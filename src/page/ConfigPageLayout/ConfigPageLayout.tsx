@@ -7,10 +7,8 @@ import { ROUTES } from 'types';
 import { getRoute } from 'components/Routing.utils';
 
 import { DataTestIds } from '../../test/dataTestIds';
-
-function getConfigTabUrl(tab = '/') {
-  return `${getRoute(ROUTES.Config)}/${tab}`.replace(/\/+/g, '/');
-}
+import { getSecretsNavModel } from './tabs/SecretsTab';
+import { getConfigTabUrl } from './ConfigPageLayout.utils';
 
 function useActiveTab(route: ROUTES) {
   const fullRoute = getRoute(route);
@@ -28,37 +26,42 @@ function useActiveTab(route: ROUTES) {
 export function ConfigPageLayout() {
   const activeTab = useActiveTab(ROUTES.Config);
 
-  const pageNav: NavModelItem = useMemo(
-    () => ({
+  const pageNav: NavModelItem = useMemo(() => {
+    const baseNav: NavModelItem = {
       icon: 'sliders-v-alt',
       text: 'General',
       subTitle: 'Configure your Synthetic Monitoring settings',
       url: getConfigTabUrl(),
       hideFromBreadcrumbs: true, // It will stack with the parent breadcrumb ('config')
+    };
 
-      children: [
-        {
-          icon: 'cog',
-          text: 'General',
-          url: getConfigTabUrl(),
-          active: activeTab(''),
-        },
-        {
-          icon: 'key-skeleton-alt',
-          text: 'Access tokens',
-          url: getConfigTabUrl('access-tokens'),
-          active: activeTab('access-tokens'),
-        },
-        {
-          icon: 'brackets-curly',
-          text: 'Terraform',
-          url: getConfigTabUrl('terraform'),
-          active: activeTab('terraform'),
-        },
-      ],
-    }),
-    [activeTab]
-  );
+    const tabs: NavModelItem[] = [
+      {
+        icon: 'cog',
+        text: 'General',
+        url: getConfigTabUrl(),
+        active: activeTab(''),
+      },
+      {
+        icon: 'key-skeleton-alt',
+        text: 'Access tokens',
+        url: getConfigTabUrl('access-tokens'),
+        active: activeTab('access-tokens'),
+      },
+      {
+        icon: 'brackets-curly',
+        text: 'Terraform',
+        url: getConfigTabUrl('terraform'),
+        active: activeTab('terraform'),
+      },
+      ...getSecretsNavModel(activeTab('secrets')),
+    ];
+
+    return {
+      ...baseNav,
+      children: tabs,
+    };
+  }, [activeTab]);
 
   // Since PluginPage doesn't render in tests, we need to provide a way to test the active tab
   let _testActiveTab = null;

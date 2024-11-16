@@ -30,6 +30,7 @@ import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
+import { SecretsTab } from '../page/ConfigPageLayout/tabs/SecretsTab';
 import { CheckList } from './CheckList';
 import { ChooseCheckGroup } from './ChooseCheckGroup';
 import { getRoute } from './Routing.utils';
@@ -108,6 +109,7 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
+        <Route path="secrets" element={<SecretsTab />} />
       </Route>
 
       <Route path={ROUTES.Redirect} element={<SceneRedirecter />} />
