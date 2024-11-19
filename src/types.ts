@@ -682,6 +682,7 @@ export enum ROUTES {
   ChooseCheckGroup = 'checks/choose-type',
   Config = 'config', // config (index)
   EditCheck = 'checks/:id/edit',
+  ViewProbe = 'probes/:id',
   EditProbe = 'probes/:id/edit',
   Home = 'home',
   NewCheck = 'checks/new',
@@ -691,7 +692,6 @@ export enum ROUTES {
   Redirect = 'redirect',
   Scene = 'scene',
   ScriptedChecks = 'scripted-checks',
-  ViewProbe = 'probes/:id',
 }
 
 interface Params extends Record<string, string | undefined> {}
