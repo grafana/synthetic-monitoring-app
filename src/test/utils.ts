@@ -10,9 +10,9 @@ import {
 
 import { ExtendedProbe, type Probe } from 'types';
 
+import { FULL_ADMIN_ACCESS, FULL_READONLY_ACCESS, FULL_WRITER_ACCESS } from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
 import { server } from './server';
-import { FULL_ADMIN_ACCESS, FULL_READONLY_ACCESS, FULL_WRITER_ACCESS } from './fixtures/rbacPermissions';
 
 export const UPDATED_VALUES: Pick<Probe, 'name' | 'latitude' | 'longitude' | 'region' | 'labels' | 'capabilities'> = {
   latitude: 19.05758,
