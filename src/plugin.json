@@ -203,7 +203,7 @@
           { "action": "grafana-synthetic-monitoring-app:read" },
           { "action": "grafana-synthetic-monitoring-app:write" },
 
-          { "action": "grafana-synthetic-monitoring-app.access-tokens:create" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:write" },
           { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" }
         ]
       },
