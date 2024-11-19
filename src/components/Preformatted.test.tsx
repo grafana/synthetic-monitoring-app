@@ -1,8 +1,6 @@
-// @ts-ignore
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 
-// @ts-ignore
 import { Preformatted } from './Preformatted';
 
 describe('Preformatted', () => {

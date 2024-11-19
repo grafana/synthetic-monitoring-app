@@ -686,12 +686,10 @@ export enum ROUTES {
   EditProbe = 'probes/:id/edit',
   Home = 'home',
   NewCheck = 'checks/new',
-  NewCheckType = 'checks/new/:checkTypeGroup',
   NewProbe = 'probes/new',
   Probes = 'probes',
   Redirect = 'redirect',
   Scene = 'scene',
-  ScriptedChecks = 'scripted-checks',
 }
 
 interface Params extends Record<string, string | undefined> {}

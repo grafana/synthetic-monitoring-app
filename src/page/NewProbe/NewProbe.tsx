@@ -9,10 +9,9 @@ import { useCreateProbe } from 'data/useProbes';
 import { useBackendAddress } from 'hooks/useBackendAddress';
 import { useNavigation } from 'hooks/useNavigation';
 import { DocsLink } from 'components/DocsLink';
+import { Preformatted } from 'components/Preformatted';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
-
-import { Preformatted } from '../../components/Preformatted';
 
 export const TEMPLATE_PROBE: ExtendedProbe = {
   name: '',

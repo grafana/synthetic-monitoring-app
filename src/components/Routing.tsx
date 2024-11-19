@@ -114,15 +114,15 @@ export const InitialisedRouter = () => {
 
       <Route path={ROUTES.Scene} element={<SceneRedirecter />} />
 
-        <Route
-            path="*"
-            element={
-                <PluginPageNotFound>
-                    The page you are looking for does not exist. Here is a working link to{' '}
-                    <TextLink href={getRoute(ROUTES.Home)}>home</TextLink>.
-                </PluginPageNotFound>
-            }
-        />
+      <Route
+        path="*"
+        element={
+          <PluginPageNotFound>
+            The page you are looking for does not exist. Here is a working link to{' '}
+            <TextLink href={getRoute(ROUTES.Home)}>home</TextLink>.
+          </PluginPageNotFound>
+        }
+      />
     </Routes>
   );
 };
@@ -144,7 +144,7 @@ export const UninitialisedRouter = () => {
       <Route path={ROUTES.Checks} element={<ChecksWelcomePage />} />
       <Route path={ROUTES.Probes} element={<ProbesWelcomePage />} />
       <Route path={ROUTES.Alerts} element={<AlertingWelcomePage />} />
-      <Route path={ROUTES.Config} Component={ConfigPageLayout} element={<div>Hello</div>}>
+      <Route path={ROUTES.Config} Component={ConfigPageLayout}>
         <Route index element={<UninitializedTab />} />
         <Route path="*" element={<UninitializedTab />} />
       </Route>

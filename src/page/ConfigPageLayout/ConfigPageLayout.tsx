@@ -2,11 +2,10 @@ import React, { useCallback, useMemo } from 'react';
 import { matchPath, Outlet, useLocation } from 'react-router-dom-v5-compat';
 import { NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { ROUTES } from 'types';
 import { getRoute } from 'components/Routing.utils';
-
-import { DataTestIds } from '../../test/dataTestIds';
 
 function getConfigTabUrl(tab = '/') {
   return `${getRoute(ROUTES.Config)}/${tab}`.replace(/\/+/g, '/');
