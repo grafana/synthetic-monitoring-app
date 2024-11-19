@@ -30,7 +30,6 @@ function doHighlights(children: ReactNode, highlights?: string | string[]): Reac
     : children;
 }
 
-// Instead if using `<pre />`
 export function Preformatted({
   children,
   className,

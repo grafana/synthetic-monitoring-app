@@ -857,7 +857,7 @@
   dependencies:
     tslib "^2.4.0"
 
-"@grafana/data@11.3.0":
+"@grafana/data@11.3.0", "@grafana/data@^11.3.0":
   version "11.3.0"
   resolved "https://registry.yarnpkg.com/@grafana/data/-/data-11.3.0.tgz#18a75244aa4e22a23ac6f43f6ecc405fd0e18da8"
   integrity sha512-AH7kJQRk1G0ccfAnCPfeQ/zJJ0kdkvpfjgTe40EJbj4S3m2mJ1lawYxd0VUsPgrh0DVezBZZkybInn+PT9jv4A==
@@ -945,7 +945,7 @@
     ua-parser-js "^1.0.32"
     web-vitals "^3.1.1"
 
-"@grafana/runtime@11.3.0":
+"@grafana/runtime@^11.3.0":
   version "11.3.0"
   resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-11.3.0.tgz#040237539da708189548320793179ccdf4e514bf"
   integrity sha512-wSa8CVK/C4N68DeEii2i2JXR8CuoXYXufLQwRG6wbpv2lcpAV2guyMSb3hmBX3DSg12SVn1ixVZRAkm5sYUqNg==
@@ -989,7 +989,7 @@
   resolved "https://registry.yarnpkg.com/@grafana/tsconfig/-/tsconfig-2.0.0.tgz#277aba907ddbe0301dc37248923e6bd2b68f5151"
   integrity sha512-cxC3Htv/GidI5FeVGAzj/lYZTMMz/Cfsc8VOQFO3Ichjx3hUjyjeoBUIpVSVMnIjKUdA5ycdxtMYPHIuIrk8+A==
 
-"@grafana/ui@11.3.0":
+"@grafana/ui@11.3.0", "@grafana/ui@^11.3.0":
   version "11.3.0"
   resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-11.3.0.tgz#398cba6f20b015ae0ebcc19a9eab55ad730a4714"
   integrity sha512-uTr1TCmLwmrEPS7FHqjM7nx/6KXrQkIAWwvzW/u5KrYiGVjmFCK5IRe586Y61SQ+uAZ98ZjqvIXzVgorzFGZ+w==
