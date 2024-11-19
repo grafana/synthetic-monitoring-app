@@ -95,7 +95,7 @@ export const InitialisedRouter = () => {
         <Route index element={<Probes />} />
         <Route path="new" element={<NewProbe />} />
         <Route path=":id">
-          <Route index element={<EditProbe readOnly />} />
+          <Route index element={<EditProbe forceViewMode />} />
           <Route path="edit" element={<EditProbe />} />
         </Route>
 
@@ -114,8 +114,15 @@ export const InitialisedRouter = () => {
 
       <Route path={ROUTES.Scene} element={<SceneRedirecter />} />
 
-      {/* TODO: Create 404 instead of navigating to home(?) */}
-      <Route path="*" element={<Navigate to={`../${ROUTES.Home}`} replace />} />
+        <Route
+            path="*"
+            element={
+                <PluginPageNotFound>
+                    The page you are looking for does not exist. Here is a working link to{' '}
+                    <TextLink href={getRoute(ROUTES.Home)}>home</TextLink>.
+                </PluginPageNotFound>
+            }
+        />
     </Routes>
   );
 };

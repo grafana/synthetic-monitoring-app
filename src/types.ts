@@ -62,6 +62,12 @@ export enum DnsProtocol {
   UDP = 'UDP',
 }
 
+export enum ProbeProvider {
+  AWS = 'AWS',
+  LINODE = 'Linode',
+  DIGITAL_OCEAN = 'Digital Ocean',
+}
+
 export interface HeaderMatch {
   header: string;
   regexp: string;
@@ -117,6 +123,12 @@ export interface Probe extends ExistingObject {
   version: string;
   deprecated: boolean;
   capabilities: ProbeCapabilities;
+
+  provider?: ProbeProvider;
+  city?: string;
+  country?: string;
+  countryCode?: string;
+  longRegion?: string;
 }
 
 // Used to extend the Probe object with additional properties (see Probes.tsx component)

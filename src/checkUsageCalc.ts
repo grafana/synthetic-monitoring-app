@@ -64,7 +64,7 @@ export function calculateMultiHTTPUsage({
   const logGBPerAssertionPerCheck = 0.0000004;
   const additionalSeriesPerUrl = 14;
 
-  const checksPerMonth = getChecksPerMonth(frequencySeconds);
+  const checksPerMonth = getTotalChecksPerMonth(probeCount, frequencySeconds);
 
   // Calculate logs
   const baseLogsGbPerMonth = checksPerMonth * logGBPerProbe;

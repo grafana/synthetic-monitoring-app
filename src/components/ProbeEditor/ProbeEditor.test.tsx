@@ -13,11 +13,15 @@ import { ProbeEditor } from './ProbeEditor';
 const onSubmit = jest.fn();
 const submitText = 'Save';
 
-const renderProbeEditor = async ({ probe = TEMPLATE_PROBE }: { probe?: Probe | ExtendedProbe } = {}) => {
+const renderProbeEditor = async ({
+  probe = TEMPLATE_PROBE,
+  forceViewMode,
+}: { probe?: Probe | ExtendedProbe; forceViewMode?: boolean } = {}) => {
   const props = {
     onSubmit,
     probe: probeToExtendedProbe(probe),
     submitText,
+    forceViewMode,
   };
 
   const res = render(<ProbeEditor {...props} />);
@@ -113,6 +117,11 @@ it('the form actions are unavailable as a viewer', async () => {
   runTestAsViewer();
   await renderProbeEditor();
   await assertNoActions();
+});
+
+it('should render the form in read mode when passing `forceReadMode`', async () => {
+  await renderProbeEditor({ probe: PRIVATE_PROBE, forceViewMode: true });
+  await assertUneditable();
 });
 
 async function assertUneditable() {

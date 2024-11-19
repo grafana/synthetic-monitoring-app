@@ -18,7 +18,7 @@ import { getRoute } from '../../components/Routing.utils';
 import { PluginPageNotFound } from '../NotFound/NotFound';
 import { getErrorInfo, getTitle } from './EditProbe.utils';
 
-export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
+export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
   const [probe, setProbe] = useState<ExtendedProbe>();
   const [errorMessage, setErrorMessage] = useState<string>('');
   const navigate = useNavigate();
@@ -26,10 +26,10 @@ export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
 
   useEffect(() => {
     // This is mainly here to handle legacy links redirect
-    if (probe && !canEdit && !readOnly) {
+    if (probe && !canEdit && !forceViewMode) {
       navigate(generateRoutePath(ROUTES.ViewProbe, { id: probe.id! }), { replace: true });
     }
-  }, [canEdit, navigate, probe, readOnly]);
+  }, [canEdit, navigate, probe, forceViewMode]);
   if (errorMessage) {
     return (
       <PluginPageNotFound breadcrumb="Probe not found">
@@ -41,11 +41,11 @@ export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
 
   return (
     <PluginPage
-      pageNav={{ text: getTitle(probe, canEdit && !readOnly) }}
+      pageNav={{ text: getTitle(probe, canEdit && !forceViewMode) }}
       actions={
         canEdit &&
         probe &&
-        readOnly && (
+        forceViewMode && (
           <LinkButton variant="secondary" icon="pen" href={generateRoutePath(ROUTES.EditProbe, { id: probe.id! })}>
             Edit probe
           </LinkButton>
@@ -53,7 +53,7 @@ export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
       }
     >
       <QueryErrorBoundary>
-        <EditProbeFetch readOnly={readOnly} onProbeFetch={setProbe} onError={setErrorMessage} />
+        <EditProbeFetch forceViewMode={forceViewMode} onProbeFetch={setProbe} onError={setErrorMessage} />
       </QueryErrorBoundary>
     </PluginPage>
   );
@@ -61,10 +61,10 @@ export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
 
 const EditProbeFetch = ({
   onProbeFetch,
-  readOnly,
+  forceViewMode,
   onError,
 }: {
-  readOnly?: boolean;
+  forceViewMode?: boolean;
   onProbeFetch: (probe: ExtendedProbe) => void;
   onError?: (message: string) => void;
 }) => {
@@ -85,13 +85,13 @@ const EditProbeFetch = ({
     return null;
   }
 
-  return <EditProbeContent readOnly={readOnly} probe={probe} />;
+  return <EditProbeContent forceViewMode={forceViewMode} probe={probe} />;
 };
 
-const EditProbeContent = ({ probe, readOnly }: { readOnly?: boolean; probe: ExtendedProbe }) => {
+const EditProbeContent = ({ probe, forceViewMode }: { forceViewMode?: boolean; probe: ExtendedProbe }) => {
   const navigate = useNavigation();
   const canEdit = useCanEditProbe(probe);
-  const writeMode = canEdit && !readOnly;
+  const writeMode = canEdit && !forceViewMode;
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState(``);
 
@@ -137,8 +137,8 @@ const EditProbeContent = ({ probe, readOnly }: { readOnly?: boolean; probe: Exte
         onSubmit={handleSubmit}
         probe={probe}
         submitText="Update probe"
-        readOnly={readOnly}
-        supportingContent={<ProbeStatus probe={probe} onReset={onReset} readOnly={readOnly} />}
+        forceViewMode={forceViewMode}
+        supportingContent={<ProbeStatus probe={probe} onReset={onReset} readOnly={forceViewMode} />}
       />
       <ProbeTokenModal
         actionText="Close"

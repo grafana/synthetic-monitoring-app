@@ -5,7 +5,11 @@ import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
-import { CheckStatusBadge, CheckStatusBadgeProps } from 'components/CheckEditor/FormComponents/CheckStatusBadge';
+import {
+  CheckStatusInfo,
+  CheckStatusInfoProps,
+  NewStatusBadge,
+} from 'components/CheckEditor/FormComponents/CheckStatusInfo';
 
 import { FORM_MAX_WIDTH } from './FormLayout';
 
@@ -15,7 +19,7 @@ export type FormSectionProps = {
   label: string;
   fields?: Array<FieldPath<CheckFormValues>>;
   index: number;
-  status?: CheckStatusBadgeProps;
+  status?: CheckStatusInfoProps;
 };
 
 // return doesn't matter as we take over how this behaves internally
@@ -32,13 +36,16 @@ export const FormSectionInternal = ({ activeSection, children, label, index, sta
   }
 
   return (
-    <div data-fs-element={`Form section ${label}`}>
+    <div data-fs-element={`Form section ${label}`} className={styles.formContainer}>
       <Box marginBottom={4}>
         <Text element="h2" variant="h3">
-          <Stack gap={2}>
+          <div className={styles.header}>
             {`${index + 1}. ${label}`}
-            {status && <CheckStatusBadge {...status} />}
-          </Stack>
+            <Stack gap={1}>
+              {status?.value && <NewStatusBadge status={status.value} />}
+              {status && <CheckStatusInfo {...status} />}
+            </Stack>
+          </div>
         </Text>
       </Box>
       <div className={styles.sectionContent}>{children}</div>
@@ -48,8 +55,17 @@ export const FormSectionInternal = ({ activeSection, children, label, index, sta
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
+    header: css({
+      position: 'relative',
+      display: 'flex',
+      gap: theme.spacing(2),
+    }),
     sectionContent: css({
       maxWidth: FORM_MAX_WIDTH,
+    }),
+
+    formContainer: css({
+      position: 'relative',
     }),
   };
 };

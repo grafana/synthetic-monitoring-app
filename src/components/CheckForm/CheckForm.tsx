@@ -159,7 +159,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     return isExistingCheck
       ? createNavModel(
           {
-            text: check?.job!,
+            text: check.job,
             url: generateRoutePath(ROUTES.CheckDashboard, { id: check.id! }),
           },
           [{ text: `Edit` }]
@@ -172,7 +172,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   return (
     <PluginPage
       pageNav={navModel}
-      renderTitle={isExistingCheck ? () => <Text element="h1">{`Editing ${check?.job}`}</Text> : undefined}
+      renderTitle={isExistingCheck ? () => <Text element="h1">{`Editing ${check.job}`}</Text> : undefined}
     >
       <FormProvider {...formMethods}>
         <CheckFormContextProvider disabled={isDisabled}>
