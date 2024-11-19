@@ -236,17 +236,17 @@
           { "action": "grafana-synthetic-monitoring-app.probes:write" },
           { "action": "grafana-synthetic-monitoring-app.alerts:write" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:write" },
-          { "action": "grafana-synthetic-monitoring-app.tokens:write" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:write" },
           { "action": "grafana-synthetic-monitoring-app.checks:read" },
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
           { "action": "grafana-synthetic-monitoring-app.alerts:read" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:read" },
-          { "action": "grafana-synthetic-monitoring-app.tokens:read" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:read" },
           { "action": "grafana-synthetic-monitoring-app.checks:delete" },
           { "action": "grafana-synthetic-monitoring-app.probes:delete" },
           { "action": "grafana-synthetic-monitoring-app.alerts:delete" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:delete" },
-          { "action": "grafana-synthetic-monitoring-app.tokens:delete" }
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" }
         ]
       },
       "grants": ["Admin"]
@@ -268,7 +268,7 @@
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
           { "action": "grafana-synthetic-monitoring-app.alerts:read" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:read" },
-          { "action": "grafana-synthetic-monitoring-app.tokens:read" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:read" },
           { "action": "grafana-synthetic-monitoring-app.checks:delete" },
           { "action": "grafana-synthetic-monitoring-app.probes:delete" },
           { "action": "grafana-synthetic-monitoring-app.alerts:delete" },
@@ -289,7 +289,7 @@
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
           { "action": "grafana-synthetic-monitoring-app.alerts:read" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:read" },
-          { "action": "grafana-synthetic-monitoring-app.tokens:read" }
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:read" }
         ]
       },
       "grants": ["Viewer"]
