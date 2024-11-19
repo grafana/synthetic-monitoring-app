@@ -12,6 +12,7 @@ it(`Toggles visibility of the probe cards`, async () => {
   const { user } = render(
     <ProbeList probes={DEFAULT_PROBES.map((probe) => probeToExtendedProbe(probe))} title={TITLE} />
   );
+
   const cards = await screen.findAllByText(`Reachability`);
   const title = screen.getByText(TITLE);
 

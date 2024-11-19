@@ -11,4 +11,7 @@ export enum DataTestIds {
   PAGE_READY = 'page-ready',
   PAGE_NOT_READY = 'page-not-ready',
   PROBE_USAGE_LINK = 'probe-usage-link',
+  TEST_ROUTER_INFO = 'test-router-info',
+  TEST_ROUTER_INFO_PATHNAME = 'test-router-info-pathname',
+  TEST_ROUTER_INFO_SEARCH = 'test-router-info-search',
 }

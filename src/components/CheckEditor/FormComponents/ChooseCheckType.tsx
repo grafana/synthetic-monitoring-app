@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { Label, RadioButtonGroup, Stack, Text } from '@grafana/ui';
 
 import { CheckFormValues, CheckType, CheckTypeGroup } from 'types';
@@ -13,12 +13,13 @@ type RefType = Partial<Record<CheckType, CheckFormValues>>;
 
 interface ChooseCheckTypeProps {
   checkType: CheckType;
-  checkTypeGroup: CheckTypeGroup;
+  checkTypeGroup?: CheckTypeGroup;
   disabled: boolean;
 }
 
 export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseCheckTypeProps) => {
-  const history = useHistory();
+  const navigate = useNavigate();
+
   const ref = useRef<RefType>({});
   const options = useCheckTypeOptions();
   const groupOptions = options.filter((option) => option.group === checkTypeGroup);
@@ -32,7 +33,7 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
 
     const values = updateCheckTypeValues(ref.current, newCheckType, checkType);
     reset(values);
-    history.replace({ search: `?checkType=${newCheckType}` }); // todo: preserve all query params
+    navigate({ search: `?checkType=${newCheckType}` }, { replace: true });
   };
 
   if (groupOptions.length === 1) {

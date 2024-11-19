@@ -8,12 +8,7 @@ import { renderEditForm } from 'page/__testHelpers__/checkForm';
 
 describe(`<EditCheck />`, () => {
   it(`renders the can't find check modal when given a bad check id`, async () => {
-    await renderEditForm({ id: -1, settings: { scripted: { script: `` } } });
-    expect(screen.getByText(/We were unable to find your check/)).toBeInTheDocument();
-  });
-
-  it(`renders the can't find check modal when given a bad check id`, async () => {
-    await renderEditForm({ id: -1, settings: { scripted: { script: `` } } });
+    await renderEditForm(-1);
     expect(screen.getByText(/We were unable to find your check/)).toBeInTheDocument();
   });
 
@@ -28,7 +23,7 @@ describe(`<EditCheck />`, () => {
       })
     );
 
-    await renderEditForm(BASIC_HTTP_CHECK);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.getByText(/An error has occurred/)).toBeInTheDocument();
   });
 
@@ -50,13 +45,13 @@ describe(`<EditCheck />`, () => {
       })
     );
 
-    await renderEditForm(BASIC_HTTP_CHECK);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.queryByText(/Check limit reached/)).not.toBeInTheDocument();
   });
 
   it(`disables the form when the user is a viewer`, async () => {
     runTestAsViewer();
-    await renderEditForm(BASIC_HTTP_CHECK);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.getByRole(`button`, { name: `Submit` })).toBeDisabled();
   });
 });

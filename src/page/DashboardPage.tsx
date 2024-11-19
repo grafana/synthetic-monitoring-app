@@ -1,16 +1,16 @@
 import React, { useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom-v5-compat';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
+import { generateRoutePath } from 'routes';
 
-import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName } from 'types';
+import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName, ROUTES } from 'types';
 import { getCheckType } from 'utils';
 import { useChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
-import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getBrowserScene } from 'scenes/BROWSER/browserScene';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
@@ -19,6 +19,8 @@ import { getPingScene } from 'scenes/PING/pingScene';
 import { getScriptedScene } from 'scenes/SCRIPTED';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
+
+import { CheckNotFound } from './NotFound/CheckNotFound';
 
 function DashboardPageContent() {
   const smDS = useSMDS();
@@ -50,8 +52,9 @@ function DashboardPageContent() {
     if (!checkToView) {
       return null;
     }
+
     const checkType = getCheckType(checkToView.settings);
-    const url = `${PLUGIN_URL_PATH}checks/${checkToView.id}/dashboard`;
+    const url = generateRoutePath(ROUTES.CheckDashboard, { id: checkToView.id! });
     switch (checkType) {
       case CheckType.DNS: {
         return new SceneApp({
@@ -146,7 +149,11 @@ function DashboardPageContent() {
     }
   }, [smDS, metricsDS, logsDS, checkToView, newUptimeQuery]);
 
-  if (!scene || isLoading) {
+  if (!isLoading && !checkToView) {
+    return <CheckNotFound />;
+  }
+
+  if (!scene) {
     return <Spinner />;
   }
 

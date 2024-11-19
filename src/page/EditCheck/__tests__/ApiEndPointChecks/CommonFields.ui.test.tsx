@@ -25,7 +25,7 @@ describe('Api endpoint checks - common fields payload', () => {
     describe(`${cType}`, () => {
       describe(`Section 1 (Request)`, () => {
         it(`request types are disabled when editing a check`, async () => {
-          await renderEditForm(check);
+          await renderEditForm(check.id);
 
           const requestTypeRadioButtonGroup = screen.getByLabelText('Request type');
 

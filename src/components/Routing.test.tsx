@@ -10,7 +10,7 @@ import { InitialisedRouter, UninitialisedRouter } from './Routing';
 import { getRoute } from './Routing.utils';
 
 function renderInitialisedRouting(options?: CustomRenderOptions) {
-  return render(<InitialisedRouter onNavChanged={jest.fn} />, options);
+  return render(<InitialisedRouter />, options);
 }
 
 function renderUninitialisedRouting(options?: CustomRenderOptions) {
@@ -104,10 +104,12 @@ describe('Routes to pages correctly', () => {
     expect(backendAddress).toBeInTheDocument();
   });
 
-  test('Non-existent route redirects to homepage', async () => {
+  test('Non-existent route shows 404 page', async () => {
     renderInitialisedRouting({ path: notaRoute });
-    const homePageText = await screen.findByText('Home page', { selector: 'h1' });
+    const homePageText = await screen.findByText('Not found', { selector: 'span' });
+    const link = await screen.findByText('home', { selector: 'a' });
     expect(homePageText).toBeInTheDocument();
+    expect(link).toBeInTheDocument();
   });
 
   test('Redirect old scenes URLS to new scenes URL', async () => {
