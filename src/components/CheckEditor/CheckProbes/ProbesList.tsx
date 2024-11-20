@@ -140,7 +140,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   headerLabel: css({
     fontWeight: theme.typography.fontWeightLight,
     fontSize: theme.typography.h5.fontSize,
-    color: 'white',
+    color: theme.colors.text.primary,
   }),
 
   columnLabel: css({
