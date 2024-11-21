@@ -156,9 +156,9 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const { isDirty, isSubmitted } = formMethods.formState;
-  const hasUnsavedChanges = isDirty && !isSubmitted;
-
+  const { isDirty, isSubmitSuccessful } = formMethods.formState;
+  // since we navigate on submit, we need this to not trigger the confirmation modal
+  const hasUnsavedChanges = isDirty && !isSubmitSuccessful;
   const navModel = useMemo(() => {
     return isExistingCheck
       ? createNavModel(

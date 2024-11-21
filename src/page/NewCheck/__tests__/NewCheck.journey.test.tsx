@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
@@ -7,9 +8,7 @@ import { CheckType } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
-import { DataTestIds } from '../../../test/dataTestIds';
-
-describe(`<NewCheck />`, () => {
+describe(`<NewCheck /> journey`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
     const { user } = await renderNewForm(CheckType.HTTP);
     server.use(
