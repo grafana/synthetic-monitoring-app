@@ -11,6 +11,8 @@ import { useMeta } from 'hooks/useMeta';
 import { useUserPermissions } from 'hooks/useUserPermissions';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 
+import { ContactAdminAlert } from './ContactAdminAlert';
+
 interface Props {
   redirectTo?: ROUTES;
   buttonText: string;
@@ -21,6 +23,8 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
   const { canEnablePlugin } = useUserPermissions();
+
+  const meetsMinPermissions = hasGlobalPermission(`datasources:read`);
   const canInitialize = canEnablePlugin && hasGlobalPermission(`datasources:create`);
 
   const {
@@ -37,12 +41,12 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
     setDataSouceModalOpen,
   } = useAppInitializer(redirectTo);
 
+  if (!meetsMinPermissions) {
+    return <ContactAdminAlert permissions={['datasources:read']} />;
+  }
+
   if (!canInitialize) {
-    return (
-      <Alert title="" severity="info">
-        Contact your administrator to get you started.
-      </Alert>
-    );
+    return <ContactAdminAlert />;
   }
 
   return (
