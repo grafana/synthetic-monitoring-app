@@ -1,6 +1,6 @@
-import React, { PropsWithChildren, ReactNode } from 'react';
+import React, { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Box, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
@@ -23,10 +23,10 @@ export function ConfigContent({ title, children, loading = false }: ConfigConten
   }
 
   return (
-    <div data-testid={DataTestIds.CONFIG_CONTENT} className={styles.container}>
-      {title && <h3>{title}</h3>}
+    <section data-testid={DataTestIds.CONFIG_CONTENT} className={styles.container}>
+      {title && <h2>{title}</h2>}
       {children}
-    </div>
+    </section>
   );
 }
 
@@ -37,13 +37,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 });
 
-ConfigContent.Section = function ConfigContentSection({ children }: PropsWithChildren<{}>) {
-  const styles = useStyles2(sectionStyles);
-  return <div className={styles.section}>{children}</div>;
-};
+ConfigContent.Section = function ConfigContentSection({
+  title,
+  children,
+  className,
+}: PropsWithChildren<{ title?: ReactNode; className?: string }>) {
+  const Container = className ? 'div' : Fragment;
 
-const sectionStyles = (theme: GrafanaTheme2) => ({
-  section: css({
-    marginBottom: theme.spacing(2),
-  }),
-});
+  return (
+    <Box marginBottom={4} element="section">
+      {!!title && <h3>{title}</h3>}
+      <Container className={className}>{children}</Container>
+    </Box>
+  );
+};

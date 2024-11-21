@@ -25,26 +25,26 @@ export function TerraformTab() {
   return (
     <ConfigContent title="Terraform config">
       {error && <Alert title={error.message} />}
-      <div>
-        <p>
-          You can manage Synthetic monitoring checks using Terraform as well as export your current checks as
-          configuration.
-        </p>
-      </div>
-      <div>
-        <h5>Prerequisites</h5>
+      <p>
+        You can manage Synthetic monitoring checks using Terraform as well as export your current checks as
+        configuration.
+      </p>
+
+      <ConfigContent.Section title="Prerequisites">
         <div>
           <TextLink href="https://grafana.com/docs/grafana/latest/administration/service-accounts/" external>
             Grafana API key
           </TextLink>
         </div>
+
         <div>
           <TextLink href={`${generateRoutePath(ROUTES.Config)}/access-tokens`}>
             Synthetic monitoring access token
           </TextLink>
         </div>
+      </ConfigContent.Section>
 
-        <br />
+      <ConfigContent.Section title="Exported config">
         <Alert title="Terraform and JSON" severity="info">
           The exported config is using{' '}
           <a href="https://www.terraform.io/docs/language/syntax/json.html">Terraform JSON syntax</a>. You can place
@@ -54,9 +54,7 @@ export function TerraformTab() {
           </TextLink>{' '}
           for more details.
         </Alert>
-
-        <h6>tf.json</h6>
-        <Text element="p" color="secondary">
+        <Text element="span" color="secondary">
           Replace{' '}
           <TextLink href="https://grafana.com/docs/grafana/latest/administration/service-accounts/" external>
             <strong className={styles.codeLink}>&lt;GRAFANA_SERVICE_TOKEN&gt;</strong>
@@ -73,17 +71,17 @@ export function TerraformTab() {
           className={styles.clipboard}
           isCode
         />
-      </div>
+      </ConfigContent.Section>
+
       {checkCommands && (
-        <>
-          <h4>Import existing checks into Terraform</h4>
+        <ConfigContent.Section title="Import existing checks into Terraform">
           <Clipboard content={checkCommands.join(' && \\\n')} className={styles.clipboard} isCode />
-        </>
+        </ConfigContent.Section>
       )}
+
       {probeCommands && (
-        <>
-          <h4>Import custom probes into Terraform</h4>
-          <Text element="p" color="secondary">
+        <ConfigContent.Section title="Import custom probes into Terraform">
+          <Text element="span" color="secondary">
             Replace{' '}
             <TextLink href={`${generateRoutePath(ROUTES.Config)}/access-tokens`}>
               <strong className={styles.codeLink}>&lt;PROBE_ACCESS_TOKEN&gt;</strong>
@@ -97,7 +95,7 @@ export function TerraformTab() {
             className={styles.clipboard}
             isCode
           />
-        </>
+        </ConfigContent.Section>
       )}
     </ConfigContent>
   );

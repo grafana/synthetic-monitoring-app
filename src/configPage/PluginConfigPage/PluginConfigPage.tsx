@@ -73,7 +73,7 @@ export function PluginConfigPage({
           <TextLink href={appConfigUrl}>Synthetic Monitoring app</TextLink>.
         </Alert>
       )}
-      <h1>Plugin config</h1>
+      <h2 className={styles.heading}>Plugin config</h2>
 
       <p>
         Here you can enable or disable the Synthetic Monitoring plugin and view linked data sources.
@@ -159,6 +159,9 @@ export function PluginConfigPage({
 
 function getStyles(theme: GrafanaTheme2) {
   return {
+    heading: css({
+      ...theme.typography.h1,
+    }),
     section: css({
       marginBottom: theme.spacing(4),
     }),

@@ -25,7 +25,6 @@ export async function getDataSource() {
   const datasource = getDataSourceSrv()
     .getList()
     .find((ds) => ds.type === 'synthetic-monitoring-datasource');
-  console.log('datasource', datasource);
   if (!datasource?.name) {
     return undefined;
   }

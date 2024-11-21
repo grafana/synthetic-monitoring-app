@@ -1,6 +1,8 @@
 import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { TextLink } from '@grafana/ui';
+import { Alert, Space, TextLink, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { useBackendAddress } from 'hooks/useBackendAddress';
 import { useCanWriteSM } from 'hooks/useDSPermission';
@@ -16,12 +18,27 @@ export function GeneralTab() {
   const isSignedIn = config.bootData.user?.isSignedIn ?? false;
   const canWriteSM = useCanWriteSM();
   const [backendAddress, backendAddressDescription] = useBackendAddress(true);
+  const styles = useStyles2(getStyles);
 
   return (
-    <ConfigContent title="General">
-      <ConfigContent.Section>
-        <h4>Private probes</h4>
-        <p>
+    <>
+      {!isSignedIn && (
+        <ConfigContent.Section>
+          <Alert title="Grafana cloud" severity="info">
+            Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
+            <TextLink href="https://grafana.com/products/cloud/" external>
+              Grafana Cloud
+            </TextLink>
+            . If you don&apos;t already have a Grafana Cloud service,{' '}
+            <TextLink href="https://grafana.com/signup/cloud" external>
+              sign up now
+            </TextLink>
+            .
+          </Alert>
+        </ConfigContent.Section>
+      )}
+      <ConfigContent title="General">
+        <ConfigContent.Section title="Private probes">
           In addition to the public probes run by Grafana Labs, you can also{' '}
           <TextLink
             href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/"
@@ -35,39 +52,32 @@ export function GeneralTab() {
             Synthetic Monitoring Agent
           </TextLink>
           .
-        </p>
+          <Space v={2} />
+          <h4>Backend address</h4>
+          {backendAddressDescription}
+          <Preformatted className={styles.pre}>{backendAddress}</Preformatted>
+        </ConfigContent.Section>
 
-        <h5>Backend address</h5>
-        <p>{backendAddressDescription}</p>
-        <Preformatted>{backendAddress}</Preformatted>
-      </ConfigContent.Section>
-
-      <ConfigContent.Section>
-        {!isSignedIn && (
-          <p>
-            Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
-            <TextLink href="https://grafana.com/products/cloud/" external>
-              Grafana Cloud
-            </TextLink>
-            . If you don&apos;t already have a Grafana Cloud service,{' '}
-            <TextLink href="https://grafana.com/signup/cloud" external>
-              sign up now
-            </TextLink>
-            .
-          </p>
-        )}
-
-        <h3>Data Sources</h3>
-        <div>
+        <ConfigContent.Section title="Data sources">
           <LinkedDatasourceView type="synthetic-monitoring-datasource" />
           <LinkedDatasourceView type="prometheus" />
           <LinkedDatasourceView type="loki" />
-        </div>
-      </ConfigContent.Section>
+        </ConfigContent.Section>
 
-      <ConfigContent.Section>
-        {canWriteSM ? <TextLink href={`/plugins/${meta.id}`}>Plugin</TextLink> : 'Plugin'} version: {meta.info.version}
-      </ConfigContent.Section>
-    </ConfigContent>
+        <ConfigContent.Section>
+          {canWriteSM ? <TextLink href={`/plugins/${meta.id}`}>Plugin</TextLink> : 'Plugin'} version:{' '}
+          {meta.info.version}
+        </ConfigContent.Section>
+      </ConfigContent>
+    </>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    pre: css({
+      marginTop: theme.spacing(1),
+      marginBottom: 0,
+    }),
+  };
 }

@@ -39,7 +39,6 @@ export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
         &quot;{type}&quot; data source is missing. Please configure it in the data sources settings.
       </Alert>
     );
-    return null;
   }
 
   const showHref = canEditMap[type];
