@@ -7,6 +7,8 @@ import { CheckType } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
+import { DataTestIds } from '../../../test/dataTestIds';
+
 describe(`<NewCheck />`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
     const { user } = await renderNewForm(CheckType.HTTP);
@@ -66,8 +68,8 @@ describe(`<NewCheck />`, () => {
       })
     );
 
-    await renderNewForm(CheckType.HTTP);
-    expect(screen.getByRole(`button`, { name: /Submit/ })).toBeDisabled();
+    const { container } = await renderNewForm(CheckType.HTTP);
+    expect(container.querySelector('#check-editor-job-input')).toBeDisabled();
   });
 
   it(`should NOT disable the form when the check limit can't be fetched`, async () => {
@@ -81,8 +83,8 @@ describe(`<NewCheck />`, () => {
       })
     );
 
-    await renderNewForm(CheckType.HTTP);
-    expect(screen.getByRole(`button`, { name: /Submit/ })).toBeEnabled();
+    const { container } = await renderNewForm(CheckType.HTTP);
+    expect(container.querySelector('#check-editor-job-input')).not.toBeDisabled();
   });
 
   it(`should show the mothly execution limit warning when the limit is reached for HG free tier customers`, async () => {
@@ -96,7 +98,7 @@ describe(`<NewCheck />`, () => {
     runTestAsHGFreeUserOverLimit();
 
     await renderNewForm(CheckType.HTTP);
-    expect(screen.getByRole(`button`, { name: /Submit/ })).toBeDisabled();
+    expect(screen.getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeDisabled();
   });
 
   it(`should focus the probes filter component when appropriate`, async () => {
