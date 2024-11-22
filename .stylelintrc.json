@@ -7,6 +7,12 @@
     }
   ],
   "rules": {
-    "color-named": "never"
+    "color-named": "never",
+    "property-no-unknown": [
+      true,
+      {
+        "ignoreProperties": ["label"]
+      }
+    ]
   }
 }
