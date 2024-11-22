@@ -18,7 +18,7 @@ export const WelcomePage = () => {
       <div className={styles.container}>
         <div className={styles.intro}>
           <Stack gap={4} alignItems={'center'} direction={`column`}>
-            <img src={info.logos.large} className={styles.logo} role="presentation" />
+            <img src={info.logos.large} className={styles.logo} role="presentation" alt="Synthetic monitoring logo" />
             <Text element="h1">Proactively monitor your endpoints and user flows from locations around the world</Text>
             <div className={styles.description}>
               Grafana Cloud Synthetic Monitoring is powered by k6, Mimir, and Loki. Measure performance and uptime,
@@ -43,28 +43,28 @@ export const WelcomePage = () => {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    container: css({
-      paddingTop: theme.spacing(16),
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      textAlign: 'center',
-    }),
-    intro: css({
-      maxWidth: '660px',
-    }),
-    logo: css({
-      width: '100px',
-    }),
-    description: css({
-      color: theme.colors.text.secondary,
-    }),
-    divider: css({
-      width: '100%',
-      margin: theme.spacing(8, 6),
-    }),
-    valueProp: css({
-      maxWidth: '860px',
-    }),
+    container: css`
+      padding-top: ${theme.spacing(16)};
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    `,
+    intro: css`
+      max-width: 660px;
+    `,
+    logo: css`
+      width: 100px;
+    `,
+    description: css`
+      color: ${theme.colors.text.secondary};
+    `,
+    divider: css`
+      width: 100%;
+      margin: ${theme.spacing(8, 6)};
+    `,
+    valueProp: css`
+      max-width: 860px;
+    `,
   };
 }

@@ -31,10 +31,10 @@ export function MismatchedDatasourceModal({
         Proceed with found datasources?
       </p>
       <div
-        className={css({
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-        })}
+        className={css`
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        `}
       >
         <dt>Expecting metrics datasource:</dt>
         <dt>Found metrics datasource:</dt>
