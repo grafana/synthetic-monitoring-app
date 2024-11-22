@@ -32,8 +32,8 @@ describe('GeneralTab', () => {
 
   it('should have a section on private probes', async () => {
     const { getByText, getByTestId } = await renderGeneralTab();
-    expect(getByText('Private probes', { selector: 'h4' })).toBeInTheDocument();
-    expect(getByText('Backend address', { selector: 'h5' })).toBeInTheDocument();
+    expect(getByText('Private probes', { selector: 'h3' })).toBeInTheDocument();
+    expect(getByText('Backend address', { selector: 'h4' })).toBeInTheDocument();
 
     const expectedBackendAddress = SM_DATASOURCE.jsonData.apiHost.replace('https://', '');
     expect(getByTestId(DataTestIds.PREFORMATTED)).toHaveTextContent(expectedBackendAddress);
@@ -41,7 +41,7 @@ describe('GeneralTab', () => {
 
   it('should have a section on data sources', async () => {
     const { getByText } = await renderGeneralTab();
-    expect(getByText('Data Sources', { selector: 'h3' })).toBeInTheDocument();
+    expect(getByText('Data sources', { selector: 'h3' })).toBeInTheDocument();
     expect(LinkedDatasourceView).toHaveBeenNthCalledWith(1, { type: 'synthetic-monitoring-datasource' }, {});
     expect(LinkedDatasourceView).toHaveBeenNthCalledWith(2, { type: 'prometheus' }, {});
     expect(LinkedDatasourceView).toHaveBeenNthCalledWith(3, { type: 'loki' }, {});

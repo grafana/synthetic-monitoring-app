@@ -3,12 +3,12 @@ import { screen } from '@testing-library/react';
 
 import { ROUTES } from '../../../types';
 
+import { AppInitializer } from '../../../components/AppInitializer';
 import { DataTestIds } from '../../../test/dataTestIds';
 import { render } from '../../../test/render';
-import { AppInitializer } from '../../AppInitializer';
 import { UninitializedTab } from './UninitializedTab';
 
-jest.mock('../../AppInitializer', () => {
+jest.mock('../../../components/AppInitializer', () => {
   return {
     AppInitializer: jest
       .fn()

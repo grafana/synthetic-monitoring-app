@@ -24,17 +24,17 @@ describe('AccessTokensTab', () => {
 
   it('should have a section on access tokens', async () => {
     const { getByText } = await renderAccessTokensTab();
-    expect(getByText('Access tokens', { selector: 'h3' })).toBeInTheDocument();
+    expect(getByText('Access tokens', { selector: 'h2' })).toBeInTheDocument();
   });
 
   it('should have a section on synthetic monitoring', async () => {
     const { getByText, queryByText } = await renderAccessTokensTab();
-    expect(getByText('Synthetic monitoring', { selector: 'h4' })).toBeInTheDocument();
+    expect(getByText('Synthetic monitoring', { selector: 'h3' })).toBeInTheDocument();
     expect(queryByText('Generate access token', { selector: 'button > span' })).toBeInTheDocument();
   });
 
   it('should have a section on private probes', async () => {
     const { getByText } = await renderAccessTokensTab();
-    expect(getByText('Private probes', { selector: 'h4' })).toBeInTheDocument();
+    expect(getByText('Private probes', { selector: 'h3' })).toBeInTheDocument();
   });
 });

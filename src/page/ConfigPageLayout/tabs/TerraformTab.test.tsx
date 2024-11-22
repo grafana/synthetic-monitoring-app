@@ -35,12 +35,12 @@ describe('TerraformTab', () => {
 
   it('should show correct heading', async () => {
     const { getByText } = await renderTerraformTab();
-    expect(getByText('Terraform config', { selector: 'h3' })).toBeInTheDocument();
+    expect(getByText('Terraform config', { selector: 'h2' })).toBeInTheDocument();
   });
 
   it('should show prerequisites', async () => {
     const { getByText } = await renderTerraformTab();
-    expect(getByText('Prerequisites', { selector: 'h5' })).toBeInTheDocument();
+    expect(getByText('Prerequisites', { selector: 'h3' })).toBeInTheDocument();
     expect(getByText('Grafana API key', { selector: 'a' })).toBeInTheDocument();
     expect(getByText('Synthetic monitoring access token', { selector: 'a' })).toBeInTheDocument();
   });
@@ -56,7 +56,7 @@ describe('TerraformTab', () => {
 
   it('should show `tf.json` with replace vars', async () => {
     const { getByText } = await renderTerraformTab();
-    expect(getByText('tf.json', { selector: 'h6' })).toBeInTheDocument();
+    expect(getByText('Exported config', { selector: 'h3' })).toBeInTheDocument();
     expect(getByText('GRAFANA_SERVICE_TOKEN', { selector: 'a > strong', exact: false })).toBeInTheDocument();
     expect(getByText('SM_ACCESS_TOKEN', { selector: 'a > strong', exact: false })).toBeInTheDocument();
   });
@@ -72,12 +72,12 @@ describe('TerraformTab', () => {
   describe('import existing checks', () => {
     it('should show "Import existing checks"', async () => {
       const { getByText } = await renderTerraformTab();
-      expect(getByText('Import existing checks into Terraform', { selector: 'h4' })).toBeInTheDocument();
+      expect(getByText('Import existing checks into Terraform', { selector: 'h3' })).toBeInTheDocument();
     });
 
     it('should show correct check import commands', async () => {
       const { getByText, getAllByTestId } = await renderTerraformTab();
-      expect(getByText('Import existing checks into Terraform', { selector: 'h4' })).toBeInTheDocument();
+      expect(getByText('Import existing checks into Terraform', { selector: 'h3' })).toBeInTheDocument();
       const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
       expect(preformatted[1]).toHaveTextContent(
         'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 5'
@@ -87,7 +87,7 @@ describe('TerraformTab', () => {
     describe('import custom probes', () => {
       it('should show "Import custom probes"', async () => {
         const { getByText } = await renderTerraformTab();
-        expect(getByText('Import custom probes into Terraform', { selector: 'h4' })).toBeInTheDocument();
+        expect(getByText('Import custom probes into Terraform', { selector: 'h3' })).toBeInTheDocument();
       });
 
       it('should show replace vars for custom probes', async () => {
@@ -113,5 +113,4 @@ describe('TerraformTab', () => {
       });
     });
   });
-  // it('', async () => {});
 });
