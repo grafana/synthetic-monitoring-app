@@ -34,6 +34,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     display: 'flex',
     flexDirection: 'column',
+    // Take down the size a notch without disturbing the a11y
+    '& > section > h2': {
+      ...theme.typography.h3,
+    },
+    '& > section > h3': {
+      ...theme.typography.h4,
+    },
+    '& > section > h4': {
+      ...theme.typography.h5,
+    },
   }),
 });
 
