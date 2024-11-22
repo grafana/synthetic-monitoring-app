@@ -103,11 +103,11 @@ export function TerraformTab() {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    clipboard: css`
-      max-height: 500px;
-      margin-top: 10px;
-      margin-bottom: 10px;
-    `,
+    clipboard: css({
+      maxHeight: 500,
+      marginTop: 10,
+      marginBottom: 10,
+    }),
     codeLink: css({
       fontFamily: theme.typography.code.fontFamily,
       fontSize: '0.8571428571em',
