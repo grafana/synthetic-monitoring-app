@@ -11,11 +11,11 @@ import { ComponentWrapperProps, render } from 'test/render';
 import { server } from 'test/server';
 
 import { AlertSensitivity, Check, CheckTypeGroup, ROUTES } from 'types';
+import { PLUGIN_URL_PATH } from 'routing/constants';
 import { InitialisedRouter } from 'routing/Routers';
 import { generateRoutePath } from 'routing/utils';
 
 import { FeatureFlagProvider } from '../components/FeatureFlagProvider';
-import { PLUGIN_URL_PATH } from '../components/Routing.consts';
 import { MetaContextProvider } from '../contexts/MetaContext';
 import { PermissionsContextProvider } from '../contexts/PermissionsContext';
 import { SMDatasourceProvider } from '../contexts/SMDatasourceContext';
