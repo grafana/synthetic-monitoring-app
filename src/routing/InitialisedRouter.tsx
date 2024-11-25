@@ -7,17 +7,13 @@ import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
-import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
-import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
-import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
 import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
-import { UninitializedTab } from 'page/ConfigPageLayout/tabs/UninitializedTab';
 import { DashboardPage } from 'page/DashboardPage';
 import { EditCheck } from 'page/EditCheck';
 import { EditProbe } from 'page/EditProbe';
@@ -26,10 +22,7 @@ import { NewProbe } from 'page/NewProbe';
 import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
-import { ProbesWelcomePage } from 'page/ProbesWelcomePage';
 import { SceneHomepage } from 'page/SceneHomepage';
-import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
-import { WelcomePage } from 'page/WelcomePage';
 
 import { CheckList } from '../components/CheckList';
 import { ChooseCheckGroup } from '../components/ChooseCheckGroup';
@@ -123,34 +116,6 @@ export const InitialisedRouter = () => {
           </PluginPageNotFound>
         }
       />
-    </Routes>
-  );
-};
-
-export const UninitialisedRouter = () => {
-  const meta = useMeta();
-  const provisioned = Boolean(meta.jsonData?.metrics?.grafanaName);
-
-  // todo: is this the correct check for provisioning?
-  // todo: is this state even possible in Grafana v11?
-  if (!provisioned) {
-    return <UnprovisionedSetup />;
-  }
-
-  return (
-    <Routes>
-      <Route path={ROUTES.Home} element={<WelcomePage />} />
-      <Route path={ROUTES.Scene} element={<WelcomePage />} />
-      <Route path={ROUTES.Checks} element={<ChecksWelcomePage />} />
-      <Route path={ROUTES.Probes} element={<ProbesWelcomePage />} />
-      <Route path={ROUTES.Alerts} element={<AlertingWelcomePage />} />
-      <Route path={ROUTES.Config} Component={ConfigPageLayout}>
-        <Route index element={<UninitializedTab />} />
-        <Route path="*" element={<UninitializedTab />} />
-      </Route>
-
-      {/* TODO: Create 404 instead of navigating to home(?) */}
-      <Route path="*" element={<Navigate to={ROUTES.Home} />} />
     </Routes>
   );
 };
