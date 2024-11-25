@@ -17,8 +17,14 @@ function renderUninitialisedRouting(options?: CustomRenderOptions) {
 }
 
 // Mocking these pages because they renders scenes, which makes jest explode
-jest.mock('page/DashboardPage');
-jest.mock('page/SceneHomepage');
+jest.mock('page/DashboardPage', () => ({
+  DashboardPage: () => <h1>Dashboard page</h1>,
+}));
+
+jest.mock('page/SceneHomepage', () => ({
+  SceneHomepage: () => <h1>Home page</h1>,
+}));
+
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
 
 describe('Renders specific welcome pages when app is not initializd', () => {
