@@ -1,1 +1,1 @@
-export { BulkActionsModal as BulkEditModal } from './BulkActionsModal';
+export { BulkActionsModal } from './BulkActionsModal';

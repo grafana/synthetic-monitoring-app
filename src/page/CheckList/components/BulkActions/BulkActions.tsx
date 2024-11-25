@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { Check } from 'types';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 import { useCanWriteSM } from 'hooks/useDSPermission';
-import { BulkEditModal } from 'page/CheckList/components/BulkActions';
+import { BulkActionsModal } from 'page/CheckList/components/BulkActions';
 
 interface BulkActionsProps {
   checks: Check[];
@@ -89,7 +89,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
         </Button>
       </div>
       {bulkEditAction && (
-        <BulkEditModal
+        <BulkActionsModal
           checks={checks}
           onDismiss={() => setBulkEditAction(null)}
           action={bulkEditAction}
