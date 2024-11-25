@@ -30,7 +30,7 @@ export function AccessTokensTab() {
 
   return (
     <ConfigContent title="Access tokens">
-      <ConfigContent.Section title="Synthetic monitoring">
+      <ConfigContent.Section title="Synthetic Monitoring">
         You can use an SM access token to authenticate with the synthetic monitoring api. Check out the{' '}
         <TextLink icon="github" href="https://github.com/grafana/synthetic-monitoring-api-go-client" external>
           Synthetic Monitoring API Go client

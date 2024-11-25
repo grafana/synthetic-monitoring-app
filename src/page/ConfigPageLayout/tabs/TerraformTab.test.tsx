@@ -42,7 +42,7 @@ describe('TerraformTab', () => {
     const { getByText } = await renderTerraformTab();
     expect(getByText('Prerequisites', { selector: 'h3' })).toBeInTheDocument();
     expect(getByText('Grafana API key', { selector: 'a' })).toBeInTheDocument();
-    expect(getByText('Synthetic monitoring access token', { selector: 'a' })).toBeInTheDocument();
+    expect(getByText('Synthetic Monitoring access token', { selector: 'a' })).toBeInTheDocument();
   });
 
   it('should show "Terraform and JSON" <Alert severity="info" />', async () => {

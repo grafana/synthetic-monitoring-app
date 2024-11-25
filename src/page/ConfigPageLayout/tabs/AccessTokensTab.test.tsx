@@ -29,7 +29,7 @@ describe('AccessTokensTab', () => {
 
   it('should have a section on synthetic monitoring', async () => {
     const { getByText, queryByText } = await renderAccessTokensTab();
-    expect(getByText('Synthetic monitoring', { selector: 'h3' })).toBeInTheDocument();
+    expect(getByText('Synthetic Monitoring', { selector: 'h3' })).toBeInTheDocument();
     expect(queryByText('Generate access token', { selector: 'button > span' })).toBeInTheDocument();
   });
 

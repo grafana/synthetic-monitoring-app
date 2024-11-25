@@ -39,7 +39,7 @@ export function TerraformTab() {
 
         <div>
           <TextLink href={`${generateRoutePath(ROUTES.Config)}/access-tokens`}>
-            Synthetic monitoring access token
+            Synthetic Monitoring access token
           </TextLink>
         </div>
       </ConfigContent.Section>
@@ -47,9 +47,11 @@ export function TerraformTab() {
       <ConfigContent.Section title="Exported config">
         <Alert title="Terraform and JSON" severity="info">
           The exported config is using{' '}
-          <a href="https://www.terraform.io/docs/language/syntax/json.html">Terraform JSON syntax</a>. You can place
-          this config in a file with a <code>tf.json</code> extension and import as a module. See the{' '}
-          <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs" external={true}>
+          <TextLink href="https://www.terraform.io/docs/language/syntax/json.html" external>
+            Terraform JSON syntax
+          </TextLink>
+          . You can place this config in a file with a <code>tf.json</code> extension and import as a module. See the{' '}
+          <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs" external>
             Terraform provider docs
           </TextLink>{' '}
           for more details.
@@ -57,11 +59,11 @@ export function TerraformTab() {
         <Text element="span" color="secondary">
           Replace{' '}
           <TextLink href="https://grafana.com/docs/grafana/latest/administration/service-accounts/" external>
-            <strong className={styles.codeLink}>&lt;GRAFANA_SERVICE_TOKEN&gt;</strong>
+            <strong className={styles.codeLink}>{'<GRAFANA_SERVICE_TOKEN>'}</strong>
           </TextLink>{' '}
           and{' '}
           <TextLink href={`${generateRoutePath(ROUTES.Config)}/access-tokens`}>
-            <strong className={styles.codeLink}>&lt;SM_ACCESS_TOKEN&gt;</strong>
+            <strong className={styles.codeLink}>{'<SM_ACCESS_TOKEN>'}</strong>
           </TextLink>
           , with their respective value.
         </Text>
@@ -84,7 +86,7 @@ export function TerraformTab() {
           <Text element="span" color="secondary">
             Replace{' '}
             <TextLink href={`${generateRoutePath(ROUTES.Config)}/access-tokens`}>
-              <strong className={styles.codeLink}>&lt;PROBE_ACCESS_TOKEN&gt;</strong>
+              <strong className={styles.codeLink}>{'<PROBE_ACCESS_TOKEN>'}</strong>
             </TextLink>{' '}
             with each probe&apos;s access token.
           </Text>
