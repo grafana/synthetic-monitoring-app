@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.16.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.7...v1.16.8) (2024-11-25)
+
+
+### Fixes
+
+* probe selector column header color ([#995](https://github.com/grafana/synthetic-monitoring-app/issues/995)) ([08dbfba](https://github.com/grafana/synthetic-monitoring-app/commit/08dbfba0e18524d72b59c04bbe9e877abaed1a37))
+
+
+### Miscellaneous Chores
+
+* `react-router-dom` migration ([#980](https://github.com/grafana/synthetic-monitoring-app/issues/980)) ([f11b89a](https://github.com/grafana/synthetic-monitoring-app/commit/f11b89ae6fa1a8c42596dcb79de6f24772c94ea8))
+* **deps:** bump cross-spawn from 7.0.3 to 7.0.6 ([#994](https://github.com/grafana/synthetic-monitoring-app/issues/994)) ([61073a3](https://github.com/grafana/synthetic-monitoring-app/commit/61073a33dc0bf172d659ea43431fee59f901920b))
+
 ## [1.16.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.6...v1.16.7) (2024-11-15)
 
 
