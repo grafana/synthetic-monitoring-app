@@ -4,7 +4,7 @@ import { NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 
 import { ROUTES } from 'types';
-import { getRoute } from 'components/Routing.utils';
+import { getRoute } from 'routing/utils';
 
 function getConfigTabUrl(tab = '/') {
   return `${getRoute(ROUTES.Config)}/${tab}`.replace(/\/+/g, '/');
