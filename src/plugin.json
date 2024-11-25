@@ -189,7 +189,8 @@
           { "action": "grafana-synthetic-monitoring-app:write" },
 
           { "action": "grafana-synthetic-monitoring-app.thresholds:write" },
-          { "action": "grafana-synthetic-monitoring-app.thresholds:read" }
+          { "action": "grafana-synthetic-monitoring-app.thresholds:read" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:delete" }
         ]
       },
       "grants": ["Admin", "Editor"]
