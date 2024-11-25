@@ -6,7 +6,6 @@ import { DataSourceRef } from '@grafana/schema';
 import { ZodType } from 'zod';
 
 import { LinkedDatasourceInfo, ProvisioningLinkedDatasourceInfo } from './datasource/types';
-import { FilterType } from 'hooks/useCheckFilters';
 import { Assertion, MultiHttpEntry, MultiHttpVariable, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface ProvisioningJsonData {
@@ -414,8 +413,6 @@ export type CheckFormValues =
   | CheckFormValuesTraceroute
   | CheckFormValuesBrowser;
 
-export type CheckTypeFilter = CheckType | 'all';
-
 export interface FilteredCheck extends Omit<Check, 'id'> {
   id: number;
 }
@@ -645,12 +642,6 @@ export enum CheckEnabledStatus {
   Disabled = 'disabled',
 }
 
-export enum CheckListViewType {
-  Card = 'card',
-  List = 'list',
-  Viz = 'viz',
-}
-
 export enum HTTPCompressionAlgo {
   none = '',
   identity = 'identity',
@@ -717,13 +708,6 @@ export interface DashboardSceneAppConfig {
   singleCheckMode?: boolean;
 }
 
-export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
-  checkFilters: CheckFiltersType;
-  checks: Check[];
-  onReset: () => void;
-  onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
-}
-
 export enum MultiHttpVariableType {
   JSON_PATH = 0,
   REGEX = 1,
@@ -742,20 +726,6 @@ export type SceneBuilder<T extends { [K in keyof T]?: string | undefined } = any
 ) => EmbeddedScene;
 
 export type RouteMatch<T extends { [K in keyof T]?: string | undefined } = any> = SceneRouteMatch<T>;
-
-export type ProbeFilter = {
-  label: string;
-  value: number;
-};
-export interface CheckFiltersType {
-  [key: string]: any;
-
-  search: string;
-  labels: string[];
-  type: CheckTypeFilter;
-  status: SelectableValue<CheckEnabledStatus>;
-  probes: Array<SelectableValue<ProbeFilter>>;
-}
 
 export interface ThresholdValues {
   upperLimit: number;

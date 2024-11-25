@@ -12,6 +12,7 @@ import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
 import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
+import { CheckList } from 'page/CheckList';
 import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
 import { ConfigPage } from 'page/ConfigPage';
 import { DashboardPage } from 'page/DashboardPage';
@@ -27,7 +28,6 @@ import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
-import { CheckList } from '../components/CheckList';
 import { ChooseCheckGroup } from '../components/ChooseCheckGroup';
 import { SceneRedirecter } from '../components/SceneRedirecter';
 
