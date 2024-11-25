@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { ROUTES } from 'types';
 import { hasGlobalPermission } from 'utils';
@@ -14,6 +15,7 @@ interface Props {
   buttonText: string;
 }
 
+// TODO: Does this really belong under /page?
 export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
@@ -42,7 +44,7 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
   }
 
   return (
-    <div>
+    <div data-testid={DataTestIds.APP_INITIALIZER}>
       <Button onClick={handleClick} disabled={loading} size="lg">
         {loading ? <Spinner /> : buttonText}
       </Button>

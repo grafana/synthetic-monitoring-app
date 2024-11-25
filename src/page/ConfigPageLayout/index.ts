@@ -1,0 +1,1 @@
+export { ConfigPageLayout } from './ConfigPageLayout';

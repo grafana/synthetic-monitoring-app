@@ -83,6 +83,7 @@ function ensureNameAndUidMatch(
   throw new Error('Invalid provisioning. Could not find datasources');
 }
 
+// TODO: Allow for the `redirectTo` to be a string (so that we can implement "return to" behaviour after initialization)
 export const useAppInitializer = (redirectTo?: ROUTES) => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);

@@ -1,1 +1,0 @@
-export { ConfigPage } from './ConfigPage';

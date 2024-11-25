@@ -14,4 +14,12 @@ export enum DataTestIds {
   TEST_ROUTER_INFO = 'test-router-info',
   TEST_ROUTER_INFO_PATHNAME = 'test-router-info-pathname',
   TEST_ROUTER_INFO_SEARCH = 'test-router-info-search',
+  TEST_PLUGIN_CONFIG_PAGE = 'test-plugin-config-page',
+  TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES = 'test-plugin-config-page-linked-datasources',
+  TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES_ERROR = 'test-plugin-config-page-linked-datasources-error',
+  CONFIG_PAGE_LAYOUT_ACTIVE_TAB = 'config-page-layout-active-tab',
+  APP_INITIALIZER = 'app-initializer',
+  CONFIG_CONTENT = 'config-content',
+  CONFIG_CONTENT_LOADING = 'config-content-loading',
+  PREFORMATTED = 'preformatted',
 }

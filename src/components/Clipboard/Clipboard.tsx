@@ -1,18 +1,13 @@
 import React from 'react';
 import { AppEvents } from '@grafana/data';
-import { useStyles } from '@grafana/ui';
+import { useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css, cx } from '@emotion/css';
 
+import { Preformatted } from '../Preformatted';
 import { CopyToClipboard } from './CopyToClipboard';
 
 const getStyles = () => ({
-  code: css`
-    width: 100%;
-    word-break: break-all;
-    overflow-y: scroll;
-    max-height: 100%;
-  `,
   container: css`
     display: flex;
     flex-direction: column;
@@ -26,16 +21,18 @@ interface Props {
   content: string;
   className?: string;
   truncate?: boolean;
+  highlight?: string | string[];
+  isCode?: boolean;
 }
 
-export function Clipboard({ content, className, truncate }: Props) {
-  const styles = useStyles(getStyles);
+export function Clipboard({ content, className, truncate, highlight, isCode }: Props) {
+  const styles = useStyles2(getStyles);
 
   return (
     <div className={cx(styles.container, className)}>
-      <pre className={styles.code} data-testid="clipboard-content">
+      <Preformatted isCode={isCode} highlight={highlight} data-testid="clipboard-content">
         {truncate ? content.slice(0, 150) + '...' : content}
-      </pre>
+      </Preformatted>
 
       <CopyToClipboard
         className={styles.button}

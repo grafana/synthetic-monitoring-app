@@ -19,6 +19,7 @@ function renderUninitialisedRouting(options?: CustomRenderOptions) {
 // Mocking these pages because they renders scenes, which makes jest explode
 jest.mock('page/DashboardPage');
 jest.mock('page/SceneHomepage');
+
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
 
 describe('Renders specific welcome pages when app is not initializd', () => {
@@ -55,7 +56,8 @@ describe('Renders specific welcome pages when app is not initializd', () => {
 
   test(`Route Config`, async () => {
     renderUninitialisedRouting({ path: getRoute(ROUTES.Config) });
-    const text = await screen.findByText(/Plugin version:/);
+
+    const text = await screen.findByText('Synthetic Monitoring is not yet initialized');
     expect(text).toBeInTheDocument();
   });
 

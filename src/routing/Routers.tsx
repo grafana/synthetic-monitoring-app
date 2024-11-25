@@ -13,7 +13,11 @@ import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
 import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
-import { ConfigPage } from 'page/ConfigPage';
+import { ConfigPageLayout } from 'page/ConfigPageLayout';
+import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
+import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
+import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
+import { UninitializedTab } from 'page/ConfigPageLayout/tabs/UninitializedTab';
 import { DashboardPage } from 'page/DashboardPage';
 import { EditCheck } from 'page/EditCheck';
 import { EditProbe } from 'page/EditProbe';
@@ -100,7 +104,11 @@ export const InitialisedRouter = () => {
 
       <Route path={ROUTES.Alerts} element={<AlertingPage />} />
 
-      <Route path={ROUTES.Config} element={<ConfigPage initialized />} />
+      <Route path={`${ROUTES.Config}`} Component={ConfigPageLayout}>
+        <Route index element={<GeneralTab />} />
+        <Route path="access-tokens" element={<AccessTokensTab />} />
+        <Route path="terraform" element={<TerraformTab />} />
+      </Route>
 
       <Route path={ROUTES.Redirect} element={<SceneRedirecter />} />
 
@@ -136,7 +144,10 @@ export const UninitialisedRouter = () => {
       <Route path={ROUTES.Checks} element={<ChecksWelcomePage />} />
       <Route path={ROUTES.Probes} element={<ProbesWelcomePage />} />
       <Route path={ROUTES.Alerts} element={<AlertingWelcomePage />} />
-      <Route path={ROUTES.Config} element={<ConfigPage />} />
+      <Route path={ROUTES.Config} Component={ConfigPageLayout}>
+        <Route index element={<UninitializedTab />} />
+        <Route path="*" element={<UninitializedTab />} />
+      </Route>
 
       {/* TODO: Create 404 instead of navigating to home(?) */}
       <Route path="*" element={<Navigate to={ROUTES.Home} />} />

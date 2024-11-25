@@ -5,11 +5,12 @@ import { config } from '@grafana/runtime';
 import { ProvisioningJsonData } from './types';
 import { getFaroConfig } from 'faro';
 import { App } from 'components/App';
-import { ConfigPageWrapper } from 'components/ConfigPageWrapper';
+
+import { PluginConfigPage } from './configPage/PluginConfigPage';
 
 const { env, url, name } = getFaroConfig();
 
-// faro was filling up the console with error logs and it annoyed me so I disabled it for localhost
+// faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
 if (window.location.hostname !== 'localhost') {
   initializeFaro({
     url,
@@ -29,6 +30,6 @@ if (window.location.hostname !== 'localhost') {
 export const plugin = new AppPlugin<ProvisioningJsonData>().setRootPage(App).addConfigPage({
   title: 'Config',
   icon: 'cog',
-  body: ConfigPageWrapper,
+  body: PluginConfigPage,
   id: 'config',
 });
