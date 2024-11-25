@@ -3,7 +3,7 @@ import { AppPluginMeta } from '@grafana/data';
 
 import type { ProvisioningJsonData } from 'types';
 
-interface VerifiedMeta extends Omit<AppPluginMeta<ProvisioningJsonData>, 'jsonData'> {
+export interface VerifiedMeta extends Omit<AppPluginMeta<ProvisioningJsonData>, 'jsonData'> {
   jsonData: ProvisioningJsonData;
 }
 

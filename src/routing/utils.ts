@@ -2,9 +2,8 @@ import { generatePath } from 'react-router-dom-v5-compat';
 import { PathParam } from '@remix-run/router/utils';
 
 import { CheckType, CheckTypeGroup, ROUTES } from 'types';
+import { PLUGIN_URL_PATH } from 'routing/constants';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
-
-import { PLUGIN_URL_PATH } from '../components/Routing.consts';
 
 function checkTypeDirectFilter({ value, group }: { value: CheckType; group: CheckTypeGroup }) {
   return (group as string) !== (value as string);

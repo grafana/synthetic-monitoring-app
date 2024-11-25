@@ -1,11 +1,13 @@
-import React from 'react';
-import { OrgRole } from '@grafana/data';
+import React, { ReactNode } from 'react';
+import { NavModelItem, OrgRole } from '@grafana/data';
 import { BackendSrvRequest } from '@grafana/runtime';
 import axios from 'axios';
 import { from } from 'rxjs';
 import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
 
 import { SMDataSource } from 'datasource/DataSource';
+
+import { DataTestIds } from '../../dataTestIds';
 
 jest.mock('@grafana/runtime', () => {
   const actual = jest.requireActual('@grafana/runtime');
@@ -56,12 +58,15 @@ jest.mock('@grafana/runtime', () => {
     getLocationSrv: () => ({
       update: (args: any) => args,
     }),
-    PluginPage: ({ actions, children, pageNav }: any) => {
+    PluginPage: ({ actions, children, pageNav }: { actions: any; children: ReactNode; pageNav: NavModelItem }) => {
       return (
         <div>
           <h2>{pageNav?.text}</h2>
           <div>{actions}</div>
           {children}
+          <div data-testid={DataTestIds.CONFIG_PAGE_LAYOUT_ACTIVE_TAB}>
+            {pageNav?.children?.find((child) => child.active)?.text ?? 'No active tab'}
+          </div>
         </div>
       );
     },

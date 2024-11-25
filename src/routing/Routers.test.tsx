@@ -4,9 +4,9 @@ import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
 
 import { ROUTES } from 'types';
+import { PLUGIN_URL_PATH } from 'routing/constants';
 import { InitialisedRouter, UninitialisedRouter } from 'routing/Routers';
 import { getRoute } from 'routing/utils';
-import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
 function renderInitialisedRouting(options?: CustomRenderOptions) {
   return render(<InitialisedRouter />, options);
@@ -61,7 +61,8 @@ describe('Renders specific welcome pages when app is not initializd', () => {
 
   test(`Route Config`, async () => {
     renderUninitialisedRouting({ path: getRoute(ROUTES.Config) });
-    const text = await screen.findByText(/Plugin version:/);
+
+    const text = await screen.findByText('Synthetic Monitoring is not yet initialized');
     expect(text).toBeInTheDocument();
   });
 

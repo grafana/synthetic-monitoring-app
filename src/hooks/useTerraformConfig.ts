@@ -49,9 +49,9 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
     provider: {
       grafana: {
         url: runtimeConfig.appUrl,
-        auth: '<add an api key from grafana.com>',
-        sm_url: apiHost ?? '<ADD SM API URL>',
-        sm_access_token: '<add an sm access token>',
+        auth: '<GRAFANA_SERVICE_TOKEN>',
+        sm_url: apiHost ?? '<SM_API_URL>',
+        sm_access_token: '<SM_ACCESS_TOKEN>',
       },
     },
     resource: {},
@@ -72,7 +72,7 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
 
   const probeCommands = Object.keys(probesConfig).map((probeName) => {
     const probeId = probes.find((probe) => sanitizeName(probe.name) === probeName)?.id;
-    return `terraform import grafana_synthetic_monitoring_probe.${probeName} ${probeId}:<PROBE_AUTH_TOKEN>`;
+    return `terraform import grafana_synthetic_monitoring_probe.${probeName} ${probeId}:<PROBE_ACCESS_TOKEN>`;
   });
 
   return { config, checkCommands, probeCommands };
@@ -80,11 +80,11 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
 
 export function useTerraformConfig() {
   const smDS = useSMDS();
-  const { data: probes = [], error: probesError } = useProbes();
-  const { data: checks = [], error: checksError } = useChecks();
+  const { data: probes = [], error: probesError, isLoading: isFetchingProbes } = useProbes();
+  const { data: checks = [], error: checksError, isLoading: isFetchingChecks } = useChecks();
   const apiHost = smDS.instanceSettings.jsonData?.apiHost;
   const generated = generateTerraformConfig(probes, checks, apiHost);
   const error = probesError || checksError;
-
-  return { ...(generated ?? {}), error };
+  const isLoading = isFetchingProbes || isFetchingChecks;
+  return { ...(generated ?? {}), error, isLoading };
 }

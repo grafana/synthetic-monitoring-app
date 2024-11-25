@@ -668,16 +668,15 @@ export interface UsageValues {
 
 export enum ROUTES {
   Alerts = 'alerts',
+  CheckDashboard = 'checks/:id',
   Checks = 'checks',
   ChooseCheckGroup = 'checks/choose-type',
-  Config = 'config',
-  CheckDashboard = 'checks/:id',
+  Config = 'config', // config (index)
   EditCheck = 'checks/:id/edit',
   ViewProbe = 'probes/:id',
   EditProbe = 'probes/:id/edit',
   Home = 'home',
   NewCheck = 'checks/new',
-  NewCheckType = 'checks/new/:checkTypeGroup',
   NewProbe = 'probes/new',
   Probes = 'probes',
   Redirect = 'redirect',
