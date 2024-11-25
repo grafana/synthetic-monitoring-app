@@ -12,7 +12,7 @@ import { server } from 'test/server';
 
 import { AlertSensitivity, Check, CheckTypeGroup, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
-import { InitialisedRouter } from 'routing/Routers';
+import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { generateRoutePath } from 'routing/utils';
 
 import { FeatureFlagProvider } from '../components/FeatureFlagProvider';

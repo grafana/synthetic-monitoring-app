@@ -1,7 +1,7 @@
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 import { PluginPage } from '@grafana/runtime';
 
-import { UninitialisedRouter } from 'routing/Routers';
+import { UninitialisedRouter } from 'routing/UninitialisedRouter';
 import { SMDataSource } from 'datasource/DataSource';
 import { useGetSMDatasource } from 'data/useSMSetup';
 import { CenteredSpinner } from 'components/CenteredSpinner';
