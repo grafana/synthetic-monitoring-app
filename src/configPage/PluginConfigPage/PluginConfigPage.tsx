@@ -6,8 +6,8 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { ProvisioningJsonData, ROUTES } from 'types';
 import { hasGlobalPermission } from 'utils';
+import { getRoute } from 'routing/utils';
 import type { SMDataSource } from 'datasource/DataSource';
-import { getRoute } from 'components/Routing.utils';
 
 import { DataSourceInfo, useLinkedDataSources } from './PluginConfigPage.hooks';
 import { enablePlugin } from './PluginConfigPage.utils';
