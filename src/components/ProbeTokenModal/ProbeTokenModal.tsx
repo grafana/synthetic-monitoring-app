@@ -13,7 +13,7 @@ type TokenModalProps = {
 
 export const ProbeTokenModal = ({ actionText, isOpen, onDismiss, token }: TokenModalProps) => {
   return (
-    <Modal isOpen={isOpen} title="Probe Authentication Token" onDismiss={onDismiss}>
+    <Modal isOpen={isOpen} title="Probe access token" onDismiss={onDismiss}>
       <Alert severity="warning" title="Note">
         This is the only time you will see this token. If you need to view it again, you will need to reset the token.
       </Alert>

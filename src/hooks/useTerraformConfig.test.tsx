@@ -65,7 +65,7 @@ describe('terraform config generation', () => {
     const result = await renderTerraformHook([BASIC_PING_CHECK], [PRIVATE_PROBE]);
 
     expect(result.current.probeCommands).toEqual([
-      `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} ${PRIVATE_PROBE.id}:<PROBE_AUTH_TOKEN>`,
+      `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} ${PRIVATE_PROBE.id}:<PROBE_ACCESS_TOKEN>`,
     ]);
   });
 
@@ -73,8 +73,8 @@ describe('terraform config generation', () => {
     const result = await renderTerraformHook([BASIC_PING_CHECK], [PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE]);
 
     expect(result.current.probeCommands).toEqual([
-      `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} ${PRIVATE_PROBE.id}:<PROBE_AUTH_TOKEN>`,
-      `terraform import grafana_synthetic_monitoring_probe.${UNSELECTED_PRIVATE_PROBE.name} ${UNSELECTED_PRIVATE_PROBE.id}:<PROBE_AUTH_TOKEN>`,
+      `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} ${PRIVATE_PROBE.id}:<PROBE_ACCESS_TOKEN>`,
+      `terraform import grafana_synthetic_monitoring_probe.${UNSELECTED_PRIVATE_PROBE.name} ${UNSELECTED_PRIVATE_PROBE.id}:<PROBE_ACCESS_TOKEN>`,
     ]);
   });
 
@@ -98,8 +98,8 @@ describe('terraform config generation', () => {
     expect(result.current.config).toEqual({
       provider: {
         grafana: {
-          auth: '<add an api key from grafana.com>',
-          sm_access_token: '<add an sm access token>',
+          auth: '<GRAFANA_SERVICE_TOKEN>',
+          sm_access_token: '<SM_ACCESS_TOKEN>',
           sm_url: SM_DATASOURCE.jsonData.apiHost,
           url: '',
         },
@@ -194,8 +194,8 @@ describe('terraform config generation', () => {
     expect(result.current.config).toEqual({
       provider: {
         grafana: {
-          auth: '<add an api key from grafana.com>',
-          sm_access_token: '<add an sm access token>',
+          auth: '<GRAFANA_SERVICE_TOKEN>',
+          sm_access_token: '<SM_ACCESS_TOKEN>',
           sm_url: SM_DATASOURCE.jsonData.apiHost,
           url: '',
         },
