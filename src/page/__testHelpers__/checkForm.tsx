@@ -8,11 +8,9 @@ import { server } from 'test/server';
 
 import { Check, CheckType, ROUTES } from 'types';
 import { getCheckTypeGroup } from 'utils';
+import { generateRoutePath, getRoute } from 'routing/utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
-
-import { getRoute } from '../../components/Routing.utils';
-import { generateRoutePath } from '../../routes';
 
 export const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',

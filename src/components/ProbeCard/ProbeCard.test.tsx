@@ -9,8 +9,8 @@ import { render } from 'test/render';
 import { probeToExtendedProbe, runTestAsViewer } from 'test/utils';
 
 import { type ExtendedProbe, ROUTES } from 'types';
+import { generateRoutePath } from 'routing/utils';
 
-import { generateRoutePath } from '../../routes';
 import { ProbeCard } from './ProbeCard';
 
 it(`Displays the correct information`, async () => {

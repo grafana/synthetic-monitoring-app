@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
+import { generateRoutePath, getRoute } from 'routing/utils';
 import { useDeleteCheck } from 'data/useChecks';
 import { useCanReadMetrics, useCanWriteSM } from 'hooks/useDSPermission';
-import { getRoute } from 'components/Routing.utils';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   actionButtonGroup: css`

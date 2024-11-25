@@ -3,10 +3,9 @@ import { ThemeTypographyVariantTypes } from '@grafana/data';
 import { TextLink } from '@grafana/ui';
 
 import { ExtendedProbe, ROUTES } from 'types';
+import { getRoute } from 'routing/utils';
 
 import { DataTestIds } from '../test/dataTestIds';
-import { getRoute } from './Routing.utils';
-
 interface ProbeUsageLinkProps {
   probe: ExtendedProbe;
   variant?: keyof Omit<ThemeTypographyVariantTypes, 'code'>;

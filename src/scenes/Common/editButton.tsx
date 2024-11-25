@@ -1,9 +1,9 @@
 import React from 'react';
 import { SceneReactObject, SceneVariable, VariableValue } from '@grafana/scenes';
 import { LinkButton } from '@grafana/ui';
-import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
+import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 

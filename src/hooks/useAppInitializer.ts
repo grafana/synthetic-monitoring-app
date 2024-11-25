@@ -6,8 +6,8 @@ import { isNumber } from 'lodash';
 import { ROUTES, SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
+import { getRoute } from 'routing/utils';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
-import { getRoute } from 'components/Routing.utils';
 
 import { useMeta } from './useMeta';
 

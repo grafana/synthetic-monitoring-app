@@ -15,8 +15,8 @@ import { server } from 'test/server';
 import { getSelect, selectOption } from 'test/utils';
 
 import { Check, FeatureName, ROUTES } from 'types';
+import { generateRoutePath } from 'routing/utils';
 
-import { generateRoutePath } from '../../routes';
 import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {

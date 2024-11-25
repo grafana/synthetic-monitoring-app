@@ -5,11 +5,11 @@ import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Stack, Text, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { generateRoutePath } from 'routes';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { Check, CheckFormValues, CheckType, ROUTES } from 'types';
 import { createNavModel } from 'utils';
+import { generateRoutePath } from 'routing/utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';

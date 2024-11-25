@@ -15,7 +15,7 @@ import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
-import { TestRouteInfo } from '../routes/test/TestRouteInfo';
+import { TestRouteInfo } from './mocks/routing/TestRouteInfo';
 
 export type ComponentWrapperProps = {
   children: ReactNode;

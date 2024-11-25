@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
 import { TextLink } from '@grafana/ui';
-import { getNewCheckTypeRedirects, LegacyEditRedirect } from 'routes';
 
 import { ROUTES } from 'types';
+import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
+import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { useMeta } from 'hooks/useMeta';
@@ -26,10 +27,9 @@ import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
-import { CheckList } from './CheckList';
-import { ChooseCheckGroup } from './ChooseCheckGroup';
-import { getRoute } from './Routing.utils';
-import { SceneRedirecter } from './SceneRedirecter';
+import { CheckList } from '../components/CheckList';
+import { ChooseCheckGroup } from '../components/ChooseCheckGroup';
+import { SceneRedirecter } from '../components/SceneRedirecter';
 
 export const InitialisedRouter = () => {
   const queryParams = useQuery();

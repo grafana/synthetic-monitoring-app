@@ -1,9 +1,10 @@
 import { generatePath } from 'react-router-dom-v5-compat';
 import { PathParam } from '@remix-run/router/utils';
 
-import { CheckType, CheckTypeGroup, ROUTES } from '../types';
+import { CheckType, CheckTypeGroup, ROUTES } from 'types';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
-import { getRoute } from 'components/Routing.utils';
+
+import { PLUGIN_URL_PATH } from '../components/Routing.consts';
 
 function checkTypeDirectFilter({ value, group }: { value: CheckType; group: CheckTypeGroup }) {
   return (group as string) !== (value as string);
@@ -33,4 +34,8 @@ export function generateRoutePath<Path extends ROUTES>(
 ) {
   // Important: this will throw if a route requires a param but the params object doesn't hold the param key/value
   return `${generatePath(getRoute(route), params)}`;
+}
+
+export function getRoute(route: ROUTES) {
+  return `${PLUGIN_URL_PATH}${route}`;
 }

@@ -7,9 +7,8 @@ import { server } from 'test/server';
 
 import { Probe, ROUTES } from 'types';
 import { formatDate } from 'utils';
-import { getRoute } from 'components/Routing.utils';
+import { generateRoutePath, getRoute } from 'routing/utils';
 
-import { generateRoutePath } from '../../routes';
 import { DataTestIds } from '../../test/dataTestIds';
 import { EditProbe } from './EditProbe';
 

@@ -5,6 +5,7 @@ import { AppRootProps } from '@grafana/data';
 import { css, Global } from '@emotion/react';
 
 import { ProvisioningJsonData } from 'types';
+import { InitialisedRouter } from 'routing/Routers';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
@@ -12,7 +13,6 @@ import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
 
 import { FeatureFlagProvider } from './FeatureFlagProvider';
-import { InitialisedRouter } from './Routing';
 
 export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta } = props;

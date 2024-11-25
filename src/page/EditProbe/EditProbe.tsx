@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom-v5-compat';
 import { PluginPage } from '@grafana/runtime';
 import { LinkButton, TextLink } from '@grafana/ui';
-import { generateRoutePath } from 'routes/utils';
 
 import { ExtendedProbe, type Probe, type ProbePageParams, ROUTES } from 'types';
+import { generateRoutePath, getRoute } from 'routing/utils';
 import { useExtendedProbe, useUpdateProbe } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { useNavigation } from 'hooks/useNavigation';
@@ -14,7 +14,6 @@ import { ProbeStatus } from 'components/ProbeStatus';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
-import { getRoute } from '../../components/Routing.utils';
 import { PluginPageNotFound } from '../NotFound/NotFound';
 import { getErrorInfo, getTitle } from './EditProbe.utils';
 

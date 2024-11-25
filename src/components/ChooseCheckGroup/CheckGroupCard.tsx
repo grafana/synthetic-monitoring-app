@@ -5,11 +5,11 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckTypeGroup, ROUTES } from 'types';
+import { getRoute } from 'routing/utils';
 import { CheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useLimits } from 'hooks/useLimits';
 import { CheckStatusInfo, NewStatusBadge } from 'components/CheckEditor/FormComponents/CheckStatusInfo';
-import { getRoute } from 'components/Routing.utils';
 
 import { Card } from '../Card';
 import { Protocol } from './Protocol';

@@ -1,8 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom-v5-compat';
 
-import { ROUTES } from '../types';
-
-import { generateRoutePath } from './utils';
+import { ROUTES } from 'types';
+import { generateRoutePath } from 'routing/utils';
 
 interface LegacyEditRedirectProps {
   entity: 'check' | 'probe';

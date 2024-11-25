@@ -3,9 +3,9 @@ import { useParams } from 'react-router-dom-v5-compat';
 import { TextLink } from '@grafana/ui';
 
 import { CheckFormPageParams, ROUTES } from 'types';
+import { getRoute } from 'routing/utils';
 import { CHECK_TYPE_GROUP_OPTIONS } from 'hooks/useCheckTypeGroupOptions';
 import { CheckForm } from 'components/CheckForm/CheckForm';
-import { getRoute } from 'components/Routing.utils';
 
 import { PluginPageNotFound } from '../NotFound/NotFound';
 
