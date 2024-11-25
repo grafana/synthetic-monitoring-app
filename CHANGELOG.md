@@ -2,11 +2,12 @@
 
 ## [1.16.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.7...v1.16.8) (2024-11-25)
 
+### Features
+* Feat/rework config page ([#990](https://github.com/grafana/synthetic-monitoring-app/pull/990))([56b05c3](https://github.com/grafana/synthetic-monitoring-app/commit/56b05c39e39e73a81656e43a6d27c1dc836bf6ab))
 
 ### Fixes
 
 * probe selector column header color ([#995](https://github.com/grafana/synthetic-monitoring-app/issues/995)) ([08dbfba](https://github.com/grafana/synthetic-monitoring-app/commit/08dbfba0e18524d72b59c04bbe9e877abaed1a37))
-
 
 ### Miscellaneous Chores
 
