@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Alert, Button, Modal, Space, TextLink } from '@grafana/ui';
 
 import { FaroEvent, reportError, reportEvent } from 'faro';
+import { getUserPermissions } from 'data/permissions';
 import { useSMDS } from 'hooks/useSMDS';
 import { Clipboard } from 'components/Clipboard';
 
 import { ConfigContent } from '../ConfigContent';
-import { getUserPermissions } from 'data/permissions';
 
 export function AccessTokensTab() {
   const { canWriteTokens } = getUserPermissions();

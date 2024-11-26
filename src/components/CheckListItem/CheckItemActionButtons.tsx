@@ -5,9 +5,8 @@ import { css } from '@emotion/css';
 import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
-import { useDeleteCheck } from 'data/useChecks';
 import { getUserPermissions } from 'data/permissions';
-
+import { useDeleteCheck } from 'data/useChecks';
 import { getRoute } from 'components/Routing.utils';
 
 const getStyles = (theme: GrafanaTheme2) => ({

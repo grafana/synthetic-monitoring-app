@@ -4,13 +4,13 @@ import { config } from '@grafana/runtime';
 import { Alert, Space, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { getUserPermissions } from 'data/permissions';
 import { useBackendAddress } from 'hooks/useBackendAddress';
 import { useMeta } from 'hooks/useMeta';
 import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
 
 import { Preformatted } from '../../../components/Preformatted';
 import { ConfigContent } from '../ConfigContent';
-import { getUserPermissions } from 'data/permissions';
 
 export function GeneralTab() {
   const meta = useMeta();

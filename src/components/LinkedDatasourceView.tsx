@@ -1,11 +1,11 @@
 import React from 'react';
 import { Alert, Card, Tag } from '@grafana/ui';
 
+import { getUserPermissions } from 'data/permissions';
 import { useCanWriteLogs, useCanWriteMetrics } from 'hooks/useDSPermission';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
-import { getUserPermissions } from 'data/permissions';
 
 interface LinkedDatasourceViewProps {
   type: 'loki' | 'prometheus' | 'synthetic-monitoring-datasource';

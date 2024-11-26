@@ -4,6 +4,7 @@ import { TextLink } from '@grafana/ui';
 import { getNewCheckTypeRedirects, LegacyEditRedirect } from 'routes';
 
 import { ROUTES } from 'types';
+import { getUserPermissions } from 'data/permissions';
 import { useLimits } from 'hooks/useLimits';
 import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
@@ -33,7 +34,6 @@ import { CheckList } from './CheckList';
 import { ChooseCheckGroup } from './ChooseCheckGroup';
 import { getRoute } from './Routing.utils';
 import { SceneRedirecter } from './SceneRedirecter';
-import { getUserPermissions } from 'data/permissions';
 
 export const InitialisedRouter = () => {
   const queryParams = useQuery();

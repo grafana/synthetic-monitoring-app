@@ -4,8 +4,8 @@ import { LinkButton } from '@grafana/ui';
 import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
-import { useChecks } from 'data/useChecks';
 import { getUserPermissions } from 'data/permissions';
+import { useChecks } from 'data/useChecks';
 
 interface Props {
   job: SceneVariable;
