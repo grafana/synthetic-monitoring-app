@@ -9,6 +9,9 @@ import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
+import { CheckList } from 'components/CheckList';
+import { ChooseCheckGroup } from 'components/ChooseCheckGroup';
+import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
@@ -23,10 +26,6 @@ import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
-
-import { CheckList } from '../components/CheckList';
-import { ChooseCheckGroup } from '../components/ChooseCheckGroup';
-import { SceneRedirecter } from '../components/SceneRedirecter';
 
 export const InitialisedRouter = () => {
   const queryParams = useQuery();
