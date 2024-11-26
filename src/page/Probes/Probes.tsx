@@ -4,7 +4,8 @@ import { LinkButton, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { ExtendedProbe, ROUTES } from 'types';
+import { ExtendedProbe } from 'types';
+import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useExtendedProbes } from 'data/useProbes';
 import { useCanWriteSM } from 'hooks/useDSPermission';

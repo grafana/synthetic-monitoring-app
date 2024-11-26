@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@grafana/ui';
 
-import { ROUTES } from 'types';
+import { ROUTES } from 'routing/types';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useNavigation } from 'hooks/useNavigation';
 

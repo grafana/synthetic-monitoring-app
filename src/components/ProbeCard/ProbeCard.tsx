@@ -3,7 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Card, Link, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe, type Label, ROUTES } from 'types';
+import { type ExtendedProbe, type Label } from 'types';
+import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { SuccessRateGaugeProbe } from 'components/Gauges';

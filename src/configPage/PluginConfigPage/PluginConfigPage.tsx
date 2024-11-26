@@ -4,8 +4,9 @@ import { Alert, Badge, Button, Card, Divider, LinkButton, TextLink, useStyles2 }
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { ProvisioningJsonData, ROUTES } from 'types';
+import { ProvisioningJsonData } from 'types';
 import { hasGlobalPermission } from 'utils';
+import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import type { SMDataSource } from 'datasource/DataSource';
 

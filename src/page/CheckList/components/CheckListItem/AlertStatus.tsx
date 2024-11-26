@@ -3,7 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, IconButton, LinkButton, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { AlertSensitivity, Check, PrometheusAlertsGroup, ROUTES } from 'types';
+import { AlertSensitivity, Check, PrometheusAlertsGroup } from 'types';
+import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useAlertRules } from 'hooks/useAlertRules';
 import { useMetricsDS } from 'hooks/useMetricsDS';

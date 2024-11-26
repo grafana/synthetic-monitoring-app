@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
 
-import { ROUTES } from 'types';
+import { ROUTES } from 'routing/types';
 import { useMeta } from 'hooks/useMeta';
 import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 import { ChecksWelcomePage } from 'page/ChecksWelcomePage';

@@ -8,7 +8,8 @@ import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/f
 import { render } from 'test/render';
 import { probeToExtendedProbe, runTestAsViewer } from 'test/utils';
 
-import { type ExtendedProbe, ROUTES } from 'types';
+import { type ExtendedProbe } from 'types';
+import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
 import { ProbeCard } from './ProbeCard';

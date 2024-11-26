@@ -2,13 +2,15 @@ import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
 import { TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'types';
 import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
+import { ROUTES } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
+import { ChooseCheckGroup } from 'components/ChooseCheckGroup';
+import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckList } from 'page/CheckList';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
@@ -24,9 +26,6 @@ import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
-
-import { ChooseCheckGroup } from '../components/ChooseCheckGroup';
-import { SceneRedirecter } from '../components/SceneRedirecter';
 
 export const InitialisedRouter = () => {
   const queryParams = useQuery();

@@ -10,7 +10,8 @@ import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
 import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
-import { Check, CheckFormValues, CheckType, ROUTES } from 'types';
+import { Check, CheckFormValues, CheckType } from 'types';
+import { ROUTES } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useCUDChecks, useTestCheck } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';

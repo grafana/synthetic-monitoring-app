@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'types';
+import { ROUTES } from 'routing/types';
 
 import { SubsectionWelcomePage } from './SubsectionWelcomePage';
 

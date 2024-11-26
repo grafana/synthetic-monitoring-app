@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom-v5-compat';
 import { PluginPage } from '@grafana/runtime';
 import { LinkButton, TextLink } from '@grafana/ui';
 
-import { ExtendedProbe, type Probe, type ProbePageParams, ROUTES } from 'types';
+import { ExtendedProbe, type Probe, type ProbePageParams } from 'types';
+import { ROUTES } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useExtendedProbe, useUpdateProbe } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
