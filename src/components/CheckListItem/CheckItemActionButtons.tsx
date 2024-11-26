@@ -6,7 +6,8 @@ import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
 import { useDeleteCheck } from 'data/useChecks';
-import { getUserPermissions } from 'hooks/useUserPermissions';
+import { getUserPermissions } from 'data/permissions';
+
 import { getRoute } from 'components/Routing.utils';
 
 const getStyles = (theme: GrafanaTheme2) => ({

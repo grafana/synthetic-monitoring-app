@@ -1,5 +1,6 @@
+import { getUserPermissions } from 'data/permissions';
+
 import { useDSPermission } from './useDSPermission';
-import { getUserPermissions } from './useUserPermissions';
 
 export function useAlertPermissions() {
   const { canReadAlerts, canWriteAlerts, canDeleteAlerts } = getUserPermissions();

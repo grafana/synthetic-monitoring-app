@@ -5,7 +5,7 @@ import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
 import { useChecks } from 'data/useChecks';
-import { useUserPermissions } from 'hooks/useUserPermissions';
+import { getUserPermissions } from 'data/permissions';
 
 interface Props {
   job: SceneVariable;
@@ -15,7 +15,7 @@ interface Props {
 function EditCheckButton({ job, instance }: Props) {
   const { data: checks = [], isLoading } = useChecks();
   const url = getUrl(checks, instance.getValue(), job.getValue());
-  const { canWriteChecks } = useUserPermissions();
+  const { canWriteChecks } = getUserPermissions();
 
   return (
     <LinkButton

@@ -2,8 +2,8 @@ import React from 'react';
 import { Button } from '@grafana/ui';
 
 import { ROUTES } from 'types';
+import { getUserPermissions } from 'data/permissions';
 import { useNavigation } from 'hooks/useNavigation';
-import { getUserPermissions } from 'hooks/useUserPermissions';
 
 export function AddNewCheckButton() {
   const navigate = useNavigation();

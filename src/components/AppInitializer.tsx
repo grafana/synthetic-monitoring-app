@@ -6,9 +6,9 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { ROUTES } from 'types';
 import { hasGlobalPermission } from 'utils';
+import { getUserPermissions } from 'data/permissions';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
-import { useUserPermissions } from 'hooks/useUserPermissions';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 
 import { ContactAdminAlert } from './ContactAdminAlert';
@@ -22,7 +22,7 @@ interface Props {
 export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
-  const { canEnablePlugin } = useUserPermissions();
+  const { canEnablePlugin } = getUserPermissions();
 
   const meetsMinPermissions = hasGlobalPermission(`datasources:read`);
   const canInitialize = canEnablePlugin && hasGlobalPermission(`datasources:create`);

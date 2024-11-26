@@ -5,8 +5,8 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { ExtendedProbe, ROUTES } from 'types';
+import { getUserPermissions } from 'data/permissions';
 import { useExtendedProbes } from 'data/useProbes';
-import { useUserPermissions } from 'hooks/useUserPermissions';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
 import { ProbeList } from 'components/ProbeList';
@@ -33,7 +33,7 @@ export const Probes = () => {
 };
 
 const Actions = () => {
-  const { canWriteProbes } = useUserPermissions();
+  const { canWriteProbes } = getUserPermissions();
   if (!canWriteProbes) {
     return null;
   }

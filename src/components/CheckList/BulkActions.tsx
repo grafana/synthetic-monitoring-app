@@ -4,8 +4,8 @@ import { Button, ButtonCascader, ConfirmModal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
+import { getUserPermissions } from 'data/permissions';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
-import { getUserPermissions } from 'hooks/useUserPermissions';
 import { BulkEditModal } from 'components/BulkEditModal';
 
 type BulkActionsProps = {

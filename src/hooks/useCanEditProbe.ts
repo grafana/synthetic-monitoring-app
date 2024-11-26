@@ -1,6 +1,5 @@
 import { Probe } from 'types';
-
-import { getUserPermissions } from './useUserPermissions';
+import { getUserPermissions } from 'data/permissions';
 
 export function useCanEditProbe(probe?: Probe) {
   const { canWriteProbes, canDeleteProbes } = getUserPermissions();

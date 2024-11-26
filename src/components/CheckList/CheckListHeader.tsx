@@ -4,8 +4,8 @@ import { Button, Checkbox, Icon, Select, Tooltip, useStyles2 } from '@grafana/ui
 import { css } from '@emotion/css';
 
 import { Check, CheckFiltersType, CheckListViewType, CheckSort } from 'types';
+import { getUserPermissions } from 'data/permissions';
 import { FilterType } from 'hooks/useCheckFilters';
-import { getUserPermissions } from 'hooks/useUserPermissions';
 import { CheckFilters } from 'components/CheckFilters';
 import { CHECK_LIST_SORT_OPTIONS } from 'components/constants';
 
