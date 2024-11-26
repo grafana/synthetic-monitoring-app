@@ -158,7 +158,7 @@ export default function main() {
   const result = http.get('http://test.k6.io/');
 
   // console.log will be represented as logs in Loki
-  console.log('got a response')
+  console.log('got a response');
   
   // Use check() to test conditions. These show as 'assertions' in the dashboard
   // Note: failed check() calls do not impact uptime and reachability
@@ -168,7 +168,7 @@ export default function main() {
 
   // Use fail() to abort and fail a test, impacting uptime and reachability
   if(!pass){
-    fail(\`non 200 result ${result.status}\`)
+    fail(\`non 200 result \${result.status}\`);
   }
 }`);
 
