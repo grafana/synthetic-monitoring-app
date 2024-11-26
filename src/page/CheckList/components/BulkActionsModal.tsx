@@ -8,7 +8,7 @@ import { Check, Probe } from 'types';
 import { useBulkUpdateChecks } from 'data/useChecks';
 import { useProbes } from 'data/useProbes';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { ProbesByRegion } from 'page/CheckList/components/BulkActions/ProbesByRegion';
+import { ProbesByRegion } from 'page/CheckList/components/ProbesByRegion';
 
 const actionTypeMap = {
   add: {

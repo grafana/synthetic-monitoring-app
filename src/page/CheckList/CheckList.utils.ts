@@ -1,9 +1,9 @@
 import { SelectableValue } from '@grafana/data';
 
-import { CheckFiltersType, CheckTypeFilter } from 'page/CheckList/types';
+import { CheckFiltersType, CheckTypeFilter } from 'page/CheckList/CheckList.types';
 import { Check, CheckEnabledStatus } from 'types';
 import { getCheckType, matchStrings } from 'utils';
-import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/constants';
+import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
 
 const matchesFilterType = (check: Check, typeFilter: CheckTypeFilter) => {
   if (typeFilter === 'all') {

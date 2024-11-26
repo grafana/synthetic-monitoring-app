@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { Check } from 'types';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 import { useCanWriteSM } from 'hooks/useDSPermission';
-import { BulkActionsModal } from 'page/CheckList/components/BulkActions';
+import { BulkActionsModal } from 'page/CheckList/components/BulkActionsModal';
 
 interface BulkActionsProps {
   checks: Check[];

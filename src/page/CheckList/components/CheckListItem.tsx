@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { CheckListViewType } from 'page/CheckList/types';
+import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckType, Label } from 'types';
-import { CheckListItemCard } from 'page/CheckList/components/CheckListItem/CheckListItemCard';
-import { CheckListItemRow } from 'page/CheckList/components/CheckListItem/CheckListItemRow';
+import { CheckListItemCard } from 'page/CheckList/components/CheckListItemCard';
+import { CheckListItemRow } from 'page/CheckList/components/CheckListItemRow';
 
 export interface CheckListItemProps {
   check: Check;

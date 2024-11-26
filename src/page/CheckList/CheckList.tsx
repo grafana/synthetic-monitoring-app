@@ -5,7 +5,7 @@ import { Pagination, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
 
-import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/types';
+import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckEnabledStatus, CheckSort, CheckType, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { useSuspenseChecks } from 'data/useChecks';
@@ -13,13 +13,13 @@ import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { CheckListHeader } from 'page/CheckList/components/CheckListHeader/CheckListHeader';
+import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
+import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
+import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
+import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 import { CheckListScene } from 'page/CheckList/components/CheckListScene';
 import { EmptyCheckList } from 'page/CheckList/components/EmptyCheckList';
-import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/constants';
-import { useCheckFilters } from 'page/CheckList/hooks/useCheckFilters';
-import { matchesAllFilters } from 'page/CheckList/utils';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;

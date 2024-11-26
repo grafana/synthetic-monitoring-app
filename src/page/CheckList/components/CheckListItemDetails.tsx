@@ -4,7 +4,7 @@ import { Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
-import { CheckCardLabel } from 'page/CheckList/components/CheckListItem/CheckCardLabel';
+import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 
 interface CheckListItemDetailsProps {
   frequency: number;

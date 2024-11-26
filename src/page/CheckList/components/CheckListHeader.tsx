@@ -3,14 +3,14 @@ import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { Button, Checkbox, Icon, Select, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/types';
+import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort } from 'types';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
-import { BulkActions } from 'page/CheckList/components/BulkActions/BulkActions';
-import { CheckFilters } from 'page/CheckList/components/CheckListHeader/CheckFilters';
-import { CheckListViewSwitcher } from 'page/CheckList/components/CheckListHeader/CheckListViewSwitcher';
-import { ThresholdGlobalSettings } from 'page/CheckList/components/Thresholds/ThresholdGlobalSettings';
+import { BulkActions } from 'page/CheckList/components/BulkActions';
+import { CheckFilters } from 'page/CheckList/components/CheckFilters';
+import { CheckListViewSwitcher } from 'page/CheckList/components/CheckListViewSwitcher';
+import { ThresholdGlobalSettings } from 'page/CheckList/components/ThresholdGlobalSettings';
 
 type CheckListHeaderProps = {
   checks: Check[];

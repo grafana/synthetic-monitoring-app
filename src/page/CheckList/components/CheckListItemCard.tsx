@@ -7,12 +7,12 @@ import { Label } from 'types';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
-import { AlertStatus } from 'page/CheckList/components/CheckListItem/AlertStatus';
-import { CheckCardLabel } from 'page/CheckList/components/CheckListItem/CheckCardLabel';
-import { CheckItemActionButtons } from 'page/CheckList/components/CheckListItem/CheckItemActionButtons';
-import { CheckListItemProps } from 'page/CheckList/components/CheckListItem/CheckListItem';
-import { CheckListItemDetails } from 'page/CheckList/components/CheckListItem/CheckListItemDetails';
-import { CheckStatusType } from 'page/CheckList/components/CheckListItem/CheckStatusType';
+import { AlertStatus } from 'page/CheckList/components/AlertStatus';
+import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
+import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
+import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
+import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
+import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 
 export const CheckListItemCard = ({
   check,

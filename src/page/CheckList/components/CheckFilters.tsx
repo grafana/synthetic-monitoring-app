@@ -3,14 +3,14 @@ import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafan
 import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/types';
+import { CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { Check } from 'types';
 import { useProbes } from 'data/useProbes';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
-import { CheckFilterGroup } from 'page/CheckList/components/CheckListHeader/CheckFilterGroup';
-import { LabelFilterInput } from 'page/CheckList/components/CheckListHeader/LabelFilterInput';
-import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/constants';
-import { defaultFilters } from 'page/CheckList/utils';
+import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
+import { defaultFilters } from 'page/CheckList/CheckList.utils';
+import { CheckFilterGroup } from 'page/CheckList/components/CheckFilterGroup';
+import { LabelFilterInput } from 'page/CheckList/components/LabelFilterInput';
 
 interface CheckFiltersProps {
   onReset: () => void;

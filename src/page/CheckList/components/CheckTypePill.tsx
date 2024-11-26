@@ -2,7 +2,7 @@ import React from 'react';
 import { useTheme2 } from '@grafana/ui';
 
 import { CheckType } from 'types';
-import { Pill } from 'page/CheckList/components/CheckListItem/Pill';
+import { Pill } from 'page/CheckList/components/Pill';
 
 interface CheckTypePillProps {
   checkType: CheckType;

@@ -4,8 +4,8 @@ import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckType } from 'types';
-import { CheckStatusPill } from 'page/CheckList/components/CheckListItem/CheckStatusPill';
-import { CheckTypePill } from 'page/CheckList/components/CheckListItem/CheckTypePill';
+import { CheckStatusPill } from 'page/CheckList/components/CheckStatusPill';
+import { CheckTypePill } from 'page/CheckList/components/CheckTypePill';
 
 interface CheckStatusTypeProps {
   checkType: CheckType;

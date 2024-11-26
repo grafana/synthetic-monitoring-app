@@ -9,7 +9,7 @@ import { getRoute } from 'routing/utils';
 import { useAlertRules } from 'hooks/useAlertRules';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { Toggletip } from 'components/Toggletip';
-import { AlertSensitivityBadge } from 'page/CheckList/components/CheckListItem/AlertSensitivityBadge';
+import { AlertSensitivityBadge } from 'page/CheckList/components/AlertSensitivityBadge';
 
 type AlertStatusProps = {
   check: Check;

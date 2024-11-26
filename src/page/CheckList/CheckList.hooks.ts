@@ -1,11 +1,11 @@
 import { SelectableValue } from '@grafana/data';
 import { capitalize } from 'lodash';
 
-import { CheckTypeFilter, ProbeFilter } from 'page/CheckList/types';
+import { CheckTypeFilter, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { CheckEnabledStatus, CheckType } from 'types';
 import { useProbes } from 'data/useProbes';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
-import { defaultFilters } from 'page/CheckList/utils';
+import { defaultFilters } from 'page/CheckList/CheckList.utils';
 
 interface CheckFiltersProps {
   search: [state: string, update: (value: string | null) => void];

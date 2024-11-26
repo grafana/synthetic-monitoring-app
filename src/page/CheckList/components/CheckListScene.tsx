@@ -16,14 +16,14 @@ import {
 } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
-import { CheckFiltersType, CheckListViewType, FilterType, VizViewSceneAppConfig } from 'page/CheckList/types';
+import { CheckFiltersType, CheckListViewType, FilterType, VizViewSceneAppConfig } from 'page/CheckList/CheckList.types';
 import { useChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
-import { CheckFilters } from 'page/CheckList/components/CheckListHeader/CheckFilters';
-import { CheckListViewSwitcher } from 'page/CheckList/components/CheckListHeader/CheckListViewSwitcher';
+import { CheckFilters } from 'page/CheckList/components/CheckFilters';
+import { CheckListViewSwitcher } from 'page/CheckList/components/CheckListViewSwitcher';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 interface CheckListSceneProps {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { RadioButtonGroup } from '@grafana/ui';
 
-import { CheckListViewType } from 'page/CheckList/types';
+import { CheckListViewType } from 'page/CheckList/CheckList.types';
 
 const CHECK_LIST_VIEW_TYPE_OPTIONS = [
   { description: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },

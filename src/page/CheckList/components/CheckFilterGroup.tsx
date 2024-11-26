@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFiltersType } from 'page/CheckList/types';
+import { CheckFiltersType } from 'page/CheckList/CheckList.types';
 import { CheckEnabledStatus } from 'types';
 
 interface CheckFilterGroupProps {

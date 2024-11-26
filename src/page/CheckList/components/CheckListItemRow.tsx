@@ -5,11 +5,11 @@ import { css, cx } from '@emotion/css';
 
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
-import { AlertStatus } from 'page/CheckList/components/CheckListItem/AlertStatus';
-import { CheckItemActionButtons } from 'page/CheckList/components/CheckListItem/CheckItemActionButtons';
-import { CheckListItemProps } from 'page/CheckList/components/CheckListItem/CheckListItem';
-import { CheckListItemDetails } from 'page/CheckList/components/CheckListItem/CheckListItemDetails';
-import { CheckStatusType } from 'page/CheckList/components/CheckListItem/CheckStatusType';
+import { AlertStatus } from 'page/CheckList/components/AlertStatus';
+import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
+import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
+import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
+import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 
 export const CheckListItemRow = ({
   check,
