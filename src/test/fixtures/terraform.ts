@@ -36,8 +36,8 @@ const nameKey = sanitizeName(`${BASIC_PING_CHECK.job}_${BASIC_PING_CHECK.target}
 export const TERRAFORM_BASIC_PING_CHECK = {
   provider: {
     grafana: {
-      auth: '<add an api key from grafana.com>',
-      sm_access_token: '<add an sm access token>',
+      auth: '<GRAFANA_SERVICE_TOKEN>',
+      sm_access_token: '<SM_ACCESS_TOKEN>',
       sm_url: SM_DATASOURCE.jsonData.apiHost,
       url: '',
     },

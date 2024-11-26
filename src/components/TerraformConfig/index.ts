@@ -1,1 +1,0 @@
-export { TerraformConfig } from './TerraformConfig';

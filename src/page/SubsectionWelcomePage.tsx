@@ -5,9 +5,8 @@ import { Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
+import { AppInitializer } from 'components/AppInitializer';
 import { Card } from 'components/Card';
-
-import { AppInitializer } from './AppInitializer';
 
 interface Props {
   children: React.ReactNode;
