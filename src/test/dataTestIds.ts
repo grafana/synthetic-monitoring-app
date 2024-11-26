@@ -15,4 +15,5 @@ export enum DataTestIds {
   TEST_ROUTER_INFO_PATHNAME = 'test-router-info-pathname',
   TEST_ROUTER_INFO_SEARCH = 'test-router-info-search',
   CHECK_FORM_SUBMIT_BUTTON = 'check-form-submit-button',
+  CONFIRM_UNSAVED_MODAL_HEADING = 'confirm-unsaved-modal-heading',
 }

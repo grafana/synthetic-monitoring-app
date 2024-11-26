@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
 import { locationService } from '@grafana/runtime';
-import { Button, Modal } from '@grafana/ui';
 import { Location, TransitionPromptHook } from 'history';
 
 import { useConfirmBeforeUnload } from 'hooks/useConfirmBeforeUnload';
+
+import { ConfirmUnsavedModal } from './ConfirmUnsavedModal';
 
 interface ConfirmLeavingPageProps {
   enabled: boolean;
@@ -27,7 +28,6 @@ export function ConfirmLeavingPage({ enabled }: ConfirmLeavingPageProps) {
   const [changesDiscarded, setChangesDiscarded] = useState(false);
   const navigate = useNavigate();
   const history = locationService.getHistory();
-
   useConfirmBeforeUnload(enabled);
 
   const location = useLocation();
@@ -63,41 +63,20 @@ export function ConfirmLeavingPage({ enabled }: ConfirmLeavingPageProps) {
     }
   }, [blockedLocation, changesDiscarded, navigate]);
 
-  const handleConfirmLeave = useCallback(() => {
+  const handleLeavePage = useCallback(() => {
     setShowModal(false);
     setChangesDiscarded(true);
   }, []);
 
-  const handleCancel = useCallback(() => {
+  const handleStayOnPage = useCallback(() => {
     setShowModal(false);
     setBlockedLocation(null);
     setChangesDiscarded(false);
   }, []);
 
   if (showModal) {
-    return <ConfirmUnsavedModal onConfirm={handleConfirmLeave} onCancel={handleCancel} />;
+    return <ConfirmUnsavedModal onLeavePage={handleLeavePage} onStayOnPage={handleStayOnPage} />;
   }
 
   return null;
-}
-
-interface ConfirmUnsavedModalProps {
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-function ConfirmUnsavedModal({ onConfirm, onCancel }: ConfirmUnsavedModalProps) {
-  return (
-    <Modal isOpen title="Unsaved changes" onDismiss={onCancel}>
-      <h5>You have unsaved changes. Are you sure you want to leave this page?</h5>
-      <Modal.ButtonRow>
-        <Button variant="secondary" onClick={onCancel} fill="outline">
-          Stay on page
-        </Button>
-        <Button onClick={onConfirm} variant="destructive">
-          Leave page
-        </Button>
-      </Modal.ButtonRow>
-    </Modal>
-  );
 }
