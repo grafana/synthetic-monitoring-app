@@ -2,8 +2,8 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { type CustomRenderOptions, render } from 'test/render';
 
-import { ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
+import { ROUTES } from 'routing/types';
 import { UninitialisedRouter } from 'routing/UninitialisedRouter';
 import { getRoute } from 'routing/utils';
 

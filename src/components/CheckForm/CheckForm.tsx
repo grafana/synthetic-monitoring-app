@@ -7,8 +7,9 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { Check, CheckFormValues, CheckType, ROUTES } from 'types';
+import { Check, CheckFormValues, CheckType } from 'types';
 import { createNavModel } from 'utils';
+import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';

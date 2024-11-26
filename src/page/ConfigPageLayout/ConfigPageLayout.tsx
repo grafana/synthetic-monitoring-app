@@ -3,7 +3,7 @@ import { matchPath, Outlet, useLocation } from 'react-router-dom-v5-compat';
 import { NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 
-import { ROUTES } from 'types';
+import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
 function getConfigTabUrl(tab = '/') {

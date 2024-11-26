@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 
-import { ROUTES } from '../../../types';
+import { ROUTES } from 'routing/types';
 
 import { AppInitializer } from '../../../components/AppInitializer';
 import { DataTestIds } from '../../../test/dataTestIds';

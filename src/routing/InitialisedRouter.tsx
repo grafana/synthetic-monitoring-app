@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
 import { TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'types';
 import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
+import { ROUTES } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';

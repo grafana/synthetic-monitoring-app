@@ -2,7 +2,8 @@ import React from 'react';
 import { ThemeTypographyVariantTypes } from '@grafana/data';
 import { TextLink } from '@grafana/ui';
 
-import { ExtendedProbe, ROUTES } from 'types';
+import { ExtendedProbe } from 'types';
+import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
 import { DataTestIds } from '../test/dataTestIds';

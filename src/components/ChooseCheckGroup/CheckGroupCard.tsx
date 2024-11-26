@@ -4,7 +4,8 @@ import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckTypeGroup, ROUTES } from 'types';
+import { CheckTypeGroup } from 'types';
+import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { CheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';

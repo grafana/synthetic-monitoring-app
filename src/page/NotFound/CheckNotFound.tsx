@@ -2,8 +2,8 @@ import React from 'react';
 import { useParams } from 'react-router-dom-v5-compat';
 import { TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'types';
 import { createNavModel } from 'utils';
+import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCheck } from 'data/useChecks';
 

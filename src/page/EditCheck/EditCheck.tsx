@@ -2,7 +2,8 @@ import React, { useCallback } from 'react';
 import { useParams } from 'react-router-dom-v5-compat';
 import { Alert, Button, LinkButton, Modal } from '@grafana/ui';
 
-import { CheckPageParams, ROUTES } from 'types';
+import { CheckPageParams } from 'types';
+import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
