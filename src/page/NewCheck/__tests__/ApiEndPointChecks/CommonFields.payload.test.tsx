@@ -77,7 +77,6 @@ describe('Api endpoint checks - common fields payload', () => {
         });
       });
 
-      // TODO: Remove/keep? It's a dubplicate of the one in `4-alerting.payload.test.tsx`
       describe(`Section 4 (alerting)`, () => {
         it(`can submit the form with alerting filled in`, async () => {
           const { user, read } = await renderNewForm(checkType);

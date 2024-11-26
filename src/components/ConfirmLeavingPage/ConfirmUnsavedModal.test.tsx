@@ -32,12 +32,12 @@ describe('<ConfirmUnsavedModal>', () => {
 
   it('should call onStayOnPage when modal is dismissed (button)', async () => {
     const onStayOnPage = jest.fn();
-    render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={onStayOnPage} />);
+    const { user } = render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={onStayOnPage} />);
 
     await screen.findByTestId('confirm-unsaved-modal-heading');
     const closeButton = screen.getByRole('button', { name: 'Close' });
 
-    closeButton.click();
+    await user.click(closeButton);
 
     expect(onStayOnPage).toHaveBeenCalled();
   });

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Button, Modal } from '@grafana/ui';
-
-import { DataTestIds } from '../../test/dataTestIds';
+import { Button, Modal, Text } from '@grafana/ui';
+import { DataTestIds } from 'test/dataTestIds';
 
 interface ConfirmUnsavedModalProps {
   onLeavePage: () => void;
@@ -11,9 +10,9 @@ interface ConfirmUnsavedModalProps {
 export function ConfirmUnsavedModal({ onLeavePage, onStayOnPage }: ConfirmUnsavedModalProps) {
   return (
     <Modal isOpen title="Unsaved changes" onDismiss={onStayOnPage}>
-      <h5 data-testid={DataTestIds.CONFIRM_UNSAVED_MODAL_HEADING}>
+      <Text data-testid={DataTestIds.CONFIRM_UNSAVED_MODAL_HEADING} element="span" variant="h5">
         You have unsaved changes. Are you sure you want to leave this page?
-      </h5>
+      </Text>
       <Modal.ButtonRow>
         <Button variant="secondary" onClick={onStayOnPage} fill="outline">
           Stay on page

@@ -15,10 +15,19 @@ const TEST_IDS = {
   OTHER_PAGE: 'ConfirmLeavingPage.other-route',
 } as const;
 
+beforeAll(() => {
+  // History needs to be reset manually between tests as it uses Grafana's global locationService
+  locationService.replace('/');
+});
+
+afterEach(() => {
+  // History needs to be reset manually between tests as it uses Grafana's global locationService
+  locationService.replace('/');
+});
+
 function Wrapper({ children }: PropsWithChildren<{}>) {
   const history = locationService.getHistory();
   // History will not automatically be reset between tests
-  history.replace('/');
 
   return (
     <Router history={history}>
