@@ -861,9 +861,9 @@ export type PluginPermissions =
   | 'grafana-synthetic-monitoring-app.alerts:delete'
   | 'grafana-synthetic-monitoring-app.thresholds:read'
   | 'grafana-synthetic-monitoring-app.thresholds:write'
+  | 'grafana-synthetic-monitoring-app.thresholds:delete'
   | 'grafana-synthetic-monitoring-app.access-tokens:read'
   | 'grafana-synthetic-monitoring-app.access-tokens:write'
   | 'grafana-synthetic-monitoring-app.access-tokens:delete'
   | 'grafana-synthetic-monitoring-app.plugin:enable'
-  | 'grafana-synthetic-monitoring-app.plugin:disable'
-  | 'grafana-synthetic-monitoring-app.tokens:delete';
+  | 'grafana-synthetic-monitoring-app.plugin:disable';
