@@ -137,6 +137,7 @@ const RequestAssertions = ({ index }: { index: number }) => {
                     onClick={() => {
                       remove(assertionIndex);
                     }}
+                    variant="destructive"
                     tooltip="Delete"
                   />
                 </div>

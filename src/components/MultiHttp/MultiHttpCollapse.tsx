@@ -58,7 +58,7 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
               <Button
                 aria-label={`Remove request ${label}`}
                 className={styles.removeButton}
-                variant="secondary"
+                variant="destructive"
                 onClick={onRemove}
                 data-fs-element={`Remove ${label}`}
                 icon="trash-alt"

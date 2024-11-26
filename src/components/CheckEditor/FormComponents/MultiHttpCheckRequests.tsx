@@ -11,7 +11,7 @@ import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
 import { broadcastFailedSubmission, flattenKeys } from 'components/CheckForm/checkForm.utils';
 import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { ENTRY_INDEX_CHAR } from 'components/CheckForm/FormLayout/formlayout.utils';
-import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
+import { CHECK_FORM_ERROR_EVENT, DEFAULT_MULTIHTTP_ASSERTION } from 'components/constants';
 import { Indent } from 'components/Indent';
 import { AvailableVariables } from 'components/MultiHttp/AvailableVariables';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
@@ -141,6 +141,7 @@ export const MultiHttpCheckRequests = () => {
           onClick={() => {
             append({
               request: { url: ``, method: HttpMethod.GET },
+              checks: [DEFAULT_MULTIHTTP_ASSERTION],
             });
             dispatchCollapse({ type: 'addNewRequest' });
           }}

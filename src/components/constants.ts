@@ -33,7 +33,7 @@ import {
 } from 'types';
 
 import { enumToStringArray } from '../utils';
-import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
+import { Assertion, AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
@@ -275,6 +275,13 @@ export const FALLBACK_CHECK_HTTP: HTTPCheck = {
   },
 };
 
+export const DEFAULT_MULTIHTTP_ASSERTION: Assertion = {
+  condition: AssertionConditionVariant.StartsWith,
+  subject: AssertionSubjectVariant.HttpStatusCode,
+  type: MultiHttpAssertionType.Text,
+  value: '2',
+};
+
 export const FALLBACK_CHECK_MULTIHTTP: MultiHTTPCheck = {
   ...FALLBACK_CHECK_BASE,
   frequency: FIVE_MINUTES_IN_MS,
@@ -289,7 +296,7 @@ export const FALLBACK_CHECK_MULTIHTTP: MultiHTTPCheck = {
             queryFields: [],
             headers: [],
           },
-          checks: [],
+          checks: [DEFAULT_MULTIHTTP_ASSERTION],
         },
       ],
     },
