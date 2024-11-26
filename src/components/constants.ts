@@ -151,16 +151,25 @@ export const TIME_UNIT_OPTIONS = [
 export const TEN_MINUTES_IN_MS = 1000 * 60 * 10;
 export const FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
 
-const EXAMPLE_SCRIPT_SCRIPTED = btoa(`import { check } from 'k6'
+const EXAMPLE_SCRIPT_SCRIPTED = btoa(`import { check, fail } from 'k6'
 import http from 'k6/http'
 
 export default function main() {
-  const res = http.get('http://test.k6.io/');
+  const result = http.get('http://test.k6.io/');
+
   // console.log will be represented as logs in Loki
   console.log('got a response')
-  check(res, {
+  
+  // Use check() to test conditions. These show as 'assertions' in the dashboard
+  // Note: failed check() calls do not impact uptime and reachability
+  const pass = check(result, {
     'is status 200': (r) => r.status === 200,
   });
+
+  // Use fail() to abort and fail a test, impacting uptime and reachability
+  if(!pass){
+    fail(\`non 200 result ${result.status}\`)
+  }
 }`);
 
 const EXAMPLE_SCRIPT_BROWSER = btoa(`import { browser } from 'k6/browser';
