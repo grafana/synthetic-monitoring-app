@@ -10,8 +10,7 @@ import { getUserPermissions } from 'data/permissions';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
-
-import { ContactAdminAlert } from './ContactAdminAlert';
+import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 interface Props {
   redirectTo?: ROUTES;

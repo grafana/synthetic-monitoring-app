@@ -57,7 +57,7 @@ describe(`<EditCheck />`, () => {
 
   it(`disables the form when the user is a RBAC viewer`, async () => {
     runTestAsRBACReader();
-    await renderEditForm(BASIC_HTTP_CHECK);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.getByRole(`button`, { name: `Submit` })).toBeDisabled();
   });
 });
