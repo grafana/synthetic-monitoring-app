@@ -7,6 +7,7 @@ import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 import { createMemoryHistory, type MemoryHistory } from 'history';
 import { SM_META } from 'test/fixtures/meta';
+import { TestRouteInfo } from 'test/helpers/TestRouteInfo';
 
 import { ProvisioningJsonData } from 'types';
 import { MetaContextProvider } from 'contexts/MetaContext';
@@ -14,8 +15,6 @@ import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-
-import { TestRouteInfo } from './mocks/routing/TestRouteInfo';
 
 export type ComponentWrapperProps = {
   children: ReactNode;
