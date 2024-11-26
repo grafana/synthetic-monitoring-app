@@ -52,4 +52,6 @@ export const getUserPermissions = () => ({
 
   canEnablePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:enable', OrgRole.Admin),
   canDisablePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:disable', OrgRole.Admin),
+
+  canWriteSM: isUserActionAllowed('grafana-synthetic-monitoring-app:write', OrgRole.Editor),
 });

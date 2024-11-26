@@ -1,10 +1,11 @@
 import React from 'react';
 import { Alert, Card, Tag } from '@grafana/ui';
 
-import { useCanWriteLogs, useCanWriteMetrics, useCanWriteSM } from 'hooks/useDSPermission';
+import { useCanWriteLogs, useCanWriteMetrics } from 'hooks/useDSPermission';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
+import { getUserPermissions } from 'data/permissions';
 
 interface LinkedDatasourceViewProps {
   type: 'loki' | 'prometheus' | 'synthetic-monitoring-datasource';
@@ -15,7 +16,7 @@ export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
   const logsDS = useLogsDS();
   const smDS = useSMDS();
 
-  const canEditSM = useCanWriteSM();
+  const { canWriteSM: canEditSM } = getUserPermissions();
   const canEditLogs = useCanWriteLogs();
   const canEditMetrics = useCanWriteMetrics();
 

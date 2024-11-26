@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Alert, Button, Modal, Space, TextLink } from '@grafana/ui';
 
 import { FaroEvent, reportError, reportEvent } from 'faro';
-import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useSMDS } from 'hooks/useSMDS';
 import { Clipboard } from 'components/Clipboard';
 
 import { ConfigContent } from '../ConfigContent';
+import { getUserPermissions } from 'data/permissions';
 
 export function AccessTokensTab() {
-  const canCreateAccessToken = useCanWriteSM();
+  const { canWriteTokens } = getUserPermissions();
   const smDS = useSMDS();
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | undefined>();
@@ -42,8 +42,8 @@ export function AccessTokensTab() {
         documentation to learn more about how to interact with the synthetic monitoring API.
         <Space v={2} />
         <Button
-          tooltip={!canCreateAccessToken ? 'You do not have permission to generate access tokens.' : undefined}
-          disabled={!canCreateAccessToken}
+          tooltip={!canWriteTokens ? 'You do not have permission to generate access tokens.' : undefined}
+          disabled={!canWriteTokens}
           onClick={() => showTokenModal()}
         >
           Generate access token

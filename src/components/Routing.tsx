@@ -4,7 +4,6 @@ import { TextLink } from '@grafana/ui';
 import { getNewCheckTypeRedirects, LegacyEditRedirect } from 'routes';
 
 import { ROUTES } from 'types';
-import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
@@ -34,6 +33,7 @@ import { CheckList } from './CheckList';
 import { ChooseCheckGroup } from './ChooseCheckGroup';
 import { getRoute } from './Routing.utils';
 import { SceneRedirecter } from './SceneRedirecter';
+import { getUserPermissions } from 'data/permissions';
 
 export const InitialisedRouter = () => {
   const queryParams = useQuery();
@@ -52,7 +52,8 @@ export const InitialisedRouter = () => {
       navigate(path, translated);
     }
   }, [page, navigate, queryParams]);
-  const canEdit = useCanWriteSM();
+
+  const { canWriteChecks } = getUserPermissions();
 
   return (
     <Routes>
@@ -64,7 +65,7 @@ export const InitialisedRouter = () => {
         <Route index element={<CheckList />} />
         <Route path=":id">
           <Route index element={<DashboardPage />} />
-          <Route path="edit" element={canEdit ? <EditCheck /> : <Navigate to=".." replace />} />
+          <Route path="edit" element={canWriteChecks ? <EditCheck /> : <Navigate to=".." replace />} />
           <Route path="dashboard" element={<Navigate to=".." replace />} />
           <Route path="*" element={<CheckNotFound />} />
         </Route>
