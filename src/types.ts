@@ -847,23 +847,12 @@ export interface CheckFormInvalidSubmissionEvent {
   source: string;
 }
 
+type PermissionBase = 'grafana-synthetic-monitoring-app';
 export type PluginPermissions =
-  | 'grafana-synthetic-monitoring-app:read'
-  | 'grafana-synthetic-monitoring-app:write'
-  | 'grafana-synthetic-monitoring-app.checks:read'
-  | 'grafana-synthetic-monitoring-app.checks:write'
-  | 'grafana-synthetic-monitoring-app.checks:delete'
-  | 'grafana-synthetic-monitoring-app.probes:read'
-  | 'grafana-synthetic-monitoring-app.probes:write'
-  | 'grafana-synthetic-monitoring-app.probes:delete'
-  | 'grafana-synthetic-monitoring-app.alerts:read'
-  | 'grafana-synthetic-monitoring-app.alerts:write'
-  | 'grafana-synthetic-monitoring-app.alerts:delete'
-  | 'grafana-synthetic-monitoring-app.thresholds:read'
-  | 'grafana-synthetic-monitoring-app.thresholds:write'
-  | 'grafana-synthetic-monitoring-app.thresholds:delete'
-  | 'grafana-synthetic-monitoring-app.access-tokens:read'
-  | 'grafana-synthetic-monitoring-app.access-tokens:write'
-  | 'grafana-synthetic-monitoring-app.access-tokens:delete'
-  | 'grafana-synthetic-monitoring-app.plugin:enable'
-  | 'grafana-synthetic-monitoring-app.plugin:disable';
+  | `${PermissionBase}:${'read' | 'write'}`
+  | `${PermissionBase}.checks:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.probes:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.alerts:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.access-tokens:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.plugin:${'enable' | 'disable'}`;
