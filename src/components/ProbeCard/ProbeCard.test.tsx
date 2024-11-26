@@ -6,7 +6,7 @@ import { userEvent } from '@testing-library/user-event';
 import { DataTestIds } from 'test/dataTestIds';
 import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
-import { probeToExtendedProbe, runTestAsRbacReader, runTestAsViewer } from 'test/utils';
+import { probeToExtendedProbe, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
 import { type ExtendedProbe, ROUTES } from 'types';
 
@@ -92,7 +92,7 @@ it(`Displays the correct information for a private probe as a viewer`, async () 
 });
 
 it(`Displays the correct information for a private probe as a RBAC viewer`, async () => {
-  runTestAsRbacReader();
+  runTestAsRBACReader();
   const probe = probeToExtendedProbe(PRIVATE_PROBE);
 
   render(<ProbeCard probe={probe} />);

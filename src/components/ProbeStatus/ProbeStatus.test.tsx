@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
-import { probeToExtendedProbe, runTestAsRbacReader, runTestAsViewer } from 'test/utils';
+import { probeToExtendedProbe, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
 import { formatDate } from 'utils';
 
@@ -17,7 +17,7 @@ it(`hides the reset button when the user is a viewer`, async () => {
 });
 
 it(`hides the reset button when the user is a RBAC viewer`, async () => {
-  runTestAsRbacReader();
+  runTestAsRBACReader();
   // We need to wait for contexts to finish loading to avoid issue with act
   await waitFor(() => render(<ProbeStatus probe={probeToExtendedProbe(PRIVATE_PROBE)} onReset={jest.fn()} />));
   const resetButton = await getResetButton(true);

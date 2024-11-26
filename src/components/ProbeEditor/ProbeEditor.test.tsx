@@ -3,7 +3,7 @@ import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
-import { fillProbeForm, probeToExtendedProbe, runTestAsRbacReader, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
+import { fillProbeForm, probeToExtendedProbe, runTestAsRBACReader, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
 
 import { ExtendedProbe, FeatureName, Probe } from 'types';
 import { TEMPLATE_PROBE } from 'page/NewProbe';
@@ -109,7 +109,7 @@ it('the form is uneditable when logged in as a viewer', async () => {
 });
 
 it('the form is uneditable when logged in as a RBAC viewer', async () => {
-  runTestAsRbacReader();
+  runTestAsRBACReader();
   await renderProbeEditor();
   await assertUneditable();
 });
@@ -131,7 +131,7 @@ it('should render the form in read mode when passing `forceReadMode`', async () 
 });
 
 it('the form actions are unavailable as a RBAC viewer', async () => {
-  runTestAsRbacReader();
+  runTestAsRBACReader();
   await renderProbeEditor();
   await assertNoActions();
 });

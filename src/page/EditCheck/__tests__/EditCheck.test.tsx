@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { runTestAsRbacReader, runTestAsViewer } from 'test/utils';
+import { runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
 import { renderEditForm } from 'page/__testHelpers__/checkForm';
 
@@ -56,7 +56,7 @@ describe(`<EditCheck />`, () => {
   });
 
   it(`disables the form when the user is a RBAC viewer`, async () => {
-    runTestAsRbacReader();
+    runTestAsRBACReader();
     await renderEditForm(BASIC_HTTP_CHECK);
     expect(screen.getByRole(`button`, { name: `Submit` })).toBeDisabled();
   });

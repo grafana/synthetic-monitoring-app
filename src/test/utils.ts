@@ -150,7 +150,7 @@ export function runTestWithoutSMAccess() {
   });
 }
 
-export function runTestAsRbacReader() {
+export function runTestAsRBACReader() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {
     ...config,
@@ -168,7 +168,7 @@ export function runTestAsRbacReader() {
   });
 }
 
-export function runTestAsRbacEditor() {
+export function runTestAsRBACEditor() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {
     ...config,
@@ -186,7 +186,7 @@ export function runTestAsRbacEditor() {
   });
 }
 
-export function runTestAsRbacAdmin() {
+export function runTestAsRBACAdmin() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {
     ...config,
