@@ -40,7 +40,7 @@
       "type": "page",
       "name": "Home",
       "path": "/a/grafana-synthetic-monitoring-app/home",
-      "action": "grafana-synthetic-monitoring-app.checks:read",
+      "action": "grafana-synthetic-monitoring-app:read",
       "addToNav": true,
       "defaultNav": true
     },
