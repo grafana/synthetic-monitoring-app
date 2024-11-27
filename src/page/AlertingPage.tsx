@@ -150,7 +150,7 @@ const AlertingPageContent = () => {
 const InsufficientPermissions = () => {
   return (
     <Alert title="Insufficient permissions" severity="info">
-      You do not have the appropriate permissions to read the alert rules. To request access contact your administrator.
+      Contact your administrator to ensure you have Query access to the metrics datasource.
     </Alert>
   );
 };
