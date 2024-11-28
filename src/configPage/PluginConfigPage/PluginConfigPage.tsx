@@ -8,10 +8,10 @@ import { ProvisioningJsonData } from 'types';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import type { SMDataSource } from 'datasource/DataSource';
+import { usePluginPermissions } from 'hooks/usePluginPermissions';
 
 import { DataSourceInfo, useLinkedDataSources } from './PluginConfigPage.hooks';
 import { enablePlugin } from './PluginConfigPage.utils';
-import { usePluginPermissions } from 'hooks/usePluginPermissions';
 
 function isInitialized(dataSource: SMDataSource | undefined): dataSource is SMDataSource {
   return dataSource?.type === 'synthetic-monitoring-datasource';
