@@ -11,6 +11,7 @@ export function useAlertPermissions() {
 
   return {
     canReadAlerts: canReadAlerts && !!metricsDs,
+    hasWriterRole: canWriteAlerts,
     canWriteAlerts: canWriteAlerts && canEditAlertInDs && !!metricsDs,
     canDeleteAlerts: canDeleteAlerts && canEditAlertInDs && !!metricsDs,
   };
