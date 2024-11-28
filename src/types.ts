@@ -808,4 +808,4 @@ export type PluginPermissions =
   | `${PermissionBase}.alerts:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.access-tokens:${'read' | 'write' | 'delete'}`
-  | `${PermissionBase}.plugin:${'enable' | 'disable'}`;
+  | `${PermissionBase}.plugin:${'write'}`;

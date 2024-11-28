@@ -21,7 +21,7 @@
       "path": "save",
       "method": "*",
       "url": "{{.JsonData.apiHost}}/api/v1/register/save",
-      "reqAction": "grafana-synthetic-monitoring-app.plugin:enable",
+      "reqAction": "grafana-synthetic-monitoring-app.plugin:write",
       "headers": [
         {
           "name": "Authorization",

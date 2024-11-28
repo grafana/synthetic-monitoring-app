@@ -1,8 +1,7 @@
 export const FULL_ADMIN_ACCESS = {
   'grafana-synthetic-monitoring-app:read': true,
   'grafana-synthetic-monitoring-app:write': true,
-  'grafana-synthetic-monitoring-app.plugin:enable': true,
-  'grafana-synthetic-monitoring-app.plugin:disable': true,
+  'grafana-synthetic-monitoring-app.plugin:write': true,
   'grafana-synthetic-monitoring-app.checks:write': true,
   'grafana-synthetic-monitoring-app.probes:write': true,
   'grafana-synthetic-monitoring-app.alerts:write': true,

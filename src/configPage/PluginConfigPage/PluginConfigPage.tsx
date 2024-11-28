@@ -5,13 +5,13 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { ProvisioningJsonData } from 'types';
-import { hasGlobalPermission } from 'utils';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import type { SMDataSource } from 'datasource/DataSource';
 
 import { DataSourceInfo, useLinkedDataSources } from './PluginConfigPage.hooks';
 import { enablePlugin } from './PluginConfigPage.utils';
+import { usePluginPermissions } from 'hooks/usePluginPermissions';
 
 function isInitialized(dataSource: SMDataSource | undefined): dataSource is SMDataSource {
   return dataSource?.type === 'synthetic-monitoring-datasource';
@@ -37,7 +37,9 @@ export function PluginConfigPage({
   const appConfigUrl = getRoute(ROUTES.Config);
   const appHomeUrl = getRoute(ROUTES.Home);
   const [isEnabling, setIsEnabling] = useState(false);
-  const isEnableDisabled = !hasGlobalPermission(`plugins:write`);
+
+  const { canWritePlugin } = usePluginPermissions();
+
   const { api, linked, isLoading } = useLinkedDataSources();
   const initialized = isInitialized(api?.dataSource);
 
@@ -146,8 +148,8 @@ export function PluginConfigPage({
       {isEnabled && <LinkButton href={appHomeUrl}>Go to the Synthetic Monitoring app</LinkButton>}
       {!isEnabled && (
         <Button
-          disabled={isEnableDisabled}
-          tooltip={isEnableDisabled ? 'Insufficient permissions for enabling plugins ' : undefined}
+          disabled={!canWritePlugin}
+          tooltip={!canWritePlugin ? 'Insufficient permissions for enabling plugins ' : undefined}
           icon={isEnabling ? 'fa fa-spinner' : undefined}
           onClick={handleEnable}
         >
