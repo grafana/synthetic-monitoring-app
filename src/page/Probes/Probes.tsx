@@ -7,12 +7,12 @@ import { DataTestIds } from 'test/dataTestIds';
 import { ExtendedProbe } from 'types';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { getUserPermissions } from 'data/permissions';
 import { useExtendedProbes } from 'data/useProbes';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
 import { ProbeList } from 'components/ProbeList';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { getUserPermissions } from 'data/permissions';
 
 export const Probes = () => {
   const theme = useTheme2();

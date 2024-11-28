@@ -7,7 +7,6 @@ import { DataTestIds } from 'test/dataTestIds';
 import { hasGlobalPermission } from 'utils';
 import { ROUTES } from 'routing/types';
 import { getUserPermissions } from 'data/permissions';
-
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
