@@ -53,7 +53,7 @@ const AlertingPageContent = () => {
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
-  const { canWriteAlerts } = useAlertPermissions();
+  const { canWriteAlerts, hasWriterRole } = useAlertPermissions();
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
@@ -97,7 +97,7 @@ const AlertingPageContent = () => {
           {alertError}
         </Alert>
       )}
-      {!canWriteAlerts && (
+      {hasWriterRole && !canWriteAlerts && (
         <InsufficientPermissions
           message={
             <>
