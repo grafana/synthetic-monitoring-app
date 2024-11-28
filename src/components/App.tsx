@@ -18,6 +18,8 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta } = props;
 
   useEffect(() => {
+    console.log(`Good morning, Dave`);
+
     return () => {
       // we have a dependency on alerts to display our alerting correctly
       // so we are invalidating the alerts list on the assumption the user might change their alerting options when they leave SM
