@@ -8,7 +8,7 @@ export const ContactAdminAlert = ({ permissions }: { permissions?: string[] }) =
         <Stack>
           <div>You are missing the following permissions:</div>
           {permissions.map((permission) => (
-            <code key="permission">{permission}</code>
+            <code key={permission}>{permission}</code>
           ))}
         </Stack>
       )}
