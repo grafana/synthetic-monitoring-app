@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { ROUTES } from 'types';
+import { ROUTES } from 'routing/types';
 import { useNavigation } from 'hooks/useNavigation';
 
 const getStyles = (theme: GrafanaTheme2) => ({

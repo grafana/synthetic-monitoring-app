@@ -2,8 +2,8 @@ import React from 'react';
 import { Alert, LinkButton, Stack, TextLink } from '@grafana/ui';
 import { useLocalStorage } from 'usehooks-ts';
 
-import { ROUTES } from 'types';
-import { getRoute } from 'components/Routing.utils';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 
 export const PrivateProbesAlert = () => {
   const [dismissed, setDismissed] = useLocalStorage<boolean>('dismissedPrivateProbesAlert', false);

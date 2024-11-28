@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { getLocationSrv } from '@grafana/runtime';
 
-import { PLUGIN_URL_PATH } from 'components/Routing.consts';
+import { PLUGIN_URL_PATH } from 'routing/constants';
 
 export type QueryParamMap = {
   [key: string]: string;

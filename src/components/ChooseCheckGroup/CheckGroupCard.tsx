@@ -4,12 +4,13 @@ import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckTypeGroup, ROUTES } from 'types';
+import { CheckTypeGroup } from 'types';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { CheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useLimits } from 'hooks/useLimits';
 import { CheckStatusInfo, NewStatusBadge } from 'components/CheckEditor/FormComponents/CheckStatusInfo';
-import { getRoute } from 'components/Routing.utils';
 
 import { Card } from '../Card';
 import { Protocol } from './Protocol';

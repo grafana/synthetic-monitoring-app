@@ -5,11 +5,11 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { Probe, ROUTES } from 'types';
+import { Probe } from 'types';
 import { formatDate } from 'utils';
-import { getRoute } from 'components/Routing.utils';
+import { ROUTES } from 'routing/types';
+import { generateRoutePath, getRoute } from 'routing/utils';
 
-import { generateRoutePath } from '../../routes';
 import { DataTestIds } from '../../test/dataTestIds';
 import { EditProbe } from './EditProbe';
 

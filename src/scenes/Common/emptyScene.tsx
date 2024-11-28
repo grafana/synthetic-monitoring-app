@@ -4,7 +4,8 @@ import { EmbeddedScene, SceneReactObject } from '@grafana/scenes';
 import { Button, Card, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckType, ROUTES } from 'types';
+import { CheckType } from 'types';
+import { ROUTES } from 'routing/types';
 import { useNavigation } from 'hooks/useNavigation';
 
 function getStyles(theme: GrafanaTheme2) {

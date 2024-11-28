@@ -2,12 +2,13 @@ import React, { useMemo } from 'react';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { LoadingPlaceholder } from '@grafana/ui';
 
-import { DashboardSceneAppConfig, ROUTES } from 'types';
+import { DashboardSceneAppConfig } from 'types';
+import { PLUGIN_URL_PATH } from 'routing/constants';
+import { ROUTES } from 'routing/types';
 import { useChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
-import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getSummaryScene } from 'scenes/Summary';
 
 export const SceneHomepage = () => {

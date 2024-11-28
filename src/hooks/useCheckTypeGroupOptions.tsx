@@ -1,9 +1,10 @@
 import { ReactNode, useContext } from 'react';
 import { IconName } from '@grafana/data';
 
-import { CheckType, CheckTypeGroup, FeatureName, ROUTES } from 'types';
+import { CheckType, CheckTypeGroup, FeatureName } from 'types';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { FeatureFlagContext } from 'contexts/FeatureFlagContext';
-import { getRoute } from 'components/Routing.utils';
 
 import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions';
 

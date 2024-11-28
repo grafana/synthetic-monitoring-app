@@ -5,10 +5,10 @@ import { ADD_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 import { fillProbeForm } from 'test/utils';
 
-import { FeatureName, ROUTES } from 'types';
-import { getRoute } from 'components/Routing.utils';
+import { FeatureName } from 'types';
+import { ROUTES } from 'routing/types';
+import { generateRoutePath, getRoute } from 'routing/utils';
 
-import { generateRoutePath } from '../../routes';
 import { DataTestIds } from '../../test/dataTestIds';
 import { NewProbe } from './NewProbe';
 
