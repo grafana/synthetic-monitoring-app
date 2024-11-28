@@ -2,17 +2,18 @@ import React, { useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { Button, LinkButton } from '@grafana/ui';
 
-import { hasGlobalPermission } from 'utils';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useMeta } from 'hooks/useMeta';
+import { usePluginPermissions } from 'hooks/usePluginPermissions';
 
 import { DisablePluginModal } from './DisablePluginModal';
 
 export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
   const [showDisableModal, setShowDisableModal] = useState(false);
   const meta = useMeta();
-  const canEdit = hasGlobalPermission(`plugins:write`);
+
+  const { canEnablePlugin, canDisablePlugin, canEditPlugin } = usePluginPermissions();
 
   const handleEnable = async () => {
     await getBackendSrv()
@@ -28,11 +29,11 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
     window.location.reload();
   };
 
-  if (!canEdit) {
+  if (!canEditPlugin) {
     return null;
   }
 
-  if (!meta.enabled) {
+  if (!meta.enabled && canEnablePlugin) {
     return (
       <Button variant="primary" onClick={handleEnable}>
         Enable plugin
@@ -40,7 +41,7 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
     );
   }
 
-  if (initialized) {
+  if (initialized && canDisablePlugin) {
     return (
       <>
         <Button variant="destructive" onClick={() => setShowDisableModal(true)}>

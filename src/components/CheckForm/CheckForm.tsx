@@ -12,9 +12,10 @@ import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { getUserPermissions } from 'data/permissions';
 import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
-import { useCanReadLogs, useCanWriteSM } from 'hooks/useDSPermission';
+import { useCanReadLogs } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -73,7 +74,7 @@ type CheckFormProps = {
 };
 
 export const CheckForm = ({ check, disabled }: CheckFormProps) => {
-  const canEdit = useCanWriteSM();
+  const { canWriteChecks } = getUserPermissions();
   const canReadLogs = useCanReadLogs();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
   const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
@@ -91,7 +92,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     isOverCheckLimit ||
     (checkType === CheckType.Browser && isOverBrowserLimit) ||
     ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
-  const isDisabled = disabled || !canEdit || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
+  const isDisabled = disabled || !canWriteChecks || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
 
   const formMethods = useForm<CheckFormValues>({
     defaultValues: toFormValues(initialCheck, checkType),
