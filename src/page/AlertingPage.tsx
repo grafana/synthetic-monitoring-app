@@ -101,7 +101,7 @@ const AlertingPageContent = () => {
         <InsufficientPermissions
           message={
             <>
-              You are not able to edit alerts because you're missing <code>alert.instances.external:write</code>{' '}
+              You are not able to edit alerts because you are missing <code>alert.instances.external:write</code>{' '}
               permissions
             </>
           }
