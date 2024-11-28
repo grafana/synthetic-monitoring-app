@@ -13,7 +13,7 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
   const [showDisableModal, setShowDisableModal] = useState(false);
   const meta = useMeta();
 
-  const { canEnablePlugin, canDisablePlugin, canEditPlugin } = usePluginPermissions();
+  const { canWritePlugin } = usePluginPermissions();
 
   const handleEnable = async () => {
     await getBackendSrv()
@@ -29,11 +29,11 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
     window.location.reload();
   };
 
-  if (!canEditPlugin) {
+  if (!canWritePlugin) {
     return null;
   }
 
-  if (!meta.enabled && canEnablePlugin) {
+  if (!meta.enabled && canWritePlugin) {
     return (
       <Button variant="primary" onClick={handleEnable}>
         Enable plugin
@@ -41,7 +41,7 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
     );
   }
 
-  if (initialized && canDisablePlugin) {
+  if (initialized && canWritePlugin) {
     return (
       <>
         <Button variant="destructive" onClick={() => setShowDisableModal(true)}>

@@ -2,12 +2,9 @@ import { hasGlobalPermission } from 'utils';
 import { getUserPermissions } from 'data/permissions';
 
 export function usePluginPermissions() {
-  const canEditPlugin = hasGlobalPermission(`plugins:write`);
-  const { canEnablePlugin, canDisablePlugin } = getUserPermissions();
+  const { canWritePlugin } = getUserPermissions();
 
   return {
-    canEnablePlugin: canEditPlugin && canEnablePlugin,
-    canDisablePlugin: canEditPlugin && canDisablePlugin,
-    canEditPlugin,
+    canWritePlugin: hasGlobalPermission(`plugins:write`) && canWritePlugin,
   };
 }

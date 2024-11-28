@@ -26,7 +26,7 @@
       "path": "install",
       "method": "*",
       "url": "{{ .JsonData.apiHost }}/api/v1/register/install",
-      "reqAction": "grafana-synthetic-monitoring-app.plugin:enable",
+      "reqAction": "grafana-synthetic-monitoring-app.plugin:write",
       "headers": [
         {
           "name": "Authorization",
@@ -232,8 +232,7 @@
           { "action": "grafana-synthetic-monitoring-app:read" },
           { "action": "grafana-synthetic-monitoring-app:write" },
 
-          { "action": "grafana-synthetic-monitoring-app.plugin:enable" },
-          { "action": "grafana-synthetic-monitoring-app.plugin:disable" },
+          { "action": "grafana-synthetic-monitoring-app.plugin:write" },
           { "action": "grafana-synthetic-monitoring-app.checks:write" },
           { "action": "grafana-synthetic-monitoring-app.probes:write" },
           { "action": "grafana-synthetic-monitoring-app.alerts:write" },

@@ -21,10 +21,10 @@ interface Props {
 export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
-  const { canEnablePlugin } = getUserPermissions();
+  const { canWritePlugin } = getUserPermissions();
 
   const meetsMinPermissions = hasGlobalPermission(`datasources:read`);
-  const canInitialize = canEnablePlugin && hasGlobalPermission(`datasources:create`);
+  const canInitialize = canWritePlugin && hasGlobalPermission(`datasources:create`);
 
   const {
     error,

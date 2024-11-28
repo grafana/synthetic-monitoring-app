@@ -50,8 +50,7 @@ export const getUserPermissions = () => ({
   canWriteTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:write', OrgRole.Admin),
   canDeleteTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:delete', OrgRole.Admin),
 
-  canEnablePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:enable', OrgRole.Admin),
-  canDisablePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:disable', OrgRole.Admin),
+  canWritePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:write', OrgRole.Admin),
 
   canWriteSM: isUserActionAllowed('grafana-synthetic-monitoring-app:write', OrgRole.Editor),
 });
