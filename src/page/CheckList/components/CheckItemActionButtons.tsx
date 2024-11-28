@@ -6,8 +6,8 @@ import { css } from '@emotion/css';
 import { Check } from 'types';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
-import { useDeleteCheck } from 'data/useChecks';
 import { getUserPermissions } from 'data/permissions';
+import { useDeleteCheck } from 'data/useChecks';
 
 interface CheckItemActionButtonsProps {
   check: Check;
