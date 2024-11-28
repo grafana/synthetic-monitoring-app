@@ -14,7 +14,7 @@ export const CheckStatusPill = ({ enabled, onClick, className }: CheckStatusPill
 
   return (
     <Pill
-      color={theme.visualization.getColorByName(enabled ? `baseGreen` : `red`)}
+      color={theme.visualization.getColorByName(enabled ? `green` : `red`)}
       icon={enabled ? 'check' : 'times'}
       className={className}
       onClick={() => {
