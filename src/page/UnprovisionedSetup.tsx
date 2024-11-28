@@ -24,7 +24,7 @@ export const UnprovisionedSetup = () => {
         </Alert>
         <p>
           It looks like your Grafana instance hasn&apos;t been provisioned correctly to use the Synthetic Monitoring
-          plugin. <strong>Remember to restart your Grafana instance after making provisiong changes.</strong>
+          plugin. <strong>Remember to restart your Grafana instance after making provisioning changes.</strong>
         </p>
         <ul>
           <li>
