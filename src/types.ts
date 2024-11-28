@@ -799,3 +799,13 @@ export interface CheckFormInvalidSubmissionEvent {
   errs: FieldErrors<CheckFormValues>;
   source: string;
 }
+
+type PermissionBase = 'grafana-synthetic-monitoring-app';
+export type PluginPermissions =
+  | `${PermissionBase}:${'read' | 'write'}`
+  | `${PermissionBase}.checks:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.probes:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.alerts:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.access-tokens:${'read' | 'write' | 'delete'}`
+  | `${PermissionBase}.plugin:${'enable' | 'disable'}`;

@@ -19,8 +19,10 @@ export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: 
   }, [_onDeleteSuccess]);
 
   const { mutateAsync: deleteProbe, isPending } = useDeleteProbe({ onSuccess: onDeleteSuccess });
-  const canEdit = useCanEditProbe(probe);
-  const canDelete = canEdit && !probe.checks.length;
+
+  const { canDeleteProbes } = useCanEditProbe();
+
+  const canDelete = canDeleteProbes && !probe.checks.length;
   const styles = getStyles();
   const [error, setError] = useState<undefined | { name: string; message: string }>();
 
@@ -37,7 +39,7 @@ export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: 
   };
 
   if (!canDelete) {
-    const tooltipContent = canEdit ? (
+    const tooltipContent = canDeleteProbes ? (
       <>
         Unable to delete the probe because it is currently in use.
         <br />
@@ -53,7 +55,7 @@ export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: 
 
     // Both tooltip component and button prob is used for accessibility reasons
     return (
-      <Tooltip content={tooltipContent} interactive={canEdit && !canDelete}>
+      <Tooltip content={tooltipContent} interactive={canDeleteProbes && !canDelete}>
         <Button type="button" variant="destructive" tooltip={tooltipContent} disabled>
           Delete probe
         </Button>
