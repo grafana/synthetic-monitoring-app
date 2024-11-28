@@ -39,7 +39,11 @@ const Alerting = () => {
           Learn more about alerting for Synthetic Monitoring.
         </a>
       </p>
-      {canReadAlerts ? <AlertingPageContent /> : <InsufficientPermissions />}
+      {canReadAlerts ? (
+        <AlertingPageContent />
+      ) : (
+        <InsufficientPermissions message="Contact your administrator to ensure you have Query access to the metrics datasource." />
+      )}
     </div>
   );
 };
@@ -92,6 +96,16 @@ const AlertingPageContent = () => {
         <Alert title="Error fetching alert rules" severity="error">
           {alertError}
         </Alert>
+      )}
+      {!canWriteAlerts && (
+        <InsufficientPermissions
+          message={
+            <>
+              You are not able to edit alerts because you're missing <code>alert.instances.external:write</code>{' '}
+              permissions
+            </>
+          }
+        />
       )}
       {alertRules?.length === 0 && !Boolean(alertError) && (
         <div className={styles.emptyCard}>
@@ -147,10 +161,10 @@ const AlertingPageContent = () => {
   );
 };
 
-const InsufficientPermissions = () => {
+const InsufficientPermissions = ({ message }: { message: string | JSX.Element }) => {
   return (
     <Alert title="Insufficient permissions" severity="info">
-      Contact your administrator to ensure you have Query access to the metrics datasource.
+      {message}
     </Alert>
   );
 };
