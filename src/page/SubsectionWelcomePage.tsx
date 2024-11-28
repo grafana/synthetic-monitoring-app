@@ -10,8 +10,8 @@ import { Card } from 'components/Card';
 
 interface Props {
   children: React.ReactNode;
-  redirectTo: ROUTES;
-  buttonText: string;
+  redirectTo?: ROUTES;
+  buttonText?: string;
 }
 
 export const SubsectionWelcomePage = ({ children, redirectTo, buttonText }: PropsWithChildren<Props>) => {
@@ -24,7 +24,7 @@ export const SubsectionWelcomePage = ({ children, redirectTo, buttonText }: Prop
           <Stack justifyContent={'center'} alignItems={'center'} direction={'column'} gap={3}>
             <Text element={`h2`}>Get started monitoring your services</Text>
             <div>{children}</div>
-            <AppInitializer redirectTo={redirectTo} buttonText={buttonText} />
+            {buttonText && <AppInitializer redirectTo={redirectTo} buttonText={buttonText} />}
           </Stack>
         </Card>
       </Stack>

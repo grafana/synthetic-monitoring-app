@@ -26,6 +26,7 @@ import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
+import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
 export const InitialisedRouter = () => {
   const queryParams = useQuery();
@@ -45,18 +46,36 @@ export const InitialisedRouter = () => {
     }
   }, [page, navigate, queryParams]);
 
-  const { canWriteChecks } = getUserPermissions();
+  const { canWriteChecks, canReadChecks, canReadProbes } = getUserPermissions();
 
   return (
     <Routes>
       <Route index element={<Navigate to={ROUTES.Home} />} />
 
-      <Route path={ROUTES.Home} element={<SceneHomepage />} />
+      <Route
+        path={ROUTES.Home}
+        element={
+          canReadChecks ? (
+            <SceneHomepage />
+          ) : (
+            <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
+          )
+        }
+      />
 
       <Route path={ROUTES.Checks}>
         <Route index element={<CheckList />} />
         <Route path=":id">
-          <Route index element={<DashboardPage />} />
+          <Route
+            index
+            element={
+              canReadChecks ? (
+                <DashboardPage />
+              ) : (
+                <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
+              )
+            }
+          />
           <Route path="edit" element={canWriteChecks ? <EditCheck /> : <Navigate to=".." replace />} />
           <Route path="dashboard" element={<Navigate to=".." replace />} />
           <Route path="*" element={<CheckNotFound />} />
@@ -88,7 +107,16 @@ export const InitialisedRouter = () => {
         <Route index element={<Probes />} />
         <Route path="new" element={<NewProbe />} />
         <Route path=":id">
-          <Route index element={<EditProbe forceViewMode />} />
+          <Route
+            index
+            element={
+              canReadProbes ? (
+                <EditProbe forceViewMode />
+              ) : (
+                <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.probes:read']} />
+              )
+            }
+          />
           <Route path="edit" element={<EditProbe />} />
         </Route>
 
