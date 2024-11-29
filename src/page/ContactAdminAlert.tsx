@@ -16,7 +16,7 @@ export const ContactAdminAlert = ({
     <Alert title={title} severity={severity}>
       {missingPermissions && (
         <Stack>
-          <div>You are missing the following permissions:</div>
+          <div>You are missing the following permission(s):</div>
           {missingPermissions.map((permission) => (
             <code key={permission}>{permission}</code>
           ))}
