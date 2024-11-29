@@ -10,16 +10,31 @@ import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
 
 import { ConfigContent } from '../ConfigContent';
+import { getUserPermissions } from 'data/permissions';
+import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 export function TerraformTab() {
   const { config, checkCommands, probeCommands, error, isLoading } = useTerraformConfig();
   const styles = useStyles2(getStyles);
+  const { canReadChecks, canReadProbes } = getUserPermissions();
   useEffect(() => {
     reportEvent(FaroEvent.SHOW_TERRAFORM_CONFIG);
   }, []);
 
   if (isLoading) {
     return <ConfigContent loading={isLoading} title="Terraform config" />;
+  }
+
+  if (!canReadChecks && !canReadProbes) {
+    return (
+      <ContactAdminAlert
+        title="Contact your administrator to gain access to Terraform data"
+        missingPermissions={[
+          'grafana-synthetic-monitoring-app.checks:read',
+          'grafana-synthetic-monitoring-app.probes:read',
+        ]}
+      />
+    );
   }
 
   return (
