@@ -5,7 +5,7 @@ import { Button, LinkButton } from '@grafana/ui';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useMeta } from 'hooks/useMeta';
-import { usePluginPermissions } from 'hooks/usePluginPermissions';
+import { usePluginPermissionCanWrite } from 'hooks/usePluginPermissionsCanWrite';
 
 import { DisablePluginModal } from './DisablePluginModal';
 
@@ -13,7 +13,7 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
   const [showDisableModal, setShowDisableModal] = useState(false);
   const meta = useMeta();
 
-  const { canWritePlugin } = usePluginPermissions();
+  const canWritePlugin = usePluginPermissionCanWrite();
 
   const handleEnable = async () => {
     await getBackendSrv()

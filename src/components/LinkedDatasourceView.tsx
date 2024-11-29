@@ -16,14 +16,14 @@ export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
   const logsDS = useLogsDS();
   const smDS = useSMDS();
 
-  const { canWriteSM: canEditSM } = getUserPermissions();
+  const { canWriteSM } = getUserPermissions();
   const canEditLogs = useCanWriteLogs();
   const canEditMetrics = useCanWriteMetrics();
 
   const canEditMap = {
     prometheus: canEditMetrics,
     loki: canEditLogs,
-    'synthetic-monitoring-datasource': canEditSM,
+    'synthetic-monitoring-datasource': canWriteSM,
   };
 
   const dsMap = {

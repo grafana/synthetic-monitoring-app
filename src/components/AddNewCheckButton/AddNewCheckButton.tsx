@@ -9,12 +9,13 @@ export function AddNewCheckButton() {
   const navigate = useNavigation();
   const { canWriteChecks } = getUserPermissions();
 
-  if (!canWriteChecks) {
-    return null;
-  }
-
   return (
-    <Button variant="primary" onClick={() => navigate(ROUTES.ChooseCheckGroup)} type="button">
+    <Button
+      variant="primary"
+      onClick={() => navigate(ROUTES.ChooseCheckGroup)}
+      type="button"
+      disabled={!canWriteChecks}
+    >
       Add new check
     </Button>
   );

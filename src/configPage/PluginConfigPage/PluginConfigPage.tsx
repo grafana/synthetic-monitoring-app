@@ -8,7 +8,7 @@ import { ProvisioningJsonData } from 'types';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import type { SMDataSource } from 'datasource/DataSource';
-import { usePluginPermissions } from 'hooks/usePluginPermissions';
+import { usePluginPermissionCanWrite } from 'hooks/usePluginPermissionsCanWrite';
 
 import { DataSourceInfo, useLinkedDataSources } from './PluginConfigPage.hooks';
 import { enablePlugin } from './PluginConfigPage.utils';
@@ -38,7 +38,7 @@ export function PluginConfigPage({
   const appHomeUrl = getRoute(ROUTES.Home);
   const [isEnabling, setIsEnabling] = useState(false);
 
-  const { canWritePlugin } = usePluginPermissions();
+  const canWritePlugin = usePluginPermissionCanWrite();
 
   const { api, linked, isLoading } = useLinkedDataSources();
   const initialized = isInitialized(api?.dataSource);

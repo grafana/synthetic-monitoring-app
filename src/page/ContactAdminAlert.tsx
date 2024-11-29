@@ -1,13 +1,23 @@
 import React from 'react';
-import { Alert, Stack } from '@grafana/ui';
+import { Alert, AlertVariant, Stack } from '@grafana/ui';
 
-export const ContactAdminAlert = ({ permissions }: { permissions?: string[] }) => {
+interface ContactAdminAlertProps {
+  title?: string;
+  missingPermissions?: string[];
+  severity?: AlertVariant;
+}
+
+export const ContactAdminAlert = ({
+  title = 'Contact your administrator to get you started.',
+  missingPermissions,
+  severity = 'info',
+}: ContactAdminAlertProps) => {
   return (
-    <Alert title="Contact your administrator to get you started." severity="info">
-      {permissions && (
+    <Alert title={title} severity={severity}>
+      {missingPermissions && (
         <Stack>
           <div>You are missing the following permissions:</div>
-          {permissions.map((permission) => (
+          {missingPermissions.map((permission) => (
             <code key={permission}>{permission}</code>
           ))}
         </Stack>
