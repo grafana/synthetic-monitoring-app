@@ -46,9 +46,7 @@ export const getUserPermissions = () => ({
   canReadThresholds: isUserActionAllowed('grafana-synthetic-monitoring-app.thresholds:read', OrgRole.Viewer),
   canWriteThresholds: isUserActionAllowed('grafana-synthetic-monitoring-app.thresholds:write', OrgRole.Editor),
 
-  canReadTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:read', OrgRole.Admin),
   canWriteTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:write', OrgRole.Admin),
-  canDeleteTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:delete', OrgRole.Admin),
 
   canWritePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:write', OrgRole.Admin),
 
