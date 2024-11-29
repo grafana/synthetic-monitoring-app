@@ -55,3 +55,24 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/d
 Grafana Enterprise adds features which the plugin takes advantage of (e.g. RBAC). To run the development environment with Grafana Enterprise features enabled you need to add a valid Grafana Enterprise license by updating `dev/license.jwt`. It has been added to our `.gitignore` file to ensure your license doesn't get added to any pull requests (we wouldn't want that happening again...).
 
 When running `yarn server` if `dev/license.jwt` doesn't exist it will create it for you with no content present. You are free to update this file with your own license.
+
+### IDE setup
+
+We make no distinction of what IDE you should be using, however we do have some recommendations that if your IDE allows, you should enable:
+
+#### Format on save
+
+We use both [prettier](https://prettier.io/) and [eslint](https://eslint.org/) with the [@grafana/eslint-config package](https://www.npmjs.com/package/@grafana/eslint-config) which [we have chosen to extend](./.eslintrc.js). Our CI/CD pipelines expect these rules to be adherred to and will fail any submitted PRs if not. We recommend you enable format on save to ensure you are always adhering to these rules with as little friction as possible.
+
+#### File nesting
+
+We use the file nesting feature to help manage the growing number of files in the project. We recommend you enable this feature in your IDE to help keep your project organized and add the following rule (example is for VSCode):
+
+```json
+"explorer.fileNesting.enabled": true,
+"explorer.fileNesting.patterns": {
+  "*.tsx": "${capture}.constants.ts, ${capture}.hooks.ts, ${capture}.test.tsx, ${capture}.types.ts, ${capture}.utils.ts"
+}
+```
+
+

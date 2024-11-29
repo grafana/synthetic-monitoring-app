@@ -16,7 +16,7 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig } from 'types';
-import { AddNewCheckButton } from 'components/CheckList/AddNewCheckButton';
+import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { getSummaryAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 

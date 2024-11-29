@@ -1,1 +1,0 @@
-export { AlertSensitivityBadge } from './AlertSensitivityBadge';

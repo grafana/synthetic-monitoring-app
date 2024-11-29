@@ -6,9 +6,6 @@ import {
   AlertSeverity,
   BrowserCheck,
   Check,
-  CheckEnabledStatus,
-  CheckListViewType,
-  CheckSort,
   CheckType,
   DNSCheck,
   DnsProtocol,
@@ -442,52 +439,6 @@ export const getDefaultAlertAnnotations = (percentage: number) => ({
   description: `check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.`,
   summary: `check success below ${percentage}%`,
 });
-
-export const CHECK_LIST_SORT_OPTIONS = [
-  {
-    label: 'A-Z',
-    value: CheckSort.AToZ,
-  },
-  {
-    label: 'Z-A',
-    value: CheckSort.ZToA,
-  },
-  {
-    label: 'Asc. Reachability ',
-    value: CheckSort.ReachabilityAsc,
-  },
-  {
-    label: 'Desc. Reachability ',
-    value: CheckSort.ReachabilityDesc,
-  },
-  {
-    label: 'Asc. Executions ',
-    value: CheckSort.ExecutionsAsc,
-  },
-  {
-    label: 'Desc. Executions ',
-    value: CheckSort.ExecutionsDesc,
-  },
-];
-
-export const CHECK_LIST_STATUS_OPTIONS: Array<SelectableValue<CheckEnabledStatus>> = [
-  { label: 'All', value: CheckEnabledStatus.All },
-  { label: 'Enabled', value: CheckEnabledStatus.Enabled },
-  { label: 'Disabled', value: CheckEnabledStatus.Disabled },
-];
-
-export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
-  { description: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },
-  { description: 'List view', value: CheckListViewType.List, icon: 'list-ul' },
-  { description: 'Visualization view', value: CheckListViewType.Viz, icon: 'gf-grid' },
-];
-
-export const CHECKS_PER_PAGE_CARD = 15;
-export const CHECKS_PER_PAGE_LIST = 50;
-
-export const CHECK_LIST_VIEW_TYPE_LS_KEY = 'grafana.sm.checklist.viewType';
-
-export const CHECK_LIST_ICON_OVERLAY_LS_KEY = 'grafana.sm.checklist.iconOverlay';
 
 export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   { label: 'none', value: HTTPCompressionAlgo.none },
