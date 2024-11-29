@@ -23,7 +23,7 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
   const styles = useStyles2(getStyles);
   const { canWritePlugin } = getUserPermissions();
 
-  const meetsMinPermissions = hasGlobalPermission(`datasources:read`);
+  const canReadDs = hasGlobalPermission(`datasources:read`);
   const canInitialize = canWritePlugin && hasGlobalPermission(`datasources:create`);
 
   const {
@@ -40,12 +40,14 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
     setDataSouceModalOpen,
   } = useAppInitializer(redirectTo);
 
-  if (!meetsMinPermissions) {
+  if (!canReadDs) {
     return <ContactAdminAlert missingPermissions={['datasources:read']} />;
   }
 
   if (!canInitialize) {
-    return <ContactAdminAlert />;
+    return (
+      <ContactAdminAlert missingPermissions={['grafana-synthetic-monitoring-app.plugin:write', 'datasources:create']} />
+    );
   }
 
   return (

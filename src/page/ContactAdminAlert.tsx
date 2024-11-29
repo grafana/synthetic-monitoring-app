@@ -1,5 +1,7 @@
 import React from 'react';
-import { Alert, AlertVariant, Stack } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Alert, AlertVariant, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 interface ContactAdminAlertProps {
   title?: string;
@@ -12,16 +14,33 @@ export const ContactAdminAlert = ({
   missingPermissions,
   severity = 'info',
 }: ContactAdminAlertProps) => {
+  const styles = useStyles2(getStyles);
   return (
-    <Alert title={title} severity={severity}>
-      {missingPermissions && (
-        <Stack>
-          <div>You are missing the following permission(s):</div>
-          {missingPermissions.map((permission) => (
-            <code key={permission}>{permission}</code>
-          ))}
-        </Stack>
-      )}
-    </Alert>
+    <div className={styles.container}>
+      <Alert title={title} severity={severity}>
+        {missingPermissions && (
+          <Stack direction={'column'}>
+            You need the following permission(s):
+            <Stack wrap={'nowrap'} direction={'column'}>
+              {missingPermissions.map((permission) => (
+                <code className={styles.permission} key={permission}>
+                  {permission}
+                </code>
+              ))}
+            </Stack>
+          </Stack>
+        )}
+      </Alert>
+    </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css({
+    textAlign: 'left',
+  }),
+
+  permission: css({
+    width: 'fit-content',
+  }),
+});
