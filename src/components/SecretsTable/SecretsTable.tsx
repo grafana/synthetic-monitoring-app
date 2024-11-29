@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Button, Column, Icon, InteractiveTable, Tag } from '@grafana/ui';
+import { Box, Button, Column, Dropdown, Field, IconButton, Input, InteractiveTable, Menu, Tag } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 interface RowData {
   id: number;
@@ -9,6 +10,12 @@ interface RowData {
   labels?: Array<[string, string]>;
   modified: string;
 }
+
+const styles = {
+  centeredColumn: css`
+    text-align: center;
+  `,
+};
 
 const columns: Array<Column<RowData>> = [
   {
@@ -43,31 +50,42 @@ const columns: Array<Column<RowData>> = [
       );
     },
   },
+  // {
+  //   id: 'type',
+  //   header: 'Type',
+  //   cell: (cell) =>
+  //     cell.row.original.type === 'string' ? (
+  //       <Icon color="crimson" name="text-fields" />
+  //     ) : (
+  //       <Icon color="#5bb0ef" name="clock-nine" />
+  //     ),
+  // },
   {
-    id: 'type',
-    header: 'Type',
-    cell: (cell) =>
-      cell.row.original.type === 'string' ? (
-        <Icon color="crimson" name="text-fields" />
-      ) : (
-        <Icon color="#5bb0ef" name="clock-nine" />
-      ),
+    id: 'version',
+    // @ts-expect-error Supplied types are invalid
+    header: () => <div className={styles.centeredColumn}>Version</div>,
+    cell({ cell }) {
+      return <div className={styles.centeredColumn}>{cell.value}</div>;
+    },
   },
-  { id: 'version', header: 'Version' },
   { id: 'modified', header: 'Modified' },
   {
     id: 'actions',
-    header: '',
+    header: undefined,
     cell: () => (
-      <div>
-        <Button fill="text" size="sm" variant="destructive">
-          Delete
-        </Button>
-        &nbsp;
-        <Button size="sm" variant="secondary">
-          Edit
-        </Button>
-      </div>
+      <Box display="flex" justifyContent="flex-end">
+        <Dropdown
+          placement="bottom-end"
+          overlay={
+            <Menu>
+              <Menu.Item label="Edit" icon="pen" />
+              <Menu.Item label="Delete" icon="trash-alt" destructive />
+            </Menu>
+          }
+        >
+          <IconButton aria-label="Open secret actions menu" name="ellipsis-v" size="lg" />
+        </Dropdown>
+      </Box>
     ),
   },
 ];
@@ -96,11 +114,25 @@ const rows: RowData[] = [
     version: 9,
     modified: '2021-09-01',
   },
+  {
+    id: 7,
+    name: 'SECRET_SOCIETY_PASSWORD',
+    type: 'string',
+    version: 9999,
+    modified: '2024-11-27',
+    labels: [
+      ['team', 'sm-frontend'],
+      ['do/not', 'use'],
+    ],
+  },
 ];
 
 export function SecretsTable() {
   return (
     <div>
+      <Field label="Filter data">
+        <Input placeholder={'Filter by name'} onChange={(event) => {}} />
+      </Field>
       <InteractiveTable columns={columns} data={rows} getRowId={({ id }) => String(id)} renderExpandedRow={undefined} />
     </div>
   );
