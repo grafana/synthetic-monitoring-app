@@ -212,19 +212,6 @@
     },
     {
       "role": {
-        "name": "Access tokens reader",
-        "description": "Read access tokens in the Synthetic Monitoring app",
-        "permissions": [
-          { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
-          { "action": "grafana-synthetic-monitoring-app:read" },
-
-          { "action": "grafana-synthetic-monitoring-app.access-tokens:read" }
-        ]
-      },
-      "grants": ["Admin", "Editor"]
-    },
-    {
-      "role": {
         "name": "Admin",
         "description": "Full access to write and manage checks, probes, alerts, thresholds, and access tokens as well as enabling/disabling the Synthetic Monitoring plugin",
         "permissions": [
