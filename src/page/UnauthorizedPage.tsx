@@ -1,7 +1,7 @@
 import React from 'react';
+import { PluginPage } from '@grafana/runtime';
 
 import { ContactAdminAlert } from './ContactAdminAlert';
-import { PluginPage } from '@grafana/runtime';
 
 interface UnauthorizedPageProps {
   permissions: string[];

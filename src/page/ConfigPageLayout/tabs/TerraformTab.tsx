@@ -6,12 +6,12 @@ import { css } from '@emotion/css';
 import { FaroEvent, reportEvent } from 'faro';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
+import { getUserPermissions } from 'data/permissions';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
+import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../ConfigContent';
-import { getUserPermissions } from 'data/permissions';
-import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 export function TerraformTab() {
   const { config, checkCommands, probeCommands, error, isLoading } = useTerraformConfig();
