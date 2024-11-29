@@ -11,12 +11,10 @@ export const FULL_ADMIN_ACCESS = {
   'grafana-synthetic-monitoring-app.probes:read': true,
   'grafana-synthetic-monitoring-app.alerts:read': true,
   'grafana-synthetic-monitoring-app.thresholds:read': true,
-  'grafana-synthetic-monitoring-app.access-tokens:read': true,
   'grafana-synthetic-monitoring-app.checks:delete': true,
   'grafana-synthetic-monitoring-app.probes:delete': true,
   'grafana-synthetic-monitoring-app.alerts:delete': true,
   'grafana-synthetic-monitoring-app.thresholds:delete': true,
-  'grafana-synthetic-monitoring-app.access-tokens:delete': true,
 };
 
 export const FULL_WRITER_ACCESS = {
@@ -31,12 +29,10 @@ export const FULL_WRITER_ACCESS = {
   'grafana-synthetic-monitoring-app.probes:read': true,
   'grafana-synthetic-monitoring-app.alerts:read': true,
   'grafana-synthetic-monitoring-app.thresholds:read': true,
-  'grafana-synthetic-monitoring-app.access-tokens:read': true,
   'grafana-synthetic-monitoring-app.checks:delete': true,
   'grafana-synthetic-monitoring-app.probes:delete': true,
   'grafana-synthetic-monitoring-app.alerts:delete': true,
   'grafana-synthetic-monitoring-app.thresholds:delete': true,
-  'grafana-synthetic-monitoring-app.access-tokens:delete': true,
 };
 
 export const FULL_READONLY_ACCESS = {
@@ -45,5 +41,4 @@ export const FULL_READONLY_ACCESS = {
   'grafana-synthetic-monitoring-app.probes:read': true,
   'grafana-synthetic-monitoring-app.alerts:read': true,
   'grafana-synthetic-monitoring-app.thresholds:read': true,
-  'grafana-synthetic-monitoring-app.access-tokens:read': true,
 };
