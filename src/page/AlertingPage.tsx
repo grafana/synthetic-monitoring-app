@@ -5,10 +5,12 @@ import { Alert, Button, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
-import { useAlertPermissions } from 'hooks/useAlertPermissions';
+import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 import { useAlerts } from 'hooks/useAlerts';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
+
+import { ContactAdminAlert } from './ContactAdminAlert';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
@@ -25,7 +27,7 @@ export const AlertingPage = () => {
 
 const Alerting = () => {
   const styles = useStyles2(getStyles);
-  const { canReadAlerts } = useAlertPermissions();
+  const { canReadAlerts } = useAlertAccessControl();
 
   return (
     <div>
@@ -42,7 +44,7 @@ const Alerting = () => {
       {canReadAlerts ? (
         <AlertingPageContent />
       ) : (
-        <InsufficientPermissions message="Contact your administrator to ensure you have Query access to the metrics datasource." />
+        <ContactAdminAlert title="Insufficient Permissions" missingPermissions={['datasources:read']} />
       )}
     </div>
   );
@@ -53,7 +55,7 @@ const AlertingPageContent = () => {
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
-  const { canWriteAlerts, hasWriterRole } = useAlertPermissions();
+  const { canWriteAlerts, hasWriterRole } = useAlertAccessControl();
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
@@ -98,14 +100,7 @@ const AlertingPageContent = () => {
         </Alert>
       )}
       {hasWriterRole && !canWriteAlerts && (
-        <InsufficientPermissions
-          message={
-            <>
-              You are not able to edit alerts because you are missing <code>alert.instances.external:write</code>{' '}
-              permissions
-            </>
-          }
-        />
+        <ContactAdminAlert title="Insufficient Permissions" missingPermissions={['alert.instances.external:write']} />
       )}
       {alertRules?.length === 0 && !Boolean(alertError) && (
         <div className={styles.emptyCard}>
@@ -158,14 +153,6 @@ const AlertingPageContent = () => {
         </Stack>
       </Modal>
     </>
-  );
-};
-
-const InsufficientPermissions = ({ message }: { message: string | JSX.Element }) => {
-  return (
-    <Alert title="Insufficient permissions" severity="info">
-      {message}
-    </Alert>
   );
 };
 

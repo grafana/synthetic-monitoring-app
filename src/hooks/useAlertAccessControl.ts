@@ -3,7 +3,7 @@ import { getUserPermissions } from 'data/permissions';
 import { useDSPermission } from './useDSPermission';
 import { useMetricsDS } from './useMetricsDS';
 
-export function useAlertPermissions() {
+export function useAlertAccessControl() {
   const { canReadAlerts, canWriteAlerts, canDeleteAlerts } = getUserPermissions();
   const canEditAlertInDs = useDSPermission(`metrics`, `alert.instances.external:write`);
 

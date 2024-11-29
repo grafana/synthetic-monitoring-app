@@ -41,7 +41,7 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
   } = useAppInitializer(redirectTo);
 
   if (!meetsMinPermissions) {
-    return <ContactAdminAlert permissions={['datasources:read']} />;
+    return <ContactAdminAlert missingPermissions={['datasources:read']} />;
   }
 
   if (!canInitialize) {

@@ -10,7 +10,7 @@ interface UnauthorizedPageProps {
 export const UnauthorizedPage = ({ permissions }: UnauthorizedPageProps) => {
   return (
     <SubsectionWelcomePage>
-      <ContactAdminAlert permissions={permissions} />
+      <ContactAdminAlert missingPermissions={permissions} />
     </SubsectionWelcomePage>
   );
 };
