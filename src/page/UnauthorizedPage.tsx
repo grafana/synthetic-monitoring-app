@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { ContactAdminAlert } from './ContactAdminAlert';
-import { SubsectionWelcomePage } from './SubsectionWelcomePage';
+import { PluginPage } from '@grafana/runtime';
 
 interface UnauthorizedPageProps {
   permissions: string[];
@@ -9,8 +9,8 @@ interface UnauthorizedPageProps {
 
 export const UnauthorizedPage = ({ permissions }: UnauthorizedPageProps) => {
   return (
-    <SubsectionWelcomePage>
+    <PluginPage>
       <ContactAdminAlert missingPermissions={permissions} />
-    </SubsectionWelcomePage>
+    </PluginPage>
   );
 };
