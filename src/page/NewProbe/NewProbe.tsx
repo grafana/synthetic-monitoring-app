@@ -3,7 +3,8 @@ import { PluginPage } from '@grafana/runtime';
 import { Alert, Label, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { ExtendedProbe, type Probe, ROUTES } from 'types';
+import { ExtendedProbe, type Probe } from 'types';
+import { ROUTES } from 'routing/types';
 import { type AddProbeResult } from 'datasource/responses.types';
 import { useCreateProbe } from 'data/useProbes';
 import { useBackendAddress } from 'hooks/useBackendAddress';

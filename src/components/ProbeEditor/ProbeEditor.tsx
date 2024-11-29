@@ -6,13 +6,14 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ProbeSchema } from 'schemas/forms/ProbeSchema';
 
-import { ExtendedProbe, FeatureName, Probe, ROUTES } from 'types';
+import { ExtendedProbe, FeatureName, Probe } from 'types';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
-import { getRoute } from 'components/Routing.utils';
 import { SimpleMap } from 'components/SimpleMap';
 
 type ProbeEditorProps = {

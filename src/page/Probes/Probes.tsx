@@ -4,14 +4,15 @@ import { LinkButton, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { ExtendedProbe, ROUTES } from 'types';
+import { ExtendedProbe } from 'types';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { useExtendedProbes } from 'data/useProbes';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
 import { ProbeList } from 'components/ProbeList';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { getRoute } from 'components/Routing.utils';
 
 export const Probes = () => {
   const theme = useTheme2();

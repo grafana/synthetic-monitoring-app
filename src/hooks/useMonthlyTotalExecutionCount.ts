@@ -5,10 +5,9 @@ import { useChecks } from 'data/useChecks';
 export function useMonthlyTotalExecutionCount() {
   const { data: checks = [], isLoading, error } = useChecks();
 
-  const data = checks.reduce(
-    (total, check) => total + getTotalChecksPerMonth(check.probes.length, check.frequency / 1000),
-    0
-  );
+  const data = checks
+    .filter((check) => check.enabled)
+    .reduce((total, check) => total + getTotalChecksPerMonth(check.probes.length, check.frequency / 1000), 0);
 
   return {
     data,

@@ -10,16 +10,17 @@ import { apiRoute } from 'test/handlers';
 import { ComponentWrapperProps, render } from 'test/render';
 import { server } from 'test/server';
 
-import { AlertSensitivity, Check, CheckTypeGroup, ROUTES } from 'types';
+import { AlertSensitivity, Check, CheckTypeGroup } from 'types';
+import { PLUGIN_URL_PATH } from 'routing/constants';
+import { InitialisedRouter } from 'routing/InitialisedRouter';
+import { ROUTES } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 
 import { FeatureFlagProvider } from '../components/FeatureFlagProvider';
-import { InitialisedRouter } from '../components/Routing';
-import { PLUGIN_URL_PATH } from '../components/Routing.consts';
 import { MetaContextProvider } from '../contexts/MetaContext';
 import { PermissionsContextProvider } from '../contexts/PermissionsContext';
 import { SMDatasourceProvider } from '../contexts/SMDatasourceContext';
 import { getQueryClient } from '../data/queryClient';
-import { generateRoutePath } from '../routes';
 import { SM_META } from '../test/fixtures/meta';
 
 function RouteWrapper({ children, meta, history }: ComponentWrapperProps) {

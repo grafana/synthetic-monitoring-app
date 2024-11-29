@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { generateRoutePath } from 'routes';
 
-import { ROUTES } from 'types';
 import { FaroEvent, reportEvent } from 'faro';
+import { ROUTES } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
 

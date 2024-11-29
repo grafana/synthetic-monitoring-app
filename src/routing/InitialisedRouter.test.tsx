@@ -3,71 +3,25 @@ import { screen } from '@testing-library/react';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
 
-import { ROUTES } from 'types';
-import { PLUGIN_URL_PATH } from 'components/Routing.consts';
-
-import { InitialisedRouter, UninitialisedRouter } from './Routing';
-import { getRoute } from './Routing.utils';
+import { PLUGIN_URL_PATH } from 'routing/constants';
+import { InitialisedRouter } from 'routing/InitialisedRouter';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 
 function renderInitialisedRouting(options?: CustomRenderOptions) {
   return render(<InitialisedRouter />, options);
 }
 
-function renderUninitialisedRouting(options?: CustomRenderOptions) {
-  render(<UninitialisedRouter />, options);
-}
-
 // Mocking these pages because they renders scenes, which makes jest explode
-jest.mock('page/DashboardPage');
-jest.mock('page/SceneHomepage');
+jest.mock('page/DashboardPage', () => ({
+  DashboardPage: () => <h1>Dashboard page</h1>,
+}));
+
+jest.mock('page/SceneHomepage', () => ({
+  SceneHomepage: () => <h1>Home page</h1>,
+}));
 
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
-
-describe('Renders specific welcome pages when app is not initializd', () => {
-  test(`Route Home`, async () => {
-    renderUninitialisedRouting({ path: getRoute(ROUTES.Home) });
-    const text = await screen.findByText('Up and running in seconds, no instrumentation required');
-    expect(text).toBeInTheDocument();
-  });
-
-  test(`Route Probes`, async () => {
-    renderUninitialisedRouting({ path: getRoute(ROUTES.Probes) });
-    const text = await screen.findByText(
-      'Click the See Probes button to initialize the plugin and see a list of public probes',
-      { exact: false }
-    );
-    expect(text).toBeInTheDocument();
-  });
-
-  test(`Route Alerts`, async () => {
-    renderUninitialisedRouting({ path: getRoute(ROUTES.Alerts) });
-    const text = await screen.findByText(
-      'Click the See Alerting button to initialize the plugin and see a list of default alerts',
-      { exact: false }
-    );
-    expect(text).toBeInTheDocument();
-  });
-  test(`Route Checks`, async () => {
-    renderUninitialisedRouting({ path: getRoute(ROUTES.Checks) });
-    const text = await screen.findByText('Click the Create a Check button to initialize the plugin and create checks', {
-      exact: false,
-    });
-    expect(text).toBeInTheDocument();
-  });
-
-  test(`Route Config`, async () => {
-    renderUninitialisedRouting({ path: getRoute(ROUTES.Config) });
-
-    const text = await screen.findByText('Synthetic Monitoring is not yet initialized');
-    expect(text).toBeInTheDocument();
-  });
-
-  test('Non-existent route (404)', async () => {
-    renderUninitialisedRouting({ path: notaRoute });
-    const text = await screen.findByText('Up and running in seconds, no instrumentation required');
-    expect(text).toBeInTheDocument();
-  });
-});
 
 // Would like to have asserted on the h1s but rendering the Grafana pluginpage is tricky
 describe('Routes to pages correctly', () => {

@@ -2,7 +2,7 @@ import React from 'react';
 import { AppRootProps, NavModelItem } from '@grafana/data';
 
 import { Settings } from 'types';
-import { PLUGIN_URL_PATH } from 'components/Routing.consts';
+import { PLUGIN_URL_PATH } from 'routing/constants';
 
 export type PageDefinition = {
   component: React.FC<AppRootProps<Settings>>;

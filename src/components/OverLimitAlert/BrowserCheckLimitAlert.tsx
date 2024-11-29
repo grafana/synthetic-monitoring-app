@@ -1,9 +1,9 @@
 import React from 'react';
 import { TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'types';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { useLimits } from 'hooks/useLimits';
-import { getRoute } from 'components/Routing.utils';
 import { Ul } from 'components/Ul';
 
 import { AlertContainer } from './AlertContainer';

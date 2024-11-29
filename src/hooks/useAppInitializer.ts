@@ -3,11 +3,12 @@ import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
 import { isNumber } from 'lodash';
 
-import { ROUTES, SubmissionErrorWrapper } from 'types';
+import { SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
-import { getRoute } from 'components/Routing.utils';
 
 import { useMeta } from './useMeta';
 

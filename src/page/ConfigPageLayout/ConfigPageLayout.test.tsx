@@ -3,9 +3,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
 import { render } from '@testing-library/react';
 
-import { ROUTES } from '../../types';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 
-import { getRoute } from '../../components/Routing.utils';
 import { DataTestIds } from '../../test/dataTestIds';
 import { ConfigPageLayout } from './ConfigPageLayout';
 

@@ -37,6 +37,7 @@ module.exports = {
             '^faro',
             '^sessionStorage',
             '^utils',
+            '^routing',
             '^validation',
             '^datasource',
             '^contexts',

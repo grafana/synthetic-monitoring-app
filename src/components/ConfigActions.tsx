@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { Button, LinkButton } from '@grafana/ui';
 
-import { ROUTES } from 'types';
 import { hasGlobalPermission } from 'utils';
+import { ROUTES } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { useMeta } from 'hooks/useMeta';
 
 import { DisablePluginModal } from './DisablePluginModal';
-import { getRoute } from './Routing.utils';
 
 export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
   const [showDisableModal, setShowDisableModal] = useState(false);

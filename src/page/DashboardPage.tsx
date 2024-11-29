@@ -2,10 +2,11 @@ import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom-v5-compat';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
-import { generateRoutePath } from 'routes';
 
-import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName, ROUTES } from 'types';
+import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName } from 'types';
 import { getCheckType } from 'utils';
+import { ROUTES } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useLogsDS } from 'hooks/useLogsDS';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { EmptyState, TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'types';
+import { ROUTES } from 'routing/types';
 import { AppInitializer } from 'components/AppInitializer';
 
 import { ConfigContent } from '../ConfigContent';
