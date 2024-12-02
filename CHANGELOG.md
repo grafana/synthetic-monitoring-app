@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.16.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.8...v1.16.9) (2024-11-29)
+
+
+### Fixes
+
+* create and organise CheckList page folder with dependent components ([#998](https://github.com/grafana/synthetic-monitoring-app/issues/998)) ([f45108e](https://github.com/grafana/synthetic-monitoring-app/commit/f45108eaf3cab5e9a6f94fb96d26c9bf6296ff1f))
+* filter out disabled checks for execution count total ([#999](https://github.com/grafana/synthetic-monitoring-app/issues/999)) ([5383102](https://github.com/grafana/synthetic-monitoring-app/commit/53831026305a50b0102ef82817ab89015c17179c))
+* moved routing components to own high-level folder ([#997](https://github.com/grafana/synthetic-monitoring-app/issues/997)) ([02a0a95](https://github.com/grafana/synthetic-monitoring-app/commit/02a0a9583a7c66d50bf7976e2c2d58cbb1f5bf07))
+
+
+### Miscellaneous Chores
+
+* update codeowners ([#1004](https://github.com/grafana/synthetic-monitoring-app/issues/1004)) ([edbf7a7](https://github.com/grafana/synthetic-monitoring-app/commit/edbf7a76f44aef259363011c57139c7e6c8fc87d))
+
 ## [1.16.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.7...v1.16.8) (2024-11-25)
 
 ### Features
