@@ -26,6 +26,7 @@ import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTa
 import { getDataTransferred } from './dataTransferred';
 import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
+import { getInsightsPanel } from '../Insights';
 
 export function getScriptedScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
@@ -47,6 +48,8 @@ export function getScriptedScene(
     });
 
     const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
+
+    const insightsPanel = getInsightsPanel(metrics);
 
     const reachability = getReachabilityStat(metrics, minStep);
     const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
@@ -76,6 +79,12 @@ export function getScriptedScene(
       body: new SceneFlexLayout({
         direction: 'column',
         children: [
+          new SceneFlexLayout({
+            direction: 'row',
+            children: [
+              new SceneFlexItem({ body: insightsPanel }),
+            ],
+          }),
           new SceneFlexLayout({
             direction: 'row',
             height: 150,

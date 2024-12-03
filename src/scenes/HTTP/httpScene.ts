@@ -30,6 +30,7 @@ import {
 } from '../Common';
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getLatencyByPhasePanel } from './latencyByPhase';
+import { getInsightsPanel } from '../Insights';
 
 export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
   return () => {
@@ -46,6 +47,7 @@ export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneA
     const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, checks, singleCheckMode);
     const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
 
+    const insightsPanel = getInsightsPanel(metrics);
     const mapPanel = getErrorRateMapPanel(metrics, minStep);
     const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
     const reachability = getReachabilityStat(metrics, minStep);
@@ -64,6 +66,13 @@ export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneA
     const statColumn = new SceneFlexLayout({
       direction: 'column',
       children: [new SceneFlexItem({ height: 90, body: statRow }), new SceneFlexItem({ body: errorTimeseries })],
+    });
+
+    const insightsRow = new SceneFlexLayout({
+        direction: 'row',
+        children: [
+          new SceneFlexItem({ body: insightsPanel }),
+      ],
     });
 
     const topRow = new SceneFlexLayout({
@@ -111,7 +120,7 @@ export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneA
       ],
       body: new SceneFlexLayout({
         direction: 'column',
-        children: [topRow, latencyRow, logsRow].map((flexItem) => new SceneFlexItem({ body: flexItem })),
+        children: [insightsRow, topRow, latencyRow, logsRow].map((flexItem) => new SceneFlexItem({ body: flexItem })),
       }),
     });
   };
