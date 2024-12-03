@@ -22,4 +22,6 @@ export enum DataTestIds {
   CONFIG_CONTENT = 'config-content',
   CONFIG_CONTENT_LOADING = 'config-content-loading',
   PREFORMATTED = 'preformatted',
+  CHECK_FORM_SUBMIT_BUTTON = 'check-form-submit-button',
+  CONFIRM_UNSAVED_MODAL_HEADING = 'confirm-unsaved-modal-heading',
 }

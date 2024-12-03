@@ -11,6 +11,8 @@ describe(`DNSCheck - Section 5 (Execution) UI`, () => {
     const { user } = await renderNewForm(checkType);
 
     await goToSection(user, 3);
+    const addLabelButton = screen.getByText('Add label', { selector: 'button > span' });
+    await user.click(addLabelButton);
     await submitForm(user);
     expect(screen.getByText(`Job name is required`)).toBeInTheDocument();
   });
