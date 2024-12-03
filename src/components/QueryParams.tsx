@@ -119,10 +119,10 @@ export const QueryParams = ({ target, onChange, onBlur }: Props) => {
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  grid: css({
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr auto',
-    gridGap: theme.spacing(1, 2),
-    alignItems: 'center',
-  }),
+  grid: css`
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    grid-gap: ${theme.spacing(1, 2)};
+    align-items: center;
+  `,
 });
