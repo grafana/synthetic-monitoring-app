@@ -76,7 +76,7 @@ export function getInsightsPanel(metrics: DataSourceRef) {
           new SceneFlexItem({
             width: 650,
             height: 200,
-            body: getInsightsMetric(metrics, 'Average Latency: Increment in  by 20%', 'The average latency of the Checks increased by 20% over the last month.', [
+            body: getInsightsMetric(metrics, 'Average Latency: Increased by 20%', 'The average latency of the Checks increased by 20% over the last month.', [
               {
                 expr: `sum by (job) (probe_http_total_duration_seconds{job=~".*"})`,
                 refId: 'A',
@@ -92,7 +92,7 @@ export function getInsightsPanel(metrics: DataSourceRef) {
           new SceneFlexItem({
             width: 650,
             height: 200,
-            body: getInsightsMetric(metrics, 'Probe Latency: Increment in by 10%', 'The average latency of the Probe in Atlanta increased by 10% over the last week.', [
+            body: getInsightsMetric(metrics, 'Probe Latency: Increased by 10%', 'The average latency of the Probe in Atlanta increased by 10% over the last week.', [
               {
                 expr: `sum by (probe) (probe_http_total_duration_seconds{probe=~".*"})`,
                 refId: 'A',

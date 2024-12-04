@@ -1,7 +1,8 @@
 import {SceneDataQuery, SceneQueryRunner} from '@grafana/scenes';
 import {DataSourceRef} from '@grafana/schema';
 
-import { ExplorablePanel } from 'scenes/ExplorablePanel';
+import {ExplorablePanel} from 'scenes/ExplorablePanel';
+import {FieldColorModeId} from "@grafana/data";
 
 function getQueryRunner(metrics: DataSourceRef, queries: SceneDataQuery[]) {
   return new SceneQueryRunner({
@@ -32,7 +33,8 @@ export function getInsightsMetric(
                 fillOpacity: 0,
               },
               color: {
-                mode: 'continuous-YlRd',
+                fixedColor: 'red',
+                mode: FieldColorModeId.Fixed,
               },
           },
           overrides: [
