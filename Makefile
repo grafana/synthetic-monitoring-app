@@ -7,10 +7,13 @@ PROM_VERSION := 2.48.1
 
 .PHONY: build
 build:
-	yarn build
+	mkdir -p dist/
+	docker build -f docker/Dockerfile . -t grafana-sm-frontend:latest
+	docker run --rm -v $(PWD)/dist:/app/plugin/dist grafana-sm-frontend:latest
 
 .PHONY: install
 install:
+
 	yarn install
 
 .PHONY: lint
