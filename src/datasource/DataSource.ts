@@ -12,12 +12,13 @@ import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runti
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, Probe, ThresholdSettings } from '../types';
+import { Check, CheckAlert, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
   AddCheckResult,
   type AddProbeResult,
   AdHocCheckResponse,
+  CheckAlertsResponse,
   CheckInfoResult,
   DeleteCheckResult,
   DeleteProbeResult,
@@ -340,6 +341,25 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         ...tenant,
         status: 1,
       },
+    });
+  }
+
+  //--------------------------------------------------------------------------------
+  // ALERTS PER CHECK
+  //--------------------------------------------------------------------------------
+
+  async listAlertsForCheck(checkId?: number) {
+    if (!checkId) {
+      const emptyResponse: CheckAlertsResponse = { alerts: [] };
+      return emptyResponse;
+    }
+    return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`);
+  }
+
+  async updateAlertsForCheck(alerts: CheckAlert[], checkId: number) {
+    return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
+      method: 'POST',
+      data: { alerts },
     });
   }
 
