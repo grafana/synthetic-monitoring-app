@@ -5,6 +5,7 @@ import { Alert, Button, LinkButton, Modal } from '@grafana/ui';
 import { CheckPageParams } from 'types';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { CheckForm } from 'components/CheckForm/CheckForm';
@@ -18,9 +19,16 @@ const EditCheckContent = () => {
   const { data: checks, isError, isLoading, error, refetch } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
 
+  const { data: alertsPerCheck } = useListAlertsForCheck(check?.id);
+
   return (
     <>
-      <CheckForm check={check} disabled={isLoading || isError} key={check ? `loading` : `ready`} />
+      <CheckForm
+        check={check}
+        checkAlerts={alertsPerCheck}
+        disabled={isLoading || isError}
+        key={check ? `loading` : `ready`}
+      />
       {checks && !check && <NotFoundModal />}
       {error && <ErrorModal error={error} onClick={refetch} />}
     </>
