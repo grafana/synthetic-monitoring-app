@@ -72,6 +72,7 @@ const checkTypeStep1Label = {
 type CheckFormProps = {
   check?: Check;
   disabled?: boolean;
+  checkAlerts?: CheckAlertsResponse;
 };
 
 export const CheckForm = ({ check, disabled }: CheckFormProps) => {
