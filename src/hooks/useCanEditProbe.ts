@@ -1,13 +1,12 @@
 import { Probe } from 'types';
-
-import { useCanWriteSM } from './useDSPermission';
+import { getUserPermissions } from 'data/permissions';
 
 export function useCanEditProbe(probe?: Probe) {
-  const canEdit = useCanWriteSM();
+  const { canWriteProbes, canDeleteProbes } = getUserPermissions();
 
-  if (!probe) {
-    return canEdit;
+  if (probe?.public) {
+    return { canWriteProbes: false, canDeleteProbes: false };
   }
 
-  return canEdit && !probe.public;
+  return { canWriteProbes, canDeleteProbes };
 }

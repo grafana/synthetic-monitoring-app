@@ -4,8 +4,8 @@ import { config } from '@grafana/runtime';
 import { Alert, Space, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { getUserPermissions } from 'data/permissions';
 import { useBackendAddress } from 'hooks/useBackendAddress';
-import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useMeta } from 'hooks/useMeta';
 import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
 
@@ -16,7 +16,7 @@ export function GeneralTab() {
   const meta = useMeta();
   // This may be false in play.grafana.net
   const isSignedIn = config.bootData.user?.isSignedIn ?? false;
-  const canWriteSM = useCanWriteSM();
+  const { canWriteSM } = getUserPermissions();
   const [backendAddress, backendAddressDescription] = useBackendAddress(true);
   const styles = useStyles2(getStyles);
 
