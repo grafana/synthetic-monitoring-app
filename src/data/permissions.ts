@@ -1,7 +1,8 @@
 import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
-import { PluginPermissions } from 'types';
+import { FeatureName, PluginPermissions } from 'types';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 
 const roleHierarchy: Record<OrgRole, OrgRole[]> = {
   [OrgRole.Viewer]: [OrgRole.Viewer, OrgRole.Editor, OrgRole.Admin],
@@ -23,7 +24,8 @@ const hasMinFallbackRole = (fallbackOrgRole: OrgRole) => {
 const isUserActionAllowed = (permission: PluginPermissions, fallbackOrgRole: OrgRole): boolean => {
   const { permissions: userPermissions } = config.bootData.user;
 
-  if (config.featureToggles.accessControlOnCall) {
+  const rbacEnabled = isFeatureEnabled(FeatureName.RBAC);
+  if (config.featureToggles.accessControlOnCall && rbacEnabled) {
     return Boolean(userPermissions?.[permission]);
   }
 
