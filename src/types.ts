@@ -656,6 +656,7 @@ export enum FeatureName {
   ScriptedChecks = 'scripted-checks',
   UnifiedAlerting = 'ngalert',
   UptimeQueryV2 = 'uptime-query-v2',
+  RBAC = 'synthetic-monitoring-rbac',
   __TURNOFF = 'test-only-do-not-use',
 }
 
