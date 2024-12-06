@@ -11,7 +11,7 @@ import { Check, CheckFormValues, CheckType } from 'types';
 import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { AdHocCheckResponse } from 'datasource/responses.types';
+import { AdHocCheckResponse, CheckAlertsResponse } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
 import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
@@ -21,6 +21,7 @@ import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { AlertsPerCheck } from 'components/CheckForm/AlertsPerCheck';
 import { DNSCheckLayout } from 'components/CheckForm/FormLayouts/CheckDNSLayout';
 import { GRPCCheckLayout } from 'components/CheckForm/FormLayouts/CheckGrpcLayout';
 import { HttpCheckLayout } from 'components/CheckForm/FormLayouts/CheckHttpLayout';
@@ -71,9 +72,10 @@ const checkTypeStep1Label = {
 type CheckFormProps = {
   check?: Check;
   disabled?: boolean;
+  checkAlerts?: CheckAlertsResponse;
 };
 
-export const CheckForm = ({ check, disabled }: CheckFormProps) => {
+export const CheckForm = ({ check, disabled, checkAlerts }: CheckFormProps) => {
   const { canWriteChecks } = getUserPermissions();
   const canReadLogs = useCanReadLogs();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
@@ -215,7 +217,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                 {labelsComponent}
                 <CheckLabels />
               </FormLayout.Section>
-              <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]} status={status}>
+              <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
+                <AlertsPerCheck checkAlerts={checkAlerts} />
                 <CheckFormAlert />
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
