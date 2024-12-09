@@ -15,8 +15,8 @@ import { ProbeLabels } from './ProbeLabels';
 import { ProbeStatus } from './ProbeStatus';
 
 export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
-  const canEdit = useCanEditProbe(probe);
-  const probeEditHref = generateRoutePath(canEdit ? ROUTES.EditProbe : ROUTES.ViewProbe, { id: probe.id! });
+  const { canWriteProbes } = useCanEditProbe(probe);
+  const probeEditHref = generateRoutePath(canWriteProbes ? ROUTES.EditProbe : ROUTES.ViewProbe, { id: probe.id! });
   const labelsString = labelsToString(probe.labels);
   const styles = useStyles2(getStyles2);
 
@@ -55,7 +55,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
       </Card.Description>
 
       <Card.Actions>
-        {canEdit ? (
+        {canWriteProbes ? (
           <>
             <LinkButton
               data-testid="probe-card-action-button"
