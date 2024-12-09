@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.9...v1.16.10) (2024-12-09)
+
+
+### Fixes
+
+* add synthetic-monitoring-dev as owners of release files ([#1010](https://github.com/grafana/synthetic-monitoring-app/issues/1010)) ([d703e42](https://github.com/grafana/synthetic-monitoring-app/commit/d703e426e1e8a4c67689dd9794c4fd1f500fcf09))
+
 ## [1.16.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.8...v1.16.9) (2024-11-29)
 
 
