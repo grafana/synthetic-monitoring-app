@@ -37,8 +37,8 @@ const CheckAlertSchemaWithPercentiles = CheckAlertSchema.refine(
 );
 
 export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: CheckAlertSchema,
-  HTTPRequestDurationTooHigh: CheckAlertSchemaWithPercentiles,
-  HTTPTargetCertificateCloseToExpiring: CheckAlertSchema,
-  PingICMPDurationTooHigh: CheckAlertSchemaWithPercentiles,
+  ProbeFailedExecutionsTooHigh: CheckAlertSchema.optional(),
+  HTTPRequestDurationTooHigh: CheckAlertSchemaWithPercentiles.optional(),
+  HTTPTargetCertificateCloseToExpiring: CheckAlertSchema.optional(),
+  PingICMPDurationTooHigh: CheckAlertSchemaWithPercentiles.optional(),
 });
