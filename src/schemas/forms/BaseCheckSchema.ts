@@ -18,5 +18,5 @@ export const BaseCheckSchema: ZodType<CheckFormValuesBase> = z.object({
   alertSensitivity: z.nativeEnum(AlertSensitivity),
   labels: LabelsSchema,
   publishAdvancedMetrics: z.boolean(),
-  alerts: CheckAlertsSchema,
+  alerts: CheckAlertsSchema.optional(),
 });

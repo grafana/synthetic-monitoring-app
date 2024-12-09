@@ -1,13 +1,7 @@
 import { CheckAlertType } from 'types';
 import { CheckAlertsResponse } from 'datasource/responses.types';
-import { queryClient } from 'data/queryClient';
-import { queryKeys } from 'data/useCheckAlerts';
 
-export function mockAlertsForCheckData(mockData: CheckAlertsResponse = alertsFromApi) {
-  queryClient.setQueryData([queryKeys.listAlertsForCheck], mockData);
-}
-
-export const alertsFromApi: CheckAlertsResponse = {
+export const BASIC_CHECK_ALERTS: CheckAlertsResponse = {
   alerts: [
     {
       id: 1,
