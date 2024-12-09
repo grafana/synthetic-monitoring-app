@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { AlertPercentiles, CheckAlertFormType, CheckFormValues, CheckStatus } from 'types';
+import { AlertPercentiles, CheckAlertFormType, CheckFormValues, CheckStatus, CheckType } from 'types';
 import { CheckAlertsResponse } from 'datasource/responses.types';
 import { getAlertCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.alerts';
 
@@ -18,11 +18,13 @@ const defaultPercentileOptions: AlertPercentiles[] = [
   AlertPercentiles.p99,
 ];
 
-const PREDEFINED_ALERTS: Array<{
+interface PredefinedAlertInterface {
   type: CheckAlertFormType;
   description: string;
   percentileOptions: AlertPercentiles[];
-}> = [
+  supportedCheckTypes?: CheckType[];
+}
+const PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertFormType.ProbeFailedExecutionsTooHigh,
     description:
@@ -33,24 +35,28 @@ const PREDEFINED_ALERTS: Array<{
     type: CheckAlertFormType.HTTPRequestDurationTooHigh,
     description: 'Alert when the selected percentile(s) of the HTTP request duration is higher than the threshold',
     percentileOptions: defaultPercentileOptions,
+    supportedCheckTypes: [CheckType.HTTP],
   },
   {
     type: CheckAlertFormType.HTTPTargetCertificateCloseToExpiring,
     description: 'Alert when the target certificate is close to expiring',
     percentileOptions: [],
+    supportedCheckTypes: [CheckType.HTTP],
   },
   {
     type: CheckAlertFormType.PingICMPDurationTooHigh,
     description: 'Alert when the selected percentile(s) of the ICMP ping duration is higher than the threshold',
     percentileOptions: defaultPercentileOptions,
+    supportedCheckTypes: [CheckType.PING],
   },
 ];
 
 interface AlertsPerCheckInterface {
   checkAlerts?: CheckAlertsResponse;
+  checkType: CheckType;
 }
 
-export const AlertsPerCheck = ({ checkAlerts }: AlertsPerCheckInterface) => {
+export const AlertsPerCheck = ({ checkAlerts, checkType }: AlertsPerCheckInterface) => {
   const styles = useStyles2(getStyles);
 
   const { getValues, setValue, control } = useFormContext<CheckFormValues>();
@@ -78,6 +84,14 @@ export const AlertsPerCheck = ({ checkAlerts }: AlertsPerCheckInterface) => {
     setValue(`alerts`, newAlerts);
   };
 
+  const availableAlerts = useMemo(
+    () =>
+      PREDEFINED_ALERTS.filter((alert) =>
+        alert.supportedCheckTypes?.length ? alert.supportedCheckTypes.includes(checkType) : true
+      ),
+    [checkType]
+  );
+
   return (
     <>
       <div className={styles.marginBottom}>
@@ -99,7 +113,7 @@ export const AlertsPerCheck = ({ checkAlerts }: AlertsPerCheckInterface) => {
               return (
                 <ul className={styles.list}>
                   <li>
-                    {PREDEFINED_ALERTS.map((alert) => {
+                    {availableAlerts.map((alert) => {
                       return <AlertCard key={alert.type} predefinedAlert={alert} onSelect={handleSelectAlert} />;
                     })}
                   </li>
