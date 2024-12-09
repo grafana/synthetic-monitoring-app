@@ -2,3 +2,12 @@
 # https://git-scm.com/docs/gitignore#_pattern_format
 
 * @grafana/synthetic-monitoring-fe
+
+# These files are updated by release-please and we need any member of the
+# larger team to be able to approve them.
+#
+# The docs seem to suggest that the last matching pattern is the one that is
+# used, so we need to keep the * pattern above this one.
+/CHANGELOG.md @grafana/synthetic-monitoring-fe @grafana/synthetic-monitoring-dev
+/package.json @grafana/synthetic-monitoring-fe @grafana/synthetic-monitoring-dev
+/.github/release-please/release-please-config.json @grafana/synthetic-monitoring-fe @grafana/synthetic-monitoring-dev
