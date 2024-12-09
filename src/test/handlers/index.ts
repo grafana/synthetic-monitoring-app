@@ -10,6 +10,8 @@ import { createAccessToken } from 'test/handlers/tokens';
 
 import { ApiEntry, RequestRes } from 'test/handlers/types';
 
+import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
+
 const apiRoutes = {
   addCheck,
   addProbe,
@@ -31,6 +33,8 @@ const apiRoutes = {
   updateCheck,
   updateProbe,
   updateTenantSettings,
+  updateAlertsForCheck,
+  listAlertsForCheck,
 };
 
 export type ApiRoutes = typeof apiRoutes;
