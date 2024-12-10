@@ -4,49 +4,66 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { AlertPercentiles, CheckAlertFormType, CheckFormValues, CheckStatus, CheckType } from 'types';
+import { CheckAlertType, CheckFormValues, CheckStatus, CheckType } from 'types';
 import { CheckAlertsResponse } from 'datasource/responses.types';
 import { getAlertCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.alerts';
 
 import { NewStatusBadge } from '../CheckEditor/FormComponents/CheckStatusInfo';
 import { AlertCard } from './AlertCard';
-
-const defaultPercentileOptions: AlertPercentiles[] = [
-  AlertPercentiles.p50,
-  AlertPercentiles.p90,
-  AlertPercentiles.p95,
-  AlertPercentiles.p99,
-];
-
 interface PredefinedAlertInterface {
-  type: CheckAlertFormType;
+  type: CheckAlertType;
   description: string;
-  percentileOptions: AlertPercentiles[];
   supportedCheckTypes?: CheckType[];
 }
 const PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
-    type: CheckAlertFormType.ProbeFailedExecutionsTooHigh,
+    type: CheckAlertType.ProbeFailedExecutionsTooHigh,
     description:
       'Alert when the percentage of failed probe executions during the time that the alert rule evaluates is higher than the threshold',
-    percentileOptions: [],
   },
   {
-    type: CheckAlertFormType.HTTPRequestDurationTooHigh,
-    description: 'Alert when the selected percentile(s) of the HTTP request duration is higher than the threshold',
-    percentileOptions: defaultPercentileOptions,
+    type: CheckAlertType.HTTPRequestDurationTooHighP50,
+    description: 'Alert when the 50th percentile of the HTTP request duration is higher than the threshold',
     supportedCheckTypes: [CheckType.HTTP],
   },
   {
-    type: CheckAlertFormType.HTTPTargetCertificateCloseToExpiring,
+    type: CheckAlertType.HTTPRequestDurationTooHighP90,
+    description: 'Alert when the 90th percentile of the HTTP request duration is higher than the threshold',
+    supportedCheckTypes: [CheckType.HTTP],
+  },
+  {
+    type: CheckAlertType.HTTPRequestDurationTooHighP95,
+    description: 'Alert when the 95th percentile of the HTTP request duration is higher than the threshold',
+    supportedCheckTypes: [CheckType.HTTP],
+  },
+  {
+    type: CheckAlertType.HTTPRequestDurationTooHighP99,
+    description: 'Alert when the 99th percentile of the HTTP request duration is higher than the threshold',
+    supportedCheckTypes: [CheckType.HTTP],
+  },
+  {
+    type: CheckAlertType.HTTPTargetCertificateCloseToExpiring,
     description: 'Alert when the target certificate is close to expiring',
-    percentileOptions: [],
     supportedCheckTypes: [CheckType.HTTP],
   },
   {
-    type: CheckAlertFormType.PingICMPDurationTooHigh,
-    description: 'Alert when the selected percentile(s) of the ICMP ping duration is higher than the threshold',
-    percentileOptions: defaultPercentileOptions,
+    type: CheckAlertType.PingICMPDurationTooHighP50,
+    description: 'Alert when the 50th percentile of the ICMP ping duration is higher than the threshold',
+    supportedCheckTypes: [CheckType.PING],
+  },
+  {
+    type: CheckAlertType.PingICMPDurationTooHighP90,
+    description: 'Alert when the 90th percentile of the ICMP ping duration is higher than the threshold',
+    supportedCheckTypes: [CheckType.PING],
+  },
+  {
+    type: CheckAlertType.PingICMPDurationTooHighP95,
+    description: 'Alert when the 95th percentile of the ICMP ping duration is higher than the threshold',
+    supportedCheckTypes: [CheckType.PING],
+  },
+  {
+    type: CheckAlertType.PingICMPDurationTooHighP99,
+    description: 'Alert when the 99th percentile of the ICMP ping duration is higher than the threshold',
     supportedCheckTypes: [CheckType.PING],
   },
 ];
@@ -69,7 +86,7 @@ export const AlertsPerCheck = ({ checkAlerts, checkType }: AlertsPerCheckInterfa
     setValue(`alerts`, formAlerts);
   }, [checkAlerts, setValue]);
 
-  const handleSelectAlert = (type: CheckAlertFormType, forceSelection?: boolean) => {
+  const handleSelectAlert = (type: CheckAlertType, forceSelection?: boolean) => {
     const alerts = getValues(`alerts`);
     if (!alerts?.[type]) {
       return;

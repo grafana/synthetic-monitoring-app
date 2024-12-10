@@ -5,7 +5,7 @@ import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/che
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
-const checkType = CheckType.HTTP;
+const checkType = CheckType.PING;
 
 describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
@@ -18,7 +18,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     expect(body.alerts).toEqual([]);
   });
 
-  it.only(`can add specific http alerts`, async () => {
+  it.only(`can add specific ping alerts`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 4);
@@ -26,19 +26,19 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
 
     expect(screen.getByText('ProbeFailedExecutionsTooHigh')).toBeInTheDocument();
-    expect(screen.getByText('HTTPRequestDurationTooHighP50')).toBeInTheDocument();
-    expect(screen.getByText('HTTPRequestDurationTooHighP90')).toBeInTheDocument();
-    expect(screen.getByText('HTTPRequestDurationTooHighP95')).toBeInTheDocument();
-    expect(screen.getByText('HTTPRequestDurationTooHighP99')).toBeInTheDocument();
-    expect(screen.getByText('HTTPTargetCertificateCloseToExpiring')).toBeInTheDocument();
-    expect(screen.queryByText('PingICMPDurationTooHighP50')).not.toBeInTheDocument();
-    expect(screen.queryByText('PingICMPDurationTooHighP90')).not.toBeInTheDocument();
-    expect(screen.queryByText('PingICMPDurationTooHighP95')).not.toBeInTheDocument();
-    expect(screen.queryByText('PingICMPDurationTooHighP99')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTPRequestDurationTooHighP50')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTPRequestDurationTooHighP90')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTPRequestDurationTooHighP95')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTPRequestDurationTooHighP99')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTPTargetCertificateCloseToExpiring')).not.toBeInTheDocument();
+    expect(screen.getByText('PingICMPDurationTooHighP50')).toBeInTheDocument();
+    expect(screen.getByText('PingICMPDurationTooHighP90')).toBeInTheDocument();
+    expect(screen.getByText('PingICMPDurationTooHighP95')).toBeInTheDocument();
+    expect(screen.getByText('PingICMPDurationTooHighP99')).toBeInTheDocument();
 
     const thresholdsInputs = screen.getAllByLabelText(`Threshold`);
 
-    expect(thresholdsInputs).toHaveLength(6);
+    expect(thresholdsInputs).toHaveLength(5);
 
     await user.clear(thresholdsInputs[0]);
     await user.type(thresholdsInputs[0], '0.1');
@@ -60,15 +60,15 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
       alerts: [
         { name: 'ProbeFailedExecutionsTooHigh', threshold: 0.1 },
         {
-          name: 'HTTPRequestDurationTooHighP50',
+          name: 'PingICMPDurationTooHighP50',
           threshold: 1,
         },
         {
-          name: 'HTTPRequestDurationTooHighP90',
+          name: 'PingICMPDurationTooHighP90',
           threshold: 2,
         },
         {
-          name: 'HTTPRequestDurationTooHighP95',
+          name: 'PingICMPDurationTooHighP95',
           threshold: 3,
         },
       ],
