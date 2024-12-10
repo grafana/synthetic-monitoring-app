@@ -45,7 +45,12 @@ export const AlertCard = ({ predefinedAlert, onSelect }: AlertCardProps) => {
       </Card.Description>
       <Card.Actions>
         {predefinedAlert.percentileOptions.length > 0 && (
-          <Field label="Percentile" invalid={Boolean(percentileError)} error={percentileError}>
+          <Field
+            label="Percentile"
+            htmlFor={`alert-percentile-${predefinedAlert.type}`}
+            invalid={Boolean(percentileError)}
+            error={percentileError}
+          >
             <Controller
               name={`alerts.${predefinedAlert.type}.percentiles`}
               control={control}
@@ -53,6 +58,7 @@ export const AlertCard = ({ predefinedAlert, onSelect }: AlertCardProps) => {
                 return (
                   <MultiSelect
                     disabled={isFormDisabled}
+                    inputId={`alert-percentile-${predefinedAlert.type}`}
                     value={field.value ? field.value : percentiles}
                     onChange={(values) => {
                       if (!isSelected) {
@@ -67,7 +73,12 @@ export const AlertCard = ({ predefinedAlert, onSelect }: AlertCardProps) => {
             />
           </Field>
         )}
-        <Field label="Threshold" invalid={Boolean(thresholdError)} error={thresholdError}>
+        <Field
+          label="Threshold"
+          htmlFor={`alert-threshold-${predefinedAlert.type}`}
+          invalid={Boolean(thresholdError)}
+          error={thresholdError}
+        >
           <Controller
             name={`alerts.${predefinedAlert.type}.threshold`}
             control={control}
@@ -75,7 +86,7 @@ export const AlertCard = ({ predefinedAlert, onSelect }: AlertCardProps) => {
               return (
                 <Input
                   type="number"
-                  label="Threshold"
+                  id={`alert-threshold-${predefinedAlert.type}`}
                   value={field.value ? field.value : threshold}
                   onChange={(e) => {
                     if (!isSelected) {
