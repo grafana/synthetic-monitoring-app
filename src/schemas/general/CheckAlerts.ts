@@ -1,13 +1,12 @@
 import { z, ZodType } from 'zod';
 
-import { AlertPercentiles, CheckAlertFormRecord } from 'types';
+import { CheckAlertFormRecord } from 'types';
 
 const CheckAlertSchema = z
   .object({
     id: z.number().optional(),
     isSelected: z.boolean().optional(),
     threshold: z.number().optional(),
-    percentiles: z.array(z.nativeEnum(AlertPercentiles)).optional(),
   })
   .refine(
     (data) => {
@@ -23,23 +22,15 @@ const CheckAlertSchema = z
     { message: 'You need to set a threshold value', path: ['threshold'] }
   );
 
-const CheckAlertSchemaWithPercentiles = CheckAlertSchema.refine(
-  (data) => {
-    if (!data.isSelected) {
-      return true;
-    }
-
-    if (data.isSelected && !data.percentiles?.length) {
-      return false;
-    }
-    return true;
-  },
-  { message: 'You need to set a percentile value', path: ['percentiles'] }
-);
-
 export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
   ProbeFailedExecutionsTooHigh: CheckAlertSchema.optional(),
-  HTTPRequestDurationTooHigh: CheckAlertSchemaWithPercentiles.optional(),
+  HTTPRequestDurationTooHighP50: CheckAlertSchema.optional(),
+  HTTPRequestDurationTooHighP90: CheckAlertSchema.optional(),
+  HTTPRequestDurationTooHighP95: CheckAlertSchema.optional(),
+  HTTPRequestDurationTooHighP99: CheckAlertSchema.optional(),
   HTTPTargetCertificateCloseToExpiring: CheckAlertSchema.optional(),
-  PingICMPDurationTooHigh: CheckAlertSchemaWithPercentiles.optional(),
+  PingICMPDurationTooHighP50: CheckAlertSchema.optional(),
+  PingICMPDurationTooHighP90: CheckAlertSchema.optional(),
+  PingICMPDurationTooHighP95: CheckAlertSchema.optional(),
+  PingICMPDurationTooHighP99: CheckAlertSchema.optional(),
 });

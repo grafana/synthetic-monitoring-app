@@ -314,11 +314,10 @@ export interface AlertFormValues {
 export interface CheckAlertFormValues {
   id?: number;
   threshold?: number;
-  percentiles?: AlertPercentiles[];
   isSelected?: boolean;
 }
 
-export type CheckAlertFormRecord = Partial<Record<CheckAlertFormType, CheckAlertFormValues>>;
+export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertFormValues>>;
 
 export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly'> & {
   publishAdvancedMetrics: boolean;
@@ -564,13 +563,6 @@ export enum HttpRegexValidationType {
   Body = 'Body',
 }
 
-export enum AlertPercentiles {
-  p50 = 'P50',
-  p90 = 'P90',
-  p95 = 'P95',
-  p99 = 'P99',
-}
-
 export interface SubmissionError {
   message?: string;
   msg?: string;
@@ -643,13 +635,6 @@ export type AlertDescription = {
 };
 
 export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
-
-export enum CheckAlertFormType {
-  ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
-  HTTPRequestDurationTooHigh = 'HTTPRequestDurationTooHigh',
-  HTTPTargetCertificateCloseToExpiring = 'HTTPTargetCertificateCloseToExpiring',
-  PingICMPDurationTooHigh = 'PingICMPDurationTooHigh',
-}
 
 export enum CheckAlertType {
   ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
