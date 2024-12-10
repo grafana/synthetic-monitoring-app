@@ -4,7 +4,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
 import { css, Global } from '@emotion/react';
 
-//import { mockAlertsForCheckData } from 'datasource/__mocks__/checkAlerts';
 import { ProvisioningJsonData } from 'types';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { MetaContextProvider } from 'contexts/MetaContext';
@@ -27,11 +26,6 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
       queryClient.removeQueries({ queryKey: alertingQueryKeys.list });
     };
   }, []);
-
-  //@todo REMOVE WHEN THE CHECK ALERTS API IS READY
-  // if (process.env.NODE_ENV === 'development') {
-  //   mockAlertsForCheckData();
-  // }
 
   return (
     <QueryClientProvider client={queryClient}>
