@@ -311,9 +311,17 @@ export interface AlertFormValues {
   annotations: Label[];
   sensitivity: SelectableValue<AlertSensitivity>;
 }
+export interface CheckAlertFormValues {
+  id?: number;
+  threshold?: number;
+  isSelected?: boolean;
+}
+
+export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertFormValues>>;
 
 export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly'> & {
   publishAdvancedMetrics: boolean;
+  alerts?: CheckAlertFormRecord;
 };
 
 export type CheckFormValuesHttp = CheckFormValuesBase & {
@@ -389,6 +397,7 @@ export interface CheckBase {
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   probes: number[];
+  alerts?: CheckAlertFormRecord;
 }
 
 export type Check =
@@ -626,6 +635,27 @@ export type AlertDescription = {
 };
 
 export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
+
+export enum CheckAlertType {
+  ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
+  HTTPRequestDurationTooHighP50 = 'HTTPRequestDurationTooHighP50',
+  HTTPRequestDurationTooHighP90 = 'HTTPRequestDurationTooHighP90',
+  HTTPRequestDurationTooHighP95 = 'HTTPRequestDurationTooHighP95',
+  HTTPRequestDurationTooHighP99 = 'HTTPRequestDurationTooHighP99',
+  HTTPTargetCertificateCloseToExpiring = 'HTTPTargetCertificateCloseToExpiring',
+  PingICMPDurationTooHighP50 = 'PingICMPDurationTooHighP50',
+  PingICMPDurationTooHighP90 = 'PingICMPDurationTooHighP90',
+  PingICMPDurationTooHighP95 = 'PingICMPDurationTooHighP95',
+  PingICMPDurationTooHighP99 = 'PingICMPDurationTooHighP99',
+}
+
+export type CheckAlert = {
+  id?: number;
+  name: CheckAlertType;
+  threshold: number;
+  created?: number;
+  modified?: number;
+};
 
 export enum CheckSort {
   AToZ = 'atoz',

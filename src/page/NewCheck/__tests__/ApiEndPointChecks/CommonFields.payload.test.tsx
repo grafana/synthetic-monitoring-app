@@ -91,6 +91,28 @@ describe('Api endpoint checks - common fields payload', () => {
 
           expect(body.alertSensitivity).toBe(AlertSensitivity.Medium);
         });
+
+        it(`can submit the form with alerts per check`, async () => {
+          const { user, read } = await renderNewForm(checkType);
+          await fillMandatoryFields({ user, checkType });
+
+          await goToSection(user, 4);
+
+          expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
+
+          expect(screen.getByText('ProbeFailedExecutionsTooHigh')).toBeInTheDocument();
+
+          const thresholdsInput = screen.getAllByLabelText(`Threshold`)[0];
+
+          await user.clear(thresholdsInput);
+          await user.type(thresholdsInput, '0.1');
+
+          await submitForm(user);
+
+          const { body: alertsBody } = await read(1);
+
+          expect(alertsBody).toEqual({ alerts: [{ name: 'ProbeFailedExecutionsTooHigh', threshold: 0.1 }] });
+        });
       });
 
       describe(`Section 5 (Execution)`, () => {
