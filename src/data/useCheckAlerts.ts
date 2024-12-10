@@ -15,8 +15,8 @@ export const queryKeys: Record<'listAlertsForCheck', QueryKey> = {
 const alertsForCheckQuery = (api: SMDataSource, checkId?: number) => {
   return {
     queryKey: [queryKeys.listAlertsForCheck, checkId],
-    //queryKey: [queryKeys.listAlertsForCheck], //omitting the id from the key temporarily for mocking purposes.
     queryFn: () => api.listAlertsForCheck(checkId),
+    staleTime: 0,
   };
 };
 

@@ -20,7 +20,7 @@ export function getAlertsPayload(formValues?: CheckAlertFormRecord, checkId?: nu
 
       alertNames.forEach((alertName) => {
         alerts.push({
-          id: checkId,
+          id: alert.id,
           name: alertName,
           threshold: alert.threshold!!,
         });

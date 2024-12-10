@@ -5,6 +5,7 @@ export function getAlertCheckFormValues(data: CheckAlertsResponse): CheckAlertFo
   const formAlerts: CheckAlertFormRecord = Object.keys(CheckAlertFormType).reduce((acc, alertTypeKey) => {
     const alertType = CheckAlertFormType[alertTypeKey as keyof typeof CheckAlertFormType];
     acc[alertType] = {
+      id: undefined,
       threshold: 0, // Default threshold
       isSelected: false,
       percentiles: [],
@@ -29,6 +30,7 @@ export function getAlertCheckFormValues(data: CheckAlertsResponse): CheckAlertFo
       const uniquePercentiles = Array.from(new Set(percentiles));
 
       formAlerts[type] = {
+        id: alert.id,
         threshold: alert.threshold,
         isSelected: true,
         percentiles: [...(formAlerts[type]?.percentiles || []), ...uniquePercentiles],
