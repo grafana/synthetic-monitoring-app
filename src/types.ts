@@ -312,6 +312,7 @@ export interface AlertFormValues {
   sensitivity: SelectableValue<AlertSensitivity>;
 }
 export interface CheckAlertFormValues {
+  id?: number;
   threshold?: number;
   percentiles?: AlertPercentiles[];
   isSelected?: boolean;

@@ -4,6 +4,7 @@ import { AlertPercentiles, CheckAlertFormRecord } from 'types';
 
 const CheckAlertSchema = z
   .object({
+    id: z.number().optional(),
     isSelected: z.boolean().optional(),
     threshold: z.number().optional(),
     percentiles: z.array(z.nativeEnum(AlertPercentiles)).optional(),

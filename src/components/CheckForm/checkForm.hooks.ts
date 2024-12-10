@@ -51,16 +51,19 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
   const testButtonRef = useRef<HTMLButtonElement>(null);
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
-  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck();
+
+  const navigateToChecks = useCallback(() => navigate(ROUTES.Checks), [navigate]);
+  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({ onSuccess: navigateToChecks });
+
   const onSuccess = useCallback(
     (data: Check, alerts?: CheckAlertFormRecord) => {
       if (alerts && data.id) {
         const checkAlerts: CheckAlert[] = getAlertsPayload(alerts, data.id);
         return updateAlertsForCheck({ alerts: checkAlerts, checkId: data.id });
       }
-      return navigate(ROUTES.Checks);
+      return navigateToChecks();
     },
-    [navigate, updateAlertsForCheck]
+    [updateAlertsForCheck, navigateToChecks]
   );
 
   const mutateCheck = useCallback(
