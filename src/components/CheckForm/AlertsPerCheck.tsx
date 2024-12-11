@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Field, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Field, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckAlertType, CheckFormValues, CheckStatus, CheckType } from 'types';
-import { CheckAlertsResponse } from 'datasource/responses.types';
+import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { getAlertCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.alerts';
 
 import { NewStatusBadge } from '../CheckEditor/FormComponents/CheckStatusInfo';
@@ -68,15 +68,15 @@ const PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   },
 ];
 
-interface AlertsPerCheckInterface {
-  checkAlerts?: CheckAlertsResponse;
-  checkType: CheckType;
-}
-
-export const AlertsPerCheck = ({ checkAlerts, checkType }: AlertsPerCheckInterface) => {
+export const AlertsPerCheck = () => {
   const styles = useStyles2(getStyles);
 
   const { getValues, setValue, control } = useFormContext<CheckFormValues>();
+
+  const checkId = getValues('id');
+  const checkType = getValues('checkType');
+
+  const { data: checkAlerts, isLoading, isError } = useListAlertsForCheck(checkId);
 
   useEffect(() => {
     if (!checkAlerts) {
@@ -85,6 +85,24 @@ export const AlertsPerCheck = ({ checkAlerts, checkType }: AlertsPerCheckInterfa
     const formAlerts = getAlertCheckFormValues(checkAlerts);
     setValue(`alerts`, formAlerts);
   }, [checkAlerts, setValue]);
+
+  const availableAlerts = useMemo(
+    () =>
+      PREDEFINED_ALERTS.filter((alert) =>
+        alert.supportedCheckTypes?.length ? alert.supportedCheckTypes.includes(checkType) : true
+      ),
+    [checkType]
+  );
+
+  if (isLoading) {
+    return <LoadingPlaceholder text="Loading alerts..." />;
+  }
+
+  if (isError) {
+    return (
+      <Alert title="There was an error fetching alerts for this check. Please try again or contact support."></Alert>
+    );
+  }
 
   const handleSelectAlert = (type: CheckAlertType, forceSelection?: boolean) => {
     const alerts = getValues(`alerts`);
@@ -100,14 +118,6 @@ export const AlertsPerCheck = ({ checkAlerts, checkType }: AlertsPerCheckInterfa
 
     setValue(`alerts`, newAlerts);
   };
-
-  const availableAlerts = useMemo(
-    () =>
-      PREDEFINED_ALERTS.filter((alert) =>
-        alert.supportedCheckTypes?.length ? alert.supportedCheckTypes.includes(checkType) : true
-      ),
-    [checkType]
-  );
 
   return (
     <>

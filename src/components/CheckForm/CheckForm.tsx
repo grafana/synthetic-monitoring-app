@@ -11,7 +11,7 @@ import { Check, CheckFormValues, CheckType } from 'types';
 import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { AdHocCheckResponse, CheckAlertsResponse } from 'datasource/responses.types';
+import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs, useCanWriteSM } from 'hooks/useDSPermission';
@@ -70,10 +70,9 @@ const checkTypeStep1Label = {
 type CheckFormProps = {
   check?: Check;
   disabled?: boolean;
-  checkAlerts?: CheckAlertsResponse;
 };
 
-export const CheckForm = ({ check, disabled, checkAlerts }: CheckFormProps) => {
+export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   const canEdit = useCanWriteSM();
   const canReadLogs = useCanReadLogs();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
@@ -212,7 +211,7 @@ export const CheckForm = ({ check, disabled, checkAlerts }: CheckFormProps) => {
                 <CheckLabels />
               </FormLayout.Section>
               <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
-                <AlertsPerCheck checkType={checkType} checkAlerts={checkAlerts} />
+                <AlertsPerCheck />
                 <CheckFormAlert />
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
