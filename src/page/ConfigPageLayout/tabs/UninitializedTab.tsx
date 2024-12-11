@@ -4,7 +4,7 @@ import { EmptyState, TextLink } from '@grafana/ui';
 import { ROUTES } from 'types';
 import { AppInitializer } from 'page/AppInitializer';
 
-import { ConfigContent } from '../ConfigContent';
+import { ConfigContent } from '../components/ConfigContent';
 
 export function UninitializedTab() {
   // For some reason the 'call-to-action' variant causes infinity loop in the test (if the image is shown)

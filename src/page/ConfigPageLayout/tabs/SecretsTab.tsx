@@ -1,12 +1,11 @@
 import React from 'react';
 import { NavModelItem } from '@grafana/data';
-import { config } from '@grafana/runtime';
 
-import { FeatureName } from '../../../types';
+import { FeatureName } from 'types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 
-import { SecretsTable } from '../../../components/SecretsTable';
-import { ConfigContent } from '../ConfigContent';
+import { ConfigContent } from '../components/ConfigContent';
+import { SecretsTable } from '../components/SecretsTable';
 import { getConfigTabUrl } from '../ConfigPageLayout.utils';
 
 const navModelItem: NavModelItem = {
@@ -16,7 +15,6 @@ const navModelItem: NavModelItem = {
 };
 
 export function getSecretsNavModel(isActive = false) {
-  console.log('getSecretsNavModel', isFeatureEnabled(FeatureName.SecretsManagement), config.featureToggles);
   if (!isFeatureEnabled(FeatureName.SecretsManagement)) {
     return [];
   }

@@ -9,7 +9,7 @@ import { FaroEvent, reportEvent } from 'faro';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
 
-import { ConfigContent } from '../ConfigContent';
+import { ConfigContent } from '../components/ConfigContent';
 
 export function TerraformTab() {
   const { config, checkCommands, probeCommands, error, isLoading } = useTerraformConfig();

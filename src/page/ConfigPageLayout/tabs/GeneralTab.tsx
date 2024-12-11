@@ -8,7 +8,7 @@ import { useMeta } from 'hooks/useMeta';
 import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
 
 import { Preformatted } from '../../../components/Preformatted';
-import { ConfigContent } from '../ConfigContent';
+import { ConfigContent } from '../components/ConfigContent';
 
 export function GeneralTab() {
   const meta = useMeta();

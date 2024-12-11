@@ -6,7 +6,7 @@ import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useSMDS } from 'hooks/useSMDS';
 import { Clipboard } from 'components/Clipboard';
 
-import { ConfigContent } from '../ConfigContent';
+import { ConfigContent } from '../components/ConfigContent';
 
 export function AccessTokensTab() {
   const canCreateAccessToken = useCanWriteSM();

@@ -1,5 +1,17 @@
 import React from 'react';
-import { Box, Button, Column, Dropdown, Field, IconButton, Input, InteractiveTable, Menu, Tag } from '@grafana/ui';
+import {
+  Box,
+  Button,
+  Column,
+  Dropdown,
+  Field,
+  IconButton,
+  Input,
+  InteractiveTable,
+  Menu,
+  TagList,
+  Tooltip,
+} from '@grafana/ui';
 import { css } from '@emotion/css';
 
 interface RowData {
@@ -8,7 +20,10 @@ interface RowData {
   type: string;
   version?: number;
   labels?: Array<[string, string]>;
+  created: string;
   modified: string;
+  modified_by?: string;
+  created_by?: string;
 }
 
 const styles = {
@@ -32,7 +47,7 @@ const columns: Array<Column<RowData>> = [
   {
     id: 'labels',
     header: 'Labels',
-    cell({ row }) {
+    cell({ row, cell }) {
       if (!row.original.labels || !row.original.labels.length) {
         return (
           <Button icon="plus" size="sm" variant="secondary">
@@ -40,14 +55,10 @@ const columns: Array<Column<RowData>> = [
           </Button>
         );
       }
-
-      return (
-        <Box display="flex" gap={1}>
-          {row.original.labels.map(([key, value]) => {
-            return <Tag key={key} name={`${key}/${value}`} />;
-          })}
-        </Box>
-      );
+      const tags = row.original.labels.map(([key, value]) => {
+        return `${key}: ${value}`;
+      });
+      return <TagList tags={tags} displayMax={1} />;
     },
   },
   // {
@@ -68,7 +79,28 @@ const columns: Array<Column<RowData>> = [
       return <div className={styles.centeredColumn}>{cell.value}</div>;
     },
   },
-  { id: 'modified', header: 'Modified' },
+  {
+    id: 'created',
+    header: 'Created',
+    cell({ cell, row }) {
+      return (
+        <Tooltip interactive content={`by ${row.original.modified_by ?? 'unknown'}`}>
+          <div>{cell.value}</div>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    id: 'modified',
+    header: 'Modified',
+    cell({ cell, row }) {
+      return (
+        <Tooltip interactive content={`by ${row.original.created_by ?? 'unknown'}`}>
+          <div>{cell.value}</div>
+        </Tooltip>
+      );
+    },
+  },
   {
     id: 'actions',
     header: undefined,
@@ -91,18 +123,29 @@ const columns: Array<Column<RowData>> = [
 ];
 
 const rows: RowData[] = [
-  { id: 1, name: 'PROD_ADMIN_PASSWORD', type: 'string', version: 1, modified: '2021-09-01' },
+  { id: 1, name: 'PROD_ADMIN_PASSWORD', type: 'string', version: 1, modified: '2021-09-01', created: '2021-09-01' },
+  {
+    id: 1,
+    name: 'PROD_ADMIN_PASSWORD',
+    type: 'string',
+    version: 1,
+    modified: '2021-09-01',
+    created: '2021-09-01',
+  },
   {
     id: 2,
     name: 'PROD_USER_PASSWORD',
     type: 'string',
     version: 102,
     labels: [['environment', 'production']],
+    created: '2021-09-01',
     modified: '2021-09-01',
+    created_by: 'thomas.wikman@grafana.com',
+    modified_by: 'thomas.wikman@grafana.com',
   },
-  { id: 3, name: 'STAGING_ACCESS_TOKEN', type: 'string', version: 1, modified: '2021-09-01' },
-  { id: 4, name: 'OKTA_TBT', type: 'Time-based token', version: 4, modified: '2021-09-01' },
-  { id: 5, name: 'PROD_ACCESS_TOKEN', type: 'string', version: 1, modified: '2021-09-01' },
+  { id: 3, name: 'STAGING_ACCESS_TOKEN', type: 'string', version: 1, modified: '2021-09-01', created: '2021-09-01' },
+  { id: 4, name: 'OKTA_TBT', type: 'Time-based token', version: 4, modified: '2021-09-01', created: '2021-09-01' },
+  { id: 5, name: 'PROD_ACCESS_TOKEN', type: 'string', version: 1, modified: '2021-09-01', created: '2021-09-01' },
   {
     id: 6,
     name: 'OKTA_TBT_STAGING',
@@ -110,9 +153,11 @@ const rows: RowData[] = [
     labels: [
       ['environment', 'staging'],
       ['service', 'okta'],
+      ['app', 'https://ezpz.se'],
     ],
     version: 9,
     modified: '2021-09-01',
+    created: '2021-09-01',
   },
   {
     id: 7,
@@ -122,8 +167,13 @@ const rows: RowData[] = [
     modified: '2024-11-27',
     labels: [
       ['team', 'sm-frontend'],
-      ['do/not', 'use'],
+      ['soo', 'many'],
+      ['labels-in', 'here'],
+      ['how-wil-it-look', 'something like this'],
+      ['foo', 'bar'],
+      ['foobar', 'root'],
     ],
+    created: '2021-09-01',
   },
 ];
 
