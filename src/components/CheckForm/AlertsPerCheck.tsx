@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Field, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Field, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertPercentiles, CheckAlertFormType, CheckFormValues, CheckStatus } from 'types';
@@ -54,6 +54,11 @@ export const AlertsPerCheck = ({ checkAlerts }: AlertsPerCheckInterface) => {
   const styles = useStyles2(getStyles);
 
   const { getValues, setValue, control } = useFormContext<CheckFormValues>();
+
+  const checkId = getValues('id');
+  const checkType = getValues('checkType');
+
+  const { data: checkAlerts, isLoading, isError } = useListAlertsForCheck(checkId);
 
   useEffect(() => {
     if (!checkAlerts) {
