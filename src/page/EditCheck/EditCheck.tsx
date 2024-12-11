@@ -19,16 +19,11 @@ const EditCheckContent = () => {
   const { data: checks, isError, isLoading, error, refetch } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
 
-  const { data: alertsPerCheck } = useListAlertsForCheck(check?.id);
+  useListAlertsForCheck(check?.id);
 
   return (
     <>
-      <CheckForm
-        check={check}
-        checkAlerts={alertsPerCheck}
-        disabled={isLoading || isError}
-        key={check ? `loading` : `ready`}
-      />
+      <CheckForm check={check} disabled={isLoading || isError} key={check ? `loading` : `ready`} />
       {checks && !check && <NotFoundModal />}
       {error && <ErrorModal error={error} onClick={refetch} />}
     </>

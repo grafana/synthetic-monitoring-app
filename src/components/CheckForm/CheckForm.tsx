@@ -72,7 +72,6 @@ const checkTypeStep1Label = {
 type CheckFormProps = {
   check?: Check;
   disabled?: boolean;
-  checkAlerts?: CheckAlertsResponse;
 };
 
 export const CheckForm = ({ check, disabled, checkAlerts }: CheckFormProps) => {
@@ -218,7 +217,7 @@ export const CheckForm = ({ check, disabled, checkAlerts }: CheckFormProps) => {
                 <CheckLabels />
               </FormLayout.Section>
               <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
-                <AlertsPerCheck checkType={checkType} checkAlerts={checkAlerts} />
+                <AlertsPerCheck />
                 <CheckFormAlert />
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
