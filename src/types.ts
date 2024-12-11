@@ -649,12 +649,19 @@ export enum CheckAlertType {
   PingICMPDurationTooHighP99 = 'PingICMPDurationTooHighP99',
 }
 
-export type CheckAlert = {
-  id?: number;
+export type CheckAlertBase = {
   name: CheckAlertType;
   threshold: number;
-  created?: number;
-  modified?: number;
+};
+
+export type CheckAlertDraft = CheckAlertBase & {
+  id?: number;
+};
+
+export type CheckAlertPublished = CheckAlertBase & {
+  id: number;
+  created: number;
+  modified: number;
 };
 
 export enum CheckSort {

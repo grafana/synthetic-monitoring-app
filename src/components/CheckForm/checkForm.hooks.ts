@@ -10,7 +10,7 @@ import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
 import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
-import { Check, CheckAlert, CheckAlertFormRecord, CheckFormValues, CheckType } from 'types';
+import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType } from 'types';
 import { ROUTES } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
@@ -58,7 +58,7 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
   const onSuccess = useCallback(
     (data: Check, alerts?: CheckAlertFormRecord) => {
       if (alerts && data.id) {
-        const checkAlerts: CheckAlert[] = getAlertsPayload(alerts, data.id);
+        const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, data.id);
         return updateAlertsForCheck({ alerts: checkAlerts, checkId: data.id });
       }
       return navigateToChecks();

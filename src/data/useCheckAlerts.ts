@@ -2,7 +2,7 @@ import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
 import { MutationProps } from './types';
-import { CheckAlert } from 'types';
+import { CheckAlertDraft } from 'types';
 import { FaroEvent } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import { CheckAlertsResponse } from 'datasource/responses.types';
@@ -28,7 +28,7 @@ export function useListAlertsForCheck(checkId?: number) {
 export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: MutationProps<CheckAlertsResponse> = {}) {
   const smDS = useSMDS();
 
-  return useMutation<CheckAlertsResponse, Error, { alerts: CheckAlert[]; checkId: number }>({
+  return useMutation<CheckAlertsResponse, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
     mutationFn: async ({ alerts, checkId }) => {
       try {
         const res = await smDS.updateAlertsForCheck(alerts, checkId);
