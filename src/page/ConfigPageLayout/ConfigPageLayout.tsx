@@ -6,6 +6,8 @@ import { PluginPage } from '@grafana/runtime';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
+import { getSecretsNavModel } from './tabs/SecretsTab';
+
 function getConfigTabUrl(tab = '/') {
   return `${getRoute(ROUTES.Config)}/${tab}`.replace(/\/+/g, '/');
 }
@@ -53,6 +55,7 @@ export function ConfigPageLayout() {
           url: getConfigTabUrl('terraform'),
           active: activeTab('terraform'),
         },
+        ...getSecretsNavModel(activeTab('secrets')),
       ],
     }),
     [activeTab]

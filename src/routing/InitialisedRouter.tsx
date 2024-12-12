@@ -27,6 +27,8 @@ import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
 
+import { SecretsTab } from '../page/ConfigPageLayout/tabs/SecretsTab';
+
 export const InitialisedRouter = () => {
   const queryParams = useQuery();
   const navigate = useNavigation();
@@ -96,10 +98,11 @@ export const InitialisedRouter = () => {
 
       <Route path={ROUTES.Alerts} element={<AlertingPage />} />
 
-      <Route path={`${ROUTES.Config}`} Component={ConfigPageLayout}>
+      <Route path={ROUTES.Config} Component={ConfigPageLayout}>
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
+        <Route path="secrets" element={<SecretsTab />} />
       </Route>
 
       <Route path={ROUTES.Redirect} element={<SceneRedirecter />} />
