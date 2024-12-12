@@ -89,7 +89,7 @@ export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 |
 }
 
 export async function submitForm(user: UserEvent) {
-  const saveButton = await screen.findByText('Submit');
+  const saveButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
   await user.click(saveButton);
 }
 
