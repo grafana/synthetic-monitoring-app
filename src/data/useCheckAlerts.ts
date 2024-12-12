@@ -14,10 +14,11 @@ export const queryKeys: Record<'listAlertsForCheck', QueryKey> = {
 
 const alertsForCheckQuery = (api: SMDataSource, checkId?: number) => {
   return {
+    enabled: Boolean(checkId),
     //queryKey: [queryKeys.listAlertsForCheck, checkId],
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [queryKeys.listAlertsForCheck],
-    queryFn: () => api.listAlertsForCheck(checkId),
+    queryFn: () => api.listAlertsForCheck(checkId!),
   };
 };
 
