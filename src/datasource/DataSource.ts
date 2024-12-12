@@ -348,11 +348,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // ALERTS PER CHECK
   //--------------------------------------------------------------------------------
 
-  async listAlertsForCheck(checkId?: number) {
-    if (!checkId) {
-      const emptyResponse: CheckAlertsResponse = { alerts: [] };
-      return emptyResponse;
-    }
+  async listAlertsForCheck(checkId: number) {
     return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`);
   }
 
