@@ -1,72 +1,16 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Field, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckAlertType, CheckFormValues, CheckStatus, CheckType } from 'types';
+import { CheckAlertType, CheckFormValues, CheckStatus } from 'types';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { getAlertCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.alerts';
 
-import { NewStatusBadge } from '../CheckEditor/FormComponents/CheckStatusInfo';
+import { NewStatusBadge } from '../../CheckEditor/FormComponents/CheckStatusInfo';
 import { AlertCard } from './AlertCard';
-interface PredefinedAlertInterface {
-  type: CheckAlertType;
-  description: string;
-  supportedCheckTypes?: CheckType[];
-}
-const PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
-  {
-    type: CheckAlertType.ProbeFailedExecutionsTooHigh,
-    description:
-      'Alert when the percentage of failed probe executions during the time that the alert rule evaluates is higher than the threshold',
-  },
-  {
-    type: CheckAlertType.HTTPRequestDurationTooHighP50,
-    description: 'Alert when the 50th percentile of the HTTP request duration is higher than the threshold',
-    supportedCheckTypes: [CheckType.HTTP],
-  },
-  {
-    type: CheckAlertType.HTTPRequestDurationTooHighP90,
-    description: 'Alert when the 90th percentile of the HTTP request duration is higher than the threshold',
-    supportedCheckTypes: [CheckType.HTTP],
-  },
-  {
-    type: CheckAlertType.HTTPRequestDurationTooHighP95,
-    description: 'Alert when the 95th percentile of the HTTP request duration is higher than the threshold',
-    supportedCheckTypes: [CheckType.HTTP],
-  },
-  {
-    type: CheckAlertType.HTTPRequestDurationTooHighP99,
-    description: 'Alert when the 99th percentile of the HTTP request duration is higher than the threshold',
-    supportedCheckTypes: [CheckType.HTTP],
-  },
-  {
-    type: CheckAlertType.HTTPTargetCertificateCloseToExpiring,
-    description: 'Alert when the target certificate is close to expiring',
-    supportedCheckTypes: [CheckType.HTTP],
-  },
-  {
-    type: CheckAlertType.PingICMPDurationTooHighP50,
-    description: 'Alert when the 50th percentile of the ICMP ping duration is higher than the threshold',
-    supportedCheckTypes: [CheckType.PING],
-  },
-  {
-    type: CheckAlertType.PingICMPDurationTooHighP90,
-    description: 'Alert when the 90th percentile of the ICMP ping duration is higher than the threshold',
-    supportedCheckTypes: [CheckType.PING],
-  },
-  {
-    type: CheckAlertType.PingICMPDurationTooHighP95,
-    description: 'Alert when the 95th percentile of the ICMP ping duration is higher than the threshold',
-    supportedCheckTypes: [CheckType.PING],
-  },
-  {
-    type: CheckAlertType.PingICMPDurationTooHighP99,
-    description: 'Alert when the 99th percentile of the ICMP ping duration is higher than the threshold',
-    supportedCheckTypes: [CheckType.PING],
-  },
-];
+import { PREDEFINED_ALERTS } from './AlertsPerCheck.constants';
 
 export const AlertsPerCheck = () => {
   const styles = useStyles2(getStyles);
@@ -85,14 +29,6 @@ export const AlertsPerCheck = () => {
     const formAlerts = getAlertCheckFormValues(checkAlerts);
     setValue(`alerts`, formAlerts);
   }, [checkAlerts, setValue]);
-
-  const availableAlerts = useMemo(
-    () =>
-      PREDEFINED_ALERTS.filter((alert) =>
-        alert.supportedCheckTypes?.length ? alert.supportedCheckTypes.includes(checkType) : true
-      ),
-    [checkType]
-  );
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading alerts..." />;
@@ -140,7 +76,7 @@ export const AlertsPerCheck = () => {
               return (
                 <ul className={styles.list}>
                   <li>
-                    {availableAlerts.map((alert) => {
+                    {PREDEFINED_ALERTS[checkType].map((alert) => {
                       return <AlertCard key={alert.type} predefinedAlert={alert} onSelect={handleSelectAlert} />;
                     })}
                   </li>

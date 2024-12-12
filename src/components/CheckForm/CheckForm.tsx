@@ -20,7 +20,7 @@ import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { AlertsPerCheck } from 'components/CheckForm/AlertsPerCheck';
+import { AlertsPerCheck } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck';
 import { DNSCheckLayout } from 'components/CheckForm/FormLayouts/CheckDNSLayout';
 import { GRPCCheckLayout } from 'components/CheckForm/FormLayouts/CheckGrpcLayout';
 import { HttpCheckLayout } from 'components/CheckForm/FormLayouts/CheckHttpLayout';

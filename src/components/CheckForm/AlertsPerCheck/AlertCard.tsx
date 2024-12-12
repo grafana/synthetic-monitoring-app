@@ -4,10 +4,11 @@ import { Card, Field, Icon, Input } from '@grafana/ui';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
-import { useCheckFormContext } from './CheckFormContext/CheckFormContext';
+import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
+import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
 interface AlertCardProps {
-  predefinedAlert: { type: CheckAlertType; description: string };
+  predefinedAlert: PredefinedAlertInterface;
   onSelect: (type: CheckAlertType, forceSelection?: boolean) => void;
 }
 
@@ -38,7 +39,7 @@ export const AlertCard = ({ predefinedAlert, onSelect }: AlertCardProps) => {
       </Card.Description>
       <Card.Actions>
         <Field
-          label="Threshold"
+          label={`Threshold (${predefinedAlert.unit})`}
           htmlFor={`alert-threshold-${predefinedAlert.type}`}
           invalid={Boolean(thresholdError)}
           error={thresholdError}
