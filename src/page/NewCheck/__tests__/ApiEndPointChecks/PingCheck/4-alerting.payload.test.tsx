@@ -36,7 +36,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     expect(screen.getByText('PingICMPDurationTooHighP95')).toBeInTheDocument();
     expect(screen.getByText('PingICMPDurationTooHighP99')).toBeInTheDocument();
 
-    const thresholdsInputs = screen.getAllByLabelText(`Threshold`);
+    const thresholdsInputs = screen.getAllByLabelText(/^Threshold/);
 
     expect(thresholdsInputs).toHaveLength(5);
 

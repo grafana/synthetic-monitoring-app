@@ -102,7 +102,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
           expect(screen.getByText('ProbeFailedExecutionsTooHigh')).toBeInTheDocument();
 
-          const thresholdsInput = screen.getAllByLabelText(`Threshold`)[0];
+          const thresholdsInput = screen.getAllByLabelText(/^Threshold/)[0];
 
           await user.clear(thresholdsInput);
           await user.type(thresholdsInput, '0.1');
