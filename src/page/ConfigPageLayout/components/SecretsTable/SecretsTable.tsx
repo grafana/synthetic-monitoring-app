@@ -1,17 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  Column,
-  Dropdown,
-  Field,
-  IconButton,
-  Input,
-  InteractiveTable,
-  Menu,
-  TagList,
-  Tooltip,
-} from '@grafana/ui';
+import { Box, Column, Dropdown, Field, IconButton, Input, InteractiveTable, Menu, Tag, Tooltip } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 interface RowData {
@@ -22,6 +10,7 @@ interface RowData {
   labels?: Array<[string, string]>;
   created: string;
   modified: string;
+  manager?: string;
   modified_by?: string;
   created_by?: string;
 }
@@ -29,6 +18,14 @@ interface RowData {
 const styles = {
   centeredColumn: css`
     text-align: center;
+  `,
+  labelContainer: css`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  `,
+  noLabel: css`
+    opacity: 0.5;
   `,
 };
 
@@ -45,20 +42,27 @@ const columns: Array<Column<RowData>> = [
     },
   },
   {
+    id: 'keeper',
+    header: 'Keeper',
+    cell(row) {
+      return <div>{row.value ?? 'Default'}</div>;
+    },
+  },
+  {
     id: 'labels',
     header: 'Labels',
     cell({ row, cell }) {
       if (!row.original.labels || !row.original.labels.length) {
-        return (
-          <Button icon="plus" size="sm" variant="secondary">
-            Add
-          </Button>
-        );
+        return <div className={styles.noLabel}>None</div>;
       }
-      const tags = row.original.labels.map(([key, value]) => {
-        return `${key}: ${value}`;
-      });
-      return <TagList tags={tags} displayMax={1} />;
+
+      return (
+        <div className={styles.labelContainer}>
+          {row.original.labels.map(([key, value]) => {
+            return <Tag key={key} name={`${key}/${value}`} />;
+          })}
+        </div>
+      );
     },
   },
   // {
