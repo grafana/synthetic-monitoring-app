@@ -25,8 +25,8 @@ export const CheckCardLabel = ({ label, onLabelSelect, className }: CheckCardLab
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
-    background-color: #9933cc;
-    border-radius: 1px;
+    //background-color: #9933cc;
+    //border-radius: 1px;
     max-width: 600px;
     overflow: hidden;
     white-space: nowrap;
