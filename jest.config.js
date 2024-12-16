@@ -18,6 +18,7 @@ module.exports = {
     '^grafana/app/core/core$': '<rootDir>/src/test/mocks/grafana/app/core/core.js',
     '^grafana/app/core/app_events$': '<rootDir>/src/test/mocks/grafana/app/core/app_events.js',
   },
+  testEnvironment: 'jest-fixed-jsdom',
   testTimeout: 30000,
   // Inform jest to only transform specific node_module packages.
   transform: {

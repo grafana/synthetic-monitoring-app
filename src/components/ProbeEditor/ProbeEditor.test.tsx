@@ -90,11 +90,18 @@ it('saves new probe', async () => {
   const saveButton = await getSaveButton();
   expect(saveButton).toBeEnabled();
   await user.click(saveButton!);
-  expect(onSubmit).toHaveBeenCalledWith({
-    ...probe,
-    ...UPDATED_VALUES,
-    labels: [...probe.labels, ...UPDATED_VALUES.labels],
-  });
+
+  const updated = JSON.parse(
+    JSON.stringify({
+      ...probe,
+      ...UPDATED_VALUES,
+      labels: [...probe.labels, ...UPDATED_VALUES.labels],
+    })
+  );
+
+  const submittedObject = onSubmit.mock.calls[0][0];
+  expect(onSubmit).toHaveBeenCalledTimes(1);
+  expect(submittedObject).toEqual(updated);
 });
 
 it('the form is uneditable when viewing a public probe', async () => {
