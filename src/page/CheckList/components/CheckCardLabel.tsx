@@ -19,14 +19,13 @@ export const CheckCardLabel = ({ label, onLabelSelect, className }: CheckCardLab
       onClick={() => onLabelSelect(label)}
       name={`${label.name}: ${label.value}`}
       className={cx(styles.container, className)}
+      colorIndex={3}
     />
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
-    background-color: #9933cc;
-    border-radius: 1px;
     max-width: 600px;
     overflow: hidden;
     white-space: nowrap;
