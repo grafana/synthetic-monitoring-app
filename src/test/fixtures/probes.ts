@@ -17,7 +17,7 @@ export const PRIVATE_PROBE: Probe = db.probe.create({
   online: true,
 });
 
-export const PUBLIC_PROBE = db.probe.create({
+export const PUBLIC_PROBE: Probe = db.probe.create({
   name: 'burrito',
   id: 2,
   public: true,
@@ -25,21 +25,21 @@ export const PUBLIC_PROBE = db.probe.create({
   online: false,
 });
 
-export const ONLINE_PROBE = db.probe.create({
+export const ONLINE_PROBE: Probe = db.probe.create({
   name: 'enchilada',
   id: 3,
   public: false,
   online: true,
 });
 
-export const OFFLINE_PROBE = db.probe.create({
+export const OFFLINE_PROBE: Probe = db.probe.create({
   name: 'quesadilla',
   id: 4,
   public: false,
   online: false,
 });
 
-export const SCRIPTED_DISABLED_PROBE = db.probe.create({
+export const SCRIPTED_DISABLED_PROBE: Probe = db.probe.create({
   name: 'empanada',
   id: 5,
   public: false,
@@ -49,7 +49,7 @@ export const SCRIPTED_DISABLED_PROBE = db.probe.create({
   },
 });
 
-export const UNSELECTED_PRIVATE_PROBE = db.probe.create({
+export const UNSELECTED_PRIVATE_PROBE: Probe = db.probe.create({
   name: 'tostada',
   id: 6,
   public: false,
