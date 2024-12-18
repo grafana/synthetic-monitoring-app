@@ -1,1 +1,1 @@
-export { CheckStatusInfo } from './CheckStatusInfo';
+export { CheckStatusInfo, type CheckStatusInfoProps } from './CheckStatusInfo';
