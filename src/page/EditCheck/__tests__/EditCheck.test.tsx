@@ -1,8 +1,9 @@
 import { screen } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { runTestAsViewer } from 'test/utils';
+import { runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
 import { renderEditForm } from 'page/__testHelpers__/checkForm';
 
@@ -53,5 +54,12 @@ describe(`<EditCheck />`, () => {
     runTestAsViewer();
     const { container } = await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(container.querySelector('#check-editor-job-input')).toBeDisabled();
+  });
+
+  it(`disables the form when the user is a RBAC viewer`, async () => {
+    runTestAsRBACReader();
+    await renderEditForm(BASIC_HTTP_CHECK.id);
+    const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+    expect(submitButton).toBeDisabled();
   });
 });
