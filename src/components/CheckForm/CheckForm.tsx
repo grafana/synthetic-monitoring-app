@@ -191,7 +191,6 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
               onValid={handleValid}
               onInvalid={handleInvalid}
               schema={schema}
-              hasUnsavedChanges={hasUnsavedChanges}
             >
               {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
@@ -228,6 +227,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
         </CheckFormContextProvider>
       </FormProvider>
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
+      {/* This will not work on checks that has been tested with the Test button, has it technically submits the form */}
       <ConfirmLeavingPage enabled={hasUnsavedChanges} />
     </PluginPage>
   );
