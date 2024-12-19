@@ -1,5 +1,4 @@
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
@@ -8,7 +7,7 @@ import { CheckType } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
-describe(`<NewCheck /> journey`, () => {
+describe(`<NewCheck />`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
     const { user } = await renderNewForm(CheckType.HTTP);
     server.use(
@@ -67,8 +66,8 @@ describe(`<NewCheck /> journey`, () => {
       })
     );
 
-    const { container } = await renderNewForm(CheckType.HTTP);
-    expect(container.querySelector('#check-editor-job-input')).toBeDisabled();
+    await renderNewForm(CheckType.HTTP);
+    expect(screen.getByRole(`button`, { name: /Submit/ })).toBeDisabled();
   });
 
   it(`should NOT disable the form when the check limit can't be fetched`, async () => {
@@ -82,8 +81,8 @@ describe(`<NewCheck /> journey`, () => {
       })
     );
 
-    const { container } = await renderNewForm(CheckType.HTTP);
-    expect(container.querySelector('#check-editor-job-input')).not.toBeDisabled();
+    await renderNewForm(CheckType.HTTP);
+    expect(screen.getByRole(`button`, { name: /Submit/ })).toBeEnabled();
   });
 
   it(`should show the mothly execution limit warning when the limit is reached for HG free tier customers`, async () => {
@@ -97,7 +96,7 @@ describe(`<NewCheck /> journey`, () => {
     runTestAsHGFreeUserOverLimit();
 
     await renderNewForm(CheckType.HTTP);
-    expect(screen.getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeDisabled();
+    expect(screen.getByRole(`button`, { name: /Submit/ })).toBeDisabled();
   });
 
   it(`should focus the probes filter component when appropriate`, async () => {

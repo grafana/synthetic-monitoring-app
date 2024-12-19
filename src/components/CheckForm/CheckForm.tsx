@@ -32,7 +32,6 @@ import { LayoutSection } from 'components/CheckForm/FormLayouts/Layout.types';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CheckUsage } from 'components/CheckUsage';
-import { ConfirmLeavingPage } from 'components/ConfirmLeavingPage';
 import { fallbackCheckMap } from 'components/constants';
 import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
@@ -157,9 +156,6 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const { isDirty, isSubmitSuccessful } = formMethods.formState;
-  // since we navigate on submit, we need this to not trigger the confirmation modal
-  const hasUnsavedChanges = isDirty && !isSubmitSuccessful;
   const navModel = useMemo(() => {
     return isExistingCheck
       ? createNavModel(
@@ -190,7 +186,6 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
               onValid={handleValid}
               onInvalid={handleInvalid}
               schema={schema}
-              hasUnsavedChanges={hasUnsavedChanges}
             >
               {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
@@ -227,7 +222,6 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
         </CheckFormContextProvider>
       </FormProvider>
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
-      <ConfirmLeavingPage enabled={hasUnsavedChanges} />
     </PluginPage>
   );
 };

@@ -26,20 +26,16 @@ export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
       <Controller
         control={control}
         name="probes"
-        render={({ field }) => {
-          const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
-
-          return (
-            <CheckProbes
-              {...fieldProps}
-              probes={field.value}
-              availableProbes={getAvailableProbes(probes, checkType)}
-              disabled={disabled}
-              invalid={Boolean(errors.probes)}
-              error={errors.probes?.message}
-            />
-          );
-        }}
+        render={({ field }) => (
+          <CheckProbes
+            {...field}
+            probes={field.value}
+            availableProbes={getAvailableProbes(probes, checkType)}
+            disabled={disabled}
+            invalid={Boolean(errors.probes)}
+            error={errors.probes?.message}
+          />
+        )}
       />
       <Field
         label="Frequency"

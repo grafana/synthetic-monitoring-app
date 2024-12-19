@@ -1,12 +1,9 @@
-import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 
 import { IpVersion, TCPCheck } from 'types';
-import { renderEditForm } from 'page/__testHelpers__/checkForm';
-
-import { DataTestIds } from '../../../../../test/dataTestIds';
+import { renderEditForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 const MIN_TCP_CHECK: TCPCheck = {
   id: 1,
@@ -28,7 +25,7 @@ const MIN_TCP_CHECK: TCPCheck = {
   alertSensitivity: 'none',
 };
 
-it(`TCPCheck -- can not submit an existing check without editing`, async () => {
+it(`TCPCheck -- can successfully submit an existing check with no editing`, async () => {
   server.use(
     apiRoute(`listChecks`, {
       result: () => {
@@ -39,7 +36,10 @@ it(`TCPCheck -- can not submit an existing check without editing`, async () => {
     })
   );
 
-  await renderEditForm(MIN_TCP_CHECK.id);
+  const { read, user } = await renderEditForm(MIN_TCP_CHECK.id);
 
-  expect(await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeEnabled();
+  await submitForm(user);
+
+  const { body } = await read();
+  expect(body).toBeTruthy();
 });

@@ -51,7 +51,7 @@ describe(`<EditCheck />`, () => {
 
   it(`disables the form when the user is a viewer`, async () => {
     runTestAsViewer();
-    const { container } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    expect(container.querySelector('#check-editor-job-input')).toBeDisabled();
+    await renderEditForm(BASIC_HTTP_CHECK.id);
+    expect(screen.getByRole(`button`, { name: `Submit` })).toBeDisabled();
   });
 });
