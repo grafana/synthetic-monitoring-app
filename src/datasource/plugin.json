@@ -9,7 +9,7 @@
       "path": "viewer-token",
       "method": "*",
       "url": "{{.JsonData.apiHost}}/api/v1/register/viewer-token",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "reqRole": "Editor",
       "headers": [
         {
           "name": "Authorization",
@@ -21,7 +21,7 @@
       "path": "save",
       "method": "*",
       "url": "{{.JsonData.apiHost}}/api/v1/register/save",
-      "reqAction": "grafana-synthetic-monitoring-app.plugin:write",
+      "reqRole": "Editor",
       "headers": [
         {
           "name": "Authorization",
@@ -33,7 +33,7 @@
       "path": "sm",
       "method": "GET",
       "url": "{{.JsonData.apiHost}}/api/v1/",
-      "reqAction": "grafana-synthetic-monitoring-app:read",
+      "reqRole": "Viewer",
       "headers": [
         {
           "name": "Authorization",
@@ -45,7 +45,7 @@
       "path": "sm",
       "method": "POST",
       "url": "{{.JsonData.apiHost}}/api/v1/",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "reqRole": "Editor",
       "headers": [
         {
           "name": "Authorization",
@@ -57,7 +57,7 @@
       "path": "sm",
       "method": "DELETE",
       "url": "{{.JsonData.apiHost}}/api/v1/",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "reqRole": "Editor",
       "headers": [
         {
           "name": "Authorization",

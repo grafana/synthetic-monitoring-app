@@ -6,11 +6,9 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { hasGlobalPermission } from 'utils';
 import { ROUTES } from 'routing/types';
-import { getUserPermissions } from 'data/permissions';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
-import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 interface Props {
   redirectTo?: ROUTES;
@@ -21,10 +19,7 @@ interface Props {
 export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
-  const { canWritePlugin } = getUserPermissions();
-
-  const canReadDs = hasGlobalPermission(`datasources:read`);
-  const canInitialize = canWritePlugin && hasGlobalPermission(`datasources:create`);
+  const canInitialize = hasGlobalPermission(`datasources:create`);
 
   const {
     error,
@@ -40,13 +35,11 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
     setDataSouceModalOpen,
   } = useAppInitializer(redirectTo);
 
-  if (!canReadDs) {
-    return <ContactAdminAlert missingPermissions={['datasources:read']} />;
-  }
-
   if (!canInitialize) {
     return (
-      <ContactAdminAlert missingPermissions={['grafana-synthetic-monitoring-app.plugin:write', 'datasources:create']} />
+      <Alert title="" severity="info">
+        Contact your administrator to get you started.
+      </Alert>
     );
   }
 

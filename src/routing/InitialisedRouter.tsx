@@ -5,7 +5,7 @@ import { TextLink } from '@grafana/ui';
 import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
 import { ROUTES } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
-import { getUserPermissions } from 'data/permissions';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
@@ -26,7 +26,6 @@ import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
-import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
 export const InitialisedRouter = () => {
   const queryParams = useQuery();
@@ -45,38 +44,19 @@ export const InitialisedRouter = () => {
       navigate(path, translated);
     }
   }, [page, navigate, queryParams]);
-
-  const { canWriteChecks, canReadChecks, canReadProbes } = getUserPermissions();
+  const canEdit = useCanWriteSM();
 
   return (
     <Routes>
       <Route index element={<Navigate to={ROUTES.Home} />} />
 
-      <Route
-        path={ROUTES.Home}
-        element={
-          canReadChecks ? (
-            <SceneHomepage />
-          ) : (
-            <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
-          )
-        }
-      />
+      <Route path={ROUTES.Home} element={<SceneHomepage />} />
 
       <Route path={ROUTES.Checks}>
         <Route index element={<CheckList />} />
         <Route path=":id">
-          <Route
-            index
-            element={
-              canReadChecks ? (
-                <DashboardPage />
-              ) : (
-                <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
-              )
-            }
-          />
-          <Route path="edit" element={canWriteChecks ? <EditCheck /> : <Navigate to=".." replace />} />
+          <Route index element={<DashboardPage />} />
+          <Route path="edit" element={canEdit ? <EditCheck /> : <Navigate to=".." replace />} />
           <Route path="dashboard" element={<Navigate to=".." replace />} />
           <Route path="*" element={<CheckNotFound />} />
         </Route>
@@ -107,16 +87,7 @@ export const InitialisedRouter = () => {
         <Route index element={<Probes />} />
         <Route path="new" element={<NewProbe />} />
         <Route path=":id">
-          <Route
-            index
-            element={
-              canReadProbes ? (
-                <EditProbe forceViewMode />
-              ) : (
-                <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.probes:read']} />
-              )
-            }
-          />
+          <Route index element={<EditProbe forceViewMode />} />
           <Route path="edit" element={<EditProbe />} />
         </Route>
 

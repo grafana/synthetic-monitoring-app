@@ -656,7 +656,6 @@ export enum FeatureName {
   ScriptedChecks = 'scripted-checks',
   UnifiedAlerting = 'ngalert',
   UptimeQueryV2 = 'uptime-query-v2',
-  RBAC = 'synthetic-monitoring-rbac',
   __TURNOFF = 'test-only-do-not-use',
 }
 
@@ -800,13 +799,3 @@ export interface CheckFormInvalidSubmissionEvent {
   errs: FieldErrors<CheckFormValues>;
   source: string;
 }
-
-type PermissionBase = 'grafana-synthetic-monitoring-app';
-export type PluginPermissions =
-  | `${PermissionBase}:${'read' | 'write'}`
-  | `${PermissionBase}.checks:${'read' | 'write' | 'delete'}`
-  | `${PermissionBase}.probes:${'read' | 'write' | 'delete'}`
-  | `${PermissionBase}.alerts:${'read' | 'write' | 'delete'}`
-  | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
-  | `${PermissionBase}.access-tokens:${'write'}`
-  | `${PermissionBase}.plugin:${'write'}`;

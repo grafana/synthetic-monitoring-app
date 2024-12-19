@@ -36,8 +36,8 @@ export const ProbeEditor = ({
   forceViewMode, // When true, the form is in view mode
 }: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
-  const { canWriteProbes } = useCanEditProbe(probe);
-  const writeMode = canWriteProbes && !forceViewMode;
+  const canEdit = useCanEditProbe(probe);
+  const writeMode = canEdit && !forceViewMode;
   const form = useForm<Probe>({ defaultValues: probe, resolver: zodResolver(ProbeSchema) });
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
@@ -164,7 +164,7 @@ export const ProbeEditor = ({
                     />
                   </Field>
                 </div>
-                {canWriteProbes && <LabelField<Probe> disabled={!writeMode} labelDestination={'probe'} />}
+                {canEdit && <LabelField<Probe> disabled={!writeMode} labelDestination={'probe'} />}
                 <div className={styles.marginBottom}>
                   <Legend>Capabilities</Legend>
                   <HorizontalCheckboxField
@@ -189,7 +189,7 @@ export const ProbeEditor = ({
                   </FeatureFlag>
                 </div>
                 <div className={styles.buttonWrapper}>
-                  {canWriteProbes && (
+                  {canEdit && (
                     <>
                       <Button
                         icon={loading ? 'fa fa-spinner' : undefined}

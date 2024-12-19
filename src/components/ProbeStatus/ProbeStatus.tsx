@@ -25,8 +25,8 @@ interface BadgeStatus {
 
 export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
   const [showResetModal, setShowResetModal] = useState(false);
-  const { canWriteProbes } = useCanEditProbe(probe);
-  const writeMode = canWriteProbes && !readOnly;
+  const canEdit = useCanEditProbe(probe);
+  const writeMode = canEdit && !readOnly;
 
   const styles = useStyles2(getStyles);
   const { mutate: onResetToken } = useResetProbeToken({
@@ -51,7 +51,7 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
           <Legend className={styles.legend}>Status:</Legend>
           <Badge color={badgeStatus.color} icon={badgeStatus.icon} text={badgeStatus.text} />
         </div>
-        {canWriteProbes && (
+        {canEdit && (
           <Container>
             <Button variant="destructive" disabled={!writeMode} onClick={() => setShowResetModal(true)}>
               Reset Access Token

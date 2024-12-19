@@ -22,14 +22,14 @@ export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
   const [probe, setProbe] = useState<ExtendedProbe>();
   const [errorMessage, setErrorMessage] = useState<string>('');
   const navigate = useNavigate();
-  const { canWriteProbes } = useCanEditProbe(probe);
+  const canEdit = useCanEditProbe(probe);
 
   useEffect(() => {
     // This is mainly here to handle legacy links redirect
-    if (probe && !canWriteProbes && !forceViewMode) {
+    if (probe && !canEdit && !forceViewMode) {
       navigate(generateRoutePath(ROUTES.ViewProbe, { id: probe.id! }), { replace: true });
     }
-  }, [canWriteProbes, navigate, probe, forceViewMode]);
+  }, [canEdit, navigate, probe, forceViewMode]);
   if (errorMessage) {
     return (
       <PluginPageNotFound breadcrumb="Probe not found">
@@ -41,9 +41,9 @@ export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
 
   return (
     <PluginPage
-      pageNav={{ text: getTitle(probe, canWriteProbes && !forceViewMode) }}
+      pageNav={{ text: getTitle(probe, canEdit && !forceViewMode) }}
       actions={
-        canWriteProbes &&
+        canEdit &&
         probe &&
         forceViewMode && (
           <LinkButton variant="secondary" icon="pen" href={generateRoutePath(ROUTES.EditProbe, { id: probe.id! })}>
@@ -90,8 +90,8 @@ const EditProbeFetch = ({
 
 const EditProbeContent = ({ probe, forceViewMode }: { forceViewMode?: boolean; probe: ExtendedProbe }) => {
   const navigate = useNavigation();
-  const { canDeleteProbes } = useCanEditProbe(probe);
-  const writeMode = canDeleteProbes && !forceViewMode;
+  const canEdit = useCanEditProbe(probe);
+  const writeMode = canEdit && !forceViewMode;
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState(``);
 
