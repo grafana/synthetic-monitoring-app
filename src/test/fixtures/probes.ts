@@ -1,85 +1,71 @@
+import { clean, db } from 'test/db';
+
 import { Label, Probe } from 'types';
 
-export const PRIVATE_PROBE: Probe = {
-  name: 'tacos',
-  id: 1,
-  public: false,
-  latitude: 51.49375,
-  longitude: -0.12679,
-  region: 'EMEA',
-  labels: [
-    { name: 'Mr', value: 'Orange' },
-    { name: 'chimi', value: 'churri' },
-  ] as Label[],
-  online: true,
-  onlineChange: 1700005000.0,
-  version: 'unknown',
-  deprecated: false,
-  modified: 1700000000.0,
-  created: 1694212496.731247,
-  capabilities: {
-    disableScriptedChecks: false,
-    disableBrowserChecks: false,
-  },
-} as const satisfies Probe;
+export const PRIVATE_PROBE: Probe = clean(
+  db.probe.create({
+    id: 1,
+    name: 'tacos',
+    public: false,
+    labels: [
+      { name: 'Mr', value: 'Orange' },
+      { name: 'chimi', value: 'churri' },
+    ] as Label[],
+    capabilities: {
+      disableScriptedChecks: false,
+      disableBrowserChecks: false,
+    },
+    online: true,
+  })
+);
 
-export const PUBLIC_PROBE: Probe = {
-  name: 'burritos',
-  id: 2,
-  public: true,
-  latitude: 19.70519,
-  longitude: -101.18815,
-  region: 'AMER',
-  labels: [{ name: 'Mr', value: 'Pink' }] as Label[],
-  online: false,
-  onlineChange: 1700005000.0,
-  version: 'v0.3.6-3-g39b5f5a',
-  deprecated: false,
-  modified: 1700000000.0,
-  created: 1694212496.731247,
-  capabilities: {
-    disableScriptedChecks: false,
-    disableBrowserChecks: false,
-  },
-} as const satisfies Probe;
+export const PUBLIC_PROBE: Probe = clean(
+  db.probe.create({
+    name: 'burrito',
+    id: 2,
+    public: true,
+    labels: [{ name: 'Mr', value: 'Pink' }] as Label[],
+    online: false,
+  })
+);
 
-export const ONLINE_PROBE: Probe = {
-  ...PRIVATE_PROBE,
-  online: true,
-} as const satisfies Probe;
+export const ONLINE_PROBE: Probe = clean(
+  db.probe.create({
+    name: 'enchilada',
+    id: 3,
+    public: false,
+    online: true,
+  })
+);
 
-export const OFFLINE_PROBE: Probe = {
-  ...PRIVATE_PROBE,
-  online: false,
-} as const satisfies Probe;
+export const OFFLINE_PROBE: Probe = clean(
+  db.probe.create({
+    name: 'quesadilla',
+    id: 4,
+    public: false,
+    online: false,
+  })
+);
 
-export const SCRIPTED_DISABLED_PROBE: Probe = {
-  ...PRIVATE_PROBE,
-  capabilities: {
-    disableScriptedChecks: true,
-    disableBrowserChecks: true,
-  },
-};
+export const SCRIPTED_DISABLED_PROBE: Probe = clean(
+  db.probe.create({
+    name: 'empanada',
+    id: 5,
+    public: false,
+    capabilities: {
+      disableScriptedChecks: true,
+      disableBrowserChecks: true,
+    },
+  })
+);
 
-export const UNSELECTED_PRIVATE_PROBE: Probe = {
-  name: 'enchiladas',
-  id: 3,
-  public: false,
-  latitude: 19.70519,
-  longitude: -101.18815,
-  region: 'APAC',
-  labels: [{ name: 'Mr', value: 'Yellow' }] as Label[],
-  online: false,
-  onlineChange: 1700005000.0,
-  version: 'v1',
-  deprecated: false,
-  modified: 1700000000.0,
-  created: 1694212496.731247,
-  capabilities: {
-    disableScriptedChecks: false,
-    disableBrowserChecks: false,
-  },
-} as const satisfies Probe;
+export const UNSELECTED_PRIVATE_PROBE: Probe = clean(
+  db.probe.create({
+    name: 'tostada',
+    id: 6,
+    public: false,
+  })
+);
 
 export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE, UNSELECTED_PRIVATE_PROBE];
 

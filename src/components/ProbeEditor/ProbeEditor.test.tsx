@@ -90,6 +90,7 @@ it('saves new probe', async () => {
   const saveButton = await getSaveButton();
   expect(saveButton).toBeEnabled();
   await user.click(saveButton!);
+
   expect(onSubmit).toHaveBeenCalledWith({
     ...probe,
     ...UPDATED_VALUES,
