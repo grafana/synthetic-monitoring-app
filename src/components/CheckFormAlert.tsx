@@ -20,6 +20,7 @@ export const CheckFormAlert = () => {
   return (
     <>
       <div className={styles.marginBottom}>
+      <h4>Alert sensitivity</h4>
         <p>
           Synthetic Monitoring provides some default alert rules via Cloud Alerting. By selecting an alert sensitivity,
           the metrics this check publishes will be associated with a Cloud Alerting rule. Default rules can be created
