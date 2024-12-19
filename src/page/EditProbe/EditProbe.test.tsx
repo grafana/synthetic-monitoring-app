@@ -63,9 +63,7 @@ describe(`Private probes`, () => {
 
     const { body } = await read();
 
-    const submittedProbe = JSON.parse(JSON.stringify(PRIVATE_PROBE));
-
-    expect(body).toEqual(submittedProbe);
+    expect(body).toEqual(PRIVATE_PROBE);
   });
 
   it(`shows the token modal on update`, async () => {

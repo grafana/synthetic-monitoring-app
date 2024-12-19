@@ -26,11 +26,11 @@ import { AssertionConditionVariant, AssertionSubjectVariant } from 'components/M
 
 const baseCheckModel = () => ({
   id: primaryKey(() => faker.number.int({ min: 1, max: 999999 })),
-  job: () => faker.lorem.word(),
+  job: () => faker.lorem.word({ length: 10 }),
   target: () => faker.internet.domainName(),
   frequency: () => faker.number.int({ min: 1, max: 60 * 1000 }),
   timeout: () => faker.number.int({ min: 30, max: 60 * 1000 }),
-  enabled: () => faker.datatype.boolean(),
+  enabled: () => true,
   alertSensitivity: () => faker.helpers.arrayElement(Object.values(AlertSensitivity)),
   basicMetricsOnly: () => faker.datatype.boolean(),
   labels: () => [{ name: faker.animal.petName(), value: faker.color.human() } as any],
@@ -169,9 +169,9 @@ export const db = factory({
           () =>
             faker.helpers.arrayElements([
               {
-                send: () => faker.lorem.word,
-                expect: () => faker.lorem.word(),
-                startTLS: () => faker.datatype.boolean(),
+                send: faker.lorem.word(),
+                expect: faker.lorem.word(),
+                startTLS: faker.datatype.boolean(),
               },
             ]) as any
         ),
