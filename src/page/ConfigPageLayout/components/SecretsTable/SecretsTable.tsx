@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Column, Dropdown, Field, IconButton, Input, InteractiveTable, Menu, Tag, Tooltip } from '@grafana/ui';
+import { Box, Column, Field, IconButton, Input, InteractiveTable, Tag, Tooltip } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 interface RowData {
@@ -49,33 +49,6 @@ const columns: Array<Column<RowData>> = [
     },
   },
   {
-    id: 'labels',
-    header: 'Labels',
-    cell({ row, cell }) {
-      if (!row.original.labels || !row.original.labels.length) {
-        return <div className={styles.noLabel}>None</div>;
-      }
-
-      return (
-        <div className={styles.labelContainer}>
-          {row.original.labels.map(([key, value]) => {
-            return <Tag key={key} name={`${key}/${value}`} />;
-          })}
-        </div>
-      );
-    },
-  },
-  // {
-  //   id: 'type',
-  //   header: 'Type',
-  //   cell: (cell) =>
-  //     cell.row.original.type === 'string' ? (
-  //       <Icon color="crimson" name="text-fields" />
-  //     ) : (
-  //       <Icon color="#5bb0ef" name="clock-nine" />
-  //     ),
-  // },
-  {
     id: 'version',
     // @ts-expect-error Supplied types are invalid
     header: () => <div className={styles.centeredColumn}>Version</div>,
@@ -106,21 +79,51 @@ const columns: Array<Column<RowData>> = [
     },
   },
   {
+    id: 'labels',
+    header: 'Labels',
+    cell({ row, cell }) {
+      if (!row.original.labels || !row.original.labels.length) {
+        return <div className={styles.noLabel}>None</div>;
+      }
+
+      return (
+        <div className={styles.labelContainer}>
+          {row.original.labels.map(([key, value]) => {
+            return <Tag colorIndex={11} key={key} name={`${key}/${value}`} />;
+          })}
+        </div>
+      );
+    },
+  },
+  // {
+  //   id: 'type',
+  //   header: 'Type',
+  //   cell: (cell) =>
+  //     cell.row.original.type === 'string' ? (
+  //       <Icon color="crimson" name="text-fields" />
+  //     ) : (
+  //       <Icon color="#5bb0ef" name="clock-nine" />
+  //     ),
+  // },
+
+  {
     id: 'actions',
-    header: undefined,
+    header: 'Actions',
     cell: () => (
-      <Box display="flex" justifyContent="flex-end">
-        <Dropdown
-          placement="bottom-end"
-          overlay={
-            <Menu>
-              <Menu.Item label="Edit" icon="pen" />
-              <Menu.Item label="Delete" icon="trash-alt" destructive />
-            </Menu>
-          }
-        >
-          <IconButton aria-label="Open secret actions menu" name="ellipsis-v" size="lg" />
-        </Dropdown>
+      <Box display="flex" justifyContent="flex-end" gap={1}>
+        <IconButton aria-label="Edit" name="trash-alt" size="lg" variant="destructive" />
+        <IconButton aria-label="Delete" name="pen" size="lg" />
+        {/*<Dropdown*/}
+        {/*  placement="bottom-end"*/}
+        {/*  overlay={*/}
+        {/*    <Menu>*/}
+        {/*      <Menu.Item label="Edit" icon="pen" />*/}
+        {/*      <Menu.Item label="Delete" icon="trash-alt" destructive />*/}
+        {/*    </Menu>*/}
+        {/*  }*/}
+        {/*>*/}
+        {/*  <IconButton aria-label="Open secret actions menu" name="ellipsis-v" size="lg" />*/}
+        {/*</Dropdown>*/}
       </Box>
     ),
   },
