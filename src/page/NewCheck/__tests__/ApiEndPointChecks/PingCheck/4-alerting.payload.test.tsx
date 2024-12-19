@@ -18,7 +18,7 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
     expect(body.alerts).toEqual([]);
   });
 
-  it.only(`can add specific ping alerts`, async () => {
+  it(`can add specific ping alerts`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 4);
