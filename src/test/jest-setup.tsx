@@ -31,9 +31,3 @@ global.IntersectionObserver = jest.fn(() => ({
 }));
 
 import 'test/mocks/@grafana/runtime';
-import 'test/mocks/@grafana/ui';
-import 'test/mocks/components/SimpleMap';
-
-// note there are some other mocks set up in jest.config.js
-// for example the rawLoader, unsupported_file, grafana/app/core/core
-// and grafana/app/core/app_events
