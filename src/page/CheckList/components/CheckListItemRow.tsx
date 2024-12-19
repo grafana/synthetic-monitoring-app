@@ -68,6 +68,7 @@ export const CheckListItemRow = ({
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     backgroundColor: theme.colors.background.secondary,
+    border: `1px solid ${theme.colors.border.medium}`,
     borderRadius: '2px',
   }),
   disabledCard: css({
