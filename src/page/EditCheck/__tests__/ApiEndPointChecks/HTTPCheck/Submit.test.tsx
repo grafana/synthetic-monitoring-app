@@ -1,12 +1,9 @@
-import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 
 import { HTTPCheck, HttpMethod, IpVersion } from 'types';
-import { renderEditForm } from 'page/__testHelpers__/checkForm';
-
-import { DataTestIds } from '../../../../../test/dataTestIds';
+import { renderEditForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 const MIN_HTTP_CHECK: HTTPCheck = {
   id: 1,
@@ -32,7 +29,7 @@ const MIN_HTTP_CHECK: HTTPCheck = {
   alertSensitivity: 'none',
 };
 
-it(`HTTPCheck -- can not submit an existing check without editing`, async () => {
+it(`HTTPCheck -- can successfully submit an existing check with no editing`, async () => {
   server.use(
     apiRoute(`listChecks`, {
       result: () => {
@@ -43,6 +40,9 @@ it(`HTTPCheck -- can not submit an existing check without editing`, async () => 
     })
   );
 
-  await renderEditForm(MIN_HTTP_CHECK.id);
-  expect(await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeEnabled();
+  const { read, user } = await renderEditForm(MIN_HTTP_CHECK.id);
+  await submitForm(user);
+
+  const { body } = await read();
+  expect(body).toBeTruthy();
 });

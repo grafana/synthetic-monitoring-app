@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort } from 'types';
-import { getUserPermissions } from 'data/permissions';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { BulkActions } from 'page/CheckList/components/BulkActions';
 import { CheckFilters } from 'page/CheckList/components/CheckFilters';
@@ -68,8 +68,7 @@ export const CheckListHeader = ({
   sortType,
   viewType,
 }: CheckListHeaderProps) => {
-  const { canWriteChecks, canWriteThresholds } = getUserPermissions();
-
+  const canEdit = useCanWriteSM();
   const styles = useStyles2(getStyles);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const hasChecks = checks.length > 0;
@@ -96,13 +95,14 @@ export const CheckListHeader = ({
             checkFilters={checkFilters}
             onChange={onFilterChange}
           />
-          {canWriteThresholds && (
-            <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
-              Set Thresholds
-            </Button>
+          {canEdit && (
+            <>
+              <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
+                Set Thresholds
+              </Button>
+              <AddNewCheckButton />
+            </>
           )}
-
-          {canWriteChecks && <AddNewCheckButton />}
         </div>
       </div>
       <div className={styles.row}>

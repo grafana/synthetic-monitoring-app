@@ -7,8 +7,8 @@ import { DataTestIds } from 'test/dataTestIds';
 import { ExtendedProbe } from 'types';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
-import { getUserPermissions } from 'data/permissions';
 import { useExtendedProbes } from 'data/useProbes';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
 import { ProbeList } from 'components/ProbeList';
@@ -34,8 +34,8 @@ export const Probes = () => {
 };
 
 const Actions = () => {
-  const { canWriteProbes } = getUserPermissions();
-  if (!canWriteProbes) {
+  const canEdit = useCanWriteSM();
+  if (!canEdit) {
     return null;
   }
 

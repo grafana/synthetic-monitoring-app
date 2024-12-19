@@ -4,7 +4,6 @@ import { BackendSrvRequest } from '@grafana/runtime';
 import axios from 'axios';
 import { from } from 'rxjs';
 import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
-import { FULL_ADMIN_ACCESS } from 'test/fixtures/rbacPermissions';
 
 import { SMDataSource } from 'datasource/DataSource';
 
@@ -12,6 +11,7 @@ import { DataTestIds } from '../../dataTestIds';
 
 jest.mock('@grafana/runtime', () => {
   const actual = jest.requireActual('@grafana/runtime');
+
   return {
     ...actual,
     config: {
@@ -27,7 +27,6 @@ jest.mock('@grafana/runtime', () => {
         user: {
           ...actual.config.user,
           orgRole: OrgRole.Admin,
-          permissions: FULL_ADMIN_ACCESS,
         },
       },
     },

@@ -28,7 +28,6 @@ export type FormLayoutProps<T extends FieldValues> = {
   onValid: SubmitHandler<T>;
   onInvalid?: (errs: FieldErrors<T>) => void;
   schema: ZodType<T>;
-  hasUnsavedChanges?: boolean;
 };
 
 export const FORM_MAX_WIDTH = `860px`;
@@ -42,7 +41,6 @@ export const FormLayout = <T extends FieldValues>({
   onValid,
   onInvalid,
   schema,
-  hasUnsavedChanges = true, // default to true to prevent accidentally disabling the submit button
 }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
   const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(disabled);
@@ -108,8 +106,6 @@ export const FormLayout = <T extends FieldValues>({
 
   const actionButtons = actions?.find((action) => action.index === activeSection)?.element;
 
-  const disableSubmit = !hasUnsavedChanges || disabled;
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
@@ -147,13 +143,8 @@ export const FormLayout = <T extends FieldValues>({
                     </Stack>
                   </Button>
                 )}
-                <Button
-                  data-testId={DataTestIds.CHECK_FORM_SUBMIT_BUTTON}
-                  disabled={disableSubmit}
-                  key="submit"
-                  type="submit"
-                >
-                  Save
+                <Button disabled={disabled} key="submit" type="submit">
+                  Submit
                 </Button>
               </Stack>
             </div>

@@ -7,7 +7,8 @@ import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { CHECK_TYPE_GROUP_OPTIONS } from 'hooks/useCheckTypeGroupOptions';
 import { CheckForm } from 'components/CheckForm/CheckForm';
-import { PluginPageNotFound } from 'page/NotFound';
+
+import { PluginPageNotFound } from '../NotFound/NotFound';
 
 export const NewCheck = () => {
   const { checkTypeGroup } = useParams<CheckFormPageParams>();

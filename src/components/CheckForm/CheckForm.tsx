@@ -12,10 +12,9 @@ import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
-import { getUserPermissions } from 'data/permissions';
 import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
-import { useCanReadLogs } from 'hooks/useDSPermission';
+import { useCanReadLogs, useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -33,7 +32,6 @@ import { LayoutSection } from 'components/CheckForm/FormLayouts/Layout.types';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CheckUsage } from 'components/CheckUsage';
-import { ConfirmLeavingPage } from 'components/ConfirmLeavingPage';
 import { fallbackCheckMap } from 'components/constants';
 import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
@@ -74,7 +72,7 @@ type CheckFormProps = {
 };
 
 export const CheckForm = ({ check, disabled }: CheckFormProps) => {
-  const { canWriteChecks } = getUserPermissions();
+  const canEdit = useCanWriteSM();
   const canReadLogs = useCanReadLogs();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
   const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
@@ -92,7 +90,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     isOverCheckLimit ||
     (checkType === CheckType.Browser && isOverBrowserLimit) ||
     ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
-  const isDisabled = disabled || !canWriteChecks || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
+  const isDisabled = disabled || !canEdit || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
 
   const formMethods = useForm<CheckFormValues>({
     defaultValues: toFormValues(initialCheck, checkType),
@@ -158,9 +156,6 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const { isDirty, isSubmitSuccessful } = formMethods.formState;
-  // since we navigate on submit, we need this to not trigger the confirmation modal
-  const hasUnsavedChanges = isDirty && !isSubmitSuccessful;
   const navModel = useMemo(() => {
     return isExistingCheck
       ? createNavModel(
@@ -191,7 +186,6 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
               onValid={handleValid}
               onInvalid={handleInvalid}
               schema={schema}
-              hasUnsavedChanges={hasUnsavedChanges}
             >
               {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
@@ -228,7 +222,6 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
         </CheckFormContextProvider>
       </FormProvider>
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
-      <ConfirmLeavingPage enabled={hasUnsavedChanges} />
     </PluginPage>
   );
 };

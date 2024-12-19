@@ -5,12 +5,10 @@ import { Alert, Button, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
-import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 import { useAlerts } from 'hooks/useAlerts';
+import { useCanReadMetrics, useDSPermission } from 'hooks/useDSPermission';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
-
-import { ContactAdminAlert } from './ContactAdminAlert';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
@@ -27,7 +25,7 @@ export const AlertingPage = () => {
 
 const Alerting = () => {
   const styles = useStyles2(getStyles);
-  const { canReadAlerts } = useAlertAccessControl();
+  const canRead = useCanReadMetrics();
 
   return (
     <div>
@@ -41,11 +39,7 @@ const Alerting = () => {
           Learn more about alerting for Synthetic Monitoring.
         </a>
       </p>
-      {canReadAlerts ? (
-        <AlertingPageContent />
-      ) : (
-        <ContactAdminAlert title="Insufficient Permissions" missingPermissions={['datasources:read']} />
-      )}
+      {canRead ? <AlertingPageContent /> : <InsufficientPermissions />}
     </div>
   );
 };
@@ -55,7 +49,7 @@ const AlertingPageContent = () => {
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
-  const { canWriteAlerts, hasWriterRole } = useAlertAccessControl();
+  const canEdit = useDSPermission(`metrics`, `alert.instances.external:write`);
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
@@ -99,16 +93,13 @@ const AlertingPageContent = () => {
           {alertError}
         </Alert>
       )}
-      {hasWriterRole && !canWriteAlerts && (
-        <ContactAdminAlert title="Insufficient Permissions" missingPermissions={['alert.instances.external:write']} />
-      )}
       {alertRules?.length === 0 && !Boolean(alertError) && (
         <div className={styles.emptyCard}>
           <span className={styles.defaultAlerts}>
             You do not have any default alerts for Synthetic Monitoring yet. Click below to get some default alerts. You
             can also create custom alerts for checks using Grafana Cloud Alerting.
           </span>
-          <Button size="md" disabled={updatingDefaultRules || !canWriteAlerts} onClick={populateDefaultAlerts}>
+          <Button size="md" disabled={updatingDefaultRules || !canEdit} onClick={populateDefaultAlerts}>
             Populate default alerts
           </Button>
         </div>
@@ -118,17 +109,12 @@ const AlertingPageContent = () => {
           key={`${alertRule.alert}-${index}`}
           rule={alertRule}
           onSubmit={getUpdateRules(index)}
-          canEdit={canWriteAlerts}
+          canEdit={canEdit}
         />
       ))}
       {Boolean(alertRules?.length) ? (
         <Stack justifyContent="flex-end">
-          <Button
-            disabled={!canWriteAlerts}
-            variant="destructive"
-            type="button"
-            onClick={() => setShowResetModal(true)}
-          >
+          <Button disabled={!canEdit} variant="destructive" type="button" onClick={() => setShowResetModal(true)}>
             Reset to defaults
           </Button>
         </Stack>
@@ -153,6 +139,14 @@ const AlertingPageContent = () => {
         </Stack>
       </Modal>
     </>
+  );
+};
+
+const InsufficientPermissions = () => {
+  return (
+    <Alert title="Insufficient permissions" severity="info">
+      You do not have the appropriate permissions to read the alert rules. To request access contact your administrator.
+    </Alert>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { forwardRef, useMemo, useState } from 'react';
 import { Field, Stack } from '@grafana/ui';
 
 import { Probe } from 'types';
@@ -16,7 +16,7 @@ interface CheckProbesProps {
   invalid?: boolean;
   error?: string;
 }
-export function CheckProbes({ probes, availableProbes, onChange, error }: CheckProbesProps) {
+export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, error }: CheckProbesProps) => {
   const [filteredProbes, setFilteredProbes] = useState<Probe[]>(availableProbes);
 
   const publicProbes = useMemo(() => filteredProbes.filter((probe) => probe.public), [filteredProbes]);
@@ -73,4 +73,6 @@ export function CheckProbes({ probes, availableProbes, onChange, error }: CheckP
       {showPrivateProbesDiscovery && <PrivateProbesAlert />}
     </div>
   );
-}
+});
+
+CheckProbes.displayName = 'CheckProbes';

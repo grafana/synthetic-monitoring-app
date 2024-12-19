@@ -8,9 +8,8 @@ import {
   VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 } from 'test/fixtures/datasources';
 
-import { ExtendedProbe, FeatureName, type Probe } from 'types';
+import { ExtendedProbe, type Probe } from 'types';
 
-import { FULL_ADMIN_ACCESS, FULL_READONLY_ACCESS, FULL_WRITER_ACCESS } from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
 import { server } from './server';
 
@@ -75,34 +74,9 @@ export function runTestAsSMViewer() {
     ...config,
     bootData: {
       ...config.bootData,
-
-      featureToggles: {
-        ...runtime.config.featureToggles,
-        [FeatureName.RBAC]: false,
-      },
-
       user: {
         ...config.bootData.user,
         orgRole: OrgRole.Viewer,
-      },
-    },
-  });
-}
-
-export function runTestAsSMEditor() {
-  // this gets reset in afterEach in jest-setup.js
-  const runtime = require('@grafana/runtime');
-  jest.replaceProperty(runtime, `config`, {
-    ...config,
-    bootData: {
-      ...config.bootData,
-      featureToggles: {
-        ...runtime.config.featureToggles,
-        [FeatureName.RBAC]: false,
-      },
-      user: {
-        ...config.bootData.user,
-        orgRole: OrgRole.Editor,
       },
     },
   });
@@ -172,63 +146,6 @@ export function runTestWithoutSMAccess() {
       ...jest.requireActual('@grafana/runtime').getDatasourceSrv(),
       getList: () => [METRICS_DATASOURCE, LOGS_DATASOURCE],
     };
-  });
-}
-
-export function runTestAsRBACReader() {
-  const runtime = require('@grafana/runtime');
-  jest.replaceProperty(runtime, `config`, {
-    ...config,
-    featureToggles: {
-      ...runtime.config.featureToggles,
-      accessControlOnCall: true,
-      [FeatureName.RBAC]: true,
-    },
-
-    bootData: {
-      ...runtime.config.bootData,
-      user: {
-        permissions: FULL_READONLY_ACCESS,
-      },
-    },
-  });
-}
-
-export function runTestAsRBACEditor() {
-  const runtime = require('@grafana/runtime');
-  jest.replaceProperty(runtime, `config`, {
-    ...config,
-    featureToggles: {
-      ...runtime.config.featureToggles,
-      accessControlOnCall: true,
-      [FeatureName.RBAC]: true,
-    },
-
-    bootData: {
-      ...runtime.config.bootData,
-      user: {
-        permissions: FULL_WRITER_ACCESS,
-      },
-    },
-  });
-}
-
-export function runTestAsRBACAdmin() {
-  const runtime = require('@grafana/runtime');
-  jest.replaceProperty(runtime, `config`, {
-    ...config,
-    featureToggles: {
-      ...runtime.config.featureToggles,
-      accessControlOnCall: true,
-      [FeatureName.RBAC]: true,
-    },
-
-    bootData: {
-      ...runtime.config.bootData,
-      user: {
-        permissions: FULL_ADMIN_ACCESS,
-      },
-    },
   });
 }
 

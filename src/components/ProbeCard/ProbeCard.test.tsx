@@ -6,7 +6,7 @@ import { userEvent } from '@testing-library/user-event';
 import { DataTestIds } from 'test/dataTestIds';
 import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
-import { probeToExtendedProbe, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
+import { probeToExtendedProbe, runTestAsViewer } from 'test/utils';
 
 import { type ExtendedProbe } from 'types';
 import { ROUTES } from 'routing/types';
@@ -82,18 +82,6 @@ it(`Displays the correct information for a private probe`, async () => {
 
 it(`Displays the correct information for a private probe as a viewer`, async () => {
   runTestAsViewer();
-  const probe = probeToExtendedProbe(PRIVATE_PROBE);
-
-  render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name, { exact: false });
-
-  const button = screen.getByTestId('probe-card-action-button');
-  expect(button).toBeInTheDocument();
-  expect(button).toHaveTextContent('View');
-});
-
-it(`Displays the correct information for a private probe as a RBAC viewer`, async () => {
-  runTestAsRBACReader();
   const probe = probeToExtendedProbe(PRIVATE_PROBE);
 
   render(<ProbeCard probe={probe} />);

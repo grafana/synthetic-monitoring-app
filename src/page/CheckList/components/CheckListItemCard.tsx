@@ -73,7 +73,7 @@ export const CheckListItemCard = ({
             </div>
           </div>
           <Stack>
-            <Stack grow={1} alignItems="center">
+            <Stack grow={1}>
               {check.labels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
@@ -89,6 +89,7 @@ export const CheckListItemCard = ({
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     backgroundColor: theme.colors.background.secondary,
+    border: `1px solid ${theme.colors.border.medium}`,
     borderRadius: '2px',
   }),
   heading: css({
