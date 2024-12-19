@@ -32,7 +32,8 @@ const MIN_HTTP_CHECK: HTTPCheck = {
   alertSensitivity: 'none',
 };
 
-it(`HTTPCheck -- can not submit an existing check without editing`, async () => {
+// This should not be enabled when issue #1026 is fixed
+it.skip(`HTTPCheck -- can not submit an existing check without editing`, async () => {
   server.use(
     apiRoute(`listChecks`, {
       result: () => {
@@ -44,6 +45,5 @@ it(`HTTPCheck -- can not submit an existing check without editing`, async () => 
   );
 
   await renderEditForm(MIN_HTTP_CHECK.id);
-  // This should not be enabled when issue #1026 is fixed
-  expect(await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeEnabled();
+  expect(await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeEnabled();
 });

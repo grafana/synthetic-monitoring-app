@@ -28,7 +28,8 @@ const MIN_TCP_CHECK: TCPCheck = {
   alertSensitivity: 'none',
 };
 
-it(`TCPCheck -- can not submit an existing check without editing`, async () => {
+// This should not be enabled when issue #1026 is fixed
+it.skip(`TCPCheck -- can not submit an existing check without editing`, async () => {
   server.use(
     apiRoute(`listChecks`, {
       result: () => {
