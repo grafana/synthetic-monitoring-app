@@ -1,23 +1,5 @@
 # Changelog
 
-## [1.16.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.9...v1.16.10) (2024-12-17)
-
-
-### Features
-
-* prompt on unsaved unload ([#1002](https://github.com/grafana/synthetic-monitoring-app/issues/1002)) ([9747b27](https://github.com/grafana/synthetic-monitoring-app/commit/9747b2778e824059768848014c53fba616a0d95a))
-
-
-### Fixes
-
-* add synthetic-monitoring-dev as owners of release files ([#1010](https://github.com/grafana/synthetic-monitoring-app/issues/1010)) ([d703e42](https://github.com/grafana/synthetic-monitoring-app/commit/d703e426e1e8a4c67689dd9794c4fd1f500fcf09))
-
-
-### Miscellaneous Chores
-
-* **deps:** bump nanoid from 3.3.7 to 3.3.8 ([#1018](https://github.com/grafana/synthetic-monitoring-app/issues/1018)) ([77032d0](https://github.com/grafana/synthetic-monitoring-app/commit/77032d060323c49ed68394a6e242b0b6aa528d29))
-* update checks UI styling ([#1020](https://github.com/grafana/synthetic-monitoring-app/issues/1020)) ([2b69b02](https://github.com/grafana/synthetic-monitoring-app/commit/2b69b024e2759e862b6c1cc490e4490ccf4f4df4))
-
 ## [1.16.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.8...v1.16.9) (2024-11-29)
 
 
