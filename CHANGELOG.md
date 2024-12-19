@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.16.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.10...v1.16.11) (2024-12-19)
+
+
+### Features
+
+* Add RBAC to Synthetic Monitoring ([#982](https://github.com/grafana/synthetic-monitoring-app/issues/982)) ([a41e15f](https://github.com/grafana/synthetic-monitoring-app/commit/a41e15f093770d525c1be24ef2097fe86a0dfcc4))
+
+
+### Fixes
+
+* Revert to v1.16.9 ([#1027](https://github.com/grafana/synthetic-monitoring-app/issues/1027)) ([51e4d55](https://github.com/grafana/synthetic-monitoring-app/commit/51e4d5573d771f8aecd356a4dcb9a536b4c6f782))
+
+
+### Code Refactoring
+
+* move ChooseCheckGroup to page folder ([#1021](https://github.com/grafana/synthetic-monitoring-app/issues/1021)) ([cf67891](https://github.com/grafana/synthetic-monitoring-app/commit/cf6789171f353a4839b03486decb5d3f6d7fec02))
+
 ## [1.16.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.9...v1.16.10) (2024-12-17)
 
 
