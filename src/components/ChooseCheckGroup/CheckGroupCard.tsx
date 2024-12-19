@@ -10,10 +10,9 @@ import { getRoute } from 'routing/utils';
 import { CheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useLimits } from 'hooks/useLimits';
-import { Card } from 'components/Card';
-import { CheckStatusInfo } from 'components/CheckStatusInfo';
-import { NewStatusBadge } from 'components/NewStatusBadge';
+import { CheckStatusInfo, NewStatusBadge } from 'components/CheckEditor/FormComponents/CheckStatusInfo';
 
+import { Card } from '../Card';
 import { Protocol } from './Protocol';
 
 export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {

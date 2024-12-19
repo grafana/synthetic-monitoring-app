@@ -5,8 +5,11 @@ import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
-import { CheckStatusInfo, type CheckStatusInfoProps } from 'components/CheckStatusInfo';
-import { NewStatusBadge } from 'components/NewStatusBadge';
+import {
+  CheckStatusInfo,
+  CheckStatusInfoProps,
+  NewStatusBadge,
+} from 'components/CheckEditor/FormComponents/CheckStatusInfo';
 
 import { FORM_MAX_WIDTH } from './FormLayout';
 
