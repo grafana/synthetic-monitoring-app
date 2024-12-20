@@ -20,6 +20,10 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta } = props;
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_MSW) {
+      setupWorker(...handlers).start();
+    }
+
     return () => {
       // we have a dependency on alerts to display our alerting correctly
       // so we are invalidating the alerts list on the assumption the user might change their alerting options when they leave SM
@@ -28,10 +32,6 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
       queryClient.removeQueries({ queryKey: alertingQueryKeys.list });
     };
   }, []);
-
-  if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_MSW) {
-    setupWorker(...handlers).start();
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
