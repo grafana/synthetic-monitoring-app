@@ -8,7 +8,7 @@ function getSentQueryRunner(metrics: DataSourceRef) {
     datasource: metrics,
     queries: [
       {
-        expr: `sum by (probe) (probe_browser_data_sent{job="$job", instance="$instance"})`,
+        expr: `sum by (probe) (probe_browser_data_sent{probe=~"$probe", job="$job", instance="$instance"})`,
         instant: false,
         legendFormat: '{{ probe }}',
         range: true,
@@ -23,7 +23,7 @@ function getReceivedQueryRunner(metrics: DataSourceRef) {
     datasource: metrics,
     queries: [
       {
-        expr: `sum by (probe) (probe_browser_data_received{job="$job", instance="$instance"})`,
+        expr: `sum by (probe) (probe_browser_data_received{probe=~"$probe", job="$job", instance="$instance"})`,
         instant: false,
         legendFormat: '{{ probe }}',
         range: true,
