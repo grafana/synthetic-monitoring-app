@@ -3,7 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
 import { css, Global } from '@emotion/react';
-import { mockAlertsForCheckData } from 'datasource/__mocks__/checkAlerts';
+import { setupWorker } from 'msw';
 
 import { ProvisioningJsonData } from 'types';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
@@ -13,12 +13,17 @@ import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
 
+import { handlers } from '../test/handlers';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 
 export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta } = props;
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_MSW) {
+      setupWorker(...handlers).start();
+    }
+
     return () => {
       // we have a dependency on alerts to display our alerting correctly
       // so we are invalidating the alerts list on the assumption the user might change their alerting options when they leave SM
@@ -27,11 +32,6 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
       queryClient.removeQueries({ queryKey: alertingQueryKeys.list });
     };
   }, []);
-
-  //@todo REMOVE WHEN THE CHECK ALERTS API IS READY
-   if (process.env.NODE_ENV === 'development') {
-     mockAlertsForCheckData();
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
