@@ -20,6 +20,7 @@ import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { AlertsPerCheck } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck';
 import { DNSCheckLayout } from 'components/CheckForm/FormLayouts/CheckDNSLayout';
 import { GRPCCheckLayout } from 'components/CheckForm/FormLayouts/CheckGrpcLayout';
 import { HttpCheckLayout } from 'components/CheckForm/FormLayouts/CheckHttpLayout';
@@ -209,7 +210,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                 {labelsComponent}
                 <CheckLabels />
               </FormLayout.Section>
-              <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]} status={status}>
+              <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
+                <AlertsPerCheck />
                 <CheckFormAlert />
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>

@@ -5,6 +5,7 @@ import { Alert, Button, LinkButton, Modal } from '@grafana/ui';
 import { CheckPageParams } from 'types';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { CheckForm } from 'components/CheckForm/CheckForm';
@@ -17,6 +18,8 @@ const EditCheckContent = () => {
   const { id } = useParams<CheckPageParams>();
   const { data: checks, isError, isLoading, error, refetch } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
+
+  useListAlertsForCheck(check?.id);
 
   return (
     <>
