@@ -5,6 +5,7 @@
   "scripts": {
     "build": "webpack -c webpack.config.ts --env production",
     "dev": "webpack -w -c webpack.config.ts --env development",
+    "dev:msw": "REACT_APP_MSW=true webpack -w -c webpack.config.ts --env development",
     "e2e": "yarn exec cypress install && yarn exec grafana-e2e run",
     "e2e:update": "yarn exec cypress install && yarn exec grafana-e2e run --update-screenshots",
     "lint": "eslint --cache --ignore-path ./.gitignore --ext .js,.jsx,.ts,.tsx .",
