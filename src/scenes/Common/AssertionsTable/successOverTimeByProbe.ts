@@ -11,7 +11,7 @@ function getQueryRunner(metrics: DataSourceRef, name: string, minStep: string) {
       {
         expr: `
           count_over_time (
-            {job="$job", instance="$instance"}
+            {job="$job", instance="$instance", probe=~"$probe"}
             | logfmt check, value, msg, probe
             | __error__ = ""
             | msg = "check result"
@@ -22,7 +22,7 @@ function getQueryRunner(metrics: DataSourceRef, name: string, minStep: string) {
           )
           / 
           count_over_time  (
-              {job="$job", instance="$instance"}
+              {job="$job", instance="$instance", probe=~"$probe"}
               | logfmt check, msg, probe
               | __error__ = ""
               | msg = "check result"
