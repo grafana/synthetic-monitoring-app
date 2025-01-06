@@ -1,13 +1,5 @@
 # Changelog
 
-## [1.16.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.10...v1.16.11) (2024-12-19)
-
-
-### Fixes
-
-* Revert to v1.16.9 ([#1027](https://github.com/grafana/synthetic-monitoring-app/issues/1027)) ([51e4d55](https://github.com/grafana/synthetic-monitoring-app/commit/51e4d5573d771f8aecd356a4dcb9a536b4c6f782))
-
-
 ## [1.16.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.9...v1.16.10) (2024-12-17)
 
 
