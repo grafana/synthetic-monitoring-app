@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { Alert, Button, Modal, Space, TextLink } from '@grafana/ui';
 
 import { FaroEvent, reportError, reportEvent } from 'faro';
-import { useCanWriteSM } from 'hooks/useDSPermission';
+import { getUserPermissions } from 'data/permissions';
 import { useSMDS } from 'hooks/useSMDS';
 import { Clipboard } from 'components/Clipboard';
+import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../ConfigContent';
 
 export function AccessTokensTab() {
-  const canCreateAccessToken = useCanWriteSM();
+  const { canWriteTokens } = getUserPermissions();
   const smDS = useSMDS();
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | undefined>();
@@ -30,6 +31,13 @@ export function AccessTokensTab() {
 
   return (
     <ConfigContent title="Access tokens">
+      {!canWriteTokens && (
+        <ContactAdminAlert
+          title="Contact your administrator to generate Access Tokens"
+          missingPermissions={['grafana-synthetic-monitoring-app.access-tokens:write']}
+        />
+      )}
+
       <ConfigContent.Section title="Synthetic Monitoring">
         You can use an SM access token to authenticate with the synthetic monitoring api. Check out the{' '}
         <TextLink icon="github" href="https://github.com/grafana/synthetic-monitoring-api-go-client" external>
@@ -42,8 +50,8 @@ export function AccessTokensTab() {
         documentation to learn more about how to interact with the synthetic monitoring API.
         <Space v={2} />
         <Button
-          tooltip={!canCreateAccessToken ? 'You do not have permission to generate access tokens.' : undefined}
-          disabled={!canCreateAccessToken}
+          tooltip={!canWriteTokens ? 'You do not have permission to generate access tokens.' : undefined}
+          disabled={!canWriteTokens}
           onClick={() => showTokenModal()}
         >
           Generate access token

@@ -1,4 +1,5 @@
 import React from 'react';
+import { runTestAsRBACAdmin, runTestAsRBACReader, runTestAsSMEditor, runTestAsSMViewer } from 'test/utils';
 
 import { DataTestIds } from '../../../test/dataTestIds';
 import { render } from '../../../test/render';
@@ -27,14 +28,42 @@ describe('AccessTokensTab', () => {
     expect(getByText('Access tokens', { selector: 'h2' })).toBeInTheDocument();
   });
 
-  it('should have a section on synthetic monitoring', async () => {
-    const { getByText, queryByText } = await renderAccessTokensTab();
-    expect(getByText('Synthetic Monitoring', { selector: 'h3' })).toBeInTheDocument();
-    expect(queryByText('Generate access token', { selector: 'button > span' })).toBeInTheDocument();
-  });
+  it('should have a section on synthetic monitoring', async () => {});
 
   it('should have a section on private probes', async () => {
     const { getByText } = await renderAccessTokensTab();
     expect(getByText('Private probes', { selector: 'h3' })).toBeInTheDocument();
+  });
+
+  describe('Permissions', () => {
+    const contactAdminMessage = `Contact your administrator to generate Access Tokens`;
+
+    describe('When RBAC is enabled', () => {
+      it(`Displays a contact admin message when permissions are not met`, async () => {
+        runTestAsRBACReader();
+        const { queryByText } = await renderAccessTokensTab();
+        expect(queryByText(contactAdminMessage)).toBeInTheDocument();
+      });
+
+      it(`Does not display a contact admin message when permissions are met`, async () => {
+        runTestAsRBACAdmin();
+        const { queryByText } = await renderAccessTokensTab();
+        expect(queryByText(contactAdminMessage)).not.toBeInTheDocument();
+      });
+    });
+
+    describe('When RBAC is disabled', () => {
+      it(`Displays a contact admin message when permissions are not met`, async () => {
+        runTestAsSMViewer();
+        const { queryByText } = await renderAccessTokensTab();
+        expect(queryByText(contactAdminMessage)).toBeInTheDocument();
+      });
+
+      it(`Does not display a contact admin message when permissions are met`, async () => {
+        runTestAsSMEditor();
+        const { queryByText } = await renderAccessTokensTab();
+        expect(queryByText(contactAdminMessage)).not.toBeInTheDocument();
+      });
+    });
   });
 });

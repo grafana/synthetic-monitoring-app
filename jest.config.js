@@ -12,17 +12,18 @@ module.exports = {
     ...config.moduleNameMapper,
     '^lodash-es$': 'lodash',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|md)$':
-      '<rootDir>/src/test/fileMock.js',
-    '^!raw-loader!*': '<rootDir>/src/test/rawLoaderMock.js',
-    '^(.+)\\?raw$': '<rootDir>/src/test/rawLoaderMock.js',
+      '<rootDir>/src/test/mocks/unsupported_file.js',
+    '^!raw-loader!*': '<rootDir>/src/test/mocks/rawLoader.js',
+    '^(.+)\\?raw$': '<rootDir>/src/test/mocks/rawLoader.js',
     '^grafana/app/core/core$': '<rootDir>/src/test/mocks/grafana/app/core/core.js',
+    '^grafana/app/core/app_events$': '<rootDir>/src/test/mocks/grafana/app/core/app_events.js',
   },
   testTimeout: 30000,
   // Inform jest to only transform specific node_module packages.
   transform: {
     ...config.transform,
     '^.+\\.mjs$': ['@swc/jest'],
-    'assets/snippets/.+\\.js$': '<rootDir>/src/test/rawLoaderMock.js',
+    'assets/snippets/.+\\.js$': '<rootDir>/src/test/mocks/rawLoader.js',
   },
   transformIgnorePatterns: [
     nodeModulesToTransform([

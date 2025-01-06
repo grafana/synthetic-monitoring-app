@@ -6,8 +6,8 @@ import { css } from '@emotion/css';
 import { Check } from 'types';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
+import { getUserPermissions } from 'data/permissions';
 import { useDeleteCheck } from 'data/useChecks';
-import { useCanReadMetrics, useCanWriteSM } from 'hooks/useDSPermission';
 
 interface CheckItemActionButtonsProps {
   check: Check;
@@ -15,8 +15,7 @@ interface CheckItemActionButtonsProps {
 }
 
 export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItemActionButtonsProps) => {
-  const canEdit = useCanWriteSM();
-  const canReadMetrics = useCanReadMetrics();
+  const { canReadChecks, canWriteChecks, canDeleteChecks } = getUserPermissions();
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -24,7 +23,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
 
   return (
     <div className={styles.actionButtonGroup}>
-      {canReadMetrics && (
+      {canReadChecks && (
         <>
           {viewDashboardAsIcon ? (
             <LinkButton
@@ -46,7 +45,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         href={`${generateRoutePath(ROUTES.EditCheck, { id: check.id! })}`}
         icon={`pen`}
         tooltip="Edit check"
-        disabled={!canEdit}
+        disabled={!canWriteChecks}
         variant="secondary"
         fill={`text`}
       />
@@ -54,7 +53,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         tooltip="Delete check"
         name="trash-alt"
         onClick={() => setShowDeleteModal(true)}
-        disabled={!canEdit}
+        disabled={!canDeleteChecks}
       />
       <ConfirmModal
         isOpen={showDeleteModal}
