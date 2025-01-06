@@ -8,7 +8,7 @@ import { DataTestIds } from 'test/dataTestIds';
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
-import { CheckGroupCard } from './CheckGroupCard';
+import { CheckGroupCard } from './components/CheckGroupCard';
 
 export const ChooseCheckGroup = () => {
   const styles = useStyles2(getStyles);

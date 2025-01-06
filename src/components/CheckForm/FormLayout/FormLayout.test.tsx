@@ -55,7 +55,7 @@ describe(`FormLayout`, () => {
       </TestForm>
     );
 
-    const submitButton = await screen.findByText(`Submit`);
+    const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
     await user.click(submitButton);
     const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
     expect(errorIcon).toBeInTheDocument();
@@ -126,7 +126,7 @@ describe(`FormLayout`, () => {
       </TestForm>
     );
 
-    const submitButton = await screen.findByRole(`button`, { name: `Submit` });
+    const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
     expect(submitButton).toBeDisabled();
   });
 
@@ -202,7 +202,7 @@ describe(`FormLayout`, () => {
     expect(within(actionsBar).getAllByRole(`button`).length).toBe(2);
     expect(within(actionsBar).getByText(secondSectionLabel)).toBeInTheDocument();
     expect(within(actionsBar).queryByText(firstSectionLabel)).not.toBeInTheDocument();
-    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+    expect(within(actionsBar).getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeInTheDocument();
 
     // when on step 2
     await user.click(within(actionsBar).getByText(secondSectionLabel));
@@ -210,7 +210,7 @@ describe(`FormLayout`, () => {
     expect(within(actionsBar).getByText(firstSectionLabel)).toBeInTheDocument();
     expect(within(actionsBar).queryByText(secondSectionLabel)).not.toBeInTheDocument();
     expect(within(actionsBar).getByText(thirdSectionLabel)).toBeInTheDocument();
-    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+    expect(within(actionsBar).getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeInTheDocument();
 
     // when on step 3
     await user.click(within(actionsBar).getByText(thirdSectionLabel));
@@ -218,7 +218,7 @@ describe(`FormLayout`, () => {
     expect(within(actionsBar).queryByText(firstSectionLabel)).not.toBeInTheDocument();
     expect(within(actionsBar).getByText(secondSectionLabel)).toBeInTheDocument();
     expect(within(actionsBar).queryByText(thirdSectionLabel)).not.toBeInTheDocument();
-    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+    expect(within(actionsBar).getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeInTheDocument();
   });
 
   it(`renders custom action buttons correctly`, async () => {
@@ -281,9 +281,81 @@ describe(`FormLayout`, () => {
     const lastSection = await screen.findByText(thirdSectionLabel);
     await user.click(lastSection);
     expect(screen.getByText(thirdSectionContent)).toBeInTheDocument();
-    await user.click(screen.getByText(`Submit`));
+    await user.click(screen.getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON));
     const firstSection = await screen.findByText(secondSectionContent);
     expect(firstSection).toBeInTheDocument();
+  });
+
+  it('submit button text should be Save', async () => {
+    render(
+      <TestForm hasUnsavedChanges disabled>
+        <FormLayout.Section label="First section">
+          <JobInput />
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+    expect(submitButton).toHaveTextContent('Save');
+  });
+
+  describe('hasUnsavedChanges prop', () => {
+    it('should disable submit button when false', async () => {
+      const { user } = render(
+        <TestForm hasUnsavedChanges={false}>
+          <FormLayout.Section label="First section">
+            <JobInput />
+          </FormLayout.Section>
+        </TestForm>
+      );
+
+      const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+      expect(submitButton).toBeDisabled();
+
+      const jobInput = await screen.findByLabelText('Job');
+      jobInput.focus();
+      await user.type(jobInput, 'job');
+      expect(jobInput).toBeEnabled();
+    });
+
+    it('should enable submit button when undefined', async () => {
+      render(
+        <TestForm hasUnsavedChanges>
+          <FormLayout.Section label="First section">
+            <JobInput />
+          </FormLayout.Section>
+        </TestForm>
+      );
+
+      const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+      expect(submitButton).toBeEnabled();
+    });
+
+    it('should enable submit button when true', async () => {
+      render(
+        <TestForm hasUnsavedChanges>
+          <FormLayout.Section label="First section">
+            <JobInput />
+          </FormLayout.Section>
+        </TestForm>
+      );
+
+      const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+      expect(submitButton).toBeEnabled();
+    });
+
+    it('should not enable submit button when form is disabled', async () => {
+      render(
+        <TestForm hasUnsavedChanges disabled>
+          <FormLayout.Section label="First section">
+            <JobInput />
+          </FormLayout.Section>
+        </TestForm>
+      );
+
+      const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+      expect(submitButton).toBeDisabled();
+    });
   });
 });
 
@@ -301,7 +373,8 @@ const TestForm = <T extends FieldValues>({
   actions,
   children,
   disabled,
-}: Pick<FormLayoutProps<T>, 'actions' | 'children' | 'disabled'>) => {
+  hasUnsavedChanges,
+}: Pick<FormLayoutProps<T>, 'actions' | 'children' | 'disabled' | 'hasUnsavedChanges'>) => {
   const formMethods = useForm<TestValues>({
     defaultValues: {
       job: ``,
@@ -318,6 +391,7 @@ const TestForm = <T extends FieldValues>({
         onSubmit={formMethods.handleSubmit}
         onValid={(v) => v}
         schema={schema}
+        hasUnsavedChanges={hasUnsavedChanges}
       >
         {children}
       </FormLayout>
