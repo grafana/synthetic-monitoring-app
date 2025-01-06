@@ -5,6 +5,10 @@ import { PROBES_FILTER_ID } from 'components/CheckEditor/CheckProbes/ProbesFilte
 import { SCRIPT_TEXTAREA_ID } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 
+export function checkHasChanges(existing: CheckFormValues, incoming: CheckFormValues) {
+  return JSON.stringify(existing) !== JSON.stringify(incoming);
+}
+
 export function flattenKeys(errs: FieldErrors<CheckFormValues>) {
   const build: string[] = [];
 
