@@ -649,6 +649,11 @@ export enum CheckAlertType {
   PingICMPDurationTooHighP99 = 'PingICMPDurationTooHighP99',
 }
 
+export enum CheckAlertCategory {
+  SystemHealth = 'System Health',
+  RequestDuration = 'Request Duration',
+}
+
 export type CheckAlertBase = {
   name: CheckAlertType;
   threshold: number;

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Field, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
@@ -9,8 +9,8 @@ import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { getAlertCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.alerts';
 import { NewStatusBadge } from 'components/NewStatusBadge';
 
-import { AlertCard } from './AlertCard';
-import { PREDEFINED_ALERTS } from './AlertsPerCheck.constants';
+import { AlertsList } from './AlertsList';
+import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
 export const AlertsPerCheck = () => {
   const styles = useStyles2(getStyles);
@@ -30,6 +30,22 @@ export const AlertsPerCheck = () => {
     setValue(`alerts`, formAlerts);
   }, [checkAlerts, setValue]);
 
+  const groupedByCategory = useMemo(
+    () =>
+      PREDEFINED_ALERTS[checkType].reduce(
+        (acc: Record<string, PredefinedAlertInterface[]>, curr: PredefinedAlertInterface) => {
+          const category = curr.category;
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(curr);
+          return acc;
+        },
+        {}
+      ),
+    [checkType]
+  );
+
   if (isLoading) {
     return <LoadingPlaceholder text="Loading alerts..." />;
   }
@@ -40,20 +56,25 @@ export const AlertsPerCheck = () => {
     );
   }
 
-  const handleSelectAlert = (type: CheckAlertType, forceSelection?: boolean) => {
-    const alerts = getValues(`alerts`);
+  const handleSelectAlert = (type: CheckAlertType) => {
+    const alerts = getValues('alerts');
     if (!alerts?.[type]) {
       return;
     }
-    let newAlerts;
-    if (forceSelection) {
-      newAlerts = { ...alerts, [type]: { ...alerts[type], isSelected: true } };
-    } else {
-      newAlerts = { ...alerts, [type]: { ...alerts[type], isSelected: !alerts[type].isSelected } };
-    }
+
+    const isSelected = alerts[type].isSelected;
+    const newAlerts = {
+      ...alerts,
+      [type]: {
+        ...alerts[type],
+        isSelected: !isSelected,
+      },
+    };
 
     setValue(`alerts`, newAlerts);
   };
+
+  const selectedAlerts = getValues('alerts');
 
   return (
     <>
@@ -74,13 +95,19 @@ export const AlertsPerCheck = () => {
             name="alerts"
             render={() => {
               return (
-                <ul className={styles.list}>
-                  <li>
-                    {PREDEFINED_ALERTS[checkType].map((alert) => {
-                      return <AlertCard key={alert.type} predefinedAlert={alert} onSelect={handleSelectAlert} />;
-                    })}
-                  </li>
-                </ul>
+                <Field>
+                  <Stack wrap="wrap">
+                    {Object.entries(groupedByCategory).map(([category, allAlerts]) => (
+                      <AlertsList
+                        key={category}
+                        title={category}
+                        alerts={allAlerts}
+                        selectedAlerts={selectedAlerts}
+                        onSelectionChange={handleSelectAlert}
+                      />
+                    ))}
+                  </Stack>
+                </Field>
               );
             }}
           />
