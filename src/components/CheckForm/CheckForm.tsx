@@ -160,7 +160,10 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const hasUnsavedChanges = checkHasChanges(defaultValues, formMethods.getValues());
+  const hasUnsavedChanges = error
+    ? true
+    : checkHasChanges(defaultValues, formMethods.getValues()) && !formMethods.formState.isSubmitSuccessful;
+
   const navModel = useMemo(() => {
     return isExistingCheck
       ? createNavModel(
