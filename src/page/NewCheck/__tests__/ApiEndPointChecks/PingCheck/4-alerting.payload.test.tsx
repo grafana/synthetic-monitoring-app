@@ -7,7 +7,7 @@ import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.PING;
 
-describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
+describe(`PingCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
@@ -40,15 +40,19 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(thresholdsInputs).toHaveLength(5);
 
+    await user.click(screen.getByLabelText('ProbeFailedExecutionsTooHigh'));
     await user.clear(thresholdsInputs[0]);
     await user.type(thresholdsInputs[0], '0.1');
 
+    await user.click(screen.getByLabelText('PingICMPDurationTooHighP50'));
     await user.clear(thresholdsInputs[1]);
     await user.type(thresholdsInputs[1], '1');
 
+    await user.click(screen.getByLabelText('PingICMPDurationTooHighP90'));
     await user.clear(thresholdsInputs[2]);
     await user.type(thresholdsInputs[2], '2');
 
+    await user.click(screen.getByLabelText('PingICMPDurationTooHighP95'));
     await user.clear(thresholdsInputs[3]);
     await user.type(thresholdsInputs[3], '3');
 

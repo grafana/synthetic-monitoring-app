@@ -104,6 +104,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
           const thresholdsInput = screen.getAllByLabelText(/^Threshold/)[0];
 
+          await user.click(screen.getByLabelText('ProbeFailedExecutionsTooHigh'));
           await user.clear(thresholdsInput);
           await user.type(thresholdsInput, '0.1');
 

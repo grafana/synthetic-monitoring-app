@@ -40,15 +40,19 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(thresholdsInputs).toHaveLength(6);
 
+    await user.click(screen.getByLabelText('ProbeFailedExecutionsTooHigh'));
     await user.clear(thresholdsInputs[0]);
     await user.type(thresholdsInputs[0], '0.1');
 
+    await user.click(screen.getByLabelText('HTTPTargetCertificateCloseToExpiring'));
     await user.clear(thresholdsInputs[1]);
     await user.type(thresholdsInputs[1], '1');
 
+    await user.click(screen.getByLabelText('HTTPRequestDurationTooHighP50'));
     await user.clear(thresholdsInputs[2]);
     await user.type(thresholdsInputs[2], '2');
 
+    await user.click(screen.getByLabelText('HTTPRequestDurationTooHighP90'));
     await user.clear(thresholdsInputs[3]);
     await user.type(thresholdsInputs[3], '3');
 
@@ -61,15 +65,15 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
         { name: 'ProbeFailedExecutionsTooHigh', threshold: 0.1 },
         {
           name: 'HTTPRequestDurationTooHighP50',
-          threshold: 1,
-        },
-        {
-          name: 'HTTPRequestDurationTooHighP90',
           threshold: 2,
         },
         {
-          name: 'HTTPRequestDurationTooHighP95',
+          name: 'HTTPRequestDurationTooHighP90',
           threshold: 3,
+        },
+        {
+          name: 'HTTPTargetCertificateCloseToExpiring',
+          threshold: 1,
         },
       ],
     });

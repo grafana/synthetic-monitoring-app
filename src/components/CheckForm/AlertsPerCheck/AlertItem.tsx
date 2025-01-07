@@ -53,6 +53,7 @@ export const AlertItem = ({
                 <Input
                   aria-disabled={!selected}
                   type="number"
+                  step="any"
                   id={`alert-threshold-${alert.type}`}
                   value={field.value ? field.value : threshold}
                   onChange={(e) => {
@@ -84,7 +85,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    marginBottom: theme.spacing(1),
   }),
 
   columnLabel: css({
@@ -95,7 +95,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 
   thresholdInput: css({
-    height: '50px',
     marginLeft: '22px',
   }),
 });
