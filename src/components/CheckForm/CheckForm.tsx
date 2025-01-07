@@ -11,7 +11,7 @@ import { Check, CheckFormValues, CheckType } from 'types';
 import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { AdHocCheckResponse, CheckAlertsResponse } from 'datasource/responses.types';
+import { AdHocCheckResponse } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
 import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
@@ -74,7 +74,7 @@ type CheckFormProps = {
   disabled?: boolean;
 };
 
-export const CheckForm = ({ check, disabled, checkAlerts }: CheckFormProps) => {
+export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   const { canWriteChecks } = getUserPermissions();
   const canReadLogs = useCanReadLogs();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);

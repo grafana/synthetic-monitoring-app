@@ -7,8 +7,8 @@ import { css } from '@emotion/css';
 import { CheckAlertType, CheckFormValues, CheckStatus } from 'types';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { getAlertCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.alerts';
+import { NewStatusBadge } from 'components/NewStatusBadge';
 
-import { NewStatusBadge } from '../../CheckEditor/FormComponents/CheckStatusInfo';
 import { AlertCard } from './AlertCard';
 import { PREDEFINED_ALERTS } from './AlertsPerCheck.constants';
 
