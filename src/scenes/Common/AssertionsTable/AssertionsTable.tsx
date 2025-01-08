@@ -28,7 +28,7 @@ function getQueryRunner(logs: DataSourceRef) {
       {
         refId: 'A',
         expr: `count_over_time (
-          {job="$job", instance="$instance"}
+          {job="$job", instance="$instance", probe=~"$probe"}
           | logfmt check, value, msg
           | __error__ = ""
           | msg = "check result"
@@ -38,7 +38,7 @@ function getQueryRunner(logs: DataSourceRef) {
         )
         / 
         count_over_time (
-            {job="$job", instance="$instance"}
+            {job="$job", instance="$instance", probe=~"$probe"}
             | logfmt check, msg
             | __error__ = ""
             | msg = "check result"
@@ -51,7 +51,7 @@ function getQueryRunner(logs: DataSourceRef) {
       {
         refId: 'B',
         expr: `count_over_time (
-          {job="$job", instance="$instance"}
+          {job="$job", instance="$instance", probe=~"$probe"}
           | logfmt check, value, msg
           | __error__ = ""
           | msg = "check result"
@@ -65,7 +65,7 @@ function getQueryRunner(logs: DataSourceRef) {
       {
         refId: 'C',
         expr: `count_over_time (
-          {job="$job", instance="$instance"}
+          {job="$job", instance="$instance", probe=~"$probe"}
           | logfmt check, value, msg
           | __error__ = ""
           | msg = "check result"
