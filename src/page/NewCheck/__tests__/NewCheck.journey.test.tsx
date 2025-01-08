@@ -177,6 +177,42 @@ describe(`<NewCheck /> journey`, () => {
     expect(testButton).toBeDisabled();
   });
 
+  it(`disables the submit button by default`, async () => {
+    await renderNewForm(CheckType.HTTP);
+    expect(screen.getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeEnabled();
+  });
+
+  it(`enables the submit button when a field is edited`, async () => {
+    const { user } = await renderNewForm(CheckType.HTTP);
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+    await user.type(jobNameInput, 'My Job Name');
+    const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+    expect(submitButton).toBeEnabled();
+  });
+
+  it(`has the save button enabled after a failed submission`, async () => {
+    const { user } = await renderNewForm(CheckType.HTTP);
+
+    server.use(
+      apiRoute(`addCheck`, {
+        result: () => {
+          return {
+            status: 409,
+            json: {
+              err: 'target/job combination already exists',
+              msg: 'Failed to add check to database',
+            },
+          };
+        },
+      })
+    );
+
+    await fillMandatoryFields({ user, checkType: CheckType.HTTP });
+    await submitForm(user);
+    const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+    expect(submitButton).toBeEnabled();
+  });
+
   // jsdom doesn't give us back the submitter of the form, so we can't test this
   // https://github.com/jsdom/jsdom/issues/3117
   it.skip(`should show an error message when it fails to test a check`, async () => {});

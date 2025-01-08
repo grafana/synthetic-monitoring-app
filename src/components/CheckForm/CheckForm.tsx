@@ -21,6 +21,7 @@ import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { checkHasChanges } from 'components/CheckForm/checkForm.utils';
 import { DNSCheckLayout } from 'components/CheckForm/FormLayouts/CheckDNSLayout';
 import { GRPCCheckLayout } from 'components/CheckForm/FormLayouts/CheckGrpcLayout';
 import { HttpCheckLayout } from 'components/CheckForm/FormLayouts/CheckHttpLayout';
@@ -93,9 +94,10 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     (checkType === CheckType.Browser && isOverBrowserLimit) ||
     ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
   const isDisabled = disabled || !canWriteChecks || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
+  const defaultValues = toFormValues(initialCheck, checkType);
 
   const formMethods = useForm<CheckFormValues>({
-    defaultValues: toFormValues(initialCheck, checkType),
+    defaultValues,
     shouldFocusError: false, // we manage focus manually
     resolver: zodResolver(schema),
   });
@@ -158,9 +160,10 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const { isDirty, isSubmitSuccessful } = formMethods.formState;
-  // since we navigate on submit, we need this to not trigger the confirmation modal
-  const hasUnsavedChanges = isDirty && !isSubmitSuccessful;
+  const hasUnsavedChanges = error
+    ? true
+    : checkHasChanges(defaultValues, formMethods.getValues()) && !formMethods.formState.isSubmitSuccessful;
+
   const navModel = useMemo(() => {
     return isExistingCheck
       ? createNavModel(
