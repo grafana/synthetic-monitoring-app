@@ -35,12 +35,12 @@ export const AlertItem = ({
       <div className={styles.itemInfo}>
         <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
         <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
-          {alert.type}
+          {alert.name}
         </Label>
       </div>
       <div className={styles.thresholdInput}>
         <Field
-          label={`Threshold (${alert.unit})`}
+          label={`Threshold`}
           htmlFor={`alert-threshold-${alert.type}`}
           invalid={Boolean(thresholdError)}
           error={thresholdError}
@@ -52,6 +52,7 @@ export const AlertItem = ({
               return (
                 <Input
                   aria-disabled={!selected}
+                  suffix={alert.unit}
                   type="number"
                   step="any"
                   id={`alert-threshold-${alert.type}`}
