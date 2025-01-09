@@ -62,4 +62,9 @@ describe(`<EditCheck />`, () => {
     const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
     expect(submitButton).toBeDisabled();
   });
+
+  it(`disables the save button when no edits have been made`, async () => {
+    await renderEditForm(BASIC_HTTP_CHECK.id);
+    expect(await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeEnabled();
+  });
 });
