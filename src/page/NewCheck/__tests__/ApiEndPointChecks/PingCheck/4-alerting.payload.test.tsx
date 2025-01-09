@@ -25,34 +25,34 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
 
-    expect(screen.getByText('ProbeFailedExecutionsTooHigh')).toBeInTheDocument();
-    expect(screen.queryByText('HTTPRequestDurationTooHighP50')).not.toBeInTheDocument();
-    expect(screen.queryByText('HTTPRequestDurationTooHighP90')).not.toBeInTheDocument();
-    expect(screen.queryByText('HTTPRequestDurationTooHighP95')).not.toBeInTheDocument();
-    expect(screen.queryByText('HTTPRequestDurationTooHighP99')).not.toBeInTheDocument();
-    expect(screen.queryByText('HTTPTargetCertificateCloseToExpiring')).not.toBeInTheDocument();
-    expect(screen.getByText('PingICMPDurationTooHighP50')).toBeInTheDocument();
-    expect(screen.getByText('PingICMPDurationTooHighP90')).toBeInTheDocument();
-    expect(screen.getByText('PingICMPDurationTooHighP95')).toBeInTheDocument();
-    expect(screen.getByText('PingICMPDurationTooHighP99')).toBeInTheDocument();
+    expect(screen.getByText('Probe Failed Executions Too High')).toBeInTheDocument();
+    expect(screen.queryByText('HTTP Request Duration Too High (P50)')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTP Request Duration Too High (P90)')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTP Request Duration Too High (P95)')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTP Request Duration Too High (P99)')).not.toBeInTheDocument();
+    expect(screen.queryByText('HTTP Target Certificate Close To Expiring')).not.toBeInTheDocument();
+    expect(screen.getByText('Ping ICMP Duration Too High (P50)')).toBeInTheDocument();
+    expect(screen.getByText('Ping ICMP Duration Too High (P90)')).toBeInTheDocument();
+    expect(screen.getByText('Ping ICMP Duration Too High (P95)')).toBeInTheDocument();
+    expect(screen.getByText('Ping ICMP Duration Too High (P99)')).toBeInTheDocument();
 
     const thresholdsInputs = screen.getAllByLabelText(/^Threshold/);
 
     expect(thresholdsInputs).toHaveLength(5);
 
-    await user.click(screen.getByLabelText('ProbeFailedExecutionsTooHigh'));
+    await user.click(screen.getByLabelText('Probe Failed Executions Too High'));
     await user.clear(thresholdsInputs[0]);
     await user.type(thresholdsInputs[0], '0.1');
 
-    await user.click(screen.getByLabelText('PingICMPDurationTooHighP50'));
+    await user.click(screen.getByLabelText('Ping ICMP Duration Too High (P50)'));
     await user.clear(thresholdsInputs[1]);
     await user.type(thresholdsInputs[1], '1');
 
-    await user.click(screen.getByLabelText('PingICMPDurationTooHighP90'));
+    await user.click(screen.getByLabelText('Ping ICMP Duration Too High (P90)'));
     await user.clear(thresholdsInputs[2]);
     await user.type(thresholdsInputs[2], '2');
 
-    await user.click(screen.getByLabelText('PingICMPDurationTooHighP95'));
+    await user.click(screen.getByLabelText('Ping ICMP Duration Too High (P95)'));
     await user.clear(thresholdsInputs[3]);
     await user.type(thresholdsInputs[3], '3');
 

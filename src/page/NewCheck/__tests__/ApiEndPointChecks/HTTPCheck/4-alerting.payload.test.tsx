@@ -25,34 +25,34 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
 
-    expect(screen.getByText('ProbeFailedExecutionsTooHigh')).toBeInTheDocument();
-    expect(screen.getByText('HTTPRequestDurationTooHighP50')).toBeInTheDocument();
-    expect(screen.getByText('HTTPRequestDurationTooHighP90')).toBeInTheDocument();
-    expect(screen.getByText('HTTPRequestDurationTooHighP95')).toBeInTheDocument();
-    expect(screen.getByText('HTTPRequestDurationTooHighP99')).toBeInTheDocument();
-    expect(screen.getByText('HTTPTargetCertificateCloseToExpiring')).toBeInTheDocument();
-    expect(screen.queryByText('PingICMPDurationTooHighP50')).not.toBeInTheDocument();
-    expect(screen.queryByText('PingICMPDurationTooHighP90')).not.toBeInTheDocument();
-    expect(screen.queryByText('PingICMPDurationTooHighP95')).not.toBeInTheDocument();
-    expect(screen.queryByText('PingICMPDurationTooHighP99')).not.toBeInTheDocument();
+    expect(screen.getByText('Probe Failed Executions Too High')).toBeInTheDocument();
+    expect(screen.getByText('HTTP Request Duration Too High (P50)')).toBeInTheDocument();
+    expect(screen.getByText('HTTP Request Duration Too High (P90)')).toBeInTheDocument();
+    expect(screen.getByText('HTTP Request Duration Too High (P95)')).toBeInTheDocument();
+    expect(screen.getByText('HTTP Request Duration Too High (P99)')).toBeInTheDocument();
+    expect(screen.getByText('HTTP Target Certificate Close To Expiring')).toBeInTheDocument();
+    expect(screen.queryByText('Ping ICMP Duration Too High (P50)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Ping ICMP Duration Too High (P90)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Ping ICMP Duration Too High (P95)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Ping ICMP Duration Too High (P99)')).not.toBeInTheDocument();
 
     const thresholdsInputs = screen.getAllByLabelText(/^Threshold/);
 
     expect(thresholdsInputs).toHaveLength(6);
 
-    await user.click(screen.getByLabelText('ProbeFailedExecutionsTooHigh'));
+    await user.click(screen.getByLabelText('Probe Failed Executions Too High'));
     await user.clear(thresholdsInputs[0]);
     await user.type(thresholdsInputs[0], '0.1');
 
-    await user.click(screen.getByLabelText('HTTPTargetCertificateCloseToExpiring'));
+    await user.click(screen.getByLabelText('HTTP Target Certificate Close To Expiring'));
     await user.clear(thresholdsInputs[1]);
     await user.type(thresholdsInputs[1], '1');
 
-    await user.click(screen.getByLabelText('HTTPRequestDurationTooHighP50'));
+    await user.click(screen.getByLabelText('HTTP Request Duration Too High (P50)'));
     await user.clear(thresholdsInputs[2]);
     await user.type(thresholdsInputs[2], '2');
 
-    await user.click(screen.getByLabelText('HTTPRequestDurationTooHighP90'));
+    await user.click(screen.getByLabelText('HTTP Request Duration Too High (P90)'));
     await user.clear(thresholdsInputs[3]);
     await user.type(thresholdsInputs[3], '3');
 
