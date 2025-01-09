@@ -7,7 +7,7 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { Check, CheckFormValues, CheckType } from 'types';
+import { Check, CheckFormValues, CheckType, FeatureName } from 'types';
 import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -37,6 +37,7 @@ import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CheckUsage } from 'components/CheckUsage';
 import { ConfirmLeavingPage } from 'components/ConfirmLeavingPage';
 import { fallbackCheckMap } from 'components/constants';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
@@ -220,7 +221,9 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                 <CheckLabels />
               </FormLayout.Section>
               <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
-                <AlertsPerCheck />
+                <FeatureFlag name={FeatureName.AlertsPerCheck}>
+                  {({ isEnabled }) => (isEnabled ? <AlertsPerCheck /> : null)}
+                </FeatureFlag>
                 <CheckFormAlert />
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
