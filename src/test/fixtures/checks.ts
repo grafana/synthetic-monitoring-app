@@ -3,6 +3,7 @@ import { db } from 'test/db';
 import {
   AlertSensitivity,
   Check,
+  CheckType,
   DNSCheck,
   HTTPCheck,
   HTTPCompressionAlgo,
@@ -70,194 +71,214 @@ SBefoVnBNp449CSHW+brvPEyKD3D5CVpTIDfu2y8+nHszfBL22wuO4T+oem5h55A
 const transformedValidCert = btoa(VALID_CERT);
 const transformedValidKey = btoa(VALID_KEY);
 
-export const BASIC_DNS_CHECK: DNSCheck = db.dnsCheck.build({
-  id: 1,
-  job: 'Job name for dns',
-  target: 'dns.com',
-  labels: [{ name: 'dnsLabelName', value: 'dnsLabelValue' }] as Label[],
-  probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-});
-
-export const BASIC_HTTP_CHECK: HTTPCheck = db.httpCheck.build({
-  id: 2,
-  job: 'Job name for http',
-  target: 'https://http.com',
-  labels: [
-    {
-      name: 'httpLabelName',
-      value: 'httpLabelValue',
-    },
-  ],
-  probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-});
-
-export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.scriptedCheck.build({
-  id: 3,
-  job: 'Job name for k6',
-  target: 'https://www.k6.com',
-  labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
-  probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  settings: {
-    scripted: {
-      script: btoa('console.log("hello world")'),
-    },
+export const BASIC_DNS_CHECK: DNSCheck = db.check.build(
+  {
+    job: 'Job name for dns',
+    target: 'dns.com',
+    labels: [{ name: 'dnsLabelName', value: 'dnsLabelValue' }] as Label[],
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   },
-});
+  { transient: { type: CheckType.DNS } }
+) as DNSCheck;
 
-export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.multiHTTPCheck.build({
-  id: 4,
-  job: 'Job name for multihttp',
-  target: 'https://www.multi1.com',
-  labels: [{ name: 'labelName', value: 'labelValue' }],
-  probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  settings: {
-    multihttp: {
-      entries: [
-        {
-          request: {
-            url: 'https://www.multi1.com',
-            method: HttpMethod.GET,
-            headers: [
-              {
-                name: 'aheader',
-                value: 'yarp',
-              },
-              {
-                name: 'carne',
-                value: 'asada',
-              },
-            ],
-            queryFields: [
-              {
-                name: 'tacos',
-                value: 'delicious',
-              },
-            ],
-          },
-          variables: [
-            { type: 0, name: 'enchiladas', expression: 'mole' },
-            { type: 1, name: 'salsa', expression: 'picante' },
-            { type: 2, name: 'chimichanga', expression: 'delicioso', attribute: 'churro' },
-          ],
-          checks: [
-            { type: 0, subject: 1, condition: 2, value: 'text-value' },
-            { type: 1, condition: 1, expression: '$.jsonpathvalue-expression', value: 'jsonpathvalue-value' },
-            { type: 2, expression: '$.jsonpath-expression' },
-            { type: 3, subject: 2, expression: '/regex/' },
-          ],
-        },
-        {
-          request: {
-            url: 'https://www.multi2.com',
-            method: HttpMethod.POST,
-            headers: [
-              {
-                name: 'examples',
-                value: 'great',
-              },
-            ],
-            body: {
-              contentType: 'steve',
-              contentEncoding: 'encoding',
-              payload: btoa(`{"averyinteresting":"request body content"}`),
-            },
-            queryFields: [
-              {
-                name: 'query',
-                value: 'param',
-              },
-              { name: 'using variable', value: '${enchiladas}' },
-            ],
-          },
-          variables: [],
-          checks: [],
-        },
-      ],
-    },
-  },
-});
-
-export const BASIC_PING_CHECK: PingCheck = db.pingCheck.build({
-  id: 5,
-  job: 'Job name for ping',
-  target: 'grafana.com',
-  labels: [{ name: 'labelName', value: 'labelValue' }],
-  probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  settings: {
-    ping: {
-      ipVersion: IpVersion.V4,
-      dontFragment: false,
-    },
-  },
-});
-
-export const BASIC_TCP_CHECK: TCPCheck = db.tcpCheck.build({
-  id: 6,
-  frequency: 60000,
-  basicMetricsOnly: true,
-  job: 'Job name for tcp',
-  labels: [{ name: 'labelName', value: 'labelValue' }],
-  probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  target: 'grafana.com:43',
-});
-
-export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = db.tracerouteCheck.build({
-  id: 7,
-  frequency: 120000,
-  timeout: 30000,
-  probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  target: 'grafana.com',
-  job: 'Job name for traceroute',
-  basicMetricsOnly: true,
-});
-
-export const FULL_HTTP_CHECK: HTTPCheck = db.httpCheck.build({
-  id: 8,
-  job: 'carne asada',
-  alertSensitivity: AlertSensitivity.Medium,
-  target: 'https://target.com',
-  labels: [{ name: 'agreatlabel', value: 'totally awesome label' }],
-  probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  timeout: 2000,
-  frequency: 120000,
-  basicMetricsOnly: true,
-  settings: {
-    http: {
-      method: HttpMethod.GET,
-      compression: HTTPCompressionAlgo.gzip,
-      headers: ['headerName:headerValue'],
-      body: 'requestbody',
-      ipVersion: IpVersion.V6,
-      noFollowRedirects: true,
-      tlsConfig: {
-        insecureSkipVerify: true,
-        caCert: transformedValidCert,
-        clientCert: transformedValidCert,
-        clientKey: transformedValidKey,
-        serverName: 'the serverName',
+export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
+  {
+    job: 'Job name for http',
+    target: 'https://http.com',
+    labels: [
+      {
+        name: 'httpLabelName',
+        value: 'httpLabelValue',
       },
-      validStatusCodes: [100],
-      validHTTPVersions: [HttpVersion.HTTP1_0],
-      failIfNotSSL: true,
-      failIfSSL: false,
-      basicAuth: { username: 'steve', password: 'stevessecurepassword' },
-      proxyURL: 'https://proxygrafana.com',
-      proxyConnectHeaders: [],
-      cacheBustingQueryParamName: 'busted',
-      failIfBodyMatchesRegexp: ['body matches'],
-      failIfBodyNotMatchesRegexp: ['body not maches'],
-      failIfHeaderMatchesRegexp: [{ header: 'a header', regexp: 'matches', allowMissing: true }],
-      failIfHeaderNotMatchesRegexp: [{ header: 'a different header', regexp: 'not matches', allowMissing: true }],
+    ],
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+  },
+  { transient: { type: CheckType.HTTP } }
+) as HTTPCheck;
+
+export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.check.build(
+  {
+    job: 'Job name for k6',
+    target: 'https://www.k6.com',
+    labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    settings: {
+      scripted: {
+        script: btoa('console.log("hello world")'),
+      },
     },
   },
-});
+  { transient: { type: CheckType.Scripted } }
+) as ScriptedCheck;
 
-export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = db.dnsCheck.build({
-  ...BASIC_DNS_CHECK,
-  job: `Job name for dns with custom alert sensitivity`,
-  id: 9,
-  alertSensitivity: AlertSensitivity.Medium,
-});
+export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
+  {
+    job: 'Job name for multihttp',
+    target: 'https://www.multi1.com',
+    labels: [{ name: 'labelName', value: 'labelValue' }],
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    settings: {
+      multihttp: {
+        entries: [
+          {
+            request: {
+              url: 'https://www.multi1.com',
+              method: HttpMethod.GET,
+              headers: [
+                {
+                  name: 'aheader',
+                  value: 'yarp',
+                },
+                {
+                  name: 'carne',
+                  value: 'asada',
+                },
+              ],
+              queryFields: [
+                {
+                  name: 'tacos',
+                  value: 'delicious',
+                },
+              ],
+            },
+            variables: [
+              { type: 0, name: 'enchiladas', expression: 'mole' },
+              { type: 1, name: 'salsa', expression: 'picante' },
+              { type: 2, name: 'chimichanga', expression: 'delicioso', attribute: 'churro' },
+            ],
+            checks: [
+              { type: 0, subject: 1, condition: 2, value: 'text-value' },
+              { type: 1, condition: 1, expression: '$.jsonpathvalue-expression', value: 'jsonpathvalue-value' },
+              { type: 2, expression: '$.jsonpath-expression' },
+              { type: 3, subject: 2, expression: '/regex/' },
+            ],
+          },
+          {
+            request: {
+              url: 'https://www.multi2.com',
+              method: HttpMethod.POST,
+              headers: [
+                {
+                  name: 'examples',
+                  value: 'great',
+                },
+              ],
+              body: {
+                contentType: 'steve',
+                contentEncoding: 'encoding',
+                payload: btoa(`{"averyinteresting":"request body content"}`),
+              },
+              queryFields: [
+                {
+                  name: 'query',
+                  value: 'param',
+                },
+                { name: 'using variable', value: '${enchiladas}' },
+              ],
+            },
+            variables: [],
+            checks: [],
+          },
+        ],
+      },
+    },
+  },
+  { transient: { type: CheckType.MULTI_HTTP } }
+) as MultiHTTPCheck;
+
+export const BASIC_PING_CHECK: PingCheck = db.check.build(
+  {
+    job: 'Job name for ping',
+    target: 'grafana.com',
+    labels: [{ name: 'labelName', value: 'labelValue' }],
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    settings: {
+      ping: {
+        ipVersion: IpVersion.V4,
+        dontFragment: false,
+      },
+    },
+  },
+  { transient: { type: CheckType.PING } }
+) as PingCheck;
+
+export const BASIC_TCP_CHECK: TCPCheck = db.check.build(
+  {
+    frequency: 60000,
+    basicMetricsOnly: true,
+    job: 'Job name for tcp',
+    labels: [{ name: 'labelName', value: 'labelValue' }],
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    target: 'grafana.com:43',
+  },
+  { transient: { type: CheckType.TCP } }
+) as TCPCheck;
+
+export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = db.check.build(
+  {
+    frequency: 120000,
+    timeout: 30000,
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    target: 'grafana.com',
+    job: 'Job name for traceroute',
+    basicMetricsOnly: true,
+  },
+  { transient: { type: CheckType.Traceroute } }
+) as TracerouteCheck;
+
+export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
+  {
+    job: 'carne asada',
+    alertSensitivity: AlertSensitivity.Medium,
+    target: 'https://target.com',
+    labels: [{ name: 'agreatlabel', value: 'totally awesome label' }],
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    timeout: 2000,
+    frequency: 120000,
+    basicMetricsOnly: true,
+    settings: {
+      http: {
+        method: HttpMethod.GET,
+        compression: HTTPCompressionAlgo.gzip,
+        headers: ['headerName:headerValue'],
+        body: 'requestbody',
+        ipVersion: IpVersion.V6,
+        noFollowRedirects: true,
+        tlsConfig: {
+          insecureSkipVerify: true,
+          caCert: transformedValidCert,
+          clientCert: transformedValidCert,
+          clientKey: transformedValidKey,
+          serverName: 'the serverName',
+        },
+        validStatusCodes: [100],
+        validHTTPVersions: [HttpVersion.HTTP1_0],
+        failIfNotSSL: true,
+        failIfSSL: false,
+        basicAuth: { username: 'steve', password: 'stevessecurepassword' },
+        proxyURL: 'https://proxygrafana.com',
+        proxyConnectHeaders: [],
+        cacheBustingQueryParamName: 'busted',
+        failIfBodyMatchesRegexp: ['body matches'],
+        failIfBodyNotMatchesRegexp: ['body not maches'],
+        failIfHeaderMatchesRegexp: [{ header: 'a header', regexp: 'matches', allowMissing: true }],
+        failIfHeaderNotMatchesRegexp: [{ header: 'a different header', regexp: 'not matches', allowMissing: true }],
+      },
+    },
+  },
+  { transient: { type: CheckType.HTTP } }
+) as HTTPCheck;
+
+export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = db.check.build(
+  {
+    job: `Job name for dns with custom alert sensitivity`,
+    target: 'dns.com',
+    labels: [{ name: 'dnsLabelName', value: 'dnsLabelValue' }] as Label[],
+    alertSensitivity: 'slightly sensitive',
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+  },
+  { transient: { type: CheckType.DNS } }
+) as DNSCheck;
 
 export const BASIC_CHECK_LIST: Check[] = [
   BASIC_DNS_CHECK,

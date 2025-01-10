@@ -1,6 +1,8 @@
 import { AppPlugin } from '@grafana/data';
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { config } from '@grafana/runtime';
+import { setupWorker } from 'msw';
+import { handlers } from 'test/handlers';
 
 import { ProvisioningJsonData } from './types';
 import { getFaroConfig } from 'faro';
@@ -25,6 +27,10 @@ if (window.location.hostname !== 'localhost') {
     },
     instrumentations: getWebInstrumentations(),
   });
+}
+
+if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_MSW) {
+  setupWorker(...handlers).start();
 }
 
 export const plugin = new AppPlugin<ProvisioningJsonData>().setRootPage(App).addConfigPage({
