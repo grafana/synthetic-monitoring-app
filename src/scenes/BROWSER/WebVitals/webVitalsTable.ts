@@ -73,27 +73,27 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fcp{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fcp{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
       },
       {
         refId: 'B',
-        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_lcp{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_lcp{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
       },
       {
         refId: 'C',
-        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_ttfb{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_ttfb{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
       },
       {
         refId: 'D',
-        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_cls{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_cls{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
       },
       {
         refId: 'E',
-        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fid{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fid{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
       },
       {
         refId: 'F',
-        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_inp{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_inp{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
       },
     ],
   });
