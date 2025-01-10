@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
 
@@ -70,7 +71,7 @@ describe('Routes to pages correctly', () => {
 
   test('Redirect old scenes URLS to new scenes URL', async () => {
     renderInitialisedRouting({
-      path: `${PLUGIN_URL_PATH}${ROUTES.Scene}?var-job=Job name for http&var-instance=https://http.com`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Scene}?var-job=${BASIC_HTTP_CHECK.job}&var-instance=${BASIC_HTTP_CHECK.target}`,
     });
     const sceneText = await screen.findByText('Dashboard page');
     expect(sceneText).toBeInTheDocument();

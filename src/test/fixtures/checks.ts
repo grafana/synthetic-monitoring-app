@@ -72,12 +72,7 @@ const transformedValidCert = btoa(VALID_CERT);
 const transformedValidKey = btoa(VALID_KEY);
 
 export const BASIC_DNS_CHECK: DNSCheck = db.check.build(
-  {
-    job: 'Job name for dns',
-    target: 'dns.com',
-    labels: [{ name: 'dnsLabelName', value: 'dnsLabelValue' }] as Label[],
-    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  },
+  { job: 'Job name for dns', target: 'dns.com' },
   { transient: { type: CheckType.DNS } }
 ) as DNSCheck;
 
@@ -99,7 +94,6 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
 export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.check.build(
   {
     job: 'Job name for k6',
-    target: 'https://www.k6.com',
     labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
     settings: {
@@ -114,7 +108,6 @@ export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.check.build(
 export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
   {
     job: 'Job name for multihttp',
-    target: 'https://www.multi1.com',
     labels: [{ name: 'labelName', value: 'labelValue' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
     settings: {
@@ -228,13 +221,9 @@ export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = db.check.build(
 
 export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
   {
-    job: 'carne asada',
     alertSensitivity: AlertSensitivity.Medium,
-    target: 'https://target.com',
     labels: [{ name: 'agreatlabel', value: 'totally awesome label' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-    timeout: 2000,
-    frequency: 120000,
     basicMetricsOnly: true,
     settings: {
       http: {
