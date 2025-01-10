@@ -90,7 +90,7 @@ export const db = {
               })),
               failIfSSL: faker.helpers.maybe(() => faker.datatype.boolean()),
               failIfNotSSL: faker.helpers.maybe(() => faker.datatype.boolean()),
-              validStatusCodes: faker.helpers.maybe(() => [] as number[]),
+              validStatusCodes: faker.helpers.maybe(() => []),
               validHTTPVersions: faker.helpers.maybe(() => faker.helpers.arrayElements(Object.values(HttpVersion))),
               failIfBodyMatchesRegexp: faker.helpers.maybe(() => []),
               failIfBodyNotMatchesRegexp: faker.helpers.maybe(() => []),
