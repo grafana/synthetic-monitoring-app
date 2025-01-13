@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, useStyles2 } from '@grafana/ui';
+import {
+  Badge,
+  BadgeColor,
+  Button,
+  ConfirmModal,
+  Container,
+  IconName,
+  Legend,
+  TextLink,
+  useStyles2,
+} from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { type ExtendedProbe } from 'types';
 import { formatDate } from 'utils';
 import { useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
@@ -50,6 +61,22 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
         <div className={styles.badgeContainer}>
           <Legend className={styles.legend}>Status:</Legend>
           <Badge color={badgeStatus.color} icon={badgeStatus.icon} text={badgeStatus.text} />
+          {probe.deprecated && (
+            <DeprecationNotice
+              tooltipContent={
+                <div>
+                  This probe is deprecated and will be removed soon. For more information{' '}
+                  <TextLink
+                    variant={'bodySmall'}
+                    href="https://grafana.com/docs/grafana-cloud/whats-new/2024-11-07-eight-synthetics-probe-locations-being-replaced-in-february-2025/"
+                    external
+                  >
+                    click here.
+                  </TextLink>
+                </div>
+              }
+            />
+          )}
         </div>
         {canWriteProbes && (
           <Container>
