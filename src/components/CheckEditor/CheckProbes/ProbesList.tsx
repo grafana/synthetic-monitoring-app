@@ -24,15 +24,12 @@ export const ProbesList = ({
       onSelectionChange(selectedProbes.filter((id) => !probes.some((probe) => probe.id === id)));
       return;
     }
-    const selected = new Set([
-      ...selectedProbes,
-      ...probes.filter((probe) => !probe.deprecated).map((probe) => probe.id!),
-    ]);
+    const selected = new Set([...selectedProbes, ...probes.map((probe) => probe.id!)]);
     onSelectionChange([...selected]);
   };
 
   const handleToggleProbe = (probe: Probe) => {
-    if (!probe.id || probe.deprecated) {
+    if (!probe.id) {
       return;
     }
     if (selectedProbes.includes(probe.id)) {
