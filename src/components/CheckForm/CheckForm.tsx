@@ -104,14 +104,15 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     resolver: zodResolver(schema),
   });
 
-  const { error, handleInvalid, handleValid, testButtonRef, testCheckError, testCheckPending } = useCheckForm({
-    check,
-    checkType,
-    onTestSuccess: (data) => {
-      setAdhocTestData(data);
-      setOpenTestCheckModal(true);
-    },
-  });
+  const { error, handleInvalid, handleValid, submittingToApi, testButtonRef, testCheckError, testCheckPending } =
+    useCheckForm({
+      check,
+      checkType,
+      onTestSuccess: (data) => {
+        setAdhocTestData(data);
+        setOpenTestCheckModal(true);
+      },
+    });
 
   const handleSubmit = (onValid: SubmitHandler<CheckFormValues>, onInvalid: SubmitErrorHandler<CheckFormValues>) =>
     formMethods.handleSubmit(onValid, onInvalid);
@@ -162,9 +163,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const hasUnsavedChanges = error
-    ? true
-    : checkHasChanges(defaultValues, formMethods.getValues()) && !formMethods.formState.isSubmitSuccessful;
+  const hasUnsavedChanges = error ? true : checkHasChanges(defaultValues, formMethods.getValues()) && !submittingToApi;
 
   const navModel = useMemo(() => {
     return isExistingCheck

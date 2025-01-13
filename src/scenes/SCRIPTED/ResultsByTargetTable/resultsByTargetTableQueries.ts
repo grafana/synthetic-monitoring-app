@@ -16,9 +16,9 @@ export function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         expr: `
           avg_over_time(
             (
-              sum by (${label}, method) (probe_http_requests_failed_total{job="$job", instance="$instance"})
+              sum by (${label}, method) (probe_http_requests_failed_total{job="$job", instance="$instance", probe=~"$probe"})
               /
-              sum by (${label}, method) (probe_http_requests_total{job="$job", instance="$instance"})
+              sum by (${label}, method) (probe_http_requests_total{job="$job", instance="$instance", probe=~"$probe"})
             )[$__range:]
           )
           `,
@@ -35,9 +35,9 @@ export function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         expr: `
           avg_over_time(
             (
-              sum by (${label}, method) (probe_http_got_expected_response{job="$job", instance="$instance"})
+              sum by (${label}, method) (probe_http_got_expected_response{job="$job", instance="$instance", probe=~"$probe"})
               /
-              count by (${label}, method)(probe_http_got_expected_response{job="$job", instance="$instance"})
+              count by (${label}, method)(probe_http_got_expected_response{job="$job", instance="$instance", probe=~"$probe"})
             )[$__range:]
           )`,
         format: 'table',
@@ -53,7 +53,7 @@ export function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         expr: `
           avg_over_time(
             (
-              sum by (${label}, method)(probe_http_duration_seconds{job="$job", instance="$instance"})
+              sum by (${label}, method)(probe_http_duration_seconds{job="$job", instance="$instance", probe=~"$probe"})
             )[$__range:]
           )`,
         format: 'table',

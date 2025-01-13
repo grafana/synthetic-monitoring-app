@@ -8,7 +8,7 @@ function getSentQueryRunner(metrics: DataSourceRef) {
     datasource: metrics,
     queries: [
       {
-        expr: `probe_data_sent_bytes{job="$job", instance="$instance"}`,
+        expr: `probe_data_sent_bytes{probe=~"$probe", job="$job", instance="$instance"}`,
         instant: false,
         legendFormat: '{{ probe }}',
         range: true,
@@ -23,7 +23,7 @@ function getReceivedQueryRunner(metrics: DataSourceRef) {
     datasource: metrics,
     queries: [
       {
-        expr: `probe_data_received_bytes{job="$job", instance="$instance"}`,
+        expr: `probe_data_received_bytes{probe=~"$probe", job="$job", instance="$instance"}`,
         instant: false,
         legendFormat: '{{ probe }}',
         range: true,
