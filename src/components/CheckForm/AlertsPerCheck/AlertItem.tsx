@@ -74,18 +74,16 @@ export const AlertItem = ({
 
 const getStyles = (theme: GrafanaTheme2) => ({
   item: css({
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
     display: `flex`,
     gap: theme.spacing(1),
     marginLeft: theme.spacing(1),
-    flexDirection: 'column',
   }),
 
   itemInfo: css({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
+    width: '50%',
   }),
 
   columnLabel: css({

@@ -93,7 +93,7 @@ export const AlertsPerCheck = () => {
             name="alerts"
             render={() => (
               <Field>
-                <Stack wrap="wrap">
+                <Stack direction={'column'}>
                   {Object.entries(groupedByCategory).map(([category, allAlerts]) => (
                     <AlertsList
                       key={category}
