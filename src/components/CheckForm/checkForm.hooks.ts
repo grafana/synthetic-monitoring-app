@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, useCallback, useRef } from 'react';
+import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
 import { BrowserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
@@ -45,6 +45,7 @@ interface UseCheckFormProps {
 }
 
 export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormProps) {
+  const [submittingToApi, setSubmittingToApi] = useState(false);
   const navigate = useNavigation();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
   const testButtonRef = useRef<HTMLButtonElement>(null);
@@ -52,7 +53,11 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
 
   const mutateCheck = useCallback(
     (newCheck: Check) => {
+      setSubmittingToApi(true);
       const onSuccess = (data: Check) => navigate(ROUTES.Checks);
+      const onError = (err: Error) => {
+        setSubmittingToApi(false);
+      };
 
       if (check?.id) {
         return updateCheck(
@@ -61,11 +66,11 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
             tenantId: check.tenantId,
             ...newCheck,
           },
-          { onSuccess }
+          { onSuccess, onError }
         );
       }
 
-      return createCheck(newCheck, { onSuccess });
+      return createCheck(newCheck, { onSuccess, onError });
     },
     [check?.id, check?.tenantId, createCheck, navigate, updateCheck]
   );
@@ -79,7 +84,6 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
       if (submitter === testButtonRef.current) {
         return testCheck(toSubmit, { onSuccess: onTestSuccess });
       }
-
       mutateCheck(toSubmit);
     },
     [mutateCheck, onTestSuccess, testCheck]
@@ -101,5 +105,6 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
     testButtonRef,
     handleValid,
     handleInvalid,
+    submittingToApi,
   };
 }
