@@ -347,6 +347,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
   // ALERTS PER CHECK
   //--------------------------------------------------------------------------------
+  // Note: this endpoints are not yet released. The prototype can be seen here https://github.com/grafana/synthetic-monitoring-api/pull/992
 
   async listAlertsForCheck(checkId: number) {
     return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`);

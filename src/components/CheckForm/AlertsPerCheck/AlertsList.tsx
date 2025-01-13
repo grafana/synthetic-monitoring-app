@@ -30,7 +30,7 @@ export const AlertsList = ({
       <div className={styles.sectionHeader}>
         <Label htmlFor={`header-${title}`} className={styles.headerLabel}>
           <Stack>
-            <Text>{`${title}`}</Text>
+            <Text>{title}</Text>
           </Stack>
         </Label>
       </div>
@@ -55,16 +55,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1,
   }),
 
-  description: css({
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    paddingTop: '3px',
-  }),
-
   list: css({
     display: 'flex',
     flexDirection: 'column',
-    minWidth: '250px',
+    whiteSpace: 'nowrap',
     overflowY: 'auto',
   }),
 

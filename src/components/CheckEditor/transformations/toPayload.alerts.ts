@@ -1,13 +1,11 @@
 import { CheckAlertDraft, CheckAlertFormRecord, CheckAlertType } from 'types';
 
 export function getAlertsPayload(formValues?: CheckAlertFormRecord, checkId?: number): CheckAlertDraft[] {
-  const alerts: CheckAlertDraft[] = [];
-
   if (!checkId || !formValues) {
-    return alerts;
+    return [];
   }
 
-  for (const [alertType, alert] of Object.entries(formValues)) {
+  return Object.entries(formValues).reduce<CheckAlertDraft[]>((alerts, [alertType, alert]) => {
     if (alert.isSelected) {
       alerts.push({
         id: alert.id,
@@ -15,6 +13,6 @@ export function getAlertsPayload(formValues?: CheckAlertFormRecord, checkId?: nu
         threshold: alert.threshold!!,
       });
     }
-  }
-  return alerts;
+    return alerts;
+  }, []);
 }

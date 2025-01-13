@@ -15,9 +15,9 @@ export const queryKeys: Record<'listAlertsForCheck', QueryKey> = {
 const alertsForCheckQuery = (api: SMDataSource, checkId?: number) => {
   return {
     enabled: Boolean(checkId),
-    //queryKey: [queryKeys.listAlertsForCheck, checkId],
+    //queryKey: [...queryKeys.listAlertsForCheck, checkId],
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [queryKeys.listAlertsForCheck],
+    queryKey: [...queryKeys.listAlertsForCheck],
     queryFn: () => api.listAlertsForCheck(checkId!),
   };
 };
@@ -33,8 +33,7 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: Mutat
   return useMutation<CheckAlertsResponse, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
     mutationFn: async ({ alerts, checkId }) => {
       try {
-        const res = await smDS.updateAlertsForCheck(alerts, checkId);
-        return res;
+        return await smDS.updateAlertsForCheck(alerts, checkId);
       } catch (error) {
         throw handleError(error);
       }
@@ -51,7 +50,7 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: Mutat
         info: eventInfo,
         type: FaroEvent.UPDATE_ALERTS,
       },
-      successAlert: (res: CheckAlertsResponse) => `Saved alerts for check`,
+      successAlert: () => `Saved alerts for check`,
       errorAlert: () => `Failed to save alerts for check`,
     },
   });

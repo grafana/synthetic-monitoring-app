@@ -20,7 +20,7 @@ export const CheckFormAlert = () => {
   return (
     <>
       <div className={styles.marginBottom}>
-      <h4>Alert sensitivity</h4>
+        <h3 className={styles.title}>Alert sensitivity</h3>
         <p>
           Synthetic Monitoring provides some default alert rules via Cloud Alerting. By selecting an alert sensitivity,
           the metrics this check publishes will be associated with a Cloud Alerting rule. Default rules can be created
@@ -66,11 +66,18 @@ export const CheckFormAlert = () => {
   );
 };
 
+const headingDisplay = `h4`;
+
 const getStyles = (theme: GrafanaTheme2) => ({
   marginBottom: css({
     marginBottom: theme.spacing(2),
   }),
   link: css({
     textDecoration: `underline`,
+  }),
+  title: css({
+    fontSize: theme.typography[headingDisplay].fontSize,
+    fontWeight: theme.typography[headingDisplay].fontWeight,
+    lineHeight: theme.typography[headingDisplay].lineHeight,
   }),
 });

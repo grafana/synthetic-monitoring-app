@@ -51,9 +51,7 @@ export const AlertsPerCheck = () => {
   }
 
   if (isError) {
-    return (
-      <Alert title="There was an error fetching alerts for this check. Please try again or contact support."></Alert>
-    );
+    return <Alert title="There was an error fetching alerts for this check. Please try again or contact support." />;
   }
 
   const handleSelectAlert = (type: CheckAlertType) => {
@@ -79,8 +77,8 @@ export const AlertsPerCheck = () => {
   return (
     <>
       <div className={styles.marginBottom}>
-        <Stack alignItems={'center'}>
-          <h4>Predefined alerts</h4>
+        <Stack alignItems="center">
+          <h3 className={styles.title}>Predefined alerts</h3>
           <NewStatusBadge status={CheckStatus.EXPERIMENTAL} className={styles.badge} />
         </Stack>
 
@@ -93,29 +91,29 @@ export const AlertsPerCheck = () => {
           <Controller
             control={control}
             name="alerts"
-            render={() => {
-              return (
-                <Field>
-                  <Stack wrap="wrap">
-                    {Object.entries(groupedByCategory).map(([category, allAlerts]) => (
-                      <AlertsList
-                        key={category}
-                        title={category}
-                        alerts={allAlerts}
-                        selectedAlerts={selectedAlerts}
-                        onSelectionChange={handleSelectAlert}
-                      />
-                    ))}
-                  </Stack>
-                </Field>
-              );
-            }}
+            render={() => (
+              <Field>
+                <Stack wrap="wrap">
+                  {Object.entries(groupedByCategory).map(([category, allAlerts]) => (
+                    <AlertsList
+                      key={category}
+                      title={category}
+                      alerts={allAlerts}
+                      selectedAlerts={selectedAlerts}
+                      onSelectionChange={handleSelectAlert}
+                    />
+                  ))}
+                </Stack>
+              </Field>
+            )}
           />
         </Field>
       </div>
     </>
   );
 };
+
+const headingDisplay = `h4`;
 
 const getStyles = (theme: GrafanaTheme2) => ({
   marginBottom: css({
@@ -131,5 +129,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
   badge: css({
     fontSize: theme.typography.body.fontSize,
     marginBottom: theme.spacing(1),
+  }),
+  title: css({
+    fontSize: theme.typography[headingDisplay].fontSize,
+    fontWeight: theme.typography[headingDisplay].fontWeight,
+    lineHeight: theme.typography[headingDisplay].lineHeight,
   }),
 });
