@@ -15,6 +15,7 @@ export const queryKeys: Record<'listAlertsForCheck', QueryKey> = {
 const alertsForCheckQuery = (api: SMDataSource, checkId?: number) => {
   return {
     enabled: Boolean(checkId),
+    // @todo add checkId to queryKey when the API is ready and mocks are removed.
     //queryKey: [...queryKeys.listAlertsForCheck, checkId],
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [...queryKeys.listAlertsForCheck],
