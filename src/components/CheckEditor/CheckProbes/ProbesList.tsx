@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Checkbox, Icon, Label, Stack, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Checkbox, Label, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Probe } from 'types';
-import { ProbeStatus } from 'components/ProbeCard/ProbeStatus';
-import { warn } from 'console';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
+import { ProbeStatus } from 'components/ProbeCard/ProbeStatus';
 
 export const ProbesList = ({
   title,
