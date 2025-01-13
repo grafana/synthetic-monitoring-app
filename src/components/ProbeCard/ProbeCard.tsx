@@ -1,12 +1,13 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Card, Link, LinkButton, useStyles2 } from '@grafana/ui';
+import { Card, Link, LinkButton, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { type ExtendedProbe, type Label } from 'types';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
@@ -29,6 +30,22 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
             <span>{probe.name}</span>
             {probe.region && <span>&nbsp;{`(${probe.region})`}</span>}
           </Link>
+          {probe.deprecated && (
+            <DeprecationNotice
+              tooltipContent={
+                <div>
+                  This probe is deprecated and will be removed soon. For more information{' '}
+                  <TextLink
+                    variant={'bodySmall'}
+                    href="https://grafana.com/docs/grafana-cloud/whats-new/2024-11-07-eight-synthetics-probe-locations-being-replaced-in-february-2025/"
+                    external
+                  >
+                    click here.
+                  </TextLink>
+                </div>
+              }
+            />
+          )}
         </div>
       </Card.Heading>
 

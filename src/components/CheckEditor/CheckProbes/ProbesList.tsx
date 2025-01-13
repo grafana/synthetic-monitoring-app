@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Checkbox, Label, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Checkbox, Icon, Label, Stack, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Probe } from 'types';
 import { ProbeStatus } from 'components/ProbeCard/ProbeStatus';
+import { warn } from 'console';
+import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 
 export const ProbesList = ({
   title,
@@ -84,6 +86,22 @@ export const ProbesList = ({
               {`${probe.name}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
                 probe.provider ? `(${probe.provider})` : ''
               }`}
+              {probe.deprecated && (
+                <DeprecationNotice
+                  tooltipContent={
+                    <div>
+                      This probe is deprecated and will be removed soon. For more information{' '}
+                      <TextLink
+                        variant={'bodySmall'}
+                        href="https://grafana.com/docs/grafana-cloud/whats-new/2024-11-07-eight-synthetics-probe-locations-being-replaced-in-february-2025/"
+                        external
+                      >
+                        click here.
+                      </TextLink>
+                    </div>
+                  }
+                />
+              )}
             </Label>
           </div>
         ))}
