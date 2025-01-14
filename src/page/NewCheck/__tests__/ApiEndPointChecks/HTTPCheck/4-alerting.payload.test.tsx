@@ -14,12 +14,12 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 4);
     await submitForm(user);
-    const { body } = await read(1);
+    const { body } = await read();
 
-    expect(body.alerts).toEqual([]);
+    expect(body.alerts).toEqual(undefined);
   });
 
-  it.only(`can add specific http alerts`, async () => {
+  it(`can add specific http alerts`, async () => {
     jest.replaceProperty(config, 'featureToggles', {
       // @ts-expect-error
       [FeatureName.AlertsPerCheck]: true,
