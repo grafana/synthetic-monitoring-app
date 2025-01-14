@@ -1,5 +1,6 @@
 import { CheckAlertFormRecord, CheckAlertType } from 'types';
 import { CheckAlertsResponse } from 'datasource/responses.types';
+import { ALL_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
 export function getAlertCheckFormValues(data: CheckAlertsResponse): CheckAlertFormRecord {
   return Object.keys(CheckAlertType).reduce((acc, alertTypeKey) => {
@@ -16,7 +17,7 @@ export function getAlertCheckFormValues(data: CheckAlertsResponse): CheckAlertFo
     } else {
       acc[alertType] = {
         id: undefined,
-        threshold: 0, // Default threshold
+        threshold: ALL_PREDEFINED_ALERTS.find((alert) => alert.type === alertType)?.default || 0,
         isSelected: false,
       };
     }
