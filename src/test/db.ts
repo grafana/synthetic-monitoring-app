@@ -72,6 +72,7 @@ export const db = {
       case CheckType.HTTP: {
         return {
           ...baseCheckModel({ sequence }),
+          target: faker.internet.url(),
           settings: {
             http: {
               method: faker.helpers.arrayElement(Object.values(HttpMethod)),
