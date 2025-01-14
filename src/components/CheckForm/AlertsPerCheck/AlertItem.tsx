@@ -27,7 +27,7 @@ export const AlertItem = ({
     onSelectionChange(type);
   };
 
-  const threshold: number = getValues(`alerts.${alert.type}.threshold`) || alert.default;
+  const threshold: number = getValues(`alerts.${alert.type}.threshold`);
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
 
   return (
