@@ -37,7 +37,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
                   This probe is deprecated and will be removed soon. For more information{' '}
                   <TextLink
                     variant={'bodySmall'}
-                    href="https://grafana.com/docs/grafana-cloud/whats-new/2024-11-07-eight-synthetics-probe-locations-being-replaced-in-february-2025/"
+                    href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
                     external
                   >
                     click here.
