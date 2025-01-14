@@ -715,6 +715,7 @@ export enum FeatureName {
   UnifiedAlerting = 'ngalert',
   UptimeQueryV2 = 'uptime-query-v2',
   RBAC = 'synthetic-monitoring-rbac',
+  AlertsPerCheck = 'sm-alerts-per-check',
   __TURNOFF = 'test-only-do-not-use',
 }
 

@@ -21,10 +21,10 @@ function getQueryRunner(metrics: DataSourceRef, minStep: string, newUptimeQuery:
     # so make it a 1 if there was at least one success and a 0 otherwise
     ceil(
       # the number of successes across all probes
-      sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[$__rate_interval]))
+      sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))
       /
       # the total number of times we checked across all probes
-      (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[$__rate_interval])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+      (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval])) + 1) # + 1 because we want to make sure it goes to 1, not 2
     )`;
 
   //The query to calculate the uptime doesn't return the expected result in all cases
@@ -35,10 +35,10 @@ function getQueryRunner(metrics: DataSourceRef, minStep: string, newUptimeQuery:
       max by (instance, job) (
         round(
           # the number of successes for each probe
-          (increase(probe_all_success_sum{instance="$instance", job="$job"}[$__rate_interval]))
+          (increase(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))
           /
           # the total number of times we checked for each probe
-          ((increase(probe_all_success_count{instance="$instance", job="$job"}[$__rate_interval])))
+          ((increase(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval])))
         )
       )
     )`;

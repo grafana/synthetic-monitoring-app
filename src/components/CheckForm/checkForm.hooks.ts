@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, useCallback, useRef } from 'react';
+import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
 import { BrowserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
@@ -47,13 +47,19 @@ interface UseCheckFormProps {
 }
 
 export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormProps) {
+  const [submittingToApi, setSubmittingToApi] = useState(false);
   const navigate = useNavigation();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
   const testButtonRef = useRef<HTMLButtonElement>(null);
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
   const navigateToChecks = useCallback(() => navigate(ROUTES.Checks), [navigate]);
-  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({ onSuccess: navigateToChecks });
+
+  const onError = (err: Error | unknown) => {
+    setSubmittingToApi(false);
+  };
+
+  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({ onSuccess: navigateToChecks, onError });
 
   const onSuccess = useCallback(
     (data: Check, alerts?: CheckAlertFormRecord) => {
@@ -68,6 +74,8 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
 
   const mutateCheck = useCallback(
     (newCheck: Check, alerts?: CheckAlertFormRecord) => {
+      setSubmittingToApi(true);
+
       if (check?.id) {
         return updateCheck(
           {
@@ -75,11 +83,11 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
             tenantId: check.tenantId,
             ...newCheck,
           },
-          { onSuccess: (data) => onSuccess(data, alerts) }
+          { onSuccess: (data) => onSuccess(data, alerts), onError }
         );
       }
 
-      return createCheck(newCheck, { onSuccess: (data) => onSuccess(data, alerts) });
+      return createCheck(newCheck, { onSuccess: (data) => onSuccess(data, alerts), onError });
     },
     [check?.id, check?.tenantId, createCheck, updateCheck, onSuccess]
   );
@@ -115,5 +123,6 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
     testButtonRef,
     handleValid,
     handleInvalid,
+    submittingToApi,
   };
 }

@@ -19,6 +19,8 @@ const EditCheckContent = () => {
   const { data: checks, isError, isLoading, error, refetch } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
 
+  // Alerts for the check are obtained by requesting them to a separate endpoint.
+  // Calling it async here so that they're pre-fetched when the user reaches the Alerting step of the form.
   useListAlertsForCheck(check?.id);
 
   return (

@@ -9,17 +9,17 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fcp{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fcp{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
         legendFormat: 'FCP',
       },
       {
         refId: 'B',
-        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_lcp{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_lcp{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
         legendFormat: 'LCP',
       },
       {
         refId: 'C',
-        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_ttfb{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_ttfb{instance="$instance", job="$job", probe=~"$probe"}[$__range]))`,
         legendFormat: 'TTFB',
       },
     ],

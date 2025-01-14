@@ -3,9 +3,9 @@ import { CheckAlertCategory, CheckAlertType, CheckType, ThresholdUnit } from 'ty
 export interface PredefinedAlertInterface {
   type: CheckAlertType;
   name: string;
-  description: string;
   unit: ThresholdUnit;
   category: CheckAlertCategory;
+  default?: number;
 }
 
 const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
@@ -14,8 +14,7 @@ const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     name: 'Probe Failed Executions Too High',
     unit: '%',
     category: CheckAlertCategory.SystemHealth,
-    description:
-      'Alert when the percentage of failed probe executions during the time that the alert rule evaluates is higher than the threshold',
+    default: 10,
   },
 ];
 
@@ -25,35 +24,35 @@ const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     name: 'HTTP Request Duration Too High (P50)',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
-    description: 'Alert when the 50th percentile of the HTTP request duration is higher than the threshold',
+    default: 300,
   },
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP90,
     name: 'HTTP Request Duration Too High (P90)',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
-    description: 'Alert when the 90th percentile of the HTTP request duration is higher than the threshold',
+    default: 500,
   },
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP95,
     name: 'HTTP Request Duration Too High (P95)',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
-    description: 'Alert when the 95th percentile of the HTTP request duration is higher than the threshold',
+    default: 800,
   },
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP99,
     name: 'HTTP Request Duration Too High (P99)',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
-    description: 'Alert when the 99th percentile of the HTTP request duration is higher than the threshold',
+    default: 1500,
   },
   {
     type: CheckAlertType.HTTPTargetCertificateCloseToExpiring,
     name: 'HTTP Target Certificate Close To Expiring',
     unit: 'd',
     category: CheckAlertCategory.SystemHealth,
-    description: 'Alert when the target certificate is close to expiring',
+    default: 60,
   },
 ];
 
@@ -63,28 +62,28 @@ const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     name: 'Ping ICMP Duration Too High (P50)',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
-    description: 'Alert when the 50th percentile of the ICMP ping duration is higher than the threshold',
+    default: 50,
   },
   {
     type: CheckAlertType.PingICMPDurationTooHighP90,
     name: 'Ping ICMP Duration Too High (P90)',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
-    description: 'Alert when the 90th percentile of the ICMP ping duration is higher than the threshold',
+    default: 100,
   },
   {
     type: CheckAlertType.PingICMPDurationTooHighP95,
     name: 'Ping ICMP Duration Too High (P95)',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
-    description: 'Alert when the 95th percentile of the ICMP ping duration is higher than the threshold',
+    default: 200,
   },
   {
     type: CheckAlertType.PingICMPDurationTooHighP99,
     name: 'Ping ICMP Duration Too High (P99)',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
-    description: 'Alert when the 99th percentile of the ICMP ping duration is higher than the threshold',
+    default: 400,
   },
 ];
 

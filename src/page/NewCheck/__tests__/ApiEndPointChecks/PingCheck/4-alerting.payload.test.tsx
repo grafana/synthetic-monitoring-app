@@ -1,6 +1,7 @@
+import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 
-import { CheckType } from 'types';
+import { CheckType, FeatureName } from 'types';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
@@ -19,6 +20,11 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`can add specific ping alerts`, async () => {
+    jest.replaceProperty(config, 'featureToggles', {
+      // @ts-expect-error
+      [FeatureName.AlertsPerCheck]: true,
+    });
+
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 4);

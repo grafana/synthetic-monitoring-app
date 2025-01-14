@@ -31,8 +31,7 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: Mutat
   return useMutation<CheckAlertsResponse, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
     mutationFn: async ({ alerts, checkId }) => {
       try {
-        const res = await smDS.updateAlertsForCheck(alerts, checkId);
-        return res;
+        return await smDS.updateAlertsForCheck(alerts, checkId);
       } catch (error) {
         throw handleError(error);
       }
@@ -47,9 +46,9 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: Mutat
     meta: {
       event: {
         info: eventInfo,
-        type: FaroEvent.UPDATE_ALERTS,
+        type: FaroEvent.UPDATE_CHECK_ALERTS,
       },
-      successAlert: (res: CheckAlertsResponse) => `Saved alerts for check`,
+      successAlert: () => `Saved alerts for check`,
       errorAlert: () => `Failed to save alerts for check`,
     },
   });
