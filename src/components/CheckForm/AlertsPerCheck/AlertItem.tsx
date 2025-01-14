@@ -55,7 +55,7 @@ export const AlertItem = ({
                 type="number"
                 step="any"
                 id={`alert-threshold-${alert.type}`}
-                value={field.value ? field.value : threshold}
+                value={field.value !== undefined ? field.value : threshold}
                 onChange={(e) => {
                   return field.onChange(Number(e.currentTarget.value));
                 }}
