@@ -54,7 +54,12 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
   const navigateToChecks = useCallback(() => navigate(ROUTES.Checks), [navigate]);
-  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({ onSuccess: navigateToChecks });
+
+  const onError = (err: Error | unknown) => {
+    setSubmittingToApi(false);
+  };
+
+  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({ onSuccess: navigateToChecks, onError });
 
   const onSuccess = useCallback(
     (data: Check, alerts?: CheckAlertFormRecord) => {
@@ -70,9 +75,6 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
   const mutateCheck = useCallback(
     (newCheck: Check, alerts?: CheckAlertFormRecord) => {
       setSubmittingToApi(true);
-      const onError = (err: Error) => {
-        setSubmittingToApi(false);
-      };
 
       if (check?.id) {
         return updateCheck(
