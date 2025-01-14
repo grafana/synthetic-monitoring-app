@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.16.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.11...v1.16.12) (2025-01-14)
+
+
+### Fixes
+
+* change dirty strategy in check form ([#1037](https://github.com/grafana/synthetic-monitoring-app/issues/1037)) ([25ee12f](https://github.com/grafana/synthetic-monitoring-app/commit/25ee12f59d67f6cf8efb27865105fb80894d15b0))
+* filter by probe on data transferred and assertions panels for browser and scripted checks ([#1030](https://github.com/grafana/synthetic-monitoring-app/issues/1030)) ([23cf761](https://github.com/grafana/synthetic-monitoring-app/commit/23cf761c879dee96ece5b89f8ab7b8be9de3aecc))
+* handle deprecated probes in the UI ([#1040](https://github.com/grafana/synthetic-monitoring-app/issues/1040)) ([c7b23ed](https://github.com/grafana/synthetic-monitoring-app/commit/c7b23ed9164a69af246dad266f1fd3cbae4109a1))
+* keep reference of submitting form internally ([#1039](https://github.com/grafana/synthetic-monitoring-app/issues/1039)) ([bd91a18](https://github.com/grafana/synthetic-monitoring-app/commit/bd91a18214a287b7478ddf4356405e1d1ca7a11a))
+
+
+### Miscellaneous Chores
+
+* undo rollback to get main back on track ([#1035](https://github.com/grafana/synthetic-monitoring-app/issues/1035)) ([e287f10](https://github.com/grafana/synthetic-monitoring-app/commit/e287f10a7093cb9f9e7bfbe2d10cd216f63328ef))
+
 ## [1.16.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.10...v1.16.11) (2024-12-19)
 
 ### Fixes
