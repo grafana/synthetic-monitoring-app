@@ -66,18 +66,20 @@ export const CheckFormAlert = () => {
   );
 };
 
-const headingDisplay = `h4`;
+const getStyles = (theme: GrafanaTheme2) => {
+  const headingDisplay = `h4`;
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  marginBottom: css({
-    marginBottom: theme.spacing(2),
-  }),
-  link: css({
-    textDecoration: `underline`,
-  }),
-  title: css({
-    fontSize: theme.typography[headingDisplay].fontSize,
-    fontWeight: theme.typography[headingDisplay].fontWeight,
-    lineHeight: theme.typography[headingDisplay].lineHeight,
-  }),
-});
+  return {
+    marginBottom: css({
+      marginBottom: theme.spacing(2),
+    }),
+    link: css({
+      textDecoration: `underline`,
+    }),
+    title: css({
+      fontSize: theme.typography[headingDisplay].fontSize,
+      fontWeight: theme.typography[headingDisplay].fontWeight,
+      lineHeight: theme.typography[headingDisplay].lineHeight,
+    }),
+  };
+};

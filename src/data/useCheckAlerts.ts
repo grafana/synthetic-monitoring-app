@@ -49,7 +49,7 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: Mutat
     meta: {
       event: {
         info: eventInfo,
-        type: FaroEvent.UPDATE_ALERTS,
+        type: FaroEvent.UPDATE_CHECK_ALERTS,
       },
       successAlert: () => `Saved alerts for check`,
       errorAlert: () => `Failed to save alerts for check`,

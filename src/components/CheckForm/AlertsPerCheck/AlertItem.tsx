@@ -48,23 +48,21 @@ export const AlertItem = ({
           <Controller
             name={`alerts.${alert.type}.threshold`}
             control={control}
-            render={({ field }) => {
-              return (
-                <Input
-                  aria-disabled={!selected}
-                  suffix={alert.unit}
-                  type="number"
-                  step="any"
-                  id={`alert-threshold-${alert.type}`}
-                  value={field.value ? field.value : threshold}
-                  onChange={(e) => {
-                    return field.onChange(Number(e.currentTarget.value));
-                  }}
-                  width={10}
-                  disabled={!selected || isFormDisabled}
-                />
-              );
-            }}
+            render={({ field }) => (
+              <Input
+                aria-disabled={!selected}
+                suffix={alert.unit}
+                type="number"
+                step="any"
+                id={`alert-threshold-${alert.type}`}
+                value={field.value ? field.value : threshold}
+                onChange={(e) => {
+                  return field.onChange(Number(e.currentTarget.value));
+                }}
+                width={10}
+                disabled={!selected || isFormDisabled}
+              />
+            )}
           />
         </Field>
       </div>
@@ -84,6 +82,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     gap: theme.spacing(1),
     width: '50%',
+    textWrap: 'wrap',
   }),
 
   columnLabel: css({

@@ -113,26 +113,28 @@ export const AlertsPerCheck = () => {
   );
 };
 
-const headingDisplay = `h4`;
+const getStyles = (theme: GrafanaTheme2) => {
+  const headingDisplay = `h4`;
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  marginBottom: css({
-    marginBottom: theme.spacing(3),
-  }),
-  link: css({
-    textDecoration: `underline`,
-  }),
-  list: css({
-    display: 'grid',
-    listStyle: 'none',
-  }),
-  badge: css({
-    fontSize: theme.typography.body.fontSize,
-    marginBottom: theme.spacing(1),
-  }),
-  title: css({
-    fontSize: theme.typography[headingDisplay].fontSize,
-    fontWeight: theme.typography[headingDisplay].fontWeight,
-    lineHeight: theme.typography[headingDisplay].lineHeight,
-  }),
-});
+  return {
+    marginBottom: css({
+      marginBottom: theme.spacing(3),
+    }),
+    link: css({
+      textDecoration: `underline`,
+    }),
+    list: css({
+      display: 'grid',
+      listStyle: 'none',
+    }),
+    badge: css({
+      fontSize: theme.typography.body.fontSize,
+      marginBottom: theme.spacing(1),
+    }),
+    title: css({
+      fontSize: theme.typography[headingDisplay].fontSize,
+      fontWeight: theme.typography[headingDisplay].fontWeight,
+      lineHeight: theme.typography[headingDisplay].lineHeight,
+    }),
+  };
+};
