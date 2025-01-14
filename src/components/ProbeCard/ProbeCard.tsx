@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Card, Link, LinkButton, TextLink, useStyles2 } from '@grafana/ui';
+import { Card, Link, LinkButton, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { type ExtendedProbe, type Label } from 'types';
@@ -24,7 +24,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
   return (
     <Card>
       <Card.Heading>
-        <div>
+        <Stack alignItems="center" gap={0}>
           <ProbeStatus probe={probe} />
           <Link href={probeEditHref}>
             <span>{probe.name}</span>
@@ -46,7 +46,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
               }
             />
           )}
-        </div>
+        </Stack>
       </Card.Heading>
 
       <Card.Meta>
