@@ -213,7 +213,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
               {currentPageChecks.map((check, index) => (
                 <CheckListItem
                   check={check}
-                  key={index}
+                  key={check.id}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
                   onTypeSelect={handleTypeSelect}
