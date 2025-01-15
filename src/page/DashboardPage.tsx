@@ -30,7 +30,7 @@ function DashboardPageContent() {
   const { data: checks = [], isLoading } = useChecks();
   const { id } = useParams<CheckPageParams>();
 
-  const checkToView = checks.find((check) => String(check.id) === id);
+  const check = checks.find((check) => String(check.id) === id);
 
   const newUptimeQuery = useFeatureFlag(FeatureName.UptimeQueryV2)?.isEnabled;
 
@@ -50,20 +50,20 @@ function DashboardPageContent() {
 
     const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef };
 
-    if (!checkToView) {
+    if (!check) {
       return null;
     }
 
-    const checkType = getCheckType(checkToView.settings);
-    const url = generateRoutePath(ROUTES.CheckDashboard, { id: checkToView.id! });
+    const checkType = getCheckType(check.settings);
+    const url = generateRoutePath(ROUTES.CheckDashboard, { id: check.id! });
     switch (checkType) {
       case CheckType.DNS: {
         return new SceneApp({
           pages: [
             new SceneAppPage({
-              title: checkToView.job,
+              title: check.job,
               url,
-              getScene: getDNSScene(config, [checkToView], newUptimeQuery),
+              getScene: getDNSScene(config, check, newUptimeQuery),
             }),
           ],
         });
@@ -72,9 +72,9 @@ function DashboardPageContent() {
         return new SceneApp({
           pages: [
             new SceneAppPage({
-              title: checkToView.job,
+              title: check.job,
               url,
-              getScene: getHTTPScene(config, [checkToView], newUptimeQuery),
+              getScene: getHTTPScene(config, check, newUptimeQuery),
             }),
           ],
         });
@@ -83,9 +83,9 @@ function DashboardPageContent() {
         return new SceneApp({
           pages: [
             new SceneAppPage({
-              title: checkToView.job,
+              title: check.job,
               url,
-              getScene: getBrowserScene(config, [checkToView], checkType, newUptimeQuery),
+              getScene: getBrowserScene(config, check, checkType, newUptimeQuery),
             }),
           ],
         });
@@ -95,9 +95,9 @@ function DashboardPageContent() {
         return new SceneApp({
           pages: [
             new SceneAppPage({
-              title: checkToView.job,
+              title: check.job,
               url,
-              getScene: getScriptedScene(config, [checkToView], checkType, newUptimeQuery),
+              getScene: getScriptedScene(config, check, checkType, newUptimeQuery),
             }),
           ],
         });
@@ -106,9 +106,9 @@ function DashboardPageContent() {
         return new SceneApp({
           pages: [
             new SceneAppPage({
-              title: checkToView.job,
+              title: check.job,
               url,
-              getScene: getPingScene(config, [checkToView], newUptimeQuery),
+              getScene: getPingScene(config, check, newUptimeQuery),
             }),
           ],
         });
@@ -117,9 +117,9 @@ function DashboardPageContent() {
         return new SceneApp({
           pages: [
             new SceneAppPage({
-              title: checkToView.job,
+              title: check.job,
               url,
-              getScene: getTcpScene(config, [checkToView], newUptimeQuery),
+              getScene: getTcpScene(config, check, newUptimeQuery),
             }),
           ],
         });
@@ -128,9 +128,9 @@ function DashboardPageContent() {
         return new SceneApp({
           pages: [
             new SceneAppPage({
-              title: checkToView.job,
+              title: check.job,
               url,
-              getScene: getTracerouteScene(config, [checkToView]),
+              getScene: getTracerouteScene(config, check),
             }),
           ],
         });
@@ -140,17 +140,17 @@ function DashboardPageContent() {
         return new SceneApp({
           pages: [
             new SceneAppPage({
-              title: checkToView.job,
+              title: check.job,
               url,
-              getScene: getGRPCScene(config, [checkToView], newUptimeQuery),
+              getScene: getGRPCScene(config, check, newUptimeQuery),
             }),
           ],
         });
       }
     }
-  }, [smDS, metricsDS, logsDS, checkToView, newUptimeQuery]);
+  }, [smDS, metricsDS, logsDS, check, newUptimeQuery]);
 
-  if (!isLoading && !checkToView) {
+  if (!isLoading && !check) {
     return <CheckNotFound />;
   }
 

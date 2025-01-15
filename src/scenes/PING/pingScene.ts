@@ -24,28 +24,23 @@ import {
 } from 'scenes/Common';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
-export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
+export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, newUptimeQuery = false) {
   return () => {
-    if (checks.length === 0) {
-      return getEmptyScene(CheckType.PING);
-    }
-
     const timeRange = new SceneTimeRange({
       from: 'now-1h',
       to: 'now',
     });
 
-    const { job, instance, probe } = getVariables(CheckType.PING, metrics, checks);
+    const { job, instance, probe } = getVariables(CheckType.PING, metrics, check);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 
-    const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
+    const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
     const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
     const reachability = getReachabilityStat(metrics, minStep);

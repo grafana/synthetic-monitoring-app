@@ -3,7 +3,7 @@ import { DataSourceRef, VariableHide, VariableRefresh } from '@grafana/schema';
 
 import { Check, CheckType } from 'types';
 
-export function getVariables(checkType: CheckType, metrics: DataSourceRef, checks: Check[]) {
+export function getVariables(checkType: CheckType, metrics: DataSourceRef, check: Check) {
   const probe = new QueryVariable({
     includeAll: true,
     allValue: '.*',
@@ -17,16 +17,16 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef, check
 
   const job = new CustomVariable({
     name: 'job',
-    query: checks[0].job,
-    value: checks[0].job,
-    text: checks[0].job,
+    query: check.job,
+    value: check.job,
+    text: check.job,
     hide: VariableHide.hideVariable,
   });
   const instance = new CustomVariable({
     name: 'instance',
-    query: checks[0].target,
-    value: checks[0].target,
-    text: checks[0].target,
+    query: check.target,
+    value: check.target,
+    text: check.target,
     hide: VariableHide.hideVariable,
   });
   return { probe, job, instance };

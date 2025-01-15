@@ -14,7 +14,6 @@ import {
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import {
@@ -31,19 +30,16 @@ import {
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
-export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
+export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, newUptimeQuery = false) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-1h',
       to: 'now',
     });
-    if (checks.length === 0) {
-      return getEmptyScene(CheckType.HTTP);
-    }
 
-    const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
+    const minStep = getMinStepFromFrequency(check.frequency);
 
-    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, checks);
+    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, check);
     const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const mapPanel = getErrorRateMapPanel(metrics, minStep);
