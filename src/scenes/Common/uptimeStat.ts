@@ -4,18 +4,8 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 import { UPTIME_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getMinStep(minStep: string) {
-  try {
-    const minStepParsed = parseInt(minStep.slice(0, -1), 10);
-    return `${Math.max(minStepParsed, 5)}m`;
-  } catch (e) {
-    return minStep;
-  }
-}
-
-function getQueryRunner(metrics: DataSourceRef, minStep: string, newUptimeQuery: boolean) {
-  const uptimeMinStep = getMinStep(minStep);
-  const uptimeQuery = `clamp_max(sum(max_over_time(probe_success{job="$job", instance="$instance", probe=~"$probe"}[15s])), 1)`;
+function getQueryRunner(metrics: DataSourceRef, minStep: string) {
+  const uptimeQuery = `clamp_max(sum(max_over_time(probe_success{job="$job", instance="$instance", probe=~"$probe"}[${minStep}])), 1)`;
 
   const runner = new SceneQueryRunner({
     datasource: metrics,
@@ -26,7 +16,7 @@ function getQueryRunner(metrics: DataSourceRef, minStep: string, newUptimeQuery:
         expr: uptimeQuery,
         hide: false,
         instant: false,
-        interval: uptimeMinStep,
+        interval: minStep,
         legendFormat: '',
         range: true,
         refId: 'B',
@@ -47,12 +37,12 @@ function getQueryRunner(metrics: DataSourceRef, minStep: string, newUptimeQuery:
   });
 }
 
-export function getUptimeStat(metrics: DataSourceRef, minStep: string, newUptimeQuery = false) {
+export function getUptimeStat(metrics: DataSourceRef, minStep: string) {
   return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Uptime',
     description: UPTIME_DESCRIPTION,
-    $data: getQueryRunner(metrics, minStep, newUptimeQuery),
+    $data: getQueryRunner(metrics, minStep),
     fieldConfig: {
       defaults: {
         decimals: 2,

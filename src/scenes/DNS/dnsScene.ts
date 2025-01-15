@@ -30,7 +30,7 @@ import { getMinStepFromFrequency } from 'scenes/utils';
 import { getAnswerRecordsStat } from './answerRecords';
 import { getResourcesRecordsPanel } from './resourceRecords';
 
-export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, newUptimeQuery = false) {
+export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-1h',
@@ -43,7 +43,7 @@ export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig, check: C
 
     const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
+    const uptime = getUptimeStat(metrics, minStep);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const answerRecords = getAnswerRecordsStat(metrics);

@@ -30,12 +30,7 @@ import { getDataTransferred } from './dataTransferred';
 import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
 
-export function getBrowserScene(
-  { metrics, logs }: DashboardSceneAppConfig,
-  check: Check,
-  checkType: CheckType,
-  newUptimeQuery = false
-) {
+export function getBrowserScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, checkType: CheckType) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-1h',
@@ -49,7 +44,7 @@ export function getBrowserScene(
     const minStep = getMinStepFromFrequency(check.frequency);
 
     const reachability = getReachabilityStat(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
+    const uptime = getUptimeStat(metrics, minStep);
 
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);

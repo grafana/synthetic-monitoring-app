@@ -30,7 +30,7 @@ import { getMinStepFromFrequency } from '../utils';
 
 // This is a placeholder scene for GRPC checks (basically a copy of the TCP scene)
 // TODO: Implement the actual GRPC scene
-export function getGRPCScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, newUptimeQuery = false) {
+export function getGRPCScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
@@ -41,7 +41,7 @@ export function getGRPCScene({ metrics, logs }: DashboardSceneAppConfig, check: 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
+    const uptime = getUptimeStat(metrics, minStep);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const frequency = getFrequencyStat(metrics);

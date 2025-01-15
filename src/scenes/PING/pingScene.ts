@@ -29,7 +29,7 @@ import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
-export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, newUptimeQuery = false) {
+export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-1h',
@@ -42,7 +42,7 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, check: 
 
     const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
+    const uptime = getUptimeStat(metrics, minStep);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const frequency = getFrequencyStat(metrics);

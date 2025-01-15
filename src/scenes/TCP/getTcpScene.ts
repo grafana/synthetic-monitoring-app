@@ -28,7 +28,7 @@ import { getEditButton } from 'scenes/Common/editButton';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, newUptimeQuery = false) {
+export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
@@ -41,7 +41,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, check: C
 
     const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
+    const uptime = getUptimeStat(metrics, minStep);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const sslExpiry = getSSLExpiryStat(metrics);
