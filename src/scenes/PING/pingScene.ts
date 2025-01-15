@@ -30,7 +30,7 @@ import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
-export function getPingScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
+export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene(CheckType.PING);
@@ -41,7 +41,7 @@ export function getPingScene({ metrics, logs, singleCheckMode }: DashboardSceneA
       to: 'now',
     });
 
-    const { job, instance, probe } = getVariables(CheckType.PING, metrics, checks, singleCheckMode);
+    const { job, instance, probe } = getVariables(CheckType.PING, metrics, checks);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 

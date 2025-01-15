@@ -25,7 +25,7 @@ import { getPacketLossPanel } from './packetLoss';
 import { getRouteHashPanel } from './routeHash';
 import { getTraceTimePanel } from './traceTime';
 
-export function getTracerouteScene({ metrics, logs, sm, singleCheckMode }: DashboardSceneAppConfig, checks: Check[]) {
+export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene(CheckType.Traceroute);
@@ -35,7 +35,7 @@ export function getTracerouteScene({ metrics, logs, sm, singleCheckMode }: Dashb
       to: 'now',
     });
 
-    const { probe, job, instance } = getVariables(CheckType.Traceroute, metrics, checks, singleCheckMode);
+    const { probe, job, instance } = getVariables(CheckType.Traceroute, metrics, checks);
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const nodeGraph = new SceneFlexItem({ height: 500, body: getNodeGraphPanel(sm) });

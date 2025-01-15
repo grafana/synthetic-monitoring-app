@@ -28,10 +28,10 @@ import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
 
 export function getScriptedScene(
-  { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
+  { metrics, logs }: DashboardSceneAppConfig,
   checks: Check[] = [],
   checkType: CheckType,
-  newUptimeQuery = false,
+  newUptimeQuery = false
 ) {
   return () => {
     if (checks.length === 0) {
@@ -41,7 +41,7 @@ export function getScriptedScene(
       from: 'now-1h',
       to: 'now',
     });
-    const { probe, job, instance } = getVariables(checkType, metrics, checks, singleCheckMode);
+    const { probe, job, instance } = getVariables(checkType, metrics, checks);
     const variables = new SceneVariableSet({
       variables: [probe, job, instance],
     });

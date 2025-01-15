@@ -48,8 +48,8 @@ function DashboardPageContent() {
       type: smDS.type,
     };
 
-    const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef, singleCheckMode: false };
-    config.singleCheckMode = true;
+    const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef };
+
     if (!checkToView) {
       return null;
     }

@@ -31,7 +31,7 @@ import {
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
-export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
+export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-1h',
@@ -43,7 +43,7 @@ export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneA
 
     const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
 
-    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, checks, singleCheckMode);
+    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, checks);
     const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const mapPanel = getErrorRateMapPanel(metrics, minStep);

@@ -32,7 +32,7 @@ import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
 
 export function getBrowserScene(
-  { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
+  { metrics, logs }: DashboardSceneAppConfig,
   checks: Check[] = [],
   checkType: CheckType,
   newUptimeQuery = false
@@ -45,7 +45,7 @@ export function getBrowserScene(
       from: 'now-1h',
       to: 'now',
     });
-    const { probe, job, instance } = getVariables(checkType, metrics, checks, singleCheckMode);
+    const { probe, job, instance } = getVariables(checkType, metrics, checks);
     const variables = new SceneVariableSet({
       variables: [probe, job, instance],
     });

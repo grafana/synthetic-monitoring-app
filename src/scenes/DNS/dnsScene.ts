@@ -31,7 +31,7 @@ import { getMinStepFromFrequency } from 'scenes/utils';
 import { getAnswerRecordsStat } from './answerRecords';
 import { getResourcesRecordsPanel } from './resourceRecords';
 
-export function getDNSScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
+export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene(CheckType.DNS);
@@ -42,7 +42,7 @@ export function getDNSScene({ metrics, logs, singleCheckMode }: DashboardSceneAp
       to: 'now',
     });
 
-    const { probe, job, instance } = getVariables(CheckType.DNS, metrics, checks, singleCheckMode);
+    const { probe, job, instance } = getVariables(CheckType.DNS, metrics, checks);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 

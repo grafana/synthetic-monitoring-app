@@ -24,7 +24,6 @@ export const SceneHomepage = () => {
       },
       logs: { uid: logsDS?.uid },
       sm: { uid: smDS.uid },
-      singleCheckMode: true,
     };
 
     return new SceneApp({

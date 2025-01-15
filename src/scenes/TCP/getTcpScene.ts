@@ -29,7 +29,7 @@ import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export function getTcpScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
+export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[], newUptimeQuery = false) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene(CheckType.TCP);
@@ -40,7 +40,7 @@ export function getTcpScene({ metrics, logs, singleCheckMode }: DashboardSceneAp
       to: 'now',
     });
 
-    const { job, instance, probe } = getVariables(CheckType.TCP, metrics, checks, singleCheckMode);
+    const { job, instance, probe } = getVariables(CheckType.TCP, metrics, checks);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 
