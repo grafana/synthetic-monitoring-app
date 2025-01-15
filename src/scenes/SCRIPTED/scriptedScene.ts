@@ -40,7 +40,7 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
     const minStep = getMinStepFromFrequency(check.frequency);
 
     const reachability = getReachabilityStat(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep);
+    const uptime = getUptimeStat(metrics, check.frequency);
 
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);

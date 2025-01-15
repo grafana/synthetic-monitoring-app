@@ -4,7 +4,8 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 import { UPTIME_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef, minStep: string) {
+function getQueryRunner(metrics: DataSourceRef, frequency: number) {
+  const minStep = getSecondsFromFrequency(frequency);
   const uptimeQuery = `clamp_max(sum(max_over_time(probe_success{job="$job", instance="$instance", probe=~"$probe"}[${minStep}])), 1)`;
 
   const runner = new SceneQueryRunner({
@@ -37,12 +38,12 @@ function getQueryRunner(metrics: DataSourceRef, minStep: string) {
   });
 }
 
-export function getUptimeStat(metrics: DataSourceRef, minStep: string) {
+export function getUptimeStat(metrics: DataSourceRef, frequency: number) {
   return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Uptime',
     description: UPTIME_DESCRIPTION,
-    $data: getQueryRunner(metrics, minStep),
+    $data: getQueryRunner(metrics, frequency),
     fieldConfig: {
       defaults: {
         decimals: 2,
@@ -85,4 +86,8 @@ export function getUptimeStat(metrics: DataSourceRef, minStep: string) {
       textMode: 'auto',
     },
   });
+}
+
+function getSecondsFromFrequency(frequency: number) {
+  return `${frequency / 1000}s`;
 }

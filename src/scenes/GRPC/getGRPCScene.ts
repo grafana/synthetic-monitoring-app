@@ -41,7 +41,7 @@ export function getGRPCScene({ metrics, logs }: DashboardSceneAppConfig, check: 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep);
+    const uptime = getUptimeStat(metrics, check.frequency);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const frequency = getFrequencyStat(metrics);

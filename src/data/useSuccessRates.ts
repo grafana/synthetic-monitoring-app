@@ -1,13 +1,11 @@
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { Check } from 'types';
-import { queryMetric } from 'utils';
 import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses.types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
-import { getMinStepFromFrequency } from 'scenes/utils';
 
-import { findCheckinMetrics } from './utils';
+import { findCheckinMetrics, getStartEnd, queryInstantMetric, queryRangeMetric } from './utils';
 
 const queryKeys: Record<'checkReachability' | 'checkUptime' | 'probeReachability', QueryKey> = {
   checkReachability: ['check_reachability'],
@@ -16,7 +14,6 @@ const queryKeys: Record<'checkReachability' | 'checkUptime' | 'probeReachability
 };
 
 export function useChecksReachabilitySuccessRate() {
-  const { options } = useQueryMetric();
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
   const query =
@@ -32,7 +29,7 @@ export function useChecksReachabilitySuccessRate() {
         return Promise.reject(`You need to have a metrics datasource available.`);
       }
 
-      return queryMetric<MetricCheckSuccess>(url, query, options);
+      return queryInstantMetric<MetricCheckSuccess>({ url, query, ...getStartEnd() });
     },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
     enabled: Boolean(metricsDS),
@@ -50,28 +47,35 @@ export function useCheckReachabilitySuccessRate(check: Check) {
 }
 
 export function useCheckUptimeSuccessRate(check: Check) {
-  const { options } = useQueryMetric(getMinStepFromFrequency(check.frequency));
+  const minStep = `${check.frequency / 1000}s`;
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
 
-  const query = `
-  ceil(
-    sum by (instance, job) (increase(probe_all_success_sum{instance="${check.target}", job="${check.job}"}[3h]))
-    /
-    (sum by (instance, job) (increase(probe_all_success_count{instance="${check.target}", job="${check.job}"}[3h])) + 1)
-  )`;
+  const query = `clamp_max(sum(max_over_time(probe_success{job="${check.job}", instance="${check.target}"}[${minStep}])), 1)`;
 
   return useQuery({
     // we add 'now' as an option so can't add it to the query key
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [...queryKeys.checkUptime, query, url],
-    queryFn: () => {
+    queryFn: async () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);
       }
 
-      return queryMetric<MetricCheckSuccess>(url, query, options);
+      return queryRangeMetric({ url, query, ...getStartEnd(), step: minStep });
+    },
+    select: (data) => {
+      const vals = data[0].values;
+      const total = vals.reduce((acc, [_, value]) => {
+        return acc + Number(value);
+      }, 0);
+
+      if (vals.length === 0) {
+        return null;
+      }
+
+      return total / vals.length;
     },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
     enabled: Boolean(metricsDS),
@@ -79,7 +83,6 @@ export function useCheckUptimeSuccessRate(check: Check) {
 }
 
 export function useProbesReachabilitySuccessRate() {
-  const { options } = useQueryMetric();
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
   const query = 'sum(rate(probe_all_success_sum[3h])) by (probe) / sum(rate(probe_all_success_count[3h])) by (probe)';
@@ -94,7 +97,7 @@ export function useProbesReachabilitySuccessRate() {
         return Promise.reject(`You need to have a metrics datasource available.`);
       }
 
-      return queryMetric<MetricProbeSuccessRate>(url, query, options);
+      return queryInstantMetric<MetricProbeSuccessRate>({ url, query, ...getStartEnd() });
     },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
     enabled: Boolean(metricsDS),
@@ -109,18 +112,4 @@ export function useProbeReachabilitySuccessRate(probeName?: string) {
     ...props,
     data: probe,
   };
-}
-
-function useQueryMetric(interval?: string) {
-  const now = Math.floor(Date.now() / 1000);
-  const threeHoursAgo = now - 60 * 60 * 3;
-
-  const options = {
-    start: threeHoursAgo,
-    end: now,
-    step: 0,
-    interval,
-  };
-
-  return { options };
 }

@@ -43,7 +43,7 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: 
     const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const mapPanel = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep);
+    const uptime = getUptimeStat(metrics, check.frequency);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const sslExpiryStat = getSSLExpiryStat(metrics);

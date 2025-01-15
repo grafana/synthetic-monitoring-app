@@ -41,7 +41,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, check: C
 
     const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep);
+    const uptime = getUptimeStat(metrics, check.frequency);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const sslExpiry = getSSLExpiryStat(metrics);
