@@ -253,8 +253,7 @@ export const db = {
     public: false,
   })),
 
-  alert: Factory.define<CheckAlertPublished>(({ sequence }) => ({
-    id: sequence,
+  alert: Factory.define<CheckAlertPublished>(() => ({
     name: faker.helpers.arrayElement(Object.values(CheckAlertType)),
     threshold: faker.number.int({ min: 50, max: 500 }),
     created: Math.floor(faker.date.past().getTime() / 1000),
