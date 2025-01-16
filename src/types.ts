@@ -312,7 +312,6 @@ export interface AlertFormValues {
   sensitivity: SelectableValue<AlertSensitivity>;
 }
 export interface CheckAlertFormValues {
-  id?: number;
   threshold?: number;
   isSelected?: boolean;
 }
@@ -668,17 +667,12 @@ export enum CheckAlertCategory {
   RequestDuration = 'Request Duration',
 }
 
-export type CheckAlertBase = {
+export type CheckAlertDraft = {
   name: CheckAlertType;
   threshold: number;
 };
 
-export type CheckAlertDraft = CheckAlertBase & {
-  id?: number;
-};
-
-export type CheckAlertPublished = CheckAlertBase & {
-  id: number;
+export type CheckAlertPublished = CheckAlertDraft & {
   created: number;
   modified: number;
 };
