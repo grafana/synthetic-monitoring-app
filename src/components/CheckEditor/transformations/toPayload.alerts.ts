@@ -8,7 +8,6 @@ export function getAlertsPayload(formValues?: CheckAlertFormRecord, checkId?: nu
   return Object.entries(formValues).reduce<CheckAlertDraft[]>((alerts, [alertType, alert]) => {
     if (alert.isSelected) {
       alerts.push({
-        id: alert.id,
         name: alertType as CheckAlertType,
         threshold: alert.threshold!!,
       });

@@ -10,13 +10,11 @@ export function getAlertCheckFormValues(data: CheckAlertsResponse): CheckAlertFo
 
     if (existingAlert) {
       acc[alertType] = {
-        id: existingAlert.id,
         threshold: existingAlert.threshold,
         isSelected: true,
       };
     } else {
       acc[alertType] = {
-        id: undefined,
         threshold: ALL_PREDEFINED_ALERTS.find((alert) => alert.type === alertType)?.default || 0,
         isSelected: false,
       };
