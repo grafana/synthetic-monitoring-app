@@ -73,7 +73,7 @@ export const CheckListItemCard = ({
             </div>
           </div>
           <Stack>
-            <Stack grow={1} alignItems="center">
+            <Stack grow={1} alignItems="center" wrap={'wrap'}>
               {check.labels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
