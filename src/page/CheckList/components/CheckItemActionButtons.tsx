@@ -75,5 +75,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: flex;
     align-items: center;
     gap: ${theme.spacing(1)};
+    flex-grow: 1;
+    justify-content: flex-end;
   `,
 });
