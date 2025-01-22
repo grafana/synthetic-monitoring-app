@@ -72,7 +72,7 @@ export const CheckListItemCard = ({
               )}
             </div>
           </div>
-          <Stack wrap={'wrap'} justifyContent={'flex-start'}>
+          <Stack wrap="wrap" justifyContent="flex-start">
             <div className={styles.labelsContainer}>
               {check.labels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
