@@ -82,10 +82,7 @@ export const AlertsPerCheck = () => {
           <NewStatusBadge status={CheckStatus.EXPERIMENTAL} className={styles.badge} />
         </Stack>
 
-        <p>
-          You can choose from the following predefined alerts to assign to this check and configure a threshold for
-          each, including setting specific percentile values are available.
-        </p>
+        <p>You can choose from the following predefined alerts to assign to this check and set a threshold for each.</p>
 
         <Field>
           <Controller
