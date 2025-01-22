@@ -80,27 +80,29 @@ export const ProbesList = ({
               onClick={() => handleToggleProbe(probe)}
               checked={selectedProbes.includes(probe.id!)}
             />
-            <Label htmlFor={`probe-${probe.id}`} className={styles.columnLabel}>
-              <ProbeStatus probe={probe} />{' '}
-              {`${probe.name}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
-                probe.provider ? `(${probe.provider})` : ''
-              }`}
-              {probe.deprecated && (
-                <DeprecationNotice
-                  tooltipContent={
-                    <div>
-                      This probe is deprecated and will be removed soon. For more information{' '}
-                      <TextLink
-                        variant={'bodySmall'}
-                        href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
-                        external
-                      >
-                        click here.
-                      </TextLink>
-                    </div>
-                  }
-                />
-              )}
+            <Label htmlFor={`probe-${probe.id}`}>
+              <div className={styles.columnLabel}>
+                <ProbeStatus probe={probe} />{' '}
+                {`${probe.name}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
+                  probe.provider ? `(${probe.provider})` : ''
+                }`}
+                {probe.deprecated && (
+                  <DeprecationNotice
+                    tooltipContent={
+                      <div>
+                        This probe is deprecated and will be removed soon. For more information{' '}
+                        <TextLink
+                          variant={'bodySmall'}
+                          href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
+                          external
+                        >
+                          click here.
+                        </TextLink>
+                      </div>
+                    }
+                  />
+                )}
+              </div>
             </Label>
           </div>
         ))}
@@ -135,7 +137,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flexDirection: 'column',
     minWidth: '250px',
     maxWidth: '350px',
-    maxHeight: '230px',
+    maxHeight: '400px',
     overflowY: 'auto',
   }),
 
