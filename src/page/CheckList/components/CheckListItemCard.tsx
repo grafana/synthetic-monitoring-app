@@ -95,7 +95,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     flexWrap: 'wrap',
     flexGrow: 1,
-    maxWidth: '90%',
     gap: theme.spacing(1),
   }),
   heading: css({
