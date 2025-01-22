@@ -259,7 +259,7 @@ export const PROBES_METADATA = [
     country: COUNTRY_ES.long,
   },
   {
-    name: 'Indonesia',
+    name: 'Jakarta',
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.AWS,
