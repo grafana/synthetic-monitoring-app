@@ -57,7 +57,8 @@ export const AlertItem = ({
                 id={`alert-threshold-${alert.type}`}
                 value={field.value !== undefined ? field.value : threshold}
                 onChange={(e) => {
-                  return field.onChange(Number(e.currentTarget.value));
+                  const value = e.currentTarget.value;
+                  return field.onChange(value !== '' ? Number(value) : undefined);
                 }}
                 width={10}
                 disabled={!selected || isFormDisabled}
