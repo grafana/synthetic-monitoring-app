@@ -78,5 +78,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontWeight: theme.typography.fontWeightLight,
     fontSize: theme.typography.h5.fontSize,
     color: theme.colors.text.primary,
+    marginBottom: 0,
   }),
 });
