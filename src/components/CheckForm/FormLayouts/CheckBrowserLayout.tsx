@@ -2,11 +2,13 @@ import React from 'react';
 import { Stack, TextLink } from '@grafana/ui';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesBrowser } from 'types';
+import { CheckFormValuesBrowser, CheckType } from 'types';
 import { BrowserFields } from 'components/CheckEditor/CheckEditor.types';
 import { BrowserCheckInstance } from 'components/CheckEditor/FormComponents/BrowserCheckInstance';
 import { BrowserCheckScript } from 'components/CheckEditor/FormComponents/BrowserCheckScript';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
+
+import { CheckTimeoutValues } from '../CheckForm.constants';
 
 export const BROWSER_CHECK_FIELDS: BrowserFields = {
   script: {
@@ -37,7 +39,7 @@ export const BrowserCheckLayout: Partial<Record<LayoutSection, Section<CheckForm
             running checks in a k6 script.
           </TextLink>
         </div>
-        <Timeout min={5.0} />
+        <Timeout min={CheckTimeoutValues[CheckType.Browser].min} max={CheckTimeoutValues[CheckType.Browser].max} />
       </Stack>
     ),
   },
