@@ -6,7 +6,7 @@ const CheckAlertSchema = z
   .object({
     id: z.number().optional(),
     isSelected: z.boolean().optional(),
-    threshold: z.number().optional(),
+    threshold: z.number().min(0).optional(),
   })
   .refine(
     (data) => {
@@ -22,8 +22,14 @@ const CheckAlertSchema = z
     { message: 'You need to set a threshold value', path: ['threshold'] }
   );
 
+const CheckAlertsPercentageSchema = CheckAlertSchema.and(
+  z.object({
+    threshold: z.number().max(100, { message: 'Threshold cannot exceed 100%' }),
+  })
+);
+
 export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: CheckAlertSchema.optional(),
+  ProbeFailedExecutionsTooHigh: CheckAlertsPercentageSchema.optional(),
   HTTPRequestDurationTooHighP50: CheckAlertSchema.optional(),
   HTTPRequestDurationTooHighP90: CheckAlertSchema.optional(),
   HTTPRequestDurationTooHighP95: CheckAlertSchema.optional(),
