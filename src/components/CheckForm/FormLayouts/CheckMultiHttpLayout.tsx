@@ -6,8 +6,8 @@ import { MultiHttpAssertions } from 'components/CheckEditor/FormComponents/Multi
 import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/MultiHttpCheckRequests';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { ENTRY_INDEX_CHAR } from '../FormLayout/formlayout.utils';
 import { CheckTimeoutValues } from '../CheckForm.constants';
+import { ENTRY_INDEX_CHAR } from '../FormLayout/formlayout.utils';
 
 export const MultiHTTPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesMultiHttp>>> = {
   [LayoutSection.Check]: {
