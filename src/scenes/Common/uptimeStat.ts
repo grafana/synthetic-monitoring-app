@@ -1,12 +1,17 @@
 import { SceneDataTransformer, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { getUptimeQuery } from 'queries/uptime';
 
 import { UPTIME_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef, frequency: number) {
-  const minStep = getSecondsFromFrequency(frequency);
-  const uptimeQuery = `clamp_max(sum(max_over_time(probe_success{job="$job", instance="$instance", probe=~"$probe"}[${minStep}])), 1)`;
+  const { expr, maxDataPoints, interval } = getUptimeQuery({
+    job: `$job`,
+    instance: `$instance`,
+    probe: `$probe`,
+    frequency,
+  });
 
   const runner = new SceneQueryRunner({
     datasource: metrics,
@@ -14,15 +19,18 @@ function getQueryRunner(metrics: DataSourceRef, frequency: number) {
       {
         editorMode: 'code',
         exemplar: true,
-        expr: uptimeQuery,
+        expr,
         hide: false,
         instant: false,
-        interval: minStep,
+        interval,
         legendFormat: '',
         range: true,
         refId: 'B',
       },
     ],
+    maxDataPoints: 6000,
+    minInterval: interval,
+    maxDataPointsFromWidth: false,
   });
 
   return new SceneDataTransformer({
@@ -86,8 +94,4 @@ export function getUptimeStat(metrics: DataSourceRef, frequency: number) {
       textMode: 'auto',
     },
   });
-}
-
-function getSecondsFromFrequency(frequency: number) {
-  return `${frequency / 1000}s`;
 }

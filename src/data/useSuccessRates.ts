@@ -1,4 +1,5 @@
 import { type QueryKey, useQuery } from '@tanstack/react-query';
+import { getUptimeQuery } from 'queries/uptime';
 
 import { Check } from 'types';
 import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses.types';
@@ -47,23 +48,25 @@ export function useCheckReachabilitySuccessRate(check: Check) {
 }
 
 export function useCheckUptimeSuccessRate(check: Check) {
-  const minStep = `${check.frequency / 1000}s`;
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
-
-  const query = `clamp_max(sum(max_over_time(probe_success{job="${check.job}", instance="${check.target}"}[${minStep}])), 1)`;
+  const { expr, interval } = getUptimeQuery({
+    job: check.job,
+    instance: check.target,
+    frequency: check.frequency,
+  });
 
   return useQuery({
     // we add 'now' as an option so can't add it to the query key
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...queryKeys.checkUptime, query, url],
+    queryKey: [...queryKeys.checkUptime, expr, url],
     queryFn: async () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);
       }
 
-      return queryRangeMetric({ url, query, ...getStartEnd(), step: minStep });
+      return queryRangeMetric({ url, query: expr, ...getStartEnd(), step: interval });
     },
     select: (data) => {
       const vals = data[0].values;

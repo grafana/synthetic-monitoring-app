@@ -33,7 +33,7 @@ import { getLatencyByPhasePanel } from './latencyByPhase';
 export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
     const timeRange = new SceneTimeRange({
-      from: 'now-1h',
+      from: 'now-3h',
       to: 'now',
     });
 
@@ -49,23 +49,27 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: 
     const sslExpiryStat = getSSLExpiryStat(metrics);
     const frequency = getFrequencyStat(metrics);
     const errorTimeseries = getErrorRateTimeseries(metrics, minStep);
-
+    console.log(timeRange.state);
     const statRow = new SceneFlexLayout({
       direction: 'row',
-      children: [uptime, reachability, avgLatency, sslExpiryStat, frequency].map((panel) => {
+      children: [uptime, reachability].map((panel) => {
+        // children: [uptime, reachability, avgLatency, sslExpiryStat, frequency].map((panel) => {
         return new SceneFlexItem({ height: 90, body: panel });
       }),
     });
 
     const statColumn = new SceneFlexLayout({
       direction: 'column',
-      children: [new SceneFlexItem({ height: 90, body: statRow }), new SceneFlexItem({ body: errorTimeseries })],
+      children: [
+        new SceneFlexItem({ height: 90, body: statRow }),
+        // new SceneFlexItem({ body: errorTimeseries })
+      ],
     });
 
     const topRow = new SceneFlexLayout({
       direction: 'row',
       children: [
-        new SceneFlexItem({ height: 500, width: 500, body: mapPanel }),
+        // new SceneFlexItem({ height: 500, width: 500, body: mapPanel }),
         new SceneFlexItem({ body: statColumn }),
       ],
     });
@@ -107,7 +111,8 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: 
       ],
       body: new SceneFlexLayout({
         direction: 'column',
-        children: [topRow, latencyRow, logsRow].map((flexItem) => new SceneFlexItem({ body: flexItem })),
+        children: [topRow].map((flexItem) => new SceneFlexItem({ body: flexItem })),
+        // children: [topRow, latencyRow, logsRow].map((flexItem) => new SceneFlexItem({ body: flexItem })),
       }),
     });
   };
