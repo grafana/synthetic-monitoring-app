@@ -4,7 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Field, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckAlertType, CheckFormValues, CheckStatus } from 'types';
+import { CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckStatus } from 'types';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { getAlertCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.alerts';
 import { NewStatusBadge } from 'components/NewStatusBadge';
@@ -12,7 +12,11 @@ import { NewStatusBadge } from 'components/NewStatusBadge';
 import { AlertsList } from './AlertsList';
 import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
-export const AlertsPerCheck = () => {
+interface AlertsPerCheckProps {
+  onInitAlerts: (formAlerts: Partial<Record<CheckAlertType, CheckAlertFormValues>>) => void;
+}
+
+export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
   const styles = useStyles2(getStyles);
 
   const { getValues, setValue, control } = useFormContext<CheckFormValues>();
@@ -27,8 +31,9 @@ export const AlertsPerCheck = () => {
       return;
     }
     const formAlerts = getAlertCheckFormValues(checkAlerts);
-    setValue(`alerts`, formAlerts);
-  }, [checkAlerts, setValue]);
+    setValue(`alerts`, formAlerts, { shouldDirty: false });
+    onInitAlerts(formAlerts);
+  }, [checkAlerts, setValue, onInitAlerts]);
 
   const groupedByCategory = useMemo(
     () =>
