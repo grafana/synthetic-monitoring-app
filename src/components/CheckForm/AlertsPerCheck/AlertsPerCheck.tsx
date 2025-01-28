@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Field, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Field, LoadingPlaceholder, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckStatus } from 'types';
@@ -56,7 +56,14 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
   }
 
   if (isError) {
-    return <Alert title="There was an error fetching alerts for this check. Please try again or contact support." />;
+    return (
+      <Alert title="There was an error fetching alerts for this check">
+        Please try again or{' '}
+        <TextLink href="https://grafana.com/contact" external>
+          contact support
+        </TextLink>
+      </Alert>
+    );
   }
 
   const handleSelectAlert = (type: CheckAlertType) => {
@@ -95,7 +102,7 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
             name="alerts"
             render={() => (
               <Field>
-                <Stack direction={'column'}>
+                <Stack direction="column">
                   {Object.entries(groupedByCategory).map(([category, allAlerts]) => (
                     <AlertsList
                       key={category}

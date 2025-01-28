@@ -2,11 +2,20 @@ import { z, ZodType } from 'zod';
 
 import { CheckAlertFormRecord } from 'types';
 
+const isScientificNotation = (val: number) => {
+  return /e|E/.test(val.toString());
+};
+
 const CheckAlertSchema = z
   .object({
     id: z.number().optional(),
     isSelected: z.boolean().optional(),
-    threshold: z.number().min(0).optional(),
+    threshold: z
+      .number()
+      .optional()
+      .refine((value) => !value || (value >= 0.01 && !isScientificNotation(value)), {
+        message: 'Invalid threshold value',
+      }),
   })
   .refine(
     (data) => {

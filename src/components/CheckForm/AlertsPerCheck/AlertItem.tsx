@@ -40,9 +40,9 @@ export const AlertItem = ({
       </div>
       <div className={styles.thresholdInput}>
         <Field
-          label={`Threshold`}
+          label="Threshold"
           htmlFor={`alert-threshold-${alert.type}`}
-          invalid={Boolean(thresholdError)}
+          invalid={!!thresholdError}
           error={thresholdError}
         >
           <Controller
