@@ -3,7 +3,7 @@ import { CheckAlertsResponse } from 'datasource/responses.types';
 import { ALL_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
 export function getAlertCheckFormValues(data: CheckAlertsResponse): CheckAlertFormRecord {
-  return Object.keys(CheckAlertType).reduce((acc, alertTypeKey) => {
+  return Object.keys(CheckAlertType).reduce<CheckAlertFormRecord>((acc, alertTypeKey) => {
     const alertType = CheckAlertType[alertTypeKey as keyof typeof CheckAlertType];
 
     const existingAlert = data.alerts.find((alert) => alert.name.includes(alertType));
@@ -21,5 +21,5 @@ export function getAlertCheckFormValues(data: CheckAlertsResponse): CheckAlertFo
     }
 
     return acc;
-  }, {} as CheckAlertFormRecord);
+  }, {});
 }
