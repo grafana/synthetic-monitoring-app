@@ -38,4 +38,27 @@ describe(`BrowserCheck - Section 5 (Execution) payload`, () => {
 
     expect(body.frequency).toBe(ONE_MINUTE_IN_MS);
   });
+
+    it(`can add timeout up to 90 seconds`, async () => {
+      const MAX_TIMEOUT_MS = 90000;
+  
+      const { user, read } = await renderNewForm(checkType);
+      await fillMandatoryFields({ user, checkType });
+  
+      await goToSection(user, 2);
+  
+      const timeoutMinutesInput = screen.getByLabelText('timeout minutes input');
+      const timeoutSecondsInput = screen.getByLabelText('timeout seconds input');
+  
+      await user.clear(timeoutMinutesInput);
+      await user.clear(timeoutSecondsInput);
+      await user.type(timeoutMinutesInput, `{backspace}1`);
+      await user.type(timeoutSecondsInput, `30`);
+  
+      await submitForm(user);
+  
+      const { body } = await read();
+  
+      expect(body.timeout).toBe(MAX_TIMEOUT_MS);
+    });
 });

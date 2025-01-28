@@ -2,11 +2,13 @@ import React from 'react';
 import { Stack, TextLink } from '@grafana/ui';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesScripted } from 'types';
+import { CheckFormValuesScripted, CheckType } from 'types';
 import { ScriptedFields } from 'components/CheckEditor/CheckEditor.types';
 import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
 import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
+
+import { CheckTimeoutValues } from '../CheckForm.constants';
 
 export const SCRIPTED_CHECK_FIELDS: ScriptedFields = {
   script: {
@@ -37,7 +39,7 @@ export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFor
             running checks in a k6 script.
           </TextLink>
         </div>
-        <Timeout min={5.0} />
+        <Timeout min={CheckTimeoutValues[CheckType.Scripted].min} max={CheckTimeoutValues[CheckType.Scripted].max} />
       </Stack>
     ),
   },
