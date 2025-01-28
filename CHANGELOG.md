@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.17.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.12...v1.17.0) (2025-01-28)
+
+
+### Features
+
+* add policy bot configuration ([#1047](https://github.com/grafana/synthetic-monitoring-app/issues/1047)) ([406851a](https://github.com/grafana/synthetic-monitoring-app/commit/406851ab0f72a79f1c02a1378cd9e42772a07431))
+* increase check timeout to scripted, browser and multihttp checks ([#1049](https://github.com/grafana/synthetic-monitoring-app/issues/1049)) ([df9c5d9](https://github.com/grafana/synthetic-monitoring-app/commit/df9c5d97a485475b618a7be93ad43c2c5fdc124d))
+
+
+### Fixes
+
+* add new probes metadata ([#1044](https://github.com/grafana/synthetic-monitoring-app/issues/1044)) ([006bc43](https://github.com/grafana/synthetic-monitoring-app/commit/006bc43071a0a642d8262a6f3d7fa2695617b7d6))
+* wrap labels to always display View dashboard button ([#1045](https://github.com/grafana/synthetic-monitoring-app/issues/1045)) ([8c45572](https://github.com/grafana/synthetic-monitoring-app/commit/8c45572631cdf956327e8b6afe2308a663c3ba28))
+
 ## [1.16.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.11...v1.16.12) (2025-01-14)
 
 
