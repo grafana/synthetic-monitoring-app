@@ -17,6 +17,11 @@ const COUNTRY_ZA = { code: 'ZA', long: 'South Africa' };
 const COUNTRY_DE = { code: 'DE', long: 'Germany' };
 const COUNTRY_UK = { code: 'UK', long: 'United Kingdom' };
 const COUNTRY_FR = { code: 'FR', long: 'France' };
+const COUNTRY_CH = { code: 'CH', long: 'Switzerland' };
+const COUNTRY_SE = { code: 'SE', long: 'Sweden' };
+const COUNTRY_AE = { code: 'AE', long: 'United Arab Emirates' };
+const COUNTRY_ES = { code: 'ES', long: 'Spain' };
+const COUNTRY_ID = { code: 'ID', long: 'Indonesia' };
 
 export const PROBES_METADATA = [
   {
@@ -196,5 +201,69 @@ export const PROBES_METADATA = [
     provider: ProbeProvider.AWS,
     countryCode: COUNTRY_FR.code,
     country: COUNTRY_FR.long,
+  },
+  {
+    name: 'Zurich',
+    region: REGION_EMEA.code,
+    longRegion: REGION_EMEA.long,
+    provider: ProbeProvider.AWS,
+    countryCode: COUNTRY_CH.code,
+    country: COUNTRY_CH.long,
+  },
+  {
+    name: 'Stockholm',
+    region: REGION_EMEA.code,
+    longRegion: REGION_EMEA.long,
+    provider: ProbeProvider.AWS,
+    countryCode: COUNTRY_SE.code,
+    country: COUNTRY_SE.long,
+  },
+  {
+    name: 'Montreal',
+    region: REGION_AMER.code,
+    longRegion: REGION_AMER.long,
+    provider: ProbeProvider.AWS,
+    countryCode: COUNTRY_CA.code,
+    country: COUNTRY_CA.long,
+  },
+  {
+    name: 'Calgary',
+    region: REGION_AMER.code,
+    longRegion: REGION_AMER.long,
+    provider: ProbeProvider.AWS,
+    countryCode: COUNTRY_CA.code,
+    country: COUNTRY_CA.long,
+  },
+  {
+    name: 'UAE',
+    region: REGION_EMEA.code,
+    longRegion: REGION_EMEA.long,
+    provider: ProbeProvider.AWS,
+    countryCode: COUNTRY_AE.code,
+    country: COUNTRY_AE.long,
+  },
+  {
+    name: 'Hyderabad',
+    region: REGION_APAC.code,
+    longRegion: REGION_APAC.long,
+    provider: ProbeProvider.AWS,
+    countryCode: COUNTRY_IN.code,
+    country: COUNTRY_IN.long,
+  },
+  {
+    name: 'Spain',
+    region: REGION_EMEA.code,
+    longRegion: REGION_EMEA.long,
+    provider: ProbeProvider.AWS,
+    countryCode: COUNTRY_ES.code,
+    country: COUNTRY_ES.long,
+  },
+  {
+    name: 'Jakarta',
+    region: REGION_APAC.code,
+    longRegion: REGION_APAC.long,
+    provider: ProbeProvider.AWS,
+    countryCode: COUNTRY_ID.code,
+    country: COUNTRY_ID.long,
   },
 ];

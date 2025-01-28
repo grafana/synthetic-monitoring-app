@@ -68,9 +68,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     font-size: ${theme.typography.bodySmall.fontSize};
     line-height: ${theme.typography.bodySmall.lineHeight};
     white-space: nowrap;
-    display: flex;
     align-items: center;
-    width: 600px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   `,
   labelWidth: css`
     max-width: 350px;

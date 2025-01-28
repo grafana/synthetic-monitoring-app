@@ -1,13 +1,14 @@
 import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesGRPC } from 'types';
+import { CheckFormValuesGRPC, CheckType } from 'types';
 import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
 import { GRPCRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { GRPCRequest } from 'components/CheckEditor/FormComponents/GRPCRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
+import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const GRPC_REQUEST_FIELDS: GRPCRequestFields = {
@@ -73,7 +74,7 @@ export const GRPCCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
     fields: [`timeout`],
     Component: (
       <>
-        <Timeout />
+        <Timeout min={CheckTimeoutValues[CheckType.GRPC].min} max={CheckTimeoutValues[CheckType.GRPC].max} />
       </>
     ),
   },
