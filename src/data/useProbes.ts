@@ -5,6 +5,7 @@ import { isFetchError } from '@grafana/runtime';
 import { type MutationProps } from 'data/types';
 import { ExtendedProbe, type Probe } from 'types';
 import { FaroEvent } from 'faro';
+import { camelCaseToSentence } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
   AddProbeResult,
@@ -44,20 +45,26 @@ export function useProbesWithMetadata() {
     if (isLoading) {
       return [];
     }
-    
-    return probes.map((probe) => {
-      const metadata = PROBES_METADATA.find(
-        (info) => info.name === probe.name && info.region === probe.region
-      );
-      return metadata ? { ...probe, ...metadata } : probe;
-    });
+
+    return probes
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((probe) => {
+        const metadata = PROBES_METADATA.find((info) => info.name === probe.name && info.region === probe.region);
+        const displayName = camelCaseToSentence(probe.name);
+
+        return {
+          ...probe,
+          ...metadata,
+          name: displayName,
+        };
+      });
   }, [probes, isLoading]);
 
   return { data: probesWithMetadata, isLoading };
 }
 
 export function useExtendedProbes(): [ExtendedProbe[], boolean] {
-  const { data: probes = [], isLoading: isLoadingProbes } = useProbes();
+  const { data: probes = [], isLoading: isLoadingProbes } = useProbesWithMetadata();
   const { data: checks = [], isLoading: isLoadingChecks } = useChecks();
   const isLoading = isLoadingProbes || isLoadingChecks;
 
