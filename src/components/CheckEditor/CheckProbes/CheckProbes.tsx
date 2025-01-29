@@ -50,15 +50,17 @@ export function CheckProbes({ probes, availableProbes, onChange, error }: CheckP
           <ProbesFilter probes={availableProbes} onSearch={setFilteredProbes} />
           <Stack wrap="wrap">
             <Stack wrap="nowrap">
-              {Object.entries(groupedByRegion).map(([region, allProbes]) => (
-                <ProbesList
-                  key={region}
-                  title={region}
-                  probes={allProbes}
-                  selectedProbes={probes}
-                  onSelectionChange={onChange}
-                />
-              ))}
+              {Object.entries(groupedByRegion)
+                .sort(([regionA], [regionB]) => regionA.localeCompare(regionB))
+                .map(([region, allProbes]) => (
+                  <ProbesList
+                    key={region}
+                    title={region}
+                    probes={allProbes}
+                    selectedProbes={probes}
+                    onSelectionChange={onChange}
+                  />
+                ))}
             </Stack>
 
             {privateProbes.length > 0 && (
