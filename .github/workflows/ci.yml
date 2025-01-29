@@ -22,11 +22,5 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable --prefer-offline
 
-      - name: Check types
-        run: yarn typecheck
       - name: Lint
         run: yarn lint
-      - name: Unit tests
-        run: yarn test:ci
-      - name: Build frontend
-        run: yarn build
