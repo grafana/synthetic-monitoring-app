@@ -92,7 +92,7 @@ export const getStyles = (theme: GrafanaTheme2, hasMarks = false) => {
     sliderInputField: css({
       marginLeft: theme.spacing(3),
       marginRight: theme.spacing(1),
-      width: '60px',
+      maxWidth: '60px',
       minWidth: '40px',
       input: {
         textAlign: 'center',

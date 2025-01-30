@@ -6,15 +6,26 @@ import { z, ZodType } from 'zod';
 
 import { AlertSensitivity, CheckFormValuesBase } from 'types';
 
-export const BaseCheckSchema: ZodType<CheckFormValuesBase> = z.object({
-  job: JobSchema,
-  target: z.string(),
-  frequency: FrequencySchema,
-  id: z.number().optional(),
-  timeout: z.number(),
-  enabled: z.boolean(),
-  probes: CheckProbesSchema,
-  alertSensitivity: z.nativeEnum(AlertSensitivity),
-  labels: LabelsSchema,
-  publishAdvancedMetrics: z.boolean(),
-});
+export const BaseCheckSchema: ZodType<CheckFormValuesBase> = z
+  .object({
+    job: JobSchema,
+    target: z.string(),
+    frequency: FrequencySchema,
+    id: z.number().optional(),
+    timeout: z.number(),
+    enabled: z.boolean(),
+    probes: CheckProbesSchema,
+    alertSensitivity: z.nativeEnum(AlertSensitivity),
+    labels: LabelsSchema,
+    publishAdvancedMetrics: z.boolean(),
+  })
+  .superRefine((data, ctx) => {
+    const { frequency, timeout } = data;
+    if (frequency < timeout) {
+      ctx.addIssue({
+        path: ['frequency'],
+        message: `Frequency must be greater than or equal to timeout (${timeout} seconds)`,
+        code: z.ZodIssueCode.custom,
+      });
+    }
+  });

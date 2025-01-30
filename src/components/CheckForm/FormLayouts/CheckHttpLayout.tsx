@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValues, CheckFormValuesHttp } from 'types';
+import { CheckFormValues, CheckFormValuesHttp, CheckType } from 'types';
 import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
 import { HttpRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
@@ -13,6 +13,7 @@ import { HttpCheckValidStatusCodes } from 'components/CheckEditor/FormComponents
 import { HttpRequest } from 'components/CheckEditor/FormComponents/HttpRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
+import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesHttp> = {
@@ -109,7 +110,7 @@ export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
         <HttpCheckSSLOptions />
         <HttpCheckRegExValidation />
         <HttpCheckCompressionOption />
-        <Timeout />
+        <Timeout min={CheckTimeoutValues[CheckType.HTTP].min} max={CheckTimeoutValues[CheckType.HTTP].max} />
       </>
     ),
   },

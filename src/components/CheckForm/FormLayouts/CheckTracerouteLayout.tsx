@@ -1,13 +1,14 @@
 import React from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesTraceroute } from 'types';
+import { CheckFormValuesTraceroute, CheckType } from 'types';
 import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
 import { TracerouteRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 import { TracerouteRequest } from 'components/CheckEditor/FormComponents/TracerouteRequest';
 
+import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 const TRACEROUTE_FIELDS: TracerouteRequestFields = {
@@ -47,7 +48,10 @@ export const TracerouteCheckLayout: Partial<Record<LayoutSection, Section<CheckF
     fields: [`timeout`],
     Component: (
       <>
-        <Timeout max={30.0} min={30.0} />
+        <Timeout
+          min={CheckTimeoutValues[CheckType.Traceroute].min}
+          max={CheckTimeoutValues[CheckType.Traceroute].max}
+        />
       </>
     ),
   },
