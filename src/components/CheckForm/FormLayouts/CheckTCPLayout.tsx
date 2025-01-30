@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesTcp } from 'types';
+import { CheckFormValuesTcp, CheckType } from 'types';
 import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
 import { TCPRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
@@ -9,6 +9,7 @@ import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/
 import { TCPRequest } from 'components/CheckEditor/FormComponents/TCPRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
+import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 const TCP_REQUEST_FIELDS: TCPRequestFields = {
@@ -71,7 +72,7 @@ export const TCPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValu
     Component: (
       <>
         <TCPCheckQueryAndResponse />
-        <Timeout />
+        <Timeout min={CheckTimeoutValues[CheckType.TCP].min} max={CheckTimeoutValues[CheckType.TCP].max} />
       </>
     ),
   },

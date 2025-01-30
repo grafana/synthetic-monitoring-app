@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
+import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
@@ -211,6 +212,41 @@ describe(`<NewCheck /> journey`, () => {
     await submitForm(user);
     const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
     expect(submitButton).toBeEnabled();
+  });
+
+  it(`should display an error message when the frequency is less than the timeout`, async () => {
+    const { user } = await renderNewForm(CheckType.Scripted);
+
+    await user.type(screen.getByLabelText('Job name', { exact: false }), `Job`);
+    await user.type(screen.getByLabelText(`Instance`, { exact: false }), `Instance`);
+
+    await goToSection(user, 2);
+
+    const timeoutMinutesInput = screen.getByLabelText('timeout minutes input');
+    const timeoutSecondsInput = screen.getByLabelText('timeout seconds input');
+
+    await user.clear(timeoutMinutesInput);
+    await user.clear(timeoutSecondsInput);
+    await user.type(timeoutMinutesInput, '1');
+    await user.type(timeoutSecondsInput, '30');
+
+    await goToSection(user, 5);
+
+    const minutesInput = screen.getByLabelText('frequency minutes input');
+    const secondsInput = screen.getByLabelText('frequency seconds input');
+    await user.clear(minutesInput);
+    await user.clear(secondsInput);
+    await user.type(minutesInput, `{backspace}1`);
+    await user.type(secondsInput, '10');
+
+    const probeCheckbox = await screen.findByLabelText(PUBLIC_PROBE.name);
+    await user.click(probeCheckbox);
+
+    await submitForm(user);
+
+    const errorMsg = await screen.findByRole('alert');
+    expect(errorMsg).toBeInTheDocument();
+    expect(errorMsg).toHaveTextContent(/Frequency must be greater than or equal to timeout \(90 seconds\)/);
   });
 
   // jsdom doesn't give us back the submitter of the form, so we can't test this
