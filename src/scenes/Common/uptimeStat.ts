@@ -28,7 +28,7 @@ function getQueryRunner(metrics: DataSourceRef, frequency: number) {
         refId: 'B',
       },
     ],
-    maxDataPoints: 6000,
+    maxDataPoints,
     minInterval: interval,
     maxDataPointsFromWidth: false,
   });
