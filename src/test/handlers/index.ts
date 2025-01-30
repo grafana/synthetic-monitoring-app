@@ -3,7 +3,7 @@ import { getAlertRules, getPromAlertRules } from 'test/handlers/alerting';
 import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
 import { getDashboard } from 'test/handlers/dashboards';
 import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
-import { getMetrics } from 'test/handlers/metrics';
+import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
 import { createAccessToken } from 'test/handlers/tokens';
@@ -19,7 +19,8 @@ const apiRoutes = {
   getAlertRules,
   getPromAlertRules,
   getDashboard,
-  getMetrics,
+  getInstantMetrics,
+  getRangeMetrics,
   getSMDS,
   getLogsDS,
   getMetricsDS,

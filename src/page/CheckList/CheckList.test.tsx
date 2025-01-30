@@ -527,26 +527,29 @@ describe(`bulk select behaviour`, () => {
 
   test(`Sorts by check execution frequency`, async () => {
     const { user } = await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
-    const checks = await screen.findAllByTestId('check-card');
+    const checksA = await screen.findAllByTestId('check-card');
 
-    expect(checks.length).toBe(2);
-    expect(checks[0]).toHaveTextContent(`89280 executions / month`);
-    expect(checks[1]).toHaveTextContent(`44640 executions / month`);
+    expect(checksA.length).toBe(2);
+    expect(checksA[0]).toHaveTextContent(`89280 executions / month`);
+    expect(checksA[1]).toHaveTextContent(`44640 executions / month`);
 
     const sortPicker = await screen.getByLabelText('Sort checks by');
     await user.click(sortPicker);
     await user.click(screen.getByText(`Asc. Executions`, { selector: 'span' }));
 
-    expect(checks.length).toBe(2);
-    expect(checks[0]).toHaveTextContent(`44640 executions / month`);
-    expect(checks[1]).toHaveTextContent(`89280 executions / month`);
+    const checksB = await screen.findAllByTestId('check-card');
+    expect(checksB.length).toBe(2);
+
+    expect(checksB[0]).toHaveTextContent(`44640 executions / month`);
+    expect(checksB[1]).toHaveTextContent(`89280 executions / month`);
 
     await user.click(sortPicker);
     await user.click(screen.getByText(`Desc. Executions`, { selector: 'span' }));
 
-    expect(checks.length).toBe(2);
-    expect(checks[0]).toHaveTextContent(`89280 executions / month`);
-    expect(checks[1]).toHaveTextContent(`44640 executions / month`);
+    const checksC = await screen.findAllByTestId('check-card');
+    expect(checksC.length).toBe(2);
+    expect(checksC[0]).toHaveTextContent(`89280 executions / month`);
+    expect(checksC[1]).toHaveTextContent(`44640 executions / month`);
   });
 });
 
