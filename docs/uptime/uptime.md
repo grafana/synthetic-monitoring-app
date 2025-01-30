@@ -41,7 +41,7 @@ Example calculation:
 | t1   | 1      | 1      | 1      | Success           |
 | t2   | 0      | 0      | 0      | Failure           |
 | t3   | 1      | 0      | 0      | Success           |
-| t3   | 1      | 1      | 0      | Success           |
+| t4   | 1      | 1      | 0      | Success           |
 
 Uptime = (3 successful time points / 4 total time points) * 100 = 75%
 
@@ -74,9 +74,9 @@ The above calculation is a naive way to calculate uptime and doesn't take into a
 | 1 week     | 15 seconds      | 20               | 806,400     |
 | 1 year     | 15 seconds      | 20               | 41,932,800  |
 
-3. A check might have multiple configurations during the time period we are querying. This could be a change in frequency, the number of probes or the check's definition of uptime itself. This could lead to a change in the number of time points and the number of successful time points.
+3. A check might have multiple configurations during the time period we are querying. This could be a change in frequency, the number of probes or the check's definition of uptime itself. This could lead to a change in the number of time points and the number of them which are successful.
 
-## How we calculate uptime
+## How we calculate uptime with PromQL
 
 Taking into account all of the above, our uptime calculation is the following:
 
@@ -87,7 +87,7 @@ clamp_max(sum(max_over_time(probe_success{job="$job", instance="$instance"}[$fre
 With the additional options:
 
 ```
-maxDataPoints: 10000
+maxDataPoints: 8000
 minInterval: $frequencyInSeconds
 ```
 
@@ -99,9 +99,9 @@ To explain the individual parts of the query, starting from the innermost part:
 
 ### max_over_time($metric[$frequencyInSeconds])
 
-`max_over_time` is a [Prometheus aggregation function](https://prometheus.io/docs/prometheus/latest/querying/functions/#aggregation_over_time) that returns the maximum value of a metric over a given time range, in this case `$frequencyInSeconds`.
+`max_over_time` is a [Prometheus aggregation function](https://prometheus.io/docs/prometheus/latest/querying/functions/#aggregation_over_time) that returns the maximum value of a metric over a given time range, in this case a check's frequency in seconds: `$frequencyInSeconds`.
 
-We use a check's frequency in seconds (`$frequencyInSeconds`) to determine what the time range and 'look back' time should be (which gives us a 'time point'). For example, if the check is running every 15 seconds, the time range would be 15 seconds. If the check is running every minute, the time range would be 60 seconds.
+We use (`$frequencyInSeconds`) to determine what the 'look back' time should be (which gives us a 'time point'). For example, if the check is running every 15 seconds, the step would be 15 seconds. If the check is running every minute, the step would be 60 seconds.
 
 This function gives us two benefits in particular, one explicit and one implicit:
 
@@ -114,11 +114,11 @@ Because of the `probe` label, we can have multiple results for a single time poi
 
 ## clamp_max(..., 1)
 
-Each assessment of uptime in a time point is a binary result. It is either 1 (success) or 0 (failure). In the previous step we sum all of the probe results for a given time point and now we 'clamp' the result to a maximum of 1. We only care if a time point is successful or not. If a time point has 3 successful probes, we still only want to count it as 1 successful time point (individual successes are represented by our reachability metric).
+Each assessment of uptime in a time point is a binary result: it is either 1 (success) or 0 (failure). In the previous step we sum all of the probe results for a given time point and in this step we 'clamp' the result to a maximum of 1. We only care if a time point is successful or not. If a time point has 3 successful probes, we still only want to count it as 1 successful time point (individual successes are represented by our reachability metric).
 
 ## Testing strategy
 
-We have a library where we can create a base set of Prometheus metrics across different common scenarios. This allows us to test our PromQL queries where we know precisely what the expected result should be as we have access to the underlying data to confirm without using PromQL to extract it. We can then modify the base query to see how it behaves in different scenarios and across different time periods and evaluate the results.
+We have a library where we can create a base set of Prometheus metrics across different common scenarios. This allows us to test our PromQL queries where we know precisely what the expected result should be as we have access to the underlying data to confirm without using PromQL to extract it (a snake eating its own tail comes to mind...). We can then modify the base query to see how it behaves in different scenarios and across different time periods and evaluate the results.
 
 There are two base-level assumptions each of the following scenarios has been run through:
 
@@ -129,10 +129,10 @@ There are two base-level assumptions each of the following scenarios has been ru
 
 There are four time periods that we have tested our uptime query against:
 
-1. 10 minute / 15-second frequency
-2. 3 hours / 15-second frequency
-3. 6 months / 1-minute frequency
-4. 1 year / 1-minute frequency
+1. __10 minutes__ / 15-second frequency
+2. __3 hours__ / 15-second frequency
+3. __6 months__ / 1-minute frequency
+4. __1 year__ / 1-minute frequency
 
 Against each of these time periods we have tested the following scenarios:
 
@@ -164,12 +164,12 @@ Two probes with a 10% failure rate at the end of the time period. The query corr
 #### 2p_no_overlap
 ![](./images/control_2p_no_overlap.png)
 
-Two probes with a 10% failure rate. probe1 has its failures at the end of the time period, probe2 has its failures at the beginning so they never overlap. The query correctly calculates 100% uptime.
+Two probes each with a 10% failure rate. probe1 has its failures at the end of the time period, probe2 has its failures at the beginning so they never overlap. The query correctly calculates 100% uptime.
 
 #### 2p_random
 ![](./images/control_2p_random.png)
 
-Two probes with a 10% failure rate. Each probe has its own random failures throughout the time period. In the example above, none of the failures overlap so the query correctly calculates 100% uptime.
+Two probes each with a 10% failure rate. Each probe has its own random failures throughout the time period which may or may not overlap. In the example above, none of the failures overlap so the query correctly calculates 100% uptime.
 
 #### 2p_shared_random
 ![](./images/control_2p_shared_random.png)
@@ -186,7 +186,7 @@ Two probes with a 10% failure rate. The failures are shared at random points of 
 
 20 probes with a 50% failure rate. The failures are shared at random points of time for each probe. The query correctly calculates 50% uptime.
 
-`shared_random` is to simulate the scenario where the issue lies at the endpoint on the client's side; `random` is to simulate the scenario where the issues lies with the probe itself.
+`shared_random` is to simulate the scenario where the issue lies at the endpoint on the client's side; `random` is to simulate the scenario where the issue lies with the probe itself.
 
 ### Results
 
@@ -264,7 +264,7 @@ Yes. They are saved in our 'Synthetics Dashboards reference' Google Sheet in the
 
 Because we have the ability to transform the data on the client side within our Grafana plugin, we are able to use the more powerful and fully featured range queries that Prometheus provides. Despite we often show uptime as a reduced single stat panel, having the ability to show the underlying data in a graph how that single stat is derived is very powerful and helps users visualize it in a more meaningful way.
 
-A limitation we bypass using range queries is Mimir's 768-hour time range limit for instant range queries, meaning we can support more of the long-range use cases outlined at the top of this document.
+A limitation we bypass using range queries is Mimir's 768-hour (30 days) time range limit for instant queries, meaning we can support more of the long-range use cases outlined at the top of this document.
 
 ### Why don't we use the `probe_all_success` summary metrics?
 
@@ -278,7 +278,7 @@ The v1 query (bottom) shows both an incorrect single stat (94.9%) and a graph th
 
 Prometheus has a feature where it has 'assumed continuity' of metrics. This means that if a metric is not reported for a given time point, Prometheus will assume that the metric is the same as the previous time point for the next five minutes before it stops reporting. For Synthetic Monitoring, this is a terrible assumption to make and can have a detrimental effect on the accuracy of our uptime calculation.
 
-The most likely scenario for a metric to stop reporting results is when a check's configuration has been altered. This could be a change in frequency, the number of probes or the check's definition of uptime itself. The `config_version` changes to a nanosecond unix timestamp when the check's configuration changes and is the most likely time that uptime would be affected (i.e. introducing a flaw in their uptime definition).
+The most likely scenario for a metric to stop reporting results is when a check's configuration has been altered. This could be a change in frequency, the number of probes or the check's definition of uptime itself. The `config_version` changes to a nanosecond unix timestamp when the check's configuration changes and is the most likely time that uptime would be affected (i.e. accidentally introducing a flaw in their uptime definition).
 
 ![](./images/without_aggregation.png)
 
