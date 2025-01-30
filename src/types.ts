@@ -688,7 +688,6 @@ export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
   sm: DataSourceRef;
-  singleCheckMode?: boolean;
 }
 
 export enum MultiHttpVariableType {
