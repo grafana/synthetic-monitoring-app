@@ -12,12 +12,13 @@ import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runti
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, Probe, ThresholdSettings } from '../types';
+import { Check, CheckAlertDraft, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
   AddCheckResult,
   type AddProbeResult,
   AdHocCheckResponse,
+  CheckAlertsResponse,
   CheckInfoResult,
   DeleteCheckResult,
   DeleteProbeResult,
@@ -340,6 +341,22 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         ...tenant,
         status: 1,
       },
+    });
+  }
+
+  //--------------------------------------------------------------------------------
+  // ALERTS PER CHECK
+  //--------------------------------------------------------------------------------
+  // Note: this endpoints are not yet released. The prototype can be seen here https://github.com/grafana/synthetic-monitoring-api/pull/992
+
+  async listAlertsForCheck(checkId: number) {
+    return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`);
+  }
+
+  async updateAlertsForCheck(alerts: CheckAlertDraft[], checkId: number) {
+    return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
+      method: 'POST',
+      data: { alerts },
     });
   }
 

@@ -1,3 +1,4 @@
+import { CheckAlertsSchema } from 'schemas/general/CheckAlerts';
 import { CheckProbesSchema } from 'schemas/general/CheckProbes';
 import { FrequencySchema } from 'schemas/general/Frequency';
 import { JobSchema } from 'schemas/general/Job';
@@ -18,6 +19,7 @@ export const BaseCheckSchema: ZodType<CheckFormValuesBase> = z
     alertSensitivity: z.nativeEnum(AlertSensitivity),
     labels: LabelsSchema,
     publishAdvancedMetrics: z.boolean(),
+    alerts: CheckAlertsSchema.optional(),
   })
   .superRefine((data, ctx) => {
     const { frequency, timeout } = data;

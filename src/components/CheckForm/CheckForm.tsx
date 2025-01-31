@@ -7,7 +7,7 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { Check, CheckFormValues, CheckType } from 'types';
+import { Check, CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckType, FeatureName } from 'types';
 import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -21,6 +21,7 @@ import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { AlertsPerCheck } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck';
 import { checkHasChanges } from 'components/CheckForm/checkForm.utils';
 import { DNSCheckLayout } from 'components/CheckForm/FormLayouts/CheckDNSLayout';
 import { GRPCCheckLayout } from 'components/CheckForm/FormLayouts/CheckGrpcLayout';
@@ -36,6 +37,7 @@ import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CheckUsage } from 'components/CheckUsage';
 import { ConfirmLeavingPage } from 'components/ConfirmLeavingPage';
 import { fallbackCheckMap } from 'components/constants';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
@@ -94,7 +96,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     (checkType === CheckType.Browser && isOverBrowserLimit) ||
     ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
   const isDisabled = disabled || !canWriteChecks || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
-  const defaultValues = toFormValues(initialCheck, checkType);
+  const defaultValues = useMemo(() => toFormValues(initialCheck, checkType), [initialCheck, checkType]);
+  const [formDefaultValues, setFormDefaultValues] = useState(defaultValues);
 
   const formMethods = useForm<CheckFormValues>({
     defaultValues,
@@ -161,7 +164,21 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const hasUnsavedChanges = error ? true : checkHasChanges(defaultValues, formMethods.getValues()) && !submittingToApi;
+  const formValues = formMethods.getValues();
+
+  const isFormModified = useMemo(() => {
+    return checkHasChanges(formDefaultValues, formValues);
+  }, [formDefaultValues, formValues]);
+
+  const hasUnsavedChanges = error ? true : isFormModified && !submittingToApi;
+
+  const handleInitAlerts = useCallback(
+    (alerts: Partial<Record<CheckAlertType, CheckAlertFormValues>>) => {
+      const newDefaults = { ...defaultValues, alerts };
+      setFormDefaultValues(newDefaults);
+    },
+    [defaultValues, setFormDefaultValues]
+  );
 
   const navModel = useMemo(() => {
     return isExistingCheck
@@ -217,7 +234,10 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                 {labelsComponent}
                 <CheckLabels />
               </FormLayout.Section>
-              <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]} status={status}>
+              <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
+                <FeatureFlag name={FeatureName.AlertsPerCheck}>
+                  {({ isEnabled }) => (isEnabled ? <AlertsPerCheck onInitAlerts={handleInitAlerts} /> : null)}
+                </FeatureFlag>
                 <CheckFormAlert />
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
