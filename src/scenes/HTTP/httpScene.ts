@@ -6,7 +6,6 @@ import {
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
-  SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
@@ -14,6 +13,7 @@ import {
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getTimeRange } from 'scenes/Common/timeRange';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import {
@@ -32,11 +32,7 @@ import { getLatencyByPhasePanel } from './latencyByPhase';
 
 export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
-    const timeRange = new SceneTimeRange({
-      from: 'now-3h',
-      to: 'now',
-    });
-
+    const timeRange = getTimeRange();
     const minStep = getMinStepFromFrequency(check.frequency);
 
     const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, check);

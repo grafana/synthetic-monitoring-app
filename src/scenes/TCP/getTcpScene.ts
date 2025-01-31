@@ -6,7 +6,6 @@ import {
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
-  SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
@@ -25,16 +24,13 @@ import {
 } from 'scenes/Common';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getTimeRange } from 'scenes/Common/timeRange';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
-    const timeRange = new SceneTimeRange({
-      from: 'now-6h',
-      to: 'now',
-    });
-
+    const timeRange = getTimeRange();
     const { job, instance, probe } = getVariables(CheckType.TCP, metrics, check);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });

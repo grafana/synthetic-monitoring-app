@@ -6,12 +6,12 @@ import {
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
-  SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
 
 import { Check, CheckType, DashboardSceneAppConfig } from '../../types';
+import { getTimeRange } from 'scenes/Common/timeRange';
 
 import {
   getAvgLatencyStat,
@@ -32,10 +32,7 @@ import { getMinStepFromFrequency } from '../utils';
 // TODO: Implement the actual GRPC scene
 export function getGRPCScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
-    const timeRange = new SceneTimeRange({
-      from: 'now-6h',
-      to: 'now',
-    });
+    const timeRange = getTimeRange();
 
     const { job, instance, probe } = getVariables(CheckType.GRPC, metrics, check);
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });

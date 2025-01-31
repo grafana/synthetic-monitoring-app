@@ -7,7 +7,6 @@ import {
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
-  SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
@@ -18,6 +17,7 @@ import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common'
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getTimeRange } from 'scenes/Common/timeRange';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getAssertionTable } from '../Common/AssertionsTable';
@@ -28,10 +28,7 @@ import { getProbeDuration } from './probeDuration';
 
 export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, checkType: CheckType) {
   return () => {
-    const timeRange = new SceneTimeRange({
-      from: 'now-1h',
-      to: 'now',
-    });
+    const timeRange = getTimeRange();
     const { probe, job, instance } = getVariables(checkType, metrics, check);
     const variables = new SceneVariableSet({
       variables: [probe, job, instance],
