@@ -11,7 +11,7 @@ If uptime has any degree of inaccuracy, it can lead to a false sense of security
 1. **"Is my site up right now?"** - Most daily use-cases of Synthetic Monitoring will be over smaller time ranges of a few hours. Our default is 3 hours but users might adjust the time range to 1 hour or 24 hours.
 2. **"I have a fortnightly SLA to report"** - Reporting uptime metrics for weekly / bi-weekly / monthly SLAs or other business metrics at regularly occurring meetings. In this case, a moderate time period, such as a week or a month is a likely scenario.
 3. **"Is our hosting provider reliable?"** - To assess whether more strategic decisions are warranted and to paint a holistic picture, it is equally valid to query much longer time periods, such as a quarter or even a year.
-4. **"We had an incident. I need to know exactly what happened."** - a query of just a few minutes is very likely in the case of an incident that requires a deep level of when problems began and ended so the root cause can be established.
+4. **"We had an incident. I need to know exactly what happened."** - a query of just a few minutes is very likely in the case of an incident that requires a deep level of analysis when problems began and ended so the root cause can be established.
 
 When we consider all of these use cases, we have to cater for an accurate uptime metric for as little as a minute up to one year. This is a **huge** range of time periods and we need to be able to accurately calculate uptime for all of them.
 
@@ -95,9 +95,9 @@ To explain the individual parts of the query, starting from the innermost part:
 
 ### probe_success{job="$job", instance="$instance"}
 
-`probe_success` is a [Prometheus gauge metric](https://prometheus.io/docs/concepts/metric_types/#gauge) reported by each of our probes. It can only have a value of 0 or 1. 0 represents a failure and 1 represents a success. We add `job` and `instance` label filters as these two combined are how we uniquely identify a check. `probe` and `config_version` labels are also available on this metric but are not explicitly used in the uptime calculation. It is worth noting they exist on the metric because if we modify the base query we can end up with very different results depending on the scenario (see reasoning below).
+`probe_success` is a [Prometheus gauge metric](https://prometheus.io/docs/concepts/metric_types/#gauge) reported by each of our probes. It can only have a value of 0 or 1. 0 represents a failure and 1 represents a success. We add `job` and `instance` label filters as these two combined are how we uniquely identify a check. `probe` and `config_version` labels are also available on this metric but are not explicitly used in the uptime calculation. It is worth noting they exist on the metric because if we modify the base query we can end up with very different results depending on the scenario _[See the example below](#what-happens-if-we-remove-the-max_over_time-aggregation-from-the-query)_.
 
-### max_over_time($metric[$frequencyInSeconds])
+### max_over_time({{_metric_}}[$frequencyInSeconds])
 
 `max_over_time` is a [Prometheus aggregation function](https://prometheus.io/docs/prometheus/latest/querying/functions/#aggregation_over_time) that returns the maximum value of a metric over a given time range, in this case a check's frequency in seconds: `$frequencyInSeconds`.
 
@@ -105,8 +105,8 @@ We use (`$frequencyInSeconds`) to determine what the 'look back' time should be 
 
 This function gives us two benefits in particular, one explicit and one implicit:
 
-1. explicit: we are telling Prometheus what the 'look-back' value is and what we consider a time point. Essentially, 'evaluate the entire time range in blocks of $frequencyInSeconds' and return the max value. This allows groups of probes to report their results at any point during the time point and be considered a single point in time.
-2. implicit: this turns off Prometheus' assumed continuity of metrics. If we didn't use this function, Prometheus would assume that the metric is continuous and that there are no gaps in the data. This is not the case and often acts as a horrible assumption creating inaccurate results. _[See the example below](#what-happens-if-we-remove-the-max_over_time-aggregation-from-the-query)_
+1. __explicit__: we are telling Prometheus what the 'look-back' value is and what we consider a time point. Essentially, 'evaluate the entire time range in blocks of $frequencyInSeconds' and return the max value (e.g. 1 if it is successful) for each block. This allows groups of probes to report their results at any point during the time point and be considered a single point in time.
+2. __implicit__: this turns off Prometheus' assumed continuity of metrics. If we didn't use this function, Prometheus would assume that the metric is continuous and that there are no gaps in the data. This is not the case and often acts as a horrible assumption creating inaccurate results. _[See the example below](#what-happens-if-we-remove-the-max_over_time-aggregation-from-the-query)_
 
 ## sum(...)
 
@@ -118,7 +118,7 @@ Each assessment of uptime in a time point is a binary result: it is either 1 (su
 
 ## Testing strategy
 
-We have a library where we can create a base set of Prometheus metrics across different common scenarios. This allows us to test our PromQL queries where we know precisely what the expected result should be as we have access to the underlying data to confirm without using PromQL to extract it (a snake eating its own tail comes to mind...). We can then modify the base query to see how it behaves in different scenarios and across different time periods and evaluate the results.
+We have a library where we can create a base set of Prometheus metrics across different common scenarios. This allows us to test our PromQL queries where we know precisely what the expected result should be as we have access to the underlying data to confirm without using PromQL to extract it (_a snake eating its own tail comes to mind..._). We can then modify the base query to see how it behaves in different scenarios and across different time periods and evaluate the results.
 
 There are two base-level assumptions each of the following scenarios has been run through:
 
@@ -154,7 +154,7 @@ A single probe with 10% of failures randomly distributed throughout the time per
 
 ![](./images/control_1p_overlap_4c.png)
 
-A single probe with 10% of failures at the end of the time period, the probe had 4 config_versions during the time period but all failures occurred in the last config_version. The query correctly calculates 90% uptime.
+A single probe with 10% of failures at the end of the time period, the probe had 4 config_versions of equal length during the time period but all failures occurred in the last config_version. The query correctly calculates 90% uptime.
 
 #### 2p_overlap
 ![](./images/control_2p_overlap.png)
@@ -238,7 +238,7 @@ When reduced in the stat panel, this shows a 50% uptime.
 ![](./images/out_of_phase_probes.png)
 __Out of phase probes__. A graph showing 40 time points, 30 of which have a successful result and 10 of which are failures. This is the more 'realistic' scenario with real world reporting because of the interaction between how agents start/restart and also how agents communicate with k6-runners for k6-powered checks. It is very likely for the probes to begin running the checks at different times ('out-of-phase') and increasingly become out of sync. Frankly, this is a feature rather than a bug as it ensures monitoring coverage is more comprehensive and a client's endpoints aren't receiving a barrage of requests at exactly the same time.
 
-When reduced in the stat panel, this shows a 75% uptime -- which from the point of view of measuring uptime is correct. Across the 40 time points, 30 are successful and 10 are failures despite the heavy-skewing of certain time points reporting multiple successes versus some only reporting one or two successes. Because our testing strategy deliberately introduces this random aspect to it, it is impossible to accurately predict what the expected result should be but we are confident that the query is behaving as expected.
+When reduced in the stat panel, this shows a 75% uptime -- which from the point of view of measuring uptime is correct. Across the 40 time points, 30 are successful and 10 are failures despite the heavy-skewing of certain time points reporting multiple successes versus some only reporting one or two successes. Because our testing strategy deliberately introduces this random aspect to it, it is impossible to accurately predict what the expected result should be (without evaluating the data in minute detail) but we are confident that the query is behaving as expected.
 
 ##### How is the uptime query over a year period so accurate?
 
