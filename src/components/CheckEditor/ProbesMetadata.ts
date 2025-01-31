@@ -1,4 +1,4 @@
-import { ProbeProvider } from 'types';
+import { ProbeMetadata, ProbeProvider } from 'types';
 
 const REGION_APAC = { code: 'APAC', long: 'Asia-Pacific' };
 const REGION_AMER = { code: 'AMER', long: 'The Americas' };
@@ -23,7 +23,7 @@ const COUNTRY_AE = { code: 'AE', long: 'United Arab Emirates' };
 const COUNTRY_ES = { code: 'ES', long: 'Spain' };
 const COUNTRY_ID = { code: 'ID', long: 'Indonesia' };
 
-export const PROBES_METADATA = [
+export const PROBES_METADATA: ProbeMetadata[] = [
   {
     name: 'Bangalore',
     region: REGION_APAC.code,

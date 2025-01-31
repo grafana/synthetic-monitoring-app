@@ -3,7 +3,7 @@ import { PluginPage } from '@grafana/runtime';
 import { Alert, Label, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { ExtendedProbe, type Probe } from 'types';
+import { ExtendedProbe, type Probe, ProbeProvider } from 'types';
 import { ROUTES } from 'routing/types';
 import { type AddProbeResult } from 'datasource/responses.types';
 import { useCreateProbe } from 'data/useProbes';
@@ -29,6 +29,11 @@ export const TEMPLATE_PROBE: ExtendedProbe = {
     disableScriptedChecks: false,
     disableBrowserChecks: false,
   },
+  provider: ProbeProvider.AWS,
+  country: '',
+  countryCode: '',
+  longRegion: '',
+  displayName: '',
   checks: [],
 };
 

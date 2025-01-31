@@ -122,16 +122,24 @@ export interface Probe extends ExistingObject {
   version: string;
   deprecated: boolean;
   capabilities: ProbeCapabilities;
-
-  provider?: ProbeProvider;
-  city?: string;
-  country?: string;
-  countryCode?: string;
-  longRegion?: string;
 }
 
+export type ProbeMetadata = {
+  name: string;
+  provider: ProbeProvider;
+  country: string;
+  countryCode: string;
+  longRegion: string;
+  region: string;
+};
+
+export type ProbeWithMetadata = Probe &
+  ProbeMetadata & {
+    displayName: string;
+  };
+
 // Used to extend the Probe object with additional properties (see Probes.tsx component)
-export type ExtendedProbe = Probe & { checks: number[] };
+export type ExtendedProbe = ProbeWithMetadata & { checks: number[] };
 
 interface ProbeCapabilities {
   disableScriptedChecks: boolean;

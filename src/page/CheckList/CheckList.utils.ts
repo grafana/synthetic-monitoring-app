@@ -24,11 +24,11 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
   // <term> can be one of target, job or a label name
   const filterParts = searchFilter.toLowerCase().trim().split('=');
 
-  const labelMatches = labels.reduce((acc, { name, value }) => {
+  const labelMatches = labels.reduce<string[]>((acc, { name, value }) => {
     acc.push(name);
     acc.push(value);
     return acc;
-  }, [] as string[]);
+  }, []);
 
   return filterParts.some((filterPart) => matchStrings(filterPart, [target, job, ...labelMatches]));
 };

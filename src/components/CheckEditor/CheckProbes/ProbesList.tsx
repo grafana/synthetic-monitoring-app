@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, Label, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Probe } from 'types';
+import { ProbeWithMetadata } from 'types';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { ProbeStatus } from 'components/ProbeCard/ProbeStatus';
 
@@ -14,7 +14,7 @@ export const ProbesList = ({
   onSelectionChange,
 }: {
   title: string;
-  probes: Probe[];
+  probes: ProbeWithMetadata[];
   selectedProbes: number[];
   onSelectionChange: (probes: number[]) => void;
 }) => {
@@ -29,7 +29,7 @@ export const ProbesList = ({
     onSelectionChange([...selected]);
   };
 
-  const handleToggleProbe = (probe: Probe) => {
+  const handleToggleProbe = (probe: ProbeWithMetadata) => {
     if (!probe.id) {
       return;
     }
@@ -73,7 +73,7 @@ export const ProbesList = ({
         </Label>
       </div>
       <div className={styles.probesList}>
-        {probes.map((probe: Probe) => (
+        {probes.map((probe: ProbeWithMetadata) => (
           <div key={probe.id} className={styles.item}>
             <Checkbox
               id={`probe-${probe.id}`}
@@ -83,7 +83,7 @@ export const ProbesList = ({
             <Label htmlFor={`probe-${probe.id}`}>
               <div className={styles.columnLabel}>
                 <ProbeStatus probe={probe} />{' '}
-                {`${probe.name}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
+                {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
                   probe.provider ? `(${probe.provider})` : ''
                 }`}
                 {probe.deprecated && (

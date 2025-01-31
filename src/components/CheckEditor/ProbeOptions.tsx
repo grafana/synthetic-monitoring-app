@@ -2,7 +2,7 @@ import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Field } from '@grafana/ui';
 
-import { CheckFormValues, CheckType, Probe } from 'types';
+import { CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
 
@@ -73,7 +73,7 @@ function getFrequencyBounds(checkType: CheckType) {
   };
 }
 
-function getAvailableProbes(probes: Probe[], checkType: CheckType) {
+function getAvailableProbes(probes: ProbeWithMetadata[], checkType: CheckType) {
   if (checkType === CheckType.Scripted) {
     return probes.filter((probe) => probe.capabilities.disableScriptedChecks === false);
   }
