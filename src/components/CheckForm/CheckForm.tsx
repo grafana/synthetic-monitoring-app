@@ -7,7 +7,7 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { Check, CheckFormValues, CheckType, FeatureName } from 'types';
+import { Check, CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckType, FeatureName } from 'types';
 import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -96,7 +96,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     (checkType === CheckType.Browser && isOverBrowserLimit) ||
     ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
   const isDisabled = disabled || !canWriteChecks || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
-  const defaultValues = toFormValues(initialCheck, checkType);
+  const defaultValues = useMemo(() => toFormValues(initialCheck, checkType), [initialCheck, checkType]);
+  const [formDefaultValues, setFormDefaultValues] = useState(defaultValues);
 
   const formMethods = useForm<CheckFormValues>({
     defaultValues,
@@ -163,7 +164,21 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const hasUnsavedChanges = error ? true : checkHasChanges(defaultValues, formMethods.getValues()) && !submittingToApi;
+  const formValues = formMethods.getValues();
+
+  const isFormModified = useMemo(() => {
+    return checkHasChanges(formDefaultValues, formValues);
+  }, [formDefaultValues, formValues]);
+
+  const hasUnsavedChanges = error ? true : isFormModified && !submittingToApi;
+
+  const handleInitAlerts = useCallback(
+    (alerts: Partial<Record<CheckAlertType, CheckAlertFormValues>>) => {
+      const newDefaults = { ...defaultValues, alerts };
+      setFormDefaultValues(newDefaults);
+    },
+    [defaultValues, setFormDefaultValues]
+  );
 
   const navModel = useMemo(() => {
     return isExistingCheck
@@ -221,7 +236,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
               </FormLayout.Section>
               <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
                 <FeatureFlag name={FeatureName.AlertsPerCheck}>
-                  {({ isEnabled }) => (isEnabled ? <AlertsPerCheck /> : null)}
+                  {({ isEnabled }) => (isEnabled ? <AlertsPerCheck onInitAlerts={handleInitAlerts} /> : null)}
                 </FeatureFlag>
                 <CheckFormAlert />
               </FormLayout.Section>

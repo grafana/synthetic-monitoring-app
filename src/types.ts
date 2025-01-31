@@ -642,13 +642,6 @@ export type AlertDescription = {
 
 export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 
-export enum CheckAlertFormType {
-  ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
-  HTTPRequestDurationTooHigh = 'HTTPRequestDurationTooHigh',
-  HTTPTargetCertificateCloseToExpiring = 'HTTPTargetCertificateCloseToExpiring',
-  PingICMPDurationTooHigh = 'PingICMPDurationTooHigh',
-}
-
 export enum CheckAlertType {
   ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
   HTTPRequestDurationTooHighP50 = 'HTTPRequestDurationTooHighP50',
@@ -741,7 +734,6 @@ export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
   sm: DataSourceRef;
-  singleCheckMode?: boolean;
 }
 
 export enum MultiHttpVariableType {

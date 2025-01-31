@@ -58,7 +58,6 @@ const ProbesContent = () => {
   };
 
   const { publicProbes, privateProbes } = extendedProbes
-    .sort((probeA, probeB) => probeA.name.localeCompare(probeB.name))
     .filter((probe) => Boolean(probe.id))
     .reduce((acc, probe) => {
       if (!probe.id) {

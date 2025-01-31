@@ -49,6 +49,20 @@ export function CheckProbes({ probes, availableProbes, onChange, error }: CheckP
         <div>
           <ProbesFilter probes={availableProbes} onSearch={setFilteredProbes} />
           <Stack wrap="wrap">
+            <Stack wrap="nowrap">
+              {Object.entries(groupedByRegion)
+                .sort(([regionA], [regionB]) => regionA.localeCompare(regionB))
+                .map(([region, allProbes]) => (
+                  <ProbesList
+                    key={region}
+                    title={region}
+                    probes={allProbes}
+                    selectedProbes={probes}
+                    onSelectionChange={onChange}
+                  />
+                ))}
+            </Stack>
+
             {privateProbes.length > 0 && (
               <ProbesList
                 title="Private probes"
@@ -57,16 +71,6 @@ export function CheckProbes({ probes, availableProbes, onChange, error }: CheckP
                 onSelectionChange={onChange}
               />
             )}
-
-            {Object.entries(groupedByRegion).map(([region, allProbes]) => (
-              <ProbesList
-                key={region}
-                title={region}
-                probes={allProbes}
-                selectedProbes={probes}
-                onSelectionChange={onChange}
-              />
-            ))}
           </Stack>
         </div>
       </Field>

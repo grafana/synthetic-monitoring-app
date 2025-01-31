@@ -18,7 +18,6 @@ import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common'
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getAssertionTable } from '../Common/AssertionsTable';
@@ -28,25 +27,22 @@ import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
 
 export function getScriptedScene(
-  { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
-  checks: Check[] = [],
+  { metrics, logs }: DashboardSceneAppConfig,
+  check: Check,
   checkType: CheckType,
-  newUptimeQuery = false,
+  newUptimeQuery = false
 ) {
   return () => {
-    if (checks.length === 0) {
-      return getEmptyScene(checkType);
-    }
     const timeRange = new SceneTimeRange({
       from: 'now-1h',
       to: 'now',
     });
-    const { probe, job, instance } = getVariables(checkType, metrics, checks, singleCheckMode);
+    const { probe, job, instance } = getVariables(checkType, metrics, check);
     const variables = new SceneVariableSet({
       variables: [probe, job, instance],
     });
 
-    const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
+    const minStep = getMinStepFromFrequency(check.frequency);
 
     const reachability = getReachabilityStat(metrics, minStep);
     const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
@@ -83,7 +79,7 @@ export function getScriptedScene(
           }),
           new SceneFlexLayout({
             direction: 'row',
-            children: [getAssertionTable(logs, checkType, checks?.[0]?.frequency)],
+            children: [getAssertionTable(logs, checkType, check.frequency)],
           }),
           new SceneFlexLayout({
             direction: 'row',

@@ -15,7 +15,6 @@ import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getVariables } from 'scenes/Common';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 
 import { getAverageHopsPanel } from './averageHops';
 import { getCommonHostsPanel } from './commonHosts';
@@ -25,17 +24,14 @@ import { getPacketLossPanel } from './packetLoss';
 import { getRouteHashPanel } from './routeHash';
 import { getTraceTimePanel } from './traceTime';
 
-export function getTracerouteScene({ metrics, logs, sm, singleCheckMode }: DashboardSceneAppConfig, checks: Check[]) {
+export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfig, check: Check) {
   return () => {
-    if (checks.length === 0) {
-      return getEmptyScene(CheckType.Traceroute);
-    }
     const timeRange = new SceneTimeRange({
       from: 'now-30m',
       to: 'now',
     });
 
-    const { probe, job, instance } = getVariables(CheckType.Traceroute, metrics, checks, singleCheckMode);
+    const { probe, job, instance } = getVariables(CheckType.Traceroute, metrics, check);
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const nodeGraph = new SceneFlexItem({ height: 500, body: getNodeGraphPanel(sm) });
