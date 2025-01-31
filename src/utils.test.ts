@@ -1,4 +1,4 @@
-import { getRandomProbes } from 'utils';
+import { camelCaseToSentence, getRandomProbes } from 'utils';
 
 it('gets random probes', async () => {
   const probes = [11, 23, 5, 5212, 43, 3, 4, 6];
@@ -12,4 +12,14 @@ it('gets random probes', async () => {
 
   const random2 = getRandomProbes(probes, 2);
   expect(random2.length).toBe(2);
+});
+
+describe(`camelCaseToSentence`, () => {
+  it(`converts camelCase to sentence`, () => {
+    expect(camelCaseToSentence('camelCaseToSentence')).toBe('Camel Case To Sentence');
+  });
+
+  it(`doesn't convert values which are all uppercase`, () => {
+    expect(camelCaseToSentence('ALLUPPERCASE')).toBe('ALLUPPERCASE');
+  });
 });
