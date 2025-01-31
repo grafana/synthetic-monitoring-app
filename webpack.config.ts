@@ -1,6 +1,6 @@
 // webpack.config.ts
 import path from 'path';
-import type { Configuration } from 'webpack';
+import { type Configuration, DefinePlugin } from 'webpack';
 import { CustomizeRule, mergeWithRules } from 'webpack-merge';
 
 import { getPluginJson } from './.config/webpack/utils';
@@ -39,6 +39,11 @@ const config = async (env): Promise<Configuration> => {
         },
       ],
     },
+    plugins: [
+      new DefinePlugin({
+        'process.env.REACT_APP_MSW': JSON.stringify(process.env.REACT_APP_MSW),
+      }),
+    ],
   };
 
   const res = mergeWithRules({

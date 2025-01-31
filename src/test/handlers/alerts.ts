@@ -1,12 +1,10 @@
 import { BASIC_CHECK_ALERTS } from 'test/fixtures/checkAlerts';
 
 import { ApiEntry } from 'test/handlers/types';
-import {
-  CheckAlertsResponse,
-} from 'datasource/responses.types'
+import { CheckAlertsResponse } from 'datasource/responses.types';
 
 export const listAlertsForCheck: ApiEntry<CheckAlertsResponse> = {
-  route: `/sm/check/:checkId/alerts`,
+  route: `/sm/check/\\d+/alerts`,
   method: `get`,
   result: () => {
     return {
@@ -15,14 +13,12 @@ export const listAlertsForCheck: ApiEntry<CheckAlertsResponse> = {
   },
 };
 
-
 export const updateAlertsForCheck: ApiEntry<CheckAlertsResponse> = {
-  route: `/sm/check/:checkId/alerts`,
+  route: `/sm/check/\\d+/alerts`,
   method: `post`,
-  result: (req) => {
+  result: () => {
     return {
       json: BASIC_CHECK_ALERTS,
     };
   },
 };
-

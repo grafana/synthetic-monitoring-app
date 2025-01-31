@@ -27,6 +27,10 @@ if (window.location.hostname !== 'localhost') {
   });
 }
 
+if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_MSW) {
+  await import('./startServerWorker');
+}
+
 export const plugin = new AppPlugin<ProvisioningJsonData>().setRootPage(App).addConfigPage({
   title: 'Config',
   icon: 'cog',
