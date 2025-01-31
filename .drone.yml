@@ -54,7 +54,7 @@ steps:
         from_secret: gcs_sa_grafanalabsdev
 
   - name: Open PR to update plugin version for all dev stacks
-    image: us.gcr.io/kubernetes-dev/drone/plugins/updater
+    image: us-docker.pkg.dev/grafanalabs-global/docker-deployment-tools-prod/updater
     settings:
       config_json: |-
         {
@@ -116,7 +116,7 @@ steps:
         from_secret: gcs_sa_grafanalabsglobal
 
   - name: Update staging stacks
-    image: us.gcr.io/kubernetes-dev/drone/plugins/updater
+    image: us-docker.pkg.dev/grafanalabs-global/docker-deployment-tools-prod/updater
     settings:
       config_json: |-
         {
@@ -168,7 +168,7 @@ steps:
         from_secret: signing_token
 
   - name: Open PR to update plugin version for all canary stacks
-    image: us.gcr.io/kubernetes-dev/drone/plugins/updater
+    image: us-docker.pkg.dev/grafanalabs-global/docker-deployment-tools-prod/updater
     settings:
       config_json: |-
         {
@@ -222,7 +222,7 @@ steps:
         from_secret: github_token
 
   - name: Open PR to update plugin version for all production stacks
-    image: us.gcr.io/kubernetes-dev/drone/plugins/updater
+    image: us-docker.pkg.dev/grafanalabs-global/docker-deployment-tools-prod/updater
     settings:
       config_json: |-
         {
@@ -293,7 +293,7 @@ kind: secret
 name: dockerconfigjson
 
 get:
-  path: secret/data/common/gcr
+  path: secret/data/common/gar
   name: .dockerconfigjson
 ---
 kind: secret
