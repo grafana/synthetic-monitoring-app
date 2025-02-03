@@ -42,7 +42,7 @@ export function CheckProbes({ probes, availableProbes, onChange, error }: CheckP
       <Field
         label="Probe locations"
         description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
-        invalid={!!error}
+        invalid={Boolean(error)}
         error={error}
         htmlFor={PROBES_FILTER_ID}
       >

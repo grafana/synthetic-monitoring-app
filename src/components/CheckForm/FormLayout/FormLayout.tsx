@@ -148,7 +148,7 @@ export const FormLayout = <T extends FieldValues>({
                   </Button>
                 )}
                 <Button
-                  data-testId={DataTestIds.CHECK_FORM_SUBMIT_BUTTON}
+                  data-testid={DataTestIds.CHECK_FORM_SUBMIT_BUTTON}
                   disabled={disableSubmit}
                   key="submit"
                   type="submit"

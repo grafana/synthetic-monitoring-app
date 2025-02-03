@@ -13,7 +13,9 @@ import {
 import {
   getBaseFormValuesFromCheck,
   getTlsConfigFormValues,
+  predefinedAlertsToFormValues,
 } from 'components/CheckEditor/transformations/toFormValues.utils';
+import { HTTP_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { FALLBACK_CHECK_HTTP, HTTP_COMPRESSION_ALGO_OPTIONS } from 'components/constants';
 
 export function getHTTPCheckFormValues(check: HTTPCheck): CheckFormValuesHttp {
@@ -24,6 +26,10 @@ export function getHTTPCheckFormValues(check: HTTPCheck): CheckFormValuesHttp {
     checkType: CheckType.HTTP,
     settings: {
       http: getHttpSettingsForm(check.settings),
+    },
+    alerts: {
+      ...base.alerts,
+      ...predefinedAlertsToFormValues(HTTP_PREDEFINED_ALERTS),
     },
   };
 }
