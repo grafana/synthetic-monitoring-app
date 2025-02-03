@@ -3,7 +3,7 @@ import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQue
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
-import { ExtendedProbe, type Probe } from 'types';
+import { ExtendedProbe, type Probe, ProbeMetadata, ProbeWithMetadata } from 'types';
 import { FaroEvent } from 'faro';
 import { camelCaseToSentence } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
@@ -11,7 +11,6 @@ import type {
   AddProbeResult,
   DeleteProbeError,
   DeleteProbeResult,
-  ListProbeResult,
   ResetProbeTokenResult,
   UpdateProbeResult,
 } from 'datasource/responses.types';
@@ -41,7 +40,7 @@ export function useProbes() {
 export function useProbesWithMetadata() {
   const { data: probes = [], isLoading } = useProbes();
 
-  const probesWithMetadata = useMemo<ListProbeResult>(() => {
+  const probesWithMetadata = useMemo<ProbeWithMetadata[]>(() => {
     if (isLoading) {
       return [];
     }
@@ -49,13 +48,15 @@ export function useProbesWithMetadata() {
     return probes
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((probe) => {
-        const metadata = PROBES_METADATA.find((info) => info.name === probe.name && info.region === probe.region);
+        const metadata = PROBES_METADATA.find(
+          (info) => info.name === probe.name && info.region === probe.region
+        ) as ProbeMetadata;
         const displayName = camelCaseToSentence(probe.name);
 
         return {
           ...probe,
           ...metadata,
-          name: displayName,
+          displayName,
         };
       });
   }, [probes, isLoading]);

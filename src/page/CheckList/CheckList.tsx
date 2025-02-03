@@ -9,6 +9,7 @@ import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/
 import { Check, CheckEnabledStatus, CheckSort, CheckType, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { useSuspenseChecks } from 'data/useChecks';
+import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
@@ -51,6 +52,7 @@ type CheckListContentProps = {
 };
 
 const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps) => {
+  useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const { data: checks } = useSuspenseChecks();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const filters = useCheckFilters();

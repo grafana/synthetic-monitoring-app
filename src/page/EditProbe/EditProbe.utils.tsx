@@ -1,10 +1,10 @@
-import { type Probe } from 'types';
+import { type ProbeWithMetadata } from 'types';
 
-export function getTitle(probe?: Probe, canEdit?: boolean) {
+export function getTitle(probe?: ProbeWithMetadata, canEdit?: boolean) {
   const verb = canEdit ? 'Editing' : 'Viewing';
   const type = !probe ? `` : probe.public ? 'public' : 'private';
 
-  return `${verb} ${type} probe ${probe ? probe.name : ``}`;
+  return `${verb} ${type} probe ${probe ? probe.displayName : ``}`;
 }
 
 type ErrorInfo = Error | null;

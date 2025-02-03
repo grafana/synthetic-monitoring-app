@@ -49,7 +49,7 @@ export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: 
       <>
         You do not have sufficient permissions
         <br />
-        to delete the probe <span className={styles.probeName}>&apos;{probe.name}&apos;</span>.
+        to delete the probe <span className={styles.probeName}>&apos;{probe.displayName}&apos;</span>.
       </>
     );
 

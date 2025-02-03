@@ -3,7 +3,7 @@ import { DataTestIds } from 'test/dataTestIds';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
+import { probeToMetadataProbe, runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
 
 import { CheckType } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
@@ -239,7 +239,7 @@ describe(`<NewCheck /> journey`, () => {
     await user.type(minutesInput, `{backspace}1`);
     await user.type(secondsInput, '10');
 
-    const probeCheckbox = await screen.findByLabelText(PUBLIC_PROBE.name);
+    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
     await user.click(probeCheckbox);
 
     await submitForm(user);

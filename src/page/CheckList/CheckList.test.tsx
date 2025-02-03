@@ -12,7 +12,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { getSelect, selectOption } from 'test/utils';
+import { getSelect, probeToMetadataProbe, selectOption } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 import { ROUTES } from 'routing/types';
@@ -172,7 +172,7 @@ test('filters by probe', async () => {
   await user.click(additionalFilters);
   const probeFilter = await screen.findByLabelText('Filter by probe');
   await user.click(probeFilter);
-  await user.click(screen.getByText(PRIVATE_PROBE.name, { selector: 'span' }));
+  await user.click(screen.getByText(probeToMetadataProbe(PRIVATE_PROBE).displayName, { selector: 'span' }));
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -222,6 +222,30 @@ test('loads labels from query params', async () => {
   const constructedLabel = `${label.name}: ${label.value}`;
 
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], `labels=${constructedLabel}`);
+  const additionalFilters = await screen.findByText(/Additional filters \(1 active\)/i);
+  await user.click(additionalFilters);
+
+  const dialog = getModalContainer();
+  const typeFilter = await within(dialog).findByText(constructedLabel, { exact: false });
+  expect(typeFilter).toBeInTheDocument();
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+});
+
+test('loads probes from query params', async () => {
+  const constructedLabel = PRIVATE_PROBE.name;
+
+  const { user } = await renderCheckList(
+    [
+      BASIC_DNS_CHECK,
+      {
+        ...BASIC_HTTP_CHECK,
+        probes: [PUBLIC_PROBE.id!],
+      },
+    ],
+    `probes=${constructedLabel}`
+  );
   const additionalFilters = await screen.findByText(/Additional filters \(1 active\)/i);
   await user.click(additionalFilters);
 

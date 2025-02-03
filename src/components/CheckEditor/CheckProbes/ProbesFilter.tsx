@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 
-import { Probe } from 'types';
+import { ProbeWithMetadata } from 'types';
 import { SearchFilter } from 'components/SearchFilter';
 
 export const PROBES_FILTER_ID = 'check-probes-filter';
 
-export const ProbesFilter = ({ probes, onSearch }: { probes: Probe[]; onSearch: (probes: Probe[]) => void }) => {
+export const ProbesFilter = ({
+  probes,
+  onSearch,
+}: {
+  probes: ProbeWithMetadata[];
+  onSearch: (probes: ProbeWithMetadata[]) => void;
+}) => {
   const [showEmptyState, setShowEmptyState] = useState(false);
   const [filterText, setFilterText] = useState('');
 
@@ -15,11 +21,11 @@ export const ProbesFilter = ({ probes, onSearch }: { probes: Probe[]; onSearch: 
       (probe) =>
         probe.region.toLowerCase().includes(searchValue) ||
         probe.name.toLowerCase().includes(searchValue) ||
-        probe.longRegion?.toLowerCase().includes(searchValue) ||
-        probe.city?.toLowerCase().includes(searchValue) ||
-        probe.provider?.toLowerCase().includes(searchValue) ||
-        probe.country?.toLowerCase().includes(searchValue) ||
-        probe.countryCode?.toLowerCase().includes(searchValue)
+        probe.displayName.toLowerCase().includes(searchValue) ||
+        probe.longRegion.toLowerCase().includes(searchValue) ||
+        probe.provider.toLowerCase().includes(searchValue) ||
+        probe.country.toLowerCase().includes(searchValue) ||
+        probe.countryCode.toLowerCase().includes(searchValue)
     );
 
     onSearch(filteredProbes);

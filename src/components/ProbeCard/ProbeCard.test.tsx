@@ -18,9 +18,9 @@ it(`Displays the correct information`, async () => {
   const probe = probeToExtendedProbe(ONLINE_PROBE);
   render(<ProbeCard probe={probe} />);
 
-  await screen.findByText(probe.name);
+  await screen.findByText(probe.displayName);
 
-  expect(screen.getByText((content) => content.startsWith(probe.name))).toBeInTheDocument();
+  expect(screen.getByText((content) => content.startsWith(probe.displayName))).toBeInTheDocument();
   expect(screen.getByText(/Version:/)).toBeInTheDocument();
   expect(screen.getByText(probe.version, { exact: false })).toBeInTheDocument();
 
@@ -36,7 +36,7 @@ it(`Displays the correct information for an online probe`, async () => {
   const probe = probeToExtendedProbe(ONLINE_PROBE);
 
   render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name);
+  await screen.findByText(probe.displayName);
 
   // Check status circle
   const status = screen.getByTestId('probe-online-status');
@@ -47,7 +47,7 @@ it(`Displays the correct information for an online probe`, async () => {
   await userEvent.hover(status);
   const tooltip = await screen.findByTestId('probe-online-status-tooltip');
   expect(tooltip).toBeInTheDocument();
-  expect(tooltip).toHaveTextContent(`Probe ${probe.name} is online`);
+  expect(tooltip).toHaveTextContent(`Probe ${probe.displayName} is online`);
 });
 
 it(`Displays the correct information for an offline probe`, async () => {
@@ -55,7 +55,7 @@ it(`Displays the correct information for an offline probe`, async () => {
   const probe = probeToExtendedProbe(OFFLINE_PROBE);
 
   render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name);
+  await screen.findByText(probe.displayName);
 
   // Check status circle
   const status = screen.getByTestId('probe-online-status');
@@ -66,14 +66,14 @@ it(`Displays the correct information for an offline probe`, async () => {
   await userEvent.hover(status);
   const tooltip = await screen.findByTestId('probe-online-status-tooltip');
   expect(tooltip).toBeInTheDocument();
-  expect(tooltip).toHaveTextContent(`Probe ${probe.name} is offline`);
+  expect(tooltip).toHaveTextContent(`Probe ${probe.displayName} is offline`);
 });
 
 it(`Displays the correct information for a private probe`, async () => {
   const probe = probeToExtendedProbe(PRIVATE_PROBE);
 
   render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name, { exact: false });
+  await screen.findByText(probe.displayName, { exact: false });
 
   const button = screen.getByTestId('probe-card-action-button');
   expect(button).toBeInTheDocument();
@@ -85,7 +85,7 @@ it(`Displays the correct information for a private probe as a viewer`, async () 
   const probe = probeToExtendedProbe(PRIVATE_PROBE);
 
   render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name, { exact: false });
+  await screen.findByText(probe.displayName, { exact: false });
 
   const button = screen.getByTestId('probe-card-action-button');
   expect(button).toBeInTheDocument();
@@ -97,7 +97,7 @@ it(`Displays the correct information for a private probe as a RBAC viewer`, asyn
   const probe = probeToExtendedProbe(PRIVATE_PROBE);
 
   render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name, { exact: false });
+  await screen.findByText(probe.displayName, { exact: false });
 
   const button = screen.getByTestId('probe-card-action-button');
   expect(button).toBeInTheDocument();
@@ -108,7 +108,7 @@ it(`Displays the correct information for a public probe`, async () => {
   const probe = probeToExtendedProbe(PUBLIC_PROBE);
 
   render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name, { exact: false });
+  await screen.findByText(probe.displayName, { exact: false });
 
   const button = screen.getByTestId('probe-card-action-button');
   expect(button).toBeInTheDocument();
@@ -118,8 +118,8 @@ it(`Displays the correct information for a public probe`, async () => {
 it('handles public probe click', async () => {
   const probe = probeToExtendedProbe(PUBLIC_PROBE);
   const { user } = render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name);
-  await user.click(screen.getByText(probe.name));
+  await screen.findByText(probe.displayName);
+  await user.click(screen.getByText(probe.displayName));
 
   expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
     generateRoutePath(ROUTES.ViewProbe, { id: probe.id! })
@@ -129,8 +129,8 @@ it('handles public probe click', async () => {
 it('handles private probe click', async () => {
   const probe = probeToExtendedProbe(PRIVATE_PROBE);
   const { user } = render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name);
-  await user.click(screen.getByText(probe.name));
+  await screen.findByText(probe.displayName);
+  await user.click(screen.getByText(probe.displayName));
 
   expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
     generateRoutePath(ROUTES.EditProbe, { id: probe.id! })
@@ -146,7 +146,7 @@ it.each<[ExtendedProbe, string]>([
   async (probe: ExtendedProbe, expectedText: string) => {
     const { user } = render(<ProbeCard probe={probe} />);
 
-    await screen.findByText(probe.name);
+    await screen.findByText(probe.displayName);
 
     const usageLink = screen.getByTestId(DataTestIds.PROBE_USAGE_LINK);
     expect(usageLink).toBeInTheDocument();
@@ -163,7 +163,7 @@ it('Displays the correct information for a probe that is NOT in use', async () =
   const probe = probeToExtendedProbe(PUBLIC_PROBE);
 
   render(<ProbeCard probe={probe} />);
-  await screen.findByText(probe.name);
+  await screen.findByText(probe.displayName);
 
   const usageLink = screen.queryByTestId(DataTestIds.PROBE_USAGE_LINK);
   expect(usageLink).not.toBeInTheDocument();

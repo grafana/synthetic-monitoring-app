@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
+import { probeToMetadataProbe } from 'test/utils';
 
 import { CheckType } from 'types';
 
@@ -28,7 +29,7 @@ export async function fillMandatoryFields({ user, fieldsToOmit = [], checkType }
   await goToSection(user, 5);
 
   if (!fieldsToOmit.includes('probes')) {
-    const probeCheckbox = await screen.findByLabelText(PRIVATE_PROBE.name);
+    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
   }
 }

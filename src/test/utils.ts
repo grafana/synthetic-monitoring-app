@@ -8,7 +8,8 @@ import {
   VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 } from 'test/fixtures/datasources';
 
-import { ExtendedProbe, FeatureName, type Probe } from 'types';
+import { ExtendedProbe, FeatureName, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
+import { camelCaseToSentence } from 'utils';
 
 import { FULL_ADMIN_ACCESS, FULL_READONLY_ACCESS, FULL_WRITER_ACCESS } from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
@@ -298,7 +299,17 @@ export const selectOption = async (user: UserEvent, options: SelectOptions, cont
   await user.click(option);
 };
 
-export const probeToExtendedProbe = (probe: Probe, usedByChecks: number[] = []): ExtendedProbe => ({
+export const probeToMetadataProbe = (probe: Probe): ProbeWithMetadata => ({
   ...probe,
+  provider: ProbeProvider.AWS,
+  country: 'country',
+  countryCode: 'cc',
+  region: 'region',
+  longRegion: 'long region',
+  displayName: camelCaseToSentence(probe.name),
+});
+
+export const probeToExtendedProbe = (probe: Probe, usedByChecks: number[] = []): ExtendedProbe => ({
+  ...probeToMetadataProbe(probe),
   checks: usedByChecks,
 });
