@@ -4,6 +4,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { probeToMetadataProbe } from 'test/utils';
 
 import { Probe } from 'types';
 import { formatDate } from 'utils';
@@ -63,7 +64,7 @@ describe(`Private probes`, () => {
 
     const { body } = await read();
 
-    expect(body).toEqual(PRIVATE_PROBE);
+    expect(body).toMatchObject(PRIVATE_PROBE);
   });
 
   it(`shows the token modal on update`, async () => {
@@ -91,7 +92,7 @@ function getResetTokenButton() {
 }
 
 function checkInformation(probe: Probe) {
-  expect(screen.getByDisplayValue(probe.name)).toBeInTheDocument();
+  expect(screen.getByDisplayValue(probeToMetadataProbe(probe).displayName)).toBeInTheDocument();
   expect(screen.getByText(probe.region)).toBeInTheDocument();
   expect(screen.getByDisplayValue(probe.latitude)).toBeInTheDocument();
   expect(screen.getByDisplayValue(probe.longitude)).toBeInTheDocument();

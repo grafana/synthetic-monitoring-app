@@ -10,6 +10,8 @@ import { createAccessToken } from 'test/handlers/tokens';
 
 import { ApiEntry, RequestRes } from 'test/handlers/types';
 
+import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
+
 const apiRoutes = {
   addCheck,
   addProbe,
@@ -32,6 +34,8 @@ const apiRoutes = {
   updateCheck,
   updateProbe,
   updateTenantSettings,
+  updateAlertsForCheck,
+  listAlertsForCheck,
 };
 
 export type ApiRoutes = typeof apiRoutes;
@@ -64,9 +68,9 @@ export function apiRoute<K extends keyof ApiRoutes>(
 }
 
 function toRestMethod({ route, method, result }: ApiEntry) {
-  const url = `http://localhost${route}`;
+  const urlPattern = new RegExp(`^http://localhost.*${route}$`);
 
-  return rest[method](url, async (req, res, ctx) => {
+  return rest[method](urlPattern, async (req, res, ctx) => {
     const { status = 200, json } = await result(req);
 
     return res(ctx.status(status), ctx.json(json));

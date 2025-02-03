@@ -3,16 +3,16 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Probe } from 'types';
+import { ProbeWithMetadata } from 'types';
 
-export function ProbeStatus({ probe }: { probe: Probe }) {
+export function ProbeStatus({ probe }: { probe: ProbeWithMetadata }) {
   const styles = useStyles2((theme) => getStyles(theme, probe));
 
   return (
     <Tooltip
       content={
         <div data-testid="probe-online-status-tooltip">
-          Probe {probe.name} is <span className={styles.statusText}>{probe.online ? 'online' : 'offline'}</span>
+          Probe {probe.displayName} is <span className={styles.statusText}>{probe.online ? 'online' : 'offline'}</span>
         </div>
       }
     >
@@ -21,7 +21,7 @@ export function ProbeStatus({ probe }: { probe: Probe }) {
   );
 }
 
-function getStyles(theme: GrafanaTheme2, probe: Probe) {
+function getStyles(theme: GrafanaTheme2, probe: ProbeWithMetadata) {
   return {
     container: css({
       display: 'inline-block',

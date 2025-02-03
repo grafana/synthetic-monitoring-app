@@ -1,8 +1,9 @@
+import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { selectOption } from 'test/utils';
 
-import { AlertSensitivity, Check, CheckType } from 'types';
+import { AlertSensitivity, Check, CheckType, FeatureName } from 'types';
 import {
   FALLBACK_CHECK_DNS,
   FALLBACK_CHECK_GRPC,
@@ -90,6 +91,36 @@ describe('Api endpoint checks - common fields payload', () => {
           const { body } = await read();
 
           expect(body.alertSensitivity).toBe(AlertSensitivity.Medium);
+        });
+
+        it(`can submit the form with alerts per check`, async () => {
+          jest.replaceProperty(config, 'featureToggles', {
+            // @ts-expect-error
+            [FeatureName.AlertsPerCheck]: true,
+          });
+
+          
+          const { user, read } = await renderNewForm(checkType);
+          
+          await fillMandatoryFields({ user, checkType });
+
+          await goToSection(user, 4);
+
+          expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
+
+          expect(screen.getByText('Probe Failed Executions Too High')).toBeInTheDocument();
+
+          const thresholdsInput = screen.getAllByLabelText(/^Threshold/)[0];
+
+          await user.click(screen.getByLabelText('Probe Failed Executions Too High'));
+          await user.clear(thresholdsInput);
+          await user.type(thresholdsInput, '0.1');
+
+          await submitForm(user);
+
+          const { body: alertsBody } = await read(1);
+
+          expect(alertsBody).toEqual({ alerts: [{ name: 'ProbeFailedExecutionsTooHigh', threshold: 0.1 }] });
         });
       });
 

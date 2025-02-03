@@ -5,10 +5,9 @@ import { css } from '@emotion/css';
 
 import { CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { Check } from 'types';
-import { useProbes } from 'data/useProbes';
+import { useExtendedProbes } from 'data/useProbes';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
-import { defaultFilters } from 'page/CheckList/CheckList.utils';
 import { CheckFilterGroup } from 'page/CheckList/components/CheckFilterGroup';
 import { LabelFilterInput } from 'page/CheckList/components/LabelFilterInput';
 
@@ -16,17 +15,11 @@ interface CheckFiltersProps {
   onReset: () => void;
   onChange: (filters: CheckFiltersType, type: FilterType) => void;
   checks: Check[];
-  checkFilters?: CheckFiltersType;
+  checkFilters: CheckFiltersType;
   includeStatus?: boolean;
 }
 
-export function CheckFilters({
-  onReset,
-  onChange,
-  checks,
-  checkFilters = defaultFilters,
-  includeStatus = true,
-}: CheckFiltersProps) {
+export function CheckFilters({ onReset, onChange, checks, checkFilters, includeStatus = true }: CheckFiltersProps) {
   const checkTypeOptions = useCheckTypeOptions();
   const filterDesc = checkTypeOptions.map((option) => {
     return {
@@ -45,7 +38,7 @@ export function CheckFilters({
 
   const styles = useStyles2(getStyles);
   const [searchValue, setSearchValue] = useState(checkFilters.search);
-  const { data: probes = [] } = useProbes();
+  const [probes] = useExtendedProbes();
   const debounceRef = useRef<NodeJS.Timeout>();
 
   function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
@@ -66,7 +59,7 @@ export function CheckFilters({
 
   const probesOptions: Array<SelectableValue<ProbeFilter>> = useMemo(() => {
     return probes.map((probe) => {
-      const probeOption: SelectableValue = { label: probe.name, value: probe.id };
+      const probeOption: SelectableValue = { label: probe.displayName, value: probe.id };
       return probeOption;
     });
   }, [probes]);

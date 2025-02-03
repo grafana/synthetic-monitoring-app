@@ -108,7 +108,7 @@ describe('TerraformTab', () => {
         const { getAllByTestId } = await renderTerraformTab();
         const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
         expect(preformatted[2]).toHaveTextContent(
-          'terraform import grafana_synthetic_monitoring_probe.tacos 1:<PROBE_ACCESS_TOKEN>'
+          `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} 1:<PROBE_ACCESS_TOKEN>`
         );
       });
     });

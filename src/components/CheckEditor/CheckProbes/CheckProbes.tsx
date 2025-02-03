@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Field, Stack } from '@grafana/ui';
 
-import { Probe } from 'types';
+import { ProbeWithMetadata } from 'types';
 
 import { PrivateProbesAlert } from './PrivateProbesAlert';
 import { PROBES_FILTER_ID, ProbesFilter } from './ProbesFilter';
@@ -9,7 +9,7 @@ import { ProbesList } from './ProbesList';
 
 interface CheckProbesProps {
   probes: number[];
-  availableProbes: Probe[];
+  availableProbes: ProbeWithMetadata[];
   disabled?: boolean;
   onChange: (probes: number[]) => void;
   onBlur?: () => void;
@@ -17,14 +17,14 @@ interface CheckProbesProps {
   error?: string;
 }
 export function CheckProbes({ probes, availableProbes, onChange, error }: CheckProbesProps) {
-  const [filteredProbes, setFilteredProbes] = useState<Probe[]>(availableProbes);
+  const [filteredProbes, setFilteredProbes] = useState<ProbeWithMetadata[]>(availableProbes);
 
   const publicProbes = useMemo(() => filteredProbes.filter((probe) => probe.public), [filteredProbes]);
   const privateProbes = useMemo(() => filteredProbes.filter((probe) => !probe.public), [filteredProbes]);
 
   const groupedByRegion = useMemo(
     () =>
-      publicProbes.reduce((acc: Record<string, Probe[]>, curr: Probe) => {
+      publicProbes.reduce((acc: Record<string, ProbeWithMetadata[]>, curr: ProbeWithMetadata) => {
         const region = curr.region;
         if (!acc[region]) {
           acc[region] = [];

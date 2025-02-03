@@ -1,6 +1,6 @@
 import { DataFrameJSON } from '@grafana/data';
 
-import { AlertRecord, Check, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
+import { AlertRecord, Check, CheckAlertPublished, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
@@ -175,4 +175,8 @@ export type LogsQueryResponse = {
 export type AccessTokenResponse = {
   msg: string;
   token: string;
+};
+
+export type CheckAlertsResponse = {
+  alerts: CheckAlertPublished[];
 };

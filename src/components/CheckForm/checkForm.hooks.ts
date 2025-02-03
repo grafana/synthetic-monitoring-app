@@ -10,12 +10,14 @@ import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
 import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
-import { Check, CheckFormValues, CheckType } from 'types';
+import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType } from 'types';
 import { ROUTES } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { useCUDChecks, useTestCheck } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
+import { getAlertsPayload } from 'components/CheckEditor/transformations/toPayload.alerts';
 
 import { broadcastFailedSubmission, findFieldToFocus } from './checkForm.utils';
 import { useFormCheckType } from './useCheckType';
@@ -51,13 +53,28 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
   const testButtonRef = useRef<HTMLButtonElement>(null);
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
+  const navigateToChecks = useCallback(() => navigate(ROUTES.Checks), [navigate]);
+
+  const onError = (err: Error | unknown) => {
+    setSubmittingToApi(false);
+  };
+
+  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({ onSuccess: navigateToChecks, onError });
+
+  const onSuccess = useCallback(
+    (data: Check, alerts?: CheckAlertFormRecord) => {
+      if (alerts && data.id) {
+        const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, data.id);
+        return updateAlertsForCheck({ alerts: checkAlerts, checkId: data.id });
+      }
+      return navigateToChecks();
+    },
+    [updateAlertsForCheck, navigateToChecks]
+  );
+
   const mutateCheck = useCallback(
-    (newCheck: Check) => {
+    (newCheck: Check, alerts?: CheckAlertFormRecord) => {
       setSubmittingToApi(true);
-      const onSuccess = (data: Check) => navigate(ROUTES.Checks);
-      const onError = (err: Error) => {
-        setSubmittingToApi(false);
-      };
 
       if (check?.id) {
         return updateCheck(
@@ -66,13 +83,13 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
             tenantId: check.tenantId,
             ...newCheck,
           },
-          { onSuccess, onError }
+          { onSuccess: (data) => onSuccess(data, alerts), onError }
         );
       }
 
-      return createCheck(newCheck, { onSuccess, onError });
+      return createCheck(newCheck, { onSuccess: (data) => onSuccess(data, alerts), onError });
     },
-    [check?.id, check?.tenantId, createCheck, navigate, updateCheck]
+    [check?.id, check?.tenantId, createCheck, updateCheck, onSuccess]
   );
 
   const handleValid = useCallback(
@@ -84,7 +101,8 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
       if (submitter === testButtonRef.current) {
         return testCheck(toSubmit, { onSuccess: onTestSuccess });
       }
-      mutateCheck(toSubmit);
+
+      mutateCheck(toSubmit, checkValues?.alerts);
     },
     [mutateCheck, onTestSuccess, testCheck]
   );

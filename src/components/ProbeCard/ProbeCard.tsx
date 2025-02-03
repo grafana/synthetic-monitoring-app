@@ -27,7 +27,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
         <Stack alignItems="center" gap={0}>
           <ProbeStatus probe={probe} />
           <Link href={probeEditHref}>
-            <span>{probe.name}</span>
+            <span>{probe.displayName}</span>
             {probe.region && <span>&nbsp;{`(${probe.region})`}</span>}
           </Link>
           {probe.deprecated && (
@@ -80,7 +80,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
               fill="outline"
               variant="secondary"
               href={probeEditHref}
-              aria-label={`Edit probe ${probe.name}`}
+              aria-label={`Edit probe ${probe.displayName}`}
               tooltip="Edit probe"
             >
               Edit
@@ -94,7 +94,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
             variant="secondary"
             icon="eye"
             tooltip="View probe"
-            aria-label={`View probe ${probe.name}`}
+            aria-label={`View probe ${probe.displayName}`}
           >
             View
           </LinkButton>

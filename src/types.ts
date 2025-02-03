@@ -122,16 +122,24 @@ export interface Probe extends ExistingObject {
   version: string;
   deprecated: boolean;
   capabilities: ProbeCapabilities;
-
-  provider?: ProbeProvider;
-  city?: string;
-  country?: string;
-  countryCode?: string;
-  longRegion?: string;
 }
 
+export type ProbeMetadata = {
+  name: string;
+  provider: ProbeProvider;
+  country: string;
+  countryCode: string;
+  longRegion: string;
+  region: string;
+};
+
+export type ProbeWithMetadata = Probe &
+  ProbeMetadata & {
+    displayName: string;
+  };
+
 // Used to extend the Probe object with additional properties (see Probes.tsx component)
-export type ExtendedProbe = Probe & { checks: number[] };
+export type ExtendedProbe = ProbeWithMetadata & { checks: number[] };
 
 interface ProbeCapabilities {
   disableScriptedChecks: boolean;
@@ -311,9 +319,16 @@ export interface AlertFormValues {
   annotations: Label[];
   sensitivity: SelectableValue<AlertSensitivity>;
 }
+export interface CheckAlertFormValues {
+  threshold?: number;
+  isSelected?: boolean;
+}
+
+export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertFormValues>>;
 
 export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly'> & {
   publishAdvancedMetrics: boolean;
+  alerts?: CheckAlertFormRecord;
 };
 
 export type CheckFormValuesHttp = CheckFormValuesBase & {
@@ -389,6 +404,7 @@ export interface CheckBase {
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   probes: number[];
+  alerts?: CheckAlertFormRecord;
 }
 
 export type Check =
@@ -554,6 +570,13 @@ export enum HttpRegexValidationType {
   Body = 'Body',
 }
 
+export enum AlertPercentiles {
+  p50 = 'P50',
+  p90 = 'P90',
+  p95 = 'P95',
+  p99 = 'P99',
+}
+
 export interface SubmissionError {
   message?: string;
   msg?: string;
@@ -627,6 +650,36 @@ export type AlertDescription = {
 
 export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 
+export enum CheckAlertType {
+  ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
+  HTTPRequestDurationTooHighP50 = 'HTTPRequestDurationTooHighP50',
+  HTTPRequestDurationTooHighP90 = 'HTTPRequestDurationTooHighP90',
+  HTTPRequestDurationTooHighP95 = 'HTTPRequestDurationTooHighP95',
+  HTTPRequestDurationTooHighP99 = 'HTTPRequestDurationTooHighP99',
+  HTTPTargetCertificateCloseToExpiring = 'HTTPTargetCertificateCloseToExpiring',
+  PingICMPDurationTooHighP50 = 'PingICMPDurationTooHighP50',
+  PingICMPDurationTooHighP90 = 'PingICMPDurationTooHighP90',
+  PingICMPDurationTooHighP95 = 'PingICMPDurationTooHighP95',
+  PingICMPDurationTooHighP99 = 'PingICMPDurationTooHighP99',
+}
+
+export enum CheckAlertCategory {
+  SystemHealth = 'System Health',
+  RequestDuration = 'Request Duration',
+}
+
+export type CheckAlertDraft = {
+  name: CheckAlertType;
+  threshold: number;
+};
+
+export type CheckAlertPublished = CheckAlertDraft & {
+  created: number;
+  modified: number;
+};
+
+export type ThresholdUnit = 'ms' | 's' | 'd' | '%';
+
 export enum CheckSort {
   AToZ = 'atoz',
   ZToA = 'ztoa',
@@ -656,6 +709,7 @@ export enum FeatureName {
   ScriptedChecks = 'scripted-checks',
   UnifiedAlerting = 'ngalert',
   RBAC = 'synthetic-monitoring-rbac',
+  AlertsPerCheck = 'sm-alerts-per-check',
   __TURNOFF = 'test-only-do-not-use',
 }
 
