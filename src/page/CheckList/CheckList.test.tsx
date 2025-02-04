@@ -238,7 +238,10 @@ test('loads probes from query params', async () => {
 
   const { user } = await renderCheckList(
     [
-      BASIC_DNS_CHECK,
+      {
+        ...BASIC_DNS_CHECK,
+        probes: [PRIVATE_PROBE.id!],
+      },
       {
         ...BASIC_HTTP_CHECK,
         probes: [PUBLIC_PROBE.id!],
