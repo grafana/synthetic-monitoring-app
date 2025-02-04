@@ -30,14 +30,14 @@ function WebVitalGaugeRenderer({ model }: SceneComponentProps<WebVitalGaugeScene
   setExploreLink(model);
 
   const { data } = sceneGraph.getData(model).useState();
-  const { name, description, longName, refId, exploreLink } = model.useState();
+  const { name, description, longName, exploreLink } = model.useState();
   const value = useMemo(() => {
     if (data != null && data.state === 'Done') {
       if (!data || data.series.length === 0) {
         return 0;
       }
 
-      const frame = data.series.find((s) => s.refId === refId);
+      const frame = data.series[0];
 
       if (!frame) {
         return 0;
@@ -47,7 +47,7 @@ function WebVitalGaugeRenderer({ model }: SceneComponentProps<WebVitalGaugeScene
 
       return view.toArray()[0]?.Mean;
     }
-  }, [data, refId]);
+  }, [data]);
 
   return (
     <div className={styles}>
