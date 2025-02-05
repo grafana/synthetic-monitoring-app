@@ -41,7 +41,7 @@ export function setup() {
   const authToken = loginRes.json('token')
   check(authToken, { 'logged in successfully': () => authToken.length > 0 })
 
-  return {token: authToken, cookies: http.cookieJar().cookiesForURL(BASE_URL), cc: http.cookieJar()}
+  return {token: authToken, cookies: http.cookieJar().cookiesForURL(BASE_URL)}
 }
 
 export default function (data) {
