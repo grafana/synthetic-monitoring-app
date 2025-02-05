@@ -12,7 +12,6 @@ import AWS_AUTH_SCRIPT from './snippets/aws_auth.js?raw';
 import BASIC_AUTH_SCRIPT from './snippets/basic_auth.js?raw';
 // Browser
 // import BROWSER_FILL_FORM_SCRIPT from './snippets/browser_fill_form.js?raw';
-import DIGEST_AUTH_SCRIPT from './snippets/digest_auth.js?raw';
 // Extracting values/tokens from form fields
 import EXTRACT_TOKEN_SCRIPT from './snippets/extract_token_csrf.js?raw';
 // Correlation
@@ -54,11 +53,6 @@ const AUTH_CHOICES = [
     label: 'Basic authentication',
     script: BASIC_AUTH_SCRIPT,
     value: 'basic_auth.js',
-  },
-  {
-    label: 'Digest authentication',
-    script: DIGEST_AUTH_SCRIPT,
-    value: 'digest_auth.js',
   },
   {
     label: 'NTLM authentication',

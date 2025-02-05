@@ -14,7 +14,7 @@ export default function () {
     file: http.file(binFile, 'test.bin', 'application/octet-stream'),
   }
 
-  const res = http.post('https://httpbin.test.k6.io/post', data)
+  const res = http.post('https://quickpizza.grafana.com/api/post', data)
   check(res, {
     'is status 200': (r) => r.status === 200,
   })
