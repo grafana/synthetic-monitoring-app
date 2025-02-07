@@ -15,16 +15,6 @@ If uptime has any degree of inaccuracy, it can lead to a false sense of security
 
 When we consider all of these use cases, we have to cater for an accurate uptime metric for as little as a minute up to one year. This is a **huge** range of time periods and we need to be able to accurately calculate uptime for all of them.
 
-## How we collect and query data
-
-![](./images/sm-architecture.png)
-
-[A more detailed explanation of the Synthetic Monitoring architecture in our on-call training.](https://docs.google.com/presentation/d/1jWuv2VwVFIsdyXq4JQMlhmM6txHXLyHImYpnl50V5XQ/edit#slide=id.g308ff111cb5_0_35).
-
-Our architecture is multi-layered with many separate services. Please read the material above for an in-depth guide to how we collect and publish data. The short answer is: **we have multiple probes that run checks at regular intervals and report their results to a Grafana Cloud Mimir instance.**
-
-Within the Synthetic Monitoring application we query the instance's default Cloud Mimir datasource using PromQL to calculate uptime.
-
 ## A naive calculation
 
 We calculate uptime as the percentage of successful time points in the requested time range that return a positive result. A simple way to express uptime is as follows:
@@ -50,7 +40,7 @@ Uptime = (3 successful time points / 4 total time points) * 100 = 75%
 The above calculation is a naive way to calculate uptime and doesn't take into account the nuance and multi-layered architecture of how we run checks and store data. The two big variables that we need to consider are:
 
 1. When does a time point start and end? How many probes reported a result for that time point?
-    - In an ideal world, if you had 3 probes running a check every 15 seconds they would report their results at precisely the same time. e.g. 12:00:15, 12:00:30, 12:00:45. However, in reality, probes won't always report their results at the same time. One probe might report at 12:00:15 but the second probe might report at 12:00:16. It could be as late as 12:00:29 or even 12:00:30, which would now be considered a new time point. Time point 1 would only have two probe execution results and time point 2 would have three (or possibly four...) probe execution results.
+    - In an ideal world, if you had a probe running a check every 15 seconds they would each report their results at precisely the interval time. e.g. 12:00:15, 12:00:30, 12:00:45. However, in reality, probes won't always report their results at the same time. One probe might report at 12:00:15 but the second probe might report at 12:00:16. It could be as late as 12:00:29 or even 12:00:30, which would now be considered a new time point. Time point 1 would only have two probe execution results and time point 2 would have three (or possibly four...) probe execution results.
 2. How large is the time period we are querying and how often is the check executing? Consider the following tables in how extreme the execution number can vary depending on the time period, check frequency and number of probes.
 
 | Time range | Check frequency | Number of probes | Executions  |
@@ -76,12 +66,48 @@ The above calculation is a naive way to calculate uptime and doesn't take into a
 
 3. A check might have multiple configurations during the time period we are querying. This could be a change in frequency, the number of probes or the check's definition of uptime itself. This could lead to a change in the number of time points and the number of them which are successful.
 
+4. It is not guaranteed that every check's results will end up in Mimir. The agent uses the HTTP remote write method and that is subject to the fickleness of the internet so some samples may be unintenionally dropped and go unreported. This is a comparatively small number but it is worth noting and will have a more magnifying effect at smaller time ranges.
+
+## A consideration for visualising uptime
+
+When we visualize uptime, we need to consider how we present the data to the user. We have two main ways of visualizing uptime:
+
+1. **Single stat panel**: It is a single number that represents the uptime percentage for the given time range. It is the most straightforward way to present the data but it doesn't give the user any insight into how that number was derived.
+
+2. **Graph**: It shows the underlying data that contributes to calculating the uptime percentage and correlates with the mental model of how Synthetic Monitoring operates: a plot point = a Synthetic Monitoring check.
+
+It is more complex to understand but gives the user a more in-depth view of how their endpoints were performing at any given time.
+
+
+## How we collect and query data
+
+![](./images/sm-architecture.png)
+
+[A more detailed explanation of the Synthetic Monitoring architecture in our on-call training. (Grafana Labs internal-only)](https://docs.google.com/presentation/d/1jWuv2VwVFIsdyXq4JQMlhmM6txHXLyHImYpnl50V5XQ/edit#slide=id.g308ff111cb5_0_35).
+
+Our architecture is multi-layered with many separate services. Please read the material above for an in-depth guide to how we collect and publish data. The most relevant part when considering uptime is: **we have multiple probes (which are effectively SM Agents) that run checks at regular intervals and report metric results to a Grafana Cloud Mimir instance and log results to a Grafana Cloud Loki instance.**
+
+Our agents report two time series metrics which are directly related to uptime:
+1. `probe_success` is a [Prometheus gauge metric](https://prometheus.io/docs/concepts/metric_types/#gauge). It can only have a value of 0 or 1. 0 represents an execution failure and 1 represents an execution success.
+2. `probe_all_success` is a [Prometheus summary metric](https://prometheus.io/docs/concepts/metric_types/#summary). A summary metric is made up two separate observations, in this case:
+    - `probe_all_success_sum`: the sum of all __successful__ executions
+    - `probe_all_success_count`: the count of all executions
+
+Within the Synthetic Monitoring App we query the instance's default Cloud Mimir datasource using PromQL to calculate uptime.
+
+## How could we calculate uptime?
+
+There are two approaches we could take to calculating uptime:
+1. 
+
+
+
 ## How we calculate uptime with PromQL
 
 Taking into account all of the above, our uptime calculation is the following:
 
 ```
-clamp_max(sum(max_over_time(probe_success{job="$job", instance="$instance"}[$frequencyInSeconds])), 1)
+max by () (max_over_time(probe_success{job="$job", instance="$instance"}[$frequencyInSeconds]))
 ```
 
 With the additional options:
@@ -112,7 +138,7 @@ This function gives us two benefits in particular, one explicit and one implicit
 
 Because of the `probe` label, we can have multiple results for a single time point. We sum all of the results for all probes given a time point to get a single result.
 
-## clamp_max(..., 1)
+## max by() (...)
 
 Each assessment of uptime in a time point is a binary result: it is either 1 (success) or 0 (failure). In the previous step we sum all of the probe results for a given time point and in this step we 'clamp' the result to a maximum of 1. We only care if a time point is successful or not. If a time point has 3 successful probes, we still only want to count it as 1 successful time point (individual successes are represented by our reachability metric).
 
@@ -264,7 +290,7 @@ Yes. They are saved in our 'Synthetics Dashboards reference' Google Sheet in the
 
 Because we have the ability to transform the data on the client side within our Grafana plugin, we are able to use the more powerful and fully featured range queries that Prometheus provides. Despite we often show uptime as a reduced single stat panel, having the ability to show the underlying data in a graph how that single stat is derived is very powerful and helps users visualize it in a more meaningful way.
 
-A limitation we bypass using range queries is Mimir's 768-hour (30 days) time range limit for instant queries, meaning we can support more of the long-range use cases outlined at the top of this document.
+A limitation we bypass using range queries is Mimir's 768-hour (32 days) time range limit for instant queries, meaning we can support more of the long-range use cases outlined at the top of this document.
 
 ### Why don't we use the `probe_all_success` summary metrics?
 
