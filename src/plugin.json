@@ -279,7 +279,6 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=11.3.0",
-    "grafanaVersion": "11.3"
+    "grafanaDependency": ">=11.5.0"
   }
 }
