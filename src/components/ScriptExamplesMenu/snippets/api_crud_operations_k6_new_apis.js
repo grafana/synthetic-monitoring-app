@@ -1,3 +1,4 @@
+import http from 'k6/http'
 import { describe, expect } from 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js'
 import { Httpx } from 'https://jslib.k6.io/httpx/0.1.0/index.js'
 import {
@@ -6,96 +7,110 @@ import {
   randomString,
 } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js'
 
-export const options = {}
+export const options = {
+  // for the example, let's run only 1 VU with 1 iteration
+  vus: 1,
+  iterations: 1,
+}
 
-// Set your own email
-const USERNAME = `user${randomIntBetween(1, 100000)}@example.com`
-const PASSWORD = 'superCroc2019'
-
-const session = new Httpx({ baseURL: 'https://test-api.k6.io' })
+const USERNAME = `user${randomIntBetween(1, 100000)}@example.com` // Set your own email;
+const PASSWORD = 'secretpassword'
+const BASE_URL = 'https://quickpizza.grafana.com'
+const session = new Httpx({ baseURL: BASE_URL })
 
 // Register a new user and retrieve authentication token for subsequent API requests
 export function setup() {
   let authToken = null
 
   describe(`setup - create a test user ${USERNAME}`, () => {
-    const resp = session.post(`/user/register/`, {
-      first_name: 'Crocodile',
-      last_name: 'Owner',
-      username: USERNAME,
-      password: PASSWORD,
-    })
+    const resp = session.post(
+      `/api/users`,
+      JSON.stringify({
+        username: USERNAME,
+        password: PASSWORD,
+      })
+    )
 
     expect(resp.status, 'User create status').to.equal(201)
     expect(resp, 'User create valid json response').to.have.validJsonBody()
   })
 
   describe(`setup - Authenticate the new user ${USERNAME}`, () => {
-    const resp = session.post(`/auth/token/login/`, {
-      username: USERNAME,
-      password: PASSWORD,
-    })
+    const resp = session.post(
+      `/api/users/token/login?set_cookie=true`,
+      JSON.stringify({
+        username: USERNAME,
+        password: PASSWORD,
+      })
+    )
 
     expect(resp.status, 'Authenticate status').to.equal(200)
     expect(resp, 'Authenticate valid json response').to.have.validJsonBody()
-    authToken = resp.json('access')
+    authToken = resp.json('token')
     expect(authToken, 'Authentication token').to.be.a('string')
   })
 
-  return authToken
+  return { token: authToken, cookies: http.cookieJar().cookiesForURL(BASE_URL) }
 }
 
-export default function (authToken) {
-  // set the authorization header on the session for the subsequent requests
-  session.addHeader('Authorization', `Bearer ${authToken}`)
+export default function (data) {
+  // copy cookies over to this VU
+  Object.entries(data.cookies).forEach(([k, v]) => {
+    http.cookieJar().set(BASE_URL, k, v)
+  })
 
-  describe('01. Create a new crocodile', (t) => {
+  // set the authorization header on the session for the subsequent requests
+  session.addHeader('Authorization', `Bearer ${data.authToken}`)
+
+  describe('01. Create a new rating', (t) => {
     const payload = {
-      name: `Croc name ${randomString(10)}`,
-      sex: randomItem(['M', 'F']),
-      date_of_birth: '2023-05-11',
+      stars: 2,
+      pizza_id: 1, // Pizza ID 1 already exists in the database
     }
 
     session.addTag('name', 'Create')
-    const resp = session.post(`/my/crocodiles/`, payload)
+    const resp = session.post(`/api/ratings`, JSON.stringify(payload))
 
-    expect(resp.status, 'Croc creation status').to.equal(201)
-    expect(resp, 'Croc creation valid json response').to.have.validJsonBody()
+    expect(resp.status, 'Rating creation status').to.equal(201)
+    expect(resp, 'Rating creation valid json response').to.have.validJsonBody()
 
-    session.newCrocId = resp.json('id')
+    session.newRatingId = resp.json('id')
   })
 
-  describe('02. Fetch private crocs', (t) => {
+  describe('02. Fetch my ratings', (t) => {
     session.clearTag('name')
-    const resp = session.get('/my/crocodiles/')
+    const resp = session.get('/api/ratings')
 
-    expect(resp.status, 'Fetch croc status').to.equal(200)
-    expect(resp, 'Fetch croc valid json response').to.have.validJsonBody()
-    expect(resp.json().length, 'Number of crocs').to.be.above(0)
+    expect(resp.status, 'Fetch ratings status').to.equal(200)
+    expect(resp, 'Fetch ratings valid json response').to.have.validJsonBody()
+    expect(resp.json('ratings').length, 'Number of ratings').to.be.above(0)
   })
 
-  describe('03. Update the croc', (t) => {
+  describe('03. Update the rating', (t) => {
     const payload = {
-      name: `New croc name ${randomString(10)}`,
+      stars: 5,
     }
 
-    const resp = session.patch(`/my/crocodiles/${session.newCrocId}/`, payload)
+    const resp = session.patch(
+      `/api/ratings/${session.newRatingId}`,
+      JSON.stringify(payload)
+    )
 
-    expect(resp.status, 'Croc patch status').to.equal(200)
-    expect(resp, 'Fetch croc valid json response').to.have.validJsonBody()
-    expect(resp.json('name'), 'Croc name').to.equal(payload.name)
+    expect(resp.status, 'Rating patch status').to.equal(200)
+    expect(resp, 'Fetch rating valid json response').to.have.validJsonBody()
+    expect(resp.json('stars'), 'Stars').to.equal(payload.stars)
 
-    // read "croc" again to verify the update worked
-    const resp1 = session.get(`/my/crocodiles/${session.newCrocId}/`)
+    // read rating again to verify the update worked
+    const resp1 = session.get(`/api/ratings/${session.newRatingId}`)
 
-    expect(resp1.status, 'Croc fetch status').to.equal(200)
-    expect(resp1, 'Fetch croc valid json response').to.have.validJsonBody()
-    expect(resp1.json('name'), 'Croc name').to.equal(payload.name)
+    expect(resp1.status, 'Fetch rating status').to.equal(200)
+    expect(resp1, 'Fetch rating valid json response').to.have.validJsonBody()
+    expect(resp1.json('stars'), 'Stars').to.equal(payload.stars)
   })
 
-  describe('04. Delete the croc', (t) => {
-    const resp = session.delete(`/my/crocodiles/${session.newCrocId}/`)
+  describe('04. Delete the rating', (t) => {
+    const resp = session.delete(`/api/ratings/${session.newRatingId}`)
 
-    expect(resp.status, 'Croc delete status').to.equal(204)
+    expect(resp.status, 'Rating delete status').to.equal(204)
   })
 }
