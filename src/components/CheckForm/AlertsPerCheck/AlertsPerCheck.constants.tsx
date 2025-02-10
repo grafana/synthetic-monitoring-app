@@ -3,6 +3,7 @@ import { CheckAlertCategory, CheckAlertType, CheckType, ThresholdUnit } from 'ty
 export interface PredefinedAlertInterface {
   type: CheckAlertType;
   name: string;
+  description: string;
   unit: ThresholdUnit;
   category: CheckAlertCategory;
   default?: number;
@@ -12,6 +13,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
     name: 'Probe Failed Executions Too High',
+    description: 'The % of failed probe executions is higher than <threshold> for the last 5m',
     unit: '%',
     category: CheckAlertCategory.SystemHealth,
     default: 10,
@@ -22,6 +24,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP50,
     name: 'HTTP Request Duration Too High (P50)',
+    description: 'The p50 for the HTTP request is higher than <threshold> for the last 5m',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 300,
@@ -29,6 +32,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP90,
     name: 'HTTP Request Duration Too High (P90)',
+    description: 'The p90 for the HTTP request is higher than <threshold> for the last 5m',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 500,
@@ -36,6 +40,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP95,
     name: 'HTTP Request Duration Too High (P95)',
+    description: 'The p95 for the HTTP request is higher than <threshold> for the last 5m',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 800,
@@ -43,6 +48,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP99,
     name: 'HTTP Request Duration Too High (P99)',
+    description: 'The p99 for the HTTP request is higher than <threshold> for the last 5m',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 1500,
@@ -50,6 +56,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPTargetCertificateCloseToExpiring,
     name: 'HTTP Target Certificate Close To Expiring',
+    description: 'The target certificate will expire in less than <threshold> days',
     unit: 'd',
     category: CheckAlertCategory.SystemHealth,
     default: 60,
@@ -60,6 +67,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP50,
     name: 'Ping ICMP Duration Too High (P50)',
+    description: 'The p50 for the ICMP request is higher than <threshold> for the last 5m',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 50,
@@ -67,6 +75,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP90,
     name: 'Ping ICMP Duration Too High (P90)',
+    description: 'The p90 for the ICMP request is higher than <threshold> for the last 5m',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 100,
@@ -74,6 +83,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP95,
     name: 'Ping ICMP Duration Too High (P95)',
+    description: 'The p95 for the ICMP request is higher than <threshold> for the last 5m',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 200,
@@ -81,6 +91,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP99,
     name: 'Ping ICMP Duration Too High (P99)',
+    description: 'The p99 for the ICMP request is higher than <threshold> for the last 5m',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 400,

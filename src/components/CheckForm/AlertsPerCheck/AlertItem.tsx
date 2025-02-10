@@ -1,7 +1,7 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Checkbox, Field, Input, Label, useStyles2 } from '@grafana/ui';
+import { Checkbox, Field, Icon, Input, Label, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckAlertType, CheckFormValues } from 'types';
@@ -33,9 +33,15 @@ export const AlertItem = ({
     <div key={alert.type} className={styles.item}>
       <div className={styles.itemInfo}>
         <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
-        <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
-          {alert.name}
-        </Label>
+
+        <Tooltip content={alert.description} placement='bottom'>
+          <Stack alignItems="center">
+            <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
+              {alert.name}
+            </Label>
+            <Icon name="info-circle" />
+          </Stack>
+        </Tooltip>
       </div>
       <div className={styles.thresholdInput}>
         <Field
