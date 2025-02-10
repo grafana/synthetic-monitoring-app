@@ -1,5 +1,5 @@
-import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
+import { toASCII } from 'punycode';
 import validUrl from 'valid-url';
 
 import { Label } from 'types';
@@ -235,7 +235,7 @@ function validateDomainElement(element: string, isLast: boolean): string | undef
 export function validateHostAddress(target: string): string | undefined {
   const ipv4 = isIpV4(target);
   const ipv6 = isIpV6(target);
-  const pc = punycode.toASCII(target);
+  const pc = toASCII(target);
   // note that \w matches "_"
   const re = new RegExp(
     /^[a-z0-9]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z0-9]([-a-z0-9]{0,62}[a-z0-9])?)*\.([a-z]|[a-z0-9]([-a-z0-9]{0,62}[a-z])|[a-z]([-a-z0-9]{0,62}[a-z0-9])?)$/,
