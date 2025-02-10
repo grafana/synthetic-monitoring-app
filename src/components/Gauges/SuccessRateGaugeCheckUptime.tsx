@@ -15,8 +15,7 @@ type SuccessRateGaugeCheckUptimeProps = {
 
 export const SuccessRateGaugeCheckUptime = ({ check, height, width, onClick }: SuccessRateGaugeCheckUptimeProps) => {
   const metricsDS = useMetricsDS();
-  const { data, isLoading, isFetching } = useCheckUptimeSuccessRate(check);
-  const value = data ? data[0]?.value?.[1] : null;
+  const { data = null, isLoading, isFetching } = useCheckUptimeSuccessRate(check);
 
   if (!metricsDS) {
     return null;
@@ -30,7 +29,7 @@ export const SuccessRateGaugeCheckUptime = ({ check, height, width, onClick }: S
       width={width}
       onClick={onClick}
       type={'uptime'}
-      value={value}
+      value={data}
       unit="%"
     />
   );
