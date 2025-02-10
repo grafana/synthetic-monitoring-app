@@ -53,11 +53,12 @@ ConfigContent.Section = function ConfigContentSection({
   className,
 }: PropsWithChildren<{ title?: ReactNode; className?: string }>) {
   const Container = className ? 'div' : Fragment;
+  const props = className ? { className } : {};
 
   return (
     <Box marginBottom={4} element="section">
       {!!title && <h3>{title}</h3>}
-      <Container className={className}>{children}</Container>
+      <Container {...props}>{children}</Container>
     </Box>
   );
 };

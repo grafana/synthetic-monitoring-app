@@ -130,8 +130,8 @@ export const NameValueInput = ({ name, disabled, limit, label, ...rest }: Props)
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  addButton: css({ 'margin-top': theme.spacing(1) }),
-  field: css({ 'margin-bottom': 0, 'margin-top': 0 }),
+  addButton: css({ marginTop: theme.spacing(1) }),
+  field: css({ marginBottom: 0, marginTop: 0 }),
   stack: css({
     display: `flex`,
     gap: theme.spacing(1),

@@ -6,7 +6,6 @@ import { css } from '@emotion/css';
 
 import { CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckStatus } from 'types';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
-import { getAlertCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.alerts';
 import { NewStatusBadge } from 'components/NewStatusBadge';
 
 import { AlertsList } from './AlertsList';
@@ -30,9 +29,30 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
     if (!checkAlerts) {
       return;
     }
-    const formAlerts = getAlertCheckFormValues(checkAlerts);
-    setValue(`alerts`, formAlerts, { shouldDirty: false });
-    onInitAlerts(formAlerts);
+
+    onInitAlerts(
+      checkAlerts.reduce((acc, alert) => {
+        return {
+          ...acc,
+          [alert.name]: {
+            threshold: alert.threshold,
+            isSelected: true,
+          },
+        };
+      }, {})
+    );
+
+    checkAlerts.forEach((alert) => {
+      setValue(
+        `alerts.${alert.name}`,
+        // @ts-expect-error
+        {
+          threshold: alert.threshold,
+          isSelected: true,
+        },
+        { shouldDirty: false }
+      );
+    });
   }, [checkAlerts, setValue, onInitAlerts]);
 
   const groupedByCategory = useMemo(
