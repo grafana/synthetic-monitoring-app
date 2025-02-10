@@ -26,7 +26,7 @@ export default function () {
   fd.append('images', http.file(img2, 'image2.jpg', 'image/jpeg'))
   fd.append('text', http.file(txt, 'text.txt', 'text/plain'))
 
-  const res = http.post('https://httpbin.test.k6.io/post', fd.body(), {
+  const res = http.post('https://quickpizza.grafana.com/api/post', fd.body(), {
     headers: { 'Content-Type': 'multipart/form-data; boundary=' + fd.boundary },
   })
   check(res, {

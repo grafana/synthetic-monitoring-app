@@ -12,7 +12,7 @@ export default function () {
 
   // Passing username and password as part of the URL will
   // allow us to authenticate using HTTP Basic Auth.
-  const url = `https://${credentials}@httpbin.test.k6.io/basic-auth/${username}/${password}`
+  const url = `https://${credentials}@quickpizza.grafana.com/api/basic-auth/${username}/${password}`
 
   let res = http.get(url)
 
@@ -33,11 +33,11 @@ export default function () {
   }
 
   res = http.get(
-    `https://httpbin.test.k6.io/basic-auth/${username}/${password}`,
+    `https://quickpizza.grafana.com/api/basic-auth/${username}/${password}`,
     options
   )
 
-  // Verify response (checking the echoed data from the httpbin.test.k6.io
+  // Verify response (checking the echoed data from the QuickPizza
   // basic auth test API endpoint)
   check(res, {
     'status is 200': (r) => r.status === 200,

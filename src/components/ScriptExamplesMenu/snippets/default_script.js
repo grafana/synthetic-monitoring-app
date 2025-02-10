@@ -22,6 +22,6 @@ export const options = {
 }
 
 export default function main() {
-  let response = http.get('https://test-api.k6.io/public/crocodiles/')
+  let response = http.get('https://quickpizza.grafana.com')
   sleep(1)
 }

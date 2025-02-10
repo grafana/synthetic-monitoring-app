@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.18.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.17.0...v1.18.0) (2025-02-04)
+
+
+### Features
+
+* Alerts per check ([#1011](https://github.com/grafana/synthetic-monitoring-app/issues/1011)) ([ef8c3f3](https://github.com/grafana/synthetic-monitoring-app/commit/ef8c3f3c9b0949a81977c209dd5c3d83906763b8))
+* sort probes alphabetically ([#1050](https://github.com/grafana/synthetic-monitoring-app/issues/1050)) ([7bc5ede](https://github.com/grafana/synthetic-monitoring-app/commit/7bc5ede93b6c1b3ce2eaa7923704893cc9b5550d))
+
+
+### Fixes
+
+* add displayName on top of name rather than replace ([#1055](https://github.com/grafana/synthetic-monitoring-app/issues/1055)) ([b8264af](https://github.com/grafana/synthetic-monitoring-app/commit/b8264af83ee8a4583a2f98115bd71f8cf53ded17))
+* fix broken checklist test ([#1058](https://github.com/grafana/synthetic-monitoring-app/issues/1058)) ([3be444d](https://github.com/grafana/synthetic-monitoring-app/commit/3be444d8ba3fd149f5eb2892368bb821f4228722))
+* strip back ci.yml checks ([#1051](https://github.com/grafana/synthetic-monitoring-app/issues/1051)) ([c04a797](https://github.com/grafana/synthetic-monitoring-app/commit/c04a79758bec2313870e35b7f5a3b943dde951fe))
+
+
+### Miscellaneous Chores
+
+* introduce Fishery as object factory and yarn dev:msw ([#1023](https://github.com/grafana/synthetic-monitoring-app/issues/1023)) ([0253f91](https://github.com/grafana/synthetic-monitoring-app/commit/0253f91d070f2684ea5e4ea54aa39add98f9f71f))
+
 ## [1.17.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.12...v1.17.0) (2025-01-28)
 
 
