@@ -33,9 +33,7 @@ export function getStyles(theme: GrafanaTheme2) {
     codeWrapper: css({
       display: 'flex',
       flexGrow: 1,
-      borderRadius: `${theme.shape.borderRadius(2)} ${theme.shape.borderRadius(2)} ${theme.shape.borderRadius(
-        2
-      )} ${theme.shape.borderRadius(2)}`,
+      borderRadius: `${theme.shape.radius.default}`,
       overflow: 'hidden',
       backgroundColor: `${theme.colors.background.canvas}`, // same as MonacoEditor
     }),
@@ -103,13 +101,13 @@ export function getStyles(theme: GrafanaTheme2) {
       gap: 8px;
       margin-bottom: ${theme.spacing(1)};
       cursor: pointer;
-      opacity: 1 : 0.65;
+      opacity: 1;
       font-weight: 500;
       min-height: ${theme.spacing(3)};
       line-height: 1.21em; // To make wrapped text look nice
 
       &::after {
-        display: 'block' : 'none';
+        display: 'block';
         font-weight: 500;
         content: ' ';
         height: ${theme.spacing(3)};
@@ -118,7 +116,7 @@ export function getStyles(theme: GrafanaTheme2) {
         top: 50%;
         transform: translateY(-50%);
         width: ${theme.spacing(0.5)};
-        border-radius: ${theme.shape.borderRadius(1)};
+        border-radius: ${theme.shape.radius.default};
         background-image: ${theme.colors.gradients.brandVertical};
       }
 
@@ -150,7 +148,7 @@ export function getStyles(theme: GrafanaTheme2) {
         top: 50%;
         transform: translateY(-50%);
         width: ${theme.spacing(0.5)};
-        border-radius: ${theme.shape.borderRadius(1)};
+        border-radius: ${theme.shape.radius.default};
         background-image: gray;
       }
 
