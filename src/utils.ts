@@ -426,3 +426,22 @@ export function createNavModel(base: NavModelItem, items: NavModelItem[]): NavMo
     };
   }, base);
 }
+
+/**
+ * Get random integer between min and max
+ *
+ * @param {number} min
+ * @param {number} max
+ */
+export function getRandomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function mockedFetch<T>(data: T, latency = 300, minLatency = 30): Promise<T> {
+  const delay = getRandomInt(minLatency, latency);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(data);
+    }, delay);
+  });
+}

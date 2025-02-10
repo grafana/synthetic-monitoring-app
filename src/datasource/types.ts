@@ -157,3 +157,25 @@ interface CurrentVariableModel {
 export interface DashboardVariable extends VariableModel {
   current?: CurrentVariableModel;
 }
+
+/* Intermediate Secrets Management types */
+
+interface SecretLabel {
+  name: string;
+  value: string;
+}
+
+export interface Secret {
+  created_at: number;
+  created_by: string;
+  description: string;
+  labels: SecretLabel[];
+  name: string;
+  orgId: number;
+  stackId: number;
+  uuid: string;
+  version: number;
+}
+
+export type SecretCreatePayload = Omit<Secret, 'uuid' | 'version' | 'created_at' | 'created_by'>;
+export type SecretUpdatePayload = { uuid: Secret['uuid'] } & Partial<Omit<Secret, 'uuid'>>;

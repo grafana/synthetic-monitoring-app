@@ -16,6 +16,7 @@ import { CheckList } from 'page/CheckList';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
 import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
+import { SecretsTab } from 'page/ConfigPageLayout/tabs/SecretsTab';
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
 import { DashboardPage } from 'page/DashboardPage';
 import { EditCheck } from 'page/EditCheck';
@@ -26,8 +27,6 @@ import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
-
-import { SecretsTab } from '../page/ConfigPageLayout/tabs/SecretsTab';
 
 export const InitialisedRouter = () => {
   const queryParams = useQuery();
@@ -102,7 +101,13 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
-        <Route path="secrets" element={<SecretsTab />} />
+
+        <Route path="secrets" Component={SecretsTab}>
+          <Route index element={<SecretsTab.ListSecrets />} />
+          <Route path="new" element={<SecretsTab.CreateSecret />} />
+          <Route path=":id" element={<SecretsTab.ViewSecret />} />
+          <Route path=":id/edit" element={<SecretsTab.EditSecret />} />
+        </Route>
       </Route>
 
       <Route path={ROUTES.Redirect} element={<SceneRedirecter />} />

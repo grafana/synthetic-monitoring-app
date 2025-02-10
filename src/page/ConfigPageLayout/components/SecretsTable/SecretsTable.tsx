@@ -1,19 +1,10 @@
 import React from 'react';
-import { Box, Column, Field, IconButton, Input, InteractiveTable, Tag, Tooltip } from '@grafana/ui';
+import { Box, Column, InteractiveTable, LinkButton, Tag, Tooltip } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-interface RowData {
-  id: number;
-  name: string;
-  type: string;
-  version?: number;
-  labels?: Array<[string, string]>;
-  created: string;
-  modified: string;
-  manager?: string;
-  modified_by?: string;
-  created_by?: string;
-}
+import { ROUTES } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
+import { Secret } from 'datasource/types';
 
 const styles = {
   centeredColumn: css`
@@ -29,7 +20,7 @@ const styles = {
   `,
 };
 
-const columns: Array<Column<RowData>> = [
+const columns: Array<Column<Secret>> = [
   {
     id: 'name',
     header: 'Name',
@@ -61,7 +52,7 @@ const columns: Array<Column<RowData>> = [
     header: 'Created',
     cell({ cell, row }) {
       return (
-        <Tooltip interactive content={`by ${row.original.modified_by ?? 'unknown'}`}>
+        <Tooltip interactive content={`by ${row.original.created_by ?? 'unknown'}`}>
           <div>{cell.value}</div>
         </Tooltip>
       );
@@ -88,31 +79,27 @@ const columns: Array<Column<RowData>> = [
 
       return (
         <div className={styles.labelContainer}>
-          {row.original.labels.map(([key, value]) => {
-            return <Tag colorIndex={11} key={key} name={`${key}/${value}`} />;
+          {row.original.labels.map(({ name, value }) => {
+            return <Tag colorIndex={11} key={name} name={`${name}/${value}`} />;
           })}
         </div>
       );
     },
   },
-  // {
-  //   id: 'type',
-  //   header: 'Type',
-  //   cell: (cell) =>
-  //     cell.row.original.type === 'string' ? (
-  //       <Icon color="crimson" name="text-fields" />
-  //     ) : (
-  //       <Icon color="#5bb0ef" name="clock-nine" />
-  //     ),
-  // },
 
   {
     id: 'actions',
     header: 'Actions',
-    cell: () => (
+    cell: ({ row }) => (
       <Box display="flex" justifyContent="flex-end" gap={1}>
-        <IconButton aria-label="Edit" name="trash-alt" size="lg" variant="destructive" />
-        <IconButton aria-label="Delete" name="pen" size="lg" />
+        <LinkButton aria-label="Delete" icon="trash-alt" variant="destructive" fill="text" />
+        <LinkButton
+          aria-label="Edit"
+          icon="pen"
+          variant="secondary"
+          fill="text"
+          href={generateRoutePath(ROUTES.EditSecret, { id: row.id })}
+        />
         {/*<Dropdown*/}
         {/*  placement="bottom-end"*/}
         {/*  overlay={*/}
@@ -129,68 +116,11 @@ const columns: Array<Column<RowData>> = [
   },
 ];
 
-const rows: RowData[] = [
-  { id: 1, name: 'PROD_ADMIN_PASSWORD', type: 'string', version: 1, modified: '2021-09-01', created: '2021-09-01' },
-  {
-    id: 1,
-    name: 'PROD_ADMIN_PASSWORD',
-    type: 'string',
-    version: 1,
-    modified: '2021-09-01',
-    created: '2021-09-01',
-  },
-  {
-    id: 2,
-    name: 'PROD_USER_PASSWORD',
-    type: 'string',
-    version: 102,
-    labels: [['environment', 'production']],
-    created: '2021-09-01',
-    modified: '2021-09-01',
-    created_by: 'thomas.wikman@grafana.com',
-    modified_by: 'thomas.wikman@grafana.com',
-  },
-  { id: 3, name: 'STAGING_ACCESS_TOKEN', type: 'string', version: 1, modified: '2021-09-01', created: '2021-09-01' },
-  { id: 4, name: 'OKTA_TBT', type: 'Time-based token', version: 4, modified: '2021-09-01', created: '2021-09-01' },
-  { id: 5, name: 'PROD_ACCESS_TOKEN', type: 'string', version: 1, modified: '2021-09-01', created: '2021-09-01' },
-  {
-    id: 6,
-    name: 'OKTA_TBT_STAGING',
-    type: 'Time-based token',
-    labels: [
-      ['environment', 'staging'],
-      ['service', 'okta'],
-      ['app', 'https://ezpz.se'],
-    ],
-    version: 9,
-    modified: '2021-09-01',
-    created: '2021-09-01',
-  },
-  {
-    id: 7,
-    name: 'SECRET_SOCIETY_PASSWORD',
-    type: 'string',
-    version: 9999,
-    modified: '2024-11-27',
-    labels: [
-      ['team', 'sm-frontend'],
-      ['soo', 'many'],
-      ['labels-in', 'here'],
-      ['how-wil-it-look', 'something like this'],
-      ['foo', 'bar'],
-      ['foobar', 'root'],
-    ],
-    created: '2021-09-01',
-  },
-];
-
-export function SecretsTable() {
+export function SecretsTable({ secrets }: { secrets?: Secret[] }) {
+  if (!secrets) {
+    return <div>Loading...</div>;
+  }
   return (
-    <div>
-      <Field label="Filter data">
-        <Input placeholder={'Filter by name'} onChange={(event) => {}} />
-      </Field>
-      <InteractiveTable columns={columns} data={rows} getRowId={({ id }) => String(id)} renderExpandedRow={undefined} />
-    </div>
+    <InteractiveTable columns={columns} data={secrets} getRowId={({ uuid }) => uuid} renderExpandedRow={undefined} />
   );
 }

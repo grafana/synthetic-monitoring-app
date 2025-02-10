@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo } from 'react';
-import { matchPath, Outlet, useLocation } from 'react-router-dom-v5-compat';
+import { Outlet, useLocation } from 'react-router-dom-v5-compat';
 import { NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
-import { getSecretsNavModel } from './tabs/SecretsTab';
+import { getSecretsNavModel } from './tabs/SecretsTab/SecretsTab';
 
 function getConfigTabUrl(tab = '/') {
   return `${getRoute(ROUTES.Config)}/${tab}`.replace(/\/+/g, '/');
@@ -19,7 +19,11 @@ function useActiveTab(route: ROUTES) {
   return useCallback(
     (path?: string) => {
       const url = `${fullRoute}/${path ?? ''}`.replace(/\/+/g, '/');
-      return Boolean(matchPath(url ?? '', location.pathname));
+      if (!path) {
+        return location.pathname === url;
+      }
+
+      return location.pathname.includes(url);
     },
     [fullRoute, location.pathname]
   );

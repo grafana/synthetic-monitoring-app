@@ -13,4 +13,7 @@ export enum ROUTES {
   Probes = 'probes',
   Redirect = 'redirect',
   Scene = 'scene',
+  Secrets = 'config/secrets',
+  EditSecret = 'config/secrets/:id/edit',
+  ViewSecret = 'config/secrets/:id',
 }

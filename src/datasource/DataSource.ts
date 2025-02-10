@@ -32,10 +32,11 @@ import {
   type UpdateProbeResult,
   type UpdateTenantSettingsResult,
 } from './responses.types';
-import { QueryType, SMOptions, SMQuery } from './types';
-import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+import { QueryType, Secret, SMOptions, SMQuery } from './types';
+import { findLinkedDatasource, getRandomProbes, mockedFetch, queryLogs } from 'utils';
 
 import { ExtendedBulkUpdateCheckResult } from '../data/useChecks';
+import { SecretObject } from './secrets/Secret';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -417,6 +418,25 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       status: 'Error',
       message: 'unable to connect',
     };
+  }
+
+  async fetchSecrets_unsafe() {}
+
+  //--------------------------------------------------------------------------------
+  // SECRETS
+  //--------------------------------------------------------------------------------
+
+  async fetchSecrets(): Promise<Secret[]> {
+    const secrets: Secret[] = [
+      new SecretObject('PROD_ADMIN_PASSWORD').toObject(),
+      new SecretObject('STAGING_ADMIN_PASSWORD').toObject(),
+      new SecretObject('DEV_ADMIN_PASSWORD').toObject(),
+      new SecretObject('LOCAL_ADMIN_PASSWORD').toObject(),
+      new SecretObject('TEST').toObject(),
+      new SecretObject('K6_VERSION').toObject(),
+    ];
+
+    return mockedFetch(secrets);
   }
 }
 
