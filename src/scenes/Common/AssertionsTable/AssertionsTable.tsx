@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { DataQueryError } from '@grafana/data';
+import { DataQueryError, LoadingState } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -11,7 +11,7 @@ import {
   SceneObjectState,
   SceneQueryRunner,
 } from '@grafana/scenes';
-import { DataSourceRef, LoadingState } from '@grafana/schema';
+import { DataSourceRef } from '@grafana/schema';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 
 import { CheckType } from 'types';

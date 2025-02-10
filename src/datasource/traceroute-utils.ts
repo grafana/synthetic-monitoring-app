@@ -1,57 +1,65 @@
-import { FieldColorModeId, FieldType, MutableDataFrame, NodeGraphDataFrameFieldNames } from '@grafana/data';
+import {
+  createDataFrame,
+  DataFrame,
+  Field,
+  FieldColorModeId,
+  FieldType,
+  NodeGraphDataFrameFieldNames,
+} from '@grafana/data';
 
 import { LogsAggregatedByTrace, LogStream, ParsedLogStream, TracesByHost } from './types';
 
 const getNodeGraphFields = () => {
-  const nodeIdField = {
+  const nodeIdField: Field = {
     name: NodeGraphDataFrameFieldNames.id,
     type: FieldType.string,
     values: [] as string[],
+    config: { displayName: 'ID' },
   };
 
-  const nodeTitleField = {
+  const nodeTitleField: Field = {
     name: NodeGraphDataFrameFieldNames.title,
     type: FieldType.string,
     values: [] as string[],
     config: { displayName: 'Host' },
   };
 
-  const nodeMainStatField = {
+  const nodeMainStatField: Field = {
     name: NodeGraphDataFrameFieldNames.mainStat,
     type: FieldType.number,
     values: [] as number[],
     config: { unit: 'ms', displayName: 'Average Ms' },
   };
 
-  const nodeStartField = {
+  const nodeStartField: Field = {
     name: NodeGraphDataFrameFieldNames.arc + 'start',
     type: FieldType.number,
     values: [] as number[],
     config: { color: { fixedColor: 'blue', mode: FieldColorModeId.Fixed }, displayName: 'Start nodes' },
   };
 
-  const nodeSuccessField = {
+  const nodeSuccessField: Field = {
     name: NodeGraphDataFrameFieldNames.arc + 'success',
     type: FieldType.number,
     values: [] as number[],
     config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed }, displayName: 'Successful packets' },
   };
 
-  const nodeErrorField = {
+  const nodeErrorField: Field = {
     name: NodeGraphDataFrameFieldNames.arc + 'error',
     type: FieldType.number,
     values: [] as number[],
     config: { color: { fixedColor: 'red', mode: FieldColorModeId.Fixed }, displayName: 'Packet loss' },
   };
 
-  const nodeDestinationField = {
+  const nodeDestinationField: Field = {
     name: NodeGraphDataFrameFieldNames.arc + 'destination',
     type: FieldType.number,
     values: [] as number[],
     config: { color: { fixedColor: 'purple', mode: FieldColorModeId.Fixed }, displayName: 'Destination node' },
   };
 
-  const nodeMostRecentDestinationField = {
+  const nodeMostRecentDestinationField: Field = {
     name: NodeGraphDataFrameFieldNames.arc + 'most_recent_destination',
     type: FieldType.number,
     values: [] as number[],
@@ -97,7 +105,7 @@ const getNodeGraphEdgeFields = () => {
   };
 };
 
-export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFrame[] => {
+export const parseTracerouteLogs = (queryResponse: LogStream[]): DataFrame[] => {
   const { edgeIdField, edgeSourceField, edgeTargetField } = getNodeGraphEdgeFields();
 
   let mostRecentTraceId: string;
@@ -213,9 +221,9 @@ export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFram
       const packetLossStat = totalPacketLoss / hostData.packetLossAverages.length / 100;
       const packetSuccessStat = 1 - packetLossStat;
 
-      nodeIdField.values.add(host);
-      nodeTitleField.values.add(host);
-      nodeMainStatField.values.add(Math.round(averageElapsedTime));
+      nodeIdField.values.push(host);
+      nodeTitleField.values.push(host);
+      nodeMainStatField.values.push(Math.round(averageElapsedTime));
 
       Array.from(hostData.nextHosts ?? new Set([])).forEach((nextHost) => {
         edgeIdField.values.push(`${host}_${nextHost}`);
@@ -224,7 +232,7 @@ export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFram
       });
 
       if (hostData.isStart) {
-        nodeMostRecentDestinationField.values.add(0);
+        nodeMostRecentDestinationField.values.push(0);
         nodeDestinationField.values.push(0);
         nodeStartField.values.push(1);
         nodeSuccessField.values.push(0);
@@ -250,7 +258,7 @@ export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFram
     });
 
   return [
-    new MutableDataFrame({
+    createDataFrame({
       name: 'nodes',
       refId: 'nodeRefId',
       fields: [
@@ -267,7 +275,7 @@ export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFram
         preferredVisualisationType: 'nodeGraph',
       },
     }),
-    new MutableDataFrame({
+    createDataFrame({
       name: 'edges',
       refId: 'edgesRefId',
       fields: [edgeIdField, edgeSourceField, edgeTargetField],

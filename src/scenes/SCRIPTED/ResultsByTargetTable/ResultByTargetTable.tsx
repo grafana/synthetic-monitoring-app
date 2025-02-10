@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { TableColumn } from 'react-data-table-component';
-import { DataQueryError, dateTimeParse } from '@grafana/data';
+import { DataQueryError, dateTimeParse, LoadingState } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -10,7 +10,7 @@ import {
   SceneObjectBase,
   SceneObjectState,
 } from '@grafana/scenes';
-import { DataSourceRef, LoadingState } from '@grafana/schema';
+import { DataSourceRef } from '@grafana/schema';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 
 import { CheckType } from 'types';
