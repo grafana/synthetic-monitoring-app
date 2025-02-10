@@ -1,6 +1,6 @@
 # Testing strategy
 
-We use `jest` with `react-testing-library` for testing our application. Our aim is to have a 'trophy'-shaped testing strategy, with a large number of integration tests and a smaller number of unit and e2e tests.
+We use `jest` with `react-testing-library` for testing our application. Our aim is to have a [trophy-shaped testing strategy](https://kentcdodds.com/blog/write-tests), with a large number of integration tests and a smaller number of unit and e2e tests.
 
 The general philosophy is aiming for the right balance of confidence in core user journeys whilst keeping our tests easy to maintain and fast to run and iterate upon. Unit tests are too closely tied to implementation details and can create friction to changing the fundamentals, e2e tests can take a long time to run and be difficult to set up an easy to reproduce environment. Integration tests are by no means perfect but they are a good compromise.
 
