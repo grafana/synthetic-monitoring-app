@@ -1,13 +1,26 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Checkbox, Field, Icon, Input, Label, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2, urlUtil } from '@grafana/data';
+import { Checkbox, Field, Icon, Input, Label, Stack, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckAlertType, CheckFormValues } from 'types';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
+
+function createExploreLink(dataSourceName: string, query: string) {
+  return urlUtil.renderUrl(`/explore`, {
+    left: JSON.stringify([
+      'now-5m',
+      'now',
+      dataSourceName,
+      { datasource: dataSourceName, expr: query },
+      { ui: [true, true, true, 'none'] },
+    ]),
+  });
+}
 
 export const AlertItem = ({
   alert,
@@ -20,7 +33,7 @@ export const AlertItem = ({
 }) => {
   const styles = useStyles2(getStyles);
 
-  const { control, formState } = useFormContext<CheckFormValues>();
+  const { control, formState, getValues } = useFormContext<CheckFormValues>();
   const { isFormDisabled } = useCheckFormContext();
 
   const handleToggleAlert = (type: CheckAlertType) => {
@@ -29,12 +42,30 @@ export const AlertItem = ({
 
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
 
+  const ds = useMetricsDS();
+
+  const job = getValues('job');
+  const instance = getValues('target');
+
+  const query = alert.query.replace(/\$instance/g, instance).replace(/\$job/g, job);
+  const exploreLink = ds && createExploreLink(ds.name, query);
+  const tooltipContent = (
+    <div>
+      {alert.description}.{' '}
+      {exploreLink && (
+        <TextLink href={exploreLink} external={true} variant="bodySmall">
+          Explore query
+        </TextLink>
+      )}
+    </div>
+  );
+
   return (
     <div key={alert.type} className={styles.item}>
       <div className={styles.itemInfo}>
         <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
 
-        <Tooltip content={alert.description} placement='bottom'>
+        <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
           <Stack alignItems="center">
             <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
               {alert.name}
