@@ -246,7 +246,7 @@ describe(`<NewCheck /> journey`, () => {
 
     const errorMsg = await screen.findByRole('alert');
     expect(errorMsg).toBeInTheDocument();
-    expect(errorMsg).toHaveTextContent(/Frequency must be greater than or equal to timeout \(90 seconds\)/);
+    expect(errorMsg).toHaveTextContent(/Frequency must be greater than or equal to timeout \(120 seconds\)/);
   });
 
   // jsdom doesn't give us back the submitter of the form, so we can't test this
