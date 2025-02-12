@@ -5,7 +5,7 @@ import { isFetchError } from '@grafana/runtime';
 import { type MutationProps } from 'data/types';
 import { ExtendedProbe, type Probe, ProbeMetadata, ProbeWithMetadata } from 'types';
 import { FaroEvent } from 'faro';
-import { camelCaseToSentence } from 'utils';
+import { pascalCaseToSentence } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
   AddProbeResult,
@@ -51,7 +51,7 @@ export function useProbesWithMetadata() {
         const metadata = PROBES_METADATA.find(
           (info) => info.name === probe.name && info.region === probe.region
         ) as ProbeMetadata;
-        const displayName = camelCaseToSentence(probe.name);
+        const displayName = pascalCaseToSentence(probe.name);
 
         return {
           ...probe,
