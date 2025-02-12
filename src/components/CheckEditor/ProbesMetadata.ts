@@ -23,6 +23,16 @@ const COUNTRY_AE = { code: 'AE', long: 'United Arab Emirates' };
 const COUNTRY_ES = { code: 'ES', long: 'Spain' };
 const COUNTRY_ID = { code: 'ID', long: 'Indonesia' };
 
+export const EMPTY_METADATA: ProbeMetadata = {
+  name: '',
+  displayName: '',
+  region: '',
+  longRegion: '',
+  provider: ProbeProvider.PRIVATE,
+  countryCode: '',
+  country: '',
+};
+
 export const PROBES_METADATA: ProbeMetadata[] = [
   {
     name: 'Bangalore',

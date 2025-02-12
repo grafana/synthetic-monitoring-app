@@ -65,6 +65,7 @@ export enum ProbeProvider {
   AWS = 'AWS',
   LINODE = 'Linode',
   DIGITAL_OCEAN = 'Digital Ocean',
+  PRIVATE = '',
 }
 
 export interface HeaderMatch {
