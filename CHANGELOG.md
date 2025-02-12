@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.19.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.18.0...v1.19.0) (2025-02-12)
+
+
+### Features
+
+* change browser, scripted and multihttp timeouts up to 120s ([#1065](https://github.com/grafana/synthetic-monitoring-app/issues/1065)) ([ff377b6](https://github.com/grafana/synthetic-monitoring-app/commit/ff377b68661544f76749db244085e1afca4be063))
+
+
+### Fixes
+
+* get web vitals value for gauge component ([#1059](https://github.com/grafana/synthetic-monitoring-app/issues/1059)) ([25dfac6](https://github.com/grafana/synthetic-monitoring-app/commit/25dfac6b67f18262360f3bf5c3684a1b9b808f75))
+* probe filtering behaviour and reset button ([#1066](https://github.com/grafana/synthetic-monitoring-app/issues/1066)) ([1b7dfb4](https://github.com/grafana/synthetic-monitoring-app/commit/1b7dfb42dcd9e5536a20fc8442d0a4eb7c0a15e5))
+* pull updater image from gar instead of gcr ([#1056](https://github.com/grafana/synthetic-monitoring-app/issues/1056)) ([654f478](https://github.com/grafana/synthetic-monitoring-app/commit/654f478b7234165bf3f5705f30f770bc1ee378e2))
+
+
+### Miscellaneous Chores
+
+* bump grafana packages to latest ([#1062](https://github.com/grafana/synthetic-monitoring-app/issues/1062)) ([4c90797](https://github.com/grafana/synthetic-monitoring-app/commit/4c907977213e1a3e6ed8484555e88f55fa007a93))
+* fix test noise ([#1057](https://github.com/grafana/synthetic-monitoring-app/issues/1057)) ([427e834](https://github.com/grafana/synthetic-monitoring-app/commit/427e834d649fa60d2901b3fab0542ee0483b34ef))
+* replace test services ([#1060](https://github.com/grafana/synthetic-monitoring-app/issues/1060)) ([b26d89a](https://github.com/grafana/synthetic-monitoring-app/commit/b26d89aa83247629f4bb10a5a35623cb69f7e4a6))
+
 ## [1.18.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.17.0...v1.18.0) (2025-02-04)
 
 
