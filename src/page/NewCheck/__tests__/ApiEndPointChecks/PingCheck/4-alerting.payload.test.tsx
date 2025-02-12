@@ -68,7 +68,10 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
 
     expect(alertsBody).toEqual({
       alerts: [
-        { name: 'ProbeFailedExecutionsTooHigh', threshold: 0.1 },
+        {
+          name: 'ProbeFailedExecutionsTooHigh',
+          threshold: 0.1,
+        },
         {
           name: 'PingICMPDurationTooHighP50',
           threshold: 1,

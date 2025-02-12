@@ -393,10 +393,10 @@ export function createNavModel(base: NavModelItem, items: NavModelItem[]): NavMo
   }, base);
 }
 
-export function camelCaseToSentence(value: string) {
-  if (value.toUpperCase() === value || value.toLowerCase() === value) {
+export const pascalCaseToSentence = (value: string): string => {
+  if (value === value.toUpperCase() || value === value.toLowerCase()) {
     return value;
   }
 
-  return value.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
-}
+  return value.charAt(0).toUpperCase() + value.slice(1).replace(/(?<! )([A-Z])/g, ' $1');
+};

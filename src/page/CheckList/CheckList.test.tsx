@@ -238,7 +238,10 @@ test('loads probes from query params', async () => {
 
   const { user } = await renderCheckList(
     [
-      BASIC_DNS_CHECK,
+      {
+        ...BASIC_DNS_CHECK,
+        probes: [PRIVATE_PROBE.id!],
+      },
       {
         ...BASIC_HTTP_CHECK,
         probes: [PUBLIC_PROBE.id!],
@@ -316,6 +319,30 @@ test('clicking status chiclet adds it to filter', async () => {
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
+});
+
+test(`clicking filters reset button works correctly`, async () => {
+  const DNS_CHECK_DISABLED = {
+    ...BASIC_DNS_CHECK,
+    enabled: false,
+  };
+
+  const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK]);
+  const disabledChiclet = await screen.findAllByText('Disabled');
+  await user.click(disabledChiclet[0]);
+  const additionalFilters = await screen.findByText(/Additional filters/i);
+  await user.click(additionalFilters);
+
+  const dialog = getModalContainer();
+  const statusFilter = await within(dialog).findByText(`Disabled`);
+  expect(statusFilter).toBeInTheDocument();
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+
+  await user.click(await within(dialog).findByText(`Reset`));
+  const resetChecks = await screen.findAllByTestId('check-card');
+  expect(resetChecks.length).toBe(2);
 });
 
 test('clicking add new is handled', async () => {

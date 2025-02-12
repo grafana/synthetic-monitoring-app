@@ -1,9 +1,9 @@
-// silence container query errors
 const originalConsoleError = console.error;
 
 const ignoreErrorsList = [
-  `Could not parse CSS stylesheet`,
-  `Using kebab-case for css properties in objects is not supported.`,
+  `Could not parse CSS stylesheet`, // silence container query errors
+  `Warning: Received \`%s\` for a non-boolean attribute \`%s\``, // should be fixed upstream
+  `Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s`, // probecard - card.meta in grafana/grafana is a paragraph tag
 ];
 
 beforeAll(() => {

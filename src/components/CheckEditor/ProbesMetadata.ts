@@ -23,9 +23,20 @@ const COUNTRY_AE = { code: 'AE', long: 'United Arab Emirates' };
 const COUNTRY_ES = { code: 'ES', long: 'Spain' };
 const COUNTRY_ID = { code: 'ID', long: 'Indonesia' };
 
+export const EMPTY_METADATA: ProbeMetadata = {
+  name: '',
+  displayName: '',
+  region: '',
+  longRegion: '',
+  provider: ProbeProvider.PRIVATE,
+  countryCode: '',
+  country: '',
+};
+
 export const PROBES_METADATA: ProbeMetadata[] = [
   {
     name: 'Bangalore',
+    displayName: `Bangalore`,
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.DIGITAL_OCEAN,
@@ -34,6 +45,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Mumbai',
+    displayName: `Mumbai`,
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.AWS,
@@ -42,6 +54,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Seoul',
+    displayName: `Seoul`,
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.AWS,
@@ -50,6 +63,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Singapore',
+    displayName: `Singapore`,
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.AWS,
@@ -58,6 +72,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Sydney',
+    displayName: `Sydney`,
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.AWS,
@@ -66,6 +81,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Tokyo',
+    displayName: `Tokyo`,
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.AWS,
@@ -75,6 +91,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
 
   {
     name: 'Atlanta',
+    displayName: `Atlanta`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.LINODE,
@@ -83,6 +100,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Dallas',
+    displayName: `Dallas`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.LINODE,
@@ -91,6 +109,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Newark',
+    displayName: `Newark`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.LINODE,
@@ -99,6 +118,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Toronto',
+    displayName: `Toronto`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.LINODE,
@@ -107,6 +127,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'NewYork',
+    displayName: `New York`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.DIGITAL_OCEAN,
@@ -115,6 +136,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'SanFrancisco',
+    displayName: `San Francisco`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.DIGITAL_OCEAN,
@@ -123,6 +145,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'NorthCalifornia',
+    displayName: `North California`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.AWS,
@@ -131,6 +154,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'NorthVirginia',
+    displayName: `North Virginia`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.AWS,
@@ -139,6 +163,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Ohio',
+    displayName: `Ohio`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.AWS,
@@ -147,6 +172,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Oregon',
+    displayName: `Oregon`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.AWS,
@@ -155,6 +181,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'SaoPaulo',
+    displayName: `Sao Paulo`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.AWS,
@@ -164,6 +191,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
 
   {
     name: 'Amsterdam',
+    displayName: `Amsterdam`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.DIGITAL_OCEAN,
@@ -172,6 +200,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'CapeTown',
+    displayName: `Cape Town`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.AWS,
@@ -180,6 +209,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Frankfurt',
+    displayName: `Frankfurt`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.AWS,
@@ -188,6 +218,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'London',
+    displayName: `London`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.AWS,
@@ -196,6 +227,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Paris',
+    displayName: `Paris`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.AWS,
@@ -204,6 +236,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Zurich',
+    displayName: `Zurich`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.AWS,
@@ -212,6 +245,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Stockholm',
+    displayName: `Stockholm`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.AWS,
@@ -220,6 +254,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Montreal',
+    displayName: `Montreal`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.AWS,
@@ -228,6 +263,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Calgary',
+    displayName: `Calgary`,
     region: REGION_AMER.code,
     longRegion: REGION_AMER.long,
     provider: ProbeProvider.AWS,
@@ -236,6 +272,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'UAE',
+    displayName: `UAE`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.AWS,
@@ -244,6 +281,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Hyderabad',
+    displayName: `Hyderabad`,
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.AWS,
@@ -252,6 +290,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Spain',
+    displayName: `Spain`,
     region: REGION_EMEA.code,
     longRegion: REGION_EMEA.long,
     provider: ProbeProvider.AWS,
@@ -260,6 +299,7 @@ export const PROBES_METADATA: ProbeMetadata[] = [
   },
   {
     name: 'Jakarta',
+    displayName: `Jakarta`,
     region: REGION_APAC.code,
     longRegion: REGION_APAC.long,
     provider: ProbeProvider.AWS,
