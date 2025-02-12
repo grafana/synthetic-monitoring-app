@@ -126,6 +126,7 @@ export interface Probe extends ExistingObject {
 
 export type ProbeMetadata = {
   name: string;
+  displayName: string;
   provider: ProbeProvider;
   country: string;
   countryCode: string;
