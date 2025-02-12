@@ -49,12 +49,11 @@ export function useProbesWithMetadata() {
       .map((probe) => {
         const metadata =
           PROBES_METADATA.find((info) => info.name === probe.name && info.region === probe.region) || EMPTY_METADATA;
-        const displayName = metadata.displayName || probe.name;
 
         return {
-          ...probe,
           ...metadata,
-          displayName,
+          ...probe,
+          displayName: metadata.displayName || probe.name,
         };
       });
   }, [probes, isLoading]);
