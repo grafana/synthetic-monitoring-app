@@ -13,7 +13,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
     name: 'Probe Failed Executions Too High',
-    description: 'Trigger an alert if more than <threshold>% of tests have failed for the last 5 minutes',
+    description: 'Trigger an alert if more than $threshold% of tests have failed for the last 5 minutes',
     unit: '%',
     category: CheckAlertCategory.SystemHealth,
     default: 10,
@@ -29,9 +29,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
         )
       )) * 100 
     > 
-    sum by (instance, job) (
-      sm_alerts_threshold_probe_failed_executions_too_high{instance="$instance", job="$job"}
-    )
+    $threshold
     ) * on (instance, job) 
     group_right() 
     max without(probe, region, geohash) (sm_check_info{instance="$instance", job="$job"})
@@ -43,7 +41,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP50,
     name: 'HTTP Request Duration Too High (P50)',
-    description: 'Trigger an alert if the p50 for the HTTP request is higher than <threshold>ms for the last 5 minutes',
+    description: 'Trigger an alert if the p50 for the HTTP request is higher than $thresholdms for the last 5 minutes',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 300,
@@ -54,9 +52,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
       sum without(phase)(probe_http_duration_seconds{instance="$instance", job="$job"})
     ) * 1000
   > 
-  sum by(instance, job) (
-    sm_alerts_threshold_http_request_duration_too_high_p50{instance="$instance", job="$job"}
-  )
+  $threshold
   ) * on (instance, job) 
   group_right() 
   max without(probe, region, geohash) (
@@ -67,7 +63,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP90,
     name: 'HTTP Request Duration Too High (P90)',
-    description: 'Trigger an alert if the p90 for the HTTP request is higher than <threshold>ms for the last 5 minutes',
+    description: 'Trigger an alert if the p90 for the HTTP request is higher than $thresholdms for the last 5 minutes',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 500,
@@ -77,9 +73,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     sum without(phase)(probe_http_duration_seconds{instance="$instance", job="$job"})
   ) * 1000 
   > 
-  sum by(instance, job)(
-    sm_alerts_threshold_http_request_duration_too_high_p90{instance="$instance", job="$job"}
-  )) 
+  $threshold) 
   * on (instance, job) 
   group_right() 
   max without(probe, region, geohash)(
@@ -90,7 +84,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP95,
     name: 'HTTP Request Duration Too High (P95)',
-    description: 'Trigger an alert if the p95 for the HTTP request is higher than <threshold>ms for the last 5 minutes',
+    description: 'Trigger an alert if the p95 for the HTTP request is higher than $thresholdms for the last 5 minutes',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 800,
@@ -100,9 +94,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     sum without(phase)(probe_http_duration_seconds{instance="$instance", job="$job"})
   ) * 1000 
   > 
-  sum by(instance, job)(
-    sm_alerts_threshold_http_request_duration_too_high_p95{instance="$instance", job="$job"}
-  )) 
+  $threshold) 
   * on (instance, job) 
   group_right() 
   max without(probe, region, geohash)(
@@ -113,7 +105,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP99,
     name: 'HTTP Request Duration Too High (P99)',
-    description: 'Trigger an alert if the p99 for the HTTP request is higher than <threshold>ms for the last 5 minutes',
+    description: 'Trigger an alert if the p99 for the HTTP request is higher than $thresholdms for the last 5 minutes',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 1500,
@@ -123,9 +115,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     sum without(phase)(probe_http_duration_seconds{instance="$instance", job="$job"})
   ) * 1000 
   > 
-  sum by(instance, job)(
-    sm_alerts_threshold_http_request_duration_too_high_p99{instance="$instance", job="$job"}
-  )) 
+  $threshold) 
   * on (instance, job) 
   group_right() 
   max without(probe, region, geohash)(
@@ -136,7 +126,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPTargetCertificateCloseToExpiring,
     name: 'HTTP Target Certificate Close To Expiring',
-    description: 'Trigger an alert if the target certificate will expire in less than <threshold> days',
+    description: 'Trigger an alert if the target certificate will expire in less than $threshold days',
     unit: 'd',
     category: CheckAlertCategory.SystemHealth,
     default: 60,
@@ -145,7 +135,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     (min by(instance, job) (probe_ssl_earliest_cert_expiry{instance="$instance", job="$job"}) - time()) 
     / (60 * 60 * 24) 
     < 
-    sum by(instance, job) (sm_alerts_threshold_http_target_certificate_close_to_expiring{instance="$instance", job="$job"})
+    $threshold
   ) 
   * on (instance, job) 
   group_right() 
@@ -160,7 +150,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP50,
     name: 'Ping ICMP Duration Too High (P50)',
-    description: 'Trigger an alert if the p50 for the ICMP request is higher than <threshold>ms for the last 5 minutes',
+    description: 'Trigger an alert if the p50 for the ICMP request is higher than $thresholdms for the last 5 minutes',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 50,
@@ -170,9 +160,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     sum without(phase)(probe_icmp_duration_seconds{instance="$instance", job="$job"})
   ) * 1000 
   > 
-  sum by(instance, job)(
-    sm_alerts_threshold_ping_icmp_duration_too_high_p50{instance="$instance", job="$job"}
-  )) 
+  $threshold) 
   * on (instance, job) 
   group_right() 
   max without(probe, region, geohash)(
@@ -183,7 +171,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP90,
     name: 'Ping ICMP Duration Too High (P90)',
-    description: 'Trigger an alert if the p90 for the ICMP request is higher than <threshold>ms for the last 5 minutes',
+    description: 'Trigger an alert if the p90 for the ICMP request is higher than $thresholdms for the last 5 minutes',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 100,
@@ -193,9 +181,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     sum without(phase)(probe_icmp_duration_seconds{instance="$instance", job="$job"})
   ) * 1000 
   > 
-  sum by(instance, job)(
-    sm_alerts_threshold_ping_icmp_duration_too_high_p90{instance="$instance", job="$job"}
-  )) 
+ $threshold) 
   * on (instance, job) 
   group_right() 
   max without(probe, region, geohash)(
@@ -206,7 +192,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP95,
     name: 'Ping ICMP Duration Too High (P95)',
-    description: 'Trigger an alert if the p95 for the ICMP request is higher than <threshold>ms for the last 5 minutes',
+    description: 'Trigger an alert if the p95 for the ICMP request is higher than $thresholdms for the last 5 minutes',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 200,
@@ -216,9 +202,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     sum without(phase)(probe_icmp_duration_seconds{instance="$instance", job="$job"})
   ) * 1000 
   > 
-  sum by(instance, job)(
-    sm_alerts_threshold_ping_icmp_duration_too_high_p95{instance="$instance", job="$job"}
-  )) 
+  $threshold) 
   * on (instance, job) 
   group_right() 
   max without(probe, region, geohash)(
@@ -229,7 +213,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP99,
     name: 'Ping ICMP Duration Too High (P99)',
-    description: 'Trigger an alert if the p99 for the ICMP request is higher than <threshold>ms for the last 5 minutes',
+    description: 'Trigger an alert if the p99 for the ICMP request is higher than $thresholdms for the last 5 minutes',
     unit: 'ms',
     category: CheckAlertCategory.RequestDuration,
     default: 400,
@@ -239,9 +223,7 @@ export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     sum without(phase)(probe_icmp_duration_seconds{instance="$instance", job="$job"})
   ) * 1000 
   > 
-  sum by(instance, job)(
-    sm_alerts_threshold_ping_icmp_duration_too_high_p99{instance="$instance", job="$job"}
-  )) 
+  $threshold) 
   * on (instance, job) 
   group_right() 
   max without(probe, region, geohash)(

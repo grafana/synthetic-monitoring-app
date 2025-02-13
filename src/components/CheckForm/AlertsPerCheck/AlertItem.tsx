@@ -46,12 +46,16 @@ export const AlertItem = ({
 
   const job = getValues('job');
   const instance = getValues('target');
+  const threshold = getValues(`alerts.${alert.type}.threshold`);
 
-  const query = alert.query.replace(/\$instance/g, instance).replace(/\$job/g, job);
-  const exploreLink = ds && createExploreLink(ds.name, query);
+  const query = alert.query
+    .replace(/\$instance/g, instance)
+    .replace(/\$job/g, job)
+    .replace(/\$threshold/g, threshold);
+  const exploreLink = ds && getValues('id') && threshold && createExploreLink(ds.name, query);
   const tooltipContent = (
     <div>
-      {alert.description}.{' '}
+      {alert.description.replace(/\$threshold/g, threshold)}.{' '}
       {exploreLink && (
         <TextLink href={exploreLink} external={true} variant="bodySmall">
           Explore query
