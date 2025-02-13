@@ -13,9 +13,9 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
     name: 'Probe Failed Executions Too High',
-    description: 'Trigger an alert if more than $threshold% of tests have failed for the last 5 minutes',
+    description: '',
     unit: '%',
-    category: CheckAlertCategory.SystemHealth,
+    category: CheckAlertCategory.FailedChecks,
     default: 10,
     query: `
     (

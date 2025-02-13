@@ -666,6 +666,7 @@ export enum CheckAlertType {
 export enum CheckAlertCategory {
   SystemHealth = 'System Health',
   RequestDuration = 'Request Duration',
+  FailedChecks = 'Failed Checks',
 }
 
 export type CheckAlertDraft = {

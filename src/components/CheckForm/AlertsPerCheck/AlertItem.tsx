@@ -9,6 +9,7 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { FailedExecutionsAlert } from './FailedExecutionsAlert';
 
 function createExploreLink(dataSourceName: string, query: string) {
   return urlUtil.renderUrl(`/explore`, {
@@ -55,7 +56,7 @@ export const AlertItem = ({
   const exploreLink = ds && getValues('id') && threshold && createExploreLink(ds.name, query);
   const tooltipContent = (
     <div>
-      {alert.description.replace(/\$threshold/g, threshold)}.{' '}
+      {alert.description.replace(/\$threshold/g, threshold)}{' '}
       {exploreLink && (
         <TextLink href={exploreLink} external={true} variant="bodySmall">
           Explore query
@@ -66,49 +67,62 @@ export const AlertItem = ({
 
   return (
     <div key={alert.type} className={styles.item}>
-      <div className={styles.itemInfo}>
-        <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
-
+      {alert.type === CheckAlertType.ProbeFailedExecutionsTooHigh && (
         <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
           <Stack alignItems="center">
-            <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
-              {alert.name}
-            </Label>
+            <FailedExecutionsAlert alert={alert} selected={selected} onSelectionChange={handleToggleAlert} />
             <Icon name="info-circle" />
           </Stack>
         </Tooltip>
-      </div>
-      <div className={styles.thresholdInput}>
-        <Field
-          label="Threshold"
-          htmlFor={`alert-threshold-${alert.type}`}
-          invalid={!!thresholdError}
-          error={thresholdError}
-        >
-          <Controller
-            name={`alerts.${alert.type}.threshold`}
-            control={control}
-            render={({ field }) => {
-              return (
-                <Input
-                  {...field}
-                  aria-disabled={!selected}
-                  suffix={alert.unit}
-                  type="number"
-                  step="any"
-                  id={`alert-threshold-${alert.type}`}
-                  onChange={(e) => {
-                    const value = e.currentTarget.value;
-                    return field.onChange(value !== '' ? Number(value) : '');
-                  }}
-                  width={10}
-                  disabled={!selected || isFormDisabled}
-                />
-              );
-            }}
-          />
-        </Field>
-      </div>
+      )}
+
+      {alert.type !== CheckAlertType.ProbeFailedExecutionsTooHigh && (
+        <>
+          <div className={styles.itemInfo}>
+            <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
+
+            <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
+              <Stack alignItems="center">
+                <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
+                  {alert.name}
+                </Label>
+                <Icon name="info-circle" />
+              </Stack>
+            </Tooltip>
+          </div>
+          <div className={styles.thresholdInput}>
+            <Field
+              label="Threshold"
+              htmlFor={`alert-threshold-${alert.type}`}
+              invalid={!!thresholdError}
+              error={thresholdError}
+            >
+              <Controller
+                name={`alerts.${alert.type}.threshold`}
+                control={control}
+                render={({ field }) => {
+                  return (
+                    <Input
+                      {...field}
+                      aria-disabled={!selected}
+                      suffix={alert.unit}
+                      type="number"
+                      step="any"
+                      id={`alert-threshold-${alert.type}`}
+                      onChange={(e) => {
+                        const value = e.currentTarget.value;
+                        return field.onChange(value !== '' ? Number(value) : '');
+                      }}
+                      width={10}
+                      disabled={!selected || isFormDisabled}
+                    />
+                  );
+                }}
+              />
+            </Field>
+          </div>
+        </>
+      )}
     </div>
   );
 };
