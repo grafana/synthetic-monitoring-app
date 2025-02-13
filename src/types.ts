@@ -863,3 +863,5 @@ export type PluginPermissions =
   | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.access-tokens:${'write'}`
   | `${PermissionBase}.plugin:${'write'}`;
+
+export type AlertingType = 'alerting' | 'sensitivity';
