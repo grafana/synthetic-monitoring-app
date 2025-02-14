@@ -81,7 +81,7 @@ export const AlertItem = ({
           <div className={styles.itemInfo}>
             <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
 
-            <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
+            <Tooltip content={tooltipContent} interactive={true}>
               <Stack alignItems="center">
                 <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
                   {alert.name}
@@ -132,6 +132,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: `flex`,
     gap: theme.spacing(1),
     marginLeft: theme.spacing(1),
+    minHeight: '40px',
   }),
 
   itemInfo: css({

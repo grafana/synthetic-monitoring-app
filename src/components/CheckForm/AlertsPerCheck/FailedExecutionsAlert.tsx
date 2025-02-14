@@ -1,11 +1,13 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Checkbox, InlineField, Input, Stack } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Checkbox, InlineField, Input, Select, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
-import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { ALERT_PENDING_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
 export const FailedExecutionsAlert = ({
   alert,
@@ -18,6 +20,7 @@ export const FailedExecutionsAlert = ({
 }) => {
   const { control, formState } = useFormContext<CheckFormValues>();
   const { isFormDisabled } = useCheckFormContext();
+  const styles = useStyles2(getStyles);
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
@@ -30,7 +33,12 @@ export const FailedExecutionsAlert = ({
       <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
       <Stack alignItems="center">
         Trigger an alert if more than{' '}
-        <InlineField htmlFor={`alert-threshold-${alert.type}`} invalid={!!thresholdError} error={thresholdError}>
+        <InlineField
+          htmlFor={`alert-threshold-${alert.type}`}
+          invalid={!!thresholdError}
+          error={thresholdError}
+          className={styles.inlineInput}
+        >
           <Controller
             name={`alerts.${alert.type}.threshold`}
             control={control}
@@ -54,8 +62,21 @@ export const FailedExecutionsAlert = ({
             }}
           />
         </InlineField>
-        of tests have failed for the last 5 minutes.
+        of tests have failed for the last
+        <Select
+          disabled={!selected || isFormDisabled}
+          data-testid="alertPendingPeriod"
+          options={ALERT_PENDING_PERIODS}
+          defaultValue={ALERT_PENDING_PERIODS[0]}
+          onChange={(e) => {}}
+        />
       </Stack>
     </Stack>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  inlineInput: css({
+    margin: 0,
+  }),
+});

@@ -9,6 +9,15 @@ export interface PredefinedAlertInterface {
   query: string;
   default?: number;
 }
+
+export const ALERT_PENDING_PERIODS = [
+  { label: '5m', value: '5m' },
+  { label: '10m', value: '10m' },
+  { label: '20m', value: '20m' },
+  { label: '30m', value: '30m' },
+  { label: '1h', value: '1h' },
+];
+
 export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
