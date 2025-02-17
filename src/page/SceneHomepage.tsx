@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
+import { Route, Routes } from 'react-router-dom-v5-compat';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
+import { CustomVariable, SceneContextProvider } from '@grafana/scenes-react';
 import { LoadingPlaceholder } from '@grafana/ui';
 
 import { DashboardSceneAppConfig } from 'types';
@@ -10,6 +12,7 @@ import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { getSummaryScene } from 'scenes/Summary';
+import { Summary } from 'scenes/Summary/Summary';
 
 export const SceneHomepage = () => {
   const smDS = useSMDS();
@@ -42,5 +45,14 @@ export const SceneHomepage = () => {
     return <LoadingPlaceholder text="Loading..." />;
   }
 
-  return <scene.Component model={scene} />;
+  return (
+  <SceneContextProvider timeRange={{ from: 'now-1h', to: 'now' }} withQueryController>
+    <CustomVariable name="env" query="dev, test, prod" initialValue="dev">
+      <Routes>
+        <Route path="" Component={Summary} />
+      </Routes>
+    </CustomVariable>
+  </SceneContextProvider>);
+
+  //return <scene.Component model={scene} />;
 };
