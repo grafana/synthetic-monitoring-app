@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.19.0...v1.19.1) (2025-02-18)
+
+
+### Fixes
+
+* prevent submitting alerts per check when FF is off ([#1068](https://github.com/grafana/synthetic-monitoring-app/issues/1068)) ([a0062cd](https://github.com/grafana/synthetic-monitoring-app/commit/a0062cddad4321b7920ba1a6818aadab37fe4a1f))
+
 ## [1.19.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.18.0...v1.19.0) (2025-02-12)
 
 
