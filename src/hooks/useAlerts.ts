@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
+import { firstValueFrom } from 'rxjs';
 
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -55,13 +56,13 @@ interface RuleResponse {
 }
 
 const fetchSMRules = (metricInstanceIdentifier: string | number): Promise<RuleResponse> =>
-  getBackendSrv()
-    .fetch<any>({
+  firstValueFrom(
+    getBackendSrv().fetch<any>({
       method: 'GET',
       url: `/api/ruler/${metricInstanceIdentifier}/api/v1/rules/${SM_ALERTING_NAMESPACE}/default`,
       showErrorAlert: false,
     })
-    .toPromise()
+  )
     .then((resp) => {
       return { rules: resp?.data?.rules ?? [] };
     })
@@ -82,8 +83,8 @@ export function useAlerts() {
     if (!metricsDS) {
       return;
     }
-    await getBackendSrv()
-      .fetch({
+    await firstValueFrom(
+      getBackendSrv().fetch({
         url: `/api/ruler/${metricsDS.uid}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
         method: 'POST',
         headers: {
@@ -91,7 +92,7 @@ export function useAlerts() {
         },
         data: defaultRules,
       })
-      .toPromise();
+    );
 
     setDefaultRulesSetCount(defaultRulesSetCount + 1);
   };
@@ -106,8 +107,8 @@ export function useAlerts() {
       rules,
     };
 
-    const updateResponse = getBackendSrv()
-      .fetch({
+    const updateResponse = firstValueFrom(
+      getBackendSrv().fetch({
         url: `/api/ruler/${metricsDS.uid}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
         method: 'POST',
         headers: {
@@ -115,7 +116,7 @@ export function useAlerts() {
         },
         data: ruleGroup,
       })
-      .toPromise();
+    );
 
     setDefaultRulesSetCount(defaultRulesSetCount + 1);
 

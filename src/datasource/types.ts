@@ -1,4 +1,5 @@
-import { DataQuery, DataSourceJsonData, VariableModel } from '@grafana/data';
+import { DataSourceJsonData } from '@grafana/data';
+import { DataQuery } from '@grafana/schema';
 
 export enum QueryType {
   Probes = 'probes',
@@ -148,12 +149,4 @@ export type CheckAccountingClasses = {
 
 export interface CheckInfo {
   AccountingClasses: CheckAccountingClasses;
-}
-
-interface CurrentVariableModel {
-  value: string | undefined;
-}
-
-export interface DashboardVariable extends VariableModel {
-  current?: CurrentVariableModel;
 }
