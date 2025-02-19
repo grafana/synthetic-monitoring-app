@@ -104,9 +104,9 @@ interface TFDnsSettings
   ip_version?: string;
   record_type?: string;
   valid_r_codes?: string[];
-  validate_answer_rrs: TFFailIfMatchesNotMatches;
-  validate_authority_rrs: TFFailIfMatchesNotMatches;
-  validate_additional_rrs: TFFailIfMatchesNotMatches;
+  validate_answer_rrs?: TFFailIfMatchesNotMatches;
+  validate_authority_rrs?: TFFailIfMatchesNotMatches;
+  validate_additional_rrs?: TFFailIfMatchesNotMatches;
 }
 
 interface TFGRPCSettings extends Omit<GRPCSettings, 'ipVersion' | 'tlsConfig'> {
