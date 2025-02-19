@@ -102,7 +102,7 @@ To explain the individual parts of the query expression, starting from the inner
 
 `probe_success` is a [Prometheus gauge metric](https://prometheus.io/docs/concepts/metric_types/#gauge) reported by each of our probes. It can only have a value of 0 or 1, representing failure and success. We add `job` and `instance` label filters as these two combined are how we uniquely identify a check. `probe` and `config_version` labels are also available on this metric but are not explicitly used in the uptime calculation. It is worth noting they exist on the metric for two reasons:
 1. we want to collect all the probe samples, so don't want to discriminate against any of them.
-2. if we modify the base query we can end up with very different results depending on the scenario because of the config_version_[See the example below](#what-happens-if-we-remove-the-max_over_time-aggregation-from-the-query)_.
+2. if we modify the base query we can end up with very different results depending on the scenario because of the `config_version` _[See the example below](#what-happens-if-we-remove-the-max_over_time-aggregation-from-the-query)_.
 
 ### max_over_time({{_metric_}}[$frequencyInSeconds])
 
@@ -112,12 +112,57 @@ We use (`$frequencyInSeconds`) to determine what range-vector to use (e.g the 'l
 
 This function gives us two benefits in particular, one explicit and one implicit:
 
-1. __explicit__: we are telling Prometheus what range-vector to use so what we consider a time point. Essentially, 'evaluate the entire time range in blocks of $frequencyInSeconds' and return the max value for each block (e.g. 1 if it is successful). This allows the probes to report their results at any time during the start and end of the time point and be considered a single point in time.
+1. __explicit__: we are telling Prometheus what range-vector to use so what we consider a time point. Essentially, 'evaluate the entire time range in blocks of `$frequencyInSeconds` and return the max value for each block (e.g. 1 if it is successful). This allows the probes to report their results at any time during the start and end of the time point and be considered a single point in time.
 2. __implicit__: this removes Prometheus' assumed continuity of metrics (the value for the `--query.lookback-delta` which is provided [as a flag when the server is set-up](https://prometheus.io/docs/prometheus/latest/command-line/prometheus/#flags)). If we didn't use this function, Prometheus would assume that the metric is continuous and that there are no gaps in the data for 5 minutes after it stops reporting. This is not the case and often acts as a bad assumption leading to inaccurate results. _[See the example below](#what-happens-if-we-remove-the-max_over_time-aggregation-from-the-query)_
 
-## max by() (...)
+### max by() (...)
 
 Each assessment of uptime for a time point is a binary result: it is either 1 (success) or 0 (failure). In the previous step we gathered all of the unique samples for a given time point (usually by probe, but could also include differing configurations when the check is updated) and in this step we pick out the max value and discard the rest. We only care if a time point has a single success. If a time point has 3 successful samples, we still only want to count it as 1 successful time point (individual successes are represented by our reachability metric).
+
+## Known limitations
+
+![Uptime v3](./images/how-it-works-visualised.png)
+
+The main limitation of our uptime query is an absense of data. There are multiple reasons why we might not have data for a given time point:
+- The probe cluster restarted
+- The agent(s) restarted
+- Mimir rejected the sample because of hitting an ingestion limit
+- The agent(s) were unable to reach Mimir to write the result
+- General fickleness of the internet
+
+Consider the scenario above, we have a check that is running every minute with three probes. We want to know uptime for the last five minutes.
+
+1. For the first time point we have three successes reported
+2. For the second we only have the result for a single probe because of the write-blocking event.
+3. By the time the write-blocking event subsides, the third time point is about to expire - there is not enough time for the probe executions to start, run and report their results, so they resume and get reported in the fourth time point.
+4. The fourth time point has two successes and a failure
+5. The fifth time point has three failures.
+
+In this case we report a 75% uptime as we can only report on the data that is present, however it is likely the 'real' value is 80% if the third time point had been reported (4 successes / 5 time points).
+
+### A note on dropped samples
+
+Depending on the write-blocking event the data isn't _necessarily_ lost. If the agent was still running, it keeps a continuous record of the probe results which is represented by the summary metric. Depending on the results recorded and how many samples were dropped the result _might_ be able to be inferred by looking at the summary metric.
+
+| Time | probe_all_success_count | probe_all_success_sum | Inferred result |
+|------|------------------------ |-----------------------|---------------- |
+| t1   | 1                       | 1                     | Up              |
+| t2   | -                       | -                     | Up              |
+| t3   | -                       | -                     | Up              |
+| t4   | 4                       | 4                     | Up              |
+
+Despite we have no data for the second and third time points, we can infer both results were successful because the `probe_all_success_sum` is 4 and the `probe_all_success_count` is 4.
+
+| Time | probe_all_success_count | probe_all_success_sum | Inferred result |
+|------|------------------------ |-----------------------|---------------- |
+| t1   | 1                       | 1                     | Up              |
+| t2   | -                       | -                     | ?               |
+| t3   | -                       | -                     | ?               |
+| t4   | 4                       | 3                     | Up              |
+
+However, in updated scenario above we know that only one of t2 or t3 were successful but we can't know which one. If the check was running a single probe we could say with confidence that the uptime was 75% but with multiple probes we can't be sure, as we can't confirm if they had the same results if their successes and failures were at the same time.
+
+Despite the summary metric providing this slight advantage over just utilising `probe_success`, it isn't enough to justify its use for our uptime calculation.
 
 ## Visualising uptime
 
@@ -126,7 +171,7 @@ When we visualize uptime, we need to consider how we present the data to the use
 **Single stat panel**: It is a single number that represents the uptime percentage for the given time range. It is the most straightforward way to present the data but it doesn't give the user any insight into how that number was derived.
 
 When displaying uptime as a single stat there are two important aspects to note:
-  1. we set the `maxDataPoints` option as high as possible to increase its fidelity for large time ranges.
+  1. we set the `maxDataPoints` option as high as possible to increase its fidelity for large time ranges. _[Could it be an instant query instead?](#why-do-we-use-range-queries-instead-of-instant-queries-for-generating-a-single-uptime-metric)_
   2. We perform a client-side Grafana transformation to reduce each datapoint to a single value, it is essentially: `count successes / count total data points * 100` so it is viualised as a percentage.
 
 **Graph**: It shows the underlying data that contributes to calculating the uptime percentage and correlates with the mental model of how Synthetic Monitoring operates: a plot point = a Synthetic Monitoring check.
@@ -271,23 +316,27 @@ Honestly, no idea - Prometheus Black magic is the only answer I can provide. I h
 
 ![](./images/logs_vs_visualization.png)
 
-The above image demonstrates visualizing a 10-minute period that is approximately 11 months into the past of the dataset and cross-referencing the raw data that was generated that is inserted into Prometheus. Uptime v3 is precisely correct in its calculation, Uptime calculations V1 and V2 are both _wildly_ incorrect.
+The above image demonstrates visualizing a 10-minute period that is approximately 11 months into the past of the dataset and cross-referencing the raw data that was generated that is inserted into Prometheus. Uptime v3 is precisely correct in its calculation, Uptime calculations V1 and V2 are both incorrect.
 
 11 data points: 3 successes, 8 failures. (3/11 * 100) = 27.3% uptime (rounded).
 
 ##### Can I view the raw results that were used in the testing process?
 
-Yes. They are saved in our 'Synthetics Dashboards reference' Google Sheet in the tabs ['In-phase Testing scenarios'](https://docs.google.com/spreadsheets/d/1-Rc2vti-LoKqM9Z-GureUXKwmbc1AJ1B8GvHx5pJrDA/edit?gid=192150256#gid=192150256) and ['Out-of-phase Testing scenarios'](https://docs.google.com/spreadsheets/d/1-Rc2vti-LoKqM9Z-GureUXKwmbc1AJ1B8GvHx5pJrDA/edit?gid=843281165#gid=843281165).
+Yes. They are saved in our 'Synthetics Dashboards reference' Google Sheet in the tabs ['In-phase Testing scenarios' _Grafana internal-only_](https://docs.google.com/spreadsheets/d/1-Rc2vti-LoKqM9Z-GureUXKwmbc1AJ1B8GvHx5pJrDA/edit?gid=192150256#gid=192150256) and ['Out-of-phase Testing scenarios' _Grafana internal-only_](https://docs.google.com/spreadsheets/d/1-Rc2vti-LoKqM9Z-GureUXKwmbc1AJ1B8GvHx5pJrDA/edit?gid=843281165#gid=843281165).
 
 ## FAQ
 
 ### Why do we use range queries instead of instant queries for generating a single uptime metric?
 
-The answer to this is multi-faceted.
+The answer to this is multi-faceted. It boils down to:
 
-Because we have the ability to transform the data on the client side within our Grafana plugin, we are able to use the more powerful and fully featured range queries that Prometheus provides. Despite we often show uptime as a reduced single stat panel, having the ability to show the underlying data in a graph how that single stat is derived is very powerful and helps users visualize it in a more meaningful way.
+1. Mimir limitations
 
-A limitation we bypass using range queries is Mimir's 768-hour (32 days) time range limit for instant queries, meaning we can support more of the long-range use cases outlined at the top of this document.
+A limitation we bypass using range queries is Mimir's 768-hour (32 days) time range limit for instant queries, meaning we can support the long-range use cases outlined at the top of this document. The only way to evaluate uptime for a period longer than 768 hours is using a range query.
+
+2. Consistency
+
+Because of the above limitation it is easier to use range queries for all use cases. In the future we may revisit this and change the query depending on the selected time period. It also means that when utilizing the 'Explore' option in the uptime stat panel the user can see the same data as they would in the graph panel and can infer how it is reduced to a single number.
 
 ### What happens if we remove the `max_over_time` aggregation from the query?
 
@@ -297,7 +346,7 @@ A likely scenario for collecting false positives would be down to user error whe
 
 ![](./images/without_aggregation.png)
 
-In the example above, on the left is the query `max by(config) (probe_success{job="$job", instance="$instance"})` versus `max by(config) (max_over_time(probe_success{job="$job", instance="$instance"}[$frequencyInSeconds]))` on the right. We can see every time point is considered successful in the left graph because of the assumed continuity of metrics and how `probe_success` results now overlap, even though it is impossible in our architecture. Turning off continuity of metrics is a must for our uptime calculation.
+In the example above, on the left is the query `max by(config) (probe_success{job="$job", instance="$instance"})` versus `max by(config) (max_over_time(probe_success{job="$job", instance="$instance"}[$frequencyInSeconds]))` on the right. We can see every time point is considered successful in the left graph because of the assumed continuity of metrics and how `probe_success` results now overlap, even though it is impossible in our architecture. 'Turning off' continuity of metrics is a must for our uptime calculation.
 
 ### Do we take into account a change of frequency across the selected time period in our uptime calculation?
 
@@ -321,11 +370,14 @@ Exploring the limitations when using the summary metric:
 ![](./images/versions_comparison_detail.png)
 
 The above image shows the individual parts of the query broken down and visualised. For the first time point where uptime has decreased, the increase value for `probe_all_success_sum` is reported as 2.67:
-- It calculates this by looking at the previous 1 minute of data (`$__rate_interval` = 15s (`$__interval`) x 4 (default)) and observing the increase in the first to present samples. In should be precisely 2 in this case but [Prometheus extrapolates](https://prometheus.io/docs/prometheus/latest/querying/functions/#increase) the time range either side slightly so we end up with 2.67.
-- As the increase for `probe_all_success_count` is 4, the calculation is 2.67 / 4 * 100 = 0.667%, the last step is rounding this to the cloest integer, which is 1 which indicates success which is incorrect.
+- It calculates this by looking at the previous 1 minute of data (`$__rate_interval` = 15s (`$__interval`) x 4 (default best practice)) and observing the increase in the first to present samples. In should be precisely 2 in this case but [Prometheus extrapolates](https://prometheus.io/docs/prometheus/latest/querying/functions/#increase) the time range either side slightly so we end up with 2.67.
+- As the increase for `probe_all_success_count` is 4, the calculation is 2.67 / 4 * 100 = 0.667%, the last step is rounding this to the closest integer, which is 1 which indicates success which is incorrect.
+    - V1 does something similar but during the outermost `ceil` evaluation in the query it rounds up to 1 (thus meaning a success) for _any_ value that isn't 0 when evaluating the result of the inner evaluation so it will only report a decrease in uptime once it has at least 3 failures in a row.
 
-This 'off by one' reporting might be considered comparatively minor for this scenario where failures all appear in a row but if we look at a different scenario and apply the v2 query, it becomes more apparent how this level of inaccuracy can have a detrimental effect on the accuracy of the uptime calculation.
+In the case of V2, this 'off by one' reporting might be considered comparatively minor for this scenario where failures all appear in a row but if we look at a different scenario and apply the v2 query, it becomes more apparent how this level of inaccuracy can have a detrimental effect on the accuracy of the uptime calculation.
 
 ![](./images/versions_comparison_hidden_failures.png)
 
-In the above image, V2 ignores failures that happen as one-off events - in this case if every third result was a failure they would all be hidden and we could be over-reporting uptime by 33.33%.
+In the above image, V2 ignores failures that happen as one-off events - if every third result was a failure they would all be hidden and we could be over-reporting uptime by 33.33%.
+
+It is worth noting, the only way to fix this is by changing the range-factor from `$__rate_interval` to a value that only evaluates the current sample to its preceeding one but this essentially makes the query the same as the V3 query (and it often fails to produce results for longer time-ranges).
