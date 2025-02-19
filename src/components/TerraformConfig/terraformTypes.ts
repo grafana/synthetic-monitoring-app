@@ -205,6 +205,8 @@ export interface TFProbeConfig {
   [key: string]: TFProbe;
 }
 
-export interface TFProbe extends Omit<Probe, 'online' | 'onlineChange' | 'version' | 'deprecated' | 'labels'> {
+export interface TFProbe extends Omit<Probe, 'online' | 'onlineChange' | 'version' | 'deprecated' | 'labels' | 'capabilities'> {
   labels: TFLabels;
+  disableScriptedChecks?: boolean;
+  disableBrowserChecks?: boolean;
 }
