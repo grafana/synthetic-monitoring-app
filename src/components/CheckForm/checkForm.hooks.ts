@@ -10,11 +10,12 @@ import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
 import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
-import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType } from 'types';
+import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType, FeatureName } from 'types';
 import { ROUTES } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { useCUDChecks, useTestCheck } from 'data/useChecks';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from 'components/CheckEditor/transformations/toPayload.alerts';
@@ -54,6 +55,7 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
   const navigateToChecks = useCallback(() => navigate(ROUTES.Checks), [navigate]);
+  const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
   const onError = (err: Error | unknown) => {
     setSubmittingToApi(false);
@@ -102,9 +104,9 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
         return testCheck(toSubmit, { onSuccess: onTestSuccess });
       }
 
-      mutateCheck(toSubmit, checkValues?.alerts);
+      mutateCheck(toSubmit, alertsEnabled ? checkValues?.alerts : undefined);
     },
-    [mutateCheck, onTestSuccess, testCheck]
+    [mutateCheck, onTestSuccess, testCheck, alertsEnabled]
   );
 
   const handleInvalid = useCallback((errs: FieldErrors) => {
