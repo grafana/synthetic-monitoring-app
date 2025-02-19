@@ -181,6 +181,8 @@ export const checkToTF = (check: Check): TFCheck => {
     probes: check.probes,
     labels: labelsToTFLabels(check.labels),
     settings: settingsToTF(check),
+    frequency: check.frequency,
+    timeout: check.timeout,
   };
 
   return tfCheck;

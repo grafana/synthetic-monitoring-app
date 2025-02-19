@@ -38,6 +38,8 @@ export interface TFCheck {
   probes: number[];
   labels: TFLabels;
   settings: TFCheckSettings;
+  frequency: number;
+  timeout: number;
 }
 
 export type TFLabels = { [key: string]: string };
