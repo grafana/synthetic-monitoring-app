@@ -20,13 +20,13 @@ When we consider all of these use cases, we have to cater for an accurate uptime
 We calculate uptime as the percentage of successful time points in the requested time range that return a positive result. A simple way to express uptime is as follows:
 
 ```
-Uptime = (Successful Time Points / Total Time Points) * 100
+Uptime = (Successful Time Points / Reported Time Points) * 100
 ```
 
-A time point is a collection of probes executing the same check at the same time. If a single probe returns a positive result, the time point is considered successful. If all probes return a negative result, the time point is considered a failure.
+A time point is a collection of probes executing the same check at the same time. If a single probe returns a positive result, the time point is considered successful. If all probes return a 0 result, the time point is considered a failure.
 
 Example calculation:
-| Time | Probe1 | Probe2 | Probe3 | Uptime Result     |
+| Time | ProbeA | ProbeB | ProbeC | Uptime Result     |
 |------|--------|--------|--------|-------------------|
 | t1   | 1      | 1      | 1      | Success           |
 | t2   | 0      | 0      | 0      | Failure           |
@@ -94,7 +94,9 @@ Utilizing Mimir's `range_query` endpoint the expression is:
 max by () (max_over_time(probe_success{job="$job", instance="$instance"}[$frequencyInSeconds]))
 ```
 
-We also provide the range from the Grafana time picker and where appropriate we might set a `maxDataPoints` parameter to be as high as possible (8000 or so has proven effective) to increase the fidelity of the data when looking at large time periods.
+With an `interval` (also known as `minStep` or `step`) parameter set to the check's `$frequencyInSeconds`. This parameter establishes a time point.
+
+Additionally, the range from the Grafana time picker and where appropriate we might set a `maxDataPoints` parameter to be as high as possible (8000 or so has proven effective) to increase the fidelity of the data when looking at large time periods.
 
 To explain the individual parts of the query expression, starting from the innermost part:
 
@@ -106,13 +108,13 @@ To explain the individual parts of the query expression, starting from the inner
 
 ### max_over_time({{_metric_}}[$frequencyInSeconds])
 
-`max_over_time` is a [Prometheus aggregation function](https://prometheus.io/docs/prometheus/latest/querying/functions/#aggregation_over_time) that returns the maximum value of a metric over a given time range, in this case a check's frequency in seconds: `$frequencyInSeconds`.
+`max_over_time` is a [Prometheus aggregation function](https://prometheus.io/docs/prometheus/latest/querying/functions/#aggregation_over_time) that returns the maximum value of a metric over a given time range, in this case a check's frequency in seconds: `$frequencyInSeconds`. This range-vector shares the same value with the interval parameter to ensure that only the executions reported in its time point are evaluated and can't be influenced by the previous or following time points. The range-vector is often referred to as the 'look-back time' or 'evaluation period'.
 
-We use (`$frequencyInSeconds`) to determine what range-vector to use (e.g the 'look back' time) which gives us a 'time point'. For example, if the check is running every 15 seconds, the range-vector would be 15 seconds. If the check is running every minute, the range-vector would be 60 seconds.
+For example, if the check is running every 15 seconds, the range-vector would be 15 seconds. If the check is running every minute, the range-vector would be 60 seconds.
 
-This function gives us two benefits in particular, one explicit and one implicit:
+This function gives us two benefits, one explicit and one implicit:
 
-1. __explicit__: we are telling Prometheus what range-vector to use so what we consider a time point. Essentially, 'evaluate the entire time range in blocks of `$frequencyInSeconds` and return the max value for each block (e.g. 1 if it is successful). This allows the probes to report their results at any time during the start and end of the time point and be considered a single point in time.
+1. __explicit__: we are telling Prometheus what range-vector to use so what we consider a time point. Essentially, 'evaluate the entire time range in blocks of `$frequencyInSeconds` and return the max value for each block (e.g. 1 if it is successful). This allows the probes to report their results at any time during the start and end of the time point but be considered a single point in time.
 2. __implicit__: this removes Prometheus' assumed continuity of metrics (the value for the `--query.lookback-delta` which is provided [as a flag when the server is set-up](https://prometheus.io/docs/prometheus/latest/command-line/prometheus/#flags)). If we didn't use this function, Prometheus would assume that the metric is continuous and that there are no gaps in the data for 5 minutes after it stops reporting. This is not the case and often acts as a bad assumption leading to inaccurate results. _[See the example below](#what-happens-if-we-remove-the-max_over_time-aggregation-from-the-query)_
 
 ### max by() (...)
@@ -151,7 +153,7 @@ Depending on the write-blocking event the data isn't _necessarily_ lost. If the 
 | t3   | -                       | -                     | Up              |
 | t4   | 4                       | 4                     | Up              |
 
-Despite we have no data for the second and third time points, we can infer both results were successful because the `probe_all_success_sum` is 4 and the `probe_all_success_count` is 4.
+Despite we have no data for the second and third time points, we can infer both results were successful because the `probe_all_success_sum` is 4 and the `probe_all_success_count` is 4, indicating no failures were reported.
 
 | Time | probe_all_success_count | probe_all_success_sum | Inferred result |
 |------|------------------------ |-----------------------|---------------- |
@@ -369,15 +371,16 @@ Exploring the limitations when using the summary metric:
 
 ![](./images/versions_comparison_detail.png)
 
-The above image shows the individual parts of the query broken down and visualised. For the first time point where uptime has decreased, the increase value for `probe_all_success_sum` is reported as 2.67:
-- It calculates this by looking at the previous 1 minute of data (`$__rate_interval` = 15s (`$__interval`) x 4 (default best practice)) and observing the increase in the first to present samples. In should be precisely 2 in this case but [Prometheus extrapolates](https://prometheus.io/docs/prometheus/latest/querying/functions/#increase) the time range either side slightly so we end up with 2.67.
-- As the increase for `probe_all_success_count` is 4, the calculation is 2.67 / 4 * 100 = 0.667%, the last step is rounding this to the closest integer, which is 1 which indicates success which is incorrect.
-    - V1 does something similar but during the outermost `ceil` evaluation in the query it rounds up to 1 (thus meaning a success) for _any_ value that isn't 0 when evaluating the result of the inner evaluation so it will only report a decrease in uptime once it has at least 3 failures in a row.
+The above image shows the individual parts of the query broken down and visualised for each time point. For the first time point where uptime has decreased, the increase value for `probe_all_success_sum` is reported as 2.67:
+- It calculates this by looking at the previous 1 minute of data (`$__rate_interval` = 15s (`$__interval`) x 4 (default best practice)) and observing the increase in the first to present samples. It should be precisely 2 in this case but [Prometheus extrapolates](https://prometheus.io/docs/prometheus/latest/querying/functions/#increase) the time range either side slightly so we end up with 2.67.
+- As the increase for `probe_all_success_count` is 4, the calculation is 2.67 / 4 * 100 = 0.667, the last step is rounding this to the closest integer, which is 1 which indicates success which is incorrect.
+- For the following step the increase is halved to 1.333, the increase for `probe_all_success_count` is still 4 so the calculation is 1.333 / 4 * 100 = 0.33, rounded this comes to 0 indicating failure, which is correct.
+    - V1 does something similar but during the outermost `ceil` evaluation in the query it rounds this value up to 1 (thus meaning a success) for _any_ value that isn't 0 when evaluating the result of the inner evaluation so it will only report a decrease in uptime once it has at least 3 failures in a row.
 
-In the case of V2, this 'off by one' reporting might be considered comparatively minor for this scenario where failures all appear in a row but if we look at a different scenario and apply the v2 query, it becomes more apparent how this level of inaccuracy can have a detrimental effect on the accuracy of the uptime calculation.
+In the case of V2, this 'off by one' reporting might be considered comparatively minor for this scenario where failures all appear in a row but if we look at a different scenario and apply the v2 query, it becomes more apparent how this level of inaccuracy can have a detrimental effect on the uptime indicator.
 
 ![](./images/versions_comparison_hidden_failures.png)
 
 In the above image, V2 ignores failures that happen as one-off events - if every third result was a failure they would all be hidden and we could be over-reporting uptime by 33.33%.
 
-It is worth noting, the only way to fix this is by changing the range-factor from `$__rate_interval` to a value that only evaluates the current sample to its preceeding one but this essentially makes the query the same as the V3 query (and it often fails to produce results for longer time-ranges).
+It is worth noting, the only way to fix this is by changing the range-vector from `$__rate_interval` to a value that only evaluates the current sample to its preceeding one but this essentially makes the query the same as the V3 query (and it often fails to produce results for longer time-ranges).
