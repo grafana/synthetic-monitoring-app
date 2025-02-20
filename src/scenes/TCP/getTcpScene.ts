@@ -6,7 +6,6 @@ import {
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
-  SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
@@ -25,23 +24,20 @@ import {
 } from 'scenes/Common';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getTimeRange } from 'scenes/Common/timeRange';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, newUptimeQuery = false) {
+export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
-    const timeRange = new SceneTimeRange({
-      from: 'now-6h',
-      to: 'now',
-    });
-
+    const timeRange = getTimeRange();
     const { job, instance, probe } = getVariables(CheckType.TCP, metrics, check);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
+    const uptime = getUptimeStat(metrics, check.frequency);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const sslExpiry = getSSLExpiryStat(metrics);
