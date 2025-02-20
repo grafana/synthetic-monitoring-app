@@ -127,7 +127,7 @@ const BulkActionsModalContent = ({ onDismiss, isOpen, checks, action }: BulkActi
 
 function getUpdatedProbes(check: Check, action: 'add' | 'remove', probeIds: number[]) {
   if (action === 'add') {
-    return [...check.probes, ...probeIds];
+    return [...new Set([...check.probes, ...probeIds])];
   }
 
   return check.probes.filter((id) => !probeIds.includes(id));
