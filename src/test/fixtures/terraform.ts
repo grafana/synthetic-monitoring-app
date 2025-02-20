@@ -16,7 +16,8 @@ export const TERRAFORM_PRIVATE_PROBES = {
     name: PRIVATE_PROBE.name,
     public: PRIVATE_PROBE.public,
     region: PRIVATE_PROBE.region,
-    capabilities: PRIVATE_PROBE.capabilities,
+    disable_browser_checks: PRIVATE_PROBE.capabilities.disableBrowserChecks,
+    disable_scripted_checks: PRIVATE_PROBE.capabilities.disableScriptedChecks,
   },
   [UNSELECTED_PRIVATE_PROBE.name]: {
     labels: {
@@ -27,7 +28,8 @@ export const TERRAFORM_PRIVATE_PROBES = {
     name: UNSELECTED_PRIVATE_PROBE.name,
     public: UNSELECTED_PRIVATE_PROBE.public,
     region: UNSELECTED_PRIVATE_PROBE.region,
-    capabilities: UNSELECTED_PRIVATE_PROBE.capabilities,
+    disable_browser_checks: UNSELECTED_PRIVATE_PROBE.capabilities.disableBrowserChecks,
+    disable_scripted_checks: UNSELECTED_PRIVATE_PROBE.capabilities.disableScriptedChecks,
   },
 };
 
@@ -46,6 +48,7 @@ export const TERRAFORM_BASIC_PING_CHECK = {
     grafana_synthetic_monitoring_check: {
       [nameKey]: {
         enabled: true,
+        frequency: BASIC_PING_CHECK.frequency,
         job: BASIC_PING_CHECK.job,
         labels: {
           [BASIC_PING_CHECK.labels[0].name]: BASIC_PING_CHECK.labels[0].value,
@@ -58,6 +61,7 @@ export const TERRAFORM_BASIC_PING_CHECK = {
           },
         },
         target: BASIC_PING_CHECK.target,
+        timeout: BASIC_PING_CHECK.timeout,
       },
     },
     grafana_synthetic_monitoring_probe: TERRAFORM_PRIVATE_PROBES,

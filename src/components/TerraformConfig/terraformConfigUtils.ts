@@ -215,5 +215,6 @@ export const probeToTF = (probe: Probe): TFProbe => ({
   region: probe.region,
   public: false,
   labels: labelsToTFLabels(probe.labels),
-  ...probe.capabilities,
+  disable_browser_checks: probe.capabilities.disableBrowserChecks,
+  disable_scripted_checks: probe.capabilities.disableScriptedChecks,
 });
