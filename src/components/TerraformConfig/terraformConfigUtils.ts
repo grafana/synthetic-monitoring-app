@@ -88,18 +88,27 @@ const settingsToTF = (check: Check): TFCheckSettings => {
         record_type: check.settings.dns.recordType,
         protocol: check.settings.dns.protocol,
         valid_r_codes: check.settings.dns.validRCodes,
-        validate_answer_rrs: {
-          fail_if_matches_regexp: check.settings.dns.validateAnswerRRS?.failIfMatchesRegexp,
-          fail_if_not_matches_regexp: check.settings.dns.validateAnswerRRS?.failIfNotMatchesRegexp,
-        },
-        validate_authority_rrs: {
-          fail_if_matches_regexp: check.settings.dns.validateAuthorityRRS?.failIfMatchesRegexp,
-          fail_if_not_matches_regexp: check.settings.dns.validateAuthorityRRS?.failIfNotMatchesRegexp,
-        },
-        validate_additional_rrs: {
-          fail_if_matches_regexp: check.settings.dns.validateAdditionalRRS?.failIfMatchesRegexp,
-          fail_if_not_matches_regexp: check.settings.dns.validateAdditionalRRS?.failIfNotMatchesRegexp,
-        },
+        ...((check.settings.dns.validateAnswerRRS?.failIfMatchesRegexp ||
+          check.settings.dns.validateAnswerRRS?.failIfNotMatchesRegexp) && {
+          validate_answer_rrs: {
+            fail_if_matches_regexp: check.settings.dns.validateAnswerRRS.failIfMatchesRegexp,
+            fail_if_not_matches_regexp: check.settings.dns.validateAnswerRRS.failIfNotMatchesRegexp,
+          },
+        }),
+        ...((check.settings.dns.validateAuthorityRRS?.failIfMatchesRegexp ||
+          check.settings.dns.validateAuthorityRRS?.failIfNotMatchesRegexp) && {
+          validate_authority_rrs: {
+            fail_if_matches_regexp: check.settings.dns.validateAuthorityRRS.failIfMatchesRegexp,
+            fail_if_not_matches_regexp: check.settings.dns.validateAuthorityRRS.failIfNotMatchesRegexp,
+          },
+        }),
+        ...((check.settings.dns.validateAdditionalRRS?.failIfMatchesRegexp ||
+          check.settings.dns.validateAdditionalRRS?.failIfNotMatchesRegexp) && {
+          validate_additional_rrs: {
+            fail_if_matches_regexp: check.settings.dns.validateAdditionalRRS.failIfMatchesRegexp,
+            fail_if_not_matches_regexp: check.settings.dns.validateAdditionalRRS.failIfNotMatchesRegexp,
+          },
+        }),
       },
     };
   }
@@ -181,6 +190,8 @@ export const checkToTF = (check: Check): TFCheck => {
     probes: check.probes,
     labels: labelsToTFLabels(check.labels),
     settings: settingsToTF(check),
+    frequency: check.frequency,
+    timeout: check.timeout,
   };
 
   return tfCheck;
@@ -204,5 +215,6 @@ export const probeToTF = (probe: Probe): TFProbe => ({
   region: probe.region,
   public: false,
   labels: labelsToTFLabels(probe.labels),
-  capabilities: probe.capabilities,
+  disable_browser_checks: probe.capabilities.disableBrowserChecks,
+  disable_scripted_checks: probe.capabilities.disableScriptedChecks,
 });

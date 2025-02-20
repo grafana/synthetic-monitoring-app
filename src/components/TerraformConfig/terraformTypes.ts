@@ -38,6 +38,8 @@ export interface TFCheck {
   probes: number[];
   labels: TFLabels;
   settings: TFCheckSettings;
+  frequency: number;
+  timeout: number;
 }
 
 export type TFLabels = { [key: string]: string };
@@ -102,9 +104,9 @@ interface TFDnsSettings
   ip_version?: string;
   record_type?: string;
   valid_r_codes?: string[];
-  validate_answer_rrs: TFFailIfMatchesNotMatches;
-  validate_authority_rrs: TFFailIfMatchesNotMatches;
-  validate_additional_rrs: TFFailIfMatchesNotMatches;
+  validate_answer_rrs?: TFFailIfMatchesNotMatches;
+  validate_authority_rrs?: TFFailIfMatchesNotMatches;
+  validate_additional_rrs?: TFFailIfMatchesNotMatches;
 }
 
 interface TFGRPCSettings extends Omit<GRPCSettings, 'ipVersion' | 'tlsConfig'> {
@@ -205,6 +207,8 @@ export interface TFProbeConfig {
   [key: string]: TFProbe;
 }
 
-export interface TFProbe extends Omit<Probe, 'online' | 'onlineChange' | 'version' | 'deprecated' | 'labels'> {
+export interface TFProbe extends Omit<Probe, 'online' | 'onlineChange' | 'version' | 'deprecated' | 'labels' | 'capabilities'> {
   labels: TFLabels;
+  disable_scripted_checks: boolean;
+  disable_browser_checks: boolean;
 }
