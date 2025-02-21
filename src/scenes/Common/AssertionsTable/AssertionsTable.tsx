@@ -36,7 +36,7 @@ function getQueryRunner(logs: DataSourceRef) {
           | keep check
           [$__range]
         )
-        / 
+        /
         count_over_time (
             {job="$job", instance="$instance", probe=~"$probe"}
             | logfmt check, msg
@@ -69,7 +69,7 @@ function getQueryRunner(logs: DataSourceRef) {
           | logfmt check, value, msg
           | __error__ = ""
           | msg = "check result"
-          | value = "0"
+          | value != "1"
           | keep check
           [$__range]
         )
