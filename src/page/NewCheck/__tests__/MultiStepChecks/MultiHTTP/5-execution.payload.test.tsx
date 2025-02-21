@@ -39,8 +39,8 @@ describe(`MultiHTTPCheck - Section 5 (Execution) payload`, () => {
     expect(body.frequency).toBe(ONE_MINUTE_IN_MS);
   });
 
-    it(`can add timeout up to 120 seconds`, async () => {
-      const MAX_TIMEOUT_MS = 120000;
+    it(`can add timeout up to 180 seconds`, async () => {
+      const MAX_TIMEOUT_MS = 180000;
   
       const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
