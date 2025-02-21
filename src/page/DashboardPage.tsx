@@ -3,12 +3,11 @@ import { useParams } from 'react-router-dom-v5-compat';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
-import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName } from 'types';
+import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
 import { getCheckType } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
@@ -29,10 +28,7 @@ function DashboardPageContent() {
   const logsDS = useLogsDS();
   const { data: checks = [], isLoading } = useChecks();
   const { id } = useParams<CheckPageParams>();
-
   const check = checks.find((check) => String(check.id) === id);
-
-  const newUptimeQuery = useFeatureFlag(FeatureName.UptimeQueryV2)?.isEnabled;
 
   const scene = useMemo(() => {
     const metricsDef = {
@@ -63,7 +59,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: check.job,
               url,
-              getScene: getDNSScene(config, check, newUptimeQuery),
+              getScene: getDNSScene(config, check),
             }),
           ],
         });
@@ -74,7 +70,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: check.job,
               url,
-              getScene: getHTTPScene(config, check, newUptimeQuery),
+              getScene: getHTTPScene(config, check),
             }),
           ],
         });
@@ -85,7 +81,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: check.job,
               url,
-              getScene: getBrowserScene(config, check, checkType, newUptimeQuery),
+              getScene: getBrowserScene(config, check, checkType),
             }),
           ],
         });
@@ -97,7 +93,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: check.job,
               url,
-              getScene: getScriptedScene(config, check, checkType, newUptimeQuery),
+              getScene: getScriptedScene(config, check, checkType),
             }),
           ],
         });
@@ -108,7 +104,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: check.job,
               url,
-              getScene: getPingScene(config, check, newUptimeQuery),
+              getScene: getPingScene(config, check),
             }),
           ],
         });
@@ -119,7 +115,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: check.job,
               url,
-              getScene: getTcpScene(config, check, newUptimeQuery),
+              getScene: getTcpScene(config, check),
             }),
           ],
         });
@@ -142,13 +138,13 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: check.job,
               url,
-              getScene: getGRPCScene(config, check, newUptimeQuery),
+              getScene: getGRPCScene(config, check),
             }),
           ],
         });
       }
     }
-  }, [smDS, metricsDS, logsDS, check, newUptimeQuery]);
+  }, [smDS, metricsDS, logsDS, check]);
 
   if (!isLoading && !check) {
     return <CheckNotFound />;
