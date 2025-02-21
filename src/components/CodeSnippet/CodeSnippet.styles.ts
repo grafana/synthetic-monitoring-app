@@ -107,7 +107,7 @@ export function getStyles(theme: GrafanaTheme2) {
       line-height: 1.21em; // To make wrapped text look nice
 
       &::after {
-        display: 'block';
+        display: block;
         font-weight: 500;
         content: ' ';
         height: ${theme.spacing(3)};
@@ -139,7 +139,7 @@ export function getStyles(theme: GrafanaTheme2) {
       line-height: 1.21em; // To make wrapped text look nice
 
       &::after {
-        display: 'none';
+        display: none;
         font-weight: 500;
         content: ' ';
         height: ${theme.spacing(3)};
@@ -149,7 +149,7 @@ export function getStyles(theme: GrafanaTheme2) {
         transform: translateY(-50%);
         width: ${theme.spacing(0.5)};
         border-radius: ${theme.shape.radius.default};
-        background-image: gray;
+        background-color: gray;
       }
 
       &:hover {

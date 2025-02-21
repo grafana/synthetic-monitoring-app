@@ -172,6 +172,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 function isMac() {
-  // eslint-disable-next-line deprecation/deprecation -- doesn't seem to be a stable alternative yet
-  return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  try {
+    // eslint-disable-next-line deprecation/deprecation -- doesn't seem to be a stable alternative yet
+    return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  } catch (e) {
+    return false;
+  }
 }
