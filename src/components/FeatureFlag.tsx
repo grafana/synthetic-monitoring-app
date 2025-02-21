@@ -1,3 +1,5 @@
+import { ReactElement } from 'react';
+
 import { FeatureName } from 'types';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
@@ -7,7 +9,7 @@ interface FlagProps {
 
 interface Props {
   name: FeatureName;
-  children: (flagProps: FlagProps) => JSX.Element | null;
+  children: (flagProps: FlagProps) => ReactElement | null;
 }
 
 export const FeatureFlag = ({ name, children }: Props) => {
