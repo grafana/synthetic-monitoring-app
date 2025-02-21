@@ -668,6 +668,7 @@ export enum CheckAlertType {
 export enum CheckAlertCategory {
   SystemHealth = 'System Health',
   RequestDuration = 'Request Duration',
+  FailedChecks = 'Failed Checks',
 }
 
 export type CheckAlertDraft = {
@@ -865,3 +866,5 @@ export type PluginPermissions =
   | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.access-tokens:${'write'}`
   | `${PermissionBase}.plugin:${'write'}`;
+
+export type AlertingType = 'alerting' | 'sensitivity';
