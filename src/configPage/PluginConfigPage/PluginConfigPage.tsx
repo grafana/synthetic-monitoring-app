@@ -78,16 +78,12 @@ export function PluginConfigPage({
       )}
       <h2 className={styles.heading}>Plugin config</h2>
 
-      <p>
-        Here you can enable or disable the Synthetic Monitoring plugin and view linked data sources.
-        <br />
-        {isEnabled && (
-          <span>
-            For app configuration and settings, go to the{' '}
-            <TextLink href={getRoute(ROUTES.Config)}>config page</TextLink> for the Synthetic Monitoring app
-          </span>
-        )}
-      </p>
+      {isEnabled && (
+        <p>
+          For app configuration and settings, go to the <TextLink href={getRoute(ROUTES.Config)}>config page</TextLink>{' '}
+          for the Synthetic Monitoring app
+        </p>
+      )}
 
       {initialized && (
         <div data-testid={DataTestIds.TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES}>

@@ -2,6 +2,7 @@
   "type": "app",
   "name": "Synthetic Monitoring",
   "id": "grafana-synthetic-monitoring-app",
+  "autoEnabled": true,
   "info": {
     "description": "Worldwide black box monitoring for services and applications",
     "author": {
