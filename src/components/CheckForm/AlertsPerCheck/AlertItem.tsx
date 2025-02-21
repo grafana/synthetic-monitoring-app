@@ -20,14 +20,13 @@ export const AlertItem = ({
 }) => {
   const styles = useStyles2(getStyles);
 
-  const { control, formState, getValues } = useFormContext<CheckFormValues>();
+  const { control, formState } = useFormContext<CheckFormValues>();
   const { isFormDisabled } = useCheckFormContext();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
   };
 
-  const threshold: number = getValues(`alerts.${alert.type}.threshold`);
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
 
   return (
@@ -48,22 +47,24 @@ export const AlertItem = ({
           <Controller
             name={`alerts.${alert.type}.threshold`}
             control={control}
-            render={({ field }) => (
-              <Input
-                aria-disabled={!selected}
-                suffix={alert.unit}
-                type="number"
-                step="any"
-                id={`alert-threshold-${alert.type}`}
-                value={field.value !== undefined ? field.value : threshold}
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  return field.onChange(value !== '' ? Number(value) : undefined);
-                }}
-                width={10}
-                disabled={!selected || isFormDisabled}
-              />
-            )}
+            render={({ field }) => {
+              return (
+                <Input
+                  {...field}
+                  aria-disabled={!selected}
+                  suffix={alert.unit}
+                  type="number"
+                  step="any"
+                  id={`alert-threshold-${alert.type}`}
+                  onChange={(e) => {
+                    const value = e.currentTarget.value;
+                    return field.onChange(value !== '' ? Number(value) : '');
+                  }}
+                  width={10}
+                  disabled={!selected || isFormDisabled}
+                />
+              );
+            }}
           />
         </Field>
       </div>

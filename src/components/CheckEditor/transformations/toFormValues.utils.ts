@@ -2,6 +2,10 @@ import { SelectableValue } from '@grafana/data';
 
 import { Check, CheckFormValues, TLSConfig } from 'types';
 import { fromBase64 } from 'utils';
+import {
+  GLOBAL_PREDEFINED_ALERTS,
+  PredefinedAlertInterface,
+} from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
   const labelValue = String(value);
@@ -49,5 +53,18 @@ export function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 
     probes: check.probes,
     target: check.target,
     timeout,
+    alerts: predefinedAlertsToFormValues(GLOBAL_PREDEFINED_ALERTS),
   };
+}
+
+export function predefinedAlertsToFormValues(predefinedAlerts: PredefinedAlertInterface[]) {
+  return Object.values(predefinedAlerts).reduce((acc, alert) => {
+    return {
+      ...acc,
+      [alert.type]: {
+        threshold: alert.default,
+        isSelected: false,
+      },
+    };
+  }, {});
 }

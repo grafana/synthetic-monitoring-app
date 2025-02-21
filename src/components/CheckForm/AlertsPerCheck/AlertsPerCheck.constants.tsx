@@ -8,7 +8,7 @@ export interface PredefinedAlertInterface {
   default?: number;
 }
 
-const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
+export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
     name: 'Probe Failed Executions Too High',
@@ -18,7 +18,7 @@ const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   },
 ];
 
-const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
+export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.HTTPRequestDurationTooHighP50,
     name: 'HTTP Request Duration Too High (P50)',
@@ -56,7 +56,7 @@ const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   },
 ];
 
-const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
+export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.PingICMPDurationTooHighP50,
     name: 'Ping ICMP Duration Too High (P50)',

@@ -174,7 +174,13 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
 
   const handleInitAlerts = useCallback(
     (alerts: Partial<Record<CheckAlertType, CheckAlertFormValues>>) => {
-      const newDefaults = { ...defaultValues, alerts };
+      const newDefaults = {
+        ...defaultValues,
+        alerts: {
+          ...defaultValues.alerts,
+          ...alerts,
+        },
+      };
       setFormDefaultValues(newDefaults);
     },
     [defaultValues, setFormDefaultValues]

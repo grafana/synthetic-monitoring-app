@@ -8,6 +8,7 @@ import { SMDataSource } from 'datasource/DataSource';
 import { CheckAlertsResponse } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
+
 export const queryKeys: Record<'listAlertsForCheck', QueryKey> = {
   listAlertsForCheck: ['alertsForCheck'],
 };
@@ -17,6 +18,7 @@ const alertsForCheckQuery = (api: SMDataSource, checkId?: number) => {
     enabled: Boolean(checkId),
     queryKey: [...queryKeys.listAlertsForCheck, checkId],
     queryFn: () => api.listAlertsForCheck(checkId!),
+    select: (data: CheckAlertsResponse) => data.alerts,
   };
 };
 
