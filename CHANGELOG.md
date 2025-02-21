@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.19.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.19.1...v1.19.2) (2025-02-21)
+
+
+### Fixes
+
+* prevent adding duplicated probes when bulk editing ([#1072](https://github.com/grafana/synthetic-monitoring-app/issues/1072)) ([efb5d42](https://github.com/grafana/synthetic-monitoring-app/commit/efb5d4279f917e003c75f51c2ee3f36334a67828))
+* terraform export fixes ([#1070](https://github.com/grafana/synthetic-monitoring-app/issues/1070)) ([2089ded](https://github.com/grafana/synthetic-monitoring-app/commit/2089ded43131bec4649012a4dbc74cb0ec599fc5))
+
+
+### Miscellaneous Chores
+
+* make plugin auto enabled ([#1067](https://github.com/grafana/synthetic-monitoring-app/issues/1067)) ([012c374](https://github.com/grafana/synthetic-monitoring-app/commit/012c374072a224ef1102019a67cab5b378372894))
+
 ## [1.19.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.19.0...v1.19.1) (2025-02-18)
 
 
