@@ -46,7 +46,7 @@ export const Collapse = ({
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     borderTop: `1px solid ${theme.components.panel.borderColor}`,
-    borderRadius: theme.shape.borderRadius(2),
+    borderRadius: theme.shape.radius.default,
   }),
   header: css({
     background: `none`,
