@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.20.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.19.1...v1.20.0) (2025-02-24)
+
+
+### Features
+
+* change browser, scripted and multihttp timeouts up to 180s ([#1075](https://github.com/grafana/synthetic-monitoring-app/issues/1075)) ([7cc9d64](https://github.com/grafana/synthetic-monitoring-app/commit/7cc9d6425a262f43cbdf0d5bba47fcdc041490a7))
+
+
+### Fixes
+
+* prevent adding duplicated probes when bulk editing ([#1072](https://github.com/grafana/synthetic-monitoring-app/issues/1072)) ([efb5d42](https://github.com/grafana/synthetic-monitoring-app/commit/efb5d4279f917e003c75f51c2ee3f36334a67828))
+* terraform export fixes ([#1070](https://github.com/grafana/synthetic-monitoring-app/issues/1070)) ([2089ded](https://github.com/grafana/synthetic-monitoring-app/commit/2089ded43131bec4649012a4dbc74cb0ec599fc5))
+
+
+### Miscellaneous Chores
+
+* make plugin auto enabled ([#1067](https://github.com/grafana/synthetic-monitoring-app/issues/1067)) ([012c374](https://github.com/grafana/synthetic-monitoring-app/commit/012c374072a224ef1102019a67cab5b378372894))
+
 ## [1.19.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.19.0...v1.19.1) (2025-02-18)
 
 
