@@ -321,7 +321,13 @@ export interface AlertFormValues {
 }
 export interface CheckAlertFormValues {
   threshold?: number;
+  thresholdUnit?: ThresholdSelectorType;
   isSelected?: boolean;
+}
+
+export enum ThresholdSelectorType {
+  Number = 'number',
+  Percentage = '%',
 }
 
 export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertFormValues>>;

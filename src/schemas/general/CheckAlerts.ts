@@ -1,6 +1,6 @@
 import { z, ZodType } from 'zod';
 
-import { CheckAlertFormRecord } from 'types';
+import { CheckAlertFormRecord, ThresholdSelectorType } from 'types';
 
 const isScientificNotation = (val: number) => {
   return /e|E/.test(val.toString());
@@ -10,6 +10,7 @@ const CheckAlertSchema = z
   .object({
     id: z.number().optional(),
     isSelected: z.boolean().optional(),
+    thresholdUnit: z.nativeEnum(ThresholdSelectorType).optional(),
     threshold: z
       .number()
       .optional()
@@ -31,14 +32,17 @@ const CheckAlertSchema = z
     { message: 'You need to set a threshold value', path: ['threshold'] }
   );
 
-const CheckAlertsPercentageSchema = CheckAlertSchema.and(
-  z.object({
-    threshold: z.number().max(100, { message: 'Threshold cannot exceed 100%' }),
-  })
-);
-
 export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: CheckAlertsPercentageSchema.optional(),
+  ProbeFailedExecutionsTooHigh: CheckAlertSchema.optional().refine(
+    (data) => {
+      const baseCondition = data?.threshold && data?.threshold > 0;
+      if (data?.thresholdUnit === '%') {
+        return baseCondition && data?.threshold! <= 100;
+      }
+      return baseCondition;
+    },
+    { message: 'Threshold must be between 0 and 100% when the unit is %', path: ['threshold'] }
+  ),
   HTTPRequestDurationTooHighP50: CheckAlertSchema.optional(),
   HTTPRequestDurationTooHighP90: CheckAlertSchema.optional(),
   HTTPRequestDurationTooHighP95: CheckAlertSchema.optional(),
