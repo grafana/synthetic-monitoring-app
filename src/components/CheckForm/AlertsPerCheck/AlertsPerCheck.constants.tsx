@@ -11,11 +11,12 @@ export interface PredefinedAlertInterface {
 }
 
 export const ALERT_PENDING_PERIODS = [
-  { label: '5m', value: '5m' },
-  { label: '10m', value: '10m' },
-  { label: '20m', value: '20m' },
-  { label: '30m', value: '30m' },
-  { label: '1h', value: '1h' },
+  { label: '5 min', value: '5m' },
+  { label: '10 min', value: '10m' },
+  { label: '20 min', value: '20m' },
+  { label: '30 min', value: '30m' },
+  { label: '1 h', value: '1h' },
+  { label: '3 h', value: '3h' },
 ];
 
 export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [

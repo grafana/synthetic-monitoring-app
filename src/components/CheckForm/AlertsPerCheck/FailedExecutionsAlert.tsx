@@ -1,13 +1,13 @@
-import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Checkbox, InlineField, Input, Select, Stack, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import React, { useMemo } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { durationToMilliseconds, parseDuration } from '@grafana/data';
+import { Checkbox, Select, Stack } from '@grafana/ui';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { ALERT_PENDING_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { ThresholdSelector } from './ThresholdSelector';
 
 export const FailedExecutionsAlert = ({
   alert,
@@ -18,65 +18,38 @@ export const FailedExecutionsAlert = ({
   selected: boolean;
   onSelectionChange: (type: CheckAlertType) => void;
 }) => {
-  const { control, formState } = useFormContext<CheckFormValues>();
   const { isFormDisabled } = useCheckFormContext();
-  const styles = useStyles2(getStyles);
+  const { getValues } = useFormContext<CheckFormValues>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
   };
 
-  const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
+  const checkFrequency = getValues('frequency');
+
+  //min time range >= 2.5 * check frequency
+  const convertPeriodToSeconds = (period: { label: string; value: string }) =>
+    durationToMilliseconds(parseDuration(period.value)) / 1000;
+
+  const validPendingPeriods = useMemo(
+    () => ALERT_PENDING_PERIODS.filter((period) => convertPeriodToSeconds(period) >= checkFrequency * 2.5),
+    [checkFrequency]
+  );
 
   return (
     <Stack alignItems="center">
       <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
       <Stack alignItems="center">
-        Trigger an alert if more than{' '}
-        <InlineField
-          htmlFor={`alert-threshold-${alert.type}`}
-          invalid={!!thresholdError}
-          error={thresholdError}
-          className={styles.inlineInput}
-        >
-          <Controller
-            name={`alerts.${alert.type}.threshold`}
-            control={control}
-            render={({ field }) => {
-              return (
-                <Input
-                  {...field}
-                  aria-disabled={!selected}
-                  suffix={alert.unit}
-                  type="number"
-                  step="any"
-                  id={`alert-threshold-${alert.type}`}
-                  onChange={(e) => {
-                    const value = e.currentTarget.value;
-                    return field.onChange(value !== '' ? Number(value) : '');
-                  }}
-                  width={10}
-                  disabled={!selected || isFormDisabled}
-                />
-              );
-            }}
-          />
-        </InlineField>
-        of tests have failed for the last
+        Trigger an alert if more than <ThresholdSelector alert={alert} selected={selected} />
+        of tests fail for
         <Select
           disabled={!selected || isFormDisabled}
           data-testid="alertPendingPeriod"
-          options={ALERT_PENDING_PERIODS}
-          defaultValue={ALERT_PENDING_PERIODS[0]}
+          options={validPendingPeriods}
+          defaultValue={validPendingPeriods[0]}
           onChange={(e) => {}}
         />
       </Stack>
     </Stack>
   );
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  inlineInput: css({
-    margin: 0,
-  }),
-});
