@@ -68,27 +68,26 @@ export const AlertItem = ({
   return (
     <div key={alert.type} className={styles.item}>
       {alert.type === CheckAlertType.ProbeFailedExecutionsTooHigh && (
-        <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
-          <Stack alignItems="center">
-            <FailedExecutionsAlert alert={alert} selected={selected} onSelectionChange={handleToggleAlert} />
+        <Stack alignItems="center">
+          <FailedExecutionsAlert alert={alert} selected={selected} onSelectionChange={handleToggleAlert} />
+          <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
             <Icon name="info-circle" />
-          </Stack>
-        </Tooltip>
+          </Tooltip>
+        </Stack>
       )}
 
       {alert.type !== CheckAlertType.ProbeFailedExecutionsTooHigh && (
         <>
           <div className={styles.itemInfo}>
             <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
-
-            <Tooltip content={tooltipContent} interactive={true}>
-              <Stack alignItems="center">
-                <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
-                  {alert.name}
-                </Label>
+            <Stack alignItems="center">
+              <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
+                {alert.name}
+              </Label>
+              <Tooltip content={tooltipContent} interactive={true}>
                 <Icon name="info-circle" />
-              </Stack>
-            </Tooltip>
+              </Tooltip>
+            </Stack>
           </div>
           <div className={styles.thresholdInput}>
             <Field

@@ -33,16 +33,7 @@ const CheckAlertSchema = z
   );
 
 export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: CheckAlertSchema.optional().refine(
-    (data) => {
-      const baseCondition = data?.threshold && data?.threshold > 0;
-      if (data?.thresholdUnit === '%') {
-        return baseCondition && data?.threshold! <= 100;
-      }
-      return baseCondition;
-    },
-    { message: 'Threshold must be between 0 and 100% when the unit is %', path: ['threshold'] }
-  ),
+  ProbeFailedExecutionsTooHigh: CheckAlertSchema.optional(),
   HTTPRequestDurationTooHighP50: CheckAlertSchema.optional(),
   HTTPRequestDurationTooHighP90: CheckAlertSchema.optional(),
   HTTPRequestDurationTooHighP95: CheckAlertSchema.optional(),
