@@ -1,6 +1,6 @@
 import { z, ZodType } from 'zod';
 
-import { CheckAlertFormRecord, ThresholdSelectorType } from 'types';
+import { CheckAlertFormRecord } from 'types';
 
 const isScientificNotation = (val: number) => {
   return /e|E/.test(val.toString());
@@ -10,7 +10,7 @@ const CheckAlertSchema = z
   .object({
     id: z.number().optional(),
     isSelected: z.boolean().optional(),
-    thresholdUnit: z.nativeEnum(ThresholdSelectorType).optional(),
+    period: z.string().optional(),
     threshold: z
       .number()
       .optional()

@@ -36,6 +36,7 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
           ...acc,
           [alert.name]: {
             threshold: alert.threshold,
+            period: alert.period,
             isSelected: true,
           },
         };

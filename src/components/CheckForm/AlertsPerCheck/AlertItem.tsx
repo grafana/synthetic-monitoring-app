@@ -48,11 +48,14 @@ export const AlertItem = ({
   const job = getValues('job');
   const instance = getValues('target');
   const threshold = getValues(`alerts.${alert.type}.threshold`);
+  const period = getValues(`alerts.${alert.type}.period`);
 
   const query = alert.query
     .replace(/\$instance/g, instance)
     .replace(/\$job/g, job)
-    .replace(/\$threshold/g, threshold);
+    .replace(/\$threshold/g, threshold)
+    .replace(/\$period/g, period);
+
   const exploreLink = ds && getValues('id') && threshold && createExploreLink(ds.name, query);
   const tooltipContent = (
     <div>
@@ -68,12 +71,12 @@ export const AlertItem = ({
   return (
     <div key={alert.type} className={styles.item}>
       {alert.type === CheckAlertType.ProbeFailedExecutionsTooHigh && (
-        <Stack alignItems="center">
-          <FailedExecutionsAlert alert={alert} selected={selected} onSelectionChange={handleToggleAlert} />
-          <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
-            <Icon name="info-circle" />
-          </Tooltip>
-        </Stack>
+        <FailedExecutionsAlert
+          alert={alert}
+          selected={selected}
+          onSelectionChange={handleToggleAlert}
+          tooltipContent={tooltipContent}
+        />
       )}
 
       {alert.type !== CheckAlertType.ProbeFailedExecutionsTooHigh && (
