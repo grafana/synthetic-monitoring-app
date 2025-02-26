@@ -685,7 +685,7 @@ export type CheckAlertPublished = CheckAlertDraft & {
   modified: number;
 };
 
-export type ThresholdUnit = 'ms' | 's' | 'd' | '%';
+export type ThresholdUnit = 'ms' | 's' | 'd' | '%' | 'no.';
 
 export enum CheckSort {
   AToZ = 'atoz',

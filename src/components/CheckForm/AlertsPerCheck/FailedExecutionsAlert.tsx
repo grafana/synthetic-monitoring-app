@@ -38,7 +38,12 @@ export const FailedExecutionsAlert = ({
 
   return (
     <Stack alignItems="center">
-      <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
+      <Checkbox
+        id={`alert-${alert.type}`}
+        data-testid={`checkbox-alert-${alert.type}`}
+        onClick={() => handleToggleAlert(alert.type)}
+        checked={selected}
+      />
       <Stack alignItems="center">
         Trigger an alert if more than <ThresholdSelector alert={alert} selected={selected} />
         of tests fail for

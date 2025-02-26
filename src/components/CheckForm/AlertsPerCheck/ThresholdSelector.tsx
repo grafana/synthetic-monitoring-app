@@ -36,6 +36,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
           <Input
             {...field}
             aria-disabled={!selected}
+            data-testid={`alert-threshold-${alert.type}`}
             type="number"
             step="any"
             id={`alert-threshold-${alert.type}`}
