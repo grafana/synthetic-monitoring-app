@@ -36,6 +36,7 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
           ...acc,
           [alert.name]: {
             threshold: alert.threshold,
+            period: alert.period,
             isSelected: true,
           },
         };
@@ -57,17 +58,16 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
 
   const groupedByCategory = useMemo(
     () =>
-      PREDEFINED_ALERTS[checkType].reduce(
-        (acc: Record<string, PredefinedAlertInterface[]>, curr: PredefinedAlertInterface) => {
+      PREDEFINED_ALERTS[checkType]
+        .filter((alert) => !alert.hide)
+        .reduce((acc: Record<string, PredefinedAlertInterface[]>, curr: PredefinedAlertInterface) => {
           const category = curr.category;
           if (!acc[category]) {
             acc[category] = [];
           }
           acc[category].push(curr);
           return acc;
-        },
-        {}
-      ),
+        }, {}),
     [checkType]
   );
 
