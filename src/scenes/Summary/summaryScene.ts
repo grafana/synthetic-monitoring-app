@@ -9,7 +9,6 @@ import {
   SceneReactObject,
   SceneRefreshPicker,
   SceneTimePicker,
-  SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
@@ -19,6 +18,7 @@ import { Check, DashboardSceneAppConfig } from 'types';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { getSummaryAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
+import { getTimeRange } from 'scenes/Common/timeRange';
 
 import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
 import { getErrorRateMapPanel } from './errorRateMap';
@@ -39,10 +39,7 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
       return acc;
     }, new Set<string>());
 
-    const timeRange = new SceneTimeRange({
-      from: 'now-1h',
-      to: 'now',
-    });
+    const timeRange = getTimeRange();
 
     // Variable definition
     const probe = new QueryVariable({
