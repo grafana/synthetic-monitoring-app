@@ -54,8 +54,8 @@ export const FailedExecutionsAlert = ({
 
   const customTooltipContent: PopoverContent = (
     <div>
-      The number of test executions is an approximation based on the check&apos;s frequency and the pending period
-      chosen for this alert.
+      The number of test executions is an approximation based on the check&apos;s frequency and the period chosen for
+      this alert.
       {tooltipContent as React.ReactNode}
     </div>
   );
