@@ -26,6 +26,12 @@ export const getTotalChecksPerMonth = (probeCount: number, frequencySeconds: num
   return checksPerMonth * probeCount;
 };
 
+export const getTotalChecksPerPeriod = (probeCount: number, frequencySeconds: number, periodInSeconds: number) => {
+  const checksPerMinute = 60 / frequencySeconds;
+  const checksPerPeriod = checksPerMinute * (periodInSeconds / 60) * probeCount;
+  return Math.round(checksPerPeriod);
+};
+
 const getLogsGbPerMonth = (probeCount: number, frequencySeconds: number) => {
   const gbPerCheck = 0.0008;
   const checksPerMonth = getChecksPerMonth(frequencySeconds);
