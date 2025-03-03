@@ -6,7 +6,6 @@ import {
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
-  SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
@@ -15,6 +14,7 @@ import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getVariables } from 'scenes/Common';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getTimeRange } from 'scenes/Common/timeRange';
 
 import { getAverageHopsPanel } from './averageHops';
 import { getCommonHostsPanel } from './commonHosts';
@@ -26,11 +26,7 @@ import { getTraceTimePanel } from './traceTime';
 
 export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfig, check: Check) {
   return () => {
-    const timeRange = new SceneTimeRange({
-      from: 'now-30m',
-      to: 'now',
-    });
-
+    const timeRange = getTimeRange();
     const { probe, job, instance } = getVariables(CheckType.Traceroute, metrics, check);
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 
