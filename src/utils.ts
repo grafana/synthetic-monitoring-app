@@ -208,13 +208,9 @@ export const queryLogsLegacy = async (
   };
 
   try {
-    const response = await backendSrv.datasourceRequest<{ data: { result: LogLine[] } }>({
-      method: 'GET',
-      url: `${url}/loki/api/v1/query_range`,
-      params,
-    });
+    const response = await backendSrv.get<{ data: { result: LogLine[] } }>(`${url}/loki/api/v1/query_range`, params);
     return {
-      data: response.data?.data?.result ?? [],
+      data: response.data?.result ?? [],
     };
   } catch (e) {
     const err = e as SubmissionErrorWrapper;
