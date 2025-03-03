@@ -11,13 +11,13 @@ import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
+import { CheckDrilldown } from 'page/CheckDrilldown';
 import { CheckList } from 'page/CheckList';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
 import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
-import { DashboardPage } from 'page/DashboardPage';
 import { EditCheck } from 'page/EditCheck';
 import { EditProbe } from 'page/EditProbe';
 import { NewCheck } from 'page/NewCheck';
@@ -70,7 +70,7 @@ export const InitialisedRouter = () => {
             index
             element={
               canReadChecks ? (
-                <DashboardPage />
+                <CheckDrilldown />
               ) : (
                 <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
               )
