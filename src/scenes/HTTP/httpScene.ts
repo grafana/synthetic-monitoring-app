@@ -13,12 +13,12 @@ import {
 
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
+import { getCheckLogs } from 'scenes/Common/CheckLogs/SceneCheckLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import {
   getAvgLatencyStat,
-  getErrorLogs,
   getErrorRateMapPanel,
   getFrequencyStat,
   getLatencyByProbePanel,
@@ -78,12 +78,7 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: 
       children: [latencyByPhase, latencyByProbe].map((panel) => new SceneFlexItem({ body: panel, height: 300 })),
     });
 
-    const errorLogs = getErrorLogs(logs);
-
-    const logsRow = new SceneFlexLayout({
-      direction: 'row',
-      children: [new SceneFlexItem({ height: 500, body: errorLogs })],
-    });
+    const checkLogs = getCheckLogs(logs);
 
     const editButton = getEditButton({ job, instance });
 
@@ -107,7 +102,7 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: 
       ],
       body: new SceneFlexLayout({
         direction: 'column',
-        children: [topRow, latencyRow, logsRow].map((flexItem) => new SceneFlexItem({ body: flexItem })),
+        children: [topRow, latencyRow, checkLogs].map((flexItem) => new SceneFlexItem({ body: flexItem })),
       }),
     });
   };
