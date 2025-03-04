@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.20.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.20.0...v1.20.1) (2025-03-03)
+
+
+### Fixes
+
+* handle fractional "check result" logs ([#1074](https://github.com/grafana/synthetic-monitoring-app/issues/1074)) ([d50448f](https://github.com/grafana/synthetic-monitoring-app/commit/d50448fc9acb371c541cd74b29ed0429343313ae))
+
+
+### Miscellaneous Chores
+
+* fix deprecation issues ([#1063](https://github.com/grafana/synthetic-monitoring-app/issues/1063)) ([f062845](https://github.com/grafana/synthetic-monitoring-app/commit/f0628456fe1799de82b44ae2d10dd8506aff269e))
+
 ## [1.20.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.19.1...v1.20.0) (2025-02-24)
 
 
