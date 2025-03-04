@@ -28,6 +28,8 @@ import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
+import { ChecksterRoutes } from '../components/ChecksterPro/ChecksterRoutes';
+
 export const InitialisedRouter = () => {
   const queryParams = useQuery();
   const navigate = useNavigation();
@@ -144,6 +146,8 @@ export const InitialisedRouter = () => {
           </PluginPageNotFound>
         }
       />
+
+      <Route path={`${ROUTES.Checkster}/*`} element={<ChecksterRoutes />} />
     </Routes>
   );
 };

@@ -61,7 +61,7 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
           )
         }
       >
-        Approximate expected usage for this check
+        Estimated usage for this check
       </Label>
       <div className={styles.calcList}>
         <div className={styles.section}>

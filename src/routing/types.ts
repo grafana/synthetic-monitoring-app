@@ -13,4 +13,6 @@ export enum ROUTES {
   Probes = 'probes',
   Redirect = 'redirect',
   Scene = 'scene',
+  // Do not merge!
+  Checkster = 'checkster',
 }
