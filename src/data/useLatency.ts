@@ -1,8 +1,9 @@
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { Check, CheckType } from 'types';
-import { getCheckType, queryMetric } from 'utils';
+import { getCheckType } from 'utils';
 import { MetricLatency } from 'datasource/responses.types';
+import { getStartEnd, queryInstantMetric } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
@@ -22,7 +23,7 @@ export function useLatency({ job, target, settings }: Check) {
         return Promise.reject(`You need to have a metrics datasource available.`);
       }
 
-      return queryMetric<MetricLatency>(url, getQuery(job, target, type));
+      return queryInstantMetric<MetricLatency>({ url, query: getQuery(job, target, type), ...getStartEnd() });
     },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
     select: (data) => {

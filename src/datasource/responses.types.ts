@@ -110,9 +110,14 @@ export type UpdateTenantSettingsResult = {
 
 export type Time = number;
 
-export interface Metric {
-  metric: {};
+export interface InstantMetric {
+  metric: Record<string, string>;
   value: [Time, string];
+}
+
+export interface RangeMetric {
+  metric: {};
+  values: Array<[Time, string]>;
 }
 
 export interface MetricDatasourceResponse<T> {
@@ -123,20 +128,20 @@ export interface MetricDatasourceResponse<T> {
   };
 }
 
-export interface MetricProbeSuccessRate extends Metric {
+export interface MetricProbeSuccessRate extends InstantMetric {
   metric: {
     probe: string;
   };
 }
 
-export interface MetricCheckSuccess extends Metric {
+export interface MetricCheckSuccess extends InstantMetric {
   metric: {
     instance: string;
     job: string;
   };
 }
 
-export interface MetricLatency extends Metric {
+export interface MetricLatency extends InstantMetric {
   metric: {};
 }
 

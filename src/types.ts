@@ -710,7 +710,6 @@ export enum FeatureName {
   GRPCChecks = 'grpc-checks',
   ScriptedChecks = 'scripted-checks',
   UnifiedAlerting = 'ngalert',
-  UptimeQueryV2 = 'uptime-query-v2',
   RBAC = 'synthetic-monitoring-rbac',
   AlertsPerCheck = 'sm-alerts-per-check',
   __TURNOFF = 'test-only-do-not-use',

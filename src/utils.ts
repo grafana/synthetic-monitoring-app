@@ -1,5 +1,5 @@
 import { DataSourceInstanceSettings, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
-import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
+import { config, getBackendSrv } from '@grafana/runtime';
 // todo: update this when we move to grafana 11.2
 // https://github.com/grafana/grafana/pull/89047
 import { contextSrv } from 'grafana/app/core/core';
@@ -26,7 +26,6 @@ import {
   isTCPFormValuesSettings,
   isTCPSettings,
 } from 'utils.types';
-import { Metric } from 'datasource/responses.types';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 
 /**
@@ -154,44 +153,11 @@ export function getCheckTypeGroup(checkType: CheckType): CheckTypeGroup {
   return group;
 }
 
-interface MetricDatasourceResponse<T> {
-  data: {
-    result: T[];
-    resultType: string;
-  };
-}
-
 export interface MetricQueryOptions {
   start: number;
   end: number;
-  step: number;
+  step: string;
 }
-
-export const queryMetric = async <T extends Metric>(url: string, query: string, options?: MetricQueryOptions) => {
-  const lastUpdate = Math.floor(Date.now() / 1000);
-  const params = {
-    query,
-    time: lastUpdate,
-    ...(options || {}),
-  };
-
-  const path = options?.step ? '/api/v1/query_range' : '/api/v1/query';
-
-  return firstValueFrom(
-    getBackendSrv().fetch<MetricDatasourceResponse<T>>({
-      method: 'GET',
-      url: `${url}${path}`,
-      params,
-    })
-  ).then((res: FetchResponse<MetricDatasourceResponse<T>>) => {
-    return res.data.data.result.map((metric) => {
-      return {
-        ...metric,
-        value: [metric.value[0], Number(metric.value[1])] as [number, number],
-      };
-    });
-  });
-};
 
 export const queryLogsLegacy = async (
   url: string,
