@@ -64,9 +64,14 @@ test('renders empty state', async () => {
 
   render(<CheckList />);
 
-  const emptyWarning = await screen.findByText('This account does not currently have any checks configured', {
-    exact: false,
-  });
+  const emptyWarning = await waitFor(
+    () =>
+      screen.findByText("You haven't created any checks yet", {
+        exact: false,
+      }),
+    { timeout: 5000 }
+  );
+
   expect(emptyWarning).toBeInTheDocument();
 });
 
