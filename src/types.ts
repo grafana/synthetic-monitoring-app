@@ -323,6 +323,7 @@ export interface AlertFormValues {
 }
 export interface CheckAlertFormValues {
   threshold?: number;
+  period?: string;
   isSelected?: boolean;
 }
 
@@ -668,11 +669,13 @@ export enum CheckAlertType {
 export enum CheckAlertCategory {
   SystemHealth = 'System Health',
   RequestDuration = 'Request Duration',
+  FailedChecks = 'Failed Checks',
 }
 
 export type CheckAlertDraft = {
   name: CheckAlertType;
   threshold: number;
+  period?: string;
 };
 
 export type CheckAlertPublished = CheckAlertDraft & {
@@ -680,7 +683,7 @@ export type CheckAlertPublished = CheckAlertDraft & {
   modified: number;
 };
 
-export type ThresholdUnit = 'ms' | 's' | 'd' | '%';
+export type ThresholdUnit = 'ms' | 's' | 'd' | '%' | 'no.';
 
 export enum CheckSort {
   AToZ = 'atoz',
@@ -865,3 +868,5 @@ export type PluginPermissions =
   | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.access-tokens:${'write'}`
   | `${PermissionBase}.plugin:${'write'}`;
+
+export type AlertingType = 'alerting' | 'sensitivity';
