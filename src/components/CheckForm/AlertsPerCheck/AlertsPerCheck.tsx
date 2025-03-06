@@ -4,9 +4,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Field, LoadingPlaceholder, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckStatus } from 'types';
+import { CheckAlertFormValues, CheckAlertType, CheckFormValues } from 'types';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
-import { NewStatusBadge } from 'components/NewStatusBadge';
 
 import { AlertsList } from './AlertsList';
 import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
@@ -109,12 +108,15 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
   return (
     <>
       <div className={styles.marginBottom}>
-        <Stack alignItems="center">
-          <h3 className={styles.title}>Predefined alerts</h3>
-          <NewStatusBadge status={CheckStatus.EXPERIMENTAL} className={styles.badge} />
-        </Stack>
-
-        <p>You can choose from the following predefined alerts to assign to this check and set a threshold for each.</p>
+        <div>
+          <p>
+            Enable and configure thresholds for common alerting scenarios. Use Grafana Alerting to{' '}
+            <TextLink href="alerting/new/alerting" external={true}>
+              create a custom alert rule
+            </TextLink>
+            .
+          </p>
+        </div>
 
         <Field>
           <Controller

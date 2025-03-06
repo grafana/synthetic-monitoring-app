@@ -12,13 +12,15 @@ export interface PredefinedAlertInterface {
   supportsPeriod: boolean;
 }
 
-export const ALERT_PENDING_PERIODS = [
+export const ALERT_PERIODS = [
+  { label: '1 min', value: '1m' },
+  { label: '2 min', value: '2m' },
   { label: '5 min', value: '5m' },
   { label: '10 min', value: '10m' },
+  { label: '15 min', value: '15m' },
   { label: '20 min', value: '20m' },
   { label: '30 min', value: '30m' },
   { label: '1 h', value: '1h' },
-  { label: '3 h', value: '3h' },
 ];
 
 export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
@@ -152,7 +154,7 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     hide: false,
     supportsPeriod: false,
     unit: 'd',
-    category: CheckAlertCategory.SystemHealth,
+    category: CheckAlertCategory.TLSCertificate,
     default: 60,
     query: `
   (

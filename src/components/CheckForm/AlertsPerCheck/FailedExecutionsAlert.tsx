@@ -7,7 +7,7 @@ import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { CheckAlertType, CheckFormValues } from 'types';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
-import { ALERT_PENDING_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { ThresholdSelector } from './ThresholdSelector';
 
 export const FailedExecutionsAlert = ({
@@ -31,18 +31,18 @@ export const FailedExecutionsAlert = ({
   const checkFrequency = getValues('frequency');
   const probes = getValues('probes');
 
-  //min time range >= 2.5 * check frequency
+  //min time range >= check frequency
   const convertPeriodToSeconds = useCallback(
     (period: string) => durationToMilliseconds(parseDuration(period)) / 1000,
     []
   );
 
-  const validPendingPeriods = useMemo(
-    () => ALERT_PENDING_PERIODS.filter((period) => convertPeriodToSeconds(period.value) >= checkFrequency * 2.5),
+  const validPeriods = useMemo(
+    () => ALERT_PERIODS.filter((period) => convertPeriodToSeconds(period.value) >= checkFrequency),
     [checkFrequency, convertPeriodToSeconds]
   );
 
-  const defaultPeriod = validPendingPeriods[0];
+  const defaultPeriod = validPeriods[0];
   const period = getValues(`alerts.${alert.type}.period`) || defaultPeriod.value;
 
   const testExecutionsPerPeriod = useMemo(() => {
@@ -70,8 +70,8 @@ export const FailedExecutionsAlert = ({
           checked={selected}
         />
         <Stack alignItems="center">
-          Trigger an alert if more than <ThresholdSelector alert={alert} selected={selected} />
-          of {testExecutionsPerPeriod} tests fail for
+          Alert if <ThresholdSelector alert={alert} selected={selected} />
+          of {testExecutionsPerPeriod} tests fail in the last
           <Controller
             name={`alerts.${alert.type}.period`}
             control={control}
@@ -80,7 +80,7 @@ export const FailedExecutionsAlert = ({
                 {...field}
                 disabled={!selected || isFormDisabled}
                 data-testid="alertPendingPeriod"
-                options={validPendingPeriods}
+                options={validPeriods}
                 defaultValue={defaultPeriod.value}
                 value={field.value || defaultPeriod.value}
                 onChange={(value) => {

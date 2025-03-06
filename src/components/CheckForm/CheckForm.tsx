@@ -257,7 +257,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                       <>
                         <TabsBar>
                           <Tab
-                            label="Alerts per check"
+                            label="Predefined alerts"
                             onChangeTab={() => setSelectedAlertingTab('alerting')}
                             active={selectedAlertingTab === 'alerting'}
                           />
