@@ -1,4 +1,4 @@
-import { assignTime } from 'features/logParsing/parseLokiLogs';
+import { assignTime } from 'features/parseLogs/parseLokiLogs';
 
 // describe('parseLokiLogs', () => {
 //   it('should parse loki logs', () => {

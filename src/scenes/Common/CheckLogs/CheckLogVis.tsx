@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { LabelsWithTime } from 'features/logParsing/logs.types';
+import { LabelsWithTime } from 'features/parseCheckLogs/checkLogs.types';
 
 interface CheckLogVisProps {
   check: LabelsWithTime[];

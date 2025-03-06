@@ -3,7 +3,7 @@ import { GrafanaTheme2, TimeRange } from '@grafana/data';
 import { Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckLogs } from 'features/logParsing/logs.types';
+import { CheckLogs } from 'features/parseCheckLogs/checkLogs.types';
 import { CheckLogsDisplay } from 'scenes/Common/CheckLogs/CheckLogsDisplay';
 import { CheckLogVis } from 'scenes/Common/CheckLogs/CheckLogVis';
 

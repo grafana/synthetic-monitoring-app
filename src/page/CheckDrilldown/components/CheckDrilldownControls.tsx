@@ -14,6 +14,7 @@ export const CheckDrilldownControls = () => {
           isOnCanvas
           value={timeRange}
           onChange={(t) => {
+            console.log(t);
             setTimeRange(t);
           }}
           onChangeTimeZone={(t) => console.log(t)}

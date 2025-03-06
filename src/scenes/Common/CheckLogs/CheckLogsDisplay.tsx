@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stack } from '@grafana/ui';
 
-import { CheckLogs } from 'features/logParsing/logs.types';
+import { CheckLogs } from 'features/parseCheckLogs/checkLogs.types';
 import { LogLine } from 'scenes/Common/CheckLogs/LogLine';
 
 interface CheckLogsDisplayProps {

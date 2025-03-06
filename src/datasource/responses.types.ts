@@ -1,6 +1,14 @@
 import { DataFrameJSON } from '@grafana/data';
 
-import { AlertRecord, Check, CheckAlertPublished, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
+import {
+  AlertRecord,
+  Check,
+  CheckAlertPublished,
+  Probe,
+  PrometheusAlertsGroup,
+  Settings,
+  ThresholdSettings,
+} from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
@@ -116,7 +124,7 @@ export interface InstantMetric {
 }
 
 export interface RangeMetric {
-  metric: {};
+  metric: Record<string, string>;
   values: Array<[Time, string]>;
 }
 

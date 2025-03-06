@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { LOG_LABELS_COMMON, LOG_LABELS_SM } from 'features/logParsing/logs.constants.labels';
+import { LOG_LABELS_COMMON, LOG_LABELS_SM } from 'features/parseCheckLogs/checkLogs.constants.labels';
 
-import { LabelsWithTime } from 'features/logParsing/logs.types';
+import { LabelsWithTime } from 'features/parseCheckLogs/checkLogs.types';
 
 interface LogLineProps {
   log: LabelsWithTime;

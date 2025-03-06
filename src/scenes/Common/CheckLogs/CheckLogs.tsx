@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { TimeRange } from '@grafana/data';
-import { groupLogs } from 'features/logParsing/groupLogs';
-import { parseLokiLogs } from 'features/logParsing/parseLokiLogs';
+import { groupLogs } from 'features/parseCheckLogs/groupLogs';
+import { parseLokiLogs } from 'features/parseLogs/parseLokiLogs';
 
-import { LokiSeries } from 'features/logParsing/logs.types';
+import { CheckLogsSeries } from 'features/parseCheckLogs/checkLogs.types';
 import { ChecksByProbe } from 'scenes/Common/CheckLogs/ChecksByProbe';
 
-export const CheckLogs = ({ series, timeRange }: { series: LokiSeries; timeRange: TimeRange }) => {
+export const CheckLogs = ({ series, timeRange }: { series: CheckLogsSeries; timeRange: TimeRange }) => {
   const orderedLogs = parseLokiLogs(series);
   const groupedLogsByProbe = groupLogs(orderedLogs);
 

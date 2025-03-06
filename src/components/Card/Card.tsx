@@ -19,7 +19,9 @@ export const Card = ({ children, className, href, ...rest }: CardProps) => {
 
   return (
     <CardContext.Provider value={{ href }}>
-      <div className={cx(styles.card, className)} {...rest}>{children}</div>
+      <div className={cx(styles.card, className)} {...rest}>
+        {children}
+      </div>
     </CardContext.Provider>
   );
 };
@@ -31,11 +33,6 @@ function getStyles(theme: GrafanaTheme2) {
       background: theme.colors.background.secondary,
       borderRadius: theme.shape.radius.default,
       position: `relative`,
-
-      '&:hover': {
-        background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
-        zIndex: 1,
-      },
     }),
   };
 }

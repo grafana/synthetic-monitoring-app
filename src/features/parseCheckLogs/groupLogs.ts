@@ -1,8 +1,8 @@
-import { MSG_STRINGS_COMMON } from 'features/logParsing/logs.constants.msgs';
+import { MSG_STRINGS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
-import { CheckLogs, LabelsWithTime } from 'features/logParsing/logs.types';
+import { CheckLogs, LabelsWithTime, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
 
-export function groupLogs(logs: LabelsWithTime[]) {
+export function groupLogs(logs: LabelsWithTime[]): PerCheckLogs[] {
   const groupedByProbe = groupByProbe(logs);
   const groupedByCheck = Object.entries(groupedByProbe).map(([probe, logs]) => ({
     probe,

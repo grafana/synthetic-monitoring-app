@@ -10,7 +10,7 @@ import {
 } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
-import { LokiSeries } from 'features/logParsing/logs.types';
+import { CheckLogsSeries } from 'features/parseCheckLogs/checkLogs.types';
 import { CheckLogs } from 'scenes/Common/CheckLogs/CheckLogs';
 
 function getQueryRunner(logs: DataSourceRef) {
@@ -46,7 +46,7 @@ function CustomObjectRenderer({ model }: SceneComponentProps<ParsedLogs>) {
   const { data } = sceneGraph.getData(model).useState();
 
   if (data?.series?.[0]?.fields) {
-    const series = data.series[0] as LokiSeries;
+    const series = data.series[0] as CheckLogsSeries;
 
     return <CheckLogs series={series} timeRange={data.timeRange} />;
   }

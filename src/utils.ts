@@ -269,13 +269,15 @@ export function getRandomProbes(probes: number[], quantity: number): number[] {
   return Array.from(randomProbes).sort((a, b) => a - b);
 }
 
-export function formatDate(number: number) {
-  return new Date(number).toLocaleString('en-US', {
+export function formatDate(timestamp: number | string, showSeconds?: boolean) {
+  return new Date(Number(timestamp)).toLocaleString('en-US', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
+    second: showSeconds ? '2-digit' : undefined,
   });
 }
 

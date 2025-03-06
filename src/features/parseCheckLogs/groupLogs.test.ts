@@ -1,7 +1,7 @@
-import { discardIncompleteChecks, groupByCheck, groupByProbe, groupLogs } from 'features/logParsing/groupLogs';
-import { MSG_STRINGS_COMMON, MSG_STRINGS_HTTP } from 'features/logParsing/logs.constants.msgs';
+import { MSG_STRINGS_COMMON, MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
+import { discardIncompleteChecks, groupByCheck, groupByProbe, groupLogs } from 'features/parseCheckLogs/groupLogs';
 
-import { LabelsWithTime } from 'features/logParsing/logs.types';
+import { LabelsWithTime } from 'features/parseCheckLogs/checkLogs.types';
 
 const discard1: LabelsWithTime = {
   time: 1713859200000,

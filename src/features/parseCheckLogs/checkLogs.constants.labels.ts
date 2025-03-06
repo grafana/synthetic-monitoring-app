@@ -1,5 +1,5 @@
 // logs contract with the backend
-import { MSG_STRINGS_COMMON, MSG_STRINGS_HTTP } from 'features/logParsing/logs.constants.msgs';
+import { MSG_STRINGS_COMMON, MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
 export const LOG_LABELS_COMMON = [`detected_level`, `level`, `service_name`];
 export const LOG_LABELS_SM = [

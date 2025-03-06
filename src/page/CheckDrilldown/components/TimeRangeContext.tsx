@@ -1,4 +1,4 @@
-import React, { createContext, PropsWithChildren, useContext, useState } from 'react';
+import React, { createContext, PropsWithChildren, useContext, useMemo, useState } from 'react';
 import { dateTime, TimeRange } from '@grafana/data';
 
 type TimeRangeContextValue = {
@@ -11,21 +11,25 @@ type TimeRangeContextValue = {
 const TimeRangeContext = createContext<TimeRangeContextValue>(null);
 
 export const TimeRangeProvider = ({ children }: PropsWithChildren) => {
+  const now = new Date().toISOString();
+  const HOURS = 3;
+
   const [timeRange, setTimeRange] = useState<TimeRange>({
-    from: dateTime(new Date().toISOString()),
-    to: dateTime(new Date().toISOString()),
+    from: dateTime(now).subtract(HOURS, 'hours'),
+    to: dateTime(now),
     raw: {
-      from: `now-3h`,
+      from: `now-${HOURS}h`,
       to: `now`,
     },
   });
   const [refreshInterval, setRefreshInterval] = useState<string>('5s');
 
-  return (
-    <TimeRangeContext.Provider value={{ timeRange, setTimeRange, refreshInterval, setRefreshInterval }}>
-      {children}
-    </TimeRangeContext.Provider>
+  const value = useMemo(
+    () => ({ timeRange, setTimeRange, refreshInterval, setRefreshInterval }),
+    [timeRange, refreshInterval]
   );
+
+  return <TimeRangeContext.Provider value={value}>{children}</TimeRangeContext.Provider>;
 };
 
 export function useTimeRange() {

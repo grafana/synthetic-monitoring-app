@@ -77,10 +77,12 @@ export function queryRangeMetric<T extends RangeMetric>({ url, query, start, end
     })
   ).then((res: FetchResponse<MetricDatasourceResponse<T>>) => {
     return res.data.data.result.map((metric) => {
-      return {
+      const result: T & { values: Array<[number, number]> } = {
         ...metric,
-        values: metric.values.map(([time, value]) => [time, Number(value)]),
+        values: metric.values.map(([time, value]) => [time * 1000, Number(value)]),
       };
+
+      return result;
     });
   });
 }
