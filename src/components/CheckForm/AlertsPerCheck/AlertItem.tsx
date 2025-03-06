@@ -10,6 +10,7 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { FailedExecutionsAlert } from './FailedExecutionsAlert';
+import { HTTPTargetCertificateCloseToExpiringAlert } from './HTTPTargetCertificateCloseToExpiringAlert';
 
 function createExploreLink(dataSourceName: string, query: string) {
   return urlUtil.renderUrl(`/explore`, {
@@ -61,9 +62,11 @@ export const AlertItem = ({
     <div>
       {alert.description.replace(/\$threshold/g, threshold)}{' '}
       {exploreLink && (
-        <TextLink href={exploreLink} external={true} variant="bodySmall">
-          Explore query
-        </TextLink>
+        <div>
+          <TextLink href={exploreLink} external={true} variant="bodySmall">
+            Explore query
+          </TextLink>
+        </div>
       )}
     </div>
   );
@@ -79,52 +82,62 @@ export const AlertItem = ({
         />
       )}
 
-      {alert.type !== CheckAlertType.ProbeFailedExecutionsTooHigh && (
-        <>
-          <div className={styles.itemInfo}>
-            <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
-            <Stack alignItems="center">
-              <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
-                {alert.name}
-              </Label>
-              <Tooltip content={tooltipContent} interactive={true}>
-                <Icon name="info-circle" />
-              </Tooltip>
-            </Stack>
-          </div>
-          <div className={styles.thresholdInput}>
-            <Field
-              label="Threshold"
-              htmlFor={`alert-threshold-${alert.type}`}
-              invalid={!!thresholdError}
-              error={thresholdError}
-            >
-              <Controller
-                name={`alerts.${alert.type}.threshold`}
-                control={control}
-                render={({ field }) => {
-                  return (
-                    <Input
-                      {...field}
-                      aria-disabled={!selected}
-                      suffix={alert.unit}
-                      type="number"
-                      step="any"
-                      id={`alert-threshold-${alert.type}`}
-                      onChange={(e) => {
-                        const value = e.currentTarget.value;
-                        return field.onChange(value !== '' ? Number(value) : '');
-                      }}
-                      width={10}
-                      disabled={!selected || isFormDisabled}
-                    />
-                  );
-                }}
-              />
-            </Field>
-          </div>
-        </>
+      {alert.type === CheckAlertType.HTTPTargetCertificateCloseToExpiring && (
+        <HTTPTargetCertificateCloseToExpiringAlert
+          alert={alert}
+          selected={selected}
+          onSelectionChange={handleToggleAlert}
+          tooltipContent={tooltipContent}
+        />
       )}
+
+      {alert.type !== CheckAlertType.ProbeFailedExecutionsTooHigh &&
+        alert.type !== CheckAlertType.HTTPTargetCertificateCloseToExpiring && (
+          <>
+            <div className={styles.itemInfo}>
+              <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
+              <Stack alignItems="center">
+                <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
+                  {alert.name}
+                </Label>
+                <Tooltip content={tooltipContent} interactive={true}>
+                  <Icon name="info-circle" />
+                </Tooltip>
+              </Stack>
+            </div>
+            <div className={styles.thresholdInput}>
+              <Field
+                label="Threshold"
+                htmlFor={`alert-threshold-${alert.type}`}
+                invalid={!!thresholdError}
+                error={thresholdError}
+              >
+                <Controller
+                  name={`alerts.${alert.type}.threshold`}
+                  control={control}
+                  render={({ field }) => {
+                    return (
+                      <Input
+                        {...field}
+                        aria-disabled={!selected}
+                        suffix={alert.unit}
+                        type="number"
+                        step="any"
+                        id={`alert-threshold-${alert.type}`}
+                        onChange={(e) => {
+                          const value = e.currentTarget.value;
+                          return field.onChange(value !== '' ? Number(value) : '');
+                        }}
+                        width={10}
+                        disabled={!selected || isFormDisabled}
+                      />
+                    );
+                  }}
+                />
+              </Field>
+            </div>
+          </>
+        )}
     </div>
   );
 };
