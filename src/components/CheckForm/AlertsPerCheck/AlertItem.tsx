@@ -1,13 +1,12 @@
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, urlUtil } from '@grafana/data';
-import { Checkbox, Field, Icon, Input, Label, Stack, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { FailedExecutionsAlert } from './FailedExecutionsAlert';
 import { HTTPTargetCertificateCloseToExpiringAlert } from './HTTPTargetCertificateCloseToExpiringAlert';
@@ -35,14 +34,11 @@ export const AlertItem = ({
 }) => {
   const styles = useStyles2(getStyles);
 
-  const { control, formState, getValues } = useFormContext<CheckFormValues>();
-  const { isFormDisabled } = useCheckFormContext();
+  const { getValues } = useFormContext<CheckFormValues>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
   };
-
-  const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
 
   const ds = useMetricsDS();
 
@@ -90,54 +86,6 @@ export const AlertItem = ({
           tooltipContent={tooltipContent}
         />
       )}
-
-      {alert.type !== CheckAlertType.ProbeFailedExecutionsTooHigh &&
-        alert.type !== CheckAlertType.HTTPTargetCertificateCloseToExpiring && (
-          <>
-            <div className={styles.itemInfo}>
-              <Checkbox id={`alert-${alert.type}`} onClick={() => handleToggleAlert(alert.type)} checked={selected} />
-              <Stack alignItems="center">
-                <Label htmlFor={`alert-${alert.type}`} className={styles.columnLabel}>
-                  {alert.name}
-                </Label>
-                <Tooltip content={tooltipContent} interactive={true}>
-                  <Icon name="info-circle" />
-                </Tooltip>
-              </Stack>
-            </div>
-            <div className={styles.thresholdInput}>
-              <Field
-                label="Threshold"
-                htmlFor={`alert-threshold-${alert.type}`}
-                invalid={!!thresholdError}
-                error={thresholdError}
-              >
-                <Controller
-                  name={`alerts.${alert.type}.threshold`}
-                  control={control}
-                  render={({ field }) => {
-                    return (
-                      <Input
-                        {...field}
-                        aria-disabled={!selected}
-                        suffix={alert.unit}
-                        type="number"
-                        step="any"
-                        id={`alert-threshold-${alert.type}`}
-                        onChange={(e) => {
-                          const value = e.currentTarget.value;
-                          return field.onChange(value !== '' ? Number(value) : '');
-                        }}
-                        width={10}
-                        disabled={!selected || isFormDisabled}
-                      />
-                    );
-                  }}
-                />
-              </Field>
-            </div>
-          </>
-        )}
     </div>
   );
 };
@@ -148,24 +96,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(1),
     marginLeft: theme.spacing(1),
     minHeight: '40px',
-  }),
-
-  itemInfo: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    width: '50%',
-    textWrap: 'wrap',
-  }),
-
-  columnLabel: css({
-    fontWeight: theme.typography.fontWeightLight,
-    fontSize: theme.typography.h6.fontSize,
-    lineHeight: theme.typography.body.lineHeight,
-    marginBottom: '0',
-  }),
-
-  thresholdInput: css({
-    marginLeft: '22px',
   }),
 });
