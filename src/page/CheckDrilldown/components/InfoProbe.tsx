@@ -6,33 +6,29 @@ import { css } from '@emotion/css';
 import { Toggletip } from 'components/Toggletip';
 import { useCheckDrilldown } from 'page/CheckDrilldown/components/CheckDrilldownContext';
 import { Info } from 'page/CheckDrilldown/components/Info';
-import { useCheckDrilldownInfo } from 'page/CheckDrilldown/hooks/useCheckDrilldownInfo';
+import { useCheckProbeHealth } from 'page/CheckDrilldown/hooks/useCheckProbeHealth';
 
 export const InfoProbe = () => {
-  const { check } = useCheckDrilldown();
-  const { singleStats } = useCheckDrilldownInfo();
-  const { probesWithResults } = singleStats;
-  const probes = check.probes.length;
-  const hasResults = probesWithResults !== null;
-  const allProbesRunning = hasResults && probesWithResults === probes;
+  const { probes, hasResults, allProbesRunning, probesWithResults } = useCheckProbeHealth();
   const styles = useStyles2(getStyles);
+  const { changeTab } = useCheckDrilldown();
 
   return (
     <Info label="No. of probes">
       <Stack>
-        <div>{probes}</div>
-        {!allProbesRunning && hasResults && (
+        <div style={{ flexGrow: 1 }}>{probes}</div>
+        {!allProbesRunning && hasResults && probesWithResults && (
           <Toggletip
             content={
               <Stack direction="column" gap={1}>
                 <div>
                   Your probe is configured to have {probes} {pluralize('probe', probes)} but for the selected time
-                  range, only {probesWithResults}
+                  range, only {probesWithResults.length}
                   {` `}
-                  {pluralize('probe', probesWithResults)} have returned results.
+                  {pluralize('probe', probesWithResults.length)} have returned results.
                 </div>
                 <div>
-                  <Button variant="secondary" size="sm" onClick={() => {}}>
+                  <Button variant="secondary" size="sm" onClick={() => changeTab(0)}>
                     Run investigation
                   </Button>
                 </div>

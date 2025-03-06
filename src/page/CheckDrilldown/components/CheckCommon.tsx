@@ -1,21 +1,25 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckExplorer } from 'page/CheckDrilldown/components/CheckExplorer';
+import { CheckOverview } from 'page/CheckDrilldown/components/CheckOverview';
 import { InfoCheck } from 'page/CheckDrilldown/components/InfoCheck';
 
 export const CheckCommon = () => {
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.explorerContainer}>
-        <CheckExplorer />
+    <Stack direction={`column`} gap={2}>
+      <div className={styles.container}>
+        <div className={styles.explorerContainer}>
+          <CheckExplorer />
+        </div>
+        <InfoCheck />
       </div>
-      <InfoCheck />
-    </div>
+      <CheckOverview />
+    </Stack>
   );
 };
 
@@ -23,7 +27,7 @@ const getStyles = (theme: GrafanaTheme2) => {
   return {
     container: css`
       display: grid;
-      grid-template-columns: 2fr 500px;
+      grid-template-columns: 2fr 450px;
       gap: ${theme.spacing(2)};
       margin: ${theme.spacing(2, 0)};
     `,

@@ -4,7 +4,8 @@ import { Box, Icon, Stack, Text, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { formatDate } from 'utils';
-import { formatDuration } from 'page/CheckDrilldown/components/CheckExplorer.utils';
+import { ResultDuration } from 'page/CheckDrilldown/components/ResultDuration';
+import { TimepointDetailProbes } from 'page/CheckDrilldown/components/TimepointDetailProbes';
 import { TimepointWithVis } from 'page/CheckDrilldown/components/TimepointExplorer.utils';
 
 interface TimepointBarProps {
@@ -66,9 +67,13 @@ const Duration = ({ timepoint }: { timepoint: TimepointWithVis }) => {
   return (
     <Stack direction={`column`}>
       <Box padding={1}>
-        <Text variant="bodySmall" element="h3">
-          {formatDuration(timepoint.duration)}
-        </Text>
+        <Stack direction={`row`} gap={1} justifyContent={`space-between`}>
+          <Text variant="bodySmall" element="h3">
+            Check result
+          </Text>
+          <ResultDuration state={timepoint.uptime} duration={timepoint.duration} />
+        </Stack>
+        <TimepointDetailProbes timepoint={timepoint} />
       </Box>
     </Stack>
   );

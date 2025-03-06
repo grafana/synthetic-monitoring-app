@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { TimeRange } from '@grafana/data';
 import { groupLogs } from 'features/parseCheckLogs/groupLogs';
 
 import { Timeseries } from 'page/CheckDrilldown/checkDrilldown.types';
@@ -10,11 +11,10 @@ import { useCheckProbeSuccess } from 'page/CheckDrilldown/hooks/useCheckProbeSuc
 import { useCheckUptime } from 'page/CheckDrilldown/hooks/useCheckUptime';
 import { constructTimepoints } from 'page/CheckDrilldown/utils/constructTimepoints';
 
-export function useCheckDrilldownInfo() {
+export function useTimepointExplorer(selectedTimerange: TimeRange) {
   const { timeRange } = useTimeRange();
   const { check } = useCheckDrilldown();
 
-  const uptimeQuery = useCheckUptime({ check, timeRange });
   const logsQuery = useCheckLogs({ check, timeRange });
   const probeDurationQuery = useCheckProbeDuration({ check, timeRange });
   const probeSuccessQuery = useCheckProbeSuccess({ check, timeRange });

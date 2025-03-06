@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { getTotalChecksPerMonth } from 'checkUsageCalc';
 
 import { formatDate } from 'utils';
 import { ROUTES } from 'routing/types';
@@ -17,6 +18,7 @@ export const InfoCheck = () => {
   const { check } = useCheckDrilldown();
   const frequency = parseFrequency(check.frequency);
   const styles = useStyles2(getStyles);
+  const estimatedExecutionsPerMonth = getTotalChecksPerMonth(check.probes.length, check.frequency / 1000);
 
   return (
     <div className={styles.container}>
@@ -31,6 +33,7 @@ export const InfoCheck = () => {
             <Info label="Check type">{Object.keys(check.settings)[0]}</Info>
             <Info label="Frequency">{frequency}</Info>
             <InfoProbe />
+            <Info label="Executions per month">{estimatedExecutionsPerMonth.toLocaleString()}</Info>
           </InfoSection>
 
           <InfoSection

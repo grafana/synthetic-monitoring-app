@@ -9,7 +9,7 @@ import { createVisualisation } from 'page/CheckDrilldown/components/TimepointExp
 import { useCheckDrilldownInfo } from 'page/CheckDrilldown/hooks/useCheckDrilldownInfo';
 
 const EXPLORER_HEIGHT = 300; // TODO: make this dynamic
-const MAX_VISIBLE_TIMEPOINTS = 120;
+// const MAX_VISIBLE_TIMEPOINTS = 120;
 
 export const TimepointExplorer = () => {
   const [selectedTimepoint, setSelectedTimepoint] = useState<number | null>(null);
@@ -103,7 +103,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   zeroState: css`
     border: 1px solid ${theme.colors.border.weak};
-    height: 150px;
+    height: 250px;
     padding: ${theme.spacing(2)};
     display: flex;
     align-items: center;

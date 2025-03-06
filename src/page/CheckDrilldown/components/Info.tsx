@@ -9,7 +9,7 @@ export const Info = ({ label, children }: { label: string; children: React.React
   return (
     <Stack>
       <div className={styles.label}>{label}:</div>
-      <div>{children}</div>
+      <div className={styles.content}>{children}</div>
     </Stack>
   );
 };
@@ -18,6 +18,9 @@ const getStyles = (theme: GrafanaTheme2) => {
   return {
     label: css`
       font-weight: 700;
+    `,
+    content: css`
+      flex-grow: 1;
     `,
   };
 };

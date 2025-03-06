@@ -60,21 +60,12 @@ function buildTimePointsFromTimeRange({ from, to, frequency }: GetTimePointsProp
 // mutating as is less memory intensive
 // but might be safer to do this in a functional way
 function assignTimeseries(timePoints: Record<string, Timepoint>, timeseries: Timeseries) {
-  let problems = {
-    uptime: [],
-    probeDuration: [],
-    probeSuccess: [],
-    duration: [],
-  };
-
   const { uptime = [], probeDuration = {}, probeSuccess = {} } = timeseries;
 
   uptime.forEach(([timestamp, value], i) => {
     try {
       timePoints[timestamp].uptime = value;
-    } catch (error) {
-      problems.uptime.push({ timestamp: new Date(timestamp), value });
-    }
+    } catch (error) {}
   });
 
   Object.entries(probeDuration).forEach(([probe, values]) => {
@@ -82,9 +73,7 @@ function assignTimeseries(timePoints: Record<string, Timepoint>, timeseries: Tim
       values.forEach(([timestamp, value]) => {
         timePoints[timestamp].probeDurations[probe] = value;
       });
-    } catch (error) {
-      problems.probeDuration.push({ probe, values });
-    }
+    } catch (error) {}
   });
 
   Object.entries(probeSuccess).forEach(([probe, values]) => {
@@ -92,21 +81,15 @@ function assignTimeseries(timePoints: Record<string, Timepoint>, timeseries: Tim
       values.forEach(([timestamp, value]) => {
         timePoints[timestamp].probeSuccesses[probe] = value;
       });
-    } catch (error) {
-      problems.probeSuccess.push({ probe, values });
-    }
+    } catch (error) {}
   });
 
   Object.entries(timePoints).forEach(([timestamp, timepoint]) => {
     try {
       timePoints[timestamp].timestamp = timestamp;
       timePoints[timestamp].duration = getDuration(timepoint.probeDurations);
-    } catch (error) {
-      problems.duration.push({ timestamp, timepoint });
-    }
+    } catch (error) {}
   });
-
-  console.log(problems);
 
   return timePoints;
 }
