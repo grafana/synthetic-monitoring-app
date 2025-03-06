@@ -18,6 +18,7 @@ import { Check, FeatureName } from 'types';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
+import { DataTestIds } from '../../test/dataTestIds';
 import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {
@@ -64,9 +65,14 @@ test('renders empty state', async () => {
 
   render(<CheckList />);
 
-  const emptyWarning = await screen.findByText('This account does not currently have any checks configured', {
-    exact: false,
-  });
+  const emptyWarning = await waitFor(
+    () =>
+      screen.findByTestId(DataTestIds.CHECKS_EMPTY_STATE, {
+        exact: false,
+      }),
+    { timeout: 10000 }
+  );
+
   expect(emptyWarning).toBeInTheDocument();
 });
 

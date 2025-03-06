@@ -3,6 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, Label, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormValues, CheckType } from 'types';
 import { checkFormValuesToUsageCalcValues } from 'utils';
@@ -46,7 +47,7 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
   }
 
   return (
-    <div className={styles.container}>
+    <div data-testid={DataTestIds.CHECK_USAGE} className={styles.container}>
       <Label
         description={
           !hideTelemetry && (
@@ -61,7 +62,7 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
           )
         }
       >
-        Approximate expected usage for this check
+        Estimated usage for this check
       </Label>
       <div className={styles.calcList}>
         <div className={styles.section}>
