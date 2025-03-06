@@ -31,15 +31,13 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
 
-    expect(screen.getByText('HTTP Target Certificate Close To Expiring')).toBeInTheDocument();
+    expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
 
-    const thresholdsInputs = screen.getAllByLabelText(/^Threshold/);
+    const thresholdsInput = screen.getByTestId('alert-threshold-HTTPTargetCertificateCloseToExpiring');
 
-    expect(thresholdsInputs).toHaveLength(1);
-
-    await user.click(screen.getByLabelText('HTTP Target Certificate Close To Expiring'));
-    await user.clear(thresholdsInputs[0]);
-    await user.type(thresholdsInputs[0], '1');
+    await user.click(screen.getByTestId('checkbox-alert-HTTPTargetCertificateCloseToExpiring'));
+    await user.clear(thresholdsInput);
+    await user.type(thresholdsInput, '1');
 
     await submitForm(user);
 

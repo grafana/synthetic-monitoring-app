@@ -31,6 +31,6 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
 
-    expect(screen.queryByText('HTTP Target Certificate Close To Expiring')).not.toBeInTheDocument();
+    expect(screen.queryByText(`Alert if the target's certificate expires in less than`)).not.toBeInTheDocument();
   });
 });

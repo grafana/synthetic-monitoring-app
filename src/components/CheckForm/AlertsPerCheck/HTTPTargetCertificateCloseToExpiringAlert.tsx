@@ -55,11 +55,12 @@ export const HTTPTargetCertificateCloseToExpiringAlert = ({
                       type="number"
                       step="any"
                       id={`alert-threshold-${alert.type}`}
+                      data-testid={`alert-threshold-${alert.type}`}
                       onChange={(e) => {
                         const value = e.currentTarget.value;
                         return field.onChange(value !== '' ? Number(value) : '');
                       }}
-                      width={10}
+                      width={7}
                       disabled={!selected || isFormDisabled}
                     />
                   );
