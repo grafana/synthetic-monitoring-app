@@ -29,7 +29,7 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 4);
 
-    expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
+    expect(screen.getByText('Alerts-per-check')).toBeInTheDocument();
 
     expect(screen.queryByText(`Alert if the target's certificate expires in less than`)).not.toBeInTheDocument();
   });

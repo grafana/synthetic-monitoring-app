@@ -106,7 +106,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
           await goToSection(user, 4);
 
-          expect(screen.getByText('Predefined alerts')).toBeInTheDocument();
+          expect(screen.getByText('Alerts-per-check')).toBeInTheDocument();
 
           expect(screen.getByText('Failed Checks')).toBeInTheDocument();
 
