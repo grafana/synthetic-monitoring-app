@@ -15,7 +15,7 @@ export function useCheckProbeSuccess({ check, timeRange }: UseCheckDrilldownInfo
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
 
-  const { expr, interval } = getProbeSuccessQuery({
+  const { expr, interval, maxDataPoints } = getProbeSuccessQuery({
     job: check.job,
     instance: check.target,
     frequency: check.frequency,
@@ -24,7 +24,17 @@ export function useCheckProbeSuccess({ check, timeRange }: UseCheckDrilldownInfo
   const refId = 'CheckProbeSuccess';
 
   return useQuery({
-    queryKey: [...queryKeys.checkProbeSuccess, expr, url, metricsDS, interval, timeRange, check.frequency, refId],
+    queryKey: [
+      ...queryKeys.checkProbeSuccess,
+      expr,
+      url,
+      metricsDS,
+      interval,
+      timeRange,
+      check.frequency,
+      refId,
+      maxDataPoints,
+    ],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);
@@ -41,6 +51,7 @@ export function useCheckProbeSuccess({ check, timeRange }: UseCheckDrilldownInfo
         start: timeRange.from.valueOf(),
         end: timeRange.to.valueOf(),
         refId,
+        maxDataPoints,
       });
     },
     select: (data) => {

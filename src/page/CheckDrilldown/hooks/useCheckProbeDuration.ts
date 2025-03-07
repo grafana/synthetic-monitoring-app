@@ -15,7 +15,7 @@ export function useCheckProbeDuration({ check, timeRange }: UseCheckDrilldownInf
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
 
-  const { expr, interval } = getProbeDurationQuery({
+  const { expr, interval, maxDataPoints } = getProbeDurationQuery({
     job: check.job,
     instance: check.target,
     frequency: check.frequency,
@@ -24,7 +24,17 @@ export function useCheckProbeDuration({ check, timeRange }: UseCheckDrilldownInf
   const refId = 'CheckProbeDuration';
 
   return useQuery({
-    queryKey: [...queryKeys.checkProbeDuration, expr, url, metricsDS, interval, timeRange, check.frequency, refId],
+    queryKey: [
+      ...queryKeys.checkProbeDuration,
+      expr,
+      url,
+      metricsDS,
+      interval,
+      timeRange,
+      check.frequency,
+      refId,
+      maxDataPoints,
+    ],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);
@@ -41,6 +51,8 @@ export function useCheckProbeDuration({ check, timeRange }: UseCheckDrilldownInf
         start: timeRange.from.valueOf(),
         end: timeRange.to.valueOf(),
         refId,
+        queryType: 'range',
+        maxDataPoints,
       });
     },
     select: (data) => {

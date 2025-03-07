@@ -23,7 +23,8 @@ export const CheckDrilldownProvider = ({ children }: PropsWithChildren) => {
 
   const changeTab = useCallback(
     (tab: number) => {
-      scrollTo({ top: 500, behavior: 'smooth' });
+      // scroll to bottom of viewport
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       dispatchViewState({ type: 'setActiveTab', payload: tab });
     },
     [dispatchViewState]

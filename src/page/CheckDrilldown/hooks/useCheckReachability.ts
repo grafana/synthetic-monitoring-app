@@ -1,31 +1,31 @@
 import { useQuery } from '@tanstack/react-query';
 import { DataFrame } from '@grafana/data';
-import { getUptimeQuery } from 'queries/uptime';
+import { getReachabilityQuery } from 'queries/reachability';
 
 import { UseCheckDrilldownInfoProps } from 'page/CheckDrilldown/checkDrilldown.types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { queryMimir } from 'page/CheckDrilldown/utils/queryMimir';
 import { toTimeSeries } from 'page/CheckDrilldown/utils/toTimeSeries';
 
-const queryKeys: Record<'checkUptime', string[]> = {
-  checkUptime: ['checkUptime'],
+const queryKeys: Record<'checkReachability', string[]> = {
+  checkReachability: ['checkReachability'],
 };
 
-export function useCheckUptime({ check, timeRange }: UseCheckDrilldownInfoProps) {
+export function useCheckReachability({ check, timeRange }: UseCheckDrilldownInfoProps) {
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
 
-  const { expr, interval, maxDataPoints } = getUptimeQuery({
+  const { expr, interval, maxDataPoints } = getReachabilityQuery({
     job: check.job,
     instance: check.target,
     frequency: check.frequency,
   });
 
-  const refId = 'CheckUptime';
+  const refId = 'CheckReachability';
 
   return useQuery({
     queryKey: [
-      ...queryKeys.checkUptime,
+      ...queryKeys.checkReachability,
       expr,
       url,
       metricsDS,
@@ -63,5 +63,5 @@ export function useCheckUptime({ check, timeRange }: UseCheckDrilldownInfoProps)
 }
 
 function getLabel(frame: DataFrame) {
-  return `Uptime`;
+  return `Reachability`;
 }

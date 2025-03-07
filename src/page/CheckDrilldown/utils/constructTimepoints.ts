@@ -44,7 +44,13 @@ type GetTimePointsProps = {
   frequency: number;
 };
 
-function buildTimePointsFromTimeRange({ from, to, frequency }: GetTimePointsProps) {
+export function calculateTimePointsInTimeRange({ from, to, frequency }: GetTimePointsProps) {
+  const diff = to - from;
+
+  return Math.floor(diff / frequency) + 1;
+}
+
+export function buildTimePointsFromTimeRange({ from, to, frequency }: GetTimePointsProps) {
   const timePoints: Record<string, Timepoint> = {};
   const remainder = from % frequency;
 
@@ -110,13 +116,13 @@ function getDuration(probeDurations: Record<string, number>) {
 function assignLogs(timePoints: Record<string, Timepoint>, perCheckLogs: PerCheckLogs[], frequency: number) {
   perCheckLogs.forEach(({ probe, checks }) => {
     checks.forEach((checkLogs) => {
-      const endingTime = checkLogs[checkLogs.length - 1].time;
-      const timepointOwner = endingTime - (endingTime % frequency) + frequency;
+      const startingTime = checkLogs[0].time;
+      const timepointOwner = startingTime - (startingTime % frequency) + frequency;
 
       if (timePoints[timepointOwner]) {
         timePoints[timepointOwner].probeLogs[probe] = checkLogs;
       } else {
-        console.log({ timepointOwner, checkLogs });
+        // console.log({ timepointOwner, checkLogs });
       }
     });
   });

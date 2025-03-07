@@ -8,25 +8,30 @@ export function queryMimir({
   refId,
   interval,
   intervalMs,
+  queryType = 'range',
+  maxDataPoints,
 }: {
   datasource: { uid: string; type: string };
   query: string;
   start: number;
   end: number;
   refId: string;
-  interval: string;
-  intervalMs: number;
+  interval?: string;
+  intervalMs?: number;
+  queryType?: 'range' | 'instant';
+  maxDataPoints?: number;
 }) {
   return queryDS({
     queries: [
       {
         refId,
         expr: query,
-        queryType: 'range',
+        range: queryType === 'range' ? true : false,
+        instant: queryType === 'instant' ? true : false,
         datasource,
         intervalMs,
         interval,
-        maxDataPoints: 8000,
+        maxDataPoints,
       },
     ],
     start,

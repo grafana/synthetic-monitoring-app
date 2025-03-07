@@ -2,8 +2,11 @@ import React, { PropsWithChildren, useCallback } from 'react';
 import { IconButton, Stack } from '@grafana/ui';
 
 import { useCheckDrilldown } from 'page/CheckDrilldown/components/CheckDrilldownContext';
+import { formatDuration } from 'page/CheckDrilldown/components/CheckExplorer.utils';
 
 export const InfoAssertions = () => {
+  const { check } = useCheckDrilldown();
+
   return (
     <div>
       <Stack direction={`column`} gap={0.5}>
@@ -17,7 +20,7 @@ export const InfoAssertions = () => {
           AND <code>SSL</code> is <code>true</code>
         </AssertionLine>
         <AssertionLine>
-          WITHIN <code>30s</code>
+          WITHIN <code>{formatDuration(check.timeout / 1000)}</code>
         </AssertionLine>
       </Stack>
     </div>

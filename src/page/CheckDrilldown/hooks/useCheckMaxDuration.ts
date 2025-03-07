@@ -1,40 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
 import { DataFrame } from '@grafana/data';
-import { getUptimeQuery } from 'queries/uptime';
+import { getMaxDurationByCheck } from 'queries/maxDurationByCheck';
 
 import { UseCheckDrilldownInfoProps } from 'page/CheckDrilldown/checkDrilldown.types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { queryMimir } from 'page/CheckDrilldown/utils/queryMimir';
 import { toTimeSeries } from 'page/CheckDrilldown/utils/toTimeSeries';
 
-const queryKeys: Record<'checkUptime', string[]> = {
-  checkUptime: ['checkUptime'],
+const queryKeys: Record<'checkMaxDuration', string[]> = {
+  checkMaxDuration: ['checkMaxDuration'],
 };
 
-export function useCheckUptime({ check, timeRange }: UseCheckDrilldownInfoProps) {
+export function useCheckMaxDuration({ check, timeRange }: UseCheckDrilldownInfoProps) {
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
 
-  const { expr, interval, maxDataPoints } = getUptimeQuery({
+  const { expr, queryType } = getMaxDurationByCheck({
     job: check.job,
     instance: check.target,
-    frequency: check.frequency,
   });
 
-  const refId = 'CheckUptime';
+  const refId = 'CheckMaxDuration';
 
   return useQuery({
-    queryKey: [
-      ...queryKeys.checkUptime,
-      expr,
-      url,
-      metricsDS,
-      interval,
-      timeRange,
-      check.frequency,
-      refId,
-      maxDataPoints,
-    ],
+    queryKey: [...queryKeys.checkMaxDuration, expr, url, metricsDS, timeRange, check.frequency, refId, queryType],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);
@@ -46,22 +35,22 @@ export function useCheckUptime({ check, timeRange }: UseCheckDrilldownInfoProps)
           type: metricsDS.type,
         },
         query: expr,
-        interval,
-        intervalMs: check.frequency,
         start: timeRange.from.valueOf(),
         end: timeRange.to.valueOf(),
         refId,
-        maxDataPoints,
+        queryType,
       });
     },
     select: (data) => {
-      const timeseries = toTimeSeries(data[refId], getLabel) as Record<string, Array<[number, 0 | 1]>>;
-      return timeseries;
+      const timeseries = toTimeSeries(data[refId], getLabel);
+      const maxDuration = timeseries.maxDuration[0][1];
+
+      return maxDuration;
     },
     enabled: !!metricsDS,
   });
 }
 
 function getLabel(frame: DataFrame) {
-  return `Uptime`;
+  return `maxDuration`;
 }

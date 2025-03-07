@@ -4,7 +4,7 @@ import { Grid, Stack, Text } from '@grafana/ui';
 import { ResultDuration } from 'page/CheckDrilldown/components/ResultDuration';
 import { TimepointWithVis } from 'page/CheckDrilldown/components/TimepointExplorer.utils';
 
-export const TimepointDetailProbes = ({ timepoint }: { timepoint: TimepointWithVis }) => {
+export const TimepointProbeResults = ({ timepoint }: { timepoint: TimepointWithVis }) => {
   const { probeDurations, probeSuccesses } = timepoint;
 
   const resultDurations = Object.entries(probeDurations).map(([probe, duration]) => {
@@ -23,7 +23,7 @@ export const TimepointDetailProbes = ({ timepoint }: { timepoint: TimepointWithV
           {resultDurations.map(({ probe, result, duration }) => (
             <Fragment key={probe}>
               <Text>{probe}</Text>
-              <ResultDuration state={result} duration={duration} />
+              <ResultDuration state={result} duration={duration} type={`success_fail`} />
             </Fragment>
           ))}
         </Grid>

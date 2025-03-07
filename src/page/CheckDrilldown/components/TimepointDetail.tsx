@@ -6,7 +6,6 @@ import { css } from '@emotion/css';
 import { formatDate } from 'utils';
 import { CheckLogsExplorer } from 'page/CheckDrilldown/components/CheckLogsExplorer';
 import { ResultDuration } from 'page/CheckDrilldown/components/ResultDuration';
-import { TimepointDetailProbes } from 'page/CheckDrilldown/components/TimepointDetailProbes';
 import { TimepointWithVis } from 'page/CheckDrilldown/components/TimepointExplorer.utils';
 
 interface TimepointDetailProps {
@@ -26,16 +25,9 @@ export const TimepointDetail = ({ timepoint, onClose }: TimepointDetailProps) =>
           <Text element={`h2`} variant="h3">
             {formatDate(timepoint.timestamp || ``, true)}
           </Text>
+          <ResultDuration state={uptime} duration={duration} type={`up_down`} />
         </div>
-        <Stack direction={`row`} gap={2}>
-          <Stack direction={`column`}>
-            <Text variant="h6">Check result</Text>
-            <ResultDuration state={uptime} duration={duration} />
-            <TimepointDetailProbes timepoint={timepoint} />
-          </Stack>
-
-          <CheckLogsExplorer timePoint={timepoint} />
-        </Stack>
+        <CheckLogsExplorer timePoint={timepoint} />
       </Stack>
     </Box>
   );

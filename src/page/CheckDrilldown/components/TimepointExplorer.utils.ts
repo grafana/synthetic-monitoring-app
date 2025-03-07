@@ -12,9 +12,7 @@ export type TimepointWithVis = Timepoint & {
   };
 };
 
-export function createVisualisation(timePoints: Timepoint[], explorerHeight: number) {
-  const maxDuration = getMaxDuration(timePoints);
-
+export function createVisualisation(timePoints: Timepoint[], explorerHeight: number, maxDuration: number) {
   return timePoints.map<TimepointWithVis>((timepoint) => {
     return {
       ...timepoint,
@@ -38,15 +36,6 @@ function getCachedColors(uptime: Timepoint['uptime']) {
   const colors = getColors(uptime);
   colorCache.set(uptime, colors);
   return colors;
-}
-
-function getMaxDuration(timePoints: Timepoint[]) {
-  const durationValues = timePoints
-    .map((timepoint) => timepoint.duration)
-    .filter((duration) => typeof duration === `number`);
-  const maxDuration = Math.max(...durationValues);
-
-  return maxDuration;
 }
 
 function getHeight(timepoint: Timepoint, maxDuration: number, explorerHeight: number) {

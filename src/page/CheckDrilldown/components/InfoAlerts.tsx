@@ -1,7 +1,5 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, LinkButton, Stack } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { AlertSensitivity } from 'types';
 import { ROUTES } from 'routing/types';
@@ -49,14 +47,4 @@ export const InfoAlerts = () => {
       )}
     </>
   );
-};
-
-const getStyles = (theme: GrafanaTheme2) => {
-  return {
-    container: css`
-      display: flex;
-      flex-direction: column;
-      gap: ${theme.spacing(3)};
-    `,
-  };
 };

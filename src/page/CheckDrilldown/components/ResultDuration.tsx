@@ -6,15 +6,17 @@ import { formatDuration } from 'page/CheckDrilldown/components/CheckExplorer.uti
 interface ResultDurationProps {
   state: 0 | 1 | null;
   duration: number | null;
+  type: `up_down` | `success_fail`;
 }
 
-export const ResultDuration = ({ state, duration }: ResultDurationProps) => {
-  const result = getResult(state);
+export const ResultDuration = ({ state, duration, type = `up_down` }: ResultDurationProps) => {
+  const result = getResult(state, type);
 
   const colorIndexMap = {
+    up: 18,
+    down: 0,
     success: 18,
     failed: 0,
-    pending: 9,
     unknown: 9,
   };
 
@@ -28,9 +30,13 @@ export const ResultDuration = ({ state, duration }: ResultDurationProps) => {
   );
 };
 
-function getResult(uptime: number | null) {
+function getResult(uptime: number | null, type: `up_down` | `success_fail`) {
   if (uptime === null) {
     return `unknown`;
+  }
+
+  if (type === `up_down`) {
+    return uptime > 0 ? `up` : `down`;
   }
 
   return uptime > 0 ? `success` : `failed`;

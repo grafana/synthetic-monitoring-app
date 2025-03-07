@@ -1,81 +1,51 @@
 import { useMemo } from 'react';
-import { groupLogs } from 'features/parseCheckLogs/groupLogs';
 
-import { Timeseries } from 'page/CheckDrilldown/checkDrilldown.types';
 import { useCheckDrilldown } from 'page/CheckDrilldown/components/CheckDrilldownContext';
 import { useTimeRange } from 'page/CheckDrilldown/components/TimeRangeContext';
-import { useCheckLogs } from 'page/CheckDrilldown/hooks/useCheckLogs';
+import { useCheckMaxDuration } from 'page/CheckDrilldown/hooks/useCheckMaxDuration';
 import { useCheckProbeDuration } from 'page/CheckDrilldown/hooks/useCheckProbeDuration';
-import { useCheckProbeSuccess } from 'page/CheckDrilldown/hooks/useCheckProbeSuccess';
+import { useCheckReachability } from 'page/CheckDrilldown/hooks/useCheckReachability';
 import { useCheckUptime } from 'page/CheckDrilldown/hooks/useCheckUptime';
-import { constructTimepoints } from 'page/CheckDrilldown/utils/constructTimepoints';
+import { calculateTimePointsInTimeRange } from 'page/CheckDrilldown/utils/constructTimepoints';
 
 export function useCheckDrilldownInfo() {
   const { timeRange } = useTimeRange();
   const { check } = useCheckDrilldown();
 
   const uptimeQuery = useCheckUptime({ check, timeRange });
-  const logsQuery = useCheckLogs({ check, timeRange });
+  const reachabilityQuery = useCheckReachability({ check, timeRange });
   const probeDurationQuery = useCheckProbeDuration({ check, timeRange });
-  const probeSuccessQuery = useCheckProbeSuccess({ check, timeRange });
+  const maxDurationQuery = useCheckMaxDuration({ check, timeRange });
+  const timePointsInRange = useMemo(
+    () =>
+      calculateTimePointsInTimeRange({
+        from: timeRange.from.valueOf(),
+        to: timeRange.to.valueOf(),
+        frequency: check.frequency,
+      }),
+    [timeRange, check.frequency]
+  );
 
-  const isLoading = uptimeQuery.isLoading || logsQuery.isLoading || probeDurationQuery.isLoading;
-  const isError = uptimeQuery.isError || logsQuery.isError || probeDurationQuery.isError;
+  const isLoading =
+    uptimeQuery.isLoading || probeDurationQuery.isLoading || maxDurationQuery.isLoading || reachabilityQuery.isLoading;
+  const isError =
+    uptimeQuery.isError || probeDurationQuery.isError || maxDurationQuery.isError || reachabilityQuery.isError;
   const uptime = uptimeQuery.data;
-  const logs = logsQuery.data;
-  const perCheckLogs = useMemo(() => groupLogs(logs || []), [logs]);
-
+  const maxDuration = maxDurationQuery.data;
+  const reachability = reachabilityQuery.data;
   const probeDuration = probeDurationQuery.data;
-  const probeSuccess = probeSuccessQuery.data;
-
-  const timeseries: Timeseries = useMemo(
-    () => ({
-      uptime: uptime ? uptime.Uptime : [],
-      probeDuration: probeDuration ? probeDuration : {},
-      probeSuccess: probeSuccess ? probeSuccess : {},
-    }),
-    [uptime, probeDuration, probeSuccess]
-  );
-
-  const timePoints = useMemo(
-    () => constructTimepoints({ check, timeRange, timeseries, perCheckLogs }),
-    [check, timeRange, timeseries, perCheckLogs]
-  );
 
   const drilldownInfo = useMemo(() => {
     return {
-      singleStats: {
-        uptime: uptime ? convertToPercentage(getMean(uptime.Uptime)) : null,
-        duration: probeDuration ? getMean(probesCombined(probeDuration)) : null,
-      },
-      timeseries,
-      logs: {
-        raw: logs,
-        perCheckLogs,
-      },
-      timePoints,
+      timePointsInRange,
+      uptime: uptime?.Uptime || null,
+      reachability: reachability?.Reachability || null,
+      duration: probeDuration || null,
+      maxDuration: maxDuration || null,
       isError,
       isLoading,
     };
-  }, [timeseries, uptime, probeDuration, logs, perCheckLogs, timePoints, isError, isLoading]);
+  }, [uptime, probeDuration, isError, isLoading, timePointsInRange, maxDuration, reachability]);
 
   return drilldownInfo;
-}
-
-function probesCombined(duration: Record<string, Array<[number, number]>>) {
-  const probes = Object.values(duration);
-
-  return probes.flat();
-}
-
-function getMean(values: Array<[number, number]>) {
-  const reduced = values.reduce((acc, [_, value]) => {
-    return acc + value;
-  }, 0);
-
-  return reduced / values.length;
-}
-
-function convertToPercentage(value: number) {
-  return (value * 100).toFixed(2);
 }

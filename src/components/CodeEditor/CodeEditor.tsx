@@ -55,7 +55,8 @@ export const CodeEditor = forwardRef(function CodeEditor(
     readOnly,
     renderHeader,
     value,
-  }: CodeEditorProps & ConstrainedEditorProps,
+    lineHighlight,
+  }: CodeEditorProps & ConstrainedEditorProps & { lineHighlight?: any },
   ref
 ) {
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
@@ -130,6 +131,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
       if (!model || prevValue === value) {
         return;
       }
+
       if (
         updateConstrainedEditorRanges(
           constrainedInstance,
@@ -144,6 +146,14 @@ export const CodeEditor = forwardRef(function CodeEditor(
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, constrainedRanges]);
+
+  useEffect(() => {
+    if (!lineHighlight) {
+      return;
+    }
+
+    editorRef?.deltaDecorations([], [lineHighlight]);
+  }, [editorRef, lineHighlight]);
 
   return (
     <div data-fs-element="Code editor" id={id}>

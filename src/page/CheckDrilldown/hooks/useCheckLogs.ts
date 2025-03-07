@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { DataFrame } from '@grafana/data';
+import { groupLogs } from 'features/parseCheckLogs/groupLogs';
 import { parseLokiLogs } from 'features/parseLogs/parseLokiLogs';
 
 import { CheckLogsSeries } from 'features/parseCheckLogs/checkLogs.types';
@@ -11,12 +12,13 @@ const queryKeys: Record<'checkLogs', string[]> = {
   checkLogs: ['checkLogs'],
 };
 
-export function useCheckLogs({ check, timeRange }: UseCheckDrilldownInfoProps) {
+export function useCheckLogs({ check, timeRange, query }: UseCheckDrilldownInfoProps & { query?: string }) {
   const logsDS = useLogsDS();
   const refId = 'CheckLogs';
+  const q = query || `{job=\`${check.job}\`, instance=\`${check.target}\`} | logfmt`;
 
   return useQuery({
-    queryKey: [...queryKeys.checkLogs, check.job, check.target, logsDS, refId],
+    queryKey: [...queryKeys.checkLogs, check.job, check.target, logsDS, refId, timeRange, q],
     queryFn: () => {
       if (!logsDS) {
         return Promise.reject(`You need to have a logs datasource available.`);
@@ -28,15 +30,17 @@ export function useCheckLogs({ check, timeRange }: UseCheckDrilldownInfoProps) {
           type: logsDS.type,
         },
         refId,
-        query: `{job=\`${check.job}\`, instance=\`${check.target}\`, probe_success="0"} | logfmt`,
+        query: q,
         start: timeRange.from.valueOf(),
         end: timeRange.to.valueOf(),
       });
     },
     select: (data: Record<string, DataFrame[]>) => {
       const frame = data[refId][0] as CheckLogsSeries;
+      const parsed = parseLokiLogs(frame);
+      const grouped = groupLogs(parsed);
 
-      return parseLokiLogs(frame);
+      return grouped;
     },
     enabled: !!logsDS,
   });

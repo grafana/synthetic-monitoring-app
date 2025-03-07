@@ -5,8 +5,8 @@ import { css } from '@emotion/css';
 
 import { formatDate } from 'utils';
 import { ResultDuration } from 'page/CheckDrilldown/components/ResultDuration';
-import { TimepointDetailProbes } from 'page/CheckDrilldown/components/TimepointDetailProbes';
 import { TimepointWithVis } from 'page/CheckDrilldown/components/TimepointExplorer.utils';
+import { TimepointProbeResults } from 'page/CheckDrilldown/components/TimepointProbeResults';
 
 interface TimepointBarProps {
   timepoint: TimepointWithVis;
@@ -71,9 +71,9 @@ const Duration = ({ timepoint }: { timepoint: TimepointWithVis }) => {
           <Text variant="bodySmall" element="h3">
             Check result
           </Text>
-          <ResultDuration state={timepoint.uptime} duration={timepoint.duration} />
+          <ResultDuration state={timepoint.uptime} duration={timepoint.duration} type={`up_down`} />
         </Stack>
-        <TimepointDetailProbes timepoint={timepoint} />
+        <TimepointProbeResults timepoint={timepoint} />
       </Box>
     </Stack>
   );
@@ -89,6 +89,10 @@ const getStyles = (theme: GrafanaTheme2, isSelected: boolean) => ({
     gap: ${theme.spacing(1)};
     align-items: center;
     flex-direction: column;
+
+    &:hover {
+      background: ${theme.colors.action.hover};
+    }
   `,
   timepointContent: css`
     display: flex;

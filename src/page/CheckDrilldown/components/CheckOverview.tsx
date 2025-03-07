@@ -3,6 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Stack, Tab, TabContent, TabsBar, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CheckAnalysis } from 'page/CheckDrilldown/components/CheckAnalysis';
 import { CheckCompare } from 'page/CheckDrilldown/components/CheckCompare';
 import { useCheckDrilldown } from 'page/CheckDrilldown/components/CheckDrilldownContext';
 import { CheckInsights } from 'page/CheckDrilldown/components/CheckInsights';
@@ -16,6 +17,10 @@ const TABS = [
   {
     label: `Metrics`,
     component: CheckMetrics,
+  },
+  {
+    label: `Analysis`,
+    component: CheckAnalysis,
   },
   {
     label: `Compare`,
@@ -53,7 +58,7 @@ export const CheckOverview = () => {
 const getStyles = (theme: GrafanaTheme2) => {
   return {
     container: css`
-      min-height: 500px;
+      min-height: 800px;
     `,
   };
 };
