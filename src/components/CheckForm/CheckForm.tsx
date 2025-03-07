@@ -257,12 +257,12 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                       <>
                         <TabsBar>
                           <Tab
-                            label="Predefined alerts"
+                            label="Alerts-per-check"
                             onChangeTab={() => setSelectedAlertingTab('alerting')}
                             active={selectedAlertingTab === 'alerting'}
                           />
                           <Tab
-                            label="Legacy Alerting"
+                            label="Legacy alerts"
                             onChangeTab={() => setSelectedAlertingTab('sensitivity')}
                             active={selectedAlertingTab === 'sensitivity'}
                           />
