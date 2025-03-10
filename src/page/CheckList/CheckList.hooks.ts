@@ -3,7 +3,7 @@ import { capitalize } from 'lodash';
 
 import { CheckTypeFilter, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { CheckEnabledStatus, CheckType } from 'types';
-import { useProbes } from 'data/useProbes';
+import { useProbesWithMetadata } from 'data/useProbes';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { defaultFilters } from 'page/CheckList/CheckList.utils';
 
@@ -22,7 +22,7 @@ interface CheckFiltersProps {
 }
 
 export function useCheckFilters() {
-  const { data: probes = [] } = useProbes();
+  const { data: probes = [] } = useProbesWithMetadata();
 
   const filters: CheckFiltersProps = {
     search: useQueryParametersState<string>({
@@ -68,8 +68,8 @@ export function useCheckFilters() {
         const labels = value.split(',');
 
         return probes
-          .filter((probe) => labels.includes(probe.name))
-          .map((probe) => ({ label: probe.name, value: probe.id } as SelectableValue<ProbeFilter>));
+          .filter((probe) => labels.includes(probe.displayName))
+          .map((probe) => ({ label: probe.displayName, value: probe.id } as SelectableValue<ProbeFilter>));
       },
     }),
   };

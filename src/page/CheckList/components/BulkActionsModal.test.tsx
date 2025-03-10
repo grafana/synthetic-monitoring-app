@@ -66,6 +66,44 @@ test('successfully adds probes', async () => {
   ]);
 });
 
+test('Does not add duplicated probes', async () => {
+  const checksWithASingleProbe: Check[] = [
+    {
+      ...BASIC_HTTP_CHECK,
+      probes: [PUBLIC_PROBE.id, PRIVATE_PROBE.id] as number[],
+    },
+    {
+      ...BASIC_PING_CHECK,
+      probes: [PUBLIC_PROBE.id] as number[],
+    },
+  ];
+
+  const { record, read } = getServerRequests();
+  server.use(apiRoute(`bulkUpdateChecks`, {}, record));
+
+  const { user } = renderBulkEditModal('add', checksWithASingleProbe);
+  const probe1 = await screen.findByText(PUBLIC_PROBE_WITHMETADATA.displayName);
+  const probe2 = await screen.findByText(PRIVATE_PROBE_WITHMETADATA.displayName);
+  
+  await user.click(probe1);
+  await user.click(probe2);
+  const submitButton = await screen.findByText('Add probes');
+  await user.click(submitButton);
+
+  const { body } = await read();
+
+  expect(body).toEqual([
+    {
+      ...BASIC_HTTP_CHECK,
+      probes: [PUBLIC_PROBE.id, PRIVATE_PROBE.id],
+    },
+    {
+      ...BASIC_PING_CHECK,
+      probes: [PUBLIC_PROBE.id, PRIVATE_PROBE.id],
+    },
+  ]);
+});
+
 test('successfully removes probes', async () => {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`bulkUpdateChecks`, {}, record));

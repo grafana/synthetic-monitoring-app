@@ -6,12 +6,12 @@ import {
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
-  SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
 
 import { Check, CheckType, DashboardSceneAppConfig } from '../../types';
+import { getTimeRange } from 'scenes/Common/timeRange';
 
 import {
   getAvgLatencyStat,
@@ -30,18 +30,15 @@ import { getMinStepFromFrequency } from '../utils';
 
 // This is a placeholder scene for GRPC checks (basically a copy of the TCP scene)
 // TODO: Implement the actual GRPC scene
-export function getGRPCScene({ metrics, logs }: DashboardSceneAppConfig, check: Check, newUptimeQuery = false) {
+export function getGRPCScene({ metrics, logs }: DashboardSceneAppConfig, check: Check) {
   return () => {
-    const timeRange = new SceneTimeRange({
-      from: 'now-6h',
-      to: 'now',
-    });
+    const timeRange = getTimeRange();
 
     const { job, instance, probe } = getVariables(CheckType.GRPC, metrics, check);
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const minStep = getMinStepFromFrequency(check.frequency);
     const errorMap = getErrorRateMapPanel(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
+    const uptime = getUptimeStat(metrics, check.frequency);
     const reachability = getReachabilityStat(metrics, minStep);
     const avgLatency = getAvgLatencyStat(metrics, minStep);
     const frequency = getFrequencyStat(metrics);
