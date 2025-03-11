@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom-v5-compat';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
+import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
+import { VariableHide, VariableRefresh } from '@grafana/schema';
 import { Spinner } from '@grafana/ui';
 
 import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
@@ -15,6 +17,7 @@ import { getBrowserScene } from 'scenes/BROWSER/browserScene';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { getHTTPScene } from 'scenes/HTTP';
+import { HttpDashboard } from 'scenes/HTTP/scenesReact/HttpDashboard';
 import { getPingScene } from 'scenes/PING/pingScene';
 import { getScriptedScene } from 'scenes/SCRIPTED';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
@@ -152,6 +155,42 @@ function DashboardPageContent() {
 
   if (!scene) {
     return <Spinner />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.HTTP) {
+    return (
+      <>
+        <SceneContextProvider timeRange={{ from: 'now-1h', to: 'now' }} withQueryController>
+          <QueryVariable
+            name="probe"
+            isMulti={true}
+            query={{ query: `label_values(sm_check_info{check_name="${CheckType.HTTP}"},probe)`, refId: 'A' }}
+            refresh={VariableRefresh.onDashboardLoad}
+            datasource={{ uid: metricsDS?.uid }}
+            regex={'.*'}
+            includeAll={true}
+          >
+            <CustomVariable
+              name="job"
+              query={check.job}
+              initialValue={check.job}
+              label={check.job}
+              hide={VariableHide.hideVariable}
+            >
+              <CustomVariable
+                name="instance"
+                query={check.target}
+                initialValue={check.target}
+                label={check.target}
+                hide={VariableHide.hideVariable}
+              >
+                <HttpDashboard check={check} />
+              </CustomVariable>
+            </CustomVariable>
+          </QueryVariable>
+        </SceneContextProvider>
+      </>
+    );
   }
 
   return <scene.Component model={scene} />;
