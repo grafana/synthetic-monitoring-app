@@ -281,9 +281,11 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                 </FeatureFlag>
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
-                <CheckProbeOptions checkType={checkType} />
-                {ProbesComponent}
-                <CheckUsage checkType={checkType} />
+                <Stack direction={`column`} gap={4}>
+                  <CheckProbeOptions checkType={checkType} />
+                  {ProbesComponent}
+                  <CheckUsage checkType={checkType} />
+                </Stack>
               </FormLayout.Section>
             </FormLayout>
           </div>

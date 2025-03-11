@@ -396,3 +396,38 @@ export const pascalCaseToSentence = (value: string): string => {
 
   return value.charAt(0).toUpperCase() + value.slice(1).replace(/(?<! )([A-Z])/g, ' $1');
 };
+
+export function formatDuration(milliseconds: number, compact = false) {
+  const seconds = milliseconds / 1000;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  const parts: string[] = [];
+
+  if (hours > 0) {
+    if (compact) {
+      parts.push(`${hours}h`);
+    } else {
+      parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`);
+    }
+  }
+
+  if (minutes > 0) {
+    if (compact) {
+      parts.push(`${minutes}m`);
+    } else {
+      parts.push(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`);
+    }
+  }
+
+  if (remainingSeconds > 0 || parts.length === 0) {
+    if (compact) {
+      parts.push(`${remainingSeconds}s`);
+    } else {
+      parts.push(`${remainingSeconds} ${remainingSeconds === 1 ? 'second' : 'seconds'}`);
+    }
+  }
+
+  return parts.join(' ');
+}
