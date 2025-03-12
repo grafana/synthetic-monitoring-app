@@ -30,7 +30,7 @@ function EditCheckButton({ job, instance }: Props) {
   );
 }
 
-function getUrl(checks: Check[], target?: VariableValue | null, job?: VariableValue | null) {
+export function getUrl(checks: Check[], target?: VariableValue | null, job?: VariableValue | null) {
   const check = checks.find((check) => check.target === target && check.job === job);
 
   if (!check) {

@@ -1027,12 +1027,12 @@
     rxjs "7.8.1"
     tslib "2.8.1"
 
-"@grafana/scenes-react@6.0.2":
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/@grafana/scenes-react/-/scenes-react-6.0.2.tgz#1e6b461db3d5f4e3327c44095bd0c3843a445297"
-  integrity sha512-AFIlwhfR/1X1Ga47/AbnolqvyVMCJn76T6g3RWMQl7VeEX8tGQKbdd66KeGJ7TLtYXb6+WDAUUcCyyoNBLz+hg==
+"@grafana/scenes-react@6.3.1":
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/@grafana/scenes-react/-/scenes-react-6.3.1.tgz#e1257575afbab424e7f819845d302fadab1dcc74"
+  integrity sha512-yYbObSQsyCYPunBaesQiRX2w0Zc8aNolOWOQafsyBX3NHoA0WLxWqZDmldb0j4CvLiDf1q9kh0kL/QRZdv2BGw==
   dependencies:
-    "@grafana/scenes" "6.0.2"
+    "@grafana/scenes" "6.3.1"
     lru-cache "^10.2.2"
     react-use "^17.4.0"
 
@@ -1048,10 +1048,10 @@
     react-virtualized-auto-sizer "1.0.24"
     uuid "^9.0.0"
 
-"@grafana/scenes@6.0.2":
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-6.0.2.tgz#d9f1102a0b008392c176fca7ea03a37e53c47c6c"
-  integrity sha512-FIPHR/oYlgALTDfnfl0EOPNzLgmcvTU7BOws6i09qFYrZ+ZKLFNWXeLw/Q1HGT2jQsy6e8+IVsAxjOOL/Ga1Wg==
+"@grafana/scenes@6.3.1":
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-6.3.1.tgz#1f411d3fe1c10df92bda8624a2489fe12a54708e"
+  integrity sha512-3OT99I6VbwQHbDFHVzJeA15FbvchfUroMDv/P8NMVwQoY+TV2LoDGsFZD1lIDhaoIj1tf7Lvuk8HP8uQ08F9zQ==
   dependencies:
     "@floating-ui/react" "^0.26.16"
     "@leeoniya/ufuzzy" "^1.0.16"

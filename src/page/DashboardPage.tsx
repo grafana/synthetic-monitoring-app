@@ -169,6 +169,7 @@ function DashboardPageContent() {
             datasource={{ uid: metricsDS?.uid }}
             regex={'.*'}
             includeAll={true}
+            initialValue={'all'}
           >
             <CustomVariable
               name="job"
