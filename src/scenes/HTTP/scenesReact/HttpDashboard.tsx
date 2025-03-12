@@ -1,4 +1,5 @@
 import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import {
   AnnotationLayer,
@@ -7,7 +8,8 @@ import {
   TimeRangePicker,
   VariableControl,
 } from '@grafana/scenes-react';
-import { LinkButton, Stack } from '@grafana/ui';
+import { LinkButton, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { Check } from 'types';
 import { getUserPermissions } from 'data/permissions';
@@ -16,7 +18,6 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 import { getUrl } from 'scenes/Common/editButton';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-import { DemoVizLayout } from '../DemoVizLayout';
 import { AvgLatency } from './stats/AvgLatencyViz';
 import { Frequency } from './stats/FrequencyViz';
 import { ReachabilityStat } from './stats/ReachabilityStatViz';
@@ -31,6 +32,7 @@ import { ResponseLatencyByProbe } from './ResponseLatencyByProbe';
 export const HttpDashboard = ({ check }: { check: Check }) => {
   const minStep = getMinStepFromFrequency(check.frequency);
   const metricsDS = useMetricsDS();
+  const styles = useStyles2(getStyles);
 
   const annotations = [
     {
@@ -64,7 +66,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
         <>
           <EditCheckButton job={check.job} instance={check.target} />
           <TimeRangePicker />
-          <RefreshPicker /> {/* note: no option to set interval? */}
+          <RefreshPicker />
         </>
       }
     >
@@ -76,31 +78,39 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
               <DataLayerControl name="Alerts firing" />
               <DataLayerControl name="Alerts pending" />
             </Stack>
-            <>
-              <DemoVizLayout>
+
+            <div className={styles.vizLayout}>
+              <div className={styles.errorRateMap}>
                 <ErrorRateMap minStep={minStep} />
-              </DemoVizLayout>
-              <DemoVizLayout>
-                <UptimeStat check={check} />
-                <ReachabilityStat minStep={minStep} />
-                <AvgLatency />
-                <SSLExpiry />
-                <Frequency />
-              </DemoVizLayout>
+              </div>
 
-              <DemoVizLayout>
-                <ErrorRate minStep={minStep} />
-              </DemoVizLayout>
+              <div className={styles.nestedGrid}>
+                <div className={styles.statsRow}>
+                  <UptimeStat check={check} />
+                  <ReachabilityStat minStep={minStep} />
+                  <AvgLatency />
+                  <SSLExpiry />
+                  <Frequency />
+                </div>
 
-              <DemoVizLayout>
-                <ResponseLatency />
-                <ResponseLatencyByProbe />
-              </DemoVizLayout>
+                <div className={styles.errorRateTimeseries}>
+                  <ErrorRate minStep={minStep} />
+                </div>
+              </div>
 
-              <DemoVizLayout>
+              <div className={styles.latencyRow}>
+                <div className={styles.latencyPanel}>
+                  <ResponseLatency />
+                </div>
+                <div className={styles.latencyPanel}>
+                  <ResponseLatencyByProbe />
+                </div>
+              </div>
+
+              <div className={styles.errorLogs}>
                 <ErrorLogs />
-              </DemoVizLayout>
-            </>
+              </div>
+            </div>
           </AnnotationLayer>
         </AnnotationLayer>
       </Stack>
@@ -108,12 +118,52 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
   );
 };
 
-interface Props {
-  job: string;
-  instance: string;
-}
+const getStyles = (theme: GrafanaTheme2) => ({
+  vizLayout: css({
+    display: 'grid',
+    gridTemplateColumns: '500px 1fr',
+    gridTemplateRows: 'auto auto auto',
+    columnGap: '8px',
+    rowGap: '8px',
+    height: '100%',
+  }),
+  errorRateMap: css({
+    width: '500px',
+    height: '500px',
+  }),
+  nestedGrid: css({
+    display: 'grid',
+    gridTemplateRows: '90px 1fr',
+    height: '500px',
+    rowGap: '8px',
+  }),
+  statsRow: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    height: '90px',
+    gap: '8px',
+  }),
+  errorRateTimeseries: css({
+    height: '100%',
+    flexGrow: 1,
+  }),
+  latencyRow: css({
+    gridColumn: 'span 2',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gridAutoRows: '300px',
+    gap: '8px',
+  }),
+  latencyPanel: css({
+    height: '300px',
+  }),
+  errorLogs: css({
+    gridColumn: 'span 2',
+    height: '500px',
+  }),
+});
 
-function EditCheckButton({ job, instance }: Props) {
+function EditCheckButton({ job, instance }: { job: string; instance: string }) {
   const { data: checks = [], isLoading } = useChecks();
   const url = getUrl(checks, instance, job);
   const { canWriteChecks } = getUserPermissions();
