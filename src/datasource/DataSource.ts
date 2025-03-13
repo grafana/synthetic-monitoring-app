@@ -37,6 +37,8 @@ import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 
 import { ExtendedBulkUpdateCheckResult } from '../data/useChecks';
+import { ExperimentalSecretsResponse } from '../data/useSecrets';
+import { secretsApiStub } from './secretsApiStub';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -416,6 +418,14 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       method: 'POST',
       data: {},
     }).then((data) => data.token);
+  }
+
+  //--------------------------------------------------------------------------------
+  // SECRETS MANAGEMENT - NOT YET IMPLEMENTED
+  //--------------------------------------------------------------------------------
+
+  async getSecrets(): Promise<ExperimentalSecretsResponse> {
+    return secretsApiStub.get('/secrets');
   }
 
   //--------------------------------------------------------------------------------
