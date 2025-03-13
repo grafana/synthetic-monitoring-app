@@ -1,6 +1,6 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { TimeRangePicker, useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { TimeRangePicker, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import {
   AxisColorMode,
   AxisPlacement,
@@ -12,12 +12,14 @@ import {
   StackingMode,
   VisibilityMode,
 } from '@grafana/schema';
-import { Stack } from '@grafana/ui';
+import { Badge, Stack, Text } from '@grafana/ui';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
 export const ErrorRate = ({ minStep }: { minStep: string }) => {
   const metricsDS = useMetricsDS();
+
+  const [currentTimeRange] = useTimeRange();
 
   const query = `
   1 - (
@@ -76,6 +78,13 @@ export const ErrorRate = ({ minStep }: { minStep: string }) => {
       <Stack direction={'row'} justifyContent={'flex-end'}>
         <TimeRangePicker />
       </Stack>
+      <Stack direction={'row'} justifyContent={'flex-end'}>
+        <Badge color="green" text="Current time range:" />
+        <Text variant='bodySmall'>
+          {currentTimeRange.from.toString()} - {currentTimeRange.to.toString()}
+        </Text>
+      </Stack>
+
       <VizPanel title="Error Rate : $probe ⮕ $job / $instance" viz={viz} dataProvider={dataProvider} />
     </div>
   );
