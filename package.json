@@ -54,7 +54,7 @@
     "@types/valid-url": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.1",
-    "axios": "1.7.4",
+    "axios": "1.8.2",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
     "eslint": "8.26.0",
