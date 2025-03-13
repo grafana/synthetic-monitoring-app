@@ -3,15 +3,19 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import {
   AnnotationLayer,
+  CustomVariable,
   DataLayerControl,
+  QueryVariable,
   RefreshPicker,
+  SceneContextProvider,
   TimeRangePicker,
   VariableControl,
 } from '@grafana/scenes-react';
+import { VariableHide, VariableRefresh } from '@grafana/schema';
 import { LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check } from 'types';
+import { Check, CheckType } from 'types';
 import { getUserPermissions } from 'data/permissions';
 import { useChecks } from 'data/useChecks';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -60,61 +64,92 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
   ];
 
   return (
-    <PluginPage
-      renderTitle={() => <h1>{check.job}</h1>}
-      actions={
-        <>
-          <EditCheckButton job={check.job} instance={check.target} />
-          <TimeRangePicker />
-          <RefreshPicker />
-        </>
-      }
-    >
-      <Stack direction="column">
-        <AnnotationLayer name="Alerts firing" query={annotations[0]}>
-          <AnnotationLayer name="Alerts pending" query={annotations[1]}>
-            <Stack direction="row">
-              <VariableControl name="probe" />
-              <DataLayerControl name="Alerts firing" />
-              <DataLayerControl name="Alerts pending" />
-            </Stack>
+    <SceneContextProvider timeRange={{ from: 'now-1h', to: 'now' }} withQueryController>
+      <QueryVariable
+        name="probe"
+        isMulti={true}
+        query={{ query: `label_values(sm_check_info{check_name="${CheckType.HTTP}"},probe)`, refId: 'A' }}
+        refresh={VariableRefresh.onDashboardLoad}
+        datasource={{ uid: metricsDS?.uid }}
+        regex={'.*'}
+        includeAll={true}
+        initialValue={'all'}
+      >
+        <CustomVariable
+          name="job"
+          query={check.job}
+          initialValue={check.job}
+          label={check.job}
+          hide={VariableHide.hideVariable}
+        >
+          <CustomVariable
+            name="instance"
+            query={check.target}
+            initialValue={check.target}
+            label={check.target}
+            hide={VariableHide.hideVariable}
+          >
+            <PluginPage
+              renderTitle={() => <h1>{check.job}</h1>}
+              actions={
+                <>
+                  <EditCheckButton job={check.job} instance={check.target} />
+                  <TimeRangePicker />
+                  <RefreshPicker />
+                </>
+              }
+            >
+              <Stack direction="column">
+                <AnnotationLayer name="Alerts firing" query={annotations[0]}>
+                  <AnnotationLayer name="Alerts pending" query={annotations[1]}>
+                    <Stack direction="row">
+                      <VariableControl name="probe" />
+                      <DataLayerControl name="Alerts firing" />
+                      <DataLayerControl name="Alerts pending" />
+                    </Stack>
 
-            <div className={styles.vizLayout}>
-              <div className={styles.errorRateMap}>
-                <ErrorRateMap minStep={minStep} />
-              </div>
+                    <div className={styles.vizLayout}>
+                      <div className={styles.errorRateMap}>
+                        <ErrorRateMap minStep={minStep} />
+                      </div>
 
-              <div className={styles.nestedGrid}>
-                <div className={styles.statsRow}>
-                  <UptimeStat check={check} />
-                  <ReachabilityStat minStep={minStep} />
-                  <AvgLatency />
-                  <SSLExpiry />
-                  <Frequency />
-                </div>
+                      <div className={styles.nestedGrid}>
+                        <div className={styles.statsRow}>
+                          <UptimeStat check={check} />
+                          <ReachabilityStat minStep={minStep} />
+                          <AvgLatency />
+                          <SSLExpiry />
+                          <Frequency />
+                        </div>
 
-                <div className={styles.errorRateTimeseries}>
-                  <ErrorRate minStep={minStep} />
-                </div>
-              </div>
+                        <div className={styles.errorRateTimeseries}>
+                          <SceneContextProvider timeRange={{ from: 'now-10m', to: 'now' }}>
+                            <ErrorRate minStep={minStep} />
+                          </SceneContextProvider>
+                        </div>
+                      </div>
 
-              <div className={styles.latencyRow}>
-                <div className={styles.latencyPanel}>
-                  <ResponseLatency />
-                </div>
-                <div className={styles.latencyPanel}>
-                  <ResponseLatencyByProbe />
-                </div>
-              </div>
+                      <div className={styles.latencyRow}>
+                        <div className={styles.latencyPanel}>
+                          <ResponseLatency />
+                        </div>
+                        <div className={styles.latencyPanel}>
+                          <ResponseLatencyByProbe />
+                        </div>
+                      </div>
 
-              <div className={styles.errorLogs}>
-                <ErrorLogs />
-              </div>
-            </div>
-          </AnnotationLayer>
-        </AnnotationLayer>
-      </Stack>
-    </PluginPage>
+                      <div className={styles.errorLogs}>
+                        <ErrorLogs />
+                      </div>
+                    </div>
+                  </AnnotationLayer>
+                </AnnotationLayer>
+              </Stack>
+            </PluginPage>
+          </CustomVariable>
+        </CustomVariable>
+      </QueryVariable>
+    </SceneContextProvider>
   );
 };
 
@@ -144,7 +179,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: '8px',
   }),
   errorRateTimeseries: css({
-    height: '100%',
+    height: 'calc(100% - 32px)',
     flexGrow: 1,
   }),
   latencyRow: css({

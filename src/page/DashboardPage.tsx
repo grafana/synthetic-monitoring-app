@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom-v5-compat';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
-import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
-import { VariableHide, VariableRefresh } from '@grafana/schema';
 import { Spinner } from '@grafana/ui';
 
 import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
@@ -158,40 +156,7 @@ function DashboardPageContent() {
   }
 
   if (check && getCheckType(check.settings) === CheckType.HTTP) {
-    return (
-      <>
-        <SceneContextProvider timeRange={{ from: 'now-1h', to: 'now' }} withQueryController>
-          <QueryVariable
-            name="probe"
-            isMulti={true}
-            query={{ query: `label_values(sm_check_info{check_name="${CheckType.HTTP}"},probe)`, refId: 'A' }}
-            refresh={VariableRefresh.onDashboardLoad}
-            datasource={{ uid: metricsDS?.uid }}
-            regex={'.*'}
-            includeAll={true}
-            initialValue={'all'}
-          >
-            <CustomVariable
-              name="job"
-              query={check.job}
-              initialValue={check.job}
-              label={check.job}
-              hide={VariableHide.hideVariable}
-            >
-              <CustomVariable
-                name="instance"
-                query={check.target}
-                initialValue={check.target}
-                label={check.target}
-                hide={VariableHide.hideVariable}
-              >
-                <HttpDashboard check={check} />
-              </CustomVariable>
-            </CustomVariable>
-          </QueryVariable>
-        </SceneContextProvider>
-      </>
-    );
+    return <HttpDashboard check={check} />;
   }
 
   return <scene.Component model={scene} />;
