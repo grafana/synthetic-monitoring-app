@@ -1,12 +1,12 @@
-import { ReactNode, useContext } from 'react';
+import { ReactNode } from 'react';
 import { IconName } from '@grafana/data';
 
 import { CheckType, CheckTypeGroup, FeatureName } from 'types';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
-import { FeatureFlagContext } from 'contexts/FeatureFlagContext';
 
 import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions';
+import { useFeatureFlagContext } from './useFeatureFlagContext';
 
 export type ProtocolOption = {
   label: string;
@@ -95,7 +95,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
 ];
 
 export function useCheckTypeGroupOptions() {
-  const { isFeatureEnabled } = useContext(FeatureFlagContext);
+  const { isFeatureEnabled } = useFeatureFlagContext();
 
   return CHECK_TYPE_GROUP_OPTIONS.map((option) => {
     const protocols = option.protocols.filter((protocol) =>
