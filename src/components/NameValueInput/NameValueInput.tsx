@@ -1,12 +1,14 @@
-import React, { useCallback, useRef } from 'react';
-import { FieldErrorsImpl, useFieldArray, useFormContext, useFormState } from 'react-hook-form';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { Controller, FieldErrorsImpl, useFieldArray, useFormContext, useFormState } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Field, IconButton, Input, useStyles2 } from '@grafana/ui';
+import { Button, Field, Icon, IconButton, Input, Select, Tag, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { get } from 'lodash';
 
 import { CheckFormValues, Probe } from 'types';
 import { interpolateErrorMessage } from 'components/CheckForm/utils';
+
+import { useCheckLabels } from '../../hooks/useCheckLabels';
 
 export type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
 
@@ -33,6 +35,10 @@ export const NameValueInput = ({ name, disabled, limit, label, ...rest }: Props)
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
   const styles = useStyles2(getStyles);
+  const checkLabels = useCheckLabels();
+  const labelOptions = useMemo(() => {
+    return checkLabels.map((label) => ({ label, value: label }));
+  }, [checkLabels]);
 
   const fieldError = getErrors(errors, name);
 
@@ -45,30 +51,54 @@ export const NameValueInput = ({ name, disabled, limit, label, ...rest }: Props)
   return (
     <div className={styles.stackCol}>
       {fields.map((field, index) => {
-        const labelNameField = register(`${name}.${index}.name`);
         const labelValueField = register(`${name}.${index}.value`);
 
         return (
           <div key={field.id} className={styles.stack}>
-            <Field
-              invalid={Boolean(fieldError?.[index]?.name?.type)}
-              error={interpolateErrorMessage(fieldError?.[index]?.name?.message, label)}
-              className={styles.field}
-              required
-            >
-              <Input
-                {...register(`${name}.${index}.name`)}
-                aria-label={`${label} ${index + 1} name`}
-                data-testid={`${label}-name-${index}`}
-                disabled={disabled}
-                onChange={(v) => {
-                  labelNameField.onChange(v);
-                  handleTrigger();
-                }}
-                placeholder="name"
-                type="text"
-              />
-            </Field>
+            <Controller
+              name={`${name}.${index}.name`}
+              control={control}
+              render={({ field }) => {
+                const { ref, ...labelNameField } = field;
+
+                return (
+                  <Field
+                    invalid={Boolean(fieldError?.[index]?.name?.type)}
+                    error={interpolateErrorMessage(fieldError?.[index]?.name?.message, label)}
+                    className={styles.field}
+                    required
+                  >
+                    <Select
+                      prefix={<Icon name="arrow-down" />}
+                      icon="tag-alt"
+                      // formatCreateLabel={() => `Create new ${label}`}
+                      fullWidth
+                      hideSelectedOptions
+                      data-testid={`${label}-name-${index}`}
+                      allowCustomValue
+                      autoFocus={!field.value}
+                      aria-label={`${label} ${index + 1} name`}
+                      disabled={disabled}
+                      options={labelOptions}
+                      // tabSelectsValue={false}
+                      {...labelNameField}
+                      onChange={(v) => {
+                        labelNameField.onChange(v.value);
+                        handleTrigger();
+                      }}
+                      formatOptionLabel={(item, meta) => {
+                        console.log('item', item, 'meta', meta);
+                        if (meta.context === 'menu' && typeof item.label === 'string') {
+                          return <Tag name={item.label as string} />;
+                        }
+                        return <div>{item.label}</div>;
+                      }}
+                      placeholder="name"
+                    />
+                  </Field>
+                );
+              }}
+            ></Controller>
             <Field
               invalid={Boolean(fieldError?.[index]?.value)}
               error={interpolateErrorMessage(fieldError?.[index]?.value?.message, label)}
@@ -111,7 +141,7 @@ export const NameValueInput = ({ name, disabled, limit, label, ...rest }: Props)
       {(limit === undefined || fields.length < limit) && (
         <div className={styles.stack}>
           <Button
-            onClick={() => append({ name: '', value: '' })}
+            onClick={() => append({ name: '', value: '' }, { shouldFocus: false })}
             disabled={disabled}
             variant="secondary"
             size="sm"
@@ -131,7 +161,8 @@ export const NameValueInput = ({ name, disabled, limit, label, ...rest }: Props)
 
 const getStyles = (theme: GrafanaTheme2) => ({
   addButton: css({ marginTop: theme.spacing(1) }),
-  field: css({ marginBottom: 0, marginTop: 0 }),
+  field: css({ marginBottom: 0, marginTop: 0, width: '100%' }),
+
   stack: css({
     display: `flex`,
     gap: theme.spacing(1),
