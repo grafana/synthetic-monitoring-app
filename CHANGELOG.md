@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.21.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.21.0...v1.21.1) (2025-03-14)
+
+
+### Miscellaneous Chores
+
+* bump @babel/runtime from 7.24.7 to 7.26.10 ([#1084](https://github.com/grafana/synthetic-monitoring-app/issues/1084)) ([45dd4e6](https://github.com/grafana/synthetic-monitoring-app/commit/45dd4e6deb46824e8cd436672fb0a7c5b15fa42b))
+* bump axios from 1.7.4 to 1.8.2 ([#1083](https://github.com/grafana/synthetic-monitoring-app/issues/1083)) ([5bfd005](https://github.com/grafana/synthetic-monitoring-app/commit/5bfd005284fb2117e1c3e385a98da7941b5ca46f))
+
 ## [1.21.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.20.1...v1.21.0) (2025-03-11)
 
 
