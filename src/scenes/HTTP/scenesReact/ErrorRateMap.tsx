@@ -1,9 +1,11 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { FrameGeometrySourceMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
+
+import { useVizPanelMenu } from './useVizPanelMenu';
 
 export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
   const metricsDS = useMetricsDS();
@@ -245,5 +247,24 @@ export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
     })
     .build();
 
-  return <VizPanel title="Error rate by probe" viz={viz} dataProvider={dataTransformer} />;
+  const data = dataProvider.useState();
+  const [currentTimeRange] = useTimeRange();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
+  return (
+    <VizPanel
+      //@ts-ignore
+      menu={menu}
+      title="Error rate by probe"
+      viz={viz}
+      dataProvider={dataTransformer}
+    />
+  );
 };

@@ -1,9 +1,11 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { GraphDrawStyle, StackingMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
+
+import { useVizPanelMenu } from './useVizPanelMenu';
 
 export const ResponseLatency = () => {
   const metricsDS = useMetricsDS();
@@ -44,7 +46,24 @@ export const ResponseLatency = () => {
 
     .build();
 
+  const data = dataProvider.useState();
+  const [currentTimeRange] = useTimeRange();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
   return (
-    <VizPanel title="Response latency by phase: $probe ⮕ $job / $instance" viz={viz} dataProvider={dataProvider} />
+    <VizPanel
+      //@ts-ignore
+      menu={menu}
+      title="Response latency by phase: $probe ⮕ $job / $instance"
+      viz={viz}
+      dataProvider={dataProvider}
+    />
   );
 };

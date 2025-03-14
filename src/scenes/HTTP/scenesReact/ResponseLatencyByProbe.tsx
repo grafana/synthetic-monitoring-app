@@ -1,6 +1,6 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import {
   AxisColorMode,
   AxisPlacement,
@@ -18,6 +18,8 @@ import {
 } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
+
+import { useVizPanelMenu } from './useVizPanelMenu';
 
 export const ResponseLatencyByProbe = () => {
   const metricsDS = useMetricsDS();
@@ -97,5 +99,24 @@ export const ResponseLatencyByProbe = () => {
 
     .build();
 
-  return <VizPanel title="Response latency by probe" viz={viz} dataProvider={dataProvider} />;
+  const data = dataProvider.useState();
+  const [currentTimeRange] = useTimeRange();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
+  return (
+    <VizPanel
+      //@ts-ignore
+      menu={menu}
+      title="Response latency by probe"
+      viz={viz}
+      dataProvider={dataProvider}
+    />
+  );
 };

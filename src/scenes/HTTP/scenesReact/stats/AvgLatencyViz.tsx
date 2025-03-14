@@ -1,9 +1,11 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
+
+import { useVizPanelMenu } from '../useVizPanelMenu';
 
 export const AvgLatency = () => {
   const metricsDS = useMetricsDS();
@@ -110,12 +112,25 @@ export const AvgLatency = () => {
     })
     .build();
 
+  const data = dataProvider.useState();
+  const [currentTimeRange] = useTimeRange();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
   return (
     <VizPanel
       title="Average latency"
       viz={viz}
       dataProvider={dataTransformer}
       description={'The average time to receive an answer across all the checks during the whole time period.'}
+      //@ts-ignore
+      menu={menu}
     />
   );
 };

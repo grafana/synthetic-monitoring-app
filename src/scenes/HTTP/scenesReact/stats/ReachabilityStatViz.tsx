@@ -1,10 +1,12 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { REACHABILITY_DESCRIPTION } from 'components/constants';
+
+import { useVizPanelMenu } from '../useVizPanelMenu';
 
 export const ReachabilityStat = ({ minStep }: { minStep: string }) => {
   const metricsDS = useMetricsDS();
@@ -112,7 +114,25 @@ export const ReachabilityStat = ({ minStep }: { minStep: string }) => {
     })
     .build();
 
+  const data = dataProvider.useState();
+  const [currentTimeRange] = useTimeRange();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
   return (
-    <VizPanel title="Reachability" viz={viz} dataProvider={dataTransformer} description={REACHABILITY_DESCRIPTION} />
+    <VizPanel
+      //@ts-ignore
+      menu={menu}
+      title="Reachability"
+      viz={viz}
+      dataProvider={dataTransformer}
+      description={REACHABILITY_DESCRIPTION}
+    />
   );
 };

@@ -1,9 +1,11 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
+
+import { useVizPanelMenu } from '../useVizPanelMenu';
 
 export const Frequency = () => {
   const metricsDS = useMetricsDS();
@@ -67,8 +69,21 @@ export const Frequency = () => {
     })
     .build();
 
+  const data = dataProvider.useState();
+  const [currentTimeRange] = useTimeRange();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
   return (
     <VizPanel
+      //@ts-ignore
+      menu={menu}
       title="Frequency"
       viz={viz}
       dataProvider={dataTransformer}

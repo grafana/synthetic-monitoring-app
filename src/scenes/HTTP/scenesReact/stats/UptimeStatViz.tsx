@@ -1,12 +1,14 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 import { getUptimeQuery } from 'queries/uptime';
 
 import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { UPTIME_DESCRIPTION } from 'components/constants';
+
+import { useVizPanelMenu } from '../useVizPanelMenu';
 
 export const UptimeStat = ({ check }: { check: Check }) => {
   const metricsDS = useMetricsDS();
@@ -77,5 +79,25 @@ export const UptimeStat = ({ check }: { check: Check }) => {
     .setNoValue('N/A')
     .build();
 
-  return <VizPanel title="Uptime" viz={viz} dataProvider={dataTransformer} description={UPTIME_DESCRIPTION} />;
+  const data = dataProvider.useState();
+  const [currentTimeRange] = useTimeRange();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
+  return (
+    <VizPanel
+      //@ts-ignore
+      menu={menu}
+      title="Uptime"
+      viz={viz}
+      dataProvider={dataTransformer}
+      description={UPTIME_DESCRIPTION}
+    />
+  );
 };

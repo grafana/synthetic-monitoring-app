@@ -16,6 +16,8 @@ import { Badge, Stack, Text } from '@grafana/ui';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
+import { useVizPanelMenu } from './useVizPanelMenu';
+
 export const ErrorRate = ({ minStep }: { minStep: string }) => {
   const metricsDS = useMetricsDS();
 
@@ -73,6 +75,16 @@ export const ErrorRate = ({ minStep }: { minStep: string }) => {
 
     .build();
 
+  const data = dataProvider.useState();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
   return (
     <div style={{ height: '100%' }}>
       <Stack direction={'row'} justifyContent={'flex-end'}>
@@ -80,12 +92,17 @@ export const ErrorRate = ({ minStep }: { minStep: string }) => {
       </Stack>
       <Stack direction={'row'} justifyContent={'flex-end'}>
         <Badge color="green" text="Current time range:" />
-        <Text variant='bodySmall'>
+        <Text variant="bodySmall">
           {currentTimeRange.from.toString()} - {currentTimeRange.to.toString()}
         </Text>
       </Stack>
 
-      <VizPanel title="Error Rate : $probe ⮕ $job / $instance" viz={viz} dataProvider={dataProvider} />
+      <VizPanel //@ts-ignore
+        menu={menu}
+        title="Error Rate : $probe ⮕ $job / $instance"
+        viz={viz}
+        dataProvider={dataProvider}
+      />
     </div>
   );
 };

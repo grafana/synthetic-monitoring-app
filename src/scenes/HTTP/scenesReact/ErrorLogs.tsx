@@ -1,9 +1,11 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
-import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
+import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
 
 import { useLogsDS } from 'hooks/useLogsDS';
+
+import { useVizPanelMenu } from './useVizPanelMenu';
 
 export const ErrorLogs = () => {
   const logsDS = useLogsDS();
@@ -29,5 +31,24 @@ export const ErrorLogs = () => {
     .setOption('sortOrder', LogsSortOrder.Descending)
     .build();
 
-  return <VizPanel title="Logs for failed checks: $probe ⮕ $job / $instance" viz={viz} dataProvider={dataProvider} />;
+  const data = dataProvider.useState();
+  const [currentTimeRange] = useTimeRange();
+
+  const menu = useVizPanelMenu({
+    //@ts-ignore
+    data,
+    viz,
+    currentTimeRange,
+    variables: ['job', 'probe', 'instance'],
+  });
+
+  return (
+    <VizPanel
+      title="Logs for failed checks: $probe ⮕ $job / $instance"
+      viz={viz}
+      dataProvider={dataProvider}
+      //@ts-ignore
+      menu={menu}
+    />
+  );
 };
