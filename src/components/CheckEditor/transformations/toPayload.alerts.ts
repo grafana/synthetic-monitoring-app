@@ -10,6 +10,7 @@ export function getAlertsPayload(formValues?: CheckAlertFormRecord, checkId?: nu
       alerts.push({
         name: alertType as CheckAlertType,
         threshold: alert.threshold!!,
+        period: alert.period,
       });
     }
     return alerts;
