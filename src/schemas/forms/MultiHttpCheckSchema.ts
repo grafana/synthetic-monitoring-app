@@ -1,6 +1,8 @@
+import { FrequencySchema } from 'schemas/general/Frequency';
 import { HeadersSchema } from 'schemas/general/Header';
 import { HttpTargetSchema } from 'schemas/general/HttpTarget';
 import { QueryParamsSchema } from 'schemas/general/QueryParam';
+import { TimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import {
@@ -11,6 +13,7 @@ import {
   MultiHttpEntryFormValues,
   MultiHttpSettingsFormValues,
 } from 'types';
+import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 import {
   Assertion,
   AssertionConditionVariant,
@@ -24,6 +27,10 @@ import {
 } from 'components/MultiHttp/MultiHttpTypes';
 
 import { BaseCheckSchema } from './BaseCheckSchema';
+
+export const MIN_FREQUENCY_MULTI_HTTP = ONE_MINUTE_IN_MS;
+export const MIN_TIMEOUT_MULTI_HTTP = ONE_SECOND_IN_MS * 5;
+export const MAX_TIMEOUT_MULTI_HTTP = ONE_MINUTE_IN_MS * 3;
 
 const MultiHttpRequestSchema: ZodType<RequestProps> = z.object({
   method: z.nativeEnum(HttpMethod),
@@ -43,6 +50,8 @@ const MultiHttpRequestSchema: ZodType<RequestProps> = z.object({
       text: z.string(),
     })
     .optional(),
+  frequency: FrequencySchema(MIN_FREQUENCY_MULTI_HTTP),
+  timeout: TimeoutSchema(MIN_FREQUENCY_MULTI_HTTP, MAX_TIMEOUT_MULTI_HTTP),
 });
 
 const AssertionValueSchema = z
@@ -106,11 +115,16 @@ const MultiHttpSettingsSchema: ZodType<MultiHttpSettingsFormValues> = z.object({
   entries: z.array(MultiHttpEntriesSchema),
 });
 
-const MultiHttpSchemaValues = z.object({
-  checkType: z.literal(CheckType.MULTI_HTTP),
-  settings: z.object({
-    multihttp: MultiHttpSettingsSchema,
-  }),
-});
-
-export const MultiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = BaseCheckSchema.and(MultiHttpSchemaValues);
+export const MultiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = BaseCheckSchema.omit({
+  frequency: true,
+  timeout: true,
+}).and(
+  z.object({
+    checkType: z.literal(CheckType.MULTI_HTTP),
+    settings: z.object({
+      multihttp: MultiHttpSettingsSchema,
+    }),
+    frequency: FrequencySchema(MIN_FREQUENCY_MULTI_HTTP),
+    timeout: TimeoutSchema(MIN_FREQUENCY_MULTI_HTTP, MAX_TIMEOUT_MULTI_HTTP),
+  })
+);

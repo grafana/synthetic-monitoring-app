@@ -1,9 +1,10 @@
 import { UsageValues } from 'types';
+import { ONE_SECOND_IN_MS } from 'utils.constants';
 
 interface ActiveSeriesParams {
   assertionCount: number;
   probeCount: number;
-  frequencySeconds: number;
+  frequency: number;
   seriesPerProbe: number;
 }
 
@@ -12,65 +13,63 @@ interface ActiveSeriesParams {
 // Slack context: https://raintank-corp.slack.com/archives/C0175SS6SA3/p1714059415879179
 
 const DAYS_IN_MONTH = 31;
+const SECONDS_IN_MINUTE = 60;
 
-const getChecksPerMonth = (frequencySeconds: number) => {
-  const checksPerMinute = 60 / frequencySeconds;
+const getChecksPerMonth = (frequency: number) => {
+  const frequencyInSeconds = frequency / ONE_SECOND_IN_MS;
+  const checksPerMinute = SECONDS_IN_MINUTE / frequencyInSeconds;
   const checksPerHour = checksPerMinute * 60;
   const checksPerDay = checksPerHour * 24;
   const checksPerMonth = checksPerDay * DAYS_IN_MONTH;
+
   return Math.round(checksPerMonth);
 };
 
-export const getTotalChecksPerMonth = (probeCount: number, frequencySeconds: number) => {
-  const checksPerMonth = getChecksPerMonth(frequencySeconds);
+export const getTotalChecksPerMonth = (probeCount: number, frequency: number) => {
+  const checksPerMonth = getChecksPerMonth(frequency);
   return checksPerMonth * probeCount;
 };
 
-export const getTotalChecksPerPeriod = (probeCount: number, frequencySeconds: number, periodInSeconds: number) => {
-  const checksPerMinute = 60 / frequencySeconds;
+export const getTotalChecksPerPeriod = (probeCount: number, frequency: number, periodInSeconds: number) => {
+  const checksPerMinute = 60 / frequency;
   const checksPerPeriod = checksPerMinute * (periodInSeconds / 60) * probeCount;
   return Math.round(checksPerPeriod);
 };
 
-const getLogsGbPerMonth = (probeCount: number, frequencySeconds: number) => {
+const getLogsGbPerMonth = (probeCount: number, frequency: number) => {
   const gbPerCheck = 0.0008;
-  const checksPerMonth = getChecksPerMonth(frequencySeconds);
+  const checksPerMonth = getChecksPerMonth(frequency);
   const logsGbPerMonth = (checksPerMonth * gbPerCheck * probeCount) / 1000;
   return parseFloat(logsGbPerMonth.toFixed(2));
 };
 
-const getDataPointsPerMinute = (activeSeries: number, frequencySeconds: number) => {
-  const dpm = activeSeries * Math.max(1, 60 / frequencySeconds);
+const getDataPointsPerMinute = (activeSeries: number, frequency: number) => {
+  const dpm = activeSeries * Math.max(1, 60 / frequency / 1000);
   return Math.ceil(dpm);
 };
 
-export const calculateUsage = ({
-  assertionCount,
-  probeCount,
-  frequencySeconds,
-  seriesPerProbe,
-}: ActiveSeriesParams): UsageValues => {
+export const calculateUsage = ({ probeCount, frequency, seriesPerProbe }: ActiveSeriesParams): UsageValues => {
   const activeSeries = seriesPerProbe * probeCount;
 
   return {
-    checksPerMonth: getTotalChecksPerMonth(probeCount, frequencySeconds),
+    checksPerMonth: getTotalChecksPerMonth(probeCount, frequency),
     activeSeries,
-    logsGbPerMonth: getLogsGbPerMonth(probeCount, frequencySeconds),
-    dpm: getDataPointsPerMinute(activeSeries, frequencySeconds),
+    logsGbPerMonth: getLogsGbPerMonth(probeCount, frequency),
+    dpm: getDataPointsPerMinute(activeSeries, frequency),
   };
 };
 
 export function calculateMultiHTTPUsage({
   assertionCount,
   probeCount,
-  frequencySeconds,
+  frequency,
   seriesPerProbe,
 }: ActiveSeriesParams): UsageValues {
   const logGBPerProbe = 0.000001151;
   const logGBPerAssertionPerCheck = 0.0000004;
   const additionalSeriesPerUrl = 14;
 
-  const checksPerMonth = getTotalChecksPerMonth(probeCount, frequencySeconds);
+  const checksPerMonth = getTotalChecksPerMonth(probeCount, frequency);
 
   // Calculate logs
   const baseLogsGbPerMonth = checksPerMonth * logGBPerProbe;
@@ -83,7 +82,7 @@ export function calculateMultiHTTPUsage({
   const additionalSeries = additionalSeriesPerUrl * additionalUrls;
   const activeSeries = baseSeries + additionalSeries;
 
-  const dpm = getDataPointsPerMinute(activeSeries, frequencySeconds);
+  const dpm = getDataPointsPerMinute(activeSeries, frequency);
 
   return {
     checksPerMonth,

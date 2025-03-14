@@ -13,12 +13,12 @@ const GRPCSettingsSchema: ZodType<GRPCSettingsFormValues> = z.object({
   tlsConfig: TLSConfigSchema,
 });
 
-const GRPCSchemaValues = z.object({
-  target: HostPortTarget,
-  checkType: z.literal(CheckType.GRPC),
-  settings: z.object({
-    grpc: GRPCSettingsSchema,
-  }),
-});
-
-export const GRPCCheckSchema: ZodType<CheckFormValuesGRPC> = BaseCheckSchema.and(GRPCSchemaValues);
+export const GRPCCheckSchema: ZodType<CheckFormValuesGRPC> = BaseCheckSchema.and(
+  z.object({
+    target: HostPortTarget,
+    checkType: z.literal(CheckType.GRPC),
+    settings: z.object({
+      grpc: GRPCSettingsSchema,
+    }),
+  })
+);

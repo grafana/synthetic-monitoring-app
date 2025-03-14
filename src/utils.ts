@@ -277,13 +277,13 @@ export function formatDate(number: number) {
 
 export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
   const { basicMetricsOnly, settings, frequency, probes } = check;
-  const cType = getCheckType(check.settings);
+  const checkType = getCheckType(check.settings);
 
   return {
     assertionCount: getEntriesCount(settings),
     basicMetricsOnly,
-    checkType: cType,
-    frequencySeconds: frequency / 1000,
+    checkType,
+    frequency,
     isSSL: getSSL(settings),
     probeCount: probes?.length ?? 0,
   };
@@ -296,7 +296,7 @@ export function checkFormValuesToUsageCalcValues(checkFormValues: CheckFormValue
     assertionCount: getEntriesCountCheckFormValues(settings),
     basicMetricsOnly: !publishAdvancedMetrics,
     checkType,
-    frequencySeconds: frequency,
+    frequency,
     isSSL: getSSLCheckFormValues(settings),
     probeCount: probes?.length ?? 0,
   };

@@ -3,31 +3,35 @@ import { CheckProbesSchema } from 'schemas/general/CheckProbes';
 import { FrequencySchema } from 'schemas/general/Frequency';
 import { JobSchema } from 'schemas/general/Job';
 import { LabelsSchema } from 'schemas/general/Label';
+import { TimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import { AlertSensitivity, CheckFormValuesBase } from 'types';
+import { formatDuration } from 'utils';
 
-export const BaseCheckSchema: ZodType<CheckFormValuesBase> = z
-  .object({
-    job: JobSchema,
-    target: z.string(),
-    frequency: FrequencySchema,
-    id: z.number().optional(),
-    timeout: z.number(),
-    enabled: z.boolean(),
-    probes: CheckProbesSchema,
-    alertSensitivity: z.nativeEnum(AlertSensitivity),
-    labels: LabelsSchema,
-    publishAdvancedMetrics: z.boolean(),
-    alerts: CheckAlertsSchema.optional(),
-  })
-  .superRefine((data, ctx) => {
+export const BaseCheckSchema = z.object({
+  job: JobSchema,
+  target: z.string(),
+  frequency: FrequencySchema(),
+  id: z.number().optional(),
+  timeout: TimeoutSchema(),
+  enabled: z.boolean(),
+  probes: CheckProbesSchema,
+  alertSensitivity: z.nativeEnum(AlertSensitivity),
+  labels: LabelsSchema,
+  publishAdvancedMetrics: z.boolean(),
+  alerts: CheckAlertsSchema.optional(),
+});
+
+export function addRefinements(schema: ZodType<CheckFormValuesBase>) {
+  return schema.superRefine((data, ctx) => {
     const { frequency, timeout } = data;
     if (frequency < timeout) {
       ctx.addIssue({
         path: ['frequency'],
-        message: `Frequency must be greater than or equal to timeout (${timeout} seconds)`,
+        message: `Frequency must be greater than or equal to timeout (${formatDuration(timeout)})`,
         code: z.ZodIssueCode.custom,
       });
     }
   });
+}

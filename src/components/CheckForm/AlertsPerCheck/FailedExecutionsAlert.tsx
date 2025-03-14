@@ -28,7 +28,7 @@ export const FailedExecutionsAlert = ({
     onSelectionChange(type);
   };
 
-  const checkFrequency = getValues('frequency');
+  const checkFrequency = getValues('frequency') / 1000;
   const probes = getValues('probes');
 
   //min time range >= check frequency

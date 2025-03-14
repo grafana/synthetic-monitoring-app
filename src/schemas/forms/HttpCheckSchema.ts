@@ -81,12 +81,12 @@ const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
   cacheBustingQueryParamName: z.string().optional(),
 });
 
-const HttpSchemaValues = z.object({
-  target: HttpTargetSchema,
-  checkType: z.literal(CheckType.HTTP),
-  settings: z.object({
-    http: HttpSettingsSchema,
-  }),
-});
-
-export const HttpCheckSchema: ZodType<CheckFormValuesHttp> = BaseCheckSchema.and(HttpSchemaValues);
+export const HttpCheckSchema: ZodType<CheckFormValuesHttp> = BaseCheckSchema.and(
+  z.object({
+    target: HttpTargetSchema,
+    checkType: z.literal(CheckType.HTTP),
+    settings: z.object({
+      http: HttpSettingsSchema,
+    }),
+  })
+);

@@ -218,7 +218,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
       <FormProvider {...formMethods}>
         <CheckFormContextProvider disabled={isDisabled}>
           <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-            <FormLayout
+            <FormLayout<CheckFormValues>
               actions={actions}
               alerts={alerts}
               disabled={isDisabled}

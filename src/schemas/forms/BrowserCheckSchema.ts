@@ -1,26 +1,33 @@
 import { FrequencySchema } from 'schemas/general/Frequency';
+import { TimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import { BrowserSettings, CheckFormValuesBrowser, CheckType } from 'types';
+import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
 import { maxSizeValidation, validateBrowserScript } from './script/validation';
 import { BaseCheckSchema } from './BaseCheckSchema';
 
-export const BROWSER_MIN_FREQUENCY = 60000;
+export const MIN_FREQUENCY_BROWSER = ONE_MINUTE_IN_MS;
+export const MIN_TIMEOUT_BROWSER = ONE_SECOND_IN_MS * 5;
+export const MAX_TIMEOUT_BROWSER = ONE_MINUTE_IN_MS * 3;
 
 const BrowserSettingsSchema: ZodType<BrowserSettings> = z.object({
   script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation).superRefine(validateBrowserScript),
 });
 
-const BrowserSchemaValues = z.object({
-  target: z.string().min(3, `Instance must be at least 3 characters long.`),
-  checkType: z.literal(CheckType.Browser),
-  settings: z.object({
-    browser: BrowserSettingsSchema,
-  }),
-  frequency: FrequencySchema.min(BROWSER_MIN_FREQUENCY, {
-    message: `Frequency must be greater than ${BROWSER_MIN_FREQUENCY} seconds`,
-  }),
-});
-
-export const BrowserCheckSchema: ZodType<CheckFormValuesBrowser> = BaseCheckSchema.and(BrowserSchemaValues);
+export const BrowserCheckSchema: ZodType<CheckFormValuesBrowser> = BaseCheckSchema.omit({
+  timeout: true,
+  frequency: true,
+  target: true,
+}).and(
+  z.object({
+    target: z.string().min(3, `Instance must be at least 3 characters long.`),
+    checkType: z.literal(CheckType.Browser),
+    settings: z.object({
+      browser: BrowserSettingsSchema,
+    }),
+    frequency: FrequencySchema(MIN_FREQUENCY_BROWSER),
+    timeout: TimeoutSchema(MIN_TIMEOUT_BROWSER, MAX_TIMEOUT_BROWSER),
+  })
+);

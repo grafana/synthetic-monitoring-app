@@ -40,12 +40,12 @@ const DNSSettingsSchema: ZodType<DnsSettingsFormValues> = z.object({
   ),
 });
 
-const DNSSchemaValues = z.object({
-  target: DomainNameTarget,
-  checkType: z.literal(CheckType.DNS),
-  settings: z.object({
-    dns: DNSSettingsSchema,
-  }),
-});
-
-export const DNSCheckSchema: ZodType<CheckFormValuesDns> = BaseCheckSchema.and(DNSSchemaValues);
+export const DNSCheckSchema: ZodType<CheckFormValuesDns> = BaseCheckSchema.and(
+  z.object({
+    target: DomainNameTarget,
+    checkType: z.literal(CheckType.DNS),
+    settings: z.object({
+      dns: DNSSettingsSchema,
+    }),
+  })
+);

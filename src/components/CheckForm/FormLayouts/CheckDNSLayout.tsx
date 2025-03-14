@@ -10,7 +10,6 @@ import { DNSCheckValidResponseCodes } from 'components/CheckEditor/FormComponent
 import { DNSRequest } from 'components/CheckEditor/FormComponents/DNSRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const DNS_REQUEST_FIELDS: DNSRequestFields = {
@@ -66,7 +65,7 @@ export const DNSCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValu
       <>
         <DNSCheckValidResponseCodes />
         <DNSCheckResponseMatches />
-        <Timeout min={CheckTimeoutValues[CheckType.DNS].min} max={CheckTimeoutValues[CheckType.DNS].max} />
+        <Timeout checkType={CheckType.DNS} />
       </>
     ),
   },

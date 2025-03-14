@@ -27,7 +27,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   ) => (event: BaseSyntheticEvent) => void;
   onValid: SubmitHandler<T>;
   onInvalid?: (errs: FieldErrors<T>) => void;
-  schema: ZodType<T>;
+  schema: ZodType;
   hasUnsavedChanges?: boolean;
 };
 

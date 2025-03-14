@@ -1,32 +1,33 @@
-import { BROWSER_MIN_FREQUENCY } from 'schemas/forms/BrowserCheckSchema';
+import { MIN_FREQUENCY_BROWSER } from 'schemas/forms/BrowserCheckSchema';
+import { MIN_FREQUENCY_MULTI_HTTP } from 'schemas/forms/MultiHttpCheckSchema';
+import { MIN_FREQUENCY_SCRIPTED } from 'schemas/forms/ScriptedCheckSchema';
+import { MIN_FREQUENCY_TRACEROUTE } from 'schemas/forms/TracerouteCheckSchema';
+import { MIN_BASE_FREQUENCY } from 'schemas/general/Frequency';
 
 import { CheckType } from 'types';
-
-const ONE_SECOND = 1000;
-const ONE_MINUTE = 60 * ONE_SECOND;
-const ONE_HOUR = 60 * ONE_MINUTE;
+import { ONE_HOUR_IN_MS, ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
 export const FREQUENCY_OPTIONS = [
-  ONE_SECOND * 10,
-  ONE_SECOND * 30,
-  ONE_MINUTE,
-  ONE_MINUTE * 2,
-  ONE_MINUTE * 3,
-  ONE_MINUTE * 5,
-  ONE_MINUTE * 10,
-  ONE_MINUTE * 15,
-  ONE_MINUTE * 30,
-  ONE_HOUR,
+  ONE_SECOND_IN_MS * 10,
+  ONE_SECOND_IN_MS * 30,
+  ONE_MINUTE_IN_MS,
+  ONE_MINUTE_IN_MS * 2,
+  ONE_MINUTE_IN_MS * 3,
+  ONE_MINUTE_IN_MS * 5,
+  ONE_MINUTE_IN_MS * 10,
+  ONE_MINUTE_IN_MS * 15,
+  ONE_MINUTE_IN_MS * 30,
+  ONE_HOUR_IN_MS,
 ];
 
 export const MIN_FREQUENCY_MAP = {
-  [CheckType.Browser]: BROWSER_MIN_FREQUENCY,
-  [CheckType.DNS]: 10,
-  [CheckType.GRPC]: 10,
-  [CheckType.HTTP]: 10,
-  [CheckType.MULTI_HTTP]: 60,
-  [CheckType.PING]: 10,
-  [CheckType.Scripted]: 60,
-  [CheckType.TCP]: 10,
-  [CheckType.Traceroute]: 120,
+  [CheckType.Browser]: MIN_FREQUENCY_BROWSER,
+  [CheckType.DNS]: MIN_BASE_FREQUENCY,
+  [CheckType.GRPC]: MIN_BASE_FREQUENCY,
+  [CheckType.HTTP]: MIN_BASE_FREQUENCY,
+  [CheckType.MULTI_HTTP]: MIN_FREQUENCY_MULTI_HTTP,
+  [CheckType.PING]: MIN_BASE_FREQUENCY,
+  [CheckType.Scripted]: MIN_FREQUENCY_SCRIPTED,
+  [CheckType.TCP]: MIN_BASE_FREQUENCY,
+  [CheckType.Traceroute]: MIN_FREQUENCY_TRACEROUTE,
 };

@@ -8,8 +8,6 @@ import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/Scr
 import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
-
 export const SCRIPTED_CHECK_FIELDS: ScriptedFields = {
   script: {
     name: `settings.scripted.script`,
@@ -39,7 +37,7 @@ export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFor
             running checks in a k6 script.
           </TextLink>
         </div>
-        <Timeout min={CheckTimeoutValues[CheckType.Scripted].min} max={CheckTimeoutValues[CheckType.Scripted].max} />
+        <Timeout checkType={CheckType.Scripted} />
       </Stack>
     ),
   },
