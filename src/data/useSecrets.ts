@@ -1,8 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { Label } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { useSMDS } from 'hooks/useSMDS';
+
+import { SecretFormValues } from '../page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
+import { queryClient } from './queryClient';
 
 export interface ExperimentalSecret {
   name: string;
@@ -22,6 +25,7 @@ export interface ExperimentalSecretsResponse {
 
 export const queryKeys = {
   list: ['secrets'],
+  byId: (id: string) => ['secrets', id],
 };
 
 function secretsQuery(api: SMDataSource) {
@@ -38,4 +42,39 @@ export function useSecrets() {
   const smDS = useSMDS();
 
   return useQuery<ExperimentalSecretsResponse, unknown, ExperimentalSecret[]>(secretsQuery(smDS));
+}
+
+export function useSecret(id?: string) {
+  const smDS = useSMDS();
+
+  return useQuery<ExperimentalSecret, unknown, ExperimentalSecret>({
+    queryKey: queryKeys.byId(id!),
+    queryFn: () => smDS.getSecret(id!),
+    enabled: !!id,
+  });
+}
+
+export function useSaveSecret() {
+  const smDS = useSMDS();
+
+  return useMutation<ExperimentalSecret, unknown, SecretFormValues & { uuid?: string }>({
+    mutationFn: (data) => {
+      return smDS.saveSecret(data);
+    },
+    onSuccess: async (data) => {
+      await queryClient.setQueryData(queryKeys.byId(data.uuid!), data);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.list });
+    },
+  });
+}
+
+export function useDeleteSecret() {
+  const smDS = useSMDS();
+
+  return useMutation<unknown, unknown, string>({
+    mutationFn: (id) => smDS.deleteSecret(id),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.list });
+    },
+  });
 }
