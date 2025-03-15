@@ -36,50 +36,50 @@ export function SecretsManagementTab() {
     return <ConfigContent loading />;
   }
 
-  if (emptyState) {
-    return (
-      <ConfigContent>
-        <EmptyState
-          variant="call-to-action"
-          message="You don't have any secrets yet."
-          button={
-            <Button onClick={handleAddSecret} icon="plus">
-              Create secret
-            </Button>
-          }
-        >
-          You can use secrets to store sensitive information such as passwords, API keys, and other sensitive
-          information.
-        </EmptyState>
-      </ConfigContent>
-    );
-  }
-
   return (
     <>
-      <ConfigContent
-        title="Secrets management"
-        actions={
+      {emptyState ? (
+        <ConfigContent>
+          <EmptyState
+            variant="call-to-action"
+            message="You don't have any secrets yet."
+            button={
+              <Button onClick={handleAddSecret} icon="plus">
+                Create secret
+              </Button>
+            }
+          >
+            You can use secrets to store sensitive information such as passwords, API keys, and other sensitive
+            information.
+          </EmptyState>
+        </ConfigContent>
+      ) : (
+        <ConfigContent
+          title="Secrets management"
+          actions={
+            <div>
+              <Button size="sm" icon="plus" onClick={handleAddSecret}>
+                Create secret
+              </Button>
+            </div>
+          }
+        >
           <div>
-            <Button size="sm" icon="plus" onClick={handleAddSecret}>
-              Create secret
-            </Button>
+            <p>
+              Secrets is a way to store and manage secrets in Grafana Cloud. You can use secrets to store sensitive
+              information such as passwords, API keys, and other sensitive information.
+            </p>
           </div>
-        }
-      >
-        <div>
-          <p>
-            Secrets is a way to store and manage secrets in Grafana Cloud. You can use secrets to store sensitive
-            information such as passwords, API keys, and other sensitive information.
-          </p>
-        </div>
-        <ConfigContent.Section>
-          {secrets?.map((secret) => (
-            <SecretCard key={secret.uuid} secret={secret} onEdit={handleEditSecret} onDelete={handleDeleteSecret} />
-          ))}
-        </ConfigContent.Section>
-      </ConfigContent>
+          <ConfigContent.Section>
+            {secrets?.map((secret) => (
+              <SecretCard key={secret.uuid} secret={secret} onEdit={handleEditSecret} onDelete={handleDeleteSecret} />
+            ))}
+          </ConfigContent.Section>
+        </ConfigContent>
+      )}
+
       <SecretEditModal id={editMode === false ? '' : editMode} open={!!editMode} onDismiss={() => handleEditSecret()} />
+
       <ConfirmModal
         isOpen={!!deleteMode}
         title="Delete secret"
@@ -96,7 +96,10 @@ export function SecretsManagementTab() {
             secret will be broken.
           </div>
         }
-        onConfirm={() => deleteMode && deleteSecret.mutate(deleteMode.uuid)}
+        onConfirm={() => {
+          deleteMode && deleteSecret.mutate(deleteMode.uuid);
+          setDeleteMode(undefined);
+        }}
         onDismiss={() => setDeleteMode(undefined)}
       />
       {(isFetching || deleteSecret.isPending) && (
