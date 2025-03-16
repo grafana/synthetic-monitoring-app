@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Field, IconButton, Input, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -7,6 +7,7 @@ import { css } from '@emotion/css';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
 
 import { SECRETS_EDIT_MODE_ADD } from './constants';
+import { SecretInput } from './SecretInput';
 import { SecretFormValues, secretToFormValues } from './SecretsManagementTab.utils';
 
 interface SecretEditModalProps {
@@ -21,13 +22,14 @@ function getDefaultValues(): SecretFormValues & { plaintext?: string } {
     name: '',
     description: '',
     labels: [],
-    plaintext: '',
+    plaintext: undefined,
   };
 }
 
 export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   const { data: secret, isLoading } = useSecret(id);
   const saveSecret = useSaveSecret();
+  const [isConfigured, setIsConfigured] = useState(id !== '' && id !== SECRETS_EDIT_MODE_ADD);
 
   const styles = useStyles2(getStyles);
   const defaultValues = useMemo(() => {
@@ -44,12 +46,19 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
     name: 'labels',
   });
 
+  const handleResetValue = () => {
+    setIsConfigured(false);
+  };
+
   useEffect(() => {
-    console.log('resetting form', defaultValues);
     reset(defaultValues);
   }, [reset, defaultValues]);
 
   const onSubmit = (data: SecretFormValues) => {
+    if ('plaintext' in data && data.plaintext === undefined) {
+      delete data.plaintext;
+    }
+
     try {
       saveSecret.mutate(data, {
         onSettled() {
@@ -66,7 +75,6 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   if (open !== true) {
     return null;
   }
-
   return (
     <Modal isOpen onDismiss={onDismiss} title={title}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -78,7 +86,13 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
           <Input {...register('description')} />
         </Field>
         <Field label="Value" description="Value returned when referencing this secret" required>
-          <Input {...register('plaintext')} />
+          <Controller
+            control={control}
+            name="plaintext"
+            render={({ field }) => (
+              <SecretInput {...field} autoComplete="off" onReset={handleResetValue} isConfigured={isConfigured} />
+            )}
+          />
         </Field>
         <Field
           label="Labels"

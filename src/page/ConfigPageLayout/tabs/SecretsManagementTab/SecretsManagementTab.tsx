@@ -78,7 +78,7 @@ export function SecretsManagementTab() {
         </ConfigContent>
       )}
 
-      <SecretEditModal id={editMode === false ? '' : editMode} open={!!editMode} onDismiss={() => handleEditSecret()} />
+      {editMode && <SecretEditModal id={editMode} open onDismiss={() => handleEditSecret()} />}
 
       <ConfirmModal
         isOpen={!!deleteMode}

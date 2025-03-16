@@ -117,6 +117,12 @@ class SecretsApiStub {
   async post(path: KnownPath, body: SecretFormValues & { plaintext?: string }) {
     if (path === '/secrets') {
       const { plaintext, ...cleanData } = body;
+
+      if (plaintext) {
+        // eslint-disable-next-line no-console
+        console.debug('secretsApiStub: redacting secret value from store', plaintext);
+      }
+
       const secret: ExperimentalSecret = {
         ...cleanData,
         uuid: generateUuid(),
@@ -141,6 +147,10 @@ class SecretsApiStub {
       const [_, id] = path.split('/').filter(Boolean);
       if (this.state.secrets.hasOwnProperty(id)) {
         const { plaintext, ...secret } = body;
+        if (plaintext) {
+          // eslint-disable-next-line no-console
+          console.debug('secretsApiStub: redacting secret value from store', plaintext);
+        }
         this.state.secrets[id] = { ...this.state.secrets[id], ...secret, modified_at: Date.now() };
         this.persist();
 
