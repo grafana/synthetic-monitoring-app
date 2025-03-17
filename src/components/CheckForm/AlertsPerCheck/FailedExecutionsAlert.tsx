@@ -3,6 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { Checkbox, Icon, PopoverContent, Select, Stack, Tooltip } from '@grafana/ui';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
+import pluralize from 'pluralize';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
@@ -30,6 +31,7 @@ export const FailedExecutionsAlert = ({
 
   const checkFrequency = getValues('frequency');
   const probes = getValues('probes');
+  const threshold = getValues(`alerts.${alert.type}.threshold`);
   const period = getValues(`alerts.${alert.type}.period`);
 
   //min time range >= check frequency
@@ -79,7 +81,11 @@ export const FailedExecutionsAlert = ({
         />
         <Stack alignItems="center">
           Alert if at least <ThresholdSelector alert={alert} selected={selected} />
-          of {testExecutionsPerPeriod} tests fail in the last
+          {testExecutionsPerPeriod
+            ? `of ${testExecutionsPerPeriod} ${pluralize('execution', testExecutionsPerPeriod)}`
+            : null}{' '}
+          fail
+          {threshold === 1 && 's'} in the last
           <Controller
             name={`alerts.${alert.type}.period`}
             control={control}

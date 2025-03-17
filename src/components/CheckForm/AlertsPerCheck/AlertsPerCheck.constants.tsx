@@ -30,7 +30,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     supportsPeriod: true,
     unit: 'no.',
     category: CheckAlertCategory.FailedChecks,
-    default: 10,
+    default: 1,
     query: `
     (
       (1 - (
