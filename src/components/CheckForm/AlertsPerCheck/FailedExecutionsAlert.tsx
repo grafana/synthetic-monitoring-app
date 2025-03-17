@@ -83,7 +83,7 @@ export const FailedExecutionsAlert = ({
           Alert if at least <ThresholdSelector alert={alert} selected={selected} />
           {testExecutionsPerPeriod
             ? `of ${testExecutionsPerPeriod} ${pluralize('execution', testExecutionsPerPeriod)}`
-            : null}{' '}
+            : pluralize('execution', threshold)}{' '}
           fail
           {threshold === 1 && 's'} in the last
           <Controller

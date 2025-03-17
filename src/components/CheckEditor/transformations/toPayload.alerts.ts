@@ -9,7 +9,7 @@ export function getAlertsPayload(formValues?: CheckAlertFormRecord, checkId?: nu
     if (alert.isSelected) {
       alerts.push({
         name: alertType as CheckAlertType,
-        threshold: alert.threshold!!,
+        threshold: alert.threshold!,
         period: alert.period,
       });
     }
