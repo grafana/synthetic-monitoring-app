@@ -62,14 +62,6 @@ export const FailedExecutionsAlert = ({
     return getTotalChecksPerPeriod(probes.length, checkFrequency, convertPeriodToSeconds(period));
   }, [checkFrequency, period, probes, convertPeriodToSeconds]);
 
-  const customTooltipContent: PopoverContent = (
-    <div>
-      The number of test executions is an approximation based on the check&apos;s frequency and the period chosen for
-      this alert.
-      {tooltipContent as React.ReactNode}
-    </div>
-  );
-
   return (
     <Stack alignItems="center">
       <Stack alignItems="center">
@@ -107,7 +99,7 @@ export const FailedExecutionsAlert = ({
           />
         </Stack>
       </Stack>
-      <Tooltip content={customTooltipContent} placement="bottom" interactive={true}>
+      <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
         <Icon name="info-circle" />
       </Tooltip>
     </Stack>
