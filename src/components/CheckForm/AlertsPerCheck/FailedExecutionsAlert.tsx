@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { Checkbox, Icon, PopoverContent, Select, Stack, Tooltip } from '@grafana/ui';
@@ -22,7 +22,7 @@ export const FailedExecutionsAlert = ({
   tooltipContent: PopoverContent;
 }) => {
   const { isFormDisabled } = useCheckFormContext();
-  const { getValues, control } = useFormContext<CheckFormValues>();
+  const { getValues, setValue, control } = useFormContext<CheckFormValues>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
@@ -30,6 +30,7 @@ export const FailedExecutionsAlert = ({
 
   const checkFrequency = getValues('frequency');
   const probes = getValues('probes');
+  const period = getValues(`alerts.${alert.type}.period`);
 
   //min time range >= check frequency
   const convertPeriodToSeconds = useCallback(
@@ -42,8 +43,15 @@ export const FailedExecutionsAlert = ({
     [checkFrequency, convertPeriodToSeconds]
   );
 
-  const defaultPeriod = validPeriods[0];
-  const period = getValues(`alerts.${alert.type}.period`) || defaultPeriod.value;
+  useEffect(() => {
+    if (!validPeriods.length || period !== undefined) {
+      return;
+    }
+
+    const defaultPeriod = validPeriods[0].value;
+    // @ts-expect-error
+    setValue(`alerts.${alert.type}.period`, defaultPeriod);
+  }, [validPeriods, setValue, alert.type, period]);
 
   const testExecutionsPerPeriod = useMemo(() => {
     if (!period) {
@@ -81,13 +89,12 @@ export const FailedExecutionsAlert = ({
                 disabled={!selected || isFormDisabled}
                 data-testid="alertPendingPeriod"
                 options={validPeriods}
-                defaultValue={defaultPeriod.value}
-                value={field.value || defaultPeriod.value}
+                value={field.value}
                 onChange={(value) => {
                   if (value === null) {
                     return field.onChange(null);
                   }
-                  field.onChange(value?.value);
+                  field.onChange(value.value);
                 }}
               />
             )}

@@ -8,7 +8,6 @@ export interface PredefinedAlertInterface {
   category: CheckAlertCategory;
   query: string;
   default?: number;
-  hide: boolean;
   supportsPeriod: boolean;
 }
 
@@ -28,7 +27,6 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
     name: 'Probe Failed Executions Too High',
     description: '',
-    hide: false,
     supportsPeriod: true,
     unit: 'no.',
     category: CheckAlertCategory.FailedChecks,
@@ -58,7 +56,6 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     type: CheckAlertType.HTTPTargetCertificateCloseToExpiring,
     name: 'HTTP Target Certificate Close To Expiring',
     description: 'Trigger an alert if the target certificate will expire in less than $threshold days',
-    hide: false,
     supportsPeriod: false,
     unit: 'd',
     category: CheckAlertCategory.TLSCertificate,
