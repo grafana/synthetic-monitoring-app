@@ -78,7 +78,7 @@ export const FailedExecutionsAlert = ({
           checked={selected}
         />
         <Stack alignItems="center">
-          Alert if <ThresholdSelector alert={alert} selected={selected} />
+          Alert if at least <ThresholdSelector alert={alert} selected={selected} />
           of {testExecutionsPerPeriod} tests fail in the last
           <Controller
             name={`alerts.${alert.type}.period`}
