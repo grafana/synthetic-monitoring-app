@@ -1,7 +1,6 @@
-import React, { ReactElement, useCallback, useState } from 'react';
+import React, { ChangeEvent, KeyboardEvent, ReactElement, useCallback, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { SelectableValue } from '@grafana/data';
-import { Combobox, Field, RadioButtonGroup, Stack, Tab, TabsBar, Text } from '@grafana/ui';
+import { Field, Input, RadioButtonGroup, Stack, Tab, TabsBar, Text } from '@grafana/ui';
 import { MAX_BASE_FREQUENCY } from 'schemas/general/Frequency';
 
 import { CheckFormValues, CheckType } from 'types';
@@ -111,60 +110,73 @@ function BasicFrequency({ value, onChange, min, max }: FrequencyComponentProps) 
   );
 }
 
-const SIXTY_OPTIONS = Array.from({ length: 60 }, (_, i) => i);
+const INPUT_WIDTH = 10;
 
 function CustomFrequency({ value, onChange }: FrequencyComponentProps) {
-  const valueInSeconds = value / 1000;
-  const minutes = Math.floor(valueInSeconds / 60);
-  const seconds = valueInSeconds % 60;
+  const { minutes, seconds } = frequencyInSecondsAndMinutes(value);
 
-  const handleUpdateFrequency = useCallback(
-    (minutes: number, seconds: number) => {
-      onChange(minutes + seconds);
-    },
-    [onChange]
-  );
+  const [inputMinutes, setInputMinutes] = useState<number | undefined>(minutes);
+  const [inputSeconds, setInputSeconds] = useState<number | undefined>(seconds);
 
-  const handleMinutesChange = useCallback(
-    ({ value }: SelectableValue<number>) => {
-      if (value) {
-        handleUpdateFrequency(value * 60 * 1000, seconds * 1000);
+  const handleUpdateFrequency = useCallback(() => {
+    const convertedMinutes = (inputMinutes || 0) * 60 * 1000;
+    const convertedSeconds = (inputSeconds || 0) * 1000;
+
+    const newFrequency = convertedMinutes + convertedSeconds;
+    onChange(newFrequency);
+
+    const res = frequencyInSecondsAndMinutes(newFrequency);
+    setInputMinutes(res.minutes);
+    setInputSeconds(res.seconds);
+  }, [onChange, inputMinutes, inputSeconds]);
+
+  const handleMinutesChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const minutes = parseInt(event.target.value, 10) || undefined;
+    setInputMinutes(minutes);
+  }, []);
+
+  const handleSecondsChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const seconds = parseInt(event.target.value, 10) || undefined;
+    setInputSeconds(seconds);
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleUpdateFrequency();
       }
     },
-    [seconds, handleUpdateFrequency]
+    [handleUpdateFrequency]
   );
-
-  const handleSecondsChange = useCallback(
-    ({ value }: SelectableValue<number>) => {
-      if (value) {
-        handleUpdateFrequency(minutes * 60 * 1000, value * 1000);
-      }
-    },
-    [minutes, handleUpdateFrequency]
-  );
-
-  const width = 10;
 
   return (
-    <Stack direction="column" gap={1}>
-      <Stack>
-        <Field label="Minutes">
-          <Combobox
-            options={SIXTY_OPTIONS.map((option) => ({ label: option.toString(), value: option }))}
-            onChange={handleMinutesChange}
-            value={minutes}
-            width={width}
-          />
-        </Field>
-        <Field label="Seconds">
-          <Combobox
-            options={SIXTY_OPTIONS.map((option) => ({ label: option.toString(), value: option }))}
-            onChange={handleSecondsChange}
-            value={seconds}
-            width={width}
-          />
-        </Field>
-      </Stack>
+    <Stack>
+      <Field label="Minutes">
+        <Input
+          onChange={handleMinutesChange}
+          value={inputMinutes}
+          width={INPUT_WIDTH}
+          onBlur={handleUpdateFrequency}
+          onKeyDown={handleKeyDown}
+        />
+      </Field>
+      <Field label="Seconds">
+        <Input
+          onChange={handleSecondsChange}
+          value={inputSeconds}
+          width={INPUT_WIDTH}
+          onBlur={handleUpdateFrequency}
+          onKeyDown={handleKeyDown}
+        />
+      </Field>
     </Stack>
   );
+}
+
+function frequencyInSecondsAndMinutes(milliseconds: number) {
+  const minutes = Math.floor(milliseconds / 60000);
+  const seconds = Math.floor((milliseconds % 60000) / 1000);
+
+  return { minutes, seconds };
 }
