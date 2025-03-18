@@ -157,8 +157,9 @@ export const MultiHttpCheckRequests = () => {
 };
 
 const MultiHttpRequest = ({ index }: { index: number }) => {
+  const { getValues } = useFormContext<CheckFormValuesMultiHttp>();
   const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
+  const { addIndividualRequest } = supportingContent;
 
   const fields: HttpRequestFields<CheckFormValuesMultiHttp> = useMemo(() => {
     const initial = Object.entries(MULTI_HTTP_REQUEST_FIELDS).reduce<HttpRequestFields<CheckFormValuesMultiHttp>>(
@@ -190,8 +191,8 @@ const MultiHttpRequest = ({ index }: { index: number }) => {
   }, [index]);
 
   const onTest = useCallback(() => {
-    addRequest(fields);
-  }, [addRequest, fields]);
+    addIndividualRequest(fields, getValues());
+  }, [addIndividualRequest, fields, getValues]);
 
   const { handleErrorRef } = useNestedRequestErrors(fields);
 

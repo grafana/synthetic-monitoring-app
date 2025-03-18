@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesDns, CheckType } from 'types';
@@ -40,13 +41,14 @@ export const DNS_REQUEST_FIELDS: DNSRequestFields = {
 };
 
 const CheckDNSRequest = () => {
+  const { getValues } = useFormContext<CheckFormValuesDns>();
   const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
+  const { addIndividualRequest } = supportingContent;
   const { handleErrorRef } = useNestedRequestErrors(DNS_REQUEST_FIELDS);
 
   const onTest = useCallback(() => {
-    addRequest(DNS_REQUEST_FIELDS);
-  }, [addRequest]);
+    addIndividualRequest(DNS_REQUEST_FIELDS, getValues());
+  }, [addIndividualRequest, getValues]);
 
   return <DNSRequest disabled={isFormDisabled} fields={DNS_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
 };

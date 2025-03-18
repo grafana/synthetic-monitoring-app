@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesPing, CheckType } from 'types';
@@ -27,12 +28,13 @@ const PING_FIELDS: PingRequestFields = {
 
 const CheckPingRequest = () => {
   const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
+  const { addIndividualRequest } = supportingContent;
   const { handleErrorRef } = useNestedRequestErrors(PING_FIELDS);
+  const { getValues } = useFormContext<CheckFormValuesPing>();
 
   const onTest = useCallback(() => {
-    addRequest(PING_FIELDS);
-  }, [addRequest]);
+    addIndividualRequest(PING_FIELDS, getValues());
+  }, [addIndividualRequest, getValues]);
 
   return <PingRequest disabled={isFormDisabled} fields={PING_FIELDS} onTest={onTest} ref={handleErrorRef} />;
 };

@@ -76,7 +76,15 @@ type CheckFormProps = {
   disabled?: boolean;
 };
 
-export const CheckForm = ({ check, disabled }: CheckFormProps) => {
+export const CheckForm = ({ disabled, check }: CheckFormProps) => {
+  return (
+    <CheckFormContextProvider disabled={!!disabled}>
+      <CheckFormContent check={check} />
+    </CheckFormContextProvider>
+  );
+};
+
+const CheckFormContent = ({ check, disabled }: CheckFormProps) => {
   const { canWriteChecks } = getUserPermissions();
   const canReadLogs = useCanReadLogs();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
@@ -158,7 +166,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
       )}
       {testCheckError && (
         <Alert title="Test failed" severity="error">
-          {testCheckError.message}
+          {`Something went wrong while testing the check. Please try again.`}
         </Alert>
       )}
     </Stack>
@@ -206,54 +214,52 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
       renderTitle={isExistingCheck ? () => <Text element="h1">{`Editing ${check.job}`}</Text> : undefined}
     >
       <FormProvider {...formMethods}>
-        <CheckFormContextProvider disabled={isDisabled}>
-          <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-            <FormLayout
-              actions={actions}
-              alerts={alerts}
-              disabled={isDisabled}
-              onSubmit={handleSubmit}
-              onValid={handleValid}
-              onInvalid={handleInvalid}
-              schema={schema}
-              hasUnsavedChanges={hasUnsavedChanges}
-            >
-              {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
+        <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
+          <FormLayout
+            actions={actions}
+            alerts={alerts}
+            disabled={isDisabled}
+            onSubmit={handleSubmit}
+            onValid={handleValid}
+            onInvalid={handleInvalid}
+            schema={schema}
+            hasUnsavedChanges={hasUnsavedChanges}
+          >
+            {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
-              <FormLayout.Section
-                label={checkTypeStep1Label[checkType]}
-                fields={[`job`, ...defineCheckFields]}
-                status={status}
-              >
-                <Stack direction={`column`} gap={4}>
-                  <CheckJobName />
-                  <Stack direction={`column`} gap={2}>
-                    <ChooseCheckType checkType={checkType} checkTypeGroup={checkTypeGroup} disabled={isExistingCheck} />
-                    {CheckComponent}
-                  </Stack>
+            <FormLayout.Section
+              label={checkTypeStep1Label[checkType]}
+              fields={[`job`, ...defineCheckFields]}
+              status={status}
+            >
+              <Stack direction={`column`} gap={4}>
+                <CheckJobName />
+                <Stack direction={`column`} gap={2}>
+                  <ChooseCheckType checkType={checkType} checkTypeGroup={checkTypeGroup} disabled={isExistingCheck} />
+                  {CheckComponent}
                 </Stack>
-              </FormLayout.Section>
-              <FormLayout.Section label="Define uptime" fields={defineUptimeFields} status={status}>
-                {UptimeComponent}
-              </FormLayout.Section>
-              <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]} status={status}>
-                {labelsComponent}
-                <CheckLabels />
-              </FormLayout.Section>
-              <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
-                <FeatureFlag name={FeatureName.AlertsPerCheck}>
-                  {({ isEnabled }) => (isEnabled ? <AlertsPerCheck onInitAlerts={handleInitAlerts} /> : null)}
-                </FeatureFlag>
-                <CheckFormAlert />
-              </FormLayout.Section>
-              <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
-                <CheckProbeOptions checkType={checkType} />
-                {ProbesComponent}
-                <CheckUsage checkType={checkType} />
-              </FormLayout.Section>
-            </FormLayout>
-          </div>
-        </CheckFormContextProvider>
+              </Stack>
+            </FormLayout.Section>
+            <FormLayout.Section label="Define uptime" fields={defineUptimeFields} status={status}>
+              {UptimeComponent}
+            </FormLayout.Section>
+            <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]} status={status}>
+              {labelsComponent}
+              <CheckLabels />
+            </FormLayout.Section>
+            <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
+              <FeatureFlag name={FeatureName.AlertsPerCheck}>
+                {({ isEnabled }) => (isEnabled ? <AlertsPerCheck onInitAlerts={handleInitAlerts} /> : null)}
+              </FeatureFlag>
+              <CheckFormAlert />
+            </FormLayout.Section>
+            <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
+              <CheckProbeOptions checkType={checkType} />
+              {ProbesComponent}
+              <CheckUsage checkType={checkType} />
+            </FormLayout.Section>
+          </FormLayout>
+        </div>
       </FormProvider>
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmLeavingPage enabled={hasUnsavedChanges} />

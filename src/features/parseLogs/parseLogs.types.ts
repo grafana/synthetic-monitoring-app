@@ -1,11 +1,22 @@
 import { DataFrame, Field, FieldType } from '@grafana/data';
 
+export enum LokiFieldNames {
+  Labels = 'labels',
+  Time = 'Time',
+  Line = 'Line',
+  TsNs = 'tsNs',
+  LabelTypes = 'labelTypes',
+  ID = 'id',
+}
+
+export type LokiFields<T, R> = [Labels<T>, Time, Line, TsNs, LabelTypes<R>, ID];
+
 export interface LokiSeries<T, R> extends DataFrame {
-  fields: Array<Labels<T> | Time | Line | TsNs | LabelTypes<R> | ID>;
+  fields: LokiFields<T, R>;
 }
 
 export type Labels<T> = Field<T> & {
-  name: `labels`;
+  name: LokiFieldNames.Labels;
   type: FieldType.other;
   typeInfo: {
     frame: `json.RawMessage`;
@@ -13,7 +24,7 @@ export type Labels<T> = Field<T> & {
 };
 
 export type Time = Field<number> & {
-  name: `Time`;
+  name: LokiFieldNames.Time;
   type: FieldType.time;
   typeInfo: {
     frame: `time.Time`;
@@ -22,15 +33,16 @@ export type Time = Field<number> & {
 };
 
 export type Line = Field<string> & {
-  name: `Line`;
+  name: LokiFieldNames.Line;
   type: FieldType.string;
   typeInfo: {
     frame: `string`;
   };
 };
 
+// timestamp in nanoseconds
 export type TsNs = Field<string> & {
-  name: `tsNs`;
+  name: LokiFieldNames.TsNs;
   type: FieldType.string;
   typeInfo: {
     frame: `string`;
@@ -45,7 +57,7 @@ export type LabelTypes<R> = Field<LabelType<R>> & {
       hidden: true;
     };
   };
-  name: `labelTypes`;
+  name: LokiFieldNames.LabelTypes;
   type: FieldType.other;
   typeInfo: {
     frame: `json.RawMessage`;
@@ -53,9 +65,18 @@ export type LabelTypes<R> = Field<LabelType<R>> & {
 };
 
 export type ID = Field<string> & {
-  name: `id`;
+  name: LokiFieldNames.ID;
   type: FieldType.string;
   typeInfo: {
     frame: `string`;
   };
+};
+
+export type ParsedLokiRecord<T, R> = {
+  [LokiFieldNames.Labels]: T;
+  [LokiFieldNames.Time]: number;
+  [LokiFieldNames.Line]: string;
+  [LokiFieldNames.TsNs]: string;
+  [LokiFieldNames.LabelTypes]: R;
+  [LokiFieldNames.ID]: string;
 };

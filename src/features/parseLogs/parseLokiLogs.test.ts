@@ -1,4 +1,7 @@
-import { assignTime } from 'features/parseLogs/parseLokiLogs';
+import { FieldType } from '@grafana/data';
+import { flattenLogs } from 'features/parseLogs/parseLokiLogs';
+
+import { Labels, LokiFieldNames, LokiFields, Time, TsNs } from 'features/parseLogs/parseLogs.types';
 
 // describe('parseLokiLogs', () => {
 //   it('should parse loki logs', () => {
@@ -6,15 +9,13 @@ import { assignTime } from 'features/parseLogs/parseLokiLogs';
 //   });
 // });
 
-describe(`assignTime`, () => {
+describe(`flattenLogs`, () => {
   it(`should assign time to logs and sort them`, () => {
-    const time = {
-      values: [2, 1, 3],
-      nanos: [0, 0, 0],
-    };
-    const labels = [{ msg: 'msg 2' }, { msg: 'msg 1' }, { msg: 'msg 3' }];
-
-    const orderedLogs = assignTime(time, labels);
+    const lokiFields = constructLokiFields({
+      tsNsValues: [`2000000`, `1000000`, `3000000`],
+      labelsValues: [{ msg: 'msg 2' }, { msg: 'msg 1' }, { msg: 'msg 3' }],
+    });
+    const orderedLogs = flattenLogs(lokiFields);
 
     expect(orderedLogs).toEqual([
       { time: 1000000, value: { msg: 'msg 1' } },
@@ -22,20 +23,34 @@ describe(`assignTime`, () => {
       { time: 3000000, value: { msg: 'msg 3' } },
     ]);
   });
-
-  it(`should use nano second-precision`, () => {
-    const time = {
-      values: [1, 1, 3],
-      nanos: [2000000, 1000000, 1000000],
-    };
-    const labels = [{ msg: 'msg 2' }, { msg: 'msg 1' }, { msg: 'msg 3' }];
-
-    const orderedLogs = assignTime(time, labels);
-
-    expect(orderedLogs).toEqual([
-      { time: 2000000, value: { msg: 'msg 1' } },
-      { time: 3000000, value: { msg: 'msg 2' } },
-      { time: 4000000, value: { msg: 'msg 3' } },
-    ]);
-  });
 });
+
+function constructLokiFields({ tsNsValues, labelsValues }: { tsNsValues: string[]; labelsValues: unknown[] }) {
+  const time: Time = {
+    name: LokiFieldNames.Time,
+    type: FieldType.time,
+    values: [],
+    nanos: [],
+    config: {},
+    typeInfo: {
+      frame: 'time.Time',
+    },
+  };
+  const labels: Labels<unknown> = {
+    name: LokiFieldNames.Labels,
+    type: FieldType.other,
+    values: labelsValues,
+    config: {},
+    typeInfo: { frame: 'json.RawMessage' },
+  };
+
+  const tsNs: TsNs = {
+    name: LokiFieldNames.TsNs,
+    type: FieldType.string,
+    values: tsNsValues,
+    config: {},
+    typeInfo: { frame: 'string' },
+  };
+
+  return [labels, time, tsNs] as unknown as LokiFields<unknown, unknown>;
+}

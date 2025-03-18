@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesTcp, CheckType } from 'types';
@@ -48,12 +49,13 @@ const TCP_REQUEST_FIELDS: TCPRequestFields = {
 
 const CheckTCPRequest = () => {
   const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
+  const { addIndividualRequest } = supportingContent;
   const { handleErrorRef } = useNestedRequestErrors(TCP_REQUEST_FIELDS);
+  const { getValues } = useFormContext<CheckFormValuesTcp>();
 
   const onTest = useCallback(() => {
-    addRequest(TCP_REQUEST_FIELDS);
-  }, [addRequest]);
+    addIndividualRequest(TCP_REQUEST_FIELDS, getValues());
+  }, [addIndividualRequest, getValues]);
 
   return <TCPRequest disabled={isFormDisabled} fields={TCP_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
 };

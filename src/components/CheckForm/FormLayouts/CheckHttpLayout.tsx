@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValues, CheckFormValuesHttp, CheckType } from 'types';
@@ -79,12 +80,13 @@ export const HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesHttp> = {
 
 const CheckHttpRequest = () => {
   const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
+  const { addIndividualRequest } = supportingContent;
   const { handleErrorRef } = useNestedRequestErrors(HTTP_REQUEST_FIELDS);
+  const { getValues } = useFormContext<CheckFormValuesHttp>();
 
   const onTest = useCallback(() => {
-    addRequest(HTTP_REQUEST_FIELDS);
-  }, [addRequest]);
+    addIndividualRequest(HTTP_REQUEST_FIELDS, getValues());
+  }, [addIndividualRequest, getValues]);
 
   return <HttpRequest disabled={isFormDisabled} fields={HTTP_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
 };

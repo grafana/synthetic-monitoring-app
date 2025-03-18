@@ -1,25 +1,43 @@
-import { LokiSeries, Time } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames, LokiFields, LokiSeries, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+
+type FieldParser = Partial<Record<LokiFieldNames, (value: any) => any>>;
 
 // ensure to send logfmt to Loki so the line is fully parsed
-export function parseLokiLogs<T, R>(dataFrame: LokiSeries<T, R>) {
-  const labels = dataFrame.fields.find((field) => field.name === 'labels');
-  const time = dataFrame.fields.find((field) => field.name === 'Time');
-  const orderedLogs = assignTime<T>(time, labels?.values);
-  // const messages = extractMessages(orderedLogs);
+export function parseLokiLogs<T, R>(dataFrame: LokiSeries<T, R>, parser?: FieldParser) {
+  const flattenedLogs = flattenLogs(dataFrame.fields, parser);
 
-  return orderedLogs;
+  return sortLogs(flattenedLogs);
 }
 
-export function assignTime<T extends unknown>(time?: Pick<Time, 'values' | 'nanos'>, input?: T[]) {
-  if (!input || !time) {
-    return [];
+export function flattenLogs<T, R>(fields: LokiFields<T, R>, parser?: FieldParser) {
+  const valuesLength = fields[0].values.length;
+  let flattenedLogs: Array<ParsedLokiRecord<T, R>> = [];
+
+  for (let i = 0; i < valuesLength; i++) {
+    const records = fields.map((entry) => {
+      const key: LokiFieldNames = entry.name;
+      const lineParser = parser?.[key];
+      const value = entry.values[i];
+
+      return {
+        [key]: lineParser ? lineParser(value) : value,
+      };
+    });
+
+    const values = records.reduce<ParsedLokiRecord<T, R>>(
+      (acc, curr) => ({
+        ...acc,
+        ...curr,
+      }),
+      {} as ParsedLokiRecord<T, R>
+    );
+
+    flattenedLogs.push(values);
   }
 
-  const orderedLogs = time.values.map((t, index) => ({
-    time: t,
-    nanotime: t * 1e6 + time.nanos[index],
-    value: input[index],
-  }));
+  return flattenedLogs;
+}
 
-  return orderedLogs.sort((a, b) => a.nanotime - b.nanotime);
+export function sortLogs<T, R>(logs: Array<ParsedLokiRecord<T, R>>) {
+  return logs.sort((a, b) => Number(a[LokiFieldNames.TsNs]) - Number(b[LokiFieldNames.TsNs]));
 }

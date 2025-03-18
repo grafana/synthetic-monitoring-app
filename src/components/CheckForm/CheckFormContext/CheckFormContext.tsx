@@ -1,6 +1,8 @@
 import React, { createContext, ReactNode, useContext, useMemo } from 'react';
 
 import { Request } from './CheckFormContext.types';
+import { CheckFormValues } from 'types';
+import { AdHocCheckResponse } from 'datasource/responses.types';
 import { RequestFields } from 'components/CheckEditor/CheckEditor.types';
 
 import { useTestRequests } from './useTestRequests';
@@ -9,17 +11,16 @@ type ContextProps = {
   isFormDisabled: boolean;
   supportingContent: {
     requests: Request[];
-    addRequest: (fields: RequestFields) => void;
+    addCheckTest: (checkFormValues: CheckFormValues, onTestSuccess?: (data: AdHocCheckResponse) => void) => void;
+    addIndividualRequest: (
+      fields: RequestFields,
+      checkFormValues: CheckFormValues,
+      onTestSuccess?: (data: AdHocCheckResponse) => void
+    ) => void;
   };
-};
+} | null;
 
-export const CheckFormContext = createContext<ContextProps>({
-  isFormDisabled: false,
-  supportingContent: {
-    requests: [],
-    addRequest: (fields: RequestFields) => {},
-  },
-});
+export const CheckFormContext = createContext<ContextProps>(null);
 
 interface CheckFormContextProviderProps {
   children: ReactNode;
@@ -27,17 +28,18 @@ interface CheckFormContextProviderProps {
 }
 
 export const CheckFormContextProvider = ({ children, disabled }: CheckFormContextProviderProps) => {
-  const { requests, addRequest } = useTestRequests();
+  const { requests, addCheckTest, addIndividualRequest } = useTestRequests();
 
   const value = useMemo(() => {
     return {
       isFormDisabled: disabled,
       supportingContent: {
         requests,
-        addRequest,
+        addCheckTest,
+        addIndividualRequest,
       },
     };
-  }, [disabled, requests, addRequest]);
+  }, [disabled, requests, addCheckTest, addIndividualRequest]);
 
   return <CheckFormContext.Provider value={value}>{children}</CheckFormContext.Provider>;
 };

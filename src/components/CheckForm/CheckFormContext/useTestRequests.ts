@@ -1,116 +1,152 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { DataFrameJSON, dateTime } from '@grafana/data';
+import { dateTime } from '@grafana/data';
+import { AdHocLog, parseAdHocLogs } from 'features/parseAdHocLogs/parseAdHocLogs';
+import { queryLoki } from 'features/queryDatasources/queryLoki';
 import { merge } from 'lodash';
 
 import { Request } from './CheckFormContext.types';
-import { CheckFormValues, Probe } from 'types';
+import { CheckFormValues } from 'types';
+import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useTestCheck } from 'data/useChecks';
-import { useLogs } from 'data/useLogs';
 import { useProbes } from 'data/useProbes';
+import { useLogsDS } from 'hooks/useLogsDS';
 import { RequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
 
-// todo: this needs work and isn't used currently
+const TIMEOUT_VALUE = 30000;
+const INTERVAL_VALUE = 2000;
+
 export function useTestRequests() {
-  const { mutate: getResults } = useLogs();
   const [requests, setRequests] = useState<Request[]>([]);
+  const { data: probes = [] } = useProbes();
   const { mutate: testCheck } = useTestCheck();
-  const { data: probes } = useProbes();
-  const { getValues } = useFormContext<CheckFormValues>();
+  const logsDS = useLogsDS();
 
   const latestRequest = requests[requests.length - 1];
-  const getRequestData = latestRequest?.data.state === `pending` && latestRequest?.data.adHocId;
+  const requestedProbesLength = latestRequest?.data.probes.length;
+  const adHocId = latestRequest?.data.state === `pending` && latestRequest?.data.adHocId;
+  const requestId = latestRequest?.id;
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     let timeout: NodeJS.Timeout;
 
-    if (getRequestData) {
+    if (adHocId && logsDS) {
+      timeout = setTimeout(() => {
+        clearInterval(interval);
+      }, TIMEOUT_VALUE);
+
       interval = setInterval(() => {
         const now = Date.now();
         const from = dateTime(now).subtract(5, 'm');
         const to = dateTime(now);
 
-        getResults(
-          { expr: `{type="adhoc"} |= "${latestRequest.data.adHocId}"`, range: { raw: { from, to }, from, to } },
-          {
-            onSuccess: (data) => {
-              const parsed = parseLogLine(data);
-              console.log(parsed);
+        const refId = `adhoc-${adHocId}`;
 
-              if (parsed) {
-                setRequests((prev) =>
-                  updateRequest(prev, latestRequest.id, {
-                    data: {
-                      state: `pending`,
-                      result: parsed,
-                    },
-                  })
-                );
+        try {
+          queryLoki({
+            query: `{type=\`adhoc\`} |= \`${adHocId}\` | logfmt | json`,
+            start: from.valueOf(),
+            end: to.valueOf(),
+            datasource: logsDS,
+            refId,
+          }).then((res) => {
+            const val = res[refId] as AdHocLog[];
+            const adHocLogs = parseAdHocLogs(val);
+            const result = adHocLogs[0];
+            let state: 'pending' | 'success' | 'error' = `pending`;
 
-                clearInterval(interval);
-              }
-
-              timeout = setTimeout(() => {
-                clearInterval(interval);
-                clearTimeout(timeout);
-              }, 30000);
-            },
-            onError: (err) => {
-              console.log(err);
+            if (result.length === requestedProbesLength) {
               clearInterval(interval);
               clearTimeout(timeout);
-            },
-          }
-        );
-      }, 1000);
+              state = `success`;
+            }
+
+            setRequests((prev) =>
+              updateRequest(prev, requestId, {
+                data: {
+                  state,
+                  result,
+                },
+              })
+            );
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }, INTERVAL_VALUE);
     }
 
     return () => {
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [getRequestData, getResults, latestRequest]);
+  }, [logsDS, probes.length, adHocId, requestId, requestedProbesLength]);
 
-  const addRequest = useCallback(
-    (fields: RequestFields) => {
+  const doTest = useCallback(
+    (values: CheckFormValues, onTestSuccess?: (data: AdHocCheckResponse) => void) => {
       if (probes?.length) {
-        const values = pullOutRequestValues(fields, getValues(), probes);
         const id = Math.random();
 
         setRequests((prev) => newRequest(prev, id, values));
+        const onlineProbesAvailable = probes.filter((probe) => probe).map((probe) => probe.id);
+        const selectedProbes = values.probes.filter((probe) => onlineProbesAvailable.includes(probe));
+        const check = toPayload(values);
 
-        testCheck(toPayload(values), {
-          onSuccess: (data) => {
-            setRequests((prev) =>
-              updateRequest(prev, id, {
-                check: {
-                  state: `success`,
-                },
-                data: {
-                  adHocId: data.id,
-                  state: `pending`,
-                },
-              })
-            );
+        testCheck(
+          {
+            ...check,
+            probes: selectedProbes,
           },
-          onError: (error) => {
-            setRequests((prev) =>
-              updateRequest(prev, id, {
-                check: {
-                  state: `error`,
-                },
-              })
-            );
-          },
-        });
+          {
+            onSuccess: (data) => {
+              setRequests((prev) =>
+                updateRequest(prev, id, {
+                  check: {
+                    state: `success`,
+                  },
+                  data: {
+                    adHocId: data.id,
+                    state: `pending`,
+                    probes: data.probes,
+                  },
+                })
+              );
+
+              onTestSuccess?.(data);
+            },
+            onError: (error) => {
+              setRequests((prev) =>
+                updateRequest(prev, id, {
+                  check: {
+                    state: `error`,
+                  },
+                })
+              );
+            },
+          }
+        );
       }
     },
-    [getValues, testCheck, probes]
+    [probes, testCheck]
   );
 
-  return { requests, addRequest };
+  // not used currently
+  const addIndividualRequest = useCallback(
+    (fields: RequestFields, checkFormValues: CheckFormValues, onTestSuccess?: (data: AdHocCheckResponse) => void) => {
+      doTest(checkFormValues, onTestSuccess);
+    },
+    [doTest]
+  );
+
+  const addCheckTest = useCallback(
+    (checkFormValues: CheckFormValues, onTestSuccess?: (data: AdHocCheckResponse) => void) => {
+      doTest(checkFormValues, onTestSuccess);
+    },
+    [doTest]
+  );
+
+  return { requests, addIndividualRequest, addCheckTest };
 }
 
 type DeepPartial<T> = {
@@ -133,15 +169,6 @@ function updateRequest(state: Request[], id: number, request: DeepPartial<Reques
   });
 }
 
-function pullOutRequestValues(fields: RequestFields, values: CheckFormValues, probes: Probe[]) {
-  const probeId = probes[0].id as number;
-
-  return {
-    ...values,
-    probes: [probeId],
-  };
-}
-
 function newRequest(state: Request[], id: number, values: CheckFormValues): Request[] {
   const lastEntry = state[state.length - 1];
 
@@ -154,6 +181,7 @@ function newRequest(state: Request[], id: number, values: CheckFormValues): Requ
     data: {
       adHocId: null,
       state: `pending`,
+      probes: [],
       result: null,
     },
   };
@@ -163,27 +191,4 @@ function newRequest(state: Request[], id: number, values: CheckFormValues): Requ
   }
 
   return [...state, newEntry];
-}
-
-function parseLogLine(dataFrames: DataFrameJSON[]) {
-  const firstFrame = dataFrames[0];
-
-  if (firstFrame) {
-    const schema = firstFrame.schema;
-    const lineIndex = schema?.fields.findIndex((field) => field.name === `Line`) || -1;
-    const data = firstFrame.data;
-    const logLineRow = data?.values[lineIndex];
-    const line = logLineRow?.[0] as string;
-
-    if (line) {
-      try {
-        return JSON.parse(line);
-      } catch (error) {
-        console.log(`couldn't parse line: ${line}`); // eslint-disable-line no-console
-        return null;
-      }
-    }
-  }
-
-  return null;
 }

@@ -14,11 +14,12 @@ import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckTyp
 import { ROUTES } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
-import { useCUDChecks, useTestCheck } from 'data/useChecks';
+import { useCUDChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from 'components/CheckEditor/transformations/toPayload.alerts';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 import { broadcastFailedSubmission, findFieldToFocus } from './checkForm.utils';
 import { useFormCheckType } from './useCheckType';
@@ -49,10 +50,14 @@ interface UseCheckFormProps {
 
 export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormProps) {
   const [submittingToApi, setSubmittingToApi] = useState(false);
+  const { supportingContent } = useCheckFormContext();
+  const { addCheckTest, requests } = supportingContent;
+  const latestRequest = requests[requests.length - 1];
+  const testCheckError = latestRequest?.check.state === `error`;
+  const testCheckPending = latestRequest?.check.state === `pending`;
   const navigate = useNavigation();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
   const testButtonRef = useRef<HTMLButtonElement>(null);
-  const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
   const navigateToChecks = useCallback(() => navigate(ROUTES.Checks), [navigate]);
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
@@ -98,15 +103,15 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
     (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
       // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
       const submitter = (event?.nativeEvent as SubmitEvent).submitter;
-      const toSubmit = toPayload(checkValues);
 
       if (submitter === testButtonRef.current) {
-        return testCheck(toSubmit, { onSuccess: onTestSuccess });
+        return addCheckTest(checkValues, onTestSuccess);
       }
 
+      const toSubmit = toPayload(checkValues);
       mutateCheck(toSubmit, alertsEnabled ? checkValues?.alerts : undefined);
     },
-    [mutateCheck, onTestSuccess, testCheck, alertsEnabled]
+    [mutateCheck, addCheckTest, alertsEnabled, onTestSuccess]
   );
 
   const handleInvalid = useCallback((errs: FieldErrors) => {
@@ -120,8 +125,8 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
 
   return {
     error,
-    testCheckError: testError,
-    testCheckPending: isPending,
+    testCheckError,
+    testCheckPending,
     testButtonRef,
     handleValid,
     handleInvalid,

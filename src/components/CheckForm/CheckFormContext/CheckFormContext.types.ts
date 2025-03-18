@@ -8,6 +8,7 @@ export type Request = {
   data: {
     adHocId: null | string;
     state: 'pending' | 'success' | 'error';
+    probes: number[];
     result: any;
   };
 };

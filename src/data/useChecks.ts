@@ -235,7 +235,7 @@ export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<Ad
   const eventType = FaroEvent.TEST_CHECK;
 
   return useMutation<AdHocCheckResponse, Error, Check, UseMutationResult>({
-    mutationFn: async (check: Check) => {
+    mutationFn: async (check) => {
       try {
         const res = await smDS
           .testCheck(check)
