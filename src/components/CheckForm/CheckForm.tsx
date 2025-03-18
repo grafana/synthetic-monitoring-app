@@ -157,6 +157,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   });
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
 
+  const [alertsInitialized, setAlertsInitialized] = useState(false);
+
   const alerts = (error || testCheckError) && (
     <Stack direction={`column`}>
       {error && (
@@ -190,6 +192,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
         },
       };
       setFormDefaultValues(newDefaults);
+      setAlertsInitialized(true);
     },
     [defaultValues, setFormDefaultValues]
   );
@@ -269,7 +272,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                         </TabsBar>
                         <TabContent>
                           <div className={styles.wrapper}>
-                            {selectedAlertingTab === 'alerting' && <AlertsPerCheck onInitAlerts={handleInitAlerts} />}
+                            {selectedAlertingTab === 'alerting' && <AlertsPerCheck onInitAlerts={handleInitAlerts} isInitialized={alertsInitialized} />}
                             {selectedAlertingTab === 'sensitivity' && <CheckFormAlert />}
                           </div>
                         </TabContent>{' '}

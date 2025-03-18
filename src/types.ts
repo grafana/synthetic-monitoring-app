@@ -653,15 +653,7 @@ export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 
 export enum CheckAlertType {
   ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
-  HTTPRequestDurationTooHighP50 = 'HTTPRequestDurationTooHighP50',
-  HTTPRequestDurationTooHighP90 = 'HTTPRequestDurationTooHighP90',
-  HTTPRequestDurationTooHighP95 = 'HTTPRequestDurationTooHighP95',
-  HTTPRequestDurationTooHighP99 = 'HTTPRequestDurationTooHighP99',
   HTTPTargetCertificateCloseToExpiring = 'HTTPTargetCertificateCloseToExpiring',
-  PingICMPDurationTooHighP50 = 'PingICMPDurationTooHighP50',
-  PingICMPDurationTooHighP90 = 'PingICMPDurationTooHighP90',
-  PingICMPDurationTooHighP95 = 'PingICMPDurationTooHighP95',
-  PingICMPDurationTooHighP99 = 'PingICMPDurationTooHighP99',
 }
 
 export enum CheckAlertCategory {

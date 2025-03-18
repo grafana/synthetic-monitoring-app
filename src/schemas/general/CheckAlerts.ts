@@ -6,13 +6,15 @@ const isScientificNotation = (val: number) => {
   return /e|E/.test(val.toString());
 };
 
+const emptyMessage = 'You need to set a threshold value';
+
 const CheckAlertSchema = z
   .object({
     id: z.number().optional(),
     isSelected: z.boolean().optional(),
     period: z.string().optional(),
     threshold: z
-      .number()
+      .number({ message: emptyMessage })
       .optional()
       .refine((value) => !value || (value >= 0.01 && !isScientificNotation(value)), {
         message: 'Invalid threshold value',
@@ -29,18 +31,20 @@ const CheckAlertSchema = z
       }
       return true;
     },
-    { message: 'You need to set a threshold value', path: ['threshold'] }
+    { message: emptyMessage, path: ['threshold'] }
   );
 
+const ProbeFailedExecutionsTooHighSchema = CheckAlertSchema.refine(
+  (data) => {
+    if (data.isSelected && !data.period) {
+      return false;
+    }
+    return true;
+  },
+  { message: 'You need to choose a period for this alert', path: ['period'] }
+);
+
 export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: CheckAlertSchema.optional(),
-  HTTPRequestDurationTooHighP50: CheckAlertSchema.optional(),
-  HTTPRequestDurationTooHighP90: CheckAlertSchema.optional(),
-  HTTPRequestDurationTooHighP95: CheckAlertSchema.optional(),
-  HTTPRequestDurationTooHighP99: CheckAlertSchema.optional(),
+  ProbeFailedExecutionsTooHigh: ProbeFailedExecutionsTooHighSchema.optional(),
   HTTPTargetCertificateCloseToExpiring: CheckAlertSchema.optional(),
-  PingICMPDurationTooHighP50: CheckAlertSchema.optional(),
-  PingICMPDurationTooHighP90: CheckAlertSchema.optional(),
-  PingICMPDurationTooHighP95: CheckAlertSchema.optional(),
-  PingICMPDurationTooHighP99: CheckAlertSchema.optional(),
 });

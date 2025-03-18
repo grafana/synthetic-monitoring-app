@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
-import { Checkbox, Icon, PopoverContent, Select, Stack, Tooltip } from '@grafana/ui';
+import { Checkbox, Icon, InlineField, PopoverContent, Select, Stack, Tooltip } from '@grafana/ui';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import pluralize from 'pluralize';
 
@@ -23,7 +23,7 @@ export const FailedExecutionsAlert = ({
   tooltipContent: PopoverContent;
 }) => {
   const { isFormDisabled } = useCheckFormContext();
-  const { getValues, setValue, control } = useFormContext<CheckFormValues>();
+  const { getValues, setValue, control, formState } = useFormContext<CheckFormValues>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
@@ -34,12 +34,12 @@ export const FailedExecutionsAlert = ({
   const threshold = getValues(`alerts.${alert.type}.threshold`);
   const period = getValues(`alerts.${alert.type}.period`);
 
-  //min time range >= check frequency
   const convertPeriodToSeconds = useCallback(
     (period: string) => durationToMilliseconds(parseDuration(period)) / 1000,
     []
   );
 
+  //min time range >= check frequency
   const validPeriods = useMemo(
     () => ALERT_PERIODS.filter((period) => convertPeriodToSeconds(period.value) >= checkFrequency),
     [checkFrequency, convertPeriodToSeconds]
@@ -62,6 +62,8 @@ export const FailedExecutionsAlert = ({
     return getTotalChecksPerPeriod(probes.length, checkFrequency, convertPeriodToSeconds(period));
   }, [checkFrequency, period, probes, convertPeriodToSeconds]);
 
+  const periodError = formState.errors?.alerts?.[alert.type]?.period?.message;
+
   return (
     <Stack alignItems="center">
       <Stack alignItems="center">
@@ -78,25 +80,28 @@ export const FailedExecutionsAlert = ({
             : pluralize('execution', threshold)}{' '}
           fail
           {threshold === 1 && 's'} in the last
-          <Controller
-            name={`alerts.${alert.type}.period`}
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                disabled={!selected || isFormDisabled}
-                data-testid="alertPendingPeriod"
-                options={validPeriods}
-                value={field.value}
-                onChange={(value) => {
-                  if (value === null) {
-                    return field.onChange(null);
-                  }
-                  field.onChange(value.value);
-                }}
-              />
-            )}
-          />
+          <InlineField htmlFor={`alert-period-${alert.type}`} invalid={!!periodError} error={periodError}>
+            <Controller
+              name={`alerts.${alert.type}.period`}
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  disabled={!selected || isFormDisabled}
+                  data-testid="alertPendingPeriod"
+                  id={`alert-period-${alert.type}`}
+                  options={validPeriods}
+                  value={field.value}
+                  onChange={(value) => {
+                    if (value === null) {
+                      return field.onChange(null);
+                    }
+                    field.onChange(value.value);
+                  }}
+                />
+              )}
+            />
+          </InlineField>
         </Stack>
       </Stack>
       <Tooltip content={tooltipContent} placement="bottom" interactive={true}>

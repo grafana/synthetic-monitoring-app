@@ -12,9 +12,10 @@ import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.co
 
 interface AlertsPerCheckProps {
   onInitAlerts: (formAlerts: Partial<Record<CheckAlertType, CheckAlertFormValues>>) => void;
+  isInitialized: boolean;
 }
 
-export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
+export const AlertsPerCheck = ({ onInitAlerts, isInitialized }: AlertsPerCheckProps) => {
   const styles = useStyles2(getStyles);
 
   const { getValues, setValue, control } = useFormContext<CheckFormValues>();
@@ -25,7 +26,7 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
   const { data: checkAlerts, isLoading, isError } = useListAlertsForCheck(checkId);
 
   useEffect(() => {
-    if (!checkAlerts) {
+    if (!checkAlerts || isInitialized) {
       return;
     }
 
@@ -54,7 +55,7 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
         { shouldDirty: false }
       );
     });
-  }, [checkAlerts, setValue, onInitAlerts]);
+  }, [checkAlerts, setValue, onInitAlerts, isInitialized]);
 
   const groupedByCategory = useMemo(
     () =>
