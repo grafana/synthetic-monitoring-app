@@ -227,17 +227,12 @@ describe(`<NewCheck /> journey`, () => {
 
     await user.clear(timeoutMinutesInput);
     await user.clear(timeoutSecondsInput);
-    await user.type(timeoutMinutesInput, '1');
+    await user.type(timeoutMinutesInput, '2');
     await user.type(timeoutSecondsInput, '30');
 
     await goToSection(user, 5);
 
-    const minutesInput = screen.getByLabelText('frequency minutes input');
-    const secondsInput = screen.getByLabelText('frequency seconds input');
-    await user.clear(minutesInput);
-    await user.clear(secondsInput);
-    await user.type(minutesInput, `{backspace}1`);
-    await user.type(secondsInput, '10');
+    await user.click(screen.getByRole('radio', { name: '2m' }));
 
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
     await user.click(probeCheckbox);
@@ -246,7 +241,7 @@ describe(`<NewCheck /> journey`, () => {
 
     const errorMsg = await screen.findByRole('alert');
     expect(errorMsg).toBeInTheDocument();
-    expect(errorMsg).toHaveTextContent(/Frequency must be greater than or equal to timeout \(180 seconds\)/);
+    expect(errorMsg).toHaveTextContent(/Frequency must be greater than or equal to timeout \(3 minutes\)/);
   });
 
   // jsdom doesn't give us back the submitter of the form, so we can't test this

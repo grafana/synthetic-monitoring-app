@@ -173,6 +173,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   );
 
   const formValues = formMethods.getValues();
+  // console.log(formMethods.formState.errors);
 
   const isFormModified = useMemo(() => {
     return checkHasChanges(formDefaultValues, formValues);

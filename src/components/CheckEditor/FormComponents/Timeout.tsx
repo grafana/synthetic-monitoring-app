@@ -34,17 +34,18 @@ export const Timeout = ({ checkType }: TimeoutProps) => {
         name="timeout"
         control={control}
         render={({ field }) => {
-          const valueInSeconds = field.value / 1000;
+          const { ref, onChange, value, ...fieldProps } = field; // ref is unused, this is to silence warnings
+          const valueInSeconds = value / 1000;
           const minInSeconds = min / 1000;
           const maxInSeconds = max / 1000;
-          const handleOnChange = (value: number) => {
-            field.onChange(value * 1000);
+          const handleOnChange = (v: number) => {
+            onChange(v * 1000);
           };
 
           if (readOnly) {
             return (
               <Input
-                {...field}
+                {...fieldProps}
                 value={valueInSeconds}
                 id={`timeout`}
                 prefix="Every"
@@ -59,7 +60,7 @@ export const Timeout = ({ checkType }: TimeoutProps) => {
               disabled={isFormDisabled}
               min={minInSeconds}
               max={maxInSeconds}
-              {...field}
+              {...fieldProps}
               value={valueInSeconds}
               onChange={handleOnChange}
               analyticsLabel="timeout"

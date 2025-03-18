@@ -50,8 +50,6 @@ const MultiHttpRequestSchema: ZodType<RequestProps> = z.object({
       text: z.string(),
     })
     .optional(),
-  frequency: FrequencySchema(MIN_FREQUENCY_MULTI_HTTP),
-  timeout: TimeoutSchema(MIN_FREQUENCY_MULTI_HTTP, MAX_TIMEOUT_MULTI_HTTP),
 });
 
 const AssertionValueSchema = z
@@ -125,6 +123,6 @@ export const MultiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = BaseCheck
       multihttp: MultiHttpSettingsSchema,
     }),
     frequency: FrequencySchema(MIN_FREQUENCY_MULTI_HTTP),
-    timeout: TimeoutSchema(MIN_FREQUENCY_MULTI_HTTP, MAX_TIMEOUT_MULTI_HTTP),
+    timeout: TimeoutSchema(MIN_TIMEOUT_MULTI_HTTP, MAX_TIMEOUT_MULTI_HTTP),
   })
 );

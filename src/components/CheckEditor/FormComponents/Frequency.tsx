@@ -1,6 +1,8 @@
 import React, { ChangeEvent, KeyboardEvent, ReactElement, useCallback, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Field, Input, RadioButtonGroup, Stack, Tab, TabsBar, Text } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Field, Input, RadioButtonGroup, Stack, Tab, TabsBar, Text, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { MAX_BASE_FREQUENCY } from 'schemas/general/Frequency';
 
 import { CheckFormValues, CheckType } from 'types';
@@ -20,6 +22,9 @@ interface FrequencyComponentProps {
 }
 
 const TAB_KEYS = ['basic', 'custom'] as const;
+export const FREQUENCY_INPUT_ID = 'frequency-input';
+export const FREQUENCY_SECONDS_INPUT_ID = 'frequency-seconds-input';
+export const FREQUENCY_MINUTES_INPUT_ID = 'frequency-minutes-input';
 
 const TABS: Record<
   (typeof TAB_KEYS)[number],
@@ -41,6 +46,7 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
     formState: { errors },
     getValues,
   } = useFormContext<CheckFormValues>();
+  const styles = useStyles2(getStyles);
   const { frequency } = getValues();
   const frequencyInSeconds = frequency;
   const isBasic = FREQUENCY_OPTIONS.includes(frequencyInSeconds);
@@ -50,7 +56,12 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
   const minFrequency = MIN_FREQUENCY_MAP[checkType];
 
   return (
-    <Field invalid={Boolean(frequencyError)} error={frequencyError}>
+    <Field
+      invalid={Boolean(frequencyError) || undefined}
+      error={frequencyError}
+      className={styles.field}
+      id={FREQUENCY_INPUT_ID}
+    >
       <Stack direction="column" gap={1.5}>
         <Stack direction="column" gap={0.5}>
           <Text element="h3" variant="h6">
@@ -113,6 +124,7 @@ function BasicFrequency({ value, onChange, min, max }: FrequencyComponentProps) 
 const INPUT_WIDTH = 10;
 
 function CustomFrequency({ value, onChange }: FrequencyComponentProps) {
+  const styles = useStyles2(getStyles);
   const { minutes, seconds } = frequencyInSecondsAndMinutes(value);
 
   const [inputMinutes, setInputMinutes] = useState<number | undefined>(minutes);
@@ -143,31 +155,36 @@ function CustomFrequency({ value, onChange }: FrequencyComponentProps) {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Enter') {
-        event.preventDefault();
+        if (inputSeconds !== seconds) {
+          event.preventDefault();
+        }
+
         handleUpdateFrequency();
       }
     },
-    [handleUpdateFrequency]
+    [handleUpdateFrequency, inputSeconds, seconds]
   );
 
   return (
     <Stack>
-      <Field label="Minutes">
+      <Field label="Minutes" className={styles.field}>
         <Input
           onChange={handleMinutesChange}
           value={inputMinutes}
           width={INPUT_WIDTH}
           onBlur={handleUpdateFrequency}
           onKeyDown={handleKeyDown}
+          id={FREQUENCY_MINUTES_INPUT_ID}
         />
       </Field>
-      <Field label="Seconds">
+      <Field label="Seconds" className={styles.field}>
         <Input
           onChange={handleSecondsChange}
           value={inputSeconds}
           width={INPUT_WIDTH}
           onBlur={handleUpdateFrequency}
           onKeyDown={handleKeyDown}
+          id={FREQUENCY_SECONDS_INPUT_ID}
         />
       </Field>
     </Stack>
@@ -180,3 +197,9 @@ function frequencyInSecondsAndMinutes(milliseconds: number) {
 
   return { minutes, seconds };
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  field: css`
+    margin-bottom: 0;
+  `,
+});
