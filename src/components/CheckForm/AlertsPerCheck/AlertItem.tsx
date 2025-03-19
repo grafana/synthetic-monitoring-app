@@ -13,13 +13,7 @@ import { HTTPTargetCertificateCloseToExpiringAlert } from './HTTPTargetCertifica
 
 function createExploreLink(dataSourceName: string, query: string) {
   return urlUtil.renderUrl(`/explore`, {
-    left: JSON.stringify([
-      'now-5m',
-      'now',
-      dataSourceName,
-      { datasource: dataSourceName, expr: query },
-      { ui: [true, true, true, 'none'] },
-    ]),
+    left: JSON.stringify(['now-3h', 'now', dataSourceName, { datasource: dataSourceName, expr: query }]),
   });
 }
 
