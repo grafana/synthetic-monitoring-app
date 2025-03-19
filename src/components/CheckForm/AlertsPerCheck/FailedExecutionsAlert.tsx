@@ -8,6 +8,7 @@ import {
   InlineFieldRow,
   PopoverContent,
   Select,
+  Stack,
   Text,
   Tooltip,
   useStyles2,
@@ -18,6 +19,7 @@ import pluralize from 'pluralize';
 import { CheckAlertType, CheckFormValues } from 'types';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
+import { AlertEvaluationInfo } from './AlertEvaluationInfo';
 import { getAlertItemStyles } from './AlertItem';
 import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { ThresholdSelector } from './ThresholdSelector';
@@ -77,54 +79,65 @@ export const FailedExecutionsAlert = ({
   const periodError = formState.errors?.alerts?.[alert.type]?.period?.message;
 
   return (
-    <InlineFieldRow className={styles.alertRow}>
-      <Checkbox
-        className={styles.alertCheckbox}
-        id={`alert-${alert.type}`}
-        data-testid={`checkbox-alert-${alert.type}`}
-        onClick={() => handleToggleAlert(alert.type)}
-        checked={selected}
-      />
-      <Text>Alert if at least</Text> <ThresholdSelector alert={alert} selected={selected} />
-      <Text>
-        {testExecutionsPerPeriod
-          ? `of ${testExecutionsPerPeriod} ${pluralize('execution', testExecutionsPerPeriod)}`
-          : pluralize('execution', threshold)}{' '}
-        fail
-        {threshold === 1 && 's'} in the last
-      </Text>
-      <InlineField
-        htmlFor={`alert-period-${alert.type}`}
-        invalid={!!periodError}
-        error={periodError}
-        validationMessageHorizontalOverflow={true}
-      >
-        <Controller
-          name={`alerts.${alert.type}.period`}
-          control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              disabled={!selected || isFormDisabled}
-              data-testid="alertPendingPeriod"
-              id={`alert-period-${alert.type}`}
-              options={validPeriods}
-              value={field.value}
-              onChange={(value) => {
-                if (value === null) {
-                  return field.onChange(null);
-                }
-                field.onChange(value.value);
-              }}
-            />
-          )}
+    <Stack direction={'column'}>
+      <InlineFieldRow className={styles.alertRow}>
+        <Checkbox
+          className={styles.alertCheckbox}
+          id={`alert-${alert.type}`}
+          data-testid={`checkbox-alert-${alert.type}`}
+          onClick={() => handleToggleAlert(alert.type)}
+          checked={selected}
         />
-      </InlineField>
-      <div className={styles.alertTooltip}>
-        <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
-          <Icon name="info-circle" />
-        </Tooltip>
-      </div>
-    </InlineFieldRow>
+        <Text>Alert if at least</Text> <ThresholdSelector alert={alert} selected={selected} />
+        <Text>
+          {testExecutionsPerPeriod
+            ? `of ${testExecutionsPerPeriod} ${pluralize('execution', testExecutionsPerPeriod)}`
+            : pluralize('execution', threshold)}{' '}
+          fail
+          {threshold === 1 && 's'} in the last
+        </Text>
+        <InlineField
+          htmlFor={`alert-period-${alert.type}`}
+          invalid={!!periodError}
+          error={periodError}
+          validationMessageHorizontalOverflow={true}
+        >
+          <Controller
+            name={`alerts.${alert.type}.period`}
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                disabled={!selected || isFormDisabled}
+                data-testid="alertPendingPeriod"
+                id={`alert-period-${alert.type}`}
+                options={validPeriods}
+                value={field.value}
+                onChange={(value) => {
+                  if (value === null) {
+                    return field.onChange(null);
+                  }
+                  field.onChange(value.value);
+                }}
+              />
+            )}
+          />
+        </InlineField>
+        <div className={styles.alertTooltip}>
+          <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
+            <Icon name="info-circle" />
+          </Tooltip>
+        </div>
+      </InlineFieldRow>
+
+      {selected && testExecutionsPerPeriod !== '' && (
+        <AlertEvaluationInfo
+          testExecutionsPerPeriod={testExecutionsPerPeriod}
+          checkFrequency={checkFrequency}
+          period={period}
+          probesNumber={probes.length}
+        />
+      )}
+    </Stack>
   );
 };
