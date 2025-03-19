@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.20.1",
+  "version": "1.21.0",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "build": "webpack -c webpack.config.ts --env production",
@@ -54,7 +54,7 @@
     "@types/valid-url": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.1",
-    "axios": "1.7.4",
+    "axios": "1.8.2",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
     "eslint": "8.26.0",
@@ -132,6 +132,7 @@
     "react-router-dom-v5-compat": "^6.27.0",
     "rxjs": "7.8.1",
     "tslib": "2.5.3",
+    "use-konami": "^1.0.1",
     "usehooks-ts": "^3.1.0",
     "valid-url": "^1.0.9",
     "yaml": "^2.2.2",

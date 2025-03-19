@@ -12,14 +12,13 @@ import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
 
+import { DevTools } from './DevTools';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 
 export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta } = props;
 
   useEffect(() => {
- 
-
     return () => {
       // we have a dependency on alerts to display our alerting correctly
       // so we are invalidating the alerts list on the assumption the user might change their alerting options when they leave SM
@@ -36,7 +35,9 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
           <GlobalStyles />
           <SMDatasourceProvider>
             <PermissionsContextProvider>
-              <InitialisedRouter />
+              <DevTools>
+                <InitialisedRouter />
+              </DevTools>
             </PermissionsContextProvider>
             <ReactQueryDevtools />
           </SMDatasourceProvider>

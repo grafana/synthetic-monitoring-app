@@ -24,4 +24,6 @@ export enum DataTestIds {
   PREFORMATTED = 'preformatted',
   CHECK_FORM_SUBMIT_BUTTON = 'check-form-submit-button',
   CONFIRM_UNSAVED_MODAL_HEADING = 'confirm-unsaved-modal-heading',
+  CHECK_USAGE = 'check-usage',
+  CHECKS_EMPTY_STATE = 'checks-empty-state',
 }
