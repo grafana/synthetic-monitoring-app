@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, urlUtil } from '@grafana/data';
 import { TextLink, useStyles2 } from '@grafana/ui';
@@ -34,7 +34,7 @@ export const AlertItem = ({
 }) => {
   const styles = useStyles2(getAlertItemStyles);
 
-  const { getValues } = useFormContext<CheckFormValues>();
+  const { getValues, clearErrors } = useFormContext<CheckFormValues>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
@@ -46,6 +46,12 @@ export const AlertItem = ({
   const instance = getValues('target');
   const threshold = getValues(`alerts.${alert.type}.threshold`);
   const period = getValues(`alerts.${alert.type}.period`);
+
+  useEffect(() => {
+    if (!selected) {
+      clearErrors(`alerts.${alert.type}`);
+    }
+  }, [selected, clearErrors, alert.type]);
 
   const query = alert.query
     .replace(/\$instance/g, instance)
@@ -107,7 +113,7 @@ export const getAlertItemStyles = (theme: GrafanaTheme2) => ({
     },
   }),
   alertCheckbox: css({
-    marginTop: theme.spacing(0.75)
+    marginTop: theme.spacing(0.75),
   }),
   alertTooltip: css({
     marginTop: theme.spacing(1),

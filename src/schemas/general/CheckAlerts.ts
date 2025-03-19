@@ -15,8 +15,9 @@ const CheckAlertSchema = z
     period: z.string().optional(),
     threshold: z
       .number({ message: invalidThreshold })
+      .int({ message: invalidThreshold })
       .optional()
-      .refine((value) => !value || (value >= 1 && (!isScientificNotation(value) || !Number.isInteger(value))), {
+      .refine((value) => !value || (value >= 1 && !isScientificNotation(value)), {
         message: invalidThreshold,
       }),
   })
