@@ -130,7 +130,7 @@ export const FailedExecutionsAlert = ({
         </div>
       </InlineFieldRow>
 
-      {selected && testExecutionsPerPeriod !== '' && (
+      {selected && !!testExecutionsPerPeriod && (
         <AlertEvaluationInfo
           testExecutionsPerPeriod={testExecutionsPerPeriod}
           checkFrequency={checkFrequency}
