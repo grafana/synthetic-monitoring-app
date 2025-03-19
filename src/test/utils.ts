@@ -9,7 +9,7 @@ import {
 } from 'test/fixtures/datasources';
 
 import { ExtendedProbe, FeatureName, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
-import { camelCaseToSentence } from 'utils';
+import { pascalCaseToSentence } from 'utils';
 
 import { FULL_ADMIN_ACCESS, FULL_READONLY_ACCESS, FULL_WRITER_ACCESS } from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
@@ -306,7 +306,7 @@ export const probeToMetadataProbe = (probe: Probe): ProbeWithMetadata => ({
   countryCode: 'cc',
   region: 'region',
   longRegion: 'long region',
-  displayName: camelCaseToSentence(probe.name),
+  displayName: pascalCaseToSentence(probe.name),
 });
 
 export const probeToExtendedProbe = (probe: Probe, usedByChecks: number[] = []): ExtendedProbe => ({

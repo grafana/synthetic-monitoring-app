@@ -151,16 +151,11 @@ export const useAppInitializer = (redirectTo?: ROUTES) => {
       return;
     }
     setLoading(true);
-    const body = {
-      stackId: isNumber(stackId) ? stackId : parseInt(stackId ?? '1', 10),
-      metricsInstanceId: metricsHostedId,
-      logsInstanceId: logsHostedId,
-    };
     try {
-      const { accessToken } = await getBackendSrv().request<{ accessToken: string }>({
-        url: `api/plugin-proxy/${id}/install`,
-        method: 'POST',
-        data: body,
+      const { accessToken } = await getBackendSrv().post<{ accessToken: string }>(`api/plugin-proxy/${id}/install`, {
+        stackId: isNumber(stackId) ? stackId : parseInt(stackId ?? '1', 10),
+        metricsInstanceId: metricsHostedId,
+        logsInstanceId: logsHostedId,
       });
       const datasourcePayload = {
         apiHost: jsonData.apiHost,

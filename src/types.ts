@@ -65,6 +65,7 @@ export enum ProbeProvider {
   AWS = 'AWS',
   LINODE = 'Linode',
   DIGITAL_OCEAN = 'Digital Ocean',
+  PRIVATE = '',
 }
 
 export interface HeaderMatch {
@@ -126,6 +127,7 @@ export interface Probe extends ExistingObject {
 
 export type ProbeMetadata = {
   name: string;
+  displayName: string;
   provider: ProbeProvider;
   country: string;
   countryCode: string;
@@ -703,7 +705,6 @@ export enum FeatureName {
   GRPCChecks = 'grpc-checks',
   ScriptedChecks = 'scripted-checks',
   UnifiedAlerting = 'ngalert',
-  UptimeQueryV2 = 'uptime-query-v2',
   RBAC = 'synthetic-monitoring-rbac',
   AlertsPerCheck = 'sm-alerts-per-check',
   __TURNOFF = 'test-only-do-not-use',

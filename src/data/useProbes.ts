@@ -3,9 +3,8 @@ import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQue
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
-import { ExtendedProbe, type Probe, ProbeMetadata, ProbeWithMetadata } from 'types';
+import { ExtendedProbe, type Probe, ProbeWithMetadata } from 'types';
 import { FaroEvent } from 'faro';
-import { camelCaseToSentence } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
   AddProbeResult,
@@ -16,7 +15,7 @@ import type {
 } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
-import { PROBES_METADATA } from 'components/CheckEditor/ProbesMetadata';
+import { EMPTY_METADATA, PROBES_METADATA } from 'components/CheckEditor/ProbesMetadata';
 
 import { useChecks } from './useChecks';
 
@@ -48,15 +47,13 @@ export function useProbesWithMetadata() {
     return probes
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((probe) => {
-        const metadata = PROBES_METADATA.find(
-          (info) => info.name === probe.name && info.region === probe.region
-        ) as ProbeMetadata;
-        const displayName = camelCaseToSentence(probe.name);
+        const metadata =
+          PROBES_METADATA.find((info) => info.name === probe.name && info.region === probe.region) || EMPTY_METADATA;
 
         return {
-          ...probe,
           ...metadata,
-          displayName,
+          ...probe,
+          displayName: metadata.displayName || probe.name,
         };
       });
   }, [probes, isLoading]);

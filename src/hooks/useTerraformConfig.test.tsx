@@ -109,6 +109,7 @@ describe('terraform config generation', () => {
           a_really_really_really_really_really_really_really_really_really_long_jobname_areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample_com:
             {
               enabled: true,
+              frequency: BASIC_PING_CHECK.frequency,
               job: 'a really really really really really really really really really long jobname',
               labels: {
                 [BASIC_PING_CHECK.labels[0].name]: BASIC_PING_CHECK.labels[0].value,
@@ -121,10 +122,12 @@ describe('terraform config generation', () => {
                 },
               },
               target: 'areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample.com',
+              timeout: BASIC_PING_CHECK.timeout
             },
           a_really_really_really_really_really_really_really_really_really_long_jobname_areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample_com_stuff:
             {
               enabled: true,
+              frequency: BASIC_PING_CHECK.frequency,
               job: 'a really really really really really really really really really long jobname',
               labels: {
                 [BASIC_PING_CHECK.labels[0].name]: BASIC_PING_CHECK.labels[0].value,
@@ -137,6 +140,7 @@ describe('terraform config generation', () => {
                 },
               },
               target: 'areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample.com/stuff',
+              timeout: BASIC_PING_CHECK.timeout
             },
         },
         grafana_synthetic_monitoring_probe: TERRAFORM_PRIVATE_PROBES,
@@ -204,6 +208,7 @@ describe('terraform config generation', () => {
         grafana_synthetic_monitoring_check: {
           'stuff_https___www_grafana-dev_com': {
             enabled: true,
+            frequency: 120000,
             job: 'stuff',
             labels: {},
             probes: [1, 2],
@@ -267,6 +272,7 @@ describe('terraform config generation', () => {
               },
             },
             target: 'https://www.grafana-dev.com',
+            timeout: 17000,
           },
         },
         grafana_synthetic_monitoring_probe: TERRAFORM_PRIVATE_PROBES,

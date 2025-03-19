@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { DataQueryError } from '@grafana/data';
+import { DataQueryError, LoadingState } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -11,7 +11,7 @@ import {
   SceneObjectState,
   SceneQueryRunner,
 } from '@grafana/scenes';
-import { DataSourceRef, LoadingState } from '@grafana/schema';
+import { DataSourceRef } from '@grafana/schema';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 
 import { CheckType } from 'types';
@@ -36,7 +36,7 @@ function getQueryRunner(logs: DataSourceRef) {
           | keep check
           [$__range]
         )
-        / 
+        /
         count_over_time (
             {job="$job", instance="$instance", probe=~"$probe"}
             | logfmt check, msg
@@ -69,7 +69,7 @@ function getQueryRunner(logs: DataSourceRef) {
           | logfmt check, value, msg
           | __error__ = ""
           | msg = "check result"
-          | value = "0"
+          | value != "1"
           | keep check
           [$__range]
         )

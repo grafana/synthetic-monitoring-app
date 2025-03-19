@@ -31,6 +31,8 @@ const ConfigEditorContent = ({
       <div className="gf-form-group">
         <div className="gf-form-inline">
           <div className="gf-form">
+            {/* no need to change this until we have better design direction */}
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <LegacyForms.SecretFormField
               isConfigured
               value={secureJsonData?.accessToken || ''}

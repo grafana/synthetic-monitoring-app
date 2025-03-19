@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
@@ -13,6 +14,7 @@ import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
+import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
 import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
@@ -20,7 +22,6 @@ import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 import { CheckListScene } from 'page/CheckList/components/CheckListScene';
-import { EmptyCheckList } from 'page/CheckList/components/EmptyCheckList';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -53,6 +54,8 @@ type CheckListContentProps = {
 
 const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps) => {
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
+  const navigate = useNavigate();
+  const location = useLocation();
   const { data: checks } = useSuspenseChecks();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const filters = useCheckFilters();
@@ -118,11 +121,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   };
 
   const handleResetFilters = () => {
-    setSearch(null);
-    setLabels(null);
-    setType(null);
-    setProbes(null);
-    setStatus(null);
+    navigate(`${location.pathname}${sortType ? `?sort=${sortType}` : ''}`);
   };
 
   const handleLabelSelect = (label: Label) => {
@@ -176,7 +175,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   };
 
   if (checks.length === 0) {
-    return <EmptyCheckList />;
+    return <ChecksEmptyState />;
   }
 
   const showHeaders = viewType !== CheckListViewType.Viz;
@@ -215,7 +214,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
               {currentPageChecks.map((check, index) => (
                 <CheckListItem
                   check={check}
-                  key={index}
+                  key={check.id}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
                   onTypeSelect={handleTypeSelect}

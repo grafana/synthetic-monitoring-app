@@ -18,6 +18,7 @@ import { Check, FeatureName } from 'types';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
+import { DataTestIds } from '../../test/dataTestIds';
 import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {
@@ -64,9 +65,14 @@ test('renders empty state', async () => {
 
   render(<CheckList />);
 
-  const emptyWarning = await screen.findByText('This account does not currently have any checks configured', {
-    exact: false,
-  });
+  const emptyWarning = await waitFor(
+    () =>
+      screen.findByTestId(DataTestIds.CHECKS_EMPTY_STATE, {
+        exact: false,
+      }),
+    { timeout: 10000 }
+  );
+
   expect(emptyWarning).toBeInTheDocument();
 });
 
@@ -321,6 +327,30 @@ test('clicking status chiclet adds it to filter', async () => {
   expect(checks.length).toBe(1);
 });
 
+test(`clicking filters reset button works correctly`, async () => {
+  const DNS_CHECK_DISABLED = {
+    ...BASIC_DNS_CHECK,
+    enabled: false,
+  };
+
+  const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK]);
+  const disabledChiclet = await screen.findAllByText('Disabled');
+  await user.click(disabledChiclet[0]);
+  const additionalFilters = await screen.findByText(/Additional filters/i);
+  await user.click(additionalFilters);
+
+  const dialog = getModalContainer();
+  const statusFilter = await within(dialog).findByText(`Disabled`);
+  expect(statusFilter).toBeInTheDocument();
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+
+  await user.click(await within(dialog).findByText(`Reset`));
+  const resetChecks = await screen.findAllByTestId('check-card');
+  expect(resetChecks.length).toBe(2);
+});
+
 test('clicking add new is handled', async () => {
   const navigate = jest.fn();
   useNavigationHook.useNavigation = jest.fn(() => navigate); // TODO: COME BACK TO
@@ -554,26 +584,29 @@ describe(`bulk select behaviour`, () => {
 
   test(`Sorts by check execution frequency`, async () => {
     const { user } = await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
-    const checks = await screen.findAllByTestId('check-card');
+    const checksA = await screen.findAllByTestId('check-card');
 
-    expect(checks.length).toBe(2);
-    expect(checks[0]).toHaveTextContent(`89280 executions / month`);
-    expect(checks[1]).toHaveTextContent(`44640 executions / month`);
+    expect(checksA.length).toBe(2);
+    expect(checksA[0]).toHaveTextContent(`89280 executions / month`);
+    expect(checksA[1]).toHaveTextContent(`44640 executions / month`);
 
     const sortPicker = await screen.getByLabelText('Sort checks by');
     await user.click(sortPicker);
     await user.click(screen.getByText(`Asc. Executions`, { selector: 'span' }));
 
-    expect(checks.length).toBe(2);
-    expect(checks[0]).toHaveTextContent(`44640 executions / month`);
-    expect(checks[1]).toHaveTextContent(`89280 executions / month`);
+    const checksB = await screen.findAllByTestId('check-card');
+    expect(checksB.length).toBe(2);
+
+    expect(checksB[0]).toHaveTextContent(`44640 executions / month`);
+    expect(checksB[1]).toHaveTextContent(`89280 executions / month`);
 
     await user.click(sortPicker);
     await user.click(screen.getByText(`Desc. Executions`, { selector: 'span' }));
 
-    expect(checks.length).toBe(2);
-    expect(checks[0]).toHaveTextContent(`89280 executions / month`);
-    expect(checks[1]).toHaveTextContent(`44640 executions / month`);
+    const checksC = await screen.findAllByTestId('check-card');
+    expect(checksC.length).toBe(2);
+    expect(checksC[0]).toHaveTextContent(`89280 executions / month`);
+    expect(checksC[1]).toHaveTextContent(`44640 executions / month`);
   });
 });
 

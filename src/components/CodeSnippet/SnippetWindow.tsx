@@ -45,7 +45,7 @@ export function getStyles(theme: GrafanaTheme2) {
     appWindowStyled: css({
       width: '100%',
       marginBottom: '20px',
-      borderRadius: theme.shape.borderRadius(2), // same as code/pre
+      borderRadius: theme.shape.radius.default, // same as code/pre
       overflow: 'hidden',
     }),
     titleBarContainer: css({
