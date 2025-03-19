@@ -20,7 +20,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
 
   return (
-    <InlineField htmlFor={`alert-threshold-${alert.type}`} invalid={!!thresholdError} error={thresholdError}>
+    <InlineField htmlFor={`alert-threshold-${alert.type}`} invalid={!!thresholdError} error={thresholdError} validationMessageHorizontalOverflow={true}>
       <Controller
         name={`alerts.${alert.type}.threshold`}
         control={control}

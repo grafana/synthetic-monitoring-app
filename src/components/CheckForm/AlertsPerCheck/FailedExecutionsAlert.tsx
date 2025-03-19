@@ -1,13 +1,24 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
-import { Checkbox, Icon, InlineField, PopoverContent, Select, Stack, Tooltip } from '@grafana/ui';
+import {
+  Checkbox,
+  Icon,
+  InlineField,
+  InlineFieldRow,
+  PopoverContent,
+  Select,
+  Text,
+  Tooltip,
+  useStyles2,
+} from '@grafana/ui';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import pluralize from 'pluralize';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
+import { getAlertItemStyles } from './AlertItem';
 import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { ThresholdSelector } from './ThresholdSelector';
 
@@ -24,6 +35,7 @@ export const FailedExecutionsAlert = ({
 }) => {
   const { isFormDisabled } = useCheckFormContext();
   const { getValues, setValue, control, formState } = useFormContext<CheckFormValues>();
+  const styles = useStyles2(getAlertItemStyles);
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
@@ -65,48 +77,54 @@ export const FailedExecutionsAlert = ({
   const periodError = formState.errors?.alerts?.[alert.type]?.period?.message;
 
   return (
-    <Stack alignItems="center">
-      <Stack alignItems="center">
-        <Checkbox
-          id={`alert-${alert.type}`}
-          data-testid={`checkbox-alert-${alert.type}`}
-          onClick={() => handleToggleAlert(alert.type)}
-          checked={selected}
-        />
-        <Stack alignItems="center">
-          Alert if at least <ThresholdSelector alert={alert} selected={selected} />
-          {testExecutionsPerPeriod
-            ? `of ${testExecutionsPerPeriod} ${pluralize('execution', testExecutionsPerPeriod)}`
-            : pluralize('execution', threshold)}{' '}
-          fail
-          {threshold === 1 && 's'} in the last
-          <InlineField htmlFor={`alert-period-${alert.type}`} invalid={!!periodError} error={periodError}>
-            <Controller
-              name={`alerts.${alert.type}.period`}
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  disabled={!selected || isFormDisabled}
-                  data-testid="alertPendingPeriod"
-                  id={`alert-period-${alert.type}`}
-                  options={validPeriods}
-                  value={field.value}
-                  onChange={(value) => {
-                    if (value === null) {
-                      return field.onChange(null);
-                    }
-                    field.onChange(value.value);
-                  }}
-                />
-              )}
+    <InlineFieldRow className={styles.alertRow}>
+      <Checkbox
+        className={styles.alertCheckbox}
+        id={`alert-${alert.type}`}
+        data-testid={`checkbox-alert-${alert.type}`}
+        onClick={() => handleToggleAlert(alert.type)}
+        checked={selected}
+      />
+      <Text>Alert if at least</Text> <ThresholdSelector alert={alert} selected={selected} />
+      <Text>
+        {testExecutionsPerPeriod
+          ? `of ${testExecutionsPerPeriod} ${pluralize('execution', testExecutionsPerPeriod)}`
+          : pluralize('execution', threshold)}{' '}
+        fail
+        {threshold === 1 && 's'} in the last
+      </Text>
+      <InlineField
+        htmlFor={`alert-period-${alert.type}`}
+        invalid={!!periodError}
+        error={periodError}
+        validationMessageHorizontalOverflow={true}
+      >
+        <Controller
+          name={`alerts.${alert.type}.period`}
+          control={control}
+          render={({ field }) => (
+            <Select
+              {...field}
+              disabled={!selected || isFormDisabled}
+              data-testid="alertPendingPeriod"
+              id={`alert-period-${alert.type}`}
+              options={validPeriods}
+              value={field.value}
+              onChange={(value) => {
+                if (value === null) {
+                  return field.onChange(null);
+                }
+                field.onChange(value.value);
+              }}
             />
-          </InlineField>
-        </Stack>
-      </Stack>
-      <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
-        <Icon name="info-circle" />
-      </Tooltip>
-    </Stack>
+          )}
+        />
+      </InlineField>
+      <div className={styles.alertTooltip}>
+        <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
+          <Icon name="info-circle" />
+        </Tooltip>
+      </div>
+    </InlineFieldRow>
   );
 };

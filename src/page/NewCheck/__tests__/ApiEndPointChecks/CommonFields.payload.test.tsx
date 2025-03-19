@@ -120,7 +120,9 @@ describe('Api endpoint checks - common fields payload', () => {
           const { body: alertsBody } = await read(1);
 
           expect(alertsBody).toEqual({
-            alerts: [{ name: 'ProbeFailedExecutionsTooHigh', period: checkType === 'traceroute' ? '2m' : '1m', threshold: 1 }],
+            alerts: [
+              { name: 'ProbeFailedExecutionsTooHigh', period: checkType === 'traceroute' ? '2m' : '1m', threshold: 1 },
+            ],
           });
         });
       });
