@@ -26,7 +26,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
     name: 'Probe Failed Executions Too High',
-    description: `The number of test executions is an approximation based on the check's frequency and the period chosen for this alert.`,
+    description: `The available periods are shown based on the selected check frequency. Only periods equal to or greater than the check frequency will be available for selection.`,
     supportsPeriod: true,
     unit: 'no.',
     category: CheckAlertCategory.FailedChecks,

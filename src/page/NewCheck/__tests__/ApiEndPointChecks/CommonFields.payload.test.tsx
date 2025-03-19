@@ -99,18 +99,17 @@ describe('Api endpoint checks - common fields payload', () => {
             [FeatureName.AlertsPerCheck]: true,
           });
 
-          
           const { user, read } = await renderNewForm(checkType);
-          
+
           await fillMandatoryFields({ user, checkType });
 
           await goToSection(user, 4);
 
-          expect(screen.getByText('Alerts-per-check')).toBeInTheDocument();
+          expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
           expect(screen.getByText('Failed Checks')).toBeInTheDocument();
 
-          const thresholdsInput = screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh')
+          const thresholdsInput = screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh');
 
           await user.click(screen.getByTestId('checkbox-alert-ProbeFailedExecutionsTooHigh'));
           await user.clear(thresholdsInput);
@@ -120,7 +119,9 @@ describe('Api endpoint checks - common fields payload', () => {
 
           const { body: alertsBody } = await read(1);
 
-          expect(alertsBody).toEqual({ alerts: [{ name: 'ProbeFailedExecutionsTooHigh', threshold: 1 }] });
+          expect(alertsBody).toEqual({
+            alerts: [{ name: 'ProbeFailedExecutionsTooHigh', period: checkType === 'traceroute' ? '2m' : '1m', threshold: 1 }],
+          });
         });
       });
 

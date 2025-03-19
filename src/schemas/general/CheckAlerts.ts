@@ -6,7 +6,7 @@ const isScientificNotation = (val: number) => {
   return /e|E/.test(val.toString());
 };
 
-const emptyMessage = 'You need to set a threshold value';
+const invalidThreshold = 'Threshold value must be a valid integer';
 
 const CheckAlertSchema = z
   .object({
@@ -14,7 +14,8 @@ const CheckAlertSchema = z
     isSelected: z.boolean().optional(),
     period: z.string().optional(),
     threshold: z
-      .number({ message: emptyMessage })
+      .number({ message: invalidThreshold })
+      .int({ message: invalidThreshold })
       .optional()
       .refine((value) => !value || (value >= 0.01 && !isScientificNotation(value)), {
         message: 'Invalid threshold value',
@@ -31,7 +32,7 @@ const CheckAlertSchema = z
       }
       return true;
     },
-    { message: emptyMessage, path: ['threshold'] }
+    { message: invalidThreshold, path: ['threshold'] }
   );
 
 const ProbeFailedExecutionsTooHighSchema = CheckAlertSchema.refine(
