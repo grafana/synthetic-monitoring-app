@@ -24,11 +24,7 @@ describe(`gRPCCheck - Section 5 (Execution) payload`, () => {
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 5);
 
-    const minutesInput = screen.getByLabelText('frequency minutes input');
-    const secondsInput = screen.getByLabelText('frequency seconds input');
-    await user.clear(minutesInput);
-    await user.clear(secondsInput);
-    await user.type(secondsInput, '30');
+    await screen.getByRole('radio', { name: '30s' }).click();
 
     await submitForm(user);
 

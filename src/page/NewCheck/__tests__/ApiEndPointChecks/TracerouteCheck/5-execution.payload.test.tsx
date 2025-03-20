@@ -20,17 +20,18 @@ describe(`TracerouteCheck - Section 5 (Execution) payload`, () => {
   });
 
   it(`can add probe frequency`, async () => {
+    const FIVE_MINUTES_IN_MS = 5 * 60 * 1000;
+
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 5);
 
-    const minutesInput = screen.getByLabelText('frequency minutes input');
-    await user.type(minutesInput, '0'); // so it turns into 20 minutes as 2 is already prefilled
+    await screen.getByRole('radio', { name: '5m' }).click();
 
     await submitForm(user);
 
     const { body } = await read();
 
-    expect(body.frequency).toBe(60 * 20 * 1000);
+    expect(body.frequency).toBe(FIVE_MINUTES_IN_MS);
   });
 });

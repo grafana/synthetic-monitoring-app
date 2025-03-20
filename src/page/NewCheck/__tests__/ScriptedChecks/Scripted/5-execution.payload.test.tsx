@@ -20,23 +20,19 @@ describe(`ScriptedCheck - Section 5 (Execution) payload`, () => {
   });
 
   it(`can add probe frequency`, async () => {
-    const ONE_MINUTE_IN_MS = 1 * 60 * 1000;
+    const TWO_MINUTES_IN_MS = 2 * 60 * 1000;
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 5);
 
-    const minutesInput = screen.getByLabelText('frequency minutes input');
-    const secondsInput = screen.getByLabelText('frequency seconds input');
-    await user.clear(minutesInput);
-    await user.clear(secondsInput);
-    await user.type(minutesInput, `{backspace}1`);
+    await screen.getByRole('radio', { name: '2m' }).click();
 
     await submitForm(user);
 
     const { body } = await read();
 
-    expect(body.frequency).toBe(ONE_MINUTE_IN_MS);
+    expect(body.frequency).toBe(TWO_MINUTES_IN_MS);
   });
 
   it(`can add timeout up to 180 seconds`, async () => {

@@ -13,7 +13,7 @@ export const MIN_TIMEOUT_BROWSER = ONE_SECOND_IN_MS * 5;
 export const MAX_TIMEOUT_BROWSER = ONE_MINUTE_IN_MS * 3;
 
 const BrowserSettingsSchema: ZodType<BrowserSettings> = z.object({
-  script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation).superRefine(validateBrowserScript),
+  script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation),
 });
 
 export const BrowserCheckSchema: ZodType<CheckFormValuesBrowser> = BaseCheckSchema.omit({
