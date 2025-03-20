@@ -10,7 +10,9 @@ import {
   isTCPCheck,
   isTracerouteCheck,
 } from 'utils.types';
+import { fromBase64 } from 'utils';
 
+import { mapAssertionsToTF, mapVariablesToTF } from './terraformMultiHTTPConfigUtils';
 import { TFCheck, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
 
 const labelsToTFLabels = (labels: Label[]): TFLabels =>
@@ -132,7 +134,8 @@ const settingsToTF = (check: Check): TFCheckSettings => {
         entries: escaped.entries.map((entry) => {
           const { queryFields, ...request } = entry.request;
           const transformed: TFMultiHttpEntry = {
-            ...entry,
+            variables: entry.variables?.map(mapVariablesToTF),
+            assertions: entry.checks?.map(mapAssertionsToTF),
             request: {
               ...request,
               query_fields: queryFields,
@@ -155,13 +158,17 @@ const settingsToTF = (check: Check): TFCheckSettings => {
 
   if (isScriptedCheck(check)) {
     return {
-      scripted: {},
+      scripted: {
+        script: fromBase64(check.settings.scripted.script),
+      },
     };
   }
 
   if (isBrowserCheck(check)) {
     return {
-      browser: {},
+      browser: {
+        script: fromBase64(check.settings.browser.script),
+      },
     };
   }
 
