@@ -91,7 +91,7 @@ export const FailedExecutionsAlert = ({
         <Text>Alert if at least</Text> <ThresholdSelector alert={alert} selected={selected} />
         <Text>
           {testExecutionsPerPeriod
-            ? `of ${testExecutionsPerPeriod} ${pluralize('execution', testExecutionsPerPeriod)}`
+            ? `of ${testExecutionsPerPeriod} probe ${pluralize('execution', testExecutionsPerPeriod)}`
             : pluralize('execution', threshold)}{' '}
           fail
           {threshold === 1 && 's'} in the last
