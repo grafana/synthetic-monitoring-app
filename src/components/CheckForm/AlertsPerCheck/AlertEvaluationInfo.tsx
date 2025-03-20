@@ -4,6 +4,8 @@ import { PopoverContent, Text, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import pluralize from 'pluralize';
 
+import { secondsToDuration } from 'utils';
+
 interface TooltipWrapperProps {
   content: PopoverContent;
 }
@@ -31,10 +33,11 @@ export const AlertEvaluationInfo: React.FC<AlertEvaluationInfoProps> = ({
   probesNumber,
   period,
 }) => {
+  const frequency = secondsToDuration(checkFrequency);
   const tooltipData = [
     {
-      label: 'frequency',
-      content: `${checkFrequency}s`,
+      label: `frequency`,
+      content: frequency,
     },
     {
       label: 'probes',
@@ -48,14 +51,15 @@ export const AlertEvaluationInfo: React.FC<AlertEvaluationInfoProps> = ({
 
   return (
     <Text variant="bodySmall" color="warning">
-      {`This alert will evaluate against a total of ${testExecutionsPerPeriod} ${pluralize(
+      {`This alert will evaluate against a total of [${testExecutionsPerPeriod}] ${pluralize(
         'execution',
         testExecutionsPerPeriod
-      )} based on your current settings for `}
+      )} based on your current settings: `}
       {tooltipData.map((tooltip, index) => (
         <React.Fragment key={tooltip.label}>
           <TooltipWrapper content={tooltip.content}>{tooltip.label}</TooltipWrapper>
-          {index < tooltipData.length - 1 && `, `}
+          {index < tooltipData.length - 2 && `, `}
+          {index === tooltipData.length - 2 && `, and `}
         </React.Fragment>
       ))}
       {`.`}
