@@ -2,10 +2,12 @@ import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
 import { TextLink } from '@grafana/ui';
 
+import { FeatureName } from 'types';
 import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
 import { ROUTES } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
+import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
@@ -16,6 +18,7 @@ import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
 import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
+import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManagementTab';
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
 import { DashboardPage } from 'page/DashboardPage';
 import { EditCheck } from 'page/EditCheck';
@@ -31,6 +34,7 @@ import { UnauthorizedPage } from 'page/UnauthorizedPage';
 export const InitialisedRouter = () => {
   const queryParams = useQuery();
   const navigate = useNavigation();
+  const { isFeatureEnabled } = useFeatureFlagContext();
 
   const page = queryParams.get('page');
   useLimits();
@@ -129,6 +133,7 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
+        {isFeatureEnabled(FeatureName.SecretsManagement) && <Route path="secrets" element={<SecretsManagementTab />} />}
       </Route>
 
       <Route path={ROUTES.Redirect} element={<SceneRedirecter />} />

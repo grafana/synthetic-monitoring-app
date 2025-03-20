@@ -53,6 +53,12 @@ export function ConfigPageLayout() {
           url: getConfigTabUrl('terraform'),
           active: activeTab('terraform'),
         },
+        {
+          icon: 'lock',
+          text: 'Secrets',
+          url: getConfigTabUrl('secrets'),
+          active: activeTab('secrets'),
+        },
       ],
     }),
     [activeTab]
