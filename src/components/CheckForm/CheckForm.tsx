@@ -272,7 +272,9 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                         </TabsBar>
                         <TabContent>
                           <div className={styles.wrapper}>
-                            {selectedAlertingTab === 'alerting' && <AlertsPerCheck onInitAlerts={handleInitAlerts} isInitialized={alertsInitialized} />}
+                            {selectedAlertingTab === 'alerting' && (
+                              <AlertsPerCheck onInitAlerts={handleInitAlerts} isInitialized={alertsInitialized} />
+                            )}
                             {selectedAlertingTab === 'sensitivity' && <CheckFormAlert />}
                           </div>
                         </TabContent>{' '}

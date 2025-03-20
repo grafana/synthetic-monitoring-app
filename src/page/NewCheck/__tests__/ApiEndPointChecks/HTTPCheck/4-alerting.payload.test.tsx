@@ -73,7 +73,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     await user.click(screen.getByTestId('checkbox-alert-ProbeFailedExecutionsTooHigh'));
     await user.clear(thresholdsInput);
-    await user.type(thresholdsInput, '5');
+    await user.type(thresholdsInput, '50');
 
     await goToSection(user, 5);
 
@@ -81,10 +81,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     await user.click(probeCheckbox);
 
     await submitForm(user);
+
     const errorMsg = await screen.findByRole('alert');
     expect(errorMsg).toBeInTheDocument();
     expect(errorMsg).toHaveTextContent(
-      'Threshold (5) must be lower than or equal to the total number of checks per period (2)'
+      'Threshold (50) must be lower than or equal to the total number of checks per period (10)'
     );
   });
 });

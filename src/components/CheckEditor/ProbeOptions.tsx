@@ -18,15 +18,8 @@ export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
   const {
     control,
     formState: { errors },
-    setValue,
   } = useFormContext<CheckFormValues>();
   const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
-
-  const handleChangingFrequency = () => {
-    //as the frequency changes, we need to reset the selected alert period
-    // @ts-expect-error
-    setValue('alerts.ProbeFailedExecutionsTooHigh.period', undefined);
-  };
 
   return (
     <div>
@@ -54,13 +47,7 @@ export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        <SliderInput
-          onChange={handleChangingFrequency}
-          disabled={disabled}
-          name="frequency"
-          min={minFrequency}
-          max={maxFrequency}
-        />
+        <SliderInput disabled={disabled} name="frequency" min={minFrequency} max={maxFrequency} />
       </Field>
     </div>
   );

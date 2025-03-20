@@ -7,7 +7,11 @@ export interface PredefinedAlertInterface {
   unit: ThresholdUnit;
   category: CheckAlertCategory;
   query: string;
-  default?: number;
+  defaultValues: {
+    threshold: number;
+    period?: (typeof ALERT_PERIODS)[number]['value'];
+    isSelected: boolean;
+  };
   supportsPeriod: boolean;
 }
 
@@ -20,7 +24,7 @@ export const ALERT_PERIODS = [
   { label: '20 min', value: '20m' },
   { label: '30 min', value: '30m' },
   { label: '1 h', value: '1h' },
-];
+] as const;
 
 export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
@@ -30,7 +34,11 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     supportsPeriod: true,
     unit: 'no.',
     category: CheckAlertCategory.FailedChecks,
-    default: 1,
+    defaultValues: {
+      threshold: 1,
+      period: '5m',
+      isSelected: false,
+    },
     query: `
     (
       (1 - (
@@ -59,7 +67,10 @@ export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     supportsPeriod: false,
     unit: 'd',
     category: CheckAlertCategory.TLSCertificate,
-    default: 60,
+    defaultValues: {
+      threshold: 1,
+      isSelected: false,
+    },
     query: `
   (
     (min by(instance, job) (probe_ssl_earliest_cert_expiry{instance="$instance", job="$job"}) - time()) 

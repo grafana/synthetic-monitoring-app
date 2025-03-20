@@ -58,7 +58,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   list: css({
     display: 'flex',
     flexDirection: 'column',
-    whiteSpace: 'nowrap',
     overflowY: 'auto',
   }),
 

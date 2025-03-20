@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import {
@@ -36,7 +36,8 @@ export const FailedExecutionsAlert = ({
   tooltipContent: PopoverContent;
 }) => {
   const { isFormDisabled } = useCheckFormContext();
-  const { getValues, setValue, control, formState } = useFormContext<CheckFormValues>();
+  const { getValues, control, formState, trigger } = useFormContext<CheckFormValues>();
+  const hasBeenSubmitted = formState.submitCount > 0;
   const styles = useStyles2(getAlertItemStyles);
 
   const handleToggleAlert = (type: CheckAlertType) => {
@@ -55,19 +56,18 @@ export const FailedExecutionsAlert = ({
 
   //min time range >= check frequency
   const validPeriods = useMemo(
-    () => ALERT_PERIODS.filter((period) => convertPeriodToSeconds(period.value) >= checkFrequency),
+    () =>
+      ALERT_PERIODS.map((period) => {
+        const isValid = convertPeriodToSeconds(period.value) >= checkFrequency;
+
+        return {
+          ...period,
+          isDisabled: !isValid,
+          description: !isValid ? 'Invalid' : undefined,
+        };
+      }),
     [checkFrequency, convertPeriodToSeconds]
   );
-
-  useEffect(() => {
-    if (!validPeriods.length || period !== undefined) {
-      return;
-    }
-
-    const defaultPeriod = validPeriods[0].value;
-    // @ts-expect-error
-    setValue(`alerts.${alert.type}.period`, defaultPeriod);
-  }, [validPeriods, setValue, alert.type, period]);
 
   const testExecutionsPerPeriod = useMemo(() => {
     if (!period) {
@@ -105,22 +105,28 @@ export const FailedExecutionsAlert = ({
           <Controller
             name={`alerts.${alert.type}.period`}
             control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                disabled={!selected || isFormDisabled}
-                data-testid="alertPendingPeriod"
-                id={`alert-period-${alert.type}`}
-                options={validPeriods}
-                value={field.value}
-                onChange={(value) => {
-                  if (value === null) {
-                    return field.onChange(null);
-                  }
-                  field.onChange(value.value);
-                }}
-              />
-            )}
+            render={({ field }) => {
+              const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
+
+              return (
+                <Select
+                  {...fieldProps}
+                  disabled={!selected || isFormDisabled}
+                  data-testid="alertPendingPeriod"
+                  id={`alert-period-${alert.type}`}
+                  options={validPeriods}
+                  value={field.value}
+                  onChange={({ value = null } = {}) => {
+                    field.onChange(value);
+
+                    // clear threshold error if new period is valid
+                    if (hasBeenSubmitted) {
+                      trigger(`alerts.${alert.type}`);
+                    }
+                  }}
+                />
+              );
+            }}
           />
         </InlineField>
         <div className={styles.alertTooltip}>

@@ -18,7 +18,7 @@ interface AlertsPerCheckProps {
 export const AlertsPerCheck = ({ onInitAlerts, isInitialized }: AlertsPerCheckProps) => {
   const styles = useStyles2(getStyles);
 
-  const { getValues, setValue, control } = useFormContext<CheckFormValues>();
+  const { getValues, setValue, control, formState, trigger } = useFormContext<CheckFormValues>();
 
   const checkId = getValues('id');
   const checkType = getValues('checkType');
@@ -104,6 +104,10 @@ export const AlertsPerCheck = ({ onInitAlerts, isInitialized }: AlertsPerCheckPr
     };
 
     setValue(`alerts`, newAlerts);
+
+    if (formState.submitCount > 0) {
+      trigger(`alerts.${type}`);
+    }
   };
 
   const selectedAlerts = getValues('alerts');
