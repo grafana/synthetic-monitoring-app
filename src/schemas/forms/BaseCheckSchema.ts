@@ -1,4 +1,4 @@
-import { CheckAlertsSchema } from 'schemas/general/CheckAlerts';
+import { checkAlertsRefinement, CheckAlertsSchema } from 'schemas/general/CheckAlerts';
 import { CheckProbesSchema } from 'schemas/general/CheckProbes';
 import { FrequencySchema } from 'schemas/general/Frequency';
 import { JobSchema } from 'schemas/general/Job';
@@ -30,4 +30,5 @@ export const BaseCheckSchema: ZodType<CheckFormValuesBase> = z
         code: z.ZodIssueCode.custom,
       });
     }
-  });
+  })
+  .superRefine(checkAlertsRefinement);

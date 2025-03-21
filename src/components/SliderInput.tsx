@@ -17,6 +17,7 @@ export interface SliderInputProps {
   validate?: (value: number) => string | undefined;
   step?: number;
   invalid?: boolean;
+  onChange?: (value: number) => void;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -40,7 +41,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const SliderInput = ({ disabled, min, max, name, step = 1 }: SliderInputProps) => {
+export const SliderInput = ({ disabled, min, max, name, step = 1, onChange }: SliderInputProps) => {
   const styles = useStyles2(getStyles);
   const { control } = useFormContext();
 
@@ -53,7 +54,20 @@ export const SliderInput = ({ disabled, min, max, name, step = 1 }: SliderInputP
           render={({ field }) => {
             const { ref, ...rest } = field;
             return (
-              <TimeSlider {...rest} disabled={disabled} min={min ?? 0} max={max} step={step} analyticsLabel={name} />
+              <TimeSlider
+                {...rest}
+                disabled={disabled}
+                min={min ?? 0}
+                max={max}
+                step={step}
+                analyticsLabel={name}
+                onChange={(value) => {
+                  if (onChange) {
+                    onChange(value);
+                  }
+                  field.onChange(value);
+                }}
+              />
             );
           }}
         />

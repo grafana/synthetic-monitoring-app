@@ -1,4 +1,10 @@
-import { DataSourceInstanceSettings, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
+import {
+  DataSourceInstanceSettings,
+  GrafanaTheme2,
+  intervalToAbbreviatedDurationString,
+  NavModelItem,
+  TimeRange,
+} from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
 // todo: update this when we move to grafana 11.2
 // https://github.com/grafana/grafana/pull/89047
@@ -273,6 +279,12 @@ export function formatDate(number: number) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+export function secondsToDuration(seconds: number): string {
+  const now = new Date();
+  const duration = { start: new Date(now.getTime() - seconds * 1000), end: now };
+  return intervalToAbbreviatedDurationString(duration);
 }
 
 export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
