@@ -17,6 +17,7 @@ import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import pluralize from 'pluralize';
 
 import { CheckAlertType, CheckFormValues } from 'types';
+import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { AlertEvaluationInfo } from './AlertEvaluationInfo';
@@ -36,8 +37,8 @@ export const FailedExecutionsAlert = ({
   tooltipContent: PopoverContent;
 }) => {
   const { isFormDisabled } = useCheckFormContext();
-  const { getValues, control, formState, trigger } = useFormContext<CheckFormValues>();
-  const hasBeenSubmitted = formState.submitCount > 0;
+  const { getValues, control, formState } = useFormContext<CheckFormValues>();
+  const revalidateForm = useRevalidateForm();
   const styles = useStyles2(getAlertItemStyles);
 
   const handleToggleAlert = (type: CheckAlertType) => {
@@ -73,6 +74,7 @@ export const FailedExecutionsAlert = ({
     if (!period) {
       return '';
     }
+
     return getTotalChecksPerPeriod(probes.length, checkFrequency, convertPeriodToSeconds(period));
   }, [checkFrequency, period, probes, convertPeriodToSeconds]);
 
@@ -89,13 +91,20 @@ export const FailedExecutionsAlert = ({
           checked={selected}
         />
         <Text>Alert if at least</Text> <ThresholdSelector alert={alert} selected={selected} />
-        <Text>
-          {testExecutionsPerPeriod
-            ? `of ${testExecutionsPerPeriod} probe ${pluralize('execution', testExecutionsPerPeriod)}`
-            : pluralize('execution', threshold)}{' '}
-          fail
-          {threshold === 1 && 's'} in the last
-        </Text>
+        <div style={{ whiteSpace: 'break-spaces' }}>
+          <Stack direction="row" alignItems="center" gap={0}>
+            {testExecutionsPerPeriod !== 0 && (
+              <Text color={selected ? `warning` : undefined}>{`of ${testExecutionsPerPeriod} `}</Text>
+            )}
+            <Text>
+              {testExecutionsPerPeriod
+                ? `probe ${pluralize('execution', testExecutionsPerPeriod)}`
+                : pluralize(' execution', threshold)}{' '}
+              fail
+              {threshold === 1 && 's'} in the last
+            </Text>
+          </Stack>
+        </div>
         <InlineField
           htmlFor={`alert-period-${alert.type}`}
           invalid={!!periodError}
@@ -120,9 +129,7 @@ export const FailedExecutionsAlert = ({
                     field.onChange(value);
 
                     // clear threshold error if new period is valid
-                    if (hasBeenSubmitted) {
-                      trigger(`alerts.${alert.type}`);
-                    }
+                    revalidateForm<CheckFormValues>(`alerts.${alert.type}`);
                   }}
                 />
               );

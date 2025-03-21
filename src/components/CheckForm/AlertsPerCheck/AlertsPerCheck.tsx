@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 
 import { CheckAlertFormValues, CheckAlertType, CheckFormValues } from 'types';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
+import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
 import { AlertsList } from './AlertsList';
 import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
@@ -17,8 +18,8 @@ interface AlertsPerCheckProps {
 
 export const AlertsPerCheck = ({ onInitAlerts, isInitialized }: AlertsPerCheckProps) => {
   const styles = useStyles2(getStyles);
-
-  const { getValues, setValue, control, formState, trigger } = useFormContext<CheckFormValues>();
+  const revalidateForm = useRevalidateForm();
+  const { getValues, setValue, control } = useFormContext<CheckFormValues>();
 
   const checkId = getValues('id');
   const checkType = getValues('checkType');
@@ -104,10 +105,7 @@ export const AlertsPerCheck = ({ onInitAlerts, isInitialized }: AlertsPerCheckPr
     };
 
     setValue(`alerts`, newAlerts);
-
-    if (formState.submitCount > 0) {
-      trigger(`alerts.${type}`);
-    }
+    revalidateForm<CheckFormValues>(`alerts.${type}`);
   };
 
   const selectedAlerts = getValues('alerts');

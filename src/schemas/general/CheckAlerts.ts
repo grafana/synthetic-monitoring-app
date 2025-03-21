@@ -3,6 +3,7 @@ import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { z, ZodType } from 'zod';
 
 import { CheckAlertFormRecord, CheckFormValuesBase } from 'types';
+import { secondsToDuration } from 'utils';
 
 const isScientificNotation = (val: number) => {
   return /e|E/.test(val.toString());
@@ -73,7 +74,7 @@ function checkThresholdIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) 
   const failedExecutionAlertPeriodInSeconds = durationToMilliseconds(parseDuration(failedExecutionsAlertPeriod)) / 1000;
   const totalChecksPerPeriod = getTotalChecksPerPeriod(probes.length, frequency, failedExecutionAlertPeriodInSeconds);
 
-  if (failedExecutionsAlertThreshold > totalChecksPerPeriod) {
+  if (totalChecksPerPeriod !== 0 && failedExecutionsAlertThreshold > totalChecksPerPeriod) {
     ctx.addIssue({
       path: ['alerts.ProbeFailedExecutionsTooHigh.threshold'],
       message: `Threshold (${failedExecutionsAlertThreshold}) must be lower than or equal to the total number of checks per period (${totalChecksPerPeriod})`,
@@ -90,7 +91,9 @@ function checkPeriodIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
   if (failedExecutionAlertPeriodInSeconds < frequency) {
     ctx.addIssue({
       path: ['alerts.ProbeFailedExecutionsTooHigh.period'],
-      message: `Period (${failedExecutionsAlertPeriod}) must be equal or higher to the frequency (${failedExecutionAlertPeriodInSeconds}s)`,
+      message: `Period (${failedExecutionsAlertPeriod}) must be equal or higher to the frequency (${secondsToDuration(
+        frequency
+      )})`,
       code: z.ZodIssueCode.custom,
     });
   }

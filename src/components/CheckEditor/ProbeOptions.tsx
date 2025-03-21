@@ -4,6 +4,7 @@ import { Field } from '@grafana/ui';
 
 import { CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
 import { useProbesWithMetadata } from 'data/useProbes';
+import { useRevalidateForm } from 'hooks/useRevalidateForm';
 import { SliderInput } from 'components/SliderInput';
 
 import { CheckProbes } from './CheckProbes/CheckProbes';
@@ -20,6 +21,12 @@ export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
     formState: { errors },
   } = useFormContext<CheckFormValues>();
   const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
+
+  const revalidateForm = useRevalidateForm();
+
+  const handleChangingFrequency = () => {
+    revalidateForm<CheckFormValues>(`alerts`);
+  };
 
   return (
     <div>
@@ -47,7 +54,13 @@ export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        <SliderInput disabled={disabled} name="frequency" min={minFrequency} max={maxFrequency} />
+        <SliderInput
+          disabled={disabled}
+          name="frequency"
+          min={minFrequency}
+          max={maxFrequency}
+          onChange={handleChangingFrequency}
+        />
       </Field>
     </div>
   );
