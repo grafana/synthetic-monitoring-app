@@ -414,7 +414,7 @@ export function hasGlobalPermission(action: string) {
   return contextSrv.hasPermission(action);
 }
 
-export function createNavModel(base: NavModelItem, items: NavModelItem[]): NavModelItem {
+export function createNavModel(base: NavModelItem, items: NavModelItem[] = []): NavModelItem {
   if (base.id === 'loading') {
     return base;
   }
