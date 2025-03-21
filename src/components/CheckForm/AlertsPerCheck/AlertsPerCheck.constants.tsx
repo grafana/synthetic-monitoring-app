@@ -16,8 +16,6 @@ export interface PredefinedAlertInterface {
 }
 
 export const ALERT_PERIODS = [
-  { label: '1 min', value: '1m' },
-  { label: '2 min', value: '2m' },
   { label: '5 min', value: '5m' },
   { label: '10 min', value: '10m' },
   { label: '15 min', value: '15m' },
