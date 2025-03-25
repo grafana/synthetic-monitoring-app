@@ -61,10 +61,7 @@ export function predefinedAlertsToFormValues(predefinedAlerts: PredefinedAlertIn
   return Object.values(predefinedAlerts).reduce((acc, alert) => {
     return {
       ...acc,
-      [alert.type]: {
-        threshold: alert.default,
-        isSelected: false,
-      },
+      [alert.type]: alert.defaultValues,
     };
   }, {});
 }

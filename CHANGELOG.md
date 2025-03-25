@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.20.1...v1.21.0) (2025-03-11)
+
+
+### Features
+
+* checks empty state ([#1081](https://github.com/grafana/synthetic-monitoring-app/issues/1081)) ([b284567](https://github.com/grafana/synthetic-monitoring-app/commit/b28456772ec6937ffd2eea4f3f7e3c57dd83ee8f))
+
 ## [1.20.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.20.0...v1.20.1) (2025-03-03)
 
 

@@ -81,7 +81,7 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, check: 
       children: [new SceneFlexItem({ height: 500, body: errorLogs })],
     });
 
-    const editButton = getEditButton({ job, instance });
+    const editButton = getEditButton({ id: check.id });
 
     const annotations = getAlertAnnotations(metrics);
 

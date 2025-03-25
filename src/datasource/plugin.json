@@ -55,6 +55,18 @@
     },
     {
       "path": "sm",
+      "method": "PUT",
+      "url": "{{.JsonData.apiHost}}/api/v1/",
+      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "sm",
       "method": "DELETE",
       "url": "{{.JsonData.apiHost}}/api/v1/",
       "reqAction": "grafana-synthetic-monitoring-app:write",
