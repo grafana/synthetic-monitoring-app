@@ -12,14 +12,12 @@ import {
   VariableControl,
 } from '@grafana/scenes-react';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
-import { LinkButton, Stack, useStyles2 } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckType } from 'types';
-import { getUserPermissions } from 'data/permissions';
-import { useChecks } from 'data/useChecks';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { getUrl } from 'scenes/Common/editButton';
+import { EditCheckButton } from 'scenes/Common/editButton';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { AvgLatency } from './stats/AvgLatencyViz';
@@ -93,7 +91,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
               renderTitle={() => <h1>{check.job}</h1>}
               actions={
                 <>
-                  <EditCheckButton job={check.job} instance={check.target} />
+                  <EditCheckButton id={check.id} />
                   <TimeRangePicker />
                   <RefreshPicker />
                 </>
@@ -197,20 +195,3 @@ const getStyles = (theme: GrafanaTheme2) => ({
     height: '500px',
   }),
 });
-
-function EditCheckButton({ job, instance }: { job: string; instance: string }) {
-  const { data: checks = [], isLoading } = useChecks();
-  const url = getUrl(checks, instance, job);
-  const { canWriteChecks } = getUserPermissions();
-
-  return (
-    <LinkButton
-      variant="secondary"
-      href={url}
-      disabled={isLoading || !url || !canWriteChecks}
-      icon={isLoading ? 'fa fa-spinner' : 'edit'}
-    >
-      Edit check
-    </LinkButton>
-  );
-}
