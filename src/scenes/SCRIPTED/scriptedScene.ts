@@ -41,7 +41,7 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
 
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
-    const editButton = getEditButton({ job, instance });
+    const editButton = getEditButton({ id: check.id });
 
     const annotations = getAlertAnnotations(metrics);
     return new EmbeddedScene({

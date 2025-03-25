@@ -54,7 +54,7 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
     const logsPanel = getLogsPanel(logs);
     const logsRow = new SceneFlexItem({ height: 400, body: logsPanel });
 
-    const editButton = getEditButton({ job, instance });
+    const editButton = getEditButton({ id: check.id });
 
     const annotations = getAlertAnnotations(metrics);
 
