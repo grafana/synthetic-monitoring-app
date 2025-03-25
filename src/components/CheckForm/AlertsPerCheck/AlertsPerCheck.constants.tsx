@@ -45,9 +45,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
           increase(probe_all_success_sum{instance="$instance", job="$job"}[$period])
         )
       ) >= 
-      sum by (instance, job) (
-        sm_alerts_threshold_probe_failed_executions_too_high{period="$period"}
-      )
+     $threshold
     ) * on (instance, job) 
     group_right() 
     max without(probe, region, geohash) (
