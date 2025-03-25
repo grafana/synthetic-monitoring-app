@@ -39,20 +39,20 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
     },
     query: `
     (
-      (1 - (
-        sum by (instance, job) (
+      sum by(instance, job) (
+        floor(
+          increase(probe_all_success_count{instance="$instance", job="$job"}[$period]) - 
           increase(probe_all_success_sum{instance="$instance", job="$job"}[$period])
-        ) 
-        / 
-        sum by (instance, job) (
-          increase(probe_all_success_count{instance="$instance", job="$job"}[$period])
         )
-      )) * 100 
-    > 
-    $threshold
+      ) >= 
+      sum by (instance, job) (
+        sm_alerts_threshold_probe_failed_executions_too_high{period="$period"}
+      )
     ) * on (instance, job) 
     group_right() 
-    max without(probe, region, geohash) (sm_check_info{instance="$instance", job="$job"})
+    max without(probe, region, geohash) (
+      sm_check_info{instance="$instance", job="$job"}
+    )
   `,
   },
 ];
