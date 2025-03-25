@@ -4,20 +4,21 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Field, LoadingPlaceholder, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckStatus } from 'types';
+import { CheckAlertFormValues, CheckAlertType, CheckFormValues } from 'types';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
-import { NewStatusBadge } from 'components/NewStatusBadge';
+import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
 import { AlertsList } from './AlertsList';
 import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
 interface AlertsPerCheckProps {
   onInitAlerts: (formAlerts: Partial<Record<CheckAlertType, CheckAlertFormValues>>) => void;
+  isInitialized: boolean;
 }
 
-export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
+export const AlertsPerCheck = ({ onInitAlerts, isInitialized }: AlertsPerCheckProps) => {
   const styles = useStyles2(getStyles);
-
+  const revalidateForm = useRevalidateForm();
   const { getValues, setValue, control } = useFormContext<CheckFormValues>();
 
   const checkId = getValues('id');
@@ -26,7 +27,7 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
   const { data: checkAlerts, isLoading, isError } = useListAlertsForCheck(checkId);
 
   useEffect(() => {
-    if (!checkAlerts) {
+    if (!checkAlerts || isInitialized) {
       return;
     }
 
@@ -36,6 +37,7 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
           ...acc,
           [alert.name]: {
             threshold: alert.threshold,
+            period: alert.period,
             isSelected: true,
           },
         };
@@ -48,12 +50,13 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
         // @ts-expect-error
         {
           threshold: alert.threshold,
+          period: alert.period,
           isSelected: true,
         },
         { shouldDirty: false }
       );
     });
-  }, [checkAlerts, setValue, onInitAlerts]);
+  }, [checkAlerts, setValue, onInitAlerts, isInitialized]);
 
   const groupedByCategory = useMemo(
     () =>
@@ -102,6 +105,7 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
     };
 
     setValue(`alerts`, newAlerts);
+    revalidateForm<CheckFormValues>(`alerts.${type}`);
   };
 
   const selectedAlerts = getValues('alerts');
@@ -109,12 +113,15 @@ export const AlertsPerCheck = ({ onInitAlerts }: AlertsPerCheckProps) => {
   return (
     <>
       <div className={styles.marginBottom}>
-        <Stack alignItems="center">
-          <h3 className={styles.title}>Predefined alerts</h3>
-          <NewStatusBadge status={CheckStatus.EXPERIMENTAL} className={styles.badge} />
-        </Stack>
-
-        <p>You can choose from the following predefined alerts to assign to this check and set a threshold for each.</p>
+        <div>
+          <p>
+            Enable and configure thresholds for common alerting scenarios. Use Grafana Alerting to{' '}
+            <TextLink href="alerting/new/alerting" external={true}>
+              create a custom alert rule
+            </TextLink>
+            .
+          </p>
+        </div>
 
         <Field>
           <Controller

@@ -2,12 +2,20 @@ import React, { forwardRef, RefObject, useCallback, useMemo, useState } from 're
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Button, Stack, Text, Tooltip, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Stack, Tab, TabContent, TabsBar, Text, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { Check, CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckType, FeatureName } from 'types';
+import {
+  AlertingType,
+  Check,
+  CheckAlertFormValues,
+  CheckAlertType,
+  CheckFormValues,
+  CheckType,
+  FeatureName,
+} from 'types';
 import { createNavModel } from 'utils';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -149,6 +157,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   });
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
 
+  const [alertsInitialized, setAlertsInitialized] = useState(false);
+
   const alerts = (error || testCheckError) && (
     <Stack direction={`column`}>
       {error && (
@@ -182,6 +192,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
         },
       };
       setFormDefaultValues(newDefaults);
+      setAlertsInitialized(true);
     },
     [defaultValues, setFormDefaultValues]
   );
@@ -199,6 +210,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
           { text: `${checkTypeGroupOption?.label ?? 'Check not found'}` },
         ]);
   }, [check, checkTypeGroupOption, isExistingCheck]);
+
+  const [selectedAlertingTab, setSelectedAlertingTab] = useState<AlertingType>('alerting');
 
   return (
     <PluginPage
@@ -242,9 +255,35 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
               </FormLayout.Section>
               <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
                 <FeatureFlag name={FeatureName.AlertsPerCheck}>
-                  {({ isEnabled }) => (isEnabled ? <AlertsPerCheck onInitAlerts={handleInitAlerts} /> : null)}
+                  {({ isEnabled }) =>
+                    isEnabled ? (
+                      <>
+                        <TabsBar>
+                          <Tab
+                            label="Per-check alerts"
+                            onChangeTab={() => setSelectedAlertingTab('alerting')}
+                            active={selectedAlertingTab === 'alerting'}
+                          />
+                          <Tab
+                            label="Legacy alerts"
+                            onChangeTab={() => setSelectedAlertingTab('sensitivity')}
+                            active={selectedAlertingTab === 'sensitivity'}
+                          />
+                        </TabsBar>
+                        <TabContent>
+                          <div className={styles.wrapper}>
+                            {selectedAlertingTab === 'alerting' && (
+                              <AlertsPerCheck onInitAlerts={handleInitAlerts} isInitialized={alertsInitialized} />
+                            )}
+                            {selectedAlertingTab === 'sensitivity' && <CheckFormAlert />}
+                          </div>
+                        </TabContent>{' '}
+                      </>
+                    ) : (
+                      <CheckFormAlert />
+                    )
+                  }
                 </FeatureFlag>
-                <CheckFormAlert />
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
                 <CheckProbeOptions checkType={checkType} />

@@ -28,7 +28,7 @@ export const TARGET_MAP = {
 export async function renderNewForm(checkType: CheckType) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`addCheck`, {}, record));
-  server.use(apiRoute(`updateAlertsForCheck`, {}, record));
+  server.use(apiRoute(`updateAlertsForCheck`, { method: 'put' }, record));
   const checkTypeGroup = getCheckTypeGroup(checkType);
 
   const res = render(<NewCheck />, {
