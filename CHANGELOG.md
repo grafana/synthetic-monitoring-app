@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.22.0...v1.22.1) (2025-03-26)
+
+
+### Fixes
+
+* update drone signature to prevent having to manually approve builds ([#1099](https://github.com/grafana/synthetic-monitoring-app/issues/1099)) ([6b62ea1](https://github.com/grafana/synthetic-monitoring-app/commit/6b62ea112f4fd9ac65f6dbe6ec99a4f11f980123))
+
 ## [1.22.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.21.0...v1.22.0) (2025-03-25)
 
 
