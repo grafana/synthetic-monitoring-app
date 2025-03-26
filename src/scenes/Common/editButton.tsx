@@ -11,7 +11,7 @@ interface Props {
   id: Check['id'];
 }
 
-function EditCheckButton({ id }: Props) {
+export function EditCheckButton({ id }: Props) {
   const { canWriteChecks } = getUserPermissions();
   const url = id ? `${generateRoutePath(ROUTES.EditCheck, { id })}` : undefined;
 

@@ -15,6 +15,7 @@ import { getBrowserScene } from 'scenes/BROWSER/browserScene';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { getHTTPScene } from 'scenes/HTTP';
+import { HttpDashboard } from 'scenes/HTTP/scenesReact/HttpDashboard';
 import { getPingScene } from 'scenes/PING/pingScene';
 import { getScriptedScene } from 'scenes/SCRIPTED';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
@@ -152,6 +153,10 @@ function DashboardPageContent() {
 
   if (!scene) {
     return <Spinner />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.HTTP) {
+    return <HttpDashboard check={check} />;
   }
 
   return <scene.Component model={scene} />;
