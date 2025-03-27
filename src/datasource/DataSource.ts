@@ -35,8 +35,11 @@ import {
 } from './responses.types';
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
+import { ExperimentalSecret, ExperimentalSecretsResponse } from 'data/useSecrets';
+import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
-import { ExtendedBulkUpdateCheckResult } from '../data/useChecks';
+import { secretsApiStub } from './secretsApiStub';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -416,6 +419,30 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       method: 'POST',
       data: {},
     }).then((data) => data.token);
+  }
+
+  //--------------------------------------------------------------------------------
+  // SECRETS MANAGEMENT - NOT YET IMPLEMENTED
+  //--------------------------------------------------------------------------------
+
+  async getSecrets(): Promise<ExperimentalSecretsResponse> {
+    return secretsApiStub.get('/secrets');
+  }
+
+  async getSecret(id: string | number): Promise<ExperimentalSecret> {
+    return secretsApiStub.get<ExperimentalSecret>(`/secrets/${id}`);
+  }
+
+  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<ExperimentalSecret> {
+    if (secret.uuid) {
+      return secretsApiStub.put(`/secrets/${secret.uuid}`, secret);
+    }
+
+    return secretsApiStub.post('/secrets', secret);
+  }
+
+  async deleteSecret(id: string | number): Promise<unknown> {
+    return secretsApiStub.delete(`/secrets/${id}`);
   }
 
   //--------------------------------------------------------------------------------

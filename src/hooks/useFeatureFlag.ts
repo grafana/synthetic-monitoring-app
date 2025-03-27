@@ -1,10 +1,9 @@
-import { useContext } from 'react';
-
 import { FeatureName } from 'types';
-import { FeatureFlagContext } from 'contexts/FeatureFlagContext';
+
+import { useFeatureFlagContext } from './useFeatureFlagContext';
 
 export function useFeatureFlag(featureFlag: FeatureName) {
-  const { isFeatureEnabled } = useContext(FeatureFlagContext);
+  const { isFeatureEnabled } = useFeatureFlagContext();
   return {
     isEnabled: isFeatureEnabled(featureFlag),
   };
