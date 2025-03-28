@@ -18,7 +18,7 @@ import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { getAlertItemStyles } from './AlertItem';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
-export const HTTPTargetCertificateCloseToExpiringAlert = ({
+export const TLSTargetCertificateCloseToExpiringAlert = ({
   alert,
   selected,
   onSelectionChange,

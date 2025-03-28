@@ -9,7 +9,7 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { FailedExecutionsAlert } from './FailedExecutionsAlert';
-import { HTTPTargetCertificateCloseToExpiringAlert } from './HTTPTargetCertificateCloseToExpiringAlert';
+import { TLSTargetCertificateCloseToExpiringAlert } from './TLSTargetCertificateCloseToExpiringAlert';
 
 function createExploreLink(dataSourceName: string, query: string) {
   return urlUtil.renderUrl(`/explore`, {
@@ -72,8 +72,8 @@ export const AlertItem = ({
         />
       )}
 
-      {alert.type === CheckAlertType.HTTPTargetCertificateCloseToExpiring && (
-        <HTTPTargetCertificateCloseToExpiringAlert
+      {alert.type === CheckAlertType.TLSTargetCertificateCloseToExpiring && (
+        <TLSTargetCertificateCloseToExpiringAlert
           alert={alert}
           selected={selected}
           onSelectionChange={handleToggleAlert}
