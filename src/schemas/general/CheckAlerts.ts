@@ -50,7 +50,7 @@ const ProbeFailedExecutionsTooHighSchema = CheckAlertSchema.refine(
 
 export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
   ProbeFailedExecutionsTooHigh: ProbeFailedExecutionsTooHighSchema.optional(),
-  HTTPTargetCertificateCloseToExpiring: CheckAlertSchema.optional(),
+  TLSTargetCertificateCloseToExpiring: CheckAlertSchema.optional(),
 });
 
 export function checkAlertsRefinement(data: CheckFormValuesBase, ctx: z.RefinementCtx) {

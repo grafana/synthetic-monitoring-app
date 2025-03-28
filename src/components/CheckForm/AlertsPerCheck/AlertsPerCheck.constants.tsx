@@ -57,7 +57,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
 
 export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
-    type: CheckAlertType.HTTPTargetCertificateCloseToExpiring,
+    type: CheckAlertType.TLSTargetCertificateCloseToExpiring,
     name: 'HTTP Target Certificate Close To Expiring',
     description: 'Trigger an alert if the target certificate will expire in less than $threshold days.',
     supportsPeriod: false,
