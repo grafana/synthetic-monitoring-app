@@ -35,9 +35,9 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
 
-    const thresholdsInput = screen.getByTestId('alert-threshold-HTTPTargetCertificateCloseToExpiring');
+    const thresholdsInput = screen.getByTestId('alert-threshold-TLSTargetCertificateCloseToExpiring');
 
-    await user.click(screen.getByTestId('checkbox-alert-HTTPTargetCertificateCloseToExpiring'));
+    await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
     await user.clear(thresholdsInput);
     await user.type(thresholdsInput, '1');
 
@@ -48,7 +48,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     expect(alertsBody).toEqual({
       alerts: [
         {
-          name: 'HTTPTargetCertificateCloseToExpiring',
+          name: 'TLSTargetCertificateCloseToExpiring',
           threshold: 1,
         },
       ],
