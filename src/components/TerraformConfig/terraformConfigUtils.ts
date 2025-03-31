@@ -12,7 +12,7 @@ import {
 } from 'utils.types';
 import { fromBase64 } from 'utils';
 
-import { mapAssertionsToTF, mapVariablesToTF } from './terraformMultiHTTPConfigUtils';
+import { mapAssertionsToTF, mapRequestBodyToTF, mapVariablesToTF } from './terraformMultiHTTPConfigUtils';
 import { TFCheck, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
 
 const labelsToTFLabels = (labels: Label[]): TFLabels =>
@@ -139,17 +139,9 @@ const settingsToTF = (check: Check): TFCheckSettings => {
             request: {
               ...request,
               query_fields: queryFields,
-              body: {
-                content_type: entry.request.body?.contentType,
-              },
+              body: mapRequestBodyToTF(request.body),
             },
           };
-          if (entry.request.postData) {
-            transformed.request.post_data = {
-              mime_type: entry.request.postData.mimeType,
-              text: entry.request.postData.text,
-            };
-          }
           return transformed;
         }),
       },

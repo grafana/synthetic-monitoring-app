@@ -1,4 +1,5 @@
 import { MultiHttpAssertionType, MultiHttpVariableType } from 'types';
+import { fromBase64 } from 'utils';
 import {
   Assertion,
   AssertionConditionVariant,
@@ -7,6 +8,7 @@ import {
   AssertionRegex,
   AssertionSubjectVariant,
   AssertionText,
+  MultiHttpRequestBody,
   MultiHttpVariable,
 } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -15,140 +17,176 @@ import {
   TFMultiHTTPAssertionCondition,
   TFMultiHttpAssertionSubject,
   TFMultiHTTPAssertionType,
+  TFMultiHttpRequestBody,
   TFMultiHttpVariable,
   TFMultiHTTPVariableType,
 } from './terraformTypes';
 
+const ASSERTION_TYPES = {
+  TEXT: 'TEXT',
+  JSON_PATH_VALUE: 'JSON_PATH_VALUE',
+  JSON_PATH_ASSERTION: 'JSON_PATH_ASSERTION',
+  REGEX_ASSERTION: 'REGEX_ASSERTION',
+} as const;
+
+const CONDITION_MAP: Record<AssertionConditionVariant, TFMultiHTTPAssertionCondition> = {
+  [AssertionConditionVariant.Contains]: 'CONTAINS',
+  [AssertionConditionVariant.NotContains]: 'NOT_CONTAINS',
+  [AssertionConditionVariant.Equals]: 'EQUALS',
+  [AssertionConditionVariant.StartsWith]: 'STARTS_WITH',
+  [AssertionConditionVariant.EndsWith]: 'ENDS_WITH',
+  [AssertionConditionVariant.TypeOf]: 'TYPE_OF',
+};
+
+const SUBJECT_MAP: Record<AssertionSubjectVariant, TFMultiHttpAssertionSubject> = {
+  [AssertionSubjectVariant.ResponseBody]: 'RESPONSE_BODY',
+  [AssertionSubjectVariant.ResponseHeaders]: 'RESPONSE_HEADERS',
+  [AssertionSubjectVariant.HttpStatusCode]: 'HTTP_STATUS_CODE',
+};
+
+const VARIABLE_TYPE_MAP: Record<MultiHttpVariableType, TFMultiHTTPVariableType> = {
+  [MultiHttpVariableType.CSS_SELECTOR]: 'CSS_SELECTOR',
+  [MultiHttpVariableType.JSON_PATH]: 'JSON_PATH',
+  [MultiHttpVariableType.REGEX]: 'REGEX',
+};
+
+function isAssertionText(assertion: Assertion): assertion is AssertionText {
+  return assertion.type === MultiHttpAssertionType.Text;
+}
+
+function isAssertionJsonPathValue(assertion: Assertion): assertion is AssertionJsonPathValue {
+  return assertion.type === MultiHttpAssertionType.JSONPathValue;
+}
+
+function isAssertionJsonPath(assertion: Assertion): assertion is AssertionJsonPath {
+  return assertion.type === MultiHttpAssertionType.JSONPath;
+}
+
+function isAssertionRegex(assertion: Assertion): assertion is AssertionRegex {
+  return assertion.type === MultiHttpAssertionType.Regex;
+}
+
+// Helper function to safely map enum values
+function mapEnumToTerraformValue<T extends number, R extends string>(
+  value: T,
+  map: Record<T, R>,
+  errorMessage: string
+): R {
+  const mapped = map[value];
+  if (!mapped) {
+    throw new Error(errorMessage);
+  }
+  return mapped;
+}
+
+/**
+ * Maps an assertion condition to its Terraform configuration format
+ */
 export const mapTFMultiHTTPAssertionCondition = (
   condition: AssertionConditionVariant
 ): TFMultiHTTPAssertionCondition => {
-  switch (condition) {
-    case AssertionConditionVariant.Contains:
-      return 'CONTAINS';
-    case AssertionConditionVariant.NotContains:
-      return 'NOT_CONTAINS';
-    case AssertionConditionVariant.Equals:
-      return 'EQUALS';
-    case AssertionConditionVariant.StartsWith:
-      return 'STARTS_WITH';
-    case AssertionConditionVariant.EndsWith:
-      return 'ENDS_WITH';
-    case AssertionConditionVariant.TypeOf:
-      return 'TYPE_OF';
-    default:
-      throw new Error(`Unknown condition: ${condition}`);
-  }
+  return mapEnumToTerraformValue(condition, CONDITION_MAP, `Unknown condition: ${condition}`);
 };
 
-export const mapTFMultiHTTPAssertionSubject = (subject: AssertionSubjectVariant): TFMultiHttpAssertionSubject => {
-  switch (subject) {
-    case AssertionSubjectVariant.ResponseBody:
-      return 'RESPONSE_BODY';
-    case AssertionSubjectVariant.ResponseHeaders:
-      return 'RESPONSE_HEADERS';
-    case AssertionSubjectVariant.HttpStatusCode:
-      return 'HTTP_STATUS_CODE';
-    default:
-      throw new Error(`Unknown subject: ${subject}`);
-  }
+/**
+ * Maps an assertion subject to its Terraform configuration format
+ */
+export const mapTFMultiHTTPAssertionSubject = (
+  subject: AssertionSubjectVariant
+): TFMultiHttpAssertionSubject => {
+  return mapEnumToTerraformValue(subject, SUBJECT_MAP, `Unknown subject: ${subject}`);
 };
 
+/**
+ * Maps an assertion to its Terraform configuration format
+ */
 export function mapAssertionsToTF(entryCheck: Assertion): TFMultiHttpAssertion {
-  let assertionType: TFMultiHTTPAssertionType;
-
-  switch (entryCheck.type) {
-    case MultiHttpAssertionType.Text:
-      assertionType = 'TEXT';
-      break;
-    case MultiHttpAssertionType.JSONPathValue:
-      assertionType = 'JSON_PATH_VALUE';
-      break;
-    case MultiHttpAssertionType.JSONPath:
-      assertionType = 'JSON_PATH_ASSERTION';
-      break;
-    case MultiHttpAssertionType.Regex:
-      assertionType = 'REGEX_ASSERTION';
-      break;
-    default:
-      assertionType = 'TEXT';
+  if (!entryCheck) {
+    throw new Error('Assertion cannot be null or undefined');
   }
 
   const assertion: TFMultiHttpAssertion = {
-    type: assertionType,
+    type: mapAssertionType(entryCheck.type),
   };
 
-  switch (assertionType) {
-    case 'TEXT': {
-      const entryCheckText = entryCheck as AssertionText;
-
+  switch (assertion.type) {
+    case ASSERTION_TYPES.TEXT: {
       // For TEXT assertions, we expect `condition`, `subject`, and `value`
-      if (entryCheckText.condition && entryCheckText.subject && entryCheckText.value) {
-        assertion.condition = mapTFMultiHTTPAssertionCondition(entryCheckText.condition);
-        assertion.subject = mapTFMultiHTTPAssertionSubject(entryCheckText.subject);
-        assertion.value = entryCheckText.value;
+      if (isAssertionText(entryCheck)) {
+        assertion.condition = mapTFMultiHTTPAssertionCondition(entryCheck.condition);
+        assertion.subject = mapTFMultiHTTPAssertionSubject(entryCheck.subject);
+        assertion.value = entryCheck.value;
       }
       break;
     }
 
-    case 'JSON_PATH_VALUE': {
-      const entryCheckJsonPathValue = entryCheck as AssertionJsonPathValue;
-
-      // For JSON_PATH_VALUE, we expect `condition`, `expression`, and `value`
-      if (entryCheckJsonPathValue.condition && entryCheckJsonPathValue.expression && entryCheckJsonPathValue.value) {
-        assertion.condition = mapTFMultiHTTPAssertionCondition(entryCheckJsonPathValue.condition);
-        assertion.expression = entryCheckJsonPathValue.expression;
-        assertion.value = entryCheckJsonPathValue.value;
+    case ASSERTION_TYPES.JSON_PATH_VALUE: {
+      if (isAssertionJsonPathValue(entryCheck)) {
+        assertion.condition = mapTFMultiHTTPAssertionCondition(entryCheck.condition);
+        assertion.expression = entryCheck.expression;
+        assertion.value = entryCheck.value;
       }
       break;
     }
 
-    case 'JSON_PATH_ASSERTION': {
-      const entryCheckJsonPath = entryCheck as AssertionJsonPath;
-
+    case ASSERTION_TYPES.JSON_PATH_ASSERTION: {
       // For JSON_PATH_ASSERTION, we only need the `expression`
-      if (entryCheckJsonPath.expression) {
-        assertion.expression = entryCheckJsonPath.expression;
+      if (isAssertionJsonPath(entryCheck)) {
+        assertion.expression = entryCheck.expression;
       }
       break;
     }
 
-    case 'REGEX_ASSERTION': {
-      const entryCheckRegex = entryCheck as AssertionRegex;
-
+    case ASSERTION_TYPES.REGEX_ASSERTION: {
       // For REGEX_ASSERTION, we expect `subject`, and `expression`
-      if (entryCheckRegex.subject && entryCheckRegex.expression) {
-        assertion.subject = mapTFMultiHTTPAssertionSubject(entryCheckRegex.subject);
-        assertion.expression = entryCheckRegex.expression;
+      if (isAssertionRegex(entryCheck)) {
+        assertion.subject = mapTFMultiHTTPAssertionSubject(entryCheck.subject);
+        assertion.expression = entryCheck.expression;
       }
       break;
     }
-
-    default:
-      break;
   }
 
   return assertion;
 }
 
+/**
+ * Maps a variable type to its Terraform configuration format
+ */
 export function mapVariablesToTF(variable: MultiHttpVariable): TFMultiHttpVariable {
-  let variableType: TFMultiHTTPVariableType;
-  switch (variable.type) {
-    case MultiHttpVariableType.CSS_SELECTOR:
-      variableType = 'CSS_SELECTOR';
-      break;
-    case MultiHttpVariableType.JSON_PATH:
-      variableType = 'JSON_PATH';
-      break;
-    case MultiHttpVariableType.REGEX:
-      variableType = 'REGEX';
-      break;
+  return {
+    ...variable,
+    type: mapEnumToTerraformValue(variable.type, VARIABLE_TYPE_MAP, `Unknown variable type: ${variable.type}`),
+  };
+}
 
-    default:
-      variableType = 'JSON_PATH';
+/**
+ * Maps a request body to its Terraform configuration format
+ */
+export function mapRequestBodyToTF(body?: MultiHttpRequestBody): TFMultiHttpRequestBody | undefined {
+  if (!body) {
+    return undefined;
   }
 
   return {
-    ...variable,
-    type: variableType,
+    content_type: body.contentType,
+    content_encoding: body.contentEncoding,
+    payload: fromBase64(body.payload),
   };
+}
+
+// Helper function to map assertion types
+function mapAssertionType(type: MultiHttpAssertionType): TFMultiHTTPAssertionType {
+  switch (type) {
+    case MultiHttpAssertionType.Text:
+      return ASSERTION_TYPES.TEXT;
+    case MultiHttpAssertionType.JSONPathValue:
+      return ASSERTION_TYPES.JSON_PATH_VALUE;
+    case MultiHttpAssertionType.JSONPath:
+      return ASSERTION_TYPES.JSON_PATH_ASSERTION;
+    case MultiHttpAssertionType.Regex:
+      return ASSERTION_TYPES.REGEX_ASSERTION;
+    default:
+      throw new Error(`Unknown assertion type: ${type}`);
+  }
 }

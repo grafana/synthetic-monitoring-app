@@ -7,7 +7,9 @@ import { apiRoute } from 'test/handlers';
 import { createWrapper } from 'test/render';
 import { server } from 'test/server';
 
-import { Check, HttpMethod, Probe } from 'types';
+import { Check, HttpMethod, MultiHttpAssertionType, MultiHttpVariableType, Probe } from 'types';
+import { toBase64 } from 'utils';
+import { AssertionConditionVariant, AssertionSubjectVariant } from 'components/MultiHttp/MultiHttpTypes';
 import { sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
 
 import { useTerraformConfig } from './useTerraformConfig';
@@ -122,7 +124,7 @@ describe('terraform config generation', () => {
                 },
               },
               target: 'areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample.com',
-              timeout: BASIC_PING_CHECK.timeout
+              timeout: BASIC_PING_CHECK.timeout,
             },
           a_really_really_really_really_really_really_really_really_really_long_jobname_areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample_com_stuff:
             {
@@ -140,7 +142,7 @@ describe('terraform config generation', () => {
                 },
               },
               target: 'areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample.com/stuff',
-              timeout: BASIC_PING_CHECK.timeout
+              timeout: BASIC_PING_CHECK.timeout,
             },
         },
         grafana_synthetic_monitoring_probe: TERRAFORM_PRIVATE_PROBES,
@@ -171,18 +173,51 @@ describe('terraform config generation', () => {
             multihttp: {
               entries: [
                 {
-                  // @ts-expect-error
-                  request: { method: 'GET', url: 'https://www.grafana-dev.com', headers: [], queryFields: [{}] },
+                  request: {
+                    method: HttpMethod.GET,
+                    url: 'https://www.grafana-dev.com',
+                    headers: [],
+                    queryFields: [{ name: 'param', value: 'test' }],
+                    body: {
+                      contentType: 'application/json',
+                      contentEncoding: 'base64',
+                      payload: toBase64('hi'),
+                    },
+                  },
                   variables: [],
-                  checks: [{ type: 0, subject: 2, condition: 2, value: '200' }],
+                  checks: [
+                    {
+                      type: MultiHttpAssertionType.Text, //0 
+                      subject: AssertionSubjectVariant.HttpStatusCode,
+                      condition: AssertionConditionVariant.Equals,
+                      value: '200',
+                    },
+                  ],
                 },
                 {
-                  request: { url: 'https://secondrequest.com', method: HttpMethod.POST, headers: [], queryFields: [] },
-                  variables: [{ type: 0, name: 'avariable', expression: 'great.variable.path' }],
+                  request: {
+                    url: 'https://secondrequest.com',
+                    body: undefined,
+                    method: HttpMethod.POST,
+                    headers: [],
+                    queryFields: [],
+                  },
+                  variables: [
+                    {
+                      type: MultiHttpVariableType.JSON_PATH, //0
+                      name: 'avariable',
+                      expression: 'great.variable.path',
+                    },
+                  ],
                   checks: [],
                 },
                 {
-                  request: { url: '${avariable}', method: HttpMethod.GET, headers: [], queryFields: [] },
+                  request: {
+                    url: 'avariable',
+                    method: HttpMethod.GET,
+                    headers: [],
+                    queryFields: [],
+                  },
                   variables: [],
                   checks: [],
                 },
@@ -206,7 +241,7 @@ describe('terraform config generation', () => {
       },
       resource: {
         grafana_synthetic_monitoring_check: {
-          'stuff_https___www_grafana-dev_com': {
+          "stuff_https___www_grafana-dev_com": {
             enabled: true,
             frequency: 120000,
             job: 'stuff',
@@ -216,57 +251,54 @@ describe('terraform config generation', () => {
               multihttp: {
                 entries: [
                   {
-                    checks: [
+                    request: {
+                      method: HttpMethod.GET,
+                      url: 'https://www.grafana-dev.com',
+                      headers: [],
+                      query_fields: [{ name: 'param', value: 'test' }],
+                      body: {
+                        content_type: 'application/json',
+                        content_encoding: 'base64',
+                        payload: 'hi',
+                      },
+                    },
+                    variables: [],
+                    assertions: [
                       {
-                        condition: 2,
-                        subject: 2,
-                        type: 0,
+                        type: 'TEXT',
+                        condition: 'EQUALS',
+                        subject: 'HTTP_STATUS_CODE',
                         value: '200',
                       },
                     ],
-                    request: {
-                      body: {
-                        content_type: undefined,
-                      },
-                      headers: [],
-                      method: 'GET',
-                      query_fields: [{}],
-                      url: 'https://www.grafana-dev.com',
-                    },
-                    variables: [],
                   },
                   {
-                    checks: [],
                     request: {
-                      body: {
-                        content_type: undefined,
-                      },
-                      headers: [],
-                      method: 'POST',
-                      query_fields: [],
                       url: 'https://secondrequest.com',
+                      body: undefined,
+                      method: HttpMethod.POST,
+                      headers: [],
+                      query_fields: [],
                     },
                     variables: [
                       {
-                        expression: 'great.variable.path',
+                        type: "JSON_PATH",
                         name: 'avariable',
-                        type: 0,
+                        expression: 'great.variable.path',
                       },
                     ],
+                    assertions: [],
                   },
                   {
-                    checks: [],
                     request: {
-                      body: {
-                        content_type: undefined,
-                      },
+                      body: undefined,
+                      url: 'avariable',
+                      method: HttpMethod.GET,
                       headers: [],
-                      method: 'GET',
                       query_fields: [],
-                      // We need double dollar signs here because of terraform interpolation
-                      url: '$${avariable}',
                     },
                     variables: [],
+                    assertions: [],
                   },
                 ],
               },
@@ -276,6 +308,81 @@ describe('terraform config generation', () => {
           },
         },
         grafana_synthetic_monitoring_probe: TERRAFORM_PRIVATE_PROBES,
+      },
+      terraform: {
+        required_providers: {
+          grafana: {
+            source: 'grafana/grafana',
+          },
+        },
+      },
+    });
+  });
+
+  test('handles scripted checks', async () => {
+    const result = await renderTerraformHook(
+      [
+        {
+          job: 'scripted-test',
+          target: 'scripted',
+          enabled: true,
+          labels: [],
+          probes: [1],
+          timeout: 17000,
+          frequency: 120000,
+          alertSensitivity: 'none',
+          settings: {
+            scripted: {
+              script: toBase64('hi'),
+            },
+          },
+          basicMetricsOnly: true,
+        },
+      ],
+      [PRIVATE_PROBE]
+    );
+
+    expect(result.current.config).toEqual({
+      provider: {
+        grafana: {
+          auth: '<GRAFANA_SERVICE_TOKEN>',
+          sm_access_token: '<SM_ACCESS_TOKEN>',
+          sm_url: SM_DATASOURCE.jsonData.apiHost,
+          url: '',
+        },
+      },
+      resource: {
+        grafana_synthetic_monitoring_check: {
+          "scripted-test_scripted": {
+            enabled: true,
+            frequency: 120000,
+            job: 'scripted-test',
+            labels: {},
+            probes: [1],
+            settings: {
+              scripted: {
+                script: 'hi',
+              },
+            },
+            target: 'scripted',
+            timeout: 17000,
+          },
+        },
+        grafana_synthetic_monitoring_probe: {
+          [PRIVATE_PROBE.name]: {
+            labels: {
+              [PRIVATE_PROBE.labels[0].name]: PRIVATE_PROBE.labels[0].value,
+              [PRIVATE_PROBE.labels[1].name]: PRIVATE_PROBE.labels[1].value,
+            },
+            latitude: PRIVATE_PROBE.latitude,
+            longitude: PRIVATE_PROBE.longitude,
+            name: PRIVATE_PROBE.name,
+            public: false,
+            region: PRIVATE_PROBE.region,
+            disable_browser_checks: PRIVATE_PROBE.capabilities.disableBrowserChecks,
+            disable_scripted_checks: PRIVATE_PROBE.capabilities.disableScriptedChecks,
+          },
+        },
       },
       terraform: {
         required_providers: {

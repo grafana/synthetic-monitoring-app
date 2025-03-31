@@ -9,7 +9,12 @@ import {
   TCPQueryResponse,
   TcpSettings,
 } from 'types';
-import { MultiHttpEntry, MultiHttpVariable, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
+import {
+  MultiHttpEntry,
+  MultiHttpRequestBody,
+  MultiHttpVariable,
+  RequestProps,
+} from 'components/MultiHttp/MultiHttpTypes';
 
 export interface TFOutput {
   config: TFConfig;
@@ -186,6 +191,11 @@ export type TFMultiHttpAssertionSubject = 'RESPONSE_HEADERS' | 'HTTP_STATUS_CODE
 
 export type TFMultiHTTPVariableType = 'JSON_PATH' | 'REGEX' | 'CSS_SELECTOR';
 
+export interface TFMultiHttpRequestBody extends Omit<MultiHttpRequestBody, 'contentType' | 'contentEncoding'> {
+  content_type?: string;
+  content_encoding?: string;
+}
+
 export interface TFMultiHttpAssertion {
   type: TFMultiHTTPAssertionType;
   condition?: TFMultiHTTPAssertionCondition;
@@ -209,11 +219,7 @@ interface TFMultiHttpRequest extends Omit<RequestProps, 'queryFields' | 'postDat
     mime_type: string;
     text: string;
   };
-  body: {
-    content_type?: string;
-    content_encoding?: string;
-    payload?: string;
-  };
+  body?: TFMultiHttpRequestBody;
 }
 
 interface TFHeaderMatch extends Omit<HeaderMatch, 'allowMissing'> {
