@@ -175,18 +175,20 @@ export function mapRequestBodyToTF(body?: MultiHttpRequestBody): TFMultiHttpRequ
   };
 }
 
-// Helper function to map assertion types
-function mapAssertionType(type: MultiHttpAssertionType): TFMultiHTTPAssertionType {
-  switch (type) {
-    case MultiHttpAssertionType.Text:
-      return ASSERTION_TYPES.TEXT;
-    case MultiHttpAssertionType.JSONPathValue:
-      return ASSERTION_TYPES.JSON_PATH_VALUE;
-    case MultiHttpAssertionType.JSONPath:
-      return ASSERTION_TYPES.JSON_PATH_ASSERTION;
-    case MultiHttpAssertionType.Regex:
-      return ASSERTION_TYPES.REGEX_ASSERTION;
-    default:
-      throw new Error(`Unknown assertion type: ${type}`);
-  }
+const ASSERTION_TYPE_MAP: Record<MultiHttpAssertionType, TFMultiHTTPAssertionType> = {
+  [MultiHttpAssertionType.Text]: ASSERTION_TYPES.TEXT,
+  [MultiHttpAssertionType.JSONPathValue]: ASSERTION_TYPES.JSON_PATH_VALUE,
+  [MultiHttpAssertionType.JSONPath]: ASSERTION_TYPES.JSON_PATH_ASSERTION,
+  [MultiHttpAssertionType.Regex]: ASSERTION_TYPES.REGEX_ASSERTION,
+};
+
+/**
+ * Maps an assertion type to its Terraform configuration format
+ */
+export function mapAssertionType(type: MultiHttpAssertionType): TFMultiHTTPAssertionType {
+  return mapEnumToTerraformValue(
+    type,
+    ASSERTION_TYPE_MAP,
+    `Unknown assertion type: ${type}`
+  );
 }
