@@ -323,6 +323,7 @@ export interface AlertFormValues {
 }
 export interface CheckAlertFormValues {
   threshold?: number;
+  period?: string;
   isSelected?: boolean;
 }
 
@@ -654,25 +655,19 @@ export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 
 export enum CheckAlertType {
   ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
-  HTTPRequestDurationTooHighP50 = 'HTTPRequestDurationTooHighP50',
-  HTTPRequestDurationTooHighP90 = 'HTTPRequestDurationTooHighP90',
-  HTTPRequestDurationTooHighP95 = 'HTTPRequestDurationTooHighP95',
-  HTTPRequestDurationTooHighP99 = 'HTTPRequestDurationTooHighP99',
-  HTTPTargetCertificateCloseToExpiring = 'HTTPTargetCertificateCloseToExpiring',
-  PingICMPDurationTooHighP50 = 'PingICMPDurationTooHighP50',
-  PingICMPDurationTooHighP90 = 'PingICMPDurationTooHighP90',
-  PingICMPDurationTooHighP95 = 'PingICMPDurationTooHighP95',
-  PingICMPDurationTooHighP99 = 'PingICMPDurationTooHighP99',
+  TLSTargetCertificateCloseToExpiring = 'TLSTargetCertificateCloseToExpiring',
 }
 
 export enum CheckAlertCategory {
-  SystemHealth = 'System Health',
+  TLSCertificate = 'TLS Certificate',
   RequestDuration = 'Request Duration',
+  FailedChecks = 'Failed Checks',
 }
 
 export type CheckAlertDraft = {
   name: CheckAlertType;
   threshold: number;
+  period?: string;
 };
 
 export type CheckAlertPublished = CheckAlertDraft & {
@@ -680,7 +675,7 @@ export type CheckAlertPublished = CheckAlertDraft & {
   modified: number;
 };
 
-export type ThresholdUnit = 'ms' | 's' | 'd' | '%';
+export type ThresholdUnit = 'ms' | 's' | 'd' | '%' | 'no.';
 
 export enum CheckSort {
   AToZ = 'atoz',
@@ -865,3 +860,5 @@ export type PluginPermissions =
   | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.access-tokens:${'write'}`
   | `${PermissionBase}.plugin:${'write'}`;
+
+export type AlertingType = 'alerting' | 'sensitivity';
