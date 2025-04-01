@@ -3,8 +3,10 @@ import { matchPath, Outlet, useLocation } from 'react-router-dom-v5-compat';
 import { NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 
+import { FeatureName } from 'types';
 import { ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 
 function getConfigTabUrl(tab = '/') {
   return `${getRoute(ROUTES.Config)}/${tab}`.replace(/\/+/g, '/');
@@ -25,9 +27,10 @@ function useActiveTab(route: ROUTES) {
 
 export function ConfigPageLayout() {
   const activeTab = useActiveTab(ROUTES.Config);
+  const { isFeatureEnabled } = useFeatureFlagContext();
 
-  const pageNav: NavModelItem = useMemo(
-    () => ({
+  const pageNav: NavModelItem = useMemo(() => {
+    const navModel: NavModelItem = {
       icon: 'sliders-v-alt',
       text: 'Config',
       subTitle: 'Configure your Synthetic Monitoring settings',
@@ -53,16 +56,20 @@ export function ConfigPageLayout() {
           url: getConfigTabUrl('terraform'),
           active: activeTab('terraform'),
         },
-        {
-          icon: 'lock',
-          text: 'Secrets',
-          url: getConfigTabUrl('secrets'),
-          active: activeTab('secrets'),
-        },
       ],
-    }),
-    [activeTab]
-  );
+    };
+
+    // Add secrets management tab if the feature is enabled
+    if (isFeatureEnabled(FeatureName.SecretsManagement)) {
+      navModel.children!.push({
+        icon: 'key-skeleton-alt',
+        text: 'Secrets',
+        url: getConfigTabUrl('secrets'),
+        active: activeTab('secrets'),
+      });
+    }
+    return navModel;
+  }, [activeTab, isFeatureEnabled]);
 
   return (
     <PluginPage pageNav={pageNav}>
