@@ -39,7 +39,6 @@ import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
 import { ExperimentalSecret, ExperimentalSecretsResponse } from 'data/useSecrets';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
-import { secretsApiStub } from './secretsApiStub';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -426,23 +425,34 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
 
   async getSecrets(): Promise<ExperimentalSecretsResponse> {
-    return secretsApiStub.get('/secrets');
+    return this.fetchAPI<ExperimentalSecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+      method: 'GET',
+    });
   }
 
   async getSecret(id: string | number): Promise<ExperimentalSecret> {
-    return secretsApiStub.get<ExperimentalSecret>(`/secrets/${id}`);
+    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+      method: 'GET',
+    });
   }
 
   async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<ExperimentalSecret> {
     if (secret.uuid) {
-      return secretsApiStub.put(`/secrets/${secret.uuid}`, secret);
+      return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${secret.uuid}`, {
+        method: 'PUT',
+        data: secret,
+      });
     }
-
-    return secretsApiStub.post('/secrets', secret);
+    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+      method: 'POST',
+      data: secret,
+    });
   }
 
   async deleteSecret(id: string | number): Promise<unknown> {
-    return secretsApiStub.delete(`/secrets/${id}`);
+    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   //--------------------------------------------------------------------------------

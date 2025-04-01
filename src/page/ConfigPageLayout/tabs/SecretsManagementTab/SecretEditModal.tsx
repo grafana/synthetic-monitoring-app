@@ -80,7 +80,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <input type="hidden" {...register('uuid')} />
         <Field label="Name" description="The name will be used to reference the secret" required>
-          <Input {...register('name')} />
+          <Input {...register('name', { disabled: isConfigured })} />
         </Field>
         <Field label="Description" description="Short description of the purpose of this secret" required>
           <Input {...register('description')} />

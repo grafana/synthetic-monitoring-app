@@ -19,7 +19,6 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
   };
 
   const handleDelete = () => {
-    console.log('SecretCard: handleDelete', secret.uuid);
     onDelete(secret.uuid);
   };
 
@@ -63,9 +62,10 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
       <div className={styles.keyValue}>
         <strong>Created:</strong> {formatDate(secret.created_at)} ({secret.created_by})
       </div>
-      <div className={styles.keyValue}>
-        <strong>Modified:</strong> {formatDate(secret.modified_at)}
-      </div>
+      {/* Currently there is no modified_at returned by the API(???) */}
+      {/*<div className={styles.keyValue}>*/}
+      {/*  <strong>Modified:</strong> {formatDate(secret.modified_at)}*/}
+      {/*</div>*/}
     </div>
   );
 }

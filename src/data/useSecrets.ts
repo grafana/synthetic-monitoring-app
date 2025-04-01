@@ -4,6 +4,7 @@ import { Label } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { useSMDS } from 'hooks/useSMDS';
 
+import { SECRETS_EDIT_MODE_ADD } from '../page/ConfigPageLayout/tabs/SecretsManagementTab/constants';
 import { SecretFormValues } from '../page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 import { queryClient } from './queryClient';
 
@@ -31,7 +32,7 @@ export const queryKeys = {
 function secretsQuery(api: SMDataSource) {
   return {
     queryKey: queryKeys.list,
-    queryFn: api.getSecrets,
+    queryFn: () => api.getSecrets(),
     select: (data: ExperimentalSecretsResponse) => {
       return data?.secrets ?? [];
     },
@@ -50,7 +51,7 @@ export function useSecret(id?: string) {
   return useQuery<ExperimentalSecret, unknown, ExperimentalSecret>({
     queryKey: queryKeys.byId(id!),
     queryFn: () => smDS.getSecret(id!),
-    enabled: !!id,
+    enabled: !!id && id !== SECRETS_EDIT_MODE_ADD,
   });
 }
 
@@ -61,8 +62,9 @@ export function useSaveSecret() {
     mutationFn: (data) => {
       return smDS.saveSecret(data);
     },
-    onSuccess: async (data) => {
-      await queryClient.setQueryData(queryKeys.byId(data.uuid!), data);
+    onSuccess: async (_data, secret) => {
+      const { name, ...updatedData } = secret; // name cannot be changed
+      await queryClient.setQueryData(queryKeys.byId(secret.uuid!), updatedData);
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
     },
   });
