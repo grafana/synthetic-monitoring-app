@@ -270,6 +270,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: df352b0540deef1175ab62a0e4caa93ddb6ba82add69e75627c32f81b614e48d
+hmac: dc4233a0d39e60035eb5abc45e446fe3e16185e109bb5faae041e163431b247c
 
 ...
