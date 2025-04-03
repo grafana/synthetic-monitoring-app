@@ -21,6 +21,7 @@ export function SecretInput({ isConfigured, onReset, ...props }: Props) {
           <Input
             {...props}
             type={reveal ? 'text' : 'password'}
+            autoComplete="off"
             suffix={
               <IconButton
                 tooltip={reveal ? HIDE_VALUE_TEXT : SHOW_VALUE_TEXT}
