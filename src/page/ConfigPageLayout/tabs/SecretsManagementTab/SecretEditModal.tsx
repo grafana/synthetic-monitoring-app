@@ -33,7 +33,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
 
   const styles = useStyles2(getStyles);
   const defaultValues = useMemo(() => {
-    return secretToFormValues(secret!) ?? getDefaultValues();
+    return secretToFormValues(secret) ?? getDefaultValues();
   }, [secret]);
 
   const { register, handleSubmit, control, reset } = useForm<SecretFormValues & { plaintext?: string }>({
@@ -51,6 +51,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   };
 
   useEffect(() => {
+    // Reset default values for when editing a secret (after secret has been fetched)
     reset(defaultValues);
   }, [reset, defaultValues]);
 
@@ -76,21 +77,39 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
     return null;
   }
   return (
-    <Modal isOpen onDismiss={onDismiss} title={title}>
+    <Modal
+      isOpen
+      onDismiss={onDismiss}
+      title={title}
+      onClickBackdrop={() => {
+        /* Clicking backdrop will not close modal */
+      }}
+    >
       <form onSubmit={handleSubmit(onSubmit)}>
         <input type="hidden" {...register('uuid')} />
-        <Field label="Name" description="The name will be used to reference the secret" required>
-          <Input {...register('name', { disabled: isConfigured })} />
+        <Field htmlFor="secret-name" label="Name" description="The name will be used to reference the secret" required>
+          <Input id="secret-name" {...register('name', { disabled: isConfigured })} />
         </Field>
-        <Field label="Description" description="Short description of the purpose of this secret" required>
-          <Input {...register('description')} />
+        <Field
+          htmlFor="secret-description"
+          label="Description"
+          description="Short description of the purpose of this secret"
+          required
+        >
+          <Input id="secret-description" {...register('description')} />
         </Field>
-        <Field label="Value" description="Value returned when referencing this secret" required>
+        <Field htmlFor="secret-value" label="Value" description="Value returned when referencing this secret" required>
           <Controller
             control={control}
             name="plaintext"
             render={({ field }) => (
-              <SecretInput {...field} autoComplete="off" onReset={handleResetValue} isConfigured={isConfigured} />
+              <SecretInput
+                id="secret-value"
+                {...field}
+                autoComplete="off"
+                onReset={handleResetValue}
+                isConfigured={isConfigured}
+              />
             )}
           />
         </Field>
@@ -102,11 +121,19 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
             {fields.map((field, index) => {
               return (
                 <div key={field.id} className={styles.labelRow}>
-                  <Field className={styles.labelField}>
-                    <Input placeholder="name" {...register(`labels.${index}.name` as const)} />
+                  <Field htmlFor={`secret-labels.${index}.name`} className={styles.labelField}>
+                    <Input
+                      id={`secret-labels.${index}.name`}
+                      placeholder="name"
+                      {...register(`labels.${index}.name` as const)}
+                    />
                   </Field>
-                  <Field className={styles.labelField}>
-                    <Input placeholder="value" {...register(`labels.${index}.value` as const)} />
+                  <Field htmlFor={`secret-labels.${index}.value`} className={styles.labelField}>
+                    <Input
+                      id={`secret-labels.${index}.value`}
+                      placeholder="value"
+                      {...register(`labels.${index}.value` as const)}
+                    />
                   </Field>
                   <IconButton aria-label="Remove label" name="minus-circle" onClick={() => remove(index)} />
                 </div>
@@ -129,9 +156,6 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
         </div>
 
         <div className={styles.buttons}>
-          <Button variant="secondary" onClick={() => reset(defaultValues)}>
-            Reset
-          </Button>
           <Button icon={saveSecret.isPending ? 'fa fa-spinner' : undefined} type="submit">
             Save
           </Button>

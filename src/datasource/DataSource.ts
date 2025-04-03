@@ -421,7 +421,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   //--------------------------------------------------------------------------------
-  // SECRETS MANAGEMENT - NOT YET IMPLEMENTED
+  // SECRETS MANAGEMENT - DEV ONLY
   //--------------------------------------------------------------------------------
 
   async getSecrets(): Promise<ExperimentalSecretsResponse> {

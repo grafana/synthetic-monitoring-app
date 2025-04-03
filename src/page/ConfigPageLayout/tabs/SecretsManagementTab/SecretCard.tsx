@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, ClipboardButton, Icon, Tag, useStyles2 } from '@grafana/ui';
+import { Button, ClipboardButton, Icon, Tag, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { formatDate } from 'utils';
@@ -22,26 +22,35 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
     onDelete(secret.uuid);
   };
 
-  const handleEnter = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter') {
-      handleEdit();
-    }
-  };
-
   return (
-    <div tabIndex={0} className={styles.card} onKeyUp={handleEnter}>
+    <div className={styles.card}>
       <div className={styles.heading}>
-        <h4>{secret.name}</h4>
+        <Text element="h3" variant="h4">
+          {secret.name}
+        </Text>
         <div className={styles.tagsContainer}>
           {secret.labels?.map((label) => (
             <Tag key={label.name} colorIndex={3} name={`${label.name}: ${label.value}`} />
           ))}
         </div>
         <div className={styles.actions}>
-          <Button size="sm" icon="edit" fill="outline" variant="secondary" onClick={handleEdit}>
+          <Button
+            aria-label={`Edit ${secret.name}`}
+            size="sm"
+            icon="edit"
+            fill="outline"
+            variant="secondary"
+            onClick={handleEdit}
+          >
             Edit
           </Button>
-          <Button size="sm" icon="trash-alt" variant="secondary" onClick={handleDelete} />
+          <Button
+            aria-label={`Delete ${secret.name}`}
+            size="sm"
+            icon="trash-alt"
+            variant="secondary"
+            onClick={handleDelete}
+          />
         </div>
       </div>
       <div className={styles.keyValue}>
@@ -102,10 +111,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     align-items: center;
     margin-bottom: ${theme.spacing(1.5)};
     position: relative;
-
-    & > h4 {
-      margin: 0;
-    }
   `,
   actions: css`
     display: flex;
