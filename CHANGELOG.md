@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.23.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.22.0...v1.23.0) (2025-03-31)
+
+
+### Features
+
+* rename the TLS certificate expiry alert ([#1102](https://github.com/grafana/synthetic-monitoring-app/issues/1102)) ([6ebaa66](https://github.com/grafana/synthetic-monitoring-app/commit/6ebaa6673c6d487a88663edba737577b659c2bf3))
+
+
+### Fixes
+
+* update drone signature to prevent having to manually approve builds ([#1099](https://github.com/grafana/synthetic-monitoring-app/issues/1099)) ([6b62ea1](https://github.com/grafana/synthetic-monitoring-app/commit/6b62ea112f4fd9ac65f6dbe6ec99a4f11f980123))
+
 ## [1.22.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.21.0...v1.22.0) (2025-03-25)
 
 

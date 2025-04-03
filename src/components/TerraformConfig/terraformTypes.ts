@@ -9,7 +9,12 @@ import {
   TCPQueryResponse,
   TcpSettings,
 } from 'types';
-import { MultiHttpEntry, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
+import {
+  MultiHttpEntry,
+  MultiHttpRequestBody,
+  MultiHttpVariable,
+  RequestProps,
+} from 'components/MultiHttp/MultiHttpTypes';
 
 export interface TFOutput {
   config: TFConfig;
@@ -174,21 +179,47 @@ interface TFMultiHTTPSettings {
   entries: TFMultiHttpEntry[];
 }
 
-export interface TFMultiHttpEntry extends Omit<MultiHttpEntry, 'request'> {
-  request: TFMultiHttpRequest;
+export type TFMultiHTTPAssertionType = 'TEXT' | 'JSON_PATH_VALUE' | 'JSON_PATH_ASSERTION' | 'REGEX_ASSERTION';
+export type TFMultiHTTPAssertionCondition =
+  | 'NOT_CONTAINS'
+  | 'EQUALS'
+  | 'STARTS_WITH'
+  | 'ENDS_WITH'
+  | 'TYPE_OF'
+  | 'CONTAINS';
+export type TFMultiHttpAssertionSubject = 'RESPONSE_HEADERS' | 'HTTP_STATUS_CODE' | 'RESPONSE_BODY';
+
+export type TFMultiHTTPVariableType = 'JSON_PATH' | 'REGEX' | 'CSS_SELECTOR';
+
+export interface TFMultiHttpRequestBody extends Omit<MultiHttpRequestBody, 'contentType' | 'contentEncoding'> {
+  content_type?: string;
+  content_encoding?: string;
 }
 
+export interface TFMultiHttpAssertion {
+  type: TFMultiHTTPAssertionType;
+  condition?: TFMultiHTTPAssertionCondition;
+  subject?: TFMultiHttpAssertionSubject;
+  expression?: string;
+  value?: string;
+}
+
+export interface TFMultiHttpVariable extends Omit<MultiHttpVariable, 'type'> {
+  type: TFMultiHTTPVariableType;
+}
+
+export interface TFMultiHttpEntry extends Omit<MultiHttpEntry, 'request' | 'checks' | 'variables'> {
+  request: TFMultiHttpRequest;
+  assertions?: TFMultiHttpAssertion[];
+  variables?: TFMultiHttpVariable[];
+}
 interface TFMultiHttpRequest extends Omit<RequestProps, 'queryFields' | 'postData' | 'body'> {
   query_fields?: Label[];
   post_data?: {
     mime_type: string;
     text: string;
   };
-  body: {
-    content_type?: string;
-    content_encoding?: string;
-    payload?: string;
-  };
+  body?: TFMultiHttpRequestBody;
 }
 
 interface TFHeaderMatch extends Omit<HeaderMatch, 'allowMissing'> {
@@ -207,7 +238,8 @@ export interface TFProbeConfig {
   [key: string]: TFProbe;
 }
 
-export interface TFProbe extends Omit<Probe, 'online' | 'onlineChange' | 'version' | 'deprecated' | 'labels' | 'capabilities'> {
+export interface TFProbe
+  extends Omit<Probe, 'online' | 'onlineChange' | 'version' | 'deprecated' | 'labels' | 'capabilities'> {
   labels: TFLabels;
   disable_scripted_checks: boolean;
   disable_browser_checks: boolean;
