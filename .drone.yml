@@ -93,8 +93,6 @@ trigger:
     - promote
   target:
     - staging
-depends_on:
-  - publish-dev
 
 steps:
   - name: build
@@ -158,8 +156,6 @@ trigger:
     - promote
   target:
     - production
-depends_on:
-  - publish-staging
 
 steps:
   - name: build
