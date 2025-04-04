@@ -10,7 +10,7 @@ export function mockAlertsForCheckData(mockData: CheckAlertsResponse = alertsFro
 export const alertsFromApi: CheckAlertsResponse = {
   alerts: [
     {
-      name: CheckAlertType['HTTPTargetCertificateCloseToExpiring'],
+      name: CheckAlertType['TLSTargetCertificateCloseToExpiring'],
       threshold: 90,
       created: 1724854935,
       modified: 1724854935,
