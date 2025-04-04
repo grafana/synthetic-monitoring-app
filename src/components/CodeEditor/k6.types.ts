@@ -41,6 +41,12 @@ import k6ExperimentalWebcrypto from '!raw-loader!@types/k6/experimental/webcrypt
 import k6ExperimentalStreams from '!raw-loader!@types/k6/experimental/streams';
 // @ts-expect-error
 import k6ExperimentalWebsockets from '!raw-loader!@types/k6/experimental/websockets';
+// @ts-expect-error
+import k6Secrets from '!raw-loader!./k6Secrets.d.ts';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { FeatureName } from 'types';
+
+const secretsEnabled = isFeatureEnabled(FeatureName.SecretsManagement);
 
 // eslint-disable-next-line no-restricted-syntax
 export default {
@@ -63,4 +69,5 @@ export default {
   'k6/experimental/webcrypto': k6ExperimentalWebcrypto,
   'k6/experimental/streams': k6ExperimentalStreams,
   'k6/experimental/websockets': k6ExperimentalWebsockets,
+  ...(secretsEnabled ? { 'k6/secrets': k6Secrets } : undefined),
 };
