@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.23.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.22.0...v1.23.0) (2025-03-31)
+
+
+### Features
+
+* rename the TLS certificate expiry alert ([#1102](https://github.com/grafana/synthetic-monitoring-app/issues/1102)) ([6ebaa66](https://github.com/grafana/synthetic-monitoring-app/commit/6ebaa6673c6d487a88663edba737577b659c2bf3))
+
+
+### Fixes
+
+* update drone signature to prevent having to manually approve builds ([#1099](https://github.com/grafana/synthetic-monitoring-app/issues/1099)) ([6b62ea1](https://github.com/grafana/synthetic-monitoring-app/commit/6b62ea112f4fd9ac65f6dbe6ec99a4f11f980123))
+
+## [1.22.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.21.0...v1.22.0) (2025-03-25)
+
+
+### Features
+
+* add dev tools ([#1089](https://github.com/grafana/synthetic-monitoring-app/issues/1089)) ([33a30d2](https://github.com/grafana/synthetic-monitoring-app/commit/33a30d205b84c719a080f1c6fb03b5b82b74888a))
+* improve new alerts UI ([#1064](https://github.com/grafana/synthetic-monitoring-app/issues/1064)) ([b2e1be4](https://github.com/grafana/synthetic-monitoring-app/commit/b2e1be46317d4d9865c7ceafc97e4b0d3af45928))
+
+
+### Fixes
+
+* add put allowed in datasource.json ([#1098](https://github.com/grafana/synthetic-monitoring-app/issues/1098)) ([48ac346](https://github.com/grafana/synthetic-monitoring-app/commit/48ac346cc356958be9316536bca3743336116ee2))
+* edit check button disabled issue ([#1091](https://github.com/grafana/synthetic-monitoring-app/issues/1091)) ([c125b6c](https://github.com/grafana/synthetic-monitoring-app/commit/c125b6c509146718610fa3b92cf2226c41c7a735))
+
+
+### Miscellaneous Chores
+
+* bump @babel/runtime from 7.24.7 to 7.26.10 ([#1084](https://github.com/grafana/synthetic-monitoring-app/issues/1084)) ([45dd4e6](https://github.com/grafana/synthetic-monitoring-app/commit/45dd4e6deb46824e8cd436672fb0a7c5b15fa42b))
+* bump axios from 1.7.4 to 1.8.2 ([#1083](https://github.com/grafana/synthetic-monitoring-app/issues/1083)) ([5bfd005](https://github.com/grafana/synthetic-monitoring-app/commit/5bfd005284fb2117e1c3e385a98da7941b5ca46f))
+* bump k6 typings to v0.57.1 ([#1096](https://github.com/grafana/synthetic-monitoring-app/issues/1096)) ([8f82b93](https://github.com/grafana/synthetic-monitoring-app/commit/8f82b9358b4afd6e76a222693c8f6d28bc95e33d))
+
 ## [1.21.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.20.1...v1.21.0) (2025-03-11)
 
 

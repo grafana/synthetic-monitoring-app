@@ -5,9 +5,7 @@ import { CheckAlertsResponse } from 'datasource/responses.types';
 
 export const BASIC_CHECK_ALERTS: CheckAlertsResponse = {
   alerts: [
-    CheckAlertType.HTTPRequestDurationTooHighP90,
-    CheckAlertType.HTTPRequestDurationTooHighP95,
-    CheckAlertType.HTTPTargetCertificateCloseToExpiring,
+    CheckAlertType.TLSTargetCertificateCloseToExpiring,
     CheckAlertType.ProbeFailedExecutionsTooHigh,
   ].map((name) => db.alert.build({ name })),
 };

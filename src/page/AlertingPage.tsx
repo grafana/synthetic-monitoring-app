@@ -19,7 +19,7 @@ type SplitAlertRules = {
 
 export const AlertingPage = () => {
   return (
-    <PluginPage>
+    <PluginPage renderTitle={() => <h1>Alerts (Legacy)</h1>}>
       <Alerting />
     </PluginPage>
   );

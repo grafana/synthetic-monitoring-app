@@ -15,7 +15,7 @@ export const listAlertsForCheck: ApiEntry<CheckAlertsResponse> = {
 
 export const updateAlertsForCheck: ApiEntry<CheckAlertsResponse> = {
   route: `/sm/check/\\d+/alerts`,
-  method: `post`,
+  method: `put`,
   result: () => {
     return {
       json: BASIC_CHECK_ALERTS,
