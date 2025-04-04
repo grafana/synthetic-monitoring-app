@@ -6,12 +6,24 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { CenteredSpinner } from 'components/CenteredSpinner';
 
-export interface ConfigContentProps extends PropsWithChildren {
-  title?: NonNullable<ReactNode>;
+interface BaseProps {
   loading?: boolean;
+  children?: ReactNode;
 }
 
-export function ConfigContent({ title, children, loading = false }: ConfigContentProps) {
+interface WithoutActions {
+  title?: ReactNode;
+  actions?: never;
+}
+
+interface WithActions {
+  title: ReactNode;
+  actions?: ReactNode;
+}
+
+type Props = BaseProps & (WithoutActions | WithActions);
+
+export function ConfigContent({ title, children, loading = false, actions }: Props) {
   const styles = useStyles2(getStyles);
 
   if (loading) {
@@ -24,7 +36,12 @@ export function ConfigContent({ title, children, loading = false }: ConfigConten
 
   return (
     <section data-testid={DataTestIds.CONFIG_CONTENT} className={styles.container}>
-      {title && <h2>{title}</h2>}
+      {title && (
+        <div className={styles.heading}>
+          <h2>{title}</h2>
+          {actions}
+        </div>
+      )}
       {children}
     </section>
   );
@@ -45,6 +62,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
       ...theme.typography.h5,
     },
   }),
+  heading: css`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  `,
 });
 
 ConfigContent.Section = function ConfigContentSection({
