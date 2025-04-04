@@ -39,7 +39,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
   const styles = useStyles2(getStyles);
   const [searchValue, setSearchValue] = useState(checkFilters.search);
   const [probes] = useExtendedProbes();
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
     const value = event.currentTarget.value;

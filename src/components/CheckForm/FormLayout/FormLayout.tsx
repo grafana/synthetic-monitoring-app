@@ -8,7 +8,7 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { flattenKeys } from '../checkForm.utils';
 import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
-import { FormSection, FormSectionInternal } from './FormSection';
+import { FormSection, FormSectionInternal, FormSectionProps } from './FormSection';
 import { FormSidebar } from './FormSidebar';
 
 type ActionNode = {
@@ -59,7 +59,9 @@ export const FormLayout = <T extends FieldValues>({
         if (child.type === FormSection) {
           index++;
 
-          return <FormSectionInternal {...child.props} index={index} activeSection={activeSection} />;
+          const sectionProps = child.props as Omit<FormSectionProps, 'index' | 'activeSection'>;
+
+          return <FormSectionInternal {...sectionProps} index={index} activeSection={activeSection} />;
         }
 
         return child;
