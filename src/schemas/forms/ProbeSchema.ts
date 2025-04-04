@@ -1,4 +1,4 @@
-import { LabelsSchema } from 'schemas/general/Label';
+import { labelsSchema } from 'schemas/general/Label';
 import { z, ZodType } from 'zod';
 
 import { Probe } from 'types';
@@ -11,7 +11,7 @@ const LATITUDE_MAX = 90;
 const LONGITUDE_MIN = -180;
 const LONGITUDE_MAX = 180;
 
-export const ProbeSchema: ZodType<Probe> = z.object({
+export const probeSchema: ZodType<Probe> = z.object({
   created: z.number().optional(),
   id: z.number().optional(),
   modified: z.number().optional(),
@@ -45,7 +45,7 @@ export const ProbeSchema: ZodType<Probe> = z.object({
   }),
   online: z.boolean(),
   onlineChange: z.number(),
-  labels: LabelsSchema,
+  labels: labelsSchema,
   version: z.string(),
   deprecated: z.boolean(),
   capabilities: z.object({

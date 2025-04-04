@@ -1,14 +1,14 @@
-import { HostNameTargetSchema } from 'schemas/general/HostNameTarget';
+import { hostNameTargetSchema } from 'schemas/general/HostNameTarget';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesTraceroute, CheckType, TracerouteSettingsFormValues } from 'types';
 
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
 const MAX_HOPS = 64;
 const MAX_UNKNOWN_HOPS = 20;
 
-const TracerouteSettingsSchema: ZodType<TracerouteSettingsFormValues> = z.object({
+const tracerouteSettingsSchema: ZodType<TracerouteSettingsFormValues> = z.object({
   maxHops: z
     .number({
       required_error: `Must be a number (0-${MAX_HOPS})`,
@@ -27,12 +27,12 @@ const TracerouteSettingsSchema: ZodType<TracerouteSettingsFormValues> = z.object
   hopTimeout: z.number(),
 });
 
-const TracerouteSchemaValues = z.object({
-  target: HostNameTargetSchema,
+const tracerouteSchemaValues = z.object({
+  target: hostNameTargetSchema,
   checkType: z.literal(CheckType.Traceroute),
   settings: z.object({
-    traceroute: TracerouteSettingsSchema,
+    traceroute: tracerouteSettingsSchema,
   }),
 });
 
-export const TracerouteCheckSchema: ZodType<CheckFormValuesTraceroute> = BaseCheckSchema.and(TracerouteSchemaValues);
+export const tracerouteCheckSchema: ZodType<CheckFormValuesTraceroute> = baseCheckSchema.and(tracerouteSchemaValues);

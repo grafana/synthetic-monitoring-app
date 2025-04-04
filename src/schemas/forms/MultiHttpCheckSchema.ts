@@ -1,6 +1,6 @@
-import { HeadersSchema } from 'schemas/general/Header';
-import { HttpTargetSchema } from 'schemas/general/HttpTarget';
-import { QueryParamsSchema } from 'schemas/general/QueryParam';
+import { headersSchema } from 'schemas/general/Header';
+import { httpTargetSchema } from 'schemas/general/HttpTarget';
+import { queryParamsSchema } from 'schemas/general/QueryParam';
 import { z, ZodType } from 'zod';
 
 import {
@@ -23,11 +23,11 @@ import {
   RequestProps,
 } from 'components/MultiHttp/MultiHttpTypes';
 
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
-const MultiHttpRequestSchema: ZodType<RequestProps> = z.object({
+const multiHttpRequestSchema: ZodType<RequestProps> = z.object({
   method: z.nativeEnum(HttpMethod),
-  url: HttpTargetSchema,
+  url: httpTargetSchema,
   body: z
     .object({
       contentType: z.string(),
@@ -35,8 +35,8 @@ const MultiHttpRequestSchema: ZodType<RequestProps> = z.object({
       payload: z.string(),
     })
     .optional(),
-  headers: HeadersSchema,
-  queryFields: QueryParamsSchema.optional(),
+  headers: headersSchema,
+  queryFields: queryParamsSchema.optional(),
   postData: z
     .object({
       mimeType: z.string(),
@@ -45,72 +45,72 @@ const MultiHttpRequestSchema: ZodType<RequestProps> = z.object({
     .optional(),
 });
 
-const AssertionValueSchema = z
+const assertionValueSchema = z
   .string({
     required_error: 'Value is required',
   })
   .min(1, { message: 'Value is required' });
 
-const AssertionExpressionSchema = z
+const assertionExpressionSchema = z
   .string({
     required_error: 'Expression is required',
   })
   .min(1, { message: 'Expression is required' });
 
-const MultiHttpAssertionTextSchema: ZodType<AssertionText> = z.object({
+const multiHttpAssertionTextSchema: ZodType<AssertionText> = z.object({
   condition: z.nativeEnum(AssertionConditionVariant),
   subject: z.nativeEnum(AssertionSubjectVariant),
   type: z.literal(MultiHttpAssertionType.Text),
-  value: AssertionValueSchema,
+  value: assertionValueSchema,
 });
 
-const MultiHttpAssertionJsonPathValueSchema: ZodType<AssertionJsonPathValue> = z.object({
+const multiHttpAssertionJsonPathValueSchema: ZodType<AssertionJsonPathValue> = z.object({
   condition: z.nativeEnum(AssertionConditionVariant),
-  expression: AssertionExpressionSchema,
+  expression: assertionExpressionSchema,
   type: z.literal(MultiHttpAssertionType.JSONPathValue),
-  value: AssertionValueSchema,
+  value: assertionValueSchema,
 });
 
-const MultiHttpAssertionJsonPathSchema: ZodType<AssertionJsonPath> = z.object({
-  expression: AssertionExpressionSchema,
+const multiHttpAssertionJsonPathSchema: ZodType<AssertionJsonPath> = z.object({
+  expression: assertionExpressionSchema,
   type: z.literal(MultiHttpAssertionType.JSONPath),
 });
 
-const MultiHttpAssertionRegexSchema: ZodType<AssertionRegex> = z.object({
-  expression: AssertionExpressionSchema,
+const multiHttpAssertionRegexSchema: ZodType<AssertionRegex> = z.object({
+  expression: assertionExpressionSchema,
   subject: z.nativeEnum(AssertionSubjectVariant),
   type: z.literal(MultiHttpAssertionType.Regex),
 });
 
-const MultiHttpAssertionSchema: ZodType<Assertion> = z.union([
-  MultiHttpAssertionTextSchema,
-  MultiHttpAssertionJsonPathValueSchema,
-  MultiHttpAssertionJsonPathSchema,
-  MultiHttpAssertionRegexSchema,
+const multiHttpAssertionSchema: ZodType<Assertion> = z.union([
+  multiHttpAssertionTextSchema,
+  multiHttpAssertionJsonPathValueSchema,
+  multiHttpAssertionJsonPathSchema,
+  multiHttpAssertionRegexSchema,
 ]);
 
-const MultiHttpVariablesSchema: ZodType<MultiHttpVariable> = z.object({
+const multiHttpVariablesSchema: ZodType<MultiHttpVariable> = z.object({
   attribute: z.string().optional(),
   expression: z.string().min(1, { message: 'Expression is required' }),
   name: z.string().min(1, { message: 'Name is required' }),
   type: z.number(),
 });
 
-const MultiHttpEntriesSchema: ZodType<MultiHttpEntryFormValues> = z.object({
-  checks: z.array(MultiHttpAssertionSchema).optional(),
-  request: MultiHttpRequestSchema,
-  variables: z.array(MultiHttpVariablesSchema).optional(),
+const multiHttpEntriesSchema: ZodType<MultiHttpEntryFormValues> = z.object({
+  checks: z.array(multiHttpAssertionSchema).optional(),
+  request: multiHttpRequestSchema,
+  variables: z.array(multiHttpVariablesSchema).optional(),
 });
 
-const MultiHttpSettingsSchema: ZodType<MultiHttpSettingsFormValues> = z.object({
-  entries: z.array(MultiHttpEntriesSchema),
+const multiHttpSettingsSchema: ZodType<MultiHttpSettingsFormValues> = z.object({
+  entries: z.array(multiHttpEntriesSchema),
 });
 
-const MultiHttpSchemaValues = z.object({
+const multiHttpSchemaValues = z.object({
   checkType: z.literal(CheckType.MULTI_HTTP),
   settings: z.object({
-    multihttp: MultiHttpSettingsSchema,
+    multihttp: multiHttpSettingsSchema,
   }),
 });
 
-export const MultiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = BaseCheckSchema.and(MultiHttpSchemaValues);
+export const multiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = baseCheckSchema.and(multiHttpSchemaValues);

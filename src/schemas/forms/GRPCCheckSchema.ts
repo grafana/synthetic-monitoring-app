@@ -1,24 +1,24 @@
-import { HostPortTarget } from 'schemas/general/HostPortTarget';
-import { TLSConfigSchema } from 'schemas/general/TLSConfig';
+import { hostPortTargetSchema } from 'schemas/general/HostPortTarget';
+import { tlsConfigSchema } from 'schemas/general/TLSConfig';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesGRPC, CheckType, GRPCSettingsFormValues, IpVersion } from 'types';
 
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
-const GRPCSettingsSchema: ZodType<GRPCSettingsFormValues> = z.object({
+const grpcSettingsSchema: ZodType<GRPCSettingsFormValues> = z.object({
   ipVersion: z.nativeEnum(IpVersion),
   service: z.string().optional(),
   tls: z.boolean().optional(),
-  tlsConfig: TLSConfigSchema,
+  tlsConfig: tlsConfigSchema,
 });
 
-const GRPCSchemaValues = z.object({
-  target: HostPortTarget,
+const grpcSchemaValues = z.object({
+  target: hostPortTargetSchema,
   checkType: z.literal(CheckType.GRPC),
   settings: z.object({
-    grpc: GRPCSettingsSchema,
+    grpc: grpcSettingsSchema,
   }),
 });
 
-export const GRPCCheckSchema: ZodType<CheckFormValuesGRPC> = BaseCheckSchema.and(GRPCSchemaValues);
+export const grpcCheckSchema: ZodType<CheckFormValuesGRPC> = baseCheckSchema.and(grpcSchemaValues);

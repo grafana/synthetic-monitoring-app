@@ -1,14 +1,14 @@
 import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
-import { BrowserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
-import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
-import { GRPCCheckSchema } from 'schemas/forms/GRPCCheckSchema';
-import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
-import { MultiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
-import { PingCheckSchema } from 'schemas/forms/PingCheckSchema';
-import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
-import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
-import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
+import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
+import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
+import { grpcCheckSchema } from 'schemas/forms/GRPCCheckSchema';
+import { httpCheckSchema } from 'schemas/forms/HttpCheckSchema';
+import { multiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
+import { pingCheckSchema } from 'schemas/forms/PingCheckSchema';
+import { scriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
+import { tcpCheckSchema } from 'schemas/forms/TCPCheckSchema';
+import { tracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
 import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType, FeatureName } from 'types';
 import { ROUTES } from 'routing/types';
@@ -24,15 +24,15 @@ import { broadcastFailedSubmission, findFieldToFocus } from './checkForm.utils';
 import { useFormCheckType } from './useCheckType';
 
 const schemaMap = {
-  [CheckType.Browser]: BrowserCheckSchema,
-  [CheckType.DNS]: DNSCheckSchema,
-  [CheckType.GRPC]: GRPCCheckSchema,
-  [CheckType.HTTP]: HttpCheckSchema,
-  [CheckType.MULTI_HTTP]: MultiHttpCheckSchema,
-  [CheckType.PING]: PingCheckSchema,
-  [CheckType.Scripted]: ScriptedCheckSchema,
-  [CheckType.TCP]: TCPCheckSchema,
-  [CheckType.Traceroute]: TracerouteCheckSchema,
+  [CheckType.Browser]: browserCheckSchema,
+  [CheckType.DNS]: dnsCheckSchema,
+  [CheckType.GRPC]: grpcCheckSchema,
+  [CheckType.HTTP]: httpCheckSchema,
+  [CheckType.MULTI_HTTP]: multiHttpCheckSchema,
+  [CheckType.PING]: pingCheckSchema,
+  [CheckType.Scripted]: scriptedCheckSchema,
+  [CheckType.TCP]: tcpCheckSchema,
+  [CheckType.Traceroute]: tracerouteCheckSchema,
 };
 
 export function useCheckFormSchema(check?: Check) {

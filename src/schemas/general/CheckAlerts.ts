@@ -11,7 +11,7 @@ const isScientificNotation = (val: number) => {
 
 const invalidThreshold = 'Threshold value must be a valid integer';
 
-const CheckAlertSchema = z
+const checkAlertSchema = z
   .object({
     id: z.number().optional(),
     isSelected: z.boolean().optional(),
@@ -38,7 +38,7 @@ const CheckAlertSchema = z
     { message: invalidThreshold, path: ['threshold'] }
   );
 
-const ProbeFailedExecutionsTooHighSchema = CheckAlertSchema.refine(
+const probeFailedExecutionsTooHighSchema = checkAlertSchema.refine(
   (data) => {
     if (data.isSelected && !data.period) {
       return false;
@@ -48,9 +48,9 @@ const ProbeFailedExecutionsTooHighSchema = CheckAlertSchema.refine(
   { message: 'You need to choose a period for this alert', path: ['period'] }
 );
 
-export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: ProbeFailedExecutionsTooHighSchema.optional(),
-  TLSTargetCertificateCloseToExpiring: CheckAlertSchema.optional(),
+export const checkAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
+  ProbeFailedExecutionsTooHigh: probeFailedExecutionsTooHighSchema.optional(),
+  TLSTargetCertificateCloseToExpiring: checkAlertSchema.optional(),
 });
 
 export function checkAlertsRefinement(data: CheckFormValuesBase, ctx: z.RefinementCtx) {

@@ -3,18 +3,18 @@ import { z, ZodType } from 'zod';
 import { BrowserSettings, CheckFormValuesBrowser, CheckType } from 'types';
 
 import { maxSizeValidation, validateBrowserScript } from './script/validation';
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
-const BrowserSettingsSchema: ZodType<BrowserSettings> = z.object({
+const browserSettingsSchema: ZodType<BrowserSettings> = z.object({
   script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation).superRefine(validateBrowserScript),
 });
 
-const BrowserSchemaValues = z.object({
+const browserSchemaValues = z.object({
   target: z.string().min(3, `Instance must be at least 3 characters long.`),
   checkType: z.literal(CheckType.Browser),
   settings: z.object({
-    browser: BrowserSettingsSchema,
+    browser: browserSettingsSchema,
   }),
 });
 
-export const BrowserCheckSchema: ZodType<CheckFormValuesBrowser> = BaseCheckSchema.and(BrowserSchemaValues);
+export const browserCheckSchema: ZodType<CheckFormValuesBrowser> = baseCheckSchema.and(browserSchemaValues);

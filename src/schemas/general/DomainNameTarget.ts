@@ -2,9 +2,9 @@ import { z } from 'zod';
 
 import { validateDomain } from 'validation';
 
-import { TargetSchema } from './Target';
+import { targetSchema } from './Target';
 
-export const DomainNameTarget = TargetSchema.and(z.string().superRefine(validate));
+export const domainNameTargetSchema = targetSchema.and(z.string().superRefine(validate));
 
 function validate(target: string, ctx: z.RefinementCtx) {
   const message = validateDomain(target);
