@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.24.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.23.0...v1.24.0) (2025-04-04)
+
+
+### Features
+
+* intermediate secrets management (part 1) ([#1087](https://github.com/grafana/synthetic-monitoring-app/issues/1087)) ([cc749dc](https://github.com/grafana/synthetic-monitoring-app/commit/cc749dcc84f0cd9c3ed395b300d015cb320343f2))
+
+
+### Fixes
+
+* recreate yarn.lock to upgrade dependencies ([#1105](https://github.com/grafana/synthetic-monitoring-app/issues/1105)) ([8d6d7b8](https://github.com/grafana/synthetic-monitoring-app/commit/8d6d7b849d165bca8bc09045100cc385241899a4))
+* remove canary config ([#1101](https://github.com/grafana/synthetic-monitoring-app/issues/1101)) ([9dd6209](https://github.com/grafana/synthetic-monitoring-app/commit/9dd6209fbb8bb3ac3b1a9c5e9c5d9d65f90b2fea))
+* Terraform fixes for scripted, browser and multiHTTP checks ([#1095](https://github.com/grafana/synthetic-monitoring-app/issues/1095)) ([84840aa](https://github.com/grafana/synthetic-monitoring-app/commit/84840aae9ceed6c51041b3ec37b54e1960e4da2a))
+
 ## [1.23.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.22.0...v1.23.0) (2025-03-31)
 
 
