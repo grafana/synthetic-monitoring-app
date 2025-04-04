@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const NAME_REQUIRED_ERROR = '{type} name is required';
 
-const QueryParam = z.object({
+const queryParamSchema = z.object({
   name: z
     .string({
       required_error: NAME_REQUIRED_ERROR,
@@ -11,7 +11,7 @@ const QueryParam = z.object({
   value: z.string(),
 });
 
-export const QueryParamsSchema = z.array(QueryParam).superRefine((queryParams, ctx) => {
+export const queryParamsSchema = z.array(queryParamSchema).superRefine((queryParams, ctx) => {
   const queryParamNames = queryParams.map((query) => query.name);
   const uniqueNames = new Set(queryParamNames);
 
