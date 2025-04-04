@@ -120,7 +120,7 @@ export const MultiHttpCheckRequests = () => {
             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
             isOpen={collapseState[index].open}
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
-            ref={(el) => (panelRefs.current[index] = el)}
+            ref={(el) => { panelRefs.current[index] = el }}
             onRemove={onRemove}
             requestMethod={requestMethod}
           >
