@@ -233,7 +233,6 @@ export const getStyles = (theme: GrafanaTheme2, hasMarks = false) => {
       flexDirection: 'row',
       alignItems: 'center',
       width: '100%',
-      // gap: theme.spacing(2),
     }),
     sliderWrapper: css({
       width: '100%',

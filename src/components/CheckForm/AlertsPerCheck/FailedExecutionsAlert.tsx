@@ -50,16 +50,13 @@ export const FailedExecutionsAlert = ({
   const threshold = getValues(`alerts.${alert.type}.threshold`);
   const period = getValues(`alerts.${alert.type}.period`);
 
-  const convertPeriodToSeconds = useCallback(
-    (period: string) => durationToMilliseconds(parseDuration(period)) / 1000,
-    []
-  );
+  const convertPeriod = useCallback((period: string) => durationToMilliseconds(parseDuration(period)), []);
 
   //min time range >= check frequency
   const validPeriods = useMemo(
     () =>
       ALERT_PERIODS.map((period) => {
-        const isValid = convertPeriodToSeconds(period.value) >= checkFrequency;
+        const isValid = convertPeriod(period.value) >= checkFrequency;
 
         return {
           ...period,
@@ -67,7 +64,7 @@ export const FailedExecutionsAlert = ({
           description: !isValid ? 'Invalid' : undefined,
         };
       }),
-    [checkFrequency, convertPeriodToSeconds]
+    [checkFrequency, convertPeriod]
   );
 
   const testExecutionsPerPeriod = useMemo(() => {
@@ -75,8 +72,8 @@ export const FailedExecutionsAlert = ({
       return '';
     }
 
-    return getTotalChecksPerPeriod(probes.length, checkFrequency, convertPeriodToSeconds(period));
-  }, [checkFrequency, period, probes, convertPeriodToSeconds]);
+    return getTotalChecksPerPeriod(probes.length, checkFrequency, convertPeriod(period));
+  }, [checkFrequency, period, probes, convertPeriod]);
 
   const periodError = formState.errors?.alerts?.[alert.type]?.period?.message;
 

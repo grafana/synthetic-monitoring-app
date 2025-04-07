@@ -80,12 +80,10 @@ function searchForSpecialInputs(errKeys: string[] = [], errs: FieldErrors<CheckF
     const frequencyError = errs.frequency?.message;
 
     if (frequencyError?.includes(MIN_FREQUENCY_ERROR_MESSAGE_START)) {
-      console.log(document.querySelector(`#${FREQUENCY_SECONDS_INPUT_ID}`));
       return document.querySelector(`#${FREQUENCY_SECONDS_INPUT_ID}`);
     }
 
     if (frequencyError?.includes(MAX_FREQUENCY_ERROR_MESSAGE_START)) {
-      console.log(document.querySelector(`#${FREQUENCY_MINUTES_INPUT_ID}`));
       return document.querySelector(`#${FREQUENCY_MINUTES_INPUT_ID}`);
     }
 

@@ -281,12 +281,6 @@ export function formatDate(number: number) {
   });
 }
 
-export function secondsToDuration(seconds: number): string {
-  const now = new Date();
-  const duration = { start: new Date(now.getTime() - seconds * 1000), end: now };
-  return intervalToAbbreviatedDurationString(duration);
-}
-
 export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
   const { basicMetricsOnly, settings, frequency, probes } = check;
   const checkType = getCheckType(check.settings);

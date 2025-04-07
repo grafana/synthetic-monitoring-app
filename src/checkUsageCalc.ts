@@ -30,9 +30,11 @@ export const getTotalChecksPerMonth = (probeCount: number, frequency: number) =>
   return checksPerMonth * probeCount;
 };
 
-export const getTotalChecksPerPeriod = (probeCount: number, frequency: number, periodInSeconds: number) => {
-  const checksPerMinute = 60 / frequency;
-  const checksPerPeriod = checksPerMinute * (periodInSeconds / 60) * probeCount;
+export const getTotalChecksPerPeriod = (probeCount: number, frequency: number, period: number) => {
+  const frequencyInSeconds = frequency / ONE_SECOND_IN_MS;
+  const checksPerMinute = SECONDS_IN_MINUTE / frequencyInSeconds;
+  const checksPerPeriod = checksPerMinute * (period / ONE_SECOND_IN_MS / 60) * probeCount;
+
   return Math.round(checksPerPeriod);
 };
 
@@ -44,7 +46,7 @@ const getLogsGbPerMonth = (probeCount: number, frequency: number) => {
 };
 
 const getDataPointsPerMinute = (activeSeries: number, frequency: number) => {
-  const dpm = activeSeries * Math.max(1, 60 / frequency / 1000);
+  const dpm = activeSeries * Math.max(1, (60 / frequency) * ONE_SECOND_IN_MS);
   return Math.ceil(dpm);
 };
 
