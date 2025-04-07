@@ -1,5 +1,5 @@
 import React from 'react';
-import { FieldError, FieldPath, useFormContext } from 'react-hook-form';
+import { FieldPath, useFormContext } from 'react-hook-form';
 import { Field } from '@grafana/ui';
 import { get } from 'lodash';
 
@@ -19,8 +19,8 @@ export const RequestHeaders = ({ description, disabled, label, name, ...rest }: 
   const {
     formState: { errors },
   } = useFormContext<CheckFormValues>();
-  const fieldError = get(errors, name) as FieldError | undefined;
-  const errorMessage = fieldError?.message || fieldError?.root?.message;
+  const fieldError = get(errors, name);
+  const errorMessage = typeof fieldError === 'string' ? fieldError : fieldError?.message || fieldError?.root?.message;
 
   return (
     <Field
