@@ -54,7 +54,6 @@ export const SSLExpiry = () => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
@@ -63,7 +62,6 @@ export const SSLExpiry = () => {
 
   return (
     <VizPanel
-      //@ts-ignore
       menu={menu}
       title="SSL Expiry"
       viz={viz}

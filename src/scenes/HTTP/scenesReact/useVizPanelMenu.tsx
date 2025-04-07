@@ -2,14 +2,14 @@ import { PanelMenuItem, TimeRange } from '@grafana/data';
 import { QueryRunnerState, SceneDataQuery, VizConfig, VizPanelMenu } from '@grafana/scenes';
 import { useVariableInterpolator } from '@grafana/scenes-react';
 
-interface UseVizPanelMenuParams {
+interface UseVizPanelMenuProps {
   data: QueryRunnerState;
   viz: VizConfig;
   currentTimeRange: TimeRange;
   variables: string[]; // Variables to interpolate (e.g., ['job', 'probe', 'instance'])
 }
 
-export function useVizPanelMenu({ data, viz, currentTimeRange, variables }: UseVizPanelMenuParams): VizPanelMenu {
+export function useVizPanelMenu({ data, viz, currentTimeRange, variables }: UseVizPanelMenuProps): VizPanelMenu {
   const { from, to } = currentTimeRange;
 
   const interpolator = useVariableInterpolator({ variables, timeRange: true });

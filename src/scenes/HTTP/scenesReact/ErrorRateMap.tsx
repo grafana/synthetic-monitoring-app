@@ -253,7 +253,6 @@ export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
@@ -264,13 +263,5 @@ export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
     return <LoadingPlaceholder text="Loading..." />;
   }
 
-  return (
-    <VizPanel
-      //@ts-ignore
-      menu={menu}
-      title="Error rate by probe"
-      viz={viz}
-      dataProvider={dataTransformer}
-    />
-  );
+  return <VizPanel menu={menu} title="Error rate by probe" viz={viz} dataProvider={dataTransformer} />;
 };

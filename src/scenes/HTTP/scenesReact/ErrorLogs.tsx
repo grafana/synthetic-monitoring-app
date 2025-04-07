@@ -35,7 +35,6 @@ export const ErrorLogs = () => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
@@ -47,7 +46,6 @@ export const ErrorLogs = () => {
       title="Logs for failed checks: $probe ⮕ $job / $instance"
       viz={viz}
       dataProvider={dataProvider}
-      //@ts-ignore
       menu={menu}
     />
   );

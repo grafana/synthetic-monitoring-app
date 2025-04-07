@@ -116,7 +116,6 @@ export const AvgLatency = () => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
@@ -129,7 +128,6 @@ export const AvgLatency = () => {
       viz={viz}
       dataProvider={dataTransformer}
       description={'The average time to receive an answer across all the checks during the whole time period.'}
-      //@ts-ignore
       menu={menu}
     />
   );

@@ -83,7 +83,6 @@ export const UptimeStat = ({ check }: { check: Check }) => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
@@ -91,13 +90,6 @@ export const UptimeStat = ({ check }: { check: Check }) => {
   });
 
   return (
-    <VizPanel
-      //@ts-ignore
-      menu={menu}
-      title="Uptime"
-      viz={viz}
-      dataProvider={dataTransformer}
-      description={UPTIME_DESCRIPTION}
-    />
+    <VizPanel menu={menu} title="Uptime" viz={viz} dataProvider={dataTransformer} description={UPTIME_DESCRIPTION} />
   );
 };

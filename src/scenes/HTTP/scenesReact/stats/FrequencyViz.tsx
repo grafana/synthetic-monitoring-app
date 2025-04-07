@@ -73,7 +73,6 @@ export const Frequency = () => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
@@ -82,7 +81,6 @@ export const Frequency = () => {
 
   return (
     <VizPanel
-      //@ts-ignore
       menu={menu}
       title="Frequency"
       viz={viz}

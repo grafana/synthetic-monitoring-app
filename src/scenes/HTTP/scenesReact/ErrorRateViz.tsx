@@ -77,19 +77,11 @@ export const ErrorRate = ({ minStep }: { minStep: string }) => {
   const data = dataProvider.useState();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
     variables: ['job', 'probe', 'instance'],
   });
 
-  return (
-    <VizPanel //@ts-ignore
-      menu={menu}
-      title="Error Rate : $probe ⮕ $job / $instance"
-      viz={viz}
-      dataProvider={dataProvider}
-    />
-  );
+  return <VizPanel menu={menu} title="Error Rate : $probe ⮕ $job / $instance" viz={viz} dataProvider={dataProvider} />;
 };

@@ -103,20 +103,11 @@ export const ResponseLatencyByProbe = () => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
     variables: ['job', 'probe', 'instance'],
   });
 
-  return (
-    <VizPanel
-      //@ts-ignore
-      menu={menu}
-      title="Response latency by probe"
-      viz={viz}
-      dataProvider={dataProvider}
-    />
-  );
+  return <VizPanel menu={menu} title="Response latency by probe" viz={viz} dataProvider={dataProvider} />;
 };

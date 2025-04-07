@@ -118,7 +118,6 @@ export const ReachabilityStat = ({ minStep }: { minStep: string }) => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
@@ -127,7 +126,6 @@ export const ReachabilityStat = ({ minStep }: { minStep: string }) => {
 
   return (
     <VizPanel
-      //@ts-ignore
       menu={menu}
       title="Reachability"
       viz={viz}

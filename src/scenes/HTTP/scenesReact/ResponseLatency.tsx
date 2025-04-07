@@ -50,7 +50,6 @@ export const ResponseLatency = () => {
   const [currentTimeRange] = useTimeRange();
 
   const menu = useVizPanelMenu({
-    //@ts-ignore
     data,
     viz,
     currentTimeRange,
@@ -59,7 +58,6 @@ export const ResponseLatency = () => {
 
   return (
     <VizPanel
-      //@ts-ignore
       menu={menu}
       title="Response latency by phase: $probe ⮕ $job / $instance"
       viz={viz}

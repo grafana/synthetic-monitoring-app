@@ -788,16 +788,6 @@
     tslib "2.8.1"
     typescript "5.7.3"
 
-"@grafana/e2e-selectors@^11.0.0":
-  version "11.6.0"
-  resolved "https://registry.yarnpkg.com/@grafana/e2e-selectors/-/e2e-selectors-11.6.0.tgz#50ac0cecf09ea680b700bc3a9d3109acb554630e"
-  integrity sha512-3nJBRYjOTIi9WbclY6tp0NOj6KUpN7mJW4xBV6nYvqK5X48PWQ8u7SUG+nZyTSYQ/9AY88V2EMZmkCMNfE99hA==
-  dependencies:
-    "@grafana/tsconfig" "^2.0.0"
-    semver "^7.7.0"
-    tslib "2.8.1"
-    typescript "5.7.3"
-
 "@grafana/eslint-config@^6.0.0":
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/@grafana/eslint-config/-/eslint-config-6.0.1.tgz#70f3e1990ab83591b566dec7bce214a1eb4d09c4"
@@ -854,38 +844,26 @@
     rxjs "7.8.1"
     tslib "2.8.1"
 
-"@grafana/scenes-react@6.3.1":
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/@grafana/scenes-react/-/scenes-react-6.3.1.tgz#e1257575afbab424e7f819845d302fadab1dcc74"
-  integrity sha512-yYbObSQsyCYPunBaesQiRX2w0Zc8aNolOWOQafsyBX3NHoA0WLxWqZDmldb0j4CvLiDf1q9kh0kL/QRZdv2BGw==
+"@grafana/scenes-react@5.42.0":
+  version "5.42.0"
+  resolved "https://registry.yarnpkg.com/@grafana/scenes-react/-/scenes-react-5.42.0.tgz#17abfb03e990c1fe372b5cc8ffc5a2ac8f07a4bf"
+  integrity sha512-mtGRtA52Id0gOVzwWIwWYedRr7GxCl2vOyf0UFMXmQNDEo+DXrVbl/JTuFPbABLGMEqNuNUFuZ0agil4PIMlnQ==
   dependencies:
-    "@grafana/scenes" "6.3.1"
+    "@grafana/scenes" "5.42.0"
     lru-cache "^10.2.2"
     react-use "^17.4.0"
 
-"@grafana/scenes@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-5.1.0.tgz#6878555302d8ef44d25619963dbd508f41de6ef0"
-  integrity sha512-v2lBWeJ9Yp47qVNRfzA80eq0UjpQrmO74lh1Nsw3W0yGxF/AxF26AiGngxxAyHffLP6vmKC/XMugta+aHtCgtQ==
-  dependencies:
-    "@grafana/e2e-selectors" "^11.0.0"
-    "@leeoniya/ufuzzy" "^1.0.14"
-    react-grid-layout "1.3.4"
-    react-use "17.5.0"
-    react-virtualized-auto-sizer "1.0.24"
-    uuid "^9.0.0"
-
-"@grafana/scenes@6.3.1":
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-6.3.1.tgz#1f411d3fe1c10df92bda8624a2489fe12a54708e"
-  integrity sha512-3OT99I6VbwQHbDFHVzJeA15FbvchfUroMDv/P8NMVwQoY+TV2LoDGsFZD1lIDhaoIj1tf7Lvuk8HP8uQ08F9zQ==
+"@grafana/scenes@5.42.0":
+  version "5.42.0"
+  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-5.42.0.tgz#52016c614f2ea8e1d2fd7a1c8c0b8758d7071f84"
+  integrity sha512-cjFDynL2bOyrhXL8MV3RyBtsgnMpdx78tc5DPXcKYal5uJYlc7Kw26PCRinIxu69uktB8IIvNlm74pqoixzZuA==
   dependencies:
     "@floating-ui/react" "^0.26.16"
     "@leeoniya/ufuzzy" "^1.0.16"
     "@tanstack/react-virtual" "^3.9.0"
-    react-grid-layout "1.3.4"
-    react-use "17.5.0"
-    react-virtualized-auto-sizer "1.0.24"
+    react-grid-layout "^1.3.4"
+    react-use "^17.5.0"
+    react-virtualized-auto-sizer "^1.0.24"
     uuid "^9.0.0"
 
 "@grafana/schema@11.5.1":
@@ -1345,7 +1323,7 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@leeoniya/ufuzzy@1.0.18", "@leeoniya/ufuzzy@^1.0.14", "@leeoniya/ufuzzy@^1.0.16":
+"@leeoniya/ufuzzy@1.0.18", "@leeoniya/ufuzzy@^1.0.16":
   version "1.0.18"
   resolved "https://registry.yarnpkg.com/@leeoniya/ufuzzy/-/ufuzzy-1.0.18.tgz#98e38c1308208bd47524aa2c53da0fe33dbbdab8"
   integrity sha512-5D54A86/VaPvJVf7UWJgy+UyhDtstUxq0iQd8UOZ2TG3NjV2oSoa9m4qW3VsotDD6dH2SNHDQwSPq+IAuudnag==
@@ -5901,6 +5879,11 @@ fast-diff@^1.1.2:
   resolved "https://registry.yarnpkg.com/fast-diff/-/fast-diff-1.3.0.tgz#ece407fa550a64d638536cd727e129c61616e0f0"
   integrity sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==
 
+fast-equals@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/fast-equals/-/fast-equals-4.0.3.tgz#72884cc805ec3c6679b99875f6b7654f39f0e8c7"
+  integrity sha512-G3BSX9cfKttjr+2o1O22tYMLq0DPluZnYtq1rXumE1SpL/F/SLIfHx08WYQoWSIpeMYf8sRbJ8++71+v6Pnxfg==
+
 fast-glob@^3.1.1, fast-glob@^3.2.11, fast-glob@^3.2.9, fast-glob@^3.3.0:
   version "3.3.3"
   resolved "https://registry.yarnpkg.com/fast-glob/-/fast-glob-3.3.3.tgz#d06d585ce8dba90a16b0505c543c3ccfb3aeb818"
@@ -8208,11 +8191,6 @@ lodash.isboolean@^3.0.3:
   resolved "https://registry.yarnpkg.com/lodash.isboolean/-/lodash.isboolean-3.0.3.tgz#6c2e171db2a257cd96802fd43b01b20d5f5870f6"
   integrity sha512-Bz5mupy2SVbPHURB98VAcw+aHh4vRV5IPNhILUCsOzRmsTmSQ17jIuqopAentWoehktxGd9e/hbIXq980/1QJg==
 
-lodash.isequal@^4.0.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
-  integrity sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==
-
 lodash.isinteger@^4.0.4:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/lodash.isinteger/-/lodash.isinteger-4.0.4.tgz#619c0af3d03f8b04c31f5882840b77b11cd68343"
@@ -8632,7 +8610,7 @@ mute-stream@0.0.8:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-nano-css@^5.6.1, nano-css@^5.6.2:
+nano-css@^5.6.2:
   version "5.6.2"
   resolved "https://registry.yarnpkg.com/nano-css/-/nano-css-5.6.2.tgz#584884ddd7547278f6d6915b6805069742679a32"
   integrity sha512-+6bHaC8dSDGALM1HJjOHVXpuastdu2xFoZlC77Jh4cg+33Zcgm+Gxd+1xsnpZK14eyHObSp82+ll5y3SX75liw==
@@ -9856,7 +9834,7 @@ react-dom@18.2.0:
     loose-envify "^1.1.0"
     scheduler "^0.23.0"
 
-react-draggable@^4.0.0, react-draggable@^4.0.3:
+react-draggable@^4.0.3, react-draggable@^4.4.5:
   version "4.4.6"
   resolved "https://registry.yarnpkg.com/react-draggable/-/react-draggable-4.4.6.tgz#63343ee945770881ca1256a5b6fa5c9f5983fe1e"
   integrity sha512-LtY5Xw1zTPqHkVmtM3X8MUOxNDOUhv/khTgBgrUvwaS064bwVvxT+q5El0uUFNx5IEPKXuRejr7UqLwBIg5pdw==
@@ -9890,16 +9868,17 @@ react-from-dom@^0.7.3:
   resolved "https://registry.yarnpkg.com/react-from-dom/-/react-from-dom-0.7.5.tgz#2d2d2bf6d80149c053bcf71bb6615e5e7f6d23db"
   integrity sha512-CO92PmMKo/23uYPm6OFvh5CtZbMgHs/Xn+o095Lz/TZj9t8DSDhGdSOMLxBxwWI4sr0MF17KUn9yJWc5Q00R/w==
 
-react-grid-layout@1.3.4:
-  version "1.3.4"
-  resolved "https://registry.yarnpkg.com/react-grid-layout/-/react-grid-layout-1.3.4.tgz#4fa819be24a1ba9268aa11b82d63afc4762a32ff"
-  integrity sha512-sB3rNhorW77HUdOjB4JkelZTdJGQKuXLl3gNg+BI8gJkTScspL1myfZzW/EM0dLEn+1eH+xW+wNqk0oIM9o7cw==
+react-grid-layout@^1.3.4:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/react-grid-layout/-/react-grid-layout-1.5.1.tgz#800899fb17aa568e5f32574d07c12579f3d76fb2"
+  integrity sha512-4Fr+kKMk0+m1HL/BWfHxi/lRuaOmDNNKQDcu7m12+NEYcen20wIuZFo789u3qWCyvUsNUxCiyf0eKq4WiJSNYw==
   dependencies:
-    clsx "^1.1.1"
-    lodash.isequal "^4.0.0"
+    clsx "^2.0.0"
+    fast-equals "^4.0.3"
     prop-types "^15.8.1"
-    react-draggable "^4.0.0"
-    react-resizable "^3.0.4"
+    react-draggable "^4.4.5"
+    react-resizable "^3.0.5"
+    resize-observer-polyfill "^1.5.1"
 
 react-highlight-words@0.20.0:
   version "0.20.0"
@@ -9988,7 +9967,7 @@ react-redux@^9.1.2:
     "@types/use-sync-external-store" "^0.0.6"
     use-sync-external-store "^1.4.0"
 
-react-resizable@^3.0.4:
+react-resizable@^3.0.5:
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/react-resizable/-/react-resizable-3.0.5.tgz#362721f2efbd094976f1780ae13f1ad7739786c1"
   integrity sha512-vKpeHhI5OZvYn82kXOs1bC8aOXktGU5AmKAgaZS4F5JPburCtbmDPqE7Pzp+1kN4+Wb81LlF33VpGwWwtXem+w==
@@ -10104,27 +10083,7 @@ react-universal-interface@^0.6.2:
   resolved "https://registry.yarnpkg.com/react-universal-interface/-/react-universal-interface-0.6.2.tgz#5e8d438a01729a4dbbcbeeceb0b86be146fe2b3b"
   integrity sha512-dg8yXdcQmvgR13RIlZbTRQOoUrDciFVoSBZILwjE2LFISxZZ8loVJKAkuzswl5js8BHda79bIb2b84ehU8IjXw==
 
-react-use@17.5.0:
-  version "17.5.0"
-  resolved "https://registry.yarnpkg.com/react-use/-/react-use-17.5.0.tgz#1fae45638828a338291efa0f0c61862db7ee6442"
-  integrity sha512-PbfwSPMwp/hoL847rLnm/qkjg3sTRCvn6YhUZiHaUa3FA6/aNoFX79ul5Xt70O1rK+9GxSVqkY0eTwMdsR/bWg==
-  dependencies:
-    "@types/js-cookie" "^2.2.6"
-    "@xobotyi/scrollbar-width" "^1.9.5"
-    copy-to-clipboard "^3.3.1"
-    fast-deep-equal "^3.1.3"
-    fast-shallow-equal "^1.0.0"
-    js-cookie "^2.2.1"
-    nano-css "^5.6.1"
-    react-universal-interface "^0.6.2"
-    resize-observer-polyfill "^1.5.1"
-    screenfull "^5.1.0"
-    set-harmonic-interval "^1.0.1"
-    throttle-debounce "^3.0.1"
-    ts-easing "^0.2.0"
-    tslib "^2.1.0"
-
-react-use@17.6.0, react-use@^17.4.0:
+react-use@17.6.0, react-use@^17.4.0, react-use@^17.5.0:
   version "17.6.0"
   resolved "https://registry.yarnpkg.com/react-use/-/react-use-17.6.0.tgz#2101a3a79dc965a25866b21f5d6de4b128488a14"
   integrity sha512-OmedEScUMKFfzn1Ir8dBxiLLSOzhKe/dPZwVxcujweSj45aNM7BEGPb9BEVIgVEqEXx6f3/TsXzwIktNgUR02g==
@@ -10144,10 +10103,10 @@ react-use@17.6.0, react-use@^17.4.0:
     ts-easing "^0.2.0"
     tslib "^2.1.0"
 
-react-virtualized-auto-sizer@1.0.24:
-  version "1.0.24"
-  resolved "https://registry.yarnpkg.com/react-virtualized-auto-sizer/-/react-virtualized-auto-sizer-1.0.24.tgz#3ebdc92f4b05ad65693b3cc8e7d8dd54924c0227"
-  integrity sha512-3kCn7N9NEb3FlvJrSHWGQ4iVl+ydQObq2fHMn12i5wbtm74zHOPhz/i64OL3c1S1vi9i2GXtZqNqUJTQ+BnNfg==
+react-virtualized-auto-sizer@^1.0.24:
+  version "1.0.26"
+  resolved "https://registry.yarnpkg.com/react-virtualized-auto-sizer/-/react-virtualized-auto-sizer-1.0.26.tgz#e9470ef6a778dc4f1d5fd76305fa2d8b610c357a"
+  integrity sha512-CblNyiNVw2o+hsa5/49NH2ogGxZ+t+3aweRvNSq7TVjDIlwk7ir4lencEg5HxHeSzwNarSkNkiu0qJSOXtxm5A==
 
 react-window@1.8.11:
   version "1.8.11"
@@ -10645,7 +10604,7 @@ semver@^6.0.0, semver@^6.2.0, semver@^6.3.0, semver@^6.3.1:
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.1.tgz#556d2ef8689146e46dcea4bfdd095f3434dffcb4"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
 
-semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.5.1, semver@^7.5.3, semver@^7.5.4, semver@^7.6.0, semver@^7.6.3, semver@^7.7.0:
+semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.5.1, semver@^7.5.3, semver@^7.5.4, semver@^7.6.0, semver@^7.6.3:
   version "7.7.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.1.tgz#abd5098d82b18c6c81f6074ff2647fd3e7220c9f"
   integrity sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==
