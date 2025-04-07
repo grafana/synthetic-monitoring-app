@@ -62,16 +62,15 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
   ];
 
   return (
-    <SceneContextProvider timeRange={{ from: 'now-1h', to: 'now' }} withQueryController>
+    <SceneContextProvider timeRange={{ from: 'now-3h', to: 'now' }} withQueryController>
       <QueryVariable
         name="probe"
         isMulti={true}
         query={{ query: `label_values(sm_check_info{check_name="${CheckType.HTTP}"},probe)`, refId: 'A' }}
         refresh={VariableRefresh.onDashboardLoad}
         datasource={{ uid: metricsDS?.uid }}
-        regex={'.*'}
         includeAll={true}
-        initialValue={'all'}
+        initialValue={'$__all'}
       >
         <CustomVariable
           name="job"
@@ -88,6 +87,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
             hide={VariableHide.hideVariable}
           >
             <PluginPage
+              pageNav={{ text: check.job }}
               renderTitle={() => <h1>{check.job}</h1>}
               actions={
                 <>
@@ -120,11 +120,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
                           <Frequency />
                         </div>
 
-                        <div className={styles.errorRateTimeseries}>
-                          <SceneContextProvider timeRange={{ from: 'now-10m', to: 'now' }}>
-                            <ErrorRate minStep={minStep} />
-                          </SceneContextProvider>
-                        </div>
+                        <ErrorRate minStep={minStep} />
                       </div>
 
                       <div className={styles.latencyRow}>
@@ -175,10 +171,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     justifyContent: 'space-between',
     height: '90px',
     gap: '8px',
-  }),
-  errorRateTimeseries: css({
-    height: 'calc(100% - 32px)',
-    flexGrow: 1,
   }),
   latencyRow: css({
     gridColumn: 'span 2',

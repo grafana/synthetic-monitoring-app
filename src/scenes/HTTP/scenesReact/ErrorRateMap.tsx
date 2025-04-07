@@ -1,7 +1,9 @@
 import React from 'react';
+import { LoadingState } from '@grafana/data';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { FrameGeometrySourceMode, ThresholdsMode } from '@grafana/schema';
+import { LoadingPlaceholder } from '@grafana/ui';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
@@ -257,6 +259,10 @@ export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
     currentTimeRange,
     variables: ['job', 'probe', 'instance'],
   });
+
+  if (data?.data?.state === LoadingState.Loading) {
+    return <LoadingPlaceholder text="Loading..." />;
+  }
 
   return (
     <VizPanel
