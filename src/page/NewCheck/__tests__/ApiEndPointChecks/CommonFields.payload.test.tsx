@@ -105,11 +105,11 @@ describe('Api endpoint checks - common fields payload', () => {
 
           await goToSection(user, 4);
 
-          expect(screen.getByText('Alerts-per-check')).toBeInTheDocument();
+          expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
           expect(screen.getByText('Failed Checks')).toBeInTheDocument();
 
-          const thresholdsInput = screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh')
+          const thresholdsInput = screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh');
 
           await user.click(screen.getByTestId('checkbox-alert-ProbeFailedExecutionsTooHigh'));
           await user.clear(thresholdsInput);
@@ -119,7 +119,9 @@ describe('Api endpoint checks - common fields payload', () => {
 
           const { body: alertsBody } = await read(1);
 
-          expect(alertsBody).toEqual({ alerts: [{ name: 'ProbeFailedExecutionsTooHigh', threshold: 1 }] });
+          expect(alertsBody).toEqual({
+            alerts: [{ name: 'ProbeFailedExecutionsTooHigh', period: '5m', threshold: 1 }],
+          });
         });
 
         it(`does not submit aletrs per check when the feature flag is disabled`, async () => {

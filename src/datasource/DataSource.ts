@@ -35,8 +35,10 @@ import {
 } from './responses.types';
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
+import { ExperimentalSecret, ExperimentalSecretsResponse } from 'data/useSecrets';
+import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
-import { ExtendedBulkUpdateCheckResult } from '../data/useChecks';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -355,7 +357,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async updateAlertsForCheck(alerts: CheckAlertDraft[], checkId: number) {
     return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
-      method: 'POST',
+      method: 'PUT',
       data: { alerts },
     });
   }
@@ -416,6 +418,41 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       method: 'POST',
       data: {},
     }).then((data) => data.token);
+  }
+
+  //--------------------------------------------------------------------------------
+  // SECRETS MANAGEMENT - DEV ONLY
+  //--------------------------------------------------------------------------------
+
+  async getSecrets(): Promise<ExperimentalSecretsResponse> {
+    return this.fetchAPI<ExperimentalSecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+      method: 'GET',
+    });
+  }
+
+  async getSecret(id: string | number): Promise<ExperimentalSecret> {
+    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+      method: 'GET',
+    });
+  }
+
+  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<ExperimentalSecret> {
+    if (secret.uuid) {
+      return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${secret.uuid}`, {
+        method: 'PUT',
+        data: secret,
+      });
+    }
+    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+      method: 'POST',
+      data: secret,
+    });
+  }
+
+  async deleteSecret(id: string | number): Promise<unknown> {
+    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   //--------------------------------------------------------------------------------

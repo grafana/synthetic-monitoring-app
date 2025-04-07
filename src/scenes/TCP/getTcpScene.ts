@@ -73,7 +73,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, check: C
       children: [new SceneFlexItem({ height: 500, body: getErrorLogs(logs) })],
     });
 
-    const editButton = getEditButton({ job, instance });
+    const editButton = getEditButton({ id: check.id });
 
     const annotations = getAlertAnnotations(metrics);
     return new EmbeddedScene({

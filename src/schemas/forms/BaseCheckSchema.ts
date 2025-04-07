@@ -1,4 +1,4 @@
-import { CheckAlertsSchema } from 'schemas/general/CheckAlerts';
+import { checkAlertsRefinement, CheckAlertsSchema } from 'schemas/general/CheckAlerts';
 import { CheckProbesSchema } from 'schemas/general/CheckProbes';
 import { FrequencySchema } from 'schemas/general/Frequency';
 import { JobSchema } from 'schemas/general/Job';
@@ -24,14 +24,16 @@ export const BaseCheckSchema = z.object({
 });
 
 export function addRefinements(schema: ZodType<CheckFormValuesBase>) {
-  return schema.superRefine((data, ctx) => {
-    const { frequency, timeout } = data;
-    if (frequency < timeout) {
-      ctx.addIssue({
-        path: ['frequency'],
-        message: `Frequency must be greater than or equal to timeout (${formatDuration(timeout)})`,
-        code: z.ZodIssueCode.custom,
-      });
-    }
-  });
+  return schema
+    .superRefine((data, ctx) => {
+      const { frequency, timeout } = data;
+      if (frequency < timeout) {
+        ctx.addIssue({
+          path: ['frequency'],
+          message: `Frequency must be greater than or equal to timeout (${formatDuration(timeout)})`,
+          code: z.ZodIssueCode.custom,
+        });
+      }
+    })
+    .superRefine(checkAlertsRefinement);
 }

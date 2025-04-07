@@ -9,17 +9,11 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { FailedExecutionsAlert } from './FailedExecutionsAlert';
-import { HTTPTargetCertificateCloseToExpiringAlert } from './HTTPTargetCertificateCloseToExpiringAlert';
+import { TLSTargetCertificateCloseToExpiringAlert } from './TLSTargetCertificateCloseToExpiringAlert';
 
 function createExploreLink(dataSourceName: string, query: string) {
   return urlUtil.renderUrl(`/explore`, {
-    left: JSON.stringify([
-      'now-5m',
-      'now',
-      dataSourceName,
-      { datasource: dataSourceName, expr: query },
-      { ui: [true, true, true, 'none'] },
-    ]),
+    left: JSON.stringify(['now-3h', 'now', dataSourceName, { datasource: dataSourceName, expr: query }]),
   });
 }
 
@@ -32,7 +26,7 @@ export const AlertItem = ({
   selected: boolean;
   onSelectionChange: (type: CheckAlertType) => void;
 }) => {
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(getAlertItemStyles);
 
   const { getValues } = useFormContext<CheckFormValues>();
 
@@ -78,8 +72,8 @@ export const AlertItem = ({
         />
       )}
 
-      {alert.type === CheckAlertType.HTTPTargetCertificateCloseToExpiring && (
-        <HTTPTargetCertificateCloseToExpiringAlert
+      {alert.type === CheckAlertType.TLSTargetCertificateCloseToExpiring && (
+        <TLSTargetCertificateCloseToExpiringAlert
           alert={alert}
           selected={selected}
           onSelectionChange={handleToggleAlert}
@@ -90,11 +84,26 @@ export const AlertItem = ({
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
+export const getAlertItemStyles = (theme: GrafanaTheme2) => ({
   item: css({
     display: `flex`,
     gap: theme.spacing(1),
     marginLeft: theme.spacing(1),
     minHeight: '40px',
+    paddingTop: theme.spacing(1),
+  }),
+
+  alertRow: css({
+    gap: theme.spacing(1),
+    alignItems: 'flex-start',
+    '& > *': {
+      marginTop: theme.spacing(0.5),
+    },
+  }),
+  alertCheckbox: css({
+    marginTop: theme.spacing(0.75),
+  }),
+  alertTooltip: css({
+    marginTop: theme.spacing(1),
   }),
 });

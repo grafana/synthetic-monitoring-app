@@ -45,7 +45,7 @@ export function getBrowserScene({ metrics, logs }: DashboardSceneAppConfig, chec
 
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
-    const editButton = getEditButton({ job, instance });
+    const editButton = getEditButton({ id: check.id });
     const annotations = getAlertAnnotations(metrics);
 
     const webVitals = getWebVitals(metrics);

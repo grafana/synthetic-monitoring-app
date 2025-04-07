@@ -55,8 +55,68 @@
     },
     {
       "path": "sm",
+      "method": "PUT",
+      "url": "{{.JsonData.apiHost}}/api/v1/",
+      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "sm",
       "method": "DELETE",
       "url": "{{.JsonData.apiHost}}/api/v1/",
+      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "api/v1alpha1/",
+      "method": "GET",
+      "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
+      "reqAction": "grafana-synthetic-monitoring-app:read",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "api/v1alpha1/",
+      "method": "PUT",
+      "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
+      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "api/v1alpha1/",
+      "method": "POST",
+      "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
+      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "api/v1alpha1/",
+      "method": "DELETE",
+      "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
       "reqAction": "grafana-synthetic-monitoring-app:write",
       "headers": [
         {
