@@ -1,11 +1,20 @@
-import React, { Children, forwardRef, Fragment, isValidElement, ReactElement, ReactNode, useImperativeHandle, useState } from 'react';
-import { Button, Stack, Tab, TabContent, TabProps,TabsBar } from '@grafana/ui';
+import React, {
+  Children,
+  forwardRef,
+  Fragment,
+  isValidElement,
+  ReactElement,
+  useImperativeHandle,
+  useState,
+} from 'react';
+import { Button, Stack, Tab, TabContent, TabProps, TabsBar } from '@grafana/ui';
 
 import { HandleErrorRef } from 'hooks/useNestedRequestErrors';
 import { Indent } from 'components/Indent';
 
+type RequestOptionsChild = ReactElement<TabProps> | undefined | null;
 interface RequestOptionsProps {
-  children: ReactNode;
+  children: RequestOptionsChild[] | RequestOptionsChild;
   open?: boolean;
 }
 
@@ -40,8 +49,8 @@ export const RequestOptions = forwardRef<HandleErrorRef, RequestOptionsProps>(({
 
                 return (
                   <Tab
-                    key={(section as ReactElement<TabProps>).props.label}
-                    label={(section as ReactElement<TabProps>).props.label}
+                    key={section.props.label}
+                    label={section.props.label}
                     onChangeTab={() => setActiveTab(i)}
                     active={activeTab === i}
                   />
@@ -54,7 +63,7 @@ export const RequestOptions = forwardRef<HandleErrorRef, RequestOptionsProps>(({
                   return null;
                 }
 
-                return activeTab === i && <Fragment key={(section as ReactElement<TabProps>).props.label}>{section}</Fragment>;
+                return activeTab === i && <Fragment key={section.props.label}>{section}</Fragment>;
               })}
             </TabContent>
           </Stack>{' '}
