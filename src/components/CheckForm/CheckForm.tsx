@@ -331,7 +331,7 @@ interface ConstructActionsProps {
   checkType: CheckType;
   disabled: boolean;
   loading: boolean;
-  ref: RefObject<HTMLButtonElement>;
+  ref: RefObject<HTMLButtonElement | null>;
 }
 
 function constructActions({ checkType, ...rest }: ConstructActionsProps) {
