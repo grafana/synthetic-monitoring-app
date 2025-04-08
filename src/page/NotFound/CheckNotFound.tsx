@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom-v5-compat';
+import { useParams } from 'react-router-dom';
 import { TextLink } from '@grafana/ui';
 
 import { createNavModel } from 'utils';

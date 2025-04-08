@@ -1,4 +1,4 @@
-import { generatePath } from 'react-router-dom-v5-compat';
+import { generatePath } from 'react-router-dom';
 import { PathParam } from '@remix-run/router/utils';
 
 import { CheckType, CheckTypeGroup } from 'types';

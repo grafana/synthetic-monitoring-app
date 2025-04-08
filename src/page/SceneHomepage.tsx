@@ -26,6 +26,8 @@ export const SceneHomepage = () => {
       sm: { uid: smDS.uid },
     };
 
+    console.log('url', `${PLUGIN_URL_PATH}${ROUTES.Home}`);
+
     return new SceneApp({
       pages: [
         new SceneAppPage({
@@ -33,6 +35,7 @@ export const SceneHomepage = () => {
           url: `${PLUGIN_URL_PATH}${ROUTES.Home}`,
           hideFromBreadcrumbs: true,
           getScene: getSummaryScene(config, checks, true),
+          routePath: `home/*`,
         }),
       ],
     });

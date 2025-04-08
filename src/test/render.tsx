@@ -1,6 +1,5 @@
 import React, { PropsWithChildren, type ReactElement, type ReactNode } from 'react';
-import { MemoryRouter } from 'react-router-dom';
-import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
 import { render, type RenderOptions } from '@testing-library/react';
@@ -52,41 +51,39 @@ const DefaultWrapper = ({ children, route: _route, history, meta }: ComponentWra
         <FeatureFlagProvider>
           <SMDatasourceProvider>
             <PermissionsContextProvider>
-              <MemoryRouter initialEntries={history.entries}>
-                <CompatRouter>
-                  <Routes>
-                    <Route path={APP_ROOT}>
-                      <Route
-                        path={route}
-                        element={
-                          <>
-                            <TestRouteInfo />
-                            {children}
-                          </>
-                        }
-                      />
-                    </Route>
-                    <Route path={route}>
-                      <Route
-                        path={route}
-                        element={
-                          <>
-                            <TestRouteInfo />
-                            {children}
-                          </>
-                        }
-                      />
-                    </Route>
+              <MemoryRouter>
+                <Routes>
+                  <Route path={APP_ROOT}>
                     <Route
-                      path="*"
+                      path={route}
                       element={
                         <>
                           <TestRouteInfo />
+                          {children}
                         </>
                       }
                     />
-                  </Routes>
-                </CompatRouter>
+                  </Route>
+                  <Route path={route}>
+                    <Route
+                      path={route}
+                      element={
+                        <>
+                          <TestRouteInfo />
+                          {children}
+                        </>
+                      }
+                    />
+                  </Route>
+                  <Route
+                    path="*"
+                    element={
+                      <>
+                        <TestRouteInfo />
+                      </>
+                    }
+                  />
+                </Routes>
               </MemoryRouter>
             </PermissionsContextProvider>
           </SMDatasourceProvider>

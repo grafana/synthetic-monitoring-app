@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { ROUTES } from 'routing/types';
 import { useMeta } from 'hooks/useMeta';

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useParams } from 'react-router-dom-v5-compat';
+import { useParams } from 'react-router-dom';
 import { Alert, Button, LinkButton, Modal } from '@grafana/ui';
 
 import { CheckPageParams } from 'types';

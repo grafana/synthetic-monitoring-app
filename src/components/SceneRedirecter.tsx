@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom-v5-compat';
+import { Navigate } from 'react-router-dom';
 import { LoadingPlaceholder } from '@grafana/ui';
 
 import { ROUTES } from 'routing/types';
@@ -18,6 +18,8 @@ export function SceneRedirecter() {
   }
 
   const check = data?.find((check) => check.job === job && check.target === instance);
+
+  console.log('scene redirecter', check);
 
   if (!check || !check.id) {
     return <Navigate to={generateRoutePath(ROUTES.Home)} replace />;

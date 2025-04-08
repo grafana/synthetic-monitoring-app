@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
 import { locationService } from '@grafana/runtime';
-import { Location, TransitionPromptHook } from 'history';
+import { Location } from 'history';
 
 import { useConfirmBeforeUnload } from 'hooks/useConfirmBeforeUnload';
 
@@ -32,17 +32,17 @@ export function ConfirmLeavingPage({ enabled }: ConfirmLeavingPageProps) {
 
   const location = useLocation();
 
-  const blockHandler: TransitionPromptHook = useCallback(
-    (nextLocation: Location) => {
+  const blockHandler = useCallback(
+    (tx: { location: Location }) => {
       const path = location.pathname;
-      const nextPath = nextLocation.pathname;
+      const nextPath = tx.location.pathname;
 
       // Check all the reasons to allow navigation
       if (!enabled || path === nextPath || changesDiscarded) {
         return;
       }
 
-      setBlockedLocation(nextLocation);
+      setBlockedLocation(tx.location);
       setShowModal(true);
       return false;
     },

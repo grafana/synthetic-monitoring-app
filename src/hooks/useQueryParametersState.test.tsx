@@ -1,4 +1,4 @@
-import { useLocation as useLocationFromReactRouter } from 'react-router-dom-v5-compat';
+import { useLocation as useLocationFromReactRouter } from 'react-router-dom';
 import { act, renderHook } from '@testing-library/react';
 
 import { useQueryParametersState } from './useQueryParametersState';
@@ -7,8 +7,8 @@ const navigateMock = jest.fn();
 
 // useLocation: jest.fn(),
 
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
   useNavigate: jest.fn(() => navigateMock),
   useLocation: jest.fn(),
 }));

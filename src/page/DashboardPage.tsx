@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useParams } from 'react-router-dom-v5-compat';
+import { useParams } from 'react-router-dom';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
@@ -60,6 +60,7 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getDNSScene(config, check),
+              routePath: `${url}/*`,
             }),
           ],
         });
@@ -71,6 +72,7 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getHTTPScene(config, check),
+              routePath: `${url}/*`,
             }),
           ],
         });
@@ -82,6 +84,7 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getBrowserScene(config, check, checkType),
+              routePath: `${url}/*`,
             }),
           ],
         });
@@ -94,6 +97,7 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getScriptedScene(config, check, checkType),
+              routePath: `${url}/*`,
             }),
           ],
         });
@@ -105,6 +109,7 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getPingScene(config, check),
+              routePath: `${url}/*`,
             }),
           ],
         });
@@ -116,6 +121,7 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getTcpScene(config, check),
+              routePath: `${url}/*`,
             }),
           ],
         });
@@ -127,6 +133,7 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getTracerouteScene(config, check),
+              routePath: `${url}/*`,
             }),
           ],
         });
@@ -139,6 +146,7 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getGRPCScene(config, check),
+              routePath: `${url}/*`,
             }),
           ],
         });

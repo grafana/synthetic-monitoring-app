@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom-v5-compat';
+import { useNavigate, useParams } from 'react-router-dom';
 import { PluginPage } from '@grafana/runtime';
 import { LinkButton, TextLink } from '@grafana/ui';
 

@@ -1,6 +1,5 @@
 import React, { PropsWithChildren } from 'react';
-import { Router } from 'react-router-dom';
-import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
+import { Router, Route, Routes } from 'react-router-dom';
 import { locationService } from '@grafana/runtime';
 import { TextLink } from '@grafana/ui';
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -30,13 +29,11 @@ function Wrapper({ children }: PropsWithChildren<{}>) {
   // History will not automatically be reset between tests
 
   return (
-    <Router history={history}>
-      <CompatRouter>
-        <Routes>
-          <Route path="/" element={<div data-testid={TEST_IDS.INITIAL_PAGE}>{children}</div>} />
-          <Route path="*" element={<div data-testid={TEST_IDS.OTHER_PAGE} />} />
-        </Routes>
-      </CompatRouter>
+    <Router location={locationService.getLocation()} navigator={history}>
+      <Routes>
+        <Route path="/" element={<div data-testid={TEST_IDS.INITIAL_PAGE}>{children}</div>} />
+        <Route path="*" element={<div data-testid={TEST_IDS.OTHER_PAGE} />} />
+      </Routes>
     </Router>
   );
 }

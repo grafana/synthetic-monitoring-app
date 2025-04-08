@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom';
 import { Label, RadioButtonGroup, Stack, Text } from '@grafana/ui';
 
 import { CheckFormValues, CheckType, CheckTypeGroup } from 'types';

@@ -1,4 +1,4 @@
-import { useLocation, useParams } from 'react-router-dom-v5-compat';
+import { useLocation, useParams } from 'react-router-dom';
 
 import { Check, CheckFormPageParams, CheckType } from 'types';
 import { getCheckType } from 'utils';
