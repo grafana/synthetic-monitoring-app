@@ -1,3 +1,4 @@
+import { config } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
@@ -5,7 +6,7 @@ import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { probeToMetadataProbe, runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
 
-import { CheckType } from 'types';
+import { CheckType, FeatureName } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
@@ -242,6 +243,30 @@ describe(`<NewCheck /> journey`, () => {
     const errorMsg = await screen.findByRole('alert');
     expect(errorMsg).toBeInTheDocument();
     expect(errorMsg).toHaveTextContent(/Frequency must be greater than or equal to timeout \(3 minutes\)/);
+  });
+
+  it(`should revalidate the form when the frequency is changed`, async () => {
+    jest.replaceProperty(config, 'featureToggles', {
+      // @ts-expect-error
+      [FeatureName.AlertsPerCheck]: true,
+    });
+
+    const { user } = await renderNewForm(CheckType.HTTP);
+    await fillMandatoryFields({ user, checkType: CheckType.HTTP });
+
+    await goToSection(user, 4);
+    await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
+    const thresholdsInput = screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh');
+    await user.clear(thresholdsInput);
+    await user.type(thresholdsInput, '6');
+    await submitForm(user);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    await goToSection(user, 5);
+    await user.click(screen.getByRole('radio', { name: '10s' }));
+
+    await goToSection(user, 4);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   // jsdom doesn't give us back the submitter of the form, so we can't test this

@@ -81,6 +81,7 @@ export const FailedExecutionsAlert = ({
     <Stack direction={'column'}>
       <InlineFieldRow className={styles.alertRow}>
         <Checkbox
+          aria-label={`Enable ${alert.name} alert`}
           className={styles.alertCheckbox}
           id={`alert-${alert.type}`}
           data-testid={`checkbox-alert-${alert.type}`}
