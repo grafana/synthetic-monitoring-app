@@ -3,7 +3,7 @@ import { z } from 'zod';
 const NAME_REQUIRED_ERROR = '{type} name is required';
 const VALUE_REQUIRED_ERROR = '{type} value is required';
 
-const HeaderSchema = z.object({
+const headerSchema = z.object({
   name: z
     .string({
       required_error: NAME_REQUIRED_ERROR,
@@ -16,8 +16,8 @@ const HeaderSchema = z.object({
     .min(1, { message: VALUE_REQUIRED_ERROR }),
 });
 
-export const HeadersSchema = z
-  .array(HeaderSchema)
+export const headersSchema = z
+  .array(headerSchema)
   .superRefine((headers, ctx) => {
     const headerNames = headers.map((header) => header.name);
     const uniqueNames = new Set(headerNames);
