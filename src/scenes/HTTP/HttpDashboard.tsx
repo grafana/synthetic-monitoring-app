@@ -86,26 +86,22 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
             label={check.target}
             hide={VariableHide.hideVariable}
           >
-            <PluginPage
-              pageNav={{ text: check.job }}
-              renderTitle={() => <h1>{check.job}</h1>}
-              actions={
-                <>
-                  <EditCheckButton id={check.id} />
-                  <TimeRangePicker />
-                  <RefreshPicker />
-                </>
-              }
-            >
-              <Stack direction="column">
+            <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
+              <Stack direction="column" gap={2}>
                 <AnnotationLayer name="Alerts firing" query={annotations[0]}>
                   <AnnotationLayer name="Alerts pending" query={annotations[1]}>
-                    <Stack direction="row">
-                      <VariableControl name="probe" />
-                      <DataLayerControl name="Alerts firing" />
-                      <DataLayerControl name="Alerts pending" />
+                    <Stack justifyContent="space-between">
+                      <Stack direction="row" gap={2}>
+                        <VariableControl name="probe" />
+                        <DataLayerControl name="Alerts firing" />
+                        <DataLayerControl name="Alerts pending" />
+                      </Stack>
+                      <Stack direction="row" gap={2}>
+                        <EditCheckButton id={check.id} />
+                        <TimeRangePicker />
+                        <RefreshPicker />
+                      </Stack>
                     </Stack>
-
                     <div className={styles.vizLayout}>
                       <div className={styles.errorRateMap}>
                         <ErrorRateMap minStep={minStep} />
