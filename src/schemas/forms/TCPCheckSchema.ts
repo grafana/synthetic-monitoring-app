@@ -1,15 +1,15 @@
-import { HostPortTarget } from 'schemas/general/HostPortTarget';
-import { TLSConfigSchema } from 'schemas/general/TLSConfig';
+import { hostPortTargetSchema } from 'schemas/general/HostPortTarget';
+import { tlsConfigSchema } from 'schemas/general/TLSConfig';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesTcp, CheckType, IpVersion, TcpSettingsFormValues } from 'types';
 
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
-const TCPSettingsSchema: ZodType<TcpSettingsFormValues> = z.object({
+const tcpSettingsSchema: ZodType<TcpSettingsFormValues> = z.object({
   ipVersion: z.nativeEnum(IpVersion),
   tls: z.boolean().optional(),
-  tlsConfig: TLSConfigSchema,
+  tlsConfig: tlsConfigSchema,
   queryResponse: z.array(
     z.object({
       send: z.string(),
@@ -19,12 +19,12 @@ const TCPSettingsSchema: ZodType<TcpSettingsFormValues> = z.object({
   ),
 });
 
-export const TCPCheckSchema: ZodType<CheckFormValuesTcp> = BaseCheckSchema.and(
+export const tcpCheckSchema: ZodType<CheckFormValuesTcp> = baseCheckSchema.and(
   z.object({
-    target: HostPortTarget,
+    target: hostPortTargetSchema,
     checkType: z.literal(CheckType.TCP),
     settings: z.object({
-      tcp: TCPSettingsSchema,
+      tcp: tcpSettingsSchema,
     }),
   })
 );

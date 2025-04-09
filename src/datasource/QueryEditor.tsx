@@ -11,7 +11,7 @@ import { getCheckType } from 'utils';
 
 import { SMDataSource } from './DataSource';
 
-type Props = QueryEditorProps<SMDataSource, SMQuery, SMOptions>;
+type Props = QueryEditorProps<SMDataSource, SMQuery, SMOptions, SMQuery>;
 
 interface TracerouteCheckOptionValue {
   job: string;
@@ -62,7 +62,7 @@ function getProbeOptionsForCheck(check: TracerouteCheckOptionValue | undefined, 
 }
 
 export class QueryEditor extends PureComponent<Props, State> {
-  constructor(props: Props, state: State) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       tracerouteCheckOptions: [],

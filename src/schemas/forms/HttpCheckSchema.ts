@@ -1,6 +1,6 @@
-import { HeadersSchema } from 'schemas/general/Header';
-import { HttpTargetSchema } from 'schemas/general/HttpTarget';
-import { TLSConfigSchema } from 'schemas/general/TLSConfig';
+import { headersSchema } from 'schemas/general/Header';
+import { httpTargetSchema } from 'schemas/general/HttpTarget';
+import { tlsConfigSchema } from 'schemas/general/TLSConfig';
 import { z, ZodType } from 'zod';
 
 import {
@@ -18,15 +18,15 @@ import {
   IpVersion,
 } from 'types';
 
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
-const HttpRegexBodyValidationSchema: ZodType<HttpRegexBodyValidationFormValue> = z.object({
+const httpRegexBodyValidationSchema: ZodType<HttpRegexBodyValidationFormValue> = z.object({
   matchType: z.literal(HttpRegexValidationType.Body),
   expression: z.string().min(1, 'Expression is required'),
   inverted: z.boolean(),
 });
 
-const HttpRegexHeaderValidationSchema: ZodType<HttpRegexHeaderValidationFormValue> = z.object({
+const httpRegexHeaderValidationSchema: ZodType<HttpRegexHeaderValidationFormValue> = z.object({
   matchType: z.literal(HttpRegexValidationType.Header),
   expression: z.string().min(1, 'Expression is required'),
   inverted: z.boolean(),
@@ -34,15 +34,15 @@ const HttpRegexHeaderValidationSchema: ZodType<HttpRegexHeaderValidationFormValu
   allowMissing: z.boolean(),
 });
 
-const HttpRegexValidationSchema: ZodType<HttpRegexValidationFormValue> = HttpRegexBodyValidationSchema.or(
-  HttpRegexHeaderValidationSchema
+const httpRegexValidationSchema: ZodType<HttpRegexValidationFormValue> = httpRegexBodyValidationSchema.or(
+  httpRegexHeaderValidationSchema
 );
 
-const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
+const httpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
   sslOptions: z.nativeEnum(HttpSslOption),
-  headers: HeadersSchema,
-  proxyConnectHeaders: HeadersSchema,
-  regexValidations: z.array(HttpRegexValidationSchema),
+  headers: headersSchema,
+  proxyConnectHeaders: headersSchema,
+  regexValidations: z.array(httpRegexValidationSchema),
   followRedirects: z.boolean(),
   compression: z.nativeEnum(HTTPCompressionAlgo),
   proxyURL: z.string().optional(),
@@ -77,16 +77,16 @@ const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
         });
       }
     }),
-  tlsConfig: TLSConfigSchema,
+  tlsConfig: tlsConfigSchema,
   cacheBustingQueryParamName: z.string().optional(),
 });
 
-export const HttpCheckSchema: ZodType<CheckFormValuesHttp> = BaseCheckSchema.and(
+export const httpCheckSchema: ZodType<CheckFormValuesHttp> = baseCheckSchema.and(
   z.object({
-    target: HttpTargetSchema,
+    target: httpTargetSchema,
     checkType: z.literal(CheckType.HTTP),
     settings: z.object({
-      http: HttpSettingsSchema,
+      http: httpSettingsSchema,
     }),
   })
 );

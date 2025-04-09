@@ -1,10 +1,4 @@
-import {
-  DataSourceInstanceSettings,
-  GrafanaTheme2,
-  intervalToAbbreviatedDurationString,
-  NavModelItem,
-  TimeRange,
-} from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
 // todo: update this when we move to grafana 11.2
 // https://github.com/grafana/grafana/pull/89047

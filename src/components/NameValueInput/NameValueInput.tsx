@@ -1,11 +1,11 @@
 import React, { useCallback, useRef } from 'react';
-import { FieldErrorsImpl, useFieldArray, useFormContext, useFormState } from 'react-hook-form';
+import { FieldError, FieldErrorsImpl, Merge, useFieldArray, useFormContext, useFormState } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Field, IconButton, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { get } from 'lodash';
 
-import { CheckFormValues, Probe } from 'types';
+import { CheckFormValues, Label, Probe } from 'types';
 import { interpolateErrorMessage } from 'components/CheckForm/utils';
 
 export type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
@@ -18,7 +18,9 @@ interface Props {
   'data-fs-element'?: string;
 }
 
-function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameValueName) {
+type NameValueArrayError = Merge<FieldError, Array<Merge<FieldError, FieldErrorsImpl<Label>> | undefined>>;
+
+function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameValueName): NameValueArrayError | undefined {
   return get(errors, name);
 }
 

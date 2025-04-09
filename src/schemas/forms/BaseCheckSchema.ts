@@ -1,26 +1,26 @@
-import { checkAlertsRefinement, CheckAlertsSchema } from 'schemas/general/CheckAlerts';
-import { CheckProbesSchema } from 'schemas/general/CheckProbes';
-import { FrequencySchema } from 'schemas/general/Frequency';
-import { JobSchema } from 'schemas/general/Job';
-import { LabelsSchema } from 'schemas/general/Label';
-import { TimeoutSchema } from 'schemas/general/Timeout';
+import { checkAlertsRefinement, checkAlertsSchema } from 'schemas/general/CheckAlerts';
+import { checkProbesSchema } from 'schemas/general/CheckProbes';
+import { frequencySchema } from 'schemas/general/Frequency';
+import { jobSchema } from 'schemas/general/Job';
+import { labelsSchema } from 'schemas/general/Label';
+import { timeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import { AlertSensitivity, CheckFormValuesBase } from 'types';
 import { formatDuration } from 'utils';
 
-export const BaseCheckSchema = z.object({
-  job: JobSchema,
+export const baseCheckSchema = z.object({
+  job: jobSchema,
   target: z.string(),
-  frequency: FrequencySchema(),
+  frequency: frequencySchema(),
   id: z.number().optional(),
-  timeout: TimeoutSchema(),
+  timeout: timeoutSchema(),
   enabled: z.boolean(),
-  probes: CheckProbesSchema,
+  probes: checkProbesSchema,
   alertSensitivity: z.nativeEnum(AlertSensitivity),
-  labels: LabelsSchema,
+  labels: labelsSchema,
   publishAdvancedMetrics: z.boolean(),
-  alerts: CheckAlertsSchema.optional(),
+  alerts: checkAlertsSchema.optional(),
 });
 
 export function addRefinements(schema: ZodType<CheckFormValuesBase>) {

@@ -15,14 +15,15 @@ export const RequestBodyTextArea = ({ disabled, name }: RequestBodyTextAreaProps
     register,
     formState: { errors },
   } = useFormContext<CheckFormValues>();
-  const error = get(errors, name);
+  const fieldError = get(errors, name);
+  const errorMessage = typeof fieldError === 'string' ? fieldError : fieldError?.message;
 
   return (
     <Field
       description="The body of the HTTP request used in probe."
-      error={error?.message}
+      error={errorMessage}
       htmlFor={name}
-      invalid={Boolean(error)}
+      invalid={Boolean(errorMessage)}
       label="Request body"
     >
       <TextArea
