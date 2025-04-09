@@ -3,4 +3,5 @@ export interface FrequencyComponentProps {
   onChange: (value: number) => void;
   min: number;
   max: number;
+  disabled?: boolean;
 }

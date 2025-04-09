@@ -14,7 +14,7 @@ import { frequencyInSecondsAndMinutes } from 'components/CheckEditor/FormCompone
 
 const INPUT_WIDTH = 10;
 
-export const FrequencyCustom = ({ value, onChange, min, max }: FrequencyComponentProps) => {
+export const FrequencyCustom = ({ value, onChange, min, max, disabled }: FrequencyComponentProps) => {
   const styles = useStyles2(getStyles);
   const { minutes, seconds } = frequencyInSecondsAndMinutes(value);
 
@@ -75,6 +75,7 @@ export const FrequencyCustom = ({ value, onChange, min, max }: FrequencyComponen
             onBlur={handleUpdateFrequency}
             onKeyDown={handleKeyDown}
             id={FREQUENCY_MINUTES_INPUT_ID}
+            disabled={disabled}
           />
         </Field>
         <Field label="Seconds" className={styles.field}>
@@ -85,6 +86,7 @@ export const FrequencyCustom = ({ value, onChange, min, max }: FrequencyComponen
             onBlur={handleUpdateFrequency}
             onKeyDown={handleKeyDown}
             id={FREQUENCY_SECONDS_INPUT_ID}
+            disabled={disabled}
           />
         </Field>
       </Stack>

@@ -1,8 +1,9 @@
-import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import React, { useCallback } from 'react';
+import { useController, useFormContext } from 'react-hook-form';
 
 import { CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
 import { useProbesWithMetadata } from 'data/useProbes';
+import { useRevalidateForm } from 'hooks/useRevalidateForm';
 import { Frequency } from 'components/CheckEditor/FormComponents/Frequency';
 
 import { CheckProbes } from './CheckProbes/CheckProbes';
@@ -18,26 +19,28 @@ export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
     control,
     formState: { errors },
   } = useFormContext<CheckFormValues>();
+  const revalidateForm = useRevalidateForm();
+  const { field } = useController({ control, name: 'probes' });
+  const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
+
+  const handleChange = useCallback(
+    (probes: number[]) => {
+      field.onChange(probes);
+      revalidateForm();
+    },
+    [field, revalidateForm]
+  );
 
   return (
     <>
-      <Controller
-        control={control}
-        name="probes"
-        render={({ field }) => {
-          const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
-
-          return (
-            <CheckProbes
-              {...fieldProps}
-              probes={field.value}
-              availableProbes={getAvailableProbes(probes, checkType)}
-              disabled={disabled}
-              invalid={Boolean(errors.probes)}
-              error={errors.probes?.message}
-            />
-          );
-        }}
+      <CheckProbes
+        {...fieldProps}
+        probes={field.value}
+        availableProbes={getAvailableProbes(probes, checkType)}
+        disabled={disabled}
+        invalid={Boolean(errors.probes)}
+        error={errors.probes?.message}
+        onChange={handleChange}
       />
       <Frequency checkType={checkType} disabled={disabled} />
     </>

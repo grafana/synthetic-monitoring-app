@@ -1,11 +1,13 @@
-import React, { ReactElement, useState } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import React, { ReactElement, useCallback, useState } from 'react';
+import { useController, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Stack, Tab, TabsBar, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { MAX_BASE_FREQUENCY } from 'schemas/general/Frequency';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormValues, CheckType } from 'types';
+import { useRevalidateForm } from 'hooks/useRevalidateForm';
 import { FrequencyComponentProps } from 'components/CheckEditor/FormComponents/Frequency.types';
 import { FrequencyBasic } from 'components/CheckEditor/FormComponents/FrequencyBasic';
 import { FrequencyCustom } from 'components/CheckEditor/FormComponents/FrequencyCustom';
@@ -39,6 +41,7 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
     formState: { errors },
     getValues,
   } = useFormContext<CheckFormValues>();
+  const { field } = useController({ control, name: 'frequency' });
   const styles = useStyles2(getStyles);
   const { frequency } = getValues();
   const frequencyInSeconds = frequency;
@@ -47,6 +50,15 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
   const frequencyError = errors?.frequency?.message;
   const TabComponent = TABS[activeTab].component;
   const minFrequency = MIN_FREQUENCY_MAP[checkType];
+  const revalidateForm = useRevalidateForm();
+
+  const handleChange = useCallback(
+    (value: number) => {
+      field.onChange(value);
+      revalidateForm();
+    },
+    [field, revalidateForm]
+  );
 
   return (
     <Field
@@ -54,6 +66,7 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
       error={frequencyError}
       className={styles.field}
       id={FREQUENCY_INPUT_ID}
+      data-testid={DataTestIds.FREQUENCY_COMPONENT}
     >
       <Stack direction="column" gap={1.5}>
         <Stack direction="column" gap={0.5}>
@@ -70,22 +83,17 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
           ))}
         </TabsBar>
         <div>
-          <Controller
-            control={control}
-            name="frequency"
-            render={({ field }) => (
-              <Stack direction="column" gap={2}>
-                <div>
-                  <TabComponent
-                    value={field.value}
-                    onChange={field.onChange}
-                    min={minFrequency}
-                    max={MAX_BASE_FREQUENCY}
-                  />
-                </div>
-              </Stack>
-            )}
-          />
+          <Stack direction="column" gap={2}>
+            <div>
+              <TabComponent
+                value={field.value}
+                onChange={handleChange}
+                min={minFrequency}
+                max={MAX_BASE_FREQUENCY}
+                disabled={disabled}
+              />
+            </div>
+          </Stack>
         </div>
       </Stack>
     </Field>

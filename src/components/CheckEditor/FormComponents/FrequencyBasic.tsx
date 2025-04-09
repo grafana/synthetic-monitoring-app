@@ -5,7 +5,7 @@ import { formatDuration } from 'utils';
 import { FREQUENCY_OPTIONS } from 'components/CheckEditor/FormComponents/Frequency.constants';
 import { FrequencyComponentProps } from 'components/CheckEditor/FormComponents/Frequency.types';
 
-export const FrequencyBasic = ({ value, onChange, min, max }: FrequencyComponentProps) => {
+export const FrequencyBasic = ({ value, onChange, min, max, disabled }: FrequencyComponentProps) => {
   return (
     <RadioButtonGroup
       options={FREQUENCY_OPTIONS.filter((option) => option >= min && option <= max).map((option) => ({
@@ -15,6 +15,7 @@ export const FrequencyBasic = ({ value, onChange, min, max }: FrequencyComponent
       disabledOptions={FREQUENCY_OPTIONS.filter((option) => option < min || option > max)}
       value={value}
       onChange={(value) => onChange(value)}
+      disabled={disabled}
     />
   );
 };
