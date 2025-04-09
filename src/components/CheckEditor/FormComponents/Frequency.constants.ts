@@ -7,6 +7,10 @@ import { MIN_BASE_FREQUENCY } from 'schemas/general/Frequency';
 import { CheckType } from 'types';
 import { ONE_HOUR_IN_MS, ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
+export const FREQUENCY_INPUT_ID = 'frequency-input';
+export const FREQUENCY_SECONDS_INPUT_ID = 'frequency-seconds-input';
+export const FREQUENCY_MINUTES_INPUT_ID = 'frequency-minutes-input';
+
 export const FREQUENCY_OPTIONS = [
   ONE_SECOND_IN_MS * 10,
   ONE_SECOND_IN_MS * 30,

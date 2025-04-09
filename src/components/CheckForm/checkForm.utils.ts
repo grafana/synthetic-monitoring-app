@@ -7,7 +7,7 @@ import {
   FREQUENCY_INPUT_ID,
   FREQUENCY_MINUTES_INPUT_ID,
   FREQUENCY_SECONDS_INPUT_ID,
-} from 'components/CheckEditor/FormComponents/Frequency';
+} from 'components/CheckEditor/FormComponents/Frequency.constants';
 import { SCRIPT_TEXTAREA_ID } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 

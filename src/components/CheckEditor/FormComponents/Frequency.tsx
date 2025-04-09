@@ -1,30 +1,23 @@
-import React, { ChangeEvent, KeyboardEvent, ReactElement, useCallback, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Field, Input, RadioButtonGroup, Stack, Tab, TabsBar, Text, useStyles2 } from '@grafana/ui';
+import { Field, Stack, Tab, TabsBar, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { MAX_BASE_FREQUENCY } from 'schemas/general/Frequency';
 
 import { CheckFormValues, CheckType } from 'types';
-import { formatDuration } from 'utils';
+import { FrequencyComponentProps } from 'components/CheckEditor/FormComponents/Frequency.types';
+import { FrequencyBasic } from 'components/CheckEditor/FormComponents/FrequencyBasic';
+import { FrequencyCustom } from 'components/CheckEditor/FormComponents/FrequencyCustom';
 
-import { FREQUENCY_OPTIONS, MIN_FREQUENCY_MAP } from './Frequency.constants';
+import { FREQUENCY_INPUT_ID, FREQUENCY_OPTIONS, MIN_FREQUENCY_MAP } from './Frequency.constants';
+
 interface ProbeOptionsProps {
   checkType: CheckType;
   disabled?: boolean;
 }
 
-interface FrequencyComponentProps {
-  value: number;
-  onChange: (value: number) => void;
-  min: number;
-  max: number;
-}
-
 const TAB_KEYS = ['basic', 'custom'] as const;
-export const FREQUENCY_INPUT_ID = 'frequency-input';
-export const FREQUENCY_SECONDS_INPUT_ID = 'frequency-seconds-input';
-export const FREQUENCY_MINUTES_INPUT_ID = 'frequency-minutes-input';
 
 const TABS: Record<
   (typeof TAB_KEYS)[number],
@@ -32,11 +25,11 @@ const TABS: Record<
 > = {
   basic: {
     label: 'Basic',
-    component: BasicFrequency,
+    component: FrequencyBasic,
   },
   custom: {
     label: 'Custom',
-    component: CustomFrequency,
+    component: FrequencyCustom,
   },
 };
 
@@ -82,14 +75,6 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
             name="frequency"
             render={({ field }) => (
               <Stack direction="column" gap={2}>
-                <Stack direction="column" gap={0.5}>
-                  <Text variant="bodySmall" color="secondary">
-                    Minimum frequency: {formatDuration(minFrequency)}
-                  </Text>
-                  <Text variant="bodySmall" color="secondary">
-                    Maximum frequency: {formatDuration(MAX_BASE_FREQUENCY)}
-                  </Text>
-                </Stack>
                 <div>
                   <TabComponent
                     value={field.value}
@@ -106,97 +91,6 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
     </Field>
   );
 };
-
-function BasicFrequency({ value, onChange, min, max }: FrequencyComponentProps) {
-  return (
-    <RadioButtonGroup
-      options={FREQUENCY_OPTIONS.filter((option) => option >= min && option <= max).map((option) => ({
-        label: formatDuration(option, true),
-        value: option,
-      }))}
-      disabledOptions={FREQUENCY_OPTIONS.filter((option) => option < min || option > max)}
-      value={value}
-      onChange={(value) => onChange(value)}
-    />
-  );
-}
-
-const INPUT_WIDTH = 10;
-
-function CustomFrequency({ value, onChange }: FrequencyComponentProps) {
-  const styles = useStyles2(getStyles);
-  const { minutes, seconds } = frequencyInSecondsAndMinutes(value);
-
-  const [inputMinutes, setInputMinutes] = useState<number | undefined>(minutes);
-  const [inputSeconds, setInputSeconds] = useState<number | undefined>(seconds);
-
-  const handleUpdateFrequency = useCallback(() => {
-    const convertedMinutes = (inputMinutes || 0) * 60 * 1000;
-    const convertedSeconds = (inputSeconds || 0) * 1000;
-
-    const newFrequency = convertedMinutes + convertedSeconds;
-    onChange(newFrequency);
-
-    const res = frequencyInSecondsAndMinutes(newFrequency);
-    setInputMinutes(res.minutes);
-    setInputSeconds(res.seconds);
-  }, [onChange, inputMinutes, inputSeconds]);
-
-  const handleMinutesChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const minutes = parseInt(event.target.value, 10) || undefined;
-    setInputMinutes(minutes);
-  }, []);
-
-  const handleSecondsChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const seconds = parseInt(event.target.value, 10) || undefined;
-    setInputSeconds(seconds);
-  }, []);
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Enter') {
-        if (inputSeconds !== seconds) {
-          event.preventDefault();
-        }
-
-        handleUpdateFrequency();
-      }
-    },
-    [handleUpdateFrequency, inputSeconds, seconds]
-  );
-
-  return (
-    <Stack>
-      <Field label="Minutes" className={styles.field}>
-        <Input
-          onChange={handleMinutesChange}
-          value={inputMinutes}
-          width={INPUT_WIDTH}
-          onBlur={handleUpdateFrequency}
-          onKeyDown={handleKeyDown}
-          id={FREQUENCY_MINUTES_INPUT_ID}
-        />
-      </Field>
-      <Field label="Seconds" className={styles.field}>
-        <Input
-          onChange={handleSecondsChange}
-          value={inputSeconds}
-          width={INPUT_WIDTH}
-          onBlur={handleUpdateFrequency}
-          onKeyDown={handleKeyDown}
-          id={FREQUENCY_SECONDS_INPUT_ID}
-        />
-      </Field>
-    </Stack>
-  );
-}
-
-function frequencyInSecondsAndMinutes(milliseconds: number) {
-  const minutes = Math.floor(milliseconds / 60000);
-  const seconds = Math.floor((milliseconds % 60000) / 1000);
-
-  return { minutes, seconds };
-}
 
 const getStyles = (theme: GrafanaTheme2) => ({
   field: css`
