@@ -3,7 +3,7 @@ name: Add main bundle size
 on:
   push:
     branches:
-      - feat/webpack-bundle-analyzer
+      - main
 
 jobs:
   build:
