@@ -3,7 +3,7 @@ name: DangerJS Checks
 on:
   pull_request:
     branches:
-      - feat/webpack-bundle-analyzer
+      - main
 
 jobs:
   build:
