@@ -7,29 +7,29 @@ import { useLogsDS } from 'hooks/useLogsDS';
 
 import { useVizPanelMenu } from './useVizPanelMenu';
 
+const viz = VizConfigBuilders.logs()
+  .setOption('showTime', true)
+  .setOption('showLabels', true)
+  .setOption('showCommonLabels', false)
+  .setOption('wrapLogMessage', true)
+  .setOption('prettifyLogMessage', false)
+  .setOption('enableLogDetails', true)
+  .setOption('dedupStrategy', LogsDedupStrategy.none)
+  .setOption('sortOrder', LogsSortOrder.Descending)
+  .build();
+
 export const ErrorLogs = () => {
   const logsDS = useLogsDS();
 
   const dataProvider = useQueryRunner({
     queries: [
       {
-        expr: '{probe=~"$probe", instance="$instance", job="$job", probe_success="0"}',
+        expr: '{probe=~"$probe", instance="$instance", job="$job"}',
         refId: 'A',
       },
     ],
     datasource: logsDS,
   });
-
-  const viz = VizConfigBuilders.logs()
-    .setOption('showTime', true)
-    .setOption('showLabels', true)
-    .setOption('showCommonLabels', false)
-    .setOption('wrapLogMessage', true)
-    .setOption('prettifyLogMessage', false)
-    .setOption('enableLogDetails', true)
-    .setOption('dedupStrategy', LogsDedupStrategy.none)
-    .setOption('sortOrder', LogsSortOrder.Descending)
-    .build();
 
   const data = dataProvider.useState();
   const [currentTimeRange] = useTimeRange();
@@ -40,6 +40,8 @@ export const ErrorLogs = () => {
     currentTimeRange,
     variables: ['job', 'probe', 'instance'],
   });
+
+  console.log(currentTimeRange);
 
   return (
     <VizPanel
