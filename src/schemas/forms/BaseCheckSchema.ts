@@ -1,25 +1,25 @@
-import { checkAlertsRefinement, CheckAlertsSchema } from 'schemas/general/CheckAlerts';
-import { CheckProbesSchema } from 'schemas/general/CheckProbes';
-import { FrequencySchema } from 'schemas/general/Frequency';
-import { JobSchema } from 'schemas/general/Job';
-import { LabelsSchema } from 'schemas/general/Label';
+import { checkAlertsRefinement, checkAlertsSchema } from 'schemas/general/CheckAlerts';
+import { checkProbesSchema } from 'schemas/general/CheckProbes';
+import { frequencySchema } from 'schemas/general/Frequency';
+import { jobSchema } from 'schemas/general/Job';
+import { labelsSchema } from 'schemas/general/Label';
 import { z, ZodType } from 'zod';
 
 import { AlertSensitivity, CheckFormValuesBase } from 'types';
 
-export const BaseCheckSchema: ZodType<CheckFormValuesBase> = z
+export const baseCheckSchema: ZodType<CheckFormValuesBase> = z
   .object({
-    job: JobSchema,
+    job: jobSchema,
     target: z.string(),
-    frequency: FrequencySchema,
+    frequency: frequencySchema,
     id: z.number().optional(),
     timeout: z.number(),
     enabled: z.boolean(),
-    probes: CheckProbesSchema,
+    probes: checkProbesSchema,
     alertSensitivity: z.nativeEnum(AlertSensitivity),
-    labels: LabelsSchema,
+    labels: labelsSchema,
     publishAdvancedMetrics: z.boolean(),
-    alerts: CheckAlertsSchema.optional(),
+    alerts: checkAlertsSchema.optional(),
   })
   .superRefine((data, ctx) => {
     const { frequency, timeout } = data;

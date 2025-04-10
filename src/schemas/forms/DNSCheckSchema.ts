@@ -1,4 +1,4 @@
-import { DomainNameTarget } from 'schemas/general/DomainNameTarget';
+import { domainNameTargetSchema } from 'schemas/general/DomainNameTarget';
 import { z, ZodType } from 'zod';
 
 import {
@@ -12,9 +12,9 @@ import {
   ResponseMatchType,
 } from 'types';
 
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
-const DNSSettingsSchema: ZodType<DnsSettingsFormValues> = z.object({
+const dnsSettingsSchema: ZodType<DnsSettingsFormValues> = z.object({
   recordType: z.nativeEnum(DnsRecordType),
   server: z
     .string({
@@ -40,12 +40,12 @@ const DNSSettingsSchema: ZodType<DnsSettingsFormValues> = z.object({
   ),
 });
 
-const DNSSchemaValues = z.object({
-  target: DomainNameTarget,
+const dnsSchemaValues = z.object({
+  target: domainNameTargetSchema,
   checkType: z.literal(CheckType.DNS),
   settings: z.object({
-    dns: DNSSettingsSchema,
+    dns: dnsSettingsSchema,
   }),
 });
 
-export const DNSCheckSchema: ZodType<CheckFormValuesDns> = BaseCheckSchema.and(DNSSchemaValues);
+export const dnsCheckSchema: ZodType<CheckFormValuesDns> = baseCheckSchema.and(dnsSchemaValues);

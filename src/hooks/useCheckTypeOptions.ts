@@ -1,7 +1,6 @@
-import { useContext } from 'react';
-
 import { CheckStatus, CheckType, CheckTypeGroup, FeatureName } from 'types';
-import { FeatureFlagContext } from 'contexts/FeatureFlagContext';
+
+import { useFeatureFlagContext } from './useFeatureFlagContext';
 
 export const CHECK_TYPE_OPTIONS = [
   {
@@ -74,7 +73,7 @@ export const CHECK_TYPE_OPTIONS = [
 ];
 
 export function useCheckTypeOptions() {
-  const { isFeatureEnabled } = useContext(FeatureFlagContext);
+  const { isFeatureEnabled } = useFeatureFlagContext();
 
   return CHECK_TYPE_OPTIONS.filter((option) => {
     if (option.featureToggle) {

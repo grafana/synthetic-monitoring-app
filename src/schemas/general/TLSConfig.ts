@@ -7,7 +7,7 @@ const PEM_FOOTER = '-----END CERTIFICATE-----';
 
 const CERT_ERROR_MESSAGE = 'Certificate must be in the PEM format.';
 
-export const TLSConfigSchema: ZodType<TLSConfig | undefined> = z
+export const tlsConfigSchema: ZodType<TLSConfig | undefined> = z
   .object({
     caCert: z
       .string()
