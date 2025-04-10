@@ -8,7 +8,7 @@ import { probeToMetadataProbe, runTestAsHGFreeUserOverLimit, runTestWithoutLogsA
 
 import { CheckType, FeatureName } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
 describe(`<NewCheck /> journey`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
@@ -233,7 +233,7 @@ describe(`<NewCheck /> journey`, () => {
 
     await goToSection(user, 5);
 
-    await user.click(screen.getByRole('radio', { name: '2m' }));
+    await selectBasicFrequency(user, '2m');
 
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
     await user.click(probeCheckbox);
@@ -263,7 +263,7 @@ describe(`<NewCheck /> journey`, () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
 
     await goToSection(user, 5);
-    await user.click(screen.getByRole('radio', { name: '10s' }));
+    await selectBasicFrequency(user, '10s');
 
     await goToSection(user, 4);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();

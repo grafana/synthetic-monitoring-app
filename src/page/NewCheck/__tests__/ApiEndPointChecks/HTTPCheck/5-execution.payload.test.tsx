@@ -1,7 +1,5 @@
-import { screen } from '@testing-library/react';
-
 import { CheckType } from 'types';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
@@ -24,7 +22,7 @@ describe(`HttpCheck - Section 5 (Execution) payload`, () => {
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 5);
 
-    await screen.getByRole('radio', { name: '30s' }).click();
+    await selectBasicFrequency(user, '30s');
 
     await submitForm(user);
 
