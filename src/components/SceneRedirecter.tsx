@@ -5,12 +5,12 @@ import { LoadingPlaceholder } from '@grafana/ui';
 import { ROUTES } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
-import { useQuery } from 'hooks/useQuery';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
 export function SceneRedirecter() {
-  const queryParams = useQuery();
-  const job = queryParams.get('var-job');
-  const instance = queryParams.get('var-instance');
+  const urlSearchParams = useURLSearchParams();
+  const job = urlSearchParams.get('var-job');
+  const instance = urlSearchParams.get('var-instance');
   const { data, isLoading } = useChecks();
 
   if (isLoading) {
