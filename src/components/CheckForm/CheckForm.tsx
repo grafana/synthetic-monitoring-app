@@ -24,6 +24,7 @@ import { getUserPermissions } from 'data/permissions';
 import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs } from 'hooks/useDSPermission';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useLimits } from 'hooks/useLimits';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -45,7 +46,6 @@ import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CheckUsage } from 'components/CheckUsage';
 import { ConfirmLeavingPage } from 'components/ConfirmLeavingPage';
 import { fallbackCheckMap } from 'components/constants';
-import { FeatureFlag } from 'components/FeatureFlag';
 import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
@@ -216,6 +216,33 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
 
   const [selectedAlertingTab, setSelectedAlertingTab] = useState<AlertingType>('alerting');
 
+  const AlertsPerCheckSection: React.FC = () => (
+    <>
+      <TabsBar>
+        <Tab
+          label="Per-check alerts"
+          onChangeTab={() => setSelectedAlertingTab('alerting')}
+          active={selectedAlertingTab === 'alerting'}
+        />
+        <Tab
+          label="Legacy alerts"
+          onChangeTab={() => setSelectedAlertingTab('sensitivity')}
+          active={selectedAlertingTab === 'sensitivity'}
+        />
+      </TabsBar>
+      <TabContent>
+        <div className={styles.wrapper}>
+          {selectedAlertingTab === 'alerting' && (
+            <AlertsPerCheck onInitAlerts={handleInitAlerts} isInitialized={alertsInitialized} />
+          )}
+          {selectedAlertingTab === 'sensitivity' && <CheckFormAlert />}
+        </div>
+      </TabContent>
+    </>
+  );
+
+  const isAlertsPerCheckOn = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
+
   return (
     <PluginPage
       pageNav={navModel}
@@ -258,38 +285,13 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                 {labelsComponent}
                 <CheckLabels />
               </FormLayout.Section>
-              <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
-                <FeatureFlag name={FeatureName.AlertsPerCheck}>
-                  {({ isEnabled }) =>
-                    isEnabled ? (
-                      <>
-                        <TabsBar>
-                          <Tab
-                            label="Per-check alerts"
-                            onChangeTab={() => setSelectedAlertingTab('alerting')}
-                            active={selectedAlertingTab === 'alerting'}
-                          />
-                          <Tab
-                            label="Legacy alerts"
-                            onChangeTab={() => setSelectedAlertingTab('sensitivity')}
-                            active={selectedAlertingTab === 'sensitivity'}
-                          />
-                        </TabsBar>
-                        <TabContent>
-                          <div className={styles.wrapper}>
-                            {selectedAlertingTab === 'alerting' && (
-                              <AlertsPerCheck onInitAlerts={handleInitAlerts} isInitialized={alertsInitialized} />
-                            )}
-                            {selectedAlertingTab === 'sensitivity' && <CheckFormAlert />}
-                          </div>
-                        </TabContent>{' '}
-                      </>
-                    ) : (
-                      <CheckFormAlert />
-                    )
-                  }
-                </FeatureFlag>
-              </FormLayout.Section>
+
+              {!isAlertsPerCheckOn && (
+                <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
+                  <CheckFormAlert />
+                </FormLayout.Section>
+              )}
+
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
                 <Stack direction={`column`} gap={4}>
                   <CheckProbeOptions checkType={checkType} />
@@ -297,6 +299,12 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                   <CheckUsage checkType={checkType} />
                 </Stack>
               </FormLayout.Section>
+
+              {isAlertsPerCheckOn && (
+                <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
+                  <AlertsPerCheckSection />
+                </FormLayout.Section>
+              )}
             </FormLayout>
           </div>
         </CheckFormContextProvider>
