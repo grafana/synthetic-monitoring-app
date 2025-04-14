@@ -20,3 +20,5 @@ export const trackNavigateWizardForm = checkFormEvents<NavigateWizardForm>('navi
 export const trackAdhocCreated = checkFormEvents<CheckFormEvent>('adhoc_test_created');
 
 export const trackCheckCreated = checkFormEvents<CheckFormEvent>('check_created');
+
+export const foo = 'asdasd';
