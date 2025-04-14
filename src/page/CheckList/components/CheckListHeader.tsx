@@ -102,7 +102,7 @@ export const CheckListHeader = ({
             </Button>
           )}
 
-          {canWriteChecks && <AddNewCheckButton />}
+          {canWriteChecks && <AddNewCheckButton source="check-list" />}
         </div>
       </div>
       <div className={styles.row}>

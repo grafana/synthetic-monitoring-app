@@ -117,6 +117,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     useCheckForm({
       check,
       checkType,
+      checkState: isExistingCheck ? 'existing' : 'new',
       onTestSuccess: (data) => {
         setAdhocTestData(data);
         setOpenTestCheckModal(true);
@@ -224,6 +225,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
             <FormLayout
               actions={actions}
               alerts={alerts}
+              checkState={isExistingCheck ? 'existing' : 'new'}
+              checkType={checkType}
               disabled={isDisabled}
               onSubmit={handleSubmit}
               onValid={handleValid}

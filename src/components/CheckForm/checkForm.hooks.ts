@@ -1,5 +1,6 @@
 import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
+import { trackAdhocCreated, trackCheckCreated } from 'features/tracking/checkFormEvents';
 import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { grpcCheckSchema } from 'schemas/forms/GRPCCheckSchema';
@@ -43,11 +44,12 @@ export function useCheckFormSchema(check?: Check) {
 
 interface UseCheckFormProps {
   check?: Check;
+  checkState: 'new' | 'existing';
   checkType: CheckType;
   onTestSuccess: (data: AdHocCheckResponse) => void;
 }
 
-export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormProps) {
+export function useCheckForm({ check, checkType, checkState, onTestSuccess }: UseCheckFormProps) {
   const [submittingToApi, setSubmittingToApi] = useState(false);
   const navigate = useNavigation();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
@@ -85,13 +87,25 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
             tenantId: check.tenantId,
             ...newCheck,
           },
-          { onSuccess: (data) => onSuccess(data, alerts), onError }
+          {
+            onSuccess: (data) => {
+              onSuccess(data, alerts);
+              trackCheckCreated({ checkType, checkState: 'existing' });
+            },
+            onError,
+          }
         );
       }
 
-      return createCheck(newCheck, { onSuccess: (data) => onSuccess(data, alerts), onError });
+      return createCheck(newCheck, {
+        onSuccess: (data) => {
+          onSuccess(data, alerts);
+          trackCheckCreated({ checkType, checkState: 'new' });
+        },
+        onError,
+      });
     },
-    [check?.id, check?.tenantId, createCheck, updateCheck, onSuccess]
+    [check?.id, check?.tenantId, createCheck, updateCheck, onSuccess, checkType]
   );
 
   const handleValid = useCallback(
@@ -101,12 +115,17 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
       const toSubmit = toPayload(checkValues);
 
       if (submitter === testButtonRef.current) {
-        return testCheck(toSubmit, { onSuccess: onTestSuccess });
+        return testCheck(toSubmit, {
+          onSuccess: (data) => {
+            trackAdhocCreated({ checkType, checkState });
+            onTestSuccess(data);
+          },
+        });
       }
 
       mutateCheck(toSubmit, alertsEnabled ? checkValues?.alerts : undefined);
     },
-    [mutateCheck, onTestSuccess, testCheck, alertsEnabled]
+    [mutateCheck, onTestSuccess, testCheck, alertsEnabled, checkType, checkState]
   );
 
   const handleInvalid = useCallback((errs: FieldErrors) => {
