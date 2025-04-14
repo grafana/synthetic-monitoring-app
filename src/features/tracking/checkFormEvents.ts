@@ -1,6 +1,7 @@
 import { createSMEventFactory } from 'features/tracking/createEventFactory';
 
 import { CheckType } from 'types';
+import { ANALYTICS_STEP_MAP } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 type CheckFormEvent = {
   checkState: `new` | `existing`;
@@ -10,7 +11,7 @@ type CheckFormEvent = {
 const checkFormEvents = createSMEventFactory('check_form');
 
 type NavigateWizardForm = CheckFormEvent & {
-  step: 'job' | 'uptime' | 'labels' | 'alerting' | 'execution';
+  step: (typeof ANALYTICS_STEP_MAP)[number];
   component: `forward-button` | `back-button` | `stepper`;
 };
 
