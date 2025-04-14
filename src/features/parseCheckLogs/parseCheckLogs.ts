@@ -1,8 +1,8 @@
 import { MSG_STRINGS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
-import { CheckLogs, LabelsWithTime, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
+import { CheckLogs, ParsedCheckLog, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
 
-export function groupLogs(logs: LabelsWithTime[]): PerCheckLogs[] {
+export function parseCheckLogs(logs: ParsedCheckLog[]): PerCheckLogs[] {
   const groupedByProbe = groupByProbe(logs);
   const groupedByCheck = Object.entries(groupedByProbe).map(([probe, logs]) => ({
     probe,
@@ -12,9 +12,9 @@ export function groupLogs(logs: LabelsWithTime[]): PerCheckLogs[] {
   return groupedByCheck;
 }
 
-export function groupByProbe(orderedLogs: LabelsWithTime[]) {
-  const res = orderedLogs.reduce<Record<string, LabelsWithTime[]>>((acc, log) => {
-    const probe = log.value.probe;
+export function groupByProbe(orderedLogs: ParsedCheckLog[]) {
+  const res = orderedLogs.reduce<Record<string, ParsedCheckLog[]>>((acc, log) => {
+    const probe = log.labels.probe;
 
     if (!acc[probe]) {
       acc[probe] = [];
@@ -28,7 +28,7 @@ export function groupByProbe(orderedLogs: LabelsWithTime[]) {
   return res;
 }
 
-export function groupByCheck(logs: LabelsWithTime[]): CheckLogs[] {
+export function groupByCheck(logs: ParsedCheckLog[]): CheckLogs[] {
   const completeFromStart = discardIncompleteChecks({
     logs,
     matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],
@@ -44,7 +44,7 @@ export function groupByCheck(logs: LabelsWithTime[]): CheckLogs[] {
   let check = [];
 
   for (const log of completeFromEnd) {
-    const msg = log.value.msg;
+    const msg = log.labels.msg;
 
     check.push(log);
 
@@ -62,7 +62,7 @@ export function discardIncompleteChecks({
   matchMsg,
   reverse = false,
 }: {
-  logs: LabelsWithTime[];
+  logs: ParsedCheckLog[];
   matchMsg: string[];
   reverse?: boolean;
 }) {
@@ -71,7 +71,7 @@ export function discardIncompleteChecks({
   const start = reverse ? copy.length - 1 : 0;
 
   for (let i = start; i < logs.length; i += direction) {
-    const msg = logs[i].value.msg;
+    const msg = logs[i].labels.msg;
 
     if (matchMsg.includes(msg)) {
       break;

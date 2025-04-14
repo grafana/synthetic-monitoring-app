@@ -18,6 +18,7 @@ import { css } from '@emotion/css';
 import { Check, CheckType } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { EditCheckButton } from 'scenes/Common/editButton';
+import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { AvgLatency } from './stats/AvgLatencyViz';
@@ -25,7 +26,6 @@ import { Frequency } from './stats/FrequencyViz';
 import { ReachabilityStat } from './stats/ReachabilityStatViz';
 import { SSLExpiry } from './stats/SSLExpiryViz';
 import { UptimeStat } from './stats/UptimeStatViz';
-import { ErrorLogs } from './ErrorLogs';
 import { ErrorRateMap } from './ErrorRateMap';
 import { ErrorRate } from './ErrorRateViz';
 import { ResponseLatency } from './ResponseLatency';
@@ -129,7 +129,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
                       </div>
 
                       <div className={styles.errorLogs}>
-                        <ErrorLogs />
+                        <TimepointExplorer check={check} />
                       </div>
                     </div>
                   </AnnotationLayer>

@@ -1,12 +1,24 @@
 import { MSG_STRINGS_COMMON, MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
-import { discardIncompleteChecks, groupByCheck, groupByProbe, groupLogs } from 'features/parseCheckLogs/groupLogs';
+import {
+  discardIncompleteChecks,
+  groupByCheck,
+  groupByProbe,
+  parseCheckLogs,
+} from 'features/parseCheckLogs/parseCheckLogs';
 
-import { LabelsWithTime } from 'features/parseCheckLogs/checkLogs.types';
+import { CheckLabelType, ParsedCheckLog } from 'features/parseCheckLogs/checkLogs.types';
 
-const discard1: LabelsWithTime = {
-  time: 1713859200000,
-  nanotime: 17138592000001000,
-  value: {
+const labelTypes: CheckLabelType = {
+  check_name: 'I',
+  detected_level: 'S',
+  instance: 'I',
+  job: 'I',
+};
+
+const discard1: ParsedCheckLog = {
+  Time: 1713859200000,
+  tsNs: 17138592000001000,
+  labels: {
     probe: 'probe1',
     msg: MSG_STRINGS_HTTP.MakingHTTPRequest,
     check_name: 'check1',
@@ -18,12 +30,15 @@ const discard1: LabelsWithTime = {
     service_name: 'service1',
     source: 'synthetic-monitoring-agent',
   },
+  Line: 'line1',
+  labelTypes,
+  id: 'id1',
 };
 
-const discard2: LabelsWithTime = {
-  time: 1713859200,
-  nanotime: 17138592000002000,
-  value: {
+const discard2: ParsedCheckLog = {
+  Time: 1713859200,
+  tsNs: 17138592000002000,
+  labels: {
     probe: 'probe1',
     msg: MSG_STRINGS_HTTP.ReceivedHTTPResponse,
     check_name: 'check1',
@@ -35,13 +50,16 @@ const discard2: LabelsWithTime = {
     service_name: 'service1',
     source: 'synthetic-monitoring-agent',
   },
+  Line: 'line2',
+  labelTypes,
+  id: 'id2',
 };
 
 // todo: need a log factory
-const probe1_log1: LabelsWithTime = {
-  time: 1713859200000,
-  nanotime: 17138592000001000,
-  value: {
+const probe1_log1: ParsedCheckLog = {
+  Time: 1713859200000,
+  tsNs: 17138592000001000,
+  labels: {
     probe: 'probe1',
     msg: MSG_STRINGS_COMMON.BeginningCheck,
     check_name: 'check1',
@@ -53,12 +71,15 @@ const probe1_log1: LabelsWithTime = {
     service_name: 'service1',
     source: 'synthetic-monitoring-agent',
   },
+  Line: 'line3',
+  labelTypes,
+  id: 'id3',
 };
 
-const probe1_log2: LabelsWithTime = {
-  time: 1713859200000,
-  nanotime: 17138592000002000,
-  value: {
+const probe1_log2: ParsedCheckLog = {
+  Time: 1713859200000,
+  tsNs: 17138592000002000,
+  labels: {
     probe: 'probe1',
     msg: MSG_STRINGS_COMMON.CheckFailed,
     check_name: 'check2',
@@ -70,12 +91,15 @@ const probe1_log2: LabelsWithTime = {
     service_name: 'service2',
     source: 'synthetic-monitoring-agent',
   },
+  Line: 'line4',
+  labelTypes,
+  id: 'id4',
 };
 
-const probe2_log1: LabelsWithTime = {
-  time: 1713859200000,
-  nanotime: 17138592000001000,
-  value: {
+const probe2_log1: ParsedCheckLog = {
+  Time: 1713859200000,
+  tsNs: 17138592000001000,
+  labels: {
     probe: 'probe2',
     msg: MSG_STRINGS_COMMON.BeginningCheck,
     check_name: 'check1',
@@ -87,12 +111,15 @@ const probe2_log1: LabelsWithTime = {
     service_name: 'service1',
     source: 'synthetic-monitoring-agent',
   },
+  Line: 'line5',
+  labelTypes,
+  id: 'id5',
 };
 
-const probe2_log2: LabelsWithTime = {
-  time: 1713859200000,
-  nanotime: 17138592000002000,
-  value: {
+const probe2_log2: ParsedCheckLog = {
+  Time: 1713859200000,
+  tsNs: 17138592000002000,
+  labels: {
     probe: 'probe2',
     msg: MSG_STRINGS_COMMON.CheckSucceeded,
     check_name: 'check2',
@@ -104,13 +131,15 @@ const probe2_log2: LabelsWithTime = {
     service_name: 'service2',
     source: 'synthetic-monitoring-agent',
   },
+  Line: 'line6',
+  labelTypes,
+  id: 'id6',
 };
 
 describe('groupLogs', () => {
   it('should group logs by probe', () => {
-    const logs: LabelsWithTime[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2, discard1, discard2];
-    const groupedLogs = groupLogs(logs);
-
+    const logs: ParsedCheckLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2, discard1, discard2];
+    const groupedLogs = parseCheckLogs(logs);
     expect(groupedLogs).toEqual([
       {
         probe: 'probe1',
@@ -126,7 +155,7 @@ describe('groupLogs', () => {
 
 describe('groupByProbe', () => {
   it('should group logs by probe', () => {
-    const logs: LabelsWithTime[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
+    const logs: ParsedCheckLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
     const groupedLogs = groupByProbe(logs);
 
     expect(groupedLogs).toEqual({
@@ -138,7 +167,7 @@ describe('groupByProbe', () => {
 
 describe('groupByCheck', () => {
   it('should group logs by check', () => {
-    const logs: LabelsWithTime[] = [probe1_log1, probe1_log2];
+    const logs: ParsedCheckLog[] = [probe1_log1, probe1_log2];
     const groupedLogs = groupByCheck(logs);
 
     expect(groupedLogs).toEqual([[probe1_log1, probe1_log2]]);
@@ -147,7 +176,7 @@ describe('groupByCheck', () => {
 
 describe('discardIncompleteChecks', () => {
   it('should discard incomplete checks from the start', () => {
-    const logs: LabelsWithTime[] = [probe2_log2, probe1_log1, probe1_log2];
+    const logs: ParsedCheckLog[] = [probe2_log2, probe1_log1, probe1_log2];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],
@@ -157,7 +186,7 @@ describe('discardIncompleteChecks', () => {
   });
 
   it('should discard incomplete checks from the end', () => {
-    const logs: LabelsWithTime[] = [probe1_log1, probe1_log2, probe2_log1];
+    const logs: ParsedCheckLog[] = [probe1_log1, probe1_log2, probe2_log1];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.CheckFailed, MSG_STRINGS_COMMON.CheckSucceeded],
@@ -168,7 +197,7 @@ describe('discardIncompleteChecks', () => {
   });
 
   it(`should discard nothing if the logs are all complete`, () => {
-    const logs: LabelsWithTime[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
+    const logs: ParsedCheckLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],

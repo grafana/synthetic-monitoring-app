@@ -72,11 +72,11 @@ export type ID = Field<string> & {
   };
 };
 
-export type ParsedLokiRecord<T, R> = {
-  [LokiFieldNames.Labels]: T;
+export type ParsedLokiRecord<L, LT> = {
+  [LokiFieldNames.Labels]: L;
   [LokiFieldNames.Time]: number;
   [LokiFieldNames.Line]: string;
   [LokiFieldNames.TsNs]: number;
-  [LokiFieldNames.LabelTypes]: R;
+  [LokiFieldNames.LabelTypes]: LT;
   [LokiFieldNames.ID]: string;
 };

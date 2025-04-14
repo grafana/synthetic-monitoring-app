@@ -8,7 +8,7 @@ export function queryMimir({
   refId,
   interval,
   intervalMs,
-  queryType = 'range',
+  queryType,
   maxDataPoints,
 }: {
   datasource: { uid: string; type: string };
@@ -18,7 +18,7 @@ export function queryMimir({
   refId: string;
   interval?: string;
   intervalMs?: number;
-  queryType?: 'range' | 'instant';
+  queryType: 'range' | 'instant';
   maxDataPoints?: number;
 }) {
   return queryDS({

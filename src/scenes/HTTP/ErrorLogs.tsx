@@ -1,8 +1,13 @@
 import React from 'react';
+import { DataFrame } from '@grafana/data';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
+import { parseCheckLogs } from 'features/parseCheckLogs/parseCheckLogs';
+import { parseLokiLogs } from 'features/parseLogs/parseLokiLogs';
 
+import { CheckLabel, CheckLabelType } from 'features/parseCheckLogs/checkLogs.types';
+import { LokiSeries } from 'features/parseLogs/parseLogs.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 
 import { useVizPanelMenu } from './useVizPanelMenu';
@@ -24,8 +29,8 @@ export const ErrorLogs = () => {
   const dataProvider = useQueryRunner({
     queries: [
       {
-        expr: '{probe=~"$probe", instance="$instance", job="$job"}',
-        refId: 'A',
+        expr: '{probe=~"$probe", instance="$instance", job="$job"} | logfmt',
+        refId: 'Execution_Logs',
       },
     ],
     datasource: logsDS,
@@ -41,7 +46,18 @@ export const ErrorLogs = () => {
     variables: ['job', 'probe', 'instance'],
   });
 
-  console.log(currentTimeRange);
+  if (data?.data) {
+    const seriesArray = data.data.series as DataFrame[];
+    const series = seriesArray[0] as LokiSeries<CheckLabel, CheckLabelType>;
+    console.log(series);
+
+    if (series) {
+      const parsedLogs = parseLokiLogs(series);
+      console.log(parsedLogs);
+      const checkLogs = parseCheckLogs(parsedLogs);
+      console.log(checkLogs);
+    }
+  }
 
   return (
     <VizPanel

@@ -1,4 +1,4 @@
-import { LokiSeries } from 'features/parseLogs/parseLogs.types';
+import { LokiSeries, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 
 import { MSG_STRINGS_COMMON } from './checkLogs.constants.msgs';
 
@@ -23,21 +23,21 @@ export type CheckLabelType = {
   job: string; // I
 };
 
-export type LabelsWithTime = { time: number; nanotime: number; value: CheckLabel };
+export type ParsedCheckLog = ParsedLokiRecord<CheckLabel, CheckLabelType>;
 
-type StartingLog = LabelsWithTime & {
+type StartingLog = ParsedCheckLog & {
   value: CheckLabel & {
     msg: (typeof MSG_STRINGS_COMMON)['BeginningCheck'];
   };
 };
 
-type CheckFailedLog = LabelsWithTime & {
+type CheckFailedLog = ParsedCheckLog & {
   value: CheckLabel & {
     msg: (typeof MSG_STRINGS_COMMON)['CheckFailed'];
   };
 };
 
-type CheckSucceededLog = LabelsWithTime & {
+type CheckSucceededLog = ParsedCheckLog & {
   value: CheckLabel & {
     msg: (typeof MSG_STRINGS_COMMON)['CheckSucceeded'];
   };
@@ -45,7 +45,7 @@ type CheckSucceededLog = LabelsWithTime & {
 
 type EndingLog = CheckFailedLog | CheckSucceededLog;
 
-export type CheckLogs = [StartingLog, ...LabelsWithTime[], EndingLog];
+export type CheckLogs = [StartingLog, ...ParsedCheckLog[], EndingLog];
 
 export type PerCheckLogs = {
   probe: string;
