@@ -1,0 +1,32 @@
+name: Add main bundle size
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Make artifacts folder
+        run: mkdir artifacts
+
+      - name: Build frontend
+        run: yarn build --json=artifacts/mainBundleSize.json --no-devtool
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mainBundleSize
+          path: ./artifacts/mainBundleSize.json
+          overwrite: true
