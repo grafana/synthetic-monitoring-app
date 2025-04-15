@@ -173,7 +173,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 function isMac() {
   try {
-    // eslint-disable-next-line deprecation/deprecation -- doesn't seem to be a stable alternative yet
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   } catch (e) {
     return false;
