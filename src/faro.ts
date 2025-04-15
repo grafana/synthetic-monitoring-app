@@ -56,6 +56,7 @@ export function reportEvent(type: FaroEvent, info: Record<string, string> = {}) 
   try {
     faro.api?.pushEvent(type, attributes);
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error(`Failed to report event: ${type}`, e);
   }
 }

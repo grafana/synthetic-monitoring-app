@@ -34,7 +34,6 @@ export const CopyToClipboard = ({
       })
       .catch((err) => {
         onClipboardError && onClipboardError(err);
-        console.warn('Failed to copy to clipboard', err);
       });
   };
 
