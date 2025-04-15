@@ -39,20 +39,17 @@ const getDecodedIfPEM = (cert = '') => {
 };
 
 export function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 'checkType' | 'settings'> {
-  const frequency = check.frequency / 1000;
-  const timeout = check.timeout / 1000;
-
   return {
     alertSensitivity: check.alertSensitivity,
     publishAdvancedMetrics: !check.basicMetricsOnly,
     enabled: check.enabled,
-    frequency,
+    frequency: check.frequency,
     id: check.id,
     job: check.job,
     labels: check.labels,
     probes: check.probes,
     target: check.target,
-    timeout,
+    timeout: check.timeout,
     alerts: predefinedAlertsToFormValues(GLOBAL_PREDEFINED_ALERTS),
   };
 }

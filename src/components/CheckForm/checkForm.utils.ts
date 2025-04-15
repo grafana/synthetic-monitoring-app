@@ -1,7 +1,13 @@
 import { FieldErrors } from 'react-hook-form';
+import { MAX_FREQUENCY_ERROR_MESSAGE_START, MIN_FREQUENCY_ERROR_MESSAGE_START } from 'schemas/general/Frequency';
 
 import { CheckFormValues } from 'types';
 import { PROBES_FILTER_ID } from 'components/CheckEditor/CheckProbes/ProbesFilter';
+import {
+  FREQUENCY_INPUT_ID,
+  FREQUENCY_MINUTES_INPUT_ID,
+  FREQUENCY_SECONDS_INPUT_ID,
+} from 'components/CheckEditor/FormComponents/Frequency.constants';
 import { SCRIPT_TEXTAREA_ID } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 
@@ -57,16 +63,31 @@ function getFirstInput(errs: FieldErrors<CheckFormValues>) {
     return firstInput;
   }
 
-  return searchForSpecialInputs(errKeys);
+  return searchForSpecialInputs(errKeys, errs);
 }
 
-function searchForSpecialInputs(errKeys: string[] = []) {
+function searchForSpecialInputs(errKeys: string[] = [], errs: FieldErrors<CheckFormValues>) {
   const probes = errKeys.includes(`probes`) && document.querySelector(`#${PROBES_FILTER_ID}`);
+  const frequency = errKeys.includes(`frequency`) && document.querySelector(`#${FREQUENCY_INPUT_ID}`);
   const script =
     errKeys.includes(`settings.scripted.script`) && document.querySelector(`#${SCRIPT_TEXTAREA_ID} textarea`);
 
   if (probes) {
     return probes;
+  }
+
+  if (frequency) {
+    const frequencyError = errs.frequency?.message;
+
+    if (frequencyError?.includes(MIN_FREQUENCY_ERROR_MESSAGE_START)) {
+      return document.querySelector(`#${FREQUENCY_SECONDS_INPUT_ID}`);
+    }
+
+    if (frequencyError?.includes(MAX_FREQUENCY_ERROR_MESSAGE_START)) {
+      return document.querySelector(`#${FREQUENCY_MINUTES_INPUT_ID}`);
+    }
+
+    return frequency;
   }
 
   if (script) {
