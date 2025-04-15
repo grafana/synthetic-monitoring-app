@@ -18,9 +18,9 @@ const events = findAnalyticsEvents(files, CREATE_EVENT_FACTORY_PATH);
 
 if (OUTPUT_FORMAT === 'markdown') {
   const markdown = await formatEventsAsMarkdown(events);
-  // console.log(markdown);
+  console.log(markdown);
 
-  await fs.writeFile('analytics-report.md', markdown);
+  await fs.writeFile('docs/analytics/analytics-report.md', markdown);
 } else {
   console.log(JSON.stringify(events, null, 2));
 }
