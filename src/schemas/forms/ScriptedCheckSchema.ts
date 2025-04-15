@@ -1,5 +1,5 @@
-import { frequencySchema } from 'schemas/general/Frequency';
-import { timeoutSchema } from 'schemas/general/Timeout';
+import { createFrequencySchema } from 'schemas/general/Frequency';
+import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesScripted, CheckType, ScriptedSettings } from 'types';
@@ -29,7 +29,7 @@ export const scriptedCheckSchema: ZodType<CheckFormValuesScripted> = baseCheckSc
       settings: z.object({
         scripted: ScriptedSettingsSchema,
       }),
-      frequency: frequencySchema(MIN_FREQUENCY_SCRIPTED),
-      timeout: timeoutSchema(MIN_TIMEOUT_SCRIPTED, MAX_TIMEOUT_SCRIPTED),
+      frequency: createFrequencySchema(MIN_FREQUENCY_SCRIPTED),
+      timeout: createTimeoutSchema(MIN_TIMEOUT_SCRIPTED, MAX_TIMEOUT_SCRIPTED),
     })
   );

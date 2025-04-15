@@ -1,5 +1,5 @@
-import { frequencySchema } from 'schemas/general/Frequency';
-import { timeoutSchema } from 'schemas/general/Timeout';
+import { createFrequencySchema } from 'schemas/general/Frequency';
+import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import { BrowserSettings, CheckFormValuesBrowser, CheckType } from 'types';
@@ -29,7 +29,7 @@ export const browserCheckSchema: ZodType<CheckFormValuesBrowser> = baseCheckSche
       settings: z.object({
         browser: browserSettingsSchema,
       }),
-      frequency: frequencySchema(MIN_FREQUENCY_BROWSER),
-      timeout: timeoutSchema(MIN_TIMEOUT_BROWSER, MAX_TIMEOUT_BROWSER),
+      frequency: createFrequencySchema(MIN_FREQUENCY_BROWSER),
+      timeout: createTimeoutSchema(MIN_TIMEOUT_BROWSER, MAX_TIMEOUT_BROWSER),
     })
   );

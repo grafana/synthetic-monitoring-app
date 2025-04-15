@@ -1,9 +1,9 @@
 import { checkAlertsRefinement, checkAlertsSchema } from 'schemas/general/CheckAlerts';
 import { checkProbesSchema } from 'schemas/general/CheckProbes';
-import { frequencySchema } from 'schemas/general/Frequency';
+import { createFrequencySchema } from 'schemas/general/Frequency';
 import { jobSchema } from 'schemas/general/Job';
 import { labelsSchema } from 'schemas/general/Label';
-import { timeoutSchema } from 'schemas/general/Timeout';
+import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import { AlertSensitivity, CheckFormValuesBase } from 'types';
@@ -12,9 +12,9 @@ import { formatDuration } from 'utils';
 export const baseCheckSchema = z.object({
   job: jobSchema,
   target: z.string(),
-  frequency: frequencySchema(),
+  frequency: createFrequencySchema(),
   id: z.number().optional(),
-  timeout: timeoutSchema(),
+  timeout: createTimeoutSchema(),
   enabled: z.boolean(),
   probes: checkProbesSchema,
   alertSensitivity: z.nativeEnum(AlertSensitivity),

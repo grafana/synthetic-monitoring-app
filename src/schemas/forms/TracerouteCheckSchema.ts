@@ -1,6 +1,6 @@
-import { frequencySchema } from 'schemas/general/Frequency';
+import { createFrequencySchema } from 'schemas/general/Frequency';
 import { hostNameTargetSchema } from 'schemas/general/HostNameTarget';
-import { timeoutSchema } from 'schemas/general/Timeout';
+import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesTraceroute, CheckType, TracerouteSettingsFormValues } from 'types';
@@ -49,7 +49,7 @@ export const tracerouteCheckSchema: ZodType<CheckFormValuesTraceroute> = baseChe
       settings: z.object({
         traceroute: TracerouteSettingsSchema,
       }),
-      frequency: frequencySchema(MIN_FREQUENCY_TRACEROUTE),
-      timeout: timeoutSchema(MIN_TIMEOUT_TRACEROUTE, MAX_TIMEOUT_TRACEROUTE),
+      frequency: createFrequencySchema(MIN_FREQUENCY_TRACEROUTE),
+      timeout: createTimeoutSchema(MIN_TIMEOUT_TRACEROUTE, MAX_TIMEOUT_TRACEROUTE),
     })
   );

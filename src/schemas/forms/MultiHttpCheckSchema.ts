@@ -1,8 +1,8 @@
-import { frequencySchema } from 'schemas/general/Frequency';
+import { createFrequencySchema } from 'schemas/general/Frequency';
 import { headersSchema } from 'schemas/general/Header';
 import { httpTargetSchema } from 'schemas/general/HttpTarget';
 import { queryParamsSchema } from 'schemas/general/QueryParam';
-import { timeoutSchema } from 'schemas/general/Timeout';
+import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import {
@@ -124,7 +124,7 @@ export const multiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = baseCheck
       settings: z.object({
         multihttp: multiHttpSettingsSchema,
       }),
-      frequency: frequencySchema(MIN_FREQUENCY_MULTI_HTTP),
-      timeout: timeoutSchema(MIN_TIMEOUT_MULTI_HTTP, MAX_TIMEOUT_MULTI_HTTP),
+      frequency: createFrequencySchema(MIN_FREQUENCY_MULTI_HTTP),
+      timeout: createTimeoutSchema(MIN_TIMEOUT_MULTI_HTTP, MAX_TIMEOUT_MULTI_HTTP),
     })
   );
