@@ -1,6 +1,7 @@
 // webpack.config.ts
 import path from 'path';
 import { type Configuration, DefinePlugin } from 'webpack';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { CustomizeRule, mergeWithRules } from 'webpack-merge';
 
 import { getPluginJson } from './.config/webpack/utils';
@@ -9,7 +10,29 @@ import grafanaConfig from './.config/webpack/webpack.config';
 const config = async (env): Promise<Configuration> => {
   const pluginJson = getPluginJson();
   const baseConfig = await grafanaConfig(env);
+  const analyzerPlugin = process.env.ANALYZE_BUNDLE === 'true' ? [new BundleAnalyzerPlugin({})] : [];
   const customConfig = {
+    // this is used by DangerJS to get the bundle size, but we need to disable it
+    // if we want to see files in the bundle analysis
+    stats:
+      process.env.ANALYZE_BUNDLE !== 'true'
+        ? {
+            assets: true,
+            assetsSort: '!size',
+            entrypoints: false,
+            modules: false,
+            chunks: false,
+            chunkGroups: false,
+            chunkModules: false,
+            children: false,
+            performance: false,
+            excludeAssets: (assetName: string) => {
+              return !assetName.endsWith('.js');
+            },
+            warnings: false,
+            errors: true,
+          }
+        : true,
     module: {
       rules: [
         {
@@ -43,6 +66,7 @@ const config = async (env): Promise<Configuration> => {
       new DefinePlugin({
         'process.env.REACT_APP_MSW': JSON.stringify(process.env.REACT_APP_MSW),
       }),
+      ...analyzerPlugin,
     ],
   };
 
