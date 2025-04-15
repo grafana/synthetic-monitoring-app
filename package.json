@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.25.0",
+  "version": "1.26.0",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
