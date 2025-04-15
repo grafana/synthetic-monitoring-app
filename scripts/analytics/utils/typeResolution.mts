@@ -29,7 +29,7 @@ export function resolveType(type: Type, visitedTypes = new Set<string>()): strin
 
         return splitOnCommaAndReturn
           .map((v) => {
-            const trimmed = v.trim();
+            const trimmed = v.trim().replace(/,/g, '');
             const splitOnEquals = trimmed.split('=');
             return `"${splitOnEquals[1].trim()}"`;
           })
