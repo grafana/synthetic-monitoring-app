@@ -19,6 +19,7 @@ export function findAnalyticsEvents(files: SourceFile[], createEventFactoryPath:
   const allEvents: Event[] = files.flatMap((file) => {
     // Get the local imported name of createEventFactory
     const createEventFactoryImportedName = getEventFactoryFunctionName(file, createEventFactoryPath);
+
     if (!createEventFactoryImportedName) return [];
 
     // Find all calls to createEventFactory and the namespaces they create
@@ -47,7 +48,7 @@ function getEventFactoryFunctionName(file: SourceFile, createEventFactoryPath: s
     for (const namedImport of namedImports) {
       const importName = namedImport.getName();
 
-      if (importName === 'createEventFactory') {
+      if (importName === 'createSMEventFactory') {
         const moduleSpecifier = importDeclaration.getModuleSpecifierSourceFile();
         if (!moduleSpecifier) continue;
 
@@ -76,22 +77,18 @@ function findEventNamespaces(file: SourceFile, createEventFactoryImportedName: s
     if (initializerFnName !== createEventFactoryImportedName) continue;
 
     const args = initializer.getArguments();
-    if (args.length !== 2) {
-      throw new Error(`Expected ${createEventFactoryImportedName} to have 2 arguments`);
+    if (args.length !== 1) {
+      throw new Error(`Expected ${createEventFactoryImportedName} to have 1 argument`);
     }
 
-    const [argA, argB] = args;
+    const [argA] = args;
 
-    if (!Node.isStringLiteral(argA) || !Node.isStringLiteral(argB)) {
-      throw new Error(`Expected ${createEventFactoryImportedName} to have 2 string arguments`);
+    if (!Node.isStringLiteral(argA)) {
+      throw new Error(`Expected ${createEventFactoryImportedName} to have 1 string argument`);
     }
 
-    const eventPrefixRepo = argA.getLiteralText();
-    const eventPrefixFeature = argB.getLiteralText();
-
-    console.log(
-      `found where ${createEventFactoryImportedName} is called, ${eventFactoryName} = ${eventPrefixRepo}_${eventPrefixFeature}`
-    );
+    const eventPrefixRepo = `synthetic-monitoring`;
+    const eventPrefixFeature = argA.getLiteralText();
 
     eventNamespaces.set(eventFactoryName, {
       factoryName: eventFactoryName,

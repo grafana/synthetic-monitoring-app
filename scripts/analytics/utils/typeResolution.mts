@@ -6,15 +6,45 @@ import type { JSDoc, Type } from 'ts-morph';
  * `Action` resolves to `"click" | "hover"`
  *
  * @param type  Type to resolve
+ * @param visitedTypes  Set of already visited types to prevent infinite recursion
  * @returns String representation of the type
  */
-export function resolveType(type: Type): string {
+export function resolveType(type: Type, visitedTypes = new Set<string>()): string {
+  const typeId = type.getSymbol()?.getName() || type.getText();
+  if (visitedTypes.has(typeId)) {
+    return typeId; // Return the type name if we've seen it before
+  }
+  visitedTypes.add(typeId);
+
+  // If the type is an enum, resolve it to a union of its values
+  if (type.isEnum()) {
+    const enumMembers = type.getSymbol()?.getDeclarations()?.[0]?.getChildren() || [];
+
+    const values = enumMembers
+      .filter((member) => member.getKindName() === 'SyntaxList' && member.getText() !== `export`)
+      .map((member) => {
+        const value = member.getText();
+        const stripQuotesAndBackticks = value.replace(/['"`]/g, '').replace(/`/g, '');
+        const splitOnCommaAndReturn = stripQuotesAndBackticks.split(',\n');
+
+        return splitOnCommaAndReturn
+          .map((v) => {
+            const trimmed = v.trim();
+            const splitOnEquals = trimmed.split('=');
+            return `"${splitOnEquals[1].trim()}"`;
+          })
+          .join(` | `);
+      });
+
+    return values.join(` | `);
+  }
+
   // If the type is an alias (e.g., `Action`), resolve its declaration
   const aliasSymbol = type.getAliasSymbol();
   if (aliasSymbol) {
     const aliasType = type.getSymbol()?.getDeclarations()?.[0]?.getType();
     if (aliasType) {
-      return resolveType(aliasType);
+      return resolveType(aliasType, visitedTypes);
     }
   }
 
@@ -22,7 +52,7 @@ export function resolveType(type: Type): string {
   if (type.isUnion()) {
     return type
       .getUnionTypes()
-      .map((t) => resolveType(t))
+      .map((t) => resolveType(t, visitedTypes))
       .join(' | ');
   }
 
@@ -30,8 +60,6 @@ export function resolveType(type: Type): string {
   if (type.isStringLiteral()) {
     return `"${type.getLiteralValue()}"`;
   }
-
-  // TODO: handle enums. Would want to represent an enum as a union of its values
 
   return type.getText(); // Default to the type's text representation
 }

@@ -4,10 +4,10 @@ import type { Event, EventNamespace, EventProperty } from './types.mts';
 import { resolveType, getMetadataFromJSDocs } from './utils/typeResolution.mts';
 
 /**
- * Finds all events - calls to the function returned by createEventFactory - declared in a file
+ * Finds all events - calls to the function returned by createSMEventFactory - declared in a file
  *
  * An event feature namespace is defined by:
- *   const createNavEvent = createEventFactory('grafana', 'navigation');
+ *   const createNavEvent = createSMEventFactory('grafana', 'navigation');
  *
  * Which will be used to define multiple events like:
  *   interface ClickProperties {
@@ -59,7 +59,6 @@ export function parseEvents(file: SourceFile, eventNamespaces: Map<string, Event
       eventProject: eventNamespace.eventPrefixProject,
       eventFeature: eventNamespace.eventPrefixFeature,
       eventName,
-
       description,
       owner,
     };
@@ -79,11 +78,11 @@ export function parseEvents(file: SourceFile, eventNamespaces: Map<string, Event
       throw new Error('Expected function to have one parameter');
     }
 
-    // Find where the parameter type was declared and get it's type
+    // Find where the parameter type was declared and get its type
     const parameterType = parameter.getTypeAtLocation(parameter.getDeclarations()[0]);
 
     // Then describe the schema for the parameters the event function is called with
-    if (parameterType.isObject()) {
+    if (parameterType.isObject() || parameterType.isIntersection()) {
       event.properties = describeObjectParameters(parameterType);
     } else if (!parameterType.isVoid()) {
       throw new Error(`Expected parameter type to be an object or void, got ${parameterType.getText()}`);
@@ -108,7 +107,7 @@ function getParentVariableStatement(node: Node): VariableStatement | undefined {
   return undefined;
 }
 
-function describeObjectParameters(objectType: Type<ts.ObjectType>): EventProperty[] {
+function describeObjectParameters(objectType: Type<ts.ObjectType | ts.IntersectionType>): EventProperty[] {
   const properties = objectType.getProperties().map((property) => {
     const declarations = property.getDeclarations();
     if (declarations.length !== 1) {
@@ -118,6 +117,17 @@ function describeObjectParameters(objectType: Type<ts.ObjectType>): EventPropert
     const declaration = declarations[0];
     const propertyType = property.getTypeAtLocation(declaration);
     const resolvedType = resolveType(propertyType);
+
+    if (Node.isPropertySignature(declaration)) {
+      const { description } = getMetadataFromJSDocs(declaration.getJsDocs());
+      console.log(description, property.getName(), resolvedType);
+
+      return {
+        name: property.getName(),
+        type: resolvedType,
+        description,
+      };
+    }
 
     if (!Node.isPropertySignature(declaration)) {
       throw new Error(`Expected property to be a property signature, got ${declaration.getKindName()}`);
