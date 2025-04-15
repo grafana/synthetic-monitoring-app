@@ -5,9 +5,8 @@
  * https://grafana.com/developers/plugin-tools/get-started/set-up-development-environment#extend-the-jest-config
  */
 
-import { TextDecoder, TextEncoder } from 'util';
-
 import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'util';
 
 Object.assign(global, { TextDecoder, TextEncoder });
 

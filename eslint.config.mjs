@@ -1,6 +1,6 @@
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import queryPlugin from '@tanstack/eslint-plugin-query';
-import { defineConfig } from 'eslint/config';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import { FlatCompat } from '@eslint/eslintrc';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,7 +12,10 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const repoConfig = [
+const config = defineConfig([
+  globalIgnores(['**/snippets/*.js', '.config/**', 'dist']),
+  ...compat.extends('./.config/.eslintrc'),
+  ...compat.extends('plugin:@tanstack/eslint-plugin-query/recommended'),
   {
     plugins: {
       'simple-import-sort': simpleImportSort,
@@ -85,7 +88,6 @@ const repoConfig = [
       ],
     },
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['**/snippets/*.js', '.config/**', 'dist'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -94,17 +96,6 @@ const repoConfig = [
       },
     },
   },
-];
-
-const extensions = [
-  ...compat.extends('./.config/.eslintrc'),
-  ...compat.extends('plugin:@tanstack/eslint-plugin-query/recommended'),
-].map((config) => ({
-  files: ['src/**/*.{ts,tsx}'],
-  ignores: ['**/snippets/*.js', '.config/**', 'dist'],
-  ...config,
-}));
-
-const config = defineConfig([...extensions, ...repoConfig]);
+]);
 
 export default config;
