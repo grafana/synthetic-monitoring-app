@@ -14,7 +14,7 @@ import { useSMDS } from 'hooks/useSMDS';
 import { getBrowserScene } from 'scenes/BROWSER/browserScene';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
-import { getHTTPScene } from 'scenes/HTTP';
+import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
 import { getPingScene } from 'scenes/PING/pingScene';
 import { getScriptedScene } from 'scenes/SCRIPTED';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
@@ -60,17 +60,6 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getDNSScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.HTTP: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getHTTPScene(config, check),
             }),
           ],
         });
@@ -143,6 +132,10 @@ function DashboardPageContent() {
           ],
         });
       }
+
+      case CheckType.HTTP: {
+        return null;
+      }
     }
   }, [smDS, metricsDS, logsDS, check]);
 
@@ -150,11 +143,15 @@ function DashboardPageContent() {
     return <CheckNotFound />;
   }
 
-  if (!scene) {
-    return <Spinner />;
+  if (check && getCheckType(check.settings) === CheckType.HTTP) {
+    return <HttpDashboard check={check} />;
   }
 
-  return <scene.Component model={scene} />;
+  if (scene) {
+    return <scene.Component model={scene} />;
+  }
+
+  return <Spinner />;
 }
 
 export function DashboardPage() {
