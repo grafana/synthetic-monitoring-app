@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Button, ConfirmModal, EmptyState } from '@grafana/ui';
+import { ErrorBoundary } from 'react-error-boundary';
+import { Button, ConfirmModal, EmptyState, TextLink } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ExperimentalSecret, useDeleteSecret, useSecrets } from 'data/useSecrets';
@@ -10,7 +11,7 @@ import { SECRETS_EDIT_MODE_ADD } from './constants';
 import { SecretCard } from './SecretCard';
 import { SecretEditModal } from './SecretEditModal';
 
-export function SecretsManagementTab() {
+function SecretsManagementTabComponent() {
   const [editMode, setEditMode] = useState<string | false>(false);
   const [deleteMode, setDeleteMode] = useState<ExperimentalSecret | undefined>();
   const { data: secrets, isLoading, isFetching } = useSecrets();
@@ -54,28 +55,30 @@ export function SecretsManagementTab() {
           </EmptyState>
         </ConfigContent>
       ) : (
-        <ConfigContent
-          title="Secrets management"
-          actions={
+        <ErrorBoundary fallback={<div>Errors!</div>}>
+          <ConfigContent
+            title="Secrets management"
+            actions={
+              <div>
+                <Button size="sm" icon="plus" onClick={handleAddSecret}>
+                  Create secret
+                </Button>
+              </div>
+            }
+          >
             <div>
-              <Button size="sm" icon="plus" onClick={handleAddSecret}>
-                Create secret
-              </Button>
+              <p>
+                Secrets is a way to store and manage secrets in Grafana Cloud. You can use secrets to store sensitive
+                information such as passwords, API keys, and other sensitive information.
+              </p>
             </div>
-          }
-        >
-          <div>
-            <p>
-              Secrets is a way to store and manage secrets in Grafana Cloud. You can use secrets to store sensitive
-              information such as passwords, API keys, and other sensitive information.
-            </p>
-          </div>
-          <ConfigContent.Section>
-            {secrets?.map((secret) => (
-              <SecretCard key={secret.uuid} secret={secret} onEdit={handleEditSecret} onDelete={handleDeleteSecret} />
-            ))}
-          </ConfigContent.Section>
-        </ConfigContent>
+            <ConfigContent.Section>
+              {secrets?.map((secret) => (
+                <SecretCard key={secret.uuid} secret={secret} onEdit={handleEditSecret} onDelete={handleDeleteSecret} />
+              ))}
+            </ConfigContent.Section>
+          </ConfigContent>
+        </ErrorBoundary>
       )}
 
       {editMode && <SecretEditModal id={editMode} open onDismiss={() => handleEditSecret()} />}
@@ -117,5 +120,33 @@ export function SecretsManagementTab() {
         </div>
       )}
     </>
+  );
+}
+
+export function SecretsManagementTab() {
+  return (
+    <ErrorBoundary
+      fallback={
+        <ConfigContent>
+          <EmptyState
+            variant="not-found"
+            message="Error loading secrets"
+            button={
+              <Button onClick={() => window.location.reload()} icon="sync">
+                Retry
+              </Button>
+            }
+          >
+            Something went wrong. Please try again later. If the problem persists, seek help on the{' '}
+            <TextLink href="https://community.grafana.com/" external>
+              community site
+            </TextLink>
+            .
+          </EmptyState>
+        </ConfigContent>
+      }
+    >
+      <SecretsManagementTabComponent />
+    </ErrorBoundary>
   );
 }

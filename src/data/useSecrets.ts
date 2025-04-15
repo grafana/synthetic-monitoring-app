@@ -33,18 +33,29 @@ function secretsQuery(api: SMDataSource) {
   return {
     queryKey: queryKeys.list,
     queryFn: () => api.getSecrets(),
+    throwOnError: true,
     select: (data: ExperimentalSecretsResponse) => {
       return data?.secrets ?? [];
     },
   };
 }
 
+/**
+ * Hook to fetch secrets
+ *
+ * @throws {Error} If the query fails - Use ErrorBoundary to catch errors
+ */
 export function useSecrets() {
   const smDS = useSMDS();
 
   return useQuery<ExperimentalSecretsResponse, unknown, ExperimentalSecret[]>(secretsQuery(smDS));
 }
 
+/**
+ * Hook to fetch a secret by id
+ * @param {number} id
+ * @throws {Error} If the query fails - Use ErrorBoundary to catch errors
+ */
 export function useSecret(id?: string) {
   const smDS = useSMDS();
 
@@ -52,9 +63,14 @@ export function useSecret(id?: string) {
     queryKey: queryKeys.byId(id!),
     queryFn: () => smDS.getSecret(id!),
     enabled: !!id && id !== SECRETS_EDIT_MODE_ADD,
+    throwOnError: true,
   });
 }
 
+/**
+ * Hook to save a secret
+ * @throws {Error} If the mutation fails - Use ErrorBoundary to catch errors
+ */
 export function useSaveSecret() {
   const smDS = useSMDS();
 
@@ -70,6 +86,10 @@ export function useSaveSecret() {
   });
 }
 
+/**
+ * Hook to delete a secret
+ * @throws {Error} If the mutation fails - Use ErrorBoundary to catch errors
+ */
 export function useDeleteSecret() {
   const smDS = useSMDS();
 
@@ -78,5 +98,6 @@ export function useDeleteSecret() {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
     },
+    throwOnError: true,
   });
 }

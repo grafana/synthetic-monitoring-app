@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Field, IconButton, Input, Modal, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { zodResolver } from '@hookform/resolvers/zod';
 
+import { Secret } from './types';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
 
 import { SECRETS_EDIT_MODE_ADD } from './constants';
 import { SecretInput } from './SecretInput';
+import { secretSchema } from './secretSchema';
 import { SecretFormValues, secretToFormValues } from './SecretsManagementTab.utils';
 
 interface SecretEditModalProps {
@@ -26,20 +29,53 @@ function getDefaultValues(): SecretFormValues & { plaintext?: string } {
   };
 }
 
+function getFieldErrors(field: keyof Secret, errors: Record<string, { message?: string }>) {
+  return { invalid: Boolean(errors[field]), error: errors[field]?.message };
+}
+
+function createGetFieldError(errors: Record<string, { message?: string }>) {
+  return (field: keyof Secret) => {
+    return getFieldErrors(field, errors);
+  };
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  return 'An unknown error occurred';
+}
+
 export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
-  const { data: secret, isLoading } = useSecret(id);
+  const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(id);
   const saveSecret = useSaveSecret();
   const [isConfigured, setIsConfigured] = useState(id !== '' && id !== SECRETS_EDIT_MODE_ADD);
+  const [saveError, setSaveError] = useState<unknown>(null);
+
+  const hasError = hasFetchError || !!saveError;
 
   const styles = useStyles2(getStyles);
   const defaultValues = useMemo(() => {
     return secretToFormValues(secret) ?? getDefaultValues();
   }, [secret]);
 
-  const { register, handleSubmit, control, reset } = useForm<SecretFormValues & { plaintext?: string }>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<SecretFormValues & { plaintext?: string }>({
     defaultValues,
     disabled: isLoading || saveSecret.isPending,
+    resolver: zodResolver(secretSchema),
   });
+
+  const fieldError = createGetFieldError(errors);
 
   const { fields, append, remove } = useFieldArray<SecretFormValues & { plaintext?: string }>({
     control,
@@ -60,15 +96,15 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
       delete data.plaintext;
     }
 
-    try {
-      saveSecret.mutate(data, {
-        onSettled() {
-          onDismiss();
-        },
-      });
-    } catch (error) {
-      onDismiss();
-    }
+    saveSecret.mutate(data, {
+      onError(error: unknown) {
+        setSaveError(error);
+      },
+      onSuccess() {
+        setSaveError(null);
+        onDismiss();
+      },
+    });
   };
 
   const title = id === SECRETS_EDIT_MODE_ADD ? 'Create secret' : 'Edit secret';
@@ -76,6 +112,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   if (open !== true) {
     return null;
   }
+
   return (
     <Modal
       isOpen
@@ -86,8 +123,28 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
       }}
     >
       <form onSubmit={handleSubmit(onSubmit)}>
+        {hasError && (
+          <Alert title={`Unable to ${hasFetchError ? 'fetch' : 'save'} secret`} severity="error">
+            An error occurred while trying to {hasFetchError ? <>fetch secret (id: {id})</> : <>save secret</>}. If the
+            problem persists, seek help from an admin or{' '}
+            <TextLink href="https://grafana.com/contact" external>
+              contact support
+            </TextLink>
+            .<br />
+            <br />
+            <strong>Message</strong>
+            <br />
+            {getErrorMessage(hasFetchError ? fetchError : saveError)}
+          </Alert>
+        )}
         <input type="hidden" {...register('uuid')} />
-        <Field htmlFor="secret-name" label="Name" description="The name will be used to reference the secret" required>
+        <Field
+          htmlFor="secret-name"
+          label="Name"
+          description="The name will be used to reference the secret"
+          required
+          {...fieldError('name')}
+        >
           <Input id="secret-name" {...register('name', { disabled: isConfigured })} />
         </Field>
         <Field
@@ -95,10 +152,18 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
           label="Description"
           description="Short description of the purpose of this secret"
           required
+          error={errors.description?.message}
+          invalid={Boolean(errors.description?.message)}
         >
           <Input id="secret-description" {...register('description')} />
         </Field>
-        <Field htmlFor="secret-value" label="Value" description="Value returned when referencing this secret" required>
+        <Field
+          htmlFor="secret-value"
+          label="Value"
+          description="Value returned when referencing this secret"
+          {...fieldError('plaintext')}
+          required
+        >
           <Controller
             control={control}
             name="plaintext"
@@ -156,12 +221,15 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
         </div>
 
         <div className={styles.buttons}>
-          <Button icon={saveSecret.isPending ? 'fa fa-spinner' : undefined} type="submit">
+          <Button
+            disabled={isLoading || saveSecret.isPending}
+            icon={saveSecret.isPending ? 'fa fa-spinner' : undefined}
+            type="submit"
+          >
             Save
           </Button>
         </div>
       </form>
-      {(isLoading || saveSecret.isPending) && <div>Loading...</div>}
     </Modal>
   );
 }
