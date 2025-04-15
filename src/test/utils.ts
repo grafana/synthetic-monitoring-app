@@ -246,13 +246,6 @@ export function runTestAsHGFreeUserOverLimit() {
   });
 }
 
-export const getSlider = async (formName: string) => {
-  const container = await screen.findByTestId(formName);
-  const minutes = await within(container).findByLabelText('minutes');
-  const seconds = await within(container).findByLabelText('seconds');
-  return [minutes, seconds];
-};
-
 type GetSelectProps =
   | {
       label: string | RegExp;

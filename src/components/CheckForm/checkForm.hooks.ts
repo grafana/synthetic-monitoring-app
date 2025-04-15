@@ -1,6 +1,7 @@
 import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
 import { trackAdhocCreated, trackCheckCreated } from 'features/tracking/checkFormEvents';
+import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { grpcCheckSchema } from 'schemas/forms/GRPCCheckSchema';
@@ -39,7 +40,10 @@ const schemaMap = {
 export function useCheckFormSchema(check?: Check) {
   const checkType = useFormCheckType(check);
 
-  return schemaMap[checkType];
+  const schema = schemaMap[checkType];
+  const withRefinements = addRefinements(schema);
+
+  return withRefinements;
 }
 
 interface UseCheckFormProps {

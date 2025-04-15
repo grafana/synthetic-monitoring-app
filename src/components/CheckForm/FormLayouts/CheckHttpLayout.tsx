@@ -13,7 +13,6 @@ import { HttpCheckValidStatusCodes } from 'components/CheckEditor/FormComponents
 import { HttpRequest } from 'components/CheckEditor/FormComponents/HttpRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesHttp> = {
@@ -110,7 +109,7 @@ export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
         <HttpCheckSSLOptions />
         <HttpCheckRegExValidation />
         <HttpCheckCompressionOption />
-        <Timeout min={CheckTimeoutValues[CheckType.HTTP].min} max={CheckTimeoutValues[CheckType.HTTP].max} />
+        <Timeout checkType={CheckType.HTTP} />
       </>
     ),
   },
