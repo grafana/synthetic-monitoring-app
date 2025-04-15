@@ -1,4 +1,5 @@
 import { UsageValues } from 'types';
+import { ONE_SECOND_IN_MS } from 'utils.constants';
 
 import { calculateMultiHTTPUsage, calculateUsage, getTotalChecksPerMonth } from './checkUsageCalc';
 
@@ -6,22 +7,22 @@ describe('checkUsageCalc', () => {
   describe('getTotalChecksPerMonth', () => {
     it('should calculate total checks per month correctly when probeCount is 1', () => {
       const probeCount = 1;
-      const frequencySeconds = 300;
-      const result = getTotalChecksPerMonth(probeCount, frequencySeconds);
+      const frequency = 300 * ONE_SECOND_IN_MS;
+      const result = getTotalChecksPerMonth(probeCount, frequency);
       expect(result).toBe(8928);
     });
 
     it('should calculate total checks per month correctly when probeCount is bigger than 1', () => {
-        const probeCount = 2;
-        const frequencySeconds = 300;
-        const result = getTotalChecksPerMonth(probeCount, frequencySeconds);
-        expect(result).toBe(17856);
-      });
+      const probeCount = 2;
+      const frequency = 300 * ONE_SECOND_IN_MS;
+      const result = getTotalChecksPerMonth(probeCount, frequency);
+      expect(result).toBe(17856);
+    });
 
     it('should return 0 checks per month when probe count is 0', () => {
       const probeCount = 0;
-      const frequencySeconds = 300;
-      const result = getTotalChecksPerMonth(probeCount, frequencySeconds);
+      const frequency = 300 * ONE_SECOND_IN_MS;
+      const result = getTotalChecksPerMonth(probeCount, frequency);
       expect(result).toBe(0);
     });
   });
@@ -31,7 +32,7 @@ describe('checkUsageCalc', () => {
       const params = {
         assertionCount: 1,
         probeCount: 1,
-        frequencySeconds: 300,
+        frequency: 300 * ONE_SECOND_IN_MS,
         seriesPerProbe: 22,
       };
       const expected: UsageValues = {
@@ -48,7 +49,7 @@ describe('checkUsageCalc', () => {
       const params = {
         assertionCount: 1,
         probeCount: 0,
-        frequencySeconds: 300,
+        frequency: 300 * ONE_SECOND_IN_MS,
         seriesPerProbe: 22,
       };
       const expected: UsageValues = {
@@ -67,7 +68,7 @@ describe('checkUsageCalc', () => {
       const params = {
         assertionCount: 1,
         probeCount: 1,
-        frequencySeconds: 300,
+        frequency: 300 * ONE_SECOND_IN_MS,
         seriesPerProbe: 33,
       };
       const expected: UsageValues = {
@@ -84,7 +85,7 @@ describe('checkUsageCalc', () => {
       const params = {
         assertionCount: 1,
         probeCount: 0,
-        frequencySeconds: 300,
+        frequency: 300 * ONE_SECOND_IN_MS,
         seriesPerProbe: 33,
       };
       const expected: UsageValues = {

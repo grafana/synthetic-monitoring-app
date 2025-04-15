@@ -19,12 +19,12 @@ const tcpSettingsSchema: ZodType<TcpSettingsFormValues> = z.object({
   ),
 });
 
-const tcpSchemaValues = z.object({
-  target: hostPortTargetSchema,
-  checkType: z.literal(CheckType.TCP),
-  settings: z.object({
-    tcp: tcpSettingsSchema,
-  }),
-});
-
-export const tcpCheckSchema: ZodType<CheckFormValuesTcp> = baseCheckSchema.and(tcpSchemaValues);
+export const tcpCheckSchema: ZodType<CheckFormValuesTcp> = baseCheckSchema.and(
+  z.object({
+    target: hostPortTargetSchema,
+    checkType: z.literal(CheckType.TCP),
+    settings: z.object({
+      tcp: tcpSettingsSchema,
+    }),
+  })
+);

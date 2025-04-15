@@ -138,8 +138,9 @@ export const useAppInitializer = (redirectTo?: ROUTES) => {
       if (metricsStatus === DatasourceStatus.UidOnly || logsStatus === DatasourceStatus.UidOnly) {
         setDataSouceModalOpen(true);
       }
-    } catch (e: any) {
-      setError(e?.message ?? 'Invalid plugin configuration. Could not find logs and metrics datasources');
+    } catch (e: unknown) {
+      const err = e as SubmissionErrorWrapper;
+      setError(err?.message ?? 'Invalid plugin configuration. Could not find logs and metrics datasources');
     }
   };
 
@@ -183,7 +184,7 @@ export const useAppInitializer = (redirectTo?: ROUTES) => {
         window.location.href = `${window.location.origin}${getRoute(ROUTES.Home)}`;
       }
     } catch (e) {
-      const err = e as unknown as SubmissionErrorWrapper;
+      const err = e as SubmissionErrorWrapper;
       setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
       setLoading(false);
       reportError(err.data?.msg ?? err.data?.err ?? err, FaroEvent.INIT);

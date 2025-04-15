@@ -8,24 +8,14 @@
   "extends": ["@grafana/eslint-config"],
   "root": true,
   "rules": {
-    "react/prop-types": "off"
+    "react/prop-types": "off",
   },
   "overrides": [
     {
-      "plugins": ["deprecation"],
       "files": ["src/**/*.{ts,tsx}"],
-      "rules": {
-        "deprecation/deprecation": "warn"
-      },
       "parserOptions": {
-        "project": "./tsconfig.json"
-      }
+        "project": "./tsconfig.json",
+      },
     },
-    {
-      "files": ["./tests/**/*"],
-      "rules": {
-        "react-hooks/rules-of-hooks": "off"
-      }
-    }
-  ]
+  ],
 }

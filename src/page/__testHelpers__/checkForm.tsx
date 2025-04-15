@@ -99,3 +99,8 @@ export async function testCheck(user: UserEvent) {
   const testButton = await within(actionsBar).findByText('Test');
   await user.click(testButton);
 }
+
+export async function selectBasicFrequency(user: UserEvent, frequency: string) {
+  const frequencyRadio = await screen.findByRole('radio', { name: frequency });
+  await user.click(frequencyRadio);
+}

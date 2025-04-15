@@ -8,13 +8,13 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
     alertSensitivity: formValues.alertSensitivity ?? AlertSensitivity.None,
     basicMetricsOnly: !formValues.publishAdvancedMetrics,
     enabled: formValues.enabled,
-    frequency: formValues.frequency * 1000,
+    frequency: formValues.frequency,
     id: formValues.id,
     job: formValues.job,
     labels: formValues.labels,
     probes: formValues.probes,
     target: formValues.target,
-    timeout: formValues.timeout * 1000,
+    timeout: formValues.timeout,
   };
 }
 
