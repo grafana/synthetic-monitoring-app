@@ -3,7 +3,7 @@
   "version": "1.25.0",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
-    "analytics-report": "node --experimental-strip-types ./scripts/analytics/main.mts",
+    "analytics-events:generate": "node --experimental-strip-types ./scripts/analytics/main.mts",
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
     "build": "webpack -c webpack.config.ts --env production",
     "danger:ci": "yarn danger ci --dangerfile danger/dangerfile.ts",

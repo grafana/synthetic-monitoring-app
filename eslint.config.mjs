@@ -36,6 +36,18 @@ const config = defineConfig([
           message: 'Prefer named exports',
         },
       ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@grafana/runtime',
+              importNames: ['reportInteraction'],
+              message: 'Please use createSMEventFactory to create an event factory',
+            },
+          ],
+        },
+      ],
       ['simple-import-sort/imports']: [
         'error',
         {

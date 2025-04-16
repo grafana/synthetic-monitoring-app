@@ -5,7 +5,7 @@ import { Project } from 'ts-morph';
 import { formatEventsAsMarkdown } from './outputFormats/markdown.mts';
 import { findAnalyticsEvents } from './findAllEvents.mts';
 
-const CREATE_EVENT_FACTORY_PATH = path.resolve('src/features/tracking/createEventFactory.ts');
+const CREATE_EVENT_FACTORY_PATH = path.resolve('src/features/tracking/utils.ts');
 const SOURCE_FILE_PATTERNS = ['**/*.ts'];
 const OUTPUT_FORMAT = 'markdown';
 
@@ -20,7 +20,7 @@ if (OUTPUT_FORMAT === 'markdown') {
   const markdown = await formatEventsAsMarkdown(events);
   console.log(markdown);
 
-  await fs.writeFile('docs/analytics/analytics-report.md', markdown);
+  await fs.writeFile('docs/analytics/analytics-events.md', markdown);
 } else {
   console.log(JSON.stringify(events, null, 2));
 }

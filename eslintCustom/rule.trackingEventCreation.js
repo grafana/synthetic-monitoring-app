@@ -60,10 +60,20 @@ const trackingEventCreation = createRule({
           if (callee.type === AST_NODE_TYPES.Identifier && eventFactoryVariables.has(callee.name)) {
             // Check for comments
             const comments = context.sourceCode.getCommentsBefore(node);
+
             if (!comments || comments.length === 0) {
               return context.report({
                 node,
                 messageId: 'missingFunctionComment',
+              });
+            }
+
+            const jsDocComment = comments.find((comment) => comment.value.slice(0, 1) === '*');
+
+            if (!jsDocComment) {
+              return context.report({
+                node,
+                messageId: 'missingJsDocComment',
               });
             }
           }
@@ -94,10 +104,20 @@ const trackingEventCreation = createRule({
           const properties = node.body.body;
           properties.forEach((property) => {
             const comments = context.sourceCode.getCommentsBefore(property);
+
             if (!comments || comments.length === 0) {
               return context.report({
                 node: property,
                 messageId: 'missingPropertyComment',
+              });
+            }
+
+            const jsDocComment = comments.find((comment) => comment.value.slice(0, 1) === '*');
+
+            if (!jsDocComment) {
+              return context.report({
+                node: property,
+                messageId: 'missingJsDocComment',
               });
             }
           });
@@ -109,6 +129,7 @@ const trackingEventCreation = createRule({
         }
         // Check if types has comments
         const comments = context.sourceCode.getCommentsBefore(node);
+
         if (!comments || comments.length === 0) {
           return context.report({
             node,
@@ -129,6 +150,7 @@ const trackingEventCreation = createRule({
       missingFunctionComment: 'Event function needs to have a description of its purpose',
       missingPropertyComment: 'Event property needs to have a description of its purpose',
       interfaceMustExtend: 'Interface must extend `TrackingEvent`',
+      missingJsDocComment: 'Comment needs to be a jsDoc comment (begin comment with `*`)',
     },
     schema: [],
   },
