@@ -65,7 +65,7 @@ ${markdownPerEvent}
   const markdown = `
 # Analytics Events
 
-_This document is generated automatically and should not be edited directly. To see how to generate this document, see [docs/analytics/analytics.md](./analytics.md)._
+_This document is generated automatically and should not be edited directly. To see how to generate this document, see [docs/analytics/analytics.md](./analytics.md#generating-the-analytics-eventsmd-file)._
 
 This document contains all the analytics events that are defined in the project.
 
