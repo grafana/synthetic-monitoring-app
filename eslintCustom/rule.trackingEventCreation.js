@@ -26,13 +26,15 @@ const trackingEventCreation = createRule({
         if (!iscreateSMEventFactoryImported) {
           return;
         }
+
         // Track variables initialized with createSMEventFactory calls
         if (
           node.init?.type === AST_NODE_TYPES.CallExpression &&
           node.init.callee.type === AST_NODE_TYPES.Identifier &&
-          node.init.callee.name === createSMEventFactoryName
+          (node.init.callee.name === createSMEventFactoryName || eventFactoryVariables.has(node.init.callee.name))
         ) {
           const variableName = node.id.type === AST_NODE_TYPES.Identifier && node.id.name;
+
           if (variableName) {
             eventFactoryVariables.add(variableName);
           }

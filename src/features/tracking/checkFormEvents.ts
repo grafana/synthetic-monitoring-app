@@ -32,8 +32,8 @@ interface CheckFormEvent extends TrackingEventProps {
   checkType: CheckType;
 }
 
-/** Tracks when a regular check is successfully created. */
+/** Tracks when a check is successfully created. */
 export const trackCheckCreated = checkFormEvents<CheckFormEvent>('check_created');
 
-/** Tracks when a regular check is successfully updated. */
+/** Tracks when a check is successfully updated. */
 export const trackCheckUpdated = checkFormEvents<CheckFormEvent>('check_updated');

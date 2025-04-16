@@ -23,7 +23,7 @@ For each feature you wish to track, create a new file in the `src/features/track
 1. Use snake_case for the feature and event names
 2. Be clear when the event being tracked is a UI component interaction (such as `button_clicked`) or the result of a user action (such as `check_created` or `check_updated`)
 3. Avoid overly long feature and event names
-4. Do not use variables or any other high cardinality properties in the feature or event name. The eslint rule is configured to catch this for the feature name but not the event name (yet). High cardinality properties should be added as properties to the event object.
+4. Do not use variables or any other high cardinality properties in the feature or event name. The eslint rule is configured to catch this.
 
 ### Generating the analytics-events.md file
 

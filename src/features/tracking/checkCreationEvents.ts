@@ -14,7 +14,7 @@ export const trackAddNewCheckButtonClicked =
   checkCreationEvents<AddNewCheckButtonClicked>('add_new_check_button_clicked');
 
 interface AddCheckTypeGroupButtonClicked extends TrackingEventProps {
-  /** The type group of the check. */
+  /** The check group type of the check. */
   checkTypeGroup: CheckTypeGroup;
 }
 
@@ -24,7 +24,7 @@ export const trackAddCheckTypeGroupButtonClicked = checkCreationEvents<AddCheckT
 );
 
 interface AddCheckTypeButtonClicked extends TrackingEventProps {
-  /** The check type group of the check. */
+  /** The check group type of the check. */
   checkTypeGroup: CheckTypeGroup;
   /** The protocol of the check. */
   protocol: string;

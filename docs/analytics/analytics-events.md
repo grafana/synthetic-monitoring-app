@@ -24,9 +24,9 @@ Tracks when the Primary Button of the check type card is clicked.
 
 ##### Properties
 
-| name           | type                                                       | description                  |
-| -------------- | ---------------------------------------------------------- | ---------------------------- |
-| checkTypeGroup | `"api-endpoint" \| "multistep" \| "scripted" \| "browser"` | The type group of the check. |
+| name           | type                                                       | description                        |
+| -------------- | ---------------------------------------------------------- | ---------------------------------- |
+| checkTypeGroup | `"api-endpoint" \| "multistep" \| "scripted" \| "browser"` | The check group type of the check. |
 
 #### synthetic-monitoring_check_creation_add_check_type_button_clicked
 
@@ -36,7 +36,7 @@ Tracks when the 'protocol' buttons on the check type card are clicked.
 
 | name           | type                                                       | description                        |
 | -------------- | ---------------------------------------------------------- | ---------------------------------- |
-| checkTypeGroup | `"api-endpoint" \| "multistep" \| "scripted" \| "browser"` | The check type group of the check. |
+| checkTypeGroup | `"api-endpoint" \| "multistep" \| "scripted" \| "browser"` | The check group type of the check. |
 | protocol       | `string`                                                   | The protocol of the check.         |
 
 ### check_form
@@ -66,7 +66,7 @@ Tracks when an adhoc test is successfully created.
 
 #### synthetic-monitoring_check_form_check_created
 
-Tracks when a regular check is successfully created.
+Tracks when a check is successfully created.
 
 ##### Properties
 
@@ -76,7 +76,7 @@ Tracks when a regular check is successfully created.
 
 #### synthetic-monitoring_check_form_check_updated
 
-Tracks when a regular check is successfully updated.
+Tracks when a check is successfully updated.
 
 ##### Properties
 
