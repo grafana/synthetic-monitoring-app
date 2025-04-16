@@ -47,8 +47,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MULTI_HTTP}`,
-        onClick: () =>
-          trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.MultiStep, protocol: CheckType.MULTI_HTTP }),
+        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.MultiStep, protocol: `HTTP` }),
       },
     ],
   },
@@ -62,8 +61,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
         label: `HTTP`,
         featureToggle: FeatureName.ScriptedChecks,
         href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Scripted}`,
-        onClick: () =>
-          trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Scripted, protocol: CheckType.Scripted }),
+        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Scripted, protocol: `HTTP` }),
       },
       // todo: we don't support these yet
       // { label: `gRPC` },
@@ -96,8 +94,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
         label: `HTTP`,
         featureToggle: FeatureName.BrowserChecks,
         href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Browser}`,
-        onClick: () =>
-          trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Browser, protocol: CheckType.Browser }),
+        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Browser, protocol: `HTTP` }),
       },
     ],
   },
