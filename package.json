@@ -3,6 +3,7 @@
   "version": "1.25.0",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
+    "analytics-events:generate": "node --experimental-strip-types ./scripts/analytics/main.mts",
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
     "build": "webpack -c webpack.config.ts --env production",
     "danger:ci": "yarn danger ci --dangerfile danger/dangerfile.ts",
@@ -92,6 +93,7 @@
     "styled-components": "^6.1.0",
     "swc-loader": "^0.2.3",
     "terser-webpack-plugin": "^5.3.10",
+    "ts-morph": "^25.0.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tslib": "2.5.3",

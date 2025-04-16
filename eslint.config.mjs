@@ -5,6 +5,7 @@ import { FlatCompat } from '@eslint/eslintrc';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import tsParser from '@typescript-eslint/parser';
+import customPlugin from './eslintCustom/plugin.custom.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,8 +21,10 @@ const config = defineConfig([
     plugins: {
       'simple-import-sort': simpleImportSort,
       '@tanstack/eslint-plugin-query': queryPlugin,
+      'custom-plugin': customPlugin,
     },
     rules: {
+      'custom-plugin/tracking-event-creation': 'error',
       'no-console': ['error', { allow: [''] }],
       'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
       '@typescript-eslint/no-redeclare': ['error'],
@@ -31,6 +34,18 @@ const config = defineConfig([
         {
           selector: 'ExportDefaultDeclaration',
           message: 'Prefer named exports',
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@grafana/runtime',
+              importNames: ['reportInteraction'],
+              message: 'Please use createSMEventFactory to create an event factory',
+            },
+          ],
         },
       ],
       ['simple-import-sort/imports']: [
