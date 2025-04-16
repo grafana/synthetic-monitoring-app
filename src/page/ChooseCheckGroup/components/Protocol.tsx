@@ -8,7 +8,7 @@ import { Toggletip } from 'components/Toggletip';
 
 const BADGE_COLOR = `blue`;
 
-export const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
+export const Protocol = ({ href, label, tooltip, onClick }: ProtocolOption) => {
   const styles = useStyles2(getStyles);
 
   if (tooltip) {
@@ -26,7 +26,7 @@ export const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
 
   if (href) {
     return (
-      <TextLink className={styles.badgeLink} href={href} inline={false} color="primary">
+      <TextLink className={styles.badgeLink} href={href} inline={false} color="primary" onClick={onClick}>
         {label}
       </TextLink>
     );

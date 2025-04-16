@@ -4,22 +4,34 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 import { ZodType } from 'zod';
 
-import { CheckFormValues } from 'types';
+import { CheckFormValues, CheckType } from 'types';
+import { ANALYTICS_STEP_MAP } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 import { checkForErrors } from './formlayout.utils';
 import { FormSectionProps } from './FormSection';
 
 type FormSidebarProps = {
   activeSection: number;
+  checkState: 'new' | 'existing';
+  checkType: CheckType;
   onSectionClick: (index: number) => void;
   sections: Array<ReactElement<FormSectionProps>>;
   visitedSections: number[];
   schema: ZodType<FieldValues>;
 };
 
-export const FormSidebar = ({ activeSection, onSectionClick, sections, visitedSections, schema }: FormSidebarProps) => {
+export const FormSidebar = ({
+  activeSection,
+  checkState,
+  checkType,
+  onSectionClick,
+  sections,
+  visitedSections,
+  schema,
+}: FormSidebarProps) => {
   const styles = useStyles2(getStyles);
   const values = useFormContext<CheckFormValues>().watch();
 
@@ -42,6 +54,12 @@ export const FormSidebar = ({ activeSection, onSectionClick, sections, visitedSe
                 className={styles.button}
                 type="button"
                 onClick={() => {
+                  trackNavigateWizardForm({
+                    checkState,
+                    checkType,
+                    component: 'stepper',
+                    step: ANALYTICS_STEP_MAP[sectionIndex],
+                  });
                   onSectionClick(sectionIndex);
                 }}
               >

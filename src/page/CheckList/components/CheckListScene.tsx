@@ -206,6 +206,9 @@ function getCheckListScene(config: VizViewSceneAppConfig & CheckListSceneProps, 
       }),
       new SceneReactObject({
         component: AddNewCheckButton,
+        props: {
+          source: 'check-list',
+        },
       }),
     ],
     body: new SceneFlexLayout({

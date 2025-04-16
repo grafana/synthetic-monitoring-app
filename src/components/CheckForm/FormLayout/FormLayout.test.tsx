@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
 import { render } from 'test/render';
 
+import { CheckType } from 'types';
+
 import { FormLayout, type FormLayoutProps } from './FormLayout';
 
 describe(`FormLayout`, () => {
@@ -386,6 +388,8 @@ const TestForm = <T extends FieldValues>({
   return (
     <FormProvider {...formMethods}>
       <FormLayout
+        checkState="new"
+        checkType={CheckType.HTTP}
         actions={actions}
         disabled={disabled}
         onSubmit={formMethods.handleSubmit}

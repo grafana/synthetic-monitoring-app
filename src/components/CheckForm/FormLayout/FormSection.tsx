@@ -5,10 +5,9 @@ import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
+import { FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 import { CheckStatusInfo, type CheckStatusInfoProps } from 'components/CheckStatusInfo';
 import { NewStatusBadge } from 'components/NewStatusBadge';
-
-import { FORM_MAX_WIDTH } from './FormLayout';
 
 export type FormSectionProps = {
   activeSection: number;
