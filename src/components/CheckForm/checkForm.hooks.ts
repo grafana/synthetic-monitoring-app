@@ -1,6 +1,6 @@
 import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
-import { trackAdhocCreated, trackCheckCreated } from 'features/tracking/checkFormEvents';
+import { trackAdhocCreated, trackCheckCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
@@ -94,7 +94,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
           {
             onSuccess: (data) => {
               onSuccess(data, alerts);
-              trackCheckCreated({ checkType, checkState: 'existing' });
+              trackCheckUpdated({ checkType });
             },
             onError,
           }
@@ -104,7 +104,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
       return createCheck(newCheck, {
         onSuccess: (data) => {
           onSuccess(data, alerts);
-          trackCheckCreated({ checkType, checkState: 'new' });
+          trackCheckCreated({ checkType });
         },
         onError,
       });
