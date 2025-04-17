@@ -4,7 +4,7 @@ import { LoadingPlaceholder } from '@grafana/ui';
 
 import { DashboardSceneAppConfig } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { useChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -30,7 +30,7 @@ export const SceneHomepage = () => {
       pages: [
         new SceneAppPage({
           title: 'Home',
-          url: `${PLUGIN_URL_PATH}${ROUTES.Home}`,
+          url: `${PLUGIN_URL_PATH}${AppRoutes.Home}`,
           hideFromBreadcrumbs: true,
           getScene: getSummaryScene(config, checks, true),
         }),

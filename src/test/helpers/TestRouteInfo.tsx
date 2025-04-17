@@ -12,7 +12,7 @@ import { DataTestIds } from '../dataTestIds';
  *
  * @example
  *   expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
- *     generateRoutePath(ROUTES.ViewProbe, { id: probe.id })
+ *     generateRoutePath(AppRoutes.ViewProbe, { id: probe.id })
  *   );
  *
  * @constructor

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom-v5-compat';
 import { Alert, Button, LinkButton, Modal } from '@grafana/ui';
 
 import { CheckPageParams } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { useChecks } from 'data/useChecks';
@@ -36,7 +36,7 @@ const NotFoundModal = () => {
   const navigate = useNavigation();
 
   const handleOnDismiss = useCallback(() => {
-    navigate(ROUTES.Checks);
+    navigate(AppRoutes.Checks);
   }, [navigate]);
 
   return (
@@ -52,7 +52,7 @@ const NotFoundModal = () => {
         are seeing this message in error, please contact your administrator.
       </Alert>
       <Modal.ButtonRow>
-        <LinkButton href={getRoute(ROUTES.Checks)}>Go to check list</LinkButton>
+        <LinkButton href={getRoute(AppRoutes.Checks)}>Go to check list</LinkButton>
       </Modal.ButtonRow>
     </Modal>
   );
@@ -68,7 +68,7 @@ const ErrorModal = ({ error, onClick }: { error: Error; onClick: () => void }) =
         </div>
       </Alert>
       <Modal.ButtonRow>
-        <LinkButton href={getRoute(ROUTES.Checks)}>Go to check list</LinkButton>
+        <LinkButton href={getRoute(AppRoutes.Checks)}>Go to check list</LinkButton>
         <Button onClick={onClick}>Retry</Button>
       </Modal.ButtonRow>
     </Modal>

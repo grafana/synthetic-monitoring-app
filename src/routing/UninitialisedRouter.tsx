@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { useMeta } from 'hooks/useMeta';
 import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
@@ -23,18 +23,18 @@ export const UninitialisedRouter = () => {
 
   return (
     <Routes>
-      <Route path={ROUTES.Home} element={<WelcomePage />} />
-      <Route path={ROUTES.Scene} element={<WelcomePage />} />
-      <Route path={ROUTES.Checks} element={<ChecksWelcomePage />} />
-      <Route path={ROUTES.Probes} element={<ProbesWelcomePage />} />
-      <Route path={ROUTES.Alerts} element={<AlertingWelcomePage />} />
-      <Route path={ROUTES.Config} Component={ConfigPageLayout}>
+      <Route path={AppRoutes.Home} element={<WelcomePage />} />
+      <Route path={AppRoutes.Scene} element={<WelcomePage />} />
+      <Route path={AppRoutes.Checks} element={<ChecksWelcomePage />} />
+      <Route path={AppRoutes.Probes} element={<ProbesWelcomePage />} />
+      <Route path={AppRoutes.Alerts} element={<AlertingWelcomePage />} />
+      <Route path={AppRoutes.Config} Component={ConfigPageLayout}>
         <Route index element={<UninitializedTab />} />
-        <Route path="*" element={<UninitializedTab />} />
+        <Route path="*" element={<Navigate to={AppRoutes.Home} />} />
       </Route>
 
       {/* TODO: Create 404 instead of navigating to home(?) */}
-      <Route path="*" element={<Navigate to={ROUTES.Home} />} />
+      <Route path="*" element={<Navigate to={AppRoutes.Home} />} />
     </Routes>
   );
 };
