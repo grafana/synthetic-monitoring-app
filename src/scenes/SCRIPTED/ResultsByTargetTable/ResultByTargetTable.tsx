@@ -19,7 +19,7 @@ import { Table } from 'components/Table';
 import { getTablePanelStyles } from '../getTablePanelStyles';
 import { getQueryRunner } from './resultsByTargetTableQueries';
 import { ResultsByTargetTableRow } from './ResultsByTargetTableRow';
-import { findValueByName, getValueFieldName, RESULTS_BY_TARGET_TABLE_REF_ID } from './utils';
+import { findValueByName, getValueFieldName, ResultsByTargetTableRefId } from './utils';
 
 interface ResultsByTargetTableState extends SceneObjectState {
   metrics: DataSourceRef;
@@ -116,12 +116,10 @@ const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByT
       return [];
     }
     const expectedResponseSeries = data.series.find(
-      (series) => series.refId === RESULTS_BY_TARGET_TABLE_REF_ID.EXPECTED_RESPONSE
+      (series) => series.refId === ResultsByTargetTableRefId.EXPECTED_RESPONSE
     );
-    const latencySeries = data.series.find((series) => series.refId === RESULTS_BY_TARGET_TABLE_REF_ID.LATENCY);
-    const successRateSeries = data.series.find(
-      (series) => series.refId === RESULTS_BY_TARGET_TABLE_REF_ID.SUCCESS_RATE
-    );
+    const latencySeries = data.series.find((series) => series.refId === ResultsByTargetTableRefId.LATENCY);
+    const successRateSeries = data.series.find((series) => series.refId === ResultsByTargetTableRefId.SUCCESS_RATE);
     if (!successRateSeries || !expectedResponseSeries || !latencySeries) {
       return [];
     }
@@ -140,7 +138,7 @@ const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByT
             findValueByName(
               name,
               method,
-              getValueFieldName(RESULTS_BY_TARGET_TABLE_REF_ID.SUCCESS_RATE),
+              getValueFieldName(ResultsByTargetTableRefId.SUCCESS_RATE),
               successRateSeries?.fields ?? []
             )) *
           100;
@@ -148,13 +146,13 @@ const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByT
           findValueByName(
             name,
             method,
-            getValueFieldName(RESULTS_BY_TARGET_TABLE_REF_ID.EXPECTED_RESPONSE),
+            getValueFieldName(ResultsByTargetTableRefId.EXPECTED_RESPONSE),
             expectedResponseSeries?.fields ?? []
           ) * 100;
         const latency = findValueByName(
           name,
           method,
-          getValueFieldName(RESULTS_BY_TARGET_TABLE_REF_ID.LATENCY),
+          getValueFieldName(ResultsByTargetTableRefId.LATENCY),
           latencySeries?.fields ?? []
         );
 

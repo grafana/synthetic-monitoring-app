@@ -3,7 +3,7 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { CheckType } from 'types';
 
-import { RESULTS_BY_TARGET_TABLE_REF_ID } from './utils';
+import { ResultsByTargetTableRefId } from './utils';
 
 export function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
   const label = checkType === CheckType.Scripted ? 'name' : 'url';
@@ -26,7 +26,7 @@ export function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         instant: true,
         legendFormat: '__auto',
         range: false,
-        refId: RESULTS_BY_TARGET_TABLE_REF_ID.SUCCESS_RATE,
+        refId: ResultsByTargetTableRefId.SUCCESS_RATE,
       },
       {
         datasource: metrics,
@@ -44,7 +44,7 @@ export function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         instant: true,
         legendFormat: '__auto',
         range: false,
-        refId: RESULTS_BY_TARGET_TABLE_REF_ID.EXPECTED_RESPONSE,
+        refId: ResultsByTargetTableRefId.EXPECTED_RESPONSE,
       },
       {
         datasource: metrics,
@@ -58,7 +58,7 @@ export function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
           )`,
         format: 'table',
         instant: true,
-        refId: RESULTS_BY_TARGET_TABLE_REF_ID.LATENCY,
+        refId: ResultsByTargetTableRefId.LATENCY,
       },
     ],
   });
