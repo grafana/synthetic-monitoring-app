@@ -83,11 +83,9 @@ export const CheckListHeader = ({
     <>
       <div className={styles.row}>
         <div>
-          {viewType !== CheckListViewType.Viz && (
-            <div>
-              Currently showing {currentPageChecks.length} of {checks.length} total checks
-            </div>
-          )}
+          <div>
+            Currently showing {currentPageChecks.length} of {checks.length} total checks
+          </div>
         </div>
         <div className={styles.stack}>
           <CheckFilters
