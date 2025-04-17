@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { IconName } from '@grafana/data';
 
 import { CheckType, CheckTypeGroup, FeatureName } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
 import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions';
@@ -31,7 +31,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `heart-rate`,
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
       label: option.label,
-      href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
+      href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
       featureToggle: option.featureToggle,
     })),
   },
@@ -43,7 +43,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     protocols: [
       {
         label: `HTTP`,
-        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MULTI_HTTP}`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MULTI_HTTP}`,
       },
     ],
   },
@@ -56,7 +56,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         featureToggle: FeatureName.ScriptedChecks,
-        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Scripted}`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Scripted}`,
       },
       // todo: we don't support these yet
       // { label: `gRPC` },
@@ -88,7 +88,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         featureToggle: FeatureName.BrowserChecks,
-        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Browser}`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Browser}`,
       },
     ],
   },

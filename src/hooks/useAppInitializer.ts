@@ -6,7 +6,7 @@ import { isNumber } from 'lodash';
 import { SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 
@@ -85,7 +85,7 @@ function ensureNameAndUidMatch(
 }
 
 // TODO: Allow for the `redirectTo` to be a string (so that we can implement "return to" behaviour after initialization)
-export const useAppInitializer = (redirectTo?: ROUTES) => {
+export const useAppInitializer = (redirectTo?: AppRoutes) => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [datasourceModalOpen, setDataSouceModalOpen] = useState<boolean>(false);
@@ -181,7 +181,7 @@ export const useAppInitializer = (redirectTo?: ROUTES) => {
         window.location.href = `${window.location.origin}${getRoute(redirectTo)}`;
       } else {
         // force reload so that GrafanaBootConfig is updated.
-        window.location.href = `${window.location.origin}${getRoute(ROUTES.Home)}`;
+        window.location.href = `${window.location.origin}${getRoute(AppRoutes.Home)}`;
       }
     } catch (e) {
       const err = e as SubmissionErrorWrapper;

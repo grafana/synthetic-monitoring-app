@@ -2,7 +2,7 @@ import React from 'react';
 import { Alert, LinkButton, Stack, TextLink } from '@grafana/ui';
 import { useLocalStorage } from 'usehooks-ts';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
 export const PrivateProbesAlert = () => {
@@ -31,7 +31,7 @@ export const PrivateProbesAlert = () => {
           </TextLink>{' '}
           and are only accessible to you.
         </p>
-        <LinkButton size="sm" href={`${getRoute(ROUTES.NewProbe)}`}>
+        <LinkButton size="sm" href={`${getRoute(AppRoutes.NewProbe)}`}>
           Set up a Private Probe
         </LinkButton>
       </Stack>

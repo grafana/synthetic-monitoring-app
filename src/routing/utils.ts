@@ -3,7 +3,7 @@ import { PathParam } from '@remix-run/router/utils';
 
 import { CheckType, CheckTypeGroup } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 
 function checkTypeDirectFilter({ value, group }: { value: CheckType; group: CheckTypeGroup }) {
@@ -26,7 +26,7 @@ export function getNewCheckTypeRedirects() {
   });
 }
 
-export function generateRoutePath<Path extends ROUTES>(
+export function generateRoutePath<Path extends AppRoutes>(
   route: Path,
   params: {
     [key in PathParam<Path>]: string | null | number;
@@ -36,6 +36,6 @@ export function generateRoutePath<Path extends ROUTES>(
   return `${generatePath(getRoute(route), params)}`;
 }
 
-export function getRoute(route: ROUTES) {
+export function getRoute(route: AppRoutes) {
   return `${PLUGIN_URL_PATH}${route}`;
 }

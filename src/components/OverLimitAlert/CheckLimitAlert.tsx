@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useLimits } from 'hooks/useLimits';
 import { Ul } from 'components/Ul';
@@ -21,7 +21,7 @@ export const CheckLimitAlert = () => {
           </TextLink>
         </li>
         <li>
-          Optimize usage by eliminating unnecessary <TextLink href={getRoute(ROUTES.Checks)}>checks</TextLink>
+          Optimize usage by eliminating unnecessary <TextLink href={getRoute(AppRoutes.Checks)}>checks</TextLink>
         </li>
       </Ul>
     </AlertContainer>

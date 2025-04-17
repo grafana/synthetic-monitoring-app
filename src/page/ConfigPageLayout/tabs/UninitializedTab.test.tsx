@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 
 import { AppInitializer } from '../../../components/AppInitializer';
 import { DataTestIds } from '../../../test/dataTestIds';
@@ -12,7 +12,7 @@ jest.mock('../../../components/AppInitializer', () => {
   return {
     AppInitializer: jest
       .fn()
-      .mockImplementation(({ buttonText, redirectTo }: { buttonText: string; redirectTo?: ROUTES }) => (
+      .mockImplementation(({ buttonText, redirectTo }: { buttonText: string; redirectTo?: AppRoutes }) => (
         <div data-testid={DataTestIds.APP_INITIALIZER}>
           <button>{buttonText}</button>
         </div>
@@ -41,6 +41,6 @@ describe('<UninitializedTab />', () => {
 
   it('should use <AppInitializer />', async () => {
     await renderUninitializedTab();
-    expect(AppInitializer).toHaveBeenCalledWith({ buttonText: 'Initialize plugin', redirectTo: ROUTES.Config }, {});
+    expect(AppInitializer).toHaveBeenCalledWith({ buttonText: 'Initialize plugin', redirectTo: AppRoutes.Config }, {});
   });
 });

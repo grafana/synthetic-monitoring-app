@@ -3,7 +3,7 @@ import { SceneReactObject } from '@grafana/scenes';
 import { LinkButton } from '@grafana/ui';
 
 import { Check } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 
@@ -13,7 +13,7 @@ interface Props {
 
 export function EditCheckButton({ id }: Props) {
   const { canWriteChecks } = getUserPermissions();
-  const url = id ? `${generateRoutePath(ROUTES.EditCheck, { id })}` : undefined;
+  const url = id ? `${generateRoutePath(AppRoutes.EditCheck, { id })}` : undefined;
 
   const disabled = !url || !canWriteChecks;
 

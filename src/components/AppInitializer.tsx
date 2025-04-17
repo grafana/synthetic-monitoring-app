@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { hasGlobalPermission } from 'utils';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getUserPermissions } from 'data/permissions';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
@@ -13,7 +13,7 @@ import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal'
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 interface Props {
-  redirectTo?: ROUTES;
+  redirectTo?: AppRoutes;
   buttonText: string;
 }
 

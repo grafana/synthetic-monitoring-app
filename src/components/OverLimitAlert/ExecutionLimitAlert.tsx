@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { FREE_EXECUTION_LIMIT } from 'hooks/useAtHgExecutionLimit';
 import { Ul } from 'components/Ul';
@@ -21,7 +21,7 @@ export const ExecutionLimitAlert = () => {
           </TextLink>
         </li>
         <li>
-          Optimize usage by eliminating unnecessary <TextLink href={getRoute(ROUTES.Checks)}>checks</TextLink> and
+          Optimize usage by eliminating unnecessary <TextLink href={getRoute(AppRoutes.Checks)}>checks</TextLink> and
           decreasing execution frequency or reducing probes on existing checks
         </li>
       </Ul>

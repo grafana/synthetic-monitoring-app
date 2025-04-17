@@ -4,15 +4,15 @@ import { NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 
 import { FeatureName } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 
 function getConfigTabUrl(tab = '/') {
-  return `${getRoute(ROUTES.Config)}/${tab}`.replace(/\/+/g, '/');
+  return `${getRoute(AppRoutes.Config)}/${tab}`.replace(/\/+/g, '/');
 }
 
-function useActiveTab(route: ROUTES) {
+function useActiveTab(route: AppRoutes) {
   const fullRoute = getRoute(route);
   const location = useLocation();
 
@@ -26,7 +26,7 @@ function useActiveTab(route: ROUTES) {
 }
 
 export function ConfigPageLayout() {
-  const activeTab = useActiveTab(ROUTES.Config);
+  const activeTab = useActiveTab(AppRoutes.Config);
   const { isFeatureEnabled } = useFeatureFlagContext();
 
   const pageNav: NavModelItem = useMemo(() => {

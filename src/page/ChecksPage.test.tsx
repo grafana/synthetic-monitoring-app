@@ -13,7 +13,7 @@ import { server } from 'test/server';
 import { AlertSensitivity, Check, CheckTypeGroup } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
 import { FeatureFlagProvider } from '../components/FeatureFlagProvider';
@@ -50,8 +50,8 @@ function RouteWrapper({ children, meta, history }: ComponentWrapperProps) {
 const renderChecksPage = async () => {
   const res = render(<InitialisedRouter />, {
     wrapper: RouteWrapper,
-    path: generateRoutePath(ROUTES.Checks),
-    route: ROUTES.Checks,
+    path: generateRoutePath(AppRoutes.Checks),
+    route: AppRoutes.Checks,
   });
 
   await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument(), { timeout: 10000 });

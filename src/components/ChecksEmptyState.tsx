@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, EmptyState, TextLink } from '@grafana/ui';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { useNavigation } from 'hooks/useNavigation';
 
 interface ChecksEmptyStatePageProps {
@@ -11,7 +11,7 @@ interface ChecksEmptyStatePageProps {
 
 export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
   const navigate = useNavigation();
-  const handleCallToAction = () => navigate(ROUTES.ChooseCheckGroup);
+  const handleCallToAction = () => navigate(AppRoutes.ChooseCheckGroup);
 
   return (
     <div className={className} data-testid={DataTestIds.CHECKS_EMPTY_STATE}>

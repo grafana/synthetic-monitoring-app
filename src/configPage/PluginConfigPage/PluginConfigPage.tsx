@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { ProvisioningJsonData } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import type { SMDataSource } from 'datasource/DataSource';
 import { usePluginPermissionCanWrite } from 'hooks/usePluginPermissionsCanWrite';
@@ -34,8 +34,8 @@ export function PluginConfigPage({
   plugin,
 }: Omit<PluginConfigPageProps<AppPluginMeta<ProvisioningJsonData>>, 'query'>) {
   const isEnabled = plugin.meta.enabled;
-  const appConfigUrl = getRoute(ROUTES.Config);
-  const appHomeUrl = getRoute(ROUTES.Home);
+  const appConfigUrl = getRoute(AppRoutes.Config);
+  const appHomeUrl = getRoute(AppRoutes.Home);
   const [isEnabling, setIsEnabling] = useState(false);
 
   const canWritePlugin = usePluginPermissionCanWrite();
@@ -80,8 +80,8 @@ export function PluginConfigPage({
 
       {isEnabled && (
         <p>
-          For app configuration and settings, go to the <TextLink href={getRoute(ROUTES.Config)}>config page</TextLink>{' '}
-          for the Synthetic Monitoring app
+          For app configuration and settings, go to the{' '}
+          <TextLink href={getRoute(AppRoutes.Config)}>config page</TextLink> for the Synthetic Monitoring app
         </p>
       )}
 

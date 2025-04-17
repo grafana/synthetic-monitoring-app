@@ -4,13 +4,13 @@ import { PluginPage } from '@grafana/runtime';
 import { Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { AppInitializer } from 'components/AppInitializer';
 import { Card } from 'components/Card';
 
 interface Props {
   children: React.ReactNode;
-  redirectTo?: ROUTES;
+  redirectTo?: AppRoutes;
   buttonText?: string;
 }
 

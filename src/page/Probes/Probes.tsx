@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { ExtendedProbe } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useExtendedProbes } from 'data/useProbes';
@@ -39,7 +39,7 @@ const Actions = () => {
     return null;
   }
 
-  return <LinkButton href={getRoute(ROUTES.NewProbe)}>Add Private Probe</LinkButton>;
+  return <LinkButton href={getRoute(AppRoutes.NewProbe)}>Add Private Probe</LinkButton>;
 };
 
 const ProbesContent = () => {

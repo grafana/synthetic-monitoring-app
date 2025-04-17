@@ -9,7 +9,7 @@ import { render } from 'test/render';
 import { probeToExtendedProbe, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
 import { type ExtendedProbe } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
 import { ProbeCard } from './ProbeCard';
@@ -122,7 +122,7 @@ it('handles public probe click', async () => {
   await user.click(screen.getByText(probe.displayName));
 
   expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
-    generateRoutePath(ROUTES.ViewProbe, { id: probe.id! })
+    generateRoutePath(AppRoutes.ViewProbe, { id: probe.id! })
   );
 });
 
@@ -133,7 +133,7 @@ it('handles private probe click', async () => {
   await user.click(screen.getByText(probe.displayName));
 
   expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
-    generateRoutePath(ROUTES.EditProbe, { id: probe.id! })
+    generateRoutePath(AppRoutes.EditProbe, { id: probe.id! })
   );
 });
 
@@ -153,7 +153,7 @@ it.each<[ExtendedProbe, string]>([
     expect(usageLink).toHaveTextContent(expectedText);
     await user.click(usageLink);
     expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
-      generateRoutePath(ROUTES.Checks)
+      generateRoutePath(AppRoutes.Checks)
     );
     expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_SEARCH)).toHaveTextContent(`?probes=${probe.name}`);
   }

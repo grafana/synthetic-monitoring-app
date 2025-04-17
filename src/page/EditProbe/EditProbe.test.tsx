@@ -8,7 +8,7 @@ import { probeToMetadataProbe } from 'test/utils';
 
 import { Probe } from 'types';
 import { formatDate } from 'utils';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 
 import { DataTestIds } from '../../test/dataTestIds';
@@ -16,8 +16,8 @@ import { EditProbe } from './EditProbe';
 
 const renderEditProbe = (probe: Probe) => {
   return render(<EditProbe />, {
-    route: `${getRoute(ROUTES.EditProbe)}/:id`,
-    path: `${getRoute(ROUTES.EditProbe)}/${probe.id}`,
+    route: `${getRoute(AppRoutes.EditProbe)}/:id`,
+    path: `${getRoute(AppRoutes.EditProbe)}/${probe.id}`,
   });
 };
 
@@ -59,7 +59,7 @@ describe(`Private probes`, () => {
     await user.click(saveButton!);
 
     expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
-      generateRoutePath(ROUTES.Probes)
+      generateRoutePath(AppRoutes.Probes)
     );
 
     const { body } = await read();

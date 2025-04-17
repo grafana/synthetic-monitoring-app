@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextLink } from '@grafana/ui';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useLimits } from 'hooks/useLimits';
 import { Ul } from 'components/Ul';
@@ -23,7 +23,7 @@ export const ScriptedCheckLimitAlert = () => {
         <li>
           {/* TODO: improve the filter so we can link to both multiHttp and Scripted checks */}
           Optimize usage by eliminating unnecessary{' '}
-          <TextLink href={getRoute(ROUTES.Checks)}>Scripted and Multi Step checks</TextLink>
+          <TextLink href={getRoute(AppRoutes.Checks)}>Scripted and Multi Step checks</TextLink>
         </li>
       </Ul>
     </AlertContainer>

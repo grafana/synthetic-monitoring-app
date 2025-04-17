@@ -8,7 +8,7 @@ import { server } from 'test/server';
 
 import { Check, CheckType } from 'types';
 import { getCheckTypeGroup } from 'utils';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
@@ -32,8 +32,8 @@ export async function renderNewForm(checkType: CheckType) {
   const checkTypeGroup = getCheckTypeGroup(checkType);
 
   const res = render(<NewCheck />, {
-    path: `${generateRoutePath(ROUTES.NewCheck)}/${checkTypeGroup}?checkType=${checkType}`,
-    route: `${getRoute(ROUTES.NewCheck)}/:checkTypeGroup`,
+    path: `${generateRoutePath(AppRoutes.NewCheck)}/${checkTypeGroup}?checkType=${checkType}`,
+    route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
   });
 
   await waitFor(async () => await screen.findByTestId(DataTestIds.PAGE_READY), { timeout: 10000 });
@@ -68,8 +68,8 @@ export async function renderEditForm(id: Check['id']) {
   }
 
   const res = render(<EditCheck />, {
-    route: ROUTES.EditCheck,
-    path: generateRoutePath(ROUTES.EditCheck, { id: id! }),
+    route: AppRoutes.EditCheck,
+    path: generateRoutePath(AppRoutes.EditCheck, { id: id! }),
   });
 
   await waitFor(async () => screen.getByTestId('page-ready'), { timeout: 10000 });

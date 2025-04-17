@@ -4,7 +4,7 @@ import { Alert, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FaroEvent, reportEvent } from 'faro';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
@@ -53,7 +53,7 @@ export function TerraformTab() {
         </div>
 
         <div>
-          <TextLink href={`${generateRoutePath(ROUTES.Config)}/access-tokens`}>
+          <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
             Synthetic Monitoring access token
           </TextLink>
         </div>
@@ -77,7 +77,7 @@ export function TerraformTab() {
             <strong className={styles.codeLink}>{'<GRAFANA_SERVICE_TOKEN>'}</strong>
           </TextLink>{' '}
           and{' '}
-          <TextLink href={`${generateRoutePath(ROUTES.Config)}/access-tokens`}>
+          <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
             <strong className={styles.codeLink}>{'<SM_ACCESS_TOKEN>'}</strong>
           </TextLink>
           , with their respective value.
@@ -100,7 +100,7 @@ export function TerraformTab() {
         <ConfigContent.Section title="Import custom probes into Terraform">
           <Text element="span" color="secondary">
             Replace{' '}
-            <TextLink href={`${generateRoutePath(ROUTES.Config)}/access-tokens`}>
+            <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
               <strong className={styles.codeLink}>{'<PROBE_ACCESS_TOKEN>'}</strong>
             </TextLink>{' '}
             with each probe&apos;s access token.

@@ -4,7 +4,7 @@ import { PluginPage } from '@grafana/runtime';
 import { LinkButton, TextLink } from '@grafana/ui';
 
 import { ExtendedProbe, type Probe, type ProbePageParams } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useExtendedProbe, useUpdateProbe } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
@@ -27,14 +27,14 @@ export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
   useEffect(() => {
     // This is mainly here to handle legacy links redirect
     if (probe && !canWriteProbes && !forceViewMode) {
-      navigate(generateRoutePath(ROUTES.ViewProbe, { id: probe.id! }), { replace: true });
+      navigate(generateRoutePath(AppRoutes.ViewProbe, { id: probe.id! }), { replace: true });
     }
   }, [canWriteProbes, navigate, probe, forceViewMode]);
   if (errorMessage) {
     return (
       <PluginPageNotFound breadcrumb="Probe not found">
         Unable to find the probe you are looking for. Try the{' '}
-        <TextLink href={getRoute(ROUTES.Probes)}>probe listing</TextLink> page.
+        <TextLink href={getRoute(AppRoutes.Probes)}>probe listing</TextLink> page.
       </PluginPageNotFound>
     );
   }
@@ -46,7 +46,7 @@ export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
         canWriteProbes &&
         probe &&
         forceViewMode && (
-          <LinkButton variant="secondary" icon="pen" href={generateRoutePath(ROUTES.EditProbe, { id: probe.id! })}>
+          <LinkButton variant="secondary" icon="pen" href={generateRoutePath(AppRoutes.EditProbe, { id: probe.id! })}>
             Edit probe
           </LinkButton>
         )
@@ -96,7 +96,7 @@ const EditProbeContent = ({ probe, forceViewMode }: { forceViewMode?: boolean; p
   const [probeToken, setProbeToken] = useState(``);
 
   const onUpdateSuccess = useCallback(() => {
-    navigate(ROUTES.Probes);
+    navigate(AppRoutes.Probes);
   }, [navigate]);
 
   const { mutate: onUpdate, error: updateError } = useUpdateProbe({ onSuccess: onUpdateSuccess });
@@ -116,7 +116,7 @@ const EditProbeContent = ({ probe, forceViewMode }: { forceViewMode?: boolean; p
   const errorInfo = getErrorInfo(updateError);
 
   const handleOnDeleteSuccess = useCallback(() => {
-    navigate(ROUTES.Probes);
+    navigate(AppRoutes.Probes);
   }, [navigate]);
 
   const actions = useMemo(
