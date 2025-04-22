@@ -1,31 +1,17 @@
 import React, { Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Field, Input, Label, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
+import type { AlertLabelsProps } from './AlertLabels.types';
 import { AlertFormValues } from 'types';
 import { validateLabelName, validateLabelValue } from 'validation';
+import { SubCollapse } from 'components/SubCollapse';
 
-import { SubCollapse } from './SubCollapse';
+import { getStyles } from './AlertLabels.styles';
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  grid: css`
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    grid-column-gap: ${theme.spacing(2)};
-    grid-row-gap: ${theme.spacing(1)};
-  `,
-  addButton: css`
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  helpText: css`
-    font-size: ${theme.typography.bodySmall.fontSize};
-  `,
-});
 const NAME = 'labels';
 
-export const AlertLabels = ({ canEdit }: { canEdit: boolean }) => {
+export const AlertLabels = ({ canEdit }: AlertLabelsProps) => {
   const styles = useStyles2(getStyles);
   const {
     control,
