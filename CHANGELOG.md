@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.26.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.25.0...v1.26.0) (2025-04-22)
+
+
+### Features
+
+* set up bundle analyzer and dangerJS workflow ([#1112](https://github.com/grafana/synthetic-monitoring-app/issues/1112)) ([c8b86af](https://github.com/grafana/synthetic-monitoring-app/commit/c8b86af07c37ad2e655f2b7619355cf67045493d))
+
+
+### Miscellaneous Chores
+
+* bump prismjs from 1.29.0 to 1.30.0 ([#1115](https://github.com/grafana/synthetic-monitoring-app/issues/1115)) ([c7233cb](https://github.com/grafana/synthetic-monitoring-app/commit/c7233cb0c79d4fcf4f1734fcca839661a4d80f6a))
+* fix release-please commit message format ([#1116](https://github.com/grafana/synthetic-monitoring-app/issues/1116)) ([2890e7e](https://github.com/grafana/synthetic-monitoring-app/commit/2890e7eff96b2312839a44656bfd7831f2aa43e9))
+* standardize enum naming to PascalCase ([#1121](https://github.com/grafana/synthetic-monitoring-app/issues/1121)) ([e6b522e](https://github.com/grafana/synthetic-monitoring-app/commit/e6b522e52db13b5c435bfa84428e4b00b48f045e))
+* upgraded eslint dependencies ([#1118](https://github.com/grafana/synthetic-monitoring-app/issues/1118)) ([307a8f7](https://github.com/grafana/synthetic-monitoring-app/commit/307a8f7a4cf672501772b5b6e745ff9fb4e12023))
+
 ## [1.25.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.24.0...v1.25.0) (2025-04-11)
 
 
