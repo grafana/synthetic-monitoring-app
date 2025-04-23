@@ -1,6 +1,8 @@
+import { createFrequencySchema } from 'schemas/general/Frequency';
 import { headersSchema } from 'schemas/general/Header';
 import { httpTargetSchema } from 'schemas/general/HttpTarget';
 import { queryParamsSchema } from 'schemas/general/QueryParam';
+import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import {
@@ -11,6 +13,7 @@ import {
   MultiHttpEntryFormValues,
   MultiHttpSettingsFormValues,
 } from 'types';
+import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 import {
   Assertion,
   AssertionConditionVariant,
@@ -24,6 +27,10 @@ import {
 } from 'components/MultiHttp/MultiHttpTypes';
 
 import { baseCheckSchema } from './BaseCheckSchema';
+
+export const MIN_FREQUENCY_MULTI_HTTP = ONE_MINUTE_IN_MS;
+export const MIN_TIMEOUT_MULTI_HTTP = ONE_SECOND_IN_MS * 5;
+export const MAX_TIMEOUT_MULTI_HTTP = ONE_MINUTE_IN_MS * 3;
 
 const multiHttpRequestSchema: ZodType<RequestProps> = z.object({
   method: z.nativeEnum(HttpMethod),
@@ -106,11 +113,18 @@ const multiHttpSettingsSchema: ZodType<MultiHttpSettingsFormValues> = z.object({
   entries: z.array(multiHttpEntriesSchema),
 });
 
-const multiHttpSchemaValues = z.object({
-  checkType: z.literal(CheckType.MULTI_HTTP),
-  settings: z.object({
-    multihttp: multiHttpSettingsSchema,
-  }),
-});
-
-export const multiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = baseCheckSchema.and(multiHttpSchemaValues);
+export const multiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = baseCheckSchema
+  .omit({
+    frequency: true,
+    timeout: true,
+  })
+  .and(
+    z.object({
+      checkType: z.literal(CheckType.MULTI_HTTP),
+      settings: z.object({
+        multihttp: multiHttpSettingsSchema,
+      }),
+      frequency: createFrequencySchema(MIN_FREQUENCY_MULTI_HTTP),
+      timeout: createTimeoutSchema(MIN_TIMEOUT_MULTI_HTTP, MAX_TIMEOUT_MULTI_HTTP),
+    })
+  );

@@ -10,12 +10,12 @@ const pingSettingsSchema: ZodType<PingSettingsFormValues> = z.object({
   dontFragment: z.boolean(),
 });
 
-const pingSchemaValues = z.object({
-  target: hostNameTargetSchema,
-  checkType: z.literal(CheckType.PING),
-  settings: z.object({
-    ping: pingSettingsSchema,
-  }),
-});
-
-export const pingCheckSchema: ZodType<CheckFormValuesPing> = baseCheckSchema.and(pingSchemaValues);
+export const pingCheckSchema: ZodType<CheckFormValuesPing> = baseCheckSchema.and(
+  z.object({
+    target: hostNameTargetSchema,
+    checkType: z.literal(CheckType.PING),
+    settings: z.object({
+      ping: pingSettingsSchema,
+    }),
+  })
+);

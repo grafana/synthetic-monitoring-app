@@ -4,7 +4,7 @@ import { PopoverContent, Text, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import pluralize from 'pluralize';
 
-import { secondsToDuration } from 'utils';
+import { formatDuration } from 'utils';
 
 interface TooltipWrapperProps {
   content: PopoverContent;
@@ -33,7 +33,7 @@ export const AlertEvaluationInfo: React.FC<AlertEvaluationInfoProps> = ({
   probesNumber,
   period,
 }) => {
-  const frequency = secondsToDuration(checkFrequency);
+  const frequency = formatDuration(checkFrequency);
   const tooltipData = [
     {
       label: `frequency`,

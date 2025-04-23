@@ -9,7 +9,6 @@ import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/
 import { TCPRequest } from 'components/CheckEditor/FormComponents/TCPRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 const TCP_REQUEST_FIELDS: TCPRequestFields = {
@@ -72,7 +71,7 @@ export const TCPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValu
     Component: (
       <>
         <TCPCheckQueryAndResponse />
-        <Timeout min={CheckTimeoutValues[CheckType.TCP].min} max={CheckTimeoutValues[CheckType.TCP].max} />
+        <Timeout checkType={CheckType.TCP} />
       </>
     ),
   },

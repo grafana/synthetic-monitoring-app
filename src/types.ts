@@ -775,7 +775,7 @@ export interface CalculateUsageValues {
   assertionCount: number;
   basicMetricsOnly: boolean;
   checkType: CheckType;
-  frequencySeconds: number;
+  frequency: number;
   isSSL: boolean;
   probeCount: number;
 }

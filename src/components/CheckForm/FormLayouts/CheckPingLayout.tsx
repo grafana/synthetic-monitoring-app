@@ -8,7 +8,6 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { PingRequest } from 'components/CheckEditor/FormComponents/PingRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 const PING_FIELDS: PingRequestFields = {
@@ -50,7 +49,7 @@ export const PingCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
     fields: [`timeout`],
     Component: (
       <>
-        <Timeout min={CheckTimeoutValues[CheckType.PING].min} max={CheckTimeoutValues[CheckType.PING].max} />
+        <Timeout checkType={CheckType.PING} />
       </>
     ),
   },

@@ -1,10 +1,4 @@
-import {
-  DataSourceInstanceSettings,
-  GrafanaTheme2,
-  intervalToAbbreviatedDurationString,
-  NavModelItem,
-  TimeRange,
-} from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
 // todo: update this when we move to grafana 11.2
 // https://github.com/grafana/grafana/pull/89047
@@ -152,7 +146,6 @@ export function getCheckTypeGroup(checkType: CheckType): CheckTypeGroup {
   const group = CHECK_TYPE_OPTIONS.find((option) => option.value === checkType)?.group;
 
   if (!group) {
-    console.log(`Check type ${checkType} not found in check type options`);
     return CHECK_TYPE_OPTIONS[0].group;
   }
 
@@ -281,21 +274,15 @@ export function formatDate(number: number) {
   });
 }
 
-export function secondsToDuration(seconds: number): string {
-  const now = new Date();
-  const duration = { start: new Date(now.getTime() - seconds * 1000), end: now };
-  return intervalToAbbreviatedDurationString(duration);
-}
-
 export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
   const { basicMetricsOnly, settings, frequency, probes } = check;
-  const cType = getCheckType(check.settings);
+  const checkType = getCheckType(check.settings);
 
   return {
     assertionCount: getEntriesCount(settings),
     basicMetricsOnly,
-    checkType: cType,
-    frequencySeconds: frequency / 1000,
+    checkType,
+    frequency,
     isSSL: getSSL(settings),
     probeCount: probes?.length ?? 0,
   };
@@ -308,7 +295,7 @@ export function checkFormValuesToUsageCalcValues(checkFormValues: CheckFormValue
     assertionCount: getEntriesCountCheckFormValues(settings),
     basicMetricsOnly: !publishAdvancedMetrics,
     checkType,
-    frequencySeconds: frequency,
+    frequency,
     isSSL: getSSLCheckFormValues(settings),
     probeCount: probes?.length ?? 0,
   };
@@ -408,3 +395,38 @@ export const pascalCaseToSentence = (value: string): string => {
 
   return value.charAt(0).toUpperCase() + value.slice(1).replace(/(?<! )([A-Z])/g, ' $1');
 };
+
+export function formatDuration(milliseconds: number, compact = false) {
+  const seconds = milliseconds / 1000;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  const parts: string[] = [];
+
+  if (hours > 0) {
+    if (compact) {
+      parts.push(`${hours}h`);
+    } else {
+      parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`);
+    }
+  }
+
+  if (minutes > 0) {
+    if (compact) {
+      parts.push(`${minutes}m`);
+    } else {
+      parts.push(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`);
+    }
+  }
+
+  if (remainingSeconds > 0 || parts.length === 0) {
+    if (compact) {
+      parts.push(`${remainingSeconds}s`);
+    } else {
+      parts.push(`${remainingSeconds} ${remainingSeconds === 1 ? 'second' : 'seconds'}`);
+    }
+  }
+
+  return parts.join(' ');
+}
