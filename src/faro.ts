@@ -22,7 +22,7 @@ export enum FaroEvent {
   UPDATE_CHECK_ALERTS = 'update_check_alerts',
 }
 
-enum FARO_ENV {
+export enum FaroEnv {
   DEV = 'development',
   STAGING = 'staging',
   PROD = 'production',
@@ -56,6 +56,7 @@ export function reportEvent(type: FaroEvent, info: Record<string, string> = {}) 
   try {
     faro.api?.pushEvent(type, attributes);
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error(`Failed to report event: ${type}`, e);
   }
 }
@@ -77,41 +78,41 @@ export function reportError(error: Error | Object | string, type?: FaroEvent) {
   } catch (e) {}
 }
 
-function getFaroEnv() {
+function getFaroEnv(): FaroEnv {
   const appUrl = new URL(config.appUrl).hostname;
   switch (true) {
     case appUrl.endsWith('grafana-ops.net'):
-      return FARO_ENV.STAGING;
+      return FaroEnv.STAGING;
     case appUrl.endsWith('grafana.net'):
-      return FARO_ENV.PROD;
+      return FaroEnv.PROD;
     case appUrl.endsWith('grafana-dev.net'):
     case appUrl.endsWith('localhost'):
     default:
-      return FARO_ENV.DEV;
+      return FaroEnv.DEV;
   }
 }
 
 export function getFaroConfig() {
   const env = getFaroEnv();
   switch (env) {
-    case FARO_ENV.DEV:
+    case FaroEnv.DEV:
       return {
         url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/769f675a8e1e8b05f05b478b7002259b',
         name: 'synthetic-monitoring-app-dev',
-        env: FARO_ENV.DEV,
+        env: FaroEnv.DEV,
       };
-    case FARO_ENV.STAGING:
+    case FaroEnv.STAGING:
       return {
         url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/73212b0adc2a3d002ee3befa3b48c4d9',
         name: 'synthetic-monitoring-app-staging',
-        env: FARO_ENV.STAGING,
+        env: FaroEnv.STAGING,
       };
-    case FARO_ENV.PROD:
+    case FaroEnv.PROD:
     default:
       return {
         url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/837791054a26c6aba5d32ece9030be32',
         name: 'synthetic-monitoring-app-prod',
-        env: FARO_ENV.PROD,
+        env: FaroEnv.PROD,
       };
   }
 }

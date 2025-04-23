@@ -26,4 +26,5 @@ export enum DataTestIds {
   CONFIRM_UNSAVED_MODAL_HEADING = 'confirm-unsaved-modal-heading',
   CHECK_USAGE = 'check-usage',
   CHECKS_EMPTY_STATE = 'checks-empty-state',
+  FREQUENCY_COMPONENT = 'frequency-component',
 }

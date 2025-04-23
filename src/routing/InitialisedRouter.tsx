@@ -10,7 +10,7 @@ import { getUserPermissions } from 'data/permissions';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
-import { useQuery } from 'hooks/useQuery';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckList } from 'page/CheckList';
@@ -32,23 +32,23 @@ import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
 export const InitialisedRouter = () => {
-  const queryParams = useQuery();
+  const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
   const { isFeatureEnabled } = useFeatureFlagContext();
 
-  const page = queryParams.get('page');
+  const page = urlSearchParams.get('page');
   useLimits();
 
   useEffect(() => {
     if (page) {
-      queryParams.delete('page');
-      const params = queryParams.toString();
+      urlSearchParams.delete('page');
+      const params = urlSearchParams.toString();
       const path = `${page}${params ? '?' : ''}${params}`;
       const translated: QueryParamMap = {};
-      queryParams.forEach((value, name) => (translated[name] = value));
+      urlSearchParams.forEach((value, name) => (translated[name] = value));
       navigate(path, translated);
     }
-  }, [page, navigate, queryParams]);
+  }, [page, navigate, urlSearchParams]);
 
   const { canWriteChecks, canReadChecks, canReadProbes } = getUserPermissions();
 

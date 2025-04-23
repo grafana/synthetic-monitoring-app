@@ -1,11 +1,10 @@
-import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
-import { Field } from '@grafana/ui';
+import React, { useCallback } from 'react';
+import { useController, useFormContext } from 'react-hook-form';
 
 import { CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
-import { SliderInput } from 'components/SliderInput';
+import { Frequency } from 'components/CheckEditor/FormComponents/Frequency';
 
 import { CheckProbes } from './CheckProbes/CheckProbes';
 
@@ -20,71 +19,33 @@ export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
     control,
     formState: { errors },
   } = useFormContext<CheckFormValues>();
-  const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
-
   const revalidateForm = useRevalidateForm();
+  const { field } = useController({ control, name: 'probes' });
+  const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
 
-  const handleChangingFrequency = () => {
-    revalidateForm<CheckFormValues>(`alerts`);
-  };
+  const handleChange = useCallback(
+    (probes: number[]) => {
+      field.onChange(probes);
+      revalidateForm();
+    },
+    [field, revalidateForm]
+  );
 
   return (
-    <div>
-      <Controller
-        control={control}
-        name="probes"
-        render={({ field }) => {
-          const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
-
-          return (
-            <CheckProbes
-              {...fieldProps}
-              probes={field.value}
-              availableProbes={getAvailableProbes(probes, checkType)}
-              disabled={disabled}
-              invalid={Boolean(errors.probes)}
-              error={errors.probes?.message}
-            />
-          );
-        }}
+    <>
+      <CheckProbes
+        {...fieldProps}
+        probes={field.value}
+        availableProbes={getAvailableProbes(probes, checkType)}
+        disabled={disabled}
+        invalid={Boolean(errors.probes)}
+        error={errors.probes?.message}
+        onChange={handleChange}
       />
-      <Field
-        label="Frequency"
-        description="How frequently the check should run."
-        invalid={Boolean(errors.frequency)}
-        error={errors.frequency?.message}
-      >
-        <SliderInput
-          disabled={disabled}
-          name="frequency"
-          min={minFrequency}
-          max={maxFrequency}
-          onChange={handleChangingFrequency}
-        />
-      </Field>
-    </div>
+      <Frequency checkType={checkType} disabled={disabled} />
+    </>
   );
 };
-
-function getFrequencyBounds(checkType: CheckType) {
-  const oneHour = 60 * 60;
-  if (checkType === CheckType.Traceroute) {
-    return {
-      minFrequency: 120.0,
-      maxFrequency: oneHour,
-    };
-  }
-  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted || checkType === CheckType.Browser) {
-    return {
-      minFrequency: 60.0,
-      maxFrequency: oneHour,
-    };
-  }
-  return {
-    minFrequency: 10.0,
-    maxFrequency: oneHour,
-  };
-}
 
 function getAvailableProbes(probes: ProbeWithMetadata[], checkType: CheckType) {
   if (checkType === CheckType.Scripted) {

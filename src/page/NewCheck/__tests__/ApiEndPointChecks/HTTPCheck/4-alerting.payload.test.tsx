@@ -55,7 +55,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     });
   });
 
-  it(`should display an error message when the threhsold is higher than the total amount of executions`, async () => {
+  it(`should display an error message when the threshold is higher than the total amount of executions`, async () => {
     jest.replaceProperty(config, 'featureToggles', {
       // @ts-expect-error
       [FeatureName.AlertsPerCheck]: true,

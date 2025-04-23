@@ -8,7 +8,6 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { GRPCRequest } from 'components/CheckEditor/FormComponents/GRPCRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const GRPC_REQUEST_FIELDS: GRPCRequestFields = {
@@ -74,7 +73,7 @@ export const GRPCCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
     fields: [`timeout`],
     Component: (
       <>
-        <Timeout min={CheckTimeoutValues[CheckType.GRPC].min} max={CheckTimeoutValues[CheckType.GRPC].max} />
+        <Timeout checkType={CheckType.GRPC} />
       </>
     ),
   },

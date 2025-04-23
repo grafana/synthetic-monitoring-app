@@ -8,7 +8,6 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 import { TracerouteRequest } from 'components/CheckEditor/FormComponents/TracerouteRequest';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 const TRACEROUTE_FIELDS: TracerouteRequestFields = {
@@ -48,10 +47,7 @@ export const TracerouteCheckLayout: Partial<Record<LayoutSection, Section<CheckF
     fields: [`timeout`],
     Component: (
       <>
-        <Timeout
-          min={CheckTimeoutValues[CheckType.Traceroute].min}
-          max={CheckTimeoutValues[CheckType.Traceroute].max}
-        />
+        <Timeout checkType={CheckType.Traceroute} />
       </>
     ),
   },

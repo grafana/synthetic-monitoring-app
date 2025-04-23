@@ -1,7 +1,5 @@
-import { screen } from '@testing-library/react';
-
 import { CheckType } from 'types';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
@@ -24,11 +22,7 @@ describe(`gRPCCheck - Section 5 (Execution) payload`, () => {
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 5);
 
-    const minutesInput = screen.getByLabelText('frequency minutes input');
-    const secondsInput = screen.getByLabelText('frequency seconds input');
-    await user.clear(minutesInput);
-    await user.clear(secondsInput);
-    await user.type(secondsInput, '30');
+    await selectBasicFrequency(user, '30s');
 
     await submitForm(user);
 

@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
 
-import { useSearchParams } from './useSearchParams';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
 enum HistoryStrategy {
   Push = 'push',
@@ -25,9 +25,9 @@ export const useQueryParametersState = <ValueType>({
 }: QueryParametersStateProps<ValueType>): [ValueType, (value: ValueType | null) => void] => {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryParams = useSearchParams();
+  const urlSearchParams = useURLSearchParams();
 
-  const existingValue = queryParams.get(key);
+  const existingValue = urlSearchParams.get(key);
 
   const parsedExistingValue = useMemo(() => {
     return existingValue ? decode(existingValue) : null;

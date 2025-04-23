@@ -8,8 +8,6 @@ import { BrowserCheckInstance } from 'components/CheckEditor/FormComponents/Brow
 import { BrowserCheckScript } from 'components/CheckEditor/FormComponents/BrowserCheckScript';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
-
 export const BROWSER_CHECK_FIELDS: BrowserFields = {
   script: {
     name: `settings.browser.script`,
@@ -39,7 +37,7 @@ export const BrowserCheckLayout: Partial<Record<LayoutSection, Section<CheckForm
             running checks in a k6 script.
           </TextLink>
         </div>
-        <Timeout min={CheckTimeoutValues[CheckType.Browser].min} max={CheckTimeoutValues[CheckType.Browser].max} />
+        <Timeout checkType={CheckType.Browser} />
       </Stack>
     ),
   },

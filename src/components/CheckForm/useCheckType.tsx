@@ -1,22 +1,23 @@
-import { useLocation, useParams } from 'react-router-dom-v5-compat';
+import { useParams } from 'react-router-dom-v5-compat';
 
 import { Check, CheckFormPageParams, CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { CHECK_TYPE_OPTIONS, useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
 export function useFormCheckType(existingCheck?: Check) {
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
   const options = useCheckTypeOptions();
   const fallback = options.filter((option) => option.group === checkTypeGroup);
-  const { search } = useLocation();
+  const urlSearchParams = useURLSearchParams();
 
   if (existingCheck) {
     return getCheckType(existingCheck.settings);
   }
 
-  const searchParams = new URLSearchParams(search);
+  const checkType = urlSearchParams.get('checkType') as CheckType;
 
-  return (searchParams.get('checkType') as CheckType) || fallback[0]?.value || options[0].value;
+  return checkType || fallback[0]?.value || options[0].value;
 }
 
 export function useFormCheckTypeGroup(check?: Check) {
