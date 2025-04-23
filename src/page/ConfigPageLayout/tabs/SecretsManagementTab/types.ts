@@ -4,14 +4,15 @@ interface Label {
 }
 
 export interface Secret {
+  uuid?: string;
   name: string;
   description: string;
   labels: Label[];
-  plaintext: never; // Never returned by the API
+  plaintext?: never; // Never returned by the API
 }
 
 export interface SecretWithValue extends Omit<Secret, 'plaintext'> {
-  plaintext: string; // Created in client
+  plaintext: string; // Created in the client
 }
 
 export interface SecretMetadata {
@@ -23,4 +24,8 @@ export interface SecretMetadata {
   uuid: string;
 }
 
-export interface SecretWithMetadata extends Secret, SecretMetadata {}
+export interface SecretWithUuid extends Omit<Secret, 'uuid'> {
+  uuid: string;
+}
+
+export interface SecretWithMetadata extends SecretWithUuid, SecretMetadata {}

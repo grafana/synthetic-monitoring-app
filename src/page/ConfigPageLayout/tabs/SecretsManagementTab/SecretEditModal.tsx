@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
@@ -8,9 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Secret } from './types';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
 
-import { SECRETS_EDIT_MODE_ADD } from './constants';
+import { SECRETS_EDIT_MODE_ADD, SECRETS_MAX_LABELS } from './constants';
 import { SecretInput } from './SecretInput';
-import { secretSchema } from './secretSchema';
+import { secretSchemaFactory } from './secretSchema';
 import { SecretFormValues, secretToFormValues } from './SecretsManagementTab.utils';
 
 interface SecretEditModalProps {
@@ -29,13 +29,34 @@ function getDefaultValues(): SecretFormValues & { plaintext?: string } {
   };
 }
 
-function getFieldErrors(field: keyof Secret, errors: Record<string, { message?: string }>) {
-  return { invalid: Boolean(errors[field]), error: errors[field]?.message };
+type FormField = keyof Secret;
+
+interface FieldError {
+  message: string;
+  type: string;
+  ref: React.RefObject<HTMLElement>;
 }
 
-function createGetFieldError(errors: Record<string, { message?: string }>) {
-  return (field: keyof Secret) => {
-    return getFieldErrors(field, errors);
+type LabelErrors = Array<{
+  name: FieldError;
+  value: FieldError;
+}>;
+
+type FormErrorMap = Record<FormField, FieldError | LabelErrors | undefined>;
+
+function getFieldErrors(field: FormField, errors: FormErrorMap, index?: number, property?: 'name' | 'value') {
+  const error = errors[field];
+
+  if (Array.isArray(error) && index !== undefined && index >= 0 && !!property) {
+    return { invalid: Boolean(error?.[index]?.[property]), error: error?.[index]?.[property]?.message };
+  }
+
+  return { invalid: Boolean(error), error: (error as FieldError)?.message };
+}
+
+function createGetFieldError(errors: FormErrorMap) {
+  return (field: FormField, index?: number, property?: 'name' | 'value') => {
+    return getFieldErrors(field, errors, index, property);
   };
 }
 
@@ -53,11 +74,10 @@ function getErrorMessage(error: unknown): string {
 export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(id);
   const saveSecret = useSaveSecret();
-  const [isConfigured, setIsConfigured] = useState(id !== '' && id !== SECRETS_EDIT_MODE_ADD);
+  const isNewSecret = id === SECRETS_EDIT_MODE_ADD;
+  const [isConfigured, setIsConfigured] = useState(id !== '' && !isNewSecret);
   const [saveError, setSaveError] = useState<unknown>(null);
-
   const hasError = hasFetchError || !!saveError;
-
   const styles = useStyles2(getStyles);
   const defaultValues = useMemo(() => {
     return secretToFormValues(secret) ?? getDefaultValues();
@@ -69,13 +89,20 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
     control,
     reset,
     formState: { errors },
+    getValues,
+    setValue,
   } = useForm<SecretFormValues & { plaintext?: string }>({
     defaultValues,
     disabled: isLoading || saveSecret.isPending,
-    resolver: zodResolver(secretSchema),
+    resolver: zodResolver(secretSchemaFactory(isNewSecret)),
   });
 
-  const fieldError = createGetFieldError(errors);
+  // Set the default value for plaintext to empty string when secret is reset (for validation to work)
+  useEffect(() => {
+    setValue('plaintext', isConfigured ? undefined : '');
+  }, [setValue, isConfigured]);
+
+  const fieldError = createGetFieldError(errors as FormErrorMap);
 
   const { fields, append, remove } = useFieldArray<SecretFormValues & { plaintext?: string }>({
     control,
@@ -83,11 +110,11 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   });
 
   const handleResetValue = () => {
-    setIsConfigured(false);
+    setIsConfigured(!isConfigured);
   };
 
   useEffect(() => {
-    // Reset default values for when editing a secret (after secret has been fetched)
+    // Reset default values for when editing a secret (after the secret has been fetched)
     reset(defaultValues);
   }, [reset, defaultValues]);
 
@@ -107,11 +134,13 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
     });
   };
 
-  const title = id === SECRETS_EDIT_MODE_ADD ? 'Create secret' : 'Edit secret';
+  const title = isNewSecret ? 'Create secret' : 'Edit secret';
 
   if (open !== true) {
     return null;
   }
+
+  const maxLabelsReached = getValues('labels').length >= SECRETS_MAX_LABELS;
 
   return (
     <Modal
@@ -119,7 +148,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
       onDismiss={onDismiss}
       title={title}
       onClickBackdrop={() => {
-        /* Clicking backdrop will not close modal */
+        /* Clicking the backdrop will not close the modal */
       }}
     >
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -145,13 +174,19 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
           required
           {...fieldError('name')}
         >
-          <Input id="secret-name" {...register('name', { disabled: isConfigured })} />
+          <Input
+            id="secret-name"
+            {...register('name', { disabled: !isNewSecret })}
+            onChange={({ target }: ChangeEvent<HTMLInputElement>) => {
+              setValue('name', target.value.replaceAll(' ', '-').toLowerCase());
+            }}
+          />
         </Field>
         <Field
           htmlFor="secret-description"
           label="Description"
-          description="Short description of the purpose of this secret"
           required
+          description="Short description of the purpose of this secret"
           error={errors.description?.message}
           invalid={Boolean(errors.description?.message)}
         >
@@ -168,16 +203,11 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
             control={control}
             name="plaintext"
             render={({ field }) => (
-              <SecretInput
-                id="secret-value"
-                {...field}
-                autoComplete="off"
-                onReset={handleResetValue}
-                isConfigured={isConfigured}
-              />
+              <SecretInput id="secret-value" {...field} onReset={handleResetValue} isConfigured={isConfigured} />
             )}
           />
         </Field>
+
         <Field
           label="Labels"
           description="Allows you to specify a set of additional labels to be attached to the secret"
@@ -186,18 +216,32 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
             {fields.map((field, index) => {
               return (
                 <div key={field.id} className={styles.labelRow}>
-                  <Field htmlFor={`secret-labels.${index}.name`} className={styles.labelField}>
+                  <Field
+                    htmlFor={`secret-labels.${index}.name`}
+                    className={styles.labelField}
+                    {...fieldError('labels', index, 'name')}
+                  >
                     <Input
                       id={`secret-labels.${index}.name`}
                       placeholder="name"
                       {...register(`labels.${index}.name` as const)}
+                      onChange={({ target }: ChangeEvent<HTMLInputElement>) => {
+                        setValue(`labels.${index}.name`, target.value.replaceAll(' ', '-'));
+                      }}
                     />
                   </Field>
-                  <Field htmlFor={`secret-labels.${index}.value`} className={styles.labelField}>
+                  <Field
+                    htmlFor={`secret-labels.${index}.value`}
+                    className={styles.labelField}
+                    {...fieldError('labels', index, 'value')}
+                  >
                     <Input
                       id={`secret-labels.${index}.value`}
                       placeholder="value"
                       {...register(`labels.${index}.value` as const)}
+                      onChange={({ target }: ChangeEvent<HTMLInputElement>) => {
+                        setValue(`labels.${index}.value`, target.value.replaceAll(' ', '-'));
+                      }}
                     />
                   </Field>
                   <IconButton aria-label="Remove label" name="minus-circle" onClick={() => remove(index)} />
@@ -215,6 +259,8 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
             }}
             icon="plus"
             variant="secondary"
+            disabled={maxLabelsReached}
+            tooltip={maxLabelsReached ? `Maximum number of labels reached (Max: ${SECRETS_MAX_LABELS})` : undefined}
           >
             Add label
           </Button>
@@ -240,6 +286,7 @@ function getStyles(theme: GrafanaTheme2) {
       display: flex;
       gap: ${theme.spacing(1)};
       align-items: flex-start;
+
       & > button {
         margin-top: ${theme.spacing(1)};
       }
