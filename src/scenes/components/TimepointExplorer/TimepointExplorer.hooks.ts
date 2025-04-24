@@ -6,6 +6,7 @@ import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
 import { Check } from 'types';
+import { useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import {
   THEME_UNIT,
@@ -86,6 +87,25 @@ export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerP
     to: timeRange.to.valueOf(),
     checkConfigs: data,
   });
+
+  const {
+    fetchNextPage,
+    hasNextPage,
+    data: logsData,
+  } = useInfiniteLogs({
+    refId: 'checkLogs',
+    expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
+    start: timeRange.from.valueOf(),
+    end: timeRange.to.valueOf(),
+  });
+
+  useEffect(() => {
+    if (hasNextPage) {
+      fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage]);
+
+  console.log({ logsData, timepointsInRange });
 
   return {
     timepointsInRange,

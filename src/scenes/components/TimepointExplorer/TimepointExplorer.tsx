@@ -32,8 +32,6 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
     };
   }, [rest, timeRange, timepointsInRange]);
 
-  console.log(drillProps);
-
   return (
     <div ref={ref}>
       <Stack direction="column" gap={2}>

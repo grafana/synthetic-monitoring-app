@@ -1,5 +1,7 @@
 import { queryDS } from 'features/queryDatasources/queryDS';
 
+import { LokiSeries } from 'features/parseLogs/parseLogs.types';
+
 export interface QueryLokiArgs {
   datasource: { uid: string; type: string };
   query: string;
@@ -8,11 +10,7 @@ export interface QueryLokiArgs {
   refId: string;
 }
 
-export function queryLoki({ datasource, query, start, end, refId }: QueryLokiArgs) {
-  // todo: make recursive and handle stitching together results
-  // need to order the logs here rather than later to know what end time to use
-  // for recursive queries
-
+export function queryLoki<T, R>({ datasource, query, start, end, refId }: QueryLokiArgs) {
   return queryDS({
     queries: [
       {
@@ -26,5 +24,7 @@ export function queryLoki({ datasource, query, start, end, refId }: QueryLokiArg
     ],
     start,
     end,
+  }).then((data) => {
+    return data[refId][0] as LokiSeries<T, R>;
   });
 }
