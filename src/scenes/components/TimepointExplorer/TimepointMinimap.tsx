@@ -4,15 +4,13 @@ import { Stack, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { MinimapSection, TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { findClosestSection } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 export const TimepointMinimap = ({
-  timeRange,
-  timepointsInRange,
   viewTimeRangeTo,
   handleTimeRangeToInViewChange,
-  timepointsToDisplay,
   miniMapSections,
+  timepointsInRange,
+  activeSection,
 }: TimepointExplorerChild) => {
   const styles = getStyles(useTheme2());
 
@@ -29,8 +27,6 @@ export const TimepointMinimap = ({
     return null;
   }
 
-  const activeSection = findClosestSection(miniMapSections, viewTimeRangeTo);
-
   return (
     <Stack gap={0}>
       {miniMapSections
@@ -40,7 +36,7 @@ export const TimepointMinimap = ({
             className={cx(styles.section, { [styles.active]: activeSection?.from === section.from })}
             onClick={() => handleSectionClick(section)}
           >
-            {new Date(section.to.getTime()).toLocaleTimeString()}
+            {new Date(section.to).toLocaleTimeString()}
           </button>
         ))
         .reverse()}
@@ -52,9 +48,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
   section: css`
     width: 100%;
     padding: 10px;
-    background-color: red;
+    border: none;
   `,
   active: css`
-    background-color: blue;
+    outline: 1px solid blue;
+    z-index: 1;
   `,
 });

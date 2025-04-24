@@ -12,8 +12,9 @@ import {
   TIMEPOINT_GAP,
   TIMEPOINT_WIDTH,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
-  findClosestSection,
+  findActiveSection,
   minimapSections,
   timeshiftedTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -22,10 +23,10 @@ type Size = {
   width?: number;
 };
 
-export function useTimepointExplorerView(timepointsInRange: Date[], initialTimeRangeToInView: Date) {
+export function useTimepointExplorerView(timepointsInRange: UnixTimestamp[], initialTimeRangeToInView: UnixTimestamp) {
   const ref = useRef<HTMLDivElement>(null);
   // if we just know when the view is to we can anchor the view from that
-  const [viewTimeRangeTo, setViewTimeRangeTo] = useState<Date>(initialTimeRangeToInView);
+  const [viewTimeRangeTo, setViewTimeRangeTo] = useState<UnixTimestamp>(initialTimeRangeToInView);
 
   const [{ width = 0 }, setSize] = useState<Size>({
     width: 0,
@@ -36,11 +37,11 @@ export function useTimepointExplorerView(timepointsInRange: Date[], initialTimeR
     setSize({ width });
 
     const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
-    const miniMapSections = minimapSections(timepointsInRange, timepointsToDisplay);
-    const newSection = findClosestSection(miniMapSections, viewTimeRangeTo);
+    const miniMapSections = minimapSections(timepointsInRange, timepointsToDisplay, viewTimeRangeTo);
+    const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
 
-    if (newSection) {
-      setViewTimeRangeTo(newSection.to);
+    if (activeSection) {
+      setViewTimeRangeTo(activeSection.to);
     }
   }, 300);
 
@@ -54,20 +55,22 @@ export function useTimepointExplorerView(timepointsInRange: Date[], initialTimeR
     setViewTimeRangeTo(initialTimeRangeToInView);
   }, [initialTimeRangeToInView]);
 
-  const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
-  const miniMapSections = minimapSections(timepointsInRange, timepointsToDisplay);
+  const timepointDisplayCount = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
+  const miniMapSections = minimapSections(timepointsInRange, timepointDisplayCount, viewTimeRangeTo);
+  const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
 
-  const handleTimeRangeToInViewChange = useCallback((timeRangeToInView: Date) => {
+  const handleTimeRangeToInViewChange = useCallback((timeRangeToInView: UnixTimestamp) => {
     setViewTimeRangeTo(timeRangeToInView);
   }, []);
 
   return {
     handleTimeRangeToInViewChange,
     ref,
-    timepointsToDisplay,
+    timepointDisplayCount,
     viewTimeRangeTo,
     width,
     miniMapSections,
+    activeSection,
   };
 }
 
@@ -79,8 +82,8 @@ interface UseTimepointExplorerProps {
 export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerProps) {
   const { data = [] } = useCheckConfigs({ timeRange, check });
   const timepointsInRange = useTimepointsInRange({
-    from: timeRange.from.toDate(),
-    to: timeRange.to.toDate(),
+    from: timeRange.from.valueOf(),
+    to: timeRange.to.valueOf(),
     checkConfigs: data,
   });
 
@@ -120,7 +123,7 @@ function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
 const NANOSECONDS_PER_MILLISECOND = 1000000;
 
 function extractFrequenciesAndConfigs(data: DataFrame[]) {
-  let build: Array<{ frequency: number; date: Date }> = [];
+  let build: Array<{ frequency: number; date: UnixTimestamp }> = [];
 
   for (const frame of data) {
     const Value = frame.fields[1];
@@ -128,7 +131,7 @@ function extractFrequenciesAndConfigs(data: DataFrame[]) {
     if (Value.labels) {
       const { config_version, frequency } = Value.labels;
       const toUnixTimestamp = Number(config_version) / NANOSECONDS_PER_MILLISECOND;
-      const date = new Date(toUnixTimestamp);
+      const date: UnixTimestamp = toUnixTimestamp;
 
       build.push({
         frequency: Number(frequency),
@@ -140,14 +143,14 @@ function extractFrequenciesAndConfigs(data: DataFrame[]) {
   return build;
 }
 interface UseTimepointsInRangeProps {
-  from: Date;
-  to: Date;
-  checkConfigs: Array<{ frequency: number; date: Date }>;
+  from: UnixTimestamp;
+  to: UnixTimestamp;
+  checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
 }
 
 function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangeProps) {
-  const rangeFrom = from.valueOf();
-  const rangeTo = to.valueOf();
+  const rangeFrom = from;
+  const rangeTo = to;
 
   // work backwards
   let configs = [...checkConfigs];
@@ -156,7 +159,7 @@ function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangePr
   let currentConfig = configs.pop();
 
   // mutate for efficiency
-  let build: Date[] = [];
+  let build: UnixTimestamp[] = [];
 
   if (!currentConfig) {
     return build;
@@ -170,7 +173,7 @@ function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangePr
     const uptoDate = currentTimepoint - (currentTimepoint % currentFrequency);
 
     for (let i = uptoDate; i <= currentTimepoint; i += currentFrequency) {
-      build.push(new Date(i));
+      build.push(i);
     }
 
     currentTimepoint = uptoDate - currentFrequency;

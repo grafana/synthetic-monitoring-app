@@ -1,18 +1,22 @@
 import { TimeRange } from '@grafana/data';
 
+export type UnixTimestamp = number;
+
 export interface TimepointExplorerChild {
-  handleTimeRangeToInViewChange: (timeRangeToInView: Date) => void;
-  timepointsInRange: Date[];
-  timepointsToDisplay: number;
+  activeSection?: MinimapSection;
+  handleTimeRangeToInViewChange: (timeRangeToInView: UnixTimestamp) => void;
+  timepointsInRange: UnixTimestamp[];
+  timepointDisplayCount: number;
   timeRange: TimeRange;
-  viewTimeRangeTo: Date;
+  viewTimeRangeTo: UnixTimestamp;
   width: number;
   miniMapSections: MinimapSection[];
 }
 
 export interface MinimapSection {
-  to: Date;
-  from: Date;
-  index: number;
-  timepoints: Date[];
+  to: UnixTimestamp;
+  from: UnixTimestamp;
+  toIndex: number;
+  fromIndex: number;
+  active: boolean;
 }

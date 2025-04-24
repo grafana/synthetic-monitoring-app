@@ -1,6 +1,10 @@
-import { MinimapSection } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { MinimapSection, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function minimapSections(timepointsInRange: Date[], timePointsToDisplay: number) {
+export function minimapSections(
+  timepointsInRange: UnixTimestamp[],
+  timePointsToDisplay: number,
+  viewTimeRangeTo: UnixTimestamp
+) {
   const sections: MinimapSection[] = [];
 
   if (timePointsToDisplay === 0) {
@@ -8,13 +12,16 @@ export function minimapSections(timepointsInRange: Date[], timePointsToDisplay: 
   }
 
   for (let i = 0; i < timepointsInRange.length; i += timePointsToDisplay) {
-    const timepoints = timepointsInRange.slice(i, i + timePointsToDisplay);
+    const fromIndex = i;
+    const toIndex = i + timePointsToDisplay;
+    const timepoints = timepointsInRange.slice(fromIndex, toIndex);
 
     const section = {
       to: timepoints[0],
       from: timepoints[timepoints.length - 1],
-      index: i,
-      timepoints,
+      toIndex,
+      fromIndex,
+      active: timepoints[0] === viewTimeRangeTo,
     };
 
     sections.push(section);
@@ -23,10 +30,10 @@ export function minimapSections(timepointsInRange: Date[], timePointsToDisplay: 
   return sections;
 }
 
-export function findClosestSection(sections: MinimapSection[], timeRangeTo: Date) {
+export function findActiveSection(sections: MinimapSection[], timeRangeTo: UnixTimestamp) {
   return sections.find((section) => timeRangeTo >= section.from && timeRangeTo <= section.to);
 }
 
-export function timeshiftedTimepoint(unixDate: number, frequency: number) {
+export function timeshiftedTimepoint(unixDate: UnixTimestamp, frequency: number): UnixTimestamp {
   return unixDate - (unixDate % frequency);
 }

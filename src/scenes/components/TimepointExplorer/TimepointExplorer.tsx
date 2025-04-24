@@ -19,41 +19,27 @@ interface TimepointExplorerProps {
 export function TimepointExplorer({ check }: TimepointExplorerProps) {
   const [timeRange] = useTimeRange();
   const timeRangeTo = timeRange.to.toDate().valueOf();
-  const initialTimeRangeToInView = useMemo(
-    () => new Date(timeshiftedTimepoint(timeRangeTo, check.frequency)),
-    [timeRangeTo, check.frequency]
-  );
+  const initialTimeRangeToInView = timeshiftedTimepoint(timeRangeTo, check.frequency);
 
   const { timepointsInRange } = useTimepointExplorer({ timeRange, check });
-  const { handleTimeRangeToInViewChange, ref, timepointsToDisplay, viewTimeRangeTo, width, miniMapSections } =
-    useTimepointExplorerView(timepointsInRange, initialTimeRangeToInView);
+  const { ref, ...rest } = useTimepointExplorerView(timepointsInRange, initialTimeRangeToInView);
 
   const drillProps: TimepointExplorerChild = useMemo(() => {
     return {
-      handleTimeRangeToInViewChange,
-      miniMapSections,
+      ...rest,
       timepointsInRange,
-      timepointsToDisplay,
       timeRange,
-      viewTimeRangeTo,
-      width,
     };
-  }, [
-    handleTimeRangeToInViewChange,
-    miniMapSections,
-    timepointsInRange,
-    timepointsToDisplay,
-    timeRange,
-    viewTimeRangeTo,
-    width,
-  ]);
+  }, [rest, timeRange, timepointsInRange]);
 
   console.log(drillProps);
 
   return (
-    <Stack direction="column" gap={2}>
-      <TimepointList {...drillProps} ref={ref} />
-      <TimepointMinimap {...drillProps} />
-    </Stack>
+    <div ref={ref}>
+      <Stack direction="column" gap={2}>
+        <TimepointList {...drillProps} />
+        <TimepointMinimap {...drillProps} />
+      </Stack>
+    </div>
   );
 }
