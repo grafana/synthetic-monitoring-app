@@ -35,9 +35,8 @@ async function renderExecutionCountHook(checks?: Check[]) {
 }
 
 const FREQUENCY = 60000;
-const FREQUENCY_SECONDS = FREQUENCY / 1000;
 const PROBES = [PRIVATE_PROBE.id!];
-const EXECUTIONS = getTotalChecksPerMonth(PROBES.length, FREQUENCY_SECONDS);
+const EXECUTIONS = getTotalChecksPerMonth(PROBES.length, FREQUENCY);
 
 describe('calculates execution count correctly', () => {
   test('handles calculation for 1 active check correctly', async () => {
