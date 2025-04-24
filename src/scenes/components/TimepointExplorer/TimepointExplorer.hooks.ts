@@ -5,6 +5,7 @@ import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
+import { CheckLabel, CheckLabelType } from 'features/parseCheckLogs/checkLogs.types';
 import { Check } from 'types';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -15,6 +16,7 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
+  configTimeRanges,
   findActiveSection,
   minimapSections,
   timeshiftedTimepoint,
@@ -81,18 +83,18 @@ interface UseTimepointExplorerProps {
 }
 
 export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerProps) {
-  const { data = [] } = useCheckConfigs({ timeRange, check });
+  const { data: checkConfigs = [] } = useCheckConfigs({ timeRange, check });
   const timepointsInRange = useTimepointsInRange({
     from: timeRange.from.valueOf(),
     to: timeRange.to.valueOf(),
-    checkConfigs: data,
+    checkConfigs,
   });
 
   const {
     fetchNextPage,
     hasNextPage,
-    data: logsData,
-  } = useInfiniteLogs({
+    data: logsData = [],
+  } = useInfiniteLogs<CheckLabel, CheckLabelType>({
     refId: 'checkLogs',
     expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
     start: timeRange.from.valueOf(),
@@ -105,10 +107,25 @@ export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerP
     }
   }, [fetchNextPage, hasNextPage]);
 
-  console.log({ logsData, timepointsInRange });
+  const builtConfigs = configTimeRanges(checkConfigs, timeRange.to.valueOf());
+
+  // ACCOUNT FOR PROBES
+  const adjusted = logsData.map((log, index) => {
+    const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
+    const adjustedTime = log.Time - (log.Time % frequency) + frequency;
+    console.log({
+      log,
+      adjustedTime: new Date(adjustedTime),
+      frequency,
+      timepoint: new Date(timepointsInRange[index]),
+    });
+    return adjustedTime;
+  });
 
   return {
     timepointsInRange,
+    logsData,
+    adjusted,
   };
 }
 
@@ -150,7 +167,7 @@ function extractFrequenciesAndConfigs(data: DataFrame[]) {
 
     if (Value.labels) {
       const { config_version, frequency } = Value.labels;
-      const toUnixTimestamp = Number(config_version) / NANOSECONDS_PER_MILLISECOND;
+      const toUnixTimestamp = Math.round(Number(config_version) / NANOSECONDS_PER_MILLISECOND);
       const date: UnixTimestamp = toUnixTimestamp;
 
       build.push({

@@ -37,3 +37,19 @@ export function findActiveSection(sections: MinimapSection[], timeRangeTo: UnixT
 export function timeshiftedTimepoint(unixDate: UnixTimestamp, frequency: number): UnixTimestamp {
   return unixDate - (unixDate % frequency);
 }
+
+export function configTimeRanges(
+  checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>,
+  timeRangeTo: UnixTimestamp
+) {
+  return checkConfigs.map(({ date, frequency }, i) => {
+    const from = date;
+    const nextConfig = checkConfigs[i + 1];
+
+    return {
+      frequency,
+      from,
+      to: nextConfig ? nextConfig.date : timeRangeTo,
+    };
+  });
+}

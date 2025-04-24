@@ -6,15 +6,7 @@ import { css } from '@emotion/css';
 import { TIMEPOINT_GAP, TIMEPOINT_WIDTH } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export const TimepointList = ({
-  miniMapSections,
-  timeRange,
-  timepointsInRange,
-  viewTimeRangeTo,
-  timepointDisplayCount,
-  handleTimeRangeToInViewChange,
-  width,
-}: TimepointExplorerChild) => {
+export const TimepointList = ({ miniMapSections, timepointsInRange }: TimepointExplorerChild) => {
   const styles = getStyles(useTheme2());
   const activeSection = miniMapSections.find((section) => section.active);
 

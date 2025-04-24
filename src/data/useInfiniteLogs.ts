@@ -47,7 +47,7 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end }: DeepLogsParam
         (log, index, self) => index === self.findIndex((t) => t.id === log.id)
       );
 
-      return deduplicatedLogs;
+      return deduplicatedLogs.reverse();
     },
   });
 }

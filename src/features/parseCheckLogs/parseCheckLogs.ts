@@ -71,6 +71,10 @@ export function discardIncompleteChecks({
   const start = reverse ? copy.length - 1 : 0;
 
   for (let i = start; i < logs.length; i += direction) {
+    if (!logs[i]) {
+      break;
+    }
+
     const msg = logs[i].labels.msg;
 
     if (matchMsg.includes(msg)) {

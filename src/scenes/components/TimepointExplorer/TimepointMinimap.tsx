@@ -6,10 +6,8 @@ import { css, cx } from '@emotion/css';
 import { MinimapSection, TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export const TimepointMinimap = ({
-  viewTimeRangeTo,
   handleTimeRangeToInViewChange,
   miniMapSections,
-  timepointsInRange,
   activeSection,
 }: TimepointExplorerChild) => {
   const styles = getStyles(useTheme2());
