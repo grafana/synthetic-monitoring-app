@@ -1,4 +1,4 @@
-import { DSQuery } from 'queries/queries.types';
+import { DSQueryWithInterval } from 'queries/queries.types';
 
 type UptimeQuery = {
   job: string;
@@ -7,7 +7,7 @@ type UptimeQuery = {
   frequency: number;
 };
 
-export function getUptimeQuery({ job, instance, probe = `.*`, frequency }: UptimeQuery): DSQuery {
+export function getUptimeQuery({ job, instance, probe = `.*`, frequency }: UptimeQuery): DSQueryWithInterval {
   const interval = `${frequency / 1000}s`;
 
   const expr = `max by () (max_over_time(probe_success{job="${job}", instance="${instance}", probe=~"${probe}"}[${interval}]))`;

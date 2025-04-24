@@ -1,10 +1,60 @@
-import React from 'react';
-import { TimeRange } from '@grafana/data';
+import React, { useCallback } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Stack, useTheme2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
-interface TimepointMinimapProps {
-  timeRange: TimeRange;
-}
+import { MinimapSection, TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { findClosestSection } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
-export const TimepointMinimap = ({ timeRange }: TimepointMinimapProps) => {
-  return <div>TimepointMinimap</div>;
+export const TimepointMinimap = ({
+  timeRange,
+  timepointsInRange,
+  viewTimeRangeTo,
+  handleTimeRangeToInViewChange,
+  timepointsToDisplay,
+  miniMapSections,
+}: TimepointExplorerChild) => {
+  const styles = getStyles(useTheme2());
+
+  const handleSectionClick = useCallback(
+    (section: MinimapSection) => {
+      const newTimeRangeToInView = section.to;
+      handleTimeRangeToInViewChange(newTimeRangeToInView);
+    },
+    [handleTimeRangeToInViewChange]
+  );
+
+  // todo: fix this
+  if (miniMapSections.length === 0) {
+    return null;
+  }
+
+  const activeSection = findClosestSection(miniMapSections, viewTimeRangeTo);
+
+  return (
+    <Stack gap={0}>
+      {miniMapSections
+        .map((section, index) => (
+          <button
+            key={index}
+            className={cx(styles.section, { [styles.active]: activeSection?.from === section.from })}
+            onClick={() => handleSectionClick(section)}
+          >
+            {new Date(section.to.getTime()).toLocaleTimeString()}
+          </button>
+        ))
+        .reverse()}
+    </Stack>
+  );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  section: css`
+    width: 100%;
+    padding: 10px;
+    background-color: red;
+  `,
+  active: css`
+    background-color: blue;
+  `,
+});

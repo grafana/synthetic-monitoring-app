@@ -4,3 +4,7 @@ export interface DSQuery {
   maxDataPoints?: number;
   interval?: string;
 }
+
+export interface DSQueryWithInterval extends DSQuery {
+  interval: string;
+}

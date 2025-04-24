@@ -1,0 +1,184 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { DataFrame, TimeRange } from '@grafana/data';
+import { queryMimir } from 'features/queryDatasources/queryMimir';
+import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
+import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
+
+import { Check } from 'types';
+import { useMetricsDS } from 'hooks/useMetricsDS';
+import {
+  THEME_UNIT,
+  TIMEPOINT_GAP,
+  TIMEPOINT_WIDTH,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  findClosestSection,
+  minimapSections,
+  timeshiftedTimepoint,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+
+type Size = {
+  width?: number;
+};
+
+export function useTimepointExplorerView(timepointsInRange: Date[], initialTimeRangeToInView: Date) {
+  const ref = useRef<HTMLDivElement>(null);
+  // if we just know when the view is to we can anchor the view from that
+  const [viewTimeRangeTo, setViewTimeRangeTo] = useState<Date>(initialTimeRangeToInView);
+
+  const [{ width = 0 }, setSize] = useState<Size>({
+    width: 0,
+  });
+
+  const onResize = useDebounceCallback(() => {
+    const width = ref.current?.clientWidth ?? 0;
+    setSize({ width });
+
+    const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
+    const miniMapSections = minimapSections(timepointsInRange, timepointsToDisplay);
+    const newSection = findClosestSection(miniMapSections, viewTimeRangeTo);
+
+    if (newSection) {
+      setViewTimeRangeTo(newSection.to);
+    }
+  }, 300);
+
+  useResizeObserver({
+    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
+    ref,
+    onResize,
+  });
+
+  useEffect(() => {
+    setViewTimeRangeTo(initialTimeRangeToInView);
+  }, [initialTimeRangeToInView]);
+
+  const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
+  const miniMapSections = minimapSections(timepointsInRange, timepointsToDisplay);
+
+  const handleTimeRangeToInViewChange = useCallback((timeRangeToInView: Date) => {
+    setViewTimeRangeTo(timeRangeToInView);
+  }, []);
+
+  return {
+    handleTimeRangeToInViewChange,
+    ref,
+    timepointsToDisplay,
+    viewTimeRangeTo,
+    width,
+    miniMapSections,
+  };
+}
+
+interface UseTimepointExplorerProps {
+  timeRange: TimeRange;
+  check: Check;
+}
+
+export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerProps) {
+  const { data = [] } = useCheckConfigs({ timeRange, check });
+  const timepointsInRange = useTimepointsInRange({
+    from: timeRange.from.toDate(),
+    to: timeRange.to.toDate(),
+    checkConfigs: data,
+  });
+
+  return {
+    timepointsInRange,
+  };
+}
+
+function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
+  const metricsDS = useMetricsDS();
+  const { expr, queryType } = getCheckConfigsQuery({ job: check.job, instance: check.target });
+  const refId = 'uniqueCheckConfigs';
+
+  return useQuery({
+    queryKey: ['uniqueCheckConfigs', metricsDS, expr, timeRange, queryType, refId],
+    queryFn: () => {
+      if (!metricsDS) {
+        return Promise.reject('No metrics data source found');
+      }
+
+      return queryMimir({
+        datasource: metricsDS,
+        query: expr,
+        start: timeRange.from.valueOf(),
+        end: timeRange.to.valueOf(),
+        refId,
+        queryType,
+      });
+    },
+    select: (data) => {
+      const res = data[refId];
+      return extractFrequenciesAndConfigs(res);
+    },
+  });
+}
+
+const NANOSECONDS_PER_MILLISECOND = 1000000;
+
+function extractFrequenciesAndConfigs(data: DataFrame[]) {
+  let build: Array<{ frequency: number; date: Date }> = [];
+
+  for (const frame of data) {
+    const Value = frame.fields[1];
+
+    if (Value.labels) {
+      const { config_version, frequency } = Value.labels;
+      const toUnixTimestamp = Number(config_version) / NANOSECONDS_PER_MILLISECOND;
+      const date = new Date(toUnixTimestamp);
+
+      build.push({
+        frequency: Number(frequency),
+        date,
+      });
+    }
+  }
+
+  return build;
+}
+interface UseTimepointsInRangeProps {
+  from: Date;
+  to: Date;
+  checkConfigs: Array<{ frequency: number; date: Date }>;
+}
+
+function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangeProps) {
+  const rangeFrom = from.valueOf();
+  const rangeTo = to.valueOf();
+
+  // work backwards
+  let configs = [...checkConfigs];
+
+  // start with the latest config
+  let currentConfig = configs.pop();
+
+  // mutate for efficiency
+  let build: Date[] = [];
+
+  if (!currentConfig) {
+    return build;
+  }
+
+  // remove non-full frequency timepoints
+  let currentTimepoint = timeshiftedTimepoint(rangeTo, currentConfig.frequency);
+
+  while (currentTimepoint > rangeFrom && currentConfig) {
+    const currentFrequency = currentConfig.frequency;
+    const uptoDate = currentTimepoint - (currentTimepoint % currentFrequency);
+
+    for (let i = uptoDate; i <= currentTimepoint; i += currentFrequency) {
+      build.push(new Date(i));
+    }
+
+    currentTimepoint = uptoDate - currentFrequency;
+
+    if (currentTimepoint.valueOf() < currentConfig.date.valueOf()) {
+      currentConfig = configs.pop();
+    }
+  }
+
+  return build;
+}

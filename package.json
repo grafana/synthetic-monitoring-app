@@ -141,7 +141,7 @@
     "rxjs": "7.8.1",
     "tslib": "2.5.3",
     "use-konami": "^1.0.1",
-    "usehooks-ts": "^3.1.0",
+    "usehooks-ts": "3.1.1",
     "valid-url": "^1.0.9",
     "yaml": "^2.2.2",
     "zod": "3.24.2"
