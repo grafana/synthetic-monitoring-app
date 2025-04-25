@@ -36,6 +36,7 @@ temp/
 .vscode
 .cursorrules
 .cursor
+.windsurfrules
 .DS_Store
 
 dev/license.jwt
