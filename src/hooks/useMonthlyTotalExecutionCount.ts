@@ -7,7 +7,7 @@ export function useMonthlyTotalExecutionCount() {
 
   const data = checks
     .filter((check) => check.enabled)
-    .reduce((total, check) => total + getTotalChecksPerMonth(check.probes.length, check.frequency / 1000), 0);
+    .reduce((total, check) => total + getTotalChecksPerMonth(check.probes.length, check.frequency), 0);
 
   return {
     data,
