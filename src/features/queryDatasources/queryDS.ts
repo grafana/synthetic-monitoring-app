@@ -15,7 +15,7 @@ export function queryDS({ queries, start, end }: { queries: Query[]; start: numb
   return firstValueFrom(
     getBackendSrv().fetch<BackendDataSourceResponse>({
       method: 'POST',
-      url: `/api/ds/query?=${queries.map((q) => q.refId).join(',')}`,
+      url: `/api/ds/query?refId=${queries.map((q) => q.refId).join(',')}`,
       data: {
         from: String(start),
         to: String(end),

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { DataFrame, TimeRange } from '@grafana/data';
+import { groupByProbe } from 'features/parseCheckLogs/parseCheckLogs';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
@@ -10,6 +11,8 @@ import { Check } from 'types';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import {
+  REF_ID_CHECK_LOGS,
+  REF_ID_UNIQUE_CHECK_CONFIGS,
   THEME_UNIT,
   TIMEPOINT_GAP,
   TIMEPOINT_WIDTH,
@@ -89,13 +92,14 @@ export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerP
     to: timeRange.to.valueOf(),
     checkConfigs,
   });
+  console.log(timepointsInRange);
 
   const {
     fetchNextPage,
     hasNextPage,
     data: logsData = [],
   } = useInfiniteLogs<CheckLabel, CheckLabelType>({
-    refId: 'checkLogs',
+    refId: REF_ID_CHECK_LOGS,
     expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
     start: timeRange.from.valueOf(),
     end: timeRange.to.valueOf(),
@@ -105,37 +109,43 @@ export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerP
     if (hasNextPage) {
       fetchNextPage();
     }
-  }, [fetchNextPage, hasNextPage]);
+  }, [fetchNextPage, hasNextPage, logsData.length]);
 
   const builtConfigs = configTimeRanges(checkConfigs, timeRange.to.valueOf());
-
+  const grouped = groupByProbe(logsData);
   // ACCOUNT FOR PROBES
-  const adjusted = logsData.map((log, index) => {
-    const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
-    const adjustedTime = log.Time - (log.Time % frequency) + frequency;
-    console.log({
-      log,
-      adjustedTime: new Date(adjustedTime),
-      frequency,
-      timepoint: new Date(timepointsInRange[index]),
+
+  const adj = Object.entries(grouped).map(([probe, logs]) => {
+    const adjusted = logs.map((log, index) => {
+      const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
+      const adjustedTime = log.Time - (log.Time % frequency) + frequency;
+
+      return {
+        log,
+        logTime: new Date(log.Time),
+        adjustedTime: new Date(adjustedTime),
+        frequency,
+        timepoint: new Date(timepointsInRange[index]),
+      };
     });
-    return adjustedTime;
+
+    return { probe, adjusted };
   });
+
+  console.log(adj);
 
   return {
     timepointsInRange,
     logsData,
-    adjusted,
   };
 }
 
 function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
   const metricsDS = useMetricsDS();
   const { expr, queryType } = getCheckConfigsQuery({ job: check.job, instance: check.target });
-  const refId = 'uniqueCheckConfigs';
 
   return useQuery({
-    queryKey: ['uniqueCheckConfigs', metricsDS, expr, timeRange, queryType, refId],
+    queryKey: ['uniqueCheckConfigs', metricsDS, expr, timeRange, queryType, REF_ID_UNIQUE_CHECK_CONFIGS],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject('No metrics data source found');
@@ -146,12 +156,12 @@ function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
         query: expr,
         start: timeRange.from.valueOf(),
         end: timeRange.to.valueOf(),
-        refId,
+        refId: REF_ID_UNIQUE_CHECK_CONFIGS,
         queryType,
       });
     },
     select: (data) => {
-      const res = data[refId];
+      const res = data[REF_ID_UNIQUE_CHECK_CONFIGS];
       return extractFrequenciesAndConfigs(res);
     },
   });

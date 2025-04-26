@@ -22,7 +22,7 @@ const config = defineConfig([
       '@tanstack/eslint-plugin-query': queryPlugin,
     },
     rules: {
-      'no-console': ['error', { allow: [''] }],
+      'no-console': ['error', { allow: ['log'] }],
       'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
       '@typescript-eslint/no-redeclare': ['error'],
       '@typescript-eslint/no-deprecated': 'error',
