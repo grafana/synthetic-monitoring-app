@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { DataFrame, TimeRange } from '@grafana/data';
-import { groupByProbe } from 'features/parseCheckLogs/parseCheckLogs';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
@@ -17,7 +16,7 @@ import {
   TIMEPOINT_GAP,
   TIMEPOINT_WIDTH,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { Timepoints, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   configTimeRanges,
   findActiveSection,
@@ -29,7 +28,7 @@ type Size = {
   width?: number;
 };
 
-export function useTimepointExplorerView(timepointsInRange: UnixTimestamp[], initialTimeRangeToInView: UnixTimestamp) {
+export function useTimepointExplorerView(timepoints: Timepoints, initialTimeRangeToInView: UnixTimestamp) {
   const ref = useRef<HTMLDivElement>(null);
   // if we just know when the view is to we can anchor the view from that
   const [viewTimeRangeTo, setViewTimeRangeTo] = useState<UnixTimestamp>(initialTimeRangeToInView);
@@ -43,7 +42,7 @@ export function useTimepointExplorerView(timepointsInRange: UnixTimestamp[], ini
     setSize({ width });
 
     const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
-    const miniMapSections = minimapSections(timepointsInRange, timepointsToDisplay, viewTimeRangeTo);
+    const miniMapSections = minimapSections(timepoints, timepointsToDisplay, viewTimeRangeTo);
     const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
 
     if (activeSection) {
@@ -62,7 +61,7 @@ export function useTimepointExplorerView(timepointsInRange: UnixTimestamp[], ini
   }, [initialTimeRangeToInView]);
 
   const timepointDisplayCount = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
-  const miniMapSections = minimapSections(timepointsInRange, timepointDisplayCount, viewTimeRangeTo);
+  const miniMapSections = minimapSections(timepoints, timepointDisplayCount, viewTimeRangeTo);
   const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
 
   const handleTimeRangeToInViewChange = useCallback((timeRangeToInView: UnixTimestamp) => {
@@ -92,7 +91,6 @@ export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerP
     to: timeRange.to.valueOf(),
     checkConfigs,
   });
-  console.log(timepointsInRange);
 
   const {
     fetchNextPage,
@@ -112,37 +110,32 @@ export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerP
   }, [fetchNextPage, hasNextPage, logsData.length]);
 
   const builtConfigs = configTimeRanges(checkConfigs, timeRange.to.valueOf());
-  const grouped = groupByProbe(logsData);
-  // ACCOUNT FOR PROBES
-  console.log({
-    logsData,
-    builtConfigs,
-    grouped,
-  });
+  console.log(builtConfigs);
+  const timepoints = logsData.reduce<Timepoints>((acc, log) => {
+    const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
 
-  const adj = Object.entries(grouped).map(([probe, logs]) => {
-    const adjusted = logs.map((log, index) => {
-      const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
-      const adjustedTime = log.Time - (log.Time % frequency) + frequency;
+    if (!frequency) {
+      // should be impossible
+      console.log('No frequency found for log', log);
+      return acc;
+    }
 
-      return {
-        log,
-        logTime: new Date(log.Time),
-        adjustedTime: new Date(adjustedTime),
-        frequency,
-        timepoint: new Date(timepointsInRange[index]),
-      };
-    });
+    const adjustedTime = timeshiftedTimepoint(log.Time, frequency) + frequency;
+    const { probe } = log.labels;
 
-    return { probe, adjusted };
-  });
+    if (!acc[adjustedTime]) {
+      acc[adjustedTime] = {};
+    }
 
-  console.log(adj);
+    acc[adjustedTime][probe] = {
+      ...log,
+      frequency,
+    };
 
-  return {
-    timepointsInRange,
-    logsData,
-  };
+    return acc;
+  }, timepointsInRange);
+
+  return timepoints;
 }
 
 function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
@@ -211,7 +204,7 @@ function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangePr
   let currentConfig = configs.pop();
 
   // mutate for efficiency
-  let build: UnixTimestamp[] = [];
+  let build: Record<UnixTimestamp, {}> = {};
 
   if (!currentConfig) {
     return build;
@@ -225,7 +218,7 @@ function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangePr
     const uptoDate = currentTimepoint - (currentTimepoint % currentFrequency);
 
     for (let i = uptoDate; i <= currentTimepoint; i += currentFrequency) {
-      build.push(i);
+      build[i] = {};
     }
 
     currentTimepoint = uptoDate - currentFrequency;

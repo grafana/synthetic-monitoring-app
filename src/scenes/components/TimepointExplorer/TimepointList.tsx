@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { TIMEPOINT_GAP, TIMEPOINT_WIDTH } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export const TimepointList = ({ miniMapSections, timepointsInRange }: TimepointExplorerChild) => {
+export const TimepointList = ({ miniMapSections, timepoints }: TimepointExplorerChild) => {
   const styles = getStyles(useTheme2());
   const activeSection = miniMapSections.find((section) => section.active);
 
@@ -14,13 +14,13 @@ export const TimepointList = ({ miniMapSections, timepointsInRange }: TimepointE
     return null;
   }
 
-  const timepoints = timepointsInRange.slice(activeSection.fromIndex, activeSection.toIndex);
+  const timepointsInRange = Object.keys(timepoints).slice(activeSection.fromIndex, activeSection.toIndex);
 
   return (
     <Stack direction="row" gap={TIMEPOINT_GAP} alignItems={`end`} height={12} justifyContent={`end`}>
-      {timepoints.reverse().map((timepoint, index) => (
+      {timepointsInRange.reverse().map((timepoint, index) => (
         <div key={index} className={styles.timepoint}>
-          <div className={styles.timepointText}>{new Date(timepoint).toLocaleTimeString()}</div>
+          <div className={styles.timepointText}>{new Date(Number(timepoint)).toLocaleTimeString()}</div>
         </div>
       ))}
     </Stack>

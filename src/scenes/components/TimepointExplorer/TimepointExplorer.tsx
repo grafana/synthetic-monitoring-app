@@ -21,16 +21,17 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
   const timeRangeTo = timeRange.to.toDate().valueOf();
   const initialTimeRangeToInView = timeshiftedTimepoint(timeRangeTo, check.frequency);
 
-  const { timepointsInRange, adjusted, logsData } = useTimepointExplorer({ timeRange, check });
-  const { ref, ...rest } = useTimepointExplorerView(timepointsInRange, initialTimeRangeToInView);
+  const timepoints = useTimepointExplorer({ timeRange, check });
+  const { ref, ...rest } = useTimepointExplorerView(timepoints, initialTimeRangeToInView);
+  console.log(timepoints);
 
   const drillProps: TimepointExplorerChild = useMemo(() => {
     return {
       ...rest,
-      timepointsInRange,
+      timepoints,
       timeRange,
     };
-  }, [rest, timeRange, timepointsInRange]);
+  }, [rest, timeRange, timepoints]);
 
   return (
     <div ref={ref}>

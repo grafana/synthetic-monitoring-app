@@ -1,10 +1,7 @@
-import { MinimapSection, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { MinimapSection, Timepoints, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function minimapSections(
-  timepointsInRange: UnixTimestamp[],
-  timePointsToDisplay: number,
-  viewTimeRangeTo: UnixTimestamp
-) {
+export function minimapSections(timepoints: Timepoints, timePointsToDisplay: number, viewTimeRangeTo: UnixTimestamp) {
+  const timepointsInRange = Object.keys(timepoints);
   const sections: MinimapSection[] = [];
 
   if (timePointsToDisplay === 0) {
@@ -15,13 +12,15 @@ export function minimapSections(
     const fromIndex = i;
     const toIndex = i + timePointsToDisplay;
     const timepoints = timepointsInRange.slice(fromIndex, toIndex);
+    const timestampTo = Number(timepoints[0]);
+    const timestampFrom = Number(timepoints[timepoints.length - 1]);
 
     const section = {
-      to: timepoints[0],
-      from: timepoints[timepoints.length - 1],
+      to: timestampTo,
+      from: timestampFrom,
       toIndex,
       fromIndex,
-      active: timepoints[0] === viewTimeRangeTo,
+      active: timestampTo === viewTimeRangeTo,
     };
 
     sections.push(section);
