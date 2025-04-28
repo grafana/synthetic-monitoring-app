@@ -6,7 +6,7 @@ import { trackAddCheckTypeGroupButtonClicked } from 'features/tracking/checkCrea
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckTypeGroup } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { CheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
@@ -48,7 +48,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
           <LinkButton
             icon={!isReady ? 'fa fa-spinner' : undefined}
             disabled={disabled}
-            href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}
+            href={`${getRoute(AppRoutes.NewCheck)}/${group.value}`}
             tooltip={getTooltip(limits, group.value)}
             onClick={() => trackAddCheckTypeGroupButtonClicked({ checkTypeGroup: group.value })}
           >

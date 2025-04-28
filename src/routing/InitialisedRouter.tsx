@@ -4,7 +4,7 @@ import { TextLink } from '@grafana/ui';
 
 import { FeatureName } from 'types';
 import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
@@ -54,10 +54,10 @@ export const InitialisedRouter = () => {
 
   return (
     <Routes>
-      <Route index element={<Navigate to={ROUTES.Home} />} />
+      <Route index element={<Navigate to={AppRoutes.Home} />} />
 
       <Route
-        path={ROUTES.Home}
+        path={AppRoutes.Home}
         element={
           canReadChecks ? (
             <SceneHomepage />
@@ -67,7 +67,7 @@ export const InitialisedRouter = () => {
         }
       />
 
-      <Route path={ROUTES.Checks}>
+      <Route path={AppRoutes.Checks}>
         <Route index element={<CheckList />} />
         <Route path=":id">
           <Route
@@ -101,13 +101,13 @@ export const InitialisedRouter = () => {
           element={
             <PluginPageNotFound>
               The page you are looking for does not exist. Here is a working link to{' '}
-              <TextLink href={getRoute(ROUTES.Checks)}>checks listing</TextLink>.
+              <TextLink href={getRoute(AppRoutes.Checks)}>checks listing</TextLink>.
             </PluginPageNotFound>
           }
         />
       </Route>
 
-      <Route path={ROUTES.Probes}>
+      <Route path={AppRoutes.Probes}>
         <Route index element={<Probes />} />
         <Route path="new" element={<NewProbe />} />
         <Route path=":id">
@@ -127,25 +127,25 @@ export const InitialisedRouter = () => {
         <Route path="edit/:id" element={<LegacyEditRedirect entity="probe" />} />
       </Route>
 
-      <Route path={ROUTES.Alerts} element={<AlertingPage />} />
+      <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
 
-      <Route path={`${ROUTES.Config}`} Component={ConfigPageLayout}>
+      <Route path={`${AppRoutes.Config}`} Component={ConfigPageLayout}>
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
         {isFeatureEnabled(FeatureName.SecretsManagement) && <Route path="secrets" element={<SecretsManagementTab />} />}
       </Route>
 
-      <Route path={ROUTES.Redirect} element={<SceneRedirecter />} />
+      <Route path={AppRoutes.Redirect} element={<SceneRedirecter />} />
 
-      <Route path={ROUTES.Scene} element={<SceneRedirecter />} />
+      <Route path={AppRoutes.Scene} element={<SceneRedirecter />} />
 
       <Route
         path="*"
         element={
           <PluginPageNotFound>
             The page you are looking for does not exist. Here is a working link to{' '}
-            <TextLink href={getRoute(ROUTES.Home)}>home</TextLink>.
+            <TextLink href={getRoute(AppRoutes.Home)}>home</TextLink>.
           </PluginPageNotFound>
         }
       />

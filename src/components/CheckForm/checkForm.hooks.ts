@@ -13,7 +13,7 @@ import { tcpCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import { tracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
 import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType, FeatureName } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { useCUDChecks, useTestCheck } from 'data/useChecks';
@@ -60,7 +60,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
   const testButtonRef = useRef<HTMLButtonElement>(null);
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
-  const navigateToChecks = useCallback(() => navigate(ROUTES.Checks), [navigate]);
+  const navigateToChecks = useCallback(() => navigate(AppRoutes.Checks), [navigate]);
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
   const onError = (err: Error | unknown) => {

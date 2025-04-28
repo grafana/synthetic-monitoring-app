@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom-v5-compat';
 import { TextLink } from '@grafana/ui';
 
 import { createNavModel } from 'utils';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCheck } from 'data/useChecks';
 
@@ -21,7 +21,7 @@ export function CheckNotFound() {
     return (
       <NotFound message="Check not found">
         The check you&apos;re trying to view does not exist. Try the{' '}
-        <TextLink href={generateRoutePath(ROUTES.Checks)}>checks page</TextLink> instead.
+        <TextLink href={generateRoutePath(AppRoutes.Checks)}>checks page</TextLink> instead.
       </NotFound>
     );
   }
@@ -29,7 +29,7 @@ export function CheckNotFound() {
   const message = 'Page not found';
 
   const navModel = createNavModel(
-    { text: check.job, url: generateRoutePath(ROUTES.CheckDashboard, { id: check?.id ?? 'new' }) },
+    { text: check.job, url: generateRoutePath(AppRoutes.CheckDashboard, { id: check?.id ?? 'new' }) },
     [{ text: message }]
   );
 
@@ -37,7 +37,7 @@ export function CheckNotFound() {
     <PluginPageNotFound navModel={navModel} message={message}>
       <div>
         We&apos;re unable to find the page you&apos;re looking for. Do you want to go to the{' '}
-        <TextLink href={generateRoutePath(ROUTES.CheckDashboard, { id: check?.id ?? 'new' })}>check page</TextLink>?
+        <TextLink href={generateRoutePath(AppRoutes.CheckDashboard, { id: check?.id ?? 'new' })}>check page</TextLink>?
       </div>
     </PluginPageNotFound>
   );

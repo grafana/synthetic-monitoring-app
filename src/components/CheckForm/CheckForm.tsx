@@ -17,7 +17,7 @@ import {
   FeatureName,
 } from 'types';
 import { createNavModel } from 'utils';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
@@ -205,11 +205,11 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
       ? createNavModel(
           {
             text: check.job,
-            url: generateRoutePath(ROUTES.CheckDashboard, { id: check.id! }),
+            url: generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! }),
           },
           [{ text: `Edit` }]
         )
-      : createNavModel({ text: `Choose a check type`, url: generateRoutePath(ROUTES.ChooseCheckGroup) }, [
+      : createNavModel({ text: `Choose a check type`, url: generateRoutePath(AppRoutes.ChooseCheckGroup) }, [
           { text: `${checkTypeGroupOption?.label ?? 'Check not found'}` },
         ]);
   }, [check, checkTypeGroupOption, isExistingCheck]);
