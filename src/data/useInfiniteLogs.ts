@@ -18,6 +18,7 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end }: DeepLogsParam
     queryKey: ['logs', expr, start, end, refId, logsDS],
     initialPageParam: end,
     queryFn: async ({ pageParam }) => {
+      console.log(logsDS);
       if (!logsDS) {
         throw new Error('Logs data source not found');
       }
@@ -32,6 +33,7 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end }: DeepLogsParam
         refId: pageRefId,
       });
 
+      console.log(response);
       return parseLokiLogs<T, R>(response);
     },
     getNextPageParam: (lastPage) => {
@@ -46,7 +48,7 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end }: DeepLogsParam
       const deduplicatedLogs = flattenedLogs.filter(
         (log, index, self) => index === self.findIndex((t) => t.id === log.id)
       );
-
+      console.log({ data, flattenedLogs, deduplicatedLogs });
       return deduplicatedLogs.reverse();
     },
   });

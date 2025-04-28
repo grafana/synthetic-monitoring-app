@@ -114,6 +114,11 @@ export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerP
   const builtConfigs = configTimeRanges(checkConfigs, timeRange.to.valueOf());
   const grouped = groupByProbe(logsData);
   // ACCOUNT FOR PROBES
+  console.log({
+    logsData,
+    builtConfigs,
+    grouped,
+  });
 
   const adj = Object.entries(grouped).map(([probe, logs]) => {
     const adjusted = logs.map((log, index) => {

@@ -10,7 +10,7 @@ import {
 export const getHttpDashboard: ApiEntry<unknown> = {
   route: `/api/ds/query`,
   method: `post`,
-  result: (req) => {
+  result: async (req) => {
     const refId = req.url.searchParams.get(`refId`);
 
     if (refId === REF_ID_UNIQUE_CHECK_CONFIGS) {
@@ -21,7 +21,8 @@ export const getHttpDashboard: ApiEntry<unknown> = {
 
     if (refId?.startsWith(REF_ID_CHECK_LOGS)) {
       return {
-        json: checksLogs1(REF_ID_CHECK_LOGS),
+        // todo: fix this
+        json: checksLogs1(`checkLogs-1745503200000`),
       };
     }
 

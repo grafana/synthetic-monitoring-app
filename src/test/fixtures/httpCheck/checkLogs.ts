@@ -1,7 +1,7 @@
 export const checksLogs1 = (refId: string) => {
   return {
     results: {
-      [refId]: {
+      [`${refId}`]: {
         status: 200,
         frames: [
           {
