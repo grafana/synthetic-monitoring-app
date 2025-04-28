@@ -1,11 +1,20 @@
-import React, { Children, forwardRef, Fragment, isValidElement, ReactNode, useImperativeHandle, useState } from 'react';
-import { Button, Stack, Tab, TabContent, TabsBar } from '@grafana/ui';
+import React, {
+  Children,
+  forwardRef,
+  Fragment,
+  isValidElement,
+  ReactElement,
+  useImperativeHandle,
+  useState,
+} from 'react';
+import { Button, Stack, Tab, TabContent, TabProps, TabsBar } from '@grafana/ui';
 
 import { HandleErrorRef } from 'hooks/useNestedRequestErrors';
 import { Indent } from 'components/Indent';
 
+type RequestOptionsChild = ReactElement<TabProps> | undefined | null;
 interface RequestOptionsProps {
-  children: ReactNode;
+  children: RequestOptionsChild[] | RequestOptionsChild;
   open?: boolean;
 }
 

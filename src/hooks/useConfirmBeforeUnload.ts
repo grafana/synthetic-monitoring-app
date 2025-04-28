@@ -27,7 +27,7 @@ export function useConfirmBeforeUnload(confirm: boolean) {
     (event: BeforeUnloadEvent) => {
       if (_confirm) {
         event.preventDefault();
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         event.returnValue = ''; // legacy support
       }
     },

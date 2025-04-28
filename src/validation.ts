@@ -53,16 +53,6 @@ function isIpV6FromUrl(target: string) {
   return isIpV6;
 }
 
-export function validateTimeout(timeout: number, maxTimeout: number, minTimeout: number): string | undefined {
-  if (timeout > maxTimeout) {
-    return `Timeout cannot be more than ${maxTimeout} seconds`;
-  }
-  if (timeout < minTimeout) {
-    return `Timeout must be at least ${minTimeout} seconds`;
-  }
-  return undefined;
-}
-
 export function validateLabels(labels: Label[]): boolean {
   if (labels.length < 0 || labels.length > 5) {
     return false;

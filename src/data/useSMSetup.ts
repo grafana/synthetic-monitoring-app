@@ -26,7 +26,7 @@ export function useGetSMDatasource() {
     queryFn: () => {
       const smDsName = getDataSourceName();
       if (!smDsName) {
-        return undefined;
+        throw new Error('Synthetic Monitoring datasource not found');
       }
       return getDataSourceSrv().get(smDsName) as Promise<SMDataSource>;
     },

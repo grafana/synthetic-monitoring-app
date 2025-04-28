@@ -175,6 +175,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   );
 
   const formValues = formMethods.getValues();
+  // console.log(formMethods.formState.errors);
 
   const isFormModified = useMemo(() => {
     return checkHasChanges(formDefaultValues, formValues);
@@ -221,7 +222,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
       <FormProvider {...formMethods}>
         <CheckFormContextProvider disabled={isDisabled}>
           <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-            <FormLayout
+            <FormLayout<CheckFormValues>
               actions={actions}
               alerts={alerts}
               disabled={isDisabled}
@@ -286,9 +287,11 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                 </FeatureFlag>
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
-                <CheckProbeOptions checkType={checkType} />
-                {ProbesComponent}
-                <CheckUsage checkType={checkType} />
+                <Stack direction={`column`} gap={4}>
+                  <CheckProbeOptions checkType={checkType} />
+                  {ProbesComponent}
+                  <CheckUsage checkType={checkType} />
+                </Stack>
               </FormLayout.Section>
             </FormLayout>
           </div>
@@ -331,7 +334,7 @@ interface ConstructActionsProps {
   checkType: CheckType;
   disabled: boolean;
   loading: boolean;
-  ref: RefObject<HTMLButtonElement>;
+  ref: RefObject<HTMLButtonElement | null>;
 }
 
 function constructActions({ checkType, ...rest }: ConstructActionsProps) {

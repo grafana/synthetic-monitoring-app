@@ -6,7 +6,6 @@ import { MultiHttpAssertions } from 'components/CheckEditor/FormComponents/Multi
 import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/MultiHttpCheckRequests';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { CheckTimeoutValues } from '../CheckForm.constants';
 import { ENTRY_INDEX_CHAR } from '../FormLayout/formlayout.utils';
 
 export const MultiHTTPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesMultiHttp>>> = {
@@ -26,10 +25,7 @@ export const MultiHTTPCheckLayout: Partial<Record<LayoutSection, Section<CheckFo
     Component: (
       <>
         <MultiHttpAssertions />
-        <Timeout
-          min={CheckTimeoutValues[CheckType.MULTI_HTTP].min}
-          max={CheckTimeoutValues[CheckType.MULTI_HTTP].max}
-        />
+        <Timeout checkType={CheckType.MULTI_HTTP} />
       </>
     ),
   },

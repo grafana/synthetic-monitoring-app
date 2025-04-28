@@ -185,8 +185,8 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
         <Field
           htmlFor="secret-description"
           label="Description"
-          required
           description="Short description of the purpose of this secret"
+          required
           error={errors.description?.message}
           invalid={Boolean(errors.description?.message)}
         >
@@ -276,6 +276,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
           </Button>
         </div>
       </form>
+      {(isLoading || saveSecret.isPending) && <div>Loading...</div>}
     </Modal>
   );
 }

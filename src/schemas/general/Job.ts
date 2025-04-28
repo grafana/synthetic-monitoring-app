@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const JobSchema = z
+export const jobSchema = z
   .string({
     required_error: 'Job name is required',
   })

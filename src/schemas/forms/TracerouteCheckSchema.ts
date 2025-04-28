@@ -1,12 +1,21 @@
-import { HostNameTargetSchema } from 'schemas/general/HostNameTarget';
+import { createFrequencySchema } from 'schemas/general/Frequency';
+import { hostNameTargetSchema } from 'schemas/general/HostNameTarget';
+import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesTraceroute, CheckType, TracerouteSettingsFormValues } from 'types';
+import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
 const MAX_HOPS = 64;
 const MAX_UNKNOWN_HOPS = 20;
+
+const THIRTY_SECONDS = ONE_SECOND_IN_MS * 30;
+
+export const MIN_FREQUENCY_TRACEROUTE = ONE_MINUTE_IN_MS * 2;
+export const MIN_TIMEOUT_TRACEROUTE = THIRTY_SECONDS;
+export const MAX_TIMEOUT_TRACEROUTE = THIRTY_SECONDS;
 
 const TracerouteSettingsSchema: ZodType<TracerouteSettingsFormValues> = z.object({
   maxHops: z
@@ -27,12 +36,20 @@ const TracerouteSettingsSchema: ZodType<TracerouteSettingsFormValues> = z.object
   hopTimeout: z.number(),
 });
 
-const TracerouteSchemaValues = z.object({
-  target: HostNameTargetSchema,
-  checkType: z.literal(CheckType.Traceroute),
-  settings: z.object({
-    traceroute: TracerouteSettingsSchema,
-  }),
-});
-
-export const TracerouteCheckSchema: ZodType<CheckFormValuesTraceroute> = BaseCheckSchema.and(TracerouteSchemaValues);
+export const tracerouteCheckSchema: ZodType<CheckFormValuesTraceroute> = baseCheckSchema
+  .omit({
+    frequency: true,
+    timeout: true,
+    target: true,
+  })
+  .and(
+    z.object({
+      target: hostNameTargetSchema,
+      checkType: z.literal(CheckType.Traceroute),
+      settings: z.object({
+        traceroute: TracerouteSettingsSchema,
+      }),
+      frequency: createFrequencySchema(MIN_FREQUENCY_TRACEROUTE),
+      timeout: createTimeoutSchema(MIN_TIMEOUT_TRACEROUTE, MAX_TIMEOUT_TRACEROUTE),
+    })
+  );

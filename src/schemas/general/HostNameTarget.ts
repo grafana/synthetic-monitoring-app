@@ -2,9 +2,9 @@ import { z } from 'zod';
 
 import { validateHostAddress } from 'validation';
 
-import { TargetSchema } from './Target';
+import { targetSchema } from './Target';
 
-export const HostNameTargetSchema = TargetSchema.and(z.string().superRefine(validate));
+export const hostNameTargetSchema = targetSchema.and(z.string().superRefine(validate));
 
 function validate(target: string, ctx: z.RefinementCtx) {
   const message = validateHostAddress(target);

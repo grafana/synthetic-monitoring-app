@@ -34,13 +34,13 @@ export function useUsageCalc(calcUsageValues: CalculateUsageValues[]) {
   return calcUsageValues.reduce<UsageValues>(
     (total, calcUsageValue) => {
       const accountingClass = getAccountingClass(calcUsageValue);
-      const { assertionCount, probeCount, frequencySeconds } = calcUsageValue;
+      const { assertionCount, probeCount, frequency } = calcUsageValue;
       const calculateFunc = calcFunctionMap[calcUsageValue.checkType === CheckType.MULTI_HTTP ? `multi` : `other`];
 
       const usage = calculateFunc({
         assertionCount,
         probeCount,
-        frequencySeconds,
+        frequency,
         seriesPerProbe: data.AccountingClasses[accountingClass]?.Series,
       });
 

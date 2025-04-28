@@ -20,7 +20,7 @@ export const RequestHeaders = ({ description, disabled, label, name, ...rest }: 
     formState: { errors },
   } = useFormContext<CheckFormValues>();
   const fieldError = get(errors, name);
-  const errorMessage = fieldError?.message || fieldError?.root?.message;
+  const errorMessage = typeof fieldError === 'string' ? fieldError : fieldError?.message || fieldError?.root?.message;
 
   return (
     <Field

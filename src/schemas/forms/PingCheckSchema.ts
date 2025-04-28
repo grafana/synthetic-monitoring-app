@@ -1,21 +1,21 @@
-import { HostNameTargetSchema } from 'schemas/general/HostNameTarget';
+import { hostNameTargetSchema } from 'schemas/general/HostNameTarget';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesPing, CheckType, IpVersion, PingSettingsFormValues } from 'types';
 
-import { BaseCheckSchema } from './BaseCheckSchema';
+import { baseCheckSchema } from './BaseCheckSchema';
 
-const PingSettingsSchema: ZodType<PingSettingsFormValues> = z.object({
+const pingSettingsSchema: ZodType<PingSettingsFormValues> = z.object({
   ipVersion: z.nativeEnum(IpVersion),
   dontFragment: z.boolean(),
 });
 
-const PingSchemaValues = z.object({
-  target: HostNameTargetSchema,
-  checkType: z.literal(CheckType.PING),
-  settings: z.object({
-    ping: PingSettingsSchema,
-  }),
-});
-
-export const PingCheckSchema: ZodType<CheckFormValuesPing> = BaseCheckSchema.and(PingSchemaValues);
+export const pingCheckSchema: ZodType<CheckFormValuesPing> = baseCheckSchema.and(
+  z.object({
+    target: hostNameTargetSchema,
+    checkType: z.literal(CheckType.PING),
+    settings: z.object({
+      ping: pingSettingsSchema,
+    }),
+  })
+);

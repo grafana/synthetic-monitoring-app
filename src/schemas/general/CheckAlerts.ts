@@ -3,7 +3,7 @@ import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { z, ZodType } from 'zod';
 
 import { CheckAlertFormRecord, CheckFormValuesBase } from 'types';
-import { secondsToDuration } from 'utils';
+import { formatDuration } from 'utils';
 
 const isScientificNotation = (val: number) => {
   return /e|E/.test(val.toString());
@@ -11,7 +11,7 @@ const isScientificNotation = (val: number) => {
 
 const invalidThreshold = 'Threshold value must be a valid integer';
 
-const CheckAlertSchema = z
+const checkAlertSchema = z
   .object({
     id: z.number().optional(),
     isSelected: z.boolean().optional(),
@@ -38,7 +38,7 @@ const CheckAlertSchema = z
     { message: invalidThreshold, path: ['threshold'] }
   );
 
-const ProbeFailedExecutionsTooHighSchema = CheckAlertSchema.refine(
+const probeFailedExecutionsTooHighSchema = checkAlertSchema.refine(
   (data) => {
     if (data.isSelected && !data.period) {
       return false;
@@ -48,9 +48,9 @@ const ProbeFailedExecutionsTooHighSchema = CheckAlertSchema.refine(
   { message: 'You need to choose a period for this alert', path: ['period'] }
 );
 
-export const CheckAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: ProbeFailedExecutionsTooHighSchema.optional(),
-  TLSTargetCertificateCloseToExpiring: CheckAlertSchema.optional(),
+export const checkAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
+  ProbeFailedExecutionsTooHigh: probeFailedExecutionsTooHighSchema.optional(),
+  TLSTargetCertificateCloseToExpiring: checkAlertSchema.optional(),
 });
 
 export function checkAlertsRefinement(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
@@ -71,8 +71,8 @@ function checkThresholdIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) 
   const { frequency, probes } = data;
   const failedExecutionsAlertPeriod = data.alerts?.ProbeFailedExecutionsTooHigh?.period ?? '';
   const failedExecutionsAlertThreshold = data.alerts?.ProbeFailedExecutionsTooHigh?.threshold ?? 0;
-  const failedExecutionAlertPeriodInSeconds = durationToMilliseconds(parseDuration(failedExecutionsAlertPeriod)) / 1000;
-  const totalChecksPerPeriod = getTotalChecksPerPeriod(probes.length, frequency, failedExecutionAlertPeriodInSeconds);
+  const failedExecutionAlertPeriod = durationToMilliseconds(parseDuration(failedExecutionsAlertPeriod));
+  const totalChecksPerPeriod = getTotalChecksPerPeriod(probes.length, frequency, failedExecutionAlertPeriod);
 
   if (totalChecksPerPeriod !== 0 && failedExecutionsAlertThreshold > totalChecksPerPeriod) {
     ctx.addIssue({
@@ -86,12 +86,12 @@ function checkThresholdIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) 
 function checkPeriodIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
   const { frequency } = data;
   const failedExecutionsAlertPeriod = data.alerts?.ProbeFailedExecutionsTooHigh?.period ?? '';
-  const failedExecutionAlertPeriodInSeconds = durationToMilliseconds(parseDuration(failedExecutionsAlertPeriod)) / 1000;
+  const failedExecutionAlertPeriod = durationToMilliseconds(parseDuration(failedExecutionsAlertPeriod));
 
-  if (failedExecutionAlertPeriodInSeconds < frequency) {
+  if (failedExecutionAlertPeriod < frequency) {
     ctx.addIssue({
       path: ['alerts.ProbeFailedExecutionsTooHigh.period'],
-      message: `Period (${failedExecutionsAlertPeriod}) must be equal or higher to the frequency (${secondsToDuration(
+      message: `Period (${failedExecutionsAlertPeriod}) must be equal or higher to the frequency (${formatDuration(
         frequency
       )})`,
       code: z.ZodIssueCode.custom,

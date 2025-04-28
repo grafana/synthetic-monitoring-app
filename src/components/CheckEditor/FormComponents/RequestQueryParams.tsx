@@ -17,7 +17,7 @@ export const RequestQueryParams = ({ disabled, name, ...rest }: RequestQueryPara
     formState: { errors },
   } = useFormContext<CheckFormValues>();
   const fieldError = get(errors, name);
-  const errorMessage = fieldError?.message || fieldError?.root?.message;
+  const errorMessage = typeof fieldError === 'string' ? fieldError : fieldError?.message || fieldError?.root?.message;
   const label = `Query parameter`;
 
   return (

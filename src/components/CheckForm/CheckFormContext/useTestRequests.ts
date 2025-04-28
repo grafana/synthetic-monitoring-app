@@ -37,7 +37,6 @@ export function useTestRequests() {
           {
             onSuccess: (data) => {
               const parsed = parseLogLine(data);
-              console.log(parsed);
 
               if (parsed) {
                 setRequests((prev) =>
@@ -58,7 +57,6 @@ export function useTestRequests() {
               }, 30000);
             },
             onError: (err) => {
-              console.log(err);
               clearInterval(interval);
               clearTimeout(timeout);
             },
