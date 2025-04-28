@@ -121,6 +121,9 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
         new SceneControlsSpacer(),
         new SceneReactObject({
           component: AddNewCheckButton,
+          props: {
+            source: 'homepage',
+          },
         }),
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({

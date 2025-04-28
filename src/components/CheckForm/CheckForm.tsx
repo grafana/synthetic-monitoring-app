@@ -96,6 +96,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   const styles = useStyles2(getStyles);
   const status = useCheckTypeOptions().find((option) => option.value === checkType)?.status;
   const isExistingCheck = !!(check && check?.id !== undefined);
+  const checkState = isExistingCheck ? 'existing' : 'new';
   const { isLoading, isOverBrowserLimit, isOverHgExecutionLimit, isOverCheckLimit, isOverScriptedLimit, isReady } =
     useLimits();
   const overLimit =
@@ -103,7 +104,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     isOverCheckLimit ||
     (checkType === CheckType.Browser && isOverBrowserLimit) ||
     ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
-  const isDisabled = disabled || !canWriteChecks || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
+  const isDisabled = disabled || !canWriteChecks || getLimitDisabled({ checkState, isLoading, overLimit });
   const defaultValues = useMemo(() => toFormValues(initialCheck, checkType), [initialCheck, checkType]);
   const [formDefaultValues, setFormDefaultValues] = useState(defaultValues);
 
@@ -117,6 +118,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     useCheckForm({
       check,
       checkType,
+      checkState,
       onTestSuccess: (data) => {
         setAdhocTestData(data);
         setOpenTestCheckModal(true);
@@ -225,6 +227,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
             <FormLayout<CheckFormValues>
               actions={actions}
               alerts={alerts}
+              checkState={checkState}
+              checkType={checkType}
               disabled={isDisabled}
               onSubmit={handleSubmit}
               onValid={handleValid}
@@ -232,7 +236,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
               schema={schema}
               hasUnsavedChanges={hasUnsavedChanges}
             >
-              {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
+              {checkState === 'new' && <OverLimitAlert checkType={checkType} />}
 
               <FormLayout.Section
                 label={checkTypeStep1Label[checkType]}
@@ -316,13 +320,13 @@ const CheckProbeOptions = ({ checkType }: { checkType: CheckType }) => {
 };
 
 interface GetIsDisabledProps {
-  isExistingCheck: boolean;
+  checkState: 'new' | 'existing';
   isLoading: boolean;
   overLimit: boolean;
 }
 
-function getLimitDisabled({ isExistingCheck, isLoading, overLimit }: GetIsDisabledProps) {
-  if (isExistingCheck) {
+function getLimitDisabled({ checkState, isLoading, overLimit }: GetIsDisabledProps) {
+  if (checkState === 'existing') {
     return false;
   }
 

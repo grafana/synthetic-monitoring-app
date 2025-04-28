@@ -2,6 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackAddCheckTypeGroupButtonClicked } from 'features/tracking/checkCreationEvents';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckTypeGroup } from 'types';
@@ -49,6 +50,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             disabled={disabled}
             href={`${getRoute(AppRoutes.NewCheck)}/${group.value}`}
             tooltip={getTooltip(limits, group.value)}
+            onClick={() => trackAddCheckTypeGroupButtonClicked({ checkTypeGroup: group.value })}
           >
             {group.label}
           </LinkButton>
@@ -58,7 +60,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             <div className={styles.cardFooter}>
               {group.protocols.map((protocol, index) => (
                 <span key={protocol.label}>
-                  <Protocol {...protocol} href={disabled ? undefined : protocol.href} />
+                  <Protocol {...protocol} href={disabled ? undefined : protocol.href} onClick={protocol.onClick} />
                   {index < group.protocols.length - 1 && ', '}
                 </span>
               ))}
