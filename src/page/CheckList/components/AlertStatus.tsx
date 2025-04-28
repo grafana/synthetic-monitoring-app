@@ -4,7 +4,7 @@ import { Icon, IconButton, LinkButton, Tooltip, useStyles2, useTheme2 } from '@g
 import { css, cx } from '@emotion/css';
 
 import { AlertSensitivity, Check, PrometheusAlertsGroup } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useAlertRules } from 'hooks/useAlertRules';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -174,7 +174,7 @@ export const ZeroStateAlerts = ({ alertSensitivity }: ZeroStateAlertsProps) => {
         but we could not detect any associated alerting rules.
       </div>
       <div>
-        <LinkButton href={getRoute(ROUTES.Alerts)} size="sm">
+        <LinkButton href={getRoute(AppRoutes.Alerts)} size="sm">
           Go to Alerts
         </LinkButton>
       </div>

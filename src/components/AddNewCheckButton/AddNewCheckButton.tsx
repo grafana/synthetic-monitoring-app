@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@grafana/ui';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getUserPermissions } from 'data/permissions';
 import { useNavigation } from 'hooks/useNavigation';
 
@@ -12,7 +12,7 @@ export function AddNewCheckButton() {
   return (
     <Button
       variant="primary"
-      onClick={() => navigate(ROUTES.ChooseCheckGroup)}
+      onClick={() => navigate(AppRoutes.ChooseCheckGroup)}
       type="button"
       disabled={!canWriteChecks}
     >

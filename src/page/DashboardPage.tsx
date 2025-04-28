@@ -5,7 +5,7 @@ import { Spinner } from '@grafana/ui';
 
 import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
 import { getCheckType } from 'utils';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
@@ -51,7 +51,7 @@ function DashboardPageContent() {
     }
 
     const checkType = getCheckType(check.settings);
-    const url = generateRoutePath(ROUTES.CheckDashboard, { id: check.id! });
+    const url = generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! });
     switch (checkType) {
       case CheckType.DNS: {
         return new SceneApp({

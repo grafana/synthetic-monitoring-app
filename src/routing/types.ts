@@ -1,4 +1,4 @@
-export enum ROUTES {
+export enum AppRoutes {
   Alerts = 'alerts',
   CheckDashboard = 'checks/:id',
   Checks = 'checks',

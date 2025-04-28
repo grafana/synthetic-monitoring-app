@@ -4,7 +4,7 @@ import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useDeleteCheck } from 'data/useChecks';
@@ -27,14 +27,14 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         <>
           {viewDashboardAsIcon ? (
             <LinkButton
-              href={generateRoutePath(ROUTES.CheckDashboard, { id: check.id! })}
+              href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
               size="sm"
               fill="text"
               name="apps"
               tooltip="Go to dashboard"
             />
           ) : (
-            <LinkButton href={`${getRoute(ROUTES.Checks)}/${check.id}/dashboard`} size="sm" fill="text">
+            <LinkButton href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`} size="sm" fill="text">
               View dashboard
             </LinkButton>
           )}
@@ -42,7 +42,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
       )}
       <LinkButton
         data-testid="edit-check-button"
-        href={`${generateRoutePath(ROUTES.EditCheck, { id: check.id! })}`}
+        href={`${generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}`}
         icon={`pen`}
         tooltip="Edit check"
         disabled={!canWriteChecks}

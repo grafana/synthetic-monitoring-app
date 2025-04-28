@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { probeSchema } from 'schemas/forms/ProbeSchema';
 
 import { ExtendedProbe, FeatureName, Probe } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { FeatureFlag } from 'components/FeatureFlag';
@@ -201,7 +201,7 @@ export const ProbeEditor = ({
                     </>
                   )}
                   {actions}
-                  <LinkButton variant="secondary" href={getRoute(ROUTES.Probes)}>
+                  <LinkButton variant="secondary" href={getRoute(AppRoutes.Probes)}>
                     Back
                   </LinkButton>
                 </div>

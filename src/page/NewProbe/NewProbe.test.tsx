@@ -6,7 +6,7 @@ import { render } from 'test/render';
 import { fillProbeForm } from 'test/utils';
 
 import { FeatureName } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 
 import { DataTestIds } from '../../test/dataTestIds';
@@ -16,8 +16,8 @@ jest.setTimeout(60000);
 
 const renderNewProbe = () => {
   return render(<NewProbe />, {
-    route: getRoute(ROUTES.NewProbe),
-    path: getRoute(ROUTES.NewProbe),
+    route: getRoute(AppRoutes.NewProbe),
+    path: getRoute(AppRoutes.NewProbe),
   });
 };
 
@@ -36,7 +36,9 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
   const dismiss = screen.getByText('Go back to probes list');
   await user.click(dismiss);
 
-  expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(generateRoutePath(ROUTES.Probes));
+  expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
+    generateRoutePath(AppRoutes.Probes)
+  );
 });
 
 //regression for https://github.com/grafana/support-escalations/issues/11171

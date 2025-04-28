@@ -1,23 +1,27 @@
-import { useNavigate, useParams } from 'react-router-dom-v5-compat';
+import { useEffect } from 'react';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
+import { useNavigation } from 'hooks/useNavigation';
 
-interface LegacyEditRedirectProps {
+interface Props {
   entity: 'check' | 'probe';
 }
 
-export function LegacyEditRedirect({ entity }: LegacyEditRedirectProps) {
-  const navigate = useNavigate();
-  const params = useParams<{ id: string }>();
+export const LegacyEditRedirect = ({ entity }: Props) => {
+  const navigate = useNavigation();
 
-  const route = entity === 'probe' ? ROUTES.EditProbe : ROUTES.EditCheck;
+  useEffect(() => {
+    const route = entity === 'probe' ? AppRoutes.EditProbe : AppRoutes.EditCheck;
+    const id = window.location.pathname.split('/').pop();
 
-  try {
-    navigate(generateRoutePath(route, { id: params.id! }), { replace: true });
-  } catch (_) {
-    navigate(generateRoutePath(ROUTES.Home));
-  }
+    if (!id) {
+      navigate(generateRoutePath(AppRoutes.Home));
+      return;
+    }
+
+    navigate(generateRoutePath(route, { id }));
+  }, [entity, navigate]);
 
   return null;
-}
+};
