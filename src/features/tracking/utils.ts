@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import { reportInteraction } from '@grafana/runtime';
 
 export type TrackingEventProps = {
