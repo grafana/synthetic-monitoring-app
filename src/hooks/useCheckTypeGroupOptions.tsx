@@ -1,8 +1,9 @@
 import { ReactNode } from 'react';
 import { IconName } from '@grafana/data';
+import { trackAddCheckTypeButtonClicked } from 'features/tracking/checkCreationEvents';
 
 import { CheckType, CheckTypeGroup, FeatureName } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
 import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions';
@@ -13,6 +14,7 @@ export type ProtocolOption = {
   tooltip?: ReactNode;
   href?: string;
   featureToggle?: FeatureName | undefined;
+  onClick?: () => void;
 };
 
 export interface CheckTypeGroupOption {
@@ -31,8 +33,9 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `heart-rate`,
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
       label: option.label,
-      href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
+      href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
       featureToggle: option.featureToggle,
+      onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.ApiTest, protocol: option.value }),
     })),
   },
   {
@@ -43,7 +46,8 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     protocols: [
       {
         label: `HTTP`,
-        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MULTI_HTTP}`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MULTI_HTTP}`,
+        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.MultiStep, protocol: `HTTP` }),
       },
     ],
   },
@@ -56,7 +60,8 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         featureToggle: FeatureName.ScriptedChecks,
-        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Scripted}`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Scripted}`,
+        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Scripted, protocol: `HTTP` }),
       },
       // todo: we don't support these yet
       // { label: `gRPC` },
@@ -88,7 +93,8 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         featureToggle: FeatureName.BrowserChecks,
-        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Browser}`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Browser}`,
+        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Browser, protocol: `HTTP` }),
       },
     ],
   },

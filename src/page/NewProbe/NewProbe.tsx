@@ -4,7 +4,7 @@ import { Alert, Label, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ExtendedProbe, type Probe, ProbeProvider } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { type AddProbeResult } from 'datasource/responses.types';
 import { useCreateProbe } from 'data/useProbes';
 import { useBackendAddress } from 'hooks/useBackendAddress';
@@ -77,7 +77,7 @@ export const NewProbe = () => {
         isOpen={showTokenModal}
         actionText="Go back to probes list"
         onDismiss={() => {
-          navigate(ROUTES.Probes);
+          navigate(AppRoutes.Probes);
           setShowTokenModal(false);
         }}
         token={probeToken}

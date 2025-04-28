@@ -15,7 +15,7 @@ import { server } from 'test/server';
 import { getSelect, probeToMetadataProbe, selectOption } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
 import { DataTestIds } from '../../test/dataTestIds';
@@ -41,10 +41,10 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
     })
   );
 
-  const path = `${generateRoutePath(ROUTES.Checks)}?${searchParams}`;
+  const path = `${generateRoutePath(AppRoutes.Checks)}?${searchParams}`;
 
   const res = render(<CheckList />, {
-    route: ROUTES.Checks,
+    route: AppRoutes.Checks,
     path,
   });
 
@@ -357,7 +357,7 @@ test('clicking add new is handled', async () => {
   const { user } = await renderCheckList();
   const addNewButton = await screen.findByText('Add new check');
   await user.click(addNewButton);
-  expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckGroup);
+  expect(navigate).toHaveBeenCalledWith(AppRoutes.ChooseCheckGroup);
 });
 
 test('cascader adds labels to label filter', async () => {
