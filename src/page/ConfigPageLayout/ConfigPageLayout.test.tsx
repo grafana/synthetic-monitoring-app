@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
 import { render } from '@testing-library/react';
 
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
 import { DataTestIds } from '../../test/dataTestIds';
@@ -14,7 +14,7 @@ function Wrapper({ initialEntries = ['/'] }) {
     <MemoryRouter initialEntries={initialEntries}>
       <CompatRouter>
         <Routes>
-          <Route path={getRoute(ROUTES.Config)} Component={ConfigPageLayout}>
+          <Route path={getRoute(AppRoutes.Config)} Component={ConfigPageLayout}>
             <Route index element={<div data-testid="indexRoute">index</div>} />
             <Route path="access-tokens" element={<div data-testid="indexAccessTokens">access-tokens</div>} />
             <Route path="terraform" element={<div data-testid="terraform">terraform</div>} />
@@ -26,7 +26,7 @@ function Wrapper({ initialEntries = ['/'] }) {
 }
 
 function renderPage(path = '') {
-  return render(<Wrapper initialEntries={[getRoute(ROUTES.Config) + path]} />);
+  return render(<Wrapper initialEntries={[getRoute(AppRoutes.Config) + path]} />);
 }
 
 describe('ConfigPageLayout', () => {

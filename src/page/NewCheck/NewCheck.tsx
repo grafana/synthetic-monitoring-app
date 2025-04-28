@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom-v5-compat';
 import { TextLink } from '@grafana/ui';
 
 import { CheckFormPageParams } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { CHECK_TYPE_GROUP_OPTIONS } from 'hooks/useCheckTypeGroupOptions';
 import { CheckForm } from 'components/CheckForm/CheckForm';
@@ -19,7 +19,7 @@ export const NewCheck = () => {
         <div>
           <div>We&apos;re unable to find a check type that corresponds to the current URL.</div>
           <div>
-            Are you trying to <TextLink href={getRoute(ROUTES.ChooseCheckGroup)}>create a new check</TextLink>?
+            Are you trying to <TextLink href={getRoute(AppRoutes.ChooseCheckGroup)}>create a new check</TextLink>?
           </div>
         </div>
       </PluginPageNotFound>

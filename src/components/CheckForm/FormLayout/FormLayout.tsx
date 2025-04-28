@@ -3,8 +3,12 @@ import { FieldErrors, FieldValues, SubmitHandler } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 import { ZodType } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
+
+import { CheckType } from 'types';
+import { ANALYTICS_STEP_MAP, FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 import { flattenKeys } from '../checkForm.utils';
 import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
@@ -20,6 +24,8 @@ export type FormLayoutProps<T extends FieldValues> = {
   actions?: ActionNode[];
   alerts?: ReactNode;
   children: ReactNode;
+  checkState: 'new' | 'existing';
+  checkType: CheckType;
   disabled?: boolean;
   onSubmit: (
     onValid: SubmitHandler<T>,
@@ -31,11 +37,11 @@ export type FormLayoutProps<T extends FieldValues> = {
   hasUnsavedChanges?: boolean;
 };
 
-export const FORM_MAX_WIDTH = `860px`;
-
 export const FormLayout = <T extends FieldValues>({
   actions,
   alerts,
+  checkState,
+  checkType,
   disabled,
   children,
   onSubmit,
@@ -117,6 +123,8 @@ export const FormLayout = <T extends FieldValues>({
       <div className={styles.container}>
         <FormSidebar
           activeSection={activeSection}
+          checkState={checkState}
+          checkType={checkType}
           onSectionClick={goToSection}
           sections={formSections}
           visitedSections={visitedSections}
@@ -131,7 +139,20 @@ export const FormLayout = <T extends FieldValues>({
             <div className={cx(styles.actionsBar, styles.sectionContent)} data-testid={DataTestIds.ACTIONS_BAR}>
               <div>
                 {activeSection !== 0 && (
-                  <Button onClick={() => goToSection(activeSection - 1)} icon="arrow-left" variant="secondary">
+                  <Button
+                    onClick={() => {
+                      const newStep = activeSection - 1;
+                      trackNavigateWizardForm({
+                        checkState,
+                        checkType,
+                        component: 'back-button',
+                        step: ANALYTICS_STEP_MAP[newStep],
+                      });
+                      goToSection(newStep);
+                    }}
+                    icon="arrow-left"
+                    variant="secondary"
+                  >
                     <Stack gap={0.5}>
                       <div>{activeSection}.</div>
                       <div>{formSections[activeSection - 1].props.label}</div>
@@ -142,7 +163,20 @@ export const FormLayout = <T extends FieldValues>({
               <Stack>
                 {actionButtons}
                 {activeSection < formSections.length - 1 && (
-                  <Button onClick={() => goToSection(activeSection + 1)} icon="arrow-right" type="button">
+                  <Button
+                    onClick={() => {
+                      const newStep = activeSection + 1;
+                      trackNavigateWizardForm({
+                        checkState,
+                        checkType,
+                        component: 'forward-button',
+                        step: ANALYTICS_STEP_MAP[newStep],
+                      });
+                      goToSection(newStep);
+                    }}
+                    icon="arrow-right"
+                    type="button"
+                  >
                     <Stack>
                       <div>{activeSection + 2}.</div>
                       <div>{formSections[activeSection + 1].props.label}</div>

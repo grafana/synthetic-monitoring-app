@@ -4,7 +4,7 @@ import { Card, Link, LinkButton, Stack, TextLink, useStyles2 } from '@grafana/ui
 import { css } from '@emotion/css';
 
 import { type ExtendedProbe, type Label } from 'types';
-import { ROUTES } from 'routing/types';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
@@ -17,7 +17,9 @@ import { ProbeStatus } from './ProbeStatus';
 
 export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
   const { canWriteProbes } = useCanEditProbe(probe);
-  const probeEditHref = generateRoutePath(canWriteProbes ? ROUTES.EditProbe : ROUTES.ViewProbe, { id: probe.id! });
+  const probeEditHref = generateRoutePath(canWriteProbes ? AppRoutes.EditProbe : AppRoutes.ViewProbe, {
+    id: probe.id!,
+  });
   const labelsString = labelsToString(probe.labels);
   const styles = useStyles2(getStyles2);
 
