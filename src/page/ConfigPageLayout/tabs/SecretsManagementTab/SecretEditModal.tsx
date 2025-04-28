@@ -110,7 +110,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   });
 
   const handleResetValue = () => {
-    setIsConfigured(!isConfigured);
+    setIsConfigured(false);
   };
 
   useEffect(() => {
