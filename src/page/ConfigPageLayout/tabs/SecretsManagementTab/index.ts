@@ -1,2 +1,2 @@
 export * from './SecretsManagementTab';
-export type * from './types';
+export * from './types';
