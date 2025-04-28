@@ -4,20 +4,29 @@ import { Secret, SecretWithValue } from './types';
 
 const keyValueRegex = /^(?=.{1,63}$)[a-zA-Z\d][a-zA-Z\d._-]*$/;
 const keyValueRegexErrorMessage =
-  'Must start with a letter or number and can only contain letters, numbers, dashes, underscores, and periods';
-const keyValue = z
-  .string()
-  .min(1, 'Required')
-  .max(63, 'Cannot be more than 63 characters')
-  .regex(keyValueRegex, keyValueRegexErrorMessage);
+  'must start with a letter or number and can only contain letters, numbers, dashes, underscores, and periods';
 
-const description = z.string().min(1, 'Required').max(253, 'Cannot be more than 253 characters');
+function keyValueFactory(fieldName: 'Name' | 'Value') {
+  return z
+    .string()
+    .min(1, `Label ${fieldName} is required`)
+    .max(63, `Label ${fieldName} cannot be more than 63 characters`)
+    .regex(keyValueRegex, `Label ${fieldName} ${keyValueRegexErrorMessage}`);
+}
+
+const labelName = keyValueFactory('Name');
+const labelValue = keyValueFactory('Value');
+
+const description = z
+  .string()
+  .min(1, 'Description is required')
+  .max(253, 'Description cannot be more than 253 characters');
 
 const labels: ZodType<Secret['labels']> = z
   .array(
     z.object({
-      name: keyValue,
-      value: keyValue,
+      name: labelName,
+      value: labelValue,
     })
   )
   .superRefine((labels, ctx) => {
@@ -75,22 +84,22 @@ const createSecretSchema: ZodType<SecretWithValue> = z.object({
     .pipe(
       z
         .string()
-        .min(1, 'Required')
-        .max(253, 'Cannot be more than 253 characters')
+        .min(1, 'Name is required')
+        .max(253, 'Name cannot be more than 253 characters')
         .regex(
           /^(?=.{1,253}$)[a-z\d][a-z\d.-]*$/,
-          'Must start with a letter or number and can only contain letters, numbers, dashes, and periods'
+          'Name must start with a letter or number and can only contain letters, numbers, dashes, and periods'
         )
     ),
-  plaintext: z.string().min(1, 'Required'),
+  plaintext: z.string().min(1, 'Value is required'),
 });
 
 export const updateSecretSchema: ZodType<Omit<SecretWithValue, 'name'> | Omit<SecretWithValue, 'name' | 'plaintext'>> =
   z.object({
-    uuid: z.string().min(1, 'Required'),
+    uuid: z.string().min(1, 'UUID is required'),
     labels,
     description,
-    plaintext: z.string().min(1, 'Required').optional(),
+    plaintext: z.string().min(1, 'Value is required').optional(),
   });
 
 export function secretSchemaFactory(isNew = true) {
