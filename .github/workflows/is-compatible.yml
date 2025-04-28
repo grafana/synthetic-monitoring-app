@@ -1,23 +1,35 @@
 name: Latest Grafana API compatibility check
 on: [pull_request]
 
+permissions:
+  contents: none
+  packages: none
+
 jobs:
   compatibilitycheck:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+        with:
+          persist-credentials: false
+
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
         with:
           node-version: '20'
           cache: 'npm'
+
       - name: Install dependencies
-        uses: borales/actions-yarn@v4
+        uses: borales/actions-yarn@97ba8bebfe5b549bb7999261698a52a81fd62f1b # v4.2.0
         with:
           cmd: install
+
       - name: Build plugin
-        uses: borales/actions-yarn@v4
+        uses: borales/actions-yarn@97ba8bebfe5b549bb7999261698a52a81fd62f1b # v4.2.0
         with:
           cmd: run build
+
       - name: Compatibility check
         run: npx @grafana/levitate@latest is-compatible --path src/module.ts --target @grafana/data,@grafana/runtime,@grafana/scenes,@grafana/schema,@grafana/ui
