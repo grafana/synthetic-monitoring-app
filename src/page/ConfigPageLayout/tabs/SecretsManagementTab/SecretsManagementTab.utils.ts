@@ -4,7 +4,7 @@ export type SecretFormValues = Omit<Secret, 'plaintext'> & { plaintext?: string 
 
 export function secretToFormValues(secret?: SecretWithMetadata): SecretFormValues | undefined {
   if (!secret) {
-    return;
+    return undefined;
   }
 
   return {

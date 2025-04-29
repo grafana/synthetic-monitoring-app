@@ -19,13 +19,13 @@ interface SecretEditModalProps {
   open?: boolean;
 }
 
-function getDefaultValues(): SecretFormValues & { plaintext?: string } {
+function getDefaultValues(isNew = true): SecretFormValues & { plaintext?: string } {
   return {
     uuid: '',
     name: '',
     description: '',
     labels: [],
-    plaintext: undefined,
+    plaintext: isNew ? '' : undefined,
   };
 }
 
@@ -80,7 +80,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   const hasError = hasFetchError || !!saveError;
   const styles = useStyles2(getStyles);
   const defaultValues = useMemo(() => {
-    return secretToFormValues(secret) ?? getDefaultValues();
+    return secretToFormValues(secret) ?? getDefaultValues(isNewSecret);
   }, [secret]);
 
   const {
@@ -91,6 +91,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
     formState: { errors },
     getValues,
     setValue,
+    trigger,
   } = useForm<SecretFormValues & { plaintext?: string }>({
     defaultValues,
     disabled: isLoading || saveSecret.isPending,
@@ -119,7 +120,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   }, [reset, defaultValues]);
 
   const onSubmit = (data: SecretFormValues) => {
-    if ('plaintext' in data && data.plaintext === undefined) {
+    if ('plaintext' in data && (data.plaintext === undefined || isConfigured)) {
       delete data.plaintext;
     }
 
@@ -179,6 +180,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
             {...register('name', { disabled: !isNewSecret })}
             onChange={({ target }: ChangeEvent<HTMLInputElement>) => {
               setValue('name', target.value.replaceAll(' ', '-').toLowerCase());
+              trigger('name');
             }}
           />
         </Field>
@@ -226,7 +228,9 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
                       placeholder="name"
                       {...register(`labels.${index}.name` as const)}
                       onChange={({ target }: ChangeEvent<HTMLInputElement>) => {
-                        setValue(`labels.${index}.name`, target.value.replaceAll(' ', '-'));
+                        const fieldName = `labels.${index}.name` as const;
+                        setValue(fieldName, target.value.replaceAll(' ', '-'));
+                        trigger(fieldName);
                       }}
                     />
                   </Field>
@@ -240,7 +244,9 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
                       placeholder="value"
                       {...register(`labels.${index}.value` as const)}
                       onChange={({ target }: ChangeEvent<HTMLInputElement>) => {
-                        setValue(`labels.${index}.value`, target.value.replaceAll(' ', '-'));
+                        const fieldName = `labels.${index}.value` as const;
+                        setValue(fieldName, target.value.replaceAll(' ', '-'));
+                        trigger(fieldName);
                       }}
                     />
                   </Field>
