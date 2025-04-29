@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
 import { useTimeRange } from '@grafana/scenes-react';
-import { Stack } from '@grafana/ui';
+import { RadioButtonGroup, Stack } from '@grafana/ui';
 
 import { Check } from 'types';
+import { AGGREGATION_OPTIONS, VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
-  useTimepointExplorer,
+  useAggregation,
   useTimepointExplorerView,
+  useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { timeshiftedTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -18,10 +20,11 @@ interface TimepointExplorerProps {
 
 export function TimepointExplorer({ check }: TimepointExplorerProps) {
   const [timeRange] = useTimeRange();
+  const { aggregation, changeAggregation, aggregationData, isLoading } = useAggregation(timeRange, check);
   const timeRangeTo = timeRange.to.toDate().valueOf();
   const initialTimeRangeToInView = timeshiftedTimepoint(timeRangeTo, check.frequency);
 
-  const timepoints = useTimepointExplorer({ timeRange, check });
+  const timepoints = useTimepoints({ timeRange, check });
   const { ref, ...rest } = useTimepointExplorerView(timepoints, initialTimeRangeToInView);
   console.log(timepoints);
 
@@ -30,11 +33,17 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
       ...rest,
       timepoints,
       timeRange,
+      aggregation,
     };
-  }, [rest, timeRange, timepoints]);
+  }, [rest, timeRange, timepoints, aggregation]);
 
   return (
     <div ref={ref}>
+      <Stack direction="row" gap={2}>
+        <RadioButtonGroup options={AGGREGATION_OPTIONS} onChange={changeAggregation} value={aggregation} />
+        <RadioButtonGroup options={VIEW_OPTIONS} value={VIEW_OPTIONS[0].value} />
+      </Stack>
+
       <Stack direction="column" gap={2}>
         <TimepointList {...drillProps} />
         <TimepointMinimap {...drillProps} />

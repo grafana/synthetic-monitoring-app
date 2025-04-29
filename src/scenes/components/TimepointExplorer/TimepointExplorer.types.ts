@@ -4,7 +4,7 @@ import { ParsedCheckLog } from 'features/parseCheckLogs/checkLogs.types';
 
 export type UnixTimestamp = number;
 
-export type Timepoint = Record<string, ParsedCheckLog & { frequency: number }>;
+export type Timepoint = Record<string, ParsedCheckLog & { frequency: number; adjustedTime: UnixTimestamp }>;
 
 export type Timepoints = Record<UnixTimestamp, Timepoint>;
 

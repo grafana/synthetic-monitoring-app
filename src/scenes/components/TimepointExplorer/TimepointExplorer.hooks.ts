@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { DataFrame, TimeRange } from '@grafana/data';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
+import { getCheckProbeAvgDuration } from 'queries/getCheckProbeAvgDuration';
+import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
 import { CheckLabel, CheckLabelType } from 'features/parseCheckLogs/checkLogs.types';
@@ -10,6 +12,7 @@ import { Check } from 'types';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import {
+  AGGREGATION_OPTIONS,
   REF_ID_CHECK_LOGS,
   REF_ID_UNIQUE_CHECK_CONFIGS,
   THEME_UNIT,
@@ -84,7 +87,7 @@ interface UseTimepointExplorerProps {
   check: Check;
 }
 
-export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerProps) {
+export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
   const { data: checkConfigs = [] } = useCheckConfigs({ timeRange, check });
   const timepointsInRange = useTimepointsInRange({
     from: timeRange.from.valueOf(),
@@ -109,31 +112,37 @@ export function useTimepointExplorer({ timeRange, check }: UseTimepointExplorerP
     }
   }, [fetchNextPage, hasNextPage, logsData.length]);
 
-  const builtConfigs = configTimeRanges(checkConfigs, timeRange.to.valueOf());
-  console.log(builtConfigs);
-  const timepoints = logsData.reduce<Timepoints>((acc, log) => {
-    const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
+  const builtConfigs = useMemo(
+    () => configTimeRanges(checkConfigs, timeRange.to.valueOf()),
+    [checkConfigs, timeRange.to]
+  );
 
-    if (!frequency) {
-      // should be impossible
-      console.log('No frequency found for log', log);
+  const timepoints = useMemo(() => {
+    return logsData.reduce<Timepoints>((acc, log) => {
+      const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
+
+      if (!frequency) {
+        // should be impossible
+        console.log('No frequency found for log', log);
+        return acc;
+      }
+
+      const adjustedTime = timeshiftedTimepoint(log.Time, frequency) + frequency;
+      const { probe } = log.labels;
+
+      if (!acc[adjustedTime]) {
+        acc[adjustedTime] = {};
+      }
+
+      acc[adjustedTime][probe] = {
+        ...log,
+        frequency,
+        adjustedTime,
+      };
+
       return acc;
-    }
-
-    const adjustedTime = timeshiftedTimepoint(log.Time, frequency) + frequency;
-    const { probe } = log.labels;
-
-    if (!acc[adjustedTime]) {
-      acc[adjustedTime] = {};
-    }
-
-    acc[adjustedTime][probe] = {
-      ...log,
-      frequency,
-    };
-
-    return acc;
-  }, timepointsInRange);
+    }, timepointsInRange);
+  }, [logsData, timepointsInRange, builtConfigs]);
 
   return timepoints;
 }
@@ -194,39 +203,85 @@ interface UseTimepointsInRangeProps {
 }
 
 function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangeProps) {
-  const rangeFrom = from;
-  const rangeTo = to;
+  return useMemo(() => {
+    const rangeFrom = from;
+    const rangeTo = to;
 
-  // work backwards
-  let configs = [...checkConfigs];
+    // work backwards
+    let configs = [...checkConfigs];
 
-  // start with the latest config
-  let currentConfig = configs.pop();
+    // start with the latest config
+    let currentConfig = configs.pop();
 
-  // mutate for efficiency
-  let build: Record<UnixTimestamp, {}> = {};
+    // mutate for efficiency
+    let build: Record<UnixTimestamp, {}> = {};
 
-  if (!currentConfig) {
+    if (!currentConfig) {
+      return build;
+    }
+
+    // remove non-full frequency timepoints
+    let currentTimepoint = timeshiftedTimepoint(rangeTo, currentConfig.frequency);
+
+    while (currentTimepoint > rangeFrom && currentConfig) {
+      const currentFrequency = currentConfig.frequency;
+      const uptoDate = currentTimepoint - (currentTimepoint % currentFrequency);
+
+      for (let i = uptoDate; i <= currentTimepoint; i += currentFrequency) {
+        build[i] = {};
+      }
+
+      currentTimepoint = uptoDate - currentFrequency;
+
+      if (currentTimepoint.valueOf() < currentConfig.date.valueOf()) {
+        currentConfig = configs.pop();
+      }
+    }
+
     return build;
-  }
+  }, [from, to, checkConfigs]);
+}
 
-  // remove non-full frequency timepoints
-  let currentTimepoint = timeshiftedTimepoint(rangeTo, currentConfig.frequency);
+const AGGREGATION_QUERY_MAP = {
+  [AGGREGATION_OPTIONS[0].value]: getCheckProbeAvgDuration,
+  [AGGREGATION_OPTIONS[1].value]: getCheckProbeMaxDuration,
+};
 
-  while (currentTimepoint > rangeFrom && currentConfig) {
-    const currentFrequency = currentConfig.frequency;
-    const uptoDate = currentTimepoint - (currentTimepoint % currentFrequency);
+export function useAggregation(timeRange: TimeRange, check: Check) {
+  const [aggregation, setAggregation] = useState<string>(AGGREGATION_OPTIONS[0].value);
+  const metricsDS = useMetricsDS();
 
-    for (let i = uptoDate; i <= currentTimepoint; i += currentFrequency) {
-      build[i] = {};
-    }
+  const { data, isLoading } = useQuery({
+    queryKey: [
+      'aggregation',
+      aggregation,
+      metricsDS,
+      check.job,
+      check.target,
+      timeRange.from.valueOf(),
+      timeRange.to.valueOf(),
+    ],
+    queryFn: () => {
+      if (!metricsDS) {
+        return Promise.reject('No metrics data source found');
+      }
 
-    currentTimepoint = uptoDate - currentFrequency;
+      const { expr, queryType } = AGGREGATION_QUERY_MAP[aggregation]({ job: check.job, instance: check.target });
 
-    if (currentTimepoint.valueOf() < currentConfig.date.valueOf()) {
-      currentConfig = configs.pop();
-    }
-  }
+      return queryMimir({
+        datasource: metricsDS,
+        query: expr,
+        start: timeRange.from.valueOf(),
+        end: timeRange.to.valueOf(),
+        refId: `probe-${aggregation}`,
+        queryType,
+      });
+    },
+  });
 
-  return build;
+  const changeAggregation = useCallback((aggregation: string) => {
+    setAggregation(aggregation);
+  }, []);
+
+  return { aggregation, changeAggregation, aggregationData: data, isLoading };
 }
