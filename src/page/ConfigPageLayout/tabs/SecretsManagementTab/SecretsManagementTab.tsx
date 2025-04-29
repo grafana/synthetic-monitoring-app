@@ -1,13 +1,11 @@
 import React from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-
-import { ErrorFallback } from './ErrorFallback';
 import { SecretsManagementUI } from './SecretsManagementUI';
+import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
 export function SecretsManagementTab() {
   return (
-    <ErrorBoundary fallback={<ErrorFallback />}>
+    <QueryErrorBoundary>
       <SecretsManagementUI />
-    </ErrorBoundary>
+    </QueryErrorBoundary>
   );
 }

@@ -71,6 +71,7 @@ export function useSaveSecret() {
       await queryClient.setQueryData(queryKeys.byId(secret.uuid!), updatedData);
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
     },
+    throwOnError: true,
   });
 }
 

@@ -50,8 +50,7 @@ export function SecretsManagementUI() {
               </Button>
             }
           >
-            You can use secrets to store sensitive information such as passwords, API keys, and other sensitive
-            information.
+            You can use secrets to store private information such as passwords, API keys, and other sensitive data.
           </EmptyState>
         </ConfigContent>
       ) : (
@@ -67,8 +66,8 @@ export function SecretsManagementUI() {
         >
           <div>
             <p>
-              Secrets is a way to store and manage secrets in Grafana Cloud. You can use secrets to store sensitive
-              information such as passwords, API keys, and other sensitive information.
+              Secrets is a way to store and manage secrets in Grafana Cloud. You can use secrets to store private
+              information such as passwords, API keys, and other sensitive data.
             </p>
           </div>
           <ConfigContent.Section>

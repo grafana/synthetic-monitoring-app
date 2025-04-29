@@ -21,8 +21,8 @@ describe('SecretsManagementTab', () => {
     it('should render the fallback UI when an error occurs', () => {
       render(<SecretsManagementTab />);
 
-      expect(screen.getByText(/error loading secret/i)).toBeInTheDocument();
       expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+      expect(screen.getByText(/An error has occurred/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
     });
   });
