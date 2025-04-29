@@ -1,6 +1,8 @@
 import React from 'react';
-import { SecretsManagementUI } from './SecretsManagementUI';
+
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
+
+import { SecretsManagementUI } from './SecretsManagementUI';
 
 export function SecretsManagementTab() {
   return (

@@ -81,7 +81,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   const styles = useStyles2(getStyles);
   const defaultValues = useMemo(() => {
     return secretToFormValues(secret) ?? getDefaultValues(isNewSecret);
-  }, [secret]);
+  }, [secret, isNewSecret]);
 
   const {
     register,
