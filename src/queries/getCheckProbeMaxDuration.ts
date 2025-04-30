@@ -7,7 +7,7 @@ type CheckConfigsQuery = {
 
 export function getCheckProbeMaxDuration({ job, instance }: CheckConfigsQuery): DSQuery {
   return {
-    expr: `max by() (probe_duration_seconds{job="${job}", instance="${instance}"})`,
+    expr: `max by () (max_over_time(probe_duration_seconds{job="${job}", instance="${instance}"}[$__range]))`,
     queryType: 'instant',
   };
 }

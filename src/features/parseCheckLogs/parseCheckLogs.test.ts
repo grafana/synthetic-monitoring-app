@@ -6,7 +6,14 @@ import {
   parseCheckLogs,
 } from 'features/parseCheckLogs/parseCheckLogs';
 
-import { CheckLabelType, ParsedCheckLog } from 'features/parseCheckLogs/checkLogs.types';
+import {
+  CheckFailedLog,
+  CheckLabelType,
+  CheckSucceededLog,
+  ParsedCheckLog,
+  StartingLog,
+} from 'features/parseCheckLogs/checkLogs.types';
+import { MakingHTTPRequestLog, ReceivedHTTPResponseLog } from 'features/parseCheckLogs/checkLogs.types.http';
 
 const labelTypes: CheckLabelType = {
   check_name: 'I',
@@ -15,11 +22,13 @@ const labelTypes: CheckLabelType = {
   job: 'I',
 };
 
-const discard1: ParsedCheckLog = {
+const discard1: MakingHTTPRequestLog = {
   Time: 1713859200000,
   tsNs: 17138592000001000,
   labels: {
     probe: 'probe1',
+    host: 'host1',
+    url: 'url1',
     msg: MSG_STRINGS_HTTP.MakingHTTPRequest,
     check_name: 'check1',
     detected_level: 'info',
@@ -35,11 +44,12 @@ const discard1: ParsedCheckLog = {
   id: 'id1',
 };
 
-const discard2: ParsedCheckLog = {
+const discard2: ReceivedHTTPResponseLog = {
   Time: 1713859200,
   tsNs: 17138592000002000,
   labels: {
     probe: 'probe1',
+    http_request: 'http_request1',
     msg: MSG_STRINGS_HTTP.ReceivedHTTPResponse,
     check_name: 'check1',
     detected_level: 'info',
@@ -56,7 +66,7 @@ const discard2: ParsedCheckLog = {
 };
 
 // todo: need a log factory
-const probe1_log1: ParsedCheckLog = {
+const probe1_log1: StartingLog = {
   Time: 1713859200000,
   tsNs: 17138592000001000,
   labels: {
@@ -76,11 +86,12 @@ const probe1_log1: ParsedCheckLog = {
   id: 'id3',
 };
 
-const probe1_log2: ParsedCheckLog = {
+const probe1_log2: CheckFailedLog = {
   Time: 1713859200000,
   tsNs: 17138592000002000,
   labels: {
     probe: 'probe1',
+    duration_seconds: '10',
     msg: MSG_STRINGS_COMMON.CheckFailed,
     check_name: 'check2',
     detected_level: 'error',
@@ -96,7 +107,7 @@ const probe1_log2: ParsedCheckLog = {
   id: 'id4',
 };
 
-const probe2_log1: ParsedCheckLog = {
+const probe2_log1: StartingLog = {
   Time: 1713859200000,
   tsNs: 17138592000001000,
   labels: {
@@ -116,11 +127,12 @@ const probe2_log1: ParsedCheckLog = {
   id: 'id5',
 };
 
-const probe2_log2: ParsedCheckLog = {
+const probe2_log2: CheckSucceededLog = {
   Time: 1713859200000,
   tsNs: 17138592000002000,
   labels: {
     probe: 'probe2',
+    duration_seconds: '10',
     msg: MSG_STRINGS_COMMON.CheckSucceeded,
     check_name: 'check2',
     detected_level: 'info',

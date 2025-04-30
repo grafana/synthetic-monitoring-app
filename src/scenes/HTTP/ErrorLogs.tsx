@@ -6,7 +6,7 @@ import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
 import { parseCheckLogs } from 'features/parseCheckLogs/parseCheckLogs';
 import { parseLokiLogs } from 'features/parseLogs/parseLokiLogs';
 
-import { CheckLabel, CheckLabelType } from 'features/parseCheckLogs/checkLogs.types';
+import { CheckLabels, CheckLabelType } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiSeries } from 'features/parseLogs/parseLogs.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 
@@ -48,7 +48,7 @@ export const ErrorLogs = () => {
 
   if (data?.data) {
     const seriesArray = data.data.series as DataFrame[];
-    const series = seriesArray[0] as LokiSeries<CheckLabel, CheckLabelType>;
+    const series = seriesArray[0] as LokiSeries<CheckLabels, CheckLabelType>;
     console.log(series);
 
     if (series) {

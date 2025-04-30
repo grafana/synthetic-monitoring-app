@@ -1,10 +1,10 @@
 import { TimeRange } from '@grafana/data';
 
-import { ParsedCheckLog } from 'features/parseCheckLogs/checkLogs.types';
+import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 
 export type UnixTimestamp = number;
 
-export type Timepoint = Record<string, ParsedCheckLog & { frequency: number; adjustedTime: UnixTimestamp }>;
+export type Timepoint = Record<string, CheckEndedLog & { frequency: number; adjustedTime: UnixTimestamp }>;
 
 export type Timepoints = Record<UnixTimestamp, Timepoint>;
 
@@ -17,6 +17,8 @@ export interface TimepointExplorerChild {
   viewTimeRangeTo: UnixTimestamp;
   width: number;
   miniMapSections: MinimapSection[];
+  isLoading: boolean;
+  maxProbeDurationData: number | undefined;
 }
 
 export interface MinimapSection {

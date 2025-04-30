@@ -3,17 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { DataFrame, TimeRange } from '@grafana/data';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
-import { getCheckProbeAvgDuration } from 'queries/getCheckProbeAvgDuration';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
-import { CheckLabel, CheckLabelType } from 'features/parseCheckLogs/checkLogs.types';
+import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
 import { Check } from 'types';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import {
-  AGGREGATION_OPTIONS,
   REF_ID_CHECK_LOGS,
+  REF_ID_MAX_PROBE_DURATION,
   REF_ID_UNIQUE_CHECK_CONFIGS,
   THEME_UNIT,
   TIMEPOINT_GAP,
@@ -99,7 +98,7 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
     fetchNextPage,
     hasNextPage,
     data: logsData = [],
-  } = useInfiniteLogs<CheckLabel, CheckLabelType>({
+  } = useInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
     refId: REF_ID_CHECK_LOGS,
     expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
     start: timeRange.from.valueOf(),
@@ -168,30 +167,27 @@ function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
       });
     },
     select: (data) => {
-      const res = data[REF_ID_UNIQUE_CHECK_CONFIGS];
-      return extractFrequenciesAndConfigs(res);
+      return extractFrequenciesAndConfigs(data);
     },
   });
 }
 
 const NANOSECONDS_PER_MILLISECOND = 1000000;
 
-function extractFrequenciesAndConfigs(data: DataFrame[]) {
+function extractFrequenciesAndConfigs(data: DataFrame) {
   let build: Array<{ frequency: number; date: UnixTimestamp }> = [];
 
-  for (const frame of data) {
-    const Value = frame.fields[1];
+  const Value = data.fields[1];
 
-    if (Value.labels) {
-      const { config_version, frequency } = Value.labels;
-      const toUnixTimestamp = Math.round(Number(config_version) / NANOSECONDS_PER_MILLISECOND);
-      const date: UnixTimestamp = toUnixTimestamp;
+  if (Value.labels) {
+    const { config_version, frequency } = Value.labels;
+    const toUnixTimestamp = Math.round(Number(config_version) / NANOSECONDS_PER_MILLISECOND);
+    const date: UnixTimestamp = toUnixTimestamp;
 
-      build.push({
-        frequency: Number(frequency),
-        date,
-      });
-    }
+    build.push({
+      frequency: Number(frequency),
+      date,
+    });
   }
 
   return build;
@@ -242,46 +238,43 @@ function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangePr
   }, [from, to, checkConfigs]);
 }
 
-const AGGREGATION_QUERY_MAP = {
-  [AGGREGATION_OPTIONS[0].value]: getCheckProbeAvgDuration,
-  [AGGREGATION_OPTIONS[1].value]: getCheckProbeMaxDuration,
-};
+const MILLISECONDS_PER_SECOND = 1000;
 
-export function useAggregation(timeRange: TimeRange, check: Check) {
-  const [aggregation, setAggregation] = useState<string>(AGGREGATION_OPTIONS[0].value);
+export function useMaxProbeDuration(timeRange: TimeRange, check: Check) {
   const metricsDS = useMetricsDS();
 
   const { data, isLoading } = useQuery({
     queryKey: [
       'aggregation',
-      aggregation,
       metricsDS,
       check.job,
       check.target,
       timeRange.from.valueOf(),
       timeRange.to.valueOf(),
+      REF_ID_MAX_PROBE_DURATION,
     ],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject('No metrics data source found');
       }
 
-      const { expr, queryType } = AGGREGATION_QUERY_MAP[aggregation]({ job: check.job, instance: check.target });
+      const { expr, queryType } = getCheckProbeMaxDuration({ job: check.job, instance: check.target });
 
       return queryMimir({
         datasource: metricsDS,
         query: expr,
         start: timeRange.from.valueOf(),
         end: timeRange.to.valueOf(),
-        refId: `probe-${aggregation}`,
+        refId: REF_ID_MAX_PROBE_DURATION,
         queryType,
       });
     },
+    select: (data) => {
+      // Convert seconds to milliseconds
+      const res = Math.round(data.fields[1].values[0] * MILLISECONDS_PER_SECOND);
+      return res;
+    },
   });
 
-  const changeAggregation = useCallback((aggregation: string) => {
-    setAggregation(aggregation);
-  }, []);
-
-  return { aggregation, changeAggregation, aggregationData: data, isLoading };
+  return { data, isLoading };
 }

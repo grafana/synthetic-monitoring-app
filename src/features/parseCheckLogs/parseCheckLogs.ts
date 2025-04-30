@@ -1,8 +1,8 @@
 import { MSG_STRINGS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
-import { CheckLogs, ParsedCheckLog, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
+import { CheckLogs, ParsedCheckLog, PerCheckLogs, UnknownCheckLog } from 'features/parseCheckLogs/checkLogs.types';
 
-export function parseCheckLogs(logs: ParsedCheckLog[]): PerCheckLogs[] {
+export function parseCheckLogs(logs: UnknownCheckLog[]): PerCheckLogs[] {
   const groupedByProbe = groupByProbe(logs);
   const groupedByCheck = Object.entries(groupedByProbe).map(([probe, logs]) => ({
     probe,
@@ -28,7 +28,7 @@ export function groupByProbe(orderedLogs: ParsedCheckLog[]) {
   return res;
 }
 
-export function groupByCheck(logs: ParsedCheckLog[]): CheckLogs[] {
+export function groupByCheck(logs: UnknownCheckLog[]): CheckLogs[] {
   const completeFromStart = discardIncompleteChecks({
     logs,
     matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],
@@ -62,7 +62,7 @@ export function discardIncompleteChecks({
   matchMsg,
   reverse = false,
 }: {
-  logs: ParsedCheckLog[];
+  logs: UnknownCheckLog[];
   matchMsg: string[];
   reverse?: boolean;
 }) {

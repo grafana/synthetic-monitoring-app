@@ -2,13 +2,14 @@ import { LokiSeries, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types
 
 import { MSG_STRINGS_COMMON } from './checkLogs.constants.msgs';
 
-export type CheckLogsSeries = LokiSeries<CheckLabel, CheckLabelType>;
+export type CheckLogsSeries = LokiSeries<CheckLabels, CheckLabelType>;
 
-export type CheckLabel = Record<string, string> & {
+export type CheckLabels<T extends Record<string, string> = {}> = T & {
   check_name: string; // this is really check type e.g. http
   detected_level: 'error' | 'info'; // might be more
   instance: string;
   job: string;
+  msg: string;
   probe: string;
   probe_success: '0' | '1';
   region: string; // might be undefined?
@@ -23,29 +24,33 @@ export type CheckLabelType = {
   job: string; // I
 };
 
-export type ParsedCheckLog = ParsedLokiRecord<CheckLabel, CheckLabelType>;
+export type ParsedCheckLog<T extends Record<string, string> = {}> = ParsedLokiRecord<CheckLabels<T>, CheckLabelType>;
 
-type StartingLog = ParsedCheckLog & {
-  value: CheckLabel & {
-    msg: (typeof MSG_STRINGS_COMMON)['BeginningCheck'];
-  };
+export type StartingLog = ParsedCheckLog<{
+  msg: (typeof MSG_STRINGS_COMMON)['BeginningCheck'];
+}>;
+
+export type EndingLogLabels = {
+  duration_seconds: string;
 };
 
-type CheckFailedLog = ParsedCheckLog & {
-  value: CheckLabel & {
+export type CheckFailedLog = ParsedCheckLog<
+  EndingLogLabels & {
     msg: (typeof MSG_STRINGS_COMMON)['CheckFailed'];
-  };
-};
+  }
+>;
 
-type CheckSucceededLog = ParsedCheckLog & {
-  value: CheckLabel & {
+export type CheckSucceededLog = ParsedCheckLog<
+  EndingLogLabels & {
     msg: (typeof MSG_STRINGS_COMMON)['CheckSucceeded'];
-  };
-};
+  }
+>;
 
-type EndingLog = CheckFailedLog | CheckSucceededLog;
+export type CheckEndedLog = CheckFailedLog | CheckSucceededLog;
 
-export type CheckLogs = [StartingLog, ...ParsedCheckLog[], EndingLog];
+export type UnknownCheckLog = ParsedCheckLog<Record<string, string>>;
+
+export type CheckLogs = [StartingLog, ...UnknownCheckLog[], CheckEndedLog];
 
 export type PerCheckLogs = {
   probe: string;

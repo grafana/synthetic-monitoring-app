@@ -1,6 +1,11 @@
+import { DataFrame, Field } from '@grafana/data';
 import { queryDS } from 'features/queryDatasources/queryDS';
 
-export function queryMimir({
+interface MimirDataFrame extends DataFrame {
+  fields: Array<Field<number>>;
+}
+
+export function queryMimir<T>({
   datasource,
   query,
   start,
@@ -36,5 +41,9 @@ export function queryMimir({
     ],
     start,
     end,
+  }).then((data: Record<string, MimirDataFrame[]>) => {
+    const res = data[refId];
+    const dataFrame = res[0];
+    return dataFrame;
   });
 }
