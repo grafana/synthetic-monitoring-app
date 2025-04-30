@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.27.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.26.0...v1.27.0) (2025-04-30)
+
+
+### Features
+
+* add event tracking for check creation and some form navigation ([#1114](https://github.com/grafana/synthetic-monitoring-app/issues/1114)) ([3d55c80](https://github.com/grafana/synthetic-monitoring-app/commit/3d55c807c75773a8922648ae76028cbff836b4c3))
+
+
+### Fixes
+
+* calculation to monthly usage ([#1123](https://github.com/grafana/synthetic-monitoring-app/issues/1123)) ([0c5a0b8](https://github.com/grafana/synthetic-monitoring-app/commit/0c5a0b8246ba0f79b7213461ec7b4969defe25ee))
+
+
+### Miscellaneous Chores
+
+* remove public preview badge ([#1127](https://github.com/grafana/synthetic-monitoring-app/issues/1127)) ([1e8544f](https://github.com/grafana/synthetic-monitoring-app/commit/1e8544f1c96843bc93efbc51f720e051088041fc))
+* rename ROUTES enum to AppRoutes ([#1120](https://github.com/grafana/synthetic-monitoring-app/issues/1120)) ([3024c0a](https://github.com/grafana/synthetic-monitoring-app/commit/3024c0ab68cadb3969b86ac8b4fe0f6b42366fc1))
+
 ## [1.26.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.25.0...v1.26.0) (2025-04-22)
 
 
