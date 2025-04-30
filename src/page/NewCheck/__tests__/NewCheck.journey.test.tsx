@@ -252,20 +252,23 @@ describe(`<NewCheck /> journey`, () => {
     });
 
     const { user } = await renderNewForm(CheckType.HTTP);
-    await fillMandatoryFields({ user, checkType: CheckType.HTTP });
-
+    await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
     await goToSection(user, 4);
+    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
+    await user.click(probeCheckbox);
+
+    await goToSection(user, 5);
     await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
-    const thresholdsInput = screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh');
-    await user.clear(thresholdsInput);
-    await user.type(thresholdsInput, '6');
+    const thresholdsInput = 'alert-threshold-ProbeFailedExecutionsTooHigh';
+    await user.clear(screen.getByTestId(thresholdsInput));
+    await user.type(screen.getByTestId(thresholdsInput), '6');
     await submitForm(user);
     expect(screen.getByRole('alert')).toBeInTheDocument();
 
-    await goToSection(user, 5);
+    await goToSection(user, 4);
     await selectBasicFrequency(user, '10s');
 
-    await goToSection(user, 4);
+    await goToSection(user, 5);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
