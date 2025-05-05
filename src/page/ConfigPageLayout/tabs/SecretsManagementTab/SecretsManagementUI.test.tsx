@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 
 import { useDeleteSecret, useSecrets } from 'data/useSecrets';
 
+import { MOCKED_SECRETS } from '../../../../test/fixtures/secrets';
 import { SECRETS_EDIT_MODE_ADD } from './constants';
 import { SecretsManagementTab } from './SecretsManagementTab';
 import { SecretsManagementUI } from './SecretsManagementUI';
@@ -30,25 +31,6 @@ jest.mock('data/useSecrets', () => ({
   useSaveSecret: jest.fn(),
 }));
 
-const mockSecrets = [
-  {
-    uuid: 'secret-1',
-    name: 'Test Secret 1',
-    description: 'Description 1',
-    created_at: new Date('2024-01-01'),
-    created_by: 'user1',
-    labels: [{ name: 'env', value: 'prod' }],
-  },
-  {
-    uuid: 'secret-2',
-    name: 'Test Secret 2',
-    description: 'Description 2',
-    created_at: new Date('2024-01-02'),
-    created_by: 'user2',
-    labels: [{ name: 'env', value: 'dev' }],
-  },
-];
-
 describe('SecretsManagementUI', () => {
   const mockDeleteMutation = {
     mutate: jest.fn(),
@@ -59,7 +41,7 @@ describe('SecretsManagementUI', () => {
 
   beforeEach(() => {
     (useSecrets as jest.Mock).mockReturnValue({
-      data: mockSecrets,
+      data: MOCKED_SECRETS,
       isLoading: false,
       isError: false,
       error: null,
@@ -102,7 +84,7 @@ describe('SecretsManagementUI', () => {
     expect(screen.getByLabelText('Loading secrets')).toBeInTheDocument();
   });
 
-  it.each(mockSecrets.map((secret) => [secret.name, secret.uuid, secret.description]))(
+  it.each(MOCKED_SECRETS.map((secret) => [secret.name, secret.uuid, secret.description]))(
     'should render %s (%s) (incl description)',
     async (name, uuid) => {
       render(<SecretsManagementTab />);
@@ -117,7 +99,7 @@ describe('SecretsManagementUI', () => {
     render(<SecretsManagementTab />);
     const editButton = screen.getAllByRole('button', { name: /edit/i })[0];
     await userEvent.click(editButton);
-    expect(screen.getByTestId('modal-id')).toHaveTextContent(mockSecrets[0].uuid);
+    expect(screen.getByTestId('modal-id')).toHaveTextContent(MOCKED_SECRETS[0].uuid);
   });
 
   it('should open delete secret modal', async () => {
