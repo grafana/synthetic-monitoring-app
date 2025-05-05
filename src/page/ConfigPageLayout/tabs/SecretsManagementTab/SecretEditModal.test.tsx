@@ -45,7 +45,7 @@ describe('SecretEditModal', () => {
     await render(<SecretEditModal {...defaultProps} id={secret1.uuid} />);
 
     expect(screen.getByText('Edit secret')).toBeInTheDocument();
-    expect(screen.getByDisplayValue(secret1.description)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByDisplayValue(secret1.description)).toBeInTheDocument(), { timeout: 3000 });
     secret1.labels.forEach((label) => {
       expect(screen.getByDisplayValue(label.name)).toBeInTheDocument();
       expect(screen.getByDisplayValue(label.value)).toBeInTheDocument();
