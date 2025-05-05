@@ -51,7 +51,6 @@ export function useSecret(id?: string) {
     queryKey: queryKeys.byId(id!),
     queryFn: () => smDS.getSecret(id!),
     enabled: !!id && id !== SECRETS_EDIT_MODE_ADD,
-    throwOnError: true,
   });
 }
 
@@ -71,7 +70,6 @@ export function useSaveSecret() {
       await queryClient.setQueryData(queryKeys.byId(secret.uuid!), updatedData);
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
     },
-    throwOnError: true,
   });
 }
 

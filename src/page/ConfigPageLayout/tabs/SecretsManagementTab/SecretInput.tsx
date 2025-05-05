@@ -19,7 +19,7 @@ export function SecretInput({ isConfigured, onReset, ...props }: Props) {
       )}
       {isConfigured && (
         <>
-          <Input type="text" disabled value={CONFIGURED_TEXT} />
+          <Input type="text" disabled value={CONFIGURED_TEXT} id={props.id} />
           <Button onClick={onReset} variant="secondary">
             {RESET_BUTTON_TEXT}
           </Button>

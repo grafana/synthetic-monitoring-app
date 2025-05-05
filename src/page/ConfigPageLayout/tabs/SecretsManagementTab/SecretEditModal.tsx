@@ -145,6 +145,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
 
   return (
     <Modal
+      data-testid="secret-edit-modal"
       isOpen
       onDismiss={onDismiss}
       title={title}
@@ -282,7 +283,6 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
           </Button>
         </div>
       </form>
-      {(isLoading || saveSecret.isPending) && <div>Loading...</div>}
     </Modal>
   );
 }
