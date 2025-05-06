@@ -26,29 +26,33 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
   const initialTimeRangeToInView = timeshiftedTimepoint(timeRangeTo, check.frequency);
 
   const timepoints = useTimepoints({ timeRange, check });
-  const { ref, ...rest } = useTimepointExplorerView(timepoints, initialTimeRangeToInView);
+  const { ref, handleViewModeChange, viewMode, ...rest } = useTimepointExplorerView(
+    timepoints,
+    initialTimeRangeToInView
+  );
   // console.log(timepoints);
 
   const drillProps: TimepointExplorerChild = useMemo(() => {
     return {
       ...rest,
+      viewMode,
       timepoints,
       timeRange,
       maxProbeDurationData,
       isLoading: maxProbeDurationIsLoading,
     };
-  }, [rest, timeRange, timepoints, maxProbeDurationData, maxProbeDurationIsLoading]);
+  }, [rest, timeRange, timepoints, maxProbeDurationData, maxProbeDurationIsLoading, viewMode]);
 
   return (
-    <div ref={ref}>
+    <Stack direction={`column`} gap={2}>
       <Stack direction="row" gap={2}>
-        <RadioButtonGroup options={VIEW_OPTIONS} value={VIEW_OPTIONS[0].value} />
+        <RadioButtonGroup options={VIEW_OPTIONS} value={viewMode} onChange={handleViewModeChange} />
       </Stack>
 
       <Stack direction="column" gap={2}>
-        <TimepointList {...drillProps} />
+        <TimepointList {...drillProps} ref={ref} />
         <TimepointMinimap {...drillProps} />
       </Stack>
-    </div>
+    </Stack>
   );
 }

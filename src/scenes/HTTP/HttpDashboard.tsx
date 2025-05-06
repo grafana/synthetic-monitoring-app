@@ -127,11 +127,9 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
                           <ResponseLatencyByProbe />
                         </div>
                       </div>
-
-                      <div className={styles.errorLogs}>
-                        <TimepointExplorer check={check} />
-                      </div>
                     </div>
+
+                    <TimepointExplorer check={check} />
                   </AnnotationLayer>
                 </AnnotationLayer>
               </Stack>
@@ -177,9 +175,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   latencyPanel: css({
     height: '300px',
-  }),
-  errorLogs: css({
-    gridColumn: 'span 2',
-    height: '500px',
   }),
 });

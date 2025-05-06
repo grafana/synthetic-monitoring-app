@@ -17,8 +17,9 @@ import {
   THEME_UNIT,
   TIMEPOINT_GAP,
   TIMEPOINT_WIDTH,
+  VIEW_OPTIONS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Timepoints, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { Timepoints, UnixTimestamp, ViewMode } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   configTimeRanges,
   findActiveSection,
@@ -34,6 +35,7 @@ export function useTimepointExplorerView(timepoints: Timepoints, initialTimeRang
   const ref = useRef<HTMLDivElement>(null);
   // if we just know when the view is to we can anchor the view from that
   const [viewTimeRangeTo, setViewTimeRangeTo] = useState<UnixTimestamp>(initialTimeRangeToInView);
+  const [viewMode, setViewMode] = useState<ViewMode>(VIEW_OPTIONS[0].value);
 
   const [{ width = 0 }, setSize] = useState<Size>({
     width: 0,
@@ -70,6 +72,10 @@ export function useTimepointExplorerView(timepoints: Timepoints, initialTimeRang
     setViewTimeRangeTo(timeRangeToInView);
   }, []);
 
+  const handleViewModeChange = useCallback((viewMode: ViewMode) => {
+    setViewMode(viewMode);
+  }, []);
+
   return {
     handleTimeRangeToInViewChange,
     ref,
@@ -78,6 +84,8 @@ export function useTimepointExplorerView(timepoints: Timepoints, initialTimeRang
     width,
     miniMapSections,
     activeSection,
+    viewMode,
+    handleViewModeChange,
   };
 }
 
@@ -133,8 +141,10 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
         acc[adjustedTime] = {};
       }
 
+      // todo: should just be an array? converting the object to an array where it is used so far
       acc[adjustedTime][probe] = {
         ...log,
+        probe,
         frequency,
         adjustedTime,
       };
