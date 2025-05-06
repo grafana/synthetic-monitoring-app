@@ -15,6 +15,7 @@ Object.assign(navigator, {
   },
 });
 
+// This is required for the copy to clipboard functionality to work in tests
 Object.defineProperty(window, 'isSecureContext', {
   value: true,
 });
