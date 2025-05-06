@@ -1,5 +1,6 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { SecretInput } from './SecretInput';
 
@@ -39,11 +40,12 @@ describe('SecretInput', () => {
     expect(resetButton).toBeInTheDocument();
   });
 
-  it('should call onReset when reset button is clicked', () => {
+  it('should call onReset when reset button is clicked', async () => {
     render(<SecretInput {...defaultProps} isConfigured={true} />);
 
     const resetButton = screen.getByRole('button', { name: 'Reset' });
-    fireEvent.click(resetButton);
+    const user = userEvent.setup();
+    await user.click(resetButton);
 
     expect(defaultProps.onReset).toHaveBeenCalledTimes(1);
   });
@@ -63,11 +65,12 @@ describe('SecretInput', () => {
     expect(textarea).toHaveAttribute('placeholder', placeholder);
   });
 
-  it('should handle value changes in textarea', () => {
+  it('should handle value changes in textarea', async () => {
     render(<SecretInput {...defaultProps} />);
 
     const textarea = screen.getByRole('textbox');
-    fireEvent.change(textarea, { target: { value: 'new secret value' } });
+    const user = userEvent.setup();
+    await user.type(textarea, 'new secret value');
 
     expect(textarea).toHaveValue('new secret value');
   });

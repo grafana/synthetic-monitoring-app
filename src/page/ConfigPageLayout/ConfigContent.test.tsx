@@ -21,7 +21,7 @@ describe('ConfigContent', () => {
 
     const loadingSpinner = screen.getByTestId(DataTestIds.CONFIG_CONTENT_LOADING);
     expect(loadingSpinner).toBeInTheDocument();
-    expect(screen.getByLabelText('Loading...')).toBeInTheDocument();
+    expect(screen.getByLabelText('Loading')).toBeInTheDocument();
   });
 
   it('should render title and actions when provided', () => {

@@ -25,14 +25,7 @@ interface WithActions {
 
 type Props = BaseProps & (WithoutActions | WithActions);
 
-export function ConfigContent({
-  title,
-  children,
-  loading = false,
-  actions,
-  ariaLoadingLabel = 'Loading...',
-  ...props
-}: Props) {
+export function ConfigContent({ title, children, loading = false, actions, ariaLoadingLabel, ...props }: Props) {
   const styles = useStyles2(getStyles);
 
   if (loading) {

@@ -8,7 +8,10 @@ export const MOCKED_SECRETS: SecretWithMetadata[] = [
     description: 'Test Description 1',
     created_at: 0,
     created_by: 'user1',
-    labels: [{ name: 'env', value: 'prod' }], // Important: This mock must have labels to be used in the test
+    labels: [
+      { name: 'env', value: 'prod' },
+      { name: 'type', value: 'test' },
+    ], // Important: This mock must have AT LEAST one label to be used in the test
     modified_at: 0,
     org_id: 0,
     stack_id: 0,

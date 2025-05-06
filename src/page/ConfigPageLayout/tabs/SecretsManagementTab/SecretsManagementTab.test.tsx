@@ -12,7 +12,7 @@ describe('SecretsManagementTab', () => {
     server.use(apiRoute('listSecrets', { result: () => ({ status: 500, body: 'Error message' }) }));
     render(<SecretsManagementTab />);
     await waitFor(() => expect(screen.queryByTestId(DataTestIds.CENTERED_SPINNER)).not.toBeInTheDocument(), {
-      timeout: 10000,
+      timeout: 3000,
     });
 
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();

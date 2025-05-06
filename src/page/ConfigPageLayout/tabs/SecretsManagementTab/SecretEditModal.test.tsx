@@ -13,7 +13,7 @@ import { SecretEditModal } from './SecretEditModal';
 async function render(element: React.ReactElement) {
   const result = testRender(<div data-testid={DataTestIds.CONFIG_CONTENT}>{element}</div>);
   await waitFor(() => expect(screen.getByTestId(DataTestIds.CONFIG_CONTENT)).toBeInTheDocument(), {
-    timeout: 10000,
+    timeout: 3000,
   });
 
   return result;
@@ -110,7 +110,7 @@ describe('SecretEditModal', () => {
     await userEvent.click(submitButton);
 
     const { body } = await read();
-    // expect(screen.getByText('Saving...')).toBeInTheDocument();
+
     expect(body).toStrictEqual({
       ...inputValues,
       name: 'new-secret', // transformed to lowercase and spaces replaced with dashes
@@ -207,7 +207,11 @@ describe('SecretEditModal', () => {
     await userEvent.type(screen.getByLabelText(/Name/), inputValues.name); // Should be transformed to 'new-secret'
     await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
 
-    await userEvent.click(screen.getByLabelText('Remove label'));
+    // Remove all labels
+    const removeLabelButtons = screen.getAllByLabelText('Remove label');
+    for (const element of removeLabelButtons) {
+      await userEvent.click(element);
+    }
 
     await userEvent.click(screen.getByText('Save'));
 

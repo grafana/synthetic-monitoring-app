@@ -1,16 +1,11 @@
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MOCKED_SECRETS } from 'test/fixtures/secrets';
 
-import { SecretWithMetadata } from './types';
 import { formatDate } from 'utils';
 
 import { SecretCard } from './SecretCard';
-
-// Mock the formatDate utility
-jest.mock('utils', () => ({
-  formatDate: jest.fn((date) => date.toString()),
-}));
 
 const writeText = jest.fn();
 
@@ -25,23 +20,8 @@ Object.defineProperty(window, 'isSecureContext', {
 });
 
 describe('SecretCard', () => {
-  const mockSecret: SecretWithMetadata = {
-    uuid: 'secret-123',
-    name: 'Test Secret',
-    description: 'Test Description',
-    created_at: Number(new Date('2024-01-01')),
-    created_by: 'test-user',
-    labels: [
-      { name: 'env', value: 'prod' },
-      { name: 'type', value: 'api-key' },
-    ],
-    modified_at: Number(new Date('2024-01-02')),
-    org_id: 1,
-    stack_id: 1,
-  };
-
   const defaultProps = {
-    secret: mockSecret,
+    secret: MOCKED_SECRETS[0],
     onEdit: jest.fn(),
     onDelete: jest.fn(),
   };
@@ -54,37 +34,40 @@ describe('SecretCard', () => {
     render(<SecretCard {...defaultProps} />);
 
     // Check basic information
-    expect(screen.getByText('Test Secret')).toBeInTheDocument();
-    expect(screen.getByText('Test Description')).toBeInTheDocument();
-    expect(screen.getByText('secret-123')).toBeInTheDocument();
-    expect(screen.getByText(/test-user/)).toBeInTheDocument();
+    expect(screen.getByText(MOCKED_SECRETS[0].name)).toBeInTheDocument();
+    expect(screen.getByText(MOCKED_SECRETS[0].description)).toBeInTheDocument();
+    expect(screen.getByText(MOCKED_SECRETS[0].uuid)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(`${MOCKED_SECRETS[0].created_by}`))).toBeInTheDocument();
 
     // Check labels
-    expect(screen.getByText('env: prod')).toBeInTheDocument();
-    expect(screen.getByText('type: api-key')).toBeInTheDocument();
+    MOCKED_SECRETS[0].labels.forEach((label) => {
+      expect(screen.getByText(`${label.name}: ${label.value}`)).toBeInTheDocument();
+    });
   });
 
-  it('should call onEdit when edit button is clicked', () => {
+  it('should call onEdit when edit button is clicked', async () => {
     render(<SecretCard {...defaultProps} />);
 
-    const editButton = screen.getByRole('button', { name: 'Edit Test Secret' });
-    fireEvent.click(editButton);
+    const editButton = screen.getByRole('button', { name: `Edit ${MOCKED_SECRETS[0].name}` });
+    const user = userEvent.setup();
+    await user.click(editButton);
 
-    expect(defaultProps.onEdit).toHaveBeenCalledWith('secret-123');
+    expect(defaultProps.onEdit).toHaveBeenCalledWith(MOCKED_SECRETS[0].uuid);
   });
 
-  it('should call onDelete when delete button is clicked', () => {
+  it('should call onDelete when delete button is clicked', async () => {
     render(<SecretCard {...defaultProps} />);
 
-    const deleteButton = screen.getByRole('button', { name: 'Delete Test Secret' });
-    fireEvent.click(deleteButton);
+    const deleteButton = screen.getByRole('button', { name: `Delete ${MOCKED_SECRETS[0].name}` });
+    const user = userEvent.setup();
+    await user.click(deleteButton);
 
-    expect(defaultProps.onDelete).toHaveBeenCalledWith('secret-123');
+    expect(defaultProps.onDelete).toHaveBeenCalledWith(MOCKED_SECRETS[0].uuid);
   });
 
   it('should render without labels when none are provided', () => {
     const secretWithoutLabels = {
-      ...mockSecret,
+      ...MOCKED_SECRETS[0],
       labels: [],
     };
 
@@ -97,7 +80,7 @@ describe('SecretCard', () => {
   it('should format the creation date correctly', () => {
     render(<SecretCard {...defaultProps} />);
 
-    expect(formatDate).toHaveBeenCalledWith(mockSecret.created_at);
+    expect(screen.getByText(formatDate(MOCKED_SECRETS[0].created_at), { exact: false })).toBeInTheDocument();
   });
 
   it('should render a clipboard button for the secret UUID', () => {
@@ -108,26 +91,24 @@ describe('SecretCard', () => {
   });
 
   // Test for clipboard functionality
-  it('should provide correct text for clipboard copy', async () => {
+  it('should provide correct uuid for clipboard copy', async () => {
     const user = userEvent.setup();
     render(<SecretCard {...defaultProps} />);
 
     // Find the clipboard component
-    const clipboardButton = screen.getByRole('button', { name: /Copy Test Secret ID/i });
+    const clipboardButton = screen.getByRole('button', { name: /Copy test-secret-1 ID/i }); // "Copy <secret name> ID"
     await act(() => {
       return user.click(clipboardButton);
     });
-    // Instead of accessing props directly, test the actual copy behavior
+    // Instead of accessing props directly, test the actual copy behaviorF
 
     const clipboardText = await navigator.clipboard.readText();
-    // Verify the copy behavior through the clipboard API
-    // You might need to mock navigator.clipboard
-    expect(clipboardText).toBe('secret-123');
+    expect(clipboardText).toBe(MOCKED_SECRETS[0].uuid);
   });
 
   it('should handle secrets without description', () => {
     const secretWithoutDescription = {
-      ...mockSecret,
+      ...MOCKED_SECRETS[0],
       description: '',
     };
 
@@ -140,13 +121,13 @@ describe('SecretCard', () => {
 
   it('should handle secrets without created_by information', () => {
     const secretWithoutCreator = {
-      ...mockSecret,
+      ...MOCKED_SECRETS[0],
       created_by: '',
     };
 
     render(<SecretCard {...defaultProps} secret={secretWithoutCreator} />);
 
     expect(screen.getByText('Created:')).toBeInTheDocument();
-    expect(formatDate).toHaveBeenCalledWith(mockSecret.created_at);
+    expect(screen.getByText(formatDate(secretWithoutCreator.created_at), { exact: false })).toBeInTheDocument();
   });
 });
