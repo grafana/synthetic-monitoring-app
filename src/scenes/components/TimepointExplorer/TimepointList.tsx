@@ -13,7 +13,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
     const activeSection = miniMapSections.find((section) => section.active);
     const styles = useStyles2(getStyles);
 
-    const timepointsInRange = Object.values(timepoints).slice(activeSection?.fromIndex, activeSection?.toIndex);
+    const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex);
 
     return (
       <div className={styles.container}>

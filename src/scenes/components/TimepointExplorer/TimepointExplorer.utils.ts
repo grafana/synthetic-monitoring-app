@@ -1,7 +1,9 @@
-import { MinimapSection, Timepoints, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
+import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { MinimapSection, Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function minimapSections(timepoints: Timepoints, timePointsToDisplay: number, viewTimeRangeTo: UnixTimestamp) {
-  const timepointsInRange = Object.keys(timepoints);
+export function minimapSections(timepoints: Timepoint[], timePointsToDisplay: number, viewTimeRangeTo: UnixTimestamp) {
+  const timepointsInRange = timepoints.map((t) => t.adjustedTime);
   const sections: MinimapSection[] = [];
 
   if (timePointsToDisplay === 0) {
@@ -51,4 +53,30 @@ export function configTimeRanges(
       to: nextConfig ? nextConfig.date : timeRangeTo,
     };
   });
+}
+
+export function calculateUptimeValue(probes: CheckEndedLog[]) {
+  if (probes.length === 0) {
+    return -1;
+  }
+
+  return probes.every((probe) => probe[LokiFieldNames.Labels].probe_success === '1') ? 1 : 0;
+}
+
+export function getMaxProbeDuration(probes: CheckEndedLog[]) {
+  return probes.reduce((acc, curr) => {
+    const duration = Math.round(Number(curr[LokiFieldNames.Labels].duration_seconds) * 1000);
+
+    if (duration > acc) {
+      return duration;
+    }
+
+    return acc;
+  }, 0);
+}
+
+export function getEntryHeight(duration: number, maxProbeDurationData: number) {
+  const percentage = (duration / maxProbeDurationData) * 100;
+
+  return `${percentage}%`;
 }

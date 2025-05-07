@@ -5,26 +5,29 @@ import { VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplo
 
 export type UnixTimestamp = number;
 
-export type Timepoint = Record<
-  string,
-  CheckEndedLog & { frequency: number; adjustedTime: UnixTimestamp; probe: string }
->;
+export type Timepoint = {
+  probes: CheckEndedLog[];
+  uptimeValue: -1 | 0 | 1; // -1 means unknown, 0 means failure, 1 means success
+  adjustedTime: UnixTimestamp;
+  frequency: number;
+  index: number;
+  maxProbeDuration: number;
+};
 
-export type Timepoints = Record<UnixTimestamp, Timepoint>;
+export type TimepointsObj = Record<UnixTimestamp, Timepoint>;
 
 export type ViewMode = (typeof VIEW_OPTIONS)[number]['value'];
 
 export interface TimepointExplorerChild {
-  activeSection?: MinimapSection;
   handleTimeRangeToInViewChange: (timeRangeToInView: UnixTimestamp) => void;
-  timepoints: Timepoints;
+  timepoints: Timepoint[];
   timepointDisplayCount: number;
   timeRange: TimeRange;
   viewTimeRangeTo: UnixTimestamp;
   width: number;
   miniMapSections: MinimapSection[];
   isLoading: boolean;
-  maxProbeDurationData: number | undefined;
+  maxProbeDurationData: number;
   viewMode: ViewMode;
 }
 

@@ -3,16 +3,16 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { getTextOffset } from 'scenes/components/TimepointExplorer/GridMarkers.utils';
 import { TIMEPOINT_THEME_HEIGHT } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
-const LINE_GAP = 16;
 const GRID_MARKERS = Array.from({ length: 5 }, (_, index) => index);
 
 export const GridMarkers = ({ maxProbeDurationData, width }: { maxProbeDurationData: number; width: number }) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <Stack gap={1}>
+    <Stack gap={2}>
       <div className={styles.container}>
         {GRID_MARKERS.map((marker) => {
           return <GridText key={marker} marker={marker} maxProbeDurationData={maxProbeDurationData} />;
@@ -30,11 +30,12 @@ export const GridMarkers = ({ maxProbeDurationData, width }: { maxProbeDurationD
 const GridText = ({ marker, maxProbeDurationData }: { marker: number; maxProbeDurationData: number }) => {
   const markerPercentage = (marker * 100) / (GRID_MARKERS.length - 1);
   const value = (markerPercentage * maxProbeDurationData) / 100;
+  const textOffset = getTextOffset(marker, GRID_MARKERS.length);
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={styles.gridMarker}>
-      <div className={styles.markerText}>{Math.round(value)}ms</div>
+    <div className={styles.gridMarker} data-marker={marker}>
+      <div style={{ transform: `translateY(${textOffset}%)` }}>{Math.round(value)}ms</div>
     </div>
   );
 };
@@ -43,7 +44,7 @@ const GridLine = ({ width }: { marker: number; maxProbeDurationData: number; wid
   const styles = useStyles2(getStyles);
   return (
     <div className={styles.gridMarker}>
-      <div className={styles.line} style={{ width: width - LINE_GAP }} />
+      <div className={styles.line} style={{ width }} />
     </div>
   );
 };
@@ -52,7 +53,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     display: flex;
     flex-direction: column;
-    align-items: space-between;
+    justify-content: space-between;
     height: ${theme.spacing(TIMEPOINT_THEME_HEIGHT)};
   `,
   line: css`
@@ -65,9 +66,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   gridMarker: css`
     position: relative;
-  `,
-
-  markerText: css`
-    transform: translateY(-50%);
   `,
 });

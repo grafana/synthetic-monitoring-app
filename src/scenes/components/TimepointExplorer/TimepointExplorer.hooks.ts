@@ -11,6 +11,7 @@ import { Check } from 'types';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import {
+  MAX_PROBE_DURATION_DEFAULT,
   REF_ID_CHECK_LOGS,
   REF_ID_MAX_PROBE_DURATION,
   REF_ID_UNIQUE_CHECK_CONFIGS,
@@ -19,10 +20,17 @@ import {
   TIMEPOINT_WIDTH,
   VIEW_OPTIONS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Timepoints, UnixTimestamp, ViewMode } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
+  Timepoint,
+  TimepointsObj,
+  UnixTimestamp,
+  ViewMode,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  calculateUptimeValue,
   configTimeRanges,
   findActiveSection,
+  getMaxProbeDuration,
   minimapSections,
   timeshiftedTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -31,7 +39,7 @@ type Size = {
   width?: number;
 };
 
-export function useTimepointExplorerView(timepoints: Timepoints, initialTimeRangeToInView: UnixTimestamp) {
+export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRangeToInView: UnixTimestamp) {
   const ref = useRef<HTMLDivElement>(null);
   // if we just know when the view is to we can anchor the view from that
   const [viewTimeRangeTo, setViewTimeRangeTo] = useState<UnixTimestamp>(initialTimeRangeToInView);
@@ -96,9 +104,12 @@ interface UseTimepointExplorerProps {
 
 export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
   const { data: checkConfigs = [] } = useCheckConfigs({ timeRange, check });
+  const from = timeRange.from.valueOf();
+  const to = timeRange.to.valueOf();
+
   const timepointsInRange = useTimepointsInRange({
-    from: timeRange.from.valueOf(),
-    to: timeRange.to.valueOf(),
+    from,
+    to,
     checkConfigs,
   });
 
@@ -125,7 +136,7 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
   );
 
   const timepoints = useMemo(() => {
-    return logsData.reduce<Timepoints>((acc, log) => {
+    return logsData.reduce<TimepointsObj>((acc, log) => {
       const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
 
       if (!frequency) {
@@ -135,25 +146,34 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
       }
 
       const adjustedTime = timeshiftedTimepoint(log.Time, frequency) + frequency;
-      const { probe } = log.labels;
 
-      if (!acc[adjustedTime]) {
-        acc[adjustedTime] = {};
+      if (adjustedTime < from || adjustedTime > to) {
+        // log is outside of the time range
+        return acc;
       }
 
-      // todo: should just be an array? converting the object to an array where it is used so far
-      acc[adjustedTime][probe] = {
-        ...log,
-        probe,
-        frequency,
-        adjustedTime,
-      };
+      if (!acc[adjustedTime]) {
+        acc[adjustedTime] = {
+          probes: [],
+          uptimeValue: -1,
+          adjustedTime,
+          frequency,
+          index: -1,
+          maxProbeDuration: -1,
+        };
+      }
+
+      acc[adjustedTime].probes.push(log);
+      acc[adjustedTime].uptimeValue = calculateUptimeValue(acc[adjustedTime].probes);
+      acc[adjustedTime].maxProbeDuration = getMaxProbeDuration(acc[adjustedTime].probes);
 
       return acc;
     }, timepointsInRange);
-  }, [logsData, timepointsInRange, builtConfigs]);
+  }, [logsData, timepointsInRange, builtConfigs, from, to]);
 
-  return timepoints;
+  return Object.values(timepoints)
+    .sort((a, b) => a.adjustedTime - b.adjustedTime)
+    .reverse();
 }
 
 function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
@@ -220,7 +240,7 @@ function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangePr
     let currentConfig = configs.pop();
 
     // mutate for efficiency
-    let build: Record<UnixTimestamp, {}> = {};
+    let build: Record<UnixTimestamp, Timepoint> = {};
 
     if (!currentConfig) {
       return build;
@@ -228,13 +248,21 @@ function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangePr
 
     // remove non-full frequency timepoints
     let currentTimepoint = timeshiftedTimepoint(rangeTo, currentConfig.frequency);
+    let count = 0;
 
-    while (currentTimepoint > rangeFrom && currentConfig) {
+    while (currentTimepoint >= rangeFrom && currentConfig) {
       const currentFrequency = currentConfig.frequency;
       const uptoDate = currentTimepoint - (currentTimepoint % currentFrequency);
 
       for (let i = uptoDate; i <= currentTimepoint; i += currentFrequency) {
-        build[i] = {};
+        build[i] = {
+          probes: [],
+          uptimeValue: -1,
+          adjustedTime: i,
+          frequency: currentFrequency,
+          index: count,
+          maxProbeDuration: -1,
+        };
       }
 
       currentTimepoint = uptoDate - currentFrequency;
@@ -242,6 +270,7 @@ function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangePr
       if (currentTimepoint.valueOf() < currentConfig.date.valueOf()) {
         currentConfig = configs.pop();
       }
+      count++;
     }
 
     return build;
@@ -253,7 +282,7 @@ const MILLISECONDS_PER_SECOND = 1000;
 export function useMaxProbeDuration(timeRange: TimeRange, check: Check) {
   const metricsDS = useMetricsDS();
 
-  const { data, isLoading } = useQuery({
+  const { data: maxProbeDurationData = 0, isLoading } = useQuery({
     queryKey: [
       'aggregation',
       metricsDS,
@@ -285,6 +314,8 @@ export function useMaxProbeDuration(timeRange: TimeRange, check: Check) {
       return res;
     },
   });
+
+  const data = maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
 
   return { data, isLoading };
 }

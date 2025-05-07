@@ -1,11 +1,12 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Icon, Stack, Tooltip, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { TIMEPOINT_WIDTH } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Timepoint, UnixTimestamp, ViewMode } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { Timepoint, ViewMode } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface TimepointListEntryProps {
   timepoint: Timepoint;
@@ -18,35 +19,49 @@ export const TimepointListEntry = ({ timepoint, maxProbeDurationData, viewMode }
 
   return (
     <div className={styles.timepoint}>
-      {viewMode === 'uptime' ? (
-        <UptimeEntry maxProbeDurationData={maxProbeDurationData} timepoint={timepoint} />
-      ) : (
-        <ReachabilityEntry maxProbeDurationData={maxProbeDurationData} timepoint={timepoint} />
-      )}
+      <Entry maxProbeDurationData={maxProbeDurationData} timepoint={timepoint} viewMode={viewMode} />
     </div>
   );
 };
 
+const Entry = ({
+  maxProbeDurationData,
+  timepoint,
+  viewMode,
+}: {
+  maxProbeDurationData: number;
+  timepoint: Timepoint;
+  viewMode: ViewMode;
+}) => {
+  if (viewMode === 'uptime') {
+    return <UptimeEntry maxProbeDurationData={maxProbeDurationData} timepoint={timepoint} />;
+  }
+
+  return <ReachabilityEntry maxProbeDurationData={maxProbeDurationData} timepoint={timepoint} />;
+};
+
+const ICON_MAP: Record<number, IconName> = {
+  [-1]: 'question-circle',
+  [0]: 'times',
+  [1]: 'check',
+};
+
 const UptimeEntry = ({ maxProbeDurationData, timepoint }: { maxProbeDurationData: number; timepoint: Timepoint }) => {
-  const probeValues = Object.values(timepoint);
-
-  const maxEntryDuration = probeValues.reduce((acc, curr) => {
-    const duration = Math.round(Number(curr[LokiFieldNames.Labels].duration_seconds) * 1000);
-
-    if (duration > acc) {
-      return duration;
-    }
-
-    return acc;
-  }, 0);
-
-  const height = getEntryHeight(maxEntryDuration, maxProbeDurationData);
+  const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDurationData);
   const styles = getStyles(useTheme2());
+  const isSuccess = timepoint.uptimeValue === 1;
+  const isFailure = timepoint.uptimeValue === 0;
 
   return (
-    <Tooltip content={<TimepointTooltipContent time={probeValues[0]?.adjustedTime} value={`${maxEntryDuration}ms`} />}>
-      <div className={styles.uptimeEntry} style={{ height }}>
-        <Icon name="check" />
+    <Tooltip content={<TimepointTooltipContent timepoint={timepoint} value={`${timepoint.maxProbeDuration}ms`} />}>
+      <div
+        className={cx(styles.uptimeEntry, {
+          [styles.success]: isSuccess,
+          [styles.failure]: isFailure,
+        })}
+        style={{ height }}
+      >
+        <Icon name={ICON_MAP[timepoint.uptimeValue]} />
       </div>
     </Tooltip>
   );
@@ -60,16 +75,15 @@ const ReachabilityEntry = ({
   timepoint: Timepoint;
 }) => {
   const styles = getStyles(useTheme2());
-  const probeValues = Object.values(timepoint);
 
-  return probeValues.map((probeValue) => {
+  return timepoint.probes.map((probeValue) => {
     const duration = Number(probeValue[LokiFieldNames.Labels].duration_seconds) * 1000;
     const height = getEntryHeight(duration, maxProbeDurationData);
 
     return (
       <Tooltip
-        content={<TimepointTooltipContent time={probeValue.adjustedTime} value={`${duration}ms`} />}
-        key={probeValue.probe}
+        content={<TimepointTooltipContent timepoint={timepoint} value={`${duration}ms`} />}
+        key={probeValue[LokiFieldNames.Labels].probe}
       >
         <div className={styles.reachabilityEntry} style={{ bottom: height }}>
           <Icon name="check" />
@@ -79,11 +93,12 @@ const ReachabilityEntry = ({
   });
 };
 
-const TimepointTooltipContent = ({ time, value }: { time: UnixTimestamp; value: string }) => {
-  const displayTime = new Date(time).toLocaleString();
+const TimepointTooltipContent = ({ timepoint, value }: { timepoint: Timepoint; value: string }) => {
+  const displayTime = new Date(timepoint.adjustedTime).toLocaleString();
 
   return (
     <Stack direction={`column`}>
+      <div>{timepoint.index}</div>
       <div>{displayTime}</div>
       <div>{value}</div>
     </Stack>
@@ -104,16 +119,15 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex-direction: column;
     align-items: center;
     justify-content: end;
-    background-color: green;
     width: 100%;
+  `,
+  success: css`
+    background-color: green;
+  `,
+  failure: css`
+    background-color: red;
   `,
   reachabilityEntry: css`
     position: absolute;
   `,
 });
-
-function getEntryHeight(duration: number, maxProbeDurationData: number) {
-  const percentage = (duration / maxProbeDurationData) * 100;
-
-  return `${percentage}%`;
-}

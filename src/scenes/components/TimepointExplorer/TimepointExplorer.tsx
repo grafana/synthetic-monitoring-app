@@ -30,7 +30,6 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
     timepoints,
     initialTimeRangeToInView
   );
-  // console.log(timepoints);
 
   const drillProps: TimepointExplorerChild = useMemo(() => {
     return {
