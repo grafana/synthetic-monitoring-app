@@ -101,7 +101,7 @@ describe('SecretCard', () => {
     await act(() => {
       return user.click(clipboardButton);
     });
-    // Instead of accessing props directly, test the actual copy behaviorF
+    // Instead of accessing props directly, test the actual copy behavior
 
     const clipboardText = await navigator.clipboard.readText();
     expect(clipboardText).toBe(MOCKED_SECRETS[0].uuid);
