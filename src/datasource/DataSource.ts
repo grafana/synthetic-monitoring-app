@@ -357,7 +357,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async updateAlertsForCheck(alerts: CheckAlertDraft[], checkId: number) {
-    return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
+    return this.fetchAPI<null>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
       method: 'PUT',
       data: { alerts },
     });

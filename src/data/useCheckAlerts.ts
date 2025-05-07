@@ -27,10 +27,10 @@ export function useListAlertsForCheck(checkId?: number) {
   return useQuery(alertsForCheckQuery(smDS, checkId));
 }
 
-export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: MutationProps<CheckAlertsResponse> = {}) {
+export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: MutationProps<null> = {}) {
   const smDS = useSMDS();
 
-  return useMutation<CheckAlertsResponse, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
+  return useMutation<null, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
     mutationFn: async ({ alerts, checkId }) => {
       try {
         return await smDS.updateAlertsForCheck(alerts, checkId);
