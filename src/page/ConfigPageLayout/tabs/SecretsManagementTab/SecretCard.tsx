@@ -3,13 +3,13 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, ClipboardButton, Icon, Tag, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { SecretWithMetadata } from './types';
 import { formatDate } from 'utils';
-import { ExperimentalSecret } from 'data/useSecrets';
 
 interface SecretCardProps {
-  secret: ExperimentalSecret;
-  onEdit: (id?: ExperimentalSecret['uuid']) => void;
-  onDelete: (id: ExperimentalSecret['uuid']) => void;
+  secret: SecretWithMetadata;
+  onEdit: (id?: SecretWithMetadata['uuid']) => void;
+  onDelete: (id: SecretWithMetadata['uuid']) => void;
 }
 
 export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
@@ -61,6 +61,7 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
           size="sm"
           fill="text"
           getText={() => secret.uuid}
+          aria-label={`Copy ${secret.name} ID`}
         >
           <Icon name="copy" />
         </ClipboardButton>

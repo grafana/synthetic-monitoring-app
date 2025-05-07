@@ -1,7 +1,7 @@
 import React, { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CenteredSpinner } from 'components/CenteredSpinner';
@@ -9,6 +9,8 @@ import { CenteredSpinner } from 'components/CenteredSpinner';
 interface BaseProps {
   loading?: boolean;
   children?: ReactNode;
+  ariaLoadingLabel?: string;
+  'data-testid'?: string;
 }
 
 interface WithoutActions {
@@ -23,13 +25,17 @@ interface WithActions {
 
 type Props = BaseProps & (WithoutActions | WithActions);
 
-export function ConfigContent({ title, children, loading = false, actions }: Props) {
+export function ConfigContent({ title, children, loading = false, actions, ariaLoadingLabel, ...props }: Props) {
   const styles = useStyles2(getStyles);
 
   if (loading) {
     return (
-      <div data-testid={DataTestIds.CONFIG_CONTENT_LOADING} className={styles.container}>
-        <CenteredSpinner />
+      <div
+        data-testid={cx(DataTestIds.CONFIG_CONTENT_LOADING, props['data-testid'])}
+        className={styles.container}
+        aria-busy
+      >
+        <CenteredSpinner aria-label={ariaLoadingLabel} />
       </div>
     );
   }
