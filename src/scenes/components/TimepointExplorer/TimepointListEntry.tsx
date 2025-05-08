@@ -4,7 +4,7 @@ import { Icon, Stack, Tooltip, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
-import { TIMEPOINT_WIDTH } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { TIMEPOINT_SIZE } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { Timepoint, ViewMode } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
@@ -59,7 +59,7 @@ const UptimeEntry = ({ maxProbeDurationData, timepoint }: { maxProbeDurationData
           [styles.success]: isSuccess,
           [styles.failure]: isFailure,
         })}
-        style={{ height }}
+        style={{ height: `${height}%` }}
       >
         <Icon name={ICON_MAP[timepoint.uptimeValue]} />
       </div>
@@ -75,22 +75,34 @@ const ReachabilityEntry = ({
   timepoint: Timepoint;
 }) => {
   const styles = getStyles(useTheme2());
+  const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDurationData);
 
-  return timepoint.probes.map((probeValue) => {
-    const duration = Number(probeValue[LokiFieldNames.Labels].duration_seconds) * 1000;
-    const height = getEntryHeight(duration, maxProbeDurationData);
+  return (
+    <Tooltip content={<TimepointTooltipContent timepoint={timepoint} value={`${``}ms`} />}>
+      <div className={styles.reachabilityEntry} style={{ height: `calc(${height}% + ${TIMEPOINT_SIZE}px)` }}>
+        {timepoint.probes.map((probeValue) => {
+          const duration = Number(probeValue[LokiFieldNames.Labels].duration_seconds) * 1000;
+          const height = getEntryHeight(duration, maxProbeDurationData);
+          const probeSuccess = probeValue[LokiFieldNames.Labels].probe_success;
+          const isSuccess = probeSuccess === '1';
+          const isFailure = probeSuccess === '0';
 
-    return (
-      <Tooltip
-        content={<TimepointTooltipContent timepoint={timepoint} value={`${duration}ms`} />}
-        key={probeValue[LokiFieldNames.Labels].probe}
-      >
-        <div className={styles.reachabilityEntry} style={{ bottom: height }}>
-          <Icon name="check" />
-        </div>
-      </Tooltip>
-    );
-  });
+          return (
+            <div
+              className={cx(styles.reachabilityProbe, {
+                [styles.success]: isSuccess,
+                [styles.failure]: isFailure,
+              })}
+              key={probeValue[LokiFieldNames.Labels].probe}
+              style={{ bottom: `${height}%` }}
+            >
+              <Icon name={ICON_MAP[probeSuccess]} />
+            </div>
+          );
+        })}
+      </div>
+    </Tooltip>
+  );
 };
 
 const TimepointTooltipContent = ({ timepoint, value }: { timepoint: Timepoint; value: string }) => {
@@ -101,6 +113,13 @@ const TimepointTooltipContent = ({ timepoint, value }: { timepoint: Timepoint; v
       <div>{timepoint.index}</div>
       <div>{displayTime}</div>
       <div>{value}</div>
+      {timepoint.probes.map((probe) => {
+        return (
+          <div key={probe[LokiFieldNames.Labels].probe}>
+            {probe[LokiFieldNames.Labels].probe} - {probe[LokiFieldNames.Labels].probe_success}
+          </div>
+        );
+      })}
     </Stack>
   );
 };
@@ -110,7 +129,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: flex;
     justify-content: end;
     flex-direction: column;
-    width: ${TIMEPOINT_WIDTH}px;
+    width: ${TIMEPOINT_SIZE}px;
     height: 100%;
     position: relative;
   `,
@@ -121,13 +140,33 @@ const getStyles = (theme: GrafanaTheme2) => ({
     justify-content: end;
     width: 100%;
   `,
+  reachabilityEntry: css`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: end;
+    width: 100%;
+  `,
   success: css`
-    background-color: green;
+    background-color: ${theme.colors.success.shade};
   `,
   failure: css`
-    background-color: red;
+    background-color: ${theme.colors.error.shade};
+    z-index: 1;
   `,
-  reachabilityEntry: css`
+  reachabilityProbe: css`
     position: absolute;
+    width: ${TIMEPOINT_SIZE}px;
+    height: ${TIMEPOINT_SIZE}px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transform: translateY(50%);
+
+    &:hover {
+      background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
+      z-index: 1;
+    }
   `,
 });

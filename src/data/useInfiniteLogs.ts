@@ -42,6 +42,9 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end }: DeepLogsParam
       return lastPage[0].Time;
     },
     select: (data) => {
+      return data.pages.flatMap((page) => page);
+
+      // computationally very expensive -- is it needed? Handle duplication on the frontend?
       const flattenedLogs = data.pages.flatMap((page) => page);
       const deduplicatedLogs = flattenedLogs.filter(
         (log, index, self) => index === self.findIndex((t) => t.id === log.id)

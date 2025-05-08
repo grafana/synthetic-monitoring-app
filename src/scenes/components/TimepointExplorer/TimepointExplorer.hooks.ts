@@ -17,7 +17,7 @@ import {
   REF_ID_UNIQUE_CHECK_CONFIGS,
   THEME_UNIT,
   TIMEPOINT_GAP,
-  TIMEPOINT_WIDTH,
+  TIMEPOINT_SIZE,
   VIEW_OPTIONS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
@@ -53,7 +53,7 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
     const width = ref.current?.clientWidth ?? 0;
     setSize({ width });
 
-    const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
+    const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
     const miniMapSections = minimapSections(timepoints, timepointsToDisplay, viewTimeRangeTo);
     const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
 
@@ -72,7 +72,7 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
     setViewTimeRangeTo(initialTimeRangeToInView);
   }, [initialTimeRangeToInView]);
 
-  const timepointDisplayCount = Math.ceil(width / (TIMEPOINT_WIDTH + TIMEPOINT_GAP * THEME_UNIT));
+  const timepointDisplayCount = Math.ceil(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
   const miniMapSections = minimapSections(timepoints, timepointDisplayCount, viewTimeRangeTo);
   const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
 
@@ -136,6 +136,10 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
   );
 
   const timepoints = useMemo(() => {
+    if (!checkConfigs.length) {
+      return timepointsInRange;
+    }
+
     return logsData.reduce<TimepointsObj>((acc, log) => {
       const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
 
@@ -163,17 +167,30 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
         };
       }
 
-      acc[adjustedTime].probes.push(log);
+      // deduplicate logs
+      if (!acc[adjustedTime].probes.find((p) => p.id === log.id)) {
+        acc[adjustedTime].probes.push(log);
+      }
+
       acc[adjustedTime].uptimeValue = calculateUptimeValue(acc[adjustedTime].probes);
       acc[adjustedTime].maxProbeDuration = getMaxProbeDuration(acc[adjustedTime].probes);
 
       return acc;
     }, timepointsInRange);
-  }, [logsData, timepointsInRange, builtConfigs, from, to]);
+  }, [logsData, timepointsInRange, builtConfigs, from, to, checkConfigs.length]);
 
-  return Object.values(timepoints)
-    .sort((a, b) => a.adjustedTime - b.adjustedTime)
-    .reverse();
+  return useMemo(() => {
+    const values = Object.values(timepoints);
+    const sorted = values.sort((a, b) => a.adjustedTime - b.adjustedTime);
+    const firstEntry = sorted[0];
+
+    // assume the first entry didn't look far enough back in time to get the logs associated with it so can be removed
+    if (firstEntry?.probes.length === 0) {
+      sorted.shift();
+    }
+
+    return sorted.reverse();
+  }, [timepoints]);
 }
 
 function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {

@@ -60,7 +60,7 @@ export function calculateUptimeValue(probes: CheckEndedLog[]) {
     return -1;
   }
 
-  return probes.every((probe) => probe[LokiFieldNames.Labels].probe_success === '1') ? 1 : 0;
+  return probes.every((probe) => probe[LokiFieldNames.Labels].probe_success === '0') ? 0 : 1;
 }
 
 export function getMaxProbeDuration(probes: CheckEndedLog[]) {
@@ -78,5 +78,5 @@ export function getMaxProbeDuration(probes: CheckEndedLog[]) {
 export function getEntryHeight(duration: number, maxProbeDurationData: number) {
   const percentage = (duration / maxProbeDurationData) * 100;
 
-  return `${percentage}%`;
+  return percentage;
 }

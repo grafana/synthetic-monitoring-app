@@ -54,6 +54,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     position: relative;
     flex: 1;
     overflow: hidden;
+    padding-top: ${theme.spacing(4)};
   `,
   gridMarkers: css`
     display: flex;
