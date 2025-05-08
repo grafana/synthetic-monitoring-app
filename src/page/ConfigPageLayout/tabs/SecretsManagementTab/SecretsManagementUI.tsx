@@ -18,6 +18,8 @@ export function SecretsManagementUI() {
   const deleteSecret = useDeleteSecret();
   const emptyState = secrets?.length === 0;
 
+  const existingNames = secrets?.map((secret) => secret.name) ?? [];
+
   const handleAddSecret = () => {
     setEditMode(SECRETS_EDIT_MODE_ADD);
   };
@@ -78,7 +80,9 @@ export function SecretsManagementUI() {
         </ConfigContent>
       )}
 
-      {editMode && <SecretEditModal id={editMode} open onDismiss={() => handleEditSecret()} />}
+      {editMode && (
+        <SecretEditModal id={editMode} existingNames={existingNames} open onDismiss={() => handleEditSecret()} />
+      )}
 
       <ConfirmModal
         isOpen={!!deleteMode}

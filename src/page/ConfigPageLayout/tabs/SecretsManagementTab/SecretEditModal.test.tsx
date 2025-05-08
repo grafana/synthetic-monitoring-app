@@ -274,4 +274,24 @@ describe('SecretEditModal', () => {
 
     expect(body.plaintext).toBe(newSecretValue);
   });
+
+  it('should show error message when secret name is already taken', async () => {
+    const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
+    const inputValues = {
+      name: secretMock.name, // should be transformed to 'new-secret'
+      description: 'My short description',
+      plaintext: 'secret-value',
+    };
+
+    await render(<SecretEditModal {...defaultProps} existingNames={[secretMock.name]} />);
+
+    await userEvent.type(screen.getByLabelText(/Name/), inputValues.name); // Should be transformed to 'new-secret'
+    await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
+    await userEvent.type(screen.getByLabelText(/Value/), inputValues.plaintext);
+
+    const submitButton = screen.getByText('Save');
+    await userEvent.click(submitButton);
+
+    expect(screen.getByText('A secret with this name already exists')).toBeInTheDocument();
+  });
 });
