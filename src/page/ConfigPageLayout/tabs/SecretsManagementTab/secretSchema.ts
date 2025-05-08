@@ -56,7 +56,7 @@ const labels: ZodType<Secret['labels']> = z
     if (labels.length > 10) {
       // Add issues for each label beyond the 10th
       // Ideally, this will never happen since the UI should prevent it
-      labels.slice(10).forEach((label, index) => {
+      labels.slice(10).forEach((_label, index) => {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'You can add up to 10 labels',
@@ -74,25 +74,37 @@ const labels: ZodType<Secret['labels']> = z
     }
   });
 
-const createSecretSchema: ZodType<SecretWithValue> = z.object({
-  labels,
-  description,
-  name: z
-    .string()
-    .toLowerCase()
-    .transform((value) => value.replaceAll(' ', '-'))
-    .pipe(
-      z
-        .string()
-        .min(1, 'Name is required')
-        .max(253, 'Name cannot be more than 253 characters')
-        .regex(
-          /^(?=.{1,253}$)[a-z\d][a-z\d.-]*$/,
-          'Name must start with a letter or number and can only contain letters, numbers, dashes, and periods'
-        )
-    ),
-  plaintext: z.string().min(1, 'Value is required'),
-});
+function createCreateSecretSchema(existingNames: string[] = []) {
+  return z.object({
+    labels,
+    description,
+    name: z
+      .string()
+      .toLowerCase()
+      .transform((value) => value.replaceAll(' ', '-'))
+      .pipe(
+        z
+          .string()
+          .min(1, 'Name is required')
+          .max(253, 'Name cannot be more than 253 characters')
+          .regex(
+            /^(?=.{1,253}$)[a-z\d][a-z\d.-]*$/,
+            'Name must start with a letter or number and can only contain letters, numbers, dashes, and periods'
+          )
+      )
+      .superRefine((name, ctx) => {
+        if (existingNames.includes(name)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'A secret with this name already exists',
+            fatal: true,
+          });
+          return z.NEVER;
+        }
+      }),
+    plaintext: z.string().min(1, 'Value is required'),
+  }) as ZodType<SecretWithValue>;
+}
 
 export const updateSecretSchema: ZodType<Omit<SecretWithValue, 'name'> | Omit<SecretWithValue, 'name' | 'plaintext'>> =
   z.object({
@@ -102,6 +114,13 @@ export const updateSecretSchema: ZodType<Omit<SecretWithValue, 'name'> | Omit<Se
     plaintext: z.string().min(1, 'Value is required').optional(),
   });
 
-export function secretSchemaFactory(isNew = true) {
-  return isNew ? createSecretSchema : updateSecretSchema;
+/**
+ * Creates a schema for creating or updating a secret.
+ *
+ * @param isNew - If true, creates a schema for creating a new secret. If false, create a schema for updating an existing secret.
+ * @param existingNames - An array of existing secret names to check for uniqueness.
+ * @returns A Zod schema for the secret.
+ */
+export function secretSchemaFactory(isNew = true, existingNames: string[] = []) {
+  return isNew ? createCreateSecretSchema(existingNames) : updateSecretSchema;
 }

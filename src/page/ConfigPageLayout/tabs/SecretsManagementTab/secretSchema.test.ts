@@ -9,7 +9,7 @@ describe('secretSchema', () => {
       labels: [{ name: 'env', value: 'prod' }],
     };
 
-    const secretSchema = secretSchemaFactory(true);
+    const secretSchema = secretSchemaFactory(true, ['existing-secret-name']);
 
     it('should validate a valid secret', () => {
       expect(() => secretSchema.parse(validSecret)).not.toThrow();
@@ -42,6 +42,11 @@ describe('secretSchema', () => {
       it('should fail if name is too long', () => {
         const invalidSecret = { ...validSecret, name: 'a'.repeat(256) };
         expect(() => secretSchema.parse(invalidSecret)).toThrow(/name cannot be more than 253 characters/i);
+      });
+
+      it('should fail if name is not unique', () => {
+        const invalidSecret = { ...validSecret, name: 'existing-secret-name' };
+        expect(() => secretSchema.parse(invalidSecret)).toThrow(/A secret with this name already exists/i);
       });
     });
 

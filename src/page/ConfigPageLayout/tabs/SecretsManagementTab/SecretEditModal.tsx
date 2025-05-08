@@ -17,6 +17,7 @@ interface SecretEditModalProps {
   id: string;
   onDismiss: () => void;
   open?: boolean;
+  existingNames?: string[];
 }
 
 function getDefaultValues(isNew = true): SecretFormValues & { plaintext?: string } {
@@ -71,7 +72,7 @@ function getErrorMessage(error: unknown): string {
   return 'An unknown error occurred';
 }
 
-export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
+export function SecretEditModal({ open, id, onDismiss, existingNames = [] }: SecretEditModalProps) {
   const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(id);
   const saveSecret = useSaveSecret();
   const isNewSecret = id === SECRETS_EDIT_MODE_ADD;
@@ -95,7 +96,7 @@ export function SecretEditModal({ open, id, onDismiss }: SecretEditModalProps) {
   } = useForm<SecretFormValues & { plaintext?: string }>({
     defaultValues,
     disabled: isLoading || saveSecret.isPending,
-    resolver: zodResolver(secretSchemaFactory(isNewSecret)),
+    resolver: zodResolver(secretSchemaFactory(isNewSecret, existingNames)),
   });
 
   // Set the default value for plaintext to empty string when secret is reset (for validation to work)
