@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.28.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.27.0...v1.28.0) (2025-05-08)
+
+
+### Features
+
+* intermediate secrets management pt2 ([#1125](https://github.com/grafana/synthetic-monitoring-app/issues/1125)) ([566bf25](https://github.com/grafana/synthetic-monitoring-app/commit/566bf25771c0db12883c46b65c8ac1bc93939038))
+
+
+### Fixes
+
+* add existing secret names to client validation ([#1138](https://github.com/grafana/synthetic-monitoring-app/issues/1138)) ([5de4f03](https://github.com/grafana/synthetic-monitoring-app/commit/5de4f0312e7c04df31943163b0d59999c3a5a659))
+
 ## [1.27.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.26.0...v1.27.0) (2025-04-30)
 
 
