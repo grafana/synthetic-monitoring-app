@@ -329,7 +329,7 @@ export interface CheckAlertFormValues {
 
 export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertFormValues>>;
 
-export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly'> & {
+export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 'alerts'> & {
   publishAdvancedMetrics: boolean;
   alerts?: CheckAlertFormRecord;
 };
@@ -407,7 +407,7 @@ export interface CheckBase {
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   probes: number[];
-  alerts?: CheckAlertFormRecord;
+  Alerts?: CheckAlertPublished[];
 }
 
 export type Check =
