@@ -1,11 +1,10 @@
-import { LokiSeries, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { ParsedLokiRecord, UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { CheckType } from 'types';
 
 import { MSG_STRINGS_COMMON } from './checkLogs.constants.msgs';
 
-export type CheckLogsSeries = LokiSeries<CheckLabels, CheckLabelType>;
-
 export type CheckLabels<T extends Record<string, string> = {}> = T & {
-  check_name: string; // this is really check type e.g. http
+  check_name: CheckType; // this is really check type e.g. http
   detected_level: 'error' | 'info'; // might be more
   instance: string;
   job: string;
@@ -48,7 +47,7 @@ export type CheckSucceededLog = ParsedCheckLog<
 
 export type CheckEndedLog = CheckFailedLog | CheckSucceededLog;
 
-export type UnknownCheckLog = ParsedCheckLog<Record<string, string>>;
+export type UnknownCheckLog = UnknownParsedLokiRecord;
 
 export type CheckLogs = [StartingLog, ...UnknownCheckLog[], CheckEndedLog];
 

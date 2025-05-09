@@ -18,7 +18,7 @@ import {
   THEME_UNIT,
   TIMEPOINT_GAP,
   TIMEPOINT_SIZE,
-  VIEW_OPTIONS,
+  TIMEPOINT_EXPLORER_VIEW_OPTIONS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   Timepoint,
@@ -43,7 +43,7 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
   const ref = useRef<HTMLDivElement>(null);
   // if we just know when the view is to we can anchor the view from that
   const [viewTimeRangeTo, setViewTimeRangeTo] = useState<UnixTimestamp>(initialTimeRangeToInView);
-  const [viewMode, setViewMode] = useState<ViewMode>(VIEW_OPTIONS[0].value);
+  const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
 
   const [{ width = 0 }, setSize] = useState<Size>({
     width: 0,

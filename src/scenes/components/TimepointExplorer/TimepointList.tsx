@@ -9,7 +9,10 @@ import { TimepointExplorerChild } from 'scenes/components/TimepointExplorer/Time
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 
 export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
-  ({ miniMapSections, timepoints, maxProbeDurationData = 1500, viewMode, width }, ref) => {
+  (
+    { miniMapSections, timepoints, maxProbeDurationData, viewMode, width, selectedTimepoint, handleTimepointSelection },
+    ref
+  ) => {
     const activeSection = miniMapSections.find((section) => section.active);
     const styles = useStyles2(getStyles);
 
@@ -21,16 +24,18 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
 
         <div ref={ref} className={styles.timepoints}>
           {activeSection &&
-            timepointsInRange
-              .reverse()
-              .map((timepoint, index) => (
+            timepointsInRange.reverse().map((timepoint, index) => {
+              return (
                 <TimepointListEntry
                   key={index}
                   timepoint={timepoint}
                   maxProbeDurationData={maxProbeDurationData}
                   viewMode={viewMode}
+                  selectedTimepoint={selectedTimepoint}
+                  handleTimepointSelection={handleTimepointSelection}
                 />
-              ))}
+              );
+            })}
         </div>
       </div>
     );

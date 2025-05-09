@@ -80,3 +80,5 @@ export type ParsedLokiRecord<L, LT> = {
   [LokiFieldNames.LabelTypes]: LT;
   [LokiFieldNames.ID]: string;
 };
+
+export interface UnknownParsedLokiRecord extends ParsedLokiRecord<Record<string, string>, Record<string, string>> {}

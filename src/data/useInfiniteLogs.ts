@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { parseLokiLogs } from 'features/parseLogs/parseLokiLogs';
 import { queryLoki } from 'features/queryDatasources/queryLoki';
 
+import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 
 interface DeepLogsParams {
@@ -41,8 +42,9 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end }: DeepLogsParam
 
       return lastPage[0].Time;
     },
-    select: (data) => {
-      return data.pages.flatMap((page) => page);
+    select: (data): Array<ParsedLokiRecord<T, R>> => {
+      const res = data.pages.flatMap((page) => page);
+      return res;
 
       // computationally very expensive -- is it needed? Handle duplication on the frontend?
       const flattenedLogs = data.pages.flatMap((page) => page);

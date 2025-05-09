@@ -1,7 +1,8 @@
 import { TimeRange } from '@grafana/data';
 
 import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
-import { VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { Check } from 'types';
+import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
 export type UnixTimestamp = number;
 
@@ -16,7 +17,11 @@ export type Timepoint = {
 
 export type TimepointsObj = Record<UnixTimestamp, Timepoint>;
 
-export type ViewMode = (typeof VIEW_OPTIONS)[number]['value'];
+export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value'];
+
+export type SelectedTimepoint = [Timepoint, string];
+
+export type SelectedTimepointState = [null, null] | SelectedTimepoint;
 
 export interface TimepointExplorerChild {
   handleTimeRangeToInViewChange: (timeRangeToInView: UnixTimestamp) => void;
@@ -29,6 +34,9 @@ export interface TimepointExplorerChild {
   isLoading: boolean;
   maxProbeDurationData: number;
   viewMode: ViewMode;
+  selectedTimepoint: SelectedTimepointState;
+  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
+  check: Check;
 }
 
 export interface MinimapSection {

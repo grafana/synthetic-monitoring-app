@@ -14,6 +14,7 @@ import {
   StartingLog,
 } from 'features/parseCheckLogs/checkLogs.types';
 import { MakingHTTPRequestLog, ReceivedHTTPResponseLog } from 'features/parseCheckLogs/checkLogs.types.http';
+import { CheckType } from 'types';
 
 const labelTypes: CheckLabelType = {
   check_name: 'I',
@@ -30,7 +31,7 @@ const discard1: MakingHTTPRequestLog = {
     host: 'host1',
     url: 'url1',
     msg: MSG_STRINGS_HTTP.MakingHTTPRequest,
-    check_name: 'check1',
+    check_name: CheckType.HTTP,
     detected_level: 'info',
     instance: 'instance1',
     job: 'job1',
@@ -51,7 +52,7 @@ const discard2: ReceivedHTTPResponseLog = {
     probe: 'probe1',
     http_request: 'http_request1',
     msg: MSG_STRINGS_HTTP.ReceivedHTTPResponse,
-    check_name: 'check1',
+    check_name: CheckType.HTTP,
     detected_level: 'info',
     instance: 'instance1',
     job: 'job1',
@@ -72,7 +73,7 @@ const probe1_log1: StartingLog = {
   labels: {
     probe: 'probe1',
     msg: MSG_STRINGS_COMMON.BeginningCheck,
-    check_name: 'check1',
+    check_name: CheckType.HTTP,
     detected_level: 'info',
     instance: 'instance1',
     job: 'job1',
@@ -93,7 +94,7 @@ const probe1_log2: CheckFailedLog = {
     probe: 'probe1',
     duration_seconds: '10',
     msg: MSG_STRINGS_COMMON.CheckFailed,
-    check_name: 'check2',
+    check_name: CheckType.HTTP,
     detected_level: 'error',
     instance: 'instance2',
     job: 'job2',
@@ -113,7 +114,7 @@ const probe2_log1: StartingLog = {
   labels: {
     probe: 'probe2',
     msg: MSG_STRINGS_COMMON.BeginningCheck,
-    check_name: 'check1',
+    check_name: CheckType.HTTP,
     detected_level: 'info',
     instance: 'instance1',
     job: 'job1',
@@ -134,7 +135,7 @@ const probe2_log2: CheckSucceededLog = {
     probe: 'probe2',
     duration_seconds: '10',
     msg: MSG_STRINGS_COMMON.CheckSucceeded,
-    check_name: 'check2',
+    check_name: CheckType.HTTP,
     detected_level: 'info',
     instance: 'instance2',
     job: 'job2',

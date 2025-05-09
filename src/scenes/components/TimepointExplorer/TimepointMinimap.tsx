@@ -34,6 +34,7 @@ export const TimepointMinimap = ({
             handleSectionClick={handleSectionClick}
             viewMode={rest.viewMode}
             timepointDisplayCount={rest.timepointDisplayCount}
+            selectedTimepoint={rest.selectedTimepoint}
           />
         ))
         .reverse()}
