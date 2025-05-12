@@ -1,7 +1,8 @@
 import React from 'react';
-import { Tab, TabContent, TabsBar } from '@grafana/ui';
+import { Icon, Stack, Tab, TabContent, TabsBar } from '@grafana/ui';
 
-import { CheckLogs, ParsedCheckLog, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
+import { ParsedCheckLog, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
+import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { SelectedTimepoint, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -26,11 +27,19 @@ export const TimepointViewerProbes = ({
       <TabsBar>
         {timepointData.map(({ probe, checks }) => {
           const active = probe === probeToView;
+          const probeStatus = checks[0][0][LokiFieldNames.Labels].probe_success;
+          const isSuccess = probeStatus === '1';
 
           return (
             <Tab
               key={probe}
-              label={probe}
+              // @ts-expect-error - it accepts components despite its type
+              label={
+                <Stack direction="row">
+                  <div>{probe}</div>
+                  <Icon name={isSuccess ? 'check' : 'times'} color={isSuccess ? 'green' : 'red'} />
+                </Stack>
+              }
               active={active}
               onChangeTab={() => {
                 if (!active) {

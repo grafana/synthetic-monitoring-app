@@ -1,4 +1,4 @@
-import { ParsedLokiRecord, UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { CheckType } from 'types';
 
 import { MSG_STRINGS_COMMON } from './checkLogs.constants.msgs';
@@ -47,7 +47,7 @@ export type CheckSucceededLog = ParsedCheckLog<
 
 export type CheckEndedLog = CheckFailedLog | CheckSucceededLog;
 
-export type UnknownCheckLog = UnknownParsedLokiRecord;
+export type UnknownCheckLog = ParsedCheckLog;
 
 export type CheckLogs = [StartingLog, ...UnknownCheckLog[], CheckEndedLog];
 
