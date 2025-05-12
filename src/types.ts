@@ -783,6 +783,7 @@ export interface CalculateUsageValues {
 export type PrometheusAlertsGroup = {
   evaulationTime: number;
   file: string;
+  folderUid: string;
   interval: number;
   lastEvaluation: string;
   name: string;

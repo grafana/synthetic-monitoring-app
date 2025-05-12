@@ -1,15 +1,15 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, IconButton, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
+import { Icon, IconButton, Stack, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertSensitivity, Check, PrometheusAlertsGroup } from 'types';
-import { useAlertRules } from 'hooks/useAlertRules';
+import { useAlertRules, useGMAlertRules } from 'hooks/useAlertRules';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { Toggletip } from 'components/Toggletip';
 
 import { LegacyAlertGroups } from './LegacyAlertGroups';
-import { PerCheckAlerts } from './PerCheckAlerts';
+import { PerCheckAlertGroups } from './PerCheckAlertsGroups';
 
 interface AlertStatusProps {
   check: Check;
@@ -31,7 +31,6 @@ export const AlertStatus = ({ check, compact }: AlertStatusProps) => {
       check={check}
       compact={compact}
       metricsDSName={metricsDS?.name}
-      hasPerCheckAlerts={hasPerCheckAlerts}
       hasAlertSensitivity={hasAlertSensitivity}
     />
   );
@@ -39,40 +38,29 @@ export const AlertStatus = ({ check, compact }: AlertStatusProps) => {
 
 interface AlertStatusContentProps extends AlertStatusProps {
   metricsDSName?: string;
-  hasPerCheckAlerts: boolean;
   hasAlertSensitivity: boolean;
 }
 
-export const AlertStatusContent = ({
-  check,
-  compact,
-  metricsDSName,
-  hasPerCheckAlerts,
-  hasAlertSensitivity,
-}: AlertStatusContentProps) => {
-  const { alertSensitivity } = check;
-  const { groups, isLoading, enabled, isError, refetch } = useAlertRules(alertSensitivity);
+export const AlertStatusContent = ({ check, compact, metricsDSName, hasAlertSensitivity }: AlertStatusContentProps) => {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
-  const setUpWarning = !isLoading && !enabled;
 
-  if (hasAlertSensitivity && isError) {
-    return (
-      <IconButton
-        tooltip="Unable to fetch alerting rules. Retry?"
-        name="exclamation-triangle"
-        onClick={() => refetch()}
-      />
-    );
-  }
+  const alertRulesResponse = useAlertRules(check.alertSensitivity);
+  const {
+    groups: perCheckGroups,
+    isLoading: perCheckGroupsLoading,
+    isError: perCheckGroupsError,
+    refetch: perCheckGroupsRefetch,
+  } = useGMAlertRules(check.Alerts);
 
-  if (hasAlertSensitivity && isLoading) {
-    return (
-      <Tooltip content={`Loading alert rules`}>
-        <Icon name="fa fa-spinner" />
-      </Tooltip>
-    );
-  }
+  const perCheckGroupsResponse = {
+    perCheckGroups,
+    perCheckGroupsLoading,
+    perCheckGroupsError,
+    perCheckGroupsRefetch,
+  };
+
+  const setUpWarning = !alertRulesResponse.isLoading && !alertRulesResponse.enabled;
 
   if (hasAlertSensitivity && setUpWarning) {
     const ariaLabel = `Alert configuration warning`;
@@ -80,12 +68,12 @@ export const AlertStatusContent = ({
     return (
       <Toggletip
         content={
-          <AlertGroups
-            groups={groups}
+          <TooltipContent
+            {...alertRulesResponse}
+            {...perCheckGroupsResponse}
+            hasAlertSensitivity={hasAlertSensitivity}
             check={check}
             metricsDSName={metricsDSName!}
-            hasPerCheckAlerts={hasPerCheckAlerts}
-            hasAlertSensitivity={hasAlertSensitivity}
           />
         }
       >
@@ -104,12 +92,12 @@ export const AlertStatusContent = ({
   return (
     <Toggletip
       content={
-        <AlertGroups
-          groups={groups}
+        <TooltipContent
+          {...alertRulesResponse}
+          {...perCheckGroupsResponse}
+          hasAlertSensitivity={hasAlertSensitivity}
           check={check}
           metricsDSName={metricsDSName!}
-          hasPerCheckAlerts={hasPerCheckAlerts}
-          hasAlertSensitivity={hasAlertSensitivity}
         />
       }
     >
@@ -118,19 +106,49 @@ export const AlertStatusContent = ({
   );
 };
 
-interface AlertRulesProps {
-  groups: PrometheusAlertsGroup[];
+const TooltipContent = ({
+  isLoading,
+  isError,
+  refetch,
+  perCheckGroups,
+  perCheckGroupsLoading,
+  perCheckGroupsError,
+  perCheckGroupsRefetch,
+  hasAlertSensitivity,
+  check,
+  metricsDSName,
+  groups,
+}: {
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => void;
+  perCheckGroups: PrometheusAlertsGroup[];
+  perCheckGroupsLoading: boolean;
+  perCheckGroupsError: boolean;
+  perCheckGroupsRefetch: () => void;
+  hasAlertSensitivity: boolean;
   check: Check;
   metricsDSName: string;
-  hasPerCheckAlerts: boolean;
-  hasAlertSensitivity: boolean;
-}
-
-const AlertGroups = ({ check, groups, metricsDSName, hasPerCheckAlerts, hasAlertSensitivity }: AlertRulesProps) => {
+  groups: PrometheusAlertsGroup[];
+}) => {
   return (
     <Stack direction="column" gap={2}>
-      <PerCheckAlerts alerts={check.Alerts} />
-      {hasAlertSensitivity && <LegacyAlertGroups check={check} groups={groups} metricsDSName={metricsDSName} />}
+      <PerCheckAlertGroups
+        groups={perCheckGroups}
+        loading={perCheckGroupsLoading}
+        isError={perCheckGroupsError}
+        refetch={perCheckGroupsRefetch}
+      />
+      {hasAlertSensitivity && (
+        <LegacyAlertGroups
+          check={check}
+          metricsDSName={metricsDSName!}
+          isLoading={isLoading}
+          groups={groups}
+          isError={isError}
+          refetch={refetch}
+        />
+      )}
     </Stack>
   );
 };
@@ -166,6 +184,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     width: theme.spacing(2),
   }),
   list: css({
+    display: 'flex',
     listStyle: 'none',
   }),
   title: css({
