@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tab, TabContent, TabsBar } from '@grafana/ui';
+import { Stack, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { AlertingType, CheckAlertFormValues, CheckAlertType } from 'types';
 import { AlertsPerCheck } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck';
@@ -8,18 +8,16 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 interface AlertsPerCheckSectionProps {
   handleInitAlerts: (alerts: Partial<Record<CheckAlertType, CheckAlertFormValues>>) => void;
   alertsInitialized: boolean;
-  styles: { wrapper: string };
 }
 
 export const AlertsPerCheckSection: React.FC<AlertsPerCheckSectionProps> = ({
   handleInitAlerts,
   alertsInitialized,
-  styles,
 }) => {
   const [selectedAlertingTab, setSelectedAlertingTab] = useState<AlertingType>('alerting');
 
   return (
-    <>
+    <Stack direction="column" gap={2}>
       <TabsBar>
         <Tab
           label="Per-check alerts"
@@ -33,13 +31,11 @@ export const AlertsPerCheckSection: React.FC<AlertsPerCheckSectionProps> = ({
         />
       </TabsBar>
       <TabContent>
-        <div className={styles.wrapper}>
-          {selectedAlertingTab === 'alerting' && (
-            <AlertsPerCheck onInitAlerts={handleInitAlerts} isInitialized={alertsInitialized} />
-          )}
-          {selectedAlertingTab === 'sensitivity' && <CheckFormAlert />}
-        </div>
+        {selectedAlertingTab === 'alerting' && (
+          <AlertsPerCheck onInitAlerts={handleInitAlerts} isInitialized={alertsInitialized} />
+        )}
+        {selectedAlertingTab === 'sensitivity' && <CheckFormAlert />}
       </TabContent>
-    </>
+    </Stack>
   );
-}; 
+};

@@ -7,14 +7,7 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
-import {
-  Check,
-  CheckAlertFormValues,
-  CheckAlertType,
-  CheckFormValues,
-  CheckType,
-  FeatureName,
-} from 'types';
+import { Check, CheckAlertFormValues, CheckAlertType, CheckFormValues, CheckType, FeatureName } from 'types';
 import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -274,11 +267,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
 
               {isAlertsPerCheckOn && (
                 <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={status}>
-                  <AlertsPerCheckSection
-                    handleInitAlerts={handleInitAlerts}
-                    alertsInitialized={alertsInitialized}
-                    styles={styles}
-                  />
+                  <AlertsPerCheckSection handleInitAlerts={handleInitAlerts} alertsInitialized={alertsInitialized} />
                 </FormLayout.Section>
               )}
             </FormLayout>
