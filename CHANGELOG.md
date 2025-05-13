@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.28.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.27.0...v1.28.0) (2025-05-08)
+
+
+### Features
+
+* intermediate secrets management pt2 ([#1125](https://github.com/grafana/synthetic-monitoring-app/issues/1125)) ([566bf25](https://github.com/grafana/synthetic-monitoring-app/commit/566bf25771c0db12883c46b65c8ac1bc93939038))
+
+
+### Fixes
+
+* add existing secret names to client validation ([#1138](https://github.com/grafana/synthetic-monitoring-app/issues/1138)) ([5de4f03](https://github.com/grafana/synthetic-monitoring-app/commit/5de4f0312e7c04df31943163b0d59999c3a5a659))
+
+## [1.27.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.26.0...v1.27.0) (2025-04-30)
+
+
+### Features
+
+* add event tracking for check creation and some form navigation ([#1114](https://github.com/grafana/synthetic-monitoring-app/issues/1114)) ([3d55c80](https://github.com/grafana/synthetic-monitoring-app/commit/3d55c807c75773a8922648ae76028cbff836b4c3))
+
+
+### Fixes
+
+* calculation to monthly usage ([#1123](https://github.com/grafana/synthetic-monitoring-app/issues/1123)) ([0c5a0b8](https://github.com/grafana/synthetic-monitoring-app/commit/0c5a0b8246ba0f79b7213461ec7b4969defe25ee))
+
+
+### Miscellaneous Chores
+
+* remove public preview badge ([#1127](https://github.com/grafana/synthetic-monitoring-app/issues/1127)) ([1e8544f](https://github.com/grafana/synthetic-monitoring-app/commit/1e8544f1c96843bc93efbc51f720e051088041fc))
+* rename ROUTES enum to AppRoutes ([#1120](https://github.com/grafana/synthetic-monitoring-app/issues/1120)) ([3024c0a](https://github.com/grafana/synthetic-monitoring-app/commit/3024c0ab68cadb3969b86ac8b4fe0f6b42366fc1))
+
 ## [1.26.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.25.0...v1.26.0) (2025-04-22)
 
 

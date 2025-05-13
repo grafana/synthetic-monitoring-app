@@ -2,7 +2,9 @@ import React from 'react';
 import { Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-export const CenteredSpinner = () => {
+import { DataTestIds } from '../../test/dataTestIds';
+
+export const CenteredSpinner = (props: { 'aria-label'?: string }) => {
   return (
     <div
       className={css({
@@ -11,6 +13,9 @@ export const CenteredSpinner = () => {
         alignItems: 'center',
         height: '100%',
       })}
+      aria-hidden="false"
+      aria-label={props['aria-label'] ?? 'Loading'}
+      data-testid={DataTestIds.CENTERED_SPINNER}
     >
       <Spinner />
     </div>

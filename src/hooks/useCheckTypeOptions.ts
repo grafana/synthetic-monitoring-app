@@ -61,12 +61,6 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'Browser',
     value: CheckType.Browser,
     description: 'Leverage k6 browser module to run checks in a browser.',
-    status: {
-      value: CheckStatus.PUBLIC_PREVIEW,
-      description: `Browser checks are in public preview. During the preview they are free to use: test executions will not be billed.`,
-      docsLink:
-        'https://grafana.com/docs/grafana-cloud/cost-management-and-billing/understand-your-invoice/synthetic-monitoring-invoice/',
-    },
     featureToggle: FeatureName.BrowserChecks,
     group: CheckTypeGroup.Browser,
   },

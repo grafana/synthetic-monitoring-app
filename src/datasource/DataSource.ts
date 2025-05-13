@@ -36,9 +36,10 @@ import {
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
-import { ExperimentalSecret, ExperimentalSecretsResponse } from 'data/useSecrets';
+import { SecretsResponse } from 'data/useSecrets';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
+import { SecretWithMetadata } from '../page/ConfigPageLayout/tabs/SecretsManagementTab';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -424,33 +425,33 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // SECRETS MANAGEMENT - DEV ONLY
   //--------------------------------------------------------------------------------
 
-  async getSecrets(): Promise<ExperimentalSecretsResponse> {
-    return this.fetchAPI<ExperimentalSecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+  async getSecrets(): Promise<SecretsResponse> {
+    return this.fetchAPI<SecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
       method: 'GET',
     });
   }
 
-  async getSecret(id: string | number): Promise<ExperimentalSecret> {
-    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+  async getSecret(id: string | number): Promise<SecretWithMetadata> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
       method: 'GET',
     });
   }
 
-  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<ExperimentalSecret> {
+  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
     if (secret.uuid) {
-      return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${secret.uuid}`, {
+      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${secret.uuid}`, {
         method: 'PUT',
         data: secret,
       });
     }
-    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
       method: 'POST',
       data: secret,
     });
   }
 
   async deleteSecret(id: string | number): Promise<unknown> {
-    return this.fetchAPI<ExperimentalSecret>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
       method: 'DELETE',
     });
   }
