@@ -6,3 +6,7 @@ export function getMinStepFromFrequency(ms?: number, incrementFactor?: number): 
   }
   return `${minStep}m`;
 }
+
+export function correctSceneVariableInterpolation(input: string) {
+  return input.replace(/(\w+)=~"\{([^}]+)\}"/g, (_, key, values) => `${key}=~"${values.split(',').join('|')}"`);
+}
