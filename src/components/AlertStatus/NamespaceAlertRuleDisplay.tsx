@@ -19,11 +19,15 @@ export const NamespaceAlertRuleDisplay = ({ group, metricsDSName }: AlertRuleDis
   return (
     <Stack direction="column" gap={1}>
       <Stack direction="row" gap={1} alignItems="center">
-        <img
-          alt={metricsDSName}
-          className={styles.image}
-          src="/public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
-        />
+        {metricsDSName === 'grafana' ? (
+          <Icon name="grafana" />
+        ) : (
+          <img
+            alt={metricsDSName}
+            className={styles.image}
+            src={'/public/app/plugins/datasource/prometheus/img/prometheus_logo.svg'}
+          />
+        )}
         <div>
           <a href={`/alerting/list?search=${queryParamForAlerting}`}>
             <span>{file}</span>
