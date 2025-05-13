@@ -2,6 +2,8 @@ import { PanelMenuItem, TimeRange } from '@grafana/data';
 import { QueryRunnerState, SceneDataQuery, VizConfig, VizPanelMenu } from '@grafana/scenes';
 import { useVariableInterpolator } from '@grafana/scenes-react';
 
+import { correctSceneVariableInterpolation } from 'scenes/utils';
+
 interface UseVizPanelMenuProps {
   data: QueryRunnerState;
   viz: VizConfig;
@@ -17,9 +19,8 @@ export function useVizPanelMenu({ data, viz, currentTimeRange, variables }: UseV
   let queries = data.queries;
   queries = queries.map((q: SceneDataQuery) => ({
     ...q,
-    expr: interpolator(q.expr),
+    expr: correctSceneVariableInterpolation(interpolator(q.expr)),
   }));
-
   const datasource = data.datasource?.uid;
 
   const jsonDef = {

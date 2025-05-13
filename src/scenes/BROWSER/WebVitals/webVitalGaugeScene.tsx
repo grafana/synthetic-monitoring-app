@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 
 import { WebVitalName } from './types';
 import { DataQueryExtended } from 'scenes/ExplorablePanel';
+import { correctSceneVariableInterpolation } from 'scenes/utils';
 
 import { WebVitalGauge } from './WebVitalGauge';
 
@@ -72,7 +73,7 @@ function setExploreLink(model: WebVitalGaugeScene) {
     let queries = (newDataState.data?.request?.targets ?? []) as DataQueryExtended[];
     queries = queries.map((q) => ({
       ...q,
-      expr: sceneGraph.interpolate(model, q.expr),
+      expr: correctSceneVariableInterpolation(sceneGraph.interpolate(model, q.expr)),
     }));
 
     const datasource = queries.find((query) => !!query.datasource?.uid)?.datasource?.uid;

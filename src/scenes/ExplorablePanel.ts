@@ -3,6 +3,8 @@ import { sceneGraph, VizPanel, VizPanelMenu, VizPanelState } from '@grafana/scen
 import { DataQuery } from '@grafana/schema';
 import appEvents from 'grafana/app/core/app_events';
 
+import { correctSceneVariableInterpolation } from 'scenes/utils';
+
 export interface DataQueryExtended extends DataQuery {
   expr: string;
 }
@@ -37,7 +39,7 @@ export class ExplorablePanel extends VizPanel {
         let queries = (newDataState.data?.request?.targets ?? []) as DataQueryExtended[];
         queries = queries.map((q) => ({
           ...q,
-          expr: sceneGraph.interpolate(this, q.expr),
+          expr: correctSceneVariableInterpolation(sceneGraph.interpolate(this, q.expr)),
         }));
 
         const datasource = queries.find((query) => !!query.datasource?.uid)?.datasource?.uid;
