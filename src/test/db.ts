@@ -34,7 +34,7 @@ const baseCheckModel = ({ sequence }: { sequence: number }) => ({
 
 const baseProbeModel = ({ sequence }: { sequence: number }) => ({
   id: sequence,
-  name: faker.lorem.word(),
+  name: `${faker.lorem.word()}_${sequence}`,
   public: faker.datatype.boolean(),
   latitude: faker.location.latitude(),
   longitude: faker.location.longitude(),
