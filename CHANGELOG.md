@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.28.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.28.0...v1.28.1) (2025-05-14)
+
+
+### Fixes
+
+* add sequence number to deduplicate probes made by the fixture factory ([#1143](https://github.com/grafana/synthetic-monitoring-app/issues/1143)) ([26d1fea](https://github.com/grafana/synthetic-monitoring-app/commit/26d1fea66928252a1d07479e5b3e67f6cdc06f5a))
+* added correctSceneVariableInterpolation function with tests ([#1142](https://github.com/grafana/synthetic-monitoring-app/issues/1142)) ([03bf35c](https://github.com/grafana/synthetic-monitoring-app/commit/03bf35c43156cb4e84e2ef3219dfb09ac5f31677))
+* invert order between Alerting/Execution when AlertsPerCheck is e… ([#1093](https://github.com/grafana/synthetic-monitoring-app/issues/1093)) ([8a39f3d](https://github.com/grafana/synthetic-monitoring-app/commit/8a39f3def66f8a635fdab69e5d0a8d3e8dbd9d5f))
+* Resolve issues reported by zizmor ([#1126](https://github.com/grafana/synthetic-monitoring-app/issues/1126)) ([ba910c2](https://github.com/grafana/synthetic-monitoring-app/commit/ba910c25bd2737c77b762f2dfe505b7e800fffa3))
+* update return type of update alerts PUT request ([#1135](https://github.com/grafana/synthetic-monitoring-app/issues/1135)) ([60feb7d](https://github.com/grafana/synthetic-monitoring-app/commit/60feb7d734eea64ada7d07291313d7d411499f1c))
+
 ## [1.28.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.27.0...v1.28.0) (2025-05-08)
 
 
