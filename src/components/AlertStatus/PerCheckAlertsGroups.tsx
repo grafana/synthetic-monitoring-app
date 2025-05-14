@@ -23,14 +23,14 @@ export const PerCheckAlertGroups = ({ groups, loading, isError, refetch }: PerCh
         <h3 className={styles.title}>Per-check alerts</h3>
         <AlertGroupStates isLoading={loading} isError={isError} refetch={refetch} />
       </Stack>
-      {!loading && !isError && groups.length > 0 ? (
+      {!loading &&
+        !isError &&
+        groups.length > 0 &&
         groups.map((group) => {
           const id = `${group.file}-${group.name}`;
           return <GrafanaNamespaceAlertRuleDisplay key={id} group={group} />;
-        })
-      ) : (
-        <>No per-check alerts defined for this check</>
-      )}
+        })}
+      {!loading && !isError && groups.length === 0 && <>No per-check alerts defined for this check</>}
     </Stack>
   );
 };

@@ -33,14 +33,14 @@ export const LegacyAlertGroups = ({
         <h3 className={styles.title}>Legacy alert rules</h3>
         <AlertGroupStates isLoading={isLoading} isError={isError} refetch={refetch} />
       </Stack>
-      {!isLoading && !isError && groups.length > 0 ? (
+      {!isLoading &&
+        !isError &&
+        groups.length > 0 &&
         groups.map((group) => {
           const id = `${group.file}-${group.name}`;
           return <LegacyNamespaceAlertRuleDisplay key={id} group={group} metricsDSName={metricsDSName} />;
-        })
-      ) : (
-        <ZeroStateAlerts alertSensitivity={check.alertSensitivity} />
-      )}
+        })}
+      {!isLoading && !isError && groups.length === 0 && <ZeroStateAlerts alertSensitivity={check.alertSensitivity} />}
     </Stack>
   );
 };
