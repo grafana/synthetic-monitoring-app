@@ -14,6 +14,7 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
+import { trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import pluralize from 'pluralize';
 
 import { CheckAlertType, CheckFormValues } from 'types';
@@ -43,6 +44,11 @@ export const FailedExecutionsAlert = ({
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
+    if (selected) {
+      trackUnSelectAlert({ name: type, threshold, period });
+    } else {
+      trackSelectAlert({ name: type, threshold, period });
+    }
   };
 
   const checkFrequency = getValues('frequency');

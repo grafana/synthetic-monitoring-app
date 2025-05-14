@@ -11,6 +11,7 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
+import { trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
@@ -30,10 +31,16 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   tooltipContent: PopoverContent;
 }) => {
   const { isFormDisabled } = useCheckFormContext();
-  const { control, formState } = useFormContext<CheckFormValues>();
+  const { control, formState, getValues } = useFormContext<CheckFormValues>();
+  const threshold = getValues(`alerts.${alert.type}.threshold`);
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
+    if (selected) {
+      trackUnSelectAlert({ name: type, threshold });
+    } else {
+      trackSelectAlert({ name: type, threshold });
+    }
   };
 
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
