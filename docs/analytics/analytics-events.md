@@ -83,3 +83,29 @@ Tracks when a check is successfully updated.
 | name      | type                                                                                                     | description        |
 | --------- | -------------------------------------------------------------------------------------------------------- | ------------------ |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check. |
+
+### per_check_alerts
+
+#### synthetic-monitoring_per_check_alerts_select_alert
+
+Tracks when an alert is selected from the per-check alerts list
+
+##### Properties
+
+| name      | type                                                                      | description                |
+| --------- | ------------------------------------------------------------------------- | -------------------------- |
+| name      | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring"` | The name of the alert      |
+| threshold | `number`                                                                  | The threshold of the alert |
+| period    | `undefined \| string`                                                     | The period of the alert    |
+
+#### synthetic-monitoring_per_check_alerts_unselect_alert
+
+Tracks when an alert is unselected from the per-check alerts list
+
+##### Properties
+
+| name      | type                                                                      | description                |
+| --------- | ------------------------------------------------------------------------- | -------------------------- |
+| name      | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring"` | The name of the alert      |
+| threshold | `number`                                                                  | The threshold of the alert |
+| period    | `undefined \| string`                                                     | The period of the alert    |
