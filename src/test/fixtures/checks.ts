@@ -95,6 +95,13 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
         created: 1746629887,
         modified: 1746629887,
       },
+      {
+        name: CheckAlertType.TLSTargetCertificateCloseToExpiring,
+        threshold: 12,
+        period: '',
+        created: 1746629887,
+        modified: 1746629887,
+      },
     ],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   },

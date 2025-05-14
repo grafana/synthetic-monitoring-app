@@ -97,6 +97,7 @@ export const GRAFANA_ALERTING_RULES: ListPrometheusAlertsResponse = {
               summary: 'Probe failed executions too high.',
             },
             duration: 300,
+            uid: 'sm-failed-executions-5m-2dfe8c9a',
           },
         ],
         totals: null,
@@ -128,6 +129,7 @@ export const GRAFANA_ALERTING_RULES: ListPrometheusAlertsResponse = {
             query:
               '((min by(instance, job) (probe_ssl_earliest_cert_expiry) - time()) / (60 * 60 * 24) < sum by(instance, job) (sm_alerts_threshold_tls_target_certificate_close_to_expiring)) * on (instance, job) group_right() max without(probe, region, geohash) (sm_check_info)',
             duration: 300,
+            uid: 'sm-certificate-expiry-2dfe8c9a',
           },
         ],
         totals: null,

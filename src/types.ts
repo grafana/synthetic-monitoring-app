@@ -818,6 +818,7 @@ export type PrometheusAlertingRule = {
   query: string;
   state: 'inactive'; // fill in others
   type: `alerting`;
+  uid?: string;
 };
 
 export enum CheckStatus {
