@@ -2,7 +2,7 @@ import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQue
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
-import { type Check } from 'types';
+import { type Check, FeatureName } from 'types';
 import { FaroEvent, FaroEventMeta } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
@@ -13,29 +13,30 @@ import type {
   UpdateCheckResult,
 } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['checks'],
 };
 
-const checksQuery = (api: SMDataSource) => {
+const checksQuery = (api: SMDataSource, includeAlerts = false) => {
   return {
-    queryKey: queryKeys.list,
-    queryFn: () => api.listChecks(),
+    queryKey: [queryKeys.list, includeAlerts],
+    queryFn: () => api.listChecks(includeAlerts),
   };
 };
 
 export function useChecks() {
   const smDS = useSMDS();
-
-  return useQuery(checksQuery(smDS));
+  const perCheckAlertsFF = useFeatureFlag(FeatureName.AlertsPerCheck);
+  return useQuery(checksQuery(smDS, perCheckAlertsFF.isEnabled));
 }
 
 export function useSuspenseChecks() {
   const smDS = useSMDS();
-
-  return useSuspenseQuery(checksQuery(smDS));
+  const perCheckAlertsFF = useFeatureFlag(FeatureName.AlertsPerCheck);
+  return useSuspenseQuery(checksQuery(smDS, perCheckAlertsFF.isEnabled));
 }
 
 export function useCheck(id: number) {

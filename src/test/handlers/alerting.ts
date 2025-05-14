@@ -1,4 +1,4 @@
-import { ALERTING_RULES } from 'test/fixtures/alerting';
+import { ALERTING_RULES, GRAFANA_ALERTING_RULES } from 'test/fixtures/alerting';
 import { METRICS_DATASOURCE } from 'test/fixtures/datasources';
 
 import { ApiEntry } from 'test/handlers/types';
@@ -67,6 +67,16 @@ export const getPromAlertRules: ApiEntry<ListPrometheusAlertsResponse> = {
   result: () => {
     return {
       json: ALERTING_RULES,
+    };
+  },
+};
+
+export const getGrafanaAlertRules: ApiEntry<ListPrometheusAlertsResponse> = {
+  route: `/api/prometheus/grafana/api/v1/rules`,
+  method: `get`,
+  result: () => {
+    return {
+      json: GRAFANA_ALERTING_RULES,
     };
   },
 };

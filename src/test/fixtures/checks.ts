@@ -3,6 +3,7 @@ import { db } from 'test/db';
 import {
   AlertSensitivity,
   Check,
+  CheckAlertType,
   CheckType,
   DNSCheck,
   HTTPCheck,
@@ -84,6 +85,22 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
       {
         name: 'httpLabelName',
         value: 'httpLabelValue',
+      },
+    ],
+    Alerts: [
+      {
+        name: CheckAlertType.ProbeFailedExecutionsTooHigh,
+        threshold: 1,
+        period: '5m',
+        created: 1746629887,
+        modified: 1746629887,
+      },
+      {
+        name: CheckAlertType.TLSTargetCertificateCloseToExpiring,
+        threshold: 12,
+        period: '',
+        created: 1746629887,
+        modified: 1746629887,
       },
     ],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],

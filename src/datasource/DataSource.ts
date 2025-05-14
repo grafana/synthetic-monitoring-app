@@ -274,8 +274,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // CHECKS
   //--------------------------------------------------------------------------------
 
-  async listChecks() {
-    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list`);
+  async listChecks(includeAlerts = false) {
+    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`);
   }
 
   async getCheck(checkId: number) {

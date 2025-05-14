@@ -1,5 +1,5 @@
 import { rest } from 'msw';
-import { getAlertRules, getPromAlertRules } from 'test/handlers/alerting';
+import { getAlertRules, getGrafanaAlertRules, getPromAlertRules } from 'test/handlers/alerting';
 import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
 import { getDashboard } from 'test/handlers/dashboards';
 import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
@@ -21,6 +21,7 @@ const apiRoutes = {
   createAccessToken,
   getAlertRules,
   getPromAlertRules,
+  getGrafanaAlertRules,
   getDashboard,
   getInstantMetrics,
   getRangeMetrics,
