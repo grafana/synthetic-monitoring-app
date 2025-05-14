@@ -5,17 +5,18 @@ import { LoadingPlaceholder } from '@grafana/ui';
 import { DashboardSceneAppConfig } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import { AppRoutes } from 'routing/types';
-import { useChecks } from 'data/useChecks';
+import { useSuspenseChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
+import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import { getSummaryScene } from 'scenes/Summary';
 
-export const SceneHomepage = () => {
+function SceneHomepageComponent() {
   const smDS = useSMDS();
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
-  const { data: checks = [], isLoading } = useChecks();
+  const { data: checks = [], isLoading } = useSuspenseChecks();
 
   const scene = useMemo(() => {
     const config: DashboardSceneAppConfig = {
@@ -43,4 +44,12 @@ export const SceneHomepage = () => {
   }
 
   return <scene.Component model={scene} />;
-};
+}
+
+export function SceneHomepage() {
+  return (
+    <QueryErrorBoundary>
+      <SceneHomepageComponent />
+    </QueryErrorBoundary>
+  );
+}
