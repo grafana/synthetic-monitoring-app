@@ -10,7 +10,7 @@ interface AlertRuleDisplayProps {
   metricsDSName: string;
 }
 
-export const NamespaceAlertRuleDisplay = ({ group, metricsDSName }: AlertRuleDisplayProps) => {
+export const LegacyNamespaceAlertRuleDisplay = ({ group, metricsDSName }: AlertRuleDisplayProps) => {
   const styles = useStyles2(getStyles);
   const { file, name, rules } = group;
   const filteredRules = rules.filter((record) => record.type === `alerting`);
@@ -19,15 +19,11 @@ export const NamespaceAlertRuleDisplay = ({ group, metricsDSName }: AlertRuleDis
   return (
     <Stack direction="column" gap={1}>
       <Stack direction="row" gap={1} alignItems="center">
-        {metricsDSName === 'grafana' ? (
-          <Icon name="grafana" />
-        ) : (
-          <img
-            alt={metricsDSName}
-            className={styles.image}
-            src={'/public/app/plugins/datasource/prometheus/img/prometheus_logo.svg'}
-          />
-        )}
+        <img
+          alt={metricsDSName}
+          className={styles.image}
+          src={'/public/app/plugins/datasource/prometheus/img/prometheus_logo.svg'}
+        />
         <div>
           <a href={`/alerting/list?search=${queryParamForAlerting}`}>
             <span>{file}</span>

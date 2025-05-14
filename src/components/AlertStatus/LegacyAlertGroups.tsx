@@ -1,8 +1,11 @@
 import React from 'react';
+import { Stack, useStyles2 } from '@grafana/ui';
 
 import { Check, PrometheusAlertsGroup } from 'types';
 
-import { AlertGroups } from './AlertGroups';
+import { AlertGroupStates } from './AlertGroupStates';
+import { getStyles } from './AlertStatus';
+import { LegacyNamespaceAlertRuleDisplay } from './LegacyNamespaceAlertRuleDisplay';
 import { ZeroStateAlerts } from './ZeroStateAlerts';
 
 interface LegacyAlertGroupsProps {
@@ -22,15 +25,22 @@ export const LegacyAlertGroups = ({
   isError,
   refetch,
 }: LegacyAlertGroupsProps) => {
+  const styles = useStyles2(getStyles);
+
   return (
-    <AlertGroups
-      groups={groups}
-      metricsDSName={metricsDSName}
-      title="Legacy alert rules"
-      emptyState={<ZeroStateAlerts alertSensitivity={check.alertSensitivity} />}
-      isError={isError}
-      refetch={refetch}
-      isLoading={isLoading}
-    />
+    <Stack direction="column" gap={2}>
+      <Stack direction="row" gap={1} alignItems="center">
+        <h3 className={styles.title}>Legacy alert rules</h3>
+        <AlertGroupStates isLoading={isLoading} isError={isError} refetch={refetch} />
+      </Stack>
+      {!isLoading && !isError && groups.length > 0 ? (
+        groups.map((group) => {
+          const id = `${group.file}-${group.name}`;
+          return <LegacyNamespaceAlertRuleDisplay key={id} group={group} metricsDSName={metricsDSName} />;
+        })
+      ) : (
+        <ZeroStateAlerts alertSensitivity={check.alertSensitivity} />
+      )}
+    </Stack>
   );
 };
