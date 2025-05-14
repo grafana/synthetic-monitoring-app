@@ -29,19 +29,21 @@ export const AlertGroups = ({
 
   return (
     <Stack direction="column" gap={2}>
-      <h3 className={styles.title}>{title}</h3>
-      {isLoading && (
-        <Tooltip content={`Loading alert rules`}>
-          <Icon name="fa fa-spinner" />
-        </Tooltip>
-      )}
-      {isError && (
-        <IconButton
-          tooltip="Unable to fetch alerting rules. Retry?"
-          name="exclamation-triangle"
-          onClick={() => refetch()}
-        />
-      )}
+      <Stack direction="row" gap={1} alignItems="center">
+        <h3 className={styles.title}>{title}</h3>
+        {isLoading && (
+          <Tooltip content={`Loading alert rules`}>
+            <Icon name="fa fa-spinner" />
+          </Tooltip>
+        )}
+        {isError && (
+          <IconButton
+            tooltip="Unable to fetch alerting rules. Retry?"
+            name="exclamation-triangle"
+            onClick={() => refetch()}
+          />
+        )}
+      </Stack>
       {!isLoading && !isError && groups.length > 0
         ? groups.map((group) => {
             const id = `${group.file}-${group.name}`;

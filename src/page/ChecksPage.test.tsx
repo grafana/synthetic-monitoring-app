@@ -182,6 +182,9 @@ describe('Checks page', () => {
     );
 
     const { user } = await renderChecksPage();
+    const alertButton = await screen.findByText('Alert configuration');
+    await user.click(alertButton);
+
     const refetchButton = await screen.findByLabelText('Unable to fetch alerting rules. Retry?');
 
     server.use(
