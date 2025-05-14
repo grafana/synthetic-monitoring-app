@@ -1,5 +1,7 @@
 import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
+import { PRIVATE_PROBE } from 'test/fixtures/probes';
+import { probeToMetadataProbe } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
@@ -26,8 +28,12 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
     });
 
     const { user } = await renderNewForm(checkType);
-    await fillMandatoryFields({ user, checkType });
+    await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await goToSection(user, 4);
+    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+    await user.click(probeCheckbox);
+
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
