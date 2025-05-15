@@ -70,12 +70,20 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
     }`;
   });
 
+  const checkAlertsCommands = checks
+    .filter((check) => check.Alerts && check.Alerts.length > 0)
+    .map((check) => {
+      return `terraform import grafana_synthetic_monitoring_check_alerts.${sanitizeName(
+        `${check.job}_${check.target}`
+      )} ${check.id}`;
+    });
+
   const probeCommands = Object.keys(probesConfig).map((probeName) => {
     const probeId = probes.find((probe) => sanitizeName(probe.name) === probeName)?.id;
     return `terraform import grafana_synthetic_monitoring_probe.${probeName} ${probeId}:<PROBE_ACCESS_TOKEN>`;
   });
 
-  return { config, checkCommands, probeCommands };
+  return { config, checkCommands, checkAlertsCommands, probeCommands };
 }
 
 export function useTerraformConfig() {

@@ -19,6 +19,7 @@ import {
 export interface TFOutput {
   config: TFConfig;
   checkCommands: string[];
+  checkAlertsCommands: string[];
   probeCommands: string[];
 }
 
