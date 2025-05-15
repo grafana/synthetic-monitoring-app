@@ -4,7 +4,7 @@ import { Check, Probe } from 'types';
 import { useChecks } from 'data/useChecks';
 import { useProbes } from 'data/useProbes';
 import { checkToTF, probeToTF, sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
-import { TFCheckConfig, TFConfig, TFOutput, TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
+import { TFCheckAlertsConfig,TFCheckConfig, TFConfig, TFOutput, TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
 
 import { useSMDS } from './useSMDS';
 
@@ -62,6 +62,25 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
   }
   if (Object.keys(probesConfig).length > 0) {
     config.resource.grafana_synthetic_monitoring_probe = probesConfig;
+  }
+
+  const checkAlertsConfig = checks
+    .filter((check) => check.Alerts && check.Alerts.length > 0)
+    .reduce((acc: TFCheckAlertsConfig, check) => {
+      const resourceName = sanitizeName(`${check.job}_${check.target}`);
+      acc[resourceName] = {
+        check_id: String(check.id),
+        alerts: (check.Alerts!).map((alert) => ({
+          name: alert.name,
+          threshold: alert.threshold,
+          period: alert.period,
+        })),
+      };
+      return acc;
+    }, {});
+
+  if (Object.keys(checkAlertsConfig).length > 0) {
+    config.resource.grafana_synthetic_monitoring_check_alerts = checkAlertsConfig;
   }
 
   const checkCommands = checks.map((check) => {

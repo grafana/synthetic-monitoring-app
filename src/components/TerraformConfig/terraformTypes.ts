@@ -30,6 +30,7 @@ export interface TFConfig {
   resource: {
     grafana_synthetic_monitoring_check?: TFCheckConfig;
     grafana_synthetic_monitoring_probe?: TFProbeConfig;
+    grafana_synthetic_monitoring_check_alerts?: TFCheckAlertsConfig;
   };
 }
 
@@ -244,4 +245,17 @@ export interface TFProbe
   labels: TFLabels;
   disable_scripted_checks: boolean;
   disable_browser_checks: boolean;
+}
+
+export interface TFCheckAlertsConfig {
+  [key: string]: TFCheckAlerts;
+}
+
+export interface TFCheckAlerts {
+  check_id: string;
+  alerts: Array<{
+    name: string;
+    threshold: number;
+    period?: string;
+  }>;
 }
