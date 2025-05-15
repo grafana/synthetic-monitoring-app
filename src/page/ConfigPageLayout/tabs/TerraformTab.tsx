@@ -14,7 +14,7 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 import { ConfigContent } from '../ConfigContent';
 
 export function TerraformTab() {
-  const { config, checkCommands, probeCommands, error, isLoading } = useTerraformConfig();
+  const { config, checkCommands, probeCommands, error, isLoading, checkAlertsCommands } = useTerraformConfig();
   const styles = useStyles2(getStyles);
   const { canReadChecks, canReadProbes } = getUserPermissions();
   useEffect(() => {
@@ -93,6 +93,12 @@ export function TerraformTab() {
       {checkCommands && (
         <ConfigContent.Section title="Import existing checks into Terraform">
           <Clipboard content={checkCommands.join(' && \\\n')} className={styles.clipboard} isCode />
+        </ConfigContent.Section>
+      )}
+
+      {checkAlertsCommands && checkAlertsCommands.length > 0 && (
+        <ConfigContent.Section title="Import check alerts into Terraform">
+          <Clipboard content={checkAlertsCommands.join(' && \\\n')} className={styles.clipboard} isCode />
         </ConfigContent.Section>
       )}
 
