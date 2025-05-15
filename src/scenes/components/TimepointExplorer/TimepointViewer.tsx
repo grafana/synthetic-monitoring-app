@@ -47,7 +47,7 @@ const TimepointViewerContent = ({
   const [timepoint] = selectedTimepoint;
   const { data, isLoading } = useTimepointLogs(timepoint, check.job, check.target);
 
-  const onChangeLogsView = useCallback((view: string) => {
+  const onChangeLogsView = useCallback((view: LogsView) => {
     setLogsView(view);
   }, []);
 
@@ -73,7 +73,7 @@ const TimepointHeader = ({
   onChangeLogsView,
 }: {
   timepoint: Timepoint;
-  onChangeLogsView: (view: string) => void;
+  onChangeLogsView: (view: LogsView) => void;
 }) => {
   return (
     <Stack direction={`column`} gap={1}>

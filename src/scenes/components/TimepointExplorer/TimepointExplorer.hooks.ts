@@ -16,9 +16,9 @@ import {
   REF_ID_MAX_PROBE_DURATION,
   REF_ID_UNIQUE_CHECK_CONFIGS,
   THEME_UNIT,
+  TIMEPOINT_EXPLORER_VIEW_OPTIONS,
   TIMEPOINT_GAP,
   TIMEPOINT_SIZE,
-  TIMEPOINT_EXPLORER_VIEW_OPTIONS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   Timepoint,

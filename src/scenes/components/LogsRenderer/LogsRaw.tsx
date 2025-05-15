@@ -39,7 +39,7 @@ export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs, mainKey }: { 
       data={getPanelData(logs)}
       options={{
         ...logPanelOptions,
-        wrapLogMessage: false,
+        wrapLogMessage: true,
       }}
     />
   );

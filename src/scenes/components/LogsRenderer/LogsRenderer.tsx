@@ -1,10 +1,10 @@
 import React from 'react';
 
 import { UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
-import { LogsList } from 'scenes/components/LogsRenderer/LogsList';
 import { LogsRaw } from 'scenes/components/LogsRenderer/LogsRaw';
 import { LogsTimeline } from 'scenes/components/LogsRenderer/LogsTimeline';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
+import { LogsWaterfall } from 'scenes/components/LogsRenderer/LogsWaterfall';
 
 export const LogsRenderer = <T extends UnknownParsedLokiRecord>({
   logs,
@@ -21,8 +21,8 @@ export const LogsRenderer = <T extends UnknownParsedLokiRecord>({
     return <LogsTimeline<T> {...props} />;
   }
 
-  if (logsView === 'list') {
-    return <LogsList<T> {...props} />;
+  if (logsView === 'waterfall') {
+    return <LogsWaterfall<T> {...props} />;
   }
 
   if (logsView === 'raw') {
