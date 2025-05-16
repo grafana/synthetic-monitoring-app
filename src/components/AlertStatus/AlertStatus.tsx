@@ -138,6 +138,7 @@ const TooltipContent = ({
         {({ isEnabled }) =>
           isEnabled ? (
             <PerCheckAlertGroups
+              alerts={check.Alerts}
               groups={perCheckGroups}
               loading={perCheckGroupsLoading}
               isError={perCheckGroupsError}

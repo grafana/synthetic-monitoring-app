@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stack, useStyles2 } from '@grafana/ui';
 
-import { PrometheusAlertsGroup } from 'types';
+import { Check, PrometheusAlertsGroup } from 'types';
 
 import { AlertGroupStates } from './AlertGroupStates';
 import { getStyles } from './AlertStatus';
@@ -12,9 +12,10 @@ interface PerCheckAlertGroupsProps {
   loading: boolean;
   isError: boolean;
   refetch: () => void;
+  alerts: Check['Alerts'];
 }
 
-export const PerCheckAlertGroups = ({ groups, loading, isError, refetch }: PerCheckAlertGroupsProps) => {
+export const PerCheckAlertGroups = ({ groups, loading, isError, refetch, alerts }: PerCheckAlertGroupsProps) => {
   const styles = useStyles2(getStyles);
 
   return (
@@ -28,7 +29,7 @@ export const PerCheckAlertGroups = ({ groups, loading, isError, refetch }: PerCh
         groups.length > 0 &&
         groups.map((group) => {
           const id = `${group.file}-${group.name}`;
-          return <GrafanaNamespaceAlertRuleDisplay key={id} group={group} />;
+          return <GrafanaNamespaceAlertRuleDisplay key={id} group={group} alerts={alerts} />;
         })}
       {!loading && !isError && groups.length === 0 && <>No per-check alerts defined for this check</>}
     </Stack>

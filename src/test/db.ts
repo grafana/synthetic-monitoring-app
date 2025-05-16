@@ -259,5 +259,6 @@ export const db = {
     threshold: faker.number.int({ min: 50, max: 500 }),
     created: Math.floor(faker.date.past().getTime() / 1000),
     modified: Math.floor(faker.date.recent().getTime() / 1000),
+    status: "OK",
   })),
 };
