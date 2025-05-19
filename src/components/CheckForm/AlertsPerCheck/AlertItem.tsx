@@ -83,9 +83,11 @@ export const AlertItem = ({
           tooltipContent={tooltipContent}
         />
       )}
-      <div className={styles.alertStatus}>
-        <NotOkStatusInfo status={status ?? 'OK'} error={creationError} />
-      </div>
+      {status !== 'OK' && (
+        <div className={styles.alertStatus} data-testid={`alert-error-status-${alert.type}`}>
+          <NotOkStatusInfo status={status} error={creationError} />
+        </div>
+      )}
     </div>
   );
 };
