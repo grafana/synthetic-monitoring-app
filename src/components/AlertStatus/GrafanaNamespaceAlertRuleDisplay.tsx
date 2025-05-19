@@ -1,10 +1,10 @@
-import React, { useCallback } from 'react';
-import { config } from '@grafana/runtime';
-import { Icon, LinkButton, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import React from 'react';
+import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 
-import { Check, CheckAlertError, PrometheusAlertsGroup } from 'types';
+import { Check, PrometheusAlertsGroup } from 'types';
 
 import { getStyles } from './AlertStatus';
+import { NotOkStatusInfo } from './NotOkStatusInfo';
 
 interface AlertRuleDisplayProps {
   group: PrometheusAlertsGroup;
@@ -57,21 +57,4 @@ export const GrafanaNamespaceAlertRuleDisplay = ({ group, alerts }: AlertRuleDis
       </ul>
     </Stack>
   );
-};
-
-export const NotOkStatusInfo = ({ status, error }: { status: string; error?: CheckAlertError }) => {
-  const tooltipContent = useCallback(() => {
-    return (
-      <Stack direction="column" gap={1}>
-        <span>Status: {status}</span>
-        {error && <span>Error: {error}</span>}
-      </Stack>
-    );
-  }, [status, error]);
-
-  return status !== 'OK' ? (
-    <Tooltip content={tooltipContent()}>
-      <Icon name="exclamation-circle" color={config.theme2.colors.error.text} cursor={'pointer'} />
-    </Tooltip>
-  ) : null;
 };

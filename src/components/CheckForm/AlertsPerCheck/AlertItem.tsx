@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { NotOkStatusInfo } from 'components/AlertStatus/GrafanaNamespaceAlertRuleDisplay';
+import { NotOkStatusInfo } from 'components/AlertStatus/NotOkStatusInfo';
 
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { FailedExecutionsAlert } from './FailedExecutionsAlert';
