@@ -64,14 +64,14 @@ export const NotOkStatusInfo = ({ status, error }: { status: string; error?: Che
     return (
       <Stack direction="column" gap={1}>
         <span>Status: {status}</span>
-        <span>Error: {error}</span>
+        {error && <span>Error: {error}</span>}
       </Stack>
     );
   }, [status, error]);
 
-  return error ? (
+  return status !== 'OK' ? (
     <Tooltip content={tooltipContent()}>
-      <Icon name="exclamation-triangle" color={config.theme2.colors.error.text} cursor={'pointer'} />
+      <Icon name="exclamation-circle" color={config.theme2.colors.error.text} cursor={'pointer'} />
     </Tooltip>
   ) : null;
 };

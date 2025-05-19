@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { NotOkStatusInfo } from 'components/AlertStatus/GrafanaNamespaceAlertRuleDisplay';
 
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { FailedExecutionsAlert } from './FailedExecutionsAlert';
@@ -40,6 +41,8 @@ export const AlertItem = ({
   const instance = getValues('target');
   const threshold = getValues(`alerts.${alert.type}.threshold`);
   const period = getValues(`alerts.${alert.type}.period`);
+  const status = getValues(`alerts.${alert.type}.status`);
+  const creationError = getValues(`alerts.${alert.type}.creationError`);
 
   const query = alert.query
     .replace(/\$instance/g, instance)
@@ -80,6 +83,9 @@ export const AlertItem = ({
           tooltipContent={tooltipContent}
         />
       )}
+      <div className={styles.alertStatus}>
+        <NotOkStatusInfo status={status ?? 'OK'} error={creationError} />
+      </div>
     </div>
   );
 };
@@ -91,8 +97,11 @@ export const getAlertItemStyles = (theme: GrafanaTheme2) => ({
     marginLeft: theme.spacing(1),
     minHeight: '40px',
     paddingTop: theme.spacing(1),
+    justifyContent: 'space-between',
   }),
-
+  alertStatus: css({
+    marginLeft: 'auto',
+  }),
   alertRow: css({
     gap: theme.spacing(1),
     alignItems: 'flex-start',
