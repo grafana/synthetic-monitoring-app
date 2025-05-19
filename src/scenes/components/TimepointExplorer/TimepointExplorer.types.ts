@@ -10,12 +10,11 @@ export type Timepoint = {
   probes: CheckEndedLog[];
   uptimeValue: -1 | 0 | 1; // -1 means unknown, 0 means failure, 1 means success
   adjustedTime: UnixTimestamp;
+  timepointDuration: number;
   frequency: number;
   index: number;
   maxProbeDuration: number;
 };
-
-export type TimepointsObj = Record<UnixTimestamp, Timepoint>;
 
 export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value'];
 

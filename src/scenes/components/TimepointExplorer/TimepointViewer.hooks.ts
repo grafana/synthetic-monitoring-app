@@ -8,7 +8,7 @@ export function useTimepointLogs(timepoint: Timepoint, job: string, instance: st
   const props = useInfiniteLogs<UnknownCheckLog['labels'], CheckLabelType>({
     refId: `${job}-${instance}-${timepoint.adjustedTime}`,
     expr: `{job="${job}", instance="${instance}"} | logfmt`,
-    start: timepoint.adjustedTime - timepoint.frequency,
+    start: timepoint.adjustedTime - timepoint.timepointDuration,
     end: timepoint.adjustedTime,
   });
 

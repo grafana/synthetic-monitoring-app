@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { DataFrame, TimeRange } from '@grafana/data';
+import { TimeRange } from '@grafana/data';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
@@ -20,19 +20,14 @@ import {
   TIMEPOINT_GAP,
   TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { Timepoint, UnixTimestamp, ViewMode } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
-  Timepoint,
-  TimepointsObj,
-  UnixTimestamp,
-  ViewMode,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import {
+  buildTimepoints,
   calculateUptimeValue,
-  configTimeRanges,
+  extractFrequenciesAndConfigs,
   findActiveSection,
   getMaxProbeDuration,
   minimapSections,
-  timeshiftedTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 type Size = {
@@ -107,11 +102,7 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
   const from = timeRange.from.valueOf();
   const to = timeRange.to.valueOf();
 
-  const timepointsInRange = useTimepointsInRange({
-    from,
-    to,
-    checkConfigs,
-  });
+  const timepointsInRange = useMemo(() => buildTimepoints({ from, to, checkConfigs }), [from, to, checkConfigs]);
 
   const {
     fetchNextPage,
@@ -130,66 +121,42 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
     }
   }, [fetchNextPage, hasNextPage, logsData.length]);
 
-  const builtConfigs = useMemo(
-    () => configTimeRanges(checkConfigs, timeRange.to.valueOf()),
-    [checkConfigs, timeRange.to]
-  );
-
   const timepoints = useMemo(() => {
-    if (!checkConfigs.length) {
-      return timepointsInRange;
-    }
+    const copy = [...timepointsInRange];
 
-    return logsData.reduce<TimepointsObj>((acc, log) => {
-      const frequency = builtConfigs.find((c) => log.Time >= c.from && log.Time < c.to)?.frequency;
+    logsData.forEach((log) => {
+      const timepoint = [...copy]
+        .reverse()
+        .find((t) => log.Time <= t.adjustedTime && log.Time >= t.adjustedTime - t.timepointDuration);
 
-      if (!frequency) {
-        // should be impossible
+      if (!timepoint) {
+        // probably out of selected time range
         console.log('No frequency found for log', log);
-        return acc;
-      }
 
-      const adjustedTime = timeshiftedTimepoint(log.Time, frequency) + frequency;
-
-      if (adjustedTime < from || adjustedTime > to) {
-        // log is outside of the time range
-        return acc;
-      }
-
-      if (!acc[adjustedTime]) {
-        acc[adjustedTime] = {
-          probes: [],
-          uptimeValue: -1,
-          adjustedTime,
-          frequency,
-          index: -1,
-          maxProbeDuration: -1,
-        };
+        return;
       }
 
       // deduplicate logs
-      if (!acc[adjustedTime].probes.find((p) => p.id === log.id)) {
-        acc[adjustedTime].probes.push(log);
+      if (!timepoint.probes.find((p) => p.id === log.id)) {
+        timepoint.probes.push(log);
       }
 
-      acc[adjustedTime].uptimeValue = calculateUptimeValue(acc[adjustedTime].probes);
-      acc[adjustedTime].maxProbeDuration = getMaxProbeDuration(acc[adjustedTime].probes);
+      timepoint.uptimeValue = calculateUptimeValue(timepoint.probes);
+      timepoint.maxProbeDuration = getMaxProbeDuration(timepoint.probes);
+    });
 
-      return acc;
-    }, timepointsInRange);
-  }, [logsData, timepointsInRange, builtConfigs, from, to, checkConfigs.length]);
+    return copy;
+  }, [logsData, timepointsInRange]);
 
   return useMemo(() => {
-    const values = Object.values(timepoints);
-    const sorted = values.sort((a, b) => a.adjustedTime - b.adjustedTime);
-    const firstEntry = sorted[0];
+    const firstEntry = timepoints[0];
 
     // assume the first entry didn't look far enough back in time to get the logs associated with it so can be removed
     if (firstEntry?.probes.length === 0) {
-      sorted.shift();
+      timepoints.shift();
     }
 
-    return sorted.reverse();
+    return timepoints.reverse();
   }, [timepoints]);
 }
 
@@ -214,84 +181,9 @@ function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
       });
     },
     select: (data) => {
-      return extractFrequenciesAndConfigs(data);
+      return data.map((d) => extractFrequenciesAndConfigs(d)).flat();
     },
   });
-}
-
-const NANOSECONDS_PER_MILLISECOND = 1000000;
-
-function extractFrequenciesAndConfigs(data: DataFrame) {
-  let build: Array<{ frequency: number; date: UnixTimestamp }> = [];
-
-  const Value = data.fields[1];
-
-  if (Value.labels) {
-    const { config_version, frequency } = Value.labels;
-    const toUnixTimestamp = Math.round(Number(config_version) / NANOSECONDS_PER_MILLISECOND);
-    const date: UnixTimestamp = toUnixTimestamp;
-
-    build.push({
-      frequency: Number(frequency),
-      date,
-    });
-  }
-
-  return build;
-}
-interface UseTimepointsInRangeProps {
-  from: UnixTimestamp;
-  to: UnixTimestamp;
-  checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
-}
-
-function useTimepointsInRange({ from, to, checkConfigs }: UseTimepointsInRangeProps) {
-  return useMemo(() => {
-    const rangeFrom = from;
-    const rangeTo = to;
-
-    // work backwards
-    let configs = [...checkConfigs];
-
-    // start with the latest config
-    let currentConfig = configs.pop();
-
-    // mutate for efficiency
-    let build: Record<UnixTimestamp, Timepoint> = {};
-
-    if (!currentConfig) {
-      return build;
-    }
-
-    // remove non-full frequency timepoints
-    let currentTimepoint = timeshiftedTimepoint(rangeTo, currentConfig.frequency);
-    let count = 0;
-
-    while (currentTimepoint >= rangeFrom && currentConfig) {
-      const currentFrequency = currentConfig.frequency;
-      const uptoDate = currentTimepoint - (currentTimepoint % currentFrequency);
-
-      for (let i = uptoDate; i <= currentTimepoint; i += currentFrequency) {
-        build[i] = {
-          probes: [],
-          uptimeValue: -1,
-          adjustedTime: i,
-          frequency: currentFrequency,
-          index: count,
-          maxProbeDuration: -1,
-        };
-      }
-
-      currentTimepoint = uptoDate - currentFrequency;
-
-      if (currentTimepoint.valueOf() < currentConfig.date.valueOf()) {
-        currentConfig = configs.pop();
-      }
-      count++;
-    }
-
-    return build;
-  }, [from, to, checkConfigs]);
 }
 
 const MILLISECONDS_PER_SECOND = 1000;
@@ -327,8 +219,9 @@ export function useMaxProbeDuration(timeRange: TimeRange, check: Check) {
     },
     select: (data) => {
       // Convert seconds to milliseconds
-      const res = Math.round(data.fields[1].values[0] * MILLISECONDS_PER_SECOND);
-      return res;
+      const values = data.map((d) => d.fields[1].values[0]);
+      const max = Math.max(...values);
+      return Math.round(max * MILLISECONDS_PER_SECOND);
     },
   });
 

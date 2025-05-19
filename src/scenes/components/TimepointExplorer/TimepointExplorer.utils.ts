@@ -1,3 +1,5 @@
+import { DataFrame } from '@grafana/data';
+
 import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { MinimapSection, Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -39,6 +41,7 @@ export function timeshiftedTimepoint(unixDate: UnixTimestamp, frequency: number)
   return unixDate - (unixDate % frequency);
 }
 
+// needed?
 export function configTimeRanges(
   checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>,
   timeRangeTo: UnixTimestamp
@@ -79,4 +82,84 @@ export function getEntryHeight(duration: number, maxProbeDurationData: number) {
   const percentage = (duration / maxProbeDurationData) * 100;
 
   return percentage;
+}
+
+interface BuildTimepointsInRangeProps {
+  from: UnixTimestamp;
+  to: UnixTimestamp;
+  checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
+}
+
+export function buildTimepoints({ from, to, checkConfigs }: BuildTimepointsInRangeProps) {
+  const configsToAndFrom = configTimeRanges(checkConfigs, to);
+
+  const timepoints = configsToAndFrom.map((config) => {
+    return buildTimepointsForConfig({ from: from > config.from ? from : config.from, to: config.to, config });
+  });
+
+  const flatTimepoints = timepoints.flat();
+
+  const res = flatTimepoints
+    .sort((a, b) => a.adjustedTime - b.adjustedTime)
+    .map((timepoint, i) => {
+      const previousTimepoint = flatTimepoints[i - 1];
+
+      if (!previousTimepoint) {
+        return timepoint;
+      }
+
+      const timepointDuration = timepoint.adjustedTime - previousTimepoint.adjustedTime;
+
+      return { ...timepoint, timepointDuration };
+    });
+
+  return res;
+}
+
+interface BuildTimepointsForConfigProps {
+  from: UnixTimestamp;
+  to: UnixTimestamp;
+  config: { frequency: number; from: UnixTimestamp; to: UnixTimestamp };
+}
+
+export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsForConfigProps) {
+  let build: Timepoint[] = [];
+
+  let currentTimepoint = timeshiftedTimepoint(to, config.frequency);
+
+  while (currentTimepoint >= from) {
+    build.push({
+      probes: [],
+      uptimeValue: -1,
+      adjustedTime: currentTimepoint,
+      timepointDuration: config.frequency,
+      frequency: config.frequency,
+      index: 0,
+      maxProbeDuration: -1,
+    });
+
+    currentTimepoint -= config.frequency;
+  }
+
+  return build;
+}
+
+const NANOSECONDS_PER_MILLISECOND = 1000000;
+
+export function extractFrequenciesAndConfigs(data: DataFrame) {
+  let build: Array<{ frequency: number; date: UnixTimestamp }> = [];
+  const Value = data.fields[1];
+
+  if (Value.labels) {
+    const { config_version, frequency } = Value.labels;
+    const toUnixTimestamp = Math.round(Number(config_version) / NANOSECONDS_PER_MILLISECOND);
+    const date: UnixTimestamp = toUnixTimestamp;
+
+    build.push({
+      frequency: Number(frequency),
+      date,
+    });
+  }
+
+  return build;
 }

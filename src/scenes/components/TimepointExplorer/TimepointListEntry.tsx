@@ -135,6 +135,8 @@ const TimepointTooltipContent = ({ timepoint, value }: { timepoint: Timepoint; v
 
   return (
     <Stack direction={`column`}>
+      <div>{timepoint.timepointDuration}</div>
+      <div>{timepoint.frequency}</div>
       <div>{timepoint.index}</div>
       <div>{displayTime}</div>
       <div>{value}</div>

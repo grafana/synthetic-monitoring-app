@@ -16,7 +16,6 @@ export const LogsTimeline = <T extends ParsedLokiRecord<Record<string, string>, 
 }) => {
   const styles = useStyles2(getStyles);
   const withDurations = logDuations(logs);
-  console.log(logDuations(logs).map((log) => log.durationNs));
 
   return (
     <div className={styles.timelineContainer}>

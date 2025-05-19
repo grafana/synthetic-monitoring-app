@@ -21,13 +21,13 @@ export const TimepointViewerProbes = ({
   logsView,
 }: TimepointViewerProbesProps) => {
   const [timepoint, probeToView] = selectedTimepoint;
-
+  console.log(timepointData);
   return (
     <>
       <TabsBar>
         {timepointData.map(({ probe, checks }) => {
           const active = probe === probeToView;
-          const probeStatus = checks[0][0][LokiFieldNames.Labels].probe_success;
+          const probeStatus = checks[0]?.[0]?.[LokiFieldNames.Labels]?.probe_success;
           const isSuccess = probeStatus === '1';
 
           return (

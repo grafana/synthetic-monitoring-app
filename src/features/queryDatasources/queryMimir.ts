@@ -42,8 +42,8 @@ export function queryMimir<T>({
     start,
     end,
   }).then((data: Record<string, MimirDataFrame[]>) => {
-    const res = data[refId];
-    const dataFrame = res[0];
-    return dataFrame;
+    const dataframes = data[refId];
+
+    return dataframes;
   });
 }

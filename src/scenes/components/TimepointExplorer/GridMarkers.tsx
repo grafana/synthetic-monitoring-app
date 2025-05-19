@@ -55,6 +55,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex-direction: column;
     justify-content: space-between;
     height: ${theme.spacing(TIMEPOINT_THEME_HEIGHT)};
+    font-size: ${theme.typography.bodySmall.fontSize};
   `,
   line: css`
     height: 1px;
