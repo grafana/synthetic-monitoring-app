@@ -98,7 +98,6 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
   const isDisabled = disabled || !canWriteChecks || getLimitDisabled({ checkState, isLoading, overLimit });
   const defaultValues = useMemo(() => toFormValues(initialCheck, checkType), [initialCheck, checkType]);
-  const [formDefaultValues] = useState(defaultValues);
 
   const formMethods = useForm<CheckFormValues>({
     defaultValues,
@@ -170,8 +169,8 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   // console.log(formMethods.formState.errors);
 
   const isFormModified = useMemo(() => {
-    return checkHasChanges(formDefaultValues, formValues);
-  }, [formDefaultValues, formValues]);
+    return checkHasChanges(defaultValues, formValues);
+  }, [defaultValues, formValues]);
 
   const hasUnsavedChanges = error ? true : isFormModified && !submittingToApi;
 

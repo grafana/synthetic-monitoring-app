@@ -160,8 +160,6 @@ const TooltipContent = ({
   );
 };
 
-const headingDisplay = `h5`;
-
 export const getStyles = (theme: GrafanaTheme2) => ({
   disabled: css({
     color: theme.colors.warning.main,
@@ -193,12 +191,6 @@ export const getStyles = (theme: GrafanaTheme2) => ({
   list: css({
     display: 'flex',
     listStyle: 'none',
-  }),
-  title: css({
-    fontSize: theme.typography[headingDisplay].fontSize,
-    fontWeight: theme.typography[headingDisplay].fontWeight,
-    lineHeight: theme.typography[headingDisplay].lineHeight,
-    margin: `0`,
   }),
   warningIcon: css({
     color: theme.colors.warning.text,
