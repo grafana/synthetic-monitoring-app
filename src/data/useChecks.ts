@@ -22,7 +22,7 @@ export const queryKeys: Record<'list', QueryKey> = {
 
 const checksQuery = (api: SMDataSource, includeAlerts = false) => {
   return {
-    queryKey: [queryKeys.list, includeAlerts],
+    queryKey: [...queryKeys.list, { includeAlerts }],
     queryFn: () => api.listChecks(includeAlerts),
   };
 };

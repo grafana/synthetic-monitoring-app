@@ -9,8 +9,9 @@ import { CheckAlertsResponse } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
 
-export const queryKeys: Record<'listAlertsForCheck', QueryKey> = {
+export const queryKeys: Record<'listAlertsForCheck' | 'list', QueryKey> = {
   listAlertsForCheck: ['alertsForCheck'],
+  list: ['checks', { includeAlerts: true }],
 };
 
 const alertsForCheckQuery = (api: SMDataSource, checkId?: number) => {
@@ -42,7 +43,7 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: Mutat
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.listAlertsForCheck });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {
