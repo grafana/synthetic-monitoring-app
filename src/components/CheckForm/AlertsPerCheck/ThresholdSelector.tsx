@@ -1,6 +1,7 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { InlineField, Input } from '@grafana/ui';
+import { trackChangeThreshold } from 'features/tracking/perCheckAlertsEvents';
 
 import { CheckFormValues } from 'types';
 
@@ -39,6 +40,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
             id={`alert-threshold-${alert.type}`}
             onChange={(e) => {
               const value = e.currentTarget.value;
+              trackChangeThreshold({ name: alert.type, threshold: value !== '' ? Number(value) : 0 });
               return field.onChange(value !== '' ? Number(value) : '');
             }}
             width={5}

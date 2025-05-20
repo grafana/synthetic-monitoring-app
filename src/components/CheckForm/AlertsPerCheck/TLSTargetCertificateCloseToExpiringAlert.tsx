@@ -11,7 +11,7 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
-import { trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
+import { trackChangeThreshold, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
@@ -31,15 +31,14 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   tooltipContent: PopoverContent;
 }) => {
   const { isFormDisabled } = useCheckFormContext();
-  const { control, formState, getValues } = useFormContext<CheckFormValues>();
-  const threshold = getValues(`alerts.${alert.type}.threshold`);
+  const { control, formState } = useFormContext<CheckFormValues>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
     if (selected) {
-      trackUnSelectAlert({ name: type, threshold });
+      trackUnSelectAlert({ name: type });
     } else {
-      trackSelectAlert({ name: type, threshold });
+      trackSelectAlert({ name: type });
     }
   };
 
@@ -77,6 +76,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
                 data-testid={`alert-threshold-${alert.type}`}
                 onChange={(e) => {
                   const value = e.currentTarget.value;
+                  trackChangeThreshold({ name: alert.type, threshold: value !== '' ? Number(value) : 0 });
                   return field.onChange(value !== '' ? Number(value) : '');
                 }}
                 width={7}
