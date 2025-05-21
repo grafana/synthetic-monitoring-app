@@ -1,6 +1,6 @@
 import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
-import { trackAdhocCreated, trackCheckCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
+import { trackAdhocCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
@@ -15,8 +15,9 @@ import { tracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { queryClient } from 'data/queryClient';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
-import { useCUDChecks, useTestCheck } from 'data/useChecks';
+import { queryKeys, useCUDChecks, useTestCheck } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
@@ -67,17 +68,28 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
     setSubmittingToApi(false);
   };
 
-  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({ onSuccess: navigateToChecks, onError });
+  const onAlertsUpdateComplete = useCallback(() => {
+    trackCheckUpdated({ checkType });
+    queryClient.invalidateQueries({ queryKey: queryKeys.list });
+  }, [checkType]);
 
-  const onSuccess = useCallback(
+  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({
+    onError,
+    onSuccess: () => navigateToChecks(),
+    onSettled: onAlertsUpdateComplete,
+  });
+
+  const updateCheckAlerts = useCallback(
     (data: Check, alerts?: CheckAlertFormRecord) => {
       if (alerts && data.id) {
         const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, data.id);
         return updateAlertsForCheck({ alerts: checkAlerts, checkId: data.id });
+      } else {
+        onAlertsUpdateComplete();
+        navigateToChecks();
       }
-      return navigateToChecks();
     },
-    [updateAlertsForCheck, navigateToChecks]
+    [updateAlertsForCheck, onAlertsUpdateComplete, navigateToChecks]
   );
 
   const mutateCheck = useCallback(
@@ -93,8 +105,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
           },
           {
             onSuccess: (data) => {
-              onSuccess(data, alerts);
-              trackCheckUpdated({ checkType });
+              updateCheckAlerts(data, alerts);
             },
             onError,
           }
@@ -103,13 +114,12 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
 
       return createCheck(newCheck, {
         onSuccess: (data) => {
-          onSuccess(data, alerts);
-          trackCheckCreated({ checkType });
+          updateCheckAlerts(data, alerts);
         },
         onError,
       });
     },
-    [check?.id, check?.tenantId, createCheck, updateCheck, onSuccess, checkType]
+    [check?.id, check?.tenantId, createCheck, updateCheck, updateCheckAlerts]
   );
 
   const handleValid = useCallback(

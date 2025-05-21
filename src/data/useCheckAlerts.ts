@@ -6,12 +6,10 @@ import { CheckAlertDraft } from 'types';
 import { FaroEvent } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import { CheckAlertsResponse } from 'datasource/responses.types';
-import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
 
-export const queryKeys: Record<'listAlertsForCheck' | 'list', QueryKey> = {
+export const queryKeys: Record<'listAlertsForCheck', QueryKey> = {
   listAlertsForCheck: ['alertsForCheck'],
-  list: ['checks', { includeAlerts: true }],
 };
 
 const alertsForCheckQuery = (api: SMDataSource, checkId?: number) => {
@@ -28,7 +26,7 @@ export function useListAlertsForCheck(checkId?: number) {
   return useQuery(alertsForCheckQuery(smDS, checkId));
 }
 
-export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: MutationProps<null> = {}) {
+export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess, onSettled }: MutationProps<null> = {}) {
   const smDS = useSMDS();
 
   return useMutation<null, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
@@ -43,8 +41,10 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: Mutat
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
+    },
+    onSettled: () => {
+      onSettled?.();
     },
     meta: {
       event: {
