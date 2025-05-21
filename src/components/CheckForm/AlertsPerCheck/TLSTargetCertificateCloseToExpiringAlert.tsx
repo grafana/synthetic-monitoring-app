@@ -16,6 +16,7 @@ import { trackChangeThreshold, trackSelectAlert, trackUnSelectAlert } from 'feat
 import { CheckAlertType, CheckFormValues } from 'types';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
+import { useDebouncedCallback } from '../useDebouncedCallback';
 import { getAlertItemStyles } from './AlertItem';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
@@ -44,6 +45,10 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
 
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
   const styles = useStyles2(getAlertItemStyles);
+
+  const debouncedTrackChangeThreshold = useDebouncedCallback((name: CheckAlertType, threshold: string) => {
+    trackChangeThreshold({ name, threshold });
+  });
 
   return (
     <InlineFieldRow className={styles.alertRow}>
@@ -76,7 +81,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
                 data-testid={`alert-threshold-${alert.type}`}
                 onChange={(e) => {
                   const value = e.currentTarget.value;
-                  trackChangeThreshold({ name: alert.type, threshold: value !== '' ? Number(value) : 0 });
+                  debouncedTrackChangeThreshold(alert.type, value);
                   return field.onChange(value !== '' ? Number(value) : '');
                 }}
                 width={7}

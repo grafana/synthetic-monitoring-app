@@ -20,7 +20,7 @@ interface PerCheckAlertChangeThreshold extends TrackingEventProps {
   /** The name of the alert */
   name: CheckAlertType;
   /** The threshold of the alert */
-  threshold: number;
+  threshold: string;
 }
 /** Tracks when an alert is selected from the per-check alerts list */
 export const trackSelectAlert = perCheckAlertEvents<PerCheckAlertEvent>('select_alert');
