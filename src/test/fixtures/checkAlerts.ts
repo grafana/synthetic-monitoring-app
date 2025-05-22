@@ -7,8 +7,6 @@ export const BASIC_CHECK_ALERTS: CheckAlertsResponse = {
   alerts: [
     db.alert.build({
       name: CheckAlertType.ProbeFailedExecutionsTooHigh,
-      status: 'PENDING_CREATE',
-      error: CheckAlertError.QuotaLimitReached,
     }),
     db.alert.build({
       name: CheckAlertType.TLSTargetCertificateCloseToExpiring,
