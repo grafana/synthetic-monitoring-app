@@ -1,6 +1,8 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { InlineField, Input } from '@grafana/ui';
+import { trackChangeThreshold } from 'features/tracking/perCheckAlertsEvents';
+import { useDebounceCallback } from 'usehooks-ts';
 
 import { CheckFormValues } from 'types';
 
@@ -18,6 +20,8 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
   const { formState, control } = useFormContext<CheckFormValues>();
 
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
+
+  const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);
 
   return (
     <InlineField
@@ -39,6 +43,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
             id={`alert-threshold-${alert.type}`}
             onChange={(e) => {
               const value = e.currentTarget.value;
+              debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
               return field.onChange(value !== '' ? Number(value) : '');
             }}
             width={5}

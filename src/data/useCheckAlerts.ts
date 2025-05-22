@@ -1,8 +1,9 @@
 import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
+import { trackAlertCreationsAndDeletions } from 'features/tracking/perCheckAlertsEvents';
 
 import { MutationProps } from './types';
-import { CheckAlertDraft } from 'types';
+import { CheckAlertDraft, CheckAlertPublished } from 'types';
 import { FaroEvent } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import { CheckAlertsResponse } from 'datasource/responses.types';
@@ -26,7 +27,13 @@ export function useListAlertsForCheck(checkId?: number) {
   return useQuery(alertsForCheckQuery(smDS, checkId));
 }
 
-export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess, onSettled }: MutationProps<null> = {}) {
+export function useUpdateAlertsForCheck({
+  eventInfo,
+  onError,
+  onSuccess,
+  onSettled,
+  prevAlerts,
+}: MutationProps<null> & { prevAlerts?: CheckAlertPublished[] } = {}) {
   const smDS = useSMDS();
 
   return useMutation<null, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
@@ -40,7 +47,8 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess, onSettl
     onError: (error) => {
       onError?.(error);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      trackAlertCreationsAndDeletions(prevAlerts, variables.alerts);
       onSuccess?.(data);
     },
     onSettled: () => {

@@ -77,6 +77,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
     onError,
     onSuccess: () => navigateToChecks(),
     onSettled: onAlertsUpdateComplete,
+    prevAlerts: check?.Alerts,
   });
 
   const updateCheckAlerts = useCallback(
