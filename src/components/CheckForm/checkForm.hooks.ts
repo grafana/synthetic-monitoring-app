@@ -64,63 +64,54 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
   const navigateToChecks = useCallback(() => navigate(AppRoutes.Checks), [navigate]);
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
-  const onError = (err: Error | unknown) => {
-    setSubmittingToApi(false);
-  };
-
-  const onAlertsUpdateComplete = useCallback(() => {
+  const onUpdateCheckComplete = useCallback(() => {
     trackCheckUpdated({ checkType });
     queryClient.invalidateQueries({ queryKey: queryKeys.list });
   }, [checkType]);
 
-  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({
-    onError,
-    onSuccess: () => navigateToChecks(),
-    onSettled: onAlertsUpdateComplete,
+  const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
     prevAlerts: check?.Alerts,
   });
 
-  const updateCheckAlerts = useCallback(
-    (data: Check, alerts?: CheckAlertFormRecord) => {
-      if (alerts && data.id) {
-        const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, data.id);
-        return updateAlertsForCheck({ alerts: checkAlerts, checkId: data.id });
-      } else {
-        onAlertsUpdateComplete();
-        navigateToChecks();
+  const handleAlertsAndNavigate = useCallback(
+    async (result: Check, alerts?: CheckAlertFormRecord) => {
+      try {
+        if (!alerts && result.id) {
+          return navigateToChecks();
+        } else {
+          const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
+          await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
+          navigateToChecks();
+        }
+      } catch (e) {
+      } finally {
+        onUpdateCheckComplete();
       }
     },
-    [updateAlertsForCheck, onAlertsUpdateComplete, navigateToChecks]
+    [navigateToChecks, onUpdateCheckComplete, updateAlertsForCheck]
   );
 
   const mutateCheck = useCallback(
-    (newCheck: Check, alerts?: CheckAlertFormRecord) => {
+    async (newCheck: Check, alerts?: CheckAlertFormRecord) => {
       setSubmittingToApi(true);
-
-      if (check?.id) {
-        return updateCheck(
-          {
+      try {
+        let result;
+        if (check?.id) {
+          result = await updateCheck({
             id: check.id,
             tenantId: check.tenantId,
             ...newCheck,
-          },
-          {
-            onSuccess: (data) => {
-              updateCheckAlerts(data, alerts);
-            },
-            onError,
-          }
-        );
+          });
+        } else {
+          result = await createCheck(newCheck);
+        }
+        await handleAlertsAndNavigate(result, alerts);
+      } catch (e) {
+      } finally {
+        setSubmittingToApi(false);
       }
-
-      return createCheck(newCheck, {
-        onSuccess: (data) => {
-          updateCheckAlerts(data, alerts);
-        },
-        onError,
-      });
     },
-    [check?.id, check?.tenantId, createCheck, updateCheck, updateCheckAlerts]
+    [check?.id, check?.tenantId, createCheck, updateCheck, handleAlertsAndNavigate]
   );
 
   const handleValid = useCallback(

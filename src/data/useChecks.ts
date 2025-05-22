@@ -273,8 +273,8 @@ export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<Ad
 }
 
 export function useCUDChecks({ eventInfo }: { eventInfo?: FaroEventMeta['info'] } = {}) {
-  const { mutate: updateCheck, error: updateError, isPending: updatePending } = useUpdateCheck({ eventInfo });
-  const { mutate: createCheck, error: createError, isPending: createPending } = useCreateCheck({ eventInfo });
+  const { mutateAsync: updateCheck, error: updateError, isPending: updatePending } = useUpdateCheck({ eventInfo });
+  const { mutateAsync: createCheck, error: createError, isPending: createPending } = useCreateCheck({ eventInfo });
   const { mutate: deleteCheck, error: deleteError, isPending: deletePending } = useDeleteCheck({ eventInfo });
 
   const error = updateError || createError || deleteError;
