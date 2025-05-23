@@ -1,8 +1,9 @@
 import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
+import { trackCheckCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
 
 import { type MutationProps } from 'data/types';
-import { type Check, FeatureName } from 'types';
+import { type Check, CheckType, FeatureName } from 'types';
 import { FaroEvent, FaroEventMeta } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
@@ -68,6 +69,11 @@ export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<
     },
     onSuccess: (data) => {
       onSuccess?.(data);
+
+      if (eventInfo?.checkType) {
+        const checkType = eventInfo.checkType as CheckType;
+        trackCheckCreated({ checkType });
+      }
     },
     meta: {
       event: {
@@ -102,6 +108,11 @@ export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<
     },
     onSuccess: (data) => {
       onSuccess?.(data);
+
+      if (eventInfo?.checkType) {
+        const checkType = eventInfo.checkType as CheckType;
+        trackCheckUpdated({ checkType });
+      }
     },
     meta: {
       event: {
