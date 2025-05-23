@@ -105,7 +105,7 @@ export const GRAFANA_ALERTING_RULES: ListPrometheusAlertsResponse = {
         lastEvaluation: '2025-05-09T20:10:50Z',
         evaulationTime: 0.410487404,
       },
-      {
+      /*{
         name: 'TLS Certificate',
         file: 'Grafana Synthetic Monitoring',
         folderUid: 'grafana-synthetic-monitoring-app',
@@ -136,7 +136,7 @@ export const GRAFANA_ALERTING_RULES: ListPrometheusAlertsResponse = {
         interval: 60,
         lastEvaluation: '2025-05-09T20:10:30Z',
         evaulationTime: 0.480036517,
-      },
+      },*/
     ],
   },
   status: `success`,

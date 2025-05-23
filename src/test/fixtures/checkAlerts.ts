@@ -1,11 +1,17 @@
 import { db } from 'test/db';
 
-import { CheckAlertType } from 'types';
+import { CheckAlertError, CheckAlertType } from 'types';
 import { CheckAlertsResponse } from 'datasource/responses.types';
 
 export const BASIC_CHECK_ALERTS: CheckAlertsResponse = {
   alerts: [
-    CheckAlertType.TLSTargetCertificateCloseToExpiring,
-    CheckAlertType.ProbeFailedExecutionsTooHigh,
-  ].map((name) => db.alert.build({ name })),
+    db.alert.build({
+      name: CheckAlertType.ProbeFailedExecutionsTooHigh,
+    }),
+    db.alert.build({
+      name: CheckAlertType.TLSTargetCertificateCloseToExpiring,
+      status: 'PENDING_CREATE',
+      error: CheckAlertError.HostedGrafanaInstanceLoading,
+    }),
+  ],
 };
