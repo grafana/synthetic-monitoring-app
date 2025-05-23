@@ -1,6 +1,6 @@
 import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
-import { trackAdhocCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
+import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
@@ -64,11 +64,6 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
   const navigateToChecks = useCallback(() => navigate(AppRoutes.Checks), [navigate]);
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
-  const onUpdateCheckComplete = useCallback(() => {
-    trackCheckUpdated({ checkType });
-    queryClient.invalidateQueries({ queryKey: queryKeys.list });
-  }, [checkType]);
-
   const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
     prevAlerts: check?.Alerts,
   });
@@ -76,19 +71,17 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
   const handleAlertsAndNavigate = useCallback(
     async (result: Check, alerts?: CheckAlertFormRecord) => {
       try {
-        if (!alerts && result.id) {
-          return navigateToChecks();
-        } else {
+        if (alerts) {
           const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
           await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
-          navigateToChecks();
         }
-      } catch (e) {
+
+        navigateToChecks();
       } finally {
-        onUpdateCheckComplete();
+        queryClient.invalidateQueries({ queryKey: queryKeys.list });
       }
     },
-    [navigateToChecks, onUpdateCheckComplete, updateAlertsForCheck]
+    [navigateToChecks, updateAlertsForCheck]
   );
 
   const mutateCheck = useCallback(
@@ -107,6 +100,9 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
         }
         await handleAlertsAndNavigate(result, alerts);
       } catch (e) {
+        // swallow the error
+        // it gets handled correctly by the the generic hooks and we have tests to prove that
+        // this isn't strictly necessary but jest complains about this...
       } finally {
         setSubmittingToApi(false);
       }
