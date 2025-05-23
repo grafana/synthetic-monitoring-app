@@ -7,6 +7,7 @@ import {
   InlineFieldRow,
   Input,
   PopoverContent,
+  Stack,
   Text,
   Tooltip,
   useStyles2,
@@ -14,7 +15,7 @@ import {
 import { trackChangeThreshold, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import { useDebounceCallback } from 'usehooks-ts';
 
-import { CheckAlertType, CheckFormValues } from 'types';
+import { CheckAlertType, CheckFormValues, CheckType } from 'types';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { getAlertItemStyles } from './AlertItem';
@@ -32,7 +33,12 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   tooltipContent: PopoverContent;
 }) => {
   const { isFormDisabled } = useCheckFormContext();
-  const { control, formState } = useFormContext<CheckFormValues>();
+  const { control, formState, getValues } = useFormContext<CheckFormValues>();
+
+  const checkType = getValues('checkType');
+  const checkUsesTLS = getValues('settings.tcp.tls');
+
+  const isDisabled = checkType === CheckType.TCP && !checkUsesTLS;
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
@@ -49,51 +55,61 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);
 
   return (
-    <InlineFieldRow className={styles.alertRow}>
-      <Checkbox
-        className={styles.alertCheckbox}
-        id={`alert-${alert.type}`}
-        data-testid={`checkbox-alert-${alert.type}`}
-        onClick={() => handleToggleAlert(alert.type)}
-        checked={selected}
-      />
-      <Text>Alert if the target&apos;s certificate expires in less than </Text>{' '}
-      <InlineField
-        htmlFor={`alert-threshold-${alert.type}`}
-        invalid={!!thresholdError}
-        error={thresholdError}
-        validationMessageHorizontalOverflow={true}
-      >
-        <Controller
-          name={`alerts.${alert.type}.threshold`}
-          control={control}
-          render={({ field }) => {
-            return (
-              <Input
-                {...field}
-                aria-disabled={!selected}
-                suffix={alert.unit}
-                type="number"
-                step="any"
-                id={`alert-threshold-${alert.type}`}
-                data-testid={`alert-threshold-${alert.type}`}
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
-                  return field.onChange(value !== '' ? Number(value) : '');
-                }}
-                width={7}
-                disabled={!selected || isFormDisabled}
-              />
-            );
-          }}
+    <Stack direction={'column'}>
+      <InlineFieldRow className={styles.alertRow}>
+        <Checkbox
+          className={styles.alertCheckbox}
+          id={`alert-${alert.type}`}
+          data-testid={`checkbox-alert-${alert.type}`}
+          onClick={() => handleToggleAlert(alert.type)}
+          checked={selected}
+          disabled={isDisabled}
         />
-      </InlineField>
-      <div className={styles.alertTooltip}>
-        <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
-          <Icon name="info-circle" />
-        </Tooltip>
-      </div>
-    </InlineFieldRow>
+        <Text>Alert if the target&apos;s certificate expires in less than </Text>{' '}
+        <InlineField
+          htmlFor={`alert-threshold-${alert.type}`}
+          invalid={!!thresholdError}
+          error={thresholdError}
+          validationMessageHorizontalOverflow={true}
+        >
+          <Controller
+            name={`alerts.${alert.type}.threshold`}
+            control={control}
+            render={({ field }) => {
+              return (
+                <Input
+                  {...field}
+                  aria-disabled={!selected}
+                  suffix={alert.unit}
+                  type="number"
+                  step="any"
+                  id={`alert-threshold-${alert.type}`}
+                  data-testid={`alert-threshold-${alert.type}`}
+                  onChange={(e) => {
+                    const value = e.currentTarget.value;
+                    debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
+                    return field.onChange(value !== '' ? Number(value) : '');
+                  }}
+                  width={7}
+                  disabled={!selected || isFormDisabled}
+                />
+              );
+            }}
+          />
+        </InlineField>
+        <div className={styles.alertTooltip}>
+          <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
+            <Icon name="info-circle" />
+          </Tooltip>
+        </div>
+      </InlineFieldRow>
+
+      {isDisabled && (
+        <Text variant="bodySmall" color="warning">
+          TLS must be enabled in Request options in order to collect the required TLS metrics for this alert. If TLS is
+          not enabled, the alert will not function as expected.
+        </Text>
+      )}
+    </Stack>
   );
 };
