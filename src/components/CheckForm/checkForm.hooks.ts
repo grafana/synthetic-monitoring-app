@@ -99,6 +99,10 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
           result = await createCheck(newCheck);
         }
         await handleAlertsAndNavigate(result, alerts);
+      } catch (e) {
+        // swallow the error
+        // it gets handled correctly by the the generic hooks and we have tests to prove that
+        // this isn't strictly necessary but jest complains about this...
       } finally {
         setSubmittingToApi(false);
       }
