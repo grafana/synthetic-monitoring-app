@@ -1,8 +1,9 @@
 import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
+import { trackCheckCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
 
 import { type MutationProps } from 'data/types';
-import { type Check } from 'types';
+import { type Check, CheckType, FeatureName } from 'types';
 import { FaroEvent, FaroEventMeta } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
@@ -13,29 +14,30 @@ import type {
   UpdateCheckResult,
 } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['checks'],
 };
 
-const checksQuery = (api: SMDataSource) => {
+const checksQuery = (api: SMDataSource, includeAlerts = false) => {
   return {
-    queryKey: queryKeys.list,
-    queryFn: () => api.listChecks(),
+    queryKey: [...queryKeys.list, { includeAlerts }],
+    queryFn: () => api.listChecks(includeAlerts),
   };
 };
 
 export function useChecks() {
   const smDS = useSMDS();
-
-  return useQuery(checksQuery(smDS));
+  const perCheckAlertsFF = useFeatureFlag(FeatureName.AlertsPerCheck);
+  return useQuery(checksQuery(smDS, perCheckAlertsFF.isEnabled));
 }
 
 export function useSuspenseChecks() {
   const smDS = useSMDS();
-
-  return useSuspenseQuery(checksQuery(smDS));
+  const perCheckAlertsFF = useFeatureFlag(FeatureName.AlertsPerCheck);
+  return useSuspenseQuery(checksQuery(smDS, perCheckAlertsFF.isEnabled));
 }
 
 export function useCheck(id: number) {
@@ -66,8 +68,12 @@ export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
+
+      if (eventInfo?.checkType) {
+        const checkType = eventInfo.checkType as CheckType;
+        trackCheckCreated({ checkType });
+      }
     },
     meta: {
       event: {
@@ -101,8 +107,12 @@ export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
+
+      if (eventInfo?.checkType) {
+        const checkType = eventInfo.checkType as CheckType;
+        trackCheckUpdated({ checkType });
+      }
     },
     meta: {
       event: {
@@ -274,8 +284,8 @@ export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<Ad
 }
 
 export function useCUDChecks({ eventInfo }: { eventInfo?: FaroEventMeta['info'] } = {}) {
-  const { mutate: updateCheck, error: updateError, isPending: updatePending } = useUpdateCheck({ eventInfo });
-  const { mutate: createCheck, error: createError, isPending: createPending } = useCreateCheck({ eventInfo });
+  const { mutateAsync: updateCheck, error: updateError, isPending: updatePending } = useUpdateCheck({ eventInfo });
+  const { mutateAsync: createCheck, error: createError, isPending: createPending } = useCreateCheck({ eventInfo });
   const { mutate: deleteCheck, error: deleteError, isPending: deletePending } = useDeleteCheck({ eventInfo });
 
   const error = updateError || createError || deleteError;

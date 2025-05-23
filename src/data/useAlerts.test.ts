@@ -39,6 +39,7 @@ const NOT_RELEVANT_RULE: PrometheusAlertingRule = {
 const RELEVANT_GROUP: PrometheusAlertsGroup = {
   evaulationTime: 1,
   file: `test`,
+  folderUid: `default`,
   interval: 300,
   lastEvaluation: `some time ago`,
   name: `group1`,
@@ -49,6 +50,7 @@ const RELEVANT_GROUP: PrometheusAlertsGroup = {
 const NOT_RELEVANT_GROUP: PrometheusAlertsGroup = {
   evaulationTime: 1,
   file: `test`,
+  folderUid: `default`,
   interval: 300,
   lastEvaluation: `some time ago`,
   name: `group1`,

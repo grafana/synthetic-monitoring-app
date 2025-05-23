@@ -11,6 +11,8 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
+import { trackChangeThreshold, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
+import { useDebounceCallback } from 'usehooks-ts';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
@@ -34,10 +36,17 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
+    if (selected) {
+      trackUnSelectAlert({ name: type });
+    } else {
+      trackSelectAlert({ name: type });
+    }
   };
 
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
   const styles = useStyles2(getAlertItemStyles);
+
+  const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);
 
   return (
     <InlineFieldRow className={styles.alertRow}>
@@ -70,6 +79,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
                 data-testid={`alert-threshold-${alert.type}`}
                 onChange={(e) => {
                   const value = e.currentTarget.value;
+                  debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
                   return field.onChange(value !== '' ? Number(value) : '');
                 }}
                 width={7}
