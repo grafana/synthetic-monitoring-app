@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.29.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.28.1...v1.29.0) (2025-05-23)
+
+
+### Features
+
+* register Component into Software Catalog and set up TechDocs publishing ([#1150](https://github.com/grafana/synthetic-monitoring-app/issues/1150)) ([b691b3f](https://github.com/grafana/synthetic-monitoring-app/commit/b691b3fb10a9fbde0297d80e6db04440b156af58))
+* show per check alerts on checks list ([#1139](https://github.com/grafana/synthetic-monitoring-app/issues/1139)) ([8471cd2](https://github.com/grafana/synthetic-monitoring-app/commit/8471cd2ded85a1ac9e8f8f4fc5ce94d944814fcc))
+
 ## [1.28.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.28.0...v1.28.1) (2025-05-14)
 
 
