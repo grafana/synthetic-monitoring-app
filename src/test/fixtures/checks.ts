@@ -87,7 +87,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
         value: 'httpLabelValue',
       },
     ],
-    Alerts: [
+    alerts: [
       {
         name: CheckAlertType.ProbeFailedExecutionsTooHigh,
         threshold: 1,

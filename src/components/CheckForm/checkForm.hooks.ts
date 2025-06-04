@@ -65,7 +65,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
   const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
-    prevAlerts: check?.Alerts,
+    prevAlerts: check?.alerts,
   });
 
   const handleAlertsAndNavigate = useCallback(

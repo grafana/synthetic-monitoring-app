@@ -52,7 +52,7 @@ export function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 
     probes: check.probes,
     target: check.target,
     timeout: check.timeout,
-    alerts: predefinedAlertsToFormValues(GLOBAL_PREDEFINED_ALERTS, check.Alerts || []),
+    alerts: predefinedAlertsToFormValues(GLOBAL_PREDEFINED_ALERTS, check.alerts || []),
   };
 }
 

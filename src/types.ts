@@ -407,7 +407,7 @@ export interface CheckBase {
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   probes: number[];
-  Alerts?: CheckAlertPublished[];
+  alerts?: CheckAlertPublished[];
 }
 
 export type Check =
