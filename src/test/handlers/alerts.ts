@@ -13,12 +13,12 @@ export const listAlertsForCheck: ApiEntry<CheckAlertsResponse> = {
   },
 };
 
-export const updateAlertsForCheck: ApiEntry<CheckAlertsResponse> = {
+export const updateAlertsForCheck: ApiEntry<null> = {
   route: `/sm/check/\\d+/alerts`,
   method: `put`,
   result: () => {
     return {
-      json: BASIC_CHECK_ALERTS,
+      json: null,
     };
   },
 };

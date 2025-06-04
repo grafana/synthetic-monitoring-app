@@ -5,7 +5,7 @@ import { css, cx } from '@emotion/css';
 
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
-import { AlertStatus } from 'page/CheckList/components/AlertStatus';
+import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';

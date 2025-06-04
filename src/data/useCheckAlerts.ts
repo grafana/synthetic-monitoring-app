@@ -1,12 +1,12 @@
 import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
+import { trackAlertCreationsAndDeletions } from 'features/tracking/perCheckAlertsEvents';
 
 import { MutationProps } from './types';
-import { CheckAlertDraft } from 'types';
+import { CheckAlertDraft, CheckAlertPublished } from 'types';
 import { FaroEvent } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import { CheckAlertsResponse } from 'datasource/responses.types';
-import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const queryKeys: Record<'listAlertsForCheck', QueryKey> = {
@@ -27,10 +27,16 @@ export function useListAlertsForCheck(checkId?: number) {
   return useQuery(alertsForCheckQuery(smDS, checkId));
 }
 
-export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: MutationProps<CheckAlertsResponse> = {}) {
+export function useUpdateAlertsForCheck({
+  eventInfo,
+  onError,
+  onSuccess,
+  onSettled,
+  prevAlerts,
+}: MutationProps<null> & { prevAlerts?: CheckAlertPublished[] } = {}) {
   const smDS = useSMDS();
 
-  return useMutation<CheckAlertsResponse, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
+  return useMutation<null, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
     mutationFn: async ({ alerts, checkId }) => {
       try {
         return await smDS.updateAlertsForCheck(alerts, checkId);
@@ -41,9 +47,12 @@ export function useUpdateAlertsForCheck({ eventInfo, onError, onSuccess }: Mutat
     onError: (error) => {
       onError?.(error);
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.listAlertsForCheck });
+    onSuccess: (data, variables) => {
+      trackAlertCreationsAndDeletions(prevAlerts, variables.alerts);
       onSuccess?.(data);
+    },
+    onSettled: () => {
+      onSettled?.();
     },
     meta: {
       event: {

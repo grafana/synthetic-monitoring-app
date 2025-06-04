@@ -1,11 +1,13 @@
 import { SelectableValue } from '@grafana/data';
 
-import { Check, CheckFormValues, TLSConfig } from 'types';
+import { Check, CheckAlertPublished, CheckFormValues, TLSConfig } from 'types';
 import { fromBase64 } from 'utils';
 import {
   GLOBAL_PREDEFINED_ALERTS,
   PredefinedAlertInterface,
 } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
+
+import { getCheckAlertsFormValues } from './toFormValues.alerts';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
   const labelValue = String(value);
@@ -50,15 +52,25 @@ export function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 
     probes: check.probes,
     target: check.target,
     timeout: check.timeout,
-    alerts: predefinedAlertsToFormValues(GLOBAL_PREDEFINED_ALERTS),
+    alerts: predefinedAlertsToFormValues(GLOBAL_PREDEFINED_ALERTS, check.alerts || []),
   };
 }
 
-export function predefinedAlertsToFormValues(predefinedAlerts: PredefinedAlertInterface[]) {
-  return Object.values(predefinedAlerts).reduce((acc, alert) => {
+export function predefinedAlertsToFormValues(
+  predefinedAlerts: PredefinedAlertInterface[],
+  alerts: CheckAlertPublished[]
+) {
+  const defaultValues = Object.values(predefinedAlerts).reduce((acc, alert) => {
     return {
       ...acc,
       [alert.type]: alert.defaultValues,
     };
   }, {});
+
+  const checkAlertFormValues = getCheckAlertsFormValues(alerts);
+
+  return {
+    ...defaultValues,
+    ...checkAlertFormValues,
+  };
 }

@@ -1,7 +1,7 @@
 import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
-import { selectOption } from 'test/utils';
+import { probeToMetadataProbe, selectOption } from 'test/utils';
 
 import { AlertSensitivity, Check, CheckType, FeatureName } from 'types';
 import {
@@ -101,19 +101,21 @@ describe('Api endpoint checks - common fields payload', () => {
 
           const { user, read } = await renderNewForm(checkType);
 
-          await fillMandatoryFields({ user, checkType });
-
+          await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
           await goToSection(user, 4);
+          const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+          await user.click(probeCheckbox);
+
+          await goToSection(user, 5);
 
           expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
           expect(screen.getByText('Failed Checks')).toBeInTheDocument();
 
-          const thresholdsInput = screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh');
-
           await user.click(screen.getByTestId('checkbox-alert-ProbeFailedExecutionsTooHigh'));
-          await user.clear(thresholdsInput);
-          await user.type(thresholdsInput, '1');
+          await user.clear(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'));
+
+          await user.type(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'), '1');
 
           await submitForm(user);
 
@@ -133,7 +135,6 @@ describe('Api endpoint checks - common fields payload', () => {
           const { user, read } = await renderNewForm(checkType);
 
           await fillMandatoryFields({ user, checkType });
-
           await goToSection(user, 4);
 
           expect(screen.queryByText('Predefined alerts')).not.toBeInTheDocument();

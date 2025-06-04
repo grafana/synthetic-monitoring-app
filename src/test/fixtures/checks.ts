@@ -19,6 +19,7 @@ import {
 } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 
+import { BASIC_CHECK_ALERTS } from './checkAlerts';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 
 export const VALID_CERT = `-----BEGIN CERTIFICATE-----
@@ -86,6 +87,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
         value: 'httpLabelValue',
       },
     ],
+    alerts: [...BASIC_CHECK_ALERTS.alerts],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   },
   { transient: { type: CheckType.HTTP } }

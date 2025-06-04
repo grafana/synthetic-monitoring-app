@@ -66,7 +66,10 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
       <QueryVariable
         name="probe"
         isMulti={true}
-        query={{ query: `label_values(sm_check_info{check_name="${CheckType.HTTP}"},probe)`, refId: 'A' }}
+        query={{
+          query: `label_values(sm_check_info{check_name="${CheckType.HTTP}", job="$job", instance="$instance"},probe)`,
+          refId: 'A',
+        }}
         refresh={VariableRefresh.onDashboardLoad}
         datasource={{ uid: metricsDS?.uid }}
         includeAll={true}

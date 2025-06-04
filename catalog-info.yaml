@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: synthetic-monitoring-app
+  title: synthetic-monitoring-app
+  description: |
+    Synthetic Monitoring frontend application
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: grafana/synthetic-monitoring-app
+spec:
+  type: library
+  owner: group:default/synthetic-monitoring-fe
+  lifecycle: production

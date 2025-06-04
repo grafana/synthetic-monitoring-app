@@ -1,6 +1,6 @@
 import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
-import { trackAdhocCreated, trackCheckCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
+import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
@@ -15,8 +15,9 @@ import { tracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { queryClient } from 'data/queryClient';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
-import { useCUDChecks, useTestCheck } from 'data/useChecks';
+import { queryKeys, useCUDChecks, useTestCheck } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
@@ -63,53 +64,50 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
   const navigateToChecks = useCallback(() => navigate(AppRoutes.Checks), [navigate]);
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
-  const onError = (err: Error | unknown) => {
-    setSubmittingToApi(false);
-  };
+  const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
+    prevAlerts: check?.alerts,
+  });
 
-  const { mutate: updateAlertsForCheck } = useUpdateAlertsForCheck({ onSuccess: navigateToChecks, onError });
+  const handleAlertsAndNavigate = useCallback(
+    async (result: Check, alerts?: CheckAlertFormRecord) => {
+      try {
+        if (alerts) {
+          const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
+          await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
+        }
 
-  const onSuccess = useCallback(
-    (data: Check, alerts?: CheckAlertFormRecord) => {
-      if (alerts && data.id) {
-        const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, data.id);
-        return updateAlertsForCheck({ alerts: checkAlerts, checkId: data.id });
+        navigateToChecks();
+      } finally {
+        queryClient.invalidateQueries({ queryKey: queryKeys.list });
       }
-      return navigateToChecks();
     },
-    [updateAlertsForCheck, navigateToChecks]
+    [navigateToChecks, updateAlertsForCheck]
   );
 
   const mutateCheck = useCallback(
-    (newCheck: Check, alerts?: CheckAlertFormRecord) => {
+    async (newCheck: Check, alerts?: CheckAlertFormRecord) => {
       setSubmittingToApi(true);
-
-      if (check?.id) {
-        return updateCheck(
-          {
+      try {
+        let result;
+        if (check?.id) {
+          result = await updateCheck({
             id: check.id,
             tenantId: check.tenantId,
             ...newCheck,
-          },
-          {
-            onSuccess: (data) => {
-              onSuccess(data, alerts);
-              trackCheckUpdated({ checkType });
-            },
-            onError,
-          }
-        );
+          });
+        } else {
+          result = await createCheck(newCheck);
+        }
+        await handleAlertsAndNavigate(result, alerts);
+      } catch (e) {
+        // swallow the error
+        // it gets handled correctly by the the generic hooks and we have tests to prove that
+        // this isn't strictly necessary but jest complains about this...
+      } finally {
+        setSubmittingToApi(false);
       }
-
-      return createCheck(newCheck, {
-        onSuccess: (data) => {
-          onSuccess(data, alerts);
-          trackCheckCreated({ checkType });
-        },
-        onError,
-      });
     },
-    [check?.id, check?.tenantId, createCheck, updateCheck, onSuccess, checkType]
+    [check?.id, check?.tenantId, createCheck, updateCheck, handleAlertsAndNavigate]
   );
 
   const handleValid = useCallback(

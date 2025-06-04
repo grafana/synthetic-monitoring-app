@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { BASIC_PING_CHECK } from 'test/fixtures/checks';
+import { BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE } from 'test/fixtures/probes';
 import { TERRAFORM_BASIC_PING_CHECK, TERRAFORM_PRIVATE_PROBES } from 'test/fixtures/terraform';
@@ -391,6 +391,28 @@ describe('terraform config generation', () => {
           },
         },
       },
+    });
+  });
+
+  test('generates checkAlertsCommands only for checks with Alerts', async () => {
+    const result = await renderTerraformHook([BASIC_PING_CHECK, BASIC_HTTP_CHECK], [PRIVATE_PROBE]);
+    expect(result.current.checkAlertsCommands).toEqual([
+      `terraform import grafana_synthetic_monitoring_check_alerts.${sanitizeName(`${BASIC_HTTP_CHECK.job}_${BASIC_HTTP_CHECK.target}`)} ${BASIC_HTTP_CHECK.id}`
+    ]);
+  });
+
+  test('generates grafana_synthetic_monitoring_check_alerts resources for checks with alerts', async () => {
+    const result = await renderTerraformHook([BASIC_HTTP_CHECK], [PRIVATE_PROBE]);
+    const resourceName = sanitizeName(`${BASIC_HTTP_CHECK.job}_${BASIC_HTTP_CHECK.target}`);
+    expect(result.current.config.resource.grafana_synthetic_monitoring_check_alerts).toEqual({
+      [resourceName]: {
+        check_id: String(BASIC_HTTP_CHECK.id),
+        alerts: (BASIC_HTTP_CHECK.alerts!).map(alert => ({
+          name: alert.name,
+          threshold: alert.threshold,
+          period: alert.period,
+        })),
+      }
     });
   });
 });

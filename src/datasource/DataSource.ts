@@ -274,8 +274,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // CHECKS
   //--------------------------------------------------------------------------------
 
-  async listChecks() {
-    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list`);
+  async listChecks(includeAlerts = false) {
+    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`);
   }
 
   async getCheck(checkId: number) {
@@ -357,7 +357,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async updateAlertsForCheck(alerts: CheckAlertDraft[], checkId: number) {
-    return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
+    return this.fetchAPI<null>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
       method: 'PUT',
       data: { alerts },
     });
