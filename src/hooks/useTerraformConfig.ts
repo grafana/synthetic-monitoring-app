@@ -65,12 +65,12 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
   }
 
   const checkAlertsConfig = checks
-    .filter((check) => check.Alerts && check.Alerts.length > 0)
+    .filter((check) => check.alerts && check.alerts.length > 0)
     .reduce((acc: TFCheckAlertsConfig, check) => {
       const resourceName = sanitizeName(`${check.job}_${check.target}`);
       acc[resourceName] = {
         check_id: String(check.id),
-        alerts: (check.Alerts!).map((alert) => ({
+        alerts: (check.alerts!).map((alert) => ({
           name: alert.name,
           threshold: alert.threshold,
           period: alert.period,
@@ -90,7 +90,7 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
   });
 
   const checkAlertsCommands = checks
-    .filter((check) => check.Alerts && check.Alerts.length > 0)
+    .filter((check) => check.alerts && check.alerts.length > 0)
     .map((check) => {
       return `terraform import grafana_synthetic_monitoring_check_alerts.${sanitizeName(
         `${check.job}_${check.target}`

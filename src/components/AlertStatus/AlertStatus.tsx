@@ -19,7 +19,7 @@ interface AlertStatusProps {
 
 export const AlertStatus = ({ check, compact }: AlertStatusProps) => {
   const hasAlertSensitivity = check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
-  const hasPerCheckAlerts = (check.Alerts?.length ?? 0) > 0;
+  const hasPerCheckAlerts = (check.alerts?.length ?? 0) > 0;
 
   const metricsDS = useMetricsDS();
 
@@ -52,7 +52,7 @@ export const AlertStatusContent = ({ check, compact, metricsDSName, hasAlertSens
     isLoading: perCheckGroupsLoading,
     isError: perCheckGroupsError,
     refetch: perCheckGroupsRefetch,
-  } = useGMAlertRules(check.Alerts);
+  } = useGMAlertRules(check.alerts);
 
   const perCheckGroupsResponse = {
     perCheckGroups,

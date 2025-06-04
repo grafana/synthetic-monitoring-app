@@ -38,7 +38,7 @@ function queryAlertApi() {
     });
 }
 
-export function findRelevantAlertGroups(groups: PrometheusAlertsGroup[], alerts: Check['Alerts']) {
+export function findRelevantAlertGroups(groups: PrometheusAlertsGroup[], alerts: Check['alerts']) {
   const alertNames = alerts?.map((alert: { name: string }) => alert.name);
 
   return groups
