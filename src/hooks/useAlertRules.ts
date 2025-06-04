@@ -27,7 +27,7 @@ export function useAlertRules(alertSensitivity: Check['alertSensitivity']) {
   }, [data, isError, isLoading, alertFilter, refetch]);
 }
 
-export function useGMAlertRules(alerts: Check['Alerts']) {
+export function useGMAlertRules(alerts: Check['alerts']) {
   const { data, isLoading, isError, refetch } = useGMAlerts();
 
   return useMemo(() => {

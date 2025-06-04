@@ -41,10 +41,11 @@ function queryAlertApi() {
     });
 }
 
-function findGroupWithMatchingRule(groups: PrometheusAlertsGroup[], alertName: string): PrometheusAlertsGroup | undefined {
-  return groups.find((group) =>
-    group.rules.some((rule) => rule.name.includes(alertName))
-  );
+function findGroupWithMatchingRule(
+  groups: PrometheusAlertsGroup[],
+  alertName: string
+): PrometheusAlertsGroup | undefined {
+  return groups.find((group) => group.rules.some((rule) => rule.name.includes(alertName)));
 }
 
 function extractMatchingRules(group: PrometheusAlertsGroup, alertName: string) {
@@ -79,15 +80,16 @@ function constructDummyGroup(alertName: string): PrometheusAlertsGroup {
   };
 }
 
-export function findRelevantAlertGroups(groups: PrometheusAlertsGroup[], alerts: Check['Alerts']): PrometheusAlertsGroup[] {
+export function findRelevantAlertGroups(
+  groups: PrometheusAlertsGroup[],
+  alerts: Check['alerts']
+): PrometheusAlertsGroup[] {
   if (!alerts) {
     return [];
   }
 
   // Only consider groups with the correct folderUid
-  const grafanaGroups = groups.filter(
-    (group) => group.folderUid === GRAFANA_SM_FOLDER_UID
-  );
+  const grafanaGroups = groups.filter((group) => group.folderUid === GRAFANA_SM_FOLDER_UID);
 
   return alerts.map((alert) => {
     const groupWithRule = findGroupWithMatchingRule(grafanaGroups, alert.name);

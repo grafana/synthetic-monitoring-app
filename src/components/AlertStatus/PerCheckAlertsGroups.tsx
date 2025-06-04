@@ -11,7 +11,7 @@ interface PerCheckAlertGroupsProps {
   loading: boolean;
   isError: boolean;
   refetch: () => void;
-  alerts: Check['Alerts'];
+  alerts: Check['alerts'];
 }
 
 export const PerCheckAlertGroups = ({ groups, loading, isError, refetch, alerts }: PerCheckAlertGroupsProps) => {

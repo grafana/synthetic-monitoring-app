@@ -8,7 +8,7 @@ import { NotOkStatusInfo } from './NotOkStatusInfo';
 
 interface AlertRuleDisplayProps {
   group: PrometheusAlertsGroup;
-  alerts: Check['Alerts'];
+  alerts: Check['alerts'];
 }
 
 export const GrafanaNamespaceAlertRuleDisplay = ({ group, alerts }: AlertRuleDisplayProps) => {
@@ -39,14 +39,16 @@ export const GrafanaNamespaceAlertRuleDisplay = ({ group, alerts }: AlertRuleDis
               <Stack gap={1} alignItems="center" justifyContent="space-between">
                 <Icon name="corner-down-right-alt" />
                 <span>{rule.name}</span>
-                {rule.uid && <LinkButton
-                  href={`/alerting/grafana/${rule.uid}/view`}
-                  target="_blank"
-                  icon="eye"
-                  fill="text"
-                  tooltip="View rule in Alerting"
-                  size="sm"
-                />}
+                {rule.uid && (
+                  <LinkButton
+                    href={`/alerting/grafana/${rule.uid}/view`}
+                    target="_blank"
+                    icon="eye"
+                    fill="text"
+                    tooltip="View rule in Alerting"
+                    size="sm"
+                  />
+                )}
                 {alert?.status && alert.status !== 'OK' && (
                   <NotOkStatusInfo status={alert.status} error={alert?.error} />
                 )}

@@ -87,7 +87,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
         value: 'httpLabelValue',
       },
     ],
-    Alerts: [...BASIC_CHECK_ALERTS.alerts],
+    alerts: [...BASIC_CHECK_ALERTS.alerts],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   },
   { transient: { type: CheckType.HTTP } }
