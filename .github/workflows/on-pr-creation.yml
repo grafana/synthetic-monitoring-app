@@ -2,6 +2,7 @@ name: On creating a PR
 
 on:
   pull_request:
+  workflow_dispatch: # temporary to test if this works
 
 jobs:
   linting-and-tests:
@@ -22,5 +23,5 @@ jobs:
       pull-requests: write
       contents: read
       id-token: write
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    # if: github.event_name == 'pull_request' && github.base_ref == 'main'
     uses: ./.github/workflows/calls/dangerJS.yml
