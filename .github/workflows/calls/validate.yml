@@ -3,9 +3,6 @@ name: Validate Plugin Build (Compat, Lint, Typecheck and Test)
 on:
   workflow_call:
 
-permissions:
-  contents: read
-
 jobs:
   set-up:
     runs-on: ubuntu-latest

@@ -6,13 +6,21 @@ on:
 jobs:
   linting-and-tests:
     name: Linting and Tests
+    permissions:
+      contents: read
     uses: ./.github/workflows/calls/validate.yml
 
   policy-bot:
     name: Policy Bot
+    permissions:
+      contents: read
     uses: ./.github/workflows/calls/policy-check.yml
 
   danger-js:
     name: DangerJS
+    permissions:
+      pull-requests: write
+      contents: read
+      id-token: write
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
     uses: ./.github/workflows/calls/dangerJS.yml
