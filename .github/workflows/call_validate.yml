@@ -11,7 +11,7 @@ jobs:
       attestations: write
     steps:
       - name: Setup Plugin Environment
-        uses: ./.github/actions/setup-env@main
+        uses: ./.github/actions/setup-env
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile

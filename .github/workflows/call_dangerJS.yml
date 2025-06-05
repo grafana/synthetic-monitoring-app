@@ -13,7 +13,7 @@ jobs:
       contents: read
     steps:
       - name: Setup Plugin Environment
-        uses: ./.github/actions/setup-env@main
+        uses: ./.github/actions/setup-env
 
       - name: Download mainBundleSize
         uses: dawidd6/action-download-artifact@80620a5d27ce0ae443b965134db88467fc607b43 # v7
