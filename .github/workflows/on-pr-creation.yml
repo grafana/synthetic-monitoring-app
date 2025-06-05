@@ -6,25 +6,29 @@ on:
 jobs:
   setup-env-and-cache:
     name: Setup Plugin Environment and Cache
-    permissions: {}
+    permissions:
+      contents: read
     uses: ./.github/workflows/call_env_setup.yml
 
   lint:
     needs: setup-env-and-cache
     name: Lint
-    permissions: {}
+    permissions:
+      contents: read
     uses: ./.github/workflows/call_lint.yml
 
   test:
     needs: setup-env-and-cache
     name: Integration and unit tests
-    permissions: {}
+    permissions:
+      contents: read
     uses: ./.github/workflows/call_test.yml
 
   grafana-compat:
     needs: setup-env-and-cache
     name: Grafana API Compatibility Check
-    permissions: {}
+    permissions:
+      contents: read
     uses: ./.github/workflows/call_grafana_compat.yml
 
   build-and-typecheck:
@@ -50,5 +54,6 @@ jobs:
   policy-bot:
     needs: setup-env-and-cache
     name: Policy Bot
-    permissions: {}
+    permissions:
+      contents: read
     uses: ./.github/workflows/call_policy-check.yml
