@@ -3,6 +3,9 @@ name: Setup Plugin Environment and Cache
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   set-up:
     runs-on: ubuntu-latest
