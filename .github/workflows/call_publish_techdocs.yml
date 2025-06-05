@@ -1,17 +1,13 @@
 name: Publish TechDocs
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - 'catalog-info.yaml'
-      - '.github/workflows/publish-techdocs.yaml'
+  workflow_call:
+
 concurrency:
   group: '${{ github.workflow }}-${{ github.ref }}'
   cancel-in-progress: true
+
 permissions: {}
+
 jobs:
   publish-docs:
     uses: grafana/shared-workflows/.github/workflows/publish-techdocs.yaml@main
