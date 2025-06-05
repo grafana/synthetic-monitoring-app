@@ -18,19 +18,9 @@ jobs:
       - name: Build plugin and typecheck
         run: mkdir -p artifacts && yarn build --json=artifacts/currentBundleSize.json --no-devtool
 
-      - name: Build plugin and typecheck
-        run: mkdir -p artifacts && yarn build --json=artifacts/mainBundleSize.json --no-devtool
-
       - name: Upload this build's bundle size artifact
         uses: actions/upload-artifact@v4
         with:
           name: currentBundleSize
           path: ./artifacts/currentBundleSize.json
-          overwrite: true
-
-      - name: Upload this build's bundle size artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mainBundleSize
-          path: ./artifacts/mainBundleSize.json
           overwrite: true
