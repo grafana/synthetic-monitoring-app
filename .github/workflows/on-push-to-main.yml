@@ -1,0 +1,19 @@
+name: On pushing to main
+
+on:
+  push:
+    branches:
+      - feat/gh-actions # should be main but testing
+
+jobs:
+  publish-techdocs:
+    name: Publish TechDocs
+    permissions:
+      contents: read
+    uses: ./.github/workflows/call_publish_techdocs.yml
+
+  release-please:
+    name: Release Please
+    permissions:
+      contents: read
+    uses: ./.github/workflows/call_release-please.yml

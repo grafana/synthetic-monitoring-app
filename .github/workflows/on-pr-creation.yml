@@ -1,4 +1,4 @@
-name: On creating a PR
+name: On PR Creation
 
 on:
   pull_request:

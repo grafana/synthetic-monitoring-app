@@ -37,6 +37,7 @@ jobs:
         with:
           name: mainBundleSize
           path: artifacts
+          workflow_search: true
 
       - name: DangerJS
         run: yarn danger:ci
