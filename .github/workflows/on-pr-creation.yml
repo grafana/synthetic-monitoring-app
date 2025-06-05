@@ -13,13 +13,15 @@ jobs:
     name: Lint
     uses: ./.github/workflows/call_lint.yml
 
-  policy-bot:
+  test:
     needs: setup-env-and-cache
-    name: Policy Bot
-    permissions:
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/call_policy-check.yml
+    name: Integration and unit tests
+    uses: ./.github/workflows/call_test.yml
+
+  grafana-compat:
+    needs: setup-env-and-cache
+    name: Grafana API Compatibility Check
+    uses: ./.github/workflows/call_grafana_compat.yml
 
   build-and-typecheck:
     needs: setup-env-and-cache
@@ -36,5 +38,15 @@ jobs:
       pull-requests: write
       attestations: read
       contents: read
+      issues: read
+      statuses: write
     # if: github.event_name == 'pull_request' && github.base_ref == 'main'
     uses: ./.github/workflows/call_dangerJS.yml
+
+  policy-bot:
+    needs: setup-env-and-cache
+    name: Policy Bot
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/call_policy-check.yml

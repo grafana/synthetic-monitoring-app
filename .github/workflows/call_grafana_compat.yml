@@ -4,21 +4,16 @@ on:
   workflow_call:
 
 jobs:
-  danger-js:
-    name: DangerJS
+  grafana-compat:
+    name: Grafana API Compatibility Check
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
-      attestations: read
       contents: read
     steps:
-      - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
 
       - name: Latest Grafana API compatibility check
         run: npx @grafana/levitate@latest is-compatible --path src/module.ts --target @grafana/data,@grafana/runtime,@grafana/scenes,@grafana/schema,@grafana/ui
