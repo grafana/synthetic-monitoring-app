@@ -4,23 +4,34 @@ on:
   pull_request:
 
 jobs:
-  linting-and-tests:
-    name: Linting and Tests
-    permissions:
-      contents: read
-      attestations: write
-    uses: ./.github/workflows/call_validate.yml
+  setup-env-and-cache:
+    name: Setup Plugin Environment and Cache
+    uses: ./.github/workflows/call_env_setup.yml
+
+  lint:
+    needs: setup-env-and-cache
+    name: Lint
+    uses: ./.github/workflows/call_lint.yml
 
   policy-bot:
+    needs: setup-env-and-cache
     name: Policy Bot
     permissions:
       contents: read
       id-token: write
     uses: ./.github/workflows/call_policy-check.yml
 
+  build-and-typecheck:
+    needs: setup-env-and-cache
+    name: Build and typecheck
+    permissions:
+      contents: read
+      attestations: write
+    uses: ./.github/workflows/call_build-and-typecheck.yml
+
   danger-js:
     name: DangerJS
-    needs: linting-and-tests
+    needs: build-and-typecheck
     permissions:
       pull-requests: write
       attestations: read

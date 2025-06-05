@@ -1,4 +1,4 @@
-name: Validate Plugin Build (Compat, Lint, Typecheck and Test)
+name: Build and typecheck
 
 on:
   workflow_call:
@@ -14,15 +14,6 @@ jobs:
 
       - name: Setup Plugin Environment
         uses: ./.github/actions/setup-env
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Lint
-        run: yarn lint
-
-      - name: Integration and unit tests
-        run: yarn test
 
       - name: Build plugin and typecheck
         run: mkdir -p artifacts && yarn build --json=artifacts/currentBundleSize.json --no-devtool

@@ -1,0 +1,16 @@
+name: Integration and unit tests
+
+on:
+  workflow_call:
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Integration and unit tests
+        run: yarn test
