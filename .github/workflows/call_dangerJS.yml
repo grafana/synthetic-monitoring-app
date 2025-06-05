@@ -30,13 +30,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: mainBundleSize
-          path: artifacts
+          path: ./artifacts/mainBundleSize.json
 
       - name: Download currentBundleSize
         uses: actions/download-artifact@v4
         with:
           name: currentBundleSize
-          path: artifacts
+          path: ./artifacts/currentBundleSize.json
 
       - name: DangerJS
         run: yarn danger:ci
