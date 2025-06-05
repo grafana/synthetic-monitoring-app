@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      attestations: read
       contents: read
-      id-token: write
     steps:
       - name: Download mainBundleSize
         uses: dawidd6/action-download-artifact@80620a5d27ce0ae443b965134db88467fc607b43 # v7
