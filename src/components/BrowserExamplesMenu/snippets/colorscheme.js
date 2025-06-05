@@ -39,6 +39,9 @@ export default async function() {
     await check(colorScheme, {
       'isDarkColorScheme': cs => cs.isDarkColorScheme
     });
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
   } finally {
     await page.close();
   }
