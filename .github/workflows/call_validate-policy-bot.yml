@@ -7,6 +7,19 @@ permissions:
   contents: read
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs-changed: ${{ steps.changes.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            policy:
+              - '.policy.yml'
+
   validate:
     name: Validate policy bot config
     runs-on: ubuntu-latest

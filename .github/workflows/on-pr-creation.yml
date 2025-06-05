@@ -8,7 +8,7 @@ jobs:
     name: Setup Plugin Environment and Cache
     permissions:
       contents: read
-    uses: ./.github/workflows/call_env_setup.yml
+    uses: ./.github/workflows/call_env-setup.yml
 
   lint:
     needs: setup-env-and-cache
@@ -22,14 +22,14 @@ jobs:
     name: Integration and unit tests
     permissions:
       contents: read
-    uses: ./.github/workflows/call_test.yml
+    uses: ./.github/workflows/call_integration-tests.yml
 
   grafana-compat:
     needs: setup-env-and-cache
     name: Grafana API Compatibility Check
     permissions:
       contents: read
-    uses: ./.github/workflows/call_grafana_compat.yml
+    uses: ./.github/workflows/call_grafana-compat.yml
 
   build-and-typecheck:
     needs: setup-env-and-cache
@@ -57,4 +57,4 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: ./.github/workflows/call_policy-check.yml
+    uses: ./.github/workflows/call_validate-policy-bot.yml

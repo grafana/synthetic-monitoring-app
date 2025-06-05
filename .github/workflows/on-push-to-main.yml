@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: ./.github/workflows/call_publish_techdocs.yml
+    uses: ./.github/workflows/call_publish-techdocs.yml
 
   release-please:
     name: Release Please
@@ -20,3 +20,10 @@ jobs:
       pull-requests: write
       id-token: write
     uses: ./.github/workflows/call_release-please.yml
+
+  # deploy-to-dev:
+  #   name: Deploy to Dev
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #   uses: ./.github/workflows/call_deploy-to-dev.yml
