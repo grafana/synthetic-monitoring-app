@@ -1,0 +1,25 @@
+name: DangerJS
+
+on:
+  workflow_call:
+
+jobs:
+  danger-js:
+    name: DangerJS
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Download mainBundleSize
+        uses: dawidd6/action-download-artifact@80620a5d27ce0ae443b965134db88467fc607b43 # v7
+        with:
+          workflow: main-bundle-size.yml
+          name: mainBundleSize
+          path: artifacts
+
+      - name: DangerJS
+        run: yarn danger:ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,25 +1,15 @@
 name: Validate Policy Bot Config
 
 on:
-  pull_request:
-    paths:
-      - ".policy.yml"
-
-  push:
-    branches:
-      - main
-    paths:
-      - ".policy.yml"
+  workflow_call:
 
 permissions:
-  contents: none
+  contents: read
 
 jobs:
   validate:
     name: Validate policy bot config
-
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       id-token: write
