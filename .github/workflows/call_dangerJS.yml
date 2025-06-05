@@ -12,6 +12,8 @@ jobs:
       attestations: read
       contents: read
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup Plugin Environment
         uses: ./.github/actions/setup-env
 
