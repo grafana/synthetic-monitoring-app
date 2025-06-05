@@ -2,7 +2,6 @@ name: On creating a PR
 
 on:
   pull_request:
-  workflow_dispatch: # temporary to test if this works
 
 jobs:
   linting-and-tests:
@@ -21,6 +20,7 @@ jobs:
 
   danger-js:
     name: DangerJS
+    needs: linting-and-tests
     permissions:
       pull-requests: write
       attestations: read

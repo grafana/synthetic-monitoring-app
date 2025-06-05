@@ -1,0 +1,22 @@
+name: Setup Plugin Environment (repo / node)
+description: Setups up a Node.js environment
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+
+    - name: Cache Yarn Dependencies
+      uses: actions/cache@v3
+      with:
+        path: plugin/.yarn/cache
+        key: ${{ runner.os }}-yarn-${{ hashFiles('plugin/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+
+    - name: Install dependencies
+      run: yarn install --immutable
+      shell: bash
+      working-directory: plugin
