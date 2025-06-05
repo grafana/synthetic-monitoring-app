@@ -24,3 +24,10 @@ jobs:
           name: currentBundleSize
           path: ./artifacts/currentBundleSize.json
           overwrite: true
+
+      - name: Upload this build's bundle size artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mainBundleSize
+          path: ./artifacts/mainBundleSize.json
+          overwrite: true
