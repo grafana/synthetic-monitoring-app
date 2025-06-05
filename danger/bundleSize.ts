@@ -20,8 +20,8 @@ type Result = {
 };
 
 export function bundleSizeDiff() {
-  const mainBundleSize = getFile('artifacts/mainBundleSize.json');
   const currentBundleSize = getFile('artifacts/currentBundleSize.json');
+  const mainBundleSize = getFile('artifacts/mainBundleSize.json');
 
   const mainBundle = normalize(mainBundleSize);
   const currentBundle = normalize(currentBundleSize);
@@ -69,9 +69,30 @@ function getFile(file) {
   try {
     return require(path.resolve(process.cwd(), file));
   } catch (e) {
-    return {
-      assets: [],
-    };
+    const fs = require('fs');
+    const artifactsDir = path.resolve(process.cwd(), 'artifacts');
+
+    console.log(`Failed to find file: ${file}`);
+    console.log(`Error: ${e.message}`);
+
+    try {
+      const files = fs.readdirSync(artifactsDir);
+      console.log('Available files in artifacts directory:');
+      files.forEach((f) => console.log(`  - ${f}`));
+    } catch (dirError) {
+      console.log('Could not read artifacts directory:', dirError.message);
+
+      // List current working directory
+      try {
+        const cwdFiles = fs.readdirSync(process.cwd());
+        console.log('Files in current working directory:');
+        cwdFiles.forEach((f) => console.log(`  - ${f}`));
+      } catch (cwdError) {
+        console.log('Could not read current directory:', cwdError.message);
+      }
+    }
+
+    throw e; // Re-throw to maintain original error behavior
   }
 }
 
