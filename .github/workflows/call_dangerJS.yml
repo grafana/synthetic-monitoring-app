@@ -27,13 +27,13 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Download mainBundleSize
-        uses: dawidd6/action-download-artifact@80620a5d27ce0ae443b965134db88467fc607b43 # v7
+        uses: actions/download-artifact@v4
         with:
           name: mainBundleSize
           path: artifacts
 
       - name: Download currentBundleSize
-        uses: dawidd6/action-download-artifact@80620a5d27ce0ae443b965134db88467fc607b43 # v7
+        uses: actions/download-artifact@v4
         with:
           name: currentBundleSize
           path: artifacts

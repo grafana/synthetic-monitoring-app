@@ -8,19 +8,6 @@ runs:
       with:
         node-version: "22"
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Cache Yarn Dependencies
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
-
     - name: Cache node_modules
       id: cache-node-modules
       uses: actions/cache@v4
@@ -29,6 +16,21 @@ runs:
         key: ${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock', 'package.json') }}
         restore-keys: |
           ${{ runner.os }}-node-modules-
+
+    - name: Get yarn cache directory path
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      id: yarn-cache-dir-path
+      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache Yarn Dependencies
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
 
     - name: Install dependencies
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
