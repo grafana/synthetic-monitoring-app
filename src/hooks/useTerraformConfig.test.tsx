@@ -401,7 +401,7 @@ describe('terraform config generation', () => {
     ]);
   });
 
-  test('generates grafana_synthetic_monitoring_check_alerts resources for checks with alerts', async () => {
+  test('generates grafana_synthetic_monitoring_check_alerts resources for checks with \'alerts\'', async () => {
     const result = await renderTerraformHook([BASIC_HTTP_CHECK], [PRIVATE_PROBE]);
     const resourceName = sanitizeName(`${BASIC_HTTP_CHECK.job}_${BASIC_HTTP_CHECK.target}`);
     expect(result.current.config.resource.grafana_synthetic_monitoring_check_alerts).toEqual({
