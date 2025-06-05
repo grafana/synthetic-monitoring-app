@@ -17,4 +17,6 @@ jobs:
     name: Release Please
     permissions:
       contents: read
+      pull-requests: write
+      id-token: write
     uses: ./.github/workflows/call_release-please.yml
