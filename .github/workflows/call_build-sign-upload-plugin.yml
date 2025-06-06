@@ -37,9 +37,8 @@ jobs:
       - name: Get signing token from Vault
         uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
         with:
-          vault_instance: ops
-          repo_secrets: |
-            GRAFANA_ACCESS_POLICY_TOKEN=github-actions:plugin-signing-token
+          common_secrets: |
+            GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
 
       - name: Build, Sign and Zip Plugin
         run: |
