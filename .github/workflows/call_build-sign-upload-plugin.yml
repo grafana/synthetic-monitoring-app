@@ -34,8 +34,7 @@ jobs:
 
       - name: log some details
         run: |
-          echo "bucket: ${{ steps.login-to-gcs.outputs.bucket_name }}"
-          echo "bucket_path: ${{ steps.login-to-gcs.outputs.bucket_path }}"
+          echo "bucket: ${{ steps.login-to-gcs.outputs.bucket }}"
           echo "environment: ${{ inputs.environment }}"
 
       - name: Get signing token from Vault
@@ -52,8 +51,7 @@ jobs:
         uses: grafana/shared-workflows/actions/push-to-gcs@main
         with:
           path: ./artifacts
-          bucket: synthetic-monitoring-app
-          bucket_path: builds
+          bucket: ${{ steps.login-to-gcs.outputs.bucket }}
           environment: dev
           predefinedAcl: publicRead
           parent: false
