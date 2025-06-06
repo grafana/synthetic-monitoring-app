@@ -1,0 +1,26 @@
+name: Deploy plugin
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment for the plugin (dev, staging, production)
+        required: true
+        type: string
+      autoMerge:
+        description: Whether to automatically merge the PR after deployment
+        required: false
+        type: string
+
+jobs:
+  build-sign-zip-upload:
+    uses: ./.github/workflows/call_build-sign-upload-plugin.yml
+    with:
+      environment: ${{ inputs.environment == 'dev' && 'dev' || 'prod' }}
+
+  update-deployment-tools:
+    needs: build-sign-zip-upload
+    uses: ./.github/workflows/call_update-deployment-tools.yml
+    with:
+      environment: ${{ inputs.environment == 'dev' && 'dev' || 'prod' }}
+      autoMerge: ${{ inputs.autoMerge }}

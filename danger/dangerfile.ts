@@ -32,7 +32,7 @@ ${bundleSizeRow(totals.otherAssets)}
 ${bundleSizeRow(totals.all)}
     `);
   } catch (e) {
-    warn(`DangerJS was unable to run. The error returned was ${e.message}`);
+    fail(`DangerJS was unable to run. The error returned was ${e.message}`);
   }
 }
 
