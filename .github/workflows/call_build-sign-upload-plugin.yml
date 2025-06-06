@@ -1,0 +1,54 @@
+name: Build, Sign, Zip and Upload Plugin
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment for the plugin (dev, prod)
+        required: true
+        type: string
+        default: dev
+    outputs:
+      plugin_version:
+        description: The version of the plugin that was built.
+        value: ${{ jobs.build-publish.outputs.plugin_version }}
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      plugin_version: ${{ steps.read-version.outputs.plugin_version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: grafana/shared-workflows/actions/login-to-gcs@fa48192dac470ae356b3f7007229f3ac28c48a25
+        id: login-to-gcs
+        with:
+          environment: ${{ inputs.environment }}
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Get signing token from Vault
+        uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
+        with:
+          vault_instance: ops
+          repo_secrets: |
+            GRAFANA_ACCESS_POLICY_TOKEN=github-actions:plugin-signing-token
+
+      - name: Build, Sign and Zip Plugin
+        run: |
+          make build sign package-latest
+
+      - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
+        uses: grafana/shared-workflows/actions/push-to-gcs@9a34c9302d2064c48e03cf7c4c7cd45998c4615e
+        with:
+          path: plugin/build/packages/release
+          bucket: ${{ steps.login-to-gcs.outputs.bucket_name }}
+          environment: ${{ inputs.environment }}
+          predefinedAcl: publicRead

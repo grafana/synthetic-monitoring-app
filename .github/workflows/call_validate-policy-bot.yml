@@ -10,7 +10,7 @@ jobs:
   check-changes:
     runs-on: ubuntu-latest
     outputs:
-      docs-changed: ${{ steps.changes.outputs.docs }}
+      policy-changed: ${{ steps.changes.outputs.policy }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
@@ -21,6 +21,8 @@ jobs:
               - '.policy.yml'
 
   validate:
+    needs: check-changes
+    if: needs.check-changes.outputs.policy-changed == 'true'
     name: Validate policy bot config
     runs-on: ubuntu-latest
     permissions:

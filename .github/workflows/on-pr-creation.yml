@@ -39,6 +39,14 @@ jobs:
       attestations: write
     uses: ./.github/workflows/call_build-and-typecheck.yml
 
+  validate-policy-bot:
+    needs: setup-env-and-cache
+    name: Validate Policy Bot
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/call_validate-policy-bot.yml
+
   danger-js:
     name: DangerJS
     needs: build-and-typecheck
@@ -48,13 +56,4 @@ jobs:
       contents: read
       issues: read
       statuses: write
-    # if: github.event_name == 'pull_request' && github.base_ref == 'main'
     uses: ./.github/workflows/call_dangerJS.yml
-
-  policy-bot:
-    needs: setup-env-and-cache
-    name: Policy Bot
-    permissions:
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/call_validate-policy-bot.yml
