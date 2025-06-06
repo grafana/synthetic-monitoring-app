@@ -47,7 +47,7 @@ jobs:
       - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
         uses: grafana/shared-workflows/actions/push-to-gcs@9a34c9302d2064c48e03cf7c4c7cd45998c4615e
         with:
-          path: plugin/build/packages/release
+          path: ./artifacts
           bucket: ${{ steps.login-to-gcs.outputs.bucket_name }}
           environment: ${{ inputs.environment }}
           predefinedAcl: publicRead

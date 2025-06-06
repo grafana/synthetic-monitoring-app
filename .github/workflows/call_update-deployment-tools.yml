@@ -26,7 +26,7 @@ jobs:
       - name: Get Vault secrets
         uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
         with:
-          common_secrets: |
+          repo_secrets: |
             GITHUB_APP_ID=updater-app:app-id
             GITHUB_APP_INSTALLATION_ID=updater-app:app-installation-id
             GITHUB_APP_PRIVATE_KEY=updater-app:private-key
@@ -71,7 +71,6 @@ jobs:
         with:
           environment: prod
 
-      # TODO
       - name: Create deployment PR
         env:
           ENVIRONMENT: ${{ inputs.environment }}
