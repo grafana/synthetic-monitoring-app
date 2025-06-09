@@ -26,7 +26,6 @@ const config = defineConfig([
     rules: {
       'no-console': ['error', { allow: ['log'] }],
       'custom-plugin/tracking-event-creation': 'error',
-      'no-console': ['error', { allow: ['log'] }],
       'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
       '@typescript-eslint/no-redeclare': ['error'],
       '@typescript-eslint/no-deprecated': 'error',
