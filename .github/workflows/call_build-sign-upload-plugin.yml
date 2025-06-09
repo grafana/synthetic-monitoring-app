@@ -51,7 +51,7 @@ jobs:
         uses: grafana/shared-workflows/actions/push-to-gcs@main
         with:
           path: ./artifacts
-          bucket: ${{ steps.login-to-gcs.outputs.bucket }}
+          bucket: synthetic-monitoring-app
           environment: dev
           predefinedAcl: publicRead
           parent: false
