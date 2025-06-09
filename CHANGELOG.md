@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.29.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.28.1...v1.29.0) (2025-06-09)
+
+
+### Features
+
+* add indicator when there is an error with per-check alerts ([#1148](https://github.com/grafana/synthetic-monitoring-app/issues/1148)) ([f1267e1](https://github.com/grafana/synthetic-monitoring-app/commit/f1267e126446e8836574e82ff9e6771ad4a5df04))
+* register Component into Software Catalog and set up TechDocs publishing ([#1150](https://github.com/grafana/synthetic-monitoring-app/issues/1150)) ([b691b3f](https://github.com/grafana/synthetic-monitoring-app/commit/b691b3fb10a9fbde0297d80e6db04440b156af58))
+* show per check alerts on checks list ([#1139](https://github.com/grafana/synthetic-monitoring-app/issues/1139)) ([8471cd2](https://github.com/grafana/synthetic-monitoring-app/commit/8471cd2ded85a1ac9e8f8f4fc5ce94d944814fcc))
+
+
+### Fixes
+
+* fix list check alerts case ([#1155](https://github.com/grafana/synthetic-monitoring-app/issues/1155)) ([9a4c6d6](https://github.com/grafana/synthetic-monitoring-app/commit/9a4c6d613535a12915214ab7a229b0106f449d1b))
+
+
+### Miscellaneous Chores
+
+* remove unnecessary console eslint rule ([#1157](https://github.com/grafana/synthetic-monitoring-app/issues/1157)) ([1deafd6](https://github.com/grafana/synthetic-monitoring-app/commit/1deafd67574d887ff6fdcc7641f804a4aab50f53))
+
 ## [1.28.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.28.0...v1.28.1) (2025-05-14)
 
 
