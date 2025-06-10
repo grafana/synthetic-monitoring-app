@@ -42,6 +42,9 @@ export default async function () {
     await check(result, {
       'result should be 25': (result) => result == 25,
     });
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
   } finally {
     await page.close();
   }
