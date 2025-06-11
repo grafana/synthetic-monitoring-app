@@ -1,23 +1,26 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useTimeRange } from '@grafana/scenes-react';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { useResizeObserver } from 'usehooks-ts';
 
-import { AnnotationRange } from 'scenes/components/TimepointExplorer/AnnotationRange';
-import { AnnotationRender } from 'scenes/components/TimepointExplorer/AnnotationRenderer';
-import { THEME_UNIT, TIMEPOINT_LIST_ID } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Annotation, CheckEventType, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  THEME_UNIT,
+  TIMEPOINT_GAP,
+  TIMEPOINT_SIZE,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { Annotation, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export const TimepointListAnnotations = ({
   annotations,
   timepointsInRange,
+  timepointDisplayCount,
 }: {
   annotations: Annotation[];
   timepointsInRange: Timepoint[];
+  timepointDisplayCount: number;
 }) => {
   const styles = useStyles2(getStyles);
+  const renderOrderedTimepoints = [...timepointsInRange].reverse();
   const timepointsInRangeAdjustedTimes = timepointsInRange.map((timepoint) => timepoint.adjustedTime);
 
   const annotationsToRender = annotations.filter((annotation) => {
@@ -28,14 +31,24 @@ export const TimepointListAnnotations = ({
 
   return (
     <div className={styles.container}>
-      <OutofSelectedTimeRange timepointsInRange={timepointsInRange} annotationsToRender={annotationsToRender} />
-      {annotationsToRender.map((annotation) => (
-        <AnnotationRender
-          annotation={annotation}
-          key={annotation.checkEvent.label}
-          timepointsInRange={timepointsInRange}
-        />
-      ))}
+      {annotationsToRender.map((annotation) => {
+        const timepointEndIndex = renderOrderedTimepoints.findIndex(
+          (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime
+        );
+        const right = (100 / timepointDisplayCount) * timepointEndIndex;
+
+        return (
+          <div
+            key={`${annotation.checkEvent.label}-${annotation.timepointEnd.adjustedTime}`}
+            className={styles.annotation}
+            style={{
+              right: `calc(${right}% + ${TIMEPOINT_SIZE + (TIMEPOINT_GAP * THEME_UNIT) / 2}px)`,
+            }}
+          >
+            <div className={styles.label}>{annotation.checkEvent.label}</div>
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -43,68 +56,23 @@ export const TimepointListAnnotations = ({
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     height: 100%;
     width: 100%;
   `,
+  annotation: css`
+    height: 80%;
+    border-right: 1px dashed yellow;
+    position: absolute;
+    bottom: 0;
+  `,
+  label: css`
+    position: relative;
+    left: 50%;
+    width: 100%;
+    padding: ${theme.spacing(1)};
+    transform: translate(0, -100%);
+    border: 1px dashed yellow;
+  `,
 });
-
-interface OutofSelectedTimeRangeProps {
-  annotationsToRender: Annotation[];
-  timepointsInRange: Timepoint[];
-}
-
-const OutofSelectedTimeRange = ({ annotationsToRender, timepointsInRange }: OutofSelectedTimeRangeProps) => {
-  const [timeRange] = useTimeRange();
-  const [width, setWidth] = useState<number>(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const firstTimepointStart = timepointsInRange[0]?.adjustedTime;
-  const isOutOfRange = firstTimepointStart > timeRange.from.valueOf();
-  const isActuallyStartOfRange = annotationsToRender.some(
-    (annotation) => annotation.checkEvent.label === CheckEventType.CHECK_CREATED
-  );
-
-  useLayoutEffect(() => {
-    setWidth(calculateWidth());
-  }, [timepointsInRange]);
-
-  useResizeObserver({
-    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
-    ref,
-    onResize: () => {
-      setWidth(calculateWidth());
-    },
-  });
-
-  if (isOutOfRange && !isActuallyStartOfRange) {
-    return (
-      <div
-        ref={ref}
-        style={{
-          zIndex: 1000,
-          width,
-          height: '100%',
-        }}
-      >
-        {width > 150 && <AnnotationRange title={`Out of selected time range`} />}
-      </div>
-    );
-  }
-
-  return null;
-};
-
-function calculateWidth() {
-  const edgeOfRef = document.getElementById(TIMEPOINT_LIST_ID);
-  const firstTimepoint = edgeOfRef?.firstChild;
-
-  if (firstTimepoint instanceof HTMLElement && edgeOfRef instanceof HTMLElement) {
-    const firstTimepointRect = firstTimepoint.getBoundingClientRect();
-    const edgeOfRefRect = edgeOfRef.getBoundingClientRect();
-
-    return firstTimepointRect.left - edgeOfRefRect.left - THEME_UNIT;
-  }
-
-  return 0;
-}

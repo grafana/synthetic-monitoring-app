@@ -18,14 +18,15 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
   (
     {
       annotations,
+      handleTimepointSelection,
+      maxProbeDurationData,
       miniMapSections,
+      selectedTimepoint,
+      timepointDisplayCount,
       timepoints,
       timeRange,
-      maxProbeDurationData,
       viewMode,
       width,
-      selectedTimepoint,
-      handleTimepointSelection,
     },
     ref
   ) => {
@@ -38,7 +39,11 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
         <div className={styles.container}>
           <GridMarkers maxProbeDurationData={maxProbeDurationData} width={width} />
           <div className={styles.timepointsContainer}>
-            <TimepointListAnnotations annotations={annotations} timepointsInRange={timepointsInRange} />
+            <TimepointListAnnotations
+              annotations={annotations}
+              timepointsInRange={timepointsInRange}
+              timepointDisplayCount={timepointDisplayCount}
+            />
             <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
               {activeSection &&
                 timepointsInRange.map((timepoint, index) => {
