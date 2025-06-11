@@ -5,6 +5,7 @@ import { RadioButtonGroup, Stack } from '@grafana/ui';
 import { Check } from 'types';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
+  useCheckConfigs,
   useMaxProbeDuration,
   useTimepointExplorerView,
   useTimepoints,
@@ -15,7 +16,11 @@ import {
   TimepointExplorerChild,
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { timeshiftedTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import {
+  constructCheckEvents,
+  generateAnnotations,
+  timeshiftedTimepoint,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointList } from 'scenes/components/TimepointExplorer/TimepointList';
 import { TimepointMinimap } from 'scenes/components/TimepointExplorer/TimepointMinimap';
 import { TimepointViewer } from 'scenes/components/TimepointExplorer/TimepointViewer';
@@ -28,15 +33,29 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
   const [timeRange] = useTimeRange();
   const { data: maxProbeDurationData, isLoading: maxProbeDurationIsLoading } = useMaxProbeDuration(timeRange, check);
   const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
+  const { data: checkConfigs = [] } = useCheckConfigs({ timeRange, check });
+  const checkEvents = constructCheckEvents({
+    timeRangeFrom: timeRange.from.toDate().valueOf(),
+    checkConfigs,
+    checkCreation: check.created,
+  });
 
   const timeRangeTo: UnixTimestamp = timeRange.to.toDate().valueOf();
   const initialTimeRangeToInView = timeshiftedTimepoint(timeRangeTo, check.frequency);
 
   const timepoints = useTimepoints({ timeRange, check });
-  const { ref, handleViewModeChange, viewMode, ...rest } = useTimepointExplorerView(
-    timepoints,
-    initialTimeRangeToInView
-  );
+  const annotations = generateAnnotations({ checkEvents, timepoints });
+  const {
+    activeSection,
+    handleTimeRangeToInViewChange,
+    handleViewModeChange,
+    miniMapSections,
+    ref,
+    timepointDisplayCount,
+    viewMode,
+    viewTimeRangeTo,
+    width,
+  } = useTimepointExplorerView(timepoints, initialTimeRangeToInView);
 
   const handleTimepointSelection = useCallback((timepoint: Timepoint, probeToView: string) => {
     setSelectedTimepoint(([prevTimepoint, prevProbeToView]) => {
@@ -48,26 +67,38 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
 
   const timepointExplorerChildProps: TimepointExplorerChild = useMemo(() => {
     return {
-      ...rest,
-      viewMode,
+      activeSection,
+      annotations,
+      check,
+      handleTimepointSelection,
+      handleTimeRangeToInViewChange,
+      isLoading: maxProbeDurationIsLoading,
+      maxProbeDurationData,
+      miniMapSections,
+      selectedTimepoint,
+      timepointDisplayCount,
       timepoints,
       timeRange,
-      maxProbeDurationData,
-      isLoading: maxProbeDurationIsLoading,
-      selectedTimepoint,
-      handleTimepointSelection,
-      check,
+      viewMode,
+      viewTimeRangeTo,
+      width,
     };
   }, [
+    activeSection,
+    annotations,
     check,
-    rest,
-    timeRange,
-    timepoints,
+    handleTimepointSelection,
+    handleTimeRangeToInViewChange,
     maxProbeDurationData,
     maxProbeDurationIsLoading,
-    viewMode,
+    miniMapSections,
     selectedTimepoint,
-    handleTimepointSelection,
+    timepointDisplayCount,
+    timepoints,
+    timeRange,
+    viewMode,
+    viewTimeRangeTo,
+    width,
   ]);
 
   return (
@@ -77,8 +108,8 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
       </Stack>
 
       <Stack direction="column" gap={2}>
-        <TimepointList {...timepointExplorerChildProps} ref={ref} />
         <TimepointMinimap {...timepointExplorerChildProps} />
+        <TimepointList {...timepointExplorerChildProps} ref={ref} />
         <TimepointViewer {...timepointExplorerChildProps} />
       </Stack>
     </Stack>

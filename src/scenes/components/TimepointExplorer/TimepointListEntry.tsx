@@ -1,12 +1,14 @@
 import React from 'react';
 import { GrafanaTheme2, IconName } from '@grafana/data';
-import { Icon, Stack, Tooltip, useTheme2 } from '@grafana/ui';
+import { Icon, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import { TIMEPOINT_SIZE } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
+  Annotation,
+  CheckEventType,
   SelectedTimepointState,
   Timepoint,
   ViewMode,
@@ -14,6 +16,7 @@ import {
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface TimepointListEntryProps {
+  annotations: Annotation[];
   timepoint: Timepoint;
   maxProbeDurationData: number;
   viewMode: ViewMode;
@@ -22,6 +25,7 @@ interface TimepointListEntryProps {
 }
 
 export const TimepointListEntry = ({
+  annotations,
   timepoint,
   maxProbeDurationData,
   viewMode,
@@ -33,6 +37,7 @@ export const TimepointListEntry = ({
   return (
     <div className={styles.timepoint}>
       <Entry
+        annotations={annotations}
         maxProbeDurationData={maxProbeDurationData}
         timepoint={timepoint}
         viewMode={viewMode}
@@ -44,6 +49,19 @@ export const TimepointListEntry = ({
 };
 
 const Entry = (props: TimepointListEntryProps) => {
+  const isCheckCreatedEntry = props.annotations.some(
+    (annotation) =>
+      annotation.timepointStart.adjustedTime === props.timepoint.adjustedTime &&
+      annotation.checkEvent.label === CheckEventType.CHECK_CREATED
+  );
+
+  const hasResult = props.timepoint.uptimeValue !== -1;
+  const isFirstEntryWithoutResult = props.timepoint.index === 0 && !hasResult;
+
+  if (isCheckCreatedEntry || isFirstEntryWithoutResult) {
+    return <div data-testid={`empty-timepoint-${props.timepoint.index}`} />;
+  }
+
   if (props.viewMode === 'uptime') {
     return <UptimeEntry {...props} />;
   }
@@ -64,7 +82,7 @@ const UptimeEntry = ({
   handleTimepointSelection,
 }: TimepointListEntryProps) => {
   const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDurationData);
-  const styles = getStyles(useTheme2());
+  const styles = useStyles2(getStyles);
   const isSuccess = timepoint.uptimeValue === 1;
   const isFailure = timepoint.uptimeValue === 0;
   const probeToView = timepoint.probes[0]?.[LokiFieldNames.Labels].probe;

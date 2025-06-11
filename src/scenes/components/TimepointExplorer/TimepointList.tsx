@@ -10,12 +10,14 @@ import {
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { TimepointListAnnotations } from 'scenes/components/TimepointExplorer/TimepointListAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
 
 export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
   (
     {
+      annotations,
       miniMapSections,
       timepoints,
       timeRange,
@@ -29,27 +31,30 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
   ) => {
     const activeSection = miniMapSections.find((section) => section.active);
     const styles = useStyles2(getStyles);
-    const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex);
+    const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
 
     return (
       <div>
         <div className={styles.container}>
           <GridMarkers maxProbeDurationData={maxProbeDurationData} width={width} />
-
-          <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
-            {activeSection &&
-              timepointsInRange.reverse().map((timepoint, index) => {
-                return (
-                  <TimepointListEntry
-                    key={index}
-                    timepoint={timepoint}
-                    maxProbeDurationData={maxProbeDurationData}
-                    viewMode={viewMode}
-                    selectedTimepoint={selectedTimepoint}
-                    handleTimepointSelection={handleTimepointSelection}
-                  />
-                );
-              })}
+          <div className={styles.timepointsContainer}>
+            <TimepointListAnnotations annotations={annotations} timepointsInRange={timepointsInRange} />
+            <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
+              {activeSection &&
+                timepointsInRange.map((timepoint, index) => {
+                  return (
+                    <TimepointListEntry
+                      annotations={annotations}
+                      key={index}
+                      timepoint={timepoint}
+                      maxProbeDurationData={maxProbeDurationData}
+                      viewMode={viewMode}
+                      selectedTimepoint={selectedTimepoint}
+                      handleTimepointSelection={handleTimepointSelection}
+                    />
+                  );
+                })}
+            </div>
           </div>
         </div>
         <XAxis
@@ -82,7 +87,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
     position: relative;
     flex: 1;
     overflow: hidden;
-    padding-top: ${theme.spacing(4)};
+  `,
+  timepointsContainer: css`
+    position: relative;
+    flex: 1;
+    overflow: hidden;
   `,
   gridMarkers: css`
     display: flex;

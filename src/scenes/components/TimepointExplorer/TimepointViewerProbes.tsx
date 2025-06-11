@@ -21,7 +21,7 @@ export const TimepointViewerProbes = ({
   logsView,
 }: TimepointViewerProbesProps) => {
   const [timepoint, probeToView] = selectedTimepoint;
-  console.log(timepointData);
+
   return (
     <>
       <TabsBar>

@@ -1,4 +1,4 @@
-import { buildTimepointsInRange } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { buildTimepoints } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 const DEFAULT_TIMEPOINT = {
   probes: [],
@@ -11,7 +11,7 @@ describe(`buildTimepointsInRange`, () => {
     const from = 0;
     const to = 1000;
     const checkConfigs = [{ frequency: 1000, date: 0 }];
-    const timepoints = buildTimepointsInRange({ from, to, checkConfigs });
+    const timepoints = buildTimepoints({ from, to, checkConfigs });
 
     expect(timepoints).toEqual({
       '1000': {
@@ -36,7 +36,7 @@ describe(`buildTimepointsInRange`, () => {
       { frequency: 1000, date: 0 },
       { frequency: 2000, date: 1001 },
     ];
-    const timepoints = buildTimepointsInRange({ from, to, checkConfigs });
+    const timepoints = buildTimepoints({ from, to, checkConfigs });
 
     expect(timepoints).toEqual({
       '6000': {
@@ -74,7 +74,7 @@ describe(`buildTimepointsInRange`, () => {
       { frequency: 2000, date: 0 },
       { frequency: 3000, date: 3999 },
     ];
-    const timepoints = buildTimepointsInRange({ from, to, checkConfigs });
+    const timepoints = buildTimepoints({ from, to, checkConfigs });
 
     expect(timepoints).toEqual({
       '10000': {

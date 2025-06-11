@@ -1,10 +1,11 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useTheme2 } from '@grafana/ui';
+import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import {
+  Annotation,
   MinimapSection,
   SelectedTimepointState,
   Timepoint,
@@ -13,6 +14,7 @@ import {
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface MiniMapSectionProps {
+  annotations: Annotation[];
   maxProbeDurationData: number;
   section: MinimapSection;
   timepoints: Timepoint[];
@@ -20,9 +22,11 @@ interface MiniMapSectionProps {
   viewMode: ViewMode;
   timepointDisplayCount: number;
   selectedTimepoint: SelectedTimepointState;
+  sectionWidth: number;
 }
 
 export const TimepointMiniMapSection = ({
+  annotations,
   maxProbeDurationData,
   section,
   timepoints,
@@ -31,31 +35,38 @@ export const TimepointMiniMapSection = ({
   timepointDisplayCount,
   selectedTimepoint,
 }: MiniMapSectionProps) => {
-  const styles = getStyles(useTheme2());
+  const styles = useStyles2(getStyles);
   const timepointsToRender = timepoints.slice(section.fromIndex, section.toIndex).reverse();
 
   return (
-    <button
-      aria-label={`${new Date(section.from).toLocaleTimeString()} - ${new Date(section.to).toLocaleTimeString()}`}
-      className={cx(styles.section, { [styles.active]: section.active })}
-      onClick={() => handleSectionClick(section)}
-    >
-      {viewMode === 'uptime' ? (
-        <UptimeSection
-          timepoints={timepointsToRender}
-          maxProbeDurationData={maxProbeDurationData}
+    <div className={styles.container}>
+      <button
+        aria-label={`${new Date(section.from).toLocaleTimeString()} - ${new Date(section.to).toLocaleTimeString()}`}
+        className={cx(styles.section, { [styles.active]: section.active })}
+        onClick={() => handleSectionClick(section)}
+      >
+        <MinimapSectionAnnotations
+          annotations={annotations}
+          timepointsInRange={timepointsToRender}
           timepointDisplayCount={timepointDisplayCount}
-          selectedTimepoint={selectedTimepoint}
         />
-      ) : (
-        <ReachabilitySection
-          timepoints={timepointsToRender}
-          maxProbeDurationData={maxProbeDurationData}
-          timepointDisplayCount={timepointDisplayCount}
-          selectedTimepoint={selectedTimepoint}
-        />
-      )}
-    </button>
+        {viewMode === 'uptime' ? (
+          <UptimeSection
+            timepoints={timepointsToRender}
+            maxProbeDurationData={maxProbeDurationData}
+            timepointDisplayCount={timepointDisplayCount}
+            selectedTimepoint={selectedTimepoint}
+          />
+        ) : (
+          <ReachabilitySection
+            timepoints={timepointsToRender}
+            maxProbeDurationData={maxProbeDurationData}
+            timepointDisplayCount={timepointDisplayCount}
+            selectedTimepoint={selectedTimepoint}
+          />
+        )}
+      </button>
+    </div>
   );
 };
 
@@ -72,7 +83,7 @@ const UptimeSection = ({
   timepointDisplayCount,
   selectedTimepoint,
 }: SectionChildProps) => {
-  const styles = getStyles(useTheme2());
+  const styles = useStyles2(getStyles);
   const width = `${100 / timepointDisplayCount}%`;
 
   return timepoints.map((timepoint) => {
@@ -126,7 +137,7 @@ const ReachabilityTimepoint = ({
   width,
   selectedTimepoint,
 }: ReachabilityTimepointProps) => {
-  const styles = getStyles(useTheme2());
+  const styles = useStyles2(getStyles);
   const ref = useRef<HTMLDivElement>(null);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
@@ -168,7 +179,51 @@ const ReachabilityTimepoint = ({
   );
 };
 
+const MinimapSectionAnnotations = ({
+  annotations,
+  timepointsInRange,
+  timepointDisplayCount,
+}: {
+  annotations: Annotation[];
+  timepointsInRange: Timepoint[];
+  timepointDisplayCount: number;
+}) => {
+  const renderOrderedTimepoints = [...timepointsInRange].reverse();
+  const styles = useStyles2(getAnnotationStyles);
+  const timepointsInRangeAdjustedTimes = renderOrderedTimepoints.map((timepoint) => timepoint.adjustedTime);
+
+  const annotationsToRender = annotations.filter((annotation) => {
+    return timepointsInRangeAdjustedTimes.some((timepoint) => {
+      return [annotation.timepointStart.adjustedTime, annotation.timepointEnd.adjustedTime].includes(timepoint);
+    });
+  });
+
+  return (
+    <div className={styles.container}>
+      {annotationsToRender.map((annotation) => {
+        const timepointEndIndex = renderOrderedTimepoints.findIndex(
+          (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime
+        );
+        const right = (100 / timepointDisplayCount) * timepointEndIndex;
+
+        return (
+          <div
+            key={annotation.checkEvent.label}
+            className={styles.annotation}
+            style={{
+              right: `${right}%`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
 const getStyles = (theme: GrafanaTheme2) => ({
+  container: css`
+    width: 100%;
+  `,
   section: css`
     width: 100%;
     padding: 0;
@@ -178,6 +233,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     align-items: end;
     background-color: transparent;
     justify-content: end;
+    position: relative;
   `,
   active: css`
     outline: 2px solid blue !important;
@@ -211,3 +267,22 @@ const getStyles = (theme: GrafanaTheme2) => ({
     border-radius: 50%;
   `,
 });
+
+const getAnnotationStyles = (theme: GrafanaTheme2) => {
+  return {
+    container: css`
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    `,
+    annotation: css`
+      height: 100%;
+      width: 1px;
+      border: 1px dashed yellow;
+      position: absolute;
+      bottom: 0;
+    `,
+  };
+};

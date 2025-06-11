@@ -1,14 +1,28 @@
-import React, { useCallback } from 'react';
-import { Stack } from '@grafana/ui';
+import React, { useCallback, useRef } from 'react';
+import { Box, Stack } from '@grafana/ui';
 
 import { MinimapSection, TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointMiniMapSection } from 'scenes/components/TimepointExplorer/TimepointMinimapSection';
 
-export const TimepointMinimap = ({
+export const TimepointMinimap = (props: TimepointExplorerChild) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const width = ref.current?.clientWidth || 0;
+  const sectionWidth = width / props.miniMapSections.length;
+
+  return (
+    <div ref={ref}>
+      <TimepointMinimapContent {...props} sectionWidth={sectionWidth} />
+    </div>
+  );
+};
+
+const TimepointMinimapContent = ({
   handleTimeRangeToInViewChange,
   miniMapSections,
+  sectionWidth,
+  annotations,
   ...rest
-}: TimepointExplorerChild) => {
+}: TimepointExplorerChild & { sectionWidth: number }) => {
   const handleSectionClick = useCallback(
     (section: MinimapSection) => {
       const newTimeRangeToInView = section.to;
@@ -23,10 +37,11 @@ export const TimepointMinimap = ({
   }
 
   return (
-    <Stack gap={0}>
-      {miniMapSections
-        .map((section, index) => (
+    <Box position="relative">
+      <Stack gap={0}>
+        {miniMapSections.reverse().map((section, index) => (
           <TimepointMiniMapSection
+            annotations={annotations}
             key={index}
             maxProbeDurationData={rest.maxProbeDurationData}
             section={section}
@@ -35,9 +50,10 @@ export const TimepointMinimap = ({
             viewMode={rest.viewMode}
             timepointDisplayCount={rest.timepointDisplayCount}
             selectedTimepoint={rest.selectedTimepoint}
+            sectionWidth={sectionWidth}
           />
-        ))
-        .reverse()}
-    </Stack>
+        ))}
+      </Stack>
+    </Box>
   );
 };

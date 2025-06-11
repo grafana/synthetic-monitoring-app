@@ -2,7 +2,14 @@ import { DataFrame } from '@grafana/data';
 
 import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
-import { MinimapSection, Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  Annotation,
+  CheckEvent,
+  CheckEventType,
+  MinimapSection,
+  Timepoint,
+  UnixTimestamp,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export function minimapSections(timepoints: Timepoint[], timePointsToDisplay: number, viewTimeRangeTo: UnixTimestamp) {
   const timepointsInRange = timepoints.map((t) => t.adjustedTime);
@@ -105,12 +112,12 @@ export function buildTimepoints({ from, to, checkConfigs }: BuildTimepointsInRan
       const previousTimepoint = flatTimepoints[i - 1];
 
       if (!previousTimepoint) {
-        return timepoint;
+        return { ...timepoint, index: i };
       }
 
       const timepointDuration = timepoint.adjustedTime - previousTimepoint.adjustedTime;
 
-      return { ...timepoint, timepointDuration };
+      return { ...timepoint, timepointDuration, index: i };
     });
 
   return res;
@@ -124,7 +131,6 @@ interface BuildTimepointsForConfigProps {
 
 export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsForConfigProps) {
   let build: Timepoint[] = [];
-
   let currentTimepoint = timeshiftedTimepoint(to, config.frequency);
 
   while (currentTimepoint >= from) {
@@ -134,7 +140,7 @@ export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsFo
       adjustedTime: currentTimepoint,
       timepointDuration: config.frequency,
       frequency: config.frequency,
-      index: 0,
+      index: -1,
       maxProbeDuration: -1,
     });
 
@@ -160,6 +166,83 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
       date,
     });
   }
+
+  return build;
+}
+
+export function constructCheckEvents({
+  timeRangeFrom,
+  checkConfigs,
+  checkCreation = -1,
+}: {
+  timeRangeFrom: UnixTimestamp;
+  checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
+  checkCreation?: UnixTimestamp;
+}): CheckEvent[] {
+  // const OUT_OF_RETENTION = {
+  //   label: `Out of retention`,
+  //   from: -1,
+  //   to: timeRangeFrom,
+  //   type: 'range',
+  // } as const;
+
+  const checkCreatedDate = Math.round(checkCreation * 1000);
+
+  const CHECK_CREATED = {
+    label: CheckEventType.CHECK_CREATED,
+    from: checkCreatedDate,
+    to: checkCreatedDate,
+  };
+
+  return [
+    CHECK_CREATED,
+    ...checkConfigs
+      .filter((config) => config.date > checkCreatedDate)
+      .map<CheckEvent>((config) => ({
+        label: CheckEventType.CHECK_UPDATED,
+        from: config.date,
+        to: config.date,
+      })),
+  ];
+}
+
+interface GenerateAnnotationsProps {
+  checkEvents: CheckEvent[];
+  timepoints: Timepoint[];
+}
+
+export function generateAnnotations({ checkEvents, timepoints }: GenerateAnnotationsProps): Annotation[] {
+  let build: Annotation[] = [];
+
+  checkEvents.forEach((checkEvent) => {
+    const annotationStartIndex = timepoints.findIndex((timepoint) => {
+      const timepointFrom = timepoint.adjustedTime - timepoint.timepointDuration;
+      const timepointTo = timepoint.adjustedTime;
+
+      return checkEvent.from >= timepointFrom && checkEvent.from <= timepointTo;
+    });
+
+    const annotationEndIndex = timepoints.findIndex((timepoint) => {
+      const timepointFrom = timepoint.adjustedTime - timepoint.timepointDuration;
+      const timepointTo = timepoint.adjustedTime;
+
+      return checkEvent.to >= timepointFrom && checkEvent.to <= timepointTo;
+    });
+
+    const isAnnotationStartInRange = annotationStartIndex !== -1;
+    const isAnnotationEndInRange = annotationEndIndex !== -1;
+
+    if (isAnnotationStartInRange || isAnnotationEndInRange) {
+      const startIndex = isAnnotationStartInRange ? annotationStartIndex : 0;
+      const endIndex = isAnnotationEndInRange ? annotationEndIndex : timepoints.length - 1;
+
+      build.push({
+        checkEvent,
+        timepointStart: timepoints[startIndex],
+        timepointEnd: timepoints[endIndex],
+      });
+    }
+  });
 
   return build;
 }

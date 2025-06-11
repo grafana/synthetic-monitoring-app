@@ -30,23 +30,17 @@ import {
   minimapSections,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
-type Size = {
-  width?: number;
-};
-
 export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRangeToInView: UnixTimestamp) {
   const ref = useRef<HTMLDivElement>(null);
   // if we just know when the view is to we can anchor the view from that
   const [viewTimeRangeTo, setViewTimeRangeTo] = useState<UnixTimestamp>(initialTimeRangeToInView);
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
 
-  const [{ width = 0 }, setSize] = useState<Size>({
-    width: 0,
-  });
+  const [width, setWidth] = useState<number>(ref.current?.clientWidth ?? 0);
 
-  const onResize = useDebounceCallback(() => {
+  const calculateActiveSection = useDebounceCallback(() => {
     const width = ref.current?.clientWidth ?? 0;
-    setSize({ width });
+    setWidth(width);
 
     const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
     const miniMapSections = minimapSections(timepoints, timepointsToDisplay, viewTimeRangeTo);
@@ -55,13 +49,17 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
     if (activeSection) {
       setViewTimeRangeTo(activeSection.to);
     }
-  }, 300);
+  }, 100);
 
   useResizeObserver({
     // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
     ref,
-    onResize,
+    onResize: calculateActiveSection,
   });
+
+  useEffect(() => {
+    calculateActiveSection();
+  }, [calculateActiveSection]);
 
   useEffect(() => {
     setViewTimeRangeTo(initialTimeRangeToInView);
@@ -92,12 +90,12 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
   };
 }
 
-interface UseTimepointExplorerProps {
+interface UseTimepointsProps {
   timeRange: TimeRange;
   check: Check;
 }
 
-export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
+export function useTimepoints({ timeRange, check }: UseTimepointsProps) {
   const { data: checkConfigs = [] } = useCheckConfigs({ timeRange, check });
   const from = timeRange.from.valueOf();
   const to = timeRange.to.valueOf();
@@ -122,17 +120,15 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
   }, [fetchNextPage, hasNextPage, logsData.length]);
 
   const timepoints = useMemo(() => {
-    const copy = [...timepointsInRange];
+    const copy = [...timepointsInRange]; // necessary?
 
     logsData.forEach((log) => {
-      const timepoint = [...copy]
+      const timepoint = [...copy] // necessary?
         .reverse()
-        .find((t) => log.Time <= t.adjustedTime && log.Time >= t.adjustedTime - t.timepointDuration);
+        .find((t) => log.Time <= t.adjustedTime && log.Time >= t.adjustedTime - t.timepointDuration); // not very efficient
 
       if (!timepoint) {
-        // probably out of selected time range
-        console.log('No frequency found for log', log);
-
+        console.log('No timepoint found for log -- probably out of selected time range', { log, to, from });
         return;
       }
 
@@ -146,21 +142,19 @@ export function useTimepoints({ timeRange, check }: UseTimepointExplorerProps) {
     });
 
     return copy;
-  }, [logsData, timepointsInRange]);
+  }, [logsData, timepointsInRange, to, from]);
 
   return useMemo(() => {
-    const firstEntry = timepoints[0];
-
-    // assume the first entry didn't look far enough back in time to get the logs associated with it so can be removed
-    if (firstEntry?.probes.length === 0) {
-      timepoints.shift();
-    }
-
     return timepoints.reverse();
   }, [timepoints]);
 }
 
-function useCheckConfigs({ timeRange, check }: UseTimepointExplorerProps) {
+interface UseCheckConfigsProps {
+  timeRange: TimeRange;
+  check: Check;
+}
+
+export function useCheckConfigs({ timeRange, check }: UseCheckConfigsProps) {
   const metricsDS = useMetricsDS();
   const { expr, queryType } = getCheckConfigsQuery({ job: check.job, instance: check.target });
 

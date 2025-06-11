@@ -23,6 +23,7 @@ export type SelectedTimepoint = [Timepoint, string];
 export type SelectedTimepointState = [null, null] | SelectedTimepoint;
 
 export interface TimepointExplorerChild {
+  annotations: Annotation[];
   handleTimeRangeToInViewChange: (timeRangeToInView: UnixTimestamp) => void;
   timepoints: Timepoint[];
   timepointDisplayCount: number;
@@ -45,3 +46,20 @@ export interface MinimapSection {
   fromIndex: number;
   active: boolean;
 }
+
+export enum CheckEventType {
+  CHECK_CREATED = 'check_created',
+  CHECK_UPDATED = 'check_updated',
+}
+
+export type CheckEvent = {
+  label: CheckEventType;
+  from: UnixTimestamp;
+  to: UnixTimestamp;
+};
+
+export type Annotation = {
+  checkEvent: CheckEvent;
+  timepointStart: Timepoint;
+  timepointEnd: Timepoint;
+};
