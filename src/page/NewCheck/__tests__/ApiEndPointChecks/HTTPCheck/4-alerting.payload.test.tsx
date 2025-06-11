@@ -1,7 +1,6 @@
-import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
-import { probeToMetadataProbe } from 'test/utils';
+import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
@@ -22,8 +21,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`can add specific http alerts`, async () => {
-    jest.replaceProperty(config, 'featureToggles', {
-      // @ts-expect-error
+    mockFeatureToggles({
       [FeatureName.AlertsPerCheck]: true,
     });
 
@@ -60,8 +58,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`should display an error message when the threshold is higher than the total amount of executions`, async () => {
-    jest.replaceProperty(config, 'featureToggles', {
-      // @ts-expect-error
+    mockFeatureToggles({
       [FeatureName.AlertsPerCheck]: true,
     });
     const { user } = await renderNewForm(checkType);
