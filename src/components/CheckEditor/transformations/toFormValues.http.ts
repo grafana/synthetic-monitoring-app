@@ -29,7 +29,7 @@ export function getHTTPCheckFormValues(check: HTTPCheck): CheckFormValuesHttp {
     },
     alerts: {
       ...base.alerts,
-      ...predefinedAlertsToFormValues(HTTP_PREDEFINED_ALERTS, check.Alerts || []),
+      ...predefinedAlertsToFormValues(HTTP_PREDEFINED_ALERTS, check.alerts || []),
     },
   };
 }

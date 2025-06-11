@@ -8,6 +8,8 @@ export function getCheckAlertsFormValues(alerts: CheckAlertPublished[]): CheckAl
       threshold: alert.threshold,
       period: alert.period,
       isSelected: true,
+      status: alert.status,
+      creationError: alert.error,
     };
   });
 

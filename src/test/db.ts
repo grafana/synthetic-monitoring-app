@@ -25,7 +25,7 @@ const baseCheckModel = ({ sequence }: { sequence: number }) => ({
   timeout: faker.number.int({ min: 30, max: 60 * 1000 }),
   enabled: true,
   alertSensitivity: faker.helpers.arrayElement(Object.values(AlertSensitivity)),
-  Alerts: [],
+  alerts: [],
   basicMetricsOnly: faker.datatype.boolean(),
   labels: [{ name: faker.animal.petName(), value: faker.color.human() }],
   probes: [],
@@ -259,5 +259,6 @@ export const db = {
     threshold: faker.number.int({ min: 50, max: 500 }),
     created: Math.floor(faker.date.past().getTime() / 1000),
     modified: Math.floor(faker.date.recent().getTime() / 1000),
+    status: "OK",
   })),
 };

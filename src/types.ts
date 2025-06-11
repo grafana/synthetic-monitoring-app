@@ -325,6 +325,8 @@ export interface CheckAlertFormValues {
   threshold?: number;
   period?: string;
   isSelected?: boolean;
+  status?: string;
+  creationError?: CheckAlertError;
 }
 
 export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertFormValues>>;
@@ -407,7 +409,7 @@ export interface CheckBase {
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   probes: number[];
-  Alerts?: CheckAlertPublished[];
+  alerts?: CheckAlertPublished[];
 }
 
 export type Check =
@@ -664,6 +666,12 @@ export enum CheckAlertCategory {
   FailedChecks = 'Failed Checks',
 }
 
+export enum CheckAlertError {
+  HostedGrafanaInstanceLoading = 'hosted grafana instance loading',
+  QuotaLimitReached = 'quota limit reached',
+  InternalError = 'internal error',
+}
+
 export type CheckAlertDraft = {
   name: CheckAlertType;
   threshold: number;
@@ -673,6 +681,8 @@ export type CheckAlertDraft = {
 export type CheckAlertPublished = CheckAlertDraft & {
   created: number;
   modified: number;
+  status: string;
+  error?: CheckAlertError;
 };
 
 export type ThresholdUnit = 'ms' | 's' | 'd' | '%' | 'no.';
