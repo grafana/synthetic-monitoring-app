@@ -3,12 +3,12 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { getTextOffset } from 'scenes/components/TimepointExplorer/GridMarkers.utils';
 import { TIMEPOINT_THEME_HEIGHT } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { getTextOffset } from 'scenes/components/TimepointExplorer/YAxis.utils';
 
 const GRID_MARKERS = Array.from({ length: 5 }, (_, index) => index);
 
-export const GridMarkers = ({ maxProbeDurationData, width }: { maxProbeDurationData: number; width: number }) => {
+export const YAxis = ({ maxProbeDurationData, width }: { maxProbeDurationData: number; width: number }) => {
   const styles = useStyles2(getStyles);
 
   return (
@@ -56,6 +56,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     justify-content: space-between;
     height: ${theme.spacing(TIMEPOINT_THEME_HEIGHT)};
     font-size: ${theme.typography.bodySmall.fontSize};
+    margin-top: ${theme.spacing(3)};
   `,
   line: css`
     height: 1px;

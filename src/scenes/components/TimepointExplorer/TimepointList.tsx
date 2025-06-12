@@ -3,7 +3,6 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { GridMarkers } from 'scenes/components/TimepointExplorer/GridMarkers';
 import {
   TIMEPOINT_GAP,
   TIMEPOINT_LIST_ID,
@@ -13,6 +12,7 @@ import { TimepointExplorerChild } from 'scenes/components/TimepointExplorer/Time
 import { TimepointListAnnotations } from 'scenes/components/TimepointExplorer/TimepointListAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
+import { YAxis } from 'scenes/components/TimepointExplorer/YAxis';
 
 export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
   (
@@ -37,7 +37,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
     return (
       <div>
         <div className={styles.container}>
-          <GridMarkers maxProbeDurationData={maxProbeDurationData} width={width} />
+          <YAxis maxProbeDurationData={maxProbeDurationData} width={width} />
           <div className={styles.timepointsContainer}>
             <TimepointListAnnotations
               annotations={annotations}
@@ -50,12 +50,13 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
                   return (
                     <TimepointListEntry
                       annotations={annotations}
-                      key={index}
-                      timepoint={timepoint}
-                      maxProbeDurationData={maxProbeDurationData}
-                      viewMode={viewMode}
-                      selectedTimepoint={selectedTimepoint}
                       handleTimepointSelection={handleTimepointSelection}
+                      key={index}
+                      maxProbeDurationData={maxProbeDurationData}
+                      selectedTimepoint={selectedTimepoint}
+                      timepoint={timepoint}
+                      viewIndex={index}
+                      viewMode={viewMode}
                     />
                   );
                 })}
@@ -78,7 +79,6 @@ TimepointList.displayName = 'TimepointList';
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     display: flex;
-    padding-top: ${theme.spacing(3)};
     position: relative;
     z-index: 1;
   `,
@@ -90,13 +90,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
     height: ${theme.spacing(TIMEPOINT_THEME_HEIGHT)};
     justify-content: end;
     position: relative;
-    flex: 1;
-    overflow: hidden;
   `,
   timepointsContainer: css`
     position: relative;
     flex: 1;
     overflow: hidden;
+    padding-top: ${theme.spacing(3)};
   `,
   gridMarkers: css`
     display: flex;

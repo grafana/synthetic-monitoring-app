@@ -5,6 +5,7 @@ export const TIMEPOINT_GAP_PX = TIMEPOINT_GAP * THEME_UNIT;
 export const TIMEPOINT_THEME_HEIGHT = 60;
 
 export const TIMEPOINT_LIST_ID = `timepoint-list`;
+export const TIMEPOINT_LIST_ANNOTATIONS_ID = `timepoint-list-annotations`;
 
 export const REF_ID_UNIQUE_CHECK_CONFIGS = `uniqueCheckConfigs`;
 export const REF_ID_CHECK_LOGS = `checkLogs`;

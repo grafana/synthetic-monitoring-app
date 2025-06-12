@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Icon, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -17,11 +17,12 @@ import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExp
 
 interface TimepointListEntryProps {
   annotations: Annotation[];
-  timepoint: Timepoint;
-  maxProbeDurationData: number;
-  viewMode: ViewMode;
-  selectedTimepoint: SelectedTimepointState;
   handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
+  maxProbeDurationData: number;
+  selectedTimepoint: SelectedTimepointState;
+  timepoint: Timepoint;
+  viewIndex: number;
+  viewMode: ViewMode;
 }
 
 export const TimepointListEntry = ({
@@ -31,6 +32,7 @@ export const TimepointListEntry = ({
   viewMode,
   selectedTimepoint,
   handleTimepointSelection,
+  viewIndex,
 }: TimepointListEntryProps) => {
   const styles = getStyles(useTheme2());
 
@@ -38,11 +40,12 @@ export const TimepointListEntry = ({
     <div className={styles.timepoint}>
       <Entry
         annotations={annotations}
-        maxProbeDurationData={maxProbeDurationData}
-        timepoint={timepoint}
-        viewMode={viewMode}
-        selectedTimepoint={selectedTimepoint}
         handleTimepointSelection={handleTimepointSelection}
+        maxProbeDurationData={maxProbeDurationData}
+        selectedTimepoint={selectedTimepoint}
+        timepoint={timepoint}
+        viewIndex={viewIndex}
+        viewMode={viewMode}
       />
     </div>
   );
@@ -87,22 +90,27 @@ const UptimeEntry = ({
   const isFailure = timepoint.uptimeValue === 0;
   const probeToView = timepoint.probes[0]?.[LokiFieldNames.Labels].probe;
   const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
+  const ref = useRef<HTMLButtonElement>(null);
 
   return (
-    <Tooltip content={<TimepointTooltipContent timepoint={timepoint} value={`${timepoint.maxProbeDuration}ms`} />}>
-      <div style={{ height: `${height}%` }}>
+    <div style={{ height: `${height}%` }}>
+      <Tooltip
+        content={<TimepointTooltipContent timepoint={timepoint} value={`${timepoint.maxProbeDuration}ms`} />}
+        ref={ref}
+      >
         <PlainButton
           className={cx(styles.uptimeButton, {
             [styles.success]: isSuccess,
             [styles.failure]: isFailure,
             [styles.selected]: isSelected,
           })}
+          ref={ref}
           onClick={() => handleTimepointSelection(timepoint, probeToView)}
         >
           <Icon name={ICON_MAP[timepoint.uptimeValue]} />
         </PlainButton>
-      </div>
-    </Tooltip>
+      </Tooltip>
+    </div>
   );
 };
 

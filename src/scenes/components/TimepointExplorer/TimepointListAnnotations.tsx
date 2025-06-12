@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import {
   THEME_UNIT,
   TIMEPOINT_GAP,
+  TIMEPOINT_LIST_ANNOTATIONS_ID,
   TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { Annotation, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -30,7 +31,7 @@ export const TimepointListAnnotations = ({
   });
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} id={TIMEPOINT_LIST_ANNOTATIONS_ID}>
       {annotationsToRender.map((annotation) => {
         const timepointEndIndex = renderOrderedTimepoints.findIndex(
           (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime

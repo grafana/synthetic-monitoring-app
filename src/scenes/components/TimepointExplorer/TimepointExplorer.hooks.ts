@@ -42,7 +42,7 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
     const width = ref.current?.clientWidth ?? 0;
     setWidth(width);
 
-    const timepointsToDisplay = Math.ceil(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
+    const timepointsToDisplay = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
     const miniMapSections = minimapSections(timepoints, timepointsToDisplay, viewTimeRangeTo);
     const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
 
@@ -65,7 +65,7 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
     setViewTimeRangeTo(initialTimeRangeToInView);
   }, [initialTimeRangeToInView]);
 
-  const timepointDisplayCount = Math.ceil(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
+  const timepointDisplayCount = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
   const miniMapSections = minimapSections(timepoints, timepointDisplayCount, viewTimeRangeTo);
   const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
 
