@@ -61,12 +61,13 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
-    const tlsCheckbox = screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring');
-    expect(tlsCheckbox).toBeDisabled();
+    await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
+    await submitForm(user);
+
     expect(
       screen.getByText(
         /TLS must be enabled in Request options in order to collect the required TLS metrics for this alert/i
       )
     ).toBeInTheDocument();
   });
-}); 
+});
