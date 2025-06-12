@@ -15,7 +15,7 @@ import {
 import { trackChangeThreshold, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import { useDebounceCallback } from 'usehooks-ts';
 
-import { CheckAlertType, CheckFormValues, CheckType } from 'types';
+import { CheckAlertType, CheckFormValues } from 'types';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { getAlertItemStyles } from './AlertItem';
@@ -33,12 +33,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   tooltipContent: PopoverContent;
 }) => {
   const { isFormDisabled } = useCheckFormContext();
-  const { control, formState, getValues } = useFormContext<CheckFormValues>();
-
-  const checkType = getValues('checkType');
-  const checkUsesTLS = getValues('settings.tcp.tls');
-
-  const isDisabled = checkType === CheckType.TCP && !checkUsesTLS;
+  const { control, formState } = useFormContext<CheckFormValues>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
@@ -50,6 +45,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   };
 
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
+  const tlsError = formState.errors?.alerts?.[alert.type]?.isSelected?.message;
   const styles = useStyles2(getAlertItemStyles);
 
   const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);
@@ -57,14 +53,21 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   return (
     <Stack direction={'column'}>
       <InlineFieldRow className={styles.alertRow}>
-        <Checkbox
-          className={styles.alertCheckbox}
-          id={`alert-${alert.type}`}
-          data-testid={`checkbox-alert-${alert.type}`}
-          onClick={() => handleToggleAlert(alert.type)}
-          checked={selected}
-          disabled={isDisabled}
-        />
+        <InlineField
+          invalid={!!tlsError}
+          error={tlsError}
+          htmlFor={`alert-${alert.type}`}
+          validationMessageHorizontalOverflow={true}
+        >
+          <Checkbox
+            className={styles.alertCheckbox}
+            id={`alert-${alert.type}`}
+            data-testid={`checkbox-alert-${alert.type}`}
+            onClick={() => handleToggleAlert(alert.type)}
+            checked={selected}
+            disabled={isFormDisabled}
+          />
+        </InlineField>
         <Text>Alert if the target&apos;s certificate expires in less than </Text>{' '}
         <InlineField
           htmlFor={`alert-threshold-${alert.type}`}
@@ -79,7 +82,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
               return (
                 <Input
                   {...field}
-                  aria-disabled={!selected}
+                  aria-disabled={!selected || isFormDisabled}
                   suffix={alert.unit}
                   type="number"
                   step="any"
@@ -103,13 +106,6 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
-
-      {isDisabled && (
-        <Text variant="bodySmall" color="warning">
-          TLS must be enabled in Request options in order to collect the required TLS metrics for this alert. If TLS is
-          not enabled, the alert will not function as expected.
-        </Text>
-      )}
     </Stack>
   );
 };
