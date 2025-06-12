@@ -1,24 +1,30 @@
-import React, { ReactNode, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { GrafanaTheme2, TimeRange } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { TIMEPOINT_THEME_HEIGHT } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  TIMEPOINT_GAP_PX,
+  TIMEPOINT_SIZE,
+  TIMEPOINT_THEME_HEIGHT,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { MinimapSection, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { calculatePositions, doesTimeRangeCrossDays } from 'scenes/components/TimepointExplorer/XAxis.utils';
+import { generateXAxisPoints } from 'scenes/components/TimepointExplorer/XAxis.utils';
 
 interface XAxisProps {
   timeRange: TimeRange;
   timepointsInRange: Timepoint[];
   width: number;
   activeSection: MinimapSection;
+  timepointDisplayCount: number;
 }
 
 export const XAxis = ({
-  timeRange,
-  timepointsInRange,
-  width,
   activeSection,
+  timepointDisplayCount,
+  timepointsInRange,
+  timeRange,
+  width,
 }: Omit<XAxisProps, 'activeSection'> & { activeSection?: MinimapSection }) => {
   const styles = useStyles2(getStyles);
 
@@ -32,6 +38,7 @@ export const XAxis = ({
             timepointsInRange={timepointsInRange}
             width={width}
             activeSection={activeSection}
+            timepointDisplayCount={timepointDisplayCount}
           />
         </div>
       )}
@@ -39,23 +46,21 @@ export const XAxis = ({
   );
 };
 
-const XAxisContent = ({ activeSection, timeRange, width }: XAxisProps) => {
+const XAxisContent = ({ timepointsInRange, timeRange, width, timepointDisplayCount }: XAxisProps) => {
   const styles = useStyles2(getStyles);
-  const [points, setPoints] = useState(calculatePositions(activeSection));
-  const crossesDays = useMemo(() => doesTimeRangeCrossDays(timeRange), [timeRange]);
+  const points = useMemo(() => generateXAxisPoints(timepointsInRange, timeRange), [timepointsInRange, timeRange]);
 
-  useEffect(() => {
-    setPoints(calculatePositions(activeSection));
-  }, [activeSection, width]);
+  const renderedGaps = timepointDisplayCount - 1;
+  const widthWithoutGaps = width - renderedGaps * TIMEPOINT_GAP_PX;
+  const renderedTimepointWidth = widthWithoutGaps / timepointDisplayCount;
+  const widthToUse = renderedTimepointWidth > TIMEPOINT_SIZE ? TIMEPOINT_SIZE : renderedTimepointWidth;
 
   return (
     <div className={styles.labelContainer}>
       {points.map((point) => {
-        const date = new Date(point.label);
-
         return (
-          <XAxisLabel key={point.label} position={point.position}>
-            {crossesDays ? date.toLocaleString() : date.toLocaleTimeString()}
+          <XAxisLabel key={point.label} index={point.index} timepointWidth={widthToUse}>
+            {point.label}
           </XAxisLabel>
         );
       })}
@@ -63,10 +68,20 @@ const XAxisContent = ({ activeSection, timeRange, width }: XAxisProps) => {
   );
 };
 
-const XAxisLabel = ({ children, position }: { children: ReactNode; position: number }) => {
+const XAxisLabel = ({
+  children,
+  index,
+  timepointWidth,
+}: {
+  children: ReactNode;
+  index: number;
+  timepointWidth: number;
+}) => {
   const styles = useStyles2(getStyles);
+  const offset = index * (timepointWidth + TIMEPOINT_GAP_PX);
+
   return (
-    <div className={styles.label} style={{ left: position }}>
+    <div className={styles.label} style={{ right: offset + timepointWidth / 2 }}>
       <div className={styles.text}>{children}</div>
       <div className={styles.line} />
     </div>
@@ -84,14 +99,14 @@ const getStyles = (theme: GrafanaTheme2) => {
       flex: 1;
     `,
     labelContainer: css`
-      display: flex;
-      justify-content: space-between;
       position: relative;
     `,
     label: css`
       position: absolute;
+      width: 1px;
     `,
     text: css`
+      position: absolute;
       transform: translateX(-50%);
       white-space: nowrap;
       font-size: ${theme.typography.bodySmall.fontSize};

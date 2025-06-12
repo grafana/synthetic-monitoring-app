@@ -65,6 +65,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
         <XAxis
           timeRange={timeRange}
           timepointsInRange={timepointsInRange}
+          timepointDisplayCount={timepointDisplayCount}
           width={width}
           activeSection={activeSection}
         />

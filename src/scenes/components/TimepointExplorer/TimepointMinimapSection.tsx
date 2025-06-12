@@ -234,6 +234,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     background-color: transparent;
     justify-content: end;
     position: relative;
+
+    &:hover {
+      background-color: ${theme.colors.background.secondary};
+    }
   `,
   active: css`
     outline: 2px solid blue !important;

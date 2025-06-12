@@ -1,6 +1,7 @@
 export const TIMEPOINT_SIZE = 20;
 export const TIMEPOINT_GAP = 1;
 export const THEME_UNIT = 8;
+export const TIMEPOINT_GAP_PX = TIMEPOINT_GAP * THEME_UNIT;
 export const TIMEPOINT_THEME_HEIGHT = 60;
 
 export const TIMEPOINT_LIST_ID = `timepoint-list`;
