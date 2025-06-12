@@ -16,12 +16,10 @@ interface XAxisProps {
   timepointsInRange: Timepoint[];
   width: number;
   activeSection: MinimapSection;
-  timepointDisplayCount: number;
 }
 
 export const XAxis = ({
   activeSection,
-  timepointDisplayCount,
   timepointsInRange,
   timeRange,
   width,
@@ -38,7 +36,6 @@ export const XAxis = ({
             timepointsInRange={timepointsInRange}
             width={width}
             activeSection={activeSection}
-            timepointDisplayCount={timepointDisplayCount}
           />
         </div>
       )}
@@ -46,13 +43,13 @@ export const XAxis = ({
   );
 };
 
-const XAxisContent = ({ timepointsInRange, timeRange, width, timepointDisplayCount }: XAxisProps) => {
+const XAxisContent = ({ timepointsInRange, timeRange, width }: XAxisProps) => {
   const styles = useStyles2(getStyles);
   const points = useMemo(() => generateXAxisPoints(timepointsInRange, timeRange), [timepointsInRange, timeRange]);
 
-  const renderedGaps = timepointDisplayCount - 1;
+  const renderedGaps = timepointsInRange.length - 1;
   const widthWithoutGaps = width - renderedGaps * TIMEPOINT_GAP_PX;
-  const renderedTimepointWidth = widthWithoutGaps / timepointDisplayCount;
+  const renderedTimepointWidth = widthWithoutGaps / timepointsInRange.length;
   const widthToUse = renderedTimepointWidth > TIMEPOINT_SIZE ? TIMEPOINT_SIZE : renderedTimepointWidth;
 
   return (
