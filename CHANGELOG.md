@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.29.0...v1.30.0) (2025-06-13)
+
+
+### Features
+
+* add TLS Cert Expiry alert for TCP checks ([#1153](https://github.com/grafana/synthetic-monitoring-app/issues/1153)) ([7fe153a](https://github.com/grafana/synthetic-monitoring-app/commit/7fe153a937955a0121e3f602ff6a14923ba9fa02))
+
 ## [1.29.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.28.1...v1.29.0) (2025-06-09)
 
 
