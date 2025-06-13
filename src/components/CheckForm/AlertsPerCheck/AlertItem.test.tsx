@@ -1,14 +1,13 @@
-import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import { mockFeatureToggles } from 'test/utils';
 
 import { CheckAlertType, FeatureName } from 'types';
 import { goToSection, renderEditForm } from 'page/__testHelpers__/checkForm';
 
 describe('AlertItem', () => {
   beforeEach(() => {
-    jest.replaceProperty(config, 'featureToggles', {
-      // @ts-expect-error
+    mockFeatureToggles({
       [FeatureName.AlertsPerCheck]: true,
     });
   });

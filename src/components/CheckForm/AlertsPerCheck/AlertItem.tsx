@@ -83,7 +83,7 @@ export const AlertItem = ({
           tooltipContent={tooltipContent}
         />
       )}
-      {status !== 'OK' && (
+      {status && status !== 'OK' && (
         <div className={styles.alertStatus} data-testid={`alert-error-status-${alert.type}`}>
           <NotOkStatusInfo status={status} error={creationError} />
         </div>
