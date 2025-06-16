@@ -17,11 +17,11 @@ import { type ExtendedProbe } from 'types';
 import { formatDate } from 'utils';
 import { useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
-import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 
 interface ProbeStatusProps {
   probe: ExtendedProbe;
