@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { GrafanaTheme2, IconName } from '@grafana/data';
-import { Icon, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
+import { Icon, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
@@ -18,6 +18,7 @@ import {
   ViewMode,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
 
 interface TimepointListEntryProps {
   annotations: Annotation[];
@@ -38,7 +39,7 @@ export const TimepointListEntry = ({
   handleTimepointSelection,
   viewIndex,
 }: TimepointListEntryProps) => {
-  const styles = getStyles(useTheme2());
+  const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.timepoint}>
@@ -82,6 +83,8 @@ const ICON_MAP: Record<number, IconName> = {
   [1]: 'check',
 };
 
+const GLOBAL_CLASS = `uptime_bar`;
+
 const UptimeEntry = ({
   maxProbeDurationData,
   timepoint,
@@ -99,10 +102,7 @@ const UptimeEntry = ({
 
   return (
     <div style={{ height: `${height}%` }}>
-      <Tooltip
-        content={<TimepointTooltipContent timepoint={timepoint} value={`${timepoint.maxProbeDuration}ms`} />}
-        ref={ref}
-      >
+      <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive>
         <PlainButton
           className={styles.uptimeButton}
           ref={ref}
@@ -110,13 +110,13 @@ const UptimeEntry = ({
           style={viewIndex === 0 ? { paddingLeft: 0 } : undefined}
         >
           <div
-            className={cx(styles.uptimeButtonContent, {
+            className={cx(styles.uptimeBar, GLOBAL_CLASS, {
               [styles.success]: isSuccess,
               [styles.failure]: isFailure,
               [styles.selected]: isSelected,
             })}
           >
-            <Icon name={ICON_MAP[timepoint.uptimeValue]} />
+            <Icon name={ICON_MAP[timepoint.uptimeValue]} color={`white`} />
           </div>
         </PlainButton>
       </Tooltip>
@@ -130,14 +130,15 @@ const ReachabilityEntry = ({
   handleTimepointSelection,
   selectedTimepoint,
 }: TimepointListEntryProps) => {
-  const styles = getStyles(useTheme2());
+  const styles = useStyles2(getStyles);
   const entryHeight = getEntryHeight(timepoint.maxProbeDuration, maxProbeDurationData);
+  const [hoveredProbe, setHoveredProbe] = useState<string | null>(null);
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
   const height = `calc(${entryHeight}% + ${TIMEPOINT_SIZE}px)`;
 
   return (
-    <Tooltip content={<TimepointTooltipContent timepoint={timepoint} value={`${``}ms`} />}>
+    <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} hoveredProbe={hoveredProbe} />} interactive>
       <div className={styles.reachabilityEntry} style={{ height }}>
         {timepoint.probes.map((probeValue) => {
           const duration = Number(probeValue[LokiFieldNames.Labels].duration_seconds) * 1000;
@@ -160,8 +161,10 @@ const ReachabilityEntry = ({
               key={probeValue[LokiFieldNames.Labels].probe}
               style={{ bottom: `${pixelHeight}px` }}
               onClick={() => handleTimepointSelection(timepoint, probeName)}
+              onMouseEnter={() => setHoveredProbe(probeName)}
+              onMouseLeave={() => setHoveredProbe(null)}
             >
-              <Icon name={ICON_MAP[probeSuccess]} />
+              <Icon name={ICON_MAP[probeSuccess]} color={`white`} />
             </PlainButton>
           );
         })}
@@ -170,85 +173,76 @@ const ReachabilityEntry = ({
   );
 };
 
-const TimepointTooltipContent = ({ timepoint, value }: { timepoint: Timepoint; value: string }) => {
-  const displayTime = new Date(timepoint.adjustedTime).toLocaleString();
+const getStyles = (theme: GrafanaTheme2) => {
+  return {
+    timepoint: css`
+      display: flex;
+      justify-content: end;
+      flex-direction: column;
+      width: ${TIMEPOINT_SIZE}px;
+      height: 100%;
+      position: relative;
+    `,
+    uptimeButton: css`
+      width: calc(${TIMEPOINT_SIZE}px + ${TIMEPOINT_GAP_PX}px);
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      position: relative;
+      display: flex;
+      justify-content: center;
 
-  return (
-    <Stack direction={`column`}>
-      <div>{timepoint.timepointDuration}</div>
-      <div>{timepoint.frequency}</div>
-      <div>{timepoint.index}</div>
-      <div>{displayTime}</div>
-      <div>{value}</div>
-      {timepoint.probes.map((probe) => {
-        return (
-          <div key={probe[LokiFieldNames.Labels].probe}>
-            {probe[LokiFieldNames.Labels].probe} - {probe[LokiFieldNames.Labels].probe_success}
-          </div>
-        );
-      })}
-    </Stack>
-  );
-};
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  timepoint: css`
-    display: flex;
-    justify-content: end;
-    flex-direction: column;
-    width: ${TIMEPOINT_SIZE}px;
-    height: 100%;
-    position: relative;
-  `,
-  uptimeButton: css`
-    width: calc(${TIMEPOINT_SIZE}px + ${TIMEPOINT_GAP_PX}px);
-    height: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    position: relative;
-  `,
-  uptimeButtonContent: css`
-    height: 100%;
-    width: ${TIMEPOINT_SIZE}px;
-    display: flex;
-    align-items: end;
-    justify-content: center;
-    position: relative;
-  `,
-  reachabilityEntry: css`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: end;
-    width: ${TIMEPOINT_SIZE + TIMEPOINT_GAP_PX}px;
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-  `,
-  success: css`
-    background-color: ${theme.colors.success.shade};
-  `,
-  failure: css`
-    background-color: ${theme.colors.error.shade};
-    z-index: 1;
-  `,
-  selected: css`
-    background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
-    z-index: 1;
-  `,
-  reachabilityProbe: css`
-    position: absolute;
-    width: ${TIMEPOINT_SIZE}px;
-    height: ${TIMEPOINT_SIZE}px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transform: translateY(50%);
-
-    &:hover {
+      &:hover {
+        .${GLOBAL_CLASS} {
+          // todo: work out why this needs a global class?
+          background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
+        }
+      }
+    `,
+    uptimeBar: css`
+      height: 100%;
+      width: ${TIMEPOINT_SIZE}px;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      position: relative;
+      border-radius: ${theme.shape.radius.default};
+    `,
+    reachabilityEntry: css`
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: end;
+      width: ${TIMEPOINT_SIZE + TIMEPOINT_GAP_PX}px;
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+    `,
+    success: css`
+      background-color: ${theme.colors.success.shade};
+    `,
+    failure: css`
+      background-color: ${theme.colors.error.shade};
+      z-index: 1;
+    `,
+    selected: css`
       background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
       z-index: 1;
-    }
-  `,
-});
+    `,
+    reachabilityProbe: css`
+      position: absolute;
+      width: ${TIMEPOINT_SIZE}px;
+      height: ${TIMEPOINT_SIZE}px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transform: translateY(50%);
+
+      &:hover {
+        background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
+        z-index: 1;
+      }
+    `,
+  };
+};

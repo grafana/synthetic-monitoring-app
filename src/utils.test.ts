@@ -1,4 +1,4 @@
-import { formatDuration, getRandomProbes, pascalCaseToSentence } from 'utils';
+import { formatDuration, formatSmallDurations, getRandomProbes, pascalCaseToSentence } from 'utils';
 
 it('gets random probes', async () => {
   const probes = [11, 23, 5, 5212, 43, 3, 4, 6];
@@ -191,5 +191,35 @@ describe(`formatDuration`, () => {
         expect(formatDuration(86522000)).toBe('24 hours 2 minutes 2 seconds');
       });
     });
+  });
+});
+
+describe(`formatSmallDurations`, () => {
+  it(`formats duration for a single second`, () => {
+    expect(formatSmallDurations(1000)).toBe('1s');
+  });
+
+  it(`formats duration for less than a second`, () => {
+    expect(formatSmallDurations(997)).toBe('997ms');
+  });
+
+  it(`ignores fractions of milliseconds`, () => {
+    expect(formatSmallDurations(997.3)).toBe('997ms');
+  });
+
+  it(`formats duration for a single minute`, () => {
+    expect(formatSmallDurations(60000)).toBe('60s');
+  });
+
+  it(`formats duration for multiple minutes`, () => {
+    expect(formatSmallDurations(120000)).toBe('120s');
+  });
+
+  it(`formats duration for a single second with milliseconds`, () => {
+    expect(formatSmallDurations(1356)).toBe('1.36s');
+  });
+
+  it(`formats duration for multiple seconds with milliseconds`, () => {
+    expect(formatSmallDurations(12345)).toBe('12.35s');
   });
 });
