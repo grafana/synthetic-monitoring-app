@@ -17,14 +17,15 @@ interface Props {
   unit: `%` | `ms`;
   value: number | null;
   width: number;
+  description?: string;
 }
 
-export const Gauge = ({ fetching, loading, height, width, onClick, type, value, unit }: Props) => {
+export const Gauge = ({ fetching, loading, height, width, onClick, type, value, unit, description }: Props) => {
   const { data: threshold } = useThreshold(type);
   const parsedValue = parseValue(value, unit);
   const comparer = comparisonMap[type];
   const color = threshold && parsedValue !== null ? comparer(threshold, parsedValue) : undefined;
-  const infoText = infoMap[type];
+  const infoText = description || infoMap[type];
   const title = titleMap[type];
   const text = formatValue(parsedValue, unit, loading);
 

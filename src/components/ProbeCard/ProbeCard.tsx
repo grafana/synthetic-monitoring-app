@@ -7,6 +7,7 @@ import { type ExtendedProbe, type Label } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
@@ -69,7 +70,12 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
           <ProbeUsageLink probe={probe} />
         </div>
         <div className={styles.gaugeContainer}>
-          <SuccessRateGaugeProbe probeName={probe.name} height={60} width={150} />
+          <SuccessRateGaugeProbe
+            probeName={probe.name}
+            height={60}
+            width={150}
+            description={PROBE_REACHABILITY_DESCRIPTION}
+          />
         </div>
       </Card.Description>
 

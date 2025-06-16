@@ -21,6 +21,7 @@ import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotic
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
+import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 
 interface ProbeStatusProps {
   probe: ExtendedProbe;
@@ -94,7 +95,7 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
           </Container>
         )}
       </div>
-      <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} />
+      <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} description={PROBE_REACHABILITY_DESCRIPTION} />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
         <Meta
