@@ -7,6 +7,7 @@ export function parseCheckLogs(logs: UnknownCheckLog[]): PerCheckLogs[] {
   const groupedByCheck = Object.entries(groupedByProbe).map(([probe, logs]) => ({
     probe,
     checks: groupByCheck(logs),
+    id: logs[logs.length - 1].id, // use the last log id to id the check
   }));
 
   return groupedByCheck;

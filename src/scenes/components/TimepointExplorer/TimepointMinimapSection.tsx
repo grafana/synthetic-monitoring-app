@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
+import { Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
@@ -37,35 +37,44 @@ export const TimepointMiniMapSection = ({
 }: MiniMapSectionProps) => {
   const styles = useStyles2(getStyles);
   const timepointsToRender = timepoints.slice(section.fromIndex, section.toIndex).reverse();
+  const ref = useRef<HTMLButtonElement>(null);
+  const from = new Date(section.from);
+  const to = new Date(section.to);
+  const fromFormatted = dateTimeFormat(from);
+  const toFormatted = dateTimeFormat(to);
+  const label = `${fromFormatted} to ${toFormatted}`;
 
   return (
     <div className={styles.container}>
-      <button
-        aria-label={`${new Date(section.from).toLocaleTimeString()} - ${new Date(section.to).toLocaleTimeString()}`}
-        className={cx(styles.section, { [styles.active]: section.active })}
-        onClick={() => handleSectionClick(section)}
-      >
-        <MinimapSectionAnnotations
-          annotations={annotations}
-          timepointsInRange={timepointsToRender}
-          timepointDisplayCount={timepointDisplayCount}
-        />
-        {viewMode === 'uptime' ? (
-          <UptimeSection
-            timepoints={timepointsToRender}
-            maxProbeDurationData={maxProbeDurationData}
+      <Tooltip content={label} ref={ref}>
+        <button
+          aria-label={label}
+          className={cx(styles.section, { [styles.active]: section.active })}
+          onClick={() => handleSectionClick(section)}
+          ref={ref}
+        >
+          <MinimapSectionAnnotations
+            annotations={annotations}
+            timepointsInRange={timepointsToRender}
             timepointDisplayCount={timepointDisplayCount}
-            selectedTimepoint={selectedTimepoint}
           />
-        ) : (
-          <ReachabilitySection
-            timepoints={timepointsToRender}
-            maxProbeDurationData={maxProbeDurationData}
-            timepointDisplayCount={timepointDisplayCount}
-            selectedTimepoint={selectedTimepoint}
-          />
-        )}
-      </button>
+          {viewMode === 'uptime' ? (
+            <UptimeSection
+              timepoints={timepointsToRender}
+              maxProbeDurationData={maxProbeDurationData}
+              timepointDisplayCount={timepointDisplayCount}
+              selectedTimepoint={selectedTimepoint}
+            />
+          ) : (
+            <ReachabilitySection
+              timepoints={timepointsToRender}
+              maxProbeDurationData={maxProbeDurationData}
+              timepointDisplayCount={timepointDisplayCount}
+              selectedTimepoint={selectedTimepoint}
+            />
+          )}
+        </button>
+      </Tooltip>
     </div>
   );
 };

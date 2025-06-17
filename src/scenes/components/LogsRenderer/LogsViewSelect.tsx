@@ -3,7 +3,6 @@ import { RadioButtonGroup } from '@grafana/ui';
 
 export const LOGS_VIEW_OPTIONS = [
   { label: 'Timeline', value: 'timeline' },
-  { label: 'Waterfall', value: 'waterfall' },
   { label: 'Raw logs', value: 'raw' },
 ] as const;
 

@@ -4,7 +4,6 @@ import { UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { LogsRaw } from 'scenes/components/LogsRenderer/LogsRaw';
 import { LogsTimeline } from 'scenes/components/LogsRenderer/LogsTimeline';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
-import { LogsWaterfall } from 'scenes/components/LogsRenderer/LogsWaterfall';
 
 export const LogsRenderer = <T extends UnknownParsedLokiRecord>({
   logs,
@@ -19,10 +18,6 @@ export const LogsRenderer = <T extends UnknownParsedLokiRecord>({
 
   if (logsView === 'timeline') {
     return <LogsTimeline<T> {...props} />;
-  }
-
-  if (logsView === 'waterfall') {
-    return <LogsWaterfall<T> {...props} />;
   }
 
   if (logsView === 'raw') {

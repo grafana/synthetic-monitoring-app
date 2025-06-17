@@ -20,45 +20,51 @@ export const TimepointViewerProbes = ({
   timepointData,
   logsView,
 }: TimepointViewerProbesProps) => {
-  const [timepoint, probeToView] = selectedTimepoint;
+  const [timepoint, checkToView] = selectedTimepoint;
 
   return (
     <>
       <TabsBar>
         {timepointData.map(({ probe, checks }) => {
-          const active = probe === probeToView;
-          const probeStatus = checks[0]?.[0]?.[LokiFieldNames.Labels]?.probe_success;
-          const isSuccess = probeStatus === '1';
+          return checks.map((check) => {
+            const id = check[check.length - 1].id;
+            const active = id === checkToView;
+            const probeStatus = check[0]?.[LokiFieldNames.Labels]?.probe_success;
+            const isSuccess = probeStatus === '1';
 
-          return (
-            <Tab
-              key={probe}
-              // @ts-expect-error - it accepts components despite its type
-              label={
-                <Stack direction="row">
-                  <div>{probe}</div>
-                  <Icon name={isSuccess ? 'check' : 'times'} color={isSuccess ? 'green' : 'red'} />
-                </Stack>
-              }
-              active={active}
-              onChangeTab={() => {
-                if (!active) {
-                  handleTimepointSelection(timepoint, probe);
+            return (
+              <Tab
+                key={probe}
+                // @ts-expect-error - it accepts components despite its type
+                label={
+                  <Stack direction="row">
+                    <div>{probe}</div>
+                    <Icon name={isSuccess ? 'check' : 'times'} color={isSuccess ? 'green' : 'red'} />
+                  </Stack>
                 }
-              }}
-            />
-          );
+                active={active}
+                onChangeTab={() => {
+                  if (!active) {
+                    handleTimepointSelection(timepoint, id);
+                  }
+                }}
+              />
+            );
+          });
         })}
       </TabsBar>
       <TabContent>
         {timepointData.map(({ probe, checks }) => {
-          const active = probe === probeToView;
+          return checks.map((check) => {
+            const id = check[check.length - 1].id;
+            const active = id === checkToView;
 
-          if (!active) {
-            return null;
-          }
+            if (!active) {
+              return null;
+            }
 
-          return <LogsRenderer<ParsedCheckLog> key={probe} logs={checks[0]} logsView={logsView} mainKey="msg" />;
+            return <LogsRenderer<ParsedCheckLog> key={probe} logs={check} logsView={logsView} mainKey="msg" />;
+          });
         })}
       </TabContent>
     </>

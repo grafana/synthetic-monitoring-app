@@ -14,10 +14,6 @@ export const LOG_LABELS_SM = [
   `target`,
 ];
 
-type HTTPLogLabelsForMsg = {
-  [key in keyof typeof MSG_STRINGS_HTTP]: string[];
-};
-
 type CommonLogLabelsForMsg = {
   [key in keyof typeof MSG_STRINGS_COMMON]: string[];
 };
@@ -28,18 +24,33 @@ export const LOG_LABELS_FOR_MSG_COMMON: CommonLogLabelsForMsg = {
   CheckSucceeded: [`duration_seconds`],
 };
 
-export const LOG_LABELS_FOR_MSG_HTTP: HTTPLogLabelsForMsg = {
-  AddressDoesNotMatchFirst: [`address`, `first`],
-  ErrorBodyRegExp: [`body_regexp`],
-  ErrorHTTPRequest: [`http_request`],
-  FinalRequestWasOverSSL: [],
-  InvalidHTTPResponseStatusCode: [`status_code`],
-  InvalidHTTPVersionNumber: [`version`],
-  MakingHTTPRequest: [`host`, `url`],
-  ReceivedHTTPResponse: [`http_request`],
-  ResolvedTarget: [`ip`],
-  ResolvingTarget: [`ip_protocol`],
-  ResponseTimings: [
+const {
+  AddressDoesNotMatchFirst,
+  ErrorBodyRegExp,
+  ErrorHTTPRequest,
+  FinalRequestWasOverSSL,
+  InvalidHTTPResponseStatusCode,
+  InvalidHTTPVersionNumber,
+  MakingHTTPRequest,
+  ReceivedHTTPResponse,
+  ReceivedRedirect,
+  ResolvedTarget,
+  ResolvingTarget,
+  ResponseTimings,
+} = MSG_STRINGS_HTTP;
+
+export const LOG_LABELS_FOR_MSG_HTTP = {
+  [AddressDoesNotMatchFirst]: [`address`, `first`],
+  [ErrorBodyRegExp]: [`regexp`],
+  [ErrorHTTPRequest]: [`http_request`],
+  [FinalRequestWasOverSSL]: [],
+  [InvalidHTTPResponseStatusCode]: [`status_code`],
+  [InvalidHTTPVersionNumber]: [`version`],
+  [MakingHTTPRequest]: [`host`, `url`],
+  [ReceivedHTTPResponse]: [`http_request`],
+  [ResolvedTarget]: [`ip`],
+  [ResolvingTarget]: [`ip_protocol`],
+  [ResponseTimings]: [
     `connectDone`,
     `dnsDone`,
     `end`,
@@ -50,5 +61,9 @@ export const LOG_LABELS_FOR_MSG_HTTP: HTTPLogLabelsForMsg = {
     `tlsDone`,
     `tlsStart`,
   ],
-  ReceivedRedirect: [`location`],
+  [ReceivedRedirect]: [`location`],
+};
+
+export const CHECK_TYPE_LABELS = {
+  http: LOG_LABELS_FOR_MSG_HTTP,
 };

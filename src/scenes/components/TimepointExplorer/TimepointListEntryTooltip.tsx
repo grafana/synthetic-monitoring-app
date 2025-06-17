@@ -9,10 +9,10 @@ import { Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer
 
 interface TimepointListEntryTooltipProps {
   timepoint: Timepoint;
-  hoveredProbe?: string | null;
+  hoveredCheck?: string | null;
 }
 
-export const TimepointListEntryTooltip = ({ timepoint, hoveredProbe }: TimepointListEntryTooltipProps) => {
+export const TimepointListEntryTooltip = ({ timepoint, hoveredCheck }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
   const displayTime = new Date(timepoint.adjustedTime).toLocaleString();
   const probeCount = timepoint.probes.length;
@@ -23,6 +23,8 @@ export const TimepointListEntryTooltip = ({ timepoint, hoveredProbe }: Timepoint
       const duration = Number(probe[LokiFieldNames.Labels].duration_seconds) * 1000;
       return sum + duration;
     }, 0) / probeCount;
+
+  const renderedAvgDuration = Number.isNaN(avgDuration) ? `-` : formatSmallDurations(avgDuration);
 
   return (
     <Stack direction="column" gap={2}>
@@ -39,13 +41,14 @@ export const TimepointListEntryTooltip = ({ timepoint, hoveredProbe }: Timepoint
       {/* Probe List */}
       <Stack direction="column" gap={1}>
         {timepoint.probes.map((entry) => {
+          const id = entry.id;
           const { probe, probe_success, duration_seconds } = entry[LokiFieldNames.Labels];
           const isSuccess = probe_success === '1';
           const duration = Number(duration_seconds) * 1000;
 
           return (
             <div key={probe} className={styles.probeRow}>
-              <span className={cx(styles.probeName, { [styles.hovered]: hoveredProbe === probe })}>{probe}</span>
+              <span className={cx(styles.probeName, { [styles.hovered]: hoveredCheck === id })}>{probe}</span>
               <Stack direction="row" gap={1} alignItems="center">
                 <Badge color={isSuccess ? 'green' : 'red'} text={isSuccess ? 'Success' : 'Fail'} />
                 <span className={styles.duration}>{formatSmallDurations(duration)}</span>
@@ -58,7 +61,7 @@ export const TimepointListEntryTooltip = ({ timepoint, hoveredProbe }: Timepoint
       {/* Footer */}
       <div className={styles.footer}>
         <span>Frequency: {formatDuration(timepoint.frequency, true)}</span>
-        <span>Avg: {formatSmallDurations(avgDuration)}</span>
+        <span>Avg: {renderedAvgDuration}</span>
       </div>
     </Stack>
   );
