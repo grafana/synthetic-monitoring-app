@@ -96,7 +96,7 @@ const UptimeEntry = ({
   const styles = useStyles2(getStyles);
   const isSuccess = timepoint.uptimeValue === 1;
   const isFailure = timepoint.uptimeValue === 0;
-  const probeToView = timepoint.probes[0]?.[LokiFieldNames.Labels].probe;
+  const checkToView = timepoint.probes[0]?.id;
   const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
 
@@ -106,7 +106,7 @@ const UptimeEntry = ({
         <PlainButton
           className={styles.uptimeButton}
           ref={ref}
-          onClick={() => handleTimepointSelection(timepoint, probeToView)}
+          onClick={() => handleTimepointSelection(timepoint, checkToView)}
           style={viewIndex === 0 ? { paddingLeft: 0 } : undefined}
           showFocusStyles={false}
         >

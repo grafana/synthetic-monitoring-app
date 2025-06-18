@@ -1,6 +1,6 @@
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 
-export interface LogWithDuration extends ParsedLokiRecord<Record<string, string>, Record<string, string>> {
+interface LogWithDuration extends ParsedLokiRecord<Record<string, string>, Record<string, string>> {
   durationNs: number;
 }
 

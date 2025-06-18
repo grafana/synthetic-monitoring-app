@@ -2,8 +2,12 @@ import React from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
+import { HTTPResponseTimings } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { formatSmallDurations } from 'utils';
+import { LogHTTPResponseTimings } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLabels';
 
 import { logDuations } from './LogsTimeline.utils';
@@ -20,7 +24,7 @@ export const LogsTimeline = <T extends ParsedLokiRecord<Record<string, string>, 
 
   return (
     <div className={styles.timelineContainer}>
-      {withDurations.map((log) => {
+      {withDurations.map((log, index) => {
         return (
           <div key={log.id} className={styles.timelineItem}>
             <div className={styles.time}>
@@ -29,8 +33,10 @@ export const LogsTimeline = <T extends ParsedLokiRecord<Record<string, string>, 
               })}
             </div>
             <div className={styles.timelineItemLabel}>{log.labels[mainKey]}</div>
-            <UniqueLogLabels log={log} />
-            <div className={styles.timelineItemDuration}>{formatToMsPrecision(log.durationNs)}</div>
+            <div className={styles.timelineItemLabel}>
+              <LabelRenderer log={logs[index]} mainKey={mainKey} />
+            </div>
+            <div className={styles.timelineItemDuration}>{formatSmallDurations(log.durationNs / 1000000)}</div>
           </div>
         );
       })}
@@ -38,21 +44,25 @@ export const LogsTimeline = <T extends ParsedLokiRecord<Record<string, string>, 
   );
 };
 
-function formatToMsPrecision(durationNs: number) {
-  const milliseconds = durationNs / 1000000;
+const MSG_MAP = {
+  [MSG_STRINGS_HTTP.ResponseTimings]: LogHTTPResponseTimings,
+};
 
-  if (milliseconds > 1000) {
-    const seconds = milliseconds / 1000;
+const LabelRenderer = ({
+  log,
+  mainKey,
+}: {
+  log: ParsedLokiRecord<Record<string, string>, Record<string, string>>;
+  mainKey: string;
+}) => {
+  const Component = MSG_MAP[log.labels[mainKey]];
 
-    return `${seconds}s`;
+  if (Component) {
+    return <Component log={log as unknown as HTTPResponseTimings} />;
   }
 
-  if (milliseconds > 1) {
-    return `${Math.round(milliseconds)}ms`;
-  }
-
-  return `<1ms`;
-}
+  return <UniqueLogLabels log={log} />;
+};
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {

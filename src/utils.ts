@@ -432,6 +432,10 @@ export function formatDuration(milliseconds: number, compact = false) {
 }
 
 export function formatSmallDurations(milliseconds: number) {
+  if (milliseconds < 1) {
+    return `<1ms`;
+  }
+
   const ms = Math.floor(milliseconds);
 
   if (ms < 1000) {
@@ -440,7 +444,7 @@ export function formatSmallDurations(milliseconds: number) {
 
   const seconds = ms / 1000;
 
-  // If it's a whole second, return without decimals
+  // If it's exactly a second, return without decimals
   if (ms % 1000 === 0) {
     return `${seconds}s`;
   }

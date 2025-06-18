@@ -2,10 +2,9 @@ import React from 'react';
 import { Stack, Tag } from '@grafana/ui';
 import { LOG_LABELS_COMMON, LOG_LABELS_SM } from 'features/parseCheckLogs/checkLogs.constants.labels';
 
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
-import { LogWithDuration } from 'scenes/components/LogsRenderer/LogsTimeline.utils';
+import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 
-export const UniqueLogLabels = ({ log }: { log: LogWithDuration }) => {
+export const UniqueLogLabels = ({ log }: { log: ParsedLokiRecord<Record<string, string>, Record<string, string>> }) => {
   const labels = uniqueLabels(log);
 
   return (
@@ -17,7 +16,7 @@ export const UniqueLogLabels = ({ log }: { log: LogWithDuration }) => {
   );
 };
 
-function uniqueLabels(log: LogWithDuration) {
+function uniqueLabels(log: ParsedLokiRecord<Record<string, string>, Record<string, string>>) {
   const labels = Object.keys(log[LokiFieldNames.Labels]);
 
   const labelsFiltered = labels
