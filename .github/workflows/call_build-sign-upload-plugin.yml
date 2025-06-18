@@ -51,7 +51,7 @@ jobs:
         uses: grafana/shared-workflows/actions/push-to-gcs@main
         with:
           path: ./artifacts
-          bucket: synthetic-monitoring-app
-          environment: dev
+          bucket: ${{ inputs.environment == 'dev' && 'grafanalabs-synthetic-monitoring-app-dev' || 'grafanalabs-synthetic-monitoring-app-prod' }}
+          environment: ${{ inputs.environment }}
           predefinedAcl: publicRead
           parent: false
