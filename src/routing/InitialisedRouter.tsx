@@ -31,6 +31,8 @@ import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
+import { LayoutTestPage } from '../page/LayoutTestPage';
+
 export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
@@ -139,6 +141,8 @@ export const InitialisedRouter = () => {
       <Route path={AppRoutes.Redirect} element={<SceneRedirecter />} />
 
       <Route path={AppRoutes.Scene} element={<SceneRedirecter />} />
+
+      <Route path="test-layout" element={<LayoutTestPage />} />
 
       <Route
         path="*"

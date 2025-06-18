@@ -5,7 +5,7 @@ import { CheckFormValues } from 'types';
 
 export enum LayoutSection {
   Check = `Request`,
-  Uptime = `Define Uptime`,
+  Uptime = `Uptime`,
   Labels = `Labels`,
   Alerting = `Alerting`,
   Probes = `Execution`,

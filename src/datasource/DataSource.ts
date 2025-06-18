@@ -12,6 +12,7 @@ import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runti
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
+import { LokiQueryResults } from '../page/LayoutTestPage/types';
 import { Check, CheckAlertDraft, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
@@ -235,6 +236,32 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         to: String(range.to.unix() * 1000),
       },
     }).then((data) => data.results.A.frames);
+  }
+
+  async queryLogsV2<RefId extends keyof any = 'A'>(
+    expr: string,
+    from: number | string = 'now-15m',
+    to: number | string = 'now',
+    refId?: string
+  ) {
+    return this.fetchAPI<LokiQueryResults<RefId>>(`/api/ds/query`, {
+      method: 'POST',
+      data: {
+        queries: [
+          {
+            refId, // undefined === 'A'
+            expr,
+            queryType: 'range',
+            // direction: 'backwards',
+            datasource: this.instanceSettings.jsonData.logs,
+            intervalMs: 2000,
+            maxDataPoints: 1779,
+          },
+        ],
+        from,
+        to,
+      },
+    });
   }
 
   //--------------------------------------------------------------------------------

@@ -102,7 +102,7 @@ function getStyles(theme: GrafanaTheme2) {
   const label = css({
     [`&:not(.${activeLabel})`]: {
       [containerQuery]: {
-        display: 'none',
+        // display: 'none',
       },
       [mediaQuery]: {
         display: 'none',
@@ -154,7 +154,11 @@ function getStyles(theme: GrafanaTheme2) {
       margin: theme.spacing(1, 1.5),
 
       [containerQuery]: {
+        borderBottom: `2px solid ${theme.colors.border.medium}`,
         margin: theme.spacing(0, 0.5),
+        width: theme.spacing(2),
+        borderLeft: 'unset',
+        height: 'unset',
       },
       [mediaQuery]: {
         margin: theme.spacing(0, 0.5),

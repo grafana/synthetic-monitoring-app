@@ -225,7 +225,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
                   </Stack>
                 </Stack>
               </FormLayout.Section>
-              <FormLayout.Section label="Define uptime" fields={defineUptimeFields} status={status}>
+              <FormLayout.Section label="Uptime" fields={defineUptimeFields} status={status}>
                 {UptimeComponent}
               </FormLayout.Section>
               <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]} status={status}>
