@@ -35,6 +35,9 @@ export default async function () {
       timeout: 2000,
     });
     await check(ok, { 'waitForFunction successfully resolved': ok.innerHTML() == 'Hello' });
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
   } finally {
     await page.close();
   }
