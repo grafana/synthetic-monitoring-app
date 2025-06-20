@@ -1,0 +1,27 @@
+name: Build and typecheck
+
+on:
+  workflow_call:
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Build plugin and typecheck
+        run: mkdir -p artifacts && yarn build --json=artifacts/currentBundleSize.json --no-devtool
+
+      - name: Upload this build's bundle size artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: currentBundleSize
+          path: ./artifacts/currentBundleSize.json
+          overwrite: true
+          retention-days: 90

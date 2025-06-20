@@ -1,0 +1,15 @@
+name: Setup Plugin Environment and Cache
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
