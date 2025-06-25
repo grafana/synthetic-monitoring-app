@@ -33,9 +33,12 @@ jobs:
         id: login-to-gcs
 
       - name: log some details
+        env:
+          BUCKET: ${{ steps.login-to-gcs.outputs.bucket }}
+          ENVIRONMENT: ${{ inputs.environment }}
         run: |
-          echo "bucket: ${{ steps.login-to-gcs.outputs.bucket }}"
-          echo "environment: ${{ inputs.environment }}"
+          echo "bucket: $BUCKET"
+          echo "environment: $ENVIRONMENT"
 
       - name: Get signing token from Vault
         uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
