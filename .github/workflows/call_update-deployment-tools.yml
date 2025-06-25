@@ -14,6 +14,10 @@ on:
         required: false
         type: string
         default: 'false'
+      plugin_version:
+        description: The version of the plugin to deploy
+        required: true
+        type: string
 
 jobs:
   deploy-plugin:
@@ -70,6 +74,11 @@ jobs:
         uses: grafana/shared-workflows/actions/login-to-gar@fa48192dac470ae356b3f7007229f3ac28c48a25
         with:
           environment: prod
+
+      - name: Create plugin version file
+        run: |
+          echo "${{ inputs.plugin_version }}" > plugin_version.txt
+          echo "Created plugin_version.txt with version: ${{ inputs.plugin_version }}"
 
       - name: Create deployment PR
         env:

@@ -24,3 +24,4 @@ jobs:
     with:
       environment: ${{ inputs.environment == 'dev' && 'dev' || 'prod' }}
       autoMerge: ${{ inputs.autoMerge }}
+      plugin_version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}

@@ -47,6 +47,13 @@ jobs:
         run: |
           make build sign package-latest
 
+      - name: Read plugin version
+        id: read-version
+        run: |
+          PLUGIN_VERSION=$(cat plugin_version.txt)
+          echo "plugin_version=${PLUGIN_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "Plugin version: ${PLUGIN_VERSION}"
+
       - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
         uses: grafana/shared-workflows/actions/push-to-gcs@main
         with:
