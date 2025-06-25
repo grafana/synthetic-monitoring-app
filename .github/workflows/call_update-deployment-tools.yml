@@ -27,9 +27,9 @@ jobs:
         uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
         with:
           repo_secrets: |
-            GITHUB_APP_ID=updater-app:app-id
-            GITHUB_APP_INSTALLATION_ID=updater-app:app-installation-id
-            GITHUB_APP_PRIVATE_KEY=updater-app:private-key
+            GITHUB_APP_ID=github-app:app-id
+            GITHUB_APP_INSTALLATION_ID=github-app:app-installation-id
+            GITHUB_APP_PRIVATE_KEY=github-app:private-key
 
       # needed?
 
