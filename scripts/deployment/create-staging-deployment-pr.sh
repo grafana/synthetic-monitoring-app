@@ -27,6 +27,8 @@ EOF
 # Run the Docker-based updater tool
 echo "Running updater Docker tool..."
 docker run --rm \
+  -v "$(pwd):/workspace" \
+  -w /workspace \
   -e GITHUB_APP_ID="$GITHUB_APP_ID" \
   -e GITHUB_APP_INSTALLATION_ID="$GITHUB_APP_INSTALLATION_ID" \
   -e GITHUB_APP_PRIVATE_KEY="$GITHUB_APP_PRIVATE_KEY" \
