@@ -76,9 +76,11 @@ jobs:
           environment: prod
 
       - name: Create plugin version file
+        env:
+          PLUGIN_VERSION: ${{ inputs.plugin_version }}
         run: |
-          echo "${{ inputs.plugin_version }}" > plugin_version.txt
-          echo "Created plugin_version.txt with version: ${{ inputs.plugin_version }}"
+          echo "$PLUGIN_VERSION" > plugin_version.txt
+          echo "Created plugin_version.txt with version: $PLUGIN_VERSION"
 
       - name: Create deployment PR
         env:

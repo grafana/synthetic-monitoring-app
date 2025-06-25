@@ -13,7 +13,7 @@ jobs:
       policy-changed: ${{ steps.changes.outputs.policy }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@4512585de7b4f337fb9b2e5d191e006e7a7e8317 # v2.11.1
         id: changes
         with:
           filters: |

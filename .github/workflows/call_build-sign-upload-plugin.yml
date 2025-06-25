@@ -44,8 +44,21 @@ jobs:
             GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
 
       - name: Build, Sign and Zip Plugin
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
         run: |
-          make build sign ${{ inputs.environment == 'dev' && 'package-latest generate-version' || 'package' }}
+          case "$ENVIRONMENT" in
+            "dev")
+              make build sign package-latest generate-version
+              ;;
+            "prod")
+              make build sign package
+              ;;
+            *)
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+              exit 1
+              ;;
+          esac
 
       - name: Read plugin version
         id: read-version
@@ -54,11 +67,29 @@ jobs:
           echo "plugin_version=${PLUGIN_VERSION}" >> "${GITHUB_OUTPUT}"
           echo "Plugin version: ${PLUGIN_VERSION}"
 
+      - name: Validate and set bucket name
+        id: set-bucket
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          case "$ENVIRONMENT" in
+            "dev")
+              echo "bucket=grafanalabs-synthetic-monitoring-app-dev" >> "${GITHUB_OUTPUT}"
+              ;;
+            "prod")
+              echo "bucket=grafanalabs-synthetic-monitoring-app-prod" >> "${GITHUB_OUTPUT}"
+              ;;
+            *)
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+              exit 1
+              ;;
+          esac
+
       - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
         uses: grafana/shared-workflows/actions/push-to-gcs@main
         with:
           path: ./artifacts
-          bucket: ${{ inputs.environment == 'dev' && 'grafanalabs-synthetic-monitoring-app-dev' || 'grafanalabs-synthetic-monitoring-app-prod' }}
+          bucket: ${{ steps.set-bucket.outputs.bucket }}
           environment: ${{ inputs.environment }}
           predefinedAcl: publicRead
           parent: false
