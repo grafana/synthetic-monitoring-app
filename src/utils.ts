@@ -430,3 +430,25 @@ export function formatDuration(milliseconds: number, compact = false) {
 
   return parts.join(' ');
 }
+
+export function formatSmallDurations(milliseconds: number) {
+  if (milliseconds < 1) {
+    return `<1ms`;
+  }
+
+  const ms = Math.floor(milliseconds);
+
+  if (ms < 1000) {
+    return `${ms}ms`;
+  }
+
+  const seconds = ms / 1000;
+
+  // If it's exactly a second, return without decimals
+  if (ms % 1000 === 0) {
+    return `${seconds}s`;
+  }
+
+  // Otherwise, return with up to 2 decimal places, removing trailing zeros
+  return `${parseFloat(seconds.toFixed(2))}s`;
+}
