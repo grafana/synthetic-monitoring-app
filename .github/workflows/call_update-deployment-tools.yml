@@ -30,10 +30,10 @@ jobs:
       - name: Get Vault secrets
         uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
         with:
-          repo_secrets: |
-            GITHUB_APP_ID=github-app:app-id
-            GITHUB_APP_INSTALLATION_ID=github-app:app-installation-id
-            GITHUB_APP_PRIVATE_KEY=github-app:private-key
+          common_secrets: |
+            GITHUB_APP_ID=updater-app:app-id
+            GITHUB_APP_INSTALLATION_ID=updater-app:app-installation-id
+            GITHUB_APP_PRIVATE_KEY=updater-app:private-key
 
       # needed?
 
@@ -84,4 +84,7 @@ jobs:
         env:
           ENVIRONMENT: ${{ inputs.environment }}
           AUTO_MERGE: ${{ inputs.autoMerge }}
+          GITHUB_APP_ID: ${{ env.GITHUB_APP_ID }}
+          GITHUB_APP_INSTALLATION_ID: ${{ env.GITHUB_APP_INSTALLATION_ID }}
+          GITHUB_APP_PRIVATE_KEY: ${{ env.GITHUB_APP_PRIVATE_KEY }}
         run: scripts/deployment/create-dev-deployment-pr.sh
