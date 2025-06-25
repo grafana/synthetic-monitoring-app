@@ -45,7 +45,7 @@ jobs:
 
       - name: Build, Sign and Zip Plugin
         run: |
-          make build sign package-latest
+          make build sign ${{ inputs.environment == 'dev' && 'package-latest' || 'package' }}
 
       - name: Read plugin version
         id: read-version
