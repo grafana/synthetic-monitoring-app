@@ -4,8 +4,7 @@ import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@gra
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
-
-import { useVizPanelMenu } from '../useVizPanelMenu';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const AvgLatency = () => {
   const metricsDS = useMetricsDS();

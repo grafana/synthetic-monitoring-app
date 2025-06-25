@@ -3,13 +3,15 @@ import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
+import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { REACHABILITY_DESCRIPTION } from 'components/constants';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
+import { getMinStepFromFrequency } from 'scenes/utils';
 
-import { useVizPanelMenu } from '../useVizPanelMenu';
-
-export const ReachabilityStat = ({ minStep }: { minStep: string }) => {
+export const ReachabilityStat = ({ check }: { check: Check }) => {
   const metricsDS = useMetricsDS();
+  const minStep = getMinStepFromFrequency(check.frequency);
 
   const queries = [
     {

@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
+import { InlineSwitch } from '@grafana/ui';
 
 import { useLogsDS } from 'hooks/useLogsDS';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
-import { useVizPanelMenu } from './useVizPanelMenu';
-
-export const ErrorLogs = () => {
+export const ErrorLogs = ({ startingUnsuccessfulOnly = false }: { startingUnsuccessfulOnly?: boolean }) => {
   const logsDS = useLogsDS();
-
+  const [unsuccessfulOnly, setUnsuccessfulOnly] = useState(startingUnsuccessfulOnly);
   const dataProvider = useQueryRunner({
     queries: [
       {
-        expr: '{probe=~"$probe", instance="$instance", job="$job", probe_success="0"}',
+        expr: `{probe=~"$probe", instance="$instance", job="$job", probe_success=~"${
+          unsuccessfulOnly ? '0' : '.*'
+        }"} | logfmt`,
         refId: 'A',
       },
     ],
@@ -43,10 +45,19 @@ export const ErrorLogs = () => {
 
   return (
     <VizPanel
-      title="Logs for failed checks: $probe ⮕ $job / $instance"
+      title="Logs for checks: $probe ⮕ $job / $instance"
       viz={viz}
       dataProvider={dataProvider}
       menu={menu}
+      headerActions={
+        <InlineSwitch
+          label="Unsuccessful runs only"
+          transparent
+          showLabel
+          defaultChecked={unsuccessfulOnly}
+          onChange={() => setUnsuccessfulOnly(!unsuccessfulOnly)}
+        />
+      }
     />
   );
 };

@@ -1,31 +1,20 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TableColumn } from 'react-data-table-component';
-import { DataQueryError, dateTimeParse, LoadingState } from '@grafana/data';
+import { DataQueryError, dateTimeParse, GrafanaTheme2, LoadingState, PanelData } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import {
-  SceneComponentProps,
-  SceneFlexItem,
-  sceneGraph,
-  SceneObject,
-  SceneObjectBase,
-  SceneObjectState,
-} from '@grafana/scenes';
-import { DataSourceRef } from '@grafana/schema';
+import { useQueryRunner, useTimeRange } from '@grafana/scenes-react';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+import { getAvgRequestExpectedResponseQuery } from 'queries/avgRequestExpectedResponse';
+import { getAvgRequestLatencyQuery } from 'queries/avgRequestLatency';
+import { getAvgRequestSuccessRateQuery } from 'queries/avgRequestSuccessRate';
 
 import { CheckType } from 'types';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { Table } from 'components/Table';
 
-import { getTablePanelStyles } from '../getTablePanelStyles';
-import { getQueryRunner } from './resultsByTargetTableQueries';
+import { findValueByName, getValueFieldName, ResultsByTargetTableRefId } from './ResultByTargetTable.utils';
 import { ResultsByTargetTableRow } from './ResultsByTargetTableRow';
-import { findValueByName, getValueFieldName, ResultsByTargetTableRefId } from './utils';
-
-interface ResultsByTargetTableState extends SceneObjectState {
-  metrics: DataSourceRef;
-  expandedRows?: SceneObject[];
-  checkType: CheckType;
-}
 
 export interface DataRow {
   name: string;
@@ -33,27 +22,66 @@ export interface DataRow {
   expectedResponse: number;
   successRate: number;
   latency: number;
-  metrics: DataSourceRef;
 }
 
-const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByTargetTableSceneObject>) => {
-  const { data } = sceneGraph.getData(model).useState();
-  const { value: timeRange } = sceneGraph.getTimeRange(model).useState();
-  const [hasLoaded, setHasLoaded] = React.useState(false);
-  const [hasStartedLoading, setHasStartedLoading] = React.useState(false);
-  const [logTimeLimitExceeded, setLogTimeLimitExceeded] = React.useState(false);
-  const { metrics, checkType } = model.useState();
-  const styles = useStyles2(getTablePanelStyles);
+export const ResultsByTargetTable = ({ checkType }: { checkType: CheckType }) => {
+  const metricsDS = useMetricsDS();
+  const label = checkType === CheckType.Scripted ? 'name' : 'url';
+
+  const avgRequestSuccessRateQuery = getAvgRequestSuccessRateQuery(label);
+  const expectedResponseQuery = getAvgRequestExpectedResponseQuery(label);
+  const latencyQuery = getAvgRequestLatencyQuery(label);
+
+  const dataProvider = useQueryRunner({
+    queries: [
+      {
+        expr: avgRequestSuccessRateQuery.expr,
+        refId: ResultsByTargetTableRefId.SUCCESS_RATE,
+        instant: avgRequestSuccessRateQuery.queryType === `instant`,
+        legendFormat: '__auto',
+        format: 'table',
+        editorMode: 'code',
+      },
+      {
+        expr: expectedResponseQuery.expr,
+        refId: ResultsByTargetTableRefId.EXPECTED_RESPONSE,
+        instant: expectedResponseQuery.queryType === `instant`,
+        legendFormat: '__auto',
+        format: 'table',
+        editorMode: 'code',
+      },
+      {
+        expr: latencyQuery.expr,
+        refId: ResultsByTargetTableRefId.LATENCY,
+        instant: latencyQuery.queryType === `instant`,
+        format: 'table',
+        editorMode: 'code',
+      },
+    ],
+    datasource: metricsDS,
+  });
+
+  const { data } = dataProvider.useState();
+
+  return <ResultsByTargetTableView data={data} checkType={checkType} />;
+};
+
+const ResultsByTargetTableView = ({ data, checkType }: { data?: PanelData; checkType: CheckType }) => {
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [hasStartedLoading, setHasStartedLoading] = useState(false);
+  const [logTimeLimitExceeded, setLogTimeLimitExceeded] = useState(false);
+  const styles = useStyles2(getStyles);
+  const [currentTimeRange] = useTimeRange();
 
   useEffect(() => {
     const logQueryLimit = new Date().setDate(new Date().getDate() - 31);
-    const from = dateTimeParse(timeRange.from);
+    const from = dateTimeParse(currentTimeRange.from);
     if (from.valueOf() < logQueryLimit) {
       setLogTimeLimitExceeded(true);
     } else if (logTimeLimitExceeded) {
       setLogTimeLimitExceeded(false);
     }
-  }, [timeRange.from, logTimeLimitExceeded]);
+  }, [currentTimeRange.from, logTimeLimitExceeded]);
 
   useEffect(() => {
     // This is a hack because the data Loading state initializes as "Done", then goes to "Loading", and then goes back to "Done"
@@ -115,6 +143,7 @@ const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByT
     if (!data || (data.errors && data.errors.length > 0) || !data.series?.[0]) {
       return [];
     }
+
     const expectedResponseSeries = data.series.find(
       (series) => series.refId === ResultsByTargetTableRefId.EXPECTED_RESPONSE
     );
@@ -127,9 +156,11 @@ const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByT
     const successRateNamesField = successRateSeries?.fields?.[namesIndex];
     const methodIndex = successRateSeries.fields?.findIndex((field) => field.name === 'method');
     const successRateMethodField = successRateSeries.fields?.[methodIndex];
+
     if (!successRateNamesField || !successRateMethodField) {
       return [];
     }
+
     return (
       successRateNamesField.values.reduce<DataRow[]>((acc, name, index) => {
         const method = successRateMethodField.values?.[index] ?? '';
@@ -156,39 +187,11 @@ const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByT
           latencySeries?.fields ?? []
         );
 
-        acc.push({ name, method, successRate, latency, expectedResponse, metrics });
+        acc.push({ name, method, successRate, latency, expectedResponse });
         return acc;
       }, []) ?? []
     );
-  }, [data, metrics]);
-
-  const getPlaceholder = (state: LoadingState | undefined, errors?: DataQueryError[]) => {
-    if (!hasLoaded) {
-      return <LoadingPlaceholder text="Loading results by URL..." />;
-    }
-    if (state === LoadingState.Error) {
-      return (
-        <div className={styles.noDataContainer}>
-          <Alert severity="error" title="Error loading URL results">
-            {errors?.map((error) => error.message + '\n') ?? 'Unknown error'}
-          </Alert>
-        </div>
-      );
-    }
-    return (
-      <div className={styles.noDataContainer}>
-        <p>There were no requests made in this script.</p>
-        <LinkButton
-          variant="primary"
-          href="https://k6.io/docs/using-k6/http-requests/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn more about making requests
-        </LinkButton>
-      </div>
-    );
-  };
+  }, [data]);
 
   return (
     <div className={styles.container}>
@@ -210,12 +213,9 @@ const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByT
           data={tableData}
           className={styles.table}
           expandableRows
-          dataTableProps={{
-            expandableRowsComponentProps: { tableViz: model, metrics, checkType },
-          }}
-          expandableComponent={ResultsByTargetTableRow}
+          expandableComponent={({ data }) => <ResultsByTargetTableRow data={data} checkType={checkType} />}
           //@ts-ignore - noDataText expects a string, but we want to render a component and it works
-          noDataText={getPlaceholder(data?.state, data?.errors)}
+          noDataText={<Placeholder state={data?.state} errors={data?.errors} hasLoaded={hasLoaded} />}
           pagination={false}
           id="assertion-table"
           name="Assertions"
@@ -226,22 +226,79 @@ const ResultsByTargetTableComponent = ({ model }: SceneComponentProps<ResultsByT
   );
 };
 
-export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTargetTableState> {
-  static Component = ResultsByTargetTableComponent;
+const Placeholder = ({
+  state,
+  errors,
+  hasLoaded,
+}: {
+  state: LoadingState;
+  errors?: DataQueryError[];
+  hasLoaded: boolean;
+}) => {
+  const styles = useStyles2(getStyles);
 
-  public constructor(state: ResultsByTargetTableState) {
-    super(state);
+  if (!hasLoaded) {
+    return <LoadingPlaceholder text="Loading results by URL..." />;
   }
-}
 
-export function getResultsByTargetTable(metrics: DataSourceRef, checkType: CheckType) {
-  return new SceneFlexItem({
-    maxWidth: '100%',
-    body: new ResultsByTargetTableSceneObject({
-      $data: getQueryRunner(metrics, checkType),
-      metrics,
-      expandedRows: [],
-      checkType,
+  if (state === LoadingState.Error) {
+    return (
+      <div className={styles.noDataContainer}>
+        <Alert severity="error" title="Error loading URL results">
+          {errors?.map((error) => error.message + '\n') ?? 'Unknown error'}
+        </Alert>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.noDataContainer}>
+      <p>There were no requests made in this script.</p>
+      <LinkButton
+        variant="primary"
+        href="https://k6.io/docs/using-k6/http-requests/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Learn more about making requests
+      </LinkButton>
+    </div>
+  );
+};
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    container: css({
+      border: `1px solid ${theme.components.panel.borderColor}`,
+      width: '100%',
+      borderRadius: theme.shape.radius.default,
     }),
-  });
+    title: css({
+      label: 'panel-title',
+      display: 'block',
+      marginBottom: 0, // override default h6 margin-bottom
+      padding: theme.spacing(theme.components.panel.padding),
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      fontSize: theme.typography.h6.fontSize,
+      fontWeight: theme.typography.h6.fontWeight,
+    }),
+    headerContainer: css({
+      label: 'panel-header',
+      display: 'flex',
+      alignItems: 'center',
+    }),
+    noDataContainer: css({
+      padding: theme.spacing(4),
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    }),
+    table: css({
+      '& > div': {
+        display: 'flex',
+      },
+    }),
+  };
 }

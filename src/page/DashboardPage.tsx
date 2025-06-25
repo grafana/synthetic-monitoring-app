@@ -16,7 +16,7 @@ import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
 import { getPingScene } from 'scenes/PING/pingScene';
-import { getScriptedScene } from 'scenes/SCRIPTED';
+import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
@@ -74,19 +74,6 @@ function DashboardPageContent() {
             }),
           ],
         });
-      // fallthrough
-      case CheckType.Scripted:
-      case CheckType.MULTI_HTTP: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getScriptedScene(config, check, checkType),
-            }),
-          ],
-        });
-      }
       case CheckType.PING: {
         return new SceneApp({
           pages: [
@@ -133,6 +120,8 @@ function DashboardPageContent() {
         });
       }
 
+      case CheckType.MULTI_HTTP:
+      case CheckType.Scripted:
       case CheckType.HTTP: {
         return null;
       }
@@ -145,6 +134,13 @@ function DashboardPageContent() {
 
   if (check && getCheckType(check.settings) === CheckType.HTTP) {
     return <HttpDashboard check={check} />;
+  }
+
+  if (
+    check &&
+    (getCheckType(check.settings) === CheckType.Scripted || getCheckType(check.settings) === CheckType.MULTI_HTTP)
+  ) {
+    return <ScriptedDashboard check={check} />;
   }
 
   if (scene) {

@@ -1,20 +1,22 @@
 import { PanelMenuItem, TimeRange } from '@grafana/data';
 import { QueryRunnerState, SceneDataQuery, VizConfig, VizPanelMenu } from '@grafana/scenes';
-import { useVariableInterpolator } from '@grafana/scenes-react';
+import { useTimeRange, useVariableInterpolator } from '@grafana/scenes-react';
 
 import { correctSceneVariableInterpolation } from 'scenes/utils';
 
 interface UseVizPanelMenuProps {
   data: QueryRunnerState;
   viz: VizConfig;
-  currentTimeRange: TimeRange;
-  variables: string[]; // Variables to interpolate (e.g., ['job', 'probe', 'instance'])
+  currentTimeRange?: TimeRange;
+  variables?: string[]; // Variables to interpolate (e.g., ['job', 'probe', 'instance'])
 }
 
 export function useVizPanelMenu({ data, viz, currentTimeRange, variables }: UseVizPanelMenuProps): VizPanelMenu {
-  const { from, to } = currentTimeRange;
+  const [timeRange] = useTimeRange();
+  const vars = variables || ['job', 'probe', 'instance'];
+  const { from, to } = currentTimeRange || timeRange;
 
-  const interpolator = useVariableInterpolator({ variables, timeRange: true });
+  const interpolator = useVariableInterpolator({ variables: vars, timeRange: true });
 
   let queries = data.queries;
   queries = queries.map((q: SceneDataQuery) => ({

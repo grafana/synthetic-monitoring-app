@@ -1,0 +1,74 @@
+import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Box, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
+import { Check, CheckType } from 'types';
+import { getCheckType } from 'utils';
+import { AssertionsTable } from 'scenes/Common/AssertionsTable';
+import { DashboardContainer } from 'scenes/Common/DashboardContainer';
+import { DataReceived } from 'scenes/Common/DataReceived';
+import { DataSent } from 'scenes/Common/DataSent';
+import { DistinctTargets } from 'scenes/Common/DistinctTargets';
+import { DurationByProbe } from 'scenes/Common/DurationByProbe';
+import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
+import { ReachabilityStat } from 'scenes/HTTP/stats/ReachabilityStatViz';
+import { UptimeStat } from 'scenes/HTTP/stats/UptimeStatViz';
+import { ResultsByTargetTable } from 'scenes/Scripted/ResultByTargetTable';
+
+export const ScriptedDashboard = ({ check }: { check: Check }) => {
+  const styles = useStyles2(getStyles);
+  const checkType = getCheckType(check.settings);
+
+  return (
+    <DashboardContainer check={check} checkType={checkType}>
+      <div className={styles.header}>
+        <UptimeStat check={check} />
+        <ReachabilityStat check={check} />
+      </div>
+      <AssertionsTable checkType={CheckType.Scripted} check={check} />
+
+      <Stack height={`200px`}>
+        <Box width={`200px`}>
+          <DistinctTargets metric="probe_http_info" />
+        </Box>
+        <DurationByProbe />
+      </Stack>
+
+      <div className={styles.dataRow}>
+        <DataSent />
+        <DataReceived />
+      </div>
+
+      <ResultsByTargetTable checkType={checkType} />
+      <Box height={`750px`}>
+        <ErrorLogs />
+      </Box>
+    </DashboardContainer>
+  );
+};
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  header: css({
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '8px',
+    height: '150px',
+  }),
+  body: css({
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gap: '8px',
+  }),
+  distinctRow: css({
+    display: 'flex',
+    gap: '8px',
+    height: '200px',
+  }),
+  dataRow: css({
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '8px',
+    height: '200px',
+  }),
+});

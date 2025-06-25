@@ -16,7 +16,6 @@ import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getAllLogs } from 'scenes/Common/allLogs';
-import { getAssertionTable } from 'scenes/Common/AssertionsTable';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getTimeRange } from 'scenes/Common/timeRange';
 import { getMinStepFromFrequency } from 'scenes/utils';
@@ -100,10 +99,10 @@ export function getBrowserScene({ metrics, logs }: DashboardSceneAppConfig, chec
             height: 300,
             children: [new SceneFlexItem({ body: webVitalsTable })],
           }),
-          new SceneFlexLayout({
-            direction: 'row',
-            children: [getAssertionTable(logs, checkType, check.frequency)],
-          }),
+          // new SceneFlexLayout({
+          //   direction: 'row',
+          //   children: [getAssertionTable(logs, checkType, check.frequency)],
+          // }),
           new SceneFlexLayout({
             direction: 'row',
             height: 200,
