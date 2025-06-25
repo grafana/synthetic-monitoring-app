@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.30.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.30.0...v1.30.1) (2025-06-25)
+
+
+### Fixes
+
+* add catch blocks to script examples ([#1154](https://github.com/grafana/synthetic-monitoring-app/issues/1154)) ([11818a3](https://github.com/grafana/synthetic-monitoring-app/commit/11818a39567cab4ebb95ab7f049e25b0aa760e61))
+* change CODEOWNERS to match actual files ([#1168](https://github.com/grafana/synthetic-monitoring-app/issues/1168)) ([d8548d7](https://github.com/grafana/synthetic-monitoring-app/commit/d8548d7f5a40ecbe2424edb1fafa0dd889b48bb7))
+* change reachability description for probes view ([#1161](https://github.com/grafana/synthetic-monitoring-app/issues/1161)) ([915983a](https://github.com/grafana/synthetic-monitoring-app/commit/915983ad326e1ecb73c04cc0d7262f9de2f6b107))
+* typo in DNS form mentioning ICMP ([#1167](https://github.com/grafana/synthetic-monitoring-app/issues/1167)) ([0224f03](https://github.com/grafana/synthetic-monitoring-app/commit/0224f0383ea865ac02c0f56bd5eaa34dc8ad9960))
+
 ## [1.30.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.29.0...v1.30.0) (2025-06-13)
 
 
