@@ -3,6 +3,7 @@ export interface DSQuery {
   queryType: 'range' | 'instant';
   maxDataPoints?: number;
   interval?: string;
+  legendFormat?: string;
 }
 
 export interface DSQueryWithInterval extends DSQuery {

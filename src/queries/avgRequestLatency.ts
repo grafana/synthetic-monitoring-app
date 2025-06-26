@@ -1,6 +1,10 @@
 import { DSQuery } from 'queries/queries.types';
 
-export function getAvgRequestLatencyQuery(label: string): DSQuery {
+interface AvgRequestLatencyQueryProps {
+  label: string;
+}
+
+export function getAvgRequestLatencyQuery({ label }: AvgRequestLatencyQueryProps): DSQuery {
   const expr = `
     avg_over_time(
       (

@@ -1,6 +1,10 @@
 import { DSQuery } from 'queries/queries.types';
 
-export function getAvgRequestExpectedResponseQuery(label: string): DSQuery {
+interface AvgRequestExpectedResponseQueryProps {
+  label: string;
+}
+
+export function getAvgRequestExpectedResponseQuery({ label }: AvgRequestExpectedResponseQueryProps): DSQuery {
   const expr = `
     avg_over_time(
       (

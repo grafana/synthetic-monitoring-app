@@ -2,25 +2,26 @@ import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 
+import { DSQuery } from 'queries/queries.types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
-export const DurationByProbe = () => {
+export const DurationByProbe = ({ query, unit }: { query: DSQuery; unit: string }) => {
   const metricsDS = useMetricsDS();
 
   const dataProvider = useQueryRunner({
     queries: [
       {
-        expr: 'sum by (probe) (probe_http_total_duration_seconds{probe=~"${probe}", job="${job}", instance="${instance}"})',
+        expr: query.expr,
         refId: 'A',
-        queryType: 'range',
-        legendFormat: '__auto',
+        range: query.queryType === 'range',
+        legendFormat: query.legendFormat,
       },
     ],
     datasource: metricsDS,
   });
 
-  const viz = VizConfigBuilders.timeseries().setUnit('s').build();
+  const viz = VizConfigBuilders.timeseries().setUnit(unit).build();
   const data = dataProvider.useState();
   const menu = useVizPanelMenu({ data, viz });
 

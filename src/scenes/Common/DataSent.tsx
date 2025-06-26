@@ -2,19 +2,20 @@ import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 
+import { DSQuery } from 'queries/queries.types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
-export const DataSent = () => {
+export const DataSent = ({ query }: { query: DSQuery }) => {
   const metricsDS = useMetricsDS();
 
   const dataProvider = useQueryRunner({
     queries: [
       {
-        expr: `probe_data_sent_bytes{probe=~"$probe", job="$job", instance="$instance"}`,
+        expr: query.expr,
         refId: 'A',
-        queryType: 'range',
-        legendFormat: '{{ probe }}',
+        range: query.queryType === 'range',
+        legendFormat: query.legendFormat,
       },
     ],
     datasource: metricsDS,

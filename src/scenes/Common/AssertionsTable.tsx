@@ -14,17 +14,17 @@ export const AssertionsTable = ({ checkType, check }: { checkType: CheckType; ch
       {
         expr: QUERY_SUCCESS_RATE,
         refId: 'successRate',
-        queryType: 'instant',
+        instant: true,
       },
       {
         expr: QUERY_SUCCESS_COUNT,
         refId: 'successCount',
-        queryType: 'instant',
+        instant: true,
       },
       {
         expr: QUERY_FAILURE_COUNT,
         refId: 'failureCount',
-        queryType: 'instant',
+        instant: true,
       },
     ],
     datasource: logsDs,

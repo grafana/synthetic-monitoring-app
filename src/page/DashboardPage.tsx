@@ -11,7 +11,7 @@ import { useChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
-import { getBrowserScene } from 'scenes/BROWSER/browserScene';
+import { BrowserDashboard } from 'scenes/Browser/BrowserDashboard';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
@@ -64,16 +64,6 @@ function DashboardPageContent() {
           ],
         });
       }
-      case CheckType.Browser:
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getBrowserScene(config, check, checkType),
-            }),
-          ],
-        });
       case CheckType.PING: {
         return new SceneApp({
           pages: [
@@ -120,6 +110,7 @@ function DashboardPageContent() {
         });
       }
 
+      case CheckType.Browser:
       case CheckType.MULTI_HTTP:
       case CheckType.Scripted:
       case CheckType.HTTP: {
@@ -141,6 +132,10 @@ function DashboardPageContent() {
     (getCheckType(check.settings) === CheckType.Scripted || getCheckType(check.settings) === CheckType.MULTI_HTTP)
   ) {
     return <ScriptedDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.Browser) {
+    return <BrowserDashboard check={check} />;
   }
 
   if (scene) {

@@ -2,22 +2,20 @@ import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 
+import { DSQuery } from 'queries/queries.types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
-export const DistinctTargets = ({ metric = 'probe_http_info' }: { metric?: string }) => {
+export const DistinctTargets = ({ query }: { query: DSQuery }) => {
   const metricsDS = useMetricsDS();
 
   const dataProvider = useQueryRunner({
     queries: [
       {
-        expr: `count by (job, target) (
-          count by (url) (
-            ${metric}{probe=~"\${probe}", job="\${job}", instance="\${instance}"}
-          )
-        )`,
+        expr: query.expr,
         refId: 'A',
-        queryType: 'instant',
+        instant: query.queryType === 'instant',
+        legendFormat: query.legendFormat,
       },
     ],
     datasource: metricsDS,

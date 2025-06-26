@@ -28,9 +28,9 @@ export const ResultsByTargetTable = ({ checkType }: { checkType: CheckType }) =>
   const metricsDS = useMetricsDS();
   const label = checkType === CheckType.Scripted ? 'name' : 'url';
 
-  const avgRequestSuccessRateQuery = getAvgRequestSuccessRateQuery(label);
-  const expectedResponseQuery = getAvgRequestExpectedResponseQuery(label);
-  const latencyQuery = getAvgRequestLatencyQuery(label);
+  const avgRequestSuccessRateQuery = getAvgRequestSuccessRateQuery({ label });
+  const expectedResponseQuery = getAvgRequestExpectedResponseQuery({ label });
+  const latencyQuery = getAvgRequestLatencyQuery({ label });
 
   const dataProvider = useQueryRunner({
     queries: [

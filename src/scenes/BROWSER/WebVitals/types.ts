@@ -21,7 +21,7 @@ export const WEB_VITAL_SCORE = {
   poor: 'Poor',
 };
 
-interface WebVitalConfig {
+export interface WebVitalConfig {
   name: WebVitalName;
   longName: string;
   unit: WebVitalUnit;

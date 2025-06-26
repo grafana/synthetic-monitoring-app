@@ -1,6 +1,10 @@
 import { DSQuery } from 'queries/queries.types';
 
-export function getAvgRequestSuccessRateQuery(label: string): DSQuery {
+interface AvgRequestSuccessRateQueryProps {
+  label: string;
+}
+
+export function getAvgRequestSuccessRateQuery({ label }: AvgRequestSuccessRateQueryProps): DSQuery {
   const expr = `
     avg_over_time(
       (

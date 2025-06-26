@@ -2,13 +2,14 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { getBrowserDataReceivedQuery } from 'queries/browserDataReceived';
+import { getBrowserDataSentQuery } from 'queries/browserDataSent';
 import { getCountDistinctTargetsQuery } from 'queries/countDistinctTargets';
-import { getScriptedDataReceivedQuery } from 'queries/scriptedDataReceived';
-import { getScriptedDataSentQuery } from 'queries/scriptedDataSent';
 import { getSumDurationByProbeQuery } from 'queries/sumDurationByProbe';
 
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
+import { WebVitalsRow } from 'scenes/Browser/WebVitalsRow';
 import { AssertionsTable } from 'scenes/Common/AssertionsTable';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
 import { DataReceived } from 'scenes/Common/DataReceived';
@@ -18,9 +19,8 @@ import { DurationByProbe } from 'scenes/Common/DurationByProbe';
 import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { ReachabilityStat } from 'scenes/HTTP/stats/ReachabilityStatViz';
 import { UptimeStat } from 'scenes/HTTP/stats/UptimeStatViz';
-import { ResultsByTargetTable } from 'scenes/Scripted/ResultByTargetTable';
 
-export const ScriptedDashboard = ({ check }: { check: Check }) => {
+export const BrowserDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
 
@@ -30,21 +30,27 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />
       </div>
+      <WebVitalsRow />
+      <div>
+        <div>Page load p75</div>
+        <div>CLS p75</div>
+        <div>FID, INP p75</div>
+      </div>
+      <div>Metrics by URL</div>
       <AssertionsTable checkType={CheckType.Scripted} check={check} />
 
       <Stack height={`200px`}>
         <Box width={`200px`}>
-          <DistinctTargets query={getCountDistinctTargetsQuery({ metric: 'probe_http_info' })} />
+          <DistinctTargets query={getCountDistinctTargetsQuery({ metric: 'probe_browser_web_vital_fcp' })} />
         </Box>
-        <DurationByProbe query={getSumDurationByProbeQuery({ metric: 'probe_http_total_duration_seconds' })} unit="s" />
+        <DurationByProbe query={getSumDurationByProbeQuery({ metric: 'probe_browser_http_req_duration' })} unit="ms" />
       </Stack>
 
       <div className={styles.dataRow}>
-        <DataSent query={getScriptedDataSentQuery()} />
-        <DataReceived query={getScriptedDataReceivedQuery()} />
+        <DataSent query={getBrowserDataSentQuery()} />
+        <DataReceived query={getBrowserDataReceivedQuery()} />
       </div>
 
-      <ResultsByTargetTable checkType={checkType} />
       <Box height={`750px`}>
         <ErrorLogs />
       </Box>
