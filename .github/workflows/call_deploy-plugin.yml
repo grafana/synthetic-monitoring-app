@@ -12,6 +12,10 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build-sign-zip-upload:
     uses: ./.github/workflows/call_build-sign-upload-plugin.yml
