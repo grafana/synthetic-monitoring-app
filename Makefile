@@ -73,6 +73,7 @@ package-latest:
 	mkdir -p $(ARTIFACTS_DIR)
 	ln -s dist grafana-synthetic-monitoring-app
 	zip -r $(ARTIFACTS_DIR)/$(PACKAGE_NAME_LATEST) grafana-synthetic-monitoring-app
+	echo $(VERSION) > $(ROOT_DIR)/plugin_version.txt
 	rm grafana-synthetic-monitoring-app
 
 .PHONY: generate-version
