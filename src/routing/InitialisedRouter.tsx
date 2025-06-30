@@ -143,6 +143,7 @@ export const InitialisedRouter = () => {
       <Route path={AppRoutes.Scene} element={<SceneRedirecter />} />
 
       <Route path="test-layout" element={<LayoutTestPage />} />
+      <Route path="test-layout/:id" element={<LayoutTestPage />} />
 
       <Route
         path="*"

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { useParams } from 'react-router-dom-v5-compat';
 import { DateTime, dateTime, GrafanaTheme2, LoadingState, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import {
@@ -15,9 +17,12 @@ import {
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+import { CheckFormValues, CheckPageParams } from '../../types';
 import { useAdHocCheck, useCheck } from 'data/useChecks';
 
+import { toPayload } from '../../components/CheckEditor/checkFormTransformations';
 import { CheckForm } from '../../components/CheckForm/CheckForm';
+import { CheckFormContextProvider, useCheckFormMetaContext } from '../../components/CheckForm/CheckFormContext';
 import { Preformatted } from '../../components/Preformatted';
 import { useProbes } from '../../data/useProbes';
 import { WikCard } from './components/WikCard';
@@ -36,6 +41,18 @@ interface RequestState {
 }
 
 export function LayoutTestPage() {
+  const { id } = useParams<CheckPageParams>();
+  const { data: check, isLoading } = useCheck(Number(id));
+  return (
+    <CheckFormContextProvider check={check}>
+      <LayoutTestPageContent isLoading={isLoading} />
+    </CheckFormContextProvider>
+  );
+}
+
+function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
+  const { check } = useCheckFormMetaContext();
+  const methods = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
   const {
     containerProps: { className: containerClassName, ...containerProps },
@@ -53,7 +70,7 @@ export function LayoutTestPage() {
   };
   const [requestState, setRequestState] = useState<RequestState[]>([]);
   const { data: probeList } = useProbes();
-  const { data: check, isLoading } = useCheck(2265);
+
   const { mutate: adHocCheck, error, isPending, isError, data: requestResponseData } = useAdHocCheck();
   const requestIds = requestState.map((request) => request.id).join('|');
   const hasPendingRequests =
@@ -217,9 +234,16 @@ export function LayoutTestPage() {
   }, [logs, hasPendingRequests, requestState, isFetching]);
 
   const handleAdHocCheck = () => {
-    if (check) {
-      adHocCheck(check);
-    }
+    methods.trigger().then(() => {
+      if (!methods.formState.isValid) {
+        console.log('Form is invalid, not submitting ad-hoc check', methods.formState.errors);
+      }
+      const formValues = methods.getValues();
+      const adHocCheckPayload = toPayload(formValues);
+      if (adHocCheckPayload) {
+        adHocCheck(adHocCheckPayload);
+      }
+    });
   };
 
   if (isLoading) {
@@ -248,7 +272,7 @@ export function LayoutTestPage() {
                 icon={isPending || hasPendingRequests ? 'fa fa-spinner' : undefined}
                 disabled={isPending || hasPendingRequests}
               >
-                AdHoc Test
+                Test check
               </Button>
               <Divider />
               <div className={styles.rightAsideFlex}>
@@ -400,6 +424,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     container-type: inline-size;
     background-color: ${theme.colors.background.primary};
+    height: 100%;
+    overflow: hidden;
+    flex: 1 1 0;
   `,
   rightAside: css`
     min-width: ${theme.spacing(40)};
