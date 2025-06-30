@@ -5,12 +5,10 @@ import { Field, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValuesHttp } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 export const HttpCheckCacheBuster = () => {
   const styles = useStyles2(getStyles);
-  const { register } = useFormContext<CheckFormValuesHttp>();
-  const { isFormDisabled } = useCheckFormContext();
+  const { register, formState } = useFormContext<CheckFormValuesHttp>();
   const id = 'https-settings-cache-busting-query';
 
   return (
@@ -23,7 +21,7 @@ export const HttpCheckCacheBuster = () => {
         {...register('settings.http.cacheBustingQueryParamName')}
         className={styles.input}
         data-fs-element="Cache busting query parameter name input"
-        disabled={isFormDisabled}
+        disabled={formState.disabled}
         id={id}
         placeholder="cache-bust"
       />

@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesDns, CheckType } from 'types';
@@ -9,8 +10,6 @@ import { DNSCheckResponseMatches } from 'components/CheckEditor/FormComponents/D
 import { DNSCheckValidResponseCodes } from 'components/CheckEditor/FormComponents/DNSCheckValidResponseCodes';
 import { DNSRequest } from 'components/CheckEditor/FormComponents/DNSRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
-
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const DNS_REQUEST_FIELDS: DNSRequestFields = {
   target: {
@@ -39,15 +38,12 @@ export const DNS_REQUEST_FIELDS: DNSRequestFields = {
 };
 
 const CheckDNSRequest = () => {
-  const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
   const { handleErrorRef } = useNestedRequestErrors(DNS_REQUEST_FIELDS);
+  const {
+    formState: { disabled: isFormDisabled },
+  } = useFormContext();
 
-  const onTest = useCallback(() => {
-    addRequest(DNS_REQUEST_FIELDS);
-  }, [addRequest]);
-
-  return <DNSRequest disabled={isFormDisabled} fields={DNS_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
+  return <DNSRequest disabled={isFormDisabled} fields={DNS_REQUEST_FIELDS} ref={handleErrorRef} />;
 };
 
 export const DNSCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesDns>>> = {
