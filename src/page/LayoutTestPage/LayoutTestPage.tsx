@@ -133,7 +133,9 @@ export function LayoutTestPage() {
 
     for (const logData of logs) {
       const request =
+        // @ts-expect-error testing
         draft.find((request) => request.id === logData.line.id) ??
+        // @ts-expect-error testing
         requestState.find((request) => request.id === logData.line.id);
       if (!request || !request.logs.some((log) => log.state === 'pending')) {
         continue;
@@ -141,6 +143,7 @@ export function LayoutTestPage() {
 
       const draftRequest: RequestState = {
         ...request,
+        // @ts-expect-error testing
         logs: request.logs.map((probeLogs) => {
           // @ts-expect-error POC
           const subject = logs.find((log) => log.line.probe === probeLogs.probe);
@@ -276,6 +279,7 @@ export function LayoutTestPage() {
                       actions={
                         <div className={styles.probeTop} onClick={handleToggleExpand}>
                           {probesInSegment.map((pState) => (
+                            // @ts-expect-error testing
                             <Badge key={pState.name} text={pState.name} icon={pState.icon} color={pState.color} />
                           ))}
                         </div>
@@ -289,8 +293,10 @@ export function LayoutTestPage() {
                               <WikCard.Heading>
                                 <div>
                                   <Badge
+                                    // @ts-expect-error testing
                                     icon={probeStuff?.icon ?? 'adjust-circle'}
                                     text={probeStuff?.name ?? 'Unknown error'}
+                                    // @ts-expect-error testing
                                     color={probeStuff?.color ?? 'red'}
                                   />
                                   <span>{(probeState.logs?.message as string) ?? ''}</span>
@@ -300,6 +306,7 @@ export function LayoutTestPage() {
 
                               <div className={styles.steps}>
                                 {!!probeState.logs.logs &&
+                                  // @ts-expect-error testing
                                   probeState.logs?.logs?.map(({ msg, ...logObj }, index) => {
                                     const invalid =
                                       msg.search(
@@ -332,6 +339,7 @@ export function LayoutTestPage() {
                                             >
                                               {mess} {messInfo}
                                               {'\n'}
+                                              {/* @ts-expect-error testing */}
                                               {restMesss.filter((val) => !!val).join('\n')}
                                             </Preformatted>
                                           )}
