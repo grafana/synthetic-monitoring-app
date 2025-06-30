@@ -29,6 +29,9 @@ export default async function () {
     await check(page.locator('#dark-mode-toggle-3'), {
       "GetAttribute('mode')": async (locator) => (await locator.getAttribute('mode')) === 'light',
     });
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
   } finally {
     await page.close();
   }

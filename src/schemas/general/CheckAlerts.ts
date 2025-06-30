@@ -2,7 +2,7 @@ import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { z, ZodType } from 'zod';
 
-import { CheckAlertFormRecord, CheckFormValuesBase } from 'types';
+import { CheckAlertFormRecord, CheckFormValuesBase, CheckFormValuesTcp, CheckType } from 'types';
 import { formatDuration } from 'utils';
 
 const isScientificNotation = (val: number) => {
@@ -53,8 +53,15 @@ export const checkAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.ob
   TLSTargetCertificateCloseToExpiring: checkAlertSchema.optional(),
 });
 
-export function checkAlertsRefinement(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
+function isCheckFormValuesTCP(data: CheckFormValuesBase | CheckFormValuesTcp): data is CheckFormValuesTcp {
+  return 'checkType' in data && data.checkType === CheckType.TCP;
+}
+
+export function checkAlertsRefinement(data: CheckFormValuesBase | CheckFormValuesTcp, ctx: z.RefinementCtx) {
   probeFailedExecutionsRefinement(data, ctx);
+  if (isCheckFormValuesTCP(data)) {
+    tcpTLSTargetCertificateCloseToExpiringRefinement(data, ctx);
+  }
 }
 
 function probeFailedExecutionsRefinement(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
@@ -64,6 +71,20 @@ function probeFailedExecutionsRefinement(data: CheckFormValuesBase, ctx: z.Refin
   if (isSelected && probes.length) {
     checkThresholdIsValid(data, ctx);
     checkPeriodIsValid(data, ctx);
+  }
+}
+
+function tcpTLSTargetCertificateCloseToExpiringRefinement(data: CheckFormValuesTcp, ctx: z.RefinementCtx) {
+  const checkType = data.checkType;
+  const isAlertSelected = data.alerts?.TLSTargetCertificateCloseToExpiring?.isSelected;
+  const isTLSEnabled = data.settings?.tcp.tls;
+
+  if (checkType === CheckType.TCP && isAlertSelected && !isTLSEnabled) {
+    ctx.addIssue({
+      path: ['alerts.TLSTargetCertificateCloseToExpiring.isSelected'],
+      message: 'TLS must be enabled in Request options in order to collect the required TLS metrics for this alert',
+      code: z.ZodIssueCode.custom,
+    });
   }
 }
 

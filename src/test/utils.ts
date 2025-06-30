@@ -306,3 +306,16 @@ export const probeToExtendedProbe = (probe: Probe, usedByChecks: number[] = []):
   ...probeToMetadataProbe(probe),
   checks: usedByChecks,
 });
+
+type FeatureToggleOverrides = Partial<Record<FeatureName, boolean>>;
+
+export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    featureToggles: {
+      ...runtime.config.featureToggles,
+      ...overrides,
+    },
+  });
+}
