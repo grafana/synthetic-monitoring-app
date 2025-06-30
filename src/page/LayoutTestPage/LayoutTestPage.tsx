@@ -17,14 +17,13 @@ import { css, cx } from '@emotion/css';
 
 import { useAdHocCheck, useCheck } from 'data/useChecks';
 
+import { CheckForm } from '../../components/CheckForm/CheckForm';
 import { Preformatted } from '../../components/Preformatted';
 import { useProbes } from '../../data/useProbes';
 import { WikCard } from './components/WikCard';
 import { useAdHocLogs } from './hooks/useAdHocLogs';
 
 const TIMEOUT_SECONDS = 10;
-const K6_CHECK_ID = 2567; // 2567 | 2560
-const BBE_CHECK_ID = 2560;
 
 interface RequestState {
   id: string;
@@ -38,10 +37,6 @@ interface RequestState {
 
 export function LayoutTestPage() {
   const styles = useStyles2(getStyles);
-  const [activeCheckId, setActiveCheckId] = useState<number>(K6_CHECK_ID);
-  const handleToggleCheckId = () => {
-    setActiveCheckId(activeCheckId === K6_CHECK_ID ? BBE_CHECK_ID : K6_CHECK_ID);
-  };
   const {
     containerProps: { className: containerClassName, ...containerProps },
     primaryProps,
@@ -58,7 +53,7 @@ export function LayoutTestPage() {
   };
   const [requestState, setRequestState] = useState<RequestState[]>([]);
   const { data: probeList } = useProbes();
-  const { data: check, isLoading } = useCheck(activeCheckId);
+  const { data: check, isLoading } = useCheck(2265);
   const { mutate: adHocCheck, error, isPending, isError, data: requestResponseData } = useAdHocCheck();
   const requestIds = requestState.map((request) => request.id).join('|');
   const hasPendingRequests =
@@ -235,19 +230,8 @@ export function LayoutTestPage() {
     <PluginPage layout={PageLayoutType.Custom} pageNav={{ text: 'Edit check' }}>
       <div {...containerProps} className={cx(containerClassName, styles.container)}>
         <div {...primaryProps}>
-          <Box grow={1} padding={2}>
-            <h1>
-              Edit check <span className={styles.mutedText}>/ {check?.job ?? 'unnamed'}</span>
-            </h1>
-            <div>check type: {activeCheckId === K6_CHECK_ID ? 'scripted' : 'http'} </div>
-            <div>
-              <Button onClick={handleToggleCheckId}>
-                Switch to {activeCheckId !== K6_CHECK_ID ? 'scripted' : 'http'}
-              </Button>
-            </div>
-            <div>
-              <h2>Imagine that the check create/edit form is here.</h2>
-            </div>
+          <Box grow={1} padding={2} backgroundColor="primary">
+            <CheckForm />
           </Box>
         </div>
         <div {...splitterProps} />
@@ -415,6 +399,7 @@ function getStateColorIndex(state: 'pending' | 'success' | 'error' | 'timeout'):
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     container-type: inline-size;
+    background-color: ${theme.colors.background.primary};
   `,
   rightAside: css`
     min-width: ${theme.spacing(40)};
