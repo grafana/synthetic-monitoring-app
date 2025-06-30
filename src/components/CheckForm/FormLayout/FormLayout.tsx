@@ -209,7 +209,7 @@ const getStyles = (theme: GrafanaTheme2) => {
   const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
 
   const containerRules = {
-    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH}) minmax(50px, auto)`,
+    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH})`,
     height: '100%',
   };
 
