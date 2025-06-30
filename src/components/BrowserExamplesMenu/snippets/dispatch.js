@@ -30,6 +30,9 @@ export default async function () {
     await check(page.locator('h3'), {
       header: async (locator) => (await locator.textContent()) === 'Contact us',
     });
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
   } finally {
     await page.close();
   }
