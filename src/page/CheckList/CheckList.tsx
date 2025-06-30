@@ -84,6 +84,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFilters);
+
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates);
   const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 

@@ -1,6 +1,7 @@
 import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
 import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
+import { aiAgentCheckSchema } from 'schemas/forms/AiAgentCheckSchema';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
@@ -27,6 +28,7 @@ import { broadcastFailedSubmission, findFieldToFocus } from './checkForm.utils';
 import { useFormCheckType } from './useCheckType';
 
 const schemaMap = {
+  [CheckType.AiAgent]: aiAgentCheckSchema,
   [CheckType.Browser]: browserCheckSchema,
   [CheckType.DNS]: dnsCheckSchema,
   [CheckType.GRPC]: grpcCheckSchema,

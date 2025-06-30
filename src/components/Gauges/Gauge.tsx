@@ -6,15 +6,21 @@ import { BigValue, BigValueColorMode, BigValueGraphMode, Container, LoadingBar, 
 import { getLatencySuccessRateThresholdColor, getSuccessRateThresholdColor } from 'utils';
 import { useThreshold } from 'data/useThresholds';
 import { BigValueTitle } from 'components/BigValueTitle';
-import { LATENCY_DESCRIPTION, REACHABILITY_DESCRIPTION, UPTIME_DESCRIPTION } from 'components/constants';
+import {
+  DURATION_DESCRIPTION,
+  LATENCY_DESCRIPTION,
+  REACHABILITY_DESCRIPTION,
+  SCORE_DESCRIPTION,
+  UPTIME_DESCRIPTION,
+} from 'components/constants';
 
 interface Props {
   height: number;
   loading?: boolean;
   fetching?: boolean;
   onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-  type: 'reachability' | 'uptime' | 'latency';
-  unit: `%` | `ms`;
+  type: 'reachability' | 'uptime' | 'latency' | 'score' | 'duration';
+  unit: `%` | `s` | `ms` | ``;
   value: number | null;
   width: number;
   description?: string;
@@ -58,21 +64,27 @@ const infoMap = {
   latency: LATENCY_DESCRIPTION,
   reachability: REACHABILITY_DESCRIPTION,
   uptime: UPTIME_DESCRIPTION,
+  score: SCORE_DESCRIPTION,
+  duration: DURATION_DESCRIPTION,
 };
 
 const titleMap = {
   latency: 'Latency',
   reachability: 'Reachability',
   uptime: 'Uptime',
+  score: 'Score',
+  duration: 'Duration',
 };
 
 const comparisonMap = {
   latency: getLatencySuccessRateThresholdColor,
   reachability: getSuccessRateThresholdColor,
   uptime: getSuccessRateThresholdColor,
+  score: getSuccessRateThresholdColor,
+  duration: getLatencySuccessRateThresholdColor,
 };
 
-function parseValue(value: number | null, unit: `%` | `ms`) {
+function parseValue(value: number | null, unit: `%` | `ms` | `s` | ``) {
   if (!value) {
     return value;
   }
@@ -88,7 +100,7 @@ function parseValue(value: number | null, unit: `%` | `ms`) {
   return value;
 }
 
-function formatValue(value: number | null, unit: `%` | `ms`, loading?: boolean) {
+function formatValue(value: number | null, unit: `%` | `ms` | `s` | ``, loading?: boolean) {
   if (loading) {
     return <Spinner />;
   }

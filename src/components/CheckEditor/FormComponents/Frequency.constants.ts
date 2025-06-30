@@ -1,3 +1,4 @@
+import { MIN_FREQUENCY_AIAGENT } from 'schemas/forms/AiAgentCheckSchema';
 import { MIN_FREQUENCY_BROWSER } from 'schemas/forms/BrowserCheckSchema';
 import { MIN_FREQUENCY_MULTI_HTTP } from 'schemas/forms/MultiHttpCheckSchema';
 import { MIN_FREQUENCY_SCRIPTED } from 'schemas/forms/ScriptedCheckSchema';
@@ -25,6 +26,7 @@ export const FREQUENCY_OPTIONS = [
 ];
 
 export const MIN_FREQUENCY_MAP = {
+  [CheckType.AiAgent]: MIN_FREQUENCY_AIAGENT,
   [CheckType.Browser]: MIN_FREQUENCY_BROWSER,
   [CheckType.DNS]: MIN_BASE_FREQUENCY,
   [CheckType.GRPC]: MIN_BASE_FREQUENCY,

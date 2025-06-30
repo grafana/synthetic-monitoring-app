@@ -24,6 +24,22 @@ export function useThreshold(type: keyof ThresholdSettings) {
   const props = useThresholds();
   const threshold = props.data?.thresholds[type];
 
+  if (type === 'score') {
+    return {
+      data: {
+        upperLimit: 80,
+        lowerLimit: 60,
+      },
+    };
+  } else if (type === 'duration') {
+    return {
+      data: {
+        upperLimit: 30000,
+        lowerLimit: 15000,
+      },
+    };
+  }
+
   return {
     ...props,
     data: threshold,

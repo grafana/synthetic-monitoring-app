@@ -98,6 +98,20 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       },
     ],
   },
+  {
+    label: `AI Agent`,
+    description: `Monitor the usability and performance of a website using an AI agent.`,
+    value: CheckTypeGroup.AiAgent,
+    icon: `ai`,
+    protocols: [
+      {
+        label: `HTTP`,
+        // featureToggle: FeatureName.BrowserChecks,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.AiAgent}`,
+        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.AiAgent, protocol: `HTTP` }),
+      },
+    ],
+  },
 ];
 
 export function useCheckTypeGroupOptions() {

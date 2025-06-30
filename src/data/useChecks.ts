@@ -24,7 +24,17 @@ export const queryKeys: Record<'list', QueryKey> = {
 const checksQuery = (api: SMDataSource, includeAlerts = false) => {
   return {
     queryKey: [...queryKeys.list, { includeAlerts }],
-    queryFn: () => api.listChecks(includeAlerts),
+    queryFn: async () => {
+      const checks = await api.listChecks(includeAlerts);
+      const localMemoryChecks = localStorage.getItem('aiagentChecks');
+      if (localMemoryChecks) {
+        console.log('Loading AI agent checks from local memory', localMemoryChecks);
+        const parsedChecks: Check[] = JSON.parse(localMemoryChecks);
+        checks.push(...parsedChecks);
+      }
+
+      return checks;
+    },
   };
 };
 
@@ -57,6 +67,21 @@ export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<
   return useMutation<AddCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
       try {
+        // Store AI agent checks in local memory
+        if ('aiagent' in check.settings) {
+          const existingChecks = localStorage.getItem('aiagentChecks');
+          if (existingChecks) {
+            const checks: Check[] = JSON.parse(existingChecks);
+            check.id = 100000 + checks.length; // Assign a temporary ID for local storage
+            checks.push(check);
+            localStorage.setItem('aiagentChecks', JSON.stringify(checks));
+          } else {
+            check.id = 100000; // Assign a temporary ID for local storage
+            localStorage.setItem('aiagentChecks', JSON.stringify([check]));
+          }
+          return check;
+        }
+
         const res = await smDS.addCheck(check);
 
         return res;

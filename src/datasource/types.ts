@@ -111,6 +111,8 @@ export interface TracesByHost {
 }
 
 export enum AccountingClassNames {
+  aiagent = 'aiagent',
+  aiagent_basic = 'aiagent_basic',
   browser = 'browser',
   browser_basic = 'browser_basic',
   dns = 'dns',

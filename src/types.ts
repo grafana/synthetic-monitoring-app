@@ -187,6 +187,19 @@ export interface BrowserSettings {
   script: string;
 }
 
+export interface AiAgentSettings {
+  url: string;
+  depth: number;
+  durationInMinutes: number;
+  aggressiveness: number;
+  features: {
+    insightsAccessibility: boolean;
+    insightsTechnicalIssues: boolean;
+    insightsContentQuality: boolean;
+    userJourneys: boolean;
+  };
+}
+
 export interface TcpSettings {
   ipVersion: IpVersion;
   tls?: boolean;
@@ -399,6 +412,13 @@ export type CheckFormValuesBrowser = CheckFormValuesBase & {
   };
 };
 
+export type CheckFormValuesAiAgent = CheckFormValuesBase & {
+  checkType: CheckType.AiAgent;
+  settings: {
+    aiagent: AiAgentSettings;
+  };
+};
+
 export interface CheckBase {
   job: string;
   target: string;
@@ -413,6 +433,7 @@ export interface CheckBase {
 }
 
 export type Check =
+  | AiAgentCheck
   | BrowserCheck
   | DNSCheck
   | GRPCCheck
@@ -432,13 +453,15 @@ export type CheckFormValues =
   | CheckFormValuesScripted
   | CheckFormValuesTcp
   | CheckFormValuesTraceroute
-  | CheckFormValuesBrowser;
+  | CheckFormValuesBrowser
+  | CheckFormValuesAiAgent;
 
 export interface FilteredCheck extends Omit<Check, 'id'> {
   id: number;
 }
 
 export type Settings =
+  | AiAgentCheck['settings']
   | BrowserCheck['settings']
   | DNSCheck['settings']
   | GRPCCheck['settings']
@@ -484,6 +507,13 @@ export type BrowserCheck = CheckBase &
     };
   };
 
+export type AiAgentCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      aiagent: AiAgentSettings;
+    };
+  };
+
 export type MultiHTTPCheck = CheckBase &
   ExistingObject & {
     settings: {
@@ -513,6 +543,7 @@ export type TracerouteCheck = CheckBase &
   };
 
 export enum CheckType {
+  AiAgent = 'aiagent',
   Browser = 'browser',
   DNS = 'dns',
   GRPC = 'grpc',
@@ -529,6 +560,7 @@ export enum CheckTypeGroup {
   MultiStep = `multistep`,
   Scripted = `scripted`,
   Browser = `browser`,
+  AiAgent = `ai-agent`,
 }
 
 export enum DnsResponseCodes {
@@ -779,6 +811,8 @@ export interface ThresholdSettings {
   latency: ThresholdValues;
   reachability: ThresholdValues;
   uptime: ThresholdValues;
+  score: ThresholdValues;
+  duration: ThresholdValues;
 }
 
 export interface CalculateUsageValues {

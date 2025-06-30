@@ -58,6 +58,8 @@ const ThresholdGlobalSettingsContent = ({ onSuccess, thresholds }: ThresholdGlob
       uptime: uptimeThresholds,
       reachability: reachabilityThresholds,
       latency: latencyThresholds,
+      score: PERCENT_DEFAULTS,
+      duration: MS_DEFAULTS,
     });
   };
 

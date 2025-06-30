@@ -21,6 +21,7 @@ export const TARGET_MAP = {
   [CheckType.PING]: 'grafana.com',
   [CheckType.Scripted]: 'Whatever string we would like',
   [CheckType.Browser]: 'Whatever string we would like',
+  [CheckType.AiAgent]: 'Whatever string we would like',
   [CheckType.TCP]: 'grafana.com:80',
   [CheckType.Traceroute]: 'grafana.com',
 };

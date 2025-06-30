@@ -43,6 +43,14 @@ export const TENANT_SETTINGS: ListTenantSettingsResult = {
       upperLimit: 99.3,
       lowerLimit: 94.6,
     },
+    score: {
+      upperLimit: 80,
+      lowerLimit: 60,
+    },
+    duration: {
+      upperLimit: 30000,
+      lowerLimit: 15000,
+    },
   },
 };
 

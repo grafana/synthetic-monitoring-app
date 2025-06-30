@@ -11,6 +11,7 @@ import { useChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
+import { getAiAgentScene } from 'scenes/AIAGENT/aiAgentScene';
 import { getBrowserScene } from 'scenes/BROWSER/browserScene';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
@@ -120,7 +121,16 @@ function DashboardPageContent() {
           ],
         });
       }
-
+      case CheckType.AiAgent:
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: check.job,
+              url,
+              getScene: getAiAgentScene(config, check),
+            }),
+          ],
+        });
       case CheckType.GRPC: {
         return new SceneApp({
           pages: [

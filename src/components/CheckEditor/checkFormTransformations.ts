@@ -1,5 +1,6 @@
 import { Check, CheckFormValues, CheckType } from 'types';
 import {
+  isAiAgentCheck,
   isBrowserCheck,
   isDNSCheck,
   isGRPCCheck,
@@ -10,6 +11,7 @@ import {
   isTCPCheck,
   isTracerouteCheck,
 } from 'utils.types';
+import { getAiAgentCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.aiagent';
 import { getBrowserCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.browser';
 import { getDNSCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.dns';
 import { getGRPCCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.grpc';
@@ -19,6 +21,7 @@ import { getPingCheckFormValues } from 'components/CheckEditor/transformations/t
 import { getScriptedCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.scripted';
 import { getTCPCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.tcp';
 import { getTracerouteCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.traceroute';
+import { getAiAgentPayload } from 'components/CheckEditor/transformations/toPayload.aiagent';
 import { getBrowserPayload } from 'components/CheckEditor/transformations/toPayload.browser';
 import { getDNSPayload } from 'components/CheckEditor/transformations/toPayload.dns';
 import { getGRPCPayload } from 'components/CheckEditor/transformations/toPayload.grpc';
@@ -72,6 +75,10 @@ export function toFormValues(check: Check, checkType: CheckType): CheckFormValue
     return getBrowserCheckFormValues(check);
   }
 
+  if (isAiAgentCheck(check)) {
+    return getAiAgentCheckFormValues(check);
+  }
+
   throw new Error(`Unknown check type`);
 }
 
@@ -110,6 +117,10 @@ export const toPayload = (formValues: CheckFormValues): Check => {
 
   if (formValues.checkType === CheckType.Browser) {
     return getBrowserPayload(formValues);
+  }
+
+  if (formValues.checkType === CheckType.AiAgent) {
+    return getAiAgentPayload(formValues);
   }
 
   throw new Error(`Unknown check type: ${formValues}`);

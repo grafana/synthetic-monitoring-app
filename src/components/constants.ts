@@ -1,6 +1,7 @@
 import { SelectableValue } from '@grafana/data';
 
 import {
+  AiAgentCheck,
   AlertFamily,
   AlertSensitivity,
   AlertSeverity,
@@ -337,6 +338,26 @@ export const FALLBACK_CHECK_BROWSER: BrowserCheck = {
   },
 };
 
+export const FALLBACK_CHECK_AIAGENT: AiAgentCheck = {
+  ...FALLBACK_CHECK_BASE,
+  frequency: FIVE_MINUTES_IN_MS,
+  timeout: 60000,
+  settings: {
+    aiagent: {
+      url: '',
+      depth: 1,
+      durationInMinutes: 5 * 60,
+      aggressiveness: 1,
+      features: {
+        insightsAccessibility: true,
+        insightsTechnicalIssues: true,
+        insightsContentQuality: true,
+        userJourneys: true,
+      },
+    },
+  },
+};
+
 export const FALLBACK_CHECK_TCP: TCPCheck = {
   ...FALLBACK_CHECK_BASE,
   settings: {
@@ -363,6 +384,7 @@ export const FALLBACK_CHECK_TRACEROUTE: TracerouteCheck = {
 };
 
 export const fallbackCheckMap = {
+  [CheckType.AiAgent]: FALLBACK_CHECK_AIAGENT,
   [CheckType.Browser]: FALLBACK_CHECK_BROWSER,
   [CheckType.DNS]: FALLBACK_CHECK_DNS,
   [CheckType.GRPC]: FALLBACK_CHECK_GRPC,
@@ -520,6 +542,8 @@ export const REACHABILITY_DESCRIPTION =
 export const PROBE_REACHABILITY_DESCRIPTION = 'The success percentage of all checks performed by this probe.';
 export const LATENCY_DESCRIPTION =
   'The average time to receive an answer across all the checks during the whole time period.';
+export const DURATION_DESCRIPTION = 'The average time to finish the exploration by the AI agent.';
+export const SCORE_DESCRIPTION = 'The latest score delivered by the AI agent.';
 
 export const STANDARD_REFRESH_INTERVAL = 1000 * 60;
 

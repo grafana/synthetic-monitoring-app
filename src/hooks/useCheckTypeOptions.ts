@@ -64,6 +64,13 @@ export const CHECK_TYPE_OPTIONS = [
     featureToggle: FeatureName.BrowserChecks,
     group: CheckTypeGroup.Browser,
   },
+  {
+    label: 'AiAgent',
+    value: CheckType.AiAgent,
+    description: 'Leverage k6 agent module to run checks using an AI agent.',
+    // featureToggle: FeatureName.BrowserChecks,
+    group: CheckTypeGroup.AiAgent,
+  },
 ];
 
 export function useCheckTypeOptions() {

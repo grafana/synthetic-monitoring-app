@@ -4,10 +4,17 @@ import { Checkbox, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
+import { isAiAgentCheck } from 'utils.types';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
-import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
+import {
+  AiCheckDurationGauge,
+  AiCheckScoreGauge,
+  LatencyGauge,
+  SuccessRateGaugeCheckReachability,
+  SuccessRateGaugeCheckUptime,
+} from 'components/Gauges';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
@@ -63,11 +70,16 @@ export const CheckListItemCard = ({
               </div>
             </div>
             <div className={styles.stats}>
-              {check.enabled && (
+              {check.enabled && !isAiAgentCheck(check) ? (
                 <>
                   <SuccessRateGaugeCheckUptime check={check} height={75} width={150} />
                   <SuccessRateGaugeCheckReachability check={check} height={75} width={150} />
                   <LatencyGauge check={check} height={75} width={175} />
+                </>
+              ) : (
+                <>
+                  <AiCheckScoreGauge check={check} height={75} width={150} />
+                  <AiCheckDurationGauge check={check} height={75} width={175} />
                 </>
               )}
             </div>

@@ -41,6 +41,7 @@ import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
 import { CheckFormContextProvider, useCheckFormContext } from './CheckFormContext/CheckFormContext';
+import { AiAgentCheckLayout } from './FormLayouts/CheckAiAgentLayout';
 import { BrowserCheckLayout } from './FormLayouts/CheckBrowserLayout';
 import { AlertsPerCheckSection } from './AlertsPerCheckSection';
 import { useCheckForm, useCheckFormSchema } from './checkForm.hooks';
@@ -57,6 +58,7 @@ const layoutMap = {
   [CheckType.Traceroute]: TracerouteCheckLayout,
   [CheckType.GRPC]: GRPCCheckLayout,
   [CheckType.Browser]: BrowserCheckLayout,
+  [CheckType.AiAgent]: AiAgentCheckLayout,
 };
 
 const checkTypeStep1Label = {
@@ -69,6 +71,7 @@ const checkTypeStep1Label = {
   [CheckType.Traceroute]: `Request`,
   [CheckType.GRPC]: `Request`,
   [CheckType.Browser]: `Script`,
+  [CheckType.AiAgent]: `Request`,
 };
 
 type CheckFormProps = {

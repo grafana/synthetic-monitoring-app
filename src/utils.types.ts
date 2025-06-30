@@ -1,4 +1,5 @@
 import {
+  AiAgentCheck,
   BrowserCheck,
   Check,
   CheckFormValues,
@@ -75,6 +76,10 @@ export function isTracerouteCheck(check: Partial<Check>): check is TracerouteChe
 
 export function isBrowserCheck(check: Partial<Check>): check is BrowserCheck {
   return CheckType.Browser in (check.settings ?? {});
+}
+
+export function isAiAgentCheck(check: Partial<Check>): check is AiAgentCheck {
+  return CheckType.AiAgent in (check.settings ?? {});
 }
 
 export function isDNSSettings(settings: Check['settings']): settings is DNSCheck['settings'] {

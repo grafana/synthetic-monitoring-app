@@ -3,6 +3,7 @@ import { FieldPath } from 'react-hook-form';
 
 import {
   CheckFormValues,
+  CheckFormValuesAiAgent,
   CheckFormValuesBrowser,
   CheckFormValuesDns,
   CheckFormValuesGRPC,
@@ -88,6 +89,13 @@ export type ScriptedFields = {
 export type BrowserFields = {
   target: FieldProps<CheckFormValuesBrowser>;
   script: FieldProps<CheckFormValuesBrowser>;
+};
+
+export type AiAgentFields = {
+  url: FieldProps<CheckFormValuesAiAgent>;
+  depth: FieldProps<CheckFormValuesAiAgent>;
+  durationInMinutes: FieldProps<CheckFormValuesAiAgent>;
+  aggressiveness: FieldProps<CheckFormValuesAiAgent>;
 };
 
 export type RequestFields =
