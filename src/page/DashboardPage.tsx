@@ -22,6 +22,7 @@ import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
 import { CheckNotFound } from './NotFound/CheckNotFound';
+import { AiCheckOutputPage } from './AiCheckOutputPage';
 
 function DashboardPageContent() {
   const smDS = useSMDS();
@@ -158,6 +159,15 @@ function DashboardPageContent() {
   }
 
   if (scene) {
+    // if (check && getCheckType(check.settings) === CheckType.AiAgent) {
+    //   return (
+    //     <>
+    //       <scene.Component model={scene} />
+    //       <AiCheckOutputPage check={check} />
+    //     </>
+    //   );
+    // }
+
     return <scene.Component model={scene} />;
   }
 

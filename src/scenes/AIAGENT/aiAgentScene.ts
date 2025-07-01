@@ -17,7 +17,10 @@ import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getTimeRange } from 'scenes/Common/timeRange';
 
-import { getGraphPanel } from './graph';
+import { getGlobalScoreGaugePanel } from './globalScoreGauge';
+import { getGlobalScoreTimeseriesPanel } from './globalScoreTimeseries';
+import { getPageInsightsTable } from './pageInsightsTable';
+import { getUserJourneysTable } from './userJourneysTable';
 
 export function getAiAgentScene({ metrics }: DashboardSceneAppConfig, check: Check) {
   return () => {
@@ -52,8 +55,18 @@ export function getAiAgentScene({ metrics }: DashboardSceneAppConfig, check: Che
         children: [
           new SceneFlexLayout({
             direction: 'row',
-            minHeight: 900,
-            children: [getGraphPanel()],
+            height: 200,
+            children: [getGlobalScoreGaugePanel(), getGlobalScoreTimeseriesPanel()],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 500,
+            children: [getUserJourneysTable()],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 500,
+            children: [getPageInsightsTable()],
           }),
         ],
       }),

@@ -1,0 +1,208 @@
+{
+  "edges": [
+    {
+      "source": "/",
+      "target": "/login"
+    },
+    {
+      "source": "/",
+      "target": "/admin"
+    },
+    {
+      "source": "/login",
+      "target": "/"
+    },
+    {
+      "source": "/admin",
+      "target": "/"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "/",
+      "data": {
+        "url": "https://quickpizza.grafana.com/",
+        "title": "QuickPizza",
+        "web_vitals": {},
+        "page_insights": {
+          "score": 52,
+          "insights_by_category": {
+            "accessibility": {
+              "summary": "The page accessibility analysis revealed one medium-severity issue related to color contrast compliance. The Lighthouse accessibility audit identified that blue footer links (#3b82f6) have insufficient contrast (3.46:1) against the orange background (#fff7ed), falling below WCAG AA standards (4.5:1 required). This affects the 'Click here' and 'GitHub' links in the footer, potentially making them difficult to read for users with visual impairments. While this is the only accessibility issue found, it represents a clear violation of web accessibility standards that should be addressed to ensure the page is inclusive for all users. The fix is straightforward - either darken the blue color, add background highlighting, or implement additional visual cues.",
+              "score": 75,
+              "issues": [
+                {
+                  "severity": "medium",
+                  "description": "Blue text links in the footer have insufficient color contrast against the orange background, making them difficult to read for users with visual impairments.",
+                  "reason": "The blue links (#3b82f6) on the orange background (#fff7ed) have a contrast ratio of only 3.46:1, which falls below the WCAG AA standard requirement of 4.5:1 for normal text. This affects two footer links: \"Click here\" and \"GitHub\".",
+                  "recommendation": "Increase the color contrast by either: 1) Using a darker shade of blue for the links (e.g., #1d4ed8 or darker), 2) Adding a white or light background behind the links, or 3) Using underlines or other visual indicators to improve link visibility while maintaining brand colors."
+                }
+              ]
+            },
+            "content": {
+              "summary": "The QuickPizza page demonstrates strong overall quality with effective, clear communication and complete functionality. Text quality is excellent with proper grammar, consistent brand voice, and appropriate tone. Content completeness is good with all essential elements present. Two minor issues were identified: technical jargon unnecessarily exposed to users (low severity) and an inadequate meta description that impacts SEO (medium severity). The page successfully serves its purpose and engages users effectively, requiring only minor improvements for optimal quality.",
+              "score": 82,
+              "issues": [
+                {
+                  "severity": "medium",
+                  "description": "The page's meta description is simply \"QuickPizza\" which doesn't provide users or search engines with useful information about what the page offers. This impacts SEO and social media sharing, as the description doesn't explain the pizza recommendation service or its value proposition.",
+                  "reason": "Meta description is too basic and doesn't provide meaningful information about page content",
+                  "recommendation": "Update the meta description to be more descriptive and informative, such as \"Discover new and exciting pizza combinations with QuickPizza - get personalized pizza recommendations with just one click to break out of your routine.\" This should be 150-160 characters and clearly communicate the page's purpose and value."
+                },
+                {
+                  "severity": "low",
+                  "description": "The text \"WebSocket visitor ID: 741433\" appears in the footer area. This is technical jargon that provides no value to end users and may cause confusion about what this ID represents or why it's displayed.",
+                  "reason": "Technical implementation detail exposed to users without context or purpose",
+                  "recommendation": "Remove the WebSocket visitor ID from the user-facing interface, or if it serves a legitimate user purpose, provide context explaining what it is and why it's shown. Technical implementation details should generally not be exposed to end users unless they serve a specific user need."
+                }
+              ]
+            },
+            "technical": {
+              "summary": "",
+              "score": 0,
+              "issues": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "/login",
+      "data": {
+        "url": "https://quickpizza.grafana.com/login",
+        "title": "",
+        "web_vitals": {},
+        "page_insights": {
+          "score": 30,
+          "insights_by_category": {
+            "accessibility": {
+              "summary": "The page analysis revealed significant accessibility issues that severely impact user experience, particularly for users with disabilities. The most critical problem is that the login form's username and password inputs completely lack proper labels, making them inaccessible to screen readers and preventing users with disabilities from successfully completing the login process. Additionally, the page is missing a document title element, which is essential for accessibility and SEO. A medium-priority issue involves insufficient color contrast on the navigation link that falls below WCAG standards. These fundamental accessibility violations make the page functionally unusable for many users with disabilities and fail to meet basic web accessibility guidelines. The core functionality (login form) is compromised due to missing labels, which is a critical barrier to user task completion.",
+              "score": 25,
+              "issues": [
+                {
+                  "severity": "critical",
+                  "description": "The login form inputs for username and password lack proper labels, making them inaccessible to screen readers and assistive technologies. This prevents users with disabilities from understanding what information to enter in each field.",
+                  "reason": "Form elements (username and password inputs) do not have associated labels",
+                  "recommendation": "Add proper label elements associated with each input field, or use aria-label attributes to provide accessible names for the form fields. For example: \u0026lt;label for=\"username\"\u0026gt;Username\u0026lt;/label\u0026gt; and \u0026lt;label for=\"password\"\u0026gt;Password\u0026lt;/label\u0026gt;"
+                },
+                {
+                  "severity": "high",
+                  "description": "The page lacks a \u0026lt;title\u0026gt; element, which is essential for screen reader users to understand the page purpose and for search engines to properly index the content. This significantly impacts accessibility and SEO.",
+                  "reason": "Document is missing a title element",
+                  "recommendation": "Add a descriptive \u0026lt;title\u0026gt; element in the \u0026lt;head\u0026gt; section of the document, such as \u0026lt;title\u0026gt;Login - Your App Name\u0026lt;/title\u0026gt;"
+                },
+                {
+                  "severity": "medium",
+                  "description": "The \"Back to main page\" link has insufficient color contrast (3.46:1) against the orange background, falling short of WCAG AA standards that require 4.5:1 for normal text. This makes the link difficult to read for users with visual impairments.",
+                  "reason": "Insufficient color contrast on link text",
+                  "recommendation": "Increase the contrast by using a darker blue color for the link text or adjusting the background color to meet WCAG AA contrast requirements of at least 4.5:1"
+                }
+              ]
+            },
+            "content": {
+              "summary": "The QuickPizza login page analysis revealed 4 significant issues across text quality and content completeness. Two high-severity problems were identified: exposed default credentials in form labels creating security vulnerabilities, and incorrect label-input associations preventing screen reader accessibility. Two medium-severity issues include technical jargon in API instructions that may confuse users, and a missing page title tag impacting SEO and browser experience. While the core content is grammatically correct and functionally complete, these security, accessibility, and usability concerns significantly impact the overall user experience and require attention to ensure safe and inclusive access for all users.",
+              "score": 65,
+              "issues": [
+                {
+                  "severity": "high",
+                  "description": "The login form labels explicitly expose default credentials by displaying \"Username (hint: default)\" and \"Password (hint: 12345678)\" directly in the field labels. This creates a serious security vulnerability by broadcasting authentication credentials to all users, including potential attackers.",
+                  "reason": "Displaying default login credentials in public interface elements compromises security and potentially violates security best practices. Even for demo/testing purposes, this approach exposes the system to unauthorized access and teaches users poor security habits.",
+                  "recommendation": "Remove the credential hints from the field labels and implement a more secure approach such as: 1) Provide separate documentation for test credentials, 2) Use a \"Demo Login\" button that auto-fills credentials, 3) Display hints only after failed login attempts, or 4) Use environment-specific credential management that doesn't expose defaults in production-like interfaces."
+                },
+                {
+                  "severity": "high",
+                  "description": "Form input fields lack proper accessibility attributes for screen readers. The username and password labels have incorrect 'for' attributes that don't match their corresponding input IDs, and the labels use 'for=\"text\"' instead of matching the actual input IDs ('username' and 'password').",
+                  "reason": "Improper label-input associations prevent screen readers and assistive technologies from correctly identifying form fields, creating accessibility barriers for users with disabilities and potentially causing form submission issues.",
+                  "recommendation": "Update the label elements to have correct 'for' attributes: change 'for=\"text\"' to 'for=\"username\"' for the username label and 'for=\"password\"' for the password label to properly associate labels with their corresponding input fields."
+                },
+                {
+                  "severity": "medium",
+                  "description": "The technical instructions contain unexplained API terminology and assume technical knowledge that may not be accessible to all users. The phrase \"Attach a JSON payload with username and password keys\" uses technical jargon without explanation.",
+                  "reason": "Users who are not familiar with API concepts, JSON format, or technical terminology like \"payload\" and \"keys\" may find this instruction confusing or intimidating, potentially preventing them from successfully using the feature.",
+                  "recommendation": "Provide clearer, more accessible language such as: \"You can also create a new user account by sending a request to our API. Include your desired username and password in the request.\" Consider adding a link to more detailed documentation or examples for users who need technical guidance."
+                },
+                {
+                  "severity": "medium",
+                  "description": "The page is missing a proper title tag in the HTML head section. While the page has a visible h1 heading, there is no title element that would appear in browser tabs, bookmarks, or search engine results.",
+                  "reason": "Missing page titles negatively impact SEO, user experience when navigating browser tabs, bookmark organization, and accessibility for screen readers that announce page titles when users navigate to the page.",
+                  "recommendation": "Add a descriptive title tag in the HTML head section, such as '\u003ctitle\u003eLogin - QuickPizza\u003c/title\u003e' or '\u003ctitle\u003eQuickPizza User Login\u003c/title\u003e' to improve user experience and SEO."
+                }
+              ]
+            },
+            "technical": {
+              "summary": "",
+              "score": 0,
+              "issues": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "/admin",
+      "data": {
+        "url": "https://quickpizza.grafana.com/admin",
+        "title": "",
+        "web_vitals": {},
+        "page_insights": {
+          "score": 23,
+          "insights_by_category": {
+            "accessibility": {
+              "summary": "The page analysis revealed significant accessibility issues that severely impact user experience. The most critical problem is the complete absence of form labels for username and password fields, making the core login functionality inaccessible to screen reader users. Additionally, the page lacks a document title, which is essential for navigation and SEO. A color contrast issue with the 'Back to main page' link further compounds the accessibility problems. These issues collectively prevent users with disabilities from effectively using the page and violate multiple WCAG guidelines. The presence of a critical accessibility barrier in the main user interaction (login form) significantly degrades the overall page quality.",
+              "score": 25,
+              "issues": [
+                {
+                  "severity": "critical",
+                  "description": "Form input fields for username and password do not have associated labels, making them inaccessible to screen reader users.",
+                  "reason": "Form elements without labels cannot be properly announced by assistive technologies, preventing users with disabilities from understanding what information to enter.",
+                  "recommendation": "Add proper `\u003clabel\u003e` elements for each input field or use aria-label attributes. For example: `\u003clabel for=\"username\"\u003eUsername\u003c/label\u003e` and `\u003clabel for=\"password\"\u003ePassword\u003c/label\u003e`."
+                },
+                {
+                  "severity": "high",
+                  "description": "The page is missing a document title element, which is essential for screen readers and search engines to understand the page content.",
+                  "reason": "Document doesn't have a `\u003ctitle\u003e` element - this prevents screen reader users from getting an overview of the page and impacts search engine optimization.",
+                  "recommendation": "Add a descriptive `\u003ctitle\u003e` element to the document head that clearly describes the page's purpose (e.g., \"Login - [Site Name]\")."
+                },
+                {
+                  "severity": "medium",
+                  "description": "The blue link text \"Back to main page\" has insufficient color contrast (3.46:1) against the orange background, making it difficult to read for users with visual impairments.",
+                  "reason": "Text with contrast ratio below 4.5:1 fails WCAG AA standards and can be difficult or impossible for users with low vision or color blindness to read.",
+                  "recommendation": "Increase the color contrast by using a darker blue color or adding a text shadow/background to ensure the contrast ratio meets the 4.5:1 minimum requirement."
+                }
+              ]
+            },
+            "content": {
+              "summary": "The QuickPizza Administration login page analysis revealed one critical security issue (exposed login credentials in field labels), two medium-severity issues (incorrect form label associations and missing page metadata), but showed good text clarity and complete functional content. While the language is professional and the interface is complete, the security vulnerability significantly impacts the page's safety and effectiveness.",
+              "score": 45,
+              "issues": [
+                {
+                  "severity": "high",
+                  "description": "Login credentials exposed in field labels",
+                  "reason": "The login form displays actual login credentials directly in the field labels as \"hints\" (Username hint: admin, Password hint: admin), which creates a serious security vulnerability and poor user experience",
+                  "recommendation": "Remove the credential hints from the labels and implement proper placeholder text or help text that doesn't expose actual login information. Consider using generic guidance like \"Enter your username\" instead of revealing the actual credentials"
+                },
+                {
+                  "severity": "medium",
+                  "description": "Form labels have mismatched 'for' attributes",
+                  "reason": "The form labels have incorrect 'for' attributes that don't match their corresponding input field IDs. The username label has for='text' but the input has id='username', and the password label has for='text' but the input has id='password'. This breaks the semantic relationship between labels and inputs.",
+                  "recommendation": "Update the label 'for' attributes to match their corresponding input IDs: username label should have for='username' and password label should have for='password'. This ensures proper accessibility and semantic relationships."
+                },
+                {
+                  "severity": "medium",
+                  "description": "Missing essential page metadata (title, description)",
+                  "reason": "The page is missing essential metadata including a title element, meta description, and other SEO/accessibility metadata. The HTML head section contains various resource links but lacks basic page identification metadata that helps users and search engines understand the page purpose.",
+                  "recommendation": "Add a descriptive title element (e.g., 'QuickPizza Administration Login'), meta description, and other relevant metadata to improve SEO, accessibility, and user experience when bookmarking or sharing the page."
+                }
+              ]
+            },
+            "technical": {
+              "summary": "",
+              "score": 0,
+              "issues": null
+            }
+          }
+        }
+      }
+    }
+  ]
+}

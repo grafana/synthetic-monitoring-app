@@ -16,6 +16,8 @@ services:
       - ./dev/custom.ini:/etc/grafana/grafana.ini
       - ./dev/license.jwt:/var/lib/grafana/license.jwt
       - grafana-storage:/var/lib/grafana
+    environment:
+      GF_PLUGINS_PREINSTALL: yesoreyeram-infinity-datasource
 
 volumes:
   grafana-storage:
