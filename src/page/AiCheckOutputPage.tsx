@@ -1,89 +1,24 @@
 import React from 'react';
 import { Graphin } from '@antv/graphin';
-import { NodeData } from '@antv/g6';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
 import { PanelChrome, useStyles2 } from '@grafana/ui';
 import { Check } from 'types';
-import { PageInsightsSection } from './AiCheckOutputPage/pageInsights';
+
+import pageInsights from '../scenes/AIAGENT/data/example-output.json';
+import { NodeData } from 'scenes/AIAGENT/types';
+
+function getNodeColor(score: number) {
+  if (score > 80) {
+    return '#52c41a'; // green
+  } else if (score > 50) {
+    return '#faad14'; // yellow
+  }
+  return '#f5222d'; // red
+}
 
 export function AiCheckOutputPage({ check }: { check: Check }) {
   const styles = useStyles2(getStyles);
-
-  const data = {
-    edges: [
-      {
-        source: '/',
-        target: '/login',
-      },
-      {
-        source: '/',
-        target: '/admin',
-      },
-      {
-        source: '/login',
-        target: '/',
-      },
-      {
-        source: '/admin',
-        target: '/',
-      },
-    ],
-    nodes: [
-      {
-        id: '/',
-        data: {
-          url: 'https://quickpizza.grafana.com/',
-          title: 'QuickPizza',
-          web_vitals: {
-            lcp: 1964,
-          },
-          page_insights: {
-            url: '',
-            score: 0,
-            insights_by_category: null,
-          },
-        },
-      },
-      {
-        id: '/login',
-        data: {
-          url: 'https://quickpizza.grafana.com/login',
-          title: '',
-          web_vitals: {
-            lcp: 520,
-            cls: 0.015405980428059894,
-          },
-          page_insights: {
-            url: '',
-            score: 0,
-            insights_by_category: null,
-          },
-        },
-      },
-      {
-        id: '/admin',
-        data: {
-          url: 'https://quickpizza.grafana.com/admin',
-          title: '',
-          web_vitals: {
-            lcp: 416,
-            cls: 0.00034141805436876087,
-          },
-          page_insights: {
-            url: '',
-            score: 0,
-            insights_by_category: null,
-          },
-        },
-      },
-    ],
-  };
-
-  const nodeData = data.nodes.map((node, i) => {
-    const newNode: NodeData = { id: `${i}`, data: node };
-    return newNode;
-  });
 
   return (
     <div className={styles.pageContainer}>
@@ -93,12 +28,21 @@ export function AiCheckOutputPage({ check }: { check: Check }) {
           className="my-graphin-container"
           options={{
             data: {
-              nodes: data.nodes,
-              edges: data.edges,
+              nodes: pageInsights.nodes,
+              edges: pageInsights.edges,
             },
             node: {
+              type: 'html',
               style: {
-                labelText: (d) => d.id,
+                size: [100, 100],
+                innerHTML: (node: any) => {
+                  const data = node.data as NodeData;
+                  const color = getNodeColor(data.page_insights?.score);
+                  return `<div style="padding: 16px; background-color: ${color}; border-radius: 100px; color: white; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div><strong>${node.id}</strong></div>
+                            <div>Score: ${data.page_insights?.score}</div>      
+                          </div>`;
+                },
               },
             },
             layout: {
@@ -112,9 +56,15 @@ export function AiCheckOutputPage({ check }: { check: Check }) {
                 type: 'tooltip',
                 trigger: 'click',
                 getContent: (e: any, items: any[]) => {
-                  let result = `<h4>Custom Content</h4>`;
-                  items.forEach((item) => {
-                    result += `<p>Type: ${item.data.description}</p>`;
+                  let result = '';
+                  items.forEach((node) => {
+                    const data = node.data as NodeData;
+                    const accessibility = data.page_insights.insights_by_category.accessibility;
+                    const content = data.page_insights.insights_by_category.content;
+                    result += `<h4>Global score: ${data.page_insights.score}</h4>`;
+                    result += `<p>Accessibility score: ${accessibility.score}</p>`;
+                    result += `<p>Content score: ${content.score}</p>`;
+                    result += `<p>Total number of issues: ${content.issues.length + accessibility.issues.length}</p>`;
                   });
                   return result;
                 },
@@ -125,7 +75,7 @@ export function AiCheckOutputPage({ check }: { check: Check }) {
           }}
         ></Graphin>
       </PanelChrome>
-      <PageInsightsSection />
+      {/* <PageInsightsSection /> */}
     </div>
   );
 }

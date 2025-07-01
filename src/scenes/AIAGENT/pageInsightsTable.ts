@@ -86,6 +86,8 @@ function getQueryRunner() {
 
 export function getPageInsightsTable() {
   return new SceneFlexItem({
+    width: '100%',
+    height: 400,
     body: new ExplorablePanel({
       pluginId: 'table',
       title: 'Accessibility issues',

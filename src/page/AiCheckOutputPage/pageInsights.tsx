@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 
-import { Badge, Collapse, Table, useStyles2 } from '@grafana/ui';
+import { Badge, Collapse, useStyles2 } from '@grafana/ui';
 
 import pageInsights from '../../scenes/AIAGENT/data/example-output.json';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
 
 import { getPageInsightsTable } from '../../scenes/AIAGENT/pageInsightsTable';
+import { EmbeddedScene, SceneFlexLayout } from '@grafana/scenes';
 
 export function Header({ title, stats }: { title: string; stats?: Map<string, number> }) {
   const styles = useStyles2(getStyles);
@@ -58,6 +59,14 @@ export function Header({ title, stats }: { title: string; stats?: Map<string, nu
   );
 }
 
+function getPageInsightsScene() {
+  return new EmbeddedScene({
+    body: new SceneFlexLayout({
+      children: [getPageInsightsTable()],
+    }),
+  });
+}
+
 export function PageInsightsSection() {
   const [isOpen, setIsOpen] = useState(false);
   const accessibilityStats: Map<string, number> = new Map();
@@ -79,6 +88,8 @@ export function PageInsightsSection() {
   });
   console.log('accessibilityStats:', accessibilityStats);
 
+  const scene = getPageInsightsScene();
+
   return (
     <>
       <h1>Page Insights</h1>
@@ -90,7 +101,7 @@ export function PageInsightsSection() {
           setIsOpen(isOpen);
         }}
       >
-        {/* {getPageInsightsTable()} */}
+        <scene.Component model={scene} />
       </Collapse>
     </>
   );

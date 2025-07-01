@@ -159,14 +159,14 @@ function DashboardPageContent() {
   }
 
   if (scene) {
-    // if (check && getCheckType(check.settings) === CheckType.AiAgent) {
-    //   return (
-    //     <>
-    //       <scene.Component model={scene} />
-    //       <AiCheckOutputPage check={check} />
-    //     </>
-    //   );
-    // }
+    if (check && getCheckType(check.settings) === CheckType.AiAgent) {
+      return (
+        <>
+          <scene.Component model={scene} />
+          <AiCheckOutputPage check={check} />
+        </>
+      );
+    }
 
     return <scene.Component model={scene} />;
   }
