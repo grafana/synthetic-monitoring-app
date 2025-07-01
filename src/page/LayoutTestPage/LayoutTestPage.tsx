@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useParams } from 'react-router-dom-v5-compat';
-import { DateTime, dateTime, GrafanaTheme2, LoadingState, PageLayoutType } from '@grafana/data';
+import { DateTime, dateTime, dateTimeFormat, GrafanaTheme2, LoadingState, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import {
   Alert,
@@ -22,9 +22,11 @@ import { useAdHocCheck, useCheck } from 'data/useChecks';
 
 import { toPayload } from '../../components/CheckEditor/checkFormTransformations';
 import { CheckForm } from '../../components/CheckForm/CheckForm';
+import { broadcastFailedSubmission, findFieldToFocus } from '../../components/CheckForm/CheckForm.utils';
 import { CheckFormContextProvider, useCheckFormMetaContext } from '../../components/CheckForm/CheckFormContext';
 import { Preformatted } from '../../components/Preformatted';
 import { useProbes } from '../../data/useProbes';
+import { trackAdhocCreated } from '../../features/tracking/checkFormEvents';
 import { WikCard } from './components/WikCard';
 import { useAdHocLogs } from './hooks/useAdHocLogs';
 
@@ -51,7 +53,7 @@ export function LayoutTestPage() {
 }
 
 function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
-  const { check } = useCheckFormMetaContext();
+  const { check, checkType, checkState } = useCheckFormMetaContext();
   const methods = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
   const {
@@ -234,11 +236,19 @@ function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
   }, [logs, hasPendingRequests, requestState, isFetching]);
 
   const handleAdHocCheck = () => {
-    methods.trigger().then(() => {
-      if (!methods.formState.isValid) {
-        console.log('Form is invalid, not submitting ad-hoc check', methods.formState.errors);
+    methods.trigger().then((isValid) => {
+      if (!isValid) {
+        const errors = methods.formState.errors;
+        console.log(methods.formState.errors);
+        broadcastFailedSubmission(errors, `collapsible`);
+        setTimeout(() => {
+          findFieldToFocus(errors);
+        }, 200);
+
+        return;
       }
       const formValues = methods.getValues();
+      trackAdhocCreated({ checkType, checkState });
       const adHocCheckPayload = toPayload(formValues);
       if (adHocCheckPayload) {
         adHocCheck(adHocCheckPayload);
@@ -279,10 +289,11 @@ function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
                 {[...requestState].reverse().map((state, index) => {
                   const probesInSegment = state.logs.map((item) => getProbeStatus(index, item.probe));
                   const isLoadingState = state.logs.some((logState) => logState.state === 'pending');
+                  console.log(state);
                   return (
                     <PanelChrome
                       key={state.id}
-                      title={`ID: ${state.id}`}
+                      title={dateTimeFormat(state.created)}
                       loadingState={isLoadingState ? LoadingState.Loading : LoadingState.Done}
                       actions={
                         <div className={styles.probeTop} onClick={handleToggleExpand}>

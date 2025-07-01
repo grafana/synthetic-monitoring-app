@@ -11,6 +11,10 @@ export interface ConstructActionsProps {
   ref: RefObject<HTMLButtonElement | null>;
 }
 
+/**
+ * Button to test a check ad-hoc.
+ * @deprecated This is stupid
+ */
 export const AdHocCheckButton = forwardRef<HTMLButtonElement, Omit<ConstructActionsProps, 'checkType'>>(
   ({ disabled, loading }, ref) => {
     const canReadLogs = useCanReadLogs();

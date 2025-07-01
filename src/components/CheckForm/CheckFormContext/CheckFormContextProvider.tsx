@@ -20,6 +20,8 @@ export function CheckFormContextProvider({ check, children, disabled = false }: 
     defaultValues: checkFormMeta.defaultFormValues,
     shouldFocusError: false, // we manage focus manually
     resolver: zodResolver(checkFormMeta.schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
   });
 
   useEffect(() => {
