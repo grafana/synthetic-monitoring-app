@@ -1,0 +1,1 @@
+export { getUserJourneysTable } from './UserJourneysTable';

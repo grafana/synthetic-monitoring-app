@@ -1,13 +1,25 @@
 export type UserJourney = {
   title: string;
   description: string;
+  discovery_context: string;
+};
+
+export type UserJourneyTest = {
+  user_flow: UserJourney;
+  summary: string;
   success: boolean;
+  final_url: string;
   steps: UserJourneyStep[];
 };
 
 export type UserJourneyStep = {
+  action: string;
+  goal: string;
   url: string;
-  reasoning: string;
+};
+
+export type UserJourneyStepIndexed = UserJourneyStep & {
+  index: number;
 };
 
 export type UserJourneyTableRow = {
