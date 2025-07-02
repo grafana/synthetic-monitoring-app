@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useCallback, useMemo } from 'react';
+import React, { BaseSyntheticEvent, ReactNode, useCallback } from 'react';
 import { FieldErrors, FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
@@ -8,11 +8,10 @@ import { ZodType } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
-import { flattenKeys } from 'components/CheckForm/CheckForm.utils';
 import { ANALYTICS_STEP_MAP, FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
-import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
-import { FormSection, FormSectionInternal, FormSectionProps } from './FormSection';
+import { useFormLayoutInternal } from './formlayout.utils';
+import { FormSection } from './FormSection';
 import { FormSidebar } from './FormSidebar';
 
 type ActionNode = {
@@ -52,31 +51,8 @@ export const FormLayout = <T extends FieldValues>({
   const {
     formState: { disabled },
   } = useFormContext();
-  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(disabled);
-
-  const sections = useMemo(() => {
-    let index = -1;
-
-    return (
-      Children.map(children, (child) => {
-        if (!isValidElement(child)) {
-          return null;
-        }
-
-        if (child.type === FormSection) {
-          index++;
-
-          const sectionProps = child.props as Omit<FormSectionProps, 'index' | 'activeSection'>;
-
-          return <FormSectionInternal {...sectionProps} index={index} activeSection={activeSection} />;
-        }
-
-        return child;
-      }) || []
-    );
-  }, [activeSection, children]);
-
-  const formSections = sections.filter((section) => section.type === FormSectionInternal);
+  const { activeSection, goToSection, setVisited, visitedSections, sections, formSections, setActiveSectionByError } =
+    useFormLayoutInternal(children);
 
   const handleVisited = useCallback(
     (indices: number[]) => {
@@ -95,24 +71,10 @@ export const FormLayout = <T extends FieldValues>({
 
   const handleInvalid = useCallback(
     (errs: FieldErrors<T>) => {
-      handleVisited(formSections.map((section) => section.props.index));
-      const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errs));
-
-      const errSection = formSections?.find((section) => {
-        const fields = section.props.fields;
-
-        return flattenedErrors.find((errName: string) => {
-          return fields?.some((field: string) => errName.startsWith(field));
-        });
-      });
-
-      if (errSection !== undefined) {
-        setActiveSection(errSection.props.index);
-      }
-
+      setActiveSectionByError(errs);
       onInvalid?.(errs);
     },
-    [handleVisited, onInvalid, formSections, setActiveSection]
+    [setActiveSectionByError, onInvalid]
   );
 
   const actionButtons = actions?.find((action) => action.index === activeSection)?.element;

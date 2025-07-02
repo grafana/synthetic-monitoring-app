@@ -18,12 +18,13 @@ import {
 import { css, cx } from '@emotion/css';
 
 import { CheckFormValues, CheckPageParams } from '../../types';
-import { useAdHocCheck, useCheck } from 'data/useChecks';
+import { useAdHocCheck, useChecks } from 'data/useChecks';
 
 import { toPayload } from '../../components/CheckEditor/checkFormTransformations';
 import { CheckForm } from '../../components/CheckForm/CheckForm';
-import { broadcastFailedSubmission, findFieldToFocus } from '../../components/CheckForm/CheckForm.utils';
+import { findFieldToFocus } from '../../components/CheckForm/CheckForm.utils';
 import { CheckFormContextProvider, useCheckFormMetaContext } from '../../components/CheckForm/CheckFormContext';
+import { useSetActiveSectionByError } from '../../components/CheckForm/FormLayout/FormLayoutContext';
 import { Preformatted } from '../../components/Preformatted';
 import { useProbes } from '../../data/useProbes';
 import { trackAdhocCreated } from '../../features/tracking/checkFormEvents';
@@ -44,7 +45,8 @@ interface RequestState {
 
 export function LayoutTestPage() {
   const { id } = useParams<CheckPageParams>();
-  const { data: check, isLoading } = useCheck(Number(id));
+  const { data: checks, isLoading } = useChecks();
+  const check = checks?.find((c) => c.id === Number(id));
   return (
     <CheckFormContextProvider check={check}>
       <LayoutTestPageContent isLoading={isLoading} />
@@ -66,6 +68,9 @@ function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
     initialSize: 1,
     dragPosition: 'end',
   });
+
+  const setActiveSectionByError = useSetActiveSectionByError();
+
   const [expand, setExpand] = useState(false);
   const handleToggleExpand = () => {
     setExpand(!expand);
@@ -239,8 +244,7 @@ function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
     methods.trigger().then((isValid) => {
       if (!isValid) {
         const errors = methods.formState.errors;
-        console.log(methods.formState.errors);
-        broadcastFailedSubmission(errors, `collapsible`);
+        setActiveSectionByError(errors);
         setTimeout(() => {
           findFieldToFocus(errors);
         }, 200);

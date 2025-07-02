@@ -9,6 +9,7 @@ import { render } from 'test/render';
 import { CheckType } from 'types';
 
 import { FormLayout, type FormLayoutProps } from './FormLayout';
+import { FormLayoutContextProvider } from './FormLayoutContext';
 
 describe(`FormLayout`, () => {
   it(`automatically has the first step open`, async () => {
@@ -388,17 +389,19 @@ const TestForm = <T extends FieldValues>({
 
   return (
     <FormProvider {...formMethods}>
-      <FormLayout
-        checkState="new"
-        checkType={CheckType.HTTP}
-        actions={actions}
-        onSubmit={formMethods.handleSubmit}
-        onValid={(v) => v}
-        schema={schema}
-        hasUnsavedChanges={hasUnsavedChanges}
-      >
-        {children}
-      </FormLayout>
+      <FormLayoutContextProvider>
+        <FormLayout
+          checkState="new"
+          checkType={CheckType.HTTP}
+          actions={actions}
+          onSubmit={formMethods.handleSubmit}
+          onValid={(v) => v}
+          schema={schema}
+          hasUnsavedChanges={hasUnsavedChanges}
+        >
+          {children}
+        </FormLayout>
+      </FormLayoutContextProvider>
     </FormProvider>
   );
 };

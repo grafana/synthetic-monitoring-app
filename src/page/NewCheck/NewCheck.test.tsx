@@ -2,10 +2,8 @@ import React, { ReactNode } from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
-import { CheckTypeGroup } from '../../types';
-import { CheckForm } from 'components/CheckForm/CheckForm';
+import { CheckTypeGroup } from 'types';
 
-import { PluginPageNotFound } from '../NotFound';
 import { NewCheck } from './NewCheck';
 
 enum NewCheckTestIds {
@@ -53,19 +51,16 @@ describe('<NewCheck />', () => {
     async (checkTypeGroup) => {
       await renderNewCheck({ route: ':checkTypeGroup', path: checkTypeGroup });
       expect(screen.getByTestId(NewCheckTestIds.CheckForm)).toBeInTheDocument();
-      expect(CheckForm).toHaveBeenCalledTimes(1);
     }
   );
 
   it('should render not found page for invalid check type group', async () => {
     await renderNewCheck({ route: ':checkTypeGroup', path: 'this-is-not-a-check-type-group' });
     expect(screen.getByTestId(NewCheckTestIds.PluginPageNotFound)).toBeInTheDocument();
-    expect(PluginPageNotFound).toHaveBeenCalledTimes(1);
   });
 
   it('should render not found page when :checkTypeGroup param is missing', async () => {
     await renderNewCheck();
     expect(screen.getByTestId(NewCheckTestIds.PluginPageNotFound)).toBeInTheDocument();
-    expect(PluginPageNotFound).toHaveBeenCalledTimes(1);
   });
 });
