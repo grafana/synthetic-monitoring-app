@@ -7,13 +7,19 @@ permissions:
   contents: read
 
 jobs:
-  set-up:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Split tests across multiple runners for parallelization
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Plugin Environment
         uses: ./.github/actions/setup-env
 
-      - name: Integration and unit tests
-        run: yarn test
+      - name: Run tests
+        run: |
+          # Use Jest's built-in sharding for better distribution
+          yarn test:ci --shard=${{ matrix.shard }}/4
