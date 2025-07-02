@@ -176,7 +176,6 @@ const settingsToTF = (check: Check): TFCheckSettings => {
     };
   }
 
-  // @ts-expect-error - This should never happen
   const settingsKey = Object.keys(check.settings)[0];
   throw new Error(`Unknown check type: ${settingsKey}`);
 };
