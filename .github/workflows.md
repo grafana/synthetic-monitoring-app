@@ -69,21 +69,32 @@ Can be manually triggered via GitHub Actions to force a release-please run outsi
 
 ## Workflow Structure
 
-The GitHub Actions setup uses reusable workflows:
+The GitHub Actions setup uses reusable workflows organized into these categories:
 
-- `on-pr-creation.yml` - Runs all PR checks
-- `on-push-to-main.yml` - Handles main branch builds and deployments
-- `dispatch_deploy-plugin.yml` - Manual deployment trigger for any environment
+### Core Workflows (Entry Points)
+- `on-pr-creation.yml` - **Triggered on PR creation** - Runs all PR validation checks
+- `on-push-to-main.yml` - **Triggered on main branch push** - Handles builds and auto-deployment
+- `dispatch_deploy-plugin.yml` - **Manual trigger** - Deployment to any environment
+
+### Reusable Workflow Components
+
+**Build & Test:**
+- `call_env-setup.yml` - Sets up plugin environment and caching
+- `call_lint.yml` - Runs ESLint checks
+- `call_integration-tests.yml` - Runs Jest integration and unit tests
+- `call_build-and-typecheck.yml` - Builds plugin and runs TypeScript checks
+- `call_grafana-compat.yml` - Checks compatibility with latest Grafana API
+
+**Quality & Analysis:**
+- `call_dangerJS.yml` - Runs bundle size comparison and PR checks
+- `call_main-bundle-size.yml` - Generates bundle size artifacts for comparison
+- `call_validate-policy-bot.yml` - Validates policy bot configuration
+
+**Deployment & Release:**
 - `call_build-sign-upload-plugin.yml` - Builds, signs, and uploads plugin to GCS
 - `call_deploy-plugin.yml` - Orchestrates deployment process
 - `call_update-deployment-tools.yml` - Creates deployment_tools PRs
 - `call_release-please.yml` - Handles release management (auto + manual)
-- `call_publish-techdocs.yml` - Publishes documentation
-- `call_main-bundle-size.yml` - Generates bundle size artifacts
-- `call_dangerJS.yml` - Runs bundle size comparison and PR checks
-- `call_build-and-typecheck.yml` - Builds plugin and runs TypeScript checks
-- `call_env-setup.yml` - Sets up plugin environment and caching
-- `call_lint.yml` - Runs linting
-- `call_integration-tests.yml` - Runs tests
-- `call_grafana-compat.yml` - Checks Grafana API compatibility
-- `call_validate-policy-bot.yml` - Validates policy bot configuration
+
+**Documentation:**
+- `call_publish-techdocs.yml` - Publishes documentation to Backstage
