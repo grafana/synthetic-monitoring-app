@@ -37,6 +37,11 @@ const aiagentSettingsSchema: ZodType<AiAgentSettings> = z.object({
     insightsContentQuality: z.boolean(),
     userJourneys: z.boolean(),
   }),
+  userJourneys: z.object({
+    enabled: z.boolean(),
+    maxUserJourneys: z.number().min(1),
+    maxStepsPerJourney: z.number().min(1),
+  }),
 });
 
 export const aiAgentCheckSchema: ZodType<CheckFormValuesAiAgent> = baseCheckSchema

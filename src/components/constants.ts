@@ -354,6 +354,11 @@ export const FALLBACK_CHECK_AIAGENT: AiAgentCheck = {
         insightsContentQuality: true,
         userJourneys: true,
       },
+      userJourneys: {
+        enabled: false,
+        maxUserJourneys: 3,
+        maxStepsPerJourney: 10,
+      },
     },
   },
 };

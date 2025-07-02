@@ -71,7 +71,7 @@ const checkTypeStep1Label = {
   [CheckType.Traceroute]: `Request`,
   [CheckType.GRPC]: `Request`,
   [CheckType.Browser]: `Script`,
-  [CheckType.AiAgent]: `Request`,
+  [CheckType.AiAgent]: `Agent`,
 };
 
 type CheckFormProps = {

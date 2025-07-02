@@ -14,6 +14,7 @@ export function getAiAgentCheckFormValues(check: AiAgentCheck): CheckFormValuesA
         durationInMinutes: check.settings?.aiagent?.durationInMinutes,
         aggressiveness: check.settings?.aiagent?.aggressiveness,
         features: check.settings?.aiagent?.features,
+        userJourneys: check.settings?.aiagent?.userJourneys,
       },
     },
   };

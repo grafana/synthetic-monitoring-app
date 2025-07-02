@@ -198,6 +198,11 @@ export interface AiAgentSettings {
     insightsContentQuality: boolean;
     userJourneys: boolean;
   };
+  userJourneys: {
+    enabled: boolean;
+    maxUserJourneys: number;
+    maxStepsPerJourney: number;
+  };
 }
 
 export interface TcpSettings {

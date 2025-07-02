@@ -8,10 +8,13 @@ export const AiAgentRequest = () => {
   const {
     control,
     register,
+    watch,
     // formState: { errors },
   } = useFormContext<CheckFormValuesAiAgent>();
   const { field } = useController({ name: 'settings.aiagent.aggressiveness', control });
   const { onChange, value } = field;
+
+  const userJourneysEnabled = watch('settings.aiagent.userJourneys.enabled');
 
   return (
     <>
@@ -53,6 +56,29 @@ export const AiAgentRequest = () => {
       <Field label="Aggressiveness" description="How nitpicky should the Agent be?">
         <Slider {...register('settings.aiagent.aggressiveness')} min={1} max={3} onChange={onChange} value={value} />
       </Field>
+      <Field label="Test user journeys" description="Make the agent explore and test user journeys">
+        <Checkbox {...register('settings.aiagent.userJourneys.enabled')} label="Enable user journeys" />
+      </Field>
+      {userJourneysEnabled && (
+        <>
+        <Field label="Max user journeys" description="The maximum number of user journeys the agent will explore">
+          <Input
+            id="aiagent-max-user-journeys"
+            {...register('settings.aiagent.userJourneys.maxUserJourneys')}
+            type="number"
+            data-fs-element="AI Agent max user journeys"
+          />
+        </Field>
+        <Field label="Max steps per journey" description="The maximum number of steps per user journey the agent will explore">
+          <Input
+            id="aiagent-max-steps-per-journey"
+            {...register('settings.aiagent.userJourneys.maxStepsPerJourney')}
+            type="number"
+            data-fs-element="AI Agent max steps per journey"
+          />
+        </Field>
+        </>
+      )}
     </>
   );
 };

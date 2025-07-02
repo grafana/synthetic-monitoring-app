@@ -13,6 +13,7 @@ export function getAiAgentPayload(formValues: CheckFormValuesAiAgent): AiAgentCh
         durationInMinutes: formValues.settings.aiagent.durationInMinutes,
         aggressiveness: formValues.settings.aiagent.aggressiveness,
         features: formValues.settings.aiagent.features,
+        userJourneys: formValues.settings.aiagent.userJourneys,
       },
     },
   };
