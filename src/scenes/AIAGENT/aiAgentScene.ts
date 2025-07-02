@@ -66,7 +66,17 @@ export function getAiAgentScene({ metrics }: DashboardSceneAppConfig, check: Che
           new SceneFlexLayout({
             direction: 'row',
             height: 500,
-            children: [getPageInsightsTable()],
+            children: [getPageInsightsTable("Accessibility")],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 500,
+            children: [getPageInsightsTable("Content")],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 500,
+            children: [getPageInsightsTable("Reliability")],
           }),
         ],
       }),

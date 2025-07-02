@@ -24,15 +24,11 @@ export type NodeData = {
   title: string;
   page_insights: {
     score: number;
-    insights_by_category: InsightsByCategory;
+    insights_by_category: Record<InsightsCategory, PageInsightsCategory>;
   };
 };
 
-export type InsightsByCategory = {
-  accessibility: PageInsightsCategory;
-  content: PageInsightsCategory;
-  reliability: PageInsightsCategory;
-};
+export type InsightsCategory = 'accessibility' | 'content' | 'reliability';
 
 export type PageInsightsCategory = {
   summary: string;

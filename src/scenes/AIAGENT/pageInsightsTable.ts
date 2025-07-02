@@ -1,8 +1,9 @@
 import { SceneDataTransformer, SceneFlexItem, SceneQueryRunner } from '@grafana/scenes';
 
+import { InsightsCategory,NodeData, PageInsightsIssue, PageInsightsTableRow } from './types';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
+
 import pageInsights from './data/example-output.json';
-import { PageInsightsTableRow, NodeData, PageInsightsIssue } from './types';
 import { INFINITY_DS_UID } from './constants';
 
 export function groupToNestedTable(runner: SceneQueryRunner) {
@@ -48,11 +49,11 @@ export function groupToNestedTable(runner: SceneQueryRunner) {
   });
 }
 
-function getQueryRunner() {
+function getQueryRunner(category: InsightsCategory) {
   const flattenedPageInsights: PageInsightsTableRow[] = [];
   pageInsights.nodes.forEach((node: any) => {
     const data = node.data as NodeData;
-    data.page_insights.insights_by_category.accessibility.issues.forEach((issue: PageInsightsIssue) => {
+    data.page_insights.insights_by_category[category].issues.forEach((issue: PageInsightsIssue) => {
       flattenedPageInsights.push({
         url: data.url,
         severity: issue.severity,
@@ -62,7 +63,6 @@ function getQueryRunner() {
       });
     });
   });
-  console.log('Flattened page insights:', flattenedPageInsights);
 
   const runner = new SceneQueryRunner({
     datasource: {
@@ -84,15 +84,14 @@ function getQueryRunner() {
   return groupToNestedTable(runner);
 }
 
-export function getPageInsightsTable() {
+export function getPageInsightsTable(category: string) {
   return new SceneFlexItem({
     width: '100%',
-    height: 400,
     body: new ExplorablePanel({
       pluginId: 'table',
-      title: 'Accessibility issues',
-      description: 'Accessibility issues discovered by the AI agent',
-      $data: getQueryRunner(),
+      title: `${category} issues`,
+      description: `${category} issues discovered by the AI agent`,
+      $data: getQueryRunner(category.toLowerCase() as InsightsCategory),
       fieldConfig: {
         defaults: {
           color: {
