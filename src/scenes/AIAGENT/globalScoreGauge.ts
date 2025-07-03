@@ -2,6 +2,7 @@ import { SceneFlexItem, SceneQueryRunner } from '@grafana/scenes';
 import { ThresholdsMode } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
+
 import { INFINITY_DS_UID } from './constants';
 
 function getQueryRunner() {
@@ -56,11 +57,11 @@ export function getGlobalScoreGaugePanel() {
               },
               {
                 color: 'orange',
-                value: 60,
+                value: 50,
               },
               {
                 color: 'green',
-                value: 80,
+                value: 90,
               },
             ],
           },

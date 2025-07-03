@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
-import { Badge, Card, CollapsableSection, PanelChrome, Stack, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
+import { Badge, Card, Collapse, PanelChrome, Stack, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
 
 import pageInsights from '../data/example-output.json';
 import { InsightsCategory, NodeData, PageInsightsIssue } from '../types';
@@ -14,9 +14,9 @@ interface PageInsightsTableState extends SceneObjectState {
 }
 
 const getScoreBadgeColor = (score: number) => {
-  if (score > 90) {
+  if (score >= 90) {
     return 'green';
-  } else if (score > 50) {
+  } else if (score >= 50) {
     return 'orange';
   }
   return 'red';
@@ -113,8 +113,6 @@ function PageInsightsTableRenderer({ model }: SceneComponentProps<PageInsightsTa
 function PageInsightsItem({ item, type }: { item: NodeData; type: InsightsCategory }) {
   const styles = useStyles2(getStyles);
   const [collapsed, setCollapsed] = useState(true);
-  console.log('item', item);
-  console.log('type', type);
   const insightsByCategory = item.page_insights.insights_by_category[type];
 
   const groupedIssues: Map<string, PageInsightsIssue[]> = new Map();
@@ -127,14 +125,14 @@ function PageInsightsItem({ item, type }: { item: NodeData; type: InsightsCatego
   const [selectedTab, setSelectedTab] = React.useState(groupedIssues.keys().next().value);
 
   return (
-    <CollapsableSection
+    <Collapse
       className={styles.collapsableSection}
       label={
         <div style={{ width: '100%' }}>
           <Stack direction="row" alignItems="center" justifyContent="center">
             <div style={{ flex: 1, textAlign: 'start' }}>
               <Badge
-                text={<div style={{ fontSize: 16 }}>Score: {insightsByCategory.score}</div>}
+                text={<div style={{ fontSize: 14 }}>Score: {insightsByCategory.score}</div>}
                 color={getScoreBadgeColor(insightsByCategory.score)}
                 style={{ marginRight: '8px' }}
               />
@@ -152,17 +150,41 @@ function PageInsightsItem({ item, type }: { item: NodeData; type: InsightsCatego
       onToggle={() => setCollapsed(!collapsed)}
     >
       <div style={{ paddingLeft: '32px', paddingRight: '16px' }}>
-        <h5>Summary</h5>
         <p>{insightsByCategory.summary}</p>
 
-        {/* <h5>Issues</h5> */}
+        {/* {[...groupedIssues.keys()].map((group, index) => {
+          const [groupCollapsed, setGroupCollapsed] = useState(true);
+
+          return (
+            <CollapsableSection
+              label={group.toUpperCase()}
+              isOpen={!groupCollapsed}
+              onToggle={() => setGroupCollapsed(!groupCollapsed)}
+              key={`group-${index}`}
+            >
+              {groupedIssues.get(group)?.map((issue, issueIndex) => (
+                <Card key={`issue-${issueIndex}`}>
+                  <Card.Heading>{issue.reason}</Card.Heading>
+                  <Card.Description>
+                    <div>
+                      <strong>Description:</strong> {issue.description}
+                    </div>
+                    <div>
+                      <strong>Recommendation:</strong> {issue.recommendation}
+                    </div>
+                  </Card.Description>
+                </Card>
+              ))}
+            </CollapsableSection>
+          );
+        })} */}
 
         <TabsBar>
           {[...groupedIssues.keys()].map((group, index) => {
             return (
               <Tab
                 key={index}
-                label={group.toUpperCase()}
+                label={`${group.toUpperCase()} (${groupedIssues.get(group)?.length ?? 0})`}
                 active={group === selectedTab}
                 onChangeTab={() => setSelectedTab(group)}
               />
@@ -185,7 +207,7 @@ function PageInsightsItem({ item, type }: { item: NodeData; type: InsightsCatego
           ))}
         </TabContent>
       </div>
-    </CollapsableSection>
+    </Collapse>
   );
 }
 export function getPageInsightsTable(type: InsightsCategory): SceneFlexItem {
