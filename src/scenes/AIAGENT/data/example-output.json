@@ -1,72 +1,156 @@
 {
   "edges": [
     {
-      "source": "/",
-      "target": "/login"
-    },
-    {
-      "source": "/",
-      "target": "/admin"
-    },
-    {
       "source": "/admin",
       "target": "/"
     },
     {
       "source": "/login",
       "target": "/"
+    },
+    {
+      "source": "/",
+      "target": "/login"
+    },
+    {
+      "source": "/",
+      "target": "/admin"
     }
   ],
   "nodes": [
+    {
+      "id": "/login",
+      "data": {
+        "url": "https://quickpizza.grafana.com/login",
+        "title": "",
+        "web_vitals": {
+          "ttfb": 122.3999999910593,
+          "lcp": 288,
+          "cls": 0.015405980428059894,
+          "fcp": 288
+        },
+        "page_insights": {
+          "score": 66,
+          "insights_by_category": {
+            "accessibility": {
+              "summary": "This login page has serious accessibility barriers that prevent users with disabilities from using it effectively. The username and password fields lack proper labels, making them unusable for screen reader users. The page also missing a title element, which impacts navigation for assistive technology users. Additionally, the main page link has poor color contrast that makes it difficult to see.",
+              "score": 31,
+              "issues": [
+                {
+                  "severity": "critical",
+                  "description": "Form elements (username and password inputs) do not have associated labels, making them inaccessible to screen readers and assistive technologies.",
+                  "reason": "The username and password input fields lack proper labels, aria-label attributes, or aria-labelledby associations. This is a critical accessibility barrier as users with screen readers cannot understand what each field is for.",
+                  "recommendation": "Add proper \u003clabel\u003e elements associated with the input fields using the 'for' attribute, or add aria-label attributes to each input field. For example: \u003clabel for=\"username\"\u003eUsername\u003c/label\u003e and \u003clabel for=\"password\"\u003ePassword\u003c/label\u003e."
+                },
+                {
+                  "severity": "high",
+                  "description": "The page is missing a document title element, which is essential for screen reader users and search engine optimization.",
+                  "reason": "The HTML document lacks a \u003ctitle\u003e element, which screen readers use to announce the page purpose and search engines use to understand page content.",
+                  "recommendation": "Add a descriptive \u003ctitle\u003e element to the document head, such as \u003ctitle\u003eLogin - Your App Name\u003c/title\u003e."
+                },
+                {
+                  "severity": "medium",
+                  "description": "The \"Back to main page\" link has insufficient color contrast (3.46:1) against the background, failing WCAG AA standards.",
+                  "reason": "The blue text (#3b82f6) on the orange background (#fff7ed) provides only 3.46:1 contrast ratio, which is below the required 4.5:1 for normal text.",
+                  "recommendation": "Adjust the link color to meet WCAG AA contrast requirements. Use a darker blue color or add a background/border to improve contrast visibility."
+                }
+              ]
+            },
+            "content": {
+              "summary": "The QuickPizza login page appears unfinished for customer use. It exposes development hints with default passwords, uses technical API language instead of user-friendly account creation options, and lacks essential features like password recovery. The page needs completion before being suitable for actual pizza customers.",
+              "score": 68,
+              "issues": [
+                {
+                  "severity": "medium",
+                  "description": "The user creation instructions contain highly technical jargon that is inaccessible to non-technical users",
+                  "reason": "The tip section states \"You can create a new user via the POST http://quickpizza.grafana.com/api/users endpoint. Attach a JSON payload with username and password keys.\" This language assumes technical knowledge of HTTP methods, API endpoints, and JSON payloads that typical pizza ordering customers would not understand.",
+                  "recommendation": "Replace the technical instructions with user-friendly language such as \"Need an account? Contact support or use the registration form to create a new account.\" Alternatively, provide a direct link to a user registration form instead of technical API instructions."
+                },
+                {
+                  "severity": "medium",
+                  "description": "Development hints are visible to end users in form field labels",
+                  "reason": "The username field shows \"(hint: default)\" and password field shows \"(hint: 12345678)\" which appear to be development/testing hints that should not be visible to actual users. These hints expose default credentials and suggest incomplete development.",
+                  "recommendation": "Remove the development hints from the field labels or replace them with user-friendly help text. For production, use proper placeholder text or help tooltips instead of exposing default credentials."
+                },
+                {
+                  "severity": "medium",
+                  "description": "Missing essential login page functionality for user account management",
+                  "reason": "The login page lacks standard user account management features that customers expect: no \"Forgot Password?\" link, no user-friendly registration option, and no security/privacy information. Users who forget their passwords have no recovery option.",
+                  "recommendation": "Add a \"Forgot Password?\" link, provide a clear user registration option (instead of technical API instructions), and include basic security information or privacy policy links to build user trust and provide complete functionality."
+                }
+              ]
+            },
+            "reliability": {
+              "summary": "The page demonstrates excellent technical reliability with clean JavaScript execution and no functional errors. The only minor issue is an incomplete monitoring tool configuration that generates a console warning but doesn't affect user experience or site functionality.",
+              "score": 99,
+              "issues": [
+                {
+                  "severity": "low",
+                  "description": "Console shows warning message: 'Grafana faro is not configured.' This suggests the application monitoring/observability setup is incomplete",
+                  "reason": "Grafana Faro monitoring tool is not configured, as indicated by console warning",
+                  "recommendation": "Configure Grafana Faro monitoring tool if application monitoring is desired, or remove the Faro initialization code if monitoring is not needed to eliminate the console warning"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
     {
       "id": "/",
       "data": {
         "url": "https://quickpizza.grafana.com/",
         "title": "QuickPizza",
-        "web_vitals": {},
+        "web_vitals": {
+          "ttfb": 416,
+          "lcp": 1180,
+          "cls": 0.004316230614980062,
+          "fcp": 1180
+        },
         "page_insights": {
-          "score": 82,
+          "score": 90,
           "insights_by_category": {
             "accessibility": {
-              "summary": "The page has good accessibility overall, with one notable issue affecting users with visual impairments. The footer links use blue text on an orange background that doesn't provide enough contrast, making them difficult to read for people with vision difficulties. Making the links darker would resolve this accessibility barrier.",
+              "summary": "The page has good accessibility overall with only one issue found. The footer links have poor color contrast against the orange background, making them difficult to read for users with visual impairments. This affects the 'Click here' and 'GitHub' links which don't meet web accessibility standards.",
               "score": 93,
               "issues": [
                 {
                   "severity": "medium",
-                  "description": "Two footer links (\"Click here\" and \"GitHub\") have insufficient color contrast. The blue text (#3b82f6) on orange background (#fff7ed) creates a contrast ratio of only 3.46:1, which doesn't meet WCAG AA accessibility standards requiring 4.5:1 for normal text.",
-                  "reason": "Color contrast ratio of 3.46:1 falls below WCAG AA standard of 4.5:1",
-                  "recommendation": "Darken the blue color of the footer links or adjust the background color to achieve at least 4.5:1 contrast ratio. Consider using a darker blue like #1e40af or #1d4ed8 to improve readability for users with visual impairments."
+                  "description": "Two blue links in the footer (\"Click here\" and \"GitHub\") have insufficient color contrast against the orange background. The contrast ratio is 3.46:1, which falls below the WCAG AA standard of 4.5:1 for normal text. This affects both links with the class \"text-blue-500\" on the orange background (#fff7ed).",
+                  "reason": "Low contrast text is difficult or impossible for many users to read, particularly those with visual impairments or color vision deficiencies. The current contrast ratio of 3.46:1 does not meet WCAG 2.1 AA standards.",
+                  "recommendation": "Increase the contrast ratio to at least 4.5:1 by either: 1) Using a darker shade of blue for the links (e.g., #1d4ed8 or darker), 2) Adding a background color to the links, or 3) Using a different color scheme that provides sufficient contrast against the orange background."
                 }
               ]
             },
             "content": {
-              "summary": "The QuickPizza website has a fake testimonial referencing performance testing tools instead of genuine customer feedback, lacks essential contact information for customer support, and is missing required legal policies like privacy terms and data handling disclosures needed for commercial sites.",
-              "score": 53,
+              "summary": "The QuickPizza landing page has solid messaging and functionality but lacks essential elements for a food service website. Most notably, there are no pizza images or food photography to showcase the product, and critical business information like contact details, service areas, and pricing is completely missing. These gaps make it difficult for users to understand or trust the service.",
+              "score": 80,
               "issues": [
                 {
-                  "severity": "high",
-                  "description": "Missing legal and policy information required for commercial websites",
-                  "reason": "The website lacks essential legal information such as privacy policy, terms of service, and data handling disclosures. This is particularly important since the site appears to collect user data (evidenced by WebSocket visitor IDs) and likely handles personal information for pizza ordering services.",
-                  "recommendation": "Add footer links to Privacy Policy, Terms of Service, and Cookie Policy. Ensure compliance with data protection regulations (GDPR, CCPA) especially if collecting user preferences or personal information for pizza recommendations."
+                  "severity": "medium",
+                  "description": "The landing page lacks any visual content such as pizza images, food photography, or product visuals that would help users understand the service and build trust in the food offering.",
+                  "reason": "For a food service landing page, visual content is essential for user engagement, appetite appeal, and building confidence in the product quality. Users expect to see what they're potentially ordering.",
+                  "recommendation": "Add high-quality pizza images, food photography, or visual representations of pizza combinations to enhance user engagement and provide visual context for the service."
                 },
                 {
                   "severity": "medium",
-                  "description": "Customer testimonial contains technical testing reference instead of authentic pizza experience",
-                  "reason": "The testimonial states \"I used Grafana's k6 to test this website, and it was great. Like pizza.\" This references a performance testing tool (Grafana's k6) rather than providing a genuine customer experience about pizza. This creates confusion and undermines the authenticity of the testimonial, making it appear as placeholder or test content that wasn't properly replaced.",
-                  "recommendation": "Replace with an authentic customer testimonial about the pizza ordering experience, food quality, or service. For example: \"I discovered amazing new pizza combinations I never would have tried! The recommendations were spot-on.\" - Mary D., Customer"
-                },
-                {
-                  "severity": "medium",
-                  "description": "Missing essential contact information and business details",
-                  "reason": "The page lacks fundamental business information including contact details (phone, email, address), customer support options, and basic company information. For a service-based website, users need ways to get help, ask questions, or contact the business if issues arise with their pizza orders or recommendations.",
-                  "recommendation": "Add a contact section or footer with essential business information: customer support email, phone number if applicable, and basic company details. Consider adding a \"Contact Us\" or \"Help\" link in the navigation."
+                  "description": "The page lacks essential business information such as contact details, service areas, pricing information, or explanation of how the pizza discovery service works.",
+                  "reason": "Users need basic business information to understand the service, make informed decisions, and get support. Without this information, users cannot properly evaluate or use the service.",
+                  "recommendation": "Add sections for: How it works, service areas, contact information, pricing overview, and basic FAQ to provide essential user information."
                 }
               ]
             },
             "reliability": {
-              "summary": "No issues found",
-              "score": 100,
-              "issues": []
+              "summary": "The page appears to be functioning well with no major user-facing issues. The only concern is that the monitoring system isn't properly configured, which could limit the ability to track and resolve problems proactively in the future.",
+              "score": 99,
+              "issues": [
+                {
+                  "severity": "low",
+                  "description": "Console shows warning: \"Grafana faro is not configured.\" This indicates that the application monitoring and observability system is not properly set up, which could limit the ability to track errors, monitor performance, and debug issues in production",
+                  "reason": "Grafana faro (application monitoring/observability tool) is not configured, which could impact error tracking and performance monitoring capabilities",
+                  "recommendation": "Configure Grafana faro properly to enable application monitoring, error tracking, and performance observability. This will improve the ability to detect and resolve issues proactively"
+                }
+              ]
             }
           }
         }
@@ -77,140 +161,72 @@
       "data": {
         "url": "https://quickpizza.grafana.com/admin",
         "title": "",
-        "web_vitals": {},
+        "web_vitals": {
+          "ttfb": 291.09999999403954,
+          "lcp": 568,
+          "cls": 0.00034141805436876087,
+          "fcp": 568
+        },
         "page_insights": {
-          "score": 67,
+          "score": 63,
           "insights_by_category": {
             "accessibility": {
-              "summary": "This login page has serious accessibility barriers that prevent users with disabilities from logging in. The username and password fields lack proper labels, making them invisible to screen readers. The page also missing a title, hindering navigation for assistive technology users. Additionally, the back link has poor color contrast that's difficult to read.",
-              "score": 43,
+              "summary": "This login page has significant accessibility barriers that prevent users with disabilities from accessing core functionality. The username and password fields lack proper labels, making them completely unusable with screen readers. The page also missing a title element, leaving users confused about the page's purpose. Additionally, the navigation link has poor color contrast, making it difficult to read for users with visual impairments.",
+              "score": 31,
               "issues": [
                 {
-                  "severity": "high",
-                  "description": "The username and password input fields have no associated labels, making them completely inaccessible to screen readers and other assistive technologies. Users with disabilities cannot identify what information to enter in these fields.",
-                  "reason": "Form elements (username and password inputs) completely lack proper labels",
-                  "recommendation": "Add proper `\u003clabel\u003e` elements for each form field, or use aria-label attributes. For example: `\u003clabel for=\"username\"\u003eUsername\u003c/label\u003e` and `\u003clabel for=\"password\"\u003ePassword\u003c/label\u003e`"
+                  "severity": "critical",
+                  "description": "Form elements (username and password inputs) do not have associated labels",
+                  "reason": "The username and password input fields lack proper labels, making them completely inaccessible to screen readers and other assistive technologies. Users with disabilities cannot identify what information should be entered in these fields.",
+                  "recommendation": "Add proper label elements for each form input. Use either explicit labels with 'for' attributes pointing to the input IDs, or wrap inputs in label elements. Example: \u0026lt;label for=\"username\"\u0026gt;Username\u0026lt;/label\u0026gt;\u0026lt;input id=\"username\" ...\u0026gt;"
                 },
                 {
                   "severity": "high",
-                  "description": "The page has no `\u003ctitle\u003e` element, which is critical for screen reader users to understand the page's purpose and for search engine optimization.",
-                  "reason": "Page is missing a document title",
-                  "recommendation": "Add a descriptive `\u003ctitle\u003e` element in the document head, such as `\u003ctitle\u003eLogin - Your App Name\u003c/title\u003e`"
+                  "description": "Document is missing a title element",
+                  "reason": "The page lacks a title element, which is essential for screen reader users to understand the page's purpose and for search engine optimization. This creates confusion for users navigating with assistive technology.",
+                  "recommendation": "Add a descriptive title element to the document head. Example: \u0026lt;title\u0026gt;Login - YourApp\u0026lt;/title\u0026gt;"
                 },
                 {
                   "severity": "medium",
-                  "description": "The blue link text (#3b82f6) on the orange background (#fff7ed) has a contrast ratio of only 3.46:1, which fails WCAG AA standards that require 4.5:1 for normal text.",
-                  "reason": "Insufficient color contrast on the \"Back to main page\" link",
-                  "recommendation": "Increase the contrast by using a darker blue color or adjusting the background. Consider using #1d4ed8 or similar darker blue to meet accessibility standards."
+                  "description": "Insufficient color contrast on \"Back to main page\" link",
+                  "reason": "The blue link text (#3b82f6) against the orange background (#fff7ed) has a contrast ratio of 3.46:1, which falls below the WCAG AA standard of 4.5:1. This makes it difficult for users with visual impairments to read the link.",
+                  "recommendation": "Increase the contrast by using a darker blue color or adding a background to the link. Consider using #1d4ed8 (darker blue) or adding a white/light background behind the link text."
                 }
               ]
             },
             "content": {
-              "summary": "The QuickPizza Administration login page has a serious security flaw by displaying actual login credentials directly on the form as hints, making the system vulnerable to unauthorized access. Additionally, the page lacks essential user support features like password recovery and help contacts, which could cause operational difficulties for business users needing assistance.",
+              "summary": "The QuickPizza administration login page has a critical security flaw where actual admin credentials are displayed as hints, allowing unauthorized access. The page also lacks password recovery options, leaving users stranded if they forget credentials, and missing branding elements that would help users trust they're on the legitimate site.",
               "score": 59,
               "issues": [
                 {
                   "severity": "high",
-                  "description": "Login form displays actual credentials in plain text as \"hints\" - Username field shows \"(hint: admin)\" and Password field shows \"(hint: admin)\", directly exposing the login credentials to anyone viewing the page",
-                  "reason": "Exposing actual login credentials as hints creates serious security vulnerabilities and teaches poor security practices. This makes the system accessible to unauthorized users and violates basic security principles of credential protection.",
-                  "recommendation": "Remove the credential hints from the form labels. If this is a demo environment, consider using placeholder text like \"Enter username\" or provide separate documentation for demo credentials. For production systems, implement proper authentication without exposing credentials."
+                  "description": "The login form displays actual administrative credentials in plain text as \"hints\" next to the username and password fields. Both fields show \"hint: admin\" which reveals the default login credentials to anyone viewing the page.",
+                  "reason": "Exposing administrative credentials in plain text creates a serious security vulnerability. This information allows unauthorized users to gain administrative access to the system, potentially compromising the entire application and any sensitive data it contains.",
+                  "recommendation": "Remove the credential hints entirely, or if hints are necessary for a demo environment, use placeholder text that doesn't reveal actual working credentials. Consider implementing proper authentication practices with unique, secure credentials."
                 },
                 {
                   "severity": "medium",
-                  "description": "Administrative login page lacks essential user support features - missing \"Forgot Password\" functionality, help/support contact information, and user assistance options",
-                  "reason": "Administrative users may need password recovery options and support contact information, especially in business environments where account lockouts or credential issues can impact operations. The absence of these features could lead to user frustration and potential system access delays.",
-                  "recommendation": "Add a \"Forgot Password?\" link below the login form, include contact information for technical support, and consider adding a help or FAQ link for common login issues. This would improve user experience and reduce support burden."
+                  "description": "The login page lacks essential user support features including password recovery options, help documentation, and contact information. There is no \"Forgot Password\" link or similar functionality to assist users who cannot access their accounts.",
+                  "reason": "Missing password recovery functionality can prevent legitimate users from accessing the system if they forget their credentials, leading to potential lockouts and requiring manual administrator intervention. This creates unnecessary friction and support burden.",
+                  "recommendation": "Add a \"Forgot Password\" link below the login form that provides users with self-service password recovery options. Consider adding links to help documentation or contact information for additional support."
                 },
                 {
                   "severity": "low",
-                  "description": "Missing security and legal information typically expected on administrative login pages - no privacy notices, terms of use, security disclaimers, or data handling information",
-                  "reason": "Administrative interfaces often handle sensitive business data and require appropriate legal disclosures and security notices to inform users about data handling, security policies, and usage terms. This is particularly important for business applications where compliance and legal requirements may apply.",
-                  "recommendation": "Consider adding appropriate legal notices, privacy policy links, or security disclaimers if required for the business context. Evaluate whether regulatory compliance (GDPR, CCPA, industry-specific requirements) necessitates additional disclosures."
+                  "description": "The administration login page lacks any branding elements, company identification, or visual context that would help users confirm they are on the correct/legitimate site. The page appears very minimal without any corporate identity markers.",
+                  "reason": "Without proper branding or visual context, users may question whether they are on the correct login page or a potential phishing site. This can reduce user confidence and trust, especially for administrative interfaces where security is paramount.",
+                  "recommendation": "Add appropriate branding elements such as a company logo, consistent color scheme, or other visual identifiers that help users recognize this as the official QuickPizza administration portal. Consider adding a brief description of the system's purpose."
                 }
               ]
             },
             "reliability": {
-              "summary": "The page demonstrates excellent technical stability with clean console logs and no functional errors. The only concern is missing monitoring configuration, which doesn't impact users but could limit future problem detection capabilities.",
+              "summary": "The page demonstrates excellent technical reliability with minimal issues. The only problem found is a missing configuration for a monitoring tool, which doesn't affect users' ability to browse or interact with the site. All core functionality appears to work properly without JavaScript errors, security warnings, or performance problems that would impact the user experience.",
               "score": 99,
               "issues": [
                 {
                   "severity": "low",
-                  "description": "Grafana Faro monitoring service is not properly configured",
-                  "reason": "Console warning indicates \"Grafana faro is not configured\" which suggests the application's observability and monitoring setup is incomplete. This could impact the ability to detect and respond to real-world errors and performance issues that users encounter.",
-                  "recommendation": "Configure Grafana Faro monitoring service to enable proper error tracking, performance monitoring, and user experience observability. This will provide better visibility into production issues and help maintain application reliability."
-                }
-              ]
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "/login",
-      "data": {
-        "url": "https://quickpizza.grafana.com/login",
-        "title": "",
-        "web_vitals": {},
-        "page_insights": {
-          "score": 68,
-          "insights_by_category": {
-            "accessibility": {
-              "summary": "This login page has accessibility barriers that impact users with disabilities. The main issue is unlabeled form inputs that screen readers cannot properly identify, making login difficult for visually impaired users. The page also lacks a title for navigation context and has a link with poor color contrast that's hard to read.",
-              "score": 53,
-              "issues": [
-                {
-                  "severity": "high",
-                  "description": "The username and password input fields do not have associated labels, making them inaccessible to screen reader users. This is a critical accessibility barrier for users with visual impairments who rely on assistive technology.",
-                  "reason": "Form inputs lack proper labels for screen readers",
-                  "recommendation": "Add proper `\u003clabel\u003e` elements associated with each input field using the `for` attribute, or use `aria-label` attributes to provide accessible names for the form controls."
-                },
-                {
-                  "severity": "medium",
-                  "description": "The page lacks a `\u003ctitle\u003e` element, which is important for screen reader users to understand the page purpose and for search engine optimization. This creates a barrier for users navigating between pages.",
-                  "reason": "Missing document title affects navigation and SEO",
-                  "recommendation": "Add a descriptive `\u003ctitle\u003e` element to the document head that clearly identifies the page purpose (e.g., \"Login - Your App Name\")."
-                },
-                {
-                  "severity": "medium",
-                  "description": "The \"Back to main page\" link has insufficient color contrast (3.46:1) against the orange background, falling short of the WCAG AA standard of 4.5:1. This makes the link difficult to read for users with visual impairments or color vision deficiencies.",
-                  "reason": "Insufficient color contrast on link text",
-                  "recommendation": "Increase the contrast ratio by using a darker blue color for the link text or adjusting the background color to meet the 4.5:1 contrast requirement."
-                }
-              ]
-            },
-            "content": {
-              "summary": "The login page has significant user experience gaps that prevent new users from creating accounts and existing users from recovering forgotten passwords. The only account creation method mentioned uses highly technical language that most users won't understand. The page lacks standard features like registration links and password recovery options, creating barriers that could lead to user frustration and abandonment.",
-              "score": 53,
-              "issues": [
-                {
-                  "severity": "high",
-                  "description": "Missing user registration option on login page. There is no visible \"Sign up\", \"Create account\", or \"Register\" link for new users who need to create accounts.",
-                  "reason": "New users cannot easily discover how to create an account, potentially leading to user abandonment. While the tip mentions API endpoint creation, this is not accessible to typical users and creates a significant gap in user experience.",
-                  "recommendation": "Add a prominent \"Create Account\" or \"Sign Up\" link below the login form. This should either link to a registration page or provide clear instructions for account creation that don't require technical knowledge."
-                },
-                {
-                  "severity": "medium",
-                  "description": "The tip section contains highly technical language that creates accessibility barriers for non-technical users. The text \"You can create a new user via the POST http://quickpizza.grafana.com/api/users endpoint. Attach a JSON payload with username and password keys\" assumes users understand API endpoints, HTTP requests, and JSON format.",
-                  "reason": "Technical jargon without explanation prevents non-technical users from understanding how to create accounts, reducing accessibility and potentially causing user confusion or abandonment.",
-                  "recommendation": "Simplify the language or provide additional context. Consider: \"Tip: Developers can create new users programmatically using our API endpoint. For manual account creation, contact support or use the registration form.\" Alternatively, add a brief explanation of technical terms or provide a link to documentation."
-                },
-                {
-                  "severity": "medium",
-                  "description": "Missing password recovery mechanism. The login page lacks a \"Forgot password?\" link or similar password reset functionality.",
-                  "reason": "Users who forget their passwords have no clear path to regain access to their accounts, leading to potential user frustration and abandonment. This is a standard expected feature on login pages.",
-                  "recommendation": "Add a \"Forgot password?\" link below the password field that leads to a password reset process, or provide contact information for password recovery assistance."
-                }
-              ]
-            },
-            "reliability": {
-              "summary": "The page shows excellent technical health with no user-facing functionality problems, security vulnerabilities, or performance issues detected. The only concern is a missing monitoring system configuration that could limit the ability to proactively detect future issues, but this doesn't currently impact user experience.",
-              "score": 99,
-              "issues": [
-                {
-                  "severity": "low",
-                  "description": "Console warning indicates \"Grafana faro is not configured\" - the application observability and monitoring system is not properly set up",
-                  "reason": "Grafana Faro monitoring system is not configured, which reduces operational visibility into application performance and user experience issues",
-                  "recommendation": "Configure Grafana Faro properly to enable real user monitoring, error tracking, and performance observability. This will improve the ability to detect and respond to issues that impact users in production"
+                  "description": "Console shows warning \"Grafana faro is not configured\" indicating that the monitoring/observability tool is not properly set up",
+                  "reason": "Grafana Faro observability tool is not configured, as indicated by console warning",
+                  "recommendation": "Configure Grafana Faro for better application monitoring and error tracking, or remove the initialization code if monitoring is not needed"
                 }
               ]
             }

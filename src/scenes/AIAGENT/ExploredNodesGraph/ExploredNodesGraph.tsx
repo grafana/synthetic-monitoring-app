@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import { Graphin } from '@antv/graphin';
+import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
 import { LegendDisplayMode, PanelChrome, Stack, useStyles2, VizLegend } from '@grafana/ui';
-import { Graphin } from '@antv/graphin';
-import { css } from '@emotion/css';
 
-import { UserJourneyTest } from '../types';
 import { NodeData } from 'scenes/AIAGENT/types';
+import { UserJourneyTest } from '../types';
 
 import pageInsights from '../data/example-output.json';
 import userJourneyTests from '../data/user-journeys.json';
@@ -201,6 +202,21 @@ function ExploredNodesGraphRenderer({ model }: SceneComponentProps<ExploredNodes
                               )};font-weight: bold;">Reliability: ${reliability.score}</span> (${getTextIssue(
                                 reliability.issues.length
                               )})`;
+                              result += `</p>`;
+                              result += `<h6>Web vitals</h6>`;
+                              result += `<p style="margin: 0 0 4px 0;">`;
+                              result += `<span style="font-weight: bold;">Time to First Byte:</span> ${Math.trunc(
+                                data.web_vitals.ttfb
+                              )}<br />`;
+                              result += `<span style="font-weight: bold;">Largest Contentful Paint:</span> ${Math.trunc(
+                                data.web_vitals.lcp
+                              )}<br />`;
+                              result += `<span style="font-weight: bold;">Cumulative Layout Shift:</span> ${Math.trunc(
+                                data.web_vitals.cls
+                              )}<br />`;
+                              result += `<span style="font-weight: bold;">First Contentful Paint:</span> ${Math.trunc(
+                                data.web_vitals.fcp
+                              )}<br />`;
                               result += `</p>`;
                             });
                             return `<div style="font-family:Inter,Helvetica,Arial,sans-serif;">${result}</div>`;

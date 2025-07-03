@@ -34,6 +34,12 @@ export type UserJourneyTableRow = {
 export type NodeData = {
   url: string;
   title: string;
+  web_vitals: {
+    ttfb: number;
+    lcp: number;
+    cls: number;
+    fcp: number;
+  };
   page_insights: {
     score: number;
     insights_by_category: Record<InsightsCategory, PageInsightsCategory>;
