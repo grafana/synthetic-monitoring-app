@@ -2,6 +2,16 @@
 
 set -euo pipefail
 
+# Determine branch prefix based on AUTO_MERGE setting
+if [[ "${AUTO_MERGE:-false}" == "true" ]]; then
+  BRANCH_PREFIX="auto-merge/synthetic-monitoring-plugin-release"
+else
+  BRANCH_PREFIX="ci/synthetic-monitoring-plugin-release"
+fi
+
+echo "AUTO_MERGE is set to: ${AUTO_MERGE:-false}"
+echo "Using branch prefix: $BRANCH_PREFIX"
+
 # Create the `config.json` file for the updater
 echo "Generating config.json for updater..."
 cat << EOF > config.json
@@ -9,7 +19,7 @@ cat << EOF > config.json
   "repo_owner": "grafana",
   "repo_name": "deployment_tools",
   "destination_branch": "master",
-  "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin-release",
+  "pull_request_branch_prefix": "$BRANCH_PREFIX",
   "pull_request_enabled": true,
   "pull_request_existing_strategy": "ignore",
   "pull_request_message": "Triggered by Synthetic Monitoring App GitHub Actions. NOTE: dev does not refer directly to an environment it refers to stacks associated with the dev 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
