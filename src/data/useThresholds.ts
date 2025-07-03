@@ -27,8 +27,8 @@ export function useThreshold(type: keyof ThresholdSettings) {
   if (type === 'score') {
     return {
       data: {
-        upperLimit: 80,
-        lowerLimit: 60,
+        upperLimit: 89,
+        lowerLimit: 49,
       },
     };
   } else if (type === 'duration') {
