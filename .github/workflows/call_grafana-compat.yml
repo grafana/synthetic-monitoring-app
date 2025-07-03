@@ -1,0 +1,19 @@
+name: Grafana API Compatibility Check
+
+on:
+  workflow_call:
+
+jobs:
+  grafana-compat:
+    name: Grafana API Compatibility Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Latest Grafana API compatibility check
+        run: npx @grafana/levitate@latest is-compatible --path src/module.ts --target @grafana/data,@grafana/runtime,@grafana/scenes,@grafana/schema,@grafana/ui
