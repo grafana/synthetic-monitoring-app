@@ -28,22 +28,12 @@ jobs:
       attestations: write
     uses: ./.github/workflows/call_main-bundle-size.yml
 
-  # deploy-to-dev:
-  #   name: Deploy to Dev
-  #   permissions:
-  #     contents: read
-  #     id-token: write
-  #   uses: ./.github/workflows/call_deploy-plugin.yml
-  #   with:
-  #     environment: 'dev'
-  #     autoMerge: 'true'
-
-  deploy-to-staging:
-    name: Deploy to Staging (Temporary test)
+  deploy-to-dev:
+    name: Deploy to Dev
     permissions:
       contents: read
       id-token: write
     uses: ./.github/workflows/call_deploy-plugin.yml
     with:
-      environment: 'staging'
-      autoMerge: 'false'  # Don't auto-merge for testing
+      environment: 'dev'
+      autoMerge: 'true'
