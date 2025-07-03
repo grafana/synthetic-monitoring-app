@@ -8,9 +8,10 @@ on:
         required: true
         type: string
       autoMerge:
-        description: Whether to automatically merge the PR after deployment
+        description: Whether to automatically merge the deployment PR
         required: false
         type: string
+        default: 'false'
 
 permissions:
   contents: read
@@ -20,7 +21,7 @@ jobs:
   build-sign-zip-upload:
     uses: ./.github/workflows/call_build-sign-upload-plugin.yml
     with:
-      environment: ${{ inputs.environment }}
+      environment: ${{ inputs.environment == 'dev' && 'dev' || 'prod' }}
 
   update-deployment-tools:
     needs: build-sign-zip-upload
