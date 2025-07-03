@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: Deployment environment for the plugin (dev, prod)
+        description: Deployment environment for the plugin (dev, staging, production)
         required: true
         type: string
         default: dev
@@ -52,13 +52,15 @@ jobs:
         run: |
           case "$ENVIRONMENT" in
             "dev")
+              echo "Building for development with git hash versioning"
               make build sign package-latest generate-version
               ;;
-            "prod")
+            "staging"|"production")
+              echo "Building for $ENVIRONMENT with semantic versioning"
               make build sign package
               ;;
             *)
-              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev', 'staging', or 'production'." >&2
               exit 1
               ;;
           esac
@@ -79,11 +81,11 @@ jobs:
             "dev")
               echo "bucket=grafanalabs-synthetic-monitoring-app-dev" >> "${GITHUB_OUTPUT}"
               ;;
-            "prod")
+            "staging"|"production")
               echo "bucket=grafanalabs-synthetic-monitoring-app-prod" >> "${GITHUB_OUTPUT}"
               ;;
             *)
-              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev', 'staging', or 'production'." >&2
               exit 1
               ;;
           esac

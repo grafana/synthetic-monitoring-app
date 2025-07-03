@@ -89,4 +89,19 @@ jobs:
           GITHUB_APP_ID: ${{ env.GITHUB_APP_ID }}
           GITHUB_APP_INSTALLATION_ID: ${{ env.GITHUB_APP_INSTALLATION_ID }}
           GITHUB_APP_PRIVATE_KEY: ${{ env.GITHUB_APP_PRIVATE_KEY }}
-        run: scripts/deployment/create-dev-deployment-pr.sh
+        run: |
+          case "$ENVIRONMENT" in
+            "dev")
+              scripts/deployment/create-dev-deployment-pr.sh
+              ;;
+            "staging")
+              scripts/deployment/create-staging-deployment-pr.sh
+              ;;
+            "production")
+              scripts/deployment/create-prod-deployment-pr.sh
+              ;;
+            *)
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev', 'staging', or 'production'." >&2
+              exit 1
+              ;;
+          esac
