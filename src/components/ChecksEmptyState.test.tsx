@@ -13,41 +13,29 @@ async function renderComponent() {
 }
 
 describe('ChecksEmptyState', () => {
-  it('should render', async () => {
+  it('should render all components correctly', async () => {
     const { container } = await renderComponent();
+    
+    // Verify container renders
     expect(container).toBeInTheDocument();
-  });
-
-  it('should render the correct message', async () => {
-    await renderComponent();
-
+    
+    // Verify correct message
     expect(await screen.findByText("You haven't created any checks yet")).toBeInTheDocument();
-  });
-
-  it('should render the correct button', async () => {
-    await renderComponent();
-
+    
+    // Verify correct button
     expect(await screen.findByText('Create check')).toBeInTheDocument();
-  });
-
-  it('should render the correct link', async () => {
-    await renderComponent();
-
-    expect(await screen.findByText('Synthetic Monitoring docs')).toBeInTheDocument();
-  });
-
-  it('should render the correct link href', async () => {
-    await renderComponent();
-
-    expect(await screen.findByText('Synthetic Monitoring docs')).toHaveAttribute(
+    
+    // Verify correct link text
+    const docsLink = await screen.findByText('Synthetic Monitoring docs');
+    expect(docsLink).toBeInTheDocument();
+    
+    // Verify link href
+    expect(docsLink).toHaveAttribute(
       'href',
       'https://grafana.com/docs/grafana-cloud/synthetic-monitoring/'
     );
-  });
-
-  it('should render the correct link target', async () => {
-    await renderComponent();
-
-    expect(await screen.findByText('Synthetic Monitoring docs')).toHaveAttribute('target', '_blank');
+    
+    // Verify link target
+    expect(docsLink).toHaveAttribute('target', '_blank');
   });
 });

@@ -22,7 +22,7 @@
     "server": "docker compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "test:changed": "jest --watch --onlyChanged",
-    "test:ci": "jest --passWithNoTests --maxWorkers 4",
+    "test:ci": "jest --passWithNoTests --maxWorkers 4 --bail",
     "test": "jest --all",
     "typecheck": "tsc --noEmit"
   },
