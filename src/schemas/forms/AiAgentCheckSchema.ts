@@ -19,12 +19,24 @@ const aiagentSettingsSchema: ZodType<AiAgentSettings> = z.object({
       invalid_type_error: 'Depth must be a number',
     })
     .min(1, { message: 'Depth is required' }),
+  size: z
+    .number({
+      required_error: 'Size is required',
+      invalid_type_error: 'Size must be a number',
+    })
+    .min(1, { message: 'Size is required' }),
   durationInMinutes: z
     .number({
       required_error: 'Duration is required',
       invalid_type_error: 'Duration must be a number',
     })
     .min(1, { message: 'Duration is required' }),
+  concurrency: z
+    .number({
+      required_error: 'Concurrency is required',
+      invalid_type_error: 'Concurrency must be a number',
+    })
+    .min(1, { message: 'Concurrency is required' }),
   aggressiveness: z
     .number({
       required_error: 'Aggressiveness is required',

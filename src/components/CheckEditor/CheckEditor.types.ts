@@ -94,6 +94,8 @@ export type BrowserFields = {
 export type AiAgentFields = {
   url: FieldProps<CheckFormValuesAiAgent>;
   depth: FieldProps<CheckFormValuesAiAgent>;
+  size: FieldProps<CheckFormValuesAiAgent>;
+  concurrency: FieldProps<CheckFormValuesAiAgent>;
   durationInMinutes: FieldProps<CheckFormValuesAiAgent>;
   aggressiveness: FieldProps<CheckFormValuesAiAgent>;
 };

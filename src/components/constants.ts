@@ -345,8 +345,10 @@ export const FALLBACK_CHECK_AIAGENT: AiAgentCheck = {
   settings: {
     aiagent: {
       url: '',
-      depth: 1,
-      durationInMinutes: 5 * 60,
+      depth: 3,
+      size: 10,
+      concurrency: 5,
+      durationInMinutes: 10,
       aggressiveness: 1,
       features: {
         insightsAccessibility: true,

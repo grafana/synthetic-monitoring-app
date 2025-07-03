@@ -11,6 +11,8 @@ export function getAiAgentCheckFormValues(check: AiAgentCheck): CheckFormValuesA
       aiagent: {
         url: check.settings?.aiagent?.url,
         depth: check.settings?.aiagent?.depth,
+        size: check.settings?.aiagent?.size,
+        concurrency: check.settings?.aiagent?.concurrency,
         durationInMinutes: check.settings?.aiagent?.durationInMinutes,
         aggressiveness: check.settings?.aiagent?.aggressiveness,
         features: check.settings?.aiagent?.features,

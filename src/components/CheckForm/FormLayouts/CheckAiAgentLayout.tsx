@@ -13,6 +13,12 @@ export const AIAGENT_CHECK_FIELDS: AiAgentFields = {
   depth: {
     name: `settings.aiagent.depth`,
   },
+  size: {
+    name: `settings.aiagent.size`,
+  },
+  concurrency: {
+    name: `settings.aiagent.concurrency`,
+  },
   durationInMinutes: {
     name: `settings.aiagent.durationInMinutes`,
   },

@@ -27,20 +27,36 @@ export const AiAgentRequest = () => {
           data-fs-element="AI Agent URL input"
         />
       </Field>
-      <Field label="Depth" description="How many levels from the given URL should the Agent dig deeper?">
+      <Field label="Maximum depth" description="How many levels from the given URL should the Agent dig deeper?">
         <Input
           id="aiagent-depth"
-          {...register('settings.aiagent.depth')}
+          {...register('settings.aiagent.depth', { valueAsNumber: true })}
           type="number"
           data-fs-element="AI Agent exploration depth"
         />
       </Field>
-      <Field label="Duration" description="How long should the Agent run at the longest? (in minutes)">
+      <Field label="Maximum size" description="How many pages should the Agent explore?">
         <Input
-          id="aiagent-duratio"
-          {...register('settings.aiagent.durationInMinutes')}
+          id="aiagent-size"
+          {...register('settings.aiagent.size', { valueAsNumber: true })}
+          type="number"
+          data-fs-element="AI Agent exploration size"
+        />
+      </Field>
+      <Field label="Maximum duration" description="How long should the Agent run at the longest? (in minutes)">
+        <Input
+          id="aiagent-duratin"
+          {...register('settings.aiagent.durationInMinutes', { valueAsNumber: true })}
           type="number"
           data-fs-element="AI Agent max exoloration duration"
+        />
+      </Field>
+      <Field label="Maximum concurrency" description="How many pages should the Agent explore at the same time?">
+        <Input
+          id="aiagent-concurrency"
+          {...register('settings.aiagent.concurrency', { valueAsNumber: true })}
+          type="number"
+          data-fs-element="AI Agent exploration concurrency"
         />
       </Field>
       <Field
@@ -61,22 +77,25 @@ export const AiAgentRequest = () => {
       </Field>
       {userJourneysEnabled && (
         <>
-        <Field label="Max user journeys" description="The maximum number of user journeys the agent will explore">
-          <Input
-            id="aiagent-max-user-journeys"
-            {...register('settings.aiagent.userJourneys.maxUserJourneys')}
-            type="number"
-            data-fs-element="AI Agent max user journeys"
-          />
-        </Field>
-        <Field label="Max steps per journey" description="The maximum number of steps per user journey the agent will explore">
-          <Input
-            id="aiagent-max-steps-per-journey"
-            {...register('settings.aiagent.userJourneys.maxStepsPerJourney')}
-            type="number"
-            data-fs-element="AI Agent max steps per journey"
-          />
-        </Field>
+          <Field label="Max user journeys" description="The maximum number of user journeys the agent will explore">
+            <Input
+              id="aiagent-max-user-journeys"
+              {...register('settings.aiagent.userJourneys.maxUserJourneys')}
+              type="number"
+              data-fs-element="AI Agent max user journeys"
+            />
+          </Field>
+          <Field
+            label="Max steps per journey"
+            description="The maximum number of steps per user journey the agent will explore"
+          >
+            <Input
+              id="aiagent-max-steps-per-journey"
+              {...register('settings.aiagent.userJourneys.maxStepsPerJourney')}
+              type="number"
+              data-fs-element="AI Agent max steps per journey"
+            />
+          </Field>
         </>
       )}
     </>

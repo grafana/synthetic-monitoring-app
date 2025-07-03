@@ -190,6 +190,8 @@ export interface BrowserSettings {
 export interface AiAgentSettings {
   url: string;
   depth: number;
+  size: number;
+  concurrency: number;
   durationInMinutes: number;
   aggressiveness: number;
   features: {

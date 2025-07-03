@@ -10,6 +10,8 @@ export function getAiAgentPayload(formValues: CheckFormValuesAiAgent): AiAgentCh
       aiagent: {
         url: formValues.settings.aiagent.url,
         depth: formValues.settings.aiagent.depth,
+        size: formValues.settings.aiagent.size,
+        concurrency: formValues.settings.aiagent.concurrency,
         durationInMinutes: formValues.settings.aiagent.durationInMinutes,
         aggressiveness: formValues.settings.aiagent.aggressiveness,
         features: formValues.settings.aiagent.features,
