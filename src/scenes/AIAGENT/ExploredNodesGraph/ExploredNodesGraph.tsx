@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-
-import { Graphin } from '@antv/graphin';
-import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
-import { PanelChrome, useStyles2 } from '@grafana/ui';
-import { NodeData } from 'scenes/AIAGENT/types';
+import { LegendDisplayMode, PanelChrome, Stack, useStyles2, VizLegend } from '@grafana/ui';
+import { Graphin } from '@antv/graphin';
+import { css } from '@emotion/css';
+
 import { UserJourneyTest } from '../types';
+import { NodeData } from 'scenes/AIAGENT/types';
 
 import pageInsights from '../data/example-output.json';
 import userJourneyTests from '../data/user-journeys.json';
@@ -47,10 +47,11 @@ export class ExploredNodesGraph extends SceneObjectBase<ExploredNodesGraphState>
 function ExploredNodesGraphRenderer({ model }: SceneComponentProps<ExploredNodesGraph>) {
   const styles = useStyles2(getStyles);
   const graphinRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const checkId = model.useCheckId();
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
+
+  const [focusedJourney, setFocusedJourney] = useState<UserJourneyTest | undefined>(undefined);
 
   // Create a unique ID based on the check ID to avoid conflicts
   const graphinId = `ai-check-graph-${checkId}`;
@@ -125,93 +126,146 @@ function ExploredNodesGraphRenderer({ model }: SceneComponentProps<ExploredNodes
   return (
     <div className={styles.pageContainer}>
       <PanelChrome title="Explored nodes" description="Nodes explored by the AI agent">
-        <div ref={containerRef} key={`${graphinId}-${isMounted}`}>
+        <Stack key={`${graphinId}-${isMounted}`} direction="row">
           {isMounted && (
-            <ErrorBoundary onError={handleGraphinError}>
-              <Graphin
-                ref={graphinRef}
-                id={graphinId}
-                className="ai-check-graphin-container"
-                options={{
-                  data: {
-                    nodes: pageInsights.nodes,
-                    edges: pageInsights.edges,
-                  },
-                  node: {
-                    type: 'html',
-                    style: {
-                      size: [100, 100],
-                      innerHTML: (node: any) => {
-                        try {
-                          const data = node.data as NodeData;
-                          const color = getNodeColor(data.page_insights?.score);
-                          return `<div style="padding: 16px; background-color: ${color}; border-radius: 100px; color: white; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style={{ flexGrow: 1 }}>
+              <ErrorBoundary onError={handleGraphinError}>
+                <Graphin
+                  ref={graphinRef}
+                  id={graphinId}
+                  className="ai-check-graphin-container"
+                  options={{
+                    data: {
+                      nodes: pageInsights.nodes,
+                      edges: pageInsights.edges,
+                    },
+                    node: {
+                      type: 'html',
+                      style: {
+                        size: [100, 100],
+                        dx: -50,
+                        dy: -50,
+                        innerHTML: (node: any) => {
+                          try {
+                            const data = node.data as NodeData;
+                            const color = getNodeColor(data.page_insights?.score);
+                            return `<div style="padding: 16px; background-color: ${color}; border-radius: 100px; color: white; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                                       <div><strong>${node.id}</strong></div>
                                       <div>Score: ${data.page_insights?.score}</div>      
                                     </div>`;
-                        } catch (error) {
-                          console.warn('Error rendering node:', error);
-                          return '<div style="padding: 16px; background-color: #ccc; border-radius: 100px; color: black;">Error</div>';
-                        }
+                          } catch (error) {
+                            console.warn('Error rendering node:', error);
+                            return '<div style="padding: 16px; background-color: #ccc; border-radius: 100px; color: black;">Error</div>';
+                          }
+                        },
                       },
                     },
-                  },
-                  layout: {
-                    type: 'dagre',
-                    rankdir: 'TB', // Top to Bottom
-                    align: 'UL',
-                    nodesep: 100,
-                    ranksep: 150,
-                  },
-                  plugins: [
-                    {
-                      type: 'tooltip',
-                      trigger: 'click',
-                      getContent: (e: any, items: any[]) => {
-                        try {
-                          let result = '';
-                          items.forEach((node) => {
-                            const data = node.data as NodeData;
-                            const accessibility = data.page_insights.insights_by_category.accessibility;
-                            const content = data.page_insights.insights_by_category.content;
-                            const reliability = data.page_insights.insights_by_category.reliability;
-                            result += `<h4 style="color: ${getNodeColor(data.page_insights.score)}">Global score: ${
-                              data.page_insights.score
-                            }</h4>`;
-                            result += `<h6>Score by category</h6>`;
-                            result += `<p style="margin: 0 0 4px 0;">`;
-                            result += `<span style="color: ${getNodeColor(
-                              accessibility.score
-                            )};font-weight: bold;">Accessibility: ${accessibility.score}</span> (${getTextIssue(
-                              accessibility.issues.length
-                            )})<br />`;
-                            result += `<span style="color: ${getNodeColor(
-                              content.score
-                            )};font-weight: bold;">Content: ${content.score}</span> (${getTextIssue(
-                              content.issues.length
-                            )})<br />`;
-                            result += `<span style="color: ${getNodeColor(
-                              reliability.score
-                            )};font-weight: bold;">Reliability: ${reliability.score}</span> (${getTextIssue(
-                              reliability.issues.length
-                            )})`;
-                            result += `</p>`;
-                          });
-                          return `<div style="font-family:Inter,Helvetica,Arial,sans-serif;">${result}</div>`;
-                        } catch (error) {
-                          console.warn('Error generating tooltip:', error);
-                          return '<p>Error loading details</p>';
-                        }
-                      },
+                    edge: {
+                      type: 'line',
+                      style: styles.edge,
                     },
-                  ],
-                  behaviors: ['zoom-canvas', 'drag-canvas'],
-                  animation: false, // Disable animations to reduce DOM conflicts
-                }}
-              />
-            </ErrorBoundary>
+                    layout: {
+                      type: 'force',
+                      preventOverlap: true,
+                      linkDistance: 100,
+                    },
+                    plugins: [
+                      {
+                        type: 'tooltip',
+                        trigger: 'click',
+                        getContent: (e: any, items: any[]) => {
+                          try {
+                            let result = '';
+                            items.forEach((node) => {
+                              const data = node.data as NodeData;
+                              const accessibility = data.page_insights.insights_by_category.accessibility;
+                              const content = data.page_insights.insights_by_category.content;
+                              const reliability = data.page_insights.insights_by_category.reliability;
+                              result += `<h4 style="color: ${getNodeColor(data.page_insights.score)}">Global score: ${
+                                data.page_insights.score
+                              }</h4>`;
+                              result += `<h6>Score by category</h6>`;
+                              result += `<p style="margin: 0 0 4px 0;">`;
+                              result += `<span style="color: ${getNodeColor(
+                                accessibility.score
+                              )};font-weight: bold;">Accessibility: ${accessibility.score}</span> (${getTextIssue(
+                                accessibility.issues.length
+                              )})<br />`;
+                              result += `<span style="color: ${getNodeColor(
+                                content.score
+                              )};font-weight: bold;">Content: ${content.score}</span> (${getTextIssue(
+                                content.issues.length
+                              )})<br />`;
+                              result += `<span style="color: ${getNodeColor(
+                                reliability.score
+                              )};font-weight: bold;">Reliability: ${reliability.score}</span> (${getTextIssue(
+                                reliability.issues.length
+                              )})`;
+                              result += `</p>`;
+                            });
+                            return `<div style="font-family:Inter,Helvetica,Arial,sans-serif;">${result}</div>`;
+                          } catch (error) {
+                            console.warn('Error generating tooltip:', error);
+                            return '<p>Error loading details</p>';
+                          }
+                        },
+                      },
+                      {
+                        type: 'grid-line',
+                        follow: {
+                          translate: false, // Do not follow translation
+                          zoom: true, // Follow zoom
+                        },
+                        lineWidth: 1,
+                        stroke: styles.gridLine,
+                        border: false,
+                      },
+                      ...(focusedJourney
+                        ? [
+                            {
+                              type: 'hull',
+                              key: focusedJourney.user_flow.title,
+                              members: pageInsights.nodes
+                                .filter((node) => focusedJourney.steps.some((step) => step.url === node.data.url))
+                                .map((node) => node.id),
+                            },
+                          ]
+                        : []),
+                    ],
+                    behaviors: ['zoom-canvas', 'drag-canvas'],
+                    animation: false, // Disable animations to reduce DOM conflicts
+                  }}
+                />
+              </ErrorBoundary>
+            </div>
           )}
-        </div>
+          {userJourneyTests.length > 0 && (
+            <div style={{ minWidth: 300 }}>
+              <h6>User Journeys</h6>
+
+              <Stack direction="column" gap={0}>
+                <VizLegend
+                  items={userJourneyTests.map((journey, index) => ({
+                    label: journey.user_flow.title,
+                    data: journey,
+                    color: journey.success ? '#83bd71' : '#e1575e',
+                    yAxis: 1,
+                    disabled: focusedJourney && focusedJourney.user_flow.title !== journey.user_flow.title,
+                  }))}
+                  displayMode={LegendDisplayMode.Table}
+                  placement="right"
+                  onLabelClick={(item) =>
+                    setFocusedJourney(
+                      focusedJourney && focusedJourney.user_flow.title === item.data?.user_flow.title
+                        ? undefined
+                        : (item.data as UserJourneyTest)
+                    )
+                  }
+                />
+              </Stack>
+            </div>
+          )}
+        </Stack>
       </PanelChrome>
       {/* <PageInsightsSection /> */}
     </div>
@@ -269,6 +323,18 @@ const getStyles = (theme: GrafanaTheme2) => {
     }),
     label: {
       color: theme.colors.text.primary,
+    },
+    journey: css`
+      border-top: 1px solid ${theme.colors.border.medium};
+      border-bottom: 1px solid ${theme.colors.border.medium};
+      color: ${theme.colors.text.maxContrast};
+      line-height: 20px;
+      padding: ${theme.spacing(1)};
+    `,
+    gridLine: theme.colors.border.weak,
+    edge: {
+      stroke: theme.colors.border.strong,
+      strokeWidth: 1,
     },
   };
 };

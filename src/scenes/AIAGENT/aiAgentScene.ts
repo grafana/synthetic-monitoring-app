@@ -13,7 +13,6 @@ import { DashboardCursorSync } from '@grafana/schema';
 
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getVariables } from 'scenes/Common';
-import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getTimeRange } from 'scenes/Common/timeRange';
 
@@ -26,19 +25,17 @@ import { getUserJourneysTable } from './UserJourneyTable';
 export function getAiAgentScene({ metrics }: DashboardSceneAppConfig, check: Check) {
   return () => {
     const timeRange = getTimeRange();
-    const { probe, job, instance } = getVariables(CheckType.AiAgent, metrics, check);
-    const variables = new SceneVariableSet({
-      variables: [probe, job, instance],
-    });
+    const { job, instance } = getVariables(CheckType.AiAgent, metrics, check);
 
     const editButton = getEditButton({ id: check.id });
+    const variables = new SceneVariableSet({
+      variables: [job, instance],
+    });
 
-    const annotations = getAlertAnnotations(metrics);
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
       $behaviors: [new behaviors.CursorSync({ key: 'sync', sync: DashboardCursorSync.Crosshair })],
-      $data: annotations,
       controls: [
         new VariableValueSelectors({}),
         new SceneDataLayerControls(),

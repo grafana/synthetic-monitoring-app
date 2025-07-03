@@ -1,397 +1,277 @@
 [
   {
     "user_flow": {
-      "title": "Product Browsing and Shopping",
-      "description": "Users can browse telescope and astronomy-related products including telescopes, binoculars, cleaning kits, optical components, filters, flashlights, and books with pricing information displayed. The site features product recommendations through 'Hot Products' sections, promotional hero banners with call-to-action buttons for shopping, detailed product pages with descriptions, specifications, quantity selection, and add to cart functionality. Product pages include 'You May Also Like' sections showing related products to encourage cross-selling and promotional banners for special offers",
-      "discovery_context": "Identified from the homepage showing various telescope products with prices and a 'Go Shopping' button in the hero section"
+      "title": "User Authentication",
+      "description": "Users can log in to their account, create new user accounts, and log out of the system.",
+      "discovery_context": "A 'Login/Profile' link is visible in the top navigation bar of the main page."
     },
     "steps": [
       {
-        "action": "Scrolling down to explore the page and look for authentication-related elements",
-        "goal": "Find login, register, or account management features on the homepage",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Clicking on the Login/Profile link in the top right corner",
+        "goal": "Access the authentication system to test login functionality",
+        "url": "unknown"
       },
       {
-        "action": "Scrolling back up to examine the header area for authentication elements",
-        "goal": "Look for login, register, or user account options in the website header",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Clicking on the username input field",
+        "goal": "Focus on the username field to enter login credentials",
+        "url": "https://quickpizza.grafana.com/login"
       },
       {
-        "action": "Clicking on the shopping cart icon in the header",
-        "goal": "Access the shopping cart to see if there are authentication options or if login is required for checkout",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Typing 'default' into the username field",
+        "goal": "Enter the username for login authentication",
+        "url": "https://quickpizza.grafana.com/login"
       },
       {
-        "action": "Clicking outside the shopping cart to close it",
-        "goal": "Close the shopping cart sidebar to continue exploring the page",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Clicking on the password input field",
+        "goal": "Focus on the password field to enter login credentials",
+        "url": "https://quickpizza.grafana.com/login"
       },
       {
-        "action": "Scrolling down to find the 'Go Shopping' button",
-        "goal": "Navigate to the shopping section to add products to cart and potentially trigger authentication flow",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Typing '12345678' into the password field",
+        "goal": "Enter the password for login authentication",
+        "url": "https://quickpizza.grafana.com/login"
       },
       {
-        "action": "Clicking on the 'Go Shopping' button",
-        "goal": "Navigate to the product catalog to explore shopping functionality and potentially find authentication features",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
+        "action": "Clicking on the Sign in button",
+        "goal": "Submit the login form to authenticate the user",
+        "url": "https://quickpizza.grafana.com/login"
       },
       {
-        "action": "Clicking on the National Park Foundation Explorascope product",
-        "goal": "Access the product detail page to find add to cart functionality and potentially trigger authentication flow",
-        "url": "https://otel-demo.field-eng.grafana.net/product/OLJCESPC7Z"
+        "action": "Scrolling down to see more content on the profile page",
+        "goal": "Explore the complete profile page to verify user profile access functionality",
+        "url": "https://quickpizza.grafana.com/login"
       },
       {
-        "action": "Clicking the 'Add To Cart' button",
-        "goal": "Add the telescope to cart to progress through the shopping flow and potentially trigger authentication requirements",
-        "url": "https://otel-demo.field-eng.grafana.net/product/OLJCESPC7Z"
-      },
-      {
-        "action": "Scrolling down to see the complete checkout form",
-        "goal": "Look for authentication options, login prompts, or user account fields in the checkout process",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Scrolling down to see the rest of the checkout form",
-        "goal": "Find the complete checkout form and place order button to see if authentication is required",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Scrolling down to see the complete checkout button",
-        "goal": "Find the place order or checkout button to complete the purchase flow and test if authentication is required",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Clicking the 'Place Order' button",
-        "goal": "Complete the checkout process to test if authentication is required or if the system allows guest checkout",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Clicking the 'Place Order' button again more precisely",
-        "goal": "Attempt to trigger the order placement and see if any authentication or confirmation dialog appears",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Scrolling up to check for error messages or validation issues",
-        "goal": "Look for any error messages, validation warnings, or other feedback about why the Place Order button might not be working",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Scrolling down to access the CVV field",
-        "goal": "Check and potentially fill in the CVV field which might be required for order processing",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Clicking on the CVV field",
-        "goal": "Focus on the CVV field to enter a test CVV number for order processing",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Typing '123' in the CVV field",
-        "goal": "Fill in the CVV field with a test value to enable order processing",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Clicking the 'Place Order' button with all fields completed",
-        "goal": "Complete the order placement now that all form fields are filled, including the CVV",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      }
-    ],
-    "success": false,
-    "summary": "Testing revealed that this e-commerce website operates with a guest-only checkout system and lacks user authentication features. No login, registration, or account management functionality was found during the complete shopping flow. However, a functional bug was discovered: the 'Place Order' button in the checkout process is non-responsive despite all form fields being properly filled, preventing order completion.",
-    "final_url": "https://otel-demo.field-eng.grafana.net/cart"
-  },
-  {
-    "user_flow": {
-      "title": "Currency Selection",
-      "description": "Users can change the currency display for product pricing through a currency selector dropdown",
-      "discovery_context": "Found in the top navigation bar with a USD currency dropdown selector"
-    },
-    "steps": [
-      {
-        "action": "Scrolling down to find the 'Go Shopping' button",
-        "goal": "Navigate to the product catalog section to begin testing the product browsing functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Clicking on the 'Go Shopping' button",
-        "goal": "Navigate to the product catalog to browse telescope and astronomy-related products",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Scrolling down to see more products and look for 'You May Also Like' sections",
-        "goal": "Explore more telescope products and find product recommendation sections and promotional banners",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Scrolling down to see more products and search for recommendation sections",
-        "goal": "Find 'You May Also Like' sections and promotional banners mentioned in the flow description",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Scrolling down to see the last products and look for recommendation sections",
-        "goal": "Complete the product catalog browsing and find any product recommendation sections or promotional content",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Clicking on 'The Comet Book' product",
-        "goal": "Access the product detail page to test product browsing functionality and look for 'You May Also Like' recommendations",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Scrolling down to find 'You May Also Like' product recommendations",
-        "goal": "Locate and test the product recommendation feature mentioned in the flow description",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Scrolling down to see the complete 'You May Also Like' product recommendations",
-        "goal": "View all the recommended products and their pricing information",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Scrolling down to see promotional banners or special offers",
-        "goal": "Check for promotional banners and special offers mentioned in the flow description",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
+        "action": "Scrolling down to see the end of the profile page",
+        "goal": "Complete the exploration of the profile page to verify all user profile access functionality",
+        "url": "https://quickpizza.grafana.com/login"
       }
     ],
     "success": true,
-    "summary": "Successfully tested the Product Browsing and Shopping user flow. The e-commerce website displays a comprehensive catalog of telescope and astronomy-related products including telescopes, binoculars, cleaning kits, optical components, and books, all with proper pricing information in USD. The 'Go Shopping' button successfully navigates to the product catalog, product detail pages load correctly with descriptions and purchase options, the 'You May Also Like' recommendation system works properly showing related products, and promotional banners display special offers (20% off telescope promotion). All features described in the flow are present and functional.",
-    "final_url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
+    "summary": "Successfully tested the user authentication system. User can log in with valid credentials (username: 'default', password: '12345678') and access their profile page which displays pizza ratings data. The authentication flow works correctly from login form to profile access, with proper user data display and profile management options (Clear Ratings and Logout buttons).",
+    "final_url": "https://quickpizza.grafana.com/login"
   },
   {
     "user_flow": {
-      "title": "Currency Selection",
-      "description": "Users can change the currency display for product pricing through a currency selector dropdown",
-      "discovery_context": "Found in the top navigation bar with a USD currency dropdown selector"
+      "title": "Pizza Discovery",
+      "description": "Users can discover new pizza combinations through an automated recommendation system with customizable parameters including calorie limits, topping counts, dietary restrictions, tool exclusions, and custom naming options.",
+      "discovery_context": "The main page features a 'Pizza, Please!' button that promises to reveal new pizza combinations with one click."
     },
     "steps": [
       {
-        "action": "Clicking on the USD currency selector dropdown",
-        "goal": "Open the currency selector dropdown to test currency selection functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Clicking on the \"Pizza, Please!\" button",
+        "goal": "Access the automated pizza recommendation system to test pizza discovery functionality",
+        "url": "https://quickpizza.grafana.com/"
       },
       {
-        "action": "Clicking on the dropdown arrow part of the currency selector",
-        "goal": "Try to open the currency dropdown by clicking on the arrow portion of the selector",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Scrolling down to see more content",
+        "goal": "Explore if there are additional features or options related to the pizza discovery system",
+        "url": "https://quickpizza.grafana.com/"
       },
       {
-        "action": "Scrolling down to find the 'Go Shopping' button",
-        "goal": "Navigate to the product section to test if currency selector affects product pricing",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Clicking on the \"Love it!\" button",
+        "goal": "Test the positive feedback functionality of the pizza discovery system",
+        "url": "https://quickpizza.grafana.com/"
       },
       {
-        "action": "Scrolling down to see product prices in the Hot Products section",
-        "goal": "View product pricing to test if currency selector affects price display",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Clicking on the \"Pizza, Please!\" button again",
+        "goal": "Generate a new pizza recommendation to test the \"No thanks\" functionality",
+        "url": "https://quickpizza.grafana.com/"
       },
       {
-        "action": "Scrolling back up to access the currency selector in the header",
-        "goal": "Return to the header area to re-test the currency selector functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Clicking on the \"No thanks\" button",
+        "goal": "Test the negative feedback functionality of the pizza discovery system",
+        "url": "https://quickpizza.grafana.com/"
       },
       {
-        "action": "Clicking directly on the 'USD' text in the currency selector",
-        "goal": "Test if clicking the text portion of the currency selector opens the dropdown menu",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      }
-    ],
-    "success": false,
-    "summary": "The currency selector dropdown in the top navigation bar is completely non-responsive. Despite multiple attempts to click on different parts of the dropdown (the USD text, the dropdown arrow, and the entire dropdown area), no dropdown menu appears and no alternative currency options are shown. This prevents users from changing the currency display for product pricing, which is the core functionality described in the user flow. The dropdown has the visual appearance of being interactive but lacks the actual functionality.",
-    "final_url": "https://otel-demo.field-eng.grafana.net/"
-  },
-  {
-    "user_flow": {
-      "title": "Shopping Cart Management",
-      "description": "Users can perform comprehensive cart management operations including adding items to cart with quantity selection, adjusting item quantities, removing individual items, and using the 'Empty Cart' feature to clear all items. The cart displays product details, quantities, individual prices, shipping costs, and total amounts with the ability to proceed to checkout via 'Go to Shopping Cart' button. Users can also continue shopping from an empty cart state",
-      "discovery_context": "Shopping cart icon visible in the top navigation bar of the homepage"
-    },
-    "steps": [
-      {
-        "action": "Clicking on the shopping cart icon in the header",
-        "goal": "Access the shopping cart to check its current state and begin testing cart management functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Clicking outside the shopping cart sidebar to close it",
-        "goal": "Close the shopping cart sidebar to continue with adding products to test cart management functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Scrolling down to find the 'Go Shopping' button",
-        "goal": "Navigate to the product catalog section to add items to the cart for testing cart management functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Clicking on the 'Go Shopping' button",
-        "goal": "Navigate to the product catalog to add items to the cart for testing cart management functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Clicking on the National Park Foundation Explorascope product",
-        "goal": "Access the product detail page to add the first item to the cart for testing cart management functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/product/OLJCESPC7Z"
-      },
-      {
-        "action": "Clicking the 'Add To Cart' button",
-        "goal": "Add the National Park Foundation Explorascope to the cart to start testing cart management functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/product/OLJCESPC7Z"
-      },
-      {
-        "action": "Clicking on the OpenTelemetry logo to go back to the homepage",
-        "goal": "Navigate back to the homepage to access more products and add a second item to the cart for comprehensive cart management testing",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Scrolling down to find the Hot Products section",
-        "goal": "Navigate to the Hot Products section to add a second item to the cart for comprehensive cart management testing",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Clicking on the Eclipsmart Travel Refractor Telescope",
-        "goal": "Access the product detail page to add a second item to the cart for comprehensive cart management testing",
-        "url": "https://otel-demo.field-eng.grafana.net/product/1YMWWN1N4O"
-      },
-      {
-        "action": "Scrolling down to find the Add To Cart button",
-        "goal": "Locate the Add To Cart button to add the second item to the cart",
-        "url": "https://otel-demo.field-eng.grafana.net/product/1YMWWN1N4O"
-      },
-      {
-        "action": "Clicking the 'Add To Cart' button",
-        "goal": "Add the Eclipsmart Travel Refractor Telescope to the cart to have multiple items for comprehensive cart management testing",
-        "url": "https://otel-demo.field-eng.grafana.net/product/1YMWWN1N4O"
-      },
-      {
-        "action": "Scrolling down to see the cart total and look for quantity adjustment controls",
-        "goal": "View the complete cart layout to identify all cart management controls available for testing",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Scrolling back up to look for quantity adjustment controls or individual item removal buttons",
-        "goal": "Find quantity adjustment controls and individual item removal functionality mentioned in the user flow",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Clicking on the quantity \"1\" for the first item to test if it's interactive",
-        "goal": "Test if the quantity field is interactive and allows quantity adjustment",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Clicking on the product name 'National Park Foundation Explorascope' to see if it reveals item management options",
-        "goal": "Test if clicking on the product name reveals individual item management options like quantity adjustment or removal",
-        "url": "https://otel-demo.field-eng.grafana.net/product/OLJCESPC7Z"
-      },
-      {
-        "action": "Clicking on the shopping cart icon to return to the cart",
-        "goal": "Return to the shopping cart page to continue testing cart management functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/product/OLJCESPC7Z"
-      },
-      {
-        "action": "Clicking on 'Go to Shopping Cart' button",
-        "goal": "Navigate to the full shopping cart page to look for cart management controls",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      },
-      {
-        "action": "Clicking on the 'Empty Cart' button",
-        "goal": "Test the Empty Cart functionality to clear all items from the cart",
-        "url": "https://otel-demo.field-eng.grafana.net/cart"
-      }
-    ],
-    "success": false,
-    "summary": "Testing revealed that the Shopping Cart Management functionality is only partially implemented. The 'Empty Cart' feature works perfectly, successfully clearing all items from the cart and updating the UI appropriately. However, the key cart management features described in the user flow are missing: there are no individual item quantity adjustment controls (no dropdowns, +/- buttons, or editable quantity fields) and no individual item removal buttons. The cart displays items with static quantity text but lacks interactive quantity management capabilities. Only the bulk 'Empty Cart' operation is available, not the granular item-level management described in the flow.",
-    "final_url": "https://otel-demo.field-eng.grafana.net/cart"
-  },
-  {
-    "user_flow": {
-      "title": "Checkout and Order Processing",
-      "description": "Users can navigate through the complete checkout process including form validation, field completion requirements, error handling, and order submission workflows. Testing should focus on checkout form behavior, validation messages, required field handling, and order processing functionality given the known issue with the Place Order button being non-responsive",
-      "discovery_context": "Checkout page with shipping address form, payment method section with credit card fields, and Place Order/Continue Shopping buttons"
-    },
-    "steps": [
-      {
-        "action": "Scrolling down to find the 'Go Shopping' button and explore product browsing functionality",
-        "goal": "Navigate to the product catalog section to begin testing product browsing functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Clicking on the 'Go Shopping' button",
-        "goal": "Navigate to the product catalog to browse telescope and astronomy-related products",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Scrolling down to see more products and look for additional product categories",
-        "goal": "Explore more telescope and astronomy products, and find other product categories like cleaning kits, optical components, and books",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Scrolling down to find books and look for 'You May Also Like' sections and promotional banners",
-        "goal": "Complete the product catalog exploration to find books and locate product recommendation sections and promotional content",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Scrolling down to see the complete book listing and look for any additional content",
-        "goal": "Complete the product catalog view and find the books mentioned in the flow description",
-        "url": "https://otel-demo.field-eng.grafana.net/#hot-products"
-      },
-      {
-        "action": "Clicking on 'The Comet Book' product to access the product detail page",
-        "goal": "Test the detailed product page functionality including descriptions, specifications, quantity selection, and add to cart functionality, and look for 'You May Also Like' recommendations",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Scrolling down to find 'You May Also Like' product recommendations",
-        "goal": "Locate and test the product recommendation feature mentioned in the flow description",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Scrolling down to see the complete 'You May Also Like' product recommendations",
-        "goal": "View all the recommended products and their pricing information",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Scrolling back up to access the Add to Cart button",
-        "goal": "Test the add to cart functionality as part of the product detail page testing",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Clicking on the quantity dropdown to test quantity selection functionality",
-        "goal": "Test the quantity selection feature mentioned in the product detail page functionality",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Clicking the 'Add To Cart' button",
-        "goal": "Test the add to cart functionality as part of the product detail page features",
-        "url": "https://otel-demo.field-eng.grafana.net/product/HQTGWGPNH4"
-      },
-      {
-        "action": "Clicking on the OpenTelemetry logo to return to the homepage",
-        "goal": "Navigate back to the homepage to look for promotional banners and special offers mentioned in the flow description",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Scrolling down to look for promotional banners and special offers",
-        "goal": "Find promotional banners with special offers and discounts mentioned in the flow description",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Scrolling down to continue looking for promotional banners and special offers",
-        "goal": "Search for promotional content including discount banners or special offers mentioned in the flow",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Scrolling down to the end of the page to look for promotional banners",
-        "goal": "Complete the search for promotional banners and special offers that might be displayed at the bottom of the page",
-        "url": "https://otel-demo.field-eng.grafana.net/"
-      },
-      {
-        "action": "Scrolling back up to look more carefully for promotional banners that might have been missed",
-        "goal": "Search for the 20% off telescope promotion banner mentioned in previous test results",
-        "url": "https://otel-demo.field-eng.grafana.net/"
+        "action": "Clicking on the \"Pizza, Please!\" button for the third time",
+        "goal": "Test that the automated recommendation system continues to work and provides variety in recommendations",
+        "url": "https://quickpizza.grafana.com/"
       }
     ],
     "success": true,
-    "summary": "Successfully tested the complete Product Browsing and Shopping user flow. All core functionality is working perfectly: the comprehensive product catalog displays telescopes, binoculars, cleaning kits, optical components, and books with proper pricing; the 'Go Shopping' button successfully navigates to the product catalog; the 'Hot Products' recommendation system works properly; product detail pages load correctly with descriptions, specifications, quantity selection, and add to cart functionality; the 'You May Also Like' recommendation system displays relevant related products; promotional hero banners with call-to-action buttons function correctly; and the shopping cart successfully manages products with proper price calculations. All features described in the user flow are present and functional.",
-    "final_url": "https://otel-demo.field-eng.grafana.net/"
+    "summary": "Successfully tested the Pizza Discovery functionality through the automated recommendation system. The system works correctly - clicking the 'Pizza, Please!' button generates unique pizza recommendations with detailed information (name, dough type, ingredients, tool, calories). The feedback system is functional with both 'Love it!' and 'No thanks' buttons properly recording user ratings (displaying 'Rated!' confirmation). The system demonstrates variety by generating three different pizza combinations: The Light Pugliese (500 cal, thick dough, knife), The Mushy Prosciutto (250 cal, thick dough, pizza cutter), and The Mammoth Margherita (800 cal, stuffed dough, pizza cutter). All aspects of the user flow for discovering new pizza combinations work as expected.",
+    "final_url": "https://quickpizza.grafana.com/"
+  },
+  {
+    "user_flow": {
+      "title": "Pizza Rating Management",
+      "description": "Users can rate pizza recommendations, view comprehensive lists of their ratings with star ratings and pizza IDs, and clear all ratings data.",
+      "discovery_context": "The ratings page displays a comprehensive list of user pizza ratings with star ratings and pizza IDs, along with a 'Clear Ratings' button for data management."
+    },
+    "steps": [
+      {
+        "action": "Clicking on the Login/Profile link in the top right corner",
+        "goal": "Access the authentication system to log in and then test the pizza rating management functionality",
+        "url": "unknown"
+      },
+      {
+        "action": "Scrolling down to see more pizza ratings and look for the Clear Ratings functionality",
+        "goal": "Explore the complete pizza ratings history and find the Clear Ratings button to test the rating management functionality",
+        "url": "https://quickpizza.grafana.com/login"
+      },
+      {
+        "action": "Scrolling down to see the end of the pizza ratings list and find the Clear Ratings button",
+        "goal": "Locate the Clear Ratings functionality to test the rating management feature",
+        "url": "https://quickpizza.grafana.com/login"
+      },
+      {
+        "action": "Clicking on the Clear Ratings button",
+        "goal": "Test the pizza rating management functionality to clear all user ratings data",
+        "url": "https://quickpizza.grafana.com/login"
+      },
+      {
+        "action": "Scrolling down to check if the Clear Ratings button shows any change or confirmation after clicking",
+        "goal": "Verify if the Clear Ratings functionality worked or if there's any feedback about the action",
+        "url": "https://quickpizza.grafana.com/login"
+      },
+      {
+        "action": "Clicking on the Clear Ratings button again to test if it requires multiple clicks or if there's any response",
+        "goal": "Verify if the Clear Ratings functionality is broken or if it requires multiple attempts",
+        "url": "https://quickpizza.grafana.com/login"
+      }
+    ],
+    "success": false,
+    "summary": "Found a critical bug with the Pizza Rating Management functionality. The 'Clear Ratings' button does not work as expected - it fails to clear the user's pizza ratings data. When clicked, it only scrolls the page to the top without removing any ratings. The user can successfully view their pizza ratings history (54 ratings total from Rating ID 1 to 54), but the clear functionality is completely broken. This prevents users from managing their ratings data properly.",
+    "final_url": "https://quickpizza.grafana.com/login"
+  },
+  {
+    "user_flow": {
+      "title": "Advanced Settings",
+      "description": "Users can toggle advanced configuration options for customizing their pizza discovery experience.",
+      "discovery_context": "An 'Advanced' button is visible in the top navigation area of the main page, suggesting additional customization features."
+    },
+    "steps": [
+      {
+        "action": "Clicking on the \"Advanced\" link in the top navigation bar",
+        "goal": "Access the advanced configuration options for customizing the pizza discovery experience",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the Max Calories per Slice input field",
+        "goal": "Test the functionality of the Max Calories per Slice configuration option",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Typing '500' to replace the current value in the Max Calories per Slice field",
+        "goal": "Test the ability to customize the maximum calorie setting for pizza recommendations",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the Max Calories per Slice field to select all text",
+        "goal": "Select all text in the field to replace it with a new value",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the Min Number of Toppings input field",
+        "goal": "Test the functionality of the Min Number of Toppings configuration option",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Typing '3' to change the Min Number of Toppings value",
+        "goal": "Test the ability to customize the minimum number of toppings for pizza recommendations",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the Max Number of Toppings input field",
+        "goal": "Test the functionality of the Max Number of Toppings configuration option",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Typing '8' to change the Max Number of Toppings value",
+        "goal": "Test the ability to customize the maximum number of toppings for pizza recommendations",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the 'Must be vegetarian' checkbox",
+        "goal": "Test the vegetarian option functionality in the advanced pizza discovery settings",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the Custom Pizza Name input field",
+        "goal": "Test the custom pizza name functionality in the advanced settings",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Typing 'My Perfect Pizza' into the Custom Pizza Name field",
+        "goal": "Test the custom pizza naming functionality in the advanced settings",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the 'Pizza, Please!' button to test the advanced settings functionality",
+        "goal": "Test that the advanced configuration options are properly applied when generating a pizza recommendation",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Scrolling down to see the generated pizza recommendation",
+        "goal": "View the pizza recommendation generated with the advanced settings to verify the configuration options are working correctly",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Scrolling down to see the complete pizza recommendation including calories and tools",
+        "goal": "View the complete pizza recommendation to verify all advanced settings are properly applied",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Scrolling down to see the rest of the pizza recommendation",
+        "goal": "Complete the view of the pizza recommendation and check for any additional functionality",
+        "url": "https://quickpizza.grafana.com/"
+      }
+    ],
+    "success": false,
+    "summary": "Found significant bugs in the Advanced Settings functionality. While some features work correctly (custom pizza name and vegetarian setting), critical settings like 'Excluded Tools' and 'Max Calories per Slice' are not being properly applied. The excluded tools list shows 'Knife' as excluded, but the generated pizza recommendation uses 'Knife' as the tool. The calorie limit setting is also not being enforced as the recommendation shows 1550 calories per slice, which exceeds the configured limit. Additionally, the input fields have a usability issue where typing new values appends to existing values instead of replacing them.",
+    "final_url": "https://quickpizza.grafana.com/"
+  },
+  {
+    "user_flow": {
+      "title": "Navigation",
+      "description": "Users can navigate back to the main page from other sections of the application.",
+      "discovery_context": "A 'Back to main page' link is visible at the bottom of the pizza ratings page, enabling navigation back to the main interface."
+    },
+    "steps": [
+      {
+        "action": "Clicking on the Login/Profile link in the top right corner",
+        "goal": "Navigate to the Login/Profile section to test navigation back to the main page",
+        "url": "unknown"
+      },
+      {
+        "action": "Scrolling up to check for navigation elements at the top of the page",
+        "goal": "Look for navigation elements (like the QuickPizza logo) that allow users to navigate back to the main page",
+        "url": "https://quickpizza.grafana.com/login"
+      },
+      {
+        "action": "Scrolling down to the bottom of the page to check for navigation elements",
+        "goal": "Look for navigation elements at the bottom of the page that would allow users to navigate back to the main page",
+        "url": "https://quickpizza.grafana.com/login"
+      },
+      {
+        "action": "Clicking on the \"Back to main page\" link at the bottom of the ratings page",
+        "goal": "Test the navigation back to the main page functionality from the ratings/profile section",
+        "url": "unknown"
+      },
+      {
+        "action": "Clicking on the \"Advanced\" link in the top right corner",
+        "goal": "Navigate to the Advanced section to test navigation back to the main page from another section",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the QuickPizza logo in the top left corner",
+        "goal": "Test navigation back to the main page from the advanced section using the logo",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking on the Advanced toggle switch to turn off the advanced settings",
+        "goal": "Test navigation back to the main page view by disabling the advanced settings panel",
+        "url": "https://quickpizza.grafana.com/"
+      },
+      {
+        "action": "Clicking directly on the red toggle switch to turn off the advanced settings",
+        "goal": "Test navigation back to the main page view by properly disabling the advanced settings panel",
+        "url": "https://quickpizza.grafana.com/"
+      }
+    ],
+    "success": true,
+    "summary": "Successfully tested the navigation back to the main page from other sections of the application. From the Login/Profile section, users can navigate back using the 'Back to main page' link at the bottom of the ratings page. From the Advanced section, users can return to the main page view by toggling off the Advanced settings switch. Both navigation methods work correctly and properly return users to the main page functionality.",
+    "final_url": "https://quickpizza.grafana.com/"
   }
 ]
