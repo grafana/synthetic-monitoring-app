@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
-import { Badge, CollapsableSection, PanelChrome, Stack, useStyles2 } from '@grafana/ui';
+
 import { Graphin } from '@antv/graphin';
 import { css } from '@emotion/css';
-
-import { UserJourneyStepIndexed, UserJourneyTest } from '../types';
-import { Check } from 'types';
+import { GrafanaTheme2 } from '@grafana/data';
+import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
+import { PanelChrome, useStyles2 } from '@grafana/ui';
 import { NodeData } from 'scenes/AIAGENT/types';
+import { UserJourneyTest } from '../types';
 
 import pageInsights from '../data/example-output.json';
 import userJourneyTests from '../data/user-journeys.json';
@@ -176,15 +175,29 @@ function ExploredNodesGraphRenderer({ model }: SceneComponentProps<ExploredNodes
                             const accessibility = data.page_insights.insights_by_category.accessibility;
                             const content = data.page_insights.insights_by_category.content;
                             const reliability = data.page_insights.insights_by_category.reliability;
-                            result += `<h4>Global score: ${data.page_insights.score}</h4>`;
-                            result += `<p>Accessibility score: ${accessibility.score}</p>`;
-                            result += `<p>Content score: ${content.score}</p>`;
-                            result += `<p>Reliability score: ${reliability.score}</p>`;
-                            result += `<p>Total number of issues: ${
-                              content.issues.length + accessibility.issues.length + reliability.issues.length
-                            }</p>`;
+                            result += `<h4 style="color: ${getNodeColor(data.page_insights.score)}">Global score: ${
+                              data.page_insights.score
+                            }</h4>`;
+                            result += `<h6>Score by category</h6>`;
+                            result += `<p style="margin: 0 0 4px 0;">`;
+                            result += `<span style="color: ${getNodeColor(
+                              accessibility.score
+                            )};font-weight: bold;">Accessibility: ${accessibility.score}</span> (${getTextIssue(
+                              accessibility.issues.length
+                            )})<br />`;
+                            result += `<span style="color: ${getNodeColor(
+                              content.score
+                            )};font-weight: bold;">Content: ${content.score}</span> (${getTextIssue(
+                              content.issues.length
+                            )})<br />`;
+                            result += `<span style="color: ${getNodeColor(
+                              reliability.score
+                            )};font-weight: bold;">Reliability: ${reliability.score}</span> (${getTextIssue(
+                              reliability.issues.length
+                            )})`;
+                            result += `</p>`;
                           });
-                          return result;
+                          return `<div style="font-family:Inter,Helvetica,Arial,sans-serif;">${result}</div>`;
                         } catch (error) {
                           console.warn('Error generating tooltip:', error);
                           return '<p>Error loading details</p>';
@@ -259,3 +272,13 @@ const getStyles = (theme: GrafanaTheme2) => {
     },
   };
 };
+
+function getTextIssue(count: number): string {
+  if (count === 0) {
+    return 'No issue';
+  }
+  if (count === 1) {
+    return '1 issue';
+  }
+  return `${count} issues`;
+}
