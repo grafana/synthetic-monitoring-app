@@ -1,32 +1,60 @@
-import React, { useCallback,useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { PanelChrome, useStyles2 } from '@grafana/ui';
+import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
+import { Badge, CollapsableSection, PanelChrome, Stack, useStyles2 } from '@grafana/ui';
 import { Graphin } from '@antv/graphin';
 import { css } from '@emotion/css';
 
+import { UserJourneyStepIndexed, UserJourneyTest } from '../types';
 import { Check } from 'types';
 import { NodeData } from 'scenes/AIAGENT/types';
 
-import pageInsights from '../scenes/AIAGENT/data/example-output.json';
+import pageInsights from '../data/example-output.json';
+import userJourneyTests from '../data/user-journeys.json';
 
 function getNodeColor(score: number) {
   if (score > 80) {
-    return '#52c41a'; // green
+    return '#83bd71'; // green
   } else if (score > 50) {
-    return '#faad14'; // yellow
+    return '#f19e45'; // yellow
   }
-  return '#f5222d'; // red
+  return '#e1575e'; // red
 }
 
-export function AiCheckOutputPage({ check }: { check: Check }) {
+interface ExploredNodesGraphState extends SceneObjectState {
+  checkId: number;
+  userJourneyTests: UserJourneyTest[];
+  pageInsights: any;
+}
+
+export class ExploredNodesGraph extends SceneObjectBase<ExploredNodesGraphState> {
+  static Component = ExploredNodesGraphRenderer;
+
+  public constructor(state: ExploredNodesGraphState) {
+    super(state);
+  }
+
+  public useCheckId() {
+    return this.useState().checkId;
+  }
+  public useUserJourneyTests() {
+    return this.useState().userJourneyTests;
+  }
+  public usePageInsights() {
+    return this.useState().pageInsights;
+  }
+}
+
+function ExploredNodesGraphRenderer({ model }: SceneComponentProps<ExploredNodesGraph>) {
   const styles = useStyles2(getStyles);
   const graphinRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const checkId = model.useCheckId();
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   // Create a unique ID based on the check ID to avoid conflicts
-  const graphinId = `ai-check-graph-${check.id}`;
+  const graphinId = `ai-check-graph-${checkId}`;
 
   const cleanupGraphin = useCallback(() => {
     if (graphinRef.current) {
@@ -66,7 +94,7 @@ export function AiCheckOutputPage({ check }: { check: Check }) {
     return () => {
       cleanupGraphin();
     };
-  }, [check.id, cleanupGraphin]);
+  }, [checkId, cleanupGraphin]);
 
   const handleGraphinError = useCallback((error: any) => {
     console.error('Graphin error:', error);
@@ -119,9 +147,9 @@ export function AiCheckOutputPage({ check }: { check: Check }) {
                           const data = node.data as NodeData;
                           const color = getNodeColor(data.page_insights?.score);
                           return `<div style="padding: 16px; background-color: ${color}; border-radius: 100px; color: white; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                    <div><strong>${node.id}</strong></div>
-                                    <div>Score: ${data.page_insights?.score}</div>      
-                                  </div>`;
+                                      <div><strong>${node.id}</strong></div>
+                                      <div>Score: ${data.page_insights?.score}</div>      
+                                    </div>`;
                         } catch (error) {
                           console.warn('Error rendering node:', error);
                           return '<div style="padding: 16px; background-color: #ccc; border-radius: 100px; color: black;">Error</div>';
@@ -177,6 +205,16 @@ export function AiCheckOutputPage({ check }: { check: Check }) {
   );
 }
 
+export function getExploredNodesGraph(checkId: number) {
+  return new SceneFlexItem({
+    body: new ExploredNodesGraph({
+      checkId: checkId,
+      userJourneyTests: userJourneyTests,
+      pageInsights: pageInsights,
+    }),
+  });
+}
+
 // Simple Error Boundary component
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode; onError: (error: any) => void },
@@ -209,17 +247,12 @@ const getStyles = (theme: GrafanaTheme2) => {
   return {
     pageContainer: css({
       label: 'page-container',
-      padding: theme.spacing(0, 2, 2, 2),
       borderBottom: 'none',
       background: theme.colors.background.primary,
       display: 'flex',
       flexDirection: 'column',
       flexGrow: 1,
       margin: theme.spacing(0, 0, 0, 0),
-
-      [theme.breakpoints.up('md')]: {
-        padding: theme.spacing(0, 4, 4, 4),
-      },
     }),
     label: {
       color: theme.colors.text.primary,
