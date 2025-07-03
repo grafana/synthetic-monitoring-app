@@ -41,6 +41,7 @@ export type NodeData = {
 };
 
 export type InsightsCategory = 'accessibility' | 'content' | 'reliability';
+export type InsightsSeverity = 'critical' | 'high' | 'medium' | 'low';
 
 export type PageInsightsCategory = {
   summary: string;
@@ -49,7 +50,7 @@ export type PageInsightsCategory = {
 };
 
 export type PageInsightsIssue = {
-  severity: 'critical' | 'high' | 'medium' | 'low';
+  severity: string;
   description: string;
   reason: string;
   recommendation: string;

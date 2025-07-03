@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
 import { Badge, CollapsableSection, PanelChrome, Stack } from '@grafana/ui';
 
-import { UserJourneyStep, UserJourneyStepIndexed, UserJourneyTest } from '../types';
+import { UserJourneyStepIndexed, UserJourneyTest } from '../types';
 
 import userJourneyTests from '../data/user-journeys.json';
 

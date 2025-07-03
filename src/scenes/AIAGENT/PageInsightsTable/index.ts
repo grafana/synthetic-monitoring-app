@@ -1,0 +1,1 @@
+export { getPageInsightsTable } from './PageInsightsTable';

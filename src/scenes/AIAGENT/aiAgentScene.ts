@@ -19,7 +19,7 @@ import { getTimeRange } from 'scenes/Common/timeRange';
 
 import { getGlobalScoreGaugePanel } from './globalScoreGauge';
 import { getGlobalScoreTimeseriesPanel } from './globalScoreTimeseries';
-import { getPageInsightsTable } from './pageInsightsTable';
+import { getPageInsightsTable } from './PageInsightsTable';
 import { getUserJourneysTable } from './UserJourneyTable';
 
 export function getAiAgentScene({ metrics }: DashboardSceneAppConfig, check: Check) {
@@ -64,18 +64,15 @@ export function getAiAgentScene({ metrics }: DashboardSceneAppConfig, check: Che
           }),
           new SceneFlexLayout({
             direction: 'row',
-            height: 500,
-            children: [getPageInsightsTable("Accessibility")],
+            children: [getPageInsightsTable('accessibility')],
           }),
           new SceneFlexLayout({
             direction: 'row',
-            height: 500,
-            children: [getPageInsightsTable("Content")],
+            children: [getPageInsightsTable('content')],
           }),
           new SceneFlexLayout({
             direction: 'row',
-            height: 500,
-            children: [getPageInsightsTable("Reliability")],
+            children: [getPageInsightsTable('reliability')],
           }),
         ],
       }),
