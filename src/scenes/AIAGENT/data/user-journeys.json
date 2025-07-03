@@ -2,276 +2,203 @@
   {
     "user_flow": {
       "title": "User Authentication",
-      "description": "Users can log in to their account, create new user accounts, and log out of the system.",
-      "discovery_context": "A 'Login/Profile' link is visible in the top navigation bar of the main page."
+      "description": "Users can log in with username and password, create new accounts, and log out of their sessions through the authentication system.",
+      "discovery_context": "Login/Profile link is visible in the top navigation bar of the main page."
     },
     "steps": [
       {
         "action": "Clicking on the Login/Profile link in the top right corner",
         "goal": "Access the authentication system to test login functionality",
-        "url": "unknown"
+        "result": "Successfully navigated to the login page",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The QuickPizza app has a Login/Profile link in the top right corner of the homepage"
       },
       {
         "action": "Clicking on the username input field",
-        "goal": "Focus on the username field to enter login credentials",
-        "url": "https://quickpizza.grafana.com/login"
+        "goal": "Focus on the username field to enter the default username",
+        "result": "Successfully focused on the username field",
+        "url": "https://quickpizza.grafana.com/login",
+        "memory": "The login page shows hints for default credentials - username: 'default' and password: '12345678'"
       },
       {
-        "action": "Typing 'default' into the username field",
-        "goal": "Enter the username for login authentication",
-        "url": "https://quickpizza.grafana.com/login"
+        "action": "Typing 'default' in the username field",
+        "goal": "Enter the default username as suggested by the hint",
+        "result": "Successfully entered 'default' in the username field",
+        "url": "https://quickpizza.grafana.com/login",
+        "memory": ""
       },
       {
         "action": "Clicking on the password input field",
-        "goal": "Focus on the password field to enter login credentials",
-        "url": "https://quickpizza.grafana.com/login"
+        "goal": "Focus on the password field to enter the default password",
+        "result": "Successfully focused on the password field",
+        "url": "https://quickpizza.grafana.com/login",
+        "memory": ""
       },
       {
-        "action": "Typing '12345678' into the password field",
-        "goal": "Enter the password for login authentication",
-        "url": "https://quickpizza.grafana.com/login"
+        "action": "Typing the password '12345678' in the password field",
+        "goal": "Enter the default password as suggested by the hint",
+        "result": "Successfully entered the password in the password field",
+        "url": "https://quickpizza.grafana.com/login",
+        "memory": ""
       },
       {
-        "action": "Clicking on the Sign in button",
-        "goal": "Submit the login form to authenticate the user",
-        "url": "https://quickpizza.grafana.com/login"
+        "action": "Clicking on the Sign in button to authenticate",
+        "goal": "Complete the login process with the entered credentials",
+        "result": "Successfully logged in and accessed the user profile page",
+        "url": "https://quickpizza.grafana.com/login",
+        "memory": ""
       },
       {
-        "action": "Scrolling down to see more content on the profile page",
-        "goal": "Explore the complete profile page to verify user profile access functionality",
-        "url": "https://quickpizza.grafana.com/login"
-      },
-      {
-        "action": "Scrolling down to see the end of the profile page",
-        "goal": "Complete the exploration of the profile page to verify all user profile access functionality",
-        "url": "https://quickpizza.grafana.com/login"
+        "action": "Clicking on the Logout button to test the logout functionality",
+        "goal": "Test the logout functionality to complete the authentication system test",
+        "result": "Successfully tested logout functionality - user was redirected back to login page",
+        "url": "https://quickpizza.grafana.com/login",
+        "memory": "After successful login, users are redirected to a profile page showing their pizza ratings with options to clear ratings and logout"
       }
     ],
     "success": true,
-    "summary": "Successfully tested the user authentication system. User can log in with valid credentials (username: 'default', password: '12345678') and access their profile page which displays pizza ratings data. The authentication flow works correctly from login form to profile access, with proper user data display and profile management options (Clear Ratings and Logout buttons).",
+    "summary": "User authentication system successfully tested. Login with default credentials works, user profile displays correctly showing pizza ratings, and logout functionality redirects back to login page.",
     "final_url": "https://quickpizza.grafana.com/login"
   },
   {
     "user_flow": {
       "title": "Pizza Discovery",
-      "description": "Users can discover new pizza combinations through an automated recommendation system with customizable parameters including calorie limits, topping counts, dietary restrictions, tool exclusions, and custom naming options.",
-      "discovery_context": "The main page features a 'Pizza, Please!' button that promises to reveal new pizza combinations with one click."
+      "description": "Users can discover new pizza combinations through an interactive recommendation system with customizable parameters including calorie limits, topping counts, dietary restrictions, excluded tools, and custom naming options.",
+      "discovery_context": "Main page features a 'Pizza, Please!' button that promises to discover new pizza combinations with one click."
     },
     "steps": [
       {
-        "action": "Clicking on the \"Pizza, Please!\" button",
-        "goal": "Access the automated pizza recommendation system to test pizza discovery functionality",
-        "url": "https://quickpizza.grafana.com/"
+        "action": "Clicking on the \"Pizza, Please!\" button to access the pizza discovery system",
+        "goal": "Test the interactive pizza recommendation system to discover new pizza combinations",
+        "result": "Successfully generated first pizza recommendation - 'A Lazy Hawaii' with thin dough and detailed ingredients",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The main page has a prominent \"Pizza, Please!\" button that appears to be the entry point for the pizza discovery feature"
       },
       {
-        "action": "Scrolling down to see more content",
-        "goal": "Explore if there are additional features or options related to the pizza discovery system",
-        "url": "https://quickpizza.grafana.com/"
+        "action": "Clicking the \"Pizza, Please!\" button again to test if it generates a different pizza recommendation",
+        "goal": "Verify that the system can generate multiple different pizza combinations",
+        "result": "Successfully generated a second different pizza recommendation - 'The Red Hawaii' with different ingredients and tools",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The pizza discovery system successfully generates detailed pizza recommendations with name, dough type, ingredients, and tools when the button is clicked"
       },
       {
-        "action": "Clicking on the \"Love it!\" button",
-        "goal": "Test the positive feedback functionality of the pizza discovery system",
-        "url": "https://quickpizza.grafana.com/"
+        "action": "Scrolling down to look for feedback options for the pizza recommendation",
+        "goal": "Find and test feedback functionality for pizza recommendations",
+        "result": "Successfully found feedback options below the pizza recommendation",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The system generates different pizza recommendations each time the button is clicked, with varying ingredients, tools, and additional details like calories"
       },
       {
-        "action": "Clicking on the \"Pizza, Please!\" button again",
-        "goal": "Generate a new pizza recommendation to test the \"No thanks\" functionality",
-        "url": "https://quickpizza.grafana.com/"
+        "action": "Clicking the \"Love it!\" button to provide positive feedback on the pizza recommendation",
+        "goal": "Test the positive feedback functionality for pizza recommendations",
+        "result": "Successfully tested positive feedback - system requires login for feedback functionality",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The pizza discovery system includes feedback buttons - 'No thanks' and 'Love it!' - allowing users to rate the recommendations"
       },
       {
-        "action": "Clicking on the \"No thanks\" button",
-        "goal": "Test the negative feedback functionality of the pizza discovery system",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the \"Pizza, Please!\" button for the third time",
-        "goal": "Test that the automated recommendation system continues to work and provides variety in recommendations",
-        "url": "https://quickpizza.grafana.com/"
+        "action": "Clicking the \"No thanks\" button to test negative feedback functionality",
+        "goal": "Test the negative feedback functionality to see if it also requires login",
+        "result": "Successfully tested negative feedback - system consistently requires login for all feedback functionality",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The feedback system requires user authentication - clicking 'Love it!' shows 'Please log in first.' message"
       }
     ],
     "success": true,
-    "summary": "Successfully tested the Pizza Discovery functionality through the automated recommendation system. The system works correctly - clicking the 'Pizza, Please!' button generates unique pizza recommendations with detailed information (name, dough type, ingredients, tool, calories). The feedback system is functional with both 'Love it!' and 'No thanks' buttons properly recording user ratings (displaying 'Rated!' confirmation). The system demonstrates variety by generating three different pizza combinations: The Light Pugliese (500 cal, thick dough, knife), The Mushy Prosciutto (250 cal, thick dough, pizza cutter), and The Mammoth Margherita (800 cal, stuffed dough, pizza cutter). All aspects of the user flow for discovering new pizza combinations work as expected.",
+    "summary": "Pizza Discovery user flow successfully tested. The system generates unique pizza recommendations with each click, includes comprehensive details (name, dough, ingredients, tools, calories), and provides feedback options that require authentication.",
     "final_url": "https://quickpizza.grafana.com/"
   },
   {
     "user_flow": {
-      "title": "Pizza Rating Management",
-      "description": "Users can rate pizza recommendations, view comprehensive lists of their ratings with star ratings and pizza IDs, and clear all ratings data.",
-      "discovery_context": "The ratings page displays a comprehensive list of user pizza ratings with star ratings and pizza IDs, along with a 'Clear Ratings' button for data management."
+      "title": "Advanced Features Access",
+      "description": "Users can access advanced functionality through a dedicated interface.",
+      "discovery_context": "An 'Advanced' toggle or switch is visible in the top navigation area of the main page."
     },
     "steps": [
       {
-        "action": "Clicking on the Login/Profile link in the top right corner",
-        "goal": "Access the authentication system to log in and then test the pizza rating management functionality",
-        "url": "unknown"
+        "action": "Clicking on the \"Advanced\" link in the top right corner of the navigation bar",
+        "goal": "Access the advanced functionality interface to test the Advanced Features Access user flow",
+        "result": "Successfully accessed advanced functionality interface with various configuration options",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The QuickPizza app has an \"Advanced\" link in the top navigation bar that provides access to advanced functionality"
       },
       {
-        "action": "Scrolling down to see more pizza ratings and look for the Clear Ratings functionality",
-        "goal": "Explore the complete pizza ratings history and find the Clear Ratings button to test the rating management functionality",
-        "url": "https://quickpizza.grafana.com/login"
+        "action": "Clicking on the \"Must be vegetarian\" checkbox to test the dietary preference feature",
+        "goal": "Test the vegetarian option in the advanced features to see if it affects pizza recommendations",
+        "result": "Successfully enabled the vegetarian checkbox option",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The Advanced features interface includes configuration options for calories, toppings, excluded tools, vegetarian preference, and custom pizza naming"
       },
       {
-        "action": "Scrolling down to see the end of the pizza ratings list and find the Clear Ratings button",
-        "goal": "Locate the Clear Ratings functionality to test the rating management feature",
-        "url": "https://quickpizza.grafana.com/login"
+        "action": "Clicking on the Custom Pizza Name input field to test the custom naming feature",
+        "goal": "Test the custom pizza name functionality by entering a custom name",
+        "result": "Successfully focused on the custom pizza name input field",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": ""
       },
       {
-        "action": "Clicking on the Clear Ratings button",
-        "goal": "Test the pizza rating management functionality to clear all user ratings data",
-        "url": "https://quickpizza.grafana.com/login"
+        "action": "Typing a custom pizza name in the input field",
+        "goal": "Test the custom pizza name functionality by entering a personalized name",
+        "result": "Successfully entered a custom pizza name",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": ""
       },
       {
-        "action": "Scrolling down to check if the Clear Ratings button shows any change or confirmation after clicking",
-        "goal": "Verify if the Clear Ratings functionality worked or if there's any feedback about the action",
-        "url": "https://quickpizza.grafana.com/login"
+        "action": "Clicking the \"Pizza, Please!\" button to test if advanced configurations are applied to pizza generation",
+        "goal": "Test if the advanced features (vegetarian preference, custom name, and other configurations) are properly applied when generating a pizza",
+        "result": "Successfully generated a pizza recommendation with advanced features enabled",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": ""
       },
       {
-        "action": "Clicking on the Clear Ratings button again to test if it requires multiple clicks or if there's any response",
-        "goal": "Verify if the Clear Ratings functionality is broken or if it requires multiple attempts",
-        "url": "https://quickpizza.grafana.com/login"
-      }
-    ],
-    "success": false,
-    "summary": "Found a critical bug with the Pizza Rating Management functionality. The 'Clear Ratings' button does not work as expected - it fails to clear the user's pizza ratings data. When clicked, it only scrolls the page to the top without removing any ratings. The user can successfully view their pizza ratings history (54 ratings total from Rating ID 1 to 54), but the clear functionality is completely broken. This prevents users from managing their ratings data properly.",
-    "final_url": "https://quickpizza.grafana.com/login"
-  },
-  {
-    "user_flow": {
-      "title": "Advanced Settings",
-      "description": "Users can toggle advanced configuration options for customizing their pizza discovery experience.",
-      "discovery_context": "An 'Advanced' button is visible in the top navigation area of the main page, suggesting additional customization features."
-    },
-    "steps": [
-      {
-        "action": "Clicking on the \"Advanced\" link in the top navigation bar",
-        "goal": "Access the advanced configuration options for customizing the pizza discovery experience",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the Max Calories per Slice input field",
-        "goal": "Test the functionality of the Max Calories per Slice configuration option",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Typing '500' to replace the current value in the Max Calories per Slice field",
-        "goal": "Test the ability to customize the maximum calorie setting for pizza recommendations",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the Max Calories per Slice field to select all text",
-        "goal": "Select all text in the field to replace it with a new value",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the Min Number of Toppings input field",
-        "goal": "Test the functionality of the Min Number of Toppings configuration option",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Typing '3' to change the Min Number of Toppings value",
-        "goal": "Test the ability to customize the minimum number of toppings for pizza recommendations",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the Max Number of Toppings input field",
-        "goal": "Test the functionality of the Max Number of Toppings configuration option",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Typing '8' to change the Max Number of Toppings value",
-        "goal": "Test the ability to customize the maximum number of toppings for pizza recommendations",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the 'Must be vegetarian' checkbox",
-        "goal": "Test the vegetarian option functionality in the advanced pizza discovery settings",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the Custom Pizza Name input field",
-        "goal": "Test the custom pizza name functionality in the advanced settings",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Typing 'My Perfect Pizza' into the Custom Pizza Name field",
-        "goal": "Test the custom pizza naming functionality in the advanced settings",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the 'Pizza, Please!' button to test the advanced settings functionality",
-        "goal": "Test that the advanced configuration options are properly applied when generating a pizza recommendation",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Scrolling down to see the generated pizza recommendation",
-        "goal": "View the pizza recommendation generated with the advanced settings to verify the configuration options are working correctly",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Scrolling down to see the complete pizza recommendation including calories and tools",
-        "goal": "View the complete pizza recommendation to verify all advanced settings are properly applied",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Scrolling down to see the rest of the pizza recommendation",
-        "goal": "Complete the view of the pizza recommendation and check for any additional functionality",
-        "url": "https://quickpizza.grafana.com/"
-      }
-    ],
-    "success": false,
-    "summary": "Found significant bugs in the Advanced Settings functionality. While some features work correctly (custom pizza name and vegetarian setting), critical settings like 'Excluded Tools' and 'Max Calories per Slice' are not being properly applied. The excluded tools list shows 'Knife' as excluded, but the generated pizza recommendation uses 'Knife' as the tool. The calorie limit setting is also not being enforced as the recommendation shows 1550 calories per slice, which exceeds the configured limit. Additionally, the input fields have a usability issue where typing new values appends to existing values instead of replacing them.",
-    "final_url": "https://quickpizza.grafana.com/"
-  },
-  {
-    "user_flow": {
-      "title": "Navigation",
-      "description": "Users can navigate back to the main page from other sections of the application.",
-      "discovery_context": "A 'Back to main page' link is visible at the bottom of the pizza ratings page, enabling navigation back to the main interface."
-    },
-    "steps": [
-      {
-        "action": "Clicking on the Login/Profile link in the top right corner",
-        "goal": "Navigate to the Login/Profile section to test navigation back to the main page",
-        "url": "unknown"
-      },
-      {
-        "action": "Scrolling up to check for navigation elements at the top of the page",
-        "goal": "Look for navigation elements (like the QuickPizza logo) that allow users to navigate back to the main page",
-        "url": "https://quickpizza.grafana.com/login"
-      },
-      {
-        "action": "Scrolling down to the bottom of the page to check for navigation elements",
-        "goal": "Look for navigation elements at the bottom of the page that would allow users to navigate back to the main page",
-        "url": "https://quickpizza.grafana.com/login"
-      },
-      {
-        "action": "Clicking on the \"Back to main page\" link at the bottom of the ratings page",
-        "goal": "Test the navigation back to the main page functionality from the ratings/profile section",
-        "url": "unknown"
-      },
-      {
-        "action": "Clicking on the \"Advanced\" link in the top right corner",
-        "goal": "Navigate to the Advanced section to test navigation back to the main page from another section",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the QuickPizza logo in the top left corner",
-        "goal": "Test navigation back to the main page from the advanced section using the logo",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking on the Advanced toggle switch to turn off the advanced settings",
-        "goal": "Test navigation back to the main page view by disabling the advanced settings panel",
-        "url": "https://quickpizza.grafana.com/"
-      },
-      {
-        "action": "Clicking directly on the red toggle switch to turn off the advanced settings",
-        "goal": "Test navigation back to the main page view by properly disabling the advanced settings panel",
-        "url": "https://quickpizza.grafana.com/"
+        "action": "Scrolling down to see the complete pizza recommendation and verify advanced settings are applied",
+        "goal": "View the complete pizza recommendation to confirm that advanced features like vegetarian preference and custom name are properly applied",
+        "result": "Successfully generated a pizza recommendation with advanced features applied, including vegetarian preference, calorie limits, and toppings constraints",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": ""
       }
     ],
     "success": true,
-    "summary": "Successfully tested the navigation back to the main page from other sections of the application. From the Login/Profile section, users can navigate back using the 'Back to main page' link at the bottom of the ratings page. From the Advanced section, users can return to the main page view by toggling off the Advanced settings switch. Both navigation methods work correctly and properly return users to the main page functionality.",
+    "summary": "Advanced Features Access user flow successfully tested. The advanced interface provides comprehensive configuration options including calorie limits, toppings count, excluded tools, vegetarian preferences, and custom naming. All features are functional and properly applied to pizza generation.",
     "final_url": "https://quickpizza.grafana.com/"
+  },
+  {
+    "user_flow": {
+      "title": "Admin Management",
+      "description": "Administrators can access a dedicated admin interface for system management through a dedicated login page with username and password authentication.",
+      "discovery_context": "Footer section contains a reference to an admin page with a clickable link."
+    },
+    "steps": [
+      {
+        "action": "Clicking on the \"Click here\" link in the footer that mentions admin page access",
+        "goal": "Access the admin interface to test admin management functionality",
+        "result": "Successfully accessed the admin login page",
+        "url": "https://quickpizza.grafana.com/",
+        "memory": "The admin page can be accessed through a \"Click here\" link in the footer that says \"Looking for the admin page?\""
+      },
+      {
+        "action": "Clicking the \"Sign in\" button to authenticate as admin",
+        "goal": "Test admin authentication to access the admin management interface",
+        "result": "Successfully logged into the admin interface and can view the latest pizza recommendations",
+        "url": "https://quickpizza.grafana.com/admin",
+        "memory": "The admin login page shows hints for credentials - username: \"admin\" and password: \"admin\". The username field appears to be pre-filled."
+      },
+      {
+        "action": "Clicking the \"Refresh\" button to test the admin dashboard refresh functionality",
+        "goal": "Test if the admin can refresh the latest pizza recommendations list",
+        "result": "Successfully tested the refresh functionality - the page refreshed and maintained the recommendations list",
+        "url": "https://quickpizza.grafana.com/admin",
+        "memory": "The admin dashboard shows a list of latest pizza recommendations with detailed information including pizza names, tools used, and ingredient counts. It includes refresh functionality."
+      },
+      {
+        "action": "Clicking the \"Logout\" button to test the admin logout functionality",
+        "goal": "Test the admin logout functionality to ensure proper session management",
+        "result": "Successfully tested the admin logout functionality - user was redirected back to the admin login page",
+        "url": "https://quickpizza.grafana.com/admin",
+        "memory": "The admin dashboard refresh functionality works properly and maintains the recommendations list after refresh"
+      }
+    ],
+    "success": true,
+    "summary": "Admin Management user flow successfully tested. Admin can access dedicated interface through footer link, authenticate with admin credentials, view latest pizza recommendations with detailed information, refresh the dashboard, and logout properly with session termination.",
+    "final_url": "https://quickpizza.grafana.com/admin"
   }
 ]

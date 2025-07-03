@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
 import { Badge, CollapsableSection, PanelChrome, Stack } from '@grafana/ui';
 
@@ -25,6 +25,13 @@ export class UserJourneysTable extends SceneObjectBase<UserJourneysTableState> {
 function UserJourneysTableRenderer({ model }: SceneComponentProps<UserJourneysTable>) {
   const userJourneyTests = model.useUserJourneyTests();
 
+  const memory = useMemo(() => {
+    return userJourneyTests
+      .flatMap((test) => test.steps)
+      .filter((step) => step.memory && step.memory.length > 0)
+      .map((step) => step.memory);
+  }, [userJourneyTests]);
+
   return (
     <div style={{ width: '100%', height: 'auto' }}>
       <PanelChrome title="User Journeys" description="User journeys discovered and analyzed by the AI agent">
@@ -33,6 +40,14 @@ function UserJourneysTableRenderer({ model }: SceneComponentProps<UserJourneysTa
             <UserJourneyTestItem key={test.user_flow.title} test={test} />
           ))}
         </Stack>
+        <div style={{ paddingLeft: '32px', marginTop: '20px' }}>
+        <CollapsableSection label={<h6>Knowledge base</h6>} isOpen={false}>
+          {memory.map((memory, index) => (
+            <p key={`$memory-${index}`}>{memory}</p>
+          ))}
+        </CollapsableSection>
+        </div>
+
       </PanelChrome>
     </div>
   );
@@ -91,6 +106,10 @@ function UserJourneyTestItem({ test }: { test: UserJourneyTest }) {
                     <p>
                       <b>Goal: </b>
                       {step.goal}
+                    </p>
+                    <p>
+                      <b>Result: </b>
+                      {step.result}
                     </p>
                   </div>
                 </CollapsableSection>

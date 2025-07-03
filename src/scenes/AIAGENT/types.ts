@@ -15,6 +15,8 @@ export type UserJourneyTest = {
 export type UserJourneyStep = {
   action: string;
   goal: string;
+  result: string;
+  memory: string;
   url: string;
 };
 
