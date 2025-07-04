@@ -42,7 +42,6 @@ export const RunbookUrl = ({ alertType, selected }: RunbookUrlProps) => {
               id={`alert-runbook-url-${alertType}`}
               data-testid={`alert-runbook-url-${alertType}`}
               placeholder="https://example.com/runbook"
-              type="url"
               disabled={!selected || isFormDisabled}
               width={40}
             />
