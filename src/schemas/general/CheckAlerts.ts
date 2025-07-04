@@ -23,6 +23,7 @@ const checkAlertSchema = z
       .refine((value) => !value || (value >= 1 && !isScientificNotation(value)), {
         message: invalidThreshold,
       }),
+    runbookUrl: z.string().url({ message: 'Runbook URL must be a valid URL' }).optional().or(z.literal('')),
   })
   .refine(
     (data) => {
