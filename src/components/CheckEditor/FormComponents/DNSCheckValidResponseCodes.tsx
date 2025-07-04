@@ -3,12 +3,10 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { Field, MultiSelect } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { DNS_RESPONSE_CODES } from 'components/constants';
 
 export const DNSCheckValidResponseCodes = () => {
-  const { control } = useFormContext<CheckFormValues>();
-  const { isFormDisabled } = useCheckFormContext();
+  const { control, formState } = useFormContext<CheckFormValues>();
   const id = 'validStatusCodes';
 
   return (
@@ -27,7 +25,7 @@ export const DNSCheckValidResponseCodes = () => {
             <MultiSelect
               {...rest}
               options={DNS_RESPONSE_CODES}
-              disabled={isFormDisabled}
+              disabled={formState.disabled}
               inputId={id}
               onChange={(values) => onChange(values.map((v) => v.value))}
             />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesTraceroute, CheckType } from 'types';
@@ -7,8 +8,6 @@ import { TracerouteRequestFields } from 'components/CheckEditor/CheckEditor.type
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 import { TracerouteRequest } from 'components/CheckEditor/FormComponents/TracerouteRequest';
-
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 const TRACEROUTE_FIELDS: TracerouteRequestFields = {
   target: {
@@ -29,7 +28,9 @@ const TRACEROUTE_FIELDS: TracerouteRequestFields = {
 };
 
 const CheckTracerouteRequest = () => {
-  const { isFormDisabled } = useCheckFormContext();
+  const {
+    formState: { disabled: isFormDisabled },
+  } = useFormContext();
   const { handleErrorRef } = useNestedRequestErrors(TRACEROUTE_FIELDS);
 
   return <TracerouteRequest disabled={isFormDisabled} fields={TRACEROUTE_FIELDS} ref={handleErrorRef} />;

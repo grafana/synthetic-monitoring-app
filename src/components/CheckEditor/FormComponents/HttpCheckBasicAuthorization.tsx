@@ -36,7 +36,7 @@ export const HttpCheckBasicAuthorization = ({ disabled }: { disabled?: boolean }
         id={passwordId}
         invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
         label="Password"
-        required={true}
+        required
       />
     </Stack>
   );

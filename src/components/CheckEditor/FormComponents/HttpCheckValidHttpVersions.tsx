@@ -3,7 +3,6 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { Field, MultiSelect } from '@grafana/ui';
 
 import { CheckFormValues, HttpVersion } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 const httpVersionOptions = [
   {
@@ -21,8 +20,8 @@ const httpVersionOptions = [
 ];
 
 export const HttpCheckValidHttpVersions = () => {
-  const { control } = useFormContext<CheckFormValues>();
-  const { isFormDisabled } = useCheckFormContext();
+  const { control, formState } = useFormContext<CheckFormValues>();
+
   const id = 'http-settings-valid-http-versions';
 
   return (
@@ -41,7 +40,7 @@ export const HttpCheckValidHttpVersions = () => {
           return (
             <MultiSelect
               {...rest}
-              disabled={isFormDisabled}
+              disabled={formState.disabled}
               inputId={id}
               onChange={(values) => onChange(values.map((v) => v.value))}
               options={httpVersionOptions}

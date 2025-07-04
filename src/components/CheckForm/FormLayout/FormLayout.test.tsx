@@ -376,13 +376,14 @@ const TestForm = <T extends FieldValues>({
   children,
   disabled,
   hasUnsavedChanges,
-}: Pick<FormLayoutProps<T>, 'actions' | 'children' | 'disabled' | 'hasUnsavedChanges'>) => {
+}: Pick<FormLayoutProps<T>, 'actions' | 'children' | 'hasUnsavedChanges'> & { disabled?: boolean }) => {
   const formMethods = useForm<TestValues>({
     defaultValues: {
       job: ``,
       target: ``,
     },
     resolver: zodResolver(schema),
+    disabled,
   });
 
   return (
@@ -391,7 +392,6 @@ const TestForm = <T extends FieldValues>({
         checkState="new"
         checkType={CheckType.HTTP}
         actions={actions}
-        disabled={disabled}
         onSubmit={formMethods.handleSubmit}
         onValid={(v) => v}
         schema={schema}

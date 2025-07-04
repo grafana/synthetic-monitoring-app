@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValues, CheckFormValuesHttp, CheckType } from 'types';
@@ -12,8 +13,6 @@ import { HttpCheckValidHttpVersions } from 'components/CheckEditor/FormComponent
 import { HttpCheckValidStatusCodes } from 'components/CheckEditor/FormComponents/HttpCheckValidStatusCodes';
 import { HttpRequest } from 'components/CheckEditor/FormComponents/HttpRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
-
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesHttp> = {
   target: {
@@ -77,15 +76,10 @@ export const HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesHttp> = {
 };
 
 const CheckHttpRequest = () => {
-  const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
+  const { formState } = useFormContext();
   const { handleErrorRef } = useNestedRequestErrors(HTTP_REQUEST_FIELDS);
 
-  const onTest = useCallback(() => {
-    addRequest(HTTP_REQUEST_FIELDS);
-  }, [addRequest]);
-
-  return <HttpRequest disabled={isFormDisabled} fields={HTTP_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
+  return <HttpRequest disabled={formState.disabled} fields={HTTP_REQUEST_FIELDS} ref={handleErrorRef} />;
 };
 
 export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValues>>> = {
