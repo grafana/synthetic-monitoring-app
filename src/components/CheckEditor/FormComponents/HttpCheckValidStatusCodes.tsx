@@ -3,13 +3,12 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { Field, MultiSelect } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 const validStatusCodes = generateValidStatusCodes();
 
 export const HttpCheckValidStatusCodes = () => {
-  const { control } = useFormContext<CheckFormValues>();
-  const { isFormDisabled } = useCheckFormContext();
+  const { control, formState } = useFormContext<CheckFormValues>();
+
   const id = 'validStatusCodes';
 
   return (
@@ -27,7 +26,7 @@ export const HttpCheckValidStatusCodes = () => {
           return (
             <MultiSelect
               {...rest}
-              disabled={isFormDisabled}
+              disabled={formState.disabled}
               inputId={id}
               onChange={(values) => onChange(values.map((v) => v.value))}
               options={validStatusCodes}

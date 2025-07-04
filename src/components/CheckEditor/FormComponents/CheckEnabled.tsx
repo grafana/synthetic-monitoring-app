@@ -2,16 +2,14 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { CheckFormValues } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 export const CheckEnabled = () => {
-  const { register } = useFormContext<CheckFormValues>();
-  const { isFormDisabled } = useCheckFormContext();
+  const { register, formState } = useFormContext<CheckFormValues>();
 
   return (
     <HorizontalCheckboxField
-      disabled={isFormDisabled}
+      disabled={formState.disabled}
       data-fs-element="Check enabled checkbox"
       id="check-form-enabled"
       label="Enabled"

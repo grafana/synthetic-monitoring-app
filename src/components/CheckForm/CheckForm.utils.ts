@@ -1,15 +1,20 @@
 import { FieldErrors } from 'react-hook-form';
 import { MAX_FREQUENCY_ERROR_MESSAGE_START, MIN_FREQUENCY_ERROR_MESSAGE_START } from 'schemas/general/Frequency';
 
-import { CheckFormValues } from 'types';
-import { PROBES_FILTER_ID } from 'components/CheckEditor/CheckProbes/ProbesFilter';
+import { Check, CheckFormValues, CheckType } from 'types';
+
+import { PROBES_FILTER_ID } from '../CheckEditor/CheckProbes/ProbesFilter';
 import {
   FREQUENCY_INPUT_ID,
   FREQUENCY_MINUTES_INPUT_ID,
   FREQUENCY_SECONDS_INPUT_ID,
-} from 'components/CheckEditor/FormComponents/Frequency.constants';
-import { SCRIPT_TEXTAREA_ID } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
-import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
+} from '../CheckEditor/FormComponents/Frequency.constants';
+import { SCRIPT_TEXTAREA_ID } from '../CheckEditor/FormComponents/ScriptedCheckScript';
+import { CHECK_FORM_ERROR_EVENT } from '../constants';
+
+export function getIsExistingCheck<T extends Check>(check?: T): check is T & { id: number } {
+  return check !== undefined && check.id !== undefined;
+}
 
 export function checkHasChanges(existing: CheckFormValues, incoming: CheckFormValues) {
   return JSON.stringify(existing) !== JSON.stringify(incoming);
@@ -32,11 +37,7 @@ export function flattenKeys(errs: FieldErrors<CheckFormValues>) {
 function isBottomOfPath(obj: any) {
   const keys = Object.keys(obj);
 
-  if (keys.every((key) => [`ref`, `message`, `type`].includes(key))) {
-    return true;
-  }
-
-  return false;
+  return keys.every((key) => [`ref`, `message`, `type`].includes(key));
 }
 
 export function broadcastFailedSubmission(errs: FieldErrors, source?: `submission` | `collapsible`) {
@@ -95,4 +96,16 @@ function searchForSpecialInputs(errKeys: string[] = [], errs: FieldErrors<CheckF
   }
 
   return null;
+}
+
+export function getStep1Label(checkType: CheckType): string {
+  switch (checkType) {
+    case CheckType.Scripted:
+    case CheckType.Browser:
+      return `Script`;
+    case CheckType.MULTI_HTTP:
+      return `Requests`;
+    default:
+      return `Request`;
+  }
 }

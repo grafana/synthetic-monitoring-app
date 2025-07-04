@@ -2,8 +2,9 @@ import { screen } from '@testing-library/react';
 import { selectOption } from 'test/utils';
 
 import { CheckType, HttpMethod, IpVersion } from 'types';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSectionV2, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
+import { FormStepOrder } from '../../../../../components/CheckForm/constants';
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.HTTP;
@@ -89,7 +90,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
 
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 1);
+    await goToSectionV2(user, FormStepOrder.Check);
 
     const queryParamsButton = screen.getByLabelText('Manage query parameters');
     await user.click(queryParamsButton);

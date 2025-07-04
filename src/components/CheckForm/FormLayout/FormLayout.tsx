@@ -1,5 +1,5 @@
-import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useCallback, useMemo } from 'react';
-import { FieldErrors, FieldValues, SubmitHandler } from 'react-hook-form';
+import React, { BaseSyntheticEvent, ReactNode, useCallback } from 'react';
+import { FieldErrors, FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -10,9 +10,8 @@ import { DataTestIds } from 'test/dataTestIds';
 import { CheckType } from 'types';
 import { ANALYTICS_STEP_MAP, FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
-import { flattenKeys } from '../checkForm.utils';
-import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
-import { FormSection, FormSectionInternal, FormSectionProps } from './FormSection';
+import { useFormLayoutInternal } from './formlayout.utils';
+import { FormSection } from './FormSection';
 import { FormSidebar } from './FormSidebar';
 
 type ActionNode = {
@@ -26,7 +25,6 @@ export type FormLayoutProps<T extends FieldValues> = {
   children: ReactNode;
   checkState: 'new' | 'existing';
   checkType: CheckType;
-  disabled?: boolean;
   onSubmit: (
     onValid: SubmitHandler<T>,
     onInvalid: (errs: FieldErrors<T>) => void
@@ -35,6 +33,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   onInvalid?: (errs: FieldErrors<T>) => void;
   schema: ZodType;
   hasUnsavedChanges?: boolean;
+  onSectionClick: (index: number) => void;
 };
 
 export const FormLayout = <T extends FieldValues>({
@@ -42,40 +41,27 @@ export const FormLayout = <T extends FieldValues>({
   alerts,
   checkState,
   checkType,
-  disabled,
   children,
   onSubmit,
   onValid,
   onInvalid,
   schema,
+  onSectionClick,
   hasUnsavedChanges = true, // default to true to prevent accidentally disabling the submit button
 }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
-  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(disabled);
-
-  const sections = useMemo(() => {
-    let index = -1;
-
-    return (
-      Children.map(children, (child) => {
-        if (!isValidElement(child)) {
-          return null;
-        }
-
-        if (child.type === FormSection) {
-          index++;
-
-          const sectionProps = child.props as Omit<FormSectionProps, 'index' | 'activeSection'>;
-
-          return <FormSectionInternal {...sectionProps} index={index} activeSection={activeSection} />;
-        }
-
-        return child;
-      }) || []
-    );
-  }, [activeSection, children]);
-
-  const formSections = sections.filter((section) => section.type === FormSectionInternal);
+  const {
+    formState: { disabled },
+  } = useFormContext();
+  const {
+    activeSection,
+    goToSection,
+    setVisited,
+    visitedSections,
+    stepOrder,
+    setActiveSectionByError,
+    getSectionLabel,
+  } = useFormLayoutInternal();
 
   const handleVisited = useCallback(
     (indices: number[]) => {
@@ -86,37 +72,30 @@ export const FormLayout = <T extends FieldValues>({
 
   const handleValid = useCallback(
     (formValues: T, event: BaseSyntheticEvent | undefined) => {
-      handleVisited(formSections.map((section) => section.props.index));
+      handleVisited(Object.keys(stepOrder).map((indexKey) => Number(indexKey)));
       onValid(formValues, event);
     },
-    [handleVisited, onValid, formSections]
+    [handleVisited, onValid, stepOrder]
   );
 
   const handleInvalid = useCallback(
     (errs: FieldErrors<T>) => {
-      handleVisited(formSections.map((section) => section.props.index));
-      const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errs));
-
-      const errSection = formSections?.find((section) => {
-        const fields = section.props.fields;
-
-        return flattenedErrors.find((errName: string) => {
-          return fields?.some((field: string) => errName.startsWith(field));
-        });
-      });
-
-      if (errSection !== undefined) {
-        setActiveSection(errSection.props.index);
-      }
-
+      setActiveSectionByError(errs);
       onInvalid?.(errs);
     },
-    [handleVisited, onInvalid, formSections, setActiveSection]
+    [setActiveSectionByError, onInvalid]
   );
 
   const actionButtons = actions?.find((action) => action.index === activeSection)?.element;
 
   const disableSubmit = !hasUnsavedChanges || disabled;
+
+  const handleSectionClick = useCallback(
+    (index: number) => {
+      onSectionClick(index);
+    },
+    [onSectionClick]
+  );
 
   return (
     <div className={styles.wrapper}>
@@ -125,13 +104,15 @@ export const FormLayout = <T extends FieldValues>({
           activeSection={activeSection}
           checkState={checkState}
           checkType={checkType}
-          onSectionClick={goToSection}
-          sections={formSections}
+          onSectionClick={(index: number) => {
+            handleSectionClick(index);
+            goToSection(index);
+          }}
           visitedSections={visitedSections}
           schema={schema}
         />
         <form className={styles.form} onSubmit={onSubmit(handleValid, handleInvalid)}>
-          <div>{sections}</div>
+          <div>{children}</div>
 
           <div>
             {alerts && <div className={styles.alerts}>{alerts}</div>}
@@ -155,14 +136,14 @@ export const FormLayout = <T extends FieldValues>({
                   >
                     <Stack gap={0.5}>
                       <div>{activeSection}.</div>
-                      <div>{formSections[activeSection - 1].props.label}</div>
+                      <div>{getSectionLabel(activeSection - 1)}</div>
                     </Stack>
                   </Button>
                 )}
               </div>
               <Stack>
                 {actionButtons}
-                {activeSection < formSections.length - 1 && (
+                {activeSection < Object.values(stepOrder).length - 1 && (
                   <Button
                     onClick={() => {
                       const newStep = activeSection + 1;
@@ -179,7 +160,7 @@ export const FormLayout = <T extends FieldValues>({
                   >
                     <Stack>
                       <div>{activeSection + 2}.</div>
-                      <div>{formSections[activeSection + 1].props.label}</div>
+                      <div>{getSectionLabel(activeSection + 1)}</div>
                     </Stack>
                   </Button>
                 )}
@@ -208,7 +189,7 @@ const getStyles = (theme: GrafanaTheme2) => {
   const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
 
   const containerRules = {
-    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH}) minmax(50px, auto)`,
+    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH})`,
     height: '100%',
   };
 

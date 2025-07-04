@@ -4,11 +4,9 @@ import { Field, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 export const CheckJobName = () => {
   const styles = useStyles2(getStyles);
-  const { isFormDisabled } = useCheckFormContext();
   const { formState, register } = useFormContext<CheckFormValues>();
 
   return (
@@ -23,7 +21,7 @@ export const CheckJobName = () => {
       <Input
         id="check-editor-job-input"
         {...register('job')}
-        disabled={isFormDisabled}
+        disabled={formState.disabled}
         type="text"
         data-fs-element="Job name input"
       />

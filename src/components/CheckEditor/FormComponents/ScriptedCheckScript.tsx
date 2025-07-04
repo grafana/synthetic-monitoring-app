@@ -3,7 +3,6 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { FieldValidationMessage, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { CheckFormValuesScripted } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { CodeEditor } from 'components/CodeEditor';
 import { CodeSnippet } from 'components/CodeSnippet';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
@@ -19,9 +18,8 @@ export const SCRIPT_TEXTAREA_ID = 'check-script-textarea';
 export const ScriptedCheckScript = () => {
   const {
     control,
-    formState: { errors },
+    formState: { errors, disabled: isFormDisabled },
   } = useFormContext<CheckFormValuesScripted>();
-  const { isFormDisabled } = useCheckFormContext();
   const [selectedTab, setSelectedTab] = useState(ScriptEditorTabs.Script);
   const fieldError = errors.settings?.scripted?.script;
 

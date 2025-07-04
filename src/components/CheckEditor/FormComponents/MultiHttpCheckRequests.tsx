@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
@@ -8,8 +8,7 @@ import { DataTestIds } from 'test/dataTestIds';
 import { HttpRequestFields } from '../CheckEditor.types';
 import { CheckFormInvalidSubmissionEvent, CheckFormValuesMultiHttp, HttpMethod } from 'types';
 import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
-import { broadcastFailedSubmission, flattenKeys } from 'components/CheckForm/checkForm.utils';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
+import { broadcastFailedSubmission, flattenKeys } from 'components/CheckForm/CheckForm.utils';
 import { ENTRY_INDEX_CHAR } from 'components/CheckForm/FormLayout/formlayout.utils';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { Indent } from 'components/Indent';
@@ -54,10 +53,9 @@ export const MultiHttpCheckRequests = () => {
   const {
     control,
     watch,
-    formState: { errors },
+    formState: { errors, disabled },
     getValues,
   } = useFormContext<CheckFormValuesMultiHttp>();
-  const { isFormDisabled } = useCheckFormContext();
 
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(getValues());
@@ -120,7 +118,9 @@ export const MultiHttpCheckRequests = () => {
             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
             isOpen={collapseState[index].open}
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
-            ref={(el) => { panelRefs.current[index] = el }}
+            ref={(el) => {
+              panelRefs.current[index] = el;
+            }}
             onRemove={onRemove}
             requestMethod={requestMethod}
           >
@@ -136,7 +136,7 @@ export const MultiHttpCheckRequests = () => {
       <div>
         <Button
           className={styles.addButton}
-          disabled={requests?.length > 9 || isFormDisabled}
+          disabled={requests?.length > 9 || disabled}
           icon="plus"
           onClick={() => {
             append({
@@ -157,8 +157,7 @@ export const MultiHttpCheckRequests = () => {
 };
 
 const MultiHttpRequest = ({ index }: { index: number }) => {
-  const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
+  const { formState } = useFormContext();
 
   const fields: HttpRequestFields<CheckFormValuesMultiHttp> = useMemo(() => {
     const initial = Object.entries(MULTI_HTTP_REQUEST_FIELDS).reduce<HttpRequestFields<CheckFormValuesMultiHttp>>(
@@ -189,13 +188,9 @@ const MultiHttpRequest = ({ index }: { index: number }) => {
     };
   }, [index]);
 
-  const onTest = useCallback(() => {
-    addRequest(fields);
-  }, [addRequest, fields]);
-
   const { handleErrorRef } = useNestedRequestErrors(fields);
 
-  return <HttpRequest disabled={isFormDisabled} fields={fields} onTest={onTest} ref={handleErrorRef} />;
+  return <HttpRequest disabled={formState.disabled} fields={fields} ref={handleErrorRef} />;
 };
 
 MultiHttpRequest.displayName = 'MultiHttpRequest';

@@ -20,15 +20,19 @@ const getDataSourceName = () => {
   return smDs?.name;
 };
 
+export async function getSMDataSource() {
+  const smDsName = getDataSourceName();
+  if (!smDsName) {
+    throw new Error('Synthetic Monitoring datasource not found');
+  }
+  return (await getDataSourceSrv().get(smDsName)) as SMDataSource;
+}
+
 export function useGetSMDatasource() {
   return useQuery({
     queryKey: queryKeys.list,
     queryFn: () => {
-      const smDsName = getDataSourceName();
-      if (!smDsName) {
-        throw new Error('Synthetic Monitoring datasource not found');
-      }
-      return getDataSourceSrv().get(smDsName) as Promise<SMDataSource>;
+      return getSMDataSource();
     },
   });
 }

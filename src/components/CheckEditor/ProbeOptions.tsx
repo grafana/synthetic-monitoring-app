@@ -10,14 +10,13 @@ import { CheckProbes } from './CheckProbes/CheckProbes';
 
 interface ProbeOptionsProps {
   checkType: CheckType;
-  disabled?: boolean;
 }
 
-export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
+export const ProbeOptions = ({ checkType }: ProbeOptionsProps) => {
   const { data: probes = [] } = useProbesWithMetadata();
   const {
     control,
-    formState: { errors },
+    formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
   const revalidateForm = useRevalidateForm();
   const { field } = useController({ control, name: 'probes' });
@@ -49,11 +48,11 @@ export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
 
 function getAvailableProbes(probes: ProbeWithMetadata[], checkType: CheckType) {
   if (checkType === CheckType.Scripted) {
-    return probes.filter((probe) => probe.capabilities.disableScriptedChecks === false);
+    return probes.filter((probe) => !probe.capabilities.disableScriptedChecks);
   }
 
   if (checkType === CheckType.Browser) {
-    return probes.filter((probe) => probe.capabilities.disableBrowserChecks === false);
+    return probes.filter((probe) => !probe.capabilities.disableBrowserChecks);
   }
   return probes;
 }

@@ -43,8 +43,7 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
   } = useFormContext<CheckFormValues>();
   const { field } = useController({ control, name: 'frequency' });
   const styles = useStyles2(getStyles);
-  const { frequency } = getValues();
-  const frequencyInSeconds = frequency;
+  const { frequency: frequencyInSeconds } = getValues();
   const isBasic = FREQUENCY_OPTIONS.includes(frequencyInSeconds);
   const [activeTab, setActiveTab] = useState<'basic' | 'custom'>(isBasic ? 'basic' : 'custom');
   const frequencyError = errors?.frequency?.message;
@@ -100,7 +99,7 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
+const getStyles = (_theme: GrafanaTheme2) => ({
   field: css`
     margin-bottom: 0;
   `,

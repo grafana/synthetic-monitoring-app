@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom-v5-compat';
 
-import { Check, CheckFormPageParams, CheckType } from 'types';
+import { Check, CheckFormPageParams, CheckType, CheckTypeGroup } from 'types';
 import { getCheckType } from 'utils';
 import { CHECK_TYPE_OPTIONS, useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
@@ -26,6 +26,11 @@ export function useFormCheckTypeGroup(check?: Check) {
   if (check) {
     const checkType = getCheckType(check.settings);
     return CHECK_TYPE_OPTIONS.find(({ value }) => value === checkType)?.group;
+  }
+
+  // A default group is required for the form to render correctly, so we default to bbe/api-endpoint if no group is provided
+  if (!checkTypeGroup) {
+    return CheckTypeGroup.ApiTest;
   }
 
   return checkTypeGroup;

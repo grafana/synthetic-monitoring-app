@@ -15,7 +15,7 @@ enum ScriptEditorTabs {
 export const BrowserCheckScript = () => {
   const {
     control,
-    formState: { errors },
+    formState: { errors, disabled },
   } = useFormContext<CheckFormValuesBrowser>();
   const [selectedTab, setSelectedTab] = React.useState(ScriptEditorTabs.Script);
   const fieldError = errors.settings?.browser?.script;
@@ -40,7 +40,7 @@ export const BrowserCheckScript = () => {
             name="settings.browser.script"
             control={control}
             render={({ field }) => {
-              return <CodeEditor {...field} />;
+              return <CodeEditor readOnly={disabled} {...field} />;
             }}
           />
         )}
