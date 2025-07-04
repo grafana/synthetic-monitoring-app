@@ -46,7 +46,6 @@ export function SceneRedirecter() {
 
     const alertConfig = check.alerts?.find((a) => a.name === alertType);
 
-    //alertConfig.runbookUrl = 'https://example.com/runbooks/probe-failures';
     if (!alertConfig?.runbookUrl) {
       return <Navigate to={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id })} replace />;
     }
