@@ -17,10 +17,10 @@ describe(`FormLayout`, () => {
 
     render(
       <TestForm>
-        <FormLayout.Section label="First section">
+        <FormLayout.Section index={0} label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
-        <FormLayout.Section label="Second section">
+        <FormLayout.Section index={1} label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
       </TestForm>
@@ -36,7 +36,7 @@ describe(`FormLayout`, () => {
     render(
       <TestForm>
         <div>Some child that means the formlayout section is not first</div>
-        <FormLayout.Section label="First section">
+        <FormLayout.Section index={0} label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
       </TestForm>
@@ -49,10 +49,10 @@ describe(`FormLayout`, () => {
   it(`shows an error icon if any of the fields in that section have errors`, async () => {
     const { container, user } = render(
       <TestForm>
-        <FormLayout.Section label="First section" fields={[`job`]}>
+        <FormLayout.Section index={0} label="First section" fields={[`job`]}>
           <JobInput />
         </FormLayout.Section>
-        <FormLayout.Section label="Second section">
+        <FormLayout.Section index={1} label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
       </TestForm>
@@ -70,10 +70,10 @@ describe(`FormLayout`, () => {
 
     const { user } = render(
       <TestForm>
-        <FormLayout.Section label="First section">
+        <FormLayout.Section index={0} label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
-        <FormLayout.Section label="Second section">
+        <FormLayout.Section index={1} label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
       </TestForm>
@@ -84,7 +84,7 @@ describe(`FormLayout`, () => {
     await user.click(next);
     const text = await screen.findByText(secondSectionText);
     expect(text).toBeInTheDocument();
-    expect(await screen.queryByText(firstSectionText)).not.toBeInTheDocument();
+    expect(screen.queryByText(firstSectionText)).not.toBeInTheDocument();
   });
 
   it(`moves between wizard steps with sidebar`, async () => {
@@ -94,13 +94,13 @@ describe(`FormLayout`, () => {
 
     const { user } = render(
       <TestForm>
-        <FormLayout.Section label="First section">
+        <FormLayout.Section index={0} label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
-        <FormLayout.Section label="Second section">
+        <FormLayout.Section index={1} label="Second section">
           <div>{secondSectionText}</div>
         </FormLayout.Section>
-        <FormLayout.Section label="Third section">
+        <FormLayout.Section index={2} label="Third section">
           <div>{thirdSectionText}</div>
         </FormLayout.Section>
       </TestForm>
@@ -120,10 +120,10 @@ describe(`FormLayout`, () => {
   it(`disables the submit button if the form is disabled`, async () => {
     render(
       <TestForm disabled>
-        <FormLayout.Section label="First section" fields={[`job`]}>
+        <FormLayout.Section index={0} label="First section" fields={[`job`]}>
           <JobInput />
         </FormLayout.Section>
-        <FormLayout.Section label="Second section">
+        <FormLayout.Section index={0} label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
       </TestForm>
@@ -136,13 +136,13 @@ describe(`FormLayout`, () => {
   it(`validates previous steps when moving between steps`, async () => {
     const { container, user } = render(
       <TestForm>
-        <FormLayout.Section label="First section" fields={[`job`]}>
+        <FormLayout.Section index={0} label="First section" fields={[`job`]}>
           <JobInput />
         </FormLayout.Section>
-        <FormLayout.Section label="Second section">
+        <FormLayout.Section index={1} label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
-        <FormLayout.Section label="Third section">
+        <FormLayout.Section index={2} label="Third section">
           <div>Third section content</div>
         </FormLayout.Section>
       </TestForm>
@@ -159,13 +159,13 @@ describe(`FormLayout`, () => {
   it(`disables showing validation when the form is disabled`, async () => {
     const { container, user } = render(
       <TestForm disabled>
-        <FormLayout.Section label="First section" fields={[`job`]}>
+        <FormLayout.Section index={0} label="First section" fields={[`job`]}>
           <JobInput />
         </FormLayout.Section>
-        <FormLayout.Section label="Second section">
+        <FormLayout.Section index={1} label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
-        <FormLayout.Section label="Third section">
+        <FormLayout.Section index={2} label="Third section">
           <div>Third section content</div>
         </FormLayout.Section>
       </TestForm>
@@ -187,13 +187,13 @@ describe(`FormLayout`, () => {
     const { user } = render(
       <TestForm>
         <div>{`NOT A FORM SECTION. DON'T COUNT ME`}</div>
-        <FormLayout.Section label={firstSectionLabel} fields={[`job`]}>
+        <FormLayout.Section index={0} label={firstSectionLabel} fields={[`job`]}>
           <JobInput />
         </FormLayout.Section>
-        <FormLayout.Section label={secondSectionLabel}>
+        <FormLayout.Section index={1} label={secondSectionLabel}>
           <div>Second section content</div>
         </FormLayout.Section>
-        <FormLayout.Section label={thirdSectionLabel}>
+        <FormLayout.Section index={2} label={thirdSectionLabel}>
           <div>Third section content</div>
         </FormLayout.Section>
       </TestForm>
@@ -241,10 +241,10 @@ describe(`FormLayout`, () => {
 
     const { user } = render(
       <TestForm actions={actions}>
-        <FormLayout.Section label="First section" fields={[`job`]}>
+        <FormLayout.Section index={0} label="First section" fields={[`job`]}>
           <JobInput />
         </FormLayout.Section>
-        <FormLayout.Section label="Second section">
+        <FormLayout.Section index={1} label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
       </TestForm>
@@ -266,14 +266,14 @@ describe(`FormLayout`, () => {
 
     const { user } = render(
       <TestForm>
-        <FormLayout.Section label="First section" fields={[`job`]}>
+        <FormLayout.Section index={0} label="First section" fields={[`job`]}>
           <JobInput />
         </FormLayout.Section>
-        <FormLayout.Section label="Second section" fields={[`target`]}>
+        <FormLayout.Section index={1} label="Second section" fields={[`target`]}>
           <TargetInput />
           <div>{secondSectionContent}</div>
         </FormLayout.Section>
-        <FormLayout.Section label={thirdSectionLabel}>
+        <FormLayout.Section index={2} label={thirdSectionLabel}>
           <div>{thirdSectionContent}</div>
         </FormLayout.Section>
       </TestForm>
@@ -292,7 +292,7 @@ describe(`FormLayout`, () => {
   it('submit button text should be Save', async () => {
     render(
       <TestForm hasUnsavedChanges disabled>
-        <FormLayout.Section label="First section">
+        <FormLayout.Section index={0} label="First section">
           <JobInput />
         </FormLayout.Section>
       </TestForm>
@@ -306,7 +306,7 @@ describe(`FormLayout`, () => {
     it('should disable submit button when false', async () => {
       const { user } = render(
         <TestForm hasUnsavedChanges={false}>
-          <FormLayout.Section label="First section">
+          <FormLayout.Section index={0} label="First section">
             <JobInput />
           </FormLayout.Section>
         </TestForm>
@@ -324,7 +324,7 @@ describe(`FormLayout`, () => {
     it('should enable submit button when undefined', async () => {
       render(
         <TestForm hasUnsavedChanges>
-          <FormLayout.Section label="First section">
+          <FormLayout.Section index={0} label="First section">
             <JobInput />
           </FormLayout.Section>
         </TestForm>
@@ -337,7 +337,7 @@ describe(`FormLayout`, () => {
     it('should enable submit button when true', async () => {
       render(
         <TestForm hasUnsavedChanges>
-          <FormLayout.Section label="First section">
+          <FormLayout.Section index={0} label="First section">
             <JobInput />
           </FormLayout.Section>
         </TestForm>
@@ -350,7 +350,7 @@ describe(`FormLayout`, () => {
     it('should not enable submit button when form is disabled', async () => {
       render(
         <TestForm hasUnsavedChanges disabled>
-          <FormLayout.Section label="First section">
+          <FormLayout.Section index={0} label="First section">
             <JobInput />
           </FormLayout.Section>
         </TestForm>
@@ -398,6 +398,7 @@ const TestForm = <T extends FieldValues>({
           onValid={(v) => v}
           schema={schema}
           hasUnsavedChanges={hasUnsavedChanges}
+          onSectionClick={(m) => m}
         >
           {children}
         </FormLayout>

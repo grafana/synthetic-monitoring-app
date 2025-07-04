@@ -1,14 +1,4 @@
-import React, {
-  Children,
-  createContext,
-  isValidElement,
-  PropsWithChildren,
-  ReactElement,
-  ReactNode,
-  useCallback,
-  useMemo,
-  useState,
-} from 'react';
+import React, { createContext, PropsWithChildren, useCallback, useMemo, useState } from 'react';
 import { FieldErrors, FieldValues, useFormContext } from 'react-hook-form';
 import { uniq } from 'lodash';
 
@@ -16,7 +6,6 @@ import { Section } from '../FormLayouts/Layout.types';
 
 import { flattenKeys } from '../CheckForm.utils';
 import { normalizeFlattenedErrors } from './formlayout.utils';
-import { FormSection, FormSectionInternal, FormSectionProps } from './FormSection';
 
 interface FormLayoutContextValue<T extends FieldValues = FieldValues> {
   activeSection: number;
@@ -24,11 +13,7 @@ interface FormLayoutContextValue<T extends FieldValues = FieldValues> {
   // setActiveSection: React.Dispatch<React.SetStateAction<number>>;
   setVisited: (visited: number[]) => void;
   visitedSections: number[];
-  sections: Array<ReactElement<FormSectionProps>>;
-  setSections: (elements: ReactNode) => void;
-  formSections: Array<ReactElement<FormSectionProps>>;
   setActiveSectionByError: (errs: FieldErrors<T>) => void;
-  getOriginalSections: () => ReactNode;
   registerSection: (stepIndex: number, label: string, fields?: Section['fields']) => void;
   stepOrder: Record<number, { label: string; fields?: Section['fields'] }>;
   getSectionLabel: (stepIndex: number) => string | null;
@@ -37,22 +22,8 @@ interface FormLayoutContextValue<T extends FieldValues = FieldValues> {
 export const FormLayoutContext = createContext<FormLayoutContextValue | null>(null);
 
 export function FormLayoutContextProvider({ children }: PropsWithChildren) {
-  const [_sections, _setSections] = useState<ReactNode>(null);
   const [visitedSections, setVisitedSections] = useState<number[]>([]);
   const [activeSection, setActiveSection] = useState(0);
-
-  const setSections = useCallback(
-    (elements: ReactNode) => {
-      _setSections((prevState) => {
-        if (prevState === null) {
-          return elements;
-        }
-
-        return prevState;
-      });
-    },
-    [_setSections]
-  );
 
   const {
     formState: { disabled },
@@ -75,30 +46,6 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
     },
     [setVisited]
   );
-
-  const sections = useMemo(() => {
-    let index = -1;
-
-    return (
-      Children.map(_sections, (child) => {
-        if (!isValidElement(child)) {
-          return null;
-        }
-
-        if (child.type === FormSection) {
-          index++;
-
-          const sectionProps = child.props as Omit<FormSectionProps, 'index' | 'activeSection'>;
-
-          return <FormSectionInternal {...sectionProps} index={index} />;
-        }
-
-        return child;
-      }) || []
-    );
-  }, [_sections]);
-
-  const formSections = useMemo(() => sections.filter((section) => section.type === FormSectionInternal), [sections]);
 
   const handleVisited = useCallback(
     (indices: number[]) => {
@@ -146,10 +93,6 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
     [handleVisited, stepOrder]
   );
 
-  const getOriginalSections = useCallback(() => {
-    return _sections;
-  }, [_sections]);
-
   const getSectionLabel = useCallback(
     (sectionIndex: number) => {
       return stepOrder[sectionIndex]?.label ?? null;
@@ -164,25 +107,20 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
       // setActiveSection,
       setVisited,
       visitedSections,
-      sections,
-      setSections,
-      formSections,
+
       setActiveSectionByError,
-      getOriginalSections,
+
       registerSection,
       stepOrder,
       getSectionLabel,
     };
   }, [
-    setSections,
     activeSection,
     goToSection,
     setVisited,
     visitedSections,
-    sections,
-    formSections,
+
     setActiveSectionByError,
-    getOriginalSections,
     registerSection,
     stepOrder,
     getSectionLabel,

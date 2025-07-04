@@ -12,8 +12,9 @@ import {
   FALLBACK_CHECK_TRACEROUTE,
 } from 'components/constants';
 
+import { FormStepOrder } from '../../../../components/CheckForm/constants';
 import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
-import { goToSection, renderNewForm, submitForm, TARGET_MAP } from '../../../__testHelpers__/checkForm';
+import { goToSectionV2, renderNewForm, submitForm, TARGET_MAP } from '../../../__testHelpers__/checkForm';
 
 export const FALLBACK_CHECK_MAP: Record<string, Check> = {
   [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
@@ -54,7 +55,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
           const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
-          await goToSection(user, 3);
+          await goToSectionV2(user, FormStepOrder.Labels);
 
           const addLabelButton = screen.getByText('Add Label', { exact: false });
           await user.click(addLabelButton);
@@ -82,7 +83,7 @@ describe('Api endpoint checks - common fields payload', () => {
           const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
 
-          await goToSection(user, 4);
+          await goToSectionV2(user, FormStepOrder.Alerting);
           await selectOption(user, { label: `Select alert sensitivity`, option: `Medium` });
 
           await submitForm(user);
@@ -100,11 +101,11 @@ describe('Api endpoint checks - common fields payload', () => {
           const { user, read } = await renderNewForm(checkType);
 
           await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-          await goToSection(user, 4);
+          await goToSectionV2(user, FormStepOrder.Execution);
           const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
           await user.click(probeCheckbox);
 
-          await goToSection(user, 5);
+          await goToSectionV2(user, FormStepOrder.Alerting);
 
           expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -132,7 +133,7 @@ describe('Api endpoint checks - common fields payload', () => {
           const { user, read } = await renderNewForm(checkType);
 
           await fillMandatoryFields({ user, checkType });
-          await goToSection(user, 4);
+          await goToSectionV2(user, FormStepOrder.Alerting);
 
           expect(screen.queryByText('Predefined alerts')).not.toBeInTheDocument();
 
@@ -148,7 +149,7 @@ describe('Api endpoint checks - common fields payload', () => {
         it(`can publish a full set of metrics`, async () => {
           const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
-          await goToSection(user, 5);
+          await goToSectionV2(user, FormStepOrder.Execution);
 
           await user.click(screen.getByLabelText('Publish full set of metrics', { exact: false }));
           await submitForm(user);

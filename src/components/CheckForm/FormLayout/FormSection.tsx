@@ -19,12 +19,7 @@ export type FormSectionProps = {
   status?: CheckStatusInfoProps;
 };
 
-// return doesn't matter as we take over how this behaves internally
-export const FormSection = (props: Omit<FormSectionProps, 'index' | 'activeSection'>) => {
-  return props.children;
-};
-
-export const FormSectionInternal = ({ children, label, index, status, fields }: FormSectionProps) => {
+export const FormSection = ({ children, label, index, status, fields }: FormSectionProps) => {
   const styles = useStyles2(getStyles);
 
   const { registerSection, activeSection } = useFormLayoutInternal();

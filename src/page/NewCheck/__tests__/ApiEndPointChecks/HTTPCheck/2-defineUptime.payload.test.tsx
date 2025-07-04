@@ -2,8 +2,9 @@ import { screen } from '@testing-library/react';
 import { selectOption } from 'test/utils';
 
 import { CheckType, HTTPCompressionAlgo, HttpVersion } from 'types';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSectionV2, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
+import { FormStepOrder } from '../../../../../components/CheckForm/constants';
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.HTTP;
@@ -28,7 +29,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await selectOption(user, { label: 'Valid status codes', option: String(ALL_GOOD_STATUS_CODE) });
     await selectOption(user, { label: 'Valid status codes', option: String(I_AM_A_TEAPOT_STATUS_CODE) });
 
@@ -42,7 +43,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await selectOption(user, { label: 'Valid HTTP versions', option: `HTTP/1.0` });
     await selectOption(user, { label: 'Valid HTTP versions', option: `HTTP/2` });
 
@@ -56,7 +57,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await selectOption(user, { label: 'SSL options', option: `Ignore SSL` });
 
     await submitForm(user);
@@ -70,7 +71,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await selectOption(user, { label: 'SSL options', option: `Probe fails if SSL is present` });
 
     await submitForm(user);
@@ -84,7 +85,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await selectOption(user, { label: 'SSL options', option: `Probe fails if SSL is not present` });
 
     await submitForm(user);
@@ -103,7 +104,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
-        await goToSection(user, 2);
+        await goToSectionV2(user, FormStepOrder.Uptime);
         await user.click(screen.getByText('Add Regex Validation'));
         await selectOption(user, {
           label: 'Validation Field Name 1',
@@ -131,7 +132,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
-        await goToSection(user, 2);
+        await goToSectionV2(user, FormStepOrder.Uptime);
         await user.click(screen.getByText('Add Regex Validation'));
         await selectOption(user, {
           label: 'Validation Field Name 1',
@@ -160,7 +161,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
-        await goToSection(user, 2);
+        await goToSectionV2(user, FormStepOrder.Uptime);
         await user.click(screen.getByText('Add Regex Validation'));
         await selectOption(user, {
           label: 'Validation Field Name 1',
@@ -189,7 +190,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
-        await goToSection(user, 2);
+        await goToSectionV2(user, FormStepOrder.Uptime);
         await user.click(screen.getByText('Add Regex Validation'));
         await selectOption(user, {
           label: 'Validation Field Name 1',
@@ -220,7 +221,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
-        await goToSection(user, 2);
+        await goToSectionV2(user, FormStepOrder.Uptime);
         await user.click(screen.getByText('Add Regex Validation'));
         await selectOption(user, {
           label: 'Validation Field Name 1',
@@ -240,7 +241,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
-        await goToSection(user, 2);
+        await goToSectionV2(user, FormStepOrder.Uptime);
         await user.click(screen.getByText('Add Regex Validation'));
         await selectOption(user, {
           label: 'Validation Field Name 1',
@@ -260,7 +261,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   it(`can add a compression option`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await selectOption(user, { label: 'Compression option', option: 'gzip' });
 
     await submitForm(user);
@@ -271,7 +272,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   it(`can set the timeout`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
 
     const minutesInput = screen.getByLabelText('timeout minutes input');
     const secondsInput = screen.getByLabelText('timeout seconds input');

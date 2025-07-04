@@ -2,7 +2,9 @@ import { screen, within } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSectionV2, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+
+import { FormStepOrder } from '../../../../../components/CheckForm/constants';
 
 const checkType = CheckType.MULTI_HTTP;
 
@@ -22,7 +24,7 @@ describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {
     await user.click(screen.getByText(`Add request`));
     await user.click(screen.getByText(`Add request`));
 
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await submitForm(user);
 
     const errors = screen.getAllByText(`Target must be a valid web URL`);
@@ -55,7 +57,7 @@ describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {
     await user.click(within(request3preSubmit).getByText(`Add query parameter`, { exact: false }));
 
     // navigate to the second section
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await submitForm(user);
 
     const request1postSubmit = screen.getByTestId(`${DataTestIds.MULTI_HTTP_REQUEST}-0`);
@@ -84,7 +86,7 @@ describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {
     await user.click(within(request2preSubmit).getByText(`Add variable`, { exact: false }));
 
     // navigate to the second section
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     await submitForm(user);
 
     const request1postSubmit = screen.getByTestId(`${DataTestIds.MULTI_HTTP_REQUEST}-0`);

@@ -11,7 +11,7 @@ import { CheckType } from 'types';
 import { ANALYTICS_STEP_MAP, FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 import { useFormLayoutInternal } from './formlayout.utils';
-import { FormSection, FormSectionInternal } from './FormSection';
+import { FormSection } from './FormSection';
 import { FormSidebar } from './FormSidebar';
 
 type ActionNode = {
@@ -58,7 +58,6 @@ export const FormLayout = <T extends FieldValues>({
     goToSection,
     setVisited,
     visitedSections,
-    formSections,
     stepOrder,
     setActiveSectionByError,
     getSectionLabel,
@@ -73,10 +72,10 @@ export const FormLayout = <T extends FieldValues>({
 
   const handleValid = useCallback(
     (formValues: T, event: BaseSyntheticEvent | undefined) => {
-      handleVisited(formSections.map((section) => section.props.index));
+      handleVisited(Object.keys(stepOrder).map((indexKey) => Number(indexKey)));
       onValid(formValues, event);
     },
-    [handleVisited, onValid, formSections]
+    [handleVisited, onValid, stepOrder]
   );
 
   const handleInvalid = useCallback(
@@ -224,4 +223,3 @@ const getStyles = (theme: GrafanaTheme2) => {
 };
 
 FormLayout.Section = FormSection;
-FormLayout.SectionV2 = FormSectionInternal;

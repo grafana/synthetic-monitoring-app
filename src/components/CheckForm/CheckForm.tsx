@@ -20,6 +20,7 @@ import { AlertsPerCheckSection } from './AlertsPerCheckSection';
 import { useCheckForm, useCheckTypeFormLayout } from './CheckForm.hooks';
 import { checkHasChanges, getStep1Label } from './CheckForm.utils';
 import { CheckFormContext, CheckFormContextProvider, useCheckFormMetaContext } from './CheckFormContext';
+import { FormStepOrder } from './constants';
 import { FormLayout } from './FormLayout';
 
 interface CheckFormProps extends PropsWithChildren {
@@ -141,8 +142,8 @@ function CheckFormInternal() {
       >
         {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
-        <FormLayout.SectionV2
-          index={0}
+        <FormLayout.Section
+          index={FormStepOrder.Check}
           label={getStep1Label(checkType)}
           fields={[`job`, ...checkFields]}
           status={checkTypeStatus}
@@ -154,19 +155,24 @@ function CheckFormInternal() {
               {CheckComponent}
             </Stack>
           </Stack>
-        </FormLayout.SectionV2>
+        </FormLayout.Section>
 
-        <FormLayout.SectionV2 index={1} label="Uptime" fields={uptimeFields} status={checkTypeStatus}>
+        <FormLayout.Section index={FormStepOrder.Uptime} label="Uptime" fields={uptimeFields} status={checkTypeStatus}>
           {UptimeComponent}
-        </FormLayout.SectionV2>
+        </FormLayout.Section>
 
-        <FormLayout.SectionV2 index={2} label="Labels" fields={[`labels`, ...labelsFields]} status={checkTypeStatus}>
+        <FormLayout.Section
+          index={FormStepOrder.Labels}
+          label="Labels"
+          fields={[`labels`, ...labelsFields]}
+          status={checkTypeStatus}
+        >
           {LabelsComponent}
           <LabelField labelDestination="check" />
-        </FormLayout.SectionV2>
+        </FormLayout.Section>
 
-        <FormLayout.SectionV2
-          index={3}
+        <FormLayout.Section
+          index={FormStepOrder.Execution}
           label="Execution"
           fields={[`probes`, `frequency`, ...probesFields]}
           status={checkTypeStatus}
@@ -176,11 +182,16 @@ function CheckFormInternal() {
             {ProbesComponent}
             <CheckUsage checkType={checkType} />
           </Stack>
-        </FormLayout.SectionV2>
+        </FormLayout.Section>
 
-        <FormLayout.SectionV2 index={4} label="Alerting" fields={alertsFields} status={checkTypeStatus}>
+        <FormLayout.Section
+          index={FormStepOrder.Alerting}
+          label="Alerting"
+          fields={alertsFields}
+          status={checkTypeStatus}
+        >
           {isAlertsPerCheckOn ? <AlertsPerCheckSection /> : <CheckFormAlert />}
-        </FormLayout.SectionV2>
+        </FormLayout.Section>
       </FormLayout>
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmLeavingPage enabled={hasUnsavedChanges} />

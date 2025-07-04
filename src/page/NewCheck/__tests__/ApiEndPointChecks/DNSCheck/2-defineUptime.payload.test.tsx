@@ -2,8 +2,9 @@ import { screen, within } from '@testing-library/react';
 import { getSelect, selectOption } from 'test/utils';
 
 import { CheckType, DnsResponseCodes } from 'types';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSectionV2, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
+import { FormStepOrder } from '../../../../../components/CheckForm/constants';
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.DNS;
@@ -25,7 +26,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
 
     const [select] = await getSelect({ label: `Valid response codes` });
     await user.click(within(select).getByLabelText(`Remove`));
@@ -47,7 +48,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
 
       const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
-      await goToSection(user, 2);
+      await goToSectionV2(user, FormStepOrder.Uptime);
 
       await user.click(screen.getByText('Add Regex Validation'));
       await selectOption(user, { label: `DNS Response Match 1`, option: `Fail if Authority matches` });
@@ -69,7 +70,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
 
       const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
-      await goToSection(user, 2);
+      await goToSectionV2(user, FormStepOrder.Uptime);
 
       await user.click(screen.getByText('Add Regex Validation'));
       await selectOption(user, { label: `DNS Response Match 1`, option: `Fail if Authority matches` });
@@ -92,7 +93,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
 
       const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
-      await goToSection(user, 2);
+      await goToSectionV2(user, FormStepOrder.Uptime);
 
       await user.click(screen.getByText('Add Regex Validation'));
       await selectOption(user, { label: `DNS Response Match 1`, option: `Fail if Answer matches` });
@@ -114,7 +115,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
 
       const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
-      await goToSection(user, 2);
+      await goToSectionV2(user, FormStepOrder.Uptime);
 
       await user.click(screen.getByText('Add Regex Validation'));
       await selectOption(user, { label: `DNS Response Match 1`, option: `Fail if Answer matches` });
@@ -137,7 +138,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
 
       const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
-      await goToSection(user, 2);
+      await goToSectionV2(user, FormStepOrder.Uptime);
 
       await user.click(screen.getByText('Add Regex Validation'));
       await selectOption(user, { label: `DNS Response Match 1`, option: `Fail if Additional matches` });
@@ -159,7 +160,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
 
       const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
-      await goToSection(user, 2);
+      await goToSectionV2(user, FormStepOrder.Uptime);
 
       await user.click(screen.getByText('Add Regex Validation'));
       await selectOption(user, { label: `DNS Response Match 1`, option: `Fail if Additional matches` });
@@ -181,7 +182,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
   it(`can set the timeout`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
 
     const minutesInput = screen.getByLabelText('timeout minutes input');
     const secondsInput = screen.getByLabelText('timeout seconds input');

@@ -3,8 +3,9 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSectionV2, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
+import { FormStepOrder } from '../../../../../components/CheckForm/constants';
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.TCP;
@@ -17,14 +18,14 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await goToSection(user, 1);
+    await goToSectionV2(user, FormStepOrder.Check);
     await user.click(screen.getByText('Request options'));
     await user.click(screen.getByText('TLS Config'));
     await user.click(screen.getByLabelText('Use TLS', { exact: false }));
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
     expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
@@ -53,12 +54,12 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
 
     const { user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
     // Do NOT enable TLS
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
     await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
