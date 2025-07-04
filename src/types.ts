@@ -327,6 +327,7 @@ export interface CheckAlertFormValues {
   isSelected?: boolean;
   status?: string;
   creationError?: CheckAlertError;
+  runbookUrl?: string;
 }
 
 export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertFormValues>>;
@@ -676,6 +677,7 @@ export type CheckAlertDraft = {
   name: CheckAlertType;
   threshold: number;
   period?: string;
+  runbookUrl?: string;
 };
 
 export type CheckAlertPublished = CheckAlertDraft & {
