@@ -11,7 +11,7 @@ import { CheckType } from 'types';
 import { ANALYTICS_STEP_MAP, FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 import { useFormLayoutInternal } from './formlayout.utils';
-import { FormSection } from './FormSection';
+import { FormSection, FormSectionInternal } from './FormSection';
 import { FormSidebar } from './FormSidebar';
 
 type ActionNode = {
@@ -33,6 +33,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   onInvalid?: (errs: FieldErrors<T>) => void;
   schema: ZodType;
   hasUnsavedChanges?: boolean;
+  onSectionClick: (index: number) => void;
 };
 
 export const FormLayout = <T extends FieldValues>({
@@ -45,14 +46,23 @@ export const FormLayout = <T extends FieldValues>({
   onValid,
   onInvalid,
   schema,
+  onSectionClick,
   hasUnsavedChanges = true, // default to true to prevent accidentally disabling the submit button
 }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
   const {
     formState: { disabled },
   } = useFormContext();
-  const { activeSection, goToSection, setVisited, visitedSections, sections, formSections, setActiveSectionByError } =
-    useFormLayoutInternal(children);
+  const {
+    activeSection,
+    goToSection,
+    setVisited,
+    visitedSections,
+    formSections,
+    stepOrder,
+    setActiveSectionByError,
+    getSectionLabel,
+  } = useFormLayoutInternal();
 
   const handleVisited = useCallback(
     (indices: number[]) => {
@@ -81,6 +91,13 @@ export const FormLayout = <T extends FieldValues>({
 
   const disableSubmit = !hasUnsavedChanges || disabled;
 
+  const handleSectionClick = useCallback(
+    (index: number) => {
+      onSectionClick(index);
+    },
+    [onSectionClick]
+  );
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
@@ -88,13 +105,15 @@ export const FormLayout = <T extends FieldValues>({
           activeSection={activeSection}
           checkState={checkState}
           checkType={checkType}
-          onSectionClick={goToSection}
-          sections={formSections}
+          onSectionClick={(index: number) => {
+            handleSectionClick(index);
+            goToSection(index);
+          }}
           visitedSections={visitedSections}
           schema={schema}
         />
         <form className={styles.form} onSubmit={onSubmit(handleValid, handleInvalid)}>
-          <div>{sections}</div>
+          <div>{children}</div>
 
           <div>
             {alerts && <div className={styles.alerts}>{alerts}</div>}
@@ -118,14 +137,14 @@ export const FormLayout = <T extends FieldValues>({
                   >
                     <Stack gap={0.5}>
                       <div>{activeSection}.</div>
-                      <div>{formSections[activeSection - 1].props.label}</div>
+                      <div>{getSectionLabel(activeSection - 1)}</div>
                     </Stack>
                   </Button>
                 )}
               </div>
               <Stack>
                 {actionButtons}
-                {activeSection < formSections.length - 1 && (
+                {activeSection < Object.values(stepOrder).length - 1 && (
                   <Button
                     onClick={() => {
                       const newStep = activeSection + 1;
@@ -142,7 +161,7 @@ export const FormLayout = <T extends FieldValues>({
                   >
                     <Stack>
                       <div>{activeSection + 2}.</div>
-                      <div>{formSections[activeSection + 1].props.label}</div>
+                      <div>{getSectionLabel(activeSection + 1)}</div>
                     </Stack>
                   </Button>
                 )}
@@ -205,3 +224,4 @@ const getStyles = (theme: GrafanaTheme2) => {
 };
 
 FormLayout.Section = FormSection;
+FormLayout.SectionV2 = FormSectionInternal;

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { FieldPath } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
@@ -9,8 +9,9 @@ import { FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.const
 import { CheckStatusInfo, type CheckStatusInfoProps } from 'components/CheckStatusInfo';
 import { NewStatusBadge } from 'components/NewStatusBadge';
 
+import { useFormLayoutInternal } from './formlayout.utils';
+
 export type FormSectionProps = {
-  activeSection: number;
   children: ReactNode;
   label: string;
   fields?: Array<FieldPath<CheckFormValues>>;
@@ -23,8 +24,14 @@ export const FormSection = (props: Omit<FormSectionProps, 'index' | 'activeSecti
   return props.children;
 };
 
-export const FormSectionInternal = ({ activeSection, children, label, index, status }: FormSectionProps) => {
+export const FormSectionInternal = ({ children, label, index, status, fields }: FormSectionProps) => {
   const styles = useStyles2(getStyles);
+
+  const { registerSection, activeSection } = useFormLayoutInternal();
+  useEffect(() => {
+    registerSection(index, label, fields);
+  }, [label, index, registerSection, fields]);
+
   const isActive = activeSection === index;
 
   if (!isActive) {

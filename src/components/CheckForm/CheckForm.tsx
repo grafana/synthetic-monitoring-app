@@ -18,21 +18,9 @@ import { OverLimitAlert } from 'components/OverLimitAlert';
 import { AdHocCheckButton, ConstructActionsProps } from './AdHocCheckButton';
 import { AlertsPerCheckSection } from './AlertsPerCheckSection';
 import { useCheckForm, useCheckTypeFormLayout } from './CheckForm.hooks';
-import { checkHasChanges } from './CheckForm.utils';
+import { checkHasChanges, getStep1Label } from './CheckForm.utils';
 import { CheckFormContext, CheckFormContextProvider, useCheckFormMetaContext } from './CheckFormContext';
 import { FormLayout } from './FormLayout';
-
-const checkTypeStep1Label = {
-  [CheckType.DNS]: `Request`,
-  [CheckType.HTTP]: `Request`,
-  [CheckType.MULTI_HTTP]: `Requests`,
-  [CheckType.Scripted]: `Script`,
-  [CheckType.PING]: `Request`,
-  [CheckType.TCP]: `Request`,
-  [CheckType.Traceroute]: `Request`,
-  [CheckType.GRPC]: `Request`,
-  [CheckType.Browser]: `Script`,
-};
 
 interface CheckFormProps extends PropsWithChildren {
   check?: Check;
@@ -87,6 +75,7 @@ function CheckFormInternal() {
     uptimeFields,
     probesFields,
     labelsFields,
+    alertsFields,
     CheckComponent,
     UptimeComponent,
     ProbesComponent,
@@ -133,6 +122,9 @@ function CheckFormInternal() {
 
   const isAlertsPerCheckOn = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
+  // @todo Remove this
+  const [, setActiveSection] = useState<number>(0);
+
   return (
     <>
       <FormLayout<CheckFormValues>
@@ -145,11 +137,13 @@ function CheckFormInternal() {
         onInvalid={handleInvalid}
         schema={schema}
         hasUnsavedChanges={hasUnsavedChanges}
+        onSectionClick={setActiveSection}
       >
         {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
-        <FormLayout.Section
-          label={checkTypeStep1Label[checkType]}
+        <FormLayout.SectionV2
+          index={0}
+          label={getStep1Label(checkType)}
           fields={[`job`, ...checkFields]}
           status={checkTypeStatus}
         >
@@ -160,22 +154,19 @@ function CheckFormInternal() {
               {CheckComponent}
             </Stack>
           </Stack>
-        </FormLayout.Section>
-        <FormLayout.Section label="Uptime" fields={uptimeFields} status={checkTypeStatus}>
+        </FormLayout.SectionV2>
+
+        <FormLayout.SectionV2 index={1} label="Uptime" fields={uptimeFields} status={checkTypeStatus}>
           {UptimeComponent}
-        </FormLayout.Section>
-        <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]} status={checkTypeStatus}>
+        </FormLayout.SectionV2>
+
+        <FormLayout.SectionV2 index={2} label="Labels" fields={[`labels`, ...labelsFields]} status={checkTypeStatus}>
           {LabelsComponent}
           <LabelField labelDestination="check" />
-        </FormLayout.Section>
+        </FormLayout.SectionV2>
 
-        {!isAlertsPerCheckOn && (
-          <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={checkTypeStatus}>
-            <CheckFormAlert />
-          </FormLayout.Section>
-        )}
-
-        <FormLayout.Section
+        <FormLayout.SectionV2
+          index={3}
           label="Execution"
           fields={[`probes`, `frequency`, ...probesFields]}
           status={checkTypeStatus}
@@ -185,13 +176,11 @@ function CheckFormInternal() {
             {ProbesComponent}
             <CheckUsage checkType={checkType} />
           </Stack>
-        </FormLayout.Section>
+        </FormLayout.SectionV2>
 
-        {isAlertsPerCheckOn && (
-          <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={checkTypeStatus}>
-            <AlertsPerCheckSection />
-          </FormLayout.Section>
-        )}
+        <FormLayout.SectionV2 index={4} label="Alerting" fields={alertsFields} status={checkTypeStatus}>
+          {isAlertsPerCheckOn ? <AlertsPerCheckSection /> : <CheckFormAlert />}
+        </FormLayout.SectionV2>
       </FormLayout>
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmLeavingPage enabled={hasUnsavedChanges} />

@@ -11,7 +11,7 @@ export enum LayoutSection {
   Probes = `Execution`,
 }
 
-export type Section<T extends CheckFormValues> = {
+export type Section<T extends CheckFormValues = CheckFormValues> = {
   fields: Array<FieldPath<T>>;
   Component: ReactElement;
 };

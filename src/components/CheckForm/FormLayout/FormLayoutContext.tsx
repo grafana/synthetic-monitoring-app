@@ -12,6 +12,8 @@ import React, {
 import { FieldErrors, FieldValues, useFormContext } from 'react-hook-form';
 import { uniq } from 'lodash';
 
+import { Section } from '../FormLayouts/Layout.types';
+
 import { flattenKeys } from '../CheckForm.utils';
 import { normalizeFlattenedErrors } from './formlayout.utils';
 import { FormSection, FormSectionInternal, FormSectionProps } from './FormSection';
@@ -27,6 +29,9 @@ interface FormLayoutContextValue<T extends FieldValues = FieldValues> {
   formSections: Array<ReactElement<FormSectionProps>>;
   setActiveSectionByError: (errs: FieldErrors<T>) => void;
   getOriginalSections: () => ReactNode;
+  registerSection: (stepIndex: number, label: string, fields?: Section['fields']) => void;
+  stepOrder: Record<number, { label: string; fields?: Section['fields'] }>;
+  getSectionLabel: (stepIndex: number) => string | null;
 }
 
 export const FormLayoutContext = createContext<FormLayoutContextValue | null>(null);
@@ -85,13 +90,13 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
 
           const sectionProps = child.props as Omit<FormSectionProps, 'index' | 'activeSection'>;
 
-          return <FormSectionInternal {...sectionProps} index={index} activeSection={activeSection} />;
+          return <FormSectionInternal {...sectionProps} index={index} />;
         }
 
         return child;
       }) || []
     );
-  }, [activeSection, _sections]);
+  }, [_sections]);
 
   const formSections = useMemo(() => sections.filter((section) => section.type === FormSectionInternal), [sections]);
 
@@ -102,14 +107,32 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
     [setVisited]
   );
 
+  const [stepOrder, setStepOrder] = useState<Record<number, { label: string; fields?: Section['fields'] }>>({});
+
+  const registerSection = useCallback(
+    (stepIndex: number, label: string, fields?: Section['fields']) => {
+      setStepOrder((prevState) => {
+        if (stepIndex in prevState && prevState[stepIndex]?.label === label) {
+          return prevState; // No change needed
+        }
+        return {
+          ...prevState,
+          [stepIndex]: { label, fields },
+        };
+      });
+    },
+    [setStepOrder]
+  );
+
   const setActiveSectionByError = useCallback(
     (errs: FieldErrors) => {
-      handleVisited(formSections.map((section) => section.props.index));
+      handleVisited(Object.keys(stepOrder).map((indexKey) => Number(indexKey)));
 
       const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errs));
-
-      const errSection = formSections?.find((section) => {
-        const fields = section.props.fields;
+      let index = 0;
+      const errSection = Object.entries(stepOrder).find(([indexKey, section]) => {
+        index = Number(indexKey);
+        const fields = section.fields;
 
         return flattenedErrors.find((errName: string) => {
           return fields?.some((field: string) => errName.startsWith(field));
@@ -117,18 +140,25 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
       });
 
       if (errSection !== undefined) {
-        setActiveSection(errSection.props.index);
+        setActiveSection(index);
       }
     },
-    [handleVisited, formSections, setActiveSection]
+    [handleVisited, stepOrder]
   );
 
   const getOriginalSections = useCallback(() => {
     return _sections;
   }, [_sections]);
 
-  const value = useMemo(
-    () => ({
+  const getSectionLabel = useCallback(
+    (sectionIndex: number) => {
+      return stepOrder[sectionIndex]?.label ?? null;
+    },
+    [stepOrder]
+  );
+
+  const value = useMemo(() => {
+    return {
       activeSection,
       goToSection,
       // setActiveSection,
@@ -139,30 +169,36 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
       formSections,
       setActiveSectionByError,
       getOriginalSections,
-    }),
-    [
-      setSections,
-      activeSection,
-      goToSection,
-      setVisited,
-      visitedSections,
-      sections,
-      formSections,
-      setActiveSectionByError,
-      getOriginalSections,
-    ]
-  );
+      registerSection,
+      stepOrder,
+      getSectionLabel,
+    };
+  }, [
+    setSections,
+    activeSection,
+    goToSection,
+    setVisited,
+    visitedSections,
+    sections,
+    formSections,
+    setActiveSectionByError,
+    getOriginalSections,
+    registerSection,
+    stepOrder,
+    getSectionLabel,
+  ]);
+
+  // @ts-ignore
+  window['formLayoutContext'] = value; // For debugging purposes
 
   return <FormLayoutContext.Provider value={value}>{children}</FormLayoutContext.Provider>;
 }
 
-export function useFormLayoutContextExtended(sections?: ReactNode) {
+export function useFormLayoutContextExtended() {
   const context = React.useContext(FormLayoutContext);
   if (!context) {
     throw new Error('useFormLayoutContext must be used within a FormLayoutContextProvider');
   }
-
-  context.setSections(sections);
 
   return context;
 }

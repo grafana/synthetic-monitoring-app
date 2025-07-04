@@ -1,3 +1,4 @@
 export const FORM_MAX_WIDTH = `860px`;
 
-export const ANALYTICS_STEP_MAP = ['job', 'uptime', 'labels', 'alerting', 'execution'] as const;
+// @todo Fix so that this and order of left aside is comes from the same object
+export const ANALYTICS_STEP_MAP = ['job', 'uptime', 'labels', 'execution', 'alerting'] as const;

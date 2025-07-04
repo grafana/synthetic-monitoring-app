@@ -1,7 +1,7 @@
 import { FieldErrors } from 'react-hook-form';
 import { MAX_FREQUENCY_ERROR_MESSAGE_START, MIN_FREQUENCY_ERROR_MESSAGE_START } from 'schemas/general/Frequency';
 
-import { Check, CheckFormValues } from 'types';
+import { Check, CheckFormValues, CheckType } from 'types';
 
 import { PROBES_FILTER_ID } from '../CheckEditor/CheckProbes/ProbesFilter';
 import {
@@ -96,4 +96,16 @@ function searchForSpecialInputs(errKeys: string[] = [], errs: FieldErrors<CheckF
   }
 
   return null;
+}
+
+export function getStep1Label(checkType: CheckType): string {
+  switch (checkType) {
+    case CheckType.Scripted:
+    case CheckType.Browser:
+      return `Script`;
+    case CheckType.MULTI_HTTP:
+      return `Requests`;
+    default:
+      return `Request`;
+  }
 }

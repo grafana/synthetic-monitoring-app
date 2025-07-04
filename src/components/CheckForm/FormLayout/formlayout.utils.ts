@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import { FieldPath, FieldValues } from 'react-hook-form';
 import { ZodType } from 'zod';
 
@@ -10,8 +9,8 @@ import { useFormLayoutContextExtended } from './FormLayoutContext';
 // -1 works well because it is type safe as it is a number but it is also impossible to be a valid index
 export const ENTRY_INDEX_CHAR = `-1`;
 
-export function useFormLayoutInternal(sections: ReactNode) {
-  return useFormLayoutContextExtended(sections);
+export function useFormLayoutInternal() {
+  return useFormLayoutContextExtended();
 }
 
 export function checkForErrors<T extends FieldValues>({
