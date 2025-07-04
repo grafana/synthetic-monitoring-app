@@ -40,6 +40,8 @@ interface CheckFormProps extends PropsWithChildren {
 }
 
 export function CheckForm({ check, disabled }: CheckFormProps) {
+  // If the context is not available, we create a new one.
+  // This allows the CheckForm to be used both as a standalone component and within the CheckFormContextProvider.
   const context = useContext(CheckFormContext);
   if (!context) {
     return (
