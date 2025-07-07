@@ -14,7 +14,6 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormValuesMultiHttp, MultiHttpAssertionType } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import {
   ASSERTION_CONDITION_OPTIONS,
   ASSERTION_SUBJECT_OPTIONS,
@@ -82,8 +81,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
 const RequestAssertions = ({ index }: { index: number }) => {
   const styles = useStyles2(getRequestAssertionsStyles);
   const assertionFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.checks`;
-  const { control } = useFormContext<CheckFormValuesMultiHttp>();
-  const { isFormDisabled } = useCheckFormContext();
+  const {
+    control,
+    formState: { disabled: isFormDisabled },
+  } = useFormContext<CheckFormValuesMultiHttp>();
+
   const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: assertionFieldName,

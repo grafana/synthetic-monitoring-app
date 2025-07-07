@@ -12,11 +12,13 @@ export const ProbesList = ({
   probes,
   selectedProbes,
   onSelectionChange,
+  disabled,
 }: {
   title: string;
   probes: ProbeWithMetadata[];
   selectedProbes: number[];
   onSelectionChange: (probes: number[]) => void;
+  disabled?: boolean;
 }) => {
   const styles = useStyles2(getStyles);
 
@@ -64,6 +66,7 @@ export const ProbesList = ({
           onClick={handleToggleAll}
           checked={allProbesSelected}
           indeterminate={someProbesSelected}
+          disabled={disabled}
         />
         <Label htmlFor={`header-${title}`} className={styles.headerLabel}>
           <Stack>
@@ -79,6 +82,7 @@ export const ProbesList = ({
               id={`probe-${probe.id}`}
               onClick={() => handleToggleProbe(probe)}
               checked={selectedProbes.includes(probe.id!)}
+              disabled={disabled}
             />
             <Label htmlFor={`probe-${probe.id}`}>
               <div className={styles.columnLabel}>

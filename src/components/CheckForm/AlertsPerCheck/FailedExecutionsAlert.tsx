@@ -20,7 +20,6 @@ import pluralize from 'pluralize';
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { AlertEvaluationInfo } from './AlertEvaluationInfo';
 import { getAlertItemStyles } from './AlertItem';
 import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
@@ -37,7 +36,9 @@ export const FailedExecutionsAlert = ({
   onSelectionChange: (type: CheckAlertType) => void;
   tooltipContent: PopoverContent;
 }) => {
-  const { isFormDisabled } = useCheckFormContext();
+  const {
+    formState: { disabled: isFormDisabled },
+  } = useFormContext();
   const { getValues, control, formState } = useFormContext<CheckFormValues>();
   const revalidateForm = useRevalidateForm();
   const styles = useStyles2(getAlertItemStyles);
