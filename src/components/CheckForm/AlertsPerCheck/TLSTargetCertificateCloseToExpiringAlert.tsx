@@ -7,6 +7,7 @@ import {
   InlineFieldRow,
   Input,
   PopoverContent,
+  Stack,
   Text,
   Tooltip,
   useStyles2,
@@ -44,56 +45,67 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   };
 
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
+  const tlsError = formState.errors?.alerts?.[alert.type]?.isSelected?.message;
   const styles = useStyles2(getAlertItemStyles);
 
   const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);
 
   return (
-    <InlineFieldRow className={styles.alertRow}>
-      <Checkbox
-        className={styles.alertCheckbox}
-        id={`alert-${alert.type}`}
-        data-testid={`checkbox-alert-${alert.type}`}
-        onClick={() => handleToggleAlert(alert.type)}
-        checked={selected}
-      />
-      <Text>Alert if the target&apos;s certificate expires in less than </Text>{' '}
-      <InlineField
-        htmlFor={`alert-threshold-${alert.type}`}
-        invalid={!!thresholdError}
-        error={thresholdError}
-        validationMessageHorizontalOverflow={true}
-      >
-        <Controller
-          name={`alerts.${alert.type}.threshold`}
-          control={control}
-          render={({ field }) => {
-            return (
-              <Input
-                {...field}
-                aria-disabled={!selected}
-                suffix={alert.unit}
-                type="number"
-                step="any"
-                id={`alert-threshold-${alert.type}`}
-                data-testid={`alert-threshold-${alert.type}`}
-                onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
-                  return field.onChange(value !== '' ? Number(value) : '');
-                }}
-                width={7}
-                disabled={!selected || isFormDisabled}
-              />
-            );
-          }}
-        />
-      </InlineField>
-      <div className={styles.alertTooltip}>
-        <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
-          <Icon name="info-circle" />
-        </Tooltip>
-      </div>
-    </InlineFieldRow>
+    <Stack direction={'column'}>
+      <InlineFieldRow className={styles.alertRow}>
+        <InlineField
+          invalid={!!tlsError}
+          error={tlsError}
+          htmlFor={`alert-${alert.type}`}
+          validationMessageHorizontalOverflow={true}
+        >
+          <Checkbox
+            className={styles.alertCheckbox}
+            id={`alert-${alert.type}`}
+            data-testid={`checkbox-alert-${alert.type}`}
+            onClick={() => handleToggleAlert(alert.type)}
+            checked={selected}
+            disabled={isFormDisabled}
+          />
+        </InlineField>
+        <Text>Alert if the target&apos;s certificate expires in less than </Text>{' '}
+        <InlineField
+          htmlFor={`alert-threshold-${alert.type}`}
+          invalid={!!thresholdError}
+          error={thresholdError}
+          validationMessageHorizontalOverflow={true}
+        >
+          <Controller
+            name={`alerts.${alert.type}.threshold`}
+            control={control}
+            render={({ field }) => {
+              return (
+                <Input
+                  {...field}
+                  aria-disabled={!selected || isFormDisabled}
+                  suffix={alert.unit}
+                  type="number"
+                  step="any"
+                  id={`alert-threshold-${alert.type}`}
+                  data-testid={`alert-threshold-${alert.type}`}
+                  onChange={(e) => {
+                    const value = e.currentTarget.value;
+                    debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
+                    return field.onChange(value !== '' ? Number(value) : '');
+                  }}
+                  width={7}
+                  disabled={!selected || isFormDisabled}
+                />
+              );
+            }}
+          />
+        </InlineField>
+        <div className={styles.alertTooltip}>
+          <Tooltip content={tooltipContent} placement="bottom" interactive={true}>
+            <Icon name="info-circle" />
+          </Tooltip>
+        </div>
+      </InlineFieldRow>
+    </Stack>
   );
 };

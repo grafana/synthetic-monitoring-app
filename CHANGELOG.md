@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.30.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.30.0...v1.30.1) (2025-06-25)
+
+
+### Fixes
+
+* add catch blocks to script examples ([#1154](https://github.com/grafana/synthetic-monitoring-app/issues/1154)) ([11818a3](https://github.com/grafana/synthetic-monitoring-app/commit/11818a39567cab4ebb95ab7f049e25b0aa760e61))
+* change CODEOWNERS to match actual files ([#1168](https://github.com/grafana/synthetic-monitoring-app/issues/1168)) ([d8548d7](https://github.com/grafana/synthetic-monitoring-app/commit/d8548d7f5a40ecbe2424edb1fafa0dd889b48bb7))
+* change reachability description for probes view ([#1161](https://github.com/grafana/synthetic-monitoring-app/issues/1161)) ([915983a](https://github.com/grafana/synthetic-monitoring-app/commit/915983ad326e1ecb73c04cc0d7262f9de2f6b107))
+* typo in DNS form mentioning ICMP ([#1167](https://github.com/grafana/synthetic-monitoring-app/issues/1167)) ([0224f03](https://github.com/grafana/synthetic-monitoring-app/commit/0224f0383ea865ac02c0f56bd5eaa34dc8ad9960))
+
+## [1.30.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.29.0...v1.30.0) (2025-06-13)
+
+
+### Features
+
+* add TLS Cert Expiry alert for TCP checks ([#1153](https://github.com/grafana/synthetic-monitoring-app/issues/1153)) ([7fe153a](https://github.com/grafana/synthetic-monitoring-app/commit/7fe153a937955a0121e3f602ff6a14923ba9fa02))
+
+## [1.29.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.28.1...v1.29.0) (2025-06-09)
+
+
+### Features
+
+* add indicator when there is an error with per-check alerts ([#1148](https://github.com/grafana/synthetic-monitoring-app/issues/1148)) ([f1267e1](https://github.com/grafana/synthetic-monitoring-app/commit/f1267e126446e8836574e82ff9e6771ad4a5df04))
+* register Component into Software Catalog and set up TechDocs publishing ([#1150](https://github.com/grafana/synthetic-monitoring-app/issues/1150)) ([b691b3f](https://github.com/grafana/synthetic-monitoring-app/commit/b691b3fb10a9fbde0297d80e6db04440b156af58))
+* show per check alerts on checks list ([#1139](https://github.com/grafana/synthetic-monitoring-app/issues/1139)) ([8471cd2](https://github.com/grafana/synthetic-monitoring-app/commit/8471cd2ded85a1ac9e8f8f4fc5ce94d944814fcc))
+
+
+### Fixes
+
+* fix list check alerts case ([#1155](https://github.com/grafana/synthetic-monitoring-app/issues/1155)) ([9a4c6d6](https://github.com/grafana/synthetic-monitoring-app/commit/9a4c6d613535a12915214ab7a229b0106f449d1b))
+
+
+### Miscellaneous Chores
+
+* remove unnecessary console eslint rule ([#1157](https://github.com/grafana/synthetic-monitoring-app/issues/1157)) ([1deafd6](https://github.com/grafana/synthetic-monitoring-app/commit/1deafd67574d887ff6fdcc7641f804a4aab50f53))
+
 ## [1.28.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.28.0...v1.28.1) (2025-05-14)
 
 

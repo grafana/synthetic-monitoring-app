@@ -206,6 +206,9 @@ export default async function () {
     await check(page.locator("h2"), {
       header: async (locator) => (await locator.textContent()) == "Welcome, admin!",
     });
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
   } finally {
     await page.close();
   }
@@ -514,6 +517,7 @@ export const UPTIME_DESCRIPTION =
   'Whether any of the probes could reach the target. Uptime decreases when all the probes fail simultaneously.';
 export const REACHABILITY_DESCRIPTION =
   'The success rate of all the probes. Reachability decreases when any probe fails.';
+export const PROBE_REACHABILITY_DESCRIPTION = 'The success percentage of all checks performed by this probe.';
 export const LATENCY_DESCRIPTION =
   'The average time to receive an answer across all the checks during the whole time period.';
 

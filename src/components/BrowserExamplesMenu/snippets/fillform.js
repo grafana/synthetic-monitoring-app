@@ -48,6 +48,9 @@ export default async function () {
         return cookies.find((c) => c.name == 'sid') !== undefined;
       },
     });
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
   } finally {
     await page.close();
   }

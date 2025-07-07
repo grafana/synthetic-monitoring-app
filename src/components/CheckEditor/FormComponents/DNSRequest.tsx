@@ -27,7 +27,7 @@ export const DNSRequest = forwardRef<HandleErrorRef, DNSRequestProps>(
         <Request.Options ref={handleErrorRef}>
           <Request.Options.Section label={`Options`}>
             <CheckIpVersion
-              description={`The IP protocol of the ICMP request`}
+              description={`The IP protocol of the DNS request`}
               disabled={disabled}
               name={fields.ipVersion.name}
             />

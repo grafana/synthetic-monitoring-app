@@ -10,4 +10,4 @@
 # used, so we need to keep the * pattern above this one.
 /CHANGELOG.md @grafana/synthetic-monitoring-fe @grafana/synthetic-monitoring-dev
 /package.json @grafana/synthetic-monitoring-fe @grafana/synthetic-monitoring-dev
-/.github/release-please/release-please-config.json @grafana/synthetic-monitoring-fe @grafana/synthetic-monitoring-dev
+/.github/release-please/.release-please-manifest.json @grafana/synthetic-monitoring-fe @grafana/synthetic-monitoring-dev
