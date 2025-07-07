@@ -106,12 +106,27 @@ export const MetricsByURL = () => {
   });
 
   const viz = VizConfigBuilders.table()
-    .setOverrides((b) =>
-      new FieldConfigOverridesBuilder<TableFieldOptions>()
+    .setCustomFieldConfig(`cellOptions`, {
+      type: TableCellDisplayMode.Sparkline,
+      hideValue: false,
+      lineInterpolation: LineInterpolation.Smooth,
+      spanNulls: true,
+      insertNulls: true,
+    })
+    .setOverrides((b) => {
+      return b
         .matchFieldsWithName(`Trend #${MetricRefId.FID}`)
         .overrideCustomFieldConfig(`displayMode`, TableCellDisplayMode.Custom)
-        .build()
-    )
+        .build();
+    })
+    .setOverrides((b) => {
+      return b
+        .matchFieldsWithName(`url`)
+        .overrideCustomFieldConfig(`cellOptions`, {
+          type: TableCellDisplayMode.Auto,
+        })
+        .build();
+    })
     .setNoValue(`-`)
     .setUnit('ms')
     .build();
