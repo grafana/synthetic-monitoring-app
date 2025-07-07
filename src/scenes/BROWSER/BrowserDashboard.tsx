@@ -9,7 +9,9 @@ import { getSumDurationByProbeQuery } from 'queries/sumDurationByProbe';
 
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
-import { WebVitalsRow } from 'scenes/Browser/WebVitalsRow';
+import { MetricsByURL } from 'scenes/Browser/MetricsByURL';
+import { WebVitalsAverageRow } from 'scenes/Browser/WebVitalsAverageRow';
+import { WebVitalsOverTimeRow } from 'scenes/Browser/WebVitalsOverTimeRow';
 import { AssertionsTable } from 'scenes/Common/AssertionsTable';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
 import { DataReceived } from 'scenes/Common/DataReceived';
@@ -30,13 +32,9 @@ export const BrowserDashboard = ({ check }: { check: Check }) => {
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />
       </div>
-      <WebVitalsRow />
-      <div>
-        <div>Page load p75</div>
-        <div>CLS p75</div>
-        <div>FID, INP p75</div>
-      </div>
-      <div>Metrics by URL</div>
+      <WebVitalsAverageRow />
+      <WebVitalsOverTimeRow />
+      <MetricsByURL />
       <AssertionsTable checkType={CheckType.Scripted} check={check} />
 
       <Stack height={`200px`}>

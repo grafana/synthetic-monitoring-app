@@ -1,7 +1,7 @@
 import React from 'react';
 import DataTable, { ExpanderComponentProps, TableColumn } from 'react-data-table-component';
-import { GrafanaConfig, GrafanaTheme2 } from '@grafana/data';
-import { Icon, Pagination, Tooltip, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Icon, Pagination, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { createTableTheme } from './tableTheme';
@@ -20,20 +20,17 @@ interface Props<T> {
   pointerOnHover?: boolean;
   id: string;
   name: string;
-  className?: string;
   dataTableProps?: any;
   defaultSortField?: string;
   expandableRows?: boolean;
   // Component to be displayed when a row is expanded
   expandableComponent?: React.FC<ExpanderComponentProps<T>> | null;
   // Requires config object from '@grafana/runtime'
-  config: GrafanaConfig;
   expandTooltipText?: string;
 }
 
 export const Table = <T extends unknown>({
   data,
-  className,
   columns,
   noDataText,
   onRowClicked,
@@ -46,25 +43,23 @@ export const Table = <T extends unknown>({
   defaultSortField = undefined,
   expandableRows = false,
   expandableComponent = null,
-  config,
   expandTooltipText = 'Actions and additional data',
 }: Props<T>) => {
   const styles = useStyles2(getStyles);
-  // Uses light/dark theme based on user config in Grafana
-  createTableTheme(config.theme2.isDark);
-  const expandColor = config.theme2.isDark ? 'white' : 'black';
+  const theme = useTheme2();
+  createTableTheme(theme);
 
   return (
     <DataTable
-      className={className}
       paginationDefaultPage={1}
       pagination={pagination}
       noDataComponent={noDataText}
       columns={columns}
       data={data}
+      key={`${theme.name}`}
       id={id}
       name={name}
-      theme={config.theme2.isDark ? 'grafana-dark' : 'grafana-light'}
+      theme={`grafana`}
       defaultSortFieldId={defaultSortField}
       highlightOnHover
       pointerOnHover={pointerOnHover}
@@ -75,10 +70,10 @@ export const Table = <T extends unknown>({
       expandableIcon={{
         collapsed: (
           <Tooltip content={expandTooltipText} placement="top">
-            <Icon size="lg" name="angle-right" style={{ color: expandColor }} />
+            <Icon size="lg" name="angle-right" style={{ color: theme.colors.text.primary }} />
           </Tooltip>
         ),
-        expanded: <Icon size="lg" name="angle-down" style={{ color: expandColor }} />,
+        expanded: <Icon size="lg" name="angle-down" style={{ color: theme.colors.text.primary }} />,
       }}
       paginationComponent={({ currentPage, rowCount, rowsPerPage, onChangePage }) => (
         <div className={styles.paginationWrapper}>

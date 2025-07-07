@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TableColumn } from 'react-data-table-component';
 import { DataQueryError, dateTimeParse, GrafanaTheme2, LoadingState, PanelData } from '@grafana/data';
-import { config } from '@grafana/runtime';
 import { useQueryRunner, useTimeRange } from '@grafana/scenes-react';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -211,7 +210,6 @@ const ResultsByTargetTableView = ({ data, checkType }: { data?: PanelData; check
         <Table<DataRow>
           columns={columns}
           data={tableData}
-          className={styles.table}
           expandableRows
           expandableComponent={({ data }) => <ResultsByTargetTableRow data={data} checkType={checkType} />}
           //@ts-ignore - noDataText expects a string, but we want to render a component and it works
@@ -219,7 +217,6 @@ const ResultsByTargetTableView = ({ data, checkType }: { data?: PanelData; check
           pagination={false}
           id="assertion-table"
           name="Assertions"
-          config={config}
         />
       )}
     </div>
@@ -294,11 +291,6 @@ function getStyles(theme: GrafanaTheme2) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-    }),
-    table: css({
-      '& > div': {
-        display: 'flex',
-      },
     }),
   };
 }

@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TableColumn } from 'react-data-table-component';
 import { DataQueryError, GrafanaTheme2, LoadingState, PanelData } from '@grafana/data';
-import { config } from '@grafana/runtime';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -113,7 +112,6 @@ export const AssertionsTableView = ({
           pagination={false}
           id="assertion-table"
           name="Assertions"
-          config={config}
         />
       )}
     </div>

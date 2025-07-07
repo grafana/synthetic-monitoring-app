@@ -3,10 +3,10 @@ import { useDataTransformer, useQueryRunner, useTimeRange, useVariableInterpolat
 import { Grid } from '@grafana/ui';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { WEB_VITAL_CONFIG, WebVitalConfig } from 'scenes/Browser/WebVitals/types';
-import { WebVitalGauge } from 'scenes/Browser/WebVitals/WebVitalGauge';
+import { WEB_VITAL_CONFIG, WebVitalConfig } from 'scenes/BROWSER/WebVitals/types';
+import { WebVitalGauge } from 'scenes/BROWSER/WebVitals/WebVitalGauge';
 
-export const WebVitalsRow = () => {
+export const WebVitalsAverageRow = () => {
   return (
     <Grid columns={6}>
       <WebVital vital={WEB_VITAL_CONFIG.fcp} />
