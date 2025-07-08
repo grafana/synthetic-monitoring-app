@@ -11,7 +11,7 @@ import { useChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
-import { BrowserDashboard } from 'scenes/Browser/BrowserDashboard';
+import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';

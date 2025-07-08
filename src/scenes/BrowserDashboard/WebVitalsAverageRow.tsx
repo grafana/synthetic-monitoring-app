@@ -3,8 +3,8 @@ import { useDataTransformer, useQueryRunner, useTimeRange, useVariableInterpolat
 import { Grid } from '@grafana/ui';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { WEB_VITAL_CONFIG, WebVitalConfig } from 'scenes/Browser/WebVitals/types';
-import { WebVitalGauge } from 'scenes/Browser/WebVitals/WebVitalGauge';
+import { WEB_VITAL_CONFIG, WebVitalConfig } from 'scenes/BrowserDashboard/WebVitals/types';
+import { WebVitalGauge } from 'scenes/BrowserDashboard/WebVitals/WebVitalGauge';
 
 export const WebVitalsAverageRow = () => {
   return (

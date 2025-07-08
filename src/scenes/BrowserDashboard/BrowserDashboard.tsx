@@ -9,9 +9,9 @@ import { getSumDurationByProbeQuery } from 'queries/sumDurationByProbe';
 
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
-import { MetricsByURL } from 'scenes/Browser/MetricsByURL';
-import { WebVitalsAverageRow } from 'scenes/Browser/WebVitalsAverageRow';
-import { WebVitalsOverTimeRow } from 'scenes/Browser/WebVitalsOverTimeRow';
+import { MetricsByURL } from 'scenes/BrowserDashboard/MetricsByURL';
+import { WebVitalsAverageRow } from 'scenes/BrowserDashboard/WebVitalsAverageRow';
+import { WebVitalsOverTimeRow } from 'scenes/BrowserDashboard/WebVitalsOverTimeRow';
 import { AssertionsTable } from 'scenes/Common/AssertionsTable';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
 import { DataReceived } from 'scenes/Common/DataReceived';
