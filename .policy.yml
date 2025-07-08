@@ -9,6 +9,7 @@ policy:
     - or:
         - and:
             - Workflow .github/workflows/ci.yml succeeded or skipped
+            - Workflow .github/workflows/danger-js.yml succeeded or skipped
             - Workflow .github/workflows/is-compatible.yml succeeded or skipped
             - Workflow .github/workflows/validate-policy-bot-config.yml succeeded or skipped
             - default to approval
@@ -27,6 +28,18 @@ approval_rules:
             - success
           workflows:
             - .github/workflows/ci.yml
+  - name: Workflow .github/workflows/danger-js.yml succeeded or skipped
+    if:
+      targets_branch:
+        pattern: (^main$)
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/danger-js.yml
   - name: Workflow .github/workflows/is-compatible.yml succeeded or skipped
     requires:
       conditions:
