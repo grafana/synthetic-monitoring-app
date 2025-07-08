@@ -1,8 +1,8 @@
 import React from 'react';
-import { DataTransformerID, FieldType } from '@grafana/data';
-import { FieldConfigOverridesBuilder, VizConfigBuilders } from '@grafana/scenes';
+import { DataTransformerID } from '@grafana/data';
+import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
-import { LineInterpolation, TableCellDisplayMode, TableFieldOptions } from '@grafana/schema';
+import { LineInterpolation, TableCellDisplayMode } from '@grafana/schema';
 import { Box } from '@grafana/ui';
 import { getAvgQuantileWebVital } from 'queries/avgQuantileWebVital';
 
