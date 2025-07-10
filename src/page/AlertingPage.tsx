@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Button, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Modal, Spinner, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
@@ -31,21 +31,38 @@ const Alerting = () => {
 
   return (
     <div>
-      <p>
-        View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
-        select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
-        <a
-          href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/synthetic-monitoring-alerting/"
-          className={styles.link}
-        >
-          Learn more about alerting for Synthetic Monitoring.
-        </a>
-      </p>
-      {canReadAlerts ? (
-        <AlertingPageContent />
-      ) : (
-        <ContactAdminAlert title="Insufficient Permissions" missingPermissions={['datasources:read']} />
-      )}
+      <Alert title="Legacy Alerting System" severity="info">
+        <p>
+          This page shows <strong>legacy alerts</strong> that use the alert sensitivity system (High, Medium, Low).
+          These alerts are applied globally and configured by selecting an alert sensitivity when creating or editing
+          checks.
+        </p>
+        <p>
+          We recommend using the new <strong>per-check alerts</strong> system instead. Per-check alerts allow you to set
+          specific thresholds and conditions for individual checks. You can configure per-check alerts in the
+          &ldquo;Alerting&rdquo; section when creating or editing any check.
+        </p>
+        <p>
+          <TextLink
+            href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/configure-per-check-alerts/"
+            external={true}
+          >
+            Learn more about alerting for Synthetic Monitoring
+          </TextLink>
+        </p>
+      </Alert>
+
+      <div className={styles.contentSection}>
+        <p>
+          View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
+          select the alert sensitivity from the Alerting section of the check form when creating a check.
+        </p>
+        {canReadAlerts ? (
+          <AlertingPageContent />
+        ) : (
+          <ContactAdminAlert title="Insufficient Permissions" missingPermissions={['datasources:read']} />
+        )}
+      </div>
     </div>
   );
 };
@@ -169,10 +186,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginBottom: theme.spacing(4),
     textAlign: 'center',
   }),
-  link: css({
-    textDecoration: 'underline',
-  }),
-  icon: css({
-    marginRight: theme.spacing(1),
+  contentSection: css({
+    marginTop: theme.spacing(2),
   }),
 });

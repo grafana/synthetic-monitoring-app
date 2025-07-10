@@ -61,7 +61,7 @@
     },
     {
       "type": "page",
-      "name": "Alerts",
+      "name": "Alerts (Legacy)",
       "path": "/a/grafana-synthetic-monitoring-app/alerts",
       "action": "grafana-synthetic-monitoring-app.alerts:read",
       "addToNav": true

@@ -43,7 +43,7 @@ describe('Routes to pages correctly', () => {
   });
   test('Alert page renders', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Alerts) });
-    const alertsText = await screen.findByText('Learn more about alerting for Synthetic Monitoring.');
+    const alertsText = await screen.findByText('Learn more about alerting for Synthetic Monitoring');
     expect(alertsText).toBeInTheDocument();
   });
   test('Config page renders', async () => {
