@@ -126,7 +126,7 @@ export function enumToStringArray(enumObject: {}) {
 // Matches a string against multiple options
 export const matchStrings = (string: string, comparisons: string[]): boolean => {
   const lowerCased = string.toLowerCase();
-  return comparisons.some((comparison) => comparison.toLowerCase().match(lowerCased));
+  return comparisons.some((comparison) => comparison.toLowerCase().includes(lowerCased));
 };
 
 export function getCheckType(settings: Settings): CheckType {
