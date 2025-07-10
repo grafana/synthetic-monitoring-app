@@ -1,4 +1,4 @@
-name: Deploy plugin
+name: Upload plugin to GCP
 run-name: 'Deploy plugin to ${{ inputs.environment }}'
 
 on:

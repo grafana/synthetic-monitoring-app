@@ -1,14 +1,14 @@
-name: Deploy plugin
+name: Deploy plugin (dispatch)
 run-name: 'Deploy plugin to ${{ inputs.environment }}'
 
 on:
   workflow_dispatch:
     inputs:
-      plugin_version:
-        description: 'The version of the plugin to deploy'
-        required: true
-        default: 'latest'
-        type: string
+      # plugin_version:
+      #   description: 'The version of the plugin to deploy'
+      #   required: true
+      #   default: 'latest'
+      #   type: string
       environment:
         description: Deployment environment for the plugin (dev, staging, production)
         required: true

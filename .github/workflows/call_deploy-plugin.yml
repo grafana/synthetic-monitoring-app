@@ -1,4 +1,4 @@
-name: Deploy plugin
+name: Update deployment tools
 
 on:
   workflow_call:
