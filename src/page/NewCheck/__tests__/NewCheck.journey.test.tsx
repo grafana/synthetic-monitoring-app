@@ -1,10 +1,14 @@
-import { config } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { probeToMetadataProbe, runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
+import {
+  mockFeatureToggles,
+  probeToMetadataProbe,
+  runTestAsHGFreeUserOverLimit,
+  runTestWithoutLogsAccess,
+} from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
@@ -246,8 +250,7 @@ describe(`<NewCheck /> journey`, () => {
   });
 
   it(`should revalidate the form when the frequency is changed`, async () => {
-    jest.replaceProperty(config, 'featureToggles', {
-      // @ts-expect-error
+    mockFeatureToggles({
       [FeatureName.AlertsPerCheck]: true,
     });
 

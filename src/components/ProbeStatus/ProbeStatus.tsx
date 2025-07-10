@@ -17,6 +17,7 @@ import { type ExtendedProbe } from 'types';
 import { formatDate } from 'utils';
 import { useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
@@ -94,7 +95,7 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
           </Container>
         )}
       </div>
-      <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} />
+      <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} description={PROBE_REACHABILITY_DESCRIPTION} />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
         <Meta

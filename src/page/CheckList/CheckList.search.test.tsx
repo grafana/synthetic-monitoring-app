@@ -32,6 +32,36 @@ const renderCheckList = async (checks = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK], sea
   return res;
 };
 
+// overkill, but just in case
+const SPECIAL_CHARACTERS = [
+  '*',
+  '?',
+  '!',
+  '@',
+  '#',
+  '$',
+  '%',
+  '^',
+  '&',
+  '(',
+  ')',
+  '[',
+  ']',
+  '{',
+  '}',
+  '|',
+  '\\',
+  '/',
+  ':',
+  ';',
+  '<',
+  '>',
+  ',',
+  '.',
+  '`',
+  '~',
+];
+
 describe('CheckList - Search Functionality', () => {
   test('search by text', async () => {
     const { user } = await renderCheckList();
@@ -98,6 +128,23 @@ describe('CheckList - Search Functionality', () => {
     const searchInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
     expect(searchInput).toHaveValue(BASIC_DNS_CHECK.job);
 
+    const checks = await screen.findAllByTestId('check-card');
+    expect(checks.length).toBe(1);
+  });
+
+  test.each(SPECIAL_CHARACTERS)('search can use special character: %s', async (specialChar) => {
+    const NO_MATCH_JOB = `NOMATCHJOB`;
+    const NO_MATCH_TARGET = `NOMATCHTARGET`;
+    const { user } = await renderCheckList([
+      { ...BASIC_DNS_CHECK, job: specialChar },
+      { ...BASIC_HTTP_CHECK, job: NO_MATCH_JOB, target: NO_MATCH_TARGET },
+    ]);
+    const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
+    const willBeRemoved = screen.getByText(NO_MATCH_JOB);
+    filterInput.focus();
+
+    await user.paste(specialChar);
+    await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
     const checks = await screen.findAllByTestId('check-card');
     expect(checks.length).toBe(1);
   });

@@ -3,12 +3,11 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { Field, Select } from '@grafana/ui';
 
 import { CheckFormValuesHttp } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { HTTP_SSL_OPTIONS } from 'components/constants';
 
 export const HttpCheckSSLOptions = () => {
-  const { control } = useFormContext<CheckFormValuesHttp>();
-  const { isFormDisabled } = useCheckFormContext();
+  const { control, formState } = useFormContext<CheckFormValuesHttp>();
+
   const id = 'http-settings-ssl-options';
 
   return (
@@ -26,7 +25,7 @@ export const HttpCheckSSLOptions = () => {
           return (
             <Select
               {...rest}
-              disabled={isFormDisabled}
+              disabled={formState.disabled}
               inputId={id}
               onChange={({ value }) => {
                 onChange(value);

@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesTcp, CheckType } from 'types';
@@ -8,8 +9,6 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/TCPCheckQueryAndResponse';
 import { TCPRequest } from 'components/CheckEditor/FormComponents/TCPRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
-
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 const TCP_REQUEST_FIELDS: TCPRequestFields = {
   target: {
@@ -46,15 +45,12 @@ const TCP_REQUEST_FIELDS: TCPRequestFields = {
 };
 
 const CheckTCPRequest = () => {
-  const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
   const { handleErrorRef } = useNestedRequestErrors(TCP_REQUEST_FIELDS);
+  const {
+    formState: { disabled: isFormDisabled },
+  } = useFormContext();
 
-  const onTest = useCallback(() => {
-    addRequest(TCP_REQUEST_FIELDS);
-  }, [addRequest]);
-
-  return <TCPRequest disabled={isFormDisabled} fields={TCP_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
+  return <TCPRequest disabled={isFormDisabled} fields={TCP_REQUEST_FIELDS} ref={handleErrorRef} />;
 };
 
 export const TCPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesTcp>>> = {

@@ -1,7 +1,6 @@
-import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
-import { probeToMetadataProbe, selectOption } from 'test/utils';
+import { mockFeatureToggles, probeToMetadataProbe, selectOption } from 'test/utils';
 
 import { AlertSensitivity, Check, CheckType, FeatureName } from 'types';
 import {
@@ -94,8 +93,7 @@ describe('Api endpoint checks - common fields payload', () => {
         });
 
         it(`can submit the form with alerts per check`, async () => {
-          jest.replaceProperty(config, 'featureToggles', {
-            // @ts-expect-error
+          mockFeatureToggles({
             [FeatureName.AlertsPerCheck]: true,
           });
 
@@ -127,8 +125,7 @@ describe('Api endpoint checks - common fields payload', () => {
         });
 
         it(`does not submit alerts per check when the feature flag is disabled`, async () => {
-          jest.replaceProperty(config, 'featureToggles', {
-            // @ts-expect-error
+          mockFeatureToggles({
             [FeatureName.AlertsPerCheck]: false,
           });
 
