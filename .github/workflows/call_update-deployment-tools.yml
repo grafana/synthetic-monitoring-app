@@ -35,15 +35,6 @@ jobs:
             GITHUB_APP_INSTALLATION_ID=updater-app:app-installation-id
             GITHUB_APP_PRIVATE_KEY=updater-app:private-key
 
-      # needed?
-
-      # - name: Export GitHub Actions URL
-      #   id: export-gha-url
-      #   shell: bash
-      #   run: |
-      #     GHA_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-      #     echo "gha_url=${GHA_URL}" >> "${GITHUB_OUTPUT}"
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -72,8 +63,6 @@ jobs:
       # Authentification for the next step docker image usage
       - name: Authenticate with GAR
         uses: grafana/shared-workflows/actions/login-to-gar@fa48192dac470ae356b3f7007229f3ac28c48a25
-        with:
-          environment: prod
 
       - name: Create plugin version file
         env:
