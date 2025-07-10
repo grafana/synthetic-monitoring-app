@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.31.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.31.0...v1.31.1) (2025-07-10)
+
+
+### Fixes
+
+* restrict environment variable ([#1185](https://github.com/grafana/synthetic-monitoring-app/issues/1185)) ([bb1ff43](https://github.com/grafana/synthetic-monitoring-app/commit/bb1ff4300fa3fc4353ce75d1c5bf514db4a30990))
+* updated gh action names ([#1183](https://github.com/grafana/synthetic-monitoring-app/issues/1183)) ([81e90ba](https://github.com/grafana/synthetic-monitoring-app/commit/81e90ba7838dbd06db262348c803d3cc7b802afe))
+
 ## [1.31.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.30.1...v1.31.0) (2025-07-10)
 
 
