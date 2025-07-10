@@ -10,6 +10,7 @@ export function getCheckAlertsFormValues(alerts: CheckAlertPublished[]): CheckAl
       isSelected: true,
       status: alert.status,
       creationError: alert.error,
+      runbookUrl: alert.runbookUrl,
     };
   });
 
