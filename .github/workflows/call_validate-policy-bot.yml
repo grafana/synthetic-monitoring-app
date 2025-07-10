@@ -1,25 +1,30 @@
 name: Validate Policy Bot Config
 
 on:
-  pull_request:
-    paths:
-      - ".policy.yml"
-
-  push:
-    branches:
-      - main
-    paths:
-      - ".policy.yml"
+  workflow_call:
 
 permissions:
-  contents: none
+  contents: read
 
 jobs:
-  validate:
-    name: Validate policy bot config
-
+  check-changes:
     runs-on: ubuntu-latest
+    outputs:
+      policy-changed: ${{ steps.changes.outputs.policy }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+        id: changes
+        with:
+          filters: |
+            policy:
+              - '.policy.yml'
 
+  validate:
+    needs: check-changes
+    if: needs.check-changes.outputs.policy-changed == 'true'
+    name: Validate policy bot config
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
