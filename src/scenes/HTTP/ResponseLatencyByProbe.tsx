@@ -18,8 +18,7 @@ import {
 } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
-
-import { useVizPanelMenu } from './useVizPanelMenu';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const ResponseLatencyByProbe = () => {
   const metricsDS = useMetricsDS();

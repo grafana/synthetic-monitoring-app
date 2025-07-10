@@ -14,8 +14,7 @@ import {
 } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
-
-import { useVizPanelMenu } from './useVizPanelMenu';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const ErrorRate = ({ minStep }: { minStep: string }) => {
   const metricsDS = useMetricsDS();

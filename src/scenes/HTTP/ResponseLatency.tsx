@@ -4,8 +4,7 @@ import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { GraphDrawStyle, StackingMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
-
-import { useVizPanelMenu } from './useVizPanelMenu';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const ResponseLatency = () => {
   const metricsDS = useMetricsDS();

@@ -7,8 +7,7 @@ import { getUptimeQuery } from 'queries/uptime';
 import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { UPTIME_DESCRIPTION } from 'components/constants';
-
-import { useVizPanelMenu } from '../useVizPanelMenu';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const UptimeStat = ({ check }: { check: Check }) => {
   const metricsDS = useMetricsDS();
