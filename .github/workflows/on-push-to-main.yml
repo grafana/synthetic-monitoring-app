@@ -3,7 +3,7 @@ name: On pushing to main
 on:
   push:
     branches:
-      - main
+      - chore/gh-actions-improvs #testing
 
 jobs:
   publish-techdocs:
