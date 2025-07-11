@@ -1,6 +1,9 @@
 import { dataLayers, SceneDataLayerSet } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
+const firingCondition = `{job="$job", instance="$instance", alertstate="firing"}`;
+const pendingCondition = `{job="$job", instance="$instance", alertstate="pending"}`;
+
 export function getAlertAnnotations(metrics: DataSourceRef) {
   return new SceneDataLayerSet({
     layers: [
@@ -9,7 +12,7 @@ export function getAlertAnnotations(metrics: DataSourceRef) {
         isHidden: false,
         query: {
           datasource: metrics,
-          expr: 'max(ALERTS{job="$job", instance="$instance", alertstate="firing"})',
+          expr: `max(ALERTS${firingCondition} or GRAFANA_ALERTS${firingCondition})`,
           hide: false,
           legendFormat: 'alert firing',
           refId: 'alertsAnnotation',
@@ -24,9 +27,9 @@ export function getAlertAnnotations(metrics: DataSourceRef) {
         isHidden: false,
         query: {
           datasource: metrics,
-          expr: 'max(ALERTS{job="$job", instance="$instance", alertstate="pending"})',
+          expr: `max(ALERTS${pendingCondition} or GRAFANA_ALERTS${pendingCondition})`,
           hide: false,
-          legendFormat: 'alert firing',
+          legendFormat: 'alert pending',
           refId: 'alertsAnnotation',
           enable: true,
           iconColor: 'yellow',
