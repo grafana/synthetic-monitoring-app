@@ -10,6 +10,7 @@ import { NotOkStatusInfo } from 'components/AlertStatus/NotOkStatusInfo';
 
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { FailedExecutionsAlert } from './FailedExecutionsAlert';
+import { RequestDurationTooHighAvgAlert } from './RequestDurationTooHighAvgAlert';
 import { TLSTargetCertificateCloseToExpiringAlert } from './TLSTargetCertificateCloseToExpiringAlert';
 
 function createExploreLink(dataSourceName: string, query: string) {
@@ -77,6 +78,16 @@ export const AlertItem = ({
 
       {alert.type === CheckAlertType.TLSTargetCertificateCloseToExpiring && (
         <TLSTargetCertificateCloseToExpiringAlert
+          alert={alert}
+          selected={selected}
+          onSelectionChange={handleToggleAlert}
+          tooltipContent={tooltipContent}
+        />
+      )}
+      {(alert.type === CheckAlertType.HTTPRequestDurationTooHighAvg ||
+        alert.type === CheckAlertType.PingRequestDurationTooHighAvg ||
+        alert.type === CheckAlertType.DNSRequestDurationTooHighAvg) && (
+        <RequestDurationTooHighAvgAlert
           alert={alert}
           selected={selected}
           onSelectionChange={handleToggleAlert}
