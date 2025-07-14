@@ -10,7 +10,7 @@ import { map } from 'rxjs/operators';
 export const debugTransform: CustomTransformOperator = () => (source: Observable<DataFrame[]>) => {
   return source.pipe(
     map((data: DataFrame[]) => {
-      // eslint-disable-next-line no-console
+       
       console.log(data);
       return data;
     })
