@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.31.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.30.1...v1.31.0) (2025-07-10)
+
+
+### Features
+
+* pr creation GH action consolidation test ([#1158](https://github.com/grafana/synthetic-monitoring-app/issues/1158)) ([f4da4e2](https://github.com/grafana/synthetic-monitoring-app/commit/f4da4e2f39093e62a328882e779ba3e8aebefcd0))
+* refactor `<CheckForm/>` ([#1170](https://github.com/grafana/synthetic-monitoring-app/issues/1170)) ([1bdd498](https://github.com/grafana/synthetic-monitoring-app/commit/1bdd498d8821d91a668bfd380243e4925ac0804b))
+
+
+### Fixes
+
+* update policybot configuration ([#1180](https://github.com/grafana/synthetic-monitoring-app/issues/1180)) ([9e7cebd](https://github.com/grafana/synthetic-monitoring-app/commit/9e7cebd1723a3e60506cc347cf4052d27395cc0e))
+* updated check list search ([#1178](https://github.com/grafana/synthetic-monitoring-app/issues/1178)) ([5482c4d](https://github.com/grafana/synthetic-monitoring-app/commit/5482c4d192aa168f8e0bb052bb0f79843ce6fed4))
+
 ## [1.30.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.30.0...v1.30.1) (2025-06-25)
 
 
