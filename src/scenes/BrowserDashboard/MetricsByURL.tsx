@@ -127,6 +127,9 @@ export const MetricsByURL = () => {
         })
         .build();
     })
+    .setOverrides((b) => {
+      return b.matchFieldsWithName(`Trend #${MetricRefId.CLS}`).overrideUnit(``).build();
+    })
     .setNoValue(`-`)
     .setUnit('ms')
     .build();

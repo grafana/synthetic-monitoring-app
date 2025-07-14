@@ -16,8 +16,8 @@ import { DataSent } from 'scenes/Common/DataSent';
 import { DistinctTargets } from 'scenes/Common/DistinctTargets';
 import { DurationByProbe } from 'scenes/Common/DurationByProbe';
 import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
-import { ReachabilityStat } from 'scenes/HTTP/stats/ReachabilityStatViz';
-import { UptimeStat } from 'scenes/HTTP/stats/UptimeStatViz';
+import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
+import { UptimeStat } from 'scenes/Common/UptimeStatViz';
 import { ResultsByTargetTable } from 'scenes/Scripted/ResultByTargetTable';
 
 export const ScriptedDashboard = ({ check }: { check: Check }) => {

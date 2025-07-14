@@ -50,7 +50,7 @@ const WebVital = ({ vital }: { vital: WebVitalConfig }) => {
   });
 
   const { data } = dataTransformer.useState();
-  const value = data?.series[0]?.fields[1].values[0] ?? 0;
+  const value = data?.series[0]?.fields[1].values[0] ?? null;
   const exploreLink = `/explore?left=${encodeURIComponent(
     JSON.stringify({
       datasource: metricsDS,

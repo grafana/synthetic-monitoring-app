@@ -8,11 +8,11 @@ import { DashboardContainer } from 'scenes/Common/DashboardContainer';
 import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
+import { ReachabilityStat } from '../Common/ReachabilityStatViz';
+import { UptimeStat } from '../Common/UptimeStatViz';
 import { AvgLatency } from './stats/AvgLatencyViz';
 import { Frequency } from './stats/FrequencyViz';
-import { ReachabilityStat } from './stats/ReachabilityStatViz';
 import { SSLExpiry } from './stats/SSLExpiryViz';
-import { UptimeStat } from './stats/UptimeStatViz';
 import { ErrorRateMap } from './ErrorRateMap';
 import { ErrorRate } from './ErrorRateViz';
 import { ResponseLatency } from './ResponseLatency';

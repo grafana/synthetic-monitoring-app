@@ -16,7 +16,7 @@ interface AssertionTableRowProps extends ExpanderComponentProps<DataRow> {
 export function AssertionTableRow({ check, data }: AssertionTableRowProps) {
   const logsDS = useLogsDS();
   const minStep = getMinStepFromFrequency(check.frequency);
-  const escaped = data.name.replace(/"/g, '\\"');
+  const escaped = data.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
   const queries = [
     {
