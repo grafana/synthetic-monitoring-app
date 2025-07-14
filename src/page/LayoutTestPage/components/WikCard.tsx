@@ -27,7 +27,7 @@ function getStyles(theme: GrafanaTheme2) {
       display: flex;
       justify-content: space-between;
       gap: ${theme.spacing(1)};
-      font-size: ${theme.typography.size.md};
+      font-size: ${theme.typography.h6.fontSize};
       letter-spacing: inherit;
       line-height: ${theme.typography.body.lineHeight};
       color: ${theme.colors.text.primary};
