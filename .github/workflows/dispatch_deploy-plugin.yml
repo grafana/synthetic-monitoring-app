@@ -10,10 +10,14 @@ on:
       #   default: 'latest'
       #   type: string
       environment:
-        description: Deployment environment for the plugin (dev, staging, production)
+        description: Deployment environment for the plugin
         required: true
-        type: string
-        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+        default: dev
       autoMerge:
         description: Whether to automatically merge the PR after deployment
         required: false
