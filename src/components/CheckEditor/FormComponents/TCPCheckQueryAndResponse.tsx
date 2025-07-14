@@ -5,12 +5,14 @@ import { Button, Field, IconButton, Input, Stack, Switch, TextArea, useStyles2 }
 import { css } from '@emotion/css';
 
 import { CheckFormValuesTcp } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 export const TCPCheckQueryAndResponse = () => {
   const styles = useStyles2(getStyles);
-  const { register, control } = useFormContext<CheckFormValuesTcp>();
-  const { isFormDisabled } = useCheckFormContext();
+  const {
+    register,
+    control,
+    formState: { disabled: isFormDisabled },
+  } = useFormContext<CheckFormValuesTcp>();
   const { fields, append, remove } = useFieldArray<CheckFormValuesTcp>({ control, name: 'settings.tcp.queryResponse' });
 
   return (

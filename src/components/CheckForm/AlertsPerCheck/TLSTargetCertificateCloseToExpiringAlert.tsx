@@ -17,7 +17,6 @@ import { useDebounceCallback } from 'usehooks-ts';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { getAlertItemStyles } from './AlertItem';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
@@ -32,7 +31,6 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   onSelectionChange: (type: CheckAlertType) => void;
   tooltipContent: PopoverContent;
 }) => {
-  const { isFormDisabled } = useCheckFormContext();
   const { control, formState } = useFormContext<CheckFormValues>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
@@ -46,6 +44,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
 
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
   const tlsError = formState.errors?.alerts?.[alert.type]?.isSelected?.message;
+  const isFormDisabled = formState.disabled;
   const styles = useStyles2(getAlertItemStyles);
 
   const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);

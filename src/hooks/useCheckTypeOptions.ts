@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { CheckStatus, CheckType, CheckTypeGroup, FeatureName } from 'types';
 
 import { useFeatureFlagContext } from './useFeatureFlagContext';
@@ -66,14 +68,17 @@ export const CHECK_TYPE_OPTIONS = [
   },
 ];
 
+/**
+ * Returns options for all checks (unless disabled by featureToggle)
+ */
 export function useCheckTypeOptions() {
   const { isFeatureEnabled } = useFeatureFlagContext();
 
-  return CHECK_TYPE_OPTIONS.filter((option) => {
-    if (option.featureToggle) {
-      return isFeatureEnabled(option.featureToggle);
-    }
-
-    return true;
-  });
+  return useMemo(
+    () =>
+      CHECK_TYPE_OPTIONS.filter(
+        (option) => !option.featureToggle || (option.featureToggle && isFeatureEnabled(option.featureToggle))
+      ),
+    [isFeatureEnabled]
+  );
 }

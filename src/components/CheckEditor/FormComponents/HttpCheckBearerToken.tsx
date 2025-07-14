@@ -18,7 +18,7 @@ export const HttpCheckBearerToken = ({ disabled }: { disabled?: boolean }) => {
       invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
       label="Bearer Authorization"
       placeholder="Bearer token"
-      required={true}
+      required
     />
   );
 };

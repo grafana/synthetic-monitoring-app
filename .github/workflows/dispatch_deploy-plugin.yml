@@ -1,0 +1,28 @@
+name: Deploy plugin (dispatch)
+run-name: 'Deploy plugin to ${{ inputs.environment }}'
+
+on:
+  workflow_dispatch:
+    inputs:
+      # plugin_version:
+      #   description: 'The version of the plugin to deploy'
+      #   required: true
+      #   default: 'latest'
+      #   type: string
+      environment:
+        description: Deployment environment for the plugin (dev, staging, production)
+        required: true
+        type: string
+        default: 'dev'
+      autoMerge:
+        description: Whether to automatically merge the PR after deployment
+        required: false
+        type: string
+        default: 'false'
+
+jobs:
+  deploy-plugin:
+    uses: ./.github/workflows/call_deploy-plugin.yml
+    with:
+      autoMerge: ${{ inputs.autoMerge }}
+      environment: ${{ inputs.environment }}

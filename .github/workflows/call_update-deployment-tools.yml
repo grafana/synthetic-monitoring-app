@@ -1,0 +1,107 @@
+name: Upload plugin to GCP
+run-name: 'Deploy plugin to ${{ inputs.environment }}'
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment for the plugin (dev, staging, production)
+        required: true
+        type: string
+        default: 'dev'
+      autoMerge:
+        description: Whether to automatically merge the PR after deployment
+        required: false
+        type: string
+        default: 'false'
+      plugin_version:
+        description: The version of the plugin to deploy
+        required: true
+        type: string
+
+jobs:
+  deploy-plugin:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Get Vault secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
+        with:
+          common_secrets: |
+            GITHUB_APP_ID=updater-app:app-id
+            GITHUB_APP_INSTALLATION_ID=updater-app:app-installation-id
+            GITHUB_APP_PRIVATE_KEY=updater-app:private-key
+
+      # needed?
+
+      # - name: Export GitHub Actions URL
+      #   id: export-gha-url
+      #   shell: bash
+      #   run: |
+      #     GHA_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      #     echo "gha_url=${GHA_URL}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Authenticate with GCS
+        uses: grafana/shared-workflows/actions/login-to-gcs@fa48192dac470ae356b3f7007229f3ac28c48a25
+
+      # Configure the GCloud SDK using authentication from the previous step,
+      # enabling the next step to execute authenticated GCloud commands.
+      - name: Setup GCloud SDK
+        uses: google-github-actions/setup-gcloud@77e7a554d41e2ee56fc945c52dfd3f33d12def9a # v2.1.4
+        with:
+          version: '>= 390.0.0'
+
+      # TODO
+      # - name: Check plugin build is in the correct bucket
+      #   run: |
+      #     .github/scripts/check-artifact.sh \
+      #     "${ENVIRONMENT}" \
+      #     "${PLUGIN_VERSION}"
+      #   env:
+      #     ENVIRONMENT: ${{ inputs.environment }}
+
+      # Authentification for the next step docker image usage
+      - name: Authenticate with GAR
+        uses: grafana/shared-workflows/actions/login-to-gar@fa48192dac470ae356b3f7007229f3ac28c48a25
+        with:
+          environment: prod
+
+      - name: Create plugin version file
+        env:
+          PLUGIN_VERSION: ${{ inputs.plugin_version }}
+        run: |
+          echo "$PLUGIN_VERSION" > plugin_version.txt
+          echo "Created plugin_version.txt with version: $PLUGIN_VERSION"
+
+      - name: Create deployment PR
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          AUTO_MERGE: ${{ inputs.autoMerge }}
+          GITHUB_APP_ID: ${{ env.GITHUB_APP_ID }}
+          GITHUB_APP_INSTALLATION_ID: ${{ env.GITHUB_APP_INSTALLATION_ID }}
+          GITHUB_APP_PRIVATE_KEY: ${{ env.GITHUB_APP_PRIVATE_KEY }}
+        run: |
+          case "$ENVIRONMENT" in
+            "dev")
+              scripts/deployment/create-dev-deployment-pr.sh
+              ;;
+            "staging")
+              scripts/deployment/create-staging-deployment-pr.sh
+              ;;
+            "production")
+              scripts/deployment/create-prod-deployment-pr.sh
+              ;;
+            *)
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev', 'staging', or 'production'." >&2
+              exit 1
+              ;;
+          esac
