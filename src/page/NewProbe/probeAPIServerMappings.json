@@ -1,7 +1,7 @@
 [
   {
     "region": "Amsterdam",
-    "provider": "Azure",
+    "provider": "Azure3",
     "apiServerURL": "synthetic-monitoring-grpc-eu-west-3.grafana.net:443",
     "backendAddress": "synthetic-monitoring-api-eu-west-3.grafana.net"
   },
