@@ -115,7 +115,7 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
           setResultsByProbe({ ...resultsByProbe, [`${info.probe}${testResponse.id}`]: info });
         }
       } catch (e) {
-        console.log('error parsing', e); // eslint-disable-line no-console
+        console.log('error parsing', e);  
       }
     });
   }

@@ -24,11 +24,13 @@ interface DashboardContainerProps extends PropsWithChildren {
 
 export const DashboardContainer = ({ check, checkType, children }: DashboardContainerProps) => {
   const metricsDS = useMetricsDS();
+  const firingCondition = `{job="$job", instance="$instance", alertstate="firing"}`;
+  const pendingCondition = `{job="$job", instance="$instance", alertstate="pending"}`;
 
   const annotations = [
     {
       datasource: metricsDS,
-      expr: 'max(ALERTS{job="$job", instance="$instance", alertstate="firing"})',
+      expr: `max(ALERTS${firingCondition} or GRAFANA_ALERTS${firingCondition})`,
       hide: false,
       legendFormat: 'alert firing',
       refId: 'alertsAnnotation',
@@ -39,9 +41,9 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
     },
     {
       datasource: metricsDS,
-      expr: 'max(ALERTS{job="$job", instance="$instance", alertstate="pending"})',
+      expr: `max(ALERTS${pendingCondition} or GRAFANA_ALERTS${pendingCondition})`,
       hide: false,
-      legendFormat: 'alert firing',
+      legendFormat: 'alert pending',
       refId: 'alertsAnnotation',
       enable: true,
       iconColor: 'yellow',
