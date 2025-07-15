@@ -183,7 +183,7 @@ function isCharacterLetter(character: string): boolean {
 }
 
 function isValidDomainCharacter(character: string): boolean {
-  const regex = new RegExp(/[-A-Za-z0-9.]/);
+  const regex = new RegExp(/^[A-Za-z0-9_-]+$/);
   return Boolean(!character.match(regex)?.length);
 }
 
@@ -199,12 +199,12 @@ function validateDomainElement(element: string, isLast: boolean): string | undef
 
   const first = element[0];
   const last = element[element.length - 1];
-  if (!isCharacterLetter(first) && !isCharacterNumber(first)) {
-    return 'A domain element must begin with a letter or number';
+  if (!isCharacterLetter(first) && !isCharacterNumber(first) && first !== '_') {
+    return 'A domain element must begin with a letter, number or underscore';
   }
 
-  if (!isCharacterNumber(last) && !isCharacterLetter(last)) {
-    return 'A domain element must end with a letter or number';
+  if (!isCharacterNumber(last) && !isCharacterLetter(last) && last !== '_') {
+    return 'A domain element must end with a letter, number or underscore';
   }
 
   if (isLast) {
@@ -216,7 +216,7 @@ function validateDomainElement(element: string, isLast: boolean): string | undef
 
   const hasInvalidCharacter = element.split('').some((character) => isValidDomainCharacter(character));
   if (hasInvalidCharacter) {
-    return 'Invalid character in domain name. Only letters, numbers and "-" are allowed';
+    return 'Invalid character in domain name. Only letters, numbers, underscores and "-" are allowed';
   }
 
   return undefined;
