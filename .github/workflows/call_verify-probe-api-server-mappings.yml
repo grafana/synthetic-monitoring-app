@@ -49,10 +49,17 @@ jobs:
             if (outputBase64 && outputBase64.trim() !== '') {
               try {
                 const output = Buffer.from(outputBase64, 'base64').toString('utf8');
-                // Remove yarn wrapper messages for cleaner output
+                // Remove yarn wrapper messages and final instruction for cleaner output
                 const cleanOutput = output
                   .split('\n')
-                  .filter(line => !line.includes('yarn run') && !line.includes('$ yarn') && !line.includes('$ /Users/') && !line.includes('error Command failed') && !line.includes('info Visit https://yarnpkg.com'))
+                  .filter(line => 
+                    !line.includes('yarn run') && 
+                    !line.includes('$ yarn') && 
+                    !line.includes('$ /Users/') && 
+                    !line.includes('error Command failed') && 
+                    !line.includes('info Visit https://yarnpkg.com') &&
+                    !line.includes('💡 Please update the probeAPIServerMappings.json file to match the documentation.')
+                  )
                   .join('\n')
                   .trim();
                 
