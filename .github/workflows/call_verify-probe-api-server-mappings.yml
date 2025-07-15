@@ -1,0 +1,43 @@
+name: Verify Probe API Server Mappings
+
+on:
+  workflow_call:
+
+jobs:
+  verify-mappings:
+    name: Verify Probe API Server Mappings
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Verify probe mappings are up to date
+        run: |
+          node scripts/verify-probe-mappings.js
+
+      - name: Comment on PR if mappings are outdated
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let message = '⚠️ **Probe API Server Mappings Verification Failed**\n\n';
+            message += 'The `probeAPIServerMappings.json` file appears to be outdated compared to the Grafana documentation.\n\n';
+            message += 'Please run the verification script locally to see the differences:\n';
+            message += '```bash\n';
+            message += 'node scripts/verify-probe-mappings.js\n';
+            message += '```\n\n';
+            message += 'You may need to update the mappings file to match the current documentation.';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
