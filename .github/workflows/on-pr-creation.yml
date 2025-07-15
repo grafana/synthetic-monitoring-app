@@ -47,7 +47,7 @@ jobs:
       id-token: write
     uses: ./.github/workflows/call_validate-policy-bot.yml
 
-  verify-probe-mappings:
+  verify-probe-api-mappings:
     name: Verify Probe API Server Mappings
     needs: setup-env-and-cache
     permissions:

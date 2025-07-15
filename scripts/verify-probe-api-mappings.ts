@@ -1,17 +1,24 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { JSDOM } = require('jsdom');
+import fs from 'fs';
+import path from 'path';
+import { JSDOM } from 'jsdom';
 
 const DOCUMENTATION_URL =
   'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#add-a-new-probe-in-your-grafana-instance';
 const MAPPINGS_FILE = 'src/page/NewProbe/probeAPIServerMappings.json';
 
+interface ProbeMapping {
+  region: string;
+  provider: string;
+  apiServerURL: string;
+  backendAddress: string;
+}
+
 /**
  * Fetches the HTML content from the Grafana documentation page
  */
-async function fetchDocumentationPage() {
+async function fetchDocumentationPage(): Promise<string> {
   try {
     const response = await fetch(DOCUMENTATION_URL);
     if (!response.ok) {
@@ -19,7 +26,7 @@ async function fetchDocumentationPage() {
     }
     return await response.text();
   } catch (error) {
-    console.error('Error fetching documentation:', error.message);
+    console.error('Error fetching documentation:', (error as Error).message);
     process.exit(1);
   }
 }
@@ -27,17 +34,17 @@ async function fetchDocumentationPage() {
 /**
  * Parses the HTML to extract probe mappings from the table
  */
-function parseProbeTableFromHtml(html) {
+function parseProbeTableFromHtml(html: string): ProbeMapping[] {
   const dom = new JSDOM(html);
   const document = dom.window.document;
 
   // Find the table containing probe mappings
   const tables = document.querySelectorAll('table');
-  let probeTable = null;
+  let probeTable: Element | null = null;
 
   for (const table of tables) {
     const headerRow = table.querySelector('tr');
-    if (headerRow && headerRow.textContent.includes('Region') && headerRow.textContent.includes('Provider')) {
+    if (headerRow && headerRow.textContent?.includes('Region') && headerRow.textContent?.includes('Provider')) {
       probeTable = table;
       break;
     }
@@ -47,7 +54,7 @@ function parseProbeTableFromHtml(html) {
     throw new Error('Could not find probe mappings table in documentation');
   }
 
-  const mappings = [];
+  const mappings: ProbeMapping[] = [];
   const rows = probeTable.querySelectorAll('tr');
 
   // Skip header row
@@ -56,10 +63,10 @@ function parseProbeTableFromHtml(html) {
     const cells = row.querySelectorAll('td');
 
     if (cells.length >= 4) {
-      const region = cells[0].textContent.trim();
-      const provider = cells[1].textContent.trim();
-      const apiServerURL = cells[2].textContent.trim();
-      const backendAddress = cells[3].textContent.trim();
+      const region = cells[0].textContent?.trim() || '';
+      const provider = cells[1].textContent?.trim() || '';
+      const apiServerURL = cells[2].textContent?.trim() || '';
+      const backendAddress = cells[3].textContent?.trim() || '';
 
       mappings.push({
         region,
@@ -76,13 +83,13 @@ function parseProbeTableFromHtml(html) {
 /**
  * Loads the current mappings from the JSON file
  */
-function loadCurrentMappings() {
+function loadCurrentMappings(): ProbeMapping[] {
   try {
     const filePath = path.resolve(MAPPINGS_FILE);
     const content = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(content);
+    return JSON.parse(content) as ProbeMapping[];
   } catch (error) {
-    console.error('Error reading current mappings file:', error.message);
+    console.error('Error reading current mappings file:', (error as Error).message);
     process.exit(1);
   }
 }
@@ -90,13 +97,13 @@ function loadCurrentMappings() {
 /**
  * Compares two mapping arrays for equality
  */
-function compareMappings(current, documentation) {
+function compareMappings(current: ProbeMapping[], documentation: ProbeMapping[]): boolean {
   if (current.length !== documentation.length) {
     return false;
   }
 
   // Sort both arrays for comparison
-  const sortFn = (a, b) => {
+  const sortFn = (a: ProbeMapping, b: ProbeMapping): number => {
     if (a.region !== b.region) {
       return a.region.localeCompare(b.region);
     }
@@ -126,7 +133,7 @@ function compareMappings(current, documentation) {
 /**
  * Displays the differences between current and documentation mappings
  */
-function displayDifferences(current, documentation) {
+function displayDifferences(current: ProbeMapping[], documentation: ProbeMapping[]): void {
   console.log('\n📋 Comparison Results:');
   console.log(`Current file has ${current.length} entries`);
   console.log(`Documentation has ${documentation.length} entries`);
@@ -135,7 +142,7 @@ function displayDifferences(current, documentation) {
     console.log('\n❌ Entry count mismatch!');
   }
 
-  const sortFn = (a, b) => {
+  const sortFn = (a: ProbeMapping, b: ProbeMapping): number => {
     if (a.region !== b.region) {
       return a.region.localeCompare(b.region);
     }
@@ -192,7 +199,7 @@ function displayDifferences(current, documentation) {
 /**
  * Main function
  */
-async function main() {
+async function main(): Promise<void> {
   console.log('🔍 Verifying probe API server mappings...');
   console.log(`📄 Fetching documentation from: ${DOCUMENTATION_URL}`);
 
@@ -223,7 +230,7 @@ try {
 }
 
 // Run the main function
-main().catch((error) => {
+main().catch((error: Error) => {
   console.error('Unexpected error:', error);
   process.exit(1);
 });
