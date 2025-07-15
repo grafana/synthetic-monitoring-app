@@ -1,18 +1,15 @@
 import React, { useCallback, useState } from 'react';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Label, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Alert, Stack } from '@grafana/ui';
 
 import { ExtendedProbe, type Probe, ProbeProvider } from 'types';
 import { AppRoutes } from 'routing/types';
 import { type AddProbeResult } from 'datasource/responses.types';
 import { useCreateProbe } from 'data/useProbes';
-import { useBackendAddress } from 'hooks/useBackendAddress';
 import { useNavigation } from 'hooks/useNavigation';
-import { DocsLink } from 'components/DocsLink';
-import { Preformatted } from 'components/Preformatted';
+import { ProbeAPIServer } from 'components/ProbeAPIServer/ProbeAPIServer';
 import { ProbeEditor } from 'components/ProbeEditor';
-import { ProbeTokenModal } from 'components/ProbeTokenModal';
+import { ProbeSetupModal } from 'components/ProbeSetupModal';
 
 export const TEMPLATE_PROBE: ExtendedProbe = {
   name: '',
@@ -71,9 +68,9 @@ export const NewProbe = () => {
         onSubmit={handleSubmit}
         probe={probe}
         submitText="Add new probe"
-        supportingContent={<SettingUpAProbe />}
+        supportingContent={<SupportingContent />}
       />
-      <ProbeTokenModal
+      <ProbeSetupModal
         isOpen={showTokenModal}
         actionText="Go back to probes list"
         onDismiss={() => {
@@ -86,21 +83,14 @@ export const NewProbe = () => {
   );
 };
 
-const SettingUpAProbe = () => {
-  const theme = useTheme2();
-  const [address, description] = useBackendAddress(true);
-
+const SupportingContent = () => {
   return (
-    <div>
-      <Label description={description}>Backend address</Label>
-      <Preformatted>{address}</Preformatted>
-      <DocsLink article="addPrivateProbe" className={css({ marginBottom: theme.spacing(2) })}>
-        Learn how to run a private probe
-      </DocsLink>
+    <Stack direction="column" gap={2}>
+      <ProbeAPIServer />
       <Alert severity="info" title="Note">
         You must reconfigure any existing checks to use your new probe even if you selected all probes when initially
         creating the check.
       </Alert>
-    </div>
+    </Stack>
   );
 };

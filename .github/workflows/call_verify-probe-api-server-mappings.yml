@@ -78,11 +78,11 @@ jobs:
               message += '⚠️ **Note:** No detailed output captured from verification script.\n\n';
             }
 
-            message += 'To fix this, please run the verification script locally:\n';
+            message += 'To fix this, please run the probe mappings build script locally and verify the changes:\n';
             message += '```bash\n';
-            message += 'yarn verify:probe-api-mappings\n';
+            message += 'yarn build:probe-api-mappings && yarn verify:probe-api-mappings\n';
             message += '```\n\n';
-            message += 'You may need to update the mappings file to match the current documentation.';
+
 
             // Look for existing comment to update
             const comments = await github.rest.issues.listComments({

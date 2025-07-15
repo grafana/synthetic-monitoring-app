@@ -20,6 +20,7 @@ export enum FaroEvent {
   REFETCH_TENANT_LIMITS = 'refetch_tenant_limits',
   INITIALIZE_ACCESS_TOKEN = 'initialize_access_token',
   UPDATE_CHECK_ALERTS = 'update_check_alerts',
+  NO_PROBE_MAPPING_FOUND = 'no_probe_mapping_found',
 }
 
 export enum FaroEnv {
@@ -56,7 +57,6 @@ export function reportEvent(type: FaroEvent, info: Record<string, string> = {}) 
   try {
     faro.api?.pushEvent(type, attributes);
   } catch (e) {
-     
     console.error(`Failed to report event: ${type}`, e);
   }
 }

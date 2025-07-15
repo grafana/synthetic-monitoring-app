@@ -12,10 +12,16 @@
     "backendAddress": "synthetic-monitoring-api-au-southeast.grafana.net"
   },
   {
-    "region": "Australia2",
+    "region": "Australia",
     "provider": "AWS",
     "apiServerURL": "synthetic-monitoring-grpc-au-southeast-1.grafana.net:443",
     "backendAddress": "synthetic-monitoring-api-au-southeast-1.grafana.net"
+  },
+  {
+    "region": "Brazil",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-sa-east-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-sa-east-0.grafana.net"
   },
   {
     "region": "Brazil",

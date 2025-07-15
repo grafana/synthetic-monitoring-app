@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppEvents } from '@grafana/data';
+import { AppEvents, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css, cx } from '@emotion/css';
@@ -7,17 +7,7 @@ import { css, cx } from '@emotion/css';
 import { Preformatted } from '../Preformatted';
 import { CopyToClipboard } from './CopyToClipboard';
 
-const getStyles = () => ({
-  container: css`
-    display: flex;
-    flex-direction: column;
-  `,
-  button: css`
-    margin-left: auto;
-  `,
-});
-
-interface Props {
+interface ClipboardProps {
   content: string;
   className?: string;
   truncate?: boolean;
@@ -25,7 +15,7 @@ interface Props {
   isCode?: boolean;
 }
 
-export function Clipboard({ content, className, truncate, highlight, isCode }: Props) {
+export function Clipboard({ content, className, truncate, highlight, isCode }: ClipboardProps) {
   const styles = useStyles2(getStyles);
 
   return (
@@ -48,3 +38,14 @@ export function Clipboard({ content, className, truncate, highlight, isCode }: P
     </div>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.spacing(2)};
+  `,
+  button: css`
+    margin-left: auto;
+  `,
+});
