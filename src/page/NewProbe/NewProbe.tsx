@@ -7,7 +7,7 @@ import { AppRoutes } from 'routing/types';
 import { type AddProbeResult } from 'datasource/responses.types';
 import { useCreateProbe } from 'data/useProbes';
 import { useNavigation } from 'hooks/useNavigation';
-import { ProbeAPIServer } from 'components/ProbeAPIServer/ProbeAPIServer';
+import { ProbeAPIServer } from 'components/ProbeAPIServer';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeSetupModal } from 'components/ProbeSetupModal';
 

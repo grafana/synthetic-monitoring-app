@@ -5,7 +5,7 @@ import { Alert, Space, TextLink } from '@grafana/ui';
 import { getUserPermissions } from 'data/permissions';
 import { useMeta } from 'hooks/useMeta';
 import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
-import { ProbeAPIServer } from 'components/ProbeAPIServer/ProbeAPIServer';
+import { ProbeAPIServer } from 'components/ProbeAPIServer';
 
 import { ConfigContent } from '../ConfigContent';
 
