@@ -7,6 +7,7 @@ import { Box } from '@grafana/ui';
 import { Check } from 'types';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { DataRow } from 'scenes/Common/AssertionsTable.types';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 interface AssertionTableRowProps extends ExpanderComponentProps<DataRow> {
@@ -56,9 +57,14 @@ export function AssertionTableRow({ check, data }: AssertionTableRowProps) {
 
   const viz = VizConfigBuilders.timeseries().setUnit('percentunit').setMax(1).build();
 
+  const menu = useVizPanelMenu({
+    data: dataProvider.useState(),
+    viz,
+  });
+
   return (
     <Box padding={2} height={`300px`}>
-      <VizPanel title={`Success rate by probe for ${data.name}`} viz={viz} dataProvider={dataProvider} />
+      <VizPanel menu={menu} title={`Success rate by probe for ${data.name}`} viz={viz} dataProvider={dataProvider} />
     </Box>
   );
 }
