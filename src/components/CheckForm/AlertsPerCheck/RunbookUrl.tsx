@@ -4,16 +4,15 @@ import { InlineField, InlineFieldRow, Input, Text, useStyles2 } from '@grafana/u
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { getAlertItemStyles } from './AlertItem';
 
 interface RunbookUrlProps {
   alertType: CheckAlertType;
   selected: boolean;
+  disabled?: boolean;
 }
 
-export const RunbookUrl = ({ alertType, selected }: RunbookUrlProps) => {
-  const { isFormDisabled } = useCheckFormContext();
+export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrlProps) => {
   const { control, formState } = useFormContext<CheckFormValues>();
   const styles = useStyles2(getAlertItemStyles);
 
@@ -42,7 +41,7 @@ export const RunbookUrl = ({ alertType, selected }: RunbookUrlProps) => {
               id={`alert-runbook-url-${alertType}`}
               data-testid={`alert-runbook-url-${alertType}`}
               placeholder="https://example.com/runbook"
-              disabled={!selected || isFormDisabled}
+              disabled={!selected || disabled}
               width={40}
             />
           )}
@@ -51,4 +50,3 @@ export const RunbookUrl = ({ alertType, selected }: RunbookUrlProps) => {
     </InlineFieldRow>
   );
 };
-

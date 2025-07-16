@@ -106,7 +106,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
-      <RunbookUrl alertType={alert.type} selected={selected} />
+      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
     </Stack>
   );
 };
