@@ -27,14 +27,13 @@ import { RequestQueryParams } from './RequestQueryParams';
 interface HttpRequestProps<T extends CheckFormValuesHttp | CheckFormValuesMultiHttp> {
   disabled?: boolean;
   fields: HttpRequestFields<T>;
-  onTest?: () => void;
   onError?: () => void;
 }
 
 export const HttpRequest = forwardRef<
   HandleErrorRef,
   HttpRequestProps<CheckFormValuesMultiHttp> | HttpRequestProps<CheckFormValuesHttp>
->(({ disabled, fields, onTest }, handleErrorRef) => {
+>(({ disabled, fields }, handleErrorRef) => {
   const [showQueryParams, setShowQueryParams] = useState(false);
   const { control, setValue, watch } = useFormContext();
   const id = `request-method-${fields.method.name}`;
@@ -98,7 +97,6 @@ export const HttpRequest = forwardRef<
               )
             }
           />
-          <Request.Test disabled={!parsedURL} onClick={onTest} />
         </div>
       </Request.Field>
       {showQueryParams && (

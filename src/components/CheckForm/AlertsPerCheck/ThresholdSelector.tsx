@@ -6,7 +6,6 @@ import { useDebounceCallback } from 'usehooks-ts';
 
 import { CheckFormValues } from 'types';
 
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
 interface ThresholdSelectorProps {
@@ -15,10 +14,8 @@ interface ThresholdSelectorProps {
 }
 
 export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, selected }) => {
-  const { isFormDisabled } = useCheckFormContext();
-
   const { formState, control } = useFormContext<CheckFormValues>();
-
+  const isFormDisabled = formState.disabled;
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
 
   const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);

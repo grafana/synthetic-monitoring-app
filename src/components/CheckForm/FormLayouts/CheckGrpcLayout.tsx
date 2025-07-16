@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesGRPC, CheckType } from 'types';
@@ -7,8 +8,6 @@ import { GRPCRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { GRPCRequest } from 'components/CheckEditor/FormComponents/GRPCRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
-
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const GRPC_REQUEST_FIELDS: GRPCRequestFields = {
   target: {
@@ -49,15 +48,12 @@ export const GRPC_REQUEST_FIELDS: GRPCRequestFields = {
 };
 
 const CheckGRPCRequest = () => {
-  const { isFormDisabled, supportingContent } = useCheckFormContext();
-  const { addRequest } = supportingContent;
   const { handleErrorRef } = useNestedRequestErrors(GRPC_REQUEST_FIELDS);
+  const {
+    formState: { disabled: isFormDisabled },
+  } = useFormContext();
 
-  const onTest = useCallback(() => {
-    addRequest(GRPC_REQUEST_FIELDS);
-  }, [addRequest]);
-
-  return <GRPCRequest disabled={isFormDisabled} fields={GRPC_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
+  return <GRPCRequest disabled={isFormDisabled} fields={GRPC_REQUEST_FIELDS} ref={handleErrorRef} />;
 };
 
 export const GRPCCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesGRPC>>> = {

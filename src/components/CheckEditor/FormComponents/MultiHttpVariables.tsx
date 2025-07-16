@@ -5,15 +5,14 @@ import { Button, Field, IconButton, Input, Select, Stack, useStyles2 } from '@gr
 import { css } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 
 export const MultiHttpVariables = ({ index }: { index: number }) => {
   const styles = useStyles2(getStyles);
-  const { isFormDisabled } = useCheckFormContext();
   const variableFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.variables`;
   const { control, formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
   const { append, fields, remove } = useFieldArray<CheckFormValuesMultiHttp>({ control, name: variableFieldName });
+  const isFormDisabled = formState.disabled;
 
   return (
     <Stack direction={`column`}>

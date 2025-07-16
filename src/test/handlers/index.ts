@@ -94,7 +94,7 @@ export function getServerRequests() {
     try {
       body = await request?.json();
     } catch (e) {
-      // eslint-disable-next-line no-console
+       
       console.error(e);
     }
 

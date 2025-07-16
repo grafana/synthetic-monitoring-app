@@ -12,7 +12,6 @@ import {
   HttpRegexValidationFormValue,
   HttpRegexValidationType,
 } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { HTTP_REGEX_VALIDATION_OPTIONS } from 'components/constants';
 
 const REGEX_FIELD_NAME = 'settings.http.regexValidations';
@@ -23,9 +22,8 @@ export const HttpCheckRegExValidation = () => {
     control,
     register,
     watch,
-    formState: { errors },
+    formState: { errors, disabled: isFormDisabled },
   } = useFormContext<CheckFormValuesHttp>();
-  const { isFormDisabled } = useCheckFormContext();
   const { fields, append, remove } = useFieldArray<CheckFormValuesHttp>({ control, name: REGEX_FIELD_NAME });
   const disallowBodyMatching = watch('settings.http.method') === HttpMethod.HEAD;
   const options = disallowBodyMatching

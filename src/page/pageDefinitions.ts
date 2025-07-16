@@ -29,7 +29,7 @@ const pages: NavModelItem[] = [
     url: `${PLUGIN_URL_PATH}probes`,
   },
   {
-    text: 'Alerts',
+    text: 'Alerts (Legacy)',
     id: 'alerts',
     url: `${PLUGIN_URL_PATH}alerts`,
   },

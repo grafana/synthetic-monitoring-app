@@ -1,0 +1,38 @@
+name: Publish TechDocs
+on:
+  workflow_call:
+
+concurrency:
+  group: '${{ github.workflow }}-${{ github.ref }}'
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs-changed: ${{ steps.changes.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+        id: changes
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'mkdocs.yml'
+              - 'catalog-info.yaml'
+
+  publish-docs:
+    needs: check-changes
+    if: needs.check-changes.outputs.docs-changed == 'true'
+    uses: grafana/shared-workflows/.github/workflows/publish-techdocs.yaml@main
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      namespace: default
+      kind: component
+      name: synthetic-monitoring-app
+      default-working-directory: .
