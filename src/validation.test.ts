@@ -21,6 +21,7 @@ describe('http', () => {
     expect(validateHttpTarget('https://hostname/')).toEqual('Target must have a valid hostname');
     expect(validateHttpTarget('https://suraj/dev')).toEqual('Target must have a valid hostname');
   });
+
   it('should reject URLs without schema', () => {
     const testcases: string[] = ['example.org'];
     testcases.forEach((testcase: string) => {
@@ -133,7 +134,7 @@ describe('DNS', () => {
 
   it('should reject dns targets with invalid characters', async () => {
     expect(validateDomain('x=y.org')).toBe(
-      'Invalid character in domain name. Only letters, numbers and "-" are allowed'
+      'Invalid character in domain name. Only letters, numbers, underscores and "-" are allowed'
     );
   });
 
@@ -151,6 +152,23 @@ describe('DNS', () => {
 
   it('should accept valid hostnames', () => {
     expect(validateDomain('grafana.com')).toBe(undefined);
+  });
+
+  it(`should accept valid hostnames that start with an underscore`, () => {
+    expect(validateDomain('hello._grafana.com')).toBe(undefined);
+  });
+
+  it(`should reject hostnames that end or start with a hyphen`, () => {
+    expect(validateDomain('-hello.com')).toBe('A domain element must begin with a letter, number or underscore');
+    expect(validateDomain('hello-.com')).toBe('A domain element must end with a letter, number or underscore');
+  });
+
+  it(`should accept hostnames that contain hyphens`, () => {
+    expect(validateDomain('hello-world.com')).toBe(undefined);
+  });
+
+  it(`should accept hostnames that contain underscores`, () => {
+    expect(validateDomain('hello_world.com')).toBe(undefined);
   });
 });
 
