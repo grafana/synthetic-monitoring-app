@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { LoadingState } from '@grafana/data';
+import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { FrameGeometrySourceMode, ThresholdsMode } from '@grafana/schema';
@@ -11,7 +10,6 @@ import { useVizPanelMenu } from './useVizPanelMenu';
 
 export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
   const metricsDS = useMetricsDS();
-  const [hasLoaded, setHasLoaded] = useState(false);
 
   function getErrorMapQueries(minStep: string) {
     return [
@@ -163,12 +161,6 @@ export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
 
   const data = dataProvider.useState();
 
-  useEffect(() => {
-    if (data?.data?.state === LoadingState.Done && !hasLoaded) {
-      setHasLoaded(true);
-    }
-  }, [data, hasLoaded]);
-
   const viz = VizConfigBuilders.geomap()
     .setUnit('percentunit')
     .setOption('basemap', {
@@ -267,7 +259,7 @@ export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
     variables: ['job', 'probe', 'instance'],
   });
 
-  if (!hasLoaded) {
+  if (!dataTransformer.isDataReadyToDisplay()) {
     return <LoadingPlaceholder text="Loading..." />;
   }
 
