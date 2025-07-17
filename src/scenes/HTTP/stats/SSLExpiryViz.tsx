@@ -4,8 +4,7 @@ import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
-
-import { useVizPanelMenu } from '../useVizPanelMenu';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const SSLExpiry = () => {
   const metricsDS = useMetricsDS();

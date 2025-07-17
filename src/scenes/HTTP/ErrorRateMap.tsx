@@ -6,8 +6,7 @@ import { FrameGeometrySourceMode, ThresholdsMode } from '@grafana/schema';
 import { LoadingPlaceholder } from '@grafana/ui';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
-
-import { useVizPanelMenu } from './useVizPanelMenu';
+import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const ErrorRateMap = ({ minStep }: { minStep: string }) => {
   const metricsDS = useMetricsDS();

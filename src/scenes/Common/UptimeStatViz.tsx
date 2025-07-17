@@ -2,70 +2,80 @@ import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
+import { getUptimeQuery } from 'queries/uptime';
 
+import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { UPTIME_DESCRIPTION } from 'components/constants';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
-export const Frequency = () => {
+export const UptimeStat = ({ check }: { check: Check }) => {
   const metricsDS = useMetricsDS();
+
+  const uptimeQuery = getUptimeQuery({
+    job: `$job`,
+    instance: `$instance`,
+    probe: `$probe`,
+    frequency: check.frequency,
+  });
 
   const queries = [
     {
-      expr: `sum by (frequency) (
-          topk(
-              1,
-              sm_check_info{instance="$instance", job="$job", probe=~"$probe"}
-          )
-        )`,
-
+      expr: uptimeQuery.expr,
+      exemplar: true,
+      hide: false,
       instant: false,
-      refId: 'D',
+      range: true,
+      interval: uptimeQuery.interval,
+      legendFormat: '',
+      refId: 'B',
     },
   ];
 
   const dataProvider = useQueryRunner({
     queries,
-    maxDataPoints: 10,
     datasource: metricsDS,
   });
 
+  const transformation = {
+    id: 'reduce',
+    options: {
+      reducers: ['mean'],
+    },
+  };
+
   const dataTransformer = useDataTransformer({
-    transformations: [
-      {
-        id: 'labelsToFields',
-        options: {},
-      },
-      {
-        id: 'merge',
-        options: {},
-      },
-    ],
+    transformations: [transformation],
     data: dataProvider,
   });
 
   const viz = VizConfigBuilders.stat()
     .setOption('graphMode', BigValueGraphMode.None)
-    .setUnit('ms')
-    .setNoValue('N/A')
-    .setColor({ mode: 'fixed', fixedColor: 'green' })
-    .setOption('reduceOptions', { values: false, calcs: ['lastNotNull'], fields: '/^frequency$/' })
+    .setUnit('percentunit')
+    .setOption('reduceOptions', {
+      calcs: ['mean'],
+      fields: '',
+      values: false,
+    })
+    .setDecimals(2)
     .setThresholds({
       mode: ThresholdsMode.Absolute,
       steps: [
         {
-          color: 'green',
+          color: 'red',
           value: 0,
         },
         {
-          color: 'yellow',
-          value: 1,
+          color: '#EAB839',
+          value: 0.99,
         },
         {
-          color: 'red',
-          value: 2,
+          color: 'green',
+          value: 0.995,
         },
       ],
     })
+    .setNoValue('N/A')
     .build();
 
   const data = dataProvider.useState();
@@ -79,12 +89,6 @@ export const Frequency = () => {
   });
 
   return (
-    <VizPanel
-      menu={menu}
-      title="Frequency"
-      viz={viz}
-      dataProvider={dataTransformer}
-      description={'How often is the target checked?'}
-    />
+    <VizPanel menu={menu} title="Uptime" viz={viz} dataProvider={dataTransformer} description={UPTIME_DESCRIPTION} />
   );
 };

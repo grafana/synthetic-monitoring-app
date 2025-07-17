@@ -3,26 +3,32 @@ import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
+import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { REACHABILITY_DESCRIPTION } from 'components/constants';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
+import { getMinStepFromFrequency } from 'scenes/utils';
 
-export const AvgLatency = () => {
+export const ReachabilityStat = ({ check }: { check: Check }) => {
   const metricsDS = useMetricsDS();
+  const minStep = getMinStepFromFrequency(check.frequency);
 
   const queries = [
     {
-      expr: `sum(rate(probe_all_duration_seconds_sum{probe=~"$probe", instance="$instance", job="$job"}[$__rate_interval]))`,
+      expr: `sum(rate(probe_all_success_sum{instance="$instance", job="$job", probe=~".*"}[$__rate_interval]))`,
       hide: false,
       instant: false,
       legendFormat: 'sum',
+      interval: minStep,
       range: true,
       refId: 'A',
     },
     {
       exemplar: true,
-      expr: `sum(rate(probe_all_duration_seconds_count{probe=~"$probe", instance="$instance", job="$job"}[$__rate_interval]))`,
+      expr: `sum(rate(probe_all_success_count{instance="$instance", job="$job", probe=~".*"}[$__rate_interval]))`,
       hide: false,
       instant: false,
+      interval: minStep,
       legendFormat: 'count',
       range: true,
       refId: 'B',
@@ -31,7 +37,6 @@ export const AvgLatency = () => {
 
   const dataProvider = useQueryRunner({
     queries,
-    maxDataPoints: 10,
     datasource: metricsDS,
   });
 
@@ -87,7 +92,7 @@ export const AvgLatency = () => {
 
   const viz = VizConfigBuilders.stat()
     .setOption('graphMode', BigValueGraphMode.None)
-    .setUnit('s')
+    .setUnit('percentunit')
     .setDecimals(2)
     .setMin(0)
     .setMax(1)
@@ -96,16 +101,16 @@ export const AvgLatency = () => {
       mode: ThresholdsMode.Absolute,
       steps: [
         {
-          color: 'green',
+          color: 'red',
           value: 0,
         },
         {
-          color: 'yellow',
-          value: 1,
+          color: '#EAB839',
+          value: 0.99,
         },
         {
-          color: 'red',
-          value: 2,
+          color: 'green',
+          value: 0.995,
         },
       ],
     })
@@ -123,11 +128,11 @@ export const AvgLatency = () => {
 
   return (
     <VizPanel
-      title="Average latency"
+      menu={menu}
+      title="Reachability"
       viz={viz}
       dataProvider={dataTransformer}
-      description={'The average time to receive an answer across all the checks during the whole time period.'}
-      menu={menu}
+      description={REACHABILITY_DESCRIPTION}
     />
   );
 };
