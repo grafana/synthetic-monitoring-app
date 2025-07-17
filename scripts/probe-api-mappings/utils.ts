@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom';
 
 export const DOCUMENTATION_URL =
   'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#add-a-new-probe-in-your-grafana-instance';
-export const MAPPINGS_FILE = 'src/page/NewProbe/probeAPIServerMappings.json';
+export const MAPPINGS_FILE = 'src/data/probeAPIServerMappings.json';
 
 export interface ProbeMapping {
   region: string;

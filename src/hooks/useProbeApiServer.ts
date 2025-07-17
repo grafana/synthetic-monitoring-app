@@ -1,5 +1,5 @@
+import probeMappings from 'data/probeAPIServerMappings.json';
 import { useBackendAddress } from 'hooks/useBackendAddress';
-import probeMappings from 'page/NewProbe/probeAPIServerMappings.json';
 
 export const GRAFANA_DEV_ENTRY = {
   backendAddress: 'synthetic-monitoring-api-dev.grafana-dev.net',
