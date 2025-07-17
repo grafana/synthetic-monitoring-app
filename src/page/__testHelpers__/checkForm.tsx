@@ -13,6 +13,8 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
 
+import { FormStepOrder } from '../../components/CheckForm/constants';
+
 export const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',
   [CheckType.GRPC]: 'grafana.com:50051',
@@ -80,11 +82,11 @@ export async function renderEditForm(id: Check['id']) {
   };
 }
 
-export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 | 5) {
+export async function goToSectionV2(user: UserEvent, section: FormStepOrder) {
   const formSidebar = await screen.findByTestId('form-sidebar');
-  const buttons = formSidebar.querySelectorAll('button');
+  const buttons = await within(formSidebar).findAllByRole('button');
 
-  const targetButton = buttons[sectionIndex - 1];
+  const targetButton = buttons[section];
 
   await user.click(targetButton);
 }
