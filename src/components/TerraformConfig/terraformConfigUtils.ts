@@ -60,6 +60,8 @@ const settingsToTF = (check: Check): TFCheckSettings => {
     return {
       http: {
         method: check.settings.http.method,
+        body: check.settings.http.body,
+        headers: check.settings.http.headers,
         compression: check.settings.http.compression,
         basic_auth: check.settings.http.basicAuth,
         bearer_token: check.settings.http.bearerToken,
