@@ -1,8 +1,5 @@
 [
   {
-    "region": "Neverland"
-  },
-  {
     "region": "Amsterdam",
     "provider": "Azure",
     "apiServerURL": "synthetic-monitoring-grpc-eu-west-3.grafana.net:443",
