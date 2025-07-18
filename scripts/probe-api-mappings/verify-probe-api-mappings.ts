@@ -26,7 +26,9 @@ async function main(): Promise<void> {
   } else {
     console.log('❌ Probe API server mappings are outdated!');
     displayDifferences(currentMappings, documentationMappings);
-    console.log('\n💡 Please update the probeAPIServerMappings.json file to match the documentation.');
+    console.log(
+      '\n💡 Please update the probeAPIServerMappings.json file to match the documentation by running `yarn build:probe-api-mappings`'
+    );
     process.exit(1);
   }
 }

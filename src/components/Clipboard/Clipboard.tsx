@@ -13,13 +13,19 @@ interface ClipboardProps {
   truncate?: boolean;
   highlight?: string | string[];
   isCode?: boolean;
+  inlineCopy?: boolean;
 }
 
-export function Clipboard({ content, className, truncate, highlight, isCode }: ClipboardProps) {
+export function Clipboard({ content, className, truncate, highlight, isCode, inlineCopy = false }: ClipboardProps) {
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={cx(styles.container, className)}>
+    <div
+      className={cx(className, {
+        [styles.inlineCopy]: inlineCopy,
+        [styles.outsideCopy]: !inlineCopy,
+      })}
+    >
       <Preformatted isCode={isCode} highlight={highlight} data-testid="clipboard-content">
         {truncate ? content.slice(0, 150) + '...' : content}
       </Preformatted>
@@ -34,16 +40,22 @@ export function Clipboard({ content, className, truncate, highlight, isCode }: C
         onClipboardError={(err) => {
           appEvents.emit(AppEvents.alertError, [`Failed to copy to clipboard: ${err}`]);
         }}
+        iconButton={inlineCopy}
       />
     </div>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css`
+  outsideCopy: css`
     display: flex;
     flex-direction: column;
     gap: ${theme.spacing(2)};
+  `,
+  inlineCopy: css`
+    display: flex;
+    align-items: center;
+    gap: ${theme.spacing(1)};
   `,
   button: css`
     margin-left: auto;

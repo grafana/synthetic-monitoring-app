@@ -5,12 +5,13 @@ import { css } from '@emotion/css';
 import { FaroEvent, reportError } from 'faro';
 import { useBackendAddress } from 'hooks/useBackendAddress';
 import { useProbeApiServer } from 'hooks/useProbeApiServer';
+import { Clipboard } from 'components/Clipboard';
 import { DocsLink } from 'components/DocsLink';
-import { Preformatted } from 'components/Preformatted';
 
 export const ProbeAPIServer = () => {
   const theme = useTheme2();
   const probeAPIServer = useProbeApiServer();
+
   const backendAddress = useBackendAddress();
 
   return (
@@ -21,7 +22,11 @@ export const ProbeAPIServer = () => {
         the region of your stack. This is the value you will need to set in the <code>API_SERVER</code> environment
         variable when setting up a private probe.
       </Text>
-      {probeAPIServer ? <Preformatted>{probeAPIServer}</Preformatted> : <NoProbeAPIServer />}
+      {probeAPIServer ? (
+        <Clipboard content={probeAPIServer} inlineCopy />
+      ) : (
+        <NoProbeAPIServer backendAddress={backendAddress} />
+      )}
       <Stack direction="column" gap={0.5}>
         <Text variant="bodySmall" italic>
           Your backend address is:
@@ -37,14 +42,14 @@ export const ProbeAPIServer = () => {
   );
 };
 
-const NoProbeAPIServer = () => {
+const NoProbeAPIServer = ({ backendAddress }: { backendAddress: string }) => {
   useEffect(() => {
     reportError(FaroEvent.NO_PROBE_MAPPING_FOUND);
   }, []);
 
   return (
     <Alert severity="error" title="No probe API server found">
-      No probe API server found. You can find the correct value by cross-referencing your backend address with the{' '}
+      You can find the correct value by cross-referencing your backend address ({`${backendAddress}`}) with the{' '}
       <TextLink
         external
         href={`https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#probe-api-server-url`}
