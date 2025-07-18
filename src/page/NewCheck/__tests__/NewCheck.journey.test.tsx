@@ -278,7 +278,7 @@ describe(`<NewCheck /> journey`, () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it(`should redirect to check dashboard when the check is created`, async () => {
+  it(`should redirect to check the dashboard when the check is created`, async () => {
     const { user } = await renderNewForm(CheckType.HTTP);
 
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });

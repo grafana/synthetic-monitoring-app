@@ -70,7 +70,7 @@ describe(`<EditCheck />`, () => {
     expect(await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeEnabled();
   });
 
-  it(`should redirect to check dashboard when the check is created`, async () => {
+  it(`should redirect to the check dashboard when the check is updated`, async () => {
     const { user } = await renderEditForm(BASIC_DNS_CHECK.id);
 
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
