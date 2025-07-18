@@ -1,5 +1,6 @@
 import { BaseSyntheticEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { ZodType } from 'zod';
@@ -16,6 +17,7 @@ import {
 } from '../../types';
 import { LayoutSection } from './FormLayouts/Layout.types';
 import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
 import { queryClient } from 'data/queryClient';
@@ -25,7 +27,6 @@ import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs } from 'hooks/useDSPermission';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useLimits } from 'hooks/useLimits';
-import { useNavigation } from 'hooks/useNavigation';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
@@ -117,12 +118,15 @@ interface UseCheckFormProps {
 
 export function useCheckForm({ check, checkType, checkState, onTestSuccess }: UseCheckFormProps) {
   const [submittingToApi, setSubmittingToApi] = useState(false);
-  const navigate = useNavigation();
+  const navigate = useNavigate();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
   const testButtonRef = useRef<HTMLButtonElement>(null);
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
-  const navigateToChecks = useCallback(() => navigate(AppRoutes.Checks), [navigate]);
+  const navigateToChecks = useCallback(
+    (result: Check) => navigate(generateRoutePath(AppRoutes.EditCheck, { id: result.id! })),
+    [navigate]
+  );
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
   const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
@@ -137,7 +141,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
           await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
         }
 
-        navigateToChecks();
+        navigateToChecks(result);
       } finally {
         queryClient.invalidateQueries({ queryKey: queryKeys.list });
       }

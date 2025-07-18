@@ -1,11 +1,13 @@
 import { screen } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
-import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
-import { renderEditForm } from 'page/__testHelpers__/checkForm';
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
+import { renderEditForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 describe(`<EditCheck />`, () => {
   it(`renders the can't find check modal when given a bad check id`, async () => {
@@ -66,5 +68,17 @@ describe(`<EditCheck />`, () => {
   it(`disables the save button when no edits have been made`, async () => {
     await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeEnabled();
+  });
+
+  it(`should redirect to check dashboard when the check is created`, async () => {
+    const { user } = await renderEditForm(BASIC_DNS_CHECK.id);
+
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+    await user.type(jobNameInput, `updated job name`);
+
+    await submitForm(user);
+
+    const pathInfo = await screen.findByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME);
+    expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
   });
 });

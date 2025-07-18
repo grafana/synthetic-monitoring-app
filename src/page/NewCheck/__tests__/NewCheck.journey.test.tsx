@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
+import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
@@ -11,6 +12,8 @@ import {
 } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
 import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
@@ -273,6 +276,19 @@ describe(`<NewCheck /> journey`, () => {
 
     await goToSection(user, 5);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it(`should redirect to check dashboard when the check is created`, async () => {
+    const { user } = await renderNewForm(CheckType.HTTP);
+
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+    await user.type(jobNameInput, `   my job name   `);
+
+    await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['job'] });
+    await submitForm(user);
+
+    const pathInfo = await screen.findByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME);
+    expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.EditCheck, { id: BASIC_HTTP_CHECK.id! }));
   });
 
   // jsdom doesn't give us back the submitter of the form, so we can't test this
