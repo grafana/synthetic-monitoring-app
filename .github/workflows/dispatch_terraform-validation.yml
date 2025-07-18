@@ -1,0 +1,124 @@
+name: Terraform Configuration Validation
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  pull_request:
+  push:
+    branches: [feat-terraform-validation]
+
+jobs:
+  validate-terraform-generation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.0"
+      
+      - name: Generate test Terraform configs
+        run: yarn terraform:generate-test-config
+      
+      - name: Validate generated Terraform
+        id: terraform-validate
+        run: |
+          cd test-terraform-output
+          terraform init
+          # Capture output and exit code
+          if terraform validate > terraform_output.txt 2>&1; then
+            echo "validation_result=success" >> $GITHUB_OUTPUT
+            echo "Terraform validation passed ✅"
+          else
+            echo "validation_result=failed" >> $GITHUB_OUTPUT
+            echo "Terraform validation failed ❌"
+            cat terraform_output.txt
+            exit 1
+          fi
+        continue-on-error: true
+      
+      - name: Comment PR with validation results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const validationResult = '${{ steps.terraform-validate.outputs.validation_result }}';
+            
+            if (validationResult === 'success') {
+              const successMessage = `## 🎉 Terraform Configuration Validation Passed
+            
+            ✅ All generated terraform configurations are valid and compatible with the Grafana provider schema.
+            
+            **Validated Resources:**
+            - \`grafana_synthetic_monitoring_check\` (HTTP, DNS, TCP, Ping, MultiHTTP, Scripted, Traceroute)
+            - \`grafana_synthetic_monitoring_probe\` (Public, Private, Online, Offline)
+            - \`grafana_synthetic_monitoring_check_alerts\` (Alert configurations)
+            
+            The terraform export functionality will work correctly with these changes.`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: successMessage
+              });
+            } else {
+              const outputPath = path.join('test-terraform-output', 'terraform_output.txt');
+              let errorOutput = 'Error details not available';
+              
+              try {
+                errorOutput = fs.readFileSync(outputPath, 'utf8');
+              } catch (error) {
+                console.log('Could not read terraform output file:', error);
+              }
+              
+              const failureMessage = `## ❌ Terraform Configuration Validation Failed
+            
+            The generated terraform configurations have schema compatibility issues with the Grafana provider.
+            
+            **⚠️ These issues would cause terraform operations to fail in production.**
+            
+            ### Validation Errors:
+            \`\`\`
+            ${errorOutput}
+            \`\`\`
+            
+            ### 🔧 How to Fix:
+            1. Check the field naming (camelCase vs snake_case mismatches)
+            2. Ensure all required fields are present
+            3. Verify data types match the provider schema
+            4. Update the transformation functions in \`src/components/TerraformConfig/\`
+            
+            ### 📁 Files to check:
+            - \`src/components/TerraformConfig/terraformConfigUtils.ts\`
+            - \`src/components/TerraformConfig/terraformMultiHTTPConfigUtils.ts\`
+            - \`src/hooks/useTerraformConfig.ts\`
+            
+            Once fixed, the validation will pass and terraform exports will work correctly.`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: failureMessage
+              });
+            }
+      
+      - name: Fail job if validation failed
+        if: steps.terraform-validate.outputs.validation_result == 'failed'
+        run: exit 1 
