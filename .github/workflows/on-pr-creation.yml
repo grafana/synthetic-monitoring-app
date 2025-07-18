@@ -53,6 +53,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     uses: ./.github/workflows/call_verify-probe-api-server-mappings.yml
 
   danger-js:
