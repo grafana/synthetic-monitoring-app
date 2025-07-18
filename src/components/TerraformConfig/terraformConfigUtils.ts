@@ -1,3 +1,5 @@
+import { fromBase64 } from 'js-base64';
+
 import { Check, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
 import {
   isBrowserCheck,
@@ -10,7 +12,6 @@ import {
   isTCPCheck,
   isTracerouteCheck,
 } from 'utils.types';
-import { fromBase64 } from 'utils';
 
 import { mapAssertionsToTF, mapRequestBodyToTF, mapVariablesToTF } from './terraformMultiHTTPConfigUtils';
 import { TFCheck, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
