@@ -5,6 +5,7 @@
   "scripts": {
     "analytics-events:generate": "node --experimental-strip-types ./scripts/analytics/main.mts",
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
+    "build:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/build-probe-api-mappings.ts",
     "build": "webpack -c webpack.config.ts --env production",
     "danger:ci": "yarn danger ci --dangerfile danger/dangerfile.ts",
     "danger:pr": "yarn danger pr --dangerfile danger/dangerfile.ts",
@@ -24,7 +25,8 @@
     "test:changed": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4 --bail",
     "test": "jest --all",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/verify-probe-api-mappings.ts"
   },
   "author": "Grafana Labs",
   "license": "Apache-2.0",

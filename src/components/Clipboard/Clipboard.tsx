@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppEvents } from '@grafana/data';
+import { AppEvents, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css, cx } from '@emotion/css';
@@ -7,29 +7,25 @@ import { css, cx } from '@emotion/css';
 import { Preformatted } from '../Preformatted';
 import { CopyToClipboard } from './CopyToClipboard';
 
-const getStyles = () => ({
-  container: css`
-    display: flex;
-    flex-direction: column;
-  `,
-  button: css`
-    margin-left: auto;
-  `,
-});
-
-interface Props {
+interface ClipboardProps {
   content: string;
   className?: string;
   truncate?: boolean;
   highlight?: string | string[];
   isCode?: boolean;
+  inlineCopy?: boolean;
 }
 
-export function Clipboard({ content, className, truncate, highlight, isCode }: Props) {
+export function Clipboard({ content, className, truncate, highlight, isCode, inlineCopy = false }: ClipboardProps) {
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={cx(styles.container, className)}>
+    <div
+      className={cx(className, {
+        [styles.inlineCopy]: inlineCopy,
+        [styles.outsideCopy]: !inlineCopy,
+      })}
+    >
       <Preformatted isCode={isCode} highlight={highlight} data-testid="clipboard-content">
         {truncate ? content.slice(0, 150) + '...' : content}
       </Preformatted>
@@ -44,7 +40,24 @@ export function Clipboard({ content, className, truncate, highlight, isCode }: P
         onClipboardError={(err) => {
           appEvents.emit(AppEvents.alertError, [`Failed to copy to clipboard: ${err}`]);
         }}
+        iconButton={inlineCopy}
       />
     </div>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  outsideCopy: css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.spacing(2)};
+  `,
+  inlineCopy: css`
+    display: flex;
+    align-items: center;
+    gap: ${theme.spacing(1)};
+  `,
+  button: css`
+    margin-left: auto;
+  `,
+});
