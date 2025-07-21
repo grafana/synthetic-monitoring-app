@@ -6,8 +6,6 @@ permissions:
 
 on:
   pull_request:
-  push:
-    branches: [feat-terraform-validation]
 
 jobs:
   validate-terraform-generation:
@@ -15,14 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'yarn'
-      
-      - name: Install dependencies
-        run: yarn install
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
