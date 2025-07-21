@@ -21,7 +21,7 @@ const baseCheckModel = ({ sequence }: { sequence: number }) => ({
   id: sequence,
   job: faker.lorem.word(),
   target: faker.internet.domainName(),
-  frequency: faker.number.int({ min: 1, max: 60 * 1000 }),
+  frequency: faker.number.int({ min: 1000, max: 60 * 1000 }),
   timeout: faker.number.int({ min: 30, max: 60 * 1000 }),
   enabled: true,
   alertSensitivity: faker.helpers.arrayElement(Object.values(AlertSensitivity)),
