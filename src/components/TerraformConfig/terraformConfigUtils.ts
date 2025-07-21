@@ -69,8 +69,16 @@ const settingsToTF = (check: Check): TFCheckSettings => {
         cache_busting_query_param_name: check.settings.http.cacheBustingQueryParamName,
         fail_if_body_matches_regexp: check.settings.http.failIfBodyMatchesRegexp,
         fail_if_body_not_matches_regexp: check.settings.http.failIfBodyNotMatchesRegexp,
-        fail_if_header_matches_regexp: check.settings.http.failIfHeaderMatchesRegexp,
-        fail_if_header_not_matches_regexp: check.settings.http.failIfHeaderNotMatchesRegexp,
+        fail_if_header_matches_regexp: check.settings.http.failIfHeaderMatchesRegexp?.map(match => ({
+          header: match.header,
+          regexp: match.regexp,
+          allow_missing: match.allowMissing?.toString(),
+        })),
+        fail_if_header_not_matches_regexp: check.settings.http.failIfHeaderNotMatchesRegexp?.map(match => ({
+          header: match.header,
+          regexp: match.regexp,
+          allow_missing: match.allowMissing?.toString(),
+        })),
         fail_if_not_ssl: check.settings.http.failIfNotSSL,
         fail_if_ssl: check.settings.http.failIfSSL,
         ip_version: check.settings.http.ipVersion,
