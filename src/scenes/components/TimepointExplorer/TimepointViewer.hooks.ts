@@ -13,10 +13,14 @@ export function useTimepointLogs(timepoint: Timepoint, job: string, instance: st
   });
 
   const { data } = props;
-  const paresedCheckLogs = data ? parseCheckLogs(data) : [];
+  const parsedCheckLogs = data ? parseCheckLogs(data) : [];
+  console.log({
+    data,
+    parsedCheckLogs,
+  });
 
   return {
     ...props,
-    data: paresedCheckLogs,
+    data: parsedCheckLogs,
   };
 }

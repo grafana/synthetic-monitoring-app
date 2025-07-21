@@ -1,0 +1,68 @@
+name: On PR Creation
+
+on:
+  pull_request:
+
+jobs:
+  setup-env-and-cache:
+    name: Setup Plugin Environment and Cache
+    permissions:
+      contents: read
+    uses: ./.github/workflows/call_env-setup.yml
+
+  lint:
+    needs: setup-env-and-cache
+    name: Lint
+    permissions:
+      contents: read
+    uses: ./.github/workflows/call_lint.yml
+
+  test:
+    needs: setup-env-and-cache
+    name: Integration and unit tests
+    permissions:
+      contents: read
+    uses: ./.github/workflows/call_integration-tests.yml
+
+  grafana-compat:
+    needs: setup-env-and-cache
+    name: Grafana API Compatibility Check
+    permissions:
+      contents: read
+    uses: ./.github/workflows/call_grafana-compat.yml
+
+  build-and-typecheck:
+    needs: setup-env-and-cache
+    name: Build and typecheck
+    permissions:
+      contents: read
+      attestations: write
+    uses: ./.github/workflows/call_build-and-typecheck.yml
+
+  validate-policy-bot:
+    needs: setup-env-and-cache
+    name: Validate Policy Bot
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/call_validate-policy-bot.yml
+
+  verify-probe-api-mappings:
+    name: Verify Probe API Server Mappings
+    needs: setup-env-and-cache
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    uses: ./.github/workflows/call_verify-probe-api-server-mappings.yml
+
+  danger-js:
+    name: DangerJS
+    needs: build-and-typecheck
+    permissions:
+      pull-requests: write
+      attestations: read
+      contents: read
+      issues: read
+      statuses: write
+    uses: ./.github/workflows/call_dangerJS.yml

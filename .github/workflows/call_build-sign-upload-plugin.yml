@@ -1,0 +1,101 @@
+name: Build, Sign, Zip and Upload Plugin
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment for the plugin (dev or prod mapped from staging/production)
+        required: true
+        type: string
+        default: dev
+    outputs:
+      plugin_version:
+        description: The version of the plugin that was built.
+        value: ${{ jobs.build-publish.outputs.plugin_version }}
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      plugin_version: ${{ steps.read-version.outputs.plugin_version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-env
+
+      - uses: grafana/shared-workflows/actions/login-to-gcs@main
+        id: login-to-gcs
+
+      - name: log some details
+        env:
+          BUCKET: ${{ steps.login-to-gcs.outputs.bucket }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          echo "bucket: $BUCKET"
+          echo "environment: $ENVIRONMENT"
+
+      - name: Get signing token from Vault
+        uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
+        with:
+          common_secrets: |
+            GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
+
+      - name: Build, Sign and Zip Plugin
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          case "$ENVIRONMENT" in
+            "dev")
+              echo "Building for development with git hash versioning"
+              make build sign package-latest generate-version
+              ;;
+            "prod")
+              echo "Building for production/staging with semantic versioning"
+              make build sign package
+              ;;
+            *)
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+              echo "Note: This workflow receives mapped values from call_deploy-plugin.yml" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Read plugin version
+        id: read-version
+        run: |
+          PLUGIN_VERSION=$(cat plugin_version.txt)
+          echo "plugin_version=${PLUGIN_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "Plugin version: ${PLUGIN_VERSION}"
+
+      - name: Validate and set bucket name
+        id: set-bucket
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          case "$ENVIRONMENT" in
+            "dev")
+              echo "bucket=grafanalabs-synthetic-monitoring-app-dev" >> "${GITHUB_OUTPUT}"
+              ;;
+            "prod")
+              echo "bucket=grafanalabs-synthetic-monitoring-app-prod" >> "${GITHUB_OUTPUT}"
+              ;;
+            *)
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
+        uses: grafana/shared-workflows/actions/push-to-gcs@main
+        with:
+          path: ./artifacts
+          bucket: ${{ steps.set-bucket.outputs.bucket }}
+          environment: ${{ inputs.environment }}
+          predefinedAcl: publicRead
+          parent: false

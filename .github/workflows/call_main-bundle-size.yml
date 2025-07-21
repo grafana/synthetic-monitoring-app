@@ -1,0 +1,31 @@
+name: Generate main bundle size
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  attestations: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Make artifacts folder
+        run: mkdir -p artifacts
+
+      - name: Build frontend and generate bundle size
+        run: yarn build --json=artifacts/mainBundleSize.json --no-devtool
+
+      - name: Upload main bundle size artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mainBundleSize
+          path: ./artifacts/mainBundleSize.json
+          overwrite: true
+          retention-days: 90

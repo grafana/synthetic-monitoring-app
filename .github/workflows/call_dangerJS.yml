@@ -1,0 +1,46 @@
+name: DangerJS
+
+on:
+  workflow_call:
+
+permissions:
+  pull-requests: write
+  attestations: read
+  contents: read
+  issues: read
+  statuses: write
+
+jobs:
+  danger-js:
+    name: DangerJS
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    permissions:
+      pull-requests: write
+      attestations: read
+      contents: read
+      issues: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Download currentBundleSize
+        uses: dawidd6/action-download-artifact@80620a5d27ce0ae443b965134db88467fc607b43 # v7
+        with:
+          name: currentBundleSize
+          path: artifacts
+
+      - name: Download mainBundleSize
+        uses: dawidd6/action-download-artifact@80620a5d27ce0ae443b965134db88467fc607b43 # v7
+        with:
+          workflow: on-push-to-main.yml
+          name: mainBundleSize
+          path: artifacts
+
+      - name: DangerJS
+        run: yarn danger:ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

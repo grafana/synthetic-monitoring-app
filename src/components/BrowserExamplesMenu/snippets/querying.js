@@ -33,6 +33,9 @@ export default async function () {
     await check(page.locator(`//header//h1[@class="title"]`), {
       'Title with XPath selector': async (locator) => (await locator.textContent()) === title,
     });
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
   } finally {
     await page.close();
   }

@@ -16,7 +16,7 @@ interface CheckProbesProps {
   invalid?: boolean;
   error?: string;
 }
-export function CheckProbes({ probes, availableProbes, onChange, error }: CheckProbesProps) {
+export function CheckProbes({ probes, availableProbes, onChange, error, disabled }: CheckProbesProps) {
   const [filteredProbes, setFilteredProbes] = useState<ProbeWithMetadata[]>(availableProbes);
 
   const publicProbes = useMemo(() => filteredProbes.filter((probe) => probe.public), [filteredProbes]);
@@ -45,6 +45,7 @@ export function CheckProbes({ probes, availableProbes, onChange, error }: CheckP
         invalid={!!error}
         error={error}
         htmlFor={PROBES_FILTER_ID}
+        disabled={disabled}
       >
         <div>
           <ProbesFilter probes={availableProbes} onSearch={setFilteredProbes} />
@@ -59,6 +60,7 @@ export function CheckProbes({ probes, availableProbes, onChange, error }: CheckP
                     probes={allProbes}
                     selectedProbes={probes}
                     onSelectionChange={onChange}
+                    disabled={disabled}
                   />
                 ))}
             </Stack>
@@ -69,6 +71,7 @@ export function CheckProbes({ probes, availableProbes, onChange, error }: CheckP
                 probes={privateProbes}
                 selectedProbes={probes}
                 onSelectionChange={onChange}
+                disabled={disabled}
               />
             )}
           </Stack>

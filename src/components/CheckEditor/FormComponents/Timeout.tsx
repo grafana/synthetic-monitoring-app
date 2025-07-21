@@ -3,7 +3,6 @@ import { useController, useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValues, CheckType } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { TimeSlider } from 'components/TimeSlider/TimeSlider';
 
 import { MAX_TIMEOUT_MAP, MIN_TIMEOUT_MAP } from './Timeout.constants';
@@ -14,11 +13,10 @@ interface TimeoutProps {
 
 export const Timeout = ({ checkType }: TimeoutProps) => {
   const {
-    formState: { errors },
+    formState: { errors, disabled: isFormDisabled },
     control,
   } = useFormContext<CheckFormValues>();
   const { field } = useController({ name: 'timeout', control });
-  const { isFormDisabled } = useCheckFormContext();
   const min = MIN_TIMEOUT_MAP[checkType];
   const max = MAX_TIMEOUT_MAP[checkType];
   const readOnly = min === max;
