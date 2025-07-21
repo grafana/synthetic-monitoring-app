@@ -15,9 +15,9 @@ import { DataReceived } from 'scenes/Common/DataReceived';
 import { DataSent } from 'scenes/Common/DataSent';
 import { DistinctTargets } from 'scenes/Common/DistinctTargets';
 import { DurationByProbe } from 'scenes/Common/DurationByProbe';
-import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
+import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { ResultsByTargetTable } from 'scenes/Scripted/ResultByTargetTable';
 
 export const ScriptedDashboard = ({ check }: { check: Check }) => {
@@ -45,9 +45,7 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
       </div>
 
       <ResultsByTargetTable checkType={checkType} />
-      <Box height={`750px`}>
-        <ErrorLogs />
-      </Box>
+      <TimepointExplorer check={check} />
     </DashboardContainer>
   );
 };

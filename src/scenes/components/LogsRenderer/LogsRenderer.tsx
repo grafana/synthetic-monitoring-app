@@ -25,7 +25,6 @@ export const LogsRenderer = <T extends UnknownParsedLokiRecord>({
 
   if (logsView === 'trace') {
     const trace = checkToTrace(logs as unknown as CheckLogs);
-    console.log(trace);
     return <TraceAndSpans trace={trace} />;
   }
 

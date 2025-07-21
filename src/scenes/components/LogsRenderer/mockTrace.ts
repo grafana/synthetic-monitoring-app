@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Trace } from 'scenes/components/LogsRenderer/TraceAndSpans.types';
 
 export const trace: Trace = {

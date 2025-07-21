@@ -153,14 +153,17 @@ describe('groupLogs', () => {
   it('should group logs by probe', () => {
     const logs: ParsedCheckLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2, discard1, discard2];
     const groupedLogs = parseCheckLogs(logs);
+
     expect(groupedLogs).toEqual([
       {
         probe: 'probe1',
         checks: [[probe1_log1, probe1_log2]],
+        id: `id2`,
       },
       {
         probe: 'probe2',
         checks: [[probe2_log1, probe2_log2]],
+        id: `id6`,
       },
     ]);
   });
@@ -217,5 +220,16 @@ describe('discardIncompleteChecks', () => {
     });
 
     expect(filteredLogs).toEqual(logs);
+  });
+});
+
+describe('splitMultipleExecutions', () => {
+  it('should split multiple executions', () => {
+    const logs: ParsedCheckLog[] = [probe1_log1, probe1_log2, probe1_log1, probe1_log2];
+    const result = groupByCheck(logs);
+    expect(result).toEqual([
+      [probe1_log1, probe1_log2],
+      [probe1_log1, probe1_log2],
+    ]);
   });
 });

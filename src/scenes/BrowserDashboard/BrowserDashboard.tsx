@@ -18,9 +18,9 @@ import { DataReceived } from 'scenes/Common/DataReceived';
 import { DataSent } from 'scenes/Common/DataSent';
 import { DistinctTargets } from 'scenes/Common/DistinctTargets';
 import { DurationByProbe } from 'scenes/Common/DurationByProbe';
-import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
+import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 
 export const BrowserDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
@@ -49,9 +49,7 @@ export const BrowserDashboard = ({ check }: { check: Check }) => {
         <DataReceived query={getBrowserDataReceivedQuery()} />
       </div>
 
-      <Box height={`750px`}>
-        <ErrorLogs />
-      </Box>
+      <TimepointExplorer check={check} />
     </DashboardContainer>
   );
 };
