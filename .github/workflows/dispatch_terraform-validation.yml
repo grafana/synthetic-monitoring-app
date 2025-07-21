@@ -52,56 +52,56 @@ jobs:
             message += '**⚠️ These issues would cause terraform operations to fail in production.**\n\n';
 
             const outputBase64 = '${{ steps.terraform-validate.outputs.TERRAFORM_OUTPUT_BASE64 }}';
-            
             if (outputBase64 && outputBase64.trim() !== '') {
               try {
                 const output = Buffer.from(outputBase64, 'base64').toString('utf8');
-                // Clean up terraform output and remove ANSI color codes
                 const cleanOutput = output
                   .split('\n')
                   .filter(line => 
                     !line.includes('Terraform has been successfully initialized') &&
-                    !line.includes('You may now begin working with Terraform') &&
-                    !line.includes('Try running "terraform plan"') &&
-                    !line.includes('If you ever set or change modules') &&
                     !line.includes('Warning: Provider development overrides are in effect')
                   )
                   .join('\n')
                   .trim()
-                  // Remove ANSI color codes using regex
-                  .replace(/\x1b\[[0-9;]*m/g, '')
-                  // Remove any remaining control characters
-                  .replace(/[\x00-\x1f\x7f-\x9f]/g, '');
+                  .replace(/\x1b\[[0-9;]*m/g, '') // Remove ANSI color codes
+                  .replace(/[\x00-\x1f\x7f-\x9f]/g, ''); // Remove control characters
                 
                 if (cleanOutput) {
-                  message += '### Validation Errors:\n';
-                  message += '```\n';
-                  message += cleanOutput;
-                  message += '\n```\n\n';
+                  // Format errors in a more readable way
+                  message += '## Validation Errors\n\n';
+                  
+                  // Split into individual errors and format each one
+                  const errors = cleanOutput.split('╷').filter(section => section.trim());
+                  
+                  errors.forEach((error, index) => {
+                    if (error.includes('Error:')) {
+                      const lines = error.split('\n').map(line => line.trim()).filter(line => line);
+                      message += `### Error ${index + 1}\n\n`;
+                      message += '```\n';
+                      lines.forEach(line => {
+                        message += line + '\n';
+                      });
+                      message += '```\n\n';
+                    }
+                  });
                 }
               } catch (e) {
-                message += '⚠️ **Note:** Error decoding terraform validation output.\n\n';
+                console.log('Error processing terraform output:', e);
+                message += '## Validation Errors\n\n';
+                message += '```\n' + outputBase64 + '\n```\n\n';
               }
-            } else {
-              message += '⚠️ **Note:** No detailed output captured from terraform validate.\n\n';
             }
 
-            message += '### 🔧 How to Fix:\n';
-            message += '1. Check the field naming (camelCase vs snake_case mismatches)\n';
-            message += '2. Ensure all required fields are present\n';
-            message += '3. Verify data types match the provider schema\n';
-            message += '4. Update the transformation functions in `src/components/TerraformConfig/`\n\n';
-            
-            message += '### 📁 Files to check:\n';
-            message += '- `src/components/TerraformConfig/terraformConfigUtils.ts`\n';
-            message += '- `src/components/TerraformConfig/terraformMultiHTTPConfigUtils.ts`\n';
-            message += '- `src/hooks/useTerraformConfig.ts`\n\n';
-            
-            message += 'To test locally:\n';
+            message += '## 🔧 How to Fix\n\n';
+            message += '1. **Check field naming and requirements** according to the [Grafana Terraform Provider Documentation](https://registry.terraform.io/providers/grafana/grafana/latest/docs)\n';
+            message += '2. **Ensure all required fields are present** for each resource type\n';
+            message += '3. **Verify data types match** the provider schema expectations\n';
+            message += '4. **Update the transformation functions** in `src/components/TerraformConfig/`\n\n';
+            message += '## 🧪 To test locally\n\n';
             message += '```bash\n';
             message += 'yarn terraform:generate-test-config\n';
             message += 'cd test-terraform-output && terraform validate\n';
-            message += '```\n\n';
+            message += '```';
 
             // Look for existing comment to update
             const comments = await github.rest.issues.listComments({
@@ -109,6 +109,8 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
+
+            console.log(`Found ${comments.data.length} total comments`);
 
             const existingComment = comments.data.find(comment => 
               comment.user.login === 'github-actions[bot]' && 
