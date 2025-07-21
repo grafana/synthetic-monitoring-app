@@ -159,7 +159,7 @@ jobs:
             message += '- `grafana_synthetic_monitoring_check_alerts` (Alert configurations)\n\n';
             message += 'The terraform export functionality will work correctly with these changes.\n\n';
 
-            // Look for existing failure comment to update (only act if there was a previous failure)
+            // Look for existing terraform validation comment to update
             const comments = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -171,6 +171,11 @@ jobs:
               comment.body.includes('❌ **Terraform Configuration Validation Failed**')
             );
 
+            const existingSuccessComment = comments.data.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('✅ **Terraform Configuration Validation Passed**')
+            );
+
             if (existingFailureComment) {
               // Update existing failure comment to success
               await github.rest.issues.updateComment({
@@ -180,8 +185,17 @@ jobs:
                 body: message
               });
               console.log('Updated existing failure comment to success:', existingFailureComment.id);
+            } else if (existingSuccessComment) {
+              // Update existing success comment (refresh)
+              await github.rest.issues.updateComment({
+                comment_id: existingSuccessComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Updated existing success comment:', existingSuccessComment.id);
             } else {
-              console.log('No previous failure comment found, skipping success comment creation');
+              console.log('No previous terraform validation comment found, skipping success comment creation');
             }
       
       - name: Fail job if validation failed

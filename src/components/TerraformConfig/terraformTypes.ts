@@ -3,7 +3,6 @@ import {
   DnsSettings,
   GRPCSettings,
   HeaderMatch,
-  HTTPCompressionAlgo,
   HttpSettings,
   Label,
   Probe,
