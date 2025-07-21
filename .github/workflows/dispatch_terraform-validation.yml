@@ -75,13 +75,19 @@ jobs:
                   
                   errors.forEach((error, index) => {
                     if (error.includes('Error:')) {
-                      const lines = error.split('\n').map(line => line.trim()).filter(line => line);
                       message += `### Error ${index + 1}\n\n`;
+                      
+                      // Clean up the error text by removing box-drawing characters and formatting properly
+                      const cleanError = error
+                        .replace(/[│╷╵]/g, '') // Remove box-drawing characters
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0)
+                        .join('\n');
+                      
                       message += '```\n';
-                      lines.forEach(line => {
-                        message += line + '\n';
-                      });
-                      message += '```\n\n';
+                      message += cleanError;
+                      message += '\n```\n\n';
                     }
                   });
                 }
