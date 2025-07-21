@@ -42,4 +42,4 @@ dev/license.jwt
 
 # Terraform validation outputs
 test-terraform-output/
-.notebook
+terraform-schema.json
