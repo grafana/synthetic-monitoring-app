@@ -11,12 +11,12 @@ import { useChecks } from 'data/useChecks';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
-import { getBrowserScene } from 'scenes/BROWSER/browserScene';
+import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
 import { getPingScene } from 'scenes/PING/pingScene';
-import { getScriptedScene } from 'scenes/SCRIPTED';
+import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
@@ -60,29 +60,6 @@ function DashboardPageContent() {
               title: check.job,
               url,
               getScene: getDNSScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.Browser:
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getBrowserScene(config, check, checkType),
-            }),
-          ],
-        });
-      // fallthrough
-      case CheckType.Scripted:
-      case CheckType.MULTI_HTTP: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getScriptedScene(config, check, checkType),
             }),
           ],
         });
@@ -133,6 +110,9 @@ function DashboardPageContent() {
         });
       }
 
+      case CheckType.Browser:
+      case CheckType.MULTI_HTTP:
+      case CheckType.Scripted:
       case CheckType.HTTP: {
         return null;
       }
@@ -145,6 +125,17 @@ function DashboardPageContent() {
 
   if (check && getCheckType(check.settings) === CheckType.HTTP) {
     return <HttpDashboard check={check} />;
+  }
+
+  if (
+    check &&
+    (getCheckType(check.settings) === CheckType.Scripted || getCheckType(check.settings) === CheckType.MULTI_HTTP)
+  ) {
+    return <ScriptedDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.Browser) {
+    return <BrowserDashboard check={check} />;
   }
 
   if (scene) {

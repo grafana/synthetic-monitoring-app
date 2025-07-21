@@ -1,15 +1,12 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { Alert, Space, TextLink, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Alert, Space, TextLink } from '@grafana/ui';
 
 import { getUserPermissions } from 'data/permissions';
-import { useBackendAddress } from 'hooks/useBackendAddress';
 import { useMeta } from 'hooks/useMeta';
 import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
+import { ProbeAPIServer } from 'components/ProbeAPIServer';
 
-import { Preformatted } from '../../../components/Preformatted';
 import { ConfigContent } from '../ConfigContent';
 
 export function GeneralTab() {
@@ -17,8 +14,6 @@ export function GeneralTab() {
   // This may be false in play.grafana.net
   const isSignedIn = config.bootData.user?.isSignedIn ?? false;
   const { canWriteSM } = getUserPermissions();
-  const [backendAddress, backendAddressDescription] = useBackendAddress(true);
-  const styles = useStyles2(getStyles);
 
   return (
     <>
@@ -53,9 +48,7 @@ export function GeneralTab() {
           </TextLink>
           .
           <Space v={2} />
-          <h4>Backend address</h4>
-          {backendAddressDescription}
-          <Preformatted className={styles.pre}>{backendAddress}</Preformatted>
+          <ProbeAPIServer />
         </ConfigContent.Section>
 
         <ConfigContent.Section title="Data sources">
@@ -71,13 +64,4 @@ export function GeneralTab() {
       </ConfigContent>
     </>
   );
-}
-
-function getStyles(theme: GrafanaTheme2) {
-  return {
-    pre: css({
-      marginTop: theme.spacing(1),
-      marginBottom: 0,
-    }),
-  };
 }
