@@ -5,7 +5,6 @@ permissions:
   pull-requests: write
 
 on:
-  pull_request:
   push:
     branches: [feat-terraform-validation]
 
@@ -64,7 +63,7 @@ jobs:
             if (outputBase64 && outputBase64.trim() !== '') {
               try {
                 const output = Buffer.from(outputBase64, 'base64').toString('utf8');
-                // Clean up terraform output
+                // Clean up terraform output and remove ANSI color codes
                 const cleanOutput = output
                   .split('\n')
                   .filter(line => 
@@ -75,7 +74,11 @@ jobs:
                     !line.includes('Warning: Provider development overrides are in effect')
                   )
                   .join('\n')
-                  .trim();
+                  .trim()
+                  // Remove ANSI color codes using regex
+                  .replace(/\x1b\[[0-9;]*m/g, '')
+                  // Remove any remaining control characters
+                  .replace(/[\x00-\x1f\x7f-\x9f]/g, '');
                 
                 if (cleanOutput) {
                   message += '### Validation Errors:\n';
