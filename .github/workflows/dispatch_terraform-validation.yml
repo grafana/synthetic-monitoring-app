@@ -79,7 +79,8 @@ jobs:
                       
                       // Clean up the error text by removing box-drawing characters and formatting properly
                       const cleanError = error
-                        .replace(/[│╷╵]/g, '') // Remove box-drawing characters
+                        .replace(/│/g, '\n') // Replace box-drawing characters with newlines
+                        .replace(/[╷╵]/g, '') // Remove remaining box-drawing characters  
                         .split('\n')
                         .map(line => line.trim())
                         .filter(line => line.length > 0)
