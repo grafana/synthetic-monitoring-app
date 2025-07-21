@@ -1,6 +1,6 @@
 import { fromBase64 } from 'js-base64';
 
-import { Check, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
+import { Check, HTTPCompressionAlgo, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
 import {
   isBrowserCheck,
   isDNSCheck,
@@ -63,18 +63,19 @@ const settingsToTF = (check: Check): TFCheckSettings => {
         method: check.settings.http.method,
         body: check.settings.http.body,
         headers: check.settings.http.headers,
-        compression: check.settings.http.compression,
+        compression:
+          check.settings.http.compression === HTTPCompressionAlgo.none ? 'none' : check.settings.http.compression,
         basic_auth: check.settings.http.basicAuth,
         bearer_token: check.settings.http.bearerToken,
         cache_busting_query_param_name: check.settings.http.cacheBustingQueryParamName,
         fail_if_body_matches_regexp: check.settings.http.failIfBodyMatchesRegexp,
         fail_if_body_not_matches_regexp: check.settings.http.failIfBodyNotMatchesRegexp,
-        fail_if_header_matches_regexp: check.settings.http.failIfHeaderMatchesRegexp?.map(match => ({
+        fail_if_header_matches_regexp: check.settings.http.failIfHeaderMatchesRegexp?.map((match) => ({
           header: match.header,
           regexp: match.regexp,
           allow_missing: match.allowMissing?.toString(),
         })),
-        fail_if_header_not_matches_regexp: check.settings.http.failIfHeaderNotMatchesRegexp?.map(match => ({
+        fail_if_header_not_matches_regexp: check.settings.http.failIfHeaderNotMatchesRegexp?.map((match) => ({
           header: match.header,
           regexp: match.regexp,
           allow_missing: match.allowMissing?.toString(),
