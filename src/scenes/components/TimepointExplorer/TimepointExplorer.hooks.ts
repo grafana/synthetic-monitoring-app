@@ -43,7 +43,7 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
 
   const [width, setWidth] = useState<number>(ref.current?.clientWidth ?? 0);
 
-  const calculateActiveSection = useDebounceCallback(() => {
+  const onResize = useDebounceCallback(() => {
     const width = ref.current?.clientWidth ?? 0;
     setWidth(width);
 
@@ -59,12 +59,8 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
   useResizeObserver({
     // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
     ref,
-    onResize: calculateActiveSection,
+    onResize,
   });
-
-  useEffect(() => {
-    calculateActiveSection();
-  }, [calculateActiveSection]);
 
   useEffect(() => {
     setViewTimeRangeTo(initialTimeRangeToInView);
@@ -148,7 +144,7 @@ function useTimepoints({ timeRange, check }: UseTimepointsProps) {
         .find((t) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration); // not very efficient
 
       if (!timepoint) {
-        console.log('No timepoint found for log -- probably out of selected time range', { log, to, from });
+        console.log('No timepoint found for log -- probably out of selected time range', { log, id: log.id, to, from });
         return;
       }
 
