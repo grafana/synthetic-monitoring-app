@@ -18,3 +18,5 @@ export const TIMEPOINT_EXPLORER_VIEW_OPTIONS = [
   { label: 'Uptime', value: 'uptime' },
   { label: 'Reachability', value: 'reachability' },
 ];
+
+export const MAX_MINIMAP_SECTIONS = 6;

@@ -2,6 +2,7 @@ import { DataFrame } from '@grafana/data';
 
 import { CheckEndedLog, CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   Annotation,
   CheckConfig,
@@ -12,7 +13,7 @@ import {
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function minimapSections(timepoints: Timepoint[], timePointsToDisplay: number, viewTimeRangeTo: UnixTimestamp) {
+export function minimapSections(timepoints: Timepoint[], timePointsToDisplay: number) {
   const timepointsInRange = timepoints.map((t) => t.adjustedTime);
   const sections: MinimapSection[] = [];
 
@@ -32,17 +33,13 @@ export function minimapSections(timepoints: Timepoint[], timePointsToDisplay: nu
       from: timestampFrom,
       toIndex,
       fromIndex,
-      active: timestampTo === viewTimeRangeTo,
+      index: i,
     };
 
     sections.push(section);
   }
 
   return sections;
-}
-
-export function findActiveSection(sections: MinimapSection[], timeRangeTo: UnixTimestamp) {
-  return sections.find((section) => timeRangeTo >= section.from && timeRangeTo <= section.to);
 }
 
 export function timeshiftedTimepoint(unixDate: UnixTimestamp, frequency: number): UnixTimestamp {
@@ -288,4 +285,27 @@ export function combineTimepointsWithLogs({ timepoints, logs, timeRangeFrom, tim
 
   const reversedTimepoints = copy.reverse();
   return reversedTimepoints;
+}
+
+interface GetTimepointExplorerLocalTimeRangeProps {
+  timepoints: Timepoint[];
+  timepointsToDisplay: number;
+  to: UnixTimestamp;
+}
+
+export function getVisibleTimepointsFromLocalTimeRange({
+  timepoints,
+  timepointsToDisplay,
+  to,
+}: GetTimepointExplorerLocalTimeRangeProps) {
+  const entries = timepointsToDisplay * MAX_MINIMAP_SECTIONS;
+
+  if (entries > timepoints.length) {
+    return timepoints;
+  }
+
+  const timepointsInRange = timepoints.filter((t) => t.adjustedTime <= to);
+  const fromIndex = timepointsInRange.length - entries;
+  const minIndex = Math.max(0, fromIndex);
+  return timepointsInRange.slice(minIndex, timepointsInRange.length);
 }

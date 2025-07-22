@@ -14,26 +14,30 @@ import {
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface MiniMapSectionProps {
+  activeMiniMapSectionIndex: number;
   annotations: Annotation[];
+  index: number;
   maxProbeDuration: number;
   section: MinimapSection;
   timepoints: Timepoint[];
-  handleSectionClick: (section: MinimapSection) => void;
+  handleSectionClick: (index: number) => void;
   viewMode: ViewMode;
-  timepointDisplayCount: number;
+  timepointsToDisplay: number;
   selectedTimepoint: SelectedTimepointState;
   sectionWidth: number;
 }
 
 export const TimepointMiniMapSection = ({
+  activeMiniMapSectionIndex,
   annotations,
+  handleSectionClick,
+  index,
   maxProbeDuration,
   section,
-  timepoints,
-  handleSectionClick,
-  viewMode,
-  timepointDisplayCount,
   selectedTimepoint,
+  timepoints,
+  timepointsToDisplay,
+  viewMode,
 }: MiniMapSectionProps) => {
   const styles = useStyles2(getStyles);
   const timepointsToRender = timepoints.slice(section.fromIndex, section.toIndex).reverse();
@@ -43,33 +47,34 @@ export const TimepointMiniMapSection = ({
   const fromFormatted = dateTimeFormat(from);
   const toFormatted = dateTimeFormat(to);
   const label = `${fromFormatted} to ${toFormatted}`;
+  const isActive = activeMiniMapSectionIndex === index;
 
   return (
     <div className={styles.container}>
       <Tooltip content={label} ref={ref}>
         <button
           aria-label={label}
-          className={cx(styles.section, { [styles.active]: section.active })}
-          onClick={() => handleSectionClick(section)}
+          className={cx(styles.section, { [styles.active]: isActive })}
+          onClick={() => handleSectionClick(index)}
           ref={ref}
         >
           <MinimapSectionAnnotations
             annotations={annotations}
             timepointsInRange={timepointsToRender}
-            timepointDisplayCount={timepointDisplayCount}
+            timepointsToDisplay={timepointsToDisplay}
           />
           {viewMode === 'uptime' ? (
             <UptimeSection
               timepoints={timepointsToRender}
               maxProbeDuration={maxProbeDuration}
-              timepointDisplayCount={timepointDisplayCount}
+              timepointsToDisplay={timepointsToDisplay}
               selectedTimepoint={selectedTimepoint}
             />
           ) : (
             <ReachabilitySection
               timepoints={timepointsToRender}
               maxProbeDuration={maxProbeDuration}
-              timepointDisplayCount={timepointDisplayCount}
+              timepointsToDisplay={timepointsToDisplay}
               selectedTimepoint={selectedTimepoint}
             />
           )}
@@ -82,18 +87,13 @@ export const TimepointMiniMapSection = ({
 interface SectionChildProps {
   timepoints: Timepoint[];
   maxProbeDuration: number;
-  timepointDisplayCount: number;
+  timepointsToDisplay: number;
   selectedTimepoint: SelectedTimepointState;
 }
 
-const UptimeSection = ({
-  timepoints,
-  maxProbeDuration,
-  timepointDisplayCount,
-  selectedTimepoint,
-}: SectionChildProps) => {
+const UptimeSection = ({ timepoints, maxProbeDuration, timepointsToDisplay, selectedTimepoint }: SectionChildProps) => {
   const styles = useStyles2(getStyles);
-  const width = `${100 / timepointDisplayCount}%`;
+  const width = `${100 / timepointsToDisplay}%`;
 
   return timepoints.map((timepoint) => {
     const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDuration);
@@ -115,10 +115,10 @@ const UptimeSection = ({
 const ReachabilitySection = ({
   timepoints,
   maxProbeDuration,
-  timepointDisplayCount,
+  timepointsToDisplay,
   selectedTimepoint,
 }: SectionChildProps) => {
-  const width = `${100 / timepointDisplayCount}%`;
+  const width = `${100 / timepointsToDisplay}%`;
 
   return timepoints.map((timepoint) => {
     return (
@@ -191,11 +191,11 @@ const ReachabilityTimepoint = ({
 const MinimapSectionAnnotations = ({
   annotations,
   timepointsInRange,
-  timepointDisplayCount,
+  timepointsToDisplay,
 }: {
   annotations: Annotation[];
   timepointsInRange: Timepoint[];
-  timepointDisplayCount: number;
+  timepointsToDisplay: number;
 }) => {
   const renderOrderedTimepoints = [...timepointsInRange].reverse();
   const styles = useStyles2(getAnnotationStyles);
@@ -213,7 +213,7 @@ const MinimapSectionAnnotations = ({
         const timepointEndIndex = renderOrderedTimepoints.findIndex(
           (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime
         );
-        const right = (100 / timepointDisplayCount) * timepointEndIndex;
+        const right = (100 / timepointsToDisplay) * timepointEndIndex;
 
         return (
           <div

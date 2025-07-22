@@ -1,5 +1,5 @@
 import React, { ReactNode, useMemo } from 'react';
-import { GrafanaTheme2, TimeRange } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -8,11 +8,11 @@ import {
   TIMEPOINT_SIZE,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { MinimapSection, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { MinimapSection, Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { generateXAxisPoints } from 'scenes/components/TimepointExplorer/XAxis.utils';
 
 interface XAxisProps {
-  timeRange: TimeRange;
+  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
   timepointsInRange: Timepoint[];
   width: number;
   activeSection: MinimapSection;

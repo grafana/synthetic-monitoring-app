@@ -17,12 +17,13 @@ import { YAxis } from 'scenes/components/TimepointExplorer/YAxis';
 export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
   (
     {
+      activeMiniMapSectionIndex,
       annotations,
       handleTimepointSelection,
       maxProbeDuration,
       miniMapSections,
       selectedTimepoint,
-      timepointDisplayCount,
+      timepointsToDisplay,
       timepoints,
       timeRange,
       viewMode,
@@ -30,7 +31,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
     },
     ref
   ) => {
-    const activeSection = miniMapSections.find((section) => section.active);
+    const activeSection = miniMapSections[activeMiniMapSectionIndex];
     const styles = useStyles2(getStyles);
     const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
 
@@ -42,7 +43,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
             <TimepointListAnnotations
               annotations={annotations}
               timepointsInRange={timepointsInRange}
-              timepointDisplayCount={timepointDisplayCount}
+              timepointsToDisplay={timepointsToDisplay}
             />
             <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
               {activeSection &&

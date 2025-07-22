@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import React, { forwardRef, RefObject, useCallback, useMemo, useState } from 'react';
 import { TimeRange } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { RadioButtonGroup, Stack } from '@grafana/ui';
@@ -7,6 +7,8 @@ import { Check } from 'types';
 import {
   MAX_PROBE_DURATION_DEFAULT,
   TIMEPOINT_EXPLORER_VIEW_OPTIONS,
+  TIMEPOINT_GAP_PX,
+  TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   useExecutionEndingLogs,
@@ -27,6 +29,7 @@ import {
   combineTimepointsWithLogs,
   constructCheckEvents,
   generateAnnotations,
+  getVisibleTimepointsFromLocalTimeRange,
   timeshiftedTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointList } from 'scenes/components/TimepointExplorer/TimepointList';
@@ -43,12 +46,22 @@ export const TimepointExplorer = ({ check }: TimepointExplorerProps) => {
     timeRange,
     check,
   });
+
+  const INITIAL_CHECK_CONFIG: CheckConfig = {
+    frequency: check.frequency,
+    date: Number(check.created),
+  };
+
   const maxProbeDuration =
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
-  const { data: checkConfigs = [], isLoading: checkConfigsIsLoading } = usePersistedCheckConfigs({ timeRange, check });
-  const timepointsInGlobalRange = useTimepoints({ timeRange, checkConfigs });
+  const { data: checkConfigs = [INITIAL_CHECK_CONFIG], isLoading: checkConfigsIsLoading } = usePersistedCheckConfigs({
+    timeRange,
+    check,
+  });
+  const timepoints = useTimepoints({ timeRange, checkConfigs });
   const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading;
   const { width, ref } = useExplorerWidth();
+  const timepointsToDisplay = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP_PX));
 
   return (
     <TimepointExplorerInternal
@@ -57,7 +70,8 @@ export const TimepointExplorer = ({ check }: TimepointExplorerProps) => {
       isLoading={isLoading}
       maxProbeDuration={maxProbeDuration}
       timeRange={timeRange}
-      timepoints={timepointsInGlobalRange}
+      timepoints={timepoints}
+      timepointsToDisplay={timepointsToDisplay}
       width={width}
       ref={ref}
     />
@@ -71,40 +85,61 @@ interface TimepointExplorerInternalProps {
   maxProbeDuration: number;
   timeRange: TimeRange;
   timepoints: Timepoint[];
+  timepointsToDisplay: number;
   width: number;
-  ref: React.RefObject<HTMLDivElement | null>;
+  ref: RefObject<HTMLDivElement | null>;
 }
 
 const TimepointExplorerInternal = forwardRef<HTMLDivElement, TimepointExplorerInternalProps>(
-  ({ check, checkConfigs, maxProbeDuration, isLoading, timeRange, timepoints: loglessTimepoints, width }, ref) => {
+  (
+    {
+      check,
+      checkConfigs,
+      maxProbeDuration,
+      isLoading,
+      timeRange,
+      timepoints: loglessTimepoints,
+      timepointsToDisplay,
+      width,
+    },
+    ref
+  ) => {
     const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
+    const localTimeRangeTo = timeshiftedTimepoint(timeRange.to.toDate().valueOf(), check.frequency);
+
+    const visibleTimepoints = getVisibleTimepointsFromLocalTimeRange({
+      timepoints: loglessTimepoints,
+      timepointsToDisplay,
+      to: localTimeRangeTo,
+    });
+
+    const selectedTimeRange = useMemo(() => {
+      return {
+        from: visibleTimepoints[0]?.adjustedTime,
+        to: visibleTimepoints[visibleTimepoints.length - 1]?.adjustedTime,
+      };
+    }, [visibleTimepoints]);
+
+    const timeRangeTo: UnixTimestamp = selectedTimeRange.to;
+    const timeRangeFrom: UnixTimestamp = selectedTimeRange.from;
 
     const checkEvents = constructCheckEvents({
-      timeRangeFrom: timeRange.from.toDate().valueOf(),
+      timeRangeFrom,
       checkConfigs,
       checkCreation: check.created,
     });
 
-    const timeRangeTo: UnixTimestamp = timeRange.to.toDate().valueOf();
-    const initialTimeRangeToInView = timeshiftedTimepoint(timeRangeTo, check.frequency);
+    const { data: logsData = [] } = useExecutionEndingLogs({ timeRange: selectedTimeRange, check });
 
-    const { data: logsData = [] } = useExecutionEndingLogs({ timeRange, check });
     const timepoints = combineTimepointsWithLogs({
-      timepoints: loglessTimepoints,
+      timepoints: visibleTimepoints,
       logs: logsData,
-      timeRangeFrom: timeRange.from.toDate().valueOf(),
+      timeRangeFrom,
       timeRangeTo,
     });
     const annotations = generateAnnotations({ checkEvents, timepoints });
-    const {
-      activeSection,
-      handleTimeRangeToInViewChange,
-      handleViewModeChange,
-      miniMapSections,
-      timepointDisplayCount,
-      viewMode,
-      viewTimeRangeTo,
-    } = useTimepointExplorerView(timepoints, initialTimeRangeToInView, width);
+    const { activeMiniMapSectionIndex, handleMiniMapSectionClick, handleViewModeChange, miniMapSections, viewMode } =
+      useTimepointExplorerView(timepoints, timepointsToDisplay);
 
     const handleTimepointSelection = useCallback((timepoint: Timepoint, probeToView: string) => {
       setSelectedTimepoint(([prevTimepoint, prevProbeToView]) => {
@@ -116,37 +151,35 @@ const TimepointExplorerInternal = forwardRef<HTMLDivElement, TimepointExplorerIn
 
     const timepointExplorerChildProps: TimepointExplorerChild = useMemo(() => {
       return {
-        activeSection,
+        activeMiniMapSectionIndex,
         annotations,
         check,
+        handleMiniMapSectionClick,
         handleTimepointSelection,
-        handleTimeRangeToInViewChange,
         isLoading,
         maxProbeDuration,
         miniMapSections,
         selectedTimepoint,
-        timepointDisplayCount,
+        timepointsToDisplay,
         timepoints,
-        timeRange,
+        timeRange: selectedTimeRange,
         viewMode,
-        viewTimeRangeTo,
         width,
       };
     }, [
-      activeSection,
+      activeMiniMapSectionIndex,
       annotations,
       check,
+      handleMiniMapSectionClick,
       handleTimepointSelection,
-      handleTimeRangeToInViewChange,
       isLoading,
       maxProbeDuration,
       miniMapSections,
       selectedTimepoint,
-      timepointDisplayCount,
+      selectedTimeRange,
       timepoints,
-      timeRange,
+      timepointsToDisplay,
       viewMode,
-      viewTimeRangeTo,
       width,
     ]);
 

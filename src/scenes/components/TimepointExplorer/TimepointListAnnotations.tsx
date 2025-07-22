@@ -14,11 +14,11 @@ import { Annotation, Timepoint } from 'scenes/components/TimepointExplorer/Timep
 export const TimepointListAnnotations = ({
   annotations,
   timepointsInRange,
-  timepointDisplayCount,
+  timepointsToDisplay,
 }: {
   annotations: Annotation[];
   timepointsInRange: Timepoint[];
-  timepointDisplayCount: number;
+  timepointsToDisplay: number;
 }) => {
   const styles = useStyles2(getStyles);
   const renderOrderedTimepoints = [...timepointsInRange].reverse();
@@ -36,7 +36,7 @@ export const TimepointListAnnotations = ({
         const timepointEndIndex = renderOrderedTimepoints.findIndex(
           (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime
         );
-        const right = (100 / timepointDisplayCount) * timepointEndIndex;
+        const right = (100 / timepointsToDisplay) * timepointEndIndex;
 
         return (
           <div

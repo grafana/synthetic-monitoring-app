@@ -15,10 +15,7 @@ import {
   REF_ID_CHECK_LOGS,
   REF_ID_MAX_PROBE_DURATION,
   REF_ID_UNIQUE_CHECK_CONFIGS,
-  THEME_UNIT,
   TIMEPOINT_EXPLORER_VIEW_OPTIONS,
-  TIMEPOINT_GAP,
-  TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   CheckConfig,
@@ -29,54 +26,28 @@ import {
 import {
   buildTimepoints,
   extractFrequenciesAndConfigs,
-  findActiveSection,
   minimapSections,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
-export function useTimepointExplorerView(
-  timepoints: Timepoint[],
-  initialTimeRangeToInView: UnixTimestamp,
-  width: number
-) {
-  // if we just know when the view is to we can anchor the view from that
-  const [viewTimeRangeTo, setViewTimeRangeTo] = useState<UnixTimestamp>(initialTimeRangeToInView);
+export function useTimepointExplorerView(timepoints: Timepoint[], timepointsToDisplay: number) {
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
-
-  useEffect(() => {
-    const timepointsToDisplay = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
-    const miniMapSections = minimapSections(timepoints, timepointsToDisplay, viewTimeRangeTo);
-    const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
-
-    if (activeSection) {
-      setViewTimeRangeTo(activeSection.to);
-    }
-  }, [timepoints, width, viewTimeRangeTo]);
-
-  useEffect(() => {
-    setViewTimeRangeTo(initialTimeRangeToInView);
-  }, [initialTimeRangeToInView]);
-
-  const timepointDisplayCount = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
-  const miniMapSections = minimapSections(timepoints, timepointDisplayCount, viewTimeRangeTo);
-  const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
-
-  const handleTimeRangeToInViewChange = useCallback((timeRangeToInView: UnixTimestamp) => {
-    setViewTimeRangeTo(timeRangeToInView);
-  }, []);
+  const [activeMiniMapSectionIndex, setActiveMiniMapSectionIndex] = useState<number>(0);
+  const miniMapSections = minimapSections(timepoints, timepointsToDisplay);
 
   const handleViewModeChange = useCallback((viewMode: ViewMode) => {
     setViewMode(viewMode);
   }, []);
 
+  const handleMiniMapSectionClick = useCallback((index: number) => {
+    setActiveMiniMapSectionIndex(index);
+  }, []);
+
   return {
-    handleTimeRangeToInViewChange,
-    timepointDisplayCount,
-    viewTimeRangeTo,
-    width,
-    miniMapSections,
-    activeSection,
-    viewMode,
+    activeMiniMapSectionIndex,
+    handleMiniMapSectionClick,
     handleViewModeChange,
+    miniMapSections,
+    viewMode,
   };
 }
 
@@ -93,7 +64,7 @@ export function useTimepoints({ timeRange, checkConfigs }: UseTimepointsProps) {
 }
 
 interface UseExecutionEndingLogsProps {
-  timeRange: TimeRange;
+  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
   check: Check;
 }
 
@@ -101,8 +72,8 @@ export function useExecutionEndingLogs({ timeRange, check }: UseExecutionEndingL
   const { data = [], ...rest } = usePersistedInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
     refId: REF_ID_CHECK_LOGS,
     expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
-    start: timeRange.from.valueOf(),
-    end: timeRange.to.valueOf(),
+    start: timeRange.from,
+    end: timeRange.to,
   });
 
   const {
@@ -112,8 +83,8 @@ export function useExecutionEndingLogs({ timeRange, check }: UseExecutionEndingL
   } = usePersistedInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
     refId: REF_ID_CHECK_LOGS,
     expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
-    start: timeRange.from.valueOf(),
-    end: timeRange.to.valueOf(),
+    start: timeRange.from,
+    end: timeRange.to,
   });
 
   useEffect(() => {

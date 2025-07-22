@@ -1,13 +1,14 @@
-import { TimeRange } from '@grafana/data';
-
 import { TIMEPOINT_GAP_PX, TIMEPOINT_SIZE } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 const APPROXIMATE_SPACING = 200; // Approximate spacing in pixels
 const TIMEPOINT_WIDTH = TIMEPOINT_SIZE + TIMEPOINT_GAP_PX;
 const LABEL_PER_POINTS = Math.floor(APPROXIMATE_SPACING / TIMEPOINT_WIDTH);
 
-export function generateXAxisPoints(timepointsInRange: Timepoint[], timeRange: TimeRange) {
+export function generateXAxisPoints(
+  timepointsInRange: Timepoint[],
+  timeRange: { from: UnixTimestamp; to: UnixTimestamp }
+) {
   if (timepointsInRange.length === 0) {
     return [];
   }
@@ -73,9 +74,9 @@ export function generateXAxisPoints(timepointsInRange: Timepoint[], timeRange: T
   });
 }
 
-function doesTimeRangeCrossDays(timeRange: TimeRange) {
-  const from = new Date(timeRange.from.valueOf());
-  const to = new Date(timeRange.to.valueOf());
+function doesTimeRangeCrossDays(timeRange: { from: UnixTimestamp; to: UnixTimestamp }) {
+  const from = new Date(timeRange.from);
+  const to = new Date(timeRange.to);
 
   return from.getDate() !== to.getDate();
 }

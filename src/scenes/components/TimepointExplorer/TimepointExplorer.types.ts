@@ -1,5 +1,3 @@
-import { TimeRange } from '@grafana/data';
-
 import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { Check } from 'types';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
@@ -23,20 +21,20 @@ export type SelectedTimepoint = [Timepoint, string];
 export type SelectedTimepointState = [null, null] | SelectedTimepoint;
 
 export interface TimepointExplorerChild {
+  activeMiniMapSectionIndex: number;
   annotations: Annotation[];
-  handleTimeRangeToInViewChange: (timeRangeToInView: UnixTimestamp) => void;
-  timepoints: Timepoint[];
-  timepointDisplayCount: number;
-  timeRange: TimeRange;
-  viewTimeRangeTo: UnixTimestamp;
-  width: number;
-  miniMapSections: MinimapSection[];
+  check: Check;
+  handleMiniMapSectionClick: (index: number) => void;
+  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
   isLoading: boolean;
   maxProbeDuration: number;
-  viewMode: ViewMode;
+  miniMapSections: MinimapSection[];
   selectedTimepoint: SelectedTimepointState;
-  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
-  check: Check;
+  timepoints: Timepoint[];
+  timepointsToDisplay: number;
+  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
+  viewMode: ViewMode;
+  width: number;
 }
 
 export interface MinimapSection {
@@ -44,7 +42,7 @@ export interface MinimapSection {
   from: UnixTimestamp;
   toIndex: number;
   fromIndex: number;
-  active: boolean;
+  index: number;
 }
 
 export enum CheckEventType {
