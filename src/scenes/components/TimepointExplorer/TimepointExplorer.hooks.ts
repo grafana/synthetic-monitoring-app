@@ -4,7 +4,7 @@ import { TimeRange } from '@grafana/data';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
-import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
+import { useResizeObserver } from 'usehooks-ts';
 
 import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
 import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
@@ -28,25 +28,21 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   buildTimepoints,
-  calculateUptimeValue,
   extractFrequenciesAndConfigs,
   findActiveSection,
-  getMaxProbeDuration,
   minimapSections,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
-export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRangeToInView: UnixTimestamp) {
-  const ref = useRef<HTMLDivElement>(null);
+export function useTimepointExplorerView(
+  timepoints: Timepoint[],
+  initialTimeRangeToInView: UnixTimestamp,
+  width: number
+) {
   // if we just know when the view is to we can anchor the view from that
   const [viewTimeRangeTo, setViewTimeRangeTo] = useState<UnixTimestamp>(initialTimeRangeToInView);
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
 
-  const [width, setWidth] = useState<number>(ref.current?.clientWidth ?? 0);
-
-  const onResize = useDebounceCallback(() => {
-    const width = ref.current?.clientWidth ?? 0;
-    setWidth(width);
-
+  useEffect(() => {
     const timepointsToDisplay = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP * THEME_UNIT));
     const miniMapSections = minimapSections(timepoints, timepointsToDisplay, viewTimeRangeTo);
     const activeSection = findActiveSection(miniMapSections, viewTimeRangeTo);
@@ -54,13 +50,7 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
     if (activeSection) {
       setViewTimeRangeTo(activeSection.to);
     }
-  }, 100);
-
-  useResizeObserver({
-    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
-    ref,
-    onResize,
-  });
+  }, [timepoints, width, viewTimeRangeTo]);
 
   useEffect(() => {
     setViewTimeRangeTo(initialTimeRangeToInView);
@@ -80,7 +70,6 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
 
   return {
     handleTimeRangeToInViewChange,
-    ref,
     timepointDisplayCount,
     viewTimeRangeTo,
     width,
@@ -93,27 +82,28 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
 
 interface UseTimepointsProps {
   timeRange: TimeRange;
-  check: Check;
-  refetchInterval?: number;
+  checkConfigs: CheckConfig[];
 }
 
-export function usePersistedTimepoints({ timeRange, check }: UseTimepointsProps) {
-  const [persistedTimepoints, setPersistedTimepoints] = useState<Timepoint[]>([]);
-  const timepoints = useTimepoints({ timeRange, check });
-
-  useEffect(() => {
-    setPersistedTimepoints(timepoints);
-  }, [timepoints]);
-
-  return persistedTimepoints;
-}
-
-function useTimepoints({ timeRange, check }: UseTimepointsProps) {
-  const { data: checkConfigs = [] } = usePersistedCheckConfigs({ timeRange, check });
+export function useTimepoints({ timeRange, checkConfigs }: UseTimepointsProps) {
   const from = timeRange.from.valueOf();
   const to = timeRange.to.valueOf();
 
-  const timepointsInRange = useMemo(() => buildTimepoints({ from, to, checkConfigs }), [from, to, checkConfigs]);
+  return useMemo(() => buildTimepoints({ from, to, checkConfigs }), [from, to, checkConfigs]);
+}
+
+interface UseExecutionEndingLogsProps {
+  timeRange: TimeRange;
+  check: Check;
+}
+
+export function useExecutionEndingLogs({ timeRange, check }: UseExecutionEndingLogsProps) {
+  const { data = [], ...rest } = usePersistedInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
+    refId: REF_ID_CHECK_LOGS,
+    expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
+    start: timeRange.from.valueOf(),
+    end: timeRange.to.valueOf(),
+  });
 
   const {
     fetchNextPage,
@@ -132,38 +122,10 @@ function useTimepoints({ timeRange, check }: UseTimepointsProps) {
     }
   }, [fetchNextPage, hasNextPage, logsData.length]);
 
-  const timepoints = useMemo(() => {
-    const copy = [...timepointsInRange]; // necessary?
-
-    logsData.forEach((log) => {
-      const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
-      const startingTime = log.Time - duration;
-
-      const timepoint = [...copy] // necessary?
-        .reverse()
-        .find((t) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration); // not very efficient
-
-      if (!timepoint) {
-        console.log('No timepoint found for log -- probably out of selected time range', { log, id: log.id, to, from });
-        return;
-      }
-
-      // deduplicate logs
-      if (!timepoint.probes.find((p) => p.id === log.id)) {
-        timepoint.probes.push(log);
-      }
-
-      timepoint.uptimeValue = calculateUptimeValue(timepoint.probes);
-      timepoint.maxProbeDuration = getMaxProbeDuration(timepoint.probes);
-    });
-
-    return copy;
-  }, [logsData, timepointsInRange, to, from]);
-
-  return useMemo(() => {
-    const reversedTimepoints = timepoints.reverse();
-    return reversedTimepoints;
-  }, [timepoints]);
+  return {
+    data: logsData,
+    ...rest,
+  };
 }
 
 interface UseCheckConfigsProps {
@@ -305,4 +267,19 @@ function useMaxProbeDuration({ timeRange, check, refetchInterval }: UseMaxProbeD
   });
 
   return { data, isLoading, refetch };
+}
+
+export function useExplorerWidth() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState<number>(0);
+
+  useResizeObserver({
+    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
+    ref,
+    onResize: () => {
+      setWidth(ref.current?.clientWidth ?? 0);
+    },
+  });
+
+  return { width, ref };
 }

@@ -1,7 +1,7 @@
 import { DataFrame } from '@grafana/data';
 
-import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { CheckEndedLog, CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
+import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import {
   Annotation,
   CheckConfig,
@@ -247,4 +247,45 @@ export function generateAnnotations({ checkEvents, timepoints }: GenerateAnnotat
   });
 
   return build;
+}
+
+interface TimepointsWithLogsProps {
+  timepoints: Timepoint[];
+  logs: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>;
+  timeRangeFrom: UnixTimestamp;
+  timeRangeTo: UnixTimestamp;
+}
+
+export function combineTimepointsWithLogs({ timepoints, logs, timeRangeFrom, timeRangeTo }: TimepointsWithLogsProps) {
+  const copy = [...timepoints]; // necessary?
+
+  logs.forEach((log) => {
+    const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
+    const startingTime = log.Time - duration;
+
+    const timepoint = [...copy] // necessary?
+      .reverse()
+      .find((t) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration); // not very efficient
+
+    if (!timepoint) {
+      console.log('No timepoint found for log -- probably out of selected time range', {
+        log,
+        id: log.id,
+        timeRangeFrom,
+        timeRangeTo,
+      });
+      return;
+    }
+
+    // deduplicate logs
+    if (!timepoint.probes.find((p) => p.id === log.id)) {
+      timepoint.probes.push(log);
+    }
+
+    timepoint.uptimeValue = calculateUptimeValue(timepoint.probes);
+    timepoint.maxProbeDuration = getMaxProbeDuration(timepoint.probes);
+  });
+
+  const reversedTimepoints = copy.reverse();
+  return reversedTimepoints;
 }
