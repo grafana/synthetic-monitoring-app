@@ -1,7 +1,8 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
+import { Check, CheckAlertType } from 'types';
 import { useChecks } from 'data/useChecks';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
@@ -23,6 +24,19 @@ jest.mock('react-router-dom-v5-compat', () => ({
 const mockUseChecks = useChecks as jest.MockedFunction<typeof useChecks>;
 const mockUseURLSearchParams = useURLSearchParams as jest.MockedFunction<typeof useURLSearchParams>;
 
+const mockLocationHref = jest.fn();
+Object.defineProperty(window, 'location', {
+  value: {
+    get href() {
+      return '';
+    },
+    set href(url: string) {
+      mockLocationHref(url);
+    },
+  },
+  writable: true,
+});
+
 function createMockSearchParams(params: Record<string, string>): URLSearchParams {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
@@ -34,7 +48,8 @@ function createMockSearchParams(params: Record<string, string>): URLSearchParams
 describe('SceneRedirecter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-
+    mockLocationHref.mockClear();
+    
     mockUseChecks.mockReturnValue({
       data: [BASIC_HTTP_CHECK],
       isLoading: false,
@@ -43,47 +58,83 @@ describe('SceneRedirecter', () => {
     } as unknown as ReturnType<typeof useChecks>);
   });
 
-  describe('Basic redirects', () => {
-    test('redirects to check dashboard when check is found', () => {
+  describe('Runbook redirects', () => {
+    test('redirects to runbook URL for ProbeFailedExecutionsTooHigh alert', async () => {
       const searchParams = createMockSearchParams({
         'var-job': BASIC_HTTP_CHECK.job,
         'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'ProbeFailedExecutionsTooHigh',
+        'var-runbook': 'true',
       });
       mockUseURLSearchParams.mockReturnValue(searchParams);
 
       render(<SceneRedirecter />);
 
-      const navigate = screen.getByTestId('navigate');
-      expect(navigate).toHaveAttribute('data-to', '/mocked/path');
-      expect(navigate).toHaveAttribute('data-replace', 'true');
+      await waitFor(() => {
+        expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
+      });
     });
 
-    test('redirects to home when check is not found', () => {
+    test('redirects to runbook URL for TLSTargetCertificateCloseToExpiring alert', async () => {
       const searchParams = createMockSearchParams({
-        'var-job': 'non-existent-job',
-        'var-instance': 'non-existent-target',
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'TLSTargetCertificateCloseToExpiring',
+        'var-runbook': 'true',
       });
       mockUseURLSearchParams.mockReturnValue(searchParams);
 
       render(<SceneRedirecter />);
 
-      const navigate = screen.getByTestId('navigate');
-      expect(navigate).toHaveAttribute('data-to', '/mocked/path');
-      expect(navigate).toHaveAttribute('data-replace', 'true');
+      await waitFor(() => {
+        expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/tls-certificate');
+      });
     });
 
-    test('redirects to home when check has no id', () => {
-      const checkWithoutId = { ...BASIC_HTTP_CHECK, id: undefined };
+    test('parses alert names with brackets correctly', async () => {
+      const searchParams = createMockSearchParams({
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'ProbeFailedExecutionsTooHigh [5m]',
+        'var-runbook': 'true',
+      });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      await waitFor(() => {
+        expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
+      });
+    });
+
+    test('navigates to fallback when runbook URL is not configured', () => {
+      const checkWithoutRunbook: Check = {
+        ...BASIC_HTTP_CHECK,
+        alerts: [
+          {
+            name: CheckAlertType.ProbeFailedExecutionsTooHigh,
+            threshold: 5,
+            period: '5m',
+            created: Date.now(),
+            modified: Date.now(),
+            status: 'active',
+            // No runbookUrl
+          },
+        ],
+      };
+
       mockUseChecks.mockReturnValue({
-        data: [checkWithoutId],
+        data: [checkWithoutRunbook],
         isLoading: false,
         error: null,
         refetch: jest.fn(),
       } as unknown as ReturnType<typeof useChecks>);
 
       const searchParams = createMockSearchParams({
-        'var-job': checkWithoutId.job,
-        'var-instance': checkWithoutId.target,
+        'var-job': checkWithoutRunbook.job,
+        'var-instance': checkWithoutRunbook.target,
+        'var-alert': 'ProbeFailedExecutionsTooHigh',
+        'var-runbook': 'true',
       });
       mockUseURLSearchParams.mockReturnValue(searchParams);
 
@@ -91,28 +142,60 @@ describe('SceneRedirecter', () => {
 
       const navigate = screen.getByTestId('navigate');
       expect(navigate).toHaveAttribute('data-to', '/mocked/path');
-      expect(navigate).toHaveAttribute('data-replace', 'true');
+      expect(mockLocationHref).not.toHaveBeenCalled();
     });
 
-    describe('Loading state', () => {
-      test('shows loading spinner when checks are loading', () => {
-        mockUseChecks.mockReturnValue({
-          data: undefined,
-          isLoading: true,
-          error: null,
-          refetch: jest.fn(),
-        } as unknown as ReturnType<typeof useChecks>);
-
-        const searchParams = createMockSearchParams({
-          'var-job': 'test-job',
-          'var-instance': 'test-target',
-        });
-        mockUseURLSearchParams.mockReturnValue(searchParams);
-
-        render(<SceneRedirecter />);
-
-        expect(screen.getByLabelText('Loading checks')).toBeInTheDocument();
+    test('navigates to fallback when alert type is unknown', () => {
+      const searchParams = createMockSearchParams({
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'UnknownAlertType',
+        'var-runbook': 'true',
       });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      const navigate = screen.getByTestId('navigate');
+      expect(navigate).toHaveAttribute('data-to', '/mocked/path');
+      expect(mockLocationHref).not.toHaveBeenCalled();
+    });
+
+    test('ignores alert parameter when runbook flag is not set', () => {
+      const searchParams = createMockSearchParams({
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'ProbeFailedExecutionsTooHigh',
+        // No var-runbook=true
+      });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      const navigate = screen.getByTestId('navigate');
+      expect(navigate).toHaveAttribute('data-to', '/mocked/path');
+      expect(mockLocationHref).not.toHaveBeenCalled();
     });
   });
-});
+
+  describe('Loading state', () => {
+    test('shows loading spinner when checks are loading', () => {
+      mockUseChecks.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        error: null,
+        refetch: jest.fn(),
+      } as unknown as ReturnType<typeof useChecks>);
+
+      const searchParams = createMockSearchParams({
+        'var-job': 'test-job',
+        'var-instance': 'test-target',
+      });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      expect(screen.getByLabelText('Loading checks')).toBeInTheDocument();
+    });
+  });
+}); 
