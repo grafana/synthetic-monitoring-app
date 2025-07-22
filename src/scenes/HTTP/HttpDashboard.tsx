@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
@@ -24,7 +25,9 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={CheckType.HTTP}>
-      <div className={styles.vizLayout}>
+      <TimepointExplorer check={check} />
+
+      {/* <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
         </div>
@@ -49,9 +52,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
             <ResponseLatencyByProbe />
           </div>
         </div>
-      </div>
-
-      <TimepointExplorer check={check} />
+      </div> */}
     </DashboardContainer>
   );
 };

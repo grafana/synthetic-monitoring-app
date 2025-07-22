@@ -45,7 +45,11 @@ const TimepointViewerContent = ({
 }) => {
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
   const [timepoint] = selectedTimepoint;
-  const { data, isLoading } = useTimepointLogs(timepoint, check.job, check.target);
+  const { data, isLoading } = useTimepointLogs({
+    timepoint,
+    job: check.job,
+    instance: check.target,
+  });
 
   const onChangeLogsView = useCallback((view: LogsView) => {
     setLogsView(view);
@@ -58,10 +62,11 @@ const TimepointViewerContent = ({
         <CenteredSpinner />
       ) : (
         <TimepointViewerProbes
+          check={check}
           handleTimepointSelection={handleTimepointSelection}
+          logsView={logsView}
           selectedTimepoint={selectedTimepoint}
           timepointData={data}
-          logsView={logsView}
         />
       )}
     </Stack>

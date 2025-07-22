@@ -8,28 +8,28 @@ import { getTextOffset } from 'scenes/components/TimepointExplorer/YAxis.utils';
 
 const GRID_MARKERS = Array.from({ length: 5 }, (_, index) => index);
 
-export const YAxis = ({ maxProbeDurationData, width }: { maxProbeDurationData: number; width: number }) => {
+export const YAxis = ({ maxProbeDuration, width }: { maxProbeDuration: number; width: number }) => {
   const styles = useStyles2(getStyles);
 
   return (
     <Stack gap={2}>
       <div className={styles.container}>
         {GRID_MARKERS.map((marker) => {
-          return <GridText key={marker} marker={marker} maxProbeDurationData={maxProbeDurationData} />;
+          return <GridText key={marker} marker={marker} maxProbeDuration={maxProbeDuration} />;
         }).reverse()}
       </div>
       <div className={styles.container}>
         {GRID_MARKERS.map((marker) => {
-          return <GridLine key={marker} marker={marker} maxProbeDurationData={maxProbeDurationData} width={width} />;
+          return <GridLine key={marker} marker={marker} maxProbeDuration={maxProbeDuration} width={width} />;
         }).reverse()}
       </div>
     </Stack>
   );
 };
 
-const GridText = ({ marker, maxProbeDurationData }: { marker: number; maxProbeDurationData: number }) => {
+const GridText = ({ marker, maxProbeDuration }: { marker: number; maxProbeDuration: number }) => {
   const markerPercentage = (marker * 100) / (GRID_MARKERS.length - 1);
-  const value = (markerPercentage * maxProbeDurationData) / 100;
+  const value = (markerPercentage * maxProbeDuration) / 100;
   const textOffset = getTextOffset(marker, GRID_MARKERS.length);
   const styles = useStyles2(getStyles);
 
@@ -40,7 +40,7 @@ const GridText = ({ marker, maxProbeDurationData }: { marker: number; maxProbeDu
   );
 };
 
-const GridLine = ({ width }: { marker: number; maxProbeDurationData: number; width: number }) => {
+const GridLine = ({ width }: { marker: number; maxProbeDuration: number; width: number }) => {
   const styles = useStyles2(getStyles);
   return (
     <div className={styles.gridMarker}>

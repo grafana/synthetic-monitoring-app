@@ -3,18 +3,21 @@ import { Icon, Stack, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { ParsedCheckLog, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { Check } from 'types';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { SelectedTimepoint, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 interface TimepointViewerProbesProps {
+  check: Check;
   handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
+  logsView: LogsView;
   selectedTimepoint: SelectedTimepoint;
   timepointData: PerCheckLogs[];
-  logsView: LogsView;
 }
 
 export const TimepointViewerProbes = ({
+  check,
   handleTimepointSelection,
   selectedTimepoint,
   timepointData,
@@ -55,15 +58,24 @@ export const TimepointViewerProbes = ({
       </TabsBar>
       <TabContent>
         {timepointData.map(({ probe, checks }) => {
-          return checks.map((check) => {
-            const id = check[check.length - 1].id;
+          return checks.map((execution) => {
+            const id = execution[execution.length - 1].id;
             const active = id === checkToView;
 
             if (!active) {
               return null;
             }
 
-            return <LogsRenderer<ParsedCheckLog> key={probe} logs={check} logsView={logsView} mainKey="msg" />;
+            return (
+              <LogsRenderer<ParsedCheckLog>
+                check={check}
+                key={probe}
+                logs={execution}
+                logsView={logsView}
+                mainKey="msg"
+                selectedTimepoint={selectedTimepoint}
+              />
+            );
           });
         })}
       </TabContent>

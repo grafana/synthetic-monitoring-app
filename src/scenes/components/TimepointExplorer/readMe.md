@@ -2,6 +2,6 @@
 
 Important:
 
-An execution belongs to a timepoint based on its finished time. NOT its starting time.
+An execution belongs to a timepoint based on its starting time. NOT its finished time.
 
-This means an execution might start in a previous timepoint and finish in a later timepoint.
+This means an execution might end in the following timepoint.

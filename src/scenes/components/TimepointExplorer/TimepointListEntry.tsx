@@ -23,7 +23,7 @@ import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/T
 interface TimepointListEntryProps {
   annotations: Annotation[];
   handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
-  maxProbeDurationData: number;
+  maxProbeDuration: number;
   selectedTimepoint: SelectedTimepointState;
   timepoint: Timepoint;
   viewIndex: number;
@@ -33,7 +33,7 @@ interface TimepointListEntryProps {
 export const TimepointListEntry = ({
   annotations,
   timepoint,
-  maxProbeDurationData,
+  maxProbeDuration,
   viewMode,
   selectedTimepoint,
   handleTimepointSelection,
@@ -46,7 +46,7 @@ export const TimepointListEntry = ({
       <Entry
         annotations={annotations}
         handleTimepointSelection={handleTimepointSelection}
-        maxProbeDurationData={maxProbeDurationData}
+        maxProbeDuration={maxProbeDuration}
         selectedTimepoint={selectedTimepoint}
         timepoint={timepoint}
         viewIndex={viewIndex}
@@ -86,13 +86,13 @@ const ICON_MAP: Record<number, IconName> = {
 const GLOBAL_CLASS = `uptime_bar`;
 
 const UptimeEntry = ({
-  maxProbeDurationData,
+  maxProbeDuration,
   timepoint,
   selectedTimepoint,
   handleTimepointSelection,
   viewIndex,
 }: TimepointListEntryProps) => {
-  const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDurationData);
+  const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles);
   const isSuccess = timepoint.uptimeValue === 1;
   const isFailure = timepoint.uptimeValue === 0;
@@ -128,13 +128,13 @@ const UptimeEntry = ({
 };
 
 const ReachabilityEntry = ({
-  maxProbeDurationData,
+  maxProbeDuration,
   timepoint,
   handleTimepointSelection,
   selectedTimepoint,
 }: TimepointListEntryProps) => {
   const styles = useStyles2(getStyles);
-  const entryHeight = getEntryHeight(timepoint.maxProbeDuration, maxProbeDurationData);
+  const entryHeight = getEntryHeight(timepoint.maxProbeDuration, maxProbeDuration);
   const [hoveredCheck, setHoveredCheck] = useState<string | null>(null);
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
@@ -145,7 +145,7 @@ const ReachabilityEntry = ({
       <div className={styles.reachabilityEntry} style={{ height }}>
         {timepoint.probes.map((checkValue) => {
           const duration = Number(checkValue[LokiFieldNames.Labels].duration_seconds) * 1000;
-          const height = getEntryHeight(duration, maxProbeDurationData);
+          const height = getEntryHeight(duration, maxProbeDuration);
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
           const probeSuccess = checkValue[LokiFieldNames.Labels].probe_success;
           const checkId = checkValue.id;

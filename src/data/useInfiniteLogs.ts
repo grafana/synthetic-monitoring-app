@@ -5,18 +5,27 @@ import { queryLoki } from 'features/queryDatasources/queryLoki';
 import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 
-interface DeepLogsParams {
+export type InfiniteLogsParams<T, R> = {
   refId: string;
   expr: string;
   start: number;
   end: number;
-}
+  refetchInterval?: number;
+  onSuccess?: (data: Array<ParsedLokiRecord<T, R>>) => void;
+};
 
-export function useInfiniteLogs<T, R>({ refId, expr, start, end }: DeepLogsParams) {
+export function useInfiniteLogs<T, R>({
+  refId,
+  expr,
+  start,
+  end,
+  refetchInterval,
+  onSuccess,
+}: InfiniteLogsParams<T, R>) {
   const logsDS = useLogsDS();
 
   return useInfiniteQuery({
-    queryKey: ['logs', expr, start, end, refId, logsDS],
+    queryKey: ['logs', expr, refId, logsDS, start, end],
     initialPageParam: end,
     queryFn: async ({ pageParam }) => {
       if (!logsDS) {
@@ -42,8 +51,10 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end }: DeepLogsParam
 
       return lastPage[0].Time;
     },
+    refetchInterval,
     select: (data): Array<ParsedLokiRecord<T, R>> => {
       const res = data.pages.flatMap((page) => page);
+      onSuccess?.(res);
       return res;
 
       // computationally very expensive -- is it needed? Handle duplication on the frontend?

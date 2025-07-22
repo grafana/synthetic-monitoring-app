@@ -3,12 +3,16 @@ import { useTimeRange } from '@grafana/scenes-react';
 import { RadioButtonGroup, Stack } from '@grafana/ui';
 
 import { Check } from 'types';
-import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
 import {
-  useCheckConfigs,
-  useMaxProbeDuration,
+  MAX_PROBE_DURATION_DEFAULT,
+  TIMEPOINT_EXPLORER_VIEW_OPTIONS,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  usePersistedCheckConfigs,
+  usePersistedMaxProbeDuration,
+  usePersistedTimepoints,
   useTimepointExplorerView,
-  useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
   SelectedTimepointState,
@@ -31,9 +35,18 @@ interface TimepointExplorerProps {
 
 export function TimepointExplorer({ check }: TimepointExplorerProps) {
   const [timeRange] = useTimeRange();
-  const { data: maxProbeDurationData, isLoading: maxProbeDurationIsLoading } = useMaxProbeDuration(timeRange, check);
+  const refreshPickerState = useSceneRefreshPicker();
+  const refetchInterval = refreshPickerState?.refreshInMs ?? check.frequency;
+
+  const { data: maxProbeDurationData, isLoading: maxProbeDurationIsLoading } = usePersistedMaxProbeDuration({
+    timeRange,
+    check,
+  });
+  const maxProbeDuration =
+    maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
   const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
-  const { data: checkConfigs = [] } = useCheckConfigs({ timeRange, check });
+  const { data: checkConfigs = [] } = usePersistedCheckConfigs({ timeRange, check, refetchInterval });
+
   const checkEvents = constructCheckEvents({
     timeRangeFrom: timeRange.from.toDate().valueOf(),
     checkConfigs,
@@ -43,7 +56,7 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
   const timeRangeTo: UnixTimestamp = timeRange.to.toDate().valueOf();
   const initialTimeRangeToInView = timeshiftedTimepoint(timeRangeTo, check.frequency);
 
-  const timepoints = useTimepoints({ timeRange, check });
+  const timepoints = usePersistedTimepoints({ timeRange, check, refetchInterval });
   const annotations = generateAnnotations({ checkEvents, timepoints });
   const {
     activeSection,
@@ -73,7 +86,7 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
       handleTimepointSelection,
       handleTimeRangeToInViewChange,
       isLoading: maxProbeDurationIsLoading,
-      maxProbeDurationData,
+      maxProbeDuration,
       miniMapSections,
       selectedTimepoint,
       timepointDisplayCount,
@@ -89,7 +102,7 @@ export function TimepointExplorer({ check }: TimepointExplorerProps) {
     check,
     handleTimepointSelection,
     handleTimeRangeToInViewChange,
-    maxProbeDurationData,
+    maxProbeDuration,
     maxProbeDurationIsLoading,
     miniMapSections,
     selectedTimepoint,

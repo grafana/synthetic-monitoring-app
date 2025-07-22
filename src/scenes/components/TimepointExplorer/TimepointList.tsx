@@ -19,7 +19,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
     {
       annotations,
       handleTimepointSelection,
-      maxProbeDurationData,
+      maxProbeDuration,
       miniMapSections,
       selectedTimepoint,
       timepointDisplayCount,
@@ -37,7 +37,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
     return (
       <div>
         <div className={styles.container}>
-          <YAxis maxProbeDurationData={maxProbeDurationData} width={width} />
+          <YAxis maxProbeDuration={maxProbeDuration} width={width} />
           <div className={styles.timepointsContainer}>
             <TimepointListAnnotations
               annotations={annotations}
@@ -52,7 +52,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
                       annotations={annotations}
                       handleTimepointSelection={handleTimepointSelection}
                       key={index}
-                      maxProbeDurationData={maxProbeDurationData}
+                      maxProbeDuration={maxProbeDuration}
                       selectedTimepoint={selectedTimepoint}
                       timepoint={timepoint}
                       viewIndex={index}

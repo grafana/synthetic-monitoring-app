@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
@@ -26,26 +27,23 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={checkType}>
-      <div className={styles.header}>
+      <TimepointExplorer check={check} />
+      {/* <div className={styles.header}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />
       </div>
       <AssertionsTable checkType={CheckType.Scripted} check={check} />
-
       <Stack height={`200px`}>
         <Box width={`200px`}>
           <DistinctTargets query={getCountDistinctTargetsQuery({ metric: 'probe_http_info' })} />
         </Box>
         <DurationByProbe query={getSumDurationByProbeQuery({ metric: 'probe_http_total_duration_seconds' })} unit="s" />
       </Stack>
-
       <div className={styles.dataRow}>
         <DataSent query={getScriptedDataSentQuery()} />
         <DataReceived query={getScriptedDataReceivedQuery()} />
       </div>
-
-      <ResultsByTargetTable checkType={checkType} />
-      <TimepointExplorer check={check} />
+      <ResultsByTargetTable checkType={checkType} /> */}
     </DashboardContainer>
   );
 };

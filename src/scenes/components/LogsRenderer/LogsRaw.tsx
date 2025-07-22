@@ -11,8 +11,13 @@ import {
 } from '@grafana/data';
 import { PanelRenderer } from '@grafana/runtime';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
+import { Link, Stack } from '@grafana/ui';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { Check } from 'types';
+import { getExploreUrl } from 'data/utils';
+import { useLogsDS } from 'hooks/useLogsDS';
+import { SelectedTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 const logPanelOptions = {
   showTime: true,
@@ -29,19 +34,46 @@ const logPanelOptions = {
 // having a search which either filters or highlights
 // add option for wordwrap
 // add label / level filters, etc.
-export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs, mainKey }: { logs: T[]; mainKey: string }) => {
+export const LogsRaw = <T extends UnknownParsedLokiRecord>({
+  logs,
+  mainKey,
+  selectedTimepoint,
+  check,
+}: {
+  logs: T[];
+  mainKey: string;
+  selectedTimepoint: SelectedTimepoint;
+  check: Check;
+}) => {
+  const logsDS = useLogsDS();
+  const [timepoint] = selectedTimepoint;
+  const startTime = timepoint.adjustedTime;
+  const endTime = timepoint.adjustedTime + timepoint.timepointDuration * 2;
+  const probe = logs[0][LokiFieldNames.Labels].probe;
+  const query = `{job="${check.job}", instance="${check.target}", probe="${probe}"} | logfmt`;
+  const exploreURL = getExploreUrl(logsDS?.uid!, [query], {
+    from: dateTime(startTime),
+    to: dateTime(endTime),
+    raw: { from: String(startTime), to: String(endTime) },
+  });
+
   return (
-    <PanelRenderer
-      title="Logs"
-      pluginId="logs"
-      width={innerWidth}
-      height={innerHeight}
-      data={getPanelData(logs)}
-      options={{
-        ...logPanelOptions,
-        wrapLogMessage: true,
-      }}
-    />
+    <Stack direction="column" gap={1}>
+      <Link href={exploreURL} target="_blank">
+        Explore link
+      </Link>
+      <PanelRenderer
+        title="Logs"
+        pluginId="logs"
+        width={innerWidth}
+        height={innerHeight}
+        data={getPanelData(logs)}
+        options={{
+          ...logPanelOptions,
+          wrapLogMessage: true,
+        }}
+      />
+    </Stack>
   );
 };
 

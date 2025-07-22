@@ -32,7 +32,7 @@ export interface TimepointExplorerChild {
   width: number;
   miniMapSections: MinimapSection[];
   isLoading: boolean;
-  maxProbeDurationData: number;
+  maxProbeDuration: number;
   viewMode: ViewMode;
   selectedTimepoint: SelectedTimepointState;
   handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
@@ -62,4 +62,9 @@ export type Annotation = {
   checkEvent: CheckEvent;
   timepointStart: Timepoint;
   timepointEnd: Timepoint;
+};
+
+export type CheckConfig = {
+  frequency: number;
+  date: UnixTimestamp;
 };

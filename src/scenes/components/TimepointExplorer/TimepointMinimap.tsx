@@ -43,7 +43,7 @@ const TimepointMinimapContent = ({
           <TimepointMiniMapSection
             annotations={annotations}
             key={index}
-            maxProbeDurationData={rest.maxProbeDurationData}
+            maxProbeDuration={rest.maxProbeDuration}
             section={section}
             timepoints={rest.timepoints}
             handleSectionClick={handleSectionClick}

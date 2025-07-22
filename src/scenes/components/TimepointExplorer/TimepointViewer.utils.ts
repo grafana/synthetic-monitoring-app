@@ -14,15 +14,15 @@ export function filterProbes(data: PerCheckLogs[], timepoint: Timepoint) {
 
 export function filterExecutions(executions: CheckLogs[], timepoint: Timepoint) {
   return executions.filter((e) => {
-    const lastLog = e[e.length - 1];
+    const startingLog = e[0];
 
-    if (!lastLog) {
+    if (!startingLog) {
       return false;
     }
 
-    const timepointStart = timepoint.adjustedTime - timepoint.timepointDuration;
-    const timepointEnd = timepoint.adjustedTime;
+    const timepointStart = timepoint.adjustedTime;
+    const timepointEnd = timepoint.adjustedTime + timepoint.timepointDuration;
 
-    return lastLog.Time >= timepointStart && lastLog.Time <= timepointEnd;
+    return startingLog.Time >= timepointStart && startingLog.Time <= timepointEnd;
   });
 }

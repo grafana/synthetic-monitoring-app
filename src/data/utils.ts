@@ -96,15 +96,19 @@ export function getStartEnd() {
 }
 
 // TODO: finish this off
-export function getExploreUrl(datasourceUid: string, queries: any, range: TimeRange) {
-  return `/explore?left=${encodeURIComponent(
+export function getExploreUrl(datasourceUid: string, queries: string[], { from, to }: TimeRange) {
+  const left = encodeURIComponent(
     JSON.stringify({
       datasource: datasourceUid,
-      queries,
+      queries: queries.map((query) => ({
+        expr: query,
+      })),
       range: {
-        from: range.from,
-        to: range.to,
+        from,
+        to,
       },
     })
-  )}`;
+  );
+
+  return `/explore?left=${left}`;
 }

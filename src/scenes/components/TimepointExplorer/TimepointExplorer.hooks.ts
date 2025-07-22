@@ -7,11 +7,11 @@ import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
 import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
+import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
-import { useInfiniteLogs } from 'data/useInfiniteLogs';
+import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import {
-  MAX_PROBE_DURATION_DEFAULT,
   REF_ID_CHECK_LOGS,
   REF_ID_MAX_PROBE_DURATION,
   REF_ID_UNIQUE_CHECK_CONFIGS,
@@ -20,7 +20,12 @@ import {
   TIMEPOINT_GAP,
   TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Timepoint, UnixTimestamp, ViewMode } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  CheckConfig,
+  Timepoint,
+  UnixTimestamp,
+  ViewMode,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   buildTimepoints,
   calculateUptimeValue,
@@ -93,10 +98,22 @@ export function useTimepointExplorerView(timepoints: Timepoint[], initialTimeRan
 interface UseTimepointsProps {
   timeRange: TimeRange;
   check: Check;
+  refetchInterval?: number;
 }
 
-export function useTimepoints({ timeRange, check }: UseTimepointsProps) {
-  const { data: checkConfigs = [] } = useCheckConfigs({ timeRange, check });
+export function usePersistedTimepoints({ timeRange, check }: UseTimepointsProps) {
+  const [persistedTimepoints, setPersistedTimepoints] = useState<Timepoint[]>([]);
+  const timepoints = useTimepoints({ timeRange, check });
+
+  useEffect(() => {
+    setPersistedTimepoints(timepoints);
+  }, [timepoints]);
+
+  return persistedTimepoints;
+}
+
+function useTimepoints({ timeRange, check }: UseTimepointsProps) {
+  const { data: checkConfigs = [] } = usePersistedCheckConfigs({ timeRange, check });
   const from = timeRange.from.valueOf();
   const to = timeRange.to.valueOf();
 
@@ -106,7 +123,7 @@ export function useTimepoints({ timeRange, check }: UseTimepointsProps) {
     fetchNextPage,
     hasNextPage,
     data: logsData = [],
-  } = useInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
+  } = usePersistedInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
     refId: REF_ID_CHECK_LOGS,
     expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
     start: timeRange.from.valueOf(),
@@ -123,9 +140,12 @@ export function useTimepoints({ timeRange, check }: UseTimepointsProps) {
     const copy = [...timepointsInRange]; // necessary?
 
     logsData.forEach((log) => {
+      const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
+      const startingTime = log.Time - duration;
+
       const timepoint = [...copy] // necessary?
         .reverse()
-        .find((t) => log.Time <= t.adjustedTime && log.Time >= t.adjustedTime - t.timepointDuration); // not very efficient
+        .find((t) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration); // not very efficient
 
       if (!timepoint) {
         console.log('No timepoint found for log -- probably out of selected time range', { log, to, from });
@@ -145,21 +165,63 @@ export function useTimepoints({ timeRange, check }: UseTimepointsProps) {
   }, [logsData, timepointsInRange, to, from]);
 
   return useMemo(() => {
-    return timepoints.reverse();
+    const reversedTimepoints = timepoints.reverse();
+    return reversedTimepoints;
   }, [timepoints]);
 }
 
 interface UseCheckConfigsProps {
   timeRange: TimeRange;
   check: Check;
+  refetchInterval?: number;
+  onSuccess?: (data: CheckConfig[]) => void;
 }
 
-export function useCheckConfigs({ timeRange, check }: UseCheckConfigsProps) {
+function usePersistedInfiniteLogs<T, R>(props: InfiniteLogsParams<T, R>) {
+  const [persistedLogsData, setPersistedLogsData] = useState<Array<ParsedLokiRecord<T, R>>>([]);
+
+  const { data = [], ...rest } = useInfiniteLogs<T, R>(props);
+
+  useEffect(() => {
+    if (data.length > 0) {
+      setPersistedLogsData(data);
+    }
+  }, [data]);
+
+  return {
+    data: persistedLogsData,
+    ...rest,
+  };
+}
+
+export function usePersistedCheckConfigs({ timeRange, check, refetchInterval }: UseCheckConfigsProps) {
+  const [persistedCheckConfigs, setPersistedCheckConfigs] = useState<CheckConfig[]>([]);
+
+  const { data = [], ...rest } = useCheckConfigs({ timeRange, check, refetchInterval });
+
+  useEffect(() => {
+    if (data.length > 0) {
+      setPersistedCheckConfigs(data);
+    }
+  }, [data]);
+
+  return { data: persistedCheckConfigs, ...rest };
+}
+
+function useCheckConfigs({ timeRange, check, refetchInterval }: UseCheckConfigsProps) {
   const metricsDS = useMetricsDS();
   const { expr, queryType } = getCheckConfigsQuery({ job: check.job, instance: check.target });
 
   return useQuery({
-    queryKey: ['uniqueCheckConfigs', metricsDS, expr, timeRange, queryType, REF_ID_UNIQUE_CHECK_CONFIGS],
+    queryKey: [
+      'uniqueCheckConfigs',
+      metricsDS,
+      expr,
+      queryType,
+      REF_ID_UNIQUE_CHECK_CONFIGS,
+      timeRange.from,
+      timeRange.to,
+    ],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject('No metrics data source found');
@@ -174,26 +236,52 @@ export function useCheckConfigs({ timeRange, check }: UseCheckConfigsProps) {
         queryType,
       });
     },
+    refetchInterval,
     select: (data) => {
-      return data.map((d) => extractFrequenciesAndConfigs(d)).flat();
+      const configs = data.map((d) => extractFrequenciesAndConfigs(d)).flat();
+      return configs;
     },
   });
 }
 
 const MILLISECONDS_PER_SECOND = 1000;
 
-export function useMaxProbeDuration(timeRange: TimeRange, check: Check) {
+interface UseMaxProbeDurationProps {
+  timeRange: TimeRange;
+  check: Check;
+  refetchInterval?: number;
+}
+
+export function usePersistedMaxProbeDuration({ timeRange, check }: UseMaxProbeDurationProps) {
+  const [persistedMaxProbeDuration, setPersistedMaxProbeDuration] = useState<number>(0);
+
+  const { data = 0, ...rest } = useMaxProbeDuration({ timeRange, check });
+
+  useEffect(() => {
+    if (data > 0) {
+      setPersistedMaxProbeDuration(data);
+    }
+  }, [data]);
+
+  return { data: persistedMaxProbeDuration, ...rest };
+}
+
+function useMaxProbeDuration({ timeRange, check, refetchInterval }: UseMaxProbeDurationProps) {
   const metricsDS = useMetricsDS();
 
-  const { data: maxProbeDurationData = 0, isLoading } = useQuery({
+  const {
+    data = 0,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: [
       'aggregation',
       metricsDS,
       check.job,
       check.target,
-      timeRange.from.valueOf(),
-      timeRange.to.valueOf(),
       REF_ID_MAX_PROBE_DURATION,
+      timeRange.from,
+      timeRange.to,
     ],
     queryFn: () => {
       if (!metricsDS) {
@@ -211,6 +299,7 @@ export function useMaxProbeDuration(timeRange: TimeRange, check: Check) {
         queryType,
       });
     },
+    refetchInterval,
     select: (data) => {
       // Convert seconds to milliseconds
       const values = data.map((d) => d.fields[1].values[0]);
@@ -219,7 +308,5 @@ export function useMaxProbeDuration(timeRange: TimeRange, check: Check) {
     },
   });
 
-  const data = maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
-
-  return { data, isLoading };
+  return { data, isLoading, refetch };
 }

@@ -4,6 +4,7 @@ import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import {
   Annotation,
+  CheckConfig,
   CheckEvent,
   CheckEventType,
   MinimapSection,
@@ -88,7 +89,8 @@ export function getMaxProbeDuration(probes: CheckEndedLog[]) {
 export function getEntryHeight(duration: number, maxProbeDurationData: number) {
   const percentage = (duration / maxProbeDurationData) * 100;
 
-  return percentage;
+  // TODO: fix this at the root of the problem
+  return percentage > 100 ? 100 : percentage;
 }
 
 interface BuildTimepointsInRangeProps {
@@ -153,7 +155,7 @@ export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsFo
 const NANOSECONDS_PER_MILLISECOND = 1000000;
 
 export function extractFrequenciesAndConfigs(data: DataFrame) {
-  let build: Array<{ frequency: number; date: UnixTimestamp }> = [];
+  let build: CheckConfig[] = [];
   const Value = data.fields[1];
 
   if (Value.labels) {

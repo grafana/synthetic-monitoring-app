@@ -15,7 +15,7 @@ import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExp
 
 interface MiniMapSectionProps {
   annotations: Annotation[];
-  maxProbeDurationData: number;
+  maxProbeDuration: number;
   section: MinimapSection;
   timepoints: Timepoint[];
   handleSectionClick: (section: MinimapSection) => void;
@@ -27,7 +27,7 @@ interface MiniMapSectionProps {
 
 export const TimepointMiniMapSection = ({
   annotations,
-  maxProbeDurationData,
+  maxProbeDuration,
   section,
   timepoints,
   handleSectionClick,
@@ -61,14 +61,14 @@ export const TimepointMiniMapSection = ({
           {viewMode === 'uptime' ? (
             <UptimeSection
               timepoints={timepointsToRender}
-              maxProbeDurationData={maxProbeDurationData}
+              maxProbeDuration={maxProbeDuration}
               timepointDisplayCount={timepointDisplayCount}
               selectedTimepoint={selectedTimepoint}
             />
           ) : (
             <ReachabilitySection
               timepoints={timepointsToRender}
-              maxProbeDurationData={maxProbeDurationData}
+              maxProbeDuration={maxProbeDuration}
               timepointDisplayCount={timepointDisplayCount}
               selectedTimepoint={selectedTimepoint}
             />
@@ -81,14 +81,14 @@ export const TimepointMiniMapSection = ({
 
 interface SectionChildProps {
   timepoints: Timepoint[];
-  maxProbeDurationData: number;
+  maxProbeDuration: number;
   timepointDisplayCount: number;
   selectedTimepoint: SelectedTimepointState;
 }
 
 const UptimeSection = ({
   timepoints,
-  maxProbeDurationData,
+  maxProbeDuration,
   timepointDisplayCount,
   selectedTimepoint,
 }: SectionChildProps) => {
@@ -96,7 +96,7 @@ const UptimeSection = ({
   const width = `${100 / timepointDisplayCount}%`;
 
   return timepoints.map((timepoint) => {
-    const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDurationData);
+    const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDuration);
 
     return (
       <div
@@ -114,7 +114,7 @@ const UptimeSection = ({
 
 const ReachabilitySection = ({
   timepoints,
-  maxProbeDurationData,
+  maxProbeDuration,
   timepointDisplayCount,
   selectedTimepoint,
 }: SectionChildProps) => {
@@ -125,7 +125,7 @@ const ReachabilitySection = ({
       <ReachabilityTimepoint
         key={timepoint.adjustedTime}
         timepoint={timepoint}
-        maxProbeDurationData={maxProbeDurationData}
+        maxProbeDuration={maxProbeDuration}
         width={width}
         selectedTimepoint={selectedTimepoint}
       />
@@ -135,14 +135,14 @@ const ReachabilitySection = ({
 
 interface ReachabilityTimepointProps {
   timepoint: Timepoint;
-  maxProbeDurationData: number;
+  maxProbeDuration: number;
   width: string;
   selectedTimepoint: SelectedTimepointState;
 }
 
 const ReachabilityTimepoint = ({
   timepoint,
-  maxProbeDurationData,
+  maxProbeDuration,
   width,
   selectedTimepoint,
 }: ReachabilityTimepointProps) => {
@@ -160,7 +160,7 @@ const ReachabilityTimepoint = ({
         const probeSuccess = probe[LokiFieldNames.Labels].probe_success;
         const probeDuration = Number(probe[LokiFieldNames.Labels].duration_seconds) * 1000;
         const probeName = probe[LokiFieldNames.Labels].probe;
-        const bottom = getEntryHeight(probeDuration, maxProbeDurationData) / 100;
+        const bottom = getEntryHeight(probeDuration, maxProbeDuration) / 100;
         const containerHeight = container?.clientHeight ?? 0;
         const containerWidth = container?.clientWidth ?? 0;
         // the probe is half the container width (--size) and the center is half of that
