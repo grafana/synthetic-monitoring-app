@@ -183,11 +183,13 @@ describe('secretSchema', () => {
       const validSecrets = [
         {
           uuid: '123',
+          name: 'test-secret',
           description: 'A valid description',
           labels: [{ name: 'env', value: 'prod' }],
         },
         {
           uuid: '123',
+          name: 'test-secret',
           description: 'A valid description',
           labels: [{ name: 'env', value: 'prod' }],
           plaintext: 'A valid plaintext value',

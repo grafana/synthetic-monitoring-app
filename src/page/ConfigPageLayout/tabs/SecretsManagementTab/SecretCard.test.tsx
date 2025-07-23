@@ -53,7 +53,7 @@ describe('SecretCard', () => {
     const user = userEvent.setup();
     await user.click(editButton);
 
-    expect(defaultProps.onEdit).toHaveBeenCalledWith(MOCKED_SECRETS[0].uuid);
+    expect(defaultProps.onEdit).toHaveBeenCalledWith(MOCKED_SECRETS[0].name);
   });
 
   it('should call onDelete when delete button is clicked', async () => {
@@ -63,7 +63,7 @@ describe('SecretCard', () => {
     const user = userEvent.setup();
     await user.click(deleteButton);
 
-    expect(defaultProps.onDelete).toHaveBeenCalledWith(MOCKED_SECRETS[0].uuid);
+    expect(defaultProps.onDelete).toHaveBeenCalledWith(MOCKED_SECRETS[0].name);
   });
 
   it('should render without labels when none are provided', () => {

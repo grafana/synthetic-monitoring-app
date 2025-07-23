@@ -10,14 +10,14 @@ import { SecretsManagementTab } from './SecretsManagementTab';
 import { SecretsManagementUI } from './SecretsManagementUI';
 
 jest.mock('./SecretEditModal', () => ({
-  SecretEditModal: ({ onDismiss, open, id }: { onDismiss?: () => void; id: string; open?: boolean }) => {
+  SecretEditModal: ({ onDismiss, open, name }: { onDismiss?: () => void; name: string; open?: boolean }) => {
     if (!open) {
       return null;
     }
 
     return (
       <div role="dialog" aria-label="Create secret">
-        <span data-testid="modal-id">{id}</span>
+        <span data-testid="modal-id">{name}</span>
         <button onClick={onDismiss}>Close</button>
       </div>
     );
@@ -99,7 +99,7 @@ describe('SecretsManagementUI', () => {
     render(<SecretsManagementTab />);
     const editButton = screen.getAllByRole('button', { name: /edit/i })[0];
     await userEvent.click(editButton);
-    expect(screen.getByTestId('modal-id')).toHaveTextContent(MOCKED_SECRETS[0].uuid);
+    expect(screen.getByTestId('modal-id')).toHaveTextContent(MOCKED_SECRETS[0].name);
   });
 
   it('should open delete secret modal', async () => {
