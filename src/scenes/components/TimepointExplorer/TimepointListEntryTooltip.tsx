@@ -5,10 +5,10 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { formatDuration, formatSmallDurations } from 'utils';
-import { Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 interface TimepointListEntryTooltipProps {
-  timepoint: Timepoint;
+  timepoint: StatefulTimepoint;
   hoveredCheck?: string | null;
 }
 

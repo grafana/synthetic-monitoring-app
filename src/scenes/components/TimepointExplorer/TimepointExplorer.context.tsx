@@ -1,6 +1,8 @@
 import React, { createContext, PropsWithChildren, RefObject, useContext, useEffect, useMemo, useState } from 'react';
 import { useTimeRange } from '@grafana/scenes-react';
 
+import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
+import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import {
   MAX_PROBE_DURATION_DEFAULT,
@@ -8,12 +10,13 @@ import {
   TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
+  useExecutionEndingLogs,
   useExplorerWidth,
   usePersistedCheckConfigs,
   usePersistedMaxProbeDuration,
   useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import { CheckConfig, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { CheckConfig, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getMiniMapPages } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 type TimepointExplorerContextType = {
@@ -21,10 +24,11 @@ type TimepointExplorerContextType = {
   checkConfigs: CheckConfig[];
   isLoading: boolean;
   handleMiniMapPageChange: React.Dispatch<React.SetStateAction<number>>;
+  logsData: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>;
   maxProbeDuration: number;
   miniMapPage: number;
   miniMapPages: Array<[number, number]>;
-  miniMapVisibleTimepoints: Timepoint[];
+  timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
   width: number;
   ref: RefObject<HTMLDivElement | null>;
@@ -64,16 +68,27 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     () => getMiniMapPages(timepoints, timepointsDisplayCount),
     [timepoints, timepointsDisplayCount]
   );
+  const timepointTo = timepoints[timepoints.length - 1];
+  const timepointFrom = timepoints[0];
+  const timeRangeTo = timepointTo?.adjustedTime + timepointTo?.timepointDuration;
+  const timeRangeFrom = timepointFrom?.adjustedTime;
+
+  const miniMapPageTimeRange = useMemo(() => {
+    return {
+      from: timeRangeFrom,
+      to: timeRangeTo,
+    };
+  }, [timeRangeFrom, timeRangeTo]);
+
+  const { data: logsData = [] } = useExecutionEndingLogs({ timeRange: miniMapPageTimeRange, check });
 
   // reset miniMapPage to 0 when miniMapPages changes (such as screen resize)
+  // todo make this better
   useEffect(() => {
     if (miniMapPages.length > 0) {
       setMiniMapPage(0);
     }
   }, [miniMapPages]);
-
-  const [miniMapStartingIndex, miniMapEndingIndex] = miniMapPages[miniMapPage] || [0, 0];
-  const miniMapVisibleTimepoints = timepoints.slice(miniMapStartingIndex, miniMapEndingIndex);
 
   return (
     <TimepointExplorerContext.Provider
@@ -82,10 +97,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
         checkConfigs,
         isLoading,
         handleMiniMapPageChange: setMiniMapPage,
+        logsData,
         maxProbeDuration,
         miniMapPage,
         miniMapPages,
-        miniMapVisibleTimepoints,
+        timepoints,
         timepointsDisplayCount,
         width,
         ref,

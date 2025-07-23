@@ -19,7 +19,7 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   CheckConfig,
-  Timepoint,
+  StatelessTimepoint,
   UnixTimestamp,
   ViewMode,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -29,7 +29,7 @@ import {
   minimapSections,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
-export function useTimepointExplorerView(timepoints: Timepoint[], timepointsDisplayCount: number) {
+export function useTimepointExplorerView(timepoints: StatelessTimepoint[], timepointsDisplayCount: number) {
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
   const [activeMiniMapSectionIndex, setActiveMiniMapSectionIndex] = useState<number>(0);
   const miniMapSections = minimapSections(timepoints, timepointsDisplayCount);

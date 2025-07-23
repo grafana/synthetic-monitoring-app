@@ -9,7 +9,7 @@ import {
   TIMEPOINT_LIST_ANNOTATIONS_ID,
   TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Annotation, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { Annotation, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export const TimepointListAnnotations = ({
   annotations,
@@ -17,7 +17,7 @@ export const TimepointListAnnotations = ({
   timepointsDisplayCount,
 }: {
   annotations: Annotation[];
-  timepointsInRange: Timepoint[];
+  timepointsInRange: StatelessTimepoint[];
   timepointsDisplayCount: number;
 }) => {
   const styles = useStyles2(getStyles);

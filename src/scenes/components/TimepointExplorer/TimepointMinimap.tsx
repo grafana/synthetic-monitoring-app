@@ -7,7 +7,6 @@ import {
   Annotation,
   MinimapSection,
   SelectedTimepointState,
-  Timepoint,
   ViewMode,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointMiniMapSection } from 'scenes/components/TimepointExplorer/TimepointMinimapSection';
@@ -17,7 +16,6 @@ interface TimepointMinimapProps {
   activeMiniMapSectionIndex: number;
   handleMiniMapSectionClick: (index: number) => void;
   miniMapSections: MinimapSection[];
-  timepoints: Timepoint[];
   viewMode: ViewMode;
   selectedTimepoint: SelectedTimepointState;
 }
@@ -27,11 +25,10 @@ export const TimepointMinimap = ({
   activeMiniMapSectionIndex,
   handleMiniMapSectionClick,
   miniMapSections,
-  timepoints,
   viewMode,
   selectedTimepoint,
 }: TimepointMinimapProps) => {
-  const { handleMiniMapPageChange, miniMapPage, miniMapPages } = useTimepointExplorerContext();
+  const { handleMiniMapPageChange, miniMapPage, miniMapPages, timepoints } = useTimepointExplorerContext();
   const endingTimepoint = timepoints[0] || null;
   const startingTimepoint = timepoints[timepoints.length - 1] || null;
   const lengthOfTime = endingTimepoint?.adjustedTime - startingTimepoint?.adjustedTime;
@@ -54,7 +51,6 @@ export const TimepointMinimap = ({
               activeMiniMapSectionIndex={activeMiniMapSectionIndex}
               handleMiniMapSectionClick={handleMiniMapSectionClick}
               miniMapSections={miniMapSections}
-              timepoints={timepoints}
               viewMode={viewMode}
               selectedTimepoint={selectedTimepoint}
             />
@@ -86,11 +82,10 @@ const TimepointMinimapContent = ({
   activeMiniMapSectionIndex,
   handleMiniMapSectionClick,
   miniMapSections,
-  timepoints,
   viewMode,
   selectedTimepoint,
 }: TimepointMinimapProps) => {
-  const { maxProbeDuration, timepointsDisplayCount } = useTimepointExplorerContext();
+  const { maxProbeDuration, timepoints, timepointsDisplayCount } = useTimepointExplorerContext();
   // todo: fix this
   if (miniMapSections.length === 0) {
     return null;

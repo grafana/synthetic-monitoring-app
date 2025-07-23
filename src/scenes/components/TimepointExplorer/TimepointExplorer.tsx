@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { RadioButtonGroup, Stack } from '@grafana/ui';
 
 import { Check } from 'types';
@@ -7,16 +7,9 @@ import {
   TimepointExplorerProvider,
   useTimepointExplorerContext,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import {
-  useExecutionEndingLogs,
-  useTimepointExplorerView,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { useTimepointExplorerView } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { SelectedTimepointState, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import {
-  combineTimepointsWithLogs,
-  constructCheckEvents,
-  generateAnnotations,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { constructCheckEvents, generateAnnotations } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointList } from 'scenes/components/TimepointExplorer/TimepointList';
 import { TimepointMinimap } from 'scenes/components/TimepointExplorer/TimepointMinimap';
 import { TimepointViewer } from 'scenes/components/TimepointExplorer/TimepointViewer';
@@ -34,35 +27,16 @@ export const TimepointExplorer = ({ check }: TimepointExplorerProps) => {
 };
 
 const TimepointExplorerInternal = () => {
-  const { check, checkConfigs, miniMapVisibleTimepoints, timepointsDisplayCount } = useTimepointExplorerContext();
+  const { check, checkConfigs, miniMapCurrentPageTimeRange, timepoints, timepointsDisplayCount } =
+    useTimepointExplorerContext();
   const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
-  const timepointTo = miniMapVisibleTimepoints[miniMapVisibleTimepoints.length - 1];
-  const timepointFrom = miniMapVisibleTimepoints[0];
-
-  const timeRangeTo = timepointTo?.adjustedTime + timepointTo?.timepointDuration;
-  const timeRangeFrom = timepointFrom?.adjustedTime;
-
-  const timeRange = useMemo(() => {
-    return {
-      from: timeRangeFrom,
-      to: timeRangeTo,
-    };
-  }, [timeRangeFrom, timeRangeTo]);
 
   const checkEvents = constructCheckEvents({
-    timeRangeFrom,
+    timeRangeFrom: miniMapCurrentPageTimeRange.from,
     checkConfigs,
     checkCreation: check.created,
   });
 
-  const { data: logsData = [] } = useExecutionEndingLogs({ timeRange, check });
-
-  const timepoints = combineTimepointsWithLogs({
-    timepoints: miniMapVisibleTimepoints,
-    logs: logsData,
-    timeRangeFrom,
-    timeRangeTo,
-  });
   const annotations = generateAnnotations({ checkEvents, timepoints });
   const { activeMiniMapSectionIndex, handleMiniMapSectionClick, handleViewModeChange, miniMapSections, viewMode } =
     useTimepointExplorerView(timepoints, timepointsDisplayCount);
@@ -87,7 +61,6 @@ const TimepointExplorerInternal = () => {
           annotations={annotations}
           handleMiniMapSectionClick={handleMiniMapSectionClick}
           miniMapSections={miniMapSections}
-          timepoints={timepoints}
           viewMode={viewMode}
           selectedTimepoint={selectedTimepoint}
         />
@@ -97,8 +70,7 @@ const TimepointExplorerInternal = () => {
           handleTimepointSelection={handleTimepointSelection}
           miniMapSections={miniMapSections}
           selectedTimepoint={selectedTimepoint}
-          timepoints={timepoints}
-          timeRange={timeRange}
+          timeRange={miniMapCurrentPageTimeRange}
           viewMode={viewMode}
         />
         <TimepointViewer handleTimepointSelection={handleTimepointSelection} selectedTimepoint={selectedTimepoint} />

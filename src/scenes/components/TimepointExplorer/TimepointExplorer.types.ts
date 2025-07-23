@@ -13,6 +13,19 @@ export type Timepoint = {
   maxProbeDuration: number;
 };
 
+export type StatelessTimepoint = {
+  adjustedTime: UnixTimestamp;
+  timepointDuration: number;
+  frequency: number;
+};
+
+export type StatefulTimepoint = StatelessTimepoint & {
+  maxProbeDuration?: number;
+  probes?: CheckEndedLog[];
+  uptimeValue?: -1 | 0 | 1; // -1 means unknown, 0 means failure, 1 means success
+  index: number;
+};
+
 export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value'];
 
 export type SelectedTimepoint = [Timepoint, string];
@@ -40,8 +53,8 @@ export type CheckEvent = {
 
 export type Annotation = {
   checkEvent: CheckEvent;
-  timepointStart: Timepoint;
-  timepointEnd: Timepoint;
+  timepointStart: StatelessTimepoint;
+  timepointEnd: StatelessTimepoint;
 };
 
 export type CheckConfig = {

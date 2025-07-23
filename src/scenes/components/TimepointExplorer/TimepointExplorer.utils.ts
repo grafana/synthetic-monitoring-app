@@ -9,11 +9,12 @@ import {
   CheckEvent,
   CheckEventType,
   MinimapSection,
-  Timepoint,
+  StatefulTimepoint,
+  StatelessTimepoint,
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function minimapSections(timepoints: Timepoint[], timepointsDisplayCount: number) {
+export function minimapSections(timepoints: StatelessTimepoint[], timepointsDisplayCount: number) {
   const timepointsInRange = timepoints.map((t) => t.adjustedTime);
   const sections: MinimapSection[] = [];
 
@@ -129,18 +130,14 @@ interface BuildTimepointsForConfigProps {
 }
 
 export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsForConfigProps) {
-  let build: Timepoint[] = [];
+  let build: StatelessTimepoint[] = [];
   let currentTimepoint = timeshiftedTimepoint(to, config.frequency);
 
   while (currentTimepoint >= from) {
     build.push({
-      probes: [],
-      uptimeValue: -1,
       adjustedTime: currentTimepoint,
       timepointDuration: config.frequency,
       frequency: config.frequency,
-      index: -1,
-      maxProbeDuration: -1,
     });
 
     currentTimepoint -= config.frequency;
@@ -207,7 +204,7 @@ export function constructCheckEvents({
 
 interface GenerateAnnotationsProps {
   checkEvents: CheckEvent[];
-  timepoints: Timepoint[];
+  timepoints: StatelessTimepoint[];
 }
 
 export function generateAnnotations({ checkEvents, timepoints }: GenerateAnnotationsProps): Annotation[] {
@@ -247,14 +244,12 @@ export function generateAnnotations({ checkEvents, timepoints }: GenerateAnnotat
 }
 
 interface TimepointsWithLogsProps {
-  timepoints: Timepoint[];
+  timepoints: StatelessTimepoint[];
   logs: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>;
-  timeRangeFrom: UnixTimestamp;
-  timeRangeTo: UnixTimestamp;
 }
 
-export function combineTimepointsWithLogs({ timepoints, logs, timeRangeFrom, timeRangeTo }: TimepointsWithLogsProps) {
-  const copy = [...timepoints]; // necessary?
+export function combineTimepointsWithLogs({ timepoints, logs }: TimepointsWithLogsProps) {
+  const copy: StatefulTimepoint[] = [...timepoints]; // necessary?
 
   logs.forEach((log) => {
     const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
@@ -265,15 +260,10 @@ export function combineTimepointsWithLogs({ timepoints, logs, timeRangeFrom, tim
       .find((t) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration); // not very efficient
 
     if (!timepoint) {
-      // console.log('No timepoint found for log -- probably out of selected time range', {
-      //   logTime: new Date(log.Time).toISOString(),
-      //   log,
-      //   id: log.id,
-      //   timeRangeFrom: new Date(timeRangeFrom).toISOString(),
-      //   timeRangeTo: new Date(timeRangeTo).toISOString(),
-      // });
       return;
     }
+
+    timepoint.probes = timepoint.probes || [];
 
     // deduplicate logs
     if (!timepoint.probes.find((p) => p.id === log.id)) {
@@ -292,7 +282,7 @@ export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
   return timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
 }
 
-export function getMiniMapPages(timepoints: Timepoint[], timepointsDisplayCount: number) {
+export function getMiniMapPages(timepoints: StatelessTimepoint[], timepointsDisplayCount: number) {
   const pages: Array<[number, number]> = [];
 
   if (!timepoints.length || timepointsDisplayCount === 0) {

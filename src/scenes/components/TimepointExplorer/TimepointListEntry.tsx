@@ -14,7 +14,7 @@ import {
   Annotation,
   CheckEventType,
   SelectedTimepointState,
-  Timepoint,
+  StatefulTimepoint,
   ViewMode,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -22,10 +22,10 @@ import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/T
 
 interface TimepointListEntryProps {
   annotations: Annotation[];
-  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
+  handleTimepointSelection: (timepoint: StatefulTimepoint, probeToView: string) => void;
   maxProbeDuration: number;
   selectedTimepoint: SelectedTimepointState;
-  timepoint: Timepoint;
+  timepoint: StatefulTimepoint;
   viewIndex: number;
   viewMode: ViewMode;
 }
@@ -92,7 +92,7 @@ const UptimeEntry = ({
   handleTimepointSelection,
   viewIndex,
 }: TimepointListEntryProps) => {
-  const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDuration);
+  const height = getEntryHeight(timepoint.maxProbeDuration!, maxProbeDuration);
   const styles = useStyles2(getStyles);
   const isSuccess = timepoint.uptimeValue === 1;
   const isFailure = timepoint.uptimeValue === 0;

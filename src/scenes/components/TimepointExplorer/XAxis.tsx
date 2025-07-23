@@ -9,12 +9,12 @@ import {
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { generateXAxisPoints } from 'scenes/components/TimepointExplorer/XAxis.utils';
 
 interface XAxisProps {
   timeRange: { from: UnixTimestamp; to: UnixTimestamp };
-  timepoints: Timepoint[];
+  timepoints: StatelessTimepoint[];
   width: number;
 }
 

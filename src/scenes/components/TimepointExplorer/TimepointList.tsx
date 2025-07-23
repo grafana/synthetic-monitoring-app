@@ -17,6 +17,7 @@ import {
   UnixTimestamp,
   ViewMode,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { combineTimepointsWithLogs } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListAnnotations } from 'scenes/components/TimepointExplorer/TimepointListAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
@@ -39,14 +40,15 @@ export const TimepointList = ({
   handleTimepointSelection,
   miniMapSections,
   selectedTimepoint,
-  timepoints,
   timeRange,
   viewMode,
 }: TimepointListProps) => {
-  const { maxProbeDuration, ref, timepointsDisplayCount, width } = useTimepointExplorerContext();
+  const { logsData, maxProbeDuration, ref, timepoints, timepointsDisplayCount, width } = useTimepointExplorerContext();
   const activeSection = miniMapSections[activeMiniMapSectionIndex];
   const styles = useStyles2(getStyles);
-  const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
+  const combinedTimepoints = combineTimepointsWithLogs({ timepoints, logs: logsData });
+
+  const timepointsInRange = combinedTimepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
 
   return (
     <div>

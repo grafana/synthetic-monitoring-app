@@ -1,12 +1,12 @@
 import { TIMEPOINT_GAP_PX, TIMEPOINT_SIZE } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 const APPROXIMATE_SPACING = 200; // Approximate spacing in pixels
 const TIMEPOINT_WIDTH = TIMEPOINT_SIZE + TIMEPOINT_GAP_PX;
 const LABEL_PER_POINTS = Math.floor(APPROXIMATE_SPACING / TIMEPOINT_WIDTH);
 
 export function generateXAxisPoints(
-  timepointsInRange: Timepoint[],
+  timepointsInRange: StatelessTimepoint[],
   timeRange: { from: UnixTimestamp; to: UnixTimestamp }
 ) {
   if (timepointsInRange.length === 0) {

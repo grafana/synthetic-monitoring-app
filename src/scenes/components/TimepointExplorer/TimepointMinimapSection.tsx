@@ -10,7 +10,7 @@ import {
   Annotation,
   MinimapSection,
   SelectedTimepointState,
-  Timepoint,
+  StatelessTimepoint,
   ViewMode,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -21,7 +21,7 @@ interface MiniMapSectionProps {
   index: number;
   maxProbeDuration: number;
   section: MinimapSection;
-  timepoints: Timepoint[];
+  timepoints: StatelessTimepoint[];
   handleSectionClick: (index: number) => void;
   viewMode: ViewMode;
   timepointsDisplayCount: number;
@@ -86,7 +86,7 @@ export const TimepointMiniMapSection = ({
 };
 
 interface SectionChildProps {
-  timepoints: Timepoint[];
+  timepoints: StatelessTimepoint[];
   maxProbeDuration: number;
   timepointsDisplayCount: number;
   selectedTimepoint: SelectedTimepointState;
