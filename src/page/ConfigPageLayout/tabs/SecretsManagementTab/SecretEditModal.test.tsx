@@ -238,7 +238,7 @@ describe('SecretEditModal', () => {
 
     const { body } = await read();
 
-    expect(body.name).toBeUndefined(); // The name should not be sent in the request
+    expect(body.name).toBe(secretMock.name); // Name is included for API identification but immutable in UI
   });
 
   it('should show value textarea as disabled when configured', async () => {

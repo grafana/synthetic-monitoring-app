@@ -157,8 +157,8 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
       <form onSubmit={handleSubmit(onSubmit)}>
         {hasError && (
           <Alert title={`Unable to ${hasFetchError ? 'fetch' : 'save'} secret`} severity="error">
-            An error occurred while trying to {hasFetchError ? <>fetch secret (name: {name})</> : <>save secret</>}. If the
-            problem persists, seek help from an admin or{' '}
+            An error occurred while trying to {hasFetchError ? <>fetch secret (name: {name})</> : <>save secret</>}. If
+            the problem persists, seek help from an admin or{' '}
             <TextLink href="https://grafana.com/contact" external>
               contact support
             </TextLink>
@@ -179,7 +179,8 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
         >
           <Input
             id="secret-name"
-            {...register('name', { disabled: !isNewSecret })}
+            {...register('name')}
+            readOnly={!isNewSecret}
             onChange={({ target }: ChangeEvent<HTMLInputElement>) => {
               setValue('name', target.value.replaceAll(' ', '-').toLowerCase());
               trigger('name');
