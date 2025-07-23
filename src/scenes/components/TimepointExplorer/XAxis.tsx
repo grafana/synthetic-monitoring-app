@@ -8,6 +8,7 @@ import {
   TIMEPOINT_SIZE,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { generateXAxisPoints } from 'scenes/components/TimepointExplorer/XAxis.utils';
 
@@ -17,7 +18,8 @@ interface XAxisProps {
   width: number;
 }
 
-export const XAxis = ({ timepoints, timeRange, width }: XAxisProps) => {
+export const XAxis = ({ timepoints, timeRange }: XAxisProps) => {
+  const { width } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
 
   return (

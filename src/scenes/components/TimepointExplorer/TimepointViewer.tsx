@@ -5,6 +5,7 @@ import { Check } from 'types';
 import { formatDuration } from 'utils';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import {
   SelectedTimepoint,
   SelectedTimepointState,
@@ -16,10 +17,10 @@ import { TimepointViewerProbes } from 'scenes/components/TimepointExplorer/Timep
 interface TimepointViewerProps {
   handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
   selectedTimepoint: SelectedTimepointState;
-  check: Check;
 }
 
-export const TimepointViewer = ({ handleTimepointSelection, selectedTimepoint, check }: TimepointViewerProps) => {
+export const TimepointViewer = ({ handleTimepointSelection, selectedTimepoint }: TimepointViewerProps) => {
+  const { check } = useTimepointExplorerContext();
   const [timepoint] = selectedTimepoint;
 
   return (

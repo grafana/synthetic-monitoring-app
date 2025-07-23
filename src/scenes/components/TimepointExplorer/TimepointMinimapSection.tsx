@@ -5,6 +5,7 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import {
   Annotation,
   MinimapSection,
@@ -30,15 +31,15 @@ interface MiniMapSectionProps {
 export const TimepointMiniMapSection = ({
   activeMiniMapSectionIndex,
   annotations,
-  handleSectionClick,
   index,
-  maxProbeDuration,
+  handleSectionClick,
   section,
   selectedTimepoint,
   timepoints,
   timepointsDisplayCount,
   viewMode,
 }: MiniMapSectionProps) => {
+  const { maxProbeDuration } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
   const timepointsToRender = timepoints.slice(section.fromIndex, section.toIndex).reverse();
   const ref = useRef<HTMLButtonElement>(null);

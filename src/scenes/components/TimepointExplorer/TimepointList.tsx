@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -8,6 +8,7 @@ import {
   TIMEPOINT_LIST_ID,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import {
   Annotation,
   MinimapSection,
@@ -25,73 +26,61 @@ interface TimepointListProps {
   activeMiniMapSectionIndex: number;
   annotations: Annotation[];
   handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
-  maxProbeDuration: number;
   miniMapSections: MinimapSection[];
   selectedTimepoint: SelectedTimepointState;
-  timepointsDisplayCount: number;
   timepoints: Timepoint[];
   timeRange: { from: UnixTimestamp; to: UnixTimestamp };
   viewMode: ViewMode;
-  width: number;
 }
 
-export const TimepointList = forwardRef<HTMLDivElement, TimepointListProps>(
-  (
-    {
-      activeMiniMapSectionIndex,
-      annotations,
-      handleTimepointSelection,
-      maxProbeDuration,
-      miniMapSections,
-      selectedTimepoint,
-      timepointsDisplayCount,
-      timepoints,
-      timeRange,
-      viewMode,
-      width,
-    },
-    ref
-  ) => {
-    const activeSection = miniMapSections[activeMiniMapSectionIndex];
-    const styles = useStyles2(getStyles);
-    const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
+export const TimepointList = ({
+  activeMiniMapSectionIndex,
+  annotations,
+  handleTimepointSelection,
+  miniMapSections,
+  selectedTimepoint,
+  timepoints,
+  timeRange,
+  viewMode,
+}: TimepointListProps) => {
+  const { maxProbeDuration, ref, timepointsDisplayCount, width } = useTimepointExplorerContext();
+  const activeSection = miniMapSections[activeMiniMapSectionIndex];
+  const styles = useStyles2(getStyles);
+  const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
 
-    return (
-      <div>
-        <div className={styles.container}>
-          <YAxis maxProbeDuration={maxProbeDuration} width={width} />
-          <div className={styles.timepointsContainer}>
-            <TimepointListAnnotations
-              annotations={annotations}
-              timepointsInRange={timepointsInRange}
-              timepointsDisplayCount={timepointsDisplayCount}
-            />
-            <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
-              {activeSection &&
-                timepointsInRange.map((timepoint, index) => {
-                  return (
-                    <TimepointListEntry
-                      annotations={annotations}
-                      handleTimepointSelection={handleTimepointSelection}
-                      key={index}
-                      maxProbeDuration={maxProbeDuration}
-                      selectedTimepoint={selectedTimepoint}
-                      timepoint={timepoint}
-                      viewIndex={index}
-                      viewMode={viewMode}
-                    />
-                  );
-                })}
-            </div>
+  return (
+    <div>
+      <div className={styles.container}>
+        <YAxis maxProbeDuration={maxProbeDuration} width={width} />
+        <div className={styles.timepointsContainer}>
+          <TimepointListAnnotations
+            annotations={annotations}
+            timepointsInRange={timepointsInRange}
+            timepointsDisplayCount={timepointsDisplayCount}
+          />
+          <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
+            {activeSection &&
+              timepointsInRange.map((timepoint, index) => {
+                return (
+                  <TimepointListEntry
+                    annotations={annotations}
+                    handleTimepointSelection={handleTimepointSelection}
+                    key={index}
+                    maxProbeDuration={maxProbeDuration}
+                    selectedTimepoint={selectedTimepoint}
+                    timepoint={timepoint}
+                    viewIndex={index}
+                    viewMode={viewMode}
+                  />
+                );
+              })}
           </div>
         </div>
-        <XAxis timeRange={timeRange} timepoints={timepointsInRange} width={width} />
       </div>
-    );
-  }
-);
-
-TimepointList.displayName = 'TimepointList';
+      <XAxis timeRange={timeRange} timepoints={timepointsInRange} width={width} />
+    </div>
+  );
+};
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
