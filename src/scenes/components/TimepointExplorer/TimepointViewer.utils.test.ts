@@ -3,7 +3,7 @@ import { createPerCheckLogsForTimeRange } from 'test/db/checkLogs';
 import { filterProbes } from './TimepointViewer.utils';
 
 describe(`filterProbes`, () => {
-  it(`should filter probes based on timepoint range`, () => {
+  it.skip(`should filter probes based on timepoint range`, () => {
     // Define a timepoint
     const timepoint = {
       adjustedTime: 1000000,

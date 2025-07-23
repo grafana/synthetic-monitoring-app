@@ -102,7 +102,7 @@ const UptimeEntry = ({
 
   return (
     <div style={{ height: `${height}%` }}>
-      <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive>
+      <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
         <PlainButton
           className={styles.uptimeButton}
           ref={ref}
@@ -119,7 +119,7 @@ const UptimeEntry = ({
               [styles.failureSelected]: isFailure && isSelected,
             })}
           >
-            <Icon name={ICON_MAP[timepoint.uptimeValue]} color={`white`} />
+            <Icon name={ICON_MAP[timepoint.uptimeValue]} />
           </div>
         </PlainButton>
       </Tooltip>
@@ -141,7 +141,11 @@ const ReachabilityEntry = ({
   const height = `calc(${entryHeight}% + ${TIMEPOINT_SIZE}px)`;
 
   return (
-    <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} hoveredCheck={hoveredCheck} />} interactive>
+    <Tooltip
+      content={<TimepointListEntryTooltip timepoint={timepoint} hoveredCheck={hoveredCheck} />}
+      interactive
+      placement="top"
+    >
       <div className={styles.reachabilityEntry} style={{ height }}>
         {timepoint.probes.map((checkValue) => {
           const duration = Number(checkValue[LokiFieldNames.Labels].duration_seconds) * 1000;
@@ -171,7 +175,7 @@ const ReachabilityEntry = ({
               onMouseEnter={() => setHoveredCheck(checkId)}
               onMouseLeave={() => setHoveredCheck(null)}
             >
-              <Icon name={ICON_MAP[probeSuccess]} color={`white`} />
+              <Icon name={ICON_MAP[probeSuccess]} />
             </PlainButton>
           );
         })}
@@ -232,10 +236,12 @@ const getStyles = (theme: GrafanaTheme2) => {
       transform: translateX(-50%);
     `,
     success: css`
-      background-color: ${theme.colors.success.shade};
+      color: ${theme.visualization.getColorByName(`green`)};
+      border: 1px solid currentColor;
     `,
     failure: css`
-      background-color: ${theme.colors.error.shade};
+      color: ${theme.colors.text.primary};
+      background-color: ${theme.visualization.getColorByName(`red`)};
     `,
     successSelected: css`
       background-color: ${theme.colors.success.main};

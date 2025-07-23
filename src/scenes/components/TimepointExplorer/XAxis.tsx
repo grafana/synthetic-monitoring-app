@@ -8,48 +8,37 @@ import {
   TIMEPOINT_SIZE,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { MinimapSection, Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { Timepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { generateXAxisPoints } from 'scenes/components/TimepointExplorer/XAxis.utils';
 
 interface XAxisProps {
   timeRange: { from: UnixTimestamp; to: UnixTimestamp };
-  timepointsInRange: Timepoint[];
+  timepoints: Timepoint[];
   width: number;
-  activeSection: MinimapSection;
 }
 
-export const XAxis = ({
-  activeSection,
-  timepointsInRange,
-  timeRange,
-  width,
-}: Omit<XAxisProps, 'activeSection'> & { activeSection?: MinimapSection }) => {
+export const XAxis = ({ timepoints, timeRange, width }: XAxisProps) => {
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.container}>
       <div className={styles.empty} />
-      {activeSection && timepointsInRange.length > 0 && (
+      {timepoints.length > 0 && (
         <div style={{ width: width }}>
-          <XAxisContent
-            timeRange={timeRange}
-            timepointsInRange={timepointsInRange}
-            width={width}
-            activeSection={activeSection}
-          />
+          <XAxisContent timeRange={timeRange} timepoints={timepoints} width={width} />
         </div>
       )}
     </div>
   );
 };
 
-const XAxisContent = ({ timepointsInRange, timeRange, width }: XAxisProps) => {
+const XAxisContent = ({ timepoints, timeRange, width }: XAxisProps) => {
   const styles = useStyles2(getStyles);
-  const points = useMemo(() => generateXAxisPoints(timepointsInRange, timeRange), [timepointsInRange, timeRange]);
+  const points = useMemo(() => generateXAxisPoints(timepoints, timeRange), [timepoints, timeRange]);
 
-  const renderedGaps = timepointsInRange.length - 1;
+  const renderedGaps = timepoints.length - 1;
   const widthWithoutGaps = width - renderedGaps * TIMEPOINT_GAP_PX;
-  const renderedTimepointWidth = widthWithoutGaps / timepointsInRange.length;
+  const renderedTimepointWidth = widthWithoutGaps / timepoints.length;
   const widthToUse = renderedTimepointWidth > TIMEPOINT_SIZE ? TIMEPOINT_SIZE : renderedTimepointWidth;
 
   return (

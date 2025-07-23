@@ -13,17 +13,17 @@ import {
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function minimapSections(timepoints: Timepoint[], timePointsToDisplay: number) {
+export function minimapSections(timepoints: Timepoint[], timepointsDisplayCount: number) {
   const timepointsInRange = timepoints.map((t) => t.adjustedTime);
   const sections: MinimapSection[] = [];
 
-  if (timePointsToDisplay === 0) {
+  if (timepointsDisplayCount === 0) {
     return sections;
   }
 
-  for (let i = 0; i < timepointsInRange.length; i += timePointsToDisplay) {
+  for (let i = 0; i < timepointsInRange.length; i += timepointsDisplayCount) {
     const fromIndex = i;
-    const toIndex = i + timePointsToDisplay;
+    const toIndex = i + timepointsDisplayCount;
     const timepoints = timepointsInRange.slice(fromIndex, toIndex);
     const timestampTo = Number(timepoints[0]);
     const timestampFrom = Number(timepoints[timepoints.length - 1]);
@@ -265,12 +265,13 @@ export function combineTimepointsWithLogs({ timepoints, logs, timeRangeFrom, tim
       .find((t) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration); // not very efficient
 
     if (!timepoint) {
-      console.log('No timepoint found for log -- probably out of selected time range', {
-        log,
-        id: log.id,
-        timeRangeFrom,
-        timeRangeTo,
-      });
+      // console.log('No timepoint found for log -- probably out of selected time range', {
+      //   logTime: new Date(log.Time).toISOString(),
+      //   log,
+      //   id: log.id,
+      //   timeRangeFrom: new Date(timeRangeFrom).toISOString(),
+      //   timeRangeTo: new Date(timeRangeTo).toISOString(),
+      // });
       return;
     }
 
@@ -287,25 +288,27 @@ export function combineTimepointsWithLogs({ timepoints, logs, timeRangeFrom, tim
   return reversedTimepoints;
 }
 
-interface GetTimepointExplorerLocalTimeRangeProps {
-  timepoints: Timepoint[];
-  timepointsToDisplay: number;
-  to: UnixTimestamp;
+export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
+  return timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
 }
 
-export function getVisibleTimepointsFromLocalTimeRange({
-  timepoints,
-  timepointsToDisplay,
-  to,
-}: GetTimepointExplorerLocalTimeRangeProps) {
-  const entries = timepointsToDisplay * MAX_MINIMAP_SECTIONS;
+export function getMiniMapPages(timepoints: Timepoint[], timepointsDisplayCount: number) {
+  const pages: Array<[number, number]> = [];
 
-  if (entries > timepoints.length) {
-    return timepoints;
+  if (!timepoints.length || timepointsDisplayCount === 0) {
+    return pages;
+  }
+  const withSections = timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
+
+  // Start from the end and work backwards to get most recent pages first
+  let remainingTimepoints = timepoints.length;
+
+  while (remainingTimepoints > 0) {
+    const endIndex = remainingTimepoints - 1;
+    const startIndex = Math.max(0, remainingTimepoints - withSections);
+    pages.push([startIndex, endIndex]);
+    remainingTimepoints = startIndex;
   }
 
-  const timepointsInRange = timepoints.filter((t) => t.adjustedTime <= to);
-  const fromIndex = timepointsInRange.length - entries;
-  const minIndex = Math.max(0, fromIndex);
-  return timepointsInRange.slice(minIndex, timepointsInRange.length);
+  return pages;
 }

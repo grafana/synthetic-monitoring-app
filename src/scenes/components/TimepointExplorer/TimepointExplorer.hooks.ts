@@ -29,10 +29,10 @@ import {
   minimapSections,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
-export function useTimepointExplorerView(timepoints: Timepoint[], timepointsToDisplay: number) {
+export function useTimepointExplorerView(timepoints: Timepoint[], timepointsDisplayCount: number) {
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
   const [activeMiniMapSectionIndex, setActiveMiniMapSectionIndex] = useState<number>(0);
-  const miniMapSections = minimapSections(timepoints, timepointsToDisplay);
+  const miniMapSections = minimapSections(timepoints, timepointsDisplayCount);
 
   const handleViewModeChange = useCallback((viewMode: ViewMode) => {
     setViewMode(viewMode);

@@ -8,13 +8,34 @@ import {
   TIMEPOINT_LIST_ID,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { TimepointExplorerChild } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  Annotation,
+  MinimapSection,
+  SelectedTimepointState,
+  Timepoint,
+  UnixTimestamp,
+  ViewMode,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointListAnnotations } from 'scenes/components/TimepointExplorer/TimepointListAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
 import { YAxis } from 'scenes/components/TimepointExplorer/YAxis';
 
-export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
+interface TimepointListProps {
+  activeMiniMapSectionIndex: number;
+  annotations: Annotation[];
+  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
+  maxProbeDuration: number;
+  miniMapSections: MinimapSection[];
+  selectedTimepoint: SelectedTimepointState;
+  timepointsDisplayCount: number;
+  timepoints: Timepoint[];
+  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
+  viewMode: ViewMode;
+  width: number;
+}
+
+export const TimepointList = forwardRef<HTMLDivElement, TimepointListProps>(
   (
     {
       activeMiniMapSectionIndex,
@@ -23,7 +44,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
       maxProbeDuration,
       miniMapSections,
       selectedTimepoint,
-      timepointsToDisplay,
+      timepointsDisplayCount,
       timepoints,
       timeRange,
       viewMode,
@@ -43,7 +64,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
             <TimepointListAnnotations
               annotations={annotations}
               timepointsInRange={timepointsInRange}
-              timepointsToDisplay={timepointsToDisplay}
+              timepointsDisplayCount={timepointsDisplayCount}
             />
             <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
               {activeSection &&
@@ -64,12 +85,7 @@ export const TimepointList = forwardRef<HTMLDivElement, TimepointExplorerChild>(
             </div>
           </div>
         </div>
-        <XAxis
-          timeRange={timeRange}
-          timepointsInRange={timepointsInRange}
-          width={width}
-          activeSection={activeSection}
-        />
+        <XAxis timeRange={timeRange} timepoints={timepointsInRange} width={width} />
       </div>
     );
   }

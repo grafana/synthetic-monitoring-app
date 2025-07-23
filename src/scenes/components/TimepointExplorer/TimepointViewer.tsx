@@ -7,13 +7,19 @@ import { CenteredSpinner } from 'components/CenteredSpinner';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import {
   SelectedTimepoint,
+  SelectedTimepointState,
   Timepoint,
-  TimepointExplorerChild,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { useTimepointLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.hooks';
 import { TimepointViewerProbes } from 'scenes/components/TimepointExplorer/TimepointViewerProbes';
 
-export const TimepointViewer = ({ handleTimepointSelection, selectedTimepoint, check }: TimepointExplorerChild) => {
+interface TimepointViewerProps {
+  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
+  selectedTimepoint: SelectedTimepointState;
+  check: Check;
+}
+
+export const TimepointViewer = ({ handleTimepointSelection, selectedTimepoint, check }: TimepointViewerProps) => {
   const [timepoint] = selectedTimepoint;
 
   return (

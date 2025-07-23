@@ -4,6 +4,7 @@ import { Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { PlainButton } from 'components/PlainButton';
 import {
   Annotation,
   MinimapSection,
@@ -22,9 +23,8 @@ interface MiniMapSectionProps {
   timepoints: Timepoint[];
   handleSectionClick: (index: number) => void;
   viewMode: ViewMode;
-  timepointsToDisplay: number;
+  timepointsDisplayCount: number;
   selectedTimepoint: SelectedTimepointState;
-  sectionWidth: number;
 }
 
 export const TimepointMiniMapSection = ({
@@ -36,7 +36,7 @@ export const TimepointMiniMapSection = ({
   section,
   selectedTimepoint,
   timepoints,
-  timepointsToDisplay,
+  timepointsDisplayCount,
   viewMode,
 }: MiniMapSectionProps) => {
   const styles = useStyles2(getStyles);
@@ -52,7 +52,7 @@ export const TimepointMiniMapSection = ({
   return (
     <div className={styles.container}>
       <Tooltip content={label} ref={ref}>
-        <button
+        <PlainButton
           aria-label={label}
           className={cx(styles.section, { [styles.active]: isActive })}
           onClick={() => handleSectionClick(index)}
@@ -61,24 +61,24 @@ export const TimepointMiniMapSection = ({
           <MinimapSectionAnnotations
             annotations={annotations}
             timepointsInRange={timepointsToRender}
-            timepointsToDisplay={timepointsToDisplay}
+            timepointsDisplayCount={timepointsDisplayCount}
           />
           {viewMode === 'uptime' ? (
             <UptimeSection
               timepoints={timepointsToRender}
               maxProbeDuration={maxProbeDuration}
-              timepointsToDisplay={timepointsToDisplay}
+              timepointsDisplayCount={timepointsDisplayCount}
               selectedTimepoint={selectedTimepoint}
             />
           ) : (
             <ReachabilitySection
               timepoints={timepointsToRender}
               maxProbeDuration={maxProbeDuration}
-              timepointsToDisplay={timepointsToDisplay}
+              timepointsDisplayCount={timepointsDisplayCount}
               selectedTimepoint={selectedTimepoint}
             />
           )}
-        </button>
+        </PlainButton>
       </Tooltip>
     </div>
   );
@@ -87,13 +87,18 @@ export const TimepointMiniMapSection = ({
 interface SectionChildProps {
   timepoints: Timepoint[];
   maxProbeDuration: number;
-  timepointsToDisplay: number;
+  timepointsDisplayCount: number;
   selectedTimepoint: SelectedTimepointState;
 }
 
-const UptimeSection = ({ timepoints, maxProbeDuration, timepointsToDisplay, selectedTimepoint }: SectionChildProps) => {
+const UptimeSection = ({
+  timepoints,
+  maxProbeDuration,
+  timepointsDisplayCount,
+  selectedTimepoint,
+}: SectionChildProps) => {
   const styles = useStyles2(getStyles);
-  const width = `${100 / timepointsToDisplay}%`;
+  const width = `${100 / timepointsDisplayCount}%`;
 
   return timepoints.map((timepoint) => {
     const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDuration);
@@ -115,10 +120,10 @@ const UptimeSection = ({ timepoints, maxProbeDuration, timepointsToDisplay, sele
 const ReachabilitySection = ({
   timepoints,
   maxProbeDuration,
-  timepointsToDisplay,
+  timepointsDisplayCount,
   selectedTimepoint,
 }: SectionChildProps) => {
-  const width = `${100 / timepointsToDisplay}%`;
+  const width = `${100 / timepointsDisplayCount}%`;
 
   return timepoints.map((timepoint) => {
     return (
@@ -191,11 +196,11 @@ const ReachabilityTimepoint = ({
 const MinimapSectionAnnotations = ({
   annotations,
   timepointsInRange,
-  timepointsToDisplay,
+  timepointsDisplayCount,
 }: {
   annotations: Annotation[];
   timepointsInRange: Timepoint[];
-  timepointsToDisplay: number;
+  timepointsDisplayCount: number;
 }) => {
   const renderOrderedTimepoints = [...timepointsInRange].reverse();
   const styles = useStyles2(getAnnotationStyles);
@@ -213,7 +218,7 @@ const MinimapSectionAnnotations = ({
         const timepointEndIndex = renderOrderedTimepoints.findIndex(
           (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime
         );
-        const right = (100 / timepointsToDisplay) * timepointEndIndex;
+        const right = (100 / timepointsDisplayCount) * timepointEndIndex;
 
         return (
           <div
@@ -238,19 +243,41 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: 0;
     border: none;
     display: flex;
-    height: 40px;
+    height: 45px;
     align-items: end;
     background-color: transparent;
     justify-content: end;
     position: relative;
+    z-index: 1;
 
-    &:hover {
+    &:before,
+    &:after {
+      content: '';
+      height: 160%;
+      left: 0;
+      pointer-events: none;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+    }
+
+    &:before {
+      z-index: -1;
+    }
+
+    &:hover:before {
       background-color: ${theme.colors.background.secondary};
     }
   `,
   active: css`
-    outline: 2px solid blue !important;
-    z-index: 1;
+    &:before {
+      background-color: ${theme.colors.background.secondary};
+    }
+
+    &:after {
+      border: 1px solid ${theme.colors.warning.border};
+    }
   `,
   uptimeTimepoint: css`
     background-color: ${theme.colors.background.primary};

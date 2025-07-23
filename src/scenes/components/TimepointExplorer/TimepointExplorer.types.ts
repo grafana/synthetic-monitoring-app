@@ -1,5 +1,4 @@
 import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
-import { Check } from 'types';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
 export type UnixTimestamp = number;
@@ -19,23 +18,6 @@ export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value']
 export type SelectedTimepoint = [Timepoint, string];
 
 export type SelectedTimepointState = [null, null] | SelectedTimepoint;
-
-export interface TimepointExplorerChild {
-  activeMiniMapSectionIndex: number;
-  annotations: Annotation[];
-  check: Check;
-  handleMiniMapSectionClick: (index: number) => void;
-  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
-  isLoading: boolean;
-  maxProbeDuration: number;
-  miniMapSections: MinimapSection[];
-  selectedTimepoint: SelectedTimepointState;
-  timepoints: Timepoint[];
-  timepointsToDisplay: number;
-  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
-  viewMode: ViewMode;
-  width: number;
-}
 
 export interface MinimapSection {
   to: UnixTimestamp;
