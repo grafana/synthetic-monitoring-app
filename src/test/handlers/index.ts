@@ -94,7 +94,7 @@ export function getServerRequests() {
     try {
       body = await request?.json();
     } catch (e) {
-       
+
       console.error(e);
     }
 
