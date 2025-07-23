@@ -439,11 +439,14 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
     if (secret.uuid) {
-      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${secret.name}`, {
+      // For updates: use name for URL but exclude it from payload
+      const { name, ...secretWithoutName } = secret;
+      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
         method: 'PUT',
-        data: secret,
+        data: secretWithoutName,
       });
     }
+    // For creates: include name in payload
     return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
       method: 'POST',
       data: secret,

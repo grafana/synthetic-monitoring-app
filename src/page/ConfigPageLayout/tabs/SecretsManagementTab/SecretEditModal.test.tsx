@@ -230,7 +230,7 @@ describe('SecretEditModal', () => {
     server.use(apiRoute('updateSecret', {}, record));
     await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
-    expect(screen.getByLabelText(/Name/)).toBeDisabled();
+    expect(screen.getByLabelText(/Name/)).toHaveAttribute('readonly');
 
     await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
 
@@ -238,7 +238,7 @@ describe('SecretEditModal', () => {
 
     const { body } = await read();
 
-    expect(body.name).toBe(secretMock.name); // Name is included for API identification but immutable in UI
+    expect(body.name).toBeUndefined(); // Name is used for URL but excluded from request payload
   });
 
   it('should show value textarea as disabled when configured', async () => {
