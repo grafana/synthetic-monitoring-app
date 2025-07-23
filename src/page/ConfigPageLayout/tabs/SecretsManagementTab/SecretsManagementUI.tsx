@@ -24,12 +24,12 @@ export function SecretsManagementUI() {
     setEditMode(SECRETS_EDIT_MODE_ADD);
   };
 
-  const handleEditSecret = (id?: string) => {
-    setEditMode(id ?? false);
+  const handleEditSecret = (name?: string) => {
+    setEditMode(name ?? false);
   };
 
-  const handleDeleteSecret = (id: string) => {
-    const secret = secrets?.find((s) => s.uuid === id);
+  const handleDeleteSecret = (name: string) => {
+    const secret = secrets?.find((s) => s.name === name);
     if (secret) {
       setDeleteMode(secret);
     }
@@ -81,7 +81,7 @@ export function SecretsManagementUI() {
       )}
 
       {editMode && (
-        <SecretEditModal id={editMode} existingNames={existingNames} open onDismiss={() => handleEditSecret()} />
+        <SecretEditModal name={editMode} existingNames={existingNames} open onDismiss={() => handleEditSecret()} />
       )}
 
       <ConfirmModal
@@ -101,7 +101,7 @@ export function SecretsManagementUI() {
           </div>
         }
         onConfirm={() => {
-          deleteMode && deleteSecret.mutate(deleteMode.uuid);
+          deleteMode && deleteSecret.mutate(deleteMode.name);
           setDeleteMode(undefined);
         }}
         onDismiss={() => setDeleteMode(undefined)}

@@ -11,7 +11,7 @@ import { createAccessToken } from 'test/handlers/tokens';
 import { ApiEntry, RequestRes } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
-import { createSecret, getSecret, listSecrets, updateSecret } from './secrets';
+import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const apiRoutes = {
   addCheck,
@@ -42,6 +42,7 @@ const apiRoutes = {
   getSecret,
   createSecret,
   updateSecret,
+  deleteSecret,
 };
 
 export type ApiRoutes = typeof apiRoutes;
@@ -74,7 +75,9 @@ export function apiRoute<K extends keyof ApiRoutes>(
 }
 
 function toRestMethod({ route, method, result }: ApiEntry) {
-  const urlPattern = new RegExp(`^http://localhost.*${route}$`);
+  // Convert route patterns like /api/v1alpha1/secrets/:name to regex patterns
+  const patternRoute = route.replace(/:[^/]+/g, '[^/]+');
+  const urlPattern = new RegExp(`^http://localhost.*${patternRoute}$`);
 
   return rest[method](urlPattern, async (req, res, ctx) => {
     const { status = 200, json } = await result(req);

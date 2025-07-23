@@ -14,7 +14,7 @@ import { secretSchemaFactory } from './secretSchema';
 import { SecretFormValues, secretToFormValues } from './SecretsManagementTab.utils';
 
 interface SecretEditModalProps {
-  id: string;
+  name: string;
   onDismiss: () => void;
   open?: boolean;
   existingNames?: string[];
@@ -72,11 +72,11 @@ function getErrorMessage(error: unknown): string {
   return 'An unknown error occurred';
 }
 
-export function SecretEditModal({ open, id, onDismiss, existingNames = [] }: SecretEditModalProps) {
-  const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(id);
+export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: SecretEditModalProps) {
+  const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(name);
   const saveSecret = useSaveSecret();
-  const isNewSecret = id === SECRETS_EDIT_MODE_ADD;
-  const [isConfigured, setIsConfigured] = useState(id !== '' && !isNewSecret);
+  const isNewSecret = name === SECRETS_EDIT_MODE_ADD;
+  const [isConfigured, setIsConfigured] = useState(name !== '' && !isNewSecret);
   const [saveError, setSaveError] = useState<unknown>(null);
   const hasError = hasFetchError || !!saveError;
   const styles = useStyles2(getStyles);
@@ -157,7 +157,7 @@ export function SecretEditModal({ open, id, onDismiss, existingNames = [] }: Sec
       <form onSubmit={handleSubmit(onSubmit)}>
         {hasError && (
           <Alert title={`Unable to ${hasFetchError ? 'fetch' : 'save'} secret`} severity="error">
-            An error occurred while trying to {hasFetchError ? <>fetch secret (id: {id})</> : <>save secret</>}. If the
+            An error occurred while trying to {hasFetchError ? <>fetch secret (name: {name})</> : <>save secret</>}. If the
             problem persists, seek help from an admin or{' '}
             <TextLink href="https://grafana.com/contact" external>
               contact support

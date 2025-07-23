@@ -21,7 +21,7 @@ async function render(element: React.ReactElement) {
 
 describe('SecretEditModal', () => {
   const defaultProps = {
-    id: SECRETS_EDIT_MODE_ADD,
+    name: SECRETS_EDIT_MODE_ADD,
     onDismiss: jest.fn(),
     open: true,
   };
@@ -42,7 +42,7 @@ describe('SecretEditModal', () => {
 
   it('should render edit secret form for existing secret', async () => {
     const [secret1] = MOCKED_SECRETS_API_RESPONSE.secrets; // getSecret returns first secret, this must be the same as secret1
-    await render(<SecretEditModal {...defaultProps} id={secret1.uuid} />);
+    await render(<SecretEditModal {...defaultProps} name={secret1.name} />);
 
     expect(screen.getByText('Edit secret')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByDisplayValue(secret1.description)).toBeInTheDocument(), { timeout: 3000 });
@@ -85,7 +85,7 @@ describe('SecretEditModal', () => {
     );
 
     const [secret1] = MOCKED_SECRETS_API_RESPONSE.secrets; // getSecret returns first secret, this must be the same as secret1
-    await render(<SecretEditModal {...defaultProps} id={secret1.uuid} />);
+    await render(<SecretEditModal {...defaultProps} name={secret1.name} />);
 
     expect(screen.getByText('Unable to fetch secret')).toBeInTheDocument();
     expect(screen.getByText(/request failed with status code 500/i)).toBeInTheDocument();
@@ -202,7 +202,7 @@ describe('SecretEditModal', () => {
 
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
-    await render(<SecretEditModal {...defaultProps} id={secretMock.uuid} />);
+    await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
     await userEvent.type(screen.getByLabelText(/Name/), inputValues.name); // Should be transformed to 'new-secret'
     await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
@@ -228,7 +228,7 @@ describe('SecretEditModal', () => {
     };
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
-    await render(<SecretEditModal {...defaultProps} id={secretMock.uuid} />);
+    await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
     expect(screen.getByLabelText(/Name/)).toBeDisabled();
 
@@ -245,7 +245,7 @@ describe('SecretEditModal', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
     const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
-    await render(<SecretEditModal {...defaultProps} id={secretMock.uuid} />);
+    await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
     const valueInput = screen.getByLabelText(/value/i);
     expect(valueInput).toBeDisabled();
@@ -263,7 +263,7 @@ describe('SecretEditModal', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
     const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
-    await render(<SecretEditModal {...defaultProps} id={secretMock.uuid} />);
+    await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Reset' }));
     await userEvent.type(screen.getByLabelText(/value/i), newSecretValue);

@@ -431,15 +431,15 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async getSecret(id: string | number): Promise<SecretWithMetadata> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+  async getSecret(name: string): Promise<SecretWithMetadata> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
       method: 'GET',
     });
   }
 
   async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
     if (secret.uuid) {
-      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${secret.uuid}`, {
+      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${secret.name}`, {
         method: 'PUT',
         data: secret,
       });
@@ -450,8 +450,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async deleteSecret(id: string | number): Promise<unknown> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+  async deleteSecret(name: string): Promise<unknown> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
       method: 'DELETE',
     });
   }
