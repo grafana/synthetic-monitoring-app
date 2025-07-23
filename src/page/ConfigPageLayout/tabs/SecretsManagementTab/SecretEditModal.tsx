@@ -142,7 +142,7 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
     return null;
   }
 
-  const maxLabelsReached = getValues('labels').length >= SECRETS_MAX_LABELS;
+  const maxLabelsReached = (getValues('labels')?.length ?? 0) >= SECRETS_MAX_LABELS;
 
   return (
     <Modal
