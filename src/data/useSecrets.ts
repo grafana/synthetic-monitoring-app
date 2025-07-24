@@ -14,7 +14,7 @@ export interface SecretsResponse {
 
 export const queryKeys = {
   list: ['secrets'],
-  byId: (id: string) => ['secrets', id],
+  byName: (name: string) => ['secrets', name],
 };
 
 function secretsQuery(api: SMDataSource) {
@@ -23,7 +23,7 @@ function secretsQuery(api: SMDataSource) {
     queryFn: () => api.getSecrets(),
     throwOnError: true,
     select: (data: SecretsResponse) => {
-      return data?.secrets ?? [];
+      return (data?.secrets ?? []).map(secret => ({ ...secret, labels: secret.labels ?? [] }));
     },
   };
 }
@@ -40,17 +40,18 @@ export function useSecrets() {
 }
 
 /**
- * Hook to fetch a secret by id
- * @param {number} id
+ * Hook to fetch a secret by name
+ * @param {string} name
  * @throws {Error} If the query fails - Use ErrorBoundary to catch errors
  */
-export function useSecret(id?: string) {
+export function useSecret(name?: string) {
   const smDS = useSMDS();
 
   return useQuery<SecretWithMetadata, unknown, SecretWithMetadata>({
-    queryKey: queryKeys.byId(id!),
-    queryFn: () => smDS.getSecret(id!),
-    enabled: !!id && id !== SECRETS_EDIT_MODE_ADD,
+    queryKey: queryKeys.byName(name!),
+    queryFn: () => smDS.getSecret(name!),
+    enabled: !!name && name !== SECRETS_EDIT_MODE_ADD,
+    select: (secret) => ({ ...secret, labels: secret.labels ?? [] }),
   });
 }
 
@@ -67,7 +68,7 @@ export function useSaveSecret() {
     },
     onSuccess: async (_data, secret) => {
       const { name, ...updatedData } = secret; // name cannot be changed
-      await queryClient.setQueryData(queryKeys.byId(secret.uuid!), updatedData);
+      await queryClient.setQueryData(queryKeys.byName(secret.name!), updatedData);
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
     },
   });
@@ -81,7 +82,7 @@ export function useDeleteSecret() {
   const smDS = useSMDS();
 
   return useMutation<unknown, unknown, string>({
-    mutationFn: (id) => smDS.deleteSecret(id),
+    mutationFn: (name) => smDS.deleteSecret(name),
     onSuccess: async (_data) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
     },

@@ -106,9 +106,10 @@ function createCreateSecretSchema(existingNames: string[] = []) {
   }) as ZodType<SecretWithValue>;
 }
 
-export const updateSecretSchema: ZodType<Omit<SecretWithValue, 'name'> | Omit<SecretWithValue, 'name' | 'plaintext'>> =
+export const updateSecretSchema: ZodType<Omit<SecretWithValue, 'plaintext'> | SecretWithValue> =
   z.object({
     uuid: z.string().min(1, 'UUID is required'),
+    name: z.string().min(1, 'Name is required'), // Include name for API URL construction
     labels,
     description,
     plaintext: z.string().min(1, 'Value is required').optional(),
