@@ -23,7 +23,7 @@ function secretsQuery(api: SMDataSource) {
     queryFn: () => api.getSecrets(),
     throwOnError: true,
     select: (data: SecretsResponse) => {
-      return data?.secrets ?? [];
+      return (data?.secrets ?? []).map(secret => ({ ...secret, labels: secret.labels ?? [] }));
     },
   };
 }
@@ -51,6 +51,7 @@ export function useSecret(name?: string) {
     queryKey: queryKeys.byName(name!),
     queryFn: () => smDS.getSecret(name!),
     enabled: !!name && name !== SECRETS_EDIT_MODE_ADD,
+    select: (secret) => ({ ...secret, labels: secret.labels ?? [] }),
   });
 }
 

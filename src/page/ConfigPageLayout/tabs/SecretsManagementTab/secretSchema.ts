@@ -72,9 +72,7 @@ const labels: ZodType<Secret['labels']> = z
       });
       return z.NEVER;
     }
-  })
-  .nullable()
-  ;
+  });
 
 function createCreateSecretSchema(existingNames: string[] = []) {
   return z.object({
