@@ -6,31 +6,18 @@ import { formatDuration } from 'utils';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import {
-  SelectedTimepoint,
-  SelectedTimepointState,
-  Timepoint,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { useTimepointLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.hooks';
 import { TimepointViewerProbes } from 'scenes/components/TimepointExplorer/TimepointViewerProbes';
 
-interface TimepointViewerProps {
-  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
-  selectedTimepoint: SelectedTimepointState;
-}
-
-export const TimepointViewer = ({ handleTimepointSelection, selectedTimepoint }: TimepointViewerProps) => {
-  const { check } = useTimepointExplorerContext();
+export const TimepointViewer = () => {
+  const { check, selectedTimepoint } = useTimepointExplorerContext();
   const [timepoint] = selectedTimepoint;
 
   return (
     <Box borderColor={'medium'} borderStyle={'solid'} padding={2} minHeight={30}>
       {timepoint ? (
-        <TimepointViewerContent
-          handleTimepointSelection={handleTimepointSelection}
-          selectedTimepoint={selectedTimepoint}
-          check={check}
-        />
+        <TimepointViewerContent timepoint={timepoint} check={check} />
       ) : (
         <Stack justifyContent={'center'} alignItems={'center'} height={30} direction={'column'}>
           <Text variant="h2">No timepoint selected</Text>
@@ -41,17 +28,8 @@ export const TimepointViewer = ({ handleTimepointSelection, selectedTimepoint }:
   );
 };
 
-const TimepointViewerContent = ({
-  handleTimepointSelection,
-  selectedTimepoint,
-  check,
-}: {
-  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
-  selectedTimepoint: SelectedTimepoint;
-  check: Check;
-}) => {
+const TimepointViewerContent = ({ timepoint, check }: { timepoint: StatelessTimepoint; check: Check }) => {
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
-  const [timepoint] = selectedTimepoint;
   const { data, isLoading } = useTimepointLogs({
     timepoint,
     job: check.job,
@@ -65,17 +43,7 @@ const TimepointViewerContent = ({
   return (
     <Stack direction={`column`} gap={1}>
       <TimepointHeader timepoint={timepoint} onChangeLogsView={onChangeLogsView} />
-      {isLoading ? (
-        <CenteredSpinner />
-      ) : (
-        <TimepointViewerProbes
-          check={check}
-          handleTimepointSelection={handleTimepointSelection}
-          logsView={logsView}
-          selectedTimepoint={selectedTimepoint}
-          timepointData={data}
-        />
-      )}
+      {isLoading ? <CenteredSpinner /> : <TimepointViewerProbes check={check} logsView={logsView} data={data} />}
     </Stack>
   );
 };
@@ -84,7 +52,7 @@ const TimepointHeader = ({
   timepoint,
   onChangeLogsView,
 }: {
-  timepoint: Timepoint;
+  timepoint: StatelessTimepoint;
   onChangeLogsView: (view: LogsView) => void;
 }) => {
   return (

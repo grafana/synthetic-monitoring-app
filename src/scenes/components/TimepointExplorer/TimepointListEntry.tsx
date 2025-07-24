@@ -10,67 +10,45 @@ import {
   TIMEPOINT_SIZE,
   TIMEPOINT_THEME_HEIGHT_PX,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import {
-  Annotation,
-  CheckEventType,
-  SelectedTimepointState,
-  StatefulTimepoint,
-  ViewMode,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
 
 interface TimepointListEntryProps {
-  annotations: Annotation[];
-  handleTimepointSelection: (timepoint: StatefulTimepoint, probeToView: string) => void;
-  maxProbeDuration: number;
-  selectedTimepoint: SelectedTimepointState;
-  timepoint: StatefulTimepoint;
+  timepoint: StatelessTimepoint;
   viewIndex: number;
-  viewMode: ViewMode;
 }
 
-export const TimepointListEntry = ({
-  annotations,
-  timepoint,
-  maxProbeDuration,
-  viewMode,
-  selectedTimepoint,
-  handleTimepointSelection,
-  viewIndex,
-}: TimepointListEntryProps) => {
+export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.timepoint}>
-      <Entry
-        annotations={annotations}
-        handleTimepointSelection={handleTimepointSelection}
-        maxProbeDuration={maxProbeDuration}
-        selectedTimepoint={selectedTimepoint}
-        timepoint={timepoint}
-        viewIndex={viewIndex}
-        viewMode={viewMode}
-      />
+      <Entry timepoint={timepoint} viewIndex={viewIndex} />
     </div>
   );
 };
 
 const Entry = (props: TimepointListEntryProps) => {
-  const isCheckCreatedEntry = props.annotations.some(
+  const { annotations, logsMap, viewMode } = useTimepointExplorerContext();
+  const isCheckCreatedEntry = annotations.some(
     (annotation) =>
       annotation.timepointStart.adjustedTime === props.timepoint.adjustedTime &&
       annotation.checkEvent.label === CheckEventType.CHECK_CREATED
   );
 
-  const hasResult = props.timepoint.uptimeValue !== -1;
-  const isFirstEntryWithoutResult = props.timepoint.index === 0 && !hasResult;
+  const statefulTimepoint = logsMap[props.timepoint.adjustedTime];
 
-  if (isCheckCreatedEntry || isFirstEntryWithoutResult) {
-    return <div data-testid={`empty-timepoint-${props.timepoint.index}`} />;
+  if (!statefulTimepoint) {
+    return null;
   }
 
-  if (props.viewMode === 'uptime') {
+  if (isCheckCreatedEntry) {
+    return <div data-testid={`empty-timepoint-${props.timepoint.adjustedTime}`} />;
+  }
+
+  if (viewMode === 'uptime') {
     return <UptimeEntry {...props} />;
   }
 
@@ -85,18 +63,15 @@ const ICON_MAP: Record<number, IconName> = {
 
 const GLOBAL_CLASS = `uptime_bar`;
 
-const UptimeEntry = ({
-  maxProbeDuration,
-  timepoint,
-  selectedTimepoint,
-  handleTimepointSelection,
-  viewIndex,
-}: TimepointListEntryProps) => {
-  const height = getEntryHeight(timepoint.maxProbeDuration!, maxProbeDuration);
+const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
+  const { handleSelectedTimepointChange, logsMap, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
+  const statefulTimepoint = logsMap[timepoint.adjustedTime];
+
+  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles);
-  const isSuccess = timepoint.uptimeValue === 1;
-  const isFailure = timepoint.uptimeValue === 0;
-  const checkToView = timepoint.probes[0]?.id;
+  const isSuccess = statefulTimepoint.uptimeValue === 1;
+  const isFailure = statefulTimepoint.uptimeValue === 0;
+  const executionToView = statefulTimepoint.executions[0].id;
   const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
 
@@ -106,7 +81,7 @@ const UptimeEntry = ({
         <PlainButton
           className={styles.uptimeButton}
           ref={ref}
-          onClick={() => handleTimepointSelection(timepoint, checkToView)}
+          onClick={() => handleSelectedTimepointChange(timepoint, executionToView)}
           style={viewIndex === 0 ? { paddingLeft: 0 } : undefined}
           showFocusStyles={false}
         >
@@ -119,7 +94,7 @@ const UptimeEntry = ({
               [styles.failureSelected]: isFailure && isSelected,
             })}
           >
-            <Icon name={ICON_MAP[timepoint.uptimeValue]} />
+            <Icon name={ICON_MAP[statefulTimepoint.uptimeValue]} />
           </div>
         </PlainButton>
       </Tooltip>
@@ -127,14 +102,11 @@ const UptimeEntry = ({
   );
 };
 
-const ReachabilityEntry = ({
-  maxProbeDuration,
-  timepoint,
-  handleTimepointSelection,
-  selectedTimepoint,
-}: TimepointListEntryProps) => {
+const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
   const styles = useStyles2(getStyles);
-  const entryHeight = getEntryHeight(timepoint.maxProbeDuration, maxProbeDuration);
+  const { handleSelectedTimepointChange, logsMap, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
+  const statefulTimepoint = logsMap[timepoint.adjustedTime];
+  const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const [hoveredCheck, setHoveredCheck] = useState<string | null>(null);
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
@@ -147,12 +119,12 @@ const ReachabilityEntry = ({
       placement="top"
     >
       <div className={styles.reachabilityEntry} style={{ height }}>
-        {timepoint.probes.map((checkValue) => {
-          const duration = Number(checkValue[LokiFieldNames.Labels].duration_seconds) * 1000;
+        {statefulTimepoint.executions.map(({ execution }) => {
+          const duration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
           const height = getEntryHeight(duration, maxProbeDuration);
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
-          const probeSuccess = checkValue[LokiFieldNames.Labels].probe_success;
-          const checkId = checkValue.id;
+          const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
+          const checkId = execution.id;
           const isSuccess = probeSuccess === '1';
           const isFailure = probeSuccess === '0';
           const [timepointToView, checkToView] = selectedTimepoint;
@@ -171,7 +143,7 @@ const ReachabilityEntry = ({
               })}
               key={checkId}
               style={{ bottom: `${pixelHeight}px` }}
-              onClick={() => handleTimepointSelection(timepoint, checkId)}
+              onClick={() => handleSelectedTimepointChange(timepoint, checkId)}
               onMouseEnter={() => setHoveredCheck(checkId)}
               onMouseLeave={() => setHoveredCheck(null)}
             >

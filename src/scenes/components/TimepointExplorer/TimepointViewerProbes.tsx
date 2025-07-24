@@ -6,29 +6,22 @@ import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
-import { SelectedTimepoint, Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 
 interface TimepointViewerProbesProps {
   check: Check;
-  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
   logsView: LogsView;
-  selectedTimepoint: SelectedTimepoint;
-  timepointData: PerCheckLogs[];
+  data: PerCheckLogs[];
 }
 
-export const TimepointViewerProbes = ({
-  check,
-  handleTimepointSelection,
-  selectedTimepoint,
-  timepointData,
-  logsView,
-}: TimepointViewerProbesProps) => {
+export const TimepointViewerProbes = ({ check, data, logsView }: TimepointViewerProbesProps) => {
+  const { handleSelectedTimepointChange, selectedTimepoint } = useTimepointExplorerContext();
   const [timepoint, checkToView] = selectedTimepoint;
 
   return (
     <>
       <TabsBar>
-        {timepointData.map(({ probe, checks }) => {
+        {data.map(({ probe, checks }) => {
           return checks.map((check) => {
             const id = check[check.length - 1].id;
             const active = id === checkToView;
@@ -47,8 +40,8 @@ export const TimepointViewerProbes = ({
                 }
                 active={active}
                 onChangeTab={() => {
-                  if (!active) {
-                    handleTimepointSelection(timepoint, id);
+                  if (!active && timepoint) {
+                    handleSelectedTimepointChange(timepoint, id);
                   }
                 }}
               />
@@ -57,7 +50,7 @@ export const TimepointViewerProbes = ({
         })}
       </TabsBar>
       <TabContent>
-        {timepointData.map(({ probe, checks }) => {
+        {data.map(({ probe, checks }) => {
           return checks.map((execution) => {
             const id = execution[execution.length - 1].id;
             const active = id === checkToView;

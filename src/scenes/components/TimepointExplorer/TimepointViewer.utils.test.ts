@@ -8,7 +8,7 @@ describe(`filterProbes`, () => {
     const timepoint = {
       adjustedTime: 1000000,
       timepointDuration: 60000, // 1 minute duration
-      probes: [],
+      executions: [],
       uptimeValue: -1 as const,
       frequency: 60000,
       index: 0,

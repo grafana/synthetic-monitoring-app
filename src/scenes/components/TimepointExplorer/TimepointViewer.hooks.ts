@@ -2,7 +2,7 @@ import { parseCheckLogs } from 'features/parseCheckLogs/parseCheckLogs';
 
 import { CheckLabelType, UnknownCheckLog } from 'features/parseCheckLogs/checkLogs.types';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
-import { Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { filterProbes } from 'scenes/components/TimepointExplorer/TimepointViewer.utils';
 
 export function useTimepointLogs({
@@ -11,7 +11,7 @@ export function useTimepointLogs({
   instance,
   refetchInterval,
 }: {
-  timepoint: Timepoint;
+  timepoint: StatelessTimepoint;
   job: string;
   instance: string;
   refetchInterval?: number;

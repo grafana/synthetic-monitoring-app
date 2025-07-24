@@ -1,17 +1,8 @@
-import { CheckEndedLog } from 'features/parseCheckLogs/checkLogs.types';
+import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
+import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
 export type UnixTimestamp = number;
-
-export type Timepoint = {
-  probes: CheckEndedLog[];
-  uptimeValue: -1 | 0 | 1; // -1 means unknown, 0 means failure, 1 means success
-  adjustedTime: UnixTimestamp;
-  timepointDuration: number;
-  frequency: number;
-  index: number;
-  maxProbeDuration: number;
-};
 
 export type StatelessTimepoint = {
   adjustedTime: UnixTimestamp;
@@ -19,16 +10,9 @@ export type StatelessTimepoint = {
   frequency: number;
 };
 
-export type StatefulTimepoint = StatelessTimepoint & {
-  maxProbeDuration?: number;
-  probes?: CheckEndedLog[];
-  uptimeValue?: -1 | 0 | 1; // -1 means unknown, 0 means failure, 1 means success
-  index: number;
-};
-
 export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value'];
 
-export type SelectedTimepoint = [Timepoint, string];
+export type SelectedTimepoint = [StatelessTimepoint, string];
 
 export type SelectedTimepointState = [null, null] | SelectedTimepoint;
 
@@ -61,3 +45,18 @@ export type CheckConfig = {
   frequency: number;
   date: UnixTimestamp;
 };
+
+export interface ExecutionsInTimepoint {
+  probe: string;
+  execution: ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>;
+  id: string;
+}
+
+export interface StatefulTimepoint {
+  adjustedTime: UnixTimestamp;
+  timepointDuration: number;
+  frequency: number;
+  uptimeValue: -1 | 0 | 1;
+  executions: ExecutionsInTimepoint[];
+  maxProbeDuration: number;
+}

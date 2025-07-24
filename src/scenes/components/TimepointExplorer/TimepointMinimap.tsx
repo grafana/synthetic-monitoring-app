@@ -3,73 +3,42 @@ import { Box, IconButton, Pagination, Stack, Text } from '@grafana/ui';
 
 import { formatDuration } from 'utils';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import {
-  Annotation,
-  MinimapSection,
-  SelectedTimepointState,
-  ViewMode,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { useVisibleTimepoints } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { getVisibleTimepointsTimeRange } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointMiniMapSection } from 'scenes/components/TimepointExplorer/TimepointMinimapSection';
 
-interface TimepointMinimapProps {
-  annotations: Annotation[];
-  activeMiniMapSectionIndex: number;
-  handleMiniMapSectionClick: (index: number) => void;
-  miniMapSections: MinimapSection[];
-  viewMode: ViewMode;
-  selectedTimepoint: SelectedTimepointState;
-}
-
-export const TimepointMinimap = ({
-  annotations,
-  activeMiniMapSectionIndex,
-  handleMiniMapSectionClick,
-  miniMapSections,
-  viewMode,
-  selectedTimepoint,
-}: TimepointMinimapProps) => {
-  const { handleMiniMapPageChange, miniMapPage, miniMapPages, timepoints } = useTimepointExplorerContext();
-  const endingTimepoint = timepoints[0] || null;
-  const startingTimepoint = timepoints[timepoints.length - 1] || null;
-  const lengthOfTime = endingTimepoint?.adjustedTime - startingTimepoint?.adjustedTime;
+export const TimepointMinimap = () => {
+  const { handleMiniMapPageChange, miniMapCurrentPage, miniMapPages } = useTimepointExplorerContext();
+  const visibleTimepoints = useVisibleTimepoints();
+  const { from, to } = getVisibleTimepointsTimeRange({ timepoints: visibleTimepoints });
+  const lengthOfTime = to - from;
 
   return (
     <Stack direction="column" gap={2}>
       <Text variant="body">{lengthOfTime ? formatDuration(lengthOfTime) : ''} overview</Text>
       <Stack gap={2}>
         <MiniMapNavigation
-          disabled={miniMapPage === miniMapPages.length - 1}
+          disabled={miniMapCurrentPage === miniMapPages.length - 1}
           direction="left"
           onClick={() => {
-            handleMiniMapPageChange(miniMapPage + 1);
+            handleMiniMapPageChange(miniMapCurrentPage + 1);
           }}
         />
         <Stack direction="column" flex={1}>
           <Box flex={1}>
-            <TimepointMinimapContent
-              annotations={annotations}
-              activeMiniMapSectionIndex={activeMiniMapSectionIndex}
-              handleMiniMapSectionClick={handleMiniMapSectionClick}
-              miniMapSections={miniMapSections}
-              viewMode={viewMode}
-              selectedTimepoint={selectedTimepoint}
-            />
+            <TimepointMinimapContent />
           </Box>
           <Stack direction="row" flex={1} justifyContent="space-between">
-            <Text variant="body">
-              {startingTimepoint?.adjustedTime ? new Date(startingTimepoint.adjustedTime).toLocaleString() : ''}
-            </Text>
-            <MiniMapPagination miniMapPage={miniMapPage} miniMapPages={miniMapPages} />
-            <Text variant="body">
-              {endingTimepoint?.adjustedTime ? new Date(endingTimepoint.adjustedTime).toLocaleString() : ''}
-            </Text>
+            <Text variant="body">{from ? new Date(from).toLocaleString() : ''}</Text>
+            <MiniMapPagination miniMapCurrentPage={miniMapCurrentPage} miniMapPages={miniMapPages} />
+            <Text variant="body">{to ? new Date(to).toLocaleString() : ''}</Text>
           </Stack>
         </Stack>
         <MiniMapNavigation
           direction="right"
-          disabled={miniMapPage === 0}
+          disabled={miniMapCurrentPage === 0}
           onClick={() => {
-            handleMiniMapPageChange(miniMapPage - 1);
+            handleMiniMapPageChange(miniMapCurrentPage - 1);
           }}
         />
       </Stack>
@@ -77,39 +46,19 @@ export const TimepointMinimap = ({
   );
 };
 
-const TimepointMinimapContent = ({
-  annotations,
-  activeMiniMapSectionIndex,
-  handleMiniMapSectionClick,
-  miniMapSections,
-  viewMode,
-  selectedTimepoint,
-}: TimepointMinimapProps) => {
-  const { maxProbeDuration, timepoints, timepointsDisplayCount } = useTimepointExplorerContext();
+const TimepointMinimapContent = () => {
+  const { miniMapCurrentPageSections } = useTimepointExplorerContext();
+
   // todo: fix this
-  if (miniMapSections.length === 0) {
+  if (miniMapCurrentPageSections.length === 0) {
     return null;
   }
 
   return (
     <Box position="relative" paddingY={2}>
       <Stack gap={0}>
-        {miniMapSections
-          .map((section, index) => (
-            <TimepointMiniMapSection
-              activeMiniMapSectionIndex={activeMiniMapSectionIndex}
-              annotations={annotations}
-              index={index}
-              key={index}
-              maxProbeDuration={maxProbeDuration}
-              section={section}
-              timepoints={timepoints}
-              handleSectionClick={handleMiniMapSectionClick}
-              viewMode={viewMode}
-              timepointsDisplayCount={timepointsDisplayCount}
-              selectedTimepoint={selectedTimepoint}
-            />
-          ))
+        {miniMapCurrentPageSections
+          .map((section, index) => <TimepointMiniMapSection index={index} key={index} section={section} />)
           .reverse()}
       </Stack>
     </Box>
@@ -129,13 +78,13 @@ const MiniMapNavigation = ({ direction, disabled, onClick }: MiniMapNavigationPr
 };
 
 interface MiniMapPaginationProps {
-  miniMapPage: number;
+  miniMapCurrentPage: number;
   miniMapPages: Array<[number, number]>;
 }
 
-const MiniMapPagination = ({ miniMapPage, miniMapPages }: MiniMapPaginationProps) => {
+const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginationProps) => {
   const { handleMiniMapPageChange } = useTimepointExplorerContext();
-  const currentPage = miniMapPages.length - miniMapPage;
+  const currentPage = miniMapPages.length - miniMapCurrentPage;
   const numberOfPages = miniMapPages.length;
 
   const handleNavigate = useCallback(

@@ -1,7 +1,7 @@
 import { CheckLogs, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
-import { Timepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function filterProbes(data: PerCheckLogs[], timepoint: Timepoint) {
+export function filterProbes(data: PerCheckLogs[], timepoint: StatelessTimepoint) {
   return data.map((d) => {
     const { checks } = d;
 
@@ -12,7 +12,7 @@ export function filterProbes(data: PerCheckLogs[], timepoint: Timepoint) {
   });
 }
 
-export function filterExecutions(executions: CheckLogs[], timepoint: Timepoint) {
+export function filterExecutions(executions: CheckLogs[], timepoint: StatelessTimepoint) {
   return executions.filter((e) => {
     const startingLog = e[0];
 

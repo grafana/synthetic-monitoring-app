@@ -1,47 +1,17 @@
 import { DataFrame } from '@grafana/data';
 
-import { CheckEndedLog, CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   Annotation,
   CheckConfig,
   CheckEvent,
   CheckEventType,
+  ExecutionsInTimepoint,
   MinimapSection,
-  StatefulTimepoint,
   StatelessTimepoint,
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-
-export function minimapSections(timepoints: StatelessTimepoint[], timepointsDisplayCount: number) {
-  const timepointsInRange = timepoints.map((t) => t.adjustedTime);
-  const sections: MinimapSection[] = [];
-
-  if (timepointsDisplayCount === 0) {
-    return sections;
-  }
-
-  for (let i = 0; i < timepointsInRange.length; i += timepointsDisplayCount) {
-    const fromIndex = i;
-    const toIndex = i + timepointsDisplayCount;
-    const timepoints = timepointsInRange.slice(fromIndex, toIndex);
-    const timestampTo = Number(timepoints[0]);
-    const timestampFrom = Number(timepoints[timepoints.length - 1]);
-
-    const section = {
-      to: timestampTo,
-      from: timestampFrom,
-      toIndex,
-      fromIndex,
-      index: i,
-    };
-
-    sections.push(section);
-  }
-
-  return sections;
-}
 
 export function timeshiftedTimepoint(unixDate: UnixTimestamp, frequency: number): UnixTimestamp {
   return unixDate - (unixDate % frequency);
@@ -64,17 +34,17 @@ export function configTimeRanges(
   });
 }
 
-export function calculateUptimeValue(probes: CheckEndedLog[]) {
-  if (probes.length === 0) {
+export function calculateUptimeValue(executions: ExecutionsInTimepoint[]) {
+  if (executions.length === 0) {
     return -1;
   }
 
-  return probes.every((probe) => probe[LokiFieldNames.Labels].probe_success === '0') ? 0 : 1;
+  return executions.every((execution) => execution.execution[LokiFieldNames.Labels].probe_success === '0') ? 0 : 1;
 }
 
-export function getMaxProbeDuration(probes: CheckEndedLog[]) {
-  return probes.reduce((acc, curr) => {
-    const duration = Math.round(Number(curr[LokiFieldNames.Labels].duration_seconds) * 1000);
+export function getMaxProbeDuration(executions: ExecutionsInTimepoint[]) {
+  return executions.reduce((acc, curr) => {
+    const duration = Math.round(Number(curr.execution[LokiFieldNames.Labels].duration_seconds) * 1000);
 
     if (duration > acc) {
       return duration;
@@ -243,41 +213,6 @@ export function generateAnnotations({ checkEvents, timepoints }: GenerateAnnotat
   return build;
 }
 
-interface TimepointsWithLogsProps {
-  timepoints: StatelessTimepoint[];
-  logs: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>;
-}
-
-export function combineTimepointsWithLogs({ timepoints, logs }: TimepointsWithLogsProps) {
-  const copy: StatefulTimepoint[] = [...timepoints]; // necessary?
-
-  logs.forEach((log) => {
-    const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
-    const startingTime = log.Time - duration;
-
-    const timepoint = [...copy] // necessary?
-      .reverse()
-      .find((t) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration); // not very efficient
-
-    if (!timepoint) {
-      return;
-    }
-
-    timepoint.probes = timepoint.probes || [];
-
-    // deduplicate logs
-    if (!timepoint.probes.find((p) => p.id === log.id)) {
-      timepoint.probes.push(log);
-    }
-
-    timepoint.uptimeValue = calculateUptimeValue(timepoint.probes);
-    timepoint.maxProbeDuration = getMaxProbeDuration(timepoint.probes);
-  });
-
-  const reversedTimepoints = copy.reverse();
-  return reversedTimepoints;
-}
-
 export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
   return timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
 }
@@ -294,11 +229,63 @@ export function getMiniMapPages(timepoints: StatelessTimepoint[], timepointsDisp
   let remainingTimepoints = timepoints.length;
 
   while (remainingTimepoints > 0) {
-    const endIndex = remainingTimepoints - 1;
+    const endIndex = remainingTimepoints;
     const startIndex = Math.max(0, remainingTimepoints - withSections);
     pages.push([startIndex, endIndex]);
     remainingTimepoints = startIndex;
   }
 
   return pages;
+}
+
+export function getMiniMapSections(timepoints: StatelessTimepoint[], timepointsDisplayCount: number) {
+  const timepointsInRange = timepoints.map((t) => t.adjustedTime);
+  const sections: MinimapSection[] = [];
+
+  if (timepointsDisplayCount === 0) {
+    return sections;
+  }
+
+  for (let i = 0; i < timepointsInRange.length; i += timepointsDisplayCount) {
+    const fromIndex = i;
+    const toIndex = i + timepointsDisplayCount;
+    const timepoints = timepointsInRange.slice(fromIndex, toIndex);
+    const timestampTo = Number(timepoints[0]);
+    const timestampFrom = Number(timepoints[timepoints.length - 1]);
+
+    const section = {
+      to: timestampTo,
+      from: timestampFrom,
+      toIndex,
+      fromIndex,
+      index: i,
+    };
+
+    sections.push(section);
+  }
+
+  return sections;
+}
+
+interface GetVisibleTimepointsProps {
+  timepoints: StatelessTimepoint[];
+  miniMapCurrentPage: number;
+  miniMapPages: Array<[number, number]>;
+}
+
+export function getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages }: GetVisibleTimepointsProps) {
+  const [start, end] = miniMapPages[miniMapCurrentPage] || [0, timepoints.length];
+  return timepoints.slice(start, end);
+}
+
+export function getVisibleTimepointsTimeRange({ timepoints }: { timepoints: StatelessTimepoint[] }) {
+  const timepointTo = timepoints[timepoints.length - 1];
+  const timepointFrom = timepoints[0];
+  const timeRangeTo = timepointTo?.adjustedTime + timepointTo?.timepointDuration;
+  const timeRangeFrom = timepointFrom?.adjustedTime;
+
+  return {
+    from: timeRangeFrom,
+    to: timeRangeTo,
+  };
 }

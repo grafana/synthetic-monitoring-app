@@ -1,4 +1,13 @@
-import React, { createContext, PropsWithChildren, RefObject, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  PropsWithChildren,
+  RefObject,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useTimeRange } from '@grafana/scenes-react';
 
 import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
@@ -6,6 +15,7 @@ import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import {
   MAX_PROBE_DURATION_DEFAULT,
+  TIMEPOINT_EXPLORER_VIEW_OPTIONS,
   TIMEPOINT_GAP_PX,
   TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
@@ -16,25 +26,51 @@ import {
   usePersistedMaxProbeDuration,
   useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import { CheckConfig, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getMiniMapPages } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import {
+  Annotation,
+  CheckConfig,
+  MinimapSection,
+  SelectedTimepointState,
+  StatefulTimepoint,
+  StatelessTimepoint,
+  UnixTimestamp,
+  ViewMode,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  constructCheckEvents,
+  generateAnnotations,
+  getMiniMapPages,
+  getMiniMapSections,
+  getVisibleTimepoints,
+  getVisibleTimepointsTimeRange,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 type TimepointExplorerContextType = {
+  annotations: Annotation[];
   check: Check;
   checkConfigs: CheckConfig[];
+  handleMiniMapPageChange: (page: number) => void;
+  handleMiniMapSectionClick: (sectionIndex: number) => void;
+  handleSelectedTimepointChange: (timepoint: StatelessTimepoint, probeToView: string) => void;
+  handleViewModeChange: (viewMode: ViewMode) => void;
   isLoading: boolean;
-  handleMiniMapPageChange: React.Dispatch<React.SetStateAction<number>>;
   logsData: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>;
+  logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   maxProbeDuration: number;
-  miniMapPage: number;
+  miniMapCurrentPage: number;
+  miniMapCurrentPageSections: MinimapSection[];
+  miniMapCurrentPageTimeRange: { from: UnixTimestamp; to: UnixTimestamp };
+  miniMapCurrentSectionIndex: number;
   miniMapPages: Array<[number, number]>;
+  ref: RefObject<HTMLDivElement | null>;
+  selectedTimepoint: SelectedTimepointState;
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
+  viewMode: ViewMode;
   width: number;
-  ref: RefObject<HTMLDivElement | null>;
-} | null;
+};
 
-export const TimepointExplorerContext = createContext<TimepointExplorerContextType>(null);
+export const TimepointExplorerContext = createContext<TimepointExplorerContextType | null>(null);
 
 interface TimepointExplorerProviderProps extends PropsWithChildren {
   check: Check;
@@ -42,7 +78,10 @@ interface TimepointExplorerProviderProps extends PropsWithChildren {
 
 export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
   const [timeRange] = useTimeRange();
-  const [miniMapPage, setMiniMapPage] = useState(0);
+  const [miniMapCurrentPage, setMiniMapPage] = useState(0);
+  const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
+  const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
 
   const { data: maxProbeDurationData, isLoading: maxProbeDurationIsLoading } = usePersistedMaxProbeDuration({
     timeRange,
@@ -64,23 +103,29 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading;
   const { width, ref } = useExplorerWidth();
   const timepointsDisplayCount = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP_PX));
+
   const miniMapPages = useMemo(
     () => getMiniMapPages(timepoints, timepointsDisplayCount),
     [timepoints, timepointsDisplayCount]
   );
-  const timepointTo = timepoints[timepoints.length - 1];
-  const timepointFrom = timepoints[0];
-  const timeRangeTo = timepointTo?.adjustedTime + timepointTo?.timepointDuration;
-  const timeRangeFrom = timepointFrom?.adjustedTime;
 
-  const miniMapPageTimeRange = useMemo(() => {
-    return {
-      from: timeRangeFrom,
-      to: timeRangeTo,
-    };
-  }, [timeRangeFrom, timeRangeTo]);
+  const visibleTimepoints = getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages });
+  const miniMapCurrentPageTimeRange = getVisibleTimepointsTimeRange({ timepoints: visibleTimepoints });
+  const miniMapCurrentPageSections = getMiniMapSections(visibleTimepoints, timepointsDisplayCount);
 
-  const { data: logsData = [] } = useExecutionEndingLogs({ timeRange: miniMapPageTimeRange, check });
+  const { data: logsData = [], logsMap } = useExecutionEndingLogs({
+    timeRange: miniMapCurrentPageTimeRange,
+    check,
+    timepoints,
+  });
+
+  const checkEvents = constructCheckEvents({
+    timeRangeFrom: miniMapCurrentPageTimeRange.from,
+    checkConfigs,
+    checkCreation: check.created,
+  });
+
+  const annotations = generateAnnotations({ checkEvents, timepoints: visibleTimepoints });
 
   // reset miniMapPage to 0 when miniMapPages changes (such as screen resize)
   // todo make this better
@@ -90,26 +135,77 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     }
   }, [miniMapPages]);
 
-  return (
-    <TimepointExplorerContext.Provider
-      value={{
-        check,
-        checkConfigs,
-        isLoading,
-        handleMiniMapPageChange: setMiniMapPage,
-        logsData,
-        maxProbeDuration,
-        miniMapPage,
-        miniMapPages,
-        timepoints,
-        timepointsDisplayCount,
-        width,
-        ref,
-      }}
-    >
-      {children}
-    </TimepointExplorerContext.Provider>
-  );
+  const handleMiniMapPageChange = useCallback((page: number) => {
+    setMiniMapPage(page);
+  }, []);
+
+  const handleViewModeChange = useCallback((viewMode: ViewMode) => {
+    setViewMode(viewMode);
+  }, []);
+
+  const handleMiniMapSectionClick = useCallback((sectionIndex: number) => {
+    setMiniMapCurrentSectionIndex(sectionIndex);
+  }, []);
+
+  const handleSelectedTimepointChange = useCallback((timepoint: StatelessTimepoint, probeToView: string) => {
+    setSelectedTimepoint(([prevTimepoint, prevProbeToView]) => {
+      return prevTimepoint?.adjustedTime === timepoint.adjustedTime && prevProbeToView === probeToView
+        ? [null, null]
+        : [timepoint, probeToView];
+    });
+  }, []);
+
+  const value: TimepointExplorerContextType = useMemo(() => {
+    return {
+      annotations,
+      check,
+      checkConfigs,
+      handleMiniMapPageChange,
+      handleMiniMapSectionClick,
+      handleSelectedTimepointChange,
+      handleViewModeChange,
+      isLoading,
+      logsData,
+      logsMap,
+      maxProbeDuration,
+      miniMapCurrentPage,
+      miniMapCurrentPageSections,
+      miniMapCurrentPageTimeRange,
+      miniMapCurrentSectionIndex,
+      miniMapPages,
+      ref,
+      selectedTimepoint,
+      timepoints,
+      timepointsDisplayCount,
+      viewMode,
+      width,
+    };
+  }, [
+    annotations,
+    check,
+    checkConfigs,
+    handleMiniMapPageChange,
+    handleMiniMapSectionClick,
+    handleSelectedTimepointChange,
+    handleViewModeChange,
+    isLoading,
+    logsData,
+    logsMap,
+    maxProbeDuration,
+    miniMapCurrentPage,
+    miniMapCurrentPageSections,
+    miniMapCurrentPageTimeRange,
+    miniMapCurrentSectionIndex,
+    miniMapPages,
+    ref,
+    selectedTimepoint,
+    timepoints,
+    timepointsDisplayCount,
+    viewMode,
+    width,
+  ]);
+
+  return <TimepointExplorerContext.Provider value={value}>{children}</TimepointExplorerContext.Provider>;
 };
 
 export function useTimepointExplorerContext() {

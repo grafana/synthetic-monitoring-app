@@ -9,72 +9,34 @@ import {
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import {
-  Annotation,
-  MinimapSection,
-  SelectedTimepointState,
-  Timepoint,
-  UnixTimestamp,
-  ViewMode,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { combineTimepointsWithLogs } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointListAnnotations } from 'scenes/components/TimepointExplorer/TimepointListAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
 import { YAxis } from 'scenes/components/TimepointExplorer/YAxis';
 
 interface TimepointListProps {
-  activeMiniMapSectionIndex: number;
-  annotations: Annotation[];
-  handleTimepointSelection: (timepoint: Timepoint, probeToView: string) => void;
-  miniMapSections: MinimapSection[];
-  selectedTimepoint: SelectedTimepointState;
-  timepoints: Timepoint[];
   timeRange: { from: UnixTimestamp; to: UnixTimestamp };
-  viewMode: ViewMode;
 }
 
-export const TimepointList = ({
-  activeMiniMapSectionIndex,
-  annotations,
-  handleTimepointSelection,
-  miniMapSections,
-  selectedTimepoint,
-  timeRange,
-  viewMode,
-}: TimepointListProps) => {
-  const { logsData, maxProbeDuration, ref, timepoints, timepointsDisplayCount, width } = useTimepointExplorerContext();
-  const activeSection = miniMapSections[activeMiniMapSectionIndex];
+export const TimepointList = ({ timeRange }: TimepointListProps) => {
+  const { maxProbeDuration, ref, timepoints, width, miniMapCurrentPageSections, miniMapCurrentSectionIndex } =
+    useTimepointExplorerContext();
+  const activeSection = miniMapCurrentPageSections[miniMapCurrentSectionIndex];
   const styles = useStyles2(getStyles);
-  const combinedTimepoints = combineTimepointsWithLogs({ timepoints, logs: logsData });
 
-  const timepointsInRange = combinedTimepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
+  const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
 
   return (
     <div>
       <div className={styles.container}>
         <YAxis maxProbeDuration={maxProbeDuration} width={width} />
         <div className={styles.timepointsContainer}>
-          <TimepointListAnnotations
-            annotations={annotations}
-            timepointsInRange={timepointsInRange}
-            timepointsDisplayCount={timepointsDisplayCount}
-          />
+          <TimepointListAnnotations timepointsInRange={timepointsInRange} />
           <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
             {activeSection &&
               timepointsInRange.map((timepoint, index) => {
-                return (
-                  <TimepointListEntry
-                    annotations={annotations}
-                    handleTimepointSelection={handleTimepointSelection}
-                    key={index}
-                    maxProbeDuration={maxProbeDuration}
-                    selectedTimepoint={selectedTimepoint}
-                    timepoint={timepoint}
-                    viewIndex={index}
-                    viewMode={viewMode}
-                  />
-                );
+                return <TimepointListEntry key={index} timepoint={timepoint} viewIndex={index} />;
               })}
           </div>
         </div>

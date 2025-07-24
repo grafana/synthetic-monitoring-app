@@ -6,49 +6,27 @@ import { css, cx } from '@emotion/css';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import {
-  Annotation,
-  MinimapSection,
-  SelectedTimepointState,
-  StatelessTimepoint,
-  ViewMode,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { useVisibleTimepoints } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { MinimapSection, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface MiniMapSectionProps {
-  activeMiniMapSectionIndex: number;
-  annotations: Annotation[];
   index: number;
-  maxProbeDuration: number;
   section: MinimapSection;
-  timepoints: StatelessTimepoint[];
-  handleSectionClick: (index: number) => void;
-  viewMode: ViewMode;
-  timepointsDisplayCount: number;
-  selectedTimepoint: SelectedTimepointState;
 }
 
-export const TimepointMiniMapSection = ({
-  activeMiniMapSectionIndex,
-  annotations,
-  index,
-  handleSectionClick,
-  section,
-  selectedTimepoint,
-  timepoints,
-  timepointsDisplayCount,
-  viewMode,
-}: MiniMapSectionProps) => {
-  const { maxProbeDuration } = useTimepointExplorerContext();
+export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps) => {
+  const { handleMiniMapSectionClick, miniMapCurrentSectionIndex, viewMode } = useTimepointExplorerContext();
+  const visibleTimepoints = useVisibleTimepoints();
   const styles = useStyles2(getStyles);
-  const timepointsToRender = timepoints.slice(section.fromIndex, section.toIndex).reverse();
+  const timepointsToRender = visibleTimepoints.slice(section.fromIndex, section.toIndex).reverse();
   const ref = useRef<HTMLButtonElement>(null);
   const from = new Date(section.from);
   const to = new Date(section.to);
   const fromFormatted = dateTimeFormat(from);
   const toFormatted = dateTimeFormat(to);
   const label = `${fromFormatted} to ${toFormatted}`;
-  const isActive = activeMiniMapSectionIndex === index;
+  const isActive = miniMapCurrentSectionIndex === index;
 
   return (
     <div className={styles.container}>
@@ -56,28 +34,14 @@ export const TimepointMiniMapSection = ({
         <PlainButton
           aria-label={label}
           className={cx(styles.section, { [styles.active]: isActive })}
-          onClick={() => handleSectionClick(index)}
+          onClick={() => handleMiniMapSectionClick(index)}
           ref={ref}
         >
-          <MinimapSectionAnnotations
-            annotations={annotations}
-            timepointsInRange={timepointsToRender}
-            timepointsDisplayCount={timepointsDisplayCount}
-          />
+          <MinimapSectionAnnotations timepointsInRange={timepointsToRender} />
           {viewMode === 'uptime' ? (
-            <UptimeSection
-              timepoints={timepointsToRender}
-              maxProbeDuration={maxProbeDuration}
-              timepointsDisplayCount={timepointsDisplayCount}
-              selectedTimepoint={selectedTimepoint}
-            />
+            <UptimeSection timepoints={timepointsToRender} />
           ) : (
-            <ReachabilitySection
-              timepoints={timepointsToRender}
-              maxProbeDuration={maxProbeDuration}
-              timepointsDisplayCount={timepointsDisplayCount}
-              selectedTimepoint={selectedTimepoint}
-            />
+            <ReachabilitySection timepoints={timepointsToRender} />
           )}
         </PlainButton>
       </Tooltip>
@@ -87,29 +51,29 @@ export const TimepointMiniMapSection = ({
 
 interface SectionChildProps {
   timepoints: StatelessTimepoint[];
-  maxProbeDuration: number;
-  timepointsDisplayCount: number;
-  selectedTimepoint: SelectedTimepointState;
 }
 
-const UptimeSection = ({
-  timepoints,
-  maxProbeDuration,
-  timepointsDisplayCount,
-  selectedTimepoint,
-}: SectionChildProps) => {
+const UptimeSection = ({ timepoints }: SectionChildProps) => {
+  const { logsMap, maxProbeDuration, selectedTimepoint, timepointsDisplayCount } = useTimepointExplorerContext();
+
   const styles = useStyles2(getStyles);
   const width = `${100 / timepointsDisplayCount}%`;
 
   return timepoints.map((timepoint) => {
-    const height = getEntryHeight(timepoint.maxProbeDuration, maxProbeDuration);
+    const statefulTimepoint = logsMap[timepoint.adjustedTime];
+
+    if (!statefulTimepoint) {
+      return null;
+    }
+
+    const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
 
     return (
       <div
         key={timepoint.adjustedTime}
         className={cx(styles.uptimeTimepoint, {
-          [styles.success]: timepoint.uptimeValue === 1,
-          [styles.failure]: timepoint.uptimeValue === 0,
+          [styles.success]: statefulTimepoint.uptimeValue === 1,
+          [styles.failure]: statefulTimepoint.uptimeValue === 0,
           [styles.selected]: selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime,
         })}
         style={{ height: `${height}%`, width }}
@@ -118,43 +82,24 @@ const UptimeSection = ({
   });
 };
 
-const ReachabilitySection = ({
-  timepoints,
-  maxProbeDuration,
-  timepointsDisplayCount,
-  selectedTimepoint,
-}: SectionChildProps) => {
-  const width = `${100 / timepointsDisplayCount}%`;
-
+const ReachabilitySection = ({ timepoints }: SectionChildProps) => {
   return timepoints.map((timepoint) => {
-    return (
-      <ReachabilityTimepoint
-        key={timepoint.adjustedTime}
-        timepoint={timepoint}
-        maxProbeDuration={maxProbeDuration}
-        width={width}
-        selectedTimepoint={selectedTimepoint}
-      />
-    );
+    return <ReachabilityTimepoint key={timepoint.adjustedTime} timepoint={timepoint} />;
   });
 };
 
 interface ReachabilityTimepointProps {
-  timepoint: Timepoint;
-  maxProbeDuration: number;
-  width: string;
-  selectedTimepoint: SelectedTimepointState;
+  timepoint: StatelessTimepoint;
 }
 
-const ReachabilityTimepoint = ({
-  timepoint,
-  maxProbeDuration,
-  width,
-  selectedTimepoint,
-}: ReachabilityTimepointProps) => {
+const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
+  const { maxProbeDuration, selectedTimepoint, timepointsDisplayCount } = useTimepointExplorerContext();
+  const width = `${100 / timepointsDisplayCount}%`;
   const styles = useStyles2(getStyles);
   const ref = useRef<HTMLDivElement>(null);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const { logsMap } = useTimepointExplorerContext();
+  const statefulTimepoint = logsMap[timepoint.adjustedTime];
 
   useLayoutEffect(() => {
     setContainer(ref.current);
@@ -162,10 +107,10 @@ const ReachabilityTimepoint = ({
 
   return (
     <div key={timepoint.adjustedTime} className={styles.reachabilityTimepoint} style={{ width }} ref={ref}>
-      {timepoint.probes.map((probe) => {
-        const probeSuccess = probe[LokiFieldNames.Labels].probe_success;
-        const probeDuration = Number(probe[LokiFieldNames.Labels].duration_seconds) * 1000;
-        const probeName = probe[LokiFieldNames.Labels].probe;
+      {statefulTimepoint.executions.map((execution) => {
+        const probeSuccess = execution.execution[LokiFieldNames.Labels].probe_success;
+        const probeDuration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
+        const probeName = execution.probe;
         const bottom = getEntryHeight(probeDuration, maxProbeDuration) / 100;
         const containerHeight = container?.clientHeight ?? 0;
         const containerWidth = container?.clientWidth ?? 0;
@@ -194,15 +139,8 @@ const ReachabilityTimepoint = ({
   );
 };
 
-const MinimapSectionAnnotations = ({
-  annotations,
-  timepointsInRange,
-  timepointsDisplayCount,
-}: {
-  annotations: Annotation[];
-  timepointsInRange: Timepoint[];
-  timepointsDisplayCount: number;
-}) => {
+const MinimapSectionAnnotations = ({ timepointsInRange }: { timepointsInRange: StatelessTimepoint[] }) => {
+  const { annotations, timepointsDisplayCount } = useTimepointExplorerContext();
   const renderOrderedTimepoints = [...timepointsInRange].reverse();
   const styles = useStyles2(getAnnotationStyles);
   const timepointsInRangeAdjustedTimes = renderOrderedTimepoints.map((timepoint) => timepoint.adjustedTime);

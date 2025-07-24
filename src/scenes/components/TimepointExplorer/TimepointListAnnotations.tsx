@@ -9,17 +9,11 @@ import {
   TIMEPOINT_LIST_ANNOTATIONS_ID,
   TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { Annotation, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export const TimepointListAnnotations = ({
-  annotations,
-  timepointsInRange,
-  timepointsDisplayCount,
-}: {
-  annotations: Annotation[];
-  timepointsInRange: StatelessTimepoint[];
-  timepointsDisplayCount: number;
-}) => {
+export const TimepointListAnnotations = ({ timepointsInRange }: { timepointsInRange: StatelessTimepoint[] }) => {
+  const { annotations, timepointsDisplayCount } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
   const renderOrderedTimepoints = [...timepointsInRange].reverse();
   const timepointsInRangeAdjustedTimes = timepointsInRange.map((timepoint) => timepoint.adjustedTime);

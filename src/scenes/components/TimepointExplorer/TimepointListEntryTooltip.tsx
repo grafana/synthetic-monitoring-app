@@ -5,22 +5,25 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { formatDuration, formatSmallDurations } from 'utils';
-import { StatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 interface TimepointListEntryTooltipProps {
-  timepoint: StatefulTimepoint;
+  timepoint: StatelessTimepoint;
   hoveredCheck?: string | null;
 }
 
 export const TimepointListEntryTooltip = ({ timepoint, hoveredCheck }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
   const displayTime = new Date(timepoint.adjustedTime).toLocaleString();
-  const probeCount = timepoint.probes.length;
+  const { logsMap } = useTimepointExplorerContext();
+  const statefulTimepoint = logsMap[timepoint.adjustedTime];
+  const probeCount = statefulTimepoint.executions.length;
 
   // Calculate average if not provided
   const avgDuration =
-    timepoint.probes.reduce((sum, probe) => {
-      const duration = Number(probe[LokiFieldNames.Labels].duration_seconds) * 1000;
+    statefulTimepoint.executions.reduce((sum, execution) => {
+      const duration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
       return sum + duration;
     }, 0) / probeCount;
 
@@ -28,21 +31,19 @@ export const TimepointListEntryTooltip = ({ timepoint, hoveredCheck }: Timepoint
 
   return (
     <Stack direction="column" gap={2}>
-      {/* Header */}
       <div className={styles.header}>
         <Stack direction="row" alignItems="center" gap={3} justifyContent="space-between">
           <Text variant="h5" element="h3">
             {displayTime}
           </Text>
-          <StatusBadge status={timepoint.uptimeValue} />
+          <StatusBadge status={statefulTimepoint.uptimeValue} />
         </Stack>
       </div>
 
-      {/* Probe List */}
       <Stack direction="column" gap={1}>
-        {timepoint.probes.map((entry) => {
-          const id = entry.id;
-          const { probe, probe_success, duration_seconds } = entry[LokiFieldNames.Labels];
+        {statefulTimepoint.executions.map((execution) => {
+          const id = execution.id;
+          const { probe, probe_success, duration_seconds } = execution.execution[LokiFieldNames.Labels];
           const isSuccess = probe_success === '1';
           const duration = Number(duration_seconds) * 1000;
 
