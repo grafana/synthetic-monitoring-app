@@ -56,6 +56,15 @@ jobs:
       pull-requests: write
     uses: ./.github/workflows/call_verify-probe-api-server-mappings.yml
 
+  validate-terraform-configuration:
+      name: Validate Terraform Configuration
+      needs: setup-env-and-cache
+      permissions:
+        contents: read
+        issues: write
+        pull-requests: write
+      uses: ./.github/workflows/call_validate-terraform.yml
+
   danger-js:
     name: DangerJS
     needs: build-and-typecheck

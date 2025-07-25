@@ -1,5 +1,6 @@
+import { fromBase64 } from 'js-base64';
+
 import { MultiHttpAssertionType, MultiHttpVariableType } from 'types';
-import { fromBase64 } from 'utils';
 import {
   Assertion,
   AssertionConditionVariant,
