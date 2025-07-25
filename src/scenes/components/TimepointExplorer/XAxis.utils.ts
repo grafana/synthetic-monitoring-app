@@ -1,22 +1,21 @@
 import { getTimeZone } from '@grafana/data';
 
-import { TIMEPOINT_GAP_PX, TIMEPOINT_SIZE } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
-import { StatelessTimepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 const APPROXIMATE_SPACING = 200; // Approximate spacing in pixels
-const TIMEPOINT_WIDTH = TIMEPOINT_SIZE + TIMEPOINT_GAP_PX;
-const LABEL_PER_POINTS = Math.floor(APPROXIMATE_SPACING / TIMEPOINT_WIDTH);
 
 export function generateXAxisPoints(
   timepointsInRange: StatelessTimepoint[],
-  timeRange: { from: UnixTimestamp; to: UnixTimestamp }
+  crossesDays: boolean,
+  timepointWidth: number
 ) {
   if (timepointsInRange.length === 0) {
     return [];
   }
 
-  const crossesDays = doesTimeRangeCrossDays(timeRange);
-
+  const TIMEPOINT_WIDTH = timepointWidth + TIMEPOINT_GAP_PX;
+  const LABEL_PER_POINTS = Math.floor(APPROXIMATE_SPACING / TIMEPOINT_WIDTH);
   // Calculate how many points we can fit based on approximate spacing
   const maxPoints = Math.max(2, Math.floor(timepointsInRange.length / LABEL_PER_POINTS) + 1);
 
@@ -83,9 +82,6 @@ export function generateXAxisPoints(
   });
 }
 
-function doesTimeRangeCrossDays(timeRange: { from: UnixTimestamp; to: UnixTimestamp }) {
-  const from = new Date(timeRange.from);
-  const to = new Date(timeRange.to);
-
+export function doesTimeRangeCrossDays(from: Date, to: Date) {
   return from.getDate() !== to.getDate();
 }

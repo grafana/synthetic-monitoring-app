@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ElementType, forwardRef, HTMLAttributes } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -6,28 +6,26 @@ import { css, cx } from '@emotion/css';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { TimepointVizOption } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-type TimepointVizItemProps = React.HTMLAttributes<HTMLDivElement> & {
-  as?: React.ElementType;
+type TimepointVizItemProps = HTMLAttributes<HTMLElement> & {
+  as?: ElementType;
   state: `failure` | `success` | `unknown`;
 };
 
-export const TimepointVizItem = ({
-  as: Component = 'div',
-  children,
-  className,
-  state,
-  ...props
-}: TimepointVizItemProps) => {
-  const { vizOptions } = useTimepointExplorerContext();
-  const vizOption = vizOptions[state];
-  const styles = useStyles2((theme) => getStyles(theme, vizOption));
+export const TimepointVizItem = forwardRef<HTMLElement, TimepointVizItemProps>(
+  ({ as: Component = 'div', children, className, state, ...props }, ref) => {
+    const { vizOptions } = useTimepointExplorerContext();
+    const vizOption = vizOptions[state];
+    const styles = useStyles2((theme) => getStyles(theme, vizOption));
 
-  return (
-    <Component className={cx(styles.container, className)} {...props}>
-      {children}
-    </Component>
-  );
-};
+    return (
+      <Component className={cx(styles.container, className)} ref={ref} {...props}>
+        {children}
+      </Component>
+    );
+  }
+);
+
+TimepointVizItem.displayName = 'TimepointVizItem';
 
 const getStyles = (theme: GrafanaTheme2, vizOption: TimepointVizOption) => ({
   container: css`

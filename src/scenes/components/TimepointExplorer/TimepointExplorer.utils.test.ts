@@ -1,5 +1,9 @@
-import { MiniMapPage } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getMiniMapPages, getMiniMapSections } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { MiniMapPage, MiniMapPages, MiniMapSection } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  findNearest,
+  getMiniMapPages,
+  getMiniMapSections,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 describe(`getMiniMapPages`, () => {
   it(`should not get into an infinite loop`, () => {});
@@ -44,5 +48,46 @@ describe(`getMiniMapSections`, () => {
       [3, 12],
       [0, 2],
     ]);
+  });
+});
+
+describe(`findNearest`, () => {
+  describe(`increase in pages (decreased width)`, () => {
+    it(`should return the new page index with the most overlapping indices`, () => {
+      const newPages: MiniMapPages = [
+        [0, 0],
+        [1, 3],
+        [4, 6],
+        [7, 9],
+      ];
+      const currentSectionRange: MiniMapSection = [4, 7];
+      const nearestPage = findNearest(newPages, currentSectionRange);
+
+      // favour further all things equal
+      expect(nearestPage).toEqual(2);
+    });
+
+    it(`should favour the newest indices when all pages have the same number of overlapping indices`, () => {
+      const newPages: MiniMapPages = [
+        [0, 9],
+        [10, 19],
+        [20, 29],
+      ];
+      const currentSectionRange: MiniMapSection = [0, 29];
+      const nearestPage = findNearest(newPages, currentSectionRange);
+
+      // favour newest all things equal
+      expect(nearestPage).toEqual(2);
+    });
+  });
+
+  describe(`decrease in pages (increased width)`, () => {
+    it(`should return the correct nearest page`, () => {
+      const newPages: MiniMapPages = [[0, 29]];
+      const currentSectionRange: MiniMapSection = [11, 13];
+      const nearestPage = findNearest(newPages, currentSectionRange);
+
+      expect(nearestPage).toEqual(0);
+    });
   });
 });

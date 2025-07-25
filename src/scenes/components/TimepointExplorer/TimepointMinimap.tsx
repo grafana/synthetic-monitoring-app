@@ -3,26 +3,43 @@ import { dateTimeFormat } from '@grafana/data';
 import { Box, IconButton, Pagination, Stack, Text } from '@grafana/ui';
 
 import { formatDuration } from 'utils';
+import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useVisibleTimepoints } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { getVisibleTimepointsTimeRange } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointMiniMapSection } from 'scenes/components/TimepointExplorer/TimepointMinimapSection';
 
 export const TimepointMinimap = () => {
-  const { handleMiniMapPageChange, miniMapCurrentPage, miniMapPages } = useTimepointExplorerContext();
+  const {
+    handleMiniMapPageChange,
+    handleMiniMapSectionChange,
+    miniMapCurrentPage,
+    miniMapCurrentSectionIndex,
+    miniMapCurrentPageSections,
+    miniMapPages,
+  } = useTimepointExplorerContext();
   const visibleTimepoints = useVisibleTimepoints();
   const { from, to } = getVisibleTimepointsTimeRange({ timepoints: visibleTimepoints });
   const lengthOfTime = to - from;
+  const isLastPage = miniMapCurrentPage === miniMapPages.length - 1;
+  const isLastSection = miniMapCurrentSectionIndex === miniMapCurrentPageSections.length - 1;
+  const isLastSectionInLastPage = isLastPage && isLastSection;
+  const isFirstSectionInFirstPage = miniMapCurrentPage === 0 && miniMapCurrentSectionIndex === 0;
 
   return (
     <Stack direction="column" gap={2}>
       <Text variant="body">{lengthOfTime ? formatDuration(lengthOfTime) : ''} overview</Text>
       <Stack gap={2}>
         <MiniMapNavigation
-          disabled={miniMapCurrentPage === miniMapPages.length - 1}
+          disabled={isLastSectionInLastPage}
           direction="left"
           onClick={() => {
-            handleMiniMapPageChange(miniMapCurrentPage + 1);
+            if (isLastSection) {
+              handleMiniMapPageChange(miniMapCurrentPage + 1);
+              handleMiniMapSectionChange(0);
+            } else {
+              handleMiniMapSectionChange(miniMapCurrentSectionIndex + 1);
+            }
           }}
         />
         <Stack direction="column" flex={1}>
@@ -37,9 +54,15 @@ export const TimepointMinimap = () => {
         </Stack>
         <MiniMapNavigation
           direction="right"
-          disabled={miniMapCurrentPage === 0}
+          disabled={isFirstSectionInFirstPage}
           onClick={() => {
-            handleMiniMapPageChange(miniMapCurrentPage - 1);
+            if (miniMapCurrentSectionIndex === 0) {
+              const newPageIndex = miniMapCurrentPage - 1;
+              handleMiniMapPageChange(newPageIndex);
+              handleMiniMapSectionChange(MAX_MINIMAP_SECTIONS - 1);
+            } else {
+              handleMiniMapSectionChange(miniMapCurrentSectionIndex - 1);
+            }
           }}
         />
       </Stack>

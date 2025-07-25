@@ -224,8 +224,12 @@ export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
 }
 
 export function getMiniMapPages(timepointsLength: number, timepointsDisplayCount: number): MiniMapPages {
-  if (!timepointsLength || !timepointsDisplayCount) {
+  if (!timepointsLength) {
     return [[0, 0]];
+  }
+
+  if (!timepointsDisplayCount) {
+    return [[timepointsLength - timepointsDisplayCount - 1, timepointsLength - 1]];
   }
 
   const pages = [];
@@ -289,7 +293,7 @@ export function getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPa
 export function getVisibleTimepointsTimeRange({ timepoints }: { timepoints: StatelessTimepoint[] }) {
   const timepointTo = timepoints[timepoints.length - 1];
   const timepointFrom = timepoints[0];
-  const timeRangeTo = timepointTo?.adjustedTime + timepointTo?.timepointDuration;
+  const timeRangeTo = timepointTo?.adjustedTime + timepointTo?.timepointDuration * 2;
   const timeRangeFrom = timepointFrom?.adjustedTime;
 
   return {
@@ -338,4 +342,26 @@ export function buildLogsMap(
 
     return acc;
   }, {});
+}
+
+export function findNearest(pages: MiniMapPages | MiniMapSections, currentRange: MiniMapPage | MiniMapSection) {
+  let bestPageIndex = 0;
+  let maxOverlap = 0;
+
+  pages.forEach((page, index) => {
+    // Calculate overlap between page range and current range
+    const overlapStart = Math.max(page[0], currentRange[0]);
+    const overlapEnd = Math.min(page[1], currentRange[1]);
+
+    // If there's overlap, calculate the number of overlapping indices
+    const overlap = overlapStart <= overlapEnd ? overlapEnd - overlapStart + 1 : 0;
+
+    // Update best page if this one has more overlap, or same overlap but higher index (newer)
+    if (overlap > maxOverlap || (overlap === maxOverlap && index > bestPageIndex)) {
+      maxOverlap = overlap;
+      bestPageIndex = index;
+    }
+  });
+
+  return bestPageIndex;
 }

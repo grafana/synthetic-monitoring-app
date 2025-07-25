@@ -7,13 +7,12 @@ import {
   THEME_UNIT,
   TIMEPOINT_GAP,
   TIMEPOINT_LIST_ANNOTATIONS_ID,
-  TIMEPOINT_SIZE,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export const TimepointListAnnotations = ({ timepointsInRange }: { timepointsInRange: StatelessTimepoint[] }) => {
-  const { annotations, timepointsDisplayCount } = useTimepointExplorerContext();
+  const { annotations, timepointsDisplayCount, timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
   const renderOrderedTimepoints = [...timepointsInRange].reverse();
   const timepointsInRangeAdjustedTimes = timepointsInRange.map((timepoint) => timepoint.adjustedTime);
@@ -37,7 +36,7 @@ export const TimepointListAnnotations = ({ timepointsInRange }: { timepointsInRa
             key={`${annotation.checkEvent.label}-${annotation.timepointEnd.adjustedTime}`}
             className={styles.annotation}
             style={{
-              right: `calc(${right}% + ${TIMEPOINT_SIZE + (TIMEPOINT_GAP * THEME_UNIT) / 2}px)`,
+              right: `calc(${right}% + ${timepointWidth + (TIMEPOINT_GAP * THEME_UNIT) / 2}px)`,
             }}
           >
             <div className={styles.label}>{annotation.checkEvent.label}</div>

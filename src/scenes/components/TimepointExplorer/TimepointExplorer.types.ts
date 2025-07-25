@@ -10,6 +10,9 @@ export type StatelessTimepoint = {
   frequency: number;
 };
 
+export type VizDisplayValue = `success` | `failure` | `unknown`;
+export type VizDisplay = VizDisplayValue[];
+
 export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value'];
 
 export type SelectedTimepoint = [StatelessTimepoint, string];

@@ -1,47 +1,51 @@
 import React, { ReactNode, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { useTimeRange } from '@grafana/scenes-react';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import {
   TIMEPOINT_GAP_PX,
-  TIMEPOINT_SIZE,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { StatelessTimepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { generateXAxisPoints } from 'scenes/components/TimepointExplorer/XAxis.utils';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { doesTimeRangeCrossDays, generateXAxisPoints } from 'scenes/components/TimepointExplorer/XAxis.utils';
 
 interface XAxisProps {
-  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
   timepoints: StatelessTimepoint[];
-  width: number;
 }
 
-export const XAxis = ({ timepoints, timeRange }: XAxisProps) => {
-  const { width } = useTimepointExplorerContext();
+export const XAxis = ({ timepoints }: XAxisProps) => {
+  const { listWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.container}>
       <div className={styles.empty} />
       {timepoints.length > 0 && (
-        <div style={{ width: width }}>
-          <XAxisContent timeRange={timeRange} timepoints={timepoints} width={width} />
+        <div style={{ width: listWidth }}>
+          <XAxisContent timepoints={timepoints} />
         </div>
       )}
     </div>
   );
 };
 
-const XAxisContent = ({ timepoints, timeRange, width }: XAxisProps) => {
+const XAxisContent = ({ timepoints }: XAxisProps) => {
+  const { listWidth, timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
-  const points = useMemo(() => generateXAxisPoints(timepoints, timeRange), [timepoints, timeRange]);
+  const [dashboardTimeRange] = useTimeRange();
+  const crossesDays = doesTimeRangeCrossDays(dashboardTimeRange.from.toDate(), dashboardTimeRange.to.toDate());
+  const points = useMemo(
+    () => generateXAxisPoints(timepoints, crossesDays, timepointWidth),
+    [timepoints, crossesDays, timepointWidth]
+  );
 
   const renderedGaps = timepoints.length - 1;
-  const widthWithoutGaps = width - renderedGaps * TIMEPOINT_GAP_PX;
+  const widthWithoutGaps = listWidth - renderedGaps * TIMEPOINT_GAP_PX;
   const renderedTimepointWidth = widthWithoutGaps / timepoints.length;
-  const widthToUse = renderedTimepointWidth > TIMEPOINT_SIZE ? TIMEPOINT_SIZE : renderedTimepointWidth;
+  const widthToUse = renderedTimepointWidth > timepointWidth ? timepointWidth : renderedTimepointWidth;
 
   return (
     <div className={styles.labelContainer}>

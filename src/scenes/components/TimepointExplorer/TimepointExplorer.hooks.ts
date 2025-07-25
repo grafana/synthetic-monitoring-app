@@ -134,7 +134,10 @@ export function usePersistedCheckConfigs({ timeRange, check, refetchInterval }: 
 
 function useCheckConfigs({ timeRange, check, refetchInterval }: UseCheckConfigsProps) {
   const metricsDS = useMetricsDS();
-  const { expr, queryType } = getCheckConfigsQuery({ job: check.job, instance: check.target });
+  const { expr, queryType } = getCheckConfigsQuery({
+    job: check.job,
+    instance: check.target,
+  });
 
   return useQuery({
     queryKey: [
@@ -158,6 +161,7 @@ function useCheckConfigs({ timeRange, check, refetchInterval }: UseCheckConfigsP
         end: timeRange.to.valueOf(),
         refId: REF_ID_UNIQUE_CHECK_CONFIGS,
         queryType,
+        maxDataPoints: 11000,
       });
     },
     refetchInterval,

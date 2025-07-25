@@ -1,7 +1,8 @@
 import React from 'react';
-import { RadioButtonGroup, Stack } from '@grafana/ui';
+import { Icon, RadioButtonGroup, Stack } from '@grafana/ui';
 
 import { Check } from 'types';
+import { PlainButton } from 'components/PlainButton';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   TimepointExplorerProvider,
@@ -24,7 +25,15 @@ export const TimepointExplorer = ({ check }: TimepointExplorerProps) => {
 };
 
 const TimepointExplorerInternal = () => {
-  const { miniMapCurrentPageTimeRange, viewMode, handleViewModeChange } = useTimepointExplorerContext();
+  const {
+    miniMapCurrentPageTimeRange,
+    viewMode,
+    handleViewModeChange,
+    handleTimepointWidthChange,
+    timepointWidth,
+    miniMapCurrentPageSections,
+    miniMapCurrentSectionIndex,
+  } = useTimepointExplorerContext();
 
   return (
     <Stack direction={`column`} gap={2}>
@@ -35,6 +44,20 @@ const TimepointExplorerInternal = () => {
       <Stack direction="column" gap={2}>
         <TimepointMinimap />
         <TimepointList timeRange={miniMapCurrentPageTimeRange} />
+        <PlainButton
+          onClick={() =>
+            handleTimepointWidthChange(timepointWidth + 5, miniMapCurrentPageSections[miniMapCurrentSectionIndex])
+          }
+        >
+          <Icon name="plus" />
+        </PlainButton>
+        <PlainButton
+          onClick={() =>
+            handleTimepointWidthChange(timepointWidth - 5, miniMapCurrentPageSections[miniMapCurrentSectionIndex])
+          }
+        >
+          <Icon name="minus" />
+        </PlainButton>
         <TimepointViewer />
       </Stack>
     </Stack>

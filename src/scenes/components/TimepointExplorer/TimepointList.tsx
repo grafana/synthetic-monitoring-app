@@ -25,20 +25,22 @@ export const TimepointList = ({ timeRange }: TimepointListProps) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const {
-    handleWidthChange,
+    handleListWidthChange,
     maxProbeDuration,
     timepoints,
-    width,
+    listWidth,
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
   } = useTimepointExplorerContext();
-  const [fromIndex, toIndex] = miniMapCurrentPageSections[miniMapCurrentSectionIndex] || [0, 0];
+
+  const currentSectionRange = miniMapCurrentPageSections[miniMapCurrentSectionIndex];
+  const [fromIndex, toIndex] = miniMapCurrentPageSections[miniMapCurrentSectionIndex];
   const styles = useStyles2(getStyles);
 
   const timepointsInRange = timepoints.slice(fromIndex, toIndex + 1);
 
   const onResize = useDebounceCallback((width: number) => {
-    handleWidthChange(width);
+    handleListWidthChange(width, currentSectionRange);
   }, 100);
 
   useResizeObserver({
@@ -52,7 +54,7 @@ export const TimepointList = ({ timeRange }: TimepointListProps) => {
   return (
     <div>
       <div className={styles.container}>
-        <YAxis maxProbeDuration={maxProbeDuration} width={width} />
+        <YAxis maxProbeDuration={maxProbeDuration} width={listWidth} />
         <div className={styles.timepointsContainer}>
           <TimepointListAnnotations timepointsInRange={timepointsInRange} />
           <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
@@ -62,7 +64,7 @@ export const TimepointList = ({ timeRange }: TimepointListProps) => {
           </div>
         </div>
       </div>
-      <XAxis timeRange={timeRange} timepoints={timepointsInRange} width={width} />
+      <XAxis timepoints={timepointsInRange} />
       <TimepointListVizLegend />
     </div>
   );

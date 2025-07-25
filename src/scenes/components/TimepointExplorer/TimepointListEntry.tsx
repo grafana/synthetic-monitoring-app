@@ -7,11 +7,10 @@ import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import {
   TIMEPOINT_GAP_PX,
-  TIMEPOINT_SIZE,
   TIMEPOINT_THEME_HEIGHT_PX,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useStatefulTimepoint, useVizOptions } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
@@ -23,7 +22,8 @@ interface TimepointListEntryProps {
 }
 
 export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
-  const styles = useStyles2(getStyles);
+  const { timepointWidth } = useTimepointExplorerContext();
+  const styles = useStyles2(getStyles, timepointWidth);
 
   return (
     <div className={styles.timepoint}>
@@ -61,14 +61,20 @@ const GLOBAL_CLASS = `uptime_bar`;
 
 const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
+  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint, vizDisplay, timepointWidth } =
+    useTimepointExplorerContext();
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(getStyles, timepointWidth);
   const executionToView = statefulTimepoint.executions[0]?.id;
   const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
-  const { borderColor, backgroundColor, color } = useVizOptions(statefulTimepoint.uptimeValue);
+  const state =
+    statefulTimepoint.uptimeValue === 0 ? 'failure' : statefulTimepoint.uptimeValue === 1 ? 'success' : 'unknown';
+
+  if (!vizDisplay.includes(state)) {
+    return <div />;
+  }
 
   return (
     <div style={{ height: `${height}%` }}>
@@ -81,22 +87,18 @@ const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
         <PlainButton
           className={styles.uptimeButton}
           ref={ref}
-          onClick={() => executionToView && handleSelectedTimepointChange(timepoint, executionToView)}
+          onClick={() => handleSelectedTimepointChange(timepoint, executionToView)}
           style={viewIndex === 0 ? { paddingLeft: 0 } : undefined}
           showFocusStyles={false}
         >
-          <div
+          <TimepointVizItem
             className={cx(styles.uptimeBar, GLOBAL_CLASS, {
               [styles.selected]: isSelected,
             })}
-            style={{
-              border: `1px solid ${borderColor}`,
-              backgroundColor: backgroundColor,
-              color,
-            }}
+            state={state}
           >
             <Icon name={ICON_MAP[statefulTimepoint.uptimeValue]} />
-          </div>
+          </TimepointVizItem>
         </PlainButton>
       </Tooltip>
     </div>
@@ -104,18 +106,38 @@ const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
 };
 
 const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
+  const { vizDisplay, timepointWidth } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(getStyles, timepointWidth);
   const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
   const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const [hoveredCheck, setHoveredCheck] = useState<string | null>(null);
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
-  const height = `calc(${entryHeight}% + ${TIMEPOINT_SIZE}px)`;
+  const height = `calc(${entryHeight}% + ${timepointWidth}px)`;
+
+  const executionsToRender = statefulTimepoint.executions.filter(({ execution }) => {
+    const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
+    const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
+
+    return vizDisplay.includes(state);
+  });
+
+  if (!executionsToRender.length) {
+    return <div key={timepoint.adjustedTime} />;
+  }
 
   return (
     <Tooltip
-      content={<TimepointListEntryTooltip statefulTimepoint={statefulTimepoint} hoveredCheck={hoveredCheck} />}
+      content={
+        <TimepointListEntryTooltip
+          statefulTimepoint={{
+            ...statefulTimepoint,
+            executions: executionsToRender,
+          }}
+          hoveredCheck={hoveredCheck}
+        />
+      }
       interactive
       placement="top"
     >
@@ -131,6 +153,10 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
           const isProbeSelected = checkId === checkToView;
           const isSelected = isTimepointSelected && isProbeSelected;
           const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
+
+          if (!vizDisplay.includes(state)) {
+            return null;
+          }
 
           return (
             <TimepointVizItem
@@ -156,18 +182,18 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => {
+const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
   return {
     timepoint: css`
       display: flex;
       justify-content: end;
       flex-direction: column;
-      width: ${TIMEPOINT_SIZE}px;
+      width: ${timepointWidth}px;
       height: 100%;
       position: relative;
     `,
     uptimeButton: css`
-      width: calc(${TIMEPOINT_SIZE}px + ${TIMEPOINT_GAP_PX}px);
+      width: calc(${timepointWidth}px + ${TIMEPOINT_GAP_PX}px);
       height: 100%;
       left: 50%;
       transform: translateX(-50%);
@@ -178,7 +204,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       &:hover {
         .${GLOBAL_CLASS} {
           // todo: work out why this needs a global class?
-          background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
+          background-color: ${theme.visualization.getColorByName(`green`)};
         }
       }
 
@@ -191,7 +217,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     uptimeBar: css`
       height: 100%;
       min-height: 2px;
-      width: ${TIMEPOINT_SIZE}px;
+      width: ${timepointWidth}px;
       display: flex;
       align-items: end;
       justify-content: center;
@@ -203,18 +229,19 @@ const getStyles = (theme: GrafanaTheme2) => {
       flex-direction: column;
       align-items: center;
       justify-content: end;
-      width: ${TIMEPOINT_SIZE + TIMEPOINT_GAP_PX}px;
+      width: ${timepointWidth + TIMEPOINT_GAP_PX}px;
       position: relative;
       left: 50%;
       transform: translateX(-50%);
     `,
     selected: css`
+      border-width: 2px;
       z-index: 1;
     `,
     reachabilityProbe: css`
       position: absolute;
-      width: ${TIMEPOINT_SIZE}px;
-      height: ${TIMEPOINT_SIZE}px;
+      width: ${timepointWidth}px;
+      height: ${timepointWidth}px;
       display: flex;
       align-items: center;
       justify-content: center;

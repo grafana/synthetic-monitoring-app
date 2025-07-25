@@ -5,7 +5,6 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
-import { TIMEPOINT_SIZE } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
@@ -23,8 +22,9 @@ interface MiniMapSectionProps {
 }
 
 export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps) => {
-  const { handleMiniMapSectionClick, miniMapCurrentSectionIndex, timepoints, viewMode } = useTimepointExplorerContext();
-  const styles = useStyles2(getStyles);
+  const { handleMiniMapSectionChange, miniMapCurrentSectionIndex, timepoints, viewMode, timepointWidth } =
+    useTimepointExplorerContext();
+  const styles = useStyles2(getStyles, timepointWidth);
   const [start, end] = section;
   const miniMapSectionTimepoints = timepoints.slice(start, end + 1);
   const ref = useRef<HTMLButtonElement>(null);
@@ -37,7 +37,7 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
         <PlainButton
           aria-label={label}
           className={cx(styles.section, { [styles.active]: isActive })}
-          onClick={() => handleMiniMapSectionClick(index)}
+          onClick={() => handleMiniMapSectionChange(index)}
           ref={ref}
         >
           <MinimapSectionAnnotations timepointsInRange={miniMapSectionTimepoints} />
@@ -63,13 +63,18 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
 };
 
 const UptimeTimepoint = ({ timepoint, timepointIndex }: { timepoint: StatelessTimepoint; timepointIndex: number }) => {
-  const { maxProbeDuration, selectedTimepoint, timepointsDisplayCount } = useTimepointExplorerContext();
+  const { maxProbeDuration, selectedTimepoint, timepointsDisplayCount, vizDisplay } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
-  const styles = useStyles2(getStyles);
+  const { timepointWidth } = useTimepointExplorerContext();
+  const styles = useStyles2(getStyles, timepointWidth);
   const width = `${100 / timepointsDisplayCount}%`;
   const state =
     statefulTimepoint.uptimeValue === 0 ? 'failure' : statefulTimepoint.uptimeValue === 1 ? 'success' : 'unknown';
+
+  if (!vizDisplay.includes(state)) {
+    return <div style={{ width }} />;
+  }
 
   return (
     <TimepointVizItem
@@ -93,7 +98,8 @@ const ReachabilityTimepoint = ({ timepoint, timepointIndex }: ReachabilityTimepo
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const { timepointsDisplayCount } = useTimepointExplorerContext();
   const width = `${100 / timepointsDisplayCount}%`;
-  const styles = useStyles2(getStyles);
+  const { timepointWidth } = useTimepointExplorerContext();
+  const styles = useStyles2(getStyles, timepointWidth);
   const ref = useRef<HTMLDivElement>(null);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
@@ -138,8 +144,9 @@ interface ExecutionEntryProps {
 }
 
 const ExecutionEntry = ({ containerHeight, offset, execution, timepoint }: ExecutionEntryProps) => {
-  const styles = useStyles2(getStyles);
-  const { maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
+  const { timepointWidth } = useTimepointExplorerContext();
+  const styles = useStyles2(getStyles, timepointWidth);
+  const { maxProbeDuration, selectedTimepoint, vizDisplay } = useTimepointExplorerContext();
   const probeSuccess = execution.execution[LokiFieldNames.Labels].probe_success;
   const probeDuration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
   const probeName = execution.probe;
@@ -149,6 +156,10 @@ const ExecutionEntry = ({ containerHeight, offset, execution, timepoint }: Execu
   const actualPosition = bottomInPx + offset > containerHeight ? containerHeight - offset : bottomInPx;
   const selected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime && selectedTimepoint[1] === probeName;
   const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
+
+  if (!vizDisplay.includes(state)) {
+    return <div />;
+  }
 
   return (
     <TimepointVizItem
@@ -196,7 +207,7 @@ const MinimapSectionAnnotations = ({ timepointsInRange }: { timepointsInRange: S
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
+const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => ({
   container: css`
     width: 100%;
   `,
@@ -243,14 +254,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     }
   `,
   uptimeTimepoint: css`
-    max-width: ${TIMEPOINT_SIZE}px;
+    max-width: ${timepointWidth}px;
   `,
   reachabilityTimepoint: css`
     position: relative;
     height: 100%;
     display: flex;
     justify-content: center;
-    max-width: ${TIMEPOINT_SIZE}px;
+    max-width: ${timepointWidth}px;
   `,
   selected: css`
     background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
