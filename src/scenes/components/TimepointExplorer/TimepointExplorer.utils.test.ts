@@ -23,19 +23,32 @@ describe(`getMiniMapPages`, () => {
 
 describe(`getMiniMapSections`, () => {
   it(`should return the correct mini map sections`, () => {
-    const miniMapPage: MiniMapPage = [0, 10];
+    const miniMapPage: MiniMapPage = [0, 9];
     const timepointsDisplayCount = 10;
     const miniMapSections = getMiniMapSections(miniMapPage, timepointsDisplayCount);
-    expect(miniMapSections).toEqual([[0, 10]]);
+    expect(miniMapSections).toEqual([[0, 9]]);
   });
 
   it(`should return the correct mini map sections`, () => {
-    const miniMapPage: MiniMapPage = [0, 10];
+    const miniMapPage: MiniMapPage = [0, 9];
     const timepointsDisplayCount = 5;
     const miniMapSections = getMiniMapSections(miniMapPage, timepointsDisplayCount);
     expect(miniMapSections).toEqual([
-      [5, 10],
-      [0, 5],
+      [5, 9],
+      [0, 4],
+    ]);
+  });
+
+  it(`should return the correct mini map sections`, () => {
+    const miniMapPage: MiniMapPage = [0, 32];
+    const timepointsDisplayCount = 10;
+    const miniMapSections = getMiniMapSections(miniMapPage, timepointsDisplayCount);
+
+    expect(miniMapSections).toEqual([
+      [23, 32],
+      [13, 22],
+      [3, 12],
+      [0, 2],
     ]);
   });
 });

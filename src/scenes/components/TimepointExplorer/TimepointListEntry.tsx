@@ -11,6 +11,7 @@ import {
   TIMEPOINT_THEME_HEIGHT_PX,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
@@ -31,18 +32,12 @@ export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryP
 };
 
 const Entry = (props: TimepointListEntryProps) => {
-  const { annotations, logsMap, viewMode } = useTimepointExplorerContext();
+  const { annotations, viewMode } = useTimepointExplorerContext();
   const isCheckCreatedEntry = annotations.some(
     (annotation) =>
       annotation.timepointStart.adjustedTime === props.timepoint.adjustedTime &&
       annotation.checkEvent.label === CheckEventType.CHECK_CREATED
   );
-
-  const statefulTimepoint = logsMap[props.timepoint.adjustedTime];
-
-  if (!statefulTimepoint) {
-    return null;
-  }
 
   if (isCheckCreatedEntry) {
     return <div data-testid={`empty-timepoint-${props.timepoint.adjustedTime}`} />;
@@ -64,24 +59,29 @@ const ICON_MAP: Record<number, IconName> = {
 const GLOBAL_CLASS = `uptime_bar`;
 
 const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
-  const { handleSelectedTimepointChange, logsMap, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
-  const statefulTimepoint = logsMap[timepoint.adjustedTime];
+  const statefulTimepoint = useStatefulTimepoint(timepoint);
+  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles);
   const isSuccess = statefulTimepoint.uptimeValue === 1;
   const isFailure = statefulTimepoint.uptimeValue === 0;
-  const executionToView = statefulTimepoint.executions[0].id;
+  const executionToView = statefulTimepoint.executions[0]?.id;
   const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
 
   return (
     <div style={{ height: `${height}%` }}>
-      <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
+      <Tooltip
+        content={<TimepointListEntryTooltip statefulTimepoint={statefulTimepoint} />}
+        ref={ref}
+        interactive
+        placement="top"
+      >
         <PlainButton
           className={styles.uptimeButton}
           ref={ref}
-          onClick={() => handleSelectedTimepointChange(timepoint, executionToView)}
+          onClick={() => executionToView && handleSelectedTimepointChange(timepoint, executionToView)}
           style={viewIndex === 0 ? { paddingLeft: 0 } : undefined}
           showFocusStyles={false}
         >
@@ -103,9 +103,9 @@ const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
 };
 
 const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
+  const statefulTimepoint = useStatefulTimepoint(timepoint);
   const styles = useStyles2(getStyles);
-  const { handleSelectedTimepointChange, logsMap, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
-  const statefulTimepoint = logsMap[timepoint.adjustedTime];
+  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
   const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const [hoveredCheck, setHoveredCheck] = useState<string | null>(null);
 
@@ -114,7 +114,7 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
 
   return (
     <Tooltip
-      content={<TimepointListEntryTooltip timepoint={timepoint} hoveredCheck={hoveredCheck} />}
+      content={<TimepointListEntryTooltip statefulTimepoint={statefulTimepoint} hoveredCheck={hoveredCheck} />}
       interactive
       placement="top"
     >

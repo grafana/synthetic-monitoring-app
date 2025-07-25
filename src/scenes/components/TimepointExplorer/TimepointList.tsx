@@ -34,7 +34,7 @@ export const TimepointList = ({ timeRange }: TimepointListProps) => {
   const [fromIndex, toIndex] = miniMapCurrentPageSections[miniMapCurrentSectionIndex] || [0, 0];
   const styles = useStyles2(getStyles);
 
-  const timepointsInRange = timepoints.slice(fromIndex, toIndex);
+  const timepointsInRange = timepoints.slice(fromIndex, toIndex + 1);
 
   const onResize = useDebounceCallback((width: number) => {
     handleWidthChange(width);

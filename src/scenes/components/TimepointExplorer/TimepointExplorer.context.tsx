@@ -214,6 +214,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     return null;
   }
 
+  console.log(value);
   return <TimepointExplorerContext.Provider value={value}>{children}</TimepointExplorerContext.Provider>;
 };
 

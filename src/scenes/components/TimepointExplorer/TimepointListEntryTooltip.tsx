@@ -5,19 +5,16 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { formatDuration, formatSmallDurations } from 'utils';
-import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 interface TimepointListEntryTooltipProps {
-  timepoint: StatelessTimepoint;
+  statefulTimepoint: StatefulTimepoint;
   hoveredCheck?: string | null;
 }
 
-export const TimepointListEntryTooltip = ({ timepoint, hoveredCheck }: TimepointListEntryTooltipProps) => {
+export const TimepointListEntryTooltip = ({ statefulTimepoint, hoveredCheck }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const displayTime = new Date(timepoint.adjustedTime).toLocaleString();
-  const { logsMap } = useTimepointExplorerContext();
-  const statefulTimepoint = logsMap[timepoint.adjustedTime];
+  const displayTime = new Date(statefulTimepoint.adjustedTime).toLocaleString();
   const probeCount = statefulTimepoint.executions.length;
 
   // Calculate average if not provided
@@ -61,7 +58,7 @@ export const TimepointListEntryTooltip = ({ timepoint, hoveredCheck }: Timepoint
 
       {/* Footer */}
       <div className={styles.footer}>
-        <span>Frequency: {formatDuration(timepoint.frequency, true)}</span>
+        <span>Frequency: {formatDuration(statefulTimepoint.frequency, true)}</span>
         <span>Avg: {renderedAvgDuration}</span>
       </div>
     </Stack>

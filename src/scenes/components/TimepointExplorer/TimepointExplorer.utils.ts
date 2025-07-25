@@ -249,15 +249,30 @@ export function getMiniMapPages(timepoints: StatelessTimepoint[], timepointsDisp
 }
 
 export function getMiniMapSections(miniMapPage: MiniMapPage, timepointsDisplayCount: number): MiniMapSections {
+  if (miniMapPage[0] === miniMapPage[1]) {
+    return [[miniMapPage[0], miniMapPage[1]]] as MiniMapSections;
+  }
+
   const sections: MiniMapSection[] = [];
   const [pageStartIndex, pageEndIndex] = miniMapPage;
+  const totalItems = pageEndIndex - pageStartIndex + 1; // +1 because ranges are inclusive
 
-  let currentStart = pageStartIndex;
+  if (totalItems <= timepointsDisplayCount) {
+    return [[pageStartIndex, pageEndIndex]] as MiniMapSections;
+  }
 
-  while (currentStart < pageEndIndex) {
-    const currentEnd = Math.min(currentStart + timepointsDisplayCount, pageEndIndex);
-    sections.unshift([currentStart, currentEnd]);
-    currentStart = currentEnd;
+  let currentEnd = pageEndIndex;
+
+  while (currentEnd >= pageStartIndex) {
+    let sectionSize = Math.min(timepointsDisplayCount, currentEnd - pageStartIndex + 1);
+    const currentStart = currentEnd - sectionSize + 1;
+
+    if (currentStart < pageStartIndex) {
+      break;
+    }
+
+    sections.push([currentStart, currentEnd]);
+    currentEnd = currentStart - 1;
   }
 
   return sections as MiniMapSections;

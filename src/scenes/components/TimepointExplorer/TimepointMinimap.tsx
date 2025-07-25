@@ -73,8 +73,9 @@ interface MiniMapNavigationProps {
 
 const MiniMapNavigation = ({ direction, disabled, onClick }: MiniMapNavigationProps) => {
   const iconName = direction === 'left' ? 'angle-left' : 'angle-right';
+  const tooltip = direction === 'left' ? 'Previous page' : 'Next page';
 
-  return <IconButton name={iconName} tooltip={`${direction} arrow`} onClick={onClick} disabled={disabled} />;
+  return <IconButton name={iconName} tooltip={tooltip} onClick={onClick} disabled={disabled} />;
 };
 
 interface MiniMapPaginationProps {

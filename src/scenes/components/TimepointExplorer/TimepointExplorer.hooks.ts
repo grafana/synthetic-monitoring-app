@@ -258,7 +258,6 @@ export function useExplorerWidth() {
     // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
     ref: internalRef,
     onResize: () => {
-      console.log('onResize');
       setWidth(internalRef.current?.clientWidth ?? 0);
     },
   });
@@ -266,4 +265,17 @@ export function useExplorerWidth() {
   console.log(internalRef.current);
 
   return { width, ref };
+}
+
+export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
+  const { logsMap } = useTimepointExplorerContext();
+
+  return (
+    logsMap[timepoint.adjustedTime] || {
+      uptimeValue: -1,
+      maxProbeDuration: -1,
+      executions: [],
+      adjustedTime: timepoint.adjustedTime,
+    }
+  );
 }
