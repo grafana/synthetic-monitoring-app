@@ -15,6 +15,7 @@ import { useStatefulTimepoint, useVizOptions } from 'scenes/components/Timepoint
 import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
+import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
 interface TimepointListEntryProps {
   timepoint: StatelessTimepoint;
@@ -108,7 +109,6 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
   const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
   const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const [hoveredCheck, setHoveredCheck] = useState<string | null>(null);
-  const { borderColor, backgroundColor, color } = useVizOptions(statefulTimepoint.uptimeValue);
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
   const height = `calc(${entryHeight}% + ${TIMEPOINT_SIZE}px)`;
@@ -130,9 +130,11 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
           const isTimepointSelected = timepointToView?.adjustedTime === timepoint.adjustedTime;
           const isProbeSelected = checkId === checkToView;
           const isSelected = isTimepointSelected && isProbeSelected;
+          const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
 
           return (
-            <PlainButton
+            <TimepointVizItem
+              as={PlainButton}
               className={cx(styles.reachabilityProbe, {
                 [styles.selected]: isSelected,
               })}
@@ -142,13 +144,11 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
               onMouseLeave={() => setHoveredCheck(null)}
               style={{
                 bottom: `${pixelHeight}px`,
-                border: `1px solid ${borderColor}`,
-                backgroundColor: backgroundColor,
-                color,
               }}
+              state={state}
             >
               <Icon name={ICON_MAP[probeSuccess]} />
-            </PlainButton>
+            </TimepointVizItem>
           );
         })}
       </div>
@@ -207,22 +207,6 @@ const getStyles = (theme: GrafanaTheme2) => {
       position: relative;
       left: 50%;
       transform: translateX(-50%);
-    `,
-    success: css`
-      color: ${theme.visualization.getColorByName(`green`)};
-      border: 1px solid currentColor;
-    `,
-    failure: css`
-      color: ${theme.colors.text.primary};
-      background-color: ${theme.visualization.getColorByName(`red`)};
-    `,
-    successSelected: css`
-      background-color: ${theme.colors.success.main};
-      border: 1px solid ${theme.colors.success.border};
-    `,
-    failureSelected: css`
-      background-color: ${theme.colors.error.main};
-      border: 1px solid ${theme.colors.error.border};
     `,
     selected: css`
       z-index: 1;

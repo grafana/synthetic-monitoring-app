@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { dateTimeFormat } from '@grafana/data';
 import { Box, IconButton, Pagination, Stack, Text } from '@grafana/ui';
 
 import { formatDuration } from 'utils';
@@ -29,9 +30,9 @@ export const TimepointMinimap = () => {
             <TimepointMinimapContent />
           </Box>
           <Stack direction="row" flex={1} justifyContent="space-between">
-            <Text variant="body">{from ? new Date(from).toLocaleString() : ''}</Text>
+            <Text variant="body">{from ? dateTimeFormat(new Date(from)) : ''}</Text>
             <MiniMapPagination miniMapCurrentPage={miniMapCurrentPage} miniMapPages={miniMapPages} />
-            <Text variant="body">{to ? new Date(to).toLocaleString() : ''}</Text>
+            <Text variant="body">{to ? dateTimeFormat(to) : ''}</Text>
           </Stack>
         </Stack>
         <MiniMapNavigation
@@ -56,7 +57,7 @@ const TimepointMinimapContent = () => {
 
   return (
     <Box position="relative" paddingY={2}>
-      <Stack gap={0}>
+      <Stack gap={0.25}>
         {miniMapCurrentPageSections
           .map((section, index) => <TimepointMiniMapSection index={index} key={index} section={section} />)
           .reverse()}

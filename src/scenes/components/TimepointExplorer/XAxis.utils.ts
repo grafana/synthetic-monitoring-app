@@ -1,3 +1,5 @@
+import { getTimeZone } from '@grafana/data';
+
 import { TIMEPOINT_GAP_PX, TIMEPOINT_SIZE } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { StatelessTimepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
@@ -56,6 +58,8 @@ export function generateXAxisPoints(
       });
     }
   }
+  const timeZoneData = getTimeZone();
+  const timeZone = timeZoneData === 'browser' ? undefined : timeZoneData;
 
   return build.map((point) => {
     const date = new Date(point.label);
@@ -64,12 +68,17 @@ export function generateXAxisPoints(
       ...point,
       label: crossesDays
         ? date.toLocaleString(undefined, {
+            timeZone,
             month: 'numeric',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
           })
-        : date.toLocaleTimeString(),
+        : date.toLocaleTimeString(undefined, {
+            timeZone,
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
     };
   });
 }

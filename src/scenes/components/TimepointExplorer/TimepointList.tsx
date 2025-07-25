@@ -13,6 +13,7 @@ import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer
 import { UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointListAnnotations } from 'scenes/components/TimepointExplorer/TimepointListAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
+import { TimepointListVizLegend } from 'scenes/components/TimepointExplorer/TimepointListVizLegend';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
 import { YAxis } from 'scenes/components/TimepointExplorer/YAxis';
 
@@ -62,6 +63,7 @@ export const TimepointList = ({ timeRange }: TimepointListProps) => {
         </div>
       </div>
       <XAxis timeRange={timeRange} timepoints={timepointsInRange} width={width} />
+      <TimepointListVizLegend />
     </div>
   );
 };

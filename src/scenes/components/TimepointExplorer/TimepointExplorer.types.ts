@@ -58,3 +58,15 @@ export interface StatefulTimepoint {
   executions: ExecutionsInTimepoint[];
   maxProbeDuration: number;
 }
+
+export type TimepointVizOption = {
+  border: string;
+  backgroundColor: string;
+  color: string;
+};
+
+export type TimepointVizOptions = {
+  success: TimepointVizOption;
+  failure: TimepointVizOption;
+  unknown: TimepointVizOption;
+};

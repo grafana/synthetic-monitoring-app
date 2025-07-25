@@ -260,10 +260,10 @@ export function useVizOptions(state: 0 | 1 | -1) {
       ? vizOptions.failure.border
       : vizOptions.unknown.border,
     backgroundColor: isSuccess
-      ? vizOptions.success.background
+      ? vizOptions.success.backgroundColor
       : isFailure
-      ? vizOptions.failure.background
-      : vizOptions.unknown.background,
+      ? vizOptions.failure.backgroundColor
+      : vizOptions.unknown.backgroundColor,
     color: isSuccess ? vizOptions.success.color : isFailure ? vizOptions.failure.color : vizOptions.unknown.color,
   };
 }

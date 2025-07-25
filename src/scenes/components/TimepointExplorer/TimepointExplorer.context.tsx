@@ -23,6 +23,7 @@ import {
   SelectedTimepointState,
   StatefulTimepoint,
   StatelessTimepoint,
+  TimepointVizOptions,
   UnixTimestamp,
   ViewMode,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -34,18 +35,6 @@ import {
   getVisibleTimepoints,
   getVisibleTimepointsTimeRange,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
-
-type VizOption = {
-  border: string;
-  background: string;
-  color: string;
-};
-
-type VizOptions = {
-  success: VizOption;
-  failure: VizOption;
-  unknown: VizOption;
-};
 
 type TimepointExplorerContextType = {
   annotations: Annotation[];
@@ -68,7 +57,7 @@ type TimepointExplorerContextType = {
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
   viewMode: ViewMode;
-  vizOptions: VizOptions;
+  vizOptions: TimepointVizOptions;
   width: number;
 };
 
@@ -153,16 +142,17 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     [checkEvents, visibleTimepoints]
   );
 
+  const handleMiniMapSectionClick = useCallback((sectionIndex: number) => {
+    setMiniMapCurrentSectionIndex(sectionIndex);
+  }, []);
+
   const handleMiniMapPageChange = useCallback((page: number) => {
     setMiniMapPage(page);
+    setMiniMapCurrentSectionIndex(0);
   }, []);
 
   const handleViewModeChange = useCallback((viewMode: ViewMode) => {
     setViewMode(viewMode);
-  }, []);
-
-  const handleMiniMapSectionClick = useCallback((sectionIndex: number) => {
-    setMiniMapCurrentSectionIndex(sectionIndex);
   }, []);
 
   const handleSelectedTimepointChange = useCallback((timepoint: StatelessTimepoint, probeToView: string) => {
@@ -181,17 +171,17 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     return {
       success: {
         border: theme.visualization.getColorByName(`green`),
-        background: 'transparent',
+        backgroundColor: 'transparent',
         color: theme.visualization.getColorByName(`green`),
       },
       failure: {
         border: `transparent`,
-        background: theme.visualization.getColorByName(`red`),
+        backgroundColor: theme.visualization.getColorByName(`red`),
         color: `white`,
       },
       unknown: {
         border: theme.visualization.getColorByName(`gray`),
-        background: 'transparent',
+        backgroundColor: 'transparent',
         color: `white`,
       },
     };

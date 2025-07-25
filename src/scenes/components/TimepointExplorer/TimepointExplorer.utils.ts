@@ -224,10 +224,6 @@ export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
 }
 
 export function getMiniMapPages(timepointsLength: number, timepointsDisplayCount: number): MiniMapPages {
-  console.log({
-    timepointsLength,
-    timepointsDisplayCount,
-  });
   if (!timepointsLength || !timepointsDisplayCount) {
     return [[0, 0]];
   }

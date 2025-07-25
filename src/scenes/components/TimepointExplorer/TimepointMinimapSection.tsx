@@ -5,8 +5,9 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
+import { TIMEPOINT_SIZE } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useStatefulTimepoint, useVizOptions } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
   ExecutionsInTimepoint,
   MiniMapSection,
@@ -14,6 +15,7 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { getLabel } from 'scenes/components/TimepointExplorer/TimepointMinimapSection.utils';
+import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
 interface MiniMapSectionProps {
   index: number;
@@ -39,12 +41,20 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
           ref={ref}
         >
           <MinimapSectionAnnotations timepointsInRange={miniMapSectionTimepoints} />
-          {miniMapSectionTimepoints.map((timepoint) => {
+          {miniMapSectionTimepoints.map((timepoint, index) => {
             if (viewMode === 'uptime') {
-              return <UptimeTimepoint key={timepoint.adjustedTime} timepoint={timepoint} />;
+              return (
+                <UptimeTimepoint key={timepoint.adjustedTime} timepoint={timepoint} timepointIndex={index + start} />
+              );
             }
 
-            return <ReachabilityTimepoint key={timepoint.adjustedTime} timepoint={timepoint} />;
+            return (
+              <ReachabilityTimepoint
+                key={timepoint.adjustedTime}
+                timepoint={timepoint}
+                timepointIndex={index + start}
+              />
+            );
           })}
         </PlainButton>
       </Tooltip>
@@ -52,36 +62,34 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
   );
 };
 
-const UptimeTimepoint = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
+const UptimeTimepoint = ({ timepoint, timepointIndex }: { timepoint: StatelessTimepoint; timepointIndex: number }) => {
   const { maxProbeDuration, selectedTimepoint, timepointsDisplayCount } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles);
   const width = `${100 / timepointsDisplayCount}%`;
-  const { borderColor, backgroundColor, color } = useVizOptions(statefulTimepoint.uptimeValue);
+  const state =
+    statefulTimepoint.uptimeValue === 0 ? 'failure' : statefulTimepoint.uptimeValue === 1 ? 'success' : 'unknown';
 
   return (
-    <div
+    <TimepointVizItem
       key={timepoint.adjustedTime}
       className={cx(styles.uptimeTimepoint, {
         [styles.selected]: selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime,
       })}
-      style={{
-        height: `${height}%`,
-        width,
-        border: `1px solid ${borderColor}`,
-        backgroundColor: backgroundColor,
-        color,
-      }}
+      data-testid={`uptime-timepoint-${timepointIndex}`}
+      state={state}
+      style={{ height: `${height}%`, width }}
     />
   );
 };
 
 interface ReachabilityTimepointProps {
   timepoint: StatelessTimepoint;
+  timepointIndex: number;
 }
 
-const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
+const ReachabilityTimepoint = ({ timepoint, timepointIndex }: ReachabilityTimepointProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const { timepointsDisplayCount } = useTimepointExplorerContext();
   const width = `${100 / timepointsDisplayCount}%`;
@@ -93,9 +101,6 @@ const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
     setContainer(ref.current);
   }, [ref.current?.clientWidth]);
 
-  if (!statefulTimepoint) {
-    return <div style={{ width, height: '100%', backgroundColor: 'red' }} />;
-  }
   const containerHeight = container?.clientHeight ?? 0;
   const containerWidth = container?.clientWidth ?? 0;
   // the probe is half the container width (--size) and the center is half of that
@@ -103,7 +108,13 @@ const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
   const offset = containerWidth / 4;
 
   return (
-    <div key={timepoint.adjustedTime} className={styles.reachabilityTimepoint} style={{ width }} ref={ref}>
+    <div
+      key={timepoint.adjustedTime}
+      className={styles.reachabilityTimepoint}
+      style={{ width }}
+      ref={ref}
+      data-testid={`reachability-timepoint-${timepointIndex}`}
+    >
       {statefulTimepoint.executions.map((execution) => {
         return (
           <ExecutionEntry
@@ -130,7 +141,6 @@ const ExecutionEntry = ({ containerHeight, offset, execution, timepoint }: Execu
   const styles = useStyles2(getStyles);
   const { maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
   const probeSuccess = execution.execution[LokiFieldNames.Labels].probe_success;
-  const successValue = probeSuccess === '1' ? 1 : probeSuccess === '0' ? 0 : -1;
   const probeDuration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
   const probeName = execution.probe;
   const bottom = getEntryHeight(probeDuration, maxProbeDuration) / 100;
@@ -138,20 +148,16 @@ const ExecutionEntry = ({ containerHeight, offset, execution, timepoint }: Execu
   const bottomInPx = containerHeight * bottom - offset;
   const actualPosition = bottomInPx + offset > containerHeight ? containerHeight - offset : bottomInPx;
   const selected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime && selectedTimepoint[1] === probeName;
-  const { borderColor, backgroundColor, color } = useVizOptions(successValue);
+  const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
 
   return (
-    <div
+    <TimepointVizItem
       key={probeName}
       className={cx(styles.reachabilityProbe, {
         [styles.selected]: selected,
       })}
-      style={{
-        bottom: `${actualPosition}px`,
-        border: `1px solid ${borderColor}`,
-        backgroundColor: backgroundColor,
-        color,
-      }}
+      state={state}
+      style={{ bottom: `${actualPosition}px` }}
     />
   );
 };
@@ -237,19 +243,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     }
   `,
   uptimeTimepoint: css`
-    background-color: ${theme.colors.background.primary};
+    max-width: ${TIMEPOINT_SIZE}px;
   `,
   reachabilityTimepoint: css`
     position: relative;
     height: 100%;
     display: flex;
     justify-content: center;
-  `,
-  success: css`
-    background-color: ${theme.colors.success.shade};
-  `,
-  failure: css`
-    background-color: ${theme.colors.error.shade};
+    max-width: ${TIMEPOINT_SIZE}px;
   `,
   selected: css`
     background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
@@ -258,7 +259,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   reachabilityProbe: css`
     --size: 50%;
     width: var(--size);
-    background-color: ${theme.colors.background.primary};
     padding-bottom: var(--size);
     position: absolute;
     border-radius: 50%;
