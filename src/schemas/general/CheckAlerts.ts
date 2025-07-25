@@ -133,7 +133,7 @@ function checkAlertPeriodIsValid(data: CheckFormValuesBase, alertType: CheckAler
   if (alertPeriodMs < frequency) {
     ctx.addIssue({
       path: [`alerts.${alertType}.period`],
-      message: `Period (${alertPeriodMs}) must be equal or higher to the frequency (${formatDuration(frequency)})`,
+      message: `Period (${alertPeriod}) must be equal or higher to the frequency (${formatDuration(frequency)})`,
       code: z.ZodIssueCode.custom,
     });
   }
