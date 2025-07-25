@@ -85,7 +85,16 @@ export const HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface 
   type: CheckAlertType.HTTPRequestDurationTooHighAvg,
   name: 'HTTP Request Duration Too High Avg',
   description: 'The average HTTP request duration for this check',
-  query: `((sum by(instance, job)(rate(probe_all_duration_seconds_sum[%s])) / sum by(instance, job)(rate(probe_all_duration_seconds_count[%s]))) * 1000 >= sum by (instance, job) (sm_alerts_threshold_http_request_duration_too_high_avg{period="%s"})) * on (instance, job) group_right() max without(probe, region, geohash) (sm_check_info)`,
+  query: `(
+    (
+      sum by(instance, job)(rate(probe_all_duration_seconds_sum{instance="$instance", job="$job"}[$period])) / 
+      sum by(instance, job)(rate(probe_all_duration_seconds_count{instance="$instance", job="$job"}[$period]))
+    ) * 1000 >= $threshold
+  ) * on (instance, job) 
+  group_right() 
+  max without(probe, region, geohash) (
+    sm_check_info{instance="$instance", job="$job"}
+  )`,
   supportsPeriod: true,
   unit: 'ms',
   category: CheckAlertCategory.Latency,
@@ -100,7 +109,16 @@ export const PING_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface 
   type: CheckAlertType.PingRequestDurationTooHighAvg,
   name: 'Ping Request Duration Too High Avg',
   description: 'The average ping request duration for this check',
-  query: `((sum by(instance, job)(rate(probe_all_duration_seconds_sum[%s])) / sum by(instance, job)(rate(probe_all_duration_seconds_count[%s]))) * 1000 >= sum by (instance, job) (sm_alerts_threshold_ping_request_duration_too_high_avg{period="%s"})) * on (instance, job) group_right() max without(probe, region, geohash) (sm_check_info)`,
+  query: `(
+    (
+      sum by(instance, job)(rate(probe_all_duration_seconds_sum{instance="$instance", job="$job"}[$period])) / 
+      sum by(instance, job)(rate(probe_all_duration_seconds_count{instance="$instance", job="$job"}[$period]))
+    ) * 1000 >= $threshold
+  ) * on (instance, job) 
+  group_right() 
+  max without(probe, region, geohash) (
+    sm_check_info{instance="$instance", job="$job"}
+  )`,
   supportsPeriod: true,
   unit: 'ms',
   category: CheckAlertCategory.Latency,
@@ -115,7 +133,16 @@ export const DNS_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface =
   type: CheckAlertType.DNSRequestDurationTooHighAvg,
   name: 'DNS Request Duration Too High Avg',
   description: 'The average DNS request duration for this check',
-  query: `((sum by(instance, job)(rate(probe_all_duration_seconds_sum[%s])) / sum by(instance, job)(rate(probe_all_duration_seconds_count[%s]))) * 1000 >= sum by (instance, job) (sm_alerts_threshold_dns_request_duration_too_high_avg{period="%s"})) * on (instance, job) group_right() max without(probe, region, geohash) (sm_check_info)`,
+  query: `(
+    (
+      sum by(instance, job)(rate(probe_all_duration_seconds_sum{instance="$instance", job="$job"}[$period])) / 
+      sum by(instance, job)(rate(probe_all_duration_seconds_count{instance="$instance", job="$job"}[$period]))
+    ) * 1000 >= $threshold
+  ) * on (instance, job) 
+  group_right() 
+  max without(probe, region, geohash) (
+    sm_check_info{instance="$instance", job="$job"}
+  )`,
   supportsPeriod: true,
   unit: 'ms',
   category: CheckAlertCategory.Latency,
