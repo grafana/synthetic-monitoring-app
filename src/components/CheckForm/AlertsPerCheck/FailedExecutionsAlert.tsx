@@ -23,6 +23,7 @@ import { useRevalidateForm } from 'hooks/useRevalidateForm';
 import { AlertEvaluationInfo } from './AlertEvaluationInfo';
 import { getAlertItemStyles } from './AlertItem';
 import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { RunbookUrl } from './RunbookUrl';
 import { ThresholdSelector } from './ThresholdSelector';
 
 export const FailedExecutionsAlert = ({
@@ -147,6 +148,7 @@ export const FailedExecutionsAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
+      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
 
       {selected && !!testExecutionsPerPeriod && (
         <AlertEvaluationInfo
