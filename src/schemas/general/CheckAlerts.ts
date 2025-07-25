@@ -2,7 +2,7 @@ import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { z, ZodType } from 'zod';
 
-import { CheckAlertFormRecord, CheckFormValuesBase, CheckFormValuesTcp, CheckType } from 'types';
+import { CheckAlertFormRecord, CheckAlertType, CheckFormValuesBase, CheckFormValuesTcp, CheckType } from 'types';
 import { formatDuration } from 'utils';
 
 const isScientificNotation = (val: number) => {
@@ -38,7 +38,7 @@ const checkAlertSchema = z
     { message: invalidThreshold, path: ['threshold'] }
   );
 
-const probeFailedExecutionsTooHighSchema = checkAlertSchema.refine(
+const checkAlertWithPeriodSchema = checkAlertSchema.refine(
   (data) => {
     if (data.isSelected && !data.period) {
       return false;
@@ -49,8 +49,11 @@ const probeFailedExecutionsTooHighSchema = checkAlertSchema.refine(
 );
 
 export const checkAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: probeFailedExecutionsTooHighSchema.optional(),
+  ProbeFailedExecutionsTooHigh: checkAlertWithPeriodSchema.optional(),
   TLSTargetCertificateCloseToExpiring: checkAlertSchema.optional(),
+  HTTPRequestDurationTooHighAvg: checkAlertWithPeriodSchema.optional(),
+  PingRequestDurationTooHighAvg: checkAlertWithPeriodSchema.optional(),
+  DNSRequestDurationTooHighAvg: checkAlertWithPeriodSchema.optional(),
 });
 
 function isCheckFormValuesTCP(data: CheckFormValuesBase | CheckFormValuesTcp): data is CheckFormValuesTcp {
@@ -59,6 +62,7 @@ function isCheckFormValuesTCP(data: CheckFormValuesBase | CheckFormValuesTcp): d
 
 export function checkAlertsRefinement(data: CheckFormValuesBase | CheckFormValuesTcp, ctx: z.RefinementCtx) {
   probeFailedExecutionsRefinement(data, ctx);
+  latencyAlertsRefinement(data, ctx);
   if (isCheckFormValuesTCP(data)) {
     tcpTLSTargetCertificateCloseToExpiringRefinement(data, ctx);
   }
@@ -70,7 +74,24 @@ function probeFailedExecutionsRefinement(data: CheckFormValuesBase, ctx: z.Refin
 
   if (isSelected && probes.length) {
     checkThresholdIsValid(data, ctx);
-    checkPeriodIsValid(data, ctx);
+    checkAlertPeriodIsValid(data, CheckAlertType.ProbeFailedExecutionsTooHigh, ctx);
+  }
+}
+
+function latencyAlertsRefinement(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
+  const httpAlertSelected = data.alerts?.HTTPRequestDurationTooHighAvg?.isSelected;
+  if (httpAlertSelected) {
+    checkAlertPeriodIsValid(data, CheckAlertType.HTTPRequestDurationTooHighAvg, ctx);
+  }
+
+  const pingAlertSelected = data.alerts?.PingRequestDurationTooHighAvg?.isSelected;
+  if (pingAlertSelected) {
+    checkAlertPeriodIsValid(data, CheckAlertType.PingRequestDurationTooHighAvg, ctx);
+  }
+
+  const dnsAlertSelected = data.alerts?.DNSRequestDurationTooHighAvg?.isSelected;
+  if (dnsAlertSelected) {
+    checkAlertPeriodIsValid(data, CheckAlertType.DNSRequestDurationTooHighAvg, ctx);
   }
 }
 
@@ -104,17 +125,15 @@ function checkThresholdIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) 
   }
 }
 
-function checkPeriodIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
+function checkAlertPeriodIsValid(data: CheckFormValuesBase, alertType: CheckAlertType, ctx: z.RefinementCtx) {
   const { frequency } = data;
-  const failedExecutionsAlertPeriod = data.alerts?.ProbeFailedExecutionsTooHigh?.period ?? '';
-  const failedExecutionAlertPeriod = durationToMilliseconds(parseDuration(failedExecutionsAlertPeriod));
+  const alertPeriod = data.alerts?.[alertType]?.period ?? '';
+  const alertPeriodMs = durationToMilliseconds(parseDuration(alertPeriod));
 
-  if (failedExecutionAlertPeriod < frequency) {
+  if (alertPeriodMs < frequency) {
     ctx.addIssue({
-      path: ['alerts.ProbeFailedExecutionsTooHigh.period'],
-      message: `Period (${failedExecutionsAlertPeriod}) must be equal or higher to the frequency (${formatDuration(
-        frequency
-      )})`,
+      path: [`alerts.${alertType}.period`],
+      message: `Period (${alertPeriodMs}) must be equal or higher to the frequency (${formatDuration(frequency)})`,
       code: z.ZodIssueCode.custom,
     });
   }
