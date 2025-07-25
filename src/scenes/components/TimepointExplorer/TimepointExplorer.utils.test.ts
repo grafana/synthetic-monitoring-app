@@ -1,22 +1,16 @@
 import { MiniMapPage } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import {
-  buildTimepoints,
-  getMiniMapPages,
-  getMiniMapSections,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getMiniMapPages, getMiniMapSections } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 describe(`getMiniMapPages`, () => {
-  it(`should return the correct mini map views`, () => {
-    const from = 0;
-    const to = 62000; // 60 entries
-    const checkConfigs = [{ frequency: 1000, date: 0 }];
-    const timepoints = buildTimepoints({ from, to, checkConfigs });
+  it(`should not get into an infinite loop`, () => {});
+
+  it(`should return the correct mini map pages`, () => {
     const timepointsDisplayCount = 10;
-    const miniMapPages = getMiniMapPages(timepoints, timepointsDisplayCount);
+    const miniMapPages = getMiniMapPages(63, timepointsDisplayCount);
 
     expect(miniMapPages).toEqual([
-      [2, 62],
-      [0, 1],
+      [3, 62],
+      [0, 2],
     ]);
   });
 });

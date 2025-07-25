@@ -223,8 +223,12 @@ export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
   return timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
 }
 
-export function getMiniMapPages(timepoints: StatelessTimepoint[], timepointsDisplayCount: number): MiniMapPages {
-  if (!timepoints.length) {
+export function getMiniMapPages(timepointsLength: number, timepointsDisplayCount: number): MiniMapPages {
+  console.log({
+    timepointsLength,
+    timepointsDisplayCount,
+  });
+  if (!timepointsLength || !timepointsDisplayCount) {
     return [[0, 0]];
   }
 
@@ -232,15 +236,12 @@ export function getMiniMapPages(timepoints: StatelessTimepoint[], timepointsDisp
   const withSections = timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
 
   // Start from the end and work backwards to get most recent pages first
-  let remainingTimepoints = timepoints.length;
+  let remainingTimepoints = timepointsLength;
 
   while (remainingTimepoints > 0) {
     const endIndex = remainingTimepoints - 1;
-    const startIndex = Math.max(0, remainingTimepoints - withSections - 1);
-
-    if (timepoints[startIndex] && timepoints[endIndex]) {
-      pages.push([startIndex, endIndex]);
-    }
+    const startIndex = Math.max(0, remainingTimepoints - withSections);
+    pages.push([startIndex, endIndex]);
 
     remainingTimepoints = startIndex;
   }

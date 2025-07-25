@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TimeRange } from '@grafana/data';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
-import { useResizeObserver } from 'usehooks-ts';
 
 import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
 import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
@@ -236,46 +235,35 @@ function useMaxProbeDuration({ timeRange, check, refetchInterval }: UseMaxProbeD
   return { data, isLoading, refetch };
 }
 
-export function useExplorerWidth() {
-  const [width, setWidth] = useState<number>(0);
-  const internalRef = useRef<HTMLDivElement>(null);
-
-  const updateWidth = useCallback((element: HTMLDivElement | null) => {
-    if (element) {
-      setWidth(element.clientWidth);
-    }
-  }, []);
-
-  const ref = useCallback(
-    (element: HTMLDivElement | null) => {
-      internalRef.current = element;
-      updateWidth(element); // Measure immediately when ref is set
-    },
-    [updateWidth]
-  );
-
-  useResizeObserver({
-    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
-    ref: internalRef,
-    onResize: () => {
-      setWidth(internalRef.current?.clientWidth ?? 0);
-    },
-  });
-
-  console.log(internalRef.current);
-
-  return { width, ref };
-}
-
 export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
-  const { logsMap } = useTimepointExplorerContext();
+  const { logsMap, maxProbeDuration } = useTimepointExplorerContext();
 
   return (
     logsMap[timepoint.adjustedTime] || {
       uptimeValue: -1,
-      maxProbeDuration: -1,
+      maxProbeDuration: maxProbeDuration / 2,
       executions: [],
       adjustedTime: timepoint.adjustedTime,
     }
   );
+}
+
+export function useVizOptions(state: 0 | 1 | -1) {
+  const { vizOptions } = useTimepointExplorerContext();
+  const isSuccess = state === 1;
+  const isFailure = state === 0;
+
+  return {
+    borderColor: isSuccess
+      ? vizOptions.success.border
+      : isFailure
+      ? vizOptions.failure.border
+      : vizOptions.unknown.border,
+    backgroundColor: isSuccess
+      ? vizOptions.success.background
+      : isFailure
+      ? vizOptions.failure.background
+      : vizOptions.unknown.background,
+    color: isSuccess ? vizOptions.success.color : isFailure ? vizOptions.failure.color : vizOptions.unknown.color,
+  };
 }

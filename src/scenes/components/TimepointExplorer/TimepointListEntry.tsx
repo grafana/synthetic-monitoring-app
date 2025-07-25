@@ -11,7 +11,7 @@ import {
   TIMEPOINT_THEME_HEIGHT_PX,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { useStatefulTimepoint, useVizOptions } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
@@ -64,11 +64,10 @@ const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles);
-  const isSuccess = statefulTimepoint.uptimeValue === 1;
-  const isFailure = statefulTimepoint.uptimeValue === 0;
   const executionToView = statefulTimepoint.executions[0]?.id;
   const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
+  const { borderColor, backgroundColor, color } = useVizOptions(statefulTimepoint.uptimeValue);
 
   return (
     <div style={{ height: `${height}%` }}>
@@ -87,12 +86,13 @@ const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
         >
           <div
             className={cx(styles.uptimeBar, GLOBAL_CLASS, {
-              [styles.success]: isSuccess,
-              [styles.failure]: isFailure,
               [styles.selected]: isSelected,
-              [styles.successSelected]: isSuccess && isSelected,
-              [styles.failureSelected]: isFailure && isSelected,
             })}
+            style={{
+              border: `1px solid ${borderColor}`,
+              backgroundColor: backgroundColor,
+              color,
+            }}
           >
             <Icon name={ICON_MAP[statefulTimepoint.uptimeValue]} />
           </div>
@@ -108,6 +108,7 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
   const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
   const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const [hoveredCheck, setHoveredCheck] = useState<string | null>(null);
+  const { borderColor, backgroundColor, color } = useVizOptions(statefulTimepoint.uptimeValue);
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
   const height = `calc(${entryHeight}% + ${TIMEPOINT_SIZE}px)`;
@@ -125,8 +126,6 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
           const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
           const checkId = execution.id;
-          const isSuccess = probeSuccess === '1';
-          const isFailure = probeSuccess === '0';
           const [timepointToView, checkToView] = selectedTimepoint;
           const isTimepointSelected = timepointToView?.adjustedTime === timepoint.adjustedTime;
           const isProbeSelected = checkId === checkToView;
@@ -135,17 +134,18 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
           return (
             <PlainButton
               className={cx(styles.reachabilityProbe, {
-                [styles.success]: isSuccess,
-                [styles.failure]: isFailure,
                 [styles.selected]: isSelected,
-                [styles.successSelected]: isSuccess && isSelected,
-                [styles.failureSelected]: isFailure && isSelected,
               })}
               key={checkId}
-              style={{ bottom: `${pixelHeight}px` }}
               onClick={() => handleSelectedTimepointChange(timepoint, checkId)}
               onMouseEnter={() => setHoveredCheck(checkId)}
               onMouseLeave={() => setHoveredCheck(null)}
+              style={{
+                bottom: `${pixelHeight}px`,
+                border: `1px solid ${borderColor}`,
+                backgroundColor: backgroundColor,
+                color,
+              }}
             >
               <Icon name={ICON_MAP[probeSuccess]} />
             </PlainButton>
@@ -190,6 +190,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     `,
     uptimeBar: css`
       height: 100%;
+      min-height: 2px;
       width: ${TIMEPOINT_SIZE}px;
       display: flex;
       align-items: end;

@@ -6,8 +6,12 @@ import { css, cx } from '@emotion/css';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import { MiniMapSection, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { useStatefulTimepoint, useVizOptions } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import {
+  ExecutionsInTimepoint,
+  MiniMapSection,
+  StatelessTimepoint,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { getLabel } from 'scenes/components/TimepointExplorer/TimepointMinimapSection.utils';
 
@@ -54,16 +58,21 @@ const UptimeTimepoint = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles);
   const width = `${100 / timepointsDisplayCount}%`;
+  const { borderColor, backgroundColor, color } = useVizOptions(statefulTimepoint.uptimeValue);
 
   return (
     <div
       key={timepoint.adjustedTime}
       className={cx(styles.uptimeTimepoint, {
-        [styles.success]: statefulTimepoint.uptimeValue === 1,
-        [styles.failure]: statefulTimepoint.uptimeValue === 0,
         [styles.selected]: selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime,
       })}
-      style={{ height: `${height}%`, width }}
+      style={{
+        height: `${height}%`,
+        width,
+        border: `1px solid ${borderColor}`,
+        backgroundColor: backgroundColor,
+        color,
+      }}
     />
   );
 };
@@ -74,7 +83,7 @@ interface ReachabilityTimepointProps {
 
 const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { maxProbeDuration, selectedTimepoint, timepointsDisplayCount } = useTimepointExplorerContext();
+  const { timepointsDisplayCount } = useTimepointExplorerContext();
   const width = `${100 / timepointsDisplayCount}%`;
   const styles = useStyles2(getStyles);
   const ref = useRef<HTMLDivElement>(null);
@@ -87,38 +96,63 @@ const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
   if (!statefulTimepoint) {
     return <div style={{ width, height: '100%', backgroundColor: 'red' }} />;
   }
+  const containerHeight = container?.clientHeight ?? 0;
+  const containerWidth = container?.clientWidth ?? 0;
+  // the probe is half the container width (--size) and the center is half of that
+  // so the offset is 1/4 of the container width
+  const offset = containerWidth / 4;
 
   return (
     <div key={timepoint.adjustedTime} className={styles.reachabilityTimepoint} style={{ width }} ref={ref}>
       {statefulTimepoint.executions.map((execution) => {
-        const probeSuccess = execution.execution[LokiFieldNames.Labels].probe_success;
-        const probeDuration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
-        const probeName = execution.probe;
-        const bottom = getEntryHeight(probeDuration, maxProbeDuration) / 100;
-        const containerHeight = container?.clientHeight ?? 0;
-        const containerWidth = container?.clientWidth ?? 0;
-        // the probe is half the container width (--size) and the center is half of that
-        // so the offset is 1/4 of the container width
-        const offset = containerWidth / 4;
-
-        const bottomInPx = containerHeight * bottom - offset;
-        const actualPosition = bottomInPx + offset > containerHeight ? containerHeight - offset : bottomInPx;
-        const selected =
-          selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime && selectedTimepoint[1] === probeName;
-
         return (
-          <div
-            key={probeName}
-            className={cx(styles.reachabilityProbe, {
-              [styles.success]: probeSuccess === '1',
-              [styles.failure]: probeSuccess === '0',
-              [styles.selected]: selected,
-            })}
-            style={{ bottom: `${actualPosition}px` }}
+          <ExecutionEntry
+            containerHeight={containerHeight}
+            offset={offset}
+            execution={execution}
+            key={execution.id}
+            timepoint={timepoint}
           />
         );
       })}
     </div>
+  );
+};
+
+interface ExecutionEntryProps {
+  containerHeight: number;
+  offset: number;
+  execution: ExecutionsInTimepoint;
+  timepoint: StatelessTimepoint;
+}
+
+const ExecutionEntry = ({ containerHeight, offset, execution, timepoint }: ExecutionEntryProps) => {
+  const styles = useStyles2(getStyles);
+  const { maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
+  const probeSuccess = execution.execution[LokiFieldNames.Labels].probe_success;
+  const successValue = probeSuccess === '1' ? 1 : probeSuccess === '0' ? 0 : -1;
+  const probeDuration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
+  const probeName = execution.probe;
+  const bottom = getEntryHeight(probeDuration, maxProbeDuration) / 100;
+
+  const bottomInPx = containerHeight * bottom - offset;
+  const actualPosition = bottomInPx + offset > containerHeight ? containerHeight - offset : bottomInPx;
+  const selected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime && selectedTimepoint[1] === probeName;
+  const { borderColor, backgroundColor, color } = useVizOptions(successValue);
+
+  return (
+    <div
+      key={probeName}
+      className={cx(styles.reachabilityProbe, {
+        [styles.selected]: selected,
+      })}
+      style={{
+        bottom: `${actualPosition}px`,
+        border: `1px solid ${borderColor}`,
+        backgroundColor: backgroundColor,
+        color,
+      }}
+    />
   );
 };
 
@@ -171,6 +205,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     justify-content: end;
     position: relative;
     z-index: 1;
+    gap: ${theme.spacing(0.25)};
 
     &:before,
     &:after {

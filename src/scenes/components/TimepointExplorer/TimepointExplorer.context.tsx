@@ -1,5 +1,6 @@
 import React, { createContext, PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react';
 import { useTimeRange } from '@grafana/scenes-react';
+import { useTheme2 } from '@grafana/ui';
 
 import { Check } from 'types';
 import {
@@ -34,6 +35,18 @@ import {
   getVisibleTimepointsTimeRange,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
+type VizOption = {
+  border: string;
+  background: string;
+  color: string;
+};
+
+type VizOptions = {
+  success: VizOption;
+  failure: VizOption;
+  unknown: VizOption;
+};
+
 type TimepointExplorerContextType = {
   annotations: Annotation[];
   check: Check;
@@ -55,6 +68,7 @@ type TimepointExplorerContextType = {
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
   viewMode: ViewMode;
+  vizOptions: VizOptions;
   width: number;
 };
 
@@ -71,6 +85,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
   const [width, setWidth] = useState<number>(0);
+  const theme = useTheme2();
 
   const { data: maxProbeDurationData, isLoading: maxProbeDurationIsLoading } = usePersistedMaxProbeDuration({
     timeRange,
@@ -100,7 +115,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const timepointsDisplayCount = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP_PX));
 
   const miniMapPages = useMemo(
-    () => getMiniMapPages(timepoints, timepointsDisplayCount),
+    () => getMiniMapPages(timepoints.length, timepointsDisplayCount),
     [timepoints, timepointsDisplayCount]
   );
 
@@ -162,6 +177,26 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     setWidth(width);
   }, []);
 
+  const vizOptions = useMemo(() => {
+    return {
+      success: {
+        border: theme.visualization.getColorByName(`green`),
+        background: 'transparent',
+        color: theme.visualization.getColorByName(`green`),
+      },
+      failure: {
+        border: `transparent`,
+        background: theme.visualization.getColorByName(`red`),
+        color: `white`,
+      },
+      unknown: {
+        border: theme.visualization.getColorByName(`gray`),
+        background: 'transparent',
+        color: `white`,
+      },
+    };
+  }, [theme]);
+
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
       annotations,
@@ -184,6 +219,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       timepoints,
       timepointsDisplayCount,
       viewMode,
+      vizOptions,
       width,
     };
   }, [
@@ -207,6 +243,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timepoints,
     timepointsDisplayCount,
     viewMode,
+    vizOptions,
     width,
   ]);
 
