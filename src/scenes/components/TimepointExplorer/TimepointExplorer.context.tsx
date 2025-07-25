@@ -1,0 +1,341 @@
+import React, {
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { TimeRange } from '@grafana/data';
+import { useTimeRange } from '@grafana/scenes-react';
+import { useTheme2 } from '@grafana/ui';
+
+import { Check } from 'types';
+import {
+  MAX_PROBE_DURATION_DEFAULT,
+  TIMEPOINT_EXPLORER_VIEW_OPTIONS,
+  TIMEPOINT_GAP_PX,
+  TIMEPOINT_SIZE,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  useExecutionEndingLogs,
+  usePersistedCheckConfigs,
+  usePersistedMaxProbeDuration,
+  useTimepoints,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import {
+  Annotation,
+  CheckConfig,
+  MiniMapPages,
+  MiniMapSection,
+  MiniMapSections,
+  SelectedTimepointState,
+  StatefulTimepoint,
+  StatelessTimepoint,
+  TimepointVizOptions,
+  UnixTimestamp,
+  ViewMode,
+  VizDisplay,
+  VizDisplayValue,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  constructCheckEvents,
+  findNearest,
+  generateAnnotations,
+  getMiniMapPages,
+  getMiniMapSections,
+  getVisibleTimepoints,
+  getVisibleTimepointsTimeRange,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+
+type TimepointExplorerContextType = {
+  annotations: Annotation[];
+  check: Check;
+  checkConfigs: CheckConfig[];
+  handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
+  handleMiniMapPageChange: (page: number) => void;
+  handleMiniMapSectionChange: (sectionIndex: number) => void;
+  handleSelectedTimepointChange: (timepoint: StatelessTimepoint, probeToView: string) => void;
+  handleTimepointWidthChange: (timepointWidth: number, currentSectionRange: MiniMapSection) => void;
+  handleViewModeChange: (viewMode: ViewMode) => void;
+  handleVizDisplayChange: (display: VizDisplayValue, usedModifier: boolean) => void;
+  isLoading: boolean;
+  listWidth: number;
+  logsMap: Record<UnixTimestamp, StatefulTimepoint>;
+  maxProbeDuration: number;
+  miniMapCurrentPage: number;
+  miniMapCurrentPageSections: MiniMapSections;
+  miniMapCurrentPageTimeRange: { from: UnixTimestamp; to: UnixTimestamp };
+  miniMapCurrentSectionIndex: number;
+  miniMapPages: MiniMapPages;
+  selectedTimepoint: SelectedTimepointState;
+  timepointWidth: number;
+  timepoints: StatelessTimepoint[];
+  timepointsDisplayCount: number;
+  viewMode: ViewMode;
+  vizDisplay: VizDisplay;
+  vizOptions: TimepointVizOptions;
+};
+
+export const TimepointExplorerContext = createContext<TimepointExplorerContextType | null>(null);
+
+interface TimepointExplorerProviderProps extends PropsWithChildren {
+  check: Check;
+}
+
+export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
+  const [timeRange] = useTimeRange();
+  const ref = useRef<TimeRange>(timeRange);
+  const [miniMapCurrentPage, setMiniMapPage] = useState(0);
+  const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
+  const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
+  const [timepointsDisplayCount, setTimepointsDisplayCount] = useState<number>(0);
+
+  const [vizDisplay, setVizDisplay] = useState<VizDisplay>([`success`, `failure`, `unknown`]);
+  const [listWidth, setListWidth] = useState<number>(0);
+  const [timepointWidth, setTimepointWidth] = useState<number>(TIMEPOINT_SIZE);
+  const theme = useTheme2();
+
+  const { data: maxProbeDurationData, isLoading: maxProbeDurationIsLoading } = usePersistedMaxProbeDuration({
+    timeRange,
+    check,
+  });
+
+  useEffect(() => {
+    ref.current = timeRange;
+  }, [timeRange]);
+
+  const INITIAL_CHECK_CONFIG: CheckConfig = useMemo(() => {
+    return {
+      frequency: check.frequency,
+      date: Number(check.created),
+    };
+  }, [check]);
+
+  const maxProbeDuration =
+    maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
+  const { data: checkConfigsData, isLoading: checkConfigsIsLoading } = usePersistedCheckConfigs({
+    timeRange,
+    check,
+  });
+
+  const checkConfigs = useMemo(() => {
+    return checkConfigsData || [INITIAL_CHECK_CONFIG];
+  }, [checkConfigsData, INITIAL_CHECK_CONFIG]);
+
+  const timepoints = useTimepoints({ timeRange, checkConfigs });
+  const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading;
+
+  const miniMapPages = useMemo(
+    () => getMiniMapPages(timepoints.length, timepointsDisplayCount),
+    [timepoints, timepointsDisplayCount]
+  );
+
+  const visibleTimepoints = useMemo(
+    () => getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages }),
+    [timepoints, miniMapCurrentPage, miniMapPages]
+  );
+  const miniMapCurrentPageTimeRange = useMemo(
+    () => getVisibleTimepointsTimeRange({ timepoints: visibleTimepoints }),
+    [visibleTimepoints]
+  );
+  const miniMapCurrentPageSections = useMemo(() => {
+    // going from a non-overlapping time range to another one, reset everything
+    if (ref.current.from !== timeRange.from || ref.current.to !== timeRange.to) {
+      setMiniMapPage(0);
+      setMiniMapCurrentSectionIndex(0);
+
+      return getMiniMapSections(miniMapPages[0], timepointsDisplayCount);
+    }
+
+    return getMiniMapSections(miniMapPages[miniMapCurrentPage], timepointsDisplayCount);
+  }, [miniMapPages, miniMapCurrentPage, timepointsDisplayCount, timeRange.from, timeRange.to]);
+
+  const { logsMap } = useExecutionEndingLogs({
+    timeRange: miniMapCurrentPageTimeRange,
+    check,
+    timepoints,
+  });
+
+  const checkEvents = useMemo(
+    () =>
+      constructCheckEvents({
+        timeRangeFrom: miniMapCurrentPageTimeRange.from,
+        checkConfigs,
+        checkCreation: check.created,
+      }),
+    [miniMapCurrentPageTimeRange.from, checkConfigs, check.created]
+  );
+
+  const annotations = useMemo(
+    () => generateAnnotations({ checkEvents, timepoints: visibleTimepoints }),
+    [checkEvents, visibleTimepoints]
+  );
+
+  const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
+    setMiniMapCurrentSectionIndex(sectionIndex);
+  }, []);
+
+  const handleMiniMapPageChange = useCallback((page: number) => {
+    setMiniMapPage(page);
+    setMiniMapCurrentSectionIndex(0);
+  }, []);
+
+  const handleViewModeChange = useCallback((viewMode: ViewMode) => {
+    setViewMode(viewMode);
+  }, []);
+
+  const handleSelectedTimepointChange = useCallback((timepoint: StatelessTimepoint, probeToView: string) => {
+    setSelectedTimepoint(([prevTimepoint, prevProbeToView]) => {
+      return prevTimepoint?.adjustedTime === timepoint.adjustedTime && prevProbeToView === probeToView
+        ? [null, null]
+        : [timepoint, probeToView];
+    });
+  }, []);
+
+  const handleTimepointDisplayCountChange = useCallback(
+    (count: number, currentSectionRange: MiniMapSection) => {
+      const newMiniMapPages = getMiniMapPages(timepoints.length, count);
+      const nearestPage = findNearest(newMiniMapPages, currentSectionRange);
+      const newMiniMapSections = getMiniMapSections(newMiniMapPages[nearestPage], count);
+      const nearestSection = findNearest(newMiniMapSections, currentSectionRange);
+      setTimepointsDisplayCount(count);
+      setMiniMapPage(nearestPage);
+      setMiniMapCurrentSectionIndex(nearestSection);
+    },
+    [timepoints]
+  );
+
+  const handleListWidthChange = useCallback(
+    (listWidth: number, currentSectionRange: MiniMapSection) => {
+      const timepointsDisplayCount = Math.floor(listWidth / (timepointWidth + TIMEPOINT_GAP_PX));
+      handleTimepointDisplayCountChange(timepointsDisplayCount, currentSectionRange);
+      setListWidth(listWidth);
+    },
+    [timepointWidth, handleTimepointDisplayCountChange]
+  );
+
+  const handleTimepointWidthChange = useCallback(
+    (timepointWidth: number, currentSectionRange: MiniMapSection) => {
+      const timepointsDisplayCount = Math.floor(listWidth / (timepointWidth + TIMEPOINT_GAP_PX));
+      handleTimepointDisplayCountChange(timepointsDisplayCount, currentSectionRange);
+      setTimepointWidth(timepointWidth);
+    },
+    [listWidth, handleTimepointDisplayCountChange]
+  );
+
+  const handleVizDisplayChange = useCallback((display: VizDisplayValue, usedModifier: boolean) => {
+    setVizDisplay((prev) => {
+      const isSelected = prev.includes(display);
+      const allSelected = prev.length === 3;
+
+      if (usedModifier) {
+        return isSelected ? prev.filter((value) => value !== display) : [...prev, display];
+      }
+
+      if (isSelected && !allSelected) {
+        return [`success`, `failure`, `unknown`];
+      }
+
+      return [display];
+    });
+  }, []);
+
+  const vizOptions = useMemo(() => {
+    return {
+      success: {
+        border: theme.visualization.getColorByName(`green`),
+        backgroundColor: 'transparent',
+        color: theme.visualization.getColorByName(`green`),
+      },
+      failure: {
+        border: `transparent`,
+        backgroundColor: theme.visualization.getColorByName(`red`),
+        color: `white`,
+      },
+      unknown: {
+        border: theme.visualization.getColorByName(`gray`),
+        backgroundColor: 'transparent',
+        color: `white`,
+      },
+    };
+  }, [theme]);
+
+  const value: TimepointExplorerContextType = useMemo(() => {
+    return {
+      annotations,
+      check,
+      checkConfigs,
+      handleListWidthChange,
+      handleMiniMapPageChange,
+      handleMiniMapSectionChange,
+      handleSelectedTimepointChange,
+      handleTimepointWidthChange,
+      handleViewModeChange,
+      handleVizDisplayChange,
+      isLoading,
+      listWidth,
+      logsMap,
+      maxProbeDuration,
+      miniMapCurrentPage,
+      miniMapCurrentPageSections,
+      miniMapCurrentPageTimeRange,
+      miniMapCurrentSectionIndex,
+      miniMapPages,
+      selectedTimepoint,
+      timepointWidth,
+      timepoints,
+      timepointsDisplayCount,
+      viewMode,
+      vizDisplay,
+      vizOptions,
+    };
+  }, [
+    annotations,
+    check,
+    checkConfigs,
+    handleListWidthChange,
+    handleMiniMapPageChange,
+    handleMiniMapSectionChange,
+    handleSelectedTimepointChange,
+    handleTimepointWidthChange,
+    handleViewModeChange,
+    handleVizDisplayChange,
+    isLoading,
+    listWidth,
+    logsMap,
+    maxProbeDuration,
+    miniMapCurrentPage,
+    miniMapCurrentPageSections,
+    miniMapCurrentPageTimeRange,
+    miniMapCurrentSectionIndex,
+    miniMapPages,
+    selectedTimepoint,
+    timepointWidth,
+    timepoints,
+    timepointsDisplayCount,
+    viewMode,
+    vizDisplay,
+    vizOptions,
+  ]);
+
+  if (!timepoints.length) {
+    return null;
+  }
+
+  // console.log(value);
+  return <TimepointExplorerContext.Provider value={value}>{children}</TimepointExplorerContext.Provider>;
+};
+
+export function useTimepointExplorerContext() {
+  const context = useContext(TimepointExplorerContext);
+
+  if (!context) {
+    throw new Error('useTimepointExplorerContext must be used within a TimepointExplorerProvider');
+  }
+
+  return context;
+}
