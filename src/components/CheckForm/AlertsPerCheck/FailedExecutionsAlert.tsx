@@ -148,7 +148,7 @@ export const FailedExecutionsAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
-      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
+      <RunbookUrl alertType={alert.type} disabled={isFormDisabled} />
 
       {selected && !!testExecutionsPerPeriod && (
         <AlertEvaluationInfo

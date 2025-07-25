@@ -7,11 +7,10 @@ import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
 interface RunbookUrlProps {
   alertType: CheckAlertType;
-  selected: boolean;
   disabled?: boolean;
 }
 
-export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrlProps) => {
+export const RunbookUrl = ({ alertType, disabled = false }: RunbookUrlProps) => {
   const { control, formState } = useFormContext<CheckFormValues>();
   const urlSearchParams = useURLSearchParams();
 
@@ -28,10 +27,6 @@ export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrl
     window.history.replaceState({}, '', newUrl);
     setShowMissingRunbookMessage(false);
   }, [urlSearchParams]);
-
-  if (!selected) {
-    return null;
-  }
 
   return (
     <>
@@ -58,7 +53,7 @@ export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrl
                 id={`alert-runbook-url-${alertType}`}
                 data-testid={`alert-runbook-url-${alertType}`}
                 placeholder="https://example.com/runbook"
-                disabled={!selected || disabled}
+                disabled={disabled}
                 width={35}
               />
             )}
