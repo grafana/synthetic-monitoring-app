@@ -1,17 +1,6 @@
-import React, {
-  createContext,
-  PropsWithChildren,
-  RefObject,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { createContext, PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react';
 import { useTimeRange } from '@grafana/scenes-react';
 
-import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
-import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import {
   MAX_PROBE_DURATION_DEFAULT,
@@ -21,7 +10,6 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   useExecutionEndingLogs,
-  useExplorerWidth,
   usePersistedCheckConfigs,
   usePersistedMaxProbeDuration,
   useTimepoints,
@@ -29,7 +17,8 @@ import {
 import {
   Annotation,
   CheckConfig,
-  MinimapSection,
+  MiniMapPages,
+  MiniMapSections,
   SelectedTimepointState,
   StatefulTimepoint,
   StatelessTimepoint,
@@ -53,16 +42,15 @@ type TimepointExplorerContextType = {
   handleMiniMapSectionClick: (sectionIndex: number) => void;
   handleSelectedTimepointChange: (timepoint: StatelessTimepoint, probeToView: string) => void;
   handleViewModeChange: (viewMode: ViewMode) => void;
+  handleWidthChange: (width: number) => void;
   isLoading: boolean;
-  logsData: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   maxProbeDuration: number;
   miniMapCurrentPage: number;
-  miniMapCurrentPageSections: MinimapSection[];
+  miniMapCurrentPageSections: MiniMapSections;
   miniMapCurrentPageTimeRange: { from: UnixTimestamp; to: UnixTimestamp };
   miniMapCurrentSectionIndex: number;
-  miniMapPages: Array<[number, number]>;
-  ref: RefObject<HTMLDivElement | null>;
+  miniMapPages: MiniMapPages;
   selectedTimepoint: SelectedTimepointState;
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
@@ -82,26 +70,33 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
   const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
+  const [width, setWidth] = useState<number>(0);
 
   const { data: maxProbeDurationData, isLoading: maxProbeDurationIsLoading } = usePersistedMaxProbeDuration({
     timeRange,
     check,
   });
 
-  const INITIAL_CHECK_CONFIG: CheckConfig = {
-    frequency: check.frequency,
-    date: Number(check.created),
-  };
+  const INITIAL_CHECK_CONFIG: CheckConfig = useMemo(() => {
+    return {
+      frequency: check.frequency,
+      date: Number(check.created),
+    };
+  }, [check]);
 
   const maxProbeDuration =
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
-  const { data: checkConfigs = [INITIAL_CHECK_CONFIG], isLoading: checkConfigsIsLoading } = usePersistedCheckConfigs({
+  const { data: checkConfigsData, isLoading: checkConfigsIsLoading } = usePersistedCheckConfigs({
     timeRange,
     check,
   });
+
+  const checkConfigs = useMemo(() => {
+    return checkConfigsData || [INITIAL_CHECK_CONFIG];
+  }, [checkConfigsData, INITIAL_CHECK_CONFIG]);
+
   const timepoints = useTimepoints({ timeRange, checkConfigs });
   const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading;
-  const { width, ref } = useExplorerWidth();
   const timepointsDisplayCount = Math.floor(width / (TIMEPOINT_SIZE + TIMEPOINT_GAP_PX));
 
   const miniMapPages = useMemo(
@@ -109,31 +104,39 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     [timepoints, timepointsDisplayCount]
   );
 
-  const visibleTimepoints = getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages });
-  const miniMapCurrentPageTimeRange = getVisibleTimepointsTimeRange({ timepoints: visibleTimepoints });
-  const miniMapCurrentPageSections = getMiniMapSections(visibleTimepoints, timepointsDisplayCount);
+  const visibleTimepoints = useMemo(
+    () => getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages }),
+    [timepoints, miniMapCurrentPage, miniMapPages]
+  );
+  const miniMapCurrentPageTimeRange = useMemo(
+    () => getVisibleTimepointsTimeRange({ timepoints: visibleTimepoints }),
+    [visibleTimepoints]
+  );
+  const miniMapCurrentPageSections = useMemo(
+    () => getMiniMapSections(miniMapPages[miniMapCurrentPage], timepointsDisplayCount),
+    [miniMapPages, miniMapCurrentPage, timepointsDisplayCount]
+  );
 
-  const { data: logsData = [], logsMap } = useExecutionEndingLogs({
+  const { logsMap } = useExecutionEndingLogs({
     timeRange: miniMapCurrentPageTimeRange,
     check,
     timepoints,
   });
 
-  const checkEvents = constructCheckEvents({
-    timeRangeFrom: miniMapCurrentPageTimeRange.from,
-    checkConfigs,
-    checkCreation: check.created,
-  });
+  const checkEvents = useMemo(
+    () =>
+      constructCheckEvents({
+        timeRangeFrom: miniMapCurrentPageTimeRange.from,
+        checkConfigs,
+        checkCreation: check.created,
+      }),
+    [miniMapCurrentPageTimeRange.from, checkConfigs, check.created]
+  );
 
-  const annotations = generateAnnotations({ checkEvents, timepoints: visibleTimepoints });
-
-  // reset miniMapPage to 0 when miniMapPages changes (such as screen resize)
-  // todo make this better
-  useEffect(() => {
-    if (miniMapPages.length > 0) {
-      setMiniMapPage(0);
-    }
-  }, [miniMapPages]);
+  const annotations = useMemo(
+    () => generateAnnotations({ checkEvents, timepoints: visibleTimepoints }),
+    [checkEvents, visibleTimepoints]
+  );
 
   const handleMiniMapPageChange = useCallback((page: number) => {
     setMiniMapPage(page);
@@ -155,6 +158,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     });
   }, []);
 
+  const handleWidthChange = useCallback((width: number) => {
+    setWidth(width);
+  }, []);
+
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
       annotations,
@@ -164,8 +171,8 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleMiniMapSectionClick,
       handleSelectedTimepointChange,
       handleViewModeChange,
+      handleWidthChange,
       isLoading,
-      logsData,
       logsMap,
       maxProbeDuration,
       miniMapCurrentPage,
@@ -173,7 +180,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       miniMapCurrentPageTimeRange,
       miniMapCurrentSectionIndex,
       miniMapPages,
-      ref,
       selectedTimepoint,
       timepoints,
       timepointsDisplayCount,
@@ -188,8 +194,8 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleMiniMapSectionClick,
     handleSelectedTimepointChange,
     handleViewModeChange,
+    handleWidthChange,
     isLoading,
-    logsData,
     logsMap,
     maxProbeDuration,
     miniMapCurrentPage,
@@ -197,13 +203,16 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     miniMapCurrentPageTimeRange,
     miniMapCurrentSectionIndex,
     miniMapPages,
-    ref,
     selectedTimepoint,
     timepoints,
     timepointsDisplayCount,
     viewMode,
     width,
   ]);
+
+  if (!timepoints.length) {
+    return null;
+  }
 
   return <TimepointExplorerContext.Provider value={value}>{children}</TimepointExplorerContext.Provider>;
 };

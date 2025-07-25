@@ -1,17 +1,41 @@
-import { buildTimepoints, getMiniMapPages } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { MiniMapPage } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  buildTimepoints,
+  getMiniMapPages,
+  getMiniMapSections,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 describe(`getMiniMapPages`, () => {
   it(`should return the correct mini map views`, () => {
     const from = 0;
-    const to = 61000; // 60 entries
+    const to = 62000; // 60 entries
     const checkConfigs = [{ frequency: 1000, date: 0 }];
     const timepoints = buildTimepoints({ from, to, checkConfigs });
     const timepointsDisplayCount = 10;
-    const miniMapViews = getMiniMapPages(timepoints, timepointsDisplayCount);
+    const miniMapPages = getMiniMapPages(timepoints, timepointsDisplayCount);
 
-    expect(miniMapViews).toEqual([
-      [2, 61],
+    expect(miniMapPages).toEqual([
+      [2, 62],
       [0, 1],
+    ]);
+  });
+});
+
+describe(`getMiniMapSections`, () => {
+  it(`should return the correct mini map sections`, () => {
+    const miniMapPage: MiniMapPage = [0, 10];
+    const timepointsDisplayCount = 10;
+    const miniMapSections = getMiniMapSections(miniMapPage, timepointsDisplayCount);
+    expect(miniMapSections).toEqual([[0, 10]]);
+  });
+
+  it(`should return the correct mini map sections`, () => {
+    const miniMapPage: MiniMapPage = [0, 10];
+    const timepointsDisplayCount = 5;
+    const miniMapSections = getMiniMapSections(miniMapPage, timepointsDisplayCount);
+    expect(miniMapSections).toEqual([
+      [5, 10],
+      [0, 5],
     ]);
   });
 });

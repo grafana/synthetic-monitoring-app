@@ -1,6 +1,8 @@
 import { DataFrame } from '@grafana/data';
 
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
+import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { Check } from 'types';
 import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   Annotation,
@@ -8,7 +10,11 @@ import {
   CheckEvent,
   CheckEventType,
   ExecutionsInTimepoint,
-  MinimapSection,
+  MiniMapPage,
+  MiniMapPages,
+  MiniMapSection,
+  MiniMapSections,
+  StatefulTimepoint,
   StatelessTimepoint,
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -217,54 +223,44 @@ export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
   return timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
 }
 
-export function getMiniMapPages(timepoints: StatelessTimepoint[], timepointsDisplayCount: number) {
-  const pages: Array<[number, number]> = [];
-
-  if (!timepoints.length || timepointsDisplayCount === 0) {
-    return pages;
+export function getMiniMapPages(timepoints: StatelessTimepoint[], timepointsDisplayCount: number): MiniMapPages {
+  if (!timepoints.length) {
+    return [[0, 0]];
   }
+
+  const pages = [];
   const withSections = timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
 
   // Start from the end and work backwards to get most recent pages first
   let remainingTimepoints = timepoints.length;
 
   while (remainingTimepoints > 0) {
-    const endIndex = remainingTimepoints;
-    const startIndex = Math.max(0, remainingTimepoints - withSections);
-    pages.push([startIndex, endIndex]);
+    const endIndex = remainingTimepoints - 1;
+    const startIndex = Math.max(0, remainingTimepoints - withSections - 1);
+
+    if (timepoints[startIndex] && timepoints[endIndex]) {
+      pages.push([startIndex, endIndex]);
+    }
+
     remainingTimepoints = startIndex;
   }
 
-  return pages;
+  return pages as MiniMapPages;
 }
 
-export function getMiniMapSections(timepoints: StatelessTimepoint[], timepointsDisplayCount: number) {
-  const timepointsInRange = timepoints.map((t) => t.adjustedTime);
-  const sections: MinimapSection[] = [];
+export function getMiniMapSections(miniMapPage: MiniMapPage, timepointsDisplayCount: number): MiniMapSections {
+  const sections: MiniMapSection[] = [];
+  const [pageStartIndex, pageEndIndex] = miniMapPage;
 
-  if (timepointsDisplayCount === 0) {
-    return sections;
+  let currentStart = pageStartIndex;
+
+  while (currentStart < pageEndIndex) {
+    const currentEnd = Math.min(currentStart + timepointsDisplayCount, pageEndIndex);
+    sections.unshift([currentStart, currentEnd]);
+    currentStart = currentEnd;
   }
 
-  for (let i = 0; i < timepointsInRange.length; i += timepointsDisplayCount) {
-    const fromIndex = i;
-    const toIndex = i + timepointsDisplayCount;
-    const timepoints = timepointsInRange.slice(fromIndex, toIndex);
-    const timestampTo = Number(timepoints[0]);
-    const timestampFrom = Number(timepoints[timepoints.length - 1]);
-
-    const section = {
-      to: timestampTo,
-      from: timestampFrom,
-      toIndex,
-      fromIndex,
-      index: i,
-    };
-
-    sections.push(section);
-  }
-
-  return sections;
+  return sections as MiniMapSections;
 }
 
 interface GetVisibleTimepointsProps {
@@ -288,4 +284,46 @@ export function getVisibleTimepointsTimeRange({ timepoints }: { timepoints: Stat
     from: timeRangeFrom,
     to: timeRangeTo,
   };
+}
+
+export function buildLogsMap(
+  logs: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>,
+  timepoints: StatelessTimepoint[],
+  check: Check
+) {
+  return logs.reduce<Record<UnixTimestamp, StatefulTimepoint>>((acc, log) => {
+    const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
+    const startingTime = log.Time - duration;
+
+    // TODO: this is not efficient, we should find a better way to do this
+    // the problem is when a check is updated with a new frequency you get a funny timepoint
+    const timepoint = timepoints.find(
+      (t: StatelessTimepoint) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration
+    );
+
+    if (!timepoint) {
+      return acc;
+    }
+
+    const timeshiftedStartingTime = timeshiftedTimepoint(startingTime, check.frequency);
+    const executions = [
+      ...(acc[timeshiftedStartingTime]?.executions || []),
+      {
+        probe: log.labels.probe,
+        execution: log,
+        id: log[LokiFieldNames.ID],
+      },
+    ];
+
+    acc[timeshiftedStartingTime] = {
+      adjustedTime: timepoint.adjustedTime,
+      timepointDuration: timepoint.timepointDuration,
+      frequency: timepoint.frequency,
+      executions,
+      uptimeValue: calculateUptimeValue(executions),
+      maxProbeDuration: getMaxProbeDuration(executions),
+    };
+
+    return acc;
+  }, {});
 }

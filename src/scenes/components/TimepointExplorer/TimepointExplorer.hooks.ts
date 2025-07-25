@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TimeRange } from '@grafana/data';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
@@ -7,7 +7,7 @@ import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
 import { useResizeObserver } from 'usehooks-ts';
 
 import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -24,12 +24,10 @@ import {
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
+  buildLogsMap,
   buildTimepoints,
-  calculateUptimeValue,
   extractFrequenciesAndConfigs,
-  getMaxProbeDuration,
   getVisibleTimepoints,
-  timeshiftedTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 export function useVisibleTimepoints() {
@@ -56,17 +54,23 @@ interface UseExecutionEndingLogsProps {
 }
 
 export function useExecutionEndingLogs({ timeRange, check, timepoints }: UseExecutionEndingLogsProps) {
-  const { data = [], ...rest } = usePersistedInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
-    refId: REF_ID_CHECK_LOGS,
-    expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
-    start: timeRange.from,
-    end: timeRange.to,
-  });
+  const [logsMap, setLogsMap] = useState<Record<UnixTimestamp, StatefulTimepoint>>({});
+
+  const onSuccess = useCallback(
+    (data: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>) => {
+      setLogsMap((prev) => ({
+        ...prev,
+        ...buildLogsMap(data, timepoints, check),
+      }));
+    },
+    [timepoints, check]
+  );
 
   const {
     fetchNextPage,
     hasNextPage,
     data: logsData = [],
+    ...rest
   } = usePersistedInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
     refId: REF_ID_CHECK_LOGS,
     expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
@@ -80,44 +84,9 @@ export function useExecutionEndingLogs({ timeRange, check, timepoints }: UseExec
     }
   }, [fetchNextPage, hasNextPage, logsData.length]);
 
-  const logsMap = useMemo(() => {
-    return logsData.reduce<Record<UnixTimestamp, StatefulTimepoint>>((acc, log) => {
-      const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
-      const startingTime = log.Time - duration;
-
-      // TODO: this is not efficient, we should find a better way to do this
-      // the problem is when a check is updated with a new frequency you get a funny timepoint
-      const timepoint = timepoints.find(
-        (t: StatelessTimepoint) =>
-          startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration
-      );
-
-      if (!timepoint) {
-        return acc;
-      }
-
-      const timeshiftedStartingTime = timeshiftedTimepoint(startingTime, check.frequency);
-      const executions = [
-        ...(acc[timeshiftedStartingTime]?.executions || []),
-        {
-          probe: log.labels.probe,
-          execution: log,
-          id: log[LokiFieldNames.ID],
-        },
-      ];
-
-      acc[timeshiftedStartingTime] = {
-        adjustedTime: timepoint.adjustedTime,
-        timepointDuration: timepoint.timepointDuration,
-        frequency: timepoint.frequency,
-        executions,
-        uptimeValue: calculateUptimeValue(executions),
-        maxProbeDuration: getMaxProbeDuration(executions),
-      };
-
-      return acc;
-    }, {});
-  }, [logsData, check.frequency, timepoints]);
+  useEffect(() => {
+    onSuccess(logsData);
+  }, [logsData, onSuccess]);
 
   return {
     data: logsData,
@@ -130,7 +99,6 @@ interface UseCheckConfigsProps {
   timeRange: TimeRange;
   check: Check;
   refetchInterval?: number;
-  onSuccess?: (data: CheckConfig[]) => void;
 }
 
 function usePersistedInfiniteLogs<T, R>(props: InfiniteLogsParams<T, R>) {
@@ -140,6 +108,7 @@ function usePersistedInfiniteLogs<T, R>(props: InfiniteLogsParams<T, R>) {
 
   useEffect(() => {
     if (data.length > 0) {
+      // todo: stitch together different pages of data here...
       setPersistedLogsData(data);
     }
   }, [data]);
@@ -268,16 +237,33 @@ function useMaxProbeDuration({ timeRange, check, refetchInterval }: UseMaxProbeD
 }
 
 export function useExplorerWidth() {
-  const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number>(0);
+  const internalRef = useRef<HTMLDivElement>(null);
+
+  const updateWidth = useCallback((element: HTMLDivElement | null) => {
+    if (element) {
+      setWidth(element.clientWidth);
+    }
+  }, []);
+
+  const ref = useCallback(
+    (element: HTMLDivElement | null) => {
+      internalRef.current = element;
+      updateWidth(element); // Measure immediately when ref is set
+    },
+    [updateWidth]
+  );
 
   useResizeObserver({
     // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
-    ref,
+    ref: internalRef,
     onResize: () => {
-      setWidth(ref.current?.clientWidth ?? 0);
+      console.log('onResize');
+      setWidth(internalRef.current?.clientWidth ?? 0);
     },
   });
+
+  console.log(internalRef.current);
 
   return { width, ref };
 }

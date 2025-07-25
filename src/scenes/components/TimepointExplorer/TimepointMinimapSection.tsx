@@ -1,31 +1,26 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useVisibleTimepoints } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import { MinimapSection, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { MiniMapSection, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getLabel } from 'scenes/components/TimepointExplorer/TimepointMinimapSection.utils';
 
 interface MiniMapSectionProps {
   index: number;
-  section: MinimapSection;
+  section: MiniMapSection;
 }
 
 export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps) => {
-  const { handleMiniMapSectionClick, miniMapCurrentSectionIndex, viewMode } = useTimepointExplorerContext();
-  const visibleTimepoints = useVisibleTimepoints();
+  const { handleMiniMapSectionClick, miniMapCurrentSectionIndex, timepoints, viewMode } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
-  const timepointsToRender = visibleTimepoints.slice(section.fromIndex, section.toIndex).reverse();
+  const miniMapSectionTimepoints = timepoints.slice(section[0], section[1]);
   const ref = useRef<HTMLButtonElement>(null);
-  const from = new Date(section.from);
-  const to = new Date(section.to);
-  const fromFormatted = dateTimeFormat(from);
-  const toFormatted = dateTimeFormat(to);
-  const label = `${fromFormatted} to ${toFormatted}`;
+  const label = getLabel(miniMapSectionTimepoints);
   const isActive = miniMapCurrentSectionIndex === index;
 
   return (
@@ -37,11 +32,11 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
           onClick={() => handleMiniMapSectionClick(index)}
           ref={ref}
         >
-          <MinimapSectionAnnotations timepointsInRange={timepointsToRender} />
+          <MinimapSectionAnnotations timepointsInRange={miniMapSectionTimepoints} />
           {viewMode === 'uptime' ? (
-            <UptimeSection timepoints={timepointsToRender} />
+            <UptimeSection timepoints={miniMapSectionTimepoints} />
           ) : (
-            <ReachabilitySection timepoints={timepointsToRender} />
+            <ReachabilitySection timepoints={miniMapSectionTimepoints} />
           )}
         </PlainButton>
       </Tooltip>
@@ -104,6 +99,10 @@ const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
   useLayoutEffect(() => {
     setContainer(ref.current);
   }, [ref.current?.clientWidth]);
+
+  if (!statefulTimepoint) {
+    return <div style={{ width, height: '100%', backgroundColor: 'red' }} />;
+  }
 
   return (
     <div key={timepoint.adjustedTime} className={styles.reachabilityTimepoint} style={{ width }} ref={ref}>

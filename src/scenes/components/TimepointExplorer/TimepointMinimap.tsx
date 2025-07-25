@@ -84,14 +84,14 @@ interface MiniMapPaginationProps {
 
 const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginationProps) => {
   const { handleMiniMapPageChange } = useTimepointExplorerContext();
-  const currentPage = miniMapPages.length - miniMapCurrentPage;
   const numberOfPages = miniMapPages.length;
+  const currentPage = numberOfPages - miniMapCurrentPage;
 
   const handleNavigate = useCallback(
     (page: number) => {
-      handleMiniMapPageChange(miniMapPages.length - page);
+      handleMiniMapPageChange(numberOfPages - page);
     },
-    [handleMiniMapPageChange, miniMapPages.length]
+    [handleMiniMapPageChange, numberOfPages]
   );
 
   return <Pagination currentPage={currentPage} numberOfPages={numberOfPages} onNavigate={handleNavigate} />;

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
 import {
   TIMEPOINT_GAP,
@@ -20,12 +21,32 @@ interface TimepointListProps {
 }
 
 export const TimepointList = ({ timeRange }: TimepointListProps) => {
-  const { maxProbeDuration, ref, timepoints, width, miniMapCurrentPageSections, miniMapCurrentSectionIndex } =
-    useTimepointExplorerContext();
-  const activeSection = miniMapCurrentPageSections[miniMapCurrentSectionIndex];
+  const ref = useRef<HTMLDivElement>(null);
+
+  const {
+    handleWidthChange,
+    maxProbeDuration,
+    timepoints,
+    width,
+    miniMapCurrentPageSections,
+    miniMapCurrentSectionIndex,
+  } = useTimepointExplorerContext();
+  const [fromIndex, toIndex] = miniMapCurrentPageSections[miniMapCurrentSectionIndex] || [0, 0];
   const styles = useStyles2(getStyles);
 
-  const timepointsInRange = timepoints.slice(activeSection?.fromIndex, activeSection?.toIndex).reverse();
+  const timepointsInRange = timepoints.slice(fromIndex, toIndex);
+
+  const onResize = useDebounceCallback((width: number) => {
+    handleWidthChange(width);
+  }, 100);
+
+  useResizeObserver({
+    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
+    ref,
+    onResize: () => {
+      onResize(ref.current?.clientWidth ?? 0);
+    },
+  });
 
   return (
     <div>
@@ -34,10 +55,9 @@ export const TimepointList = ({ timeRange }: TimepointListProps) => {
         <div className={styles.timepointsContainer}>
           <TimepointListAnnotations timepointsInRange={timepointsInRange} />
           <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
-            {activeSection &&
-              timepointsInRange.map((timepoint, index) => {
-                return <TimepointListEntry key={index} timepoint={timepoint} viewIndex={index} />;
-              })}
+            {timepointsInRange.map((timepoint, index) => {
+              return <TimepointListEntry key={index} timepoint={timepoint} viewIndex={index} />;
+            })}
           </div>
         </div>
       </div>

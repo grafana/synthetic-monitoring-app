@@ -16,13 +16,11 @@ export type SelectedTimepoint = [StatelessTimepoint, string];
 
 export type SelectedTimepointState = [null, null] | SelectedTimepoint;
 
-export interface MinimapSection {
-  to: UnixTimestamp;
-  from: UnixTimestamp;
-  toIndex: number;
-  fromIndex: number;
-  index: number;
-}
+export type MiniMapSection = [number, number];
+export type MiniMapSections = [MiniMapSection, ...MiniMapSection[]];
+
+export type MiniMapPage = [number, number];
+export type MiniMapPages = [MiniMapPage, ...MiniMapPage[]];
 
 export enum CheckEventType {
   CHECK_CREATED = 'check_created',
