@@ -64,4 +64,22 @@ describe('findRelevantAlertGroups', () => {
     const result = findRelevantAlertGroups([GROUP], []);
     expect(result).toStrictEqual([]);
   });
+
+  test.each([
+    ['HTTP', CheckAlertType.HTTPRequestDurationTooHighAvg],
+    ['PING', CheckAlertType.PingRequestDurationTooHighAvg],
+    ['DNS', CheckAlertType.DNSRequestDurationTooHighAvg],
+  ])('handles %s latency alerts correctly', (checkTypeName, alertType) => {
+    const latencyCategory = ALL_PREDEFINED_ALERTS.find(a => a.type === alertType)?.category || CheckAlertCategory.Latency;
+    
+    const alerts = [{ name: alertType, ...baseAlert }];
+    const result = findRelevantAlertGroups([], alerts);
+    
+    expect(result).toStrictEqual([
+      expect.objectContaining({
+        name: latencyCategory,
+        rules: [expect.objectContaining({ name: alertType })],
+      }),
+    ]);
+  });
 }); 
