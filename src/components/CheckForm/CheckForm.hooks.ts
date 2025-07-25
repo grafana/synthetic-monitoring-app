@@ -52,6 +52,7 @@ type CheckFormMetaReturn = {
   isDisabled: boolean;
   isLoading: boolean;
   defaultFormValues: CheckFormValues;
+  initialSection?: number;
 };
 
 export function useCheckFormMeta(check?: Check, forceDisabled = false): CheckFormMetaReturn {

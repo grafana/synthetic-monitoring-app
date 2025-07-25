@@ -141,7 +141,7 @@ describe('SceneRedirecter', () => {
       render(<SceneRedirecter />);
 
       const navigate = screen.getByTestId('navigate');
-      expect(navigate).toHaveAttribute('data-to', '/mocked/path');
+      expect(navigate).toHaveAttribute('data-to', '/mocked/path?runbookMissing=ProbeFailedExecutionsTooHigh');
       expect(mockLocationHref).not.toHaveBeenCalled();
     });
 

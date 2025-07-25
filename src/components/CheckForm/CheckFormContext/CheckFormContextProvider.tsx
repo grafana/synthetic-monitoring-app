@@ -10,9 +10,15 @@ import { CheckFormContext } from './CheckFormContext';
 interface CheckFormContextProviderProps extends PropsWithChildren {
   check?: Check;
   disabled?: boolean;
+  initialSection?: number;
 }
 
-export function CheckFormContextProvider({ check, children, disabled = false }: CheckFormContextProviderProps) {
+export function CheckFormContextProvider({
+  check,
+  children,
+  disabled = false,
+  initialSection = 0,
+}: CheckFormContextProviderProps) {
   const checkFormMeta = useCheckFormMeta(check);
 
   const methods = useForm<CheckFormValues>({
@@ -30,8 +36,8 @@ export function CheckFormContextProvider({ check, children, disabled = false }: 
   }, [check, checkFormMeta.defaultFormValues, methods]);
 
   const value = useMemo(() => {
-    return checkFormMeta;
-  }, [checkFormMeta]);
+    return { ...checkFormMeta, initialSection };
+  }, [checkFormMeta, initialSection]);
 
   return (
     <CheckFormContext.Provider value={value}>

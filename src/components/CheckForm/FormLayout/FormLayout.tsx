@@ -26,6 +26,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   children: ReactNode;
   checkState: 'new' | 'existing';
   checkType: CheckType;
+  initialSection?: number;
   onSubmit: (
     onValid: SubmitHandler<T>,
     onInvalid: (errs: FieldErrors<T>) => void
@@ -42,6 +43,7 @@ export const FormLayout = <T extends FieldValues>({
   checkState,
   checkType,
   children,
+  initialSection,
   onSubmit,
   onValid,
   onInvalid,
@@ -52,7 +54,7 @@ export const FormLayout = <T extends FieldValues>({
   const {
     formState: { disabled },
   } = useFormContext();
-  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(disabled);
+  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(disabled, initialSection);
 
   const sections = useMemo(() => {
     let index = -1;
