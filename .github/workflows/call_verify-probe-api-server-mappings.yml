@@ -1,0 +1,158 @@
+name: Verify Probe API Server Mappings
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  verify-mappings:
+    name: Verify Probe API Server Mappings
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Verify probe mappings are up to date
+        id: verify-mappings
+        continue-on-error: true
+        run: |
+          # Run the verification and capture output to a temp file
+          if yarn verify:probe-api-mappings > /tmp/verification_output.txt 2>&1; then
+            echo "verification_result=success" >> $GITHUB_OUTPUT
+          else
+            echo "verification_result=failed" >> $GITHUB_OUTPUT
+            # Store the output using base64 encoding to avoid issues with special characters
+            OUTPUT_BASE64=$(cat /tmp/verification_output.txt | base64 -w 0)
+            echo "VERIFICATION_OUTPUT_BASE64=$OUTPUT_BASE64" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on PR if mappings are outdated
+        if: steps.verify-mappings.outputs.verification_result == 'failed' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentIdentifier = '🔄 **Probe API Server Mappings Verification Failed**';
+
+            let message = commentIdentifier + '\n\n';
+            message += 'The `probeAPIServerMappings.json` file appears to be outdated compared to the [Grafana documentation](https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#add-a-new-probe-in-your-grafana-instance).\n\n';
+
+            const outputBase64 = '${{ steps.verify-mappings.outputs.VERIFICATION_OUTPUT_BASE64 }}';
+
+            if (outputBase64 && outputBase64.trim() !== '') {
+              try {
+                const output = Buffer.from(outputBase64, 'base64').toString('utf8');
+                // Remove yarn wrapper messages and final instruction for cleaner output
+                const cleanOutput = output
+                  .split('\n')
+                  .filter(line => 
+                    !line.includes('yarn run') && 
+                    !line.includes('$ yarn') && 
+                    !line.includes('$ /Users/') && 
+                    !line.includes('error Command failed') && 
+                    !line.includes('info Visit https://yarnpkg.com') &&
+                    !line.includes('💡 Please update the probeAPIServerMappings.json file to match the documentation.')
+                  )
+                  .join('\n')
+                  .trim();
+                
+                if (cleanOutput) {
+                  message += '**Verification Output:**\n';
+                  message += '```\n';
+                  message += cleanOutput;
+                  message += '\n```\n\n';
+                }
+              } catch (e) {
+                message += '⚠️ **Note:** Error decoding verification output.\n\n';
+              }
+            } else {
+              message += '⚠️ **Note:** No detailed output captured from verification script.\n\n';
+            }
+
+            message += 'To fix this, please run the probe mappings build script locally and verify the changes:\n';
+            message += '```bash\n';
+            message += 'yarn build:probe-api-mappings && yarn verify:probe-api-mappings\n';
+            message += '```\n\n';
+
+
+            // Look for existing comment to update
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const existingComment = comments.data.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes(commentIdentifier)
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Updated existing comment:', existingComment.id);
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Created new comment');
+            }
+
+      - name: Comment on PR if mappings are up to date
+        if: steps.verify-mappings.outputs.verification_result == 'success' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentIdentifier = '✅ **Probe API Server Mappings Verification Passed**';
+
+            let message = commentIdentifier + '\n\n';
+            message += 'The `probeAPIServerMappings.json` file is up to date and matches the [Grafana documentation](https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#add-a-new-probe-in-your-grafana-instance). 🎉\n\n';
+
+            // Look for existing failure comment to update (only act if there was a previous failure)
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const existingFailureComment = comments.data.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('🔄 **Probe API Server Mappings Verification Failed**')
+            );
+
+            if (existingFailureComment) {
+              // Update existing failure comment to success
+              await github.rest.issues.updateComment({
+                comment_id: existingFailureComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Updated existing failure comment to success:', existingFailureComment.id);
+            } else {
+              console.log('No previous failure comment found, skipping success comment creation');
+            }
+
+      - name: Fail the workflow if verification failed
+        if: steps.verify-mappings.outputs.verification_result == 'failed'
+        run: |
+          echo "Probe API server mappings verification failed!"
+          exit 1

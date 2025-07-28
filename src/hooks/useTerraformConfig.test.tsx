@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
+import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, FULL_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE } from 'test/fixtures/probes';
 import { TERRAFORM_BASIC_PING_CHECK, TERRAFORM_PRIVATE_PROBES } from 'test/fixtures/terraform';
@@ -414,5 +414,21 @@ describe('terraform config generation', () => {
         })),
       }
     });
+  });
+
+  //regression test for https://github.com/grafana/support-escalations/issues/17216
+  test('includes body and headers in HTTP check Terraform config', async () => {
+    const result = await renderTerraformHook([FULL_HTTP_CHECK], [PRIVATE_PROBE]);
+    
+    const httpCheckName = sanitizeName(`${FULL_HTTP_CHECK.job}_${FULL_HTTP_CHECK.target}`);
+    const httpCheckConfig = result.current.config?.resource.grafana_synthetic_monitoring_check?.[httpCheckName];
+    
+    expect(httpCheckConfig).toBeDefined();
+    expect(httpCheckConfig?.settings).toHaveProperty('http');
+    
+    if (httpCheckConfig && 'http' in httpCheckConfig.settings) {
+      expect(httpCheckConfig.settings.http.body).toBe(FULL_HTTP_CHECK.settings.http.body);
+      expect(httpCheckConfig.settings.http.headers).toEqual(FULL_HTTP_CHECK.settings.http.headers);
+    }
   });
 });

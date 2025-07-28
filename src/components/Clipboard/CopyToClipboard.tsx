@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Button, ButtonVariant } from '@grafana/ui';
+import { Button, ButtonVariant, IconButton } from '@grafana/ui';
 
-interface Props extends React.ComponentProps<typeof Button> {
+interface CopyToClipboardProps extends React.ComponentProps<typeof Button> {
   content: string;
   buttonText: string;
   buttonTextCopied: string;
   onClipboardCopy?(): void;
   onClipboardError?(err: string): void;
-
   variant?: ButtonVariant;
+  iconButton?: boolean;
 }
 
 export const CopyToClipboard = ({
@@ -17,8 +17,9 @@ export const CopyToClipboard = ({
   onClipboardError,
   buttonText,
   buttonTextCopied,
+  iconButton = false,
   ...rest
-}: Props) => {
+}: CopyToClipboardProps) => {
   const [copied, setCopied] = useState(false);
 
   const copyContent = () => {
@@ -36,6 +37,16 @@ export const CopyToClipboard = ({
         onClipboardError && onClipboardError(err);
       });
   };
+
+  if (iconButton) {
+    return (
+      <IconButton
+        name={copied ? 'check' : 'clipboard-alt'}
+        onClick={copyContent}
+        tooltip={copied ? buttonTextCopied : buttonText}
+      />
+    );
+  }
 
   return (
     <Button onClick={copyContent} icon={copied ? 'check' : 'clipboard-alt'} {...rest}>

@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.33.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.32.0...v1.33.0) (2025-07-24)
+
+
+### Features
+
+* add probe server api url alongside backend address for private probe creation ([#1194](https://github.com/grafana/synthetic-monitoring-app/issues/1194)) ([a69706e](https://github.com/grafana/synthetic-monitoring-app/commit/a69706e0c12207f06df40c53575d37e7848c0ca2))
+
+
+### Fixes
+
+* include body and headers in HTTP check Terraform export ([#1195](https://github.com/grafana/synthetic-monitoring-app/issues/1195)) ([1308ba7](https://github.com/grafana/synthetic-monitoring-app/commit/1308ba76e968bb9d0cbbd1c81cd0bdaa98261505))
+* prevent loading errorRateMap when data has not finished loading ([#1201](https://github.com/grafana/synthetic-monitoring-app/issues/1201)) ([ad93b4d](https://github.com/grafana/synthetic-monitoring-app/commit/ad93b4dcc91e0d2b9788fa41149817715cae5ba0))
+* use secret name, not UUID, to interact with the API ([#1205](https://github.com/grafana/synthetic-monitoring-app/issues/1205)) ([1ca2704](https://github.com/grafana/synthetic-monitoring-app/commit/1ca270499acdf56a8d7221839dd53317deef1c69))
+* validation logic for DNS targets and add appropriate tests ([#1193](https://github.com/grafana/synthetic-monitoring-app/issues/1193)) ([2bf2f93](https://github.com/grafana/synthetic-monitoring-app/commit/2bf2f930483a2b8dbe37188df6d6ea5783d2185f))
+
+## [1.32.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.31.0...v1.32.0) (2025-07-15)
+
+
+### Features
+
+* add GRAFANA_ALERTS to dashboard annotations for firing/pending alerts ([#1187](https://github.com/grafana/synthetic-monitoring-app/issues/1187)) ([8857da4](https://github.com/grafana/synthetic-monitoring-app/commit/8857da43f7a09fdc70fc150a2f1839c569dafc1e))
+
+
+### Fixes
+
+* add information about legacy vs per-check alerts in Alerting page ([#1176](https://github.com/grafana/synthetic-monitoring-app/issues/1176)) ([ed8713a](https://github.com/grafana/synthetic-monitoring-app/commit/ed8713a2364f1c23cccfbfde7b144976cd3723a5))
+* add link to notification policies ([#1179](https://github.com/grafana/synthetic-monitoring-app/issues/1179)) ([21369e8](https://github.com/grafana/synthetic-monitoring-app/commit/21369e8143c6138acf8680e7cfe9b289b5be6e2b))
+* change autoMerge to choice rather than string ([#1191](https://github.com/grafana/synthetic-monitoring-app/issues/1191)) ([6c1befb](https://github.com/grafana/synthetic-monitoring-app/commit/6c1befbaf94d096beb5066e485760ccd8fada55b))
+* lint warnings ([#1190](https://github.com/grafana/synthetic-monitoring-app/issues/1190)) ([b32dd09](https://github.com/grafana/synthetic-monitoring-app/commit/b32dd098dc98e9cdfcf248d032de68162838a688))
+* publish to gcom on release ([#1192](https://github.com/grafana/synthetic-monitoring-app/issues/1192)) ([2df299c](https://github.com/grafana/synthetic-monitoring-app/commit/2df299c1174ef739d80f9249cd83658815756236))
+* restrict environment variable ([#1185](https://github.com/grafana/synthetic-monitoring-app/issues/1185)) ([bb1ff43](https://github.com/grafana/synthetic-monitoring-app/commit/bb1ff4300fa3fc4353ce75d1c5bf514db4a30990))
+* updated gh action names ([#1183](https://github.com/grafana/synthetic-monitoring-app/issues/1183)) ([81e90ba](https://github.com/grafana/synthetic-monitoring-app/commit/81e90ba7838dbd06db262348c803d3cc7b802afe))
+
 ## [1.31.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.30.1...v1.31.0) (2025-07-10)
 
 
