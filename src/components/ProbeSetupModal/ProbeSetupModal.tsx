@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { config } from '@grafana/runtime';
 import { Alert, Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -73,7 +72,6 @@ const EnvsTable = ({ token }: { token: string }) => {
       pagination={false}
       id="probe-setup-modal-table"
       name="probe-setup-modal-table"
-      config={config}
     />
   );
 };
