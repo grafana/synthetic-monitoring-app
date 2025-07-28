@@ -32,7 +32,7 @@ const TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT: PredefinedAlertInterface =
   unit: 'd',
   category: CheckAlertCategory.TLSCertificate,
   defaultValues: {
-    threshold: 1,
+    threshold: 30,
     isSelected: false,
   },
   query: `
