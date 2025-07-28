@@ -21,7 +21,7 @@ jobs:
   build-sign-zip-upload:
     uses: ./.github/workflows/call_build-sign-upload-plugin.yml
     with:
-      environment: ${{ inputs.environment == 'staging' ||  inputs.environment == 'production' && 'prod' || inputs.environment == 'dev' && 'dev' || inputs.environment }}
+      environment: ${{ (inputs.environment == 'production' || inputs.environment == 'staging') && 'prod' || inputs.environment }}
 
   update-deployment-tools:
     needs: build-sign-zip-upload
