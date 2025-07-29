@@ -267,7 +267,7 @@ function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
   return (
     <PluginPage layout={PageLayoutType.Custom} pageNav={{ text: 'Edit check' }}>
       <div {...containerProps} className={cx(containerClassName, styles.container)}>
-        <div {...primaryProps}>
+        <div {...primaryProps} className={styles.primarySection}>
           <Box grow={1} padding={2} backgroundColor="primary">
             <CheckForm />
           </Box>
@@ -442,6 +442,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     height: 100%;
     overflow: hidden;
     flex: 1 1 0;
+  `,
+  primarySection: css`
+    max-height: 100%;
+    overflow: auto;
   `,
   rightAside: css`
     min-width: ${theme.spacing(40)};
