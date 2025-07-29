@@ -726,6 +726,7 @@ export enum FeatureName {
   RBAC = 'synthetic-monitoring-rbac',
   AlertsPerCheck = 'sm-alerts-per-check',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
+  CheckSidePanel = 'synthetic-monitoring-check-side-panel',
   __TURNOFF = 'test-only-do-not-use',
 }
 
