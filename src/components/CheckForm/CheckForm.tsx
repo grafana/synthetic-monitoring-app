@@ -11,7 +11,6 @@ import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseChe
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckSidePanelView } from 'components/CheckSidePanel/CheckSidePanelView';
-import { useCheckSidePanel } from 'components/CheckSidePanel/useCheckSidePanel';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CheckUsage } from 'components/CheckUsage';
 import { ConfirmLeavingPage } from 'components/ConfirmLeavingPage';
@@ -78,18 +77,6 @@ function CheckFormInternal() {
     initialSize: 1,
     dragPosition: 'end',
   });
-
-  const {
-    requestState,
-    expand,
-    hasPendingRequests,
-    handleAdHocCheck: sidePanelAdHocCheck,
-    handleToggleExpand,
-    getProbeStatus,
-    isError: sidePanelError,
-    error: sidePanelErrorMessage,
-    isPending: sidePanelPending,
-  } = useCheckSidePanel();
 
   const { error, handleInvalid, handleValid, submittingToApi, testButtonRef, testCheckError, testCheckPending } =
     useCheckForm({
@@ -237,17 +224,7 @@ function CheckFormInternal() {
           </div>
           <div {...splitterProps} />
           <div {...secondaryProps}>
-            <CheckSidePanelView
-              requestState={requestState}
-              expand={expand}
-              hasPendingRequests={hasPendingRequests}
-              onAdHocCheck={sidePanelAdHocCheck}
-              onToggleExpand={handleToggleExpand}
-              getProbeStatus={getProbeStatus}
-              isError={sidePanelError}
-              error={sidePanelErrorMessage}
-              isPending={sidePanelPending}
-            />
+            <CheckSidePanelView />
           </div>
         </div>
         <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />

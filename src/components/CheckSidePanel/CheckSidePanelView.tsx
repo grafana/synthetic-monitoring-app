@@ -1,38 +1,27 @@
 import React from 'react';
-import { dateTimeFormat,GrafanaTheme2, LoadingState } from '@grafana/data';
+import { dateTimeFormat, GrafanaTheme2, LoadingState } from '@grafana/data';
 import { Alert, Badge, Box, Button, Divider, PanelChrome, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-
-import { RequestState } from './CheckSidePanel.types';
 
 import { WikCard } from '../../page/LayoutTestPage/components/WikCard';
 import { Preformatted } from '../Preformatted';
 import { HIGHLIGHT_PATTERNS } from './CheckSidePanel.utils';
+import { useCheckSidePanel } from './useCheckSidePanel';
 
-interface CheckSidePanelViewProps {
-  requestState: RequestState[];
-  expand: boolean;
-  hasPendingRequests: boolean;
-  onAdHocCheck: () => void;
-  onToggleExpand: () => void;
-  getProbeStatus: (checkIndex: number, probeName: string) => any;
-  isError: boolean;
-  error?: Error | null;
-  isPending: boolean;
-}
-
-export function CheckSidePanelView({
-  requestState,
-  expand,
-  hasPendingRequests,
-  onAdHocCheck,
-  onToggleExpand,
-  getProbeStatus,
-  isError,
-  error,
-  isPending,
-}: CheckSidePanelViewProps) {
+export function CheckSidePanelView() {
   const styles = useStyles2(getCheckSidePanelStyles);
+
+  const {
+    requestState,
+    expand,
+    hasPendingRequests,
+    handleAdHocCheck: onAdHocCheck,
+    handleToggleExpand: onToggleExpand,
+    getProbeStatus,
+    isError,
+    error,
+    isPending,
+  } = useCheckSidePanel();
 
   return (
     <div className={styles.rightAside}>
@@ -61,9 +50,14 @@ export function CheckSidePanelView({
                 loadingState={isLoadingState ? LoadingState.Loading : LoadingState.Done}
                 actions={
                   <div className={styles.probeTop} onClick={onToggleExpand}>
-                                         {probesInSegment.map((pState) => (
-                       <Badge key={pState.name} text={pState.name} icon={pState.icon} color={pState.color} />
-                     ))}
+                    {probesInSegment.map((pState) => (
+                      <Badge
+                        key={pState.name}
+                        text={pState.name}
+                        icon={pState.icon as any}
+                        color={pState.color as any}
+                      />
+                    ))}
                   </div>
                 }
               >
@@ -73,12 +67,12 @@ export function CheckSidePanelView({
                     return (
                       <WikCard key={`${state.id}-${probeState.probe}`}>
                         <WikCard.Heading>
-                                                     <div>
-                             <Badge
-                               icon={probeStuff?.icon ?? 'adjust-circle'}
-                               text={probeStuff?.name ?? 'Unknown error'}
-                               color={probeStuff?.color ?? 'red'}
-                             />
+                          <div>
+                            <Badge
+                              icon={(probeStuff?.icon as any) ?? 'adjust-circle'}
+                              text={probeStuff?.name ?? 'Unknown error'}
+                              color={(probeStuff?.color as any) ?? 'red'}
+                            />
                             <span>{(probeState.logs?.message as string) ?? ''}</span>
                           </div>
                           <div>{probeState.logs?.timeseries ? 'success' : 'error'}</div>
@@ -89,8 +83,7 @@ export function CheckSidePanelView({
                             // @ts-expect-error testing
                             probeState.logs?.logs?.map(({ msg, ...logObj }, index) => {
                               const invalid =
-                                msg.search(/invalid|Uncaught \(in promise\)|script did not execute successfully/i) >
-                                -1;
+                                msg.search(/invalid|Uncaught \(in promise\)|script did not execute successfully/i) > -1;
                               const [mess, messInfo = null, ...restMesss] = msg.split('\n');
                               return (
                                 <div key={index}>
@@ -210,4 +203,4 @@ const getCheckSidePanelStyles = (theme: GrafanaTheme2) => ({
   k6Info: css`
     background-color: ${theme.colors.background.secondary};
   `,
-}); 
+});
