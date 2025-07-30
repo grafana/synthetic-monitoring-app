@@ -6,6 +6,7 @@
     "analytics-events:generate": "node --experimental-strip-types ./scripts/analytics/main.mts",
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
     "build:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/build-probe-api-mappings.ts",
+    "build:generate-terraform-test-config": "npx tsx scripts/terraform-validation/generate-test-configs.ts",
     "build": "webpack -c webpack.config.ts --env production",
     "danger:ci": "yarn danger ci --dangerfile danger/dangerfile.ts",
     "danger:pr": "yarn danger pr --dangerfile danger/dangerfile.ts",
@@ -25,8 +26,8 @@
     "test:changed": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4 --bail",
     "test": "jest --all",
-    "terraform:generate-test-config": "tsx scripts/terraform-validation/generate-test-configs.mts",
     "verify:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/verify-probe-api-mappings.ts",
+    "verify:terraform-test-config": "./scripts/terraform-validation/verify-terraform-test-config.sh",
     "typecheck": "tsc --noEmit"
   },
   "author": "Grafana Labs",

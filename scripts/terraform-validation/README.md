@@ -37,7 +37,7 @@ The workflow:
 - **Posts detailed PR comments** with validation results and fix instructions
 - **Updates existing comments** instead of creating duplicates
 
-### 2. Configuration Generation Script (`generate-test-configs.mts`)
+### 2. Configuration Generation Script (`generate-test-configs.ts`)
 
 This script:
 - Imports real test fixtures from the production codebase
@@ -76,10 +76,10 @@ This script:
 ### Simple Two-Step Process
 ```bash
 # Generate comprehensive test terraform configuration
-yarn terraform:generate-test-config
+yarn build:generate-terraform-test-config
 
 # Validate against provider schema
-cd test-terraform-output && terraform validate
+yarn verify:terraform-test-config
 ```
 
 ### What Gets Validated
@@ -92,7 +92,7 @@ The system generates configurations for:
 
 ### Single File Output
 ```
-test-terraform-output/
+artifacts/terraform-validation/
 └── testTerraformConfig.tf.json    # Comprehensive config with all resources
 ```
 
@@ -172,11 +172,11 @@ Inappropriate value for attribute "alerts": element 0: attribute "period" is req
 
 ### Adding New Check Types
 1. Add test fixtures to `src/test/fixtures/checks.ts`
-2. Include in the `testCases` array in `generate-test-configs.mts`
+2. Include in the `testCases` array in `generate-test-configs.ts`
 3. Test the generated configuration
 
 ### Provider Version Updates
-1. Update provider version in `generate-test-configs.mts`
+1. Update provider version in `generate-test-configs.ts`
 2. Run validation to identify new schema requirements
 3. Update transformation logic as needed
 
@@ -187,7 +187,8 @@ Inappropriate value for attribute "alerts": element 0: attribute "period" is req
 
 ## Package Scripts
 
-- `yarn terraform:generate-test-config` - Generate comprehensive terraform test configuration
+- `yarn build:generate-terraform-test-config` - Generate comprehensive terraform test configuration
+- `yarn verify:terraform-test-config` - Validate the generated terraform configuration
 - The validation system integrates with existing development workflows
 
 This validation system ensures terraform export functionality generates configurations that are fully compatible with the official Grafana provider schema, preventing deployment failures and ensuring reliable infrastructure operations. 

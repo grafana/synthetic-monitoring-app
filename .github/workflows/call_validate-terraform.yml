@@ -22,16 +22,13 @@ jobs:
           terraform_version: "~1.0"
       
       - name: Generate test Terraform configs
-        run: yarn terraform:generate-test-config
+        run: yarn build:generate-terraform-test-config
       
       - name: Validate generated Terraform
         id: terraform-validate
         continue-on-error: true
         run: |
-          cd test-terraform-output
-          terraform init
-          # Capture output and exit code
-          if terraform validate > /tmp/terraform_output.txt 2>&1; then
+          if yarn verify:terraform-test-config > /tmp/terraform_output.txt 2>&1; then
             echo "validation_result=success" >> $GITHUB_OUTPUT
           else
             echo "validation_result=failed" >> $GITHUB_OUTPUT
@@ -106,8 +103,8 @@ jobs:
             message += '4. **Update the transformation functions** in `src/components/TerraformConfig/`\n\n';
             message += '## 🧪 To test locally\n\n';
             message += '```bash\n';
-            message += 'yarn terraform:generate-test-config\n';
-            message += 'cd test-terraform-output && terraform validate\n';
+            message += 'yarn build:generate-terraform-test-config\n';
+            message += 'yarn verify:terraform-test-config\n';
             message += '```';
 
             // Look for existing comment to update

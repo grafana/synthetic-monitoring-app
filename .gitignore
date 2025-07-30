@@ -39,7 +39,3 @@ temp/
 .DS_Store
 
 dev/license.jwt
-
-# Terraform validation outputs
-test-terraform-output/
-terraform-schema.json
