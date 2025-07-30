@@ -274,6 +274,12 @@ export function formatDate(number: number) {
   });
 }
 
+// Helper function to normalize timestamps to milliseconds
+export function normalizeTimestamp(timestamp: number): number {
+  // Assume it's seconds if timestamp is less than Jan 1, 2000 in milliseconds
+  return timestamp < 946684800000 ? timestamp * 1000 : timestamp;
+}
+
 export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
   const { basicMetricsOnly, settings, frequency, probes } = check;
   const checkType = getCheckType(check.settings);

@@ -84,6 +84,42 @@ describe('SecretCard', () => {
     expect(screen.getByText(formatDate(MOCKED_SECRETS[0].created_at), { exact: false })).toBeInTheDocument();
   });
 
+  describe('timestamp format handling', () => {
+    it('should display correct date for seconds-based timestamps (new backend)', () => {
+      const secretWithSecondsTimestamp = {
+        ...MOCKED_SECRETS[0],
+        created_at: 1672574400, // Jan 1, 2023 in seconds
+      };
+
+      render(<SecretCard {...defaultProps} secret={secretWithSecondsTimestamp} />);
+
+      expect(screen.getByText(/January.*2023/)).toBeInTheDocument();
+    });
+
+    it('should display correct date for milliseconds-based timestamps (old backend)', () => {
+      const secretWithMillisecondsTimestamp = {
+        ...MOCKED_SECRETS[0],
+        created_at: 1672574400000, // Jan 1, 2023 in milliseconds
+      };
+
+      render(<SecretCard {...defaultProps} secret={secretWithMillisecondsTimestamp} />);
+
+      expect(screen.getByText(/January.*2023/)).toBeInTheDocument();
+    });
+
+    it('should not display 1970 dates for seconds timestamps', () => {
+      const secretWithRecentTimestamp = {
+        ...MOCKED_SECRETS[0],
+        created_at: 1672574400, // Jan 1, 2023 in seconds (should not be interpreted as 1970)
+      };
+
+      render(<SecretCard {...defaultProps} secret={secretWithRecentTimestamp} />);
+
+      expect(screen.queryByText(/1970/)).not.toBeInTheDocument();
+      expect(screen.getByText(/2023/)).toBeInTheDocument();
+    });
+  });
+
   it('should render a clipboard button for the secret UUID', () => {
     render(<SecretCard {...defaultProps} />);
 
