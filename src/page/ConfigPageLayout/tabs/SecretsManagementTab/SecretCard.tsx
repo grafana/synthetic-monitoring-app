@@ -4,7 +4,7 @@ import { Button, ClipboardButton, Icon, Tag, Text, useStyles2 } from '@grafana/u
 import { css } from '@emotion/css';
 
 import { SecretWithMetadata } from './types';
-import { formatDate } from 'utils';
+import { formatDate, normalizeTimestamp } from 'utils';
 
 interface SecretCardProps {
   secret: SecretWithMetadata;
@@ -70,7 +70,7 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
         <strong>Description:</strong> {secret.description}
       </div>
       <div className={styles.keyValue}>
-        <strong>Created:</strong> {formatDate(secret.created_at * 1000)} ({secret.created_by})
+        <strong>Created:</strong> {formatDate(normalizeTimestamp(secret.created_at))} ({secret.created_by})
       </div>
       {/* Currently there is no modified_at returned by the API(???) */}
       {/*<div className={styles.keyValue}>*/}
