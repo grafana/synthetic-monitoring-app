@@ -53,4 +53,6 @@ export const getUserPermissions = () => ({
   canWritePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:write', OrgRole.Admin),
 
   canWriteSM: isUserActionAllowed('grafana-synthetic-monitoring-app:write', OrgRole.Editor),
+
+  isAdmin: hasMinFallbackRole(OrgRole.Admin),
 });
