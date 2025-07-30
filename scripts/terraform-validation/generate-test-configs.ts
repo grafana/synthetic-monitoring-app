@@ -64,7 +64,7 @@ async function generateConfigs() {
       },
     ];
 
-    const outputDir = 'test-terraform-output';
+    const outputDir = 'artifacts/terraform-validation';
     
     // Ensure output directory exists
     if (!fs.existsSync(outputDir)) {
@@ -134,7 +134,7 @@ async function generateConfigs() {
     console.log('✅ No duplicated code - any changes to terraformConfigUtils will be reflected here!');
     console.log('✅ Proper TypeScript types - no any types used!');
     console.log('\n🧪 To validate:');
-    console.log('   cd test-terraform-output');
+    console.log('   cd artifacts/terraform-validation');
     console.log('   terraform validate');
     
   } catch (error) {
