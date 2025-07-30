@@ -99,7 +99,7 @@ export const HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface 
   unit: 'ms',
   category: CheckAlertCategory.Latency,
   defaultValues: {
-    threshold: 100,
+    threshold: 300,
     period: '5m',
     isSelected: false,
   },
