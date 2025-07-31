@@ -123,8 +123,8 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
   const testButtonRef = useRef<HTMLButtonElement>(null);
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
-  const navigateToChecks = useCallback(
-    (result: Check) => navigate(generateRoutePath(AppRoutes.EditCheck, { id: result.id! })),
+  const navigateToCheckDashboard = useCallback(
+    (result: Check) => navigate(generateRoutePath(AppRoutes.CheckDashboard, { id: result.id! })),
     [navigate]
   );
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
@@ -133,20 +133,14 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
     prevAlerts: check?.alerts,
   });
 
-  const handleAlertsAndNavigate = useCallback(
+  const handleAlerts = useCallback(
     async (result: Check, alerts?: CheckAlertFormRecord) => {
-      try {
-        if (alerts) {
-          const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
-          await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
-        }
-
-        navigateToChecks(result);
-      } finally {
-        queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      if (alerts) {
+        const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
+        await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
       }
     },
-    [navigateToChecks, updateAlertsForCheck]
+    [updateAlertsForCheck]
   );
 
   const mutateCheck = useCallback(
@@ -163,7 +157,9 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
         } else {
           result = await createCheck(newCheck);
         }
-        await handleAlertsAndNavigate(result, alerts);
+        await handleAlerts(result, alerts);
+        await queryClient.invalidateQueries({ queryKey: queryKeys.list });
+        navigateToCheckDashboard(result);
       } catch (e) {
         console.log(`Error while submitting check`, e);
         // swallow the error
@@ -173,7 +169,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
         setSubmittingToApi(false);
       }
     },
-    [check?.id, check?.tenantId, createCheck, updateCheck, handleAlertsAndNavigate]
+    [check?.id, check?.tenantId, createCheck, updateCheck, handleAlerts, navigateToCheckDashboard]
   );
 
   const handleValid = useCallback(

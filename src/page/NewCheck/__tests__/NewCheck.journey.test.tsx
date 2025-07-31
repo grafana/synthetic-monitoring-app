@@ -288,7 +288,7 @@ describe(`<NewCheck /> journey`, () => {
     await submitForm(user);
 
     const pathInfo = await screen.findByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME);
-    expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.EditCheck, { id: BASIC_HTTP_CHECK.id! }));
+    expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_HTTP_CHECK.id! }));
   });
 
   // jsdom doesn't give us back the submitter of the form, so we can't test this
