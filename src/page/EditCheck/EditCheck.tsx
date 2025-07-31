@@ -24,7 +24,7 @@ export const EditCheck = () => {
   const urlSearchParams = useURLSearchParams();
 
   // Check for runbook missing notification to determine initial section
-  const initialSection = !!urlSearchParams.get('runbookMissing') ? 4 : undefined; // Section 4 is "Alerting"
+  const initialSection = !!urlSearchParams.get('runbookMissing') ? 'alerting' : undefined;
 
   // Only show spinner for the initial fetch.
   if (isLoading && !isFetched) {

@@ -5,19 +5,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, CheckFormValues } from 'types';
 
 import { useCheckFormMeta } from '../CheckForm.hooks';
+import { FORM_SECTION_STEPS, SectionName } from '../FormLayout/FormLayout.constants';
 import { CheckFormContext } from './CheckFormContext';
 
 interface CheckFormContextProviderProps extends PropsWithChildren {
   check?: Check;
   disabled?: boolean;
-  initialSection?: number;
+  initialSection?: SectionName;
 }
 
 export function CheckFormContextProvider({
   check,
   children,
   disabled = false,
-  initialSection = 0,
+  initialSection = FORM_SECTION_STEPS[0],
 }: CheckFormContextProviderProps) {
   const checkFormMeta = useCheckFormMeta(check);
 

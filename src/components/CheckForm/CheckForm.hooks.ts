@@ -30,6 +30,7 @@ import { useNavigation } from 'hooks/useNavigation';
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
 import { fallbackCheckMap } from '../constants';
+import { SectionName } from './FormLayout/FormLayout.constants';
 import { layoutMap } from './FormLayouts/constants';
 import { broadcastFailedSubmission, findFieldToFocus, getIsExistingCheck } from './CheckForm.utils';
 import { SCHEMA_MAP } from './constants';
@@ -52,7 +53,7 @@ type CheckFormMetaReturn = {
   isDisabled: boolean;
   isLoading: boolean;
   defaultFormValues: CheckFormValues;
-  initialSection?: number;
+  initialSection?: SectionName;
 };
 
 export function useCheckFormMeta(check?: Check, forceDisabled = false): CheckFormMetaReturn {

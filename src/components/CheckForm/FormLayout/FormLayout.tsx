@@ -9,7 +9,7 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
 import { flattenKeys } from 'components/CheckForm/CheckForm.utils';
-import { ANALYTICS_STEP_MAP, FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
+import { FORM_MAX_WIDTH, FORM_SECTION_STEPS, SectionName } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal, FormSectionProps } from './FormSection';
@@ -26,7 +26,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   children: ReactNode;
   checkState: 'new' | 'existing';
   checkType: CheckType;
-  initialSection?: number;
+  initialSection?: SectionName;
   onSubmit: (
     onValid: SubmitHandler<T>,
     onInvalid: (errs: FieldErrors<T>) => void
@@ -43,7 +43,7 @@ export const FormLayout = <T extends FieldValues>({
   checkState,
   checkType,
   children,
-  initialSection,
+  initialSection = FORM_SECTION_STEPS[0],
   onSubmit,
   onValid,
   onInvalid,
@@ -54,7 +54,12 @@ export const FormLayout = <T extends FieldValues>({
   const {
     formState: { disabled },
   } = useFormContext();
-  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(disabled, initialSection);
+
+  const initialSectionIndex = FORM_SECTION_STEPS.indexOf(initialSection);
+  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(
+    disabled,
+    initialSectionIndex
+  );
 
   const sections = useMemo(() => {
     let index = -1;
@@ -149,7 +154,7 @@ export const FormLayout = <T extends FieldValues>({
                         checkState,
                         checkType,
                         component: 'back-button',
-                        step: ANALYTICS_STEP_MAP[newStep],
+                        step: FORM_SECTION_STEPS[newStep],
                       });
                       goToSection(newStep);
                     }}
@@ -173,7 +178,7 @@ export const FormLayout = <T extends FieldValues>({
                         checkState,
                         checkType,
                         component: 'forward-button',
-                        step: ANALYTICS_STEP_MAP[newStep],
+                        step: FORM_SECTION_STEPS[newStep],
                       });
                       goToSection(newStep);
                     }}
