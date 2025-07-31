@@ -11,9 +11,11 @@ import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 interface ThresholdSelectorProps {
   alert: PredefinedAlertInterface;
   selected: boolean;
+  suffix?: string;
+  width?: number;
 }
 
-export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, selected }) => {
+export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, selected, suffix, width = 5 }) => {
   const { formState, control } = useFormContext<CheckFormValues>();
   const isFormDisabled = formState.disabled;
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
@@ -35,6 +37,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
             {...field}
             aria-disabled={!selected}
             data-testid={`alert-threshold-${alert.type}`}
+            suffix={suffix}
             type="number"
             step="any"
             id={`alert-threshold-${alert.type}`}
@@ -43,7 +46,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
               debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
               return field.onChange(value !== '' ? Number(value) : '');
             }}
-            width={5}
+            width={width}
             disabled={!selected || isFormDisabled}
           />
         )}

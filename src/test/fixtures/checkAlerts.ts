@@ -15,5 +15,14 @@ export const BASIC_CHECK_ALERTS: CheckAlertsResponse = {
       error: CheckAlertError.HostedGrafanaInstanceLoading,
       runbookUrl: 'https://example.com/runbooks/tls-certificate',
     }),
+    db.alert.build({
+      name: CheckAlertType.HTTPRequestDurationTooHighAvg,
+    }),
+    db.alert.build({
+      name: CheckAlertType.PingRequestDurationTooHighAvg,
+    }),
+    db.alert.build({
+      name: CheckAlertType.DNSRequestDurationTooHighAvg,
+    }),
   ],
 };

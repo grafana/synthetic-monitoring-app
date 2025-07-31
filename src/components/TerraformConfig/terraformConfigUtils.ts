@@ -1,4 +1,6 @@
-import { Check, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
+import { fromBase64 } from 'js-base64';
+
+import { Check, HTTPCompressionAlgo, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
 import {
   isBrowserCheck,
   isDNSCheck,
@@ -10,7 +12,6 @@ import {
   isTCPCheck,
   isTracerouteCheck,
 } from 'utils.types';
-import { fromBase64 } from 'utils';
 
 import { mapAssertionsToTF, mapRequestBodyToTF, mapVariablesToTF } from './terraformMultiHTTPConfigUtils';
 import { TFCheck, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
@@ -60,14 +61,25 @@ const settingsToTF = (check: Check): TFCheckSettings => {
     return {
       http: {
         method: check.settings.http.method,
-        compression: check.settings.http.compression,
+        body: check.settings.http.body,
+        headers: check.settings.http.headers,
+        compression:
+          check.settings.http.compression === HTTPCompressionAlgo.none ? 'none' : check.settings.http.compression,
         basic_auth: check.settings.http.basicAuth,
         bearer_token: check.settings.http.bearerToken,
         cache_busting_query_param_name: check.settings.http.cacheBustingQueryParamName,
         fail_if_body_matches_regexp: check.settings.http.failIfBodyMatchesRegexp,
         fail_if_body_not_matches_regexp: check.settings.http.failIfBodyNotMatchesRegexp,
-        fail_if_header_matches_regexp: check.settings.http.failIfHeaderMatchesRegexp,
-        fail_if_header_not_matches_regexp: check.settings.http.failIfHeaderNotMatchesRegexp,
+        fail_if_header_matches_regexp: check.settings.http.failIfHeaderMatchesRegexp?.map((match) => ({
+          header: match.header,
+          regexp: match.regexp,
+          allow_missing: match.allowMissing?.toString(),
+        })),
+        fail_if_header_not_matches_regexp: check.settings.http.failIfHeaderNotMatchesRegexp?.map((match) => ({
+          header: match.header,
+          regexp: match.regexp,
+          allow_missing: match.allowMissing?.toString(),
+        })),
         fail_if_not_ssl: check.settings.http.failIfNotSSL,
         fail_if_ssl: check.settings.http.failIfSSL,
         ip_version: check.settings.http.ipVersion,

@@ -1,10 +1,12 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.32.0",
+  "version": "1.33.1",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "analytics-events:generate": "node --experimental-strip-types ./scripts/analytics/main.mts",
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
+    "build:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/build-probe-api-mappings.ts",
+    "build:generate-terraform-test-config": "npx tsx scripts/terraform-validation/generate-test-configs.ts",
     "build": "webpack -c webpack.config.ts --env production",
     "danger:ci": "yarn danger ci --dangerfile danger/dangerfile.ts",
     "danger:pr": "yarn danger pr --dangerfile danger/dangerfile.ts",
@@ -24,6 +26,8 @@
     "test:changed": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4 --bail",
     "test": "jest --all",
+    "verify:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/verify-probe-api-mappings.ts",
+    "verify:terraform-test-config": "./scripts/terraform-validation/verify-terraform-test-config.sh",
     "typecheck": "tsc --noEmit"
   },
   "author": "Grafana Labs",
@@ -96,6 +100,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tslib": "2.5.3",
+    "tsx": "^4.20.3",
     "typescript": "5.5.4",
     "webpack": "^5.94.0",
     "webpack-bundle-analyzer": "^4.10.2",

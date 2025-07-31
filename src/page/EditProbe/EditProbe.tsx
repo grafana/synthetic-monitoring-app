@@ -11,8 +11,8 @@ import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { useNavigation } from 'hooks/useNavigation';
 import { DeleteProbeButton } from 'components/DeleteProbeButton';
 import { ProbeEditor } from 'components/ProbeEditor';
+import { ProbeSetupModal } from 'components/ProbeSetupModal';
 import { ProbeStatus } from 'components/ProbeStatus';
-import { ProbeTokenModal } from 'components/ProbeTokenModal';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
 import { PluginPageNotFound } from '../NotFound/NotFound';
@@ -140,7 +140,7 @@ const EditProbeContent = ({ probe, forceViewMode }: { forceViewMode?: boolean; p
         forceViewMode={forceViewMode}
         supportingContent={<ProbeStatus probe={probe} onReset={onReset} readOnly={forceViewMode} />}
       />
-      <ProbeTokenModal
+      <ProbeSetupModal
         actionText="Close"
         isOpen={showTokenModal}
         onDismiss={() => setShowTokenModal(false)}

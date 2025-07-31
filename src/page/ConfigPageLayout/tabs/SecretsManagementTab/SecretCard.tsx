@@ -8,18 +8,18 @@ import { formatDate } from 'utils';
 
 interface SecretCardProps {
   secret: SecretWithMetadata;
-  onEdit: (id?: SecretWithMetadata['uuid']) => void;
-  onDelete: (id: SecretWithMetadata['uuid']) => void;
+  onEdit: (name?: SecretWithMetadata['name']) => void;
+  onDelete: (name: SecretWithMetadata['name']) => void;
 }
 
 export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
   const styles = useStyles2(getStyles);
   const handleEdit = () => {
-    onEdit(secret.uuid);
+    onEdit(secret.name);
   };
 
   const handleDelete = () => {
-    onDelete(secret.uuid);
+    onDelete(secret.name);
   };
 
   return (
