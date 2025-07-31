@@ -109,6 +109,19 @@ export function runTestAsSMEditor() {
   });
 }
 
+export function runTestAsSMAdmin() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    bootData: {
+      user: {
+        ...config.bootData.user,
+        orgRole: OrgRole.Admin,
+      },
+    },
+  });
+}
+
 export function runTestAsLogsViewer() {
   server.use(
     apiRoute(`getLogsDS`, {
