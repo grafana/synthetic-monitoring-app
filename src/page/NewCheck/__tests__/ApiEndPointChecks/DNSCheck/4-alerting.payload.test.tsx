@@ -7,9 +7,9 @@ import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'pa
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
-const checkType = CheckType.PING;
+const checkType = CheckType.DNS;
 
-describe(`PingCheck - Section 4 (Alerting) payload`, () => {
+describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
@@ -20,7 +20,7 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
     expect(body.alerts).toEqual(undefined);
   });
 
-  it(`can add ping request duration latency alert`, async () => {
+  it(`can add DNS request duration latency alert`, async () => {
     mockFeatureToggles({
       [FeatureName.AlertsPerCheck]: true,
     });
@@ -38,11 +38,11 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
     // Check that latency alerts section exists
     expect(screen.getByText('Latency')).toBeInTheDocument();
 
-    const thresholdInputSelector = 'alert-threshold-PingRequestDurationTooHighAvg';
+    const thresholdInputSelector = 'alert-threshold-DNSRequestDurationTooHighAvg';
 
-    await user.click(screen.getByTestId('checkbox-alert-PingRequestDurationTooHighAvg'));
+    await user.click(screen.getByTestId('checkbox-alert-DNSRequestDurationTooHighAvg'));
     await user.clear(screen.getByTestId(thresholdInputSelector));
-    await user.type(screen.getByTestId(thresholdInputSelector), '200');
+    await user.type(screen.getByTestId(thresholdInputSelector), '150');
 
     await submitForm(user);
 
@@ -51,8 +51,8 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
     expect(alertsBody).toEqual({
       alerts: [
         {
-          name: 'PingRequestDurationTooHighAvg',
-          threshold: 200,
+          name: 'DNSRequestDurationTooHighAvg',
+          threshold: 150,
           period: '5m',
         },
       ],
@@ -71,7 +71,7 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
     await goToSection(user, 4);
     await selectBasicFrequency(user, '10m');
 
-    // Still in section 4 for probes selection
+    // Then go to section 4 for probes selection (this is the Execution section)
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
@@ -80,12 +80,12 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
-    await user.click(screen.getByTestId('checkbox-alert-PingRequestDurationTooHighAvg'));
-    await user.clear(screen.getByTestId('alert-threshold-PingRequestDurationTooHighAvg'));
-    await user.type(screen.getByTestId('alert-threshold-PingRequestDurationTooHighAvg'), '100');
+    await user.click(screen.getByTestId('checkbox-alert-DNSRequestDurationTooHighAvg'));
+    await user.clear(screen.getByTestId('alert-threshold-DNSRequestDurationTooHighAvg'));
+    await user.type(screen.getByTestId('alert-threshold-DNSRequestDurationTooHighAvg'), '100');
 
     // Select 5m period (which is less than 10m frequency) - target the specific period selector by ID
-    const periodContainer = document.getElementById('alert-period-PingRequestDurationTooHighAvg');
+    const periodContainer = document.getElementById('alert-period-DNSRequestDurationTooHighAvg');
     const periodSelector = within(periodContainer as HTMLElement).getByTestId('alertPendingPeriod');
     await user.click(periodSelector);
     

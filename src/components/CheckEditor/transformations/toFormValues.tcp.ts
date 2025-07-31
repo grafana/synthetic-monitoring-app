@@ -3,7 +3,9 @@ import { fromBase64 } from 'utils';
 import {
   getBaseFormValuesFromCheck,
   getTlsConfigFormValues,
+  predefinedAlertsToFormValues,
 } from 'components/CheckEditor/transformations/toFormValues.utils';
+import { TCP_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { FALLBACK_CHECK_TCP } from 'components/constants';
 
 export function getTCPCheckFormValues(check: TCPCheck): CheckFormValuesTcp {
@@ -14,6 +16,10 @@ export function getTCPCheckFormValues(check: TCPCheck): CheckFormValuesTcp {
     checkType: CheckType.TCP,
     settings: {
       tcp: getTcpSettingsFormValues(check.settings),
+    },
+    alerts: {
+      ...base.alerts,
+      ...predefinedAlertsToFormValues(TCP_PREDEFINED_ALERTS, check.alerts || []),
     },
   };
 }

@@ -13,5 +13,14 @@ export const BASIC_CHECK_ALERTS: CheckAlertsResponse = {
       status: 'PENDING_CREATE',
       error: CheckAlertError.HostedGrafanaInstanceLoading,
     }),
+    db.alert.build({
+      name: CheckAlertType.HTTPRequestDurationTooHighAvg,
+    }),
+    db.alert.build({
+      name: CheckAlertType.PingRequestDurationTooHighAvg,
+    }),
+    db.alert.build({
+      name: CheckAlertType.DNSRequestDurationTooHighAvg,
+    }),
   ],
 };
