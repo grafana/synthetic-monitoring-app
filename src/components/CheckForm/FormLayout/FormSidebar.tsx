@@ -8,8 +8,8 @@ import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 import { ZodType } from 'zod';
 
 import { CheckFormValues, CheckType } from 'types';
-import { ANALYTICS_STEP_MAP } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
+import { FORM_SECTION_STEPS } from './FormLayout.constants';
 import { checkForErrors } from './formlayout.utils';
 import { FormSectionProps } from './FormSection';
 
@@ -58,7 +58,7 @@ export const FormSidebar = ({
                     checkState,
                     checkType,
                     component: 'stepper',
-                    step: ANALYTICS_STEP_MAP[sectionIndex],
+                    step: FORM_SECTION_STEPS[sectionIndex],
                   });
                   onSectionClick(sectionIndex);
                 }}

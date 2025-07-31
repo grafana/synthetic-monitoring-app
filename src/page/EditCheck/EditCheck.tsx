@@ -12,6 +12,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { CheckForm } from 'components/CheckForm/CheckForm';
 import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
@@ -20,6 +21,10 @@ export const EditCheck = () => {
   const { id } = useParams<CheckPageParams>();
   const { data: checks, isError, isLoading, error, refetch, isFetched } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
+  const urlSearchParams = useURLSearchParams();
+
+  // Check for runbook missing notification to determine initial section
+  const initialSection = !!urlSearchParams.get('runbookMissing') ? 'alerting' : undefined;
 
   // Only show spinner for the initial fetch.
   if (isLoading && !isFetched) {
@@ -27,7 +32,7 @@ export const EditCheck = () => {
   }
 
   return (
-    <CheckFormContextProvider check={check} disabled={isLoading || isError}>
+    <CheckFormContextProvider check={check} disabled={isLoading || isError} initialSection={initialSection}>
       <EditCheckContent isLoading={isLoading} />
       {checks && !check && <NotFoundModal />}
       {error && <ErrorModal error={error} onClick={refetch} />}

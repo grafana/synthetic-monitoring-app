@@ -261,5 +261,6 @@ export const db = {
     created: Math.floor(faker.date.past().getTime() / 1000),
     modified: Math.floor(faker.date.recent().getTime() / 1000),
     status: "OK",
+    runbookUrl: faker.helpers.maybe(() => faker.internet.url()),
   })),
 };

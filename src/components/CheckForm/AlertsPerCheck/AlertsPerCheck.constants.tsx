@@ -11,6 +11,7 @@ export interface PredefinedAlertInterface {
     threshold: number;
     period?: (typeof ALERT_PERIODS)[number]['value'];
     isSelected: boolean;
+    runbookUrl?: string;
   };
   supportsPeriod: boolean;
 }
@@ -34,6 +35,7 @@ const TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT: PredefinedAlertInterface =
   defaultValues: {
     threshold: 30,
     isSelected: false,
+    runbookUrl: undefined,
   },
   query: `
 (
@@ -62,6 +64,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
       threshold: 1,
       period: '5m',
       isSelected: false,
+      runbookUrl: undefined,
     },
     query: `
     (
