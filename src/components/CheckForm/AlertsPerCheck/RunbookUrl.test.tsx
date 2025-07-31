@@ -64,7 +64,7 @@ describe('RunbookUrl', () => {
     expect(tlsRunbookInput).toHaveValue('');
   });
 
-  it('hides runbook URL input when alert is deselected', async () => {
+  it('shows runbook URL input as disabled when alert is deselected', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await goToSection(user, 5); // Go to alerts section
 
@@ -72,6 +72,6 @@ describe('RunbookUrl', () => {
     const tlsCheckbox = screen.getByTestId(`checkbox-alert-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`);
     await user.click(tlsCheckbox);
 
-    expect(screen.queryByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)).toHaveAttribute('disabled');
   });
 });

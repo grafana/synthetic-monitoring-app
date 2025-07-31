@@ -1,12 +1,14 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom-v5-compat';
+import { PluginPage } from '@grafana/runtime';
 
-import { CheckAlertType } from 'types';
+import { CheckAlertType, CheckAlertWithRunbookUrl } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { CenteredSpinner } from 'components/CenteredSpinner';
+import { RunbookRedirectAlert } from 'components/RunbookRedirectAlert';
 
 const ALERT_NAME_TO_TYPE: Record<string, CheckAlertType> = {
   ProbeFailedExecutionsTooHigh: CheckAlertType.ProbeFailedExecutionsTooHigh,
@@ -47,11 +49,20 @@ export function SceneRedirecter() {
     const alertConfig = check.alerts?.find((a) => a.name === alertType);
 
     if (!alertConfig?.runbookUrl) {
-      return <Navigate to={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id })} replace />;
+      // Redirect to edit check page with missing runbook notification
+      return (
+        <Navigate
+          to={`${generateRoutePath(AppRoutes.EditCheck, { id: check.id })}?runbookMissing=${alertType}`}
+          replace
+        />
+      );
     }
 
-    window.location.href = alertConfig.runbookUrl;
-    return <CenteredSpinner aria-label="Redirecting to runbook" />;
+    return (
+      <PluginPage>
+        <RunbookRedirectAlert check={check} alertConfig={alertConfig as CheckAlertWithRunbookUrl} />
+      </PluginPage>
+    );
   }
 
   return <Navigate to={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id })} replace />;

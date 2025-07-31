@@ -1,7 +1,7 @@
 import { createSMEventFactory, TrackingEventProps } from 'features/tracking/utils';
 
 import { CheckType } from 'types';
-import { ANALYTICS_STEP_MAP } from 'components/CheckForm/FormLayout/FormLayout.constants';
+import { SectionName } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 const checkFormEvents = createSMEventFactory('check_form');
 
@@ -9,7 +9,7 @@ interface NavigateWizardForm extends TrackingEventProps {
   /** The type of check. */
   checkType: CheckType;
   /** The current step in the wizard. */
-  step: (typeof ANALYTICS_STEP_MAP)[number];
+  step: SectionName;
   /** The UI component that triggered the navigation. */
   component: `forward-button` | `back-button` | `stepper`;
 }
