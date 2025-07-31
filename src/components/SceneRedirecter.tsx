@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom-v5-compat';
 import { PluginPage } from '@grafana/runtime';
 
-import { CheckAlertType } from 'types';
+import { CheckAlertType, CheckAlertWithRunbookUrl } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
@@ -60,7 +60,7 @@ export function SceneRedirecter() {
 
     return (
       <PluginPage>
-        <RunbookRedirectAlert runbookUrl={alertConfig?.runbookUrl} />
+        <RunbookRedirectAlert check={check} alertConfig={alertConfig as CheckAlertWithRunbookUrl} />
       </PluginPage>
     );
   }
