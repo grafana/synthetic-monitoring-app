@@ -687,6 +687,8 @@ export type CheckAlertPublished = CheckAlertDraft & {
   error?: CheckAlertError;
 };
 
+export type CheckAlertWithRunbookUrl = Omit<CheckAlertPublished, 'runbookUrl'> & { runbookUrl: string };
+
 export type ThresholdUnit = 'ms' | 's' | 'd' | '%' | 'no.';
 
 export enum CheckSort {

@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { Check, CheckAlertType } from 'types';
@@ -30,8 +31,8 @@ Object.defineProperty(window, 'location', {
     get href() {
       return '';
     },
-    set href(url: string) {
-      mockLocationHref(url);
+    set href(value: string) {
+      mockLocationHref(value);
     },
   },
   writable: true,
@@ -48,8 +49,9 @@ function createMockSearchParams(params: Record<string, string>): URLSearchParams
 describe('SceneRedirecter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
     mockLocationHref.mockClear();
-    
+
     mockUseChecks.mockReturnValue({
       data: [BASIC_HTTP_CHECK],
       isLoading: false,
@@ -58,8 +60,13 @@ describe('SceneRedirecter', () => {
     } as unknown as ReturnType<typeof useChecks>);
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   describe('Runbook redirects', () => {
     test('redirects to runbook URL for ProbeFailedExecutionsTooHigh alert', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
       const searchParams = createMockSearchParams({
         'var-job': BASIC_HTTP_CHECK.job,
         'var-instance': BASIC_HTTP_CHECK.target,
@@ -70,12 +77,14 @@ describe('SceneRedirecter', () => {
 
       render(<SceneRedirecter />);
 
-      await waitFor(() => {
-        expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
-      });
+      const takeNowButton = screen.getByText('Take me there now');
+      await user.click(takeNowButton);
+
+      expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
     });
 
     test('redirects to runbook URL for TLSTargetCertificateCloseToExpiring alert', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
       const searchParams = createMockSearchParams({
         'var-job': BASIC_HTTP_CHECK.job,
         'var-instance': BASIC_HTTP_CHECK.target,
@@ -86,12 +95,14 @@ describe('SceneRedirecter', () => {
 
       render(<SceneRedirecter />);
 
-      await waitFor(() => {
-        expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/tls-certificate');
-      });
+      const takeNowButton = screen.getByText('Take me there now');
+      await user.click(takeNowButton);
+
+      expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/tls-certificate');
     });
 
     test('parses alert names with brackets correctly', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
       const searchParams = createMockSearchParams({
         'var-job': BASIC_HTTP_CHECK.job,
         'var-instance': BASIC_HTTP_CHECK.target,
@@ -102,9 +113,10 @@ describe('SceneRedirecter', () => {
 
       render(<SceneRedirecter />);
 
-      await waitFor(() => {
-        expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
-      });
+      const takeNowButton = screen.getByText('Take me there now');
+      await user.click(takeNowButton);
+
+      expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
     });
 
     test('navigates to fallback when runbook URL is not configured', () => {
@@ -198,4 +210,4 @@ describe('SceneRedirecter', () => {
       expect(screen.getByLabelText('Loading checks')).toBeInTheDocument();
     });
   });
-}); 
+});
