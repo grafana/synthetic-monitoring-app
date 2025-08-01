@@ -59,7 +59,7 @@ export const getUserPermissions = () => ({
 
   canCreateSecrets: isUserActionAllowed('secret.securevalues:create', OrgRole.Admin),
   canReadSecrets: isUserActionAllowed('secret.securevalues:read', OrgRole.Admin),
-  canUpdateSecrets: isUserActionAllowed('secret.securevalues:update', OrgRole.Admin),
+  canUpdateSecrets: isUserActionAllowed('secret.securevalues:write', OrgRole.Admin),
   canDeleteSecrets: isUserActionAllowed('secret.securevalues:delete', OrgRole.Admin),
 
   isAdmin: hasMinFallbackRole(OrgRole.Admin),
