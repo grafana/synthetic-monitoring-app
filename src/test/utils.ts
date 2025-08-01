@@ -11,7 +11,15 @@ import {
 import { ExtendedProbe, FeatureName, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
 import { pascalCaseToSentence } from 'utils';
 
-import { FULL_ADMIN_ACCESS, FULL_READONLY_ACCESS, FULL_WRITER_ACCESS } from './fixtures/rbacPermissions';
+import { 
+  FULL_ADMIN_ACCESS, 
+  FULL_READONLY_ACCESS, 
+  FULL_WRITER_ACCESS, 
+  SECRETS_CREATOR_ACCESS, 
+  SECRETS_EDITOR_ACCESS, 
+  SECRETS_FULL_ACCESS, 
+  SECRETS_NO_ACCESS, 
+  SECRETS_READ_ONLY_ACCESS} from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
 import { server } from './server';
 
@@ -244,6 +252,45 @@ export function runTestAsRBACAdmin() {
       },
     },
   });
+}
+
+function runTestAsSecretsWithPermissions(permissions: Record<string, boolean>) {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    featureToggles: {
+      ...runtime.config.featureToggles,
+      accessControlOnCall: true,
+      [FeatureName.RBAC]: true,
+    },
+
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions,
+      },
+    },
+  });
+}
+
+export function runTestAsSecretsFullAccess() {
+  runTestAsSecretsWithPermissions(SECRETS_FULL_ACCESS);
+}
+
+export function runTestAsSecretsReadOnly() {
+  runTestAsSecretsWithPermissions(SECRETS_READ_ONLY_ACCESS);
+}
+
+export function runTestAsSecretsCreator() {
+  runTestAsSecretsWithPermissions(SECRETS_CREATOR_ACCESS);
+}
+
+export function runTestAsSecretsEditor() {
+  runTestAsSecretsWithPermissions(SECRETS_EDITOR_ACCESS);
+}
+
+export function runTestAsSecretsNoAccess() {
+  runTestAsSecretsWithPermissions(SECRETS_NO_ACCESS);
 }
 
 export function runTestAsHGFreeUserOverLimit() {
