@@ -658,12 +658,16 @@ export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 export enum CheckAlertType {
   ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
   TLSTargetCertificateCloseToExpiring = 'TLSTargetCertificateCloseToExpiring',
+  HTTPRequestDurationTooHighAvg = 'HTTPRequestDurationTooHighAvg',
+  PingRequestDurationTooHighAvg = 'PingRequestDurationTooHighAvg',
+  DNSRequestDurationTooHighAvg = 'DNSRequestDurationTooHighAvg',
 }
 
 export enum CheckAlertCategory {
   TLSCertificate = 'TLS Certificate',
   RequestDuration = 'Request Duration',
   FailedChecks = 'Failed Checks',
+  Latency = 'Latency',
 }
 
 export enum CheckAlertError {

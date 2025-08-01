@@ -21,7 +21,7 @@ const baseCheckModel = ({ sequence }: { sequence: number }) => ({
   id: sequence,
   job: faker.lorem.word(),
   target: faker.internet.domainName(),
-  frequency: faker.number.int({ min: 1, max: 60 * 1000 }),
+  frequency: faker.number.int({ min: 1000, max: 60 * 1000 }),
   timeout: faker.number.int({ min: 30, max: 60 * 1000 }),
   enabled: true,
   alertSensitivity: faker.helpers.arrayElement(Object.values(AlertSensitivity)),
@@ -257,6 +257,7 @@ export const db = {
   alert: Factory.define<CheckAlertPublished>(() => ({
     name: faker.helpers.arrayElement(Object.values(CheckAlertType)),
     threshold: faker.number.int({ min: 50, max: 500 }),
+    period: faker.helpers.arrayElement(['5m', '10m', '15m', '30m', '1h']),
     created: Math.floor(faker.date.past().getTime() / 1000),
     modified: Math.floor(faker.date.recent().getTime() / 1000),
     status: "OK",

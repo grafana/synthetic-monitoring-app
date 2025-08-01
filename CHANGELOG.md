@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.33.0...v1.33.1) (2025-07-28)
+
+
+### Fixes
+
+* github actions staging value passthrough ([#1208](https://github.com/grafana/synthetic-monitoring-app/issues/1208)) ([df58967](https://github.com/grafana/synthetic-monitoring-app/commit/df589679753fc33d09221c603255377dd78cbe5d))
+
 ## [1.33.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.32.0...v1.33.0) (2025-07-24)
 
 

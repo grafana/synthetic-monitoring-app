@@ -38,6 +38,8 @@ export interface TFCheckConfig {
   [key: string]: TFCheck;
 }
 
+export type TFHttpCompressionAlgo = 'none' | 'identity' | 'gzip' | 'br' | 'deflate';
+
 export interface TFCheck {
   job: string;
   target: string;
@@ -140,6 +142,7 @@ interface TFHttpSettings
     | 'failIfHeaderMatchesRegexp'
     | 'failIfHeaderNotMatchesRegexp'
     | 'cacheBustingQueryParamName'
+    | 'compression'
   > {
   basic_auth?: BasicAuth;
   bearer_token?: string;
@@ -157,6 +160,7 @@ interface TFHttpSettings
   tls_config?: TFTlsConfig;
   valid_http_versions?: string[];
   valid_status_codes?: number[];
+  compression?: TFHttpCompressionAlgo;
 }
 
 interface TFPingSettings {
