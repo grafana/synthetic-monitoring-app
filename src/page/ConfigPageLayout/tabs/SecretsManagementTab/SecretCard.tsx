@@ -5,6 +5,7 @@ import { css } from '@emotion/css';
 
 import { SecretWithMetadata } from './types';
 import { formatDate } from 'utils';
+import { getUserPermissions } from 'data/permissions';
 
 interface SecretCardProps {
   secret: SecretWithMetadata;
@@ -14,6 +15,8 @@ interface SecretCardProps {
 
 export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
   const styles = useStyles2(getStyles);
+  const { canUpdateSecrets, canDeleteSecrets } = getUserPermissions();
+
   const handleEdit = () => {
     onEdit(secret.name);
   };
@@ -21,6 +24,8 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
   const handleDelete = () => {
     onDelete(secret.name);
   };
+
+  const hasAnyActions = canUpdateSecrets || canDeleteSecrets;
 
   return (
     <div className={styles.card}>
@@ -33,25 +38,31 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
             <Tag key={label.name} colorIndex={3} name={`${label.name}: ${label.value}`} />
           ))}
         </div>
-        <div className={styles.actions}>
-          <Button
-            aria-label={`Edit ${secret.name}`}
-            size="sm"
-            icon="edit"
-            fill="outline"
-            variant="secondary"
-            onClick={handleEdit}
-          >
-            Edit
-          </Button>
-          <Button
-            aria-label={`Delete ${secret.name}`}
-            size="sm"
-            icon="trash-alt"
-            variant="secondary"
-            onClick={handleDelete}
-          />
-        </div>
+        {hasAnyActions && (
+          <div className={styles.actions}>
+            {canUpdateSecrets && (
+              <Button
+                aria-label={`Edit ${secret.name}`}
+                size="sm"
+                icon="edit"
+                fill="outline"
+                variant="secondary"
+                onClick={handleEdit}
+              >
+                Edit
+              </Button>
+            )}
+            {canDeleteSecrets && (
+              <Button
+                aria-label={`Delete ${secret.name}`}
+                size="sm"
+                icon="trash-alt"
+                variant="secondary"
+                onClick={handleDelete}
+              />
+            )}
+          </div>
+        )}
       </div>
       <div className={styles.keyValue}>
         <strong>ID:</strong> {secret.uuid}{' '}

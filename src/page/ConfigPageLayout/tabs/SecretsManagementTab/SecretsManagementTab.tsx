@@ -7,13 +7,13 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 import { SecretsManagementUI } from './SecretsManagementUI';
 
 export function SecretsManagementTab() {
-  const { isAdmin } = getUserPermissions();
+  const { canReadSecrets } = getUserPermissions();
 
-  if (!isAdmin) {
+  if (!canReadSecrets) {
     return (
-      <ContactAdminAlert 
-        title="Contact an admin: currently only admins are able to add, view, or remove secrets"
-        missingPermissions={['Admin role']}
+      <ContactAdminAlert
+        title="Contact an admin: you don't have permissions to view secrets"
+        missingPermissions={['secret.securevalues:read']}
       />
     );
   }
