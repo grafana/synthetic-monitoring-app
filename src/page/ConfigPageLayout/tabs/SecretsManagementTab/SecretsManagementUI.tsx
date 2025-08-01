@@ -3,6 +3,7 @@ import { Button, ConfirmModal, EmptyState } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { SecretWithUuid } from './types';
+import { getUserPermissions } from 'data/permissions';
 import { useDeleteSecret, useSecrets } from 'data/useSecrets';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 
@@ -16,6 +17,7 @@ export function SecretsManagementUI() {
   const [deleteMode, setDeleteMode] = useState<SecretWithUuid | undefined>();
   const { data: secrets, isLoading, isFetching } = useSecrets();
   const deleteSecret = useDeleteSecret();
+  const { canCreateSecrets } = getUserPermissions();
   const emptyState = secrets?.length === 0;
 
   const existingNames = secrets?.map((secret) => secret.name) ?? [];
@@ -47,23 +49,32 @@ export function SecretsManagementUI() {
             variant="call-to-action"
             message="You don't have any secrets yet."
             button={
-              <Button onClick={handleAddSecret} icon="plus">
-                Create secret
-              </Button>
+              canCreateSecrets ? (
+                <Button onClick={handleAddSecret} icon="plus">
+                  Create secret
+                </Button>
+              ) : undefined
             }
           >
             You can use secrets to store private information such as passwords, API keys, and other sensitive data.
+            {!canCreateSecrets && (
+              <div style={{ marginTop: '16px', fontSize: '14px', color: '#6c757d' }}>
+                Contact an admin to create secrets.
+              </div>
+            )}
           </EmptyState>
         </ConfigContent>
       ) : (
         <ConfigContent
           title="Secrets management"
           actions={
-            <div>
-              <Button size="sm" icon="plus" onClick={handleAddSecret}>
-                Create secret
-              </Button>
-            </div>
+            canCreateSecrets ? (
+              <div>
+                <Button size="sm" icon="plus" onClick={handleAddSecret}>
+                  Create secret
+                </Button>
+              </div>
+            ) : undefined
           }
         >
           <div>
