@@ -14,7 +14,7 @@ import {
   CheckTypeGroup,
   FeatureName,
 } from '../../types';
-import { LayoutSection } from './FormLayouts/Layout.types';
+import { LayoutSection, Section } from './FormLayouts/Layout.types';
 import { AppRoutes } from 'routing/types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
@@ -278,6 +278,7 @@ export function useCheckTypeFormLayout(checkType: CheckType) {
       uptimeFields: uptimeFields ?? [],
       probesFields: probesFields ?? [],
       labelsFields: labelsFields ?? [],
+      alertsFields: [`alerts`, `alertSensitivity`] as Section<CheckFormValues>['fields'],
       CheckComponent,
       UptimeComponent,
       ProbesComponent,
