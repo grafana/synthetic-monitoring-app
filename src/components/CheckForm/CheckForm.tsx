@@ -62,11 +62,10 @@ function CheckFormInternal() {
   const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
 
   const formMethods = useFormContext<CheckFormValues>();
-  
-  // CheckSidePanel functionality
   const isCheckSidePanelEnabled = useFeatureFlag(FeatureName.CheckSidePanel).isEnabled;
   const styles = useStyles2(getCheckFormStyles);
   
+  const sidePanelStyles = useStyles2(getSidePanelFormStyles);
   const {
     containerProps: { className: containerClassName, ...containerProps },
     primaryProps,
@@ -219,7 +218,7 @@ function CheckFormInternal() {
         <div {...containerProps} className={cx(containerClassName, styles.container)}>
           <div {...primaryProps} className={styles.primarySection}>
             <Box grow={1} padding={2} backgroundColor="primary">
-              {formContent}
+              <div className={sidePanelStyles.wrapper}>{formContent}</div>
             </Box>
           </div>
           <div {...splitterProps} />
@@ -227,7 +226,6 @@ function CheckFormInternal() {
             <CheckSidePanelView />
           </div>
         </div>
-        <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
         <ConfirmLeavingPage enabled={hasUnsavedChanges} />
       </>
     );
@@ -265,5 +263,42 @@ const getCheckFormStyles = (theme: any) => ({
   primarySection: css`
     height: 100%;
     overflow: auto;
+  `,
+});
+
+const getSidePanelFormStyles = (theme: any) => ({
+  wrapper: css`
+    height: 100%;
+    min-width: 0;
+    
+    /* Single column layout with horizontal steps at top */
+    & > div > div:first-child {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      height: 100%;
+      gap: ${theme.spacing(2)};
+    }
+    
+    /* Horizontal form navigation */
+    & ol[data-testid='form-sidebar'] {
+      display: flex;
+      align-items: center;
+      border-right: none;
+      border-bottom: 1px solid ${theme.colors.border.medium};
+      padding: ${theme.spacing(1)} 0;
+      margin: 0;
+      list-style-type: none;
+      overflow-x: auto;
+    }
+    
+    /* Step dividers */
+    & ol[data-testid='form-sidebar'] > div {
+      border-bottom: 2px solid ${theme.colors.border.medium};
+      margin: 0 ${theme.spacing(0.5)};
+      width: ${theme.spacing(2)};
+      border-left: none;
+      height: auto;
+    }
   `,
 });
