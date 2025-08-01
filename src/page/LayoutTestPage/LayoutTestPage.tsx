@@ -17,8 +17,9 @@ import {
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { CheckFormValues, CheckPageParams } from '../../types';
+import { CheckFormValues, CheckPageParams, FeatureName } from '../../types';
 import { useAdHocCheck, useChecks } from 'data/useChecks';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 import { toPayload } from '../../components/CheckEditor/checkFormTransformations';
 import { CheckForm } from '../../components/CheckForm/CheckForm';
@@ -58,6 +59,7 @@ function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
   const { check, checkType, checkState } = useCheckFormMetaContext();
   const methods = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
+  const isCheckSidePanelEnabled = useFeatureFlag(FeatureName.CheckSidePanel).isEnabled;
   const {
     containerProps: { className: containerClassName, ...containerProps },
     primaryProps,
@@ -267,14 +269,15 @@ function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
   return (
     <PluginPage layout={PageLayoutType.Custom} pageNav={{ text: 'Edit check' }}>
       <div {...containerProps} className={cx(containerClassName, styles.container)}>
-        <div {...primaryProps}>
+        <div {...primaryProps} className={styles.primarySection}>
           <Box grow={1} padding={2} backgroundColor="primary">
             <CheckForm />
           </Box>
         </div>
-        <div {...splitterProps} />
-        <div {...secondaryProps}>
-          <div className={styles.rightAside}>
+        {isCheckSidePanelEnabled && <div {...splitterProps} />}
+        {isCheckSidePanelEnabled && (
+          <div {...secondaryProps}>
+            <div className={styles.rightAside}>
             <Box grow={1} backgroundColor="primary" padding={2} maxHeight={{ xs: '100%' }}>
               {isError && (
                 <Alert title="AdHocError" severity="error">
@@ -391,6 +394,7 @@ function LayoutTestPageContent({ isLoading }: { isLoading: boolean }) {
             </Box>
           </div>
         </div>
+        )}
       </div>
     </PluginPage>
   );
@@ -442,6 +446,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     height: 100%;
     overflow: hidden;
     flex: 1 1 0;
+  `,
+  primarySection: css`
+    max-height: 100%;
+    overflow: auto;
   `,
   rightAside: css`
     min-width: ${theme.spacing(40)};
