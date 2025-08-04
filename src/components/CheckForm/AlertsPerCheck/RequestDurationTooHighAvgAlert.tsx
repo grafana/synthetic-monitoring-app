@@ -24,6 +24,7 @@ import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
 import { getAlertItemStyles } from './AlertItem';
 import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { RunbookUrl } from './RunbookUrl';
 import { ThresholdSelector } from './ThresholdSelector';
 
 export const RequestDurationTooHighAvgAlert = ({
@@ -122,6 +123,7 @@ export const RequestDurationTooHighAvgAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
+      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
     </Stack>
   );
 };

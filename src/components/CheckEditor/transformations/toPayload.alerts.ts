@@ -11,6 +11,7 @@ export function getAlertsPayload(formValues?: CheckAlertFormRecord, checkId?: nu
         name: alertType as CheckAlertType,
         threshold: alert.threshold!,
         period: alert.period ? alert.period : undefined,
+        runbookUrl: alert.runbookUrl || undefined,
       });
     }
     return alerts;
