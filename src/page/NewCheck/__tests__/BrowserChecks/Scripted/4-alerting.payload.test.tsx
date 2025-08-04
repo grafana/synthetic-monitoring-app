@@ -2,7 +2,8 @@ import { selectOption } from 'test/utils';
 
 import { AlertSensitivity, CheckType } from 'types';
 
-import { goToSection, renderNewForm, submitForm } from '../../../../__testHelpers__/checkForm';
+import { FormStepOrder } from '../../../../../components/CheckForm/constants';
+import { goToSectionV2, renderNewForm, submitForm } from '../../../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../../../__testHelpers__/scripted';
 
 const checkType = CheckType.Browser;
@@ -12,7 +13,7 @@ describe(`BrowserCheck - Section 4 (alerting)`, () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Alerting);
     await selectOption(user, { label: `Select alert sensitivity`, option: `Medium` });
 
     await submitForm(user);

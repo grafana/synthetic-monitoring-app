@@ -12,7 +12,9 @@ import {
 
 import { CheckType, FeatureName } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
-import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSectionV2, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
+
+import { FormStepOrder } from '../../../components/CheckForm/constants';
 
 describe(`<NewCheck /> journey`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
@@ -177,7 +179,7 @@ describe(`<NewCheck /> journey`, () => {
   it(`should disable the test button when the user doesn't have logs access`, async () => {
     runTestWithoutLogsAccess();
     const { user } = await renderNewForm(CheckType.HTTP);
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Alerting);
 
     const testButton = screen.getByRole(`button`, { name: /Test/ });
     expect(testButton).toBeDisabled();
@@ -225,7 +227,7 @@ describe(`<NewCheck /> journey`, () => {
     await user.type(screen.getByLabelText('Job name', { exact: false }), `Job`);
     await user.type(screen.getByLabelText(`Instance`, { exact: false }), `Instance`);
 
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
 
     const timeoutMinutesInput = screen.getByLabelText('timeout minutes input');
     const timeoutSecondsInput = screen.getByLabelText('timeout seconds input');
@@ -235,7 +237,7 @@ describe(`<NewCheck /> journey`, () => {
     await user.type(timeoutMinutesInput, '2');
     await user.type(timeoutSecondsInput, '30');
 
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Execution);
 
     await selectBasicFrequency(user, '2m');
 
@@ -256,11 +258,11 @@ describe(`<NewCheck /> journey`, () => {
 
     const { user } = await renderNewForm(CheckType.HTTP);
     await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Alerting);
     await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
     const thresholdsInput = 'alert-threshold-ProbeFailedExecutionsTooHigh';
     await user.clear(screen.getByTestId(thresholdsInput));
@@ -268,10 +270,10 @@ describe(`<NewCheck /> journey`, () => {
     await submitForm(user);
     expect(screen.getByRole('alert')).toBeInTheDocument();
 
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Execution);
     await selectBasicFrequency(user, '10s');
 
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Alerting);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
