@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.33.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.33.1...v1.33.2) (2025-08-04)
+
+
+### Features
+
+* add new latency alerts ([#1188](https://github.com/grafana/synthetic-monitoring-app/issues/1188)) ([81a5917](https://github.com/grafana/synthetic-monitoring-app/commit/81a59172c5b6cf3c0fb453903bb3a6ca0753953d))
+* per check alerts runbooks UI support ([#1173](https://github.com/grafana/synthetic-monitoring-app/issues/1173)) ([80d78e2](https://github.com/grafana/synthetic-monitoring-app/commit/80d78e2085e858b8053c76f5bfa6a8bc7a6e52be))
+
+
+### Fixes
+
+* restrict secrets tab usage to admin users ([#1213](https://github.com/grafana/synthetic-monitoring-app/issues/1213)) ([be7475a](https://github.com/grafana/synthetic-monitoring-app/commit/be7475ae6c426a92886c617a10a08af50a4c1082))
+
 ## [1.33.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.33.0...v1.33.1) (2025-07-28)
 
 

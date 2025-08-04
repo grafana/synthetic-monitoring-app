@@ -8,7 +8,7 @@ import { ZodType } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
-import { ANALYTICS_STEP_MAP, FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
+import { FORM_MAX_WIDTH, FORM_SECTION_STEPS, SectionName } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 import { useFormLayoutInternal } from './formlayout.utils';
 import { FormSection } from './FormSection';
@@ -25,6 +25,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   children: ReactNode;
   checkState: 'new' | 'existing';
   checkType: CheckType;
+  initialSection?: SectionName;
   onSubmit: (
     onValid: SubmitHandler<T>,
     onInvalid: (errs: FieldErrors<T>) => void
@@ -42,6 +43,7 @@ export const FormLayout = <T extends FieldValues>({
   checkState,
   checkType,
   children,
+  initialSection = FORM_SECTION_STEPS[0],
   onSubmit,
   onValid,
   onInvalid,
@@ -127,7 +129,7 @@ export const FormLayout = <T extends FieldValues>({
                         checkState,
                         checkType,
                         component: 'back-button',
-                        step: ANALYTICS_STEP_MAP[newStep],
+                        step: FORM_SECTION_STEPS[newStep],
                       });
                       goToSection(newStep);
                     }}
@@ -151,7 +153,7 @@ export const FormLayout = <T extends FieldValues>({
                         checkState,
                         checkType,
                         component: 'forward-button',
-                        step: ANALYTICS_STEP_MAP[newStep],
+                        step: FORM_SECTION_STEPS[newStep],
                       });
                       goToSection(newStep);
                     }}

@@ -1,4 +1,6 @@
+import { useCallback, useState } from 'react';
 import { FieldPath, FieldValues } from 'react-hook-form';
+import { uniq } from 'lodash';
 import { ZodType } from 'zod';
 
 import { useFormLayoutContextExtended } from './FormLayoutContext';
@@ -11,6 +13,37 @@ export const ENTRY_INDEX_CHAR = `-1`;
 
 export function useFormLayoutInternal() {
   return useFormLayoutContextExtended();
+}
+
+export function useFormLayout(disabled?: boolean, initialSection = 0) {
+  const [visitedSections, setVisitedSections] = useState<number[]>([]);
+  const [activeSection, setActiveSection] = useState(initialSection);
+
+  const setVisited = useCallback(
+    (visited: number[]) => {
+      if (!disabled) {
+        setVisitedSections((prev) => uniq([...prev, ...visited]));
+      }
+    },
+    [disabled]
+  );
+
+  const goToSection = useCallback(
+    (index: number) => {
+      setActiveSection(index);
+      const previous = new Array(index).fill(0).map((_, i) => i);
+      setVisited(previous);
+    },
+    [setVisited]
+  );
+
+  return {
+    activeSection,
+    goToSection,
+    setActiveSection,
+    setVisited,
+    visitedSections,
+  };
 }
 
 export function checkForErrors<T extends FieldValues>({
