@@ -134,11 +134,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
