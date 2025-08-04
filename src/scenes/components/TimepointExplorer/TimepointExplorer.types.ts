@@ -1,5 +1,4 @@
-import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
-import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
 export type UnixTimestamp = number;
@@ -49,8 +48,8 @@ export type CheckConfig = {
 
 export interface ExecutionsInTimepoint {
   probe: string;
-  execution: ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>;
-  id: string;
+  execution: ExecutionEndedLog;
+  id: string; // id'd by using the log id of the ending log
 }
 
 export interface StatefulTimepoint {
@@ -61,15 +60,3 @@ export interface StatefulTimepoint {
   executions: ExecutionsInTimepoint[];
   maxProbeDuration: number;
 }
-
-export type TimepointVizOption = {
-  border: string;
-  backgroundColor: string;
-  color: string;
-};
-
-export type TimepointVizOptions = {
-  success: TimepointVizOption;
-  failure: TimepointVizOption;
-  unknown: TimepointVizOption;
-};

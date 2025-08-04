@@ -1,20 +1,25 @@
 import { MSG_STRINGS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
-import { CheckLogs, ParsedCheckLog, PerCheckLogs, UnknownCheckLog } from 'features/parseCheckLogs/checkLogs.types';
+import {
+  ExecutionLogs,
+  ParsedExecutionLog,
+  PerExecutionLogs,
+  UnknownExecutionLog,
+} from 'features/parseCheckLogs/checkLogs.types';
 
-export function parseCheckLogs(logs: UnknownCheckLog[]): PerCheckLogs[] {
+export function parseCheckLogs(logs: UnknownExecutionLog[]): PerExecutionLogs[] {
   const groupedByProbe = groupByProbe(logs);
   const groupedByCheck = Object.entries(groupedByProbe).map(([probe, logs]) => ({
     probe,
-    checks: groupByCheck(logs),
+    executions: groupByExecution(logs),
     id: logs[logs.length - 1].id, // use the last log id to id the check
   }));
 
   return groupedByCheck;
 }
 
-export function groupByProbe(orderedLogs: ParsedCheckLog[]) {
-  const res = orderedLogs.reduce<Record<string, ParsedCheckLog[]>>((acc, log) => {
+export function groupByProbe(orderedLogs: ParsedExecutionLog[]) {
+  const res = orderedLogs.reduce<Record<string, ParsedExecutionLog[]>>((acc, log) => {
     const probe = log.labels.probe;
 
     if (!acc[probe]) {
@@ -29,7 +34,7 @@ export function groupByProbe(orderedLogs: ParsedCheckLog[]) {
   return res;
 }
 
-export function groupByCheck(logs: UnknownCheckLog[]): CheckLogs[] {
+export function groupByExecution(logs: UnknownExecutionLog[]): ExecutionLogs[] {
   const completeFromStart = discardIncompleteChecks({
     logs,
     matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],
@@ -41,21 +46,21 @@ export function groupByCheck(logs: UnknownCheckLog[]): CheckLogs[] {
     reverse: true,
   });
 
-  const checks = [];
-  let check = [];
+  const executions = [];
+  let execution = [];
 
   for (const log of completeFromEnd) {
     const msg = log.labels.msg;
 
-    check.push(log);
+    execution.push(log);
 
     if ([MSG_STRINGS_COMMON.CheckFailed, MSG_STRINGS_COMMON.CheckSucceeded].includes(msg)) {
-      checks.push(check);
-      check = [];
+      executions.push(execution);
+      execution = [];
     }
   }
 
-  return checks as CheckLogs[];
+  return executions as ExecutionLogs[];
 }
 
 export function discardIncompleteChecks({
@@ -63,7 +68,7 @@ export function discardIncompleteChecks({
   matchMsg,
   reverse = false,
 }: {
-  logs: UnknownCheckLog[];
+  logs: UnknownExecutionLog[];
   matchMsg: string[];
   reverse?: boolean;
 }) {

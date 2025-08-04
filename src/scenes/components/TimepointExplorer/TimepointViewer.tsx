@@ -4,11 +4,12 @@ import { Box, Stack, Text } from '@grafana/ui';
 import { Check } from 'types';
 import { formatDuration } from 'utils';
 import { CenteredSpinner } from 'components/CenteredSpinner';
+import { useSceneVar } from 'scenes/Common/useSceneVar';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { useTimepointLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.hooks';
-import { TimepointViewerProbes } from 'scenes/components/TimepointExplorer/TimepointViewerProbes';
+import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
   const { check, selectedTimepoint } = useTimepointExplorerContext();
@@ -30,10 +31,13 @@ export const TimepointViewer = () => {
 
 const TimepointViewerContent = ({ timepoint, check }: { timepoint: StatelessTimepoint; check: Check }) => {
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
+  const probe = useSceneVar('probe');
+
   const { data, isLoading } = useTimepointLogs({
     timepoint,
     job: check.job,
     instance: check.target,
+    probe,
   });
 
   const onChangeLogsView = useCallback((view: LogsView) => {
@@ -43,7 +47,7 @@ const TimepointViewerContent = ({ timepoint, check }: { timepoint: StatelessTime
   return (
     <Stack direction={`column`} gap={1}>
       <TimepointHeader timepoint={timepoint} onChangeLogsView={onChangeLogsView} />
-      {isLoading ? <CenteredSpinner /> : <TimepointViewerProbes check={check} logsView={logsView} data={data} />}
+      {isLoading ? <CenteredSpinner /> : <TimepointViewerExecutions check={check} logsView={logsView} data={data} />}
     </Stack>
   );
 };

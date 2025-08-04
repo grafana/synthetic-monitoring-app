@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Stack, Text, useStyles2 } from '@grafana/ui';
+import { ColorPicker, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { PlainButton } from 'components/PlainButton';
@@ -11,7 +11,7 @@ const VIZ_STATES = [`failure`, `success`, `unknown`] as const;
 
 export const TimepointListVizLegend = () => {
   const styles = useStyles2(getStyles);
-  const { handleVizDisplayChange, vizDisplay } = useTimepointExplorerContext();
+  const { handleVizDisplayChange, vizDisplay, vizOptions, handleVizOptionChange } = useTimepointExplorerContext();
 
   return (
     <Stack gap={1.5}>
@@ -20,9 +20,18 @@ export const TimepointListVizLegend = () => {
 
         return (
           <Stack key={value} alignItems="center">
-            <PlainButton onClick={() => {}}>
-              <TimepointVizItem className={styles.legendItem} state={value} />
-            </PlainButton>
+            <ColorPicker color={vizOptions[value]} onChange={(color) => handleVizOptionChange(value, color)}>
+              {({ ref, showColorPicker, hideColorPicker }) => (
+                <PlainButton
+                  onClick={() => {
+                    showColorPicker();
+                  }}
+                  onMouseLeave={hideColorPicker}
+                >
+                  <TimepointVizItem ref={ref} className={styles.legendItem} state={value} />
+                </PlainButton>
+              )}
+            </ColorPicker>
             <PlainButton
               onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
                 const { ctrlKey, metaKey, shiftKey } = event;

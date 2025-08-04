@@ -72,6 +72,10 @@ export const TimepointMinimap = () => {
 
 const TimepointMinimapContent = () => {
   const { miniMapCurrentPageSections } = useTimepointExplorerContext();
+  const filler =
+    miniMapCurrentPageSections.length < MAX_MINIMAP_SECTIONS
+      ? Array(MAX_MINIMAP_SECTIONS - miniMapCurrentPageSections.length).fill(null)
+      : [];
 
   // todo: fix this
   if (miniMapCurrentPageSections.length === 0) {
@@ -81,8 +85,15 @@ const TimepointMinimapContent = () => {
   return (
     <Box position="relative" paddingY={2}>
       <Stack gap={0.25}>
+        {filler.map((_, index) => {
+          return <Box key={index} flex={1} />;
+        })}
         {miniMapCurrentPageSections
-          .map((section, index) => <TimepointMiniMapSection index={index} key={index} section={section} />)
+          .map((section, index) => (
+            <Box key={index} flex={1}>
+              <TimepointMiniMapSection index={index} section={section} />
+            </Box>
+          ))
           .reverse()}
       </Stack>
     </Box>

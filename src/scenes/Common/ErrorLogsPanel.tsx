@@ -7,7 +7,7 @@ import { InlineSwitch } from '@grafana/ui';
 import { parseCheckLogs } from 'features/parseCheckLogs/parseCheckLogs';
 import { parseLokiLogs } from 'features/parseLogs/parseLokiLogs';
 
-import { CheckLabels, CheckLabelType } from 'features/parseCheckLogs/checkLogs.types';
+import { ExecutionLabels, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiSeries } from 'features/parseLogs/parseLogs.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
@@ -48,7 +48,7 @@ export const ErrorLogs = ({ startingUnsuccessfulOnly = false }: { startingUnsucc
 
   if (data?.data) {
     const seriesArray = data.data.series as DataFrame[];
-    const series = seriesArray[0] as LokiSeries<CheckLabels, CheckLabelType>;
+    const series = seriesArray[0] as LokiSeries<ExecutionLabels, ExecutionLabelType>;
     console.log(series);
 
     if (series) {

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CheckLogs } from 'features/parseCheckLogs/checkLogs.types';
+import { ExecutionLogs } from 'features/parseCheckLogs/checkLogs.types';
 import { UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { LogsRaw } from 'scenes/components/LogsRenderer/LogsRaw';
@@ -30,7 +30,7 @@ export const LogsRenderer = <T extends UnknownParsedLokiRecord>({
   }
 
   if (logsView === 'trace') {
-    const trace = checkToTrace(logs as unknown as CheckLogs);
+    const trace = checkToTrace(logs as unknown as ExecutionLogs);
     return <TraceAndSpans trace={trace} />;
   }
 

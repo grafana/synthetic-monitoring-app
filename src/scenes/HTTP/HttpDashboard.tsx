@@ -27,7 +27,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
     <DashboardContainer check={check} checkType={CheckType.HTTP}>
       <TimepointExplorer check={check} />
 
-      {/* <div className={styles.vizLayout}>
+      <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
         </div>
@@ -52,7 +52,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
             <ResponseLatencyByProbe />
           </div>
         </div>
-      </div> */}
+      </div>
     </DashboardContainer>
   );
 };

@@ -5,23 +5,17 @@ import { css } from '@emotion/css';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
 import {
-  TIMEPOINT_GAP,
   TIMEPOINT_LIST_ID,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointListAnnotations } from 'scenes/components/TimepointExplorer/TimepointListAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 import { TimepointListVizLegend } from 'scenes/components/TimepointExplorer/TimepointListVizLegend';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
 import { YAxis } from 'scenes/components/TimepointExplorer/YAxis';
 
-interface TimepointListProps {
-  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
-}
-
-export const TimepointList = ({ timeRange }: TimepointListProps) => {
+export const TimepointList = () => {
   const ref = useRef<HTMLDivElement>(null);
 
   const {
@@ -79,7 +73,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   timepoints: css`
     display: flex;
     flex-direction: row;
-    gap: ${theme.spacing(TIMEPOINT_GAP)};
     align-items: end;
     height: ${theme.spacing(TIMEPOINT_THEME_HEIGHT)};
     justify-content: end;

@@ -1,31 +1,32 @@
 import React from 'react';
 import { Icon, Stack, Tab, TabContent, TabsBar } from '@grafana/ui';
 
-import { ParsedCheckLog, PerCheckLogs } from 'features/parseCheckLogs/checkLogs.types';
+import { ParsedExecutionLog, PerExecutionLogs } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { getExecutionIdFromLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.utils';
 
-interface TimepointViewerProbesProps {
+interface TimepointViewerExecutionsProps {
   check: Check;
   logsView: LogsView;
-  data: PerCheckLogs[];
+  data: PerExecutionLogs[];
 }
 
-export const TimepointViewerProbes = ({ check, data, logsView }: TimepointViewerProbesProps) => {
-  const { handleSelectedTimepointChange, selectedTimepoint } = useTimepointExplorerContext();
-  const [timepoint, checkToView] = selectedTimepoint;
+export const TimepointViewerExecutions = ({ check, data, logsView }: TimepointViewerExecutionsProps) => {
+  const { handleExecutionHover, handleSelectedTimepointChange, selectedTimepoint } = useTimepointExplorerContext();
+  const [timepoint, executionToView] = selectedTimepoint;
 
   return (
     <>
       <TabsBar>
-        {data.map(({ probe, checks }) => {
-          return checks.map((check) => {
-            const id = check[check.length - 1].id;
-            const active = id === checkToView;
-            const probeStatus = check[0]?.[LokiFieldNames.Labels]?.probe_success;
+        {data.map(({ probe, executions }) => {
+          return executions.map((execution) => {
+            const id = getExecutionIdFromLogs(execution);
+            const active = id === executionToView;
+            const probeStatus = execution[0]?.[LokiFieldNames.Labels]?.probe_success;
             const isSuccess = probeStatus === '1';
 
             return (
@@ -33,10 +34,12 @@ export const TimepointViewerProbes = ({ check, data, logsView }: TimepointViewer
                 key={probe}
                 // @ts-expect-error - it accepts components despite its type
                 label={
-                  <Stack direction="row">
-                    <div>{probe}</div>
-                    <Icon name={isSuccess ? 'check' : 'times'} color={isSuccess ? 'green' : 'red'} />
-                  </Stack>
+                  <div onMouseEnter={() => handleExecutionHover(id)} onMouseLeave={() => handleExecutionHover(null)}>
+                    <Stack direction="row">
+                      <div>{probe}</div>
+                      <Icon name={isSuccess ? 'check' : 'times'} color={isSuccess ? 'green' : 'red'} />
+                    </Stack>
+                  </div>
                 }
                 active={active}
                 onChangeTab={() => {
@@ -50,17 +53,17 @@ export const TimepointViewerProbes = ({ check, data, logsView }: TimepointViewer
         })}
       </TabsBar>
       <TabContent>
-        {data.map(({ probe, checks }) => {
-          return checks.map((execution) => {
-            const id = execution[execution.length - 1].id;
-            const active = id === checkToView;
+        {data.map(({ probe, executions }) => {
+          return executions.map((execution) => {
+            const id = getExecutionIdFromLogs(execution);
+            const active = id === executionToView;
 
             if (!active) {
               return null;
             }
 
             return (
-              <LogsRenderer<ParsedCheckLog>
+              <LogsRenderer<ParsedExecutionLog>
                 check={check}
                 key={probe}
                 logs={execution}

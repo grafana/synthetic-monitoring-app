@@ -3,17 +3,17 @@ import { MSG_STRINGS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.
 import { Factory } from 'fishery';
 
 import {
-  CheckFailedLog,
-  CheckLabelType,
-  CheckLogs,
-  CheckSucceededLog,
-  PerCheckLogs,
+  ExecutionFailedLog,
+  ExecutionLabelType,
+  ExecutionLogs,
+  ExecutionSucceededLog,
+  PerExecutionLogs,
   StartingLog,
 } from 'features/parseCheckLogs/checkLogs.types';
 import { CheckType } from 'types';
 
 // Factory for CheckLabelType
-const checkLabelTypeFactory = Factory.define<CheckLabelType>(() => ({
+const checkLabelTypeFactory = Factory.define<ExecutionLabelType>(() => ({
   check_name: 'I',
   detected_level: 'S',
   instance: 'I',
@@ -41,7 +41,7 @@ const createStartingLog = (probeName: string, time: number): StartingLog => ({
   id: faker.string.uuid(),
 });
 
-const createSucceededLog = (probeName: string, time: number): CheckSucceededLog => ({
+const createSucceededLog = (probeName: string, time: number): ExecutionSucceededLog => ({
   Time: time,
   tsNs: time * 1000,
   labels: {
@@ -62,7 +62,7 @@ const createSucceededLog = (probeName: string, time: number): CheckSucceededLog 
   id: faker.string.uuid(),
 });
 
-const createFailedLog = (probeName: string, time: number): CheckFailedLog => ({
+const createFailedLog = (probeName: string, time: number): ExecutionFailedLog => ({
   Time: time,
   tsNs: time * 1000,
   labels: {
@@ -84,11 +84,11 @@ const createFailedLog = (probeName: string, time: number): CheckFailedLog => ({
 });
 
 // Factory for PerCheckLogs
-export const perCheckLogsFactory = Factory.define<PerCheckLogs>(({ sequence }) => {
+export const perCheckLogsFactory = Factory.define<PerExecutionLogs>(({ sequence }) => {
   const probeName = `probe${sequence + 1}`;
   const checkCount = faker.number.int({ min: 1, max: 3 });
 
-  const checks = Array.from({ length: checkCount }, (_, checkIndex) => {
+  const executions = Array.from({ length: checkCount }, (_, checkIndex) => {
     const baseTime = faker.date.recent().getTime() - checkIndex * 60000; // Spread checks over time
     const isSuccess = faker.datatype.boolean();
     const endTime = baseTime + faker.number.int({ min: 100, max: 10000 });
@@ -96,12 +96,12 @@ export const perCheckLogsFactory = Factory.define<PerCheckLogs>(({ sequence }) =
     const startingLog = createStartingLog(probeName, baseTime);
     const endingLog = isSuccess ? createSucceededLog(probeName, endTime) : createFailedLog(probeName, endTime);
 
-    return [startingLog, endingLog] as CheckLogs;
+    return [startingLog, endingLog] as ExecutionLogs;
   });
 
   return {
     probe: probeName,
-    checks: checks,
+    executions: executions,
   };
 });
 
@@ -119,7 +119,7 @@ export const createPerCheckLogsForTimeRange = (
     const probeName = `probe${index + 1}`;
     const checkCount = 2;
 
-    const checks = Array.from({ length: checkCount }, (_, checkIndex) => {
+    const executions = Array.from({ length: checkCount }, (_, checkIndex) => {
       // Create some logs within the timepoint range and some outside
       const isInRange = checkIndex === 0;
       const baseTime = isInRange
@@ -131,12 +131,12 @@ export const createPerCheckLogsForTimeRange = (
       const startingLog = createStartingLog(probeName, baseTime);
       const endingLog = createSucceededLog(probeName, endTime);
 
-      return [startingLog, endingLog] as CheckLogs;
+      return [startingLog, endingLog] as ExecutionLogs;
     });
 
     return {
       probe: probeName,
-      checks: checks,
+      executions,
     };
   });
 };

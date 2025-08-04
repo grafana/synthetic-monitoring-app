@@ -27,14 +27,14 @@ describe(`filterProbes`, () => {
     // Verify that each probe has been processed
     result.forEach((probe, index) => {
       expect(probe.probe).toBe(`probe${index + 1}`);
-      expect(probe.checks).toBeInstanceOf(Array);
+      expect(probe.executions).toBeInstanceOf(Array);
 
       // The factory creates 2 checks per probe - one in range, one out of range
       // So after filtering, we should have 1 check per probe
-      expect(probe.checks).toHaveLength(1);
+      expect(probe.executions).toHaveLength(1);
 
       // Verify the remaining check is within the timepoint range
-      const remainingCheck = probe.checks[0];
+      const remainingCheck = probe.executions[0];
       const lastLog = remainingCheck[remainingCheck.length - 1];
       const timepointStart = timepoint.adjustedTime - timepoint.timepointDuration;
       const timepointEnd = timepoint.adjustedTime;

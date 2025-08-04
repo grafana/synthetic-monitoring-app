@@ -5,15 +5,19 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { formatDuration, formatSmallDurations } from 'utils';
+import { PlainButton } from 'components/PlainButton';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { getIsExecutionSelected } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface TimepointListEntryTooltipProps {
   statefulTimepoint: StatefulTimepoint;
-  hoveredCheck?: string | null;
 }
 
-export const TimepointListEntryTooltip = ({ statefulTimepoint, hoveredCheck }: TimepointListEntryTooltipProps) => {
+export const TimepointListEntryTooltip = ({ statefulTimepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
+  const { handleExecutionHover, handleSelectedTimepointChange, hoveredExecution, selectedTimepoint } =
+    useTimepointExplorerContext();
   const displayTime = new Date(statefulTimepoint.adjustedTime).toLocaleString();
   const probeCount = statefulTimepoint.executions.length;
 
@@ -39,14 +43,28 @@ export const TimepointListEntryTooltip = ({ statefulTimepoint, hoveredCheck }: T
 
       <Stack direction="column" gap={1}>
         {statefulTimepoint.executions.map((execution) => {
-          const id = execution.id;
+          const executionId = execution.id;
           const { probe, probe_success, duration_seconds } = execution.execution[LokiFieldNames.Labels];
           const isSuccess = probe_success === '1';
           const duration = Number(duration_seconds) * 1000;
+          const isSelected = getIsExecutionSelected(statefulTimepoint, executionId, selectedTimepoint);
+          const isHovered = hoveredExecution === executionId;
 
           return (
             <div key={probe} className={styles.probeRow}>
-              <span className={cx(styles.probeName, { [styles.hovered]: hoveredCheck === id })}>{probe}</span>
+              <PlainButton
+                className={cx(styles.probeName, {
+                  [styles.hovered]: isHovered,
+                  [styles.selected]: isSelected,
+                })}
+                onClick={() => {
+                  handleSelectedTimepointChange(statefulTimepoint, executionId);
+                }}
+                onMouseEnter={() => handleExecutionHover(executionId)}
+                onMouseLeave={() => handleExecutionHover(null)}
+              >
+                {probe}
+              </PlainButton>
               <Stack direction="row" gap={1} alignItems="center">
                 <Badge color={isSuccess ? 'green' : 'red'} text={isSuccess ? 'Success' : 'Fail'} />
                 <span className={styles.duration}>{formatSmallDurations(duration)}</span>
@@ -96,8 +114,15 @@ const getStyles = (theme: GrafanaTheme2) => ({
   hovered: css`
     text-decoration: underline;
   `,
+  selected: css`
+    font-weight: 700;
+  `,
   probeName: css`
     font-size: ${theme.typography.bodySmall.fontSize};
+
+    &:hover {
+      text-decoration: underline;
+    }
   `,
   duration: css`
     font-size: ${theme.typography.bodySmall.fontSize};

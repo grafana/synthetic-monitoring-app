@@ -5,7 +5,7 @@ import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
 
-import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
+import { EndingLogLabels, ExecutionLabels, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
 import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
@@ -50,13 +50,15 @@ interface UseExecutionEndingLogsProps {
   timeRange: { from: UnixTimestamp; to: UnixTimestamp };
   check: Check;
   timepoints: StatelessTimepoint[];
+  probe?: string[];
 }
 
-export function useExecutionEndingLogs({ timeRange, check, timepoints }: UseExecutionEndingLogsProps) {
+export function useExecutionEndingLogs({ timeRange, check, timepoints, probe }: UseExecutionEndingLogsProps) {
   const [logsMap, setLogsMap] = useState<Record<UnixTimestamp, StatefulTimepoint>>({});
+  const probeExpr = probe?.join('|') || '.*';
 
   const onSuccess = useCallback(
-    (data: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>) => {
+    (data: Array<ParsedLokiRecord<ExecutionLabels & EndingLogLabels, ExecutionLabelType>>) => {
       setLogsMap((prev) => ({
         ...prev,
         ...buildLogsMap(data, timepoints, check),
@@ -70,9 +72,9 @@ export function useExecutionEndingLogs({ timeRange, check, timepoints }: UseExec
     hasNextPage,
     data: logsData = [],
     ...rest
-  } = usePersistedInfiniteLogs<CheckLabels & EndingLogLabels, CheckLabelType>({
+  } = usePersistedInfiniteLogs<ExecutionLabels & EndingLogLabels, ExecutionLabelType>({
     refId: REF_ID_CHECK_LOGS,
-    expr: `{job="${check.job}", instance="${check.target}"} | logfmt |="duration_seconds="`,
+    expr: `{job="${check.job}", instance="${check.target}", probe=~"${probeExpr}"} | logfmt |="duration_seconds="`,
     start: timeRange.from,
     end: timeRange.to,
   });
@@ -94,12 +96,6 @@ export function useExecutionEndingLogs({ timeRange, check, timepoints }: UseExec
   };
 }
 
-interface UseCheckConfigsProps {
-  timeRange: TimeRange;
-  check: Check;
-  refetchInterval?: number;
-}
-
 function usePersistedInfiniteLogs<T, R>(props: InfiniteLogsParams<T, R>) {
   const [persistedLogsData, setPersistedLogsData] = useState<Array<ParsedLokiRecord<T, R>>>([]);
 
@@ -118,10 +114,17 @@ function usePersistedInfiniteLogs<T, R>(props: InfiniteLogsParams<T, R>) {
   };
 }
 
-export function usePersistedCheckConfigs({ timeRange, check, refetchInterval }: UseCheckConfigsProps) {
+interface UseCheckConfigsProps {
+  timeRange: TimeRange;
+  check: Check;
+  refetchInterval?: number;
+  probe?: string[];
+}
+
+export function usePersistedCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckConfigsProps) {
   const [persistedCheckConfigs, setPersistedCheckConfigs] = useState<CheckConfig[]>([]);
 
-  const { data = [], ...rest } = useCheckConfigs({ timeRange, check, refetchInterval });
+  const { data = [], ...rest } = useCheckConfigs({ timeRange, check, probe, refetchInterval });
 
   useEffect(() => {
     if (data.length > 0) {
@@ -132,11 +135,12 @@ export function usePersistedCheckConfigs({ timeRange, check, refetchInterval }: 
   return { data: persistedCheckConfigs, ...rest };
 }
 
-function useCheckConfigs({ timeRange, check, refetchInterval }: UseCheckConfigsProps) {
+function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckConfigsProps) {
   const metricsDS = useMetricsDS();
   const { expr, queryType } = getCheckConfigsQuery({
     job: check.job,
     instance: check.target,
+    probe: probe?.join('|'),
   });
 
   return useQuery({
@@ -178,12 +182,13 @@ interface UseMaxProbeDurationProps {
   timeRange: TimeRange;
   check: Check;
   refetchInterval?: number;
+  probe?: string[];
 }
 
-export function usePersistedMaxProbeDuration({ timeRange, check }: UseMaxProbeDurationProps) {
+export function usePersistedMaxProbeDuration({ timeRange, check, probe }: UseMaxProbeDurationProps) {
   const [persistedMaxProbeDuration, setPersistedMaxProbeDuration] = useState<number>(0);
 
-  const { data = 0, ...rest } = useMaxProbeDuration({ timeRange, check });
+  const { data = 0, ...rest } = useMaxProbeDuration({ timeRange, check, probe });
 
   useEffect(() => {
     if (data > 0) {
@@ -194,7 +199,7 @@ export function usePersistedMaxProbeDuration({ timeRange, check }: UseMaxProbeDu
   return { data: persistedMaxProbeDuration, ...rest };
 }
 
-function useMaxProbeDuration({ timeRange, check, refetchInterval }: UseMaxProbeDurationProps) {
+function useMaxProbeDuration({ timeRange, check, probe, refetchInterval }: UseMaxProbeDurationProps) {
   const metricsDS = useMetricsDS();
 
   const {
@@ -210,13 +215,18 @@ function useMaxProbeDuration({ timeRange, check, refetchInterval }: UseMaxProbeD
       REF_ID_MAX_PROBE_DURATION,
       timeRange.from,
       timeRange.to,
+      probe,
     ],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject('No metrics data source found');
       }
 
-      const { expr, queryType } = getCheckProbeMaxDuration({ job: check.job, instance: check.target });
+      const { expr, queryType } = getCheckProbeMaxDuration({
+        job: check.job,
+        instance: check.target,
+        probe: probe?.join('|'),
+      });
 
       return queryMimir({
         datasource: metricsDS,
@@ -250,24 +260,4 @@ export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
       adjustedTime: timepoint.adjustedTime,
     }
   );
-}
-
-export function useVizOptions(state: 0 | 1 | -1) {
-  const { vizOptions } = useTimepointExplorerContext();
-  const isSuccess = state === 1;
-  const isFailure = state === 0;
-
-  return {
-    borderColor: isSuccess
-      ? vizOptions.success.border
-      : isFailure
-      ? vizOptions.failure.border
-      : vizOptions.unknown.border,
-    backgroundColor: isSuccess
-      ? vizOptions.success.backgroundColor
-      : isFailure
-      ? vizOptions.failure.backgroundColor
-      : vizOptions.unknown.backgroundColor,
-    color: isSuccess ? vizOptions.success.color : isFailure ? vizOptions.failure.color : vizOptions.unknown.color,
-  };
 }

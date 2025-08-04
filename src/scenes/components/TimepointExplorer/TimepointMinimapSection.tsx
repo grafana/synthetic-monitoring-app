@@ -32,33 +32,27 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
   const isActive = miniMapCurrentSectionIndex === index;
 
   return (
-    <div className={styles.container}>
-      <Tooltip content={label} ref={ref}>
-        <PlainButton
-          aria-label={label}
-          className={cx(styles.section, { [styles.active]: isActive })}
-          onClick={() => handleMiniMapSectionChange(index)}
-          ref={ref}
-        >
-          <MinimapSectionAnnotations timepointsInRange={miniMapSectionTimepoints} />
-          {miniMapSectionTimepoints.map((timepoint, index) => {
-            if (viewMode === 'uptime') {
-              return (
-                <UptimeTimepoint key={timepoint.adjustedTime} timepoint={timepoint} timepointIndex={index + start} />
-              );
-            }
-
+    <Tooltip content={label} ref={ref}>
+      <PlainButton
+        aria-label={label}
+        className={cx(styles.section, { [styles.active]: isActive })}
+        onClick={() => handleMiniMapSectionChange(index)}
+        ref={ref}
+      >
+        <MinimapSectionAnnotations timepointsInRange={miniMapSectionTimepoints} />
+        {miniMapSectionTimepoints.map((timepoint, index) => {
+          if (viewMode === 'uptime') {
             return (
-              <ReachabilityTimepoint
-                key={timepoint.adjustedTime}
-                timepoint={timepoint}
-                timepointIndex={index + start}
-              />
+              <UptimeTimepoint key={timepoint.adjustedTime} timepoint={timepoint} timepointIndex={index + start} />
             );
-          })}
-        </PlainButton>
-      </Tooltip>
-    </div>
+          }
+
+          return (
+            <ReachabilityTimepoint key={timepoint.adjustedTime} timepoint={timepoint} timepointIndex={index + start} />
+          );
+        })}
+      </PlainButton>
+    </Tooltip>
   );
 };
 
@@ -208,9 +202,6 @@ const MinimapSectionAnnotations = ({ timepointsInRange }: { timepointsInRange: S
 };
 
 const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => ({
-  container: css`
-    width: 100%;
-  `,
   section: css`
     width: 100%;
     padding: 0;

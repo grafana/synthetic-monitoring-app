@@ -1,7 +1,7 @@
-import { CheckLogs } from 'features/parseCheckLogs/checkLogs.types';
+import { ExecutionLogs } from 'features/parseCheckLogs/checkLogs.types';
 import { Trace, TraceKeyValuePair, TraceProcess, TraceSpan } from 'scenes/components/LogsRenderer/TraceAndSpans.types';
 
-export function checkToTrace(check: CheckLogs): Trace {
+export function checkToTrace(check: ExecutionLogs): Trace {
   if (check.length === 0) {
     throw new Error('CheckLogs array cannot be empty');
   }

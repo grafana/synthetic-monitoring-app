@@ -1,8 +1,8 @@
 import { DataFrame } from '@grafana/data';
 
-import { CheckLabels, CheckLabelType, EndingLogLabels } from 'features/parseCheckLogs/checkLogs.types';
+import { EndingLogLabels, ExecutionLabels, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
-import { Check } from 'types';
+import { Check, Probe } from 'types';
 import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   Annotation,
@@ -14,6 +14,7 @@ import {
   MiniMapPages,
   MiniMapSection,
   MiniMapSections,
+  SelectedTimepointState,
   StatefulTimepoint,
   StatelessTimepoint,
   UnixTimestamp,
@@ -303,7 +304,7 @@ export function getVisibleTimepointsTimeRange({ timepoints }: { timepoints: Stat
 }
 
 export function buildLogsMap(
-  logs: Array<ParsedLokiRecord<CheckLabels & EndingLogLabels, CheckLabelType>>,
+  logs: Array<ParsedLokiRecord<ExecutionLabels & EndingLogLabels, ExecutionLabelType>>,
   timepoints: StatelessTimepoint[],
   check: Check
 ) {
@@ -312,7 +313,7 @@ export function buildLogsMap(
     const startingTime = log.Time - duration;
 
     // TODO: this is not efficient, we should find a better way to do this
-    // the problem is when a check is updated with a new frequency you get a funny timepoint
+    // the problem is when a check is updated with a new frequency you get a non-standard timepoint
     const timepoint = timepoints.find(
       (t: StatelessTimepoint) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration
     );
@@ -364,4 +365,62 @@ export function findNearest(pages: MiniMapPages | MiniMapSections, currentRange:
   });
 
   return bestPageIndex;
+}
+
+export function getIsTimepointSelected(timepoint: StatelessTimepoint, selectedTimepoint: SelectedTimepointState) {
+  const [timepointToView] = selectedTimepoint;
+  const isTimepointSelected = timepointToView?.adjustedTime === timepoint.adjustedTime;
+
+  return isTimepointSelected;
+}
+
+export function getIsExecutionSelected(
+  timepoint: StatelessTimepoint,
+  executionId: string,
+  selectedTimepoint: SelectedTimepointState
+) {
+  const [_, executionToView] = selectedTimepoint;
+  const isTimepointSelected = getIsTimepointSelected(timepoint, selectedTimepoint);
+  const isExecutionSelected = executionId === executionToView;
+  const isSelected = isTimepointSelected && isExecutionSelected;
+
+  return isSelected;
+}
+
+interface GetPendingResultsProps {
+  check: Check;
+  logsMap: Record<UnixTimestamp, StatefulTimepoint>;
+  selectedProbes: Array<string | number>;
+  timepoints: StatelessTimepoint[];
+  probes: Probe[];
+}
+
+export function getIsResultPending({ check, logsMap, selectedProbes, timepoints, probes }: GetPendingResultsProps) {
+  const latestTimepoint = timepoints[timepoints.length - 1];
+
+  if (!latestTimepoint) {
+    return true;
+  }
+
+  const entry = logsMap[latestTimepoint.adjustedTime];
+
+  if (!entry) {
+    return true;
+  }
+
+  const entryResults = Object.values(entry.executions);
+  const normalisedProbes = getNormalisedProbes(selectedProbes, check, probes);
+  const isResultPending = normalisedProbes.length !== entryResults.length;
+
+  return isResultPending;
+}
+
+function getNormalisedProbes(selectedProbes: Array<string | number>, check: Check, probes: Probe[]) {
+  const onlineProbes = probes.filter((probe) => probe.online).map((probe) => probe.id || -1);
+
+  if (selectedProbes.includes('.*')) {
+    return onlineProbes.filter((probe) => check.probes.includes(probe));
+  }
+
+  return probes;
 }

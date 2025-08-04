@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -12,7 +12,7 @@ import {
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getEntryHeight, getIsExecutionSelected } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
@@ -26,7 +26,7 @@ export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryP
   const styles = useStyles2(getStyles, timepointWidth);
 
   return (
-    <div className={styles.timepoint}>
+    <div className={styles.timepoint} data-testid={`timepoint-${timepoint.adjustedTime}`}>
       <Entry timepoint={timepoint} viewIndex={viewIndex} />
     </div>
   );
@@ -52,9 +52,9 @@ const Entry = (props: TimepointListEntryProps) => {
 };
 
 const ICON_MAP: Record<number, IconName> = {
-  [-1]: 'question-circle',
   [0]: 'times',
   [1]: 'check',
+  [2]: 'fa fa-spinner',
 };
 
 const GLOBAL_CLASS = `uptime_bar`;
@@ -77,7 +77,12 @@ const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
   }
 
   return (
-    <div style={{ height: `${height}%` }}>
+    <div style={{ height: `${height}%`, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {isSelected && (
+        <div className={styles.selectedIcon} style={{ bottom: `${height}%` }}>
+          <Icon name="eye" />
+        </div>
+      )}
       <Tooltip
         content={<TimepointListEntryTooltip statefulTimepoint={statefulTimepoint} />}
         ref={ref}
@@ -97,7 +102,13 @@ const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
             })}
             state={state}
           >
-            <Icon name={ICON_MAP[statefulTimepoint.uptimeValue]} />
+            {statefulTimepoint.uptimeValue === 0 ? (
+              <Icon name={ICON_MAP[0]} />
+            ) : statefulTimepoint.uptimeValue === 1 ? (
+              <Icon name={ICON_MAP[1]} />
+            ) : (
+              `?`
+            )}
           </TimepointVizItem>
         </PlainButton>
       </Tooltip>
@@ -106,12 +117,12 @@ const UptimeEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
 };
 
 const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
-  const { vizDisplay, timepointWidth } = useTimepointExplorerContext();
+  const { hoveredExecution, vizDisplay, timepointWidth } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const styles = useStyles2(getStyles, timepointWidth);
-  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } = useTimepointExplorerContext();
+  const { handleExecutionHover, handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } =
+    useTimepointExplorerContext();
   const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
-  const [hoveredCheck, setHoveredCheck] = useState<string | null>(null);
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
   const height = `calc(${entryHeight}% + ${timepointWidth}px)`;
@@ -135,7 +146,6 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
             ...statefulTimepoint,
             executions: executionsToRender,
           }}
-          hoveredCheck={hoveredCheck}
         />
       }
       interactive
@@ -147,11 +157,8 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
           const height = getEntryHeight(duration, maxProbeDuration);
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
           const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
-          const checkId = execution.id;
-          const [timepointToView, checkToView] = selectedTimepoint;
-          const isTimepointSelected = timepointToView?.adjustedTime === timepoint.adjustedTime;
-          const isProbeSelected = checkId === checkToView;
-          const isSelected = isTimepointSelected && isProbeSelected;
+          const executionId = execution.id;
+          const isSelected = getIsExecutionSelected(timepoint, executionId, selectedTimepoint);
           const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
 
           if (!vizDisplay.includes(state)) {
@@ -159,22 +166,26 @@ const ReachabilityEntry = ({ timepoint }: TimepointListEntryProps) => {
           }
 
           return (
-            <TimepointVizItem
-              as={PlainButton}
-              className={cx(styles.reachabilityProbe, {
-                [styles.selected]: isSelected,
-              })}
-              key={checkId}
-              onClick={() => handleSelectedTimepointChange(timepoint, checkId)}
-              onMouseEnter={() => setHoveredCheck(checkId)}
-              onMouseLeave={() => setHoveredCheck(null)}
-              style={{
-                bottom: `${pixelHeight}px`,
-              }}
-              state={state}
-            >
-              <Icon name={ICON_MAP[probeSuccess]} />
-            </TimepointVizItem>
+            <div className={styles.executionContainer} key={executionId} style={{ bottom: `${pixelHeight}px` }}>
+              {isSelected && (
+                <div className={styles.selectedIcon}>
+                  <Icon name="eye" />
+                </div>
+              )}
+              <TimepointVizItem
+                as={PlainButton}
+                className={cx(styles.reachabilityExecution, {
+                  [styles.hovered]: hoveredExecution === executionId,
+                  [styles.selected]: isSelected,
+                })}
+                onClick={() => handleSelectedTimepointChange(timepoint, executionId)}
+                onMouseEnter={() => handleExecutionHover(executionId)}
+                onMouseLeave={() => handleExecutionHover(null)}
+                state={state}
+              >
+                <Icon name={ICON_MAP[probeSuccess]} />
+              </TimepointVizItem>
+            </div>
           );
         })}
       </div>
@@ -188,9 +199,9 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
       display: flex;
       justify-content: end;
       flex-direction: column;
-      width: ${timepointWidth}px;
       height: 100%;
       position: relative;
+      width: ${timepointWidth + TIMEPOINT_GAP_PX}px;
     `,
     uptimeButton: css`
       width: calc(${timepointWidth}px + ${TIMEPOINT_GAP_PX}px);
@@ -201,10 +212,9 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
       display: flex;
       justify-content: center;
 
-      &:hover {
-        .${GLOBAL_CLASS} {
-          // todo: work out why this needs a global class?
-          background-color: ${theme.visualization.getColorByName(`green`)};
+      &:hover .${GLOBAL_CLASS} {
+        &:after {
+          opacity: 0.3;
         }
       }
 
@@ -223,6 +233,18 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
       justify-content: center;
       position: relative;
       border-radius: ${theme.shape.radius.default};
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
+        opacity: 0;
+        pointer-events: none;
+      }
     `,
     reachabilityEntry: css`
       display: flex;
@@ -234,24 +256,46 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
       left: 50%;
       transform: translateX(-50%);
     `,
-    selected: css`
-      border-width: 2px;
-      z-index: 1;
-    `,
-    reachabilityProbe: css`
+    executionContainer: css`
       position: absolute;
+      bottom: 0;
+      transform: translateY(50%);
+      display: flex;
+      justify-content: center;
+    `,
+    reachabilityExecution: css`
       width: ${timepointWidth}px;
       height: ${timepointWidth}px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      transform: translateY(50%);
 
-      &:hover {
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
-        z-index: 1;
+        opacity: 0;
+        pointer-events: none;
+        border-radius: 50%;
       }
+    `,
+    selected: css`
+      border-width: 2px;
+      z-index: 1;
+    `,
+    hovered: css`
+      &:after {
+        opacity: 0.3;
+      }
+    `,
+    selectedIcon: css`
+      position: absolute;
+      bottom: 100%;
     `,
   };
 };

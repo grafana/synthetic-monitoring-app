@@ -3,7 +3,7 @@ import { CheckType } from 'types';
 
 import { MSG_STRINGS_COMMON } from './checkLogs.constants.msgs';
 
-export type CheckLabels<T extends Record<string, string> = {}> = T & {
+export type ExecutionLabels<T extends Record<string, string> = {}> = T & {
   check_name: CheckType; // this is really check type e.g. http
   detected_level: 'error' | 'info'; // might be more
   instance: string;
@@ -16,16 +16,19 @@ export type CheckLabels<T extends Record<string, string> = {}> = T & {
   source: 'synthetic-monitoring-agent'; // might be more?
 };
 
-export type CheckLabelType = {
+export type ExecutionLabelType = {
   check_name: string; // I
   detected_level: string; // S
   instance: string; // I
   job: string; // I
 };
 
-export type ParsedCheckLog<T extends Record<string, string> = {}> = ParsedLokiRecord<CheckLabels<T>, CheckLabelType>;
+export type ParsedExecutionLog<T extends Record<string, string> = {}> = ParsedLokiRecord<
+  ExecutionLabels<T>,
+  ExecutionLabelType
+>;
 
-export type StartingLog = ParsedCheckLog<{
+export type StartingLog = ParsedExecutionLog<{
   msg: (typeof MSG_STRINGS_COMMON)['BeginningCheck'];
 }>;
 
@@ -33,25 +36,25 @@ export type EndingLogLabels = {
   duration_seconds: string;
 };
 
-export type CheckFailedLog = ParsedCheckLog<
+export type ExecutionFailedLog = ParsedExecutionLog<
   EndingLogLabels & {
     msg: (typeof MSG_STRINGS_COMMON)['CheckFailed'];
   }
 >;
 
-export type CheckSucceededLog = ParsedCheckLog<
+export type ExecutionSucceededLog = ParsedExecutionLog<
   EndingLogLabels & {
     msg: (typeof MSG_STRINGS_COMMON)['CheckSucceeded'];
   }
 >;
 
-export type CheckEndedLog = CheckFailedLog | CheckSucceededLog;
+export type ExecutionEndedLog = ExecutionFailedLog | ExecutionSucceededLog;
 
-export type UnknownCheckLog = ParsedCheckLog;
+export type UnknownExecutionLog = ParsedExecutionLog;
 
-export type CheckLogs = [StartingLog, ...UnknownCheckLog[], CheckEndedLog];
+export type ExecutionLogs = [StartingLog, ...UnknownExecutionLog[], ExecutionEndedLog];
 
-export type PerCheckLogs = {
+export type PerExecutionLogs = {
   probe: string;
-  checks: CheckLogs[];
+  executions: ExecutionLogs[];
 };
