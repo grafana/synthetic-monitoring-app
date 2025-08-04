@@ -20,9 +20,10 @@ describe('RunbookUrl', () => {
 
     expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)).toBeInTheDocument();
     expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.ProbeFailedExecutionsTooHigh}`)).toBeInTheDocument();
+    expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.HTTPRequestDurationTooHighAvg}`)).toBeInTheDocument();
     
-    expect(screen.getAllByText('Runbook URL (optional):')).toHaveLength(2);
-    expect(screen.getAllByPlaceholderText('https://example.com/runbook')).toHaveLength(2);
+    expect(screen.getAllByText('Runbook URL (optional):')).toHaveLength(3);
+    expect(screen.getAllByPlaceholderText('https://example.com/runbook')).toHaveLength(3);
   });
 
   it('displays existing runbook URL values from test data', async () => {
@@ -52,6 +53,17 @@ describe('RunbookUrl', () => {
     await user.type(failedExecRunbookInput, 'https://mycompany.com/runbooks/modified-failed-exec');
 
     expect(failedExecRunbookInput).toHaveValue('https://mycompany.com/runbooks/modified-failed-exec');
+  });
+
+  it('allows user to modify the HTTP request duration runbook URL', async () => {
+    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
+    await goToSection(user, 5); // Go to alerts section
+    const httpDurationRunbookInput = screen.getByTestId(`alert-runbook-url-${CheckAlertType.HTTPRequestDurationTooHighAvg}`);
+  
+    await user.clear(httpDurationRunbookInput);
+    await user.type(httpDurationRunbookInput, 'https://mycompany.com/runbooks/modified-http-duration');
+
+    expect(httpDurationRunbookInput).toHaveValue('https://mycompany.com/runbooks/modified-http-duration');
   });
 
   it('allows user to clear a runbook URL', async () => {
