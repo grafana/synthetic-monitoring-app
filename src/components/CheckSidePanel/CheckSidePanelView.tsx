@@ -61,6 +61,12 @@ export function CheckSidePanelView() {
                 <div>
                   {state.logs.map((probeState) => {
                     const probeStuff = probesInSegment.find((s) => s.name === probeState.probe);
+                    const status = isPending || hasPendingRequests 
+                      ? 'pending' 
+                      : probeState.logs?.timeseries 
+                      ? 'success' 
+                      : 'error';
+                      
                     return (
                       <WikCard key={`${state.id}-${probeState.probe}`}>
                         <WikCard.Heading>
@@ -68,11 +74,13 @@ export function CheckSidePanelView() {
                             <Badge
                               icon={(probeStuff?.icon as any) ?? 'adjust-circle'}
                               text={probeStuff?.name ?? 'Unknown error'}
-                              color={(probeStuff?.color as any) ?? 'red'}
+                              color={probeStuff?.color ?? 'red'}
                             />
                             <span>{(probeState.logs?.message as string) ?? ''}</span>
                           </div>
-                          <div>{probeState.logs?.timeseries ? 'success' : 'error'}</div>
+                          <div>
+                            {status}
+                          </div>
                         </WikCard.Heading>
 
                         <div className={styles.steps}>
