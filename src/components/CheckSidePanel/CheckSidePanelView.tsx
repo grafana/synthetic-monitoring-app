@@ -61,7 +61,7 @@ export function CheckSidePanelView() {
                 <div>
                   {state.logs.map((probeState) => {
                     const probeStuff = probesInSegment.find((s) => s.name === probeState.probe);
-                    const status = isPending || hasPendingRequests 
+                    const status = probeState.state === 'pending'
                       ? 'pending' 
                       : probeState.logs?.timeseries 
                       ? 'success' 

@@ -25,7 +25,7 @@ export function useCheckSidePanel() {
   const [requestState, setRequestState] = useState<RequestState[]>([]);
   
   // Data hooks
-  const { data: probeList } = useProbes();
+  const { data: probeList, isLoading } = useProbes();
   const { mutate: adHocCheck, error, isPending, isError, data: requestResponseData } = useAdHocCheck();
   
   // Logs query setup
@@ -43,26 +43,23 @@ export function useCheckSidePanel() {
 
   // Handle new ad-hoc check response
   useEffect(() => {
-    if (!requestResponseData) {
+    if (!requestResponseData || isLoading) {
       return;
     }
 
-    setRequestState((prevState) => {
-      return [
-        ...prevState,
-        {
-          id: requestResponseData.id,
-          logs: requestResponseData.probes.map((probeId) => ({
-            // @fixme! assuming that probeList has loaded! NO BUENO!
-            probe: probeList?.find((probe) => probe.id === probeId)?.name ?? 'Unknown',
-            logs: {},
-            state: 'pending',
-          })),
-          created: dateTime(),
-        },
-      ];
-    });
-  }, [probeList, requestResponseData]);
+    setRequestState((prevState) => [
+      ...prevState,
+      {
+        id: requestResponseData.id,
+        logs: requestResponseData.probes.map((probeId) => ({
+          probe: probeList?.find((probe) => probe.id === probeId)?.name ?? 'Unknown',
+          logs: {},
+          state: 'pending',
+        })),
+        created: dateTime(),
+      },
+    ]);
+  }, [probeList, requestResponseData, isLoading]);
 
   // Process incoming logs
   useEffect(() => {
