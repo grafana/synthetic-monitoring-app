@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { UseLogsQueryArgs } from '../types';
-import { useSMDS } from 'hooks/useSMDS';
+import { UseLogsQueryArgs } from '../CheckSidePanel.types';
 
-import { loggify } from '../utils';
+import { useSMDS } from '../../../hooks/useSMDS';
+import { loggify } from '../CheckSidePanel.utils';
 
 export function useAdHocLogs(
   expr?: UseLogsQueryArgs['expr'],

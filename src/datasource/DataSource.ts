@@ -12,7 +12,7 @@ import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runti
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { LokiQueryResults } from '../page/LayoutTestPage/types';
+import { LokiQueryResults } from '../components/CheckSidePanel/CheckSidePanel.types';
 import { Check, CheckAlertDraft, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,

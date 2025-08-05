@@ -3,8 +3,10 @@ import { dateTimeFormat, GrafanaTheme2, LoadingState } from '@grafana/data';
 import { Alert, Badge, Box, Button, Divider, PanelChrome, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { WikCard } from '../../page/LayoutTestPage/components/WikCard';
+import { ProbeStatus } from './CheckSidePanel.types';
+
 import { Preformatted } from '../Preformatted';
+import { WikCard } from './components/WikCard';
 import { HIGHLIGHT_PATTERNS } from './CheckSidePanel.utils';
 import { useCheckSidePanel } from './useCheckSidePanel';
 
@@ -50,13 +52,8 @@ export function CheckSidePanelView() {
                 loadingState={isLoadingState ? LoadingState.Loading : LoadingState.Done}
                 actions={
                   <div className={styles.probeTop} onClick={onToggleExpand}>
-                    {probesInSegment.map((pState) => (
-                      <Badge
-                        key={pState.name}
-                        text={pState.name}
-                        icon={pState.icon as any}
-                        color={pState.color as any}
-                      />
+                    {probesInSegment.map((pState: ProbeStatus) => (
+                      <Badge key={pState.name} text={pState.name} icon={pState.icon} color={pState.color} />
                     ))}
                   </div>
                 }

@@ -8,11 +8,11 @@ import { ProbeStatus,RequestState } from './CheckSidePanel.types';
 import { useAdHocCheck } from '../../data/useChecks';
 import { useProbes } from '../../data/useProbes';
 import { trackAdhocCreated } from '../../features/tracking/checkFormEvents';
-import { useAdHocLogs } from '../../page/LayoutTestPage/hooks/useAdHocLogs';
 import { toPayload } from '../CheckEditor/checkFormTransformations';
 import { findFieldToFocus } from '../CheckForm/CheckForm.utils';
 import { useCheckFormMetaContext } from '../CheckForm/CheckFormContext';
 import { useSetActiveSectionByError } from '../CheckForm/FormLayout/FormLayoutContext';
+import { useAdHocLogs } from './hooks/useAdHocLogs';
 import { getProbeSuccess, getStateColorIndex, getStateIcon, TIMEOUT_SECONDS } from './CheckSidePanel.utils';
 
 export function useCheckSidePanel() {
