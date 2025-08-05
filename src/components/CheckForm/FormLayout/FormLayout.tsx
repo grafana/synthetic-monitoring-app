@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent, ReactNode, useCallback } from 'react';
+import React, { BaseSyntheticEvent, ReactNode, useCallback, useEffect } from 'react';
 import { FieldErrors, FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
@@ -34,7 +34,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   onInvalid?: (errs: FieldErrors<T>) => void;
   schema: ZodType;
   hasUnsavedChanges?: boolean;
-  onSectionClick: (index: number) => void;
+  onSectionClick?: (index: number) => void;
 };
 
 export const FormLayout = <T extends FieldValues>({
@@ -43,13 +43,13 @@ export const FormLayout = <T extends FieldValues>({
   checkState,
   checkType,
   children,
-  initialSection = FORM_SECTION_STEPS[0],
   onSubmit,
   onValid,
   onInvalid,
   schema,
   onSectionClick,
   hasUnsavedChanges = true, // default to true to prevent accidentally disabling the submit button
+  initialSection,
 }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
   const {
@@ -64,6 +64,15 @@ export const FormLayout = <T extends FieldValues>({
     setActiveSectionByError,
     getSectionLabel,
   } = useFormLayoutInternal();
+
+  useEffect(() => {
+    if (initialSection) {
+      const sectionIndex = FORM_SECTION_STEPS.indexOf(initialSection);
+      if (sectionIndex !== -1) {
+        goToSection(sectionIndex);
+      }
+    }
+  }, [initialSection, goToSection]);
 
   const handleVisited = useCallback(
     (indices: number[]) => {
@@ -94,7 +103,7 @@ export const FormLayout = <T extends FieldValues>({
 
   const handleSectionClick = useCallback(
     (index: number) => {
-      onSectionClick(index);
+      onSectionClick?.(index);
     },
     [onSectionClick]
   );

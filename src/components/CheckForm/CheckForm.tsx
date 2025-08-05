@@ -140,8 +140,7 @@ function CheckFormInternal() {
 
   const isAlertsPerCheckOn = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
-  // @todo Remove this
-  const [, setActiveSection] = useState<number>(0);
+
 
   const renderFormLayout = ({ actions: formActions }: { actions: typeof actions }) => (
     <FormLayout<CheckFormValues>
@@ -155,7 +154,7 @@ function CheckFormInternal() {
       onInvalid={handleInvalid}
       schema={schema}
       hasUnsavedChanges={hasUnsavedChanges}
-      onSectionClick={setActiveSection}
+
     >
       {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
