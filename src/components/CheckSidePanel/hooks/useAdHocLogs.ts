@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { UseLogsQueryArgs, LogEntry } from '../CheckSidePanel.types';
+import { LogEntry,UseLogsQueryArgs } from '../CheckSidePanel.types';
 
 import { useSMDS } from '../../../hooks/useSMDS';
 import { loggify } from '../CheckSidePanel.utils';
