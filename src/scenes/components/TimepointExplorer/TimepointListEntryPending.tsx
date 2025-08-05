@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { css, cx, keyframes } from '@emotion/css';
 
 import { PlainButton } from 'components/PlainButton';
 import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
@@ -18,17 +18,24 @@ interface TimepointListEntryProps {
 
 const GLOBAL_CLASS = `pending_bar`;
 
-export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryProps) => {
-  const statefulTimepoint = {
-    ...useStatefulTimepoint(timepoint),
-    uptimeValue: 2,
-  } as const;
+// Loading animation constants
+const BAR_HEIGHT_PERCENT = 28;
+const MILLISECONDS_PER_PIXEL = 2.4;
+const MIN_DURATION_MS = 2000;
+const MAX_DURATION_MS = 4000;
+const DEFAULT_ANIMATION_DELAY = 300;
+const MAX_TRANSLATE_Y = (100 / BAR_HEIGHT_PERCENT) * 100;
 
-  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint, timepointWidth, vizDisplay } =
+export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryProps) => {
+  const statefulTimepoint = useStatefulTimepoint(timepoint);
+
+  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint, timepointWidth, vizDisplay, vizOptions } =
     useTimepointExplorerContext();
+  const option = vizOptions.pending;
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
-  const styles = useStyles2(getStyles, timepointWidth);
+  const durationMs = Math.min(Math.max(Math.round(height * MILLISECONDS_PER_PIXEL), MIN_DURATION_MS), MAX_DURATION_MS);
+  const styles = useStyles2(getStyles, timepointWidth, option, durationMs);
   const executionToView = statefulTimepoint.executions[0]?.id;
   const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
@@ -57,7 +64,7 @@ export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryProps
             })}
             state={`pending`}
           >
-            <Icon name={`fa fa-spinner`} />
+            <div className={styles.loadingBar} />
           </TimepointVizItem>
         </PlainButton>
       </Tooltip>
@@ -65,7 +72,16 @@ export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryProps
   );
 };
 
-const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
+const getStyles = (theme: GrafanaTheme2, timepointWidth: number, option: string, duration: number) => {
+  const verticalAnimation = keyframes({
+    '0%': {
+      transform: 'translateY(-100%)',
+    },
+    // this gives us a delay between iterations
+    '85%, 100%': {
+      transform: `translateY(${MAX_TRANSLATE_Y}%)`,
+    },
+  });
   return {
     pendingButton: css`
       width: calc(${timepointWidth}px + ${TIMEPOINT_GAP_PX}px);
@@ -97,6 +113,7 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
       justify-content: center;
       position: relative;
       border-radius: ${theme.shape.radius.default};
+      overflow: hidden;
 
       &:after {
         content: '';
@@ -110,6 +127,30 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
         pointer-events: none;
       }
     `,
+    loadingBar: css({
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: BAR_HEIGHT_PERCENT + '%',
+      background: `linear-gradient(180deg, transparent 0%, ${option} 80.75%, transparent 100%)`,
+      transform: 'translateY(-100%)',
+      willChange: 'transform',
+      [theme.transitions.handleMotion('no-preference')]: {
+        animationName: verticalAnimation,
+        animationDelay: `${DEFAULT_ANIMATION_DELAY}ms`,
+        animationTimingFunction: 'linear',
+        animationIterationCount: 'infinite',
+        animationDuration: `${duration}ms`,
+      },
+      [theme.transitions.handleMotion('reduce')]: {
+        animationName: verticalAnimation,
+        animationDelay: `${DEFAULT_ANIMATION_DELAY}ms`,
+        animationTimingFunction: 'linear',
+        animationIterationCount: 'infinite',
+        animationDuration: `${4 * duration}ms`,
+      },
+    }),
     selected: css`
       border-width: 2px;
       z-index: 1;
