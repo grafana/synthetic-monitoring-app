@@ -64,7 +64,7 @@ function CheckFormInternal() {
   const formMethods = useFormContext<CheckFormValues>();
   const isCheckSidePanelEnabled = useFeatureFlag(FeatureName.CheckSidePanel).isEnabled;
   const styles = useStyles2(getCheckFormStyles);
-  
+
   const sidePanelStyles = useStyles2(getSidePanelFormStyles);
   const {
     containerProps: { className: containerClassName, ...containerProps },
@@ -143,9 +143,9 @@ function CheckFormInternal() {
   // @todo Remove this
   const [, setActiveSection] = useState<number>(0);
 
-  const formContent = (
+  const renderFormLayout = ({ actions: formActions }: { actions: typeof actions }) => (
     <FormLayout<CheckFormValues>
-      actions={actions}
+      actions={formActions}
       alerts={alerts}
       checkState={checkState}
       checkType={checkType}
@@ -218,7 +218,7 @@ function CheckFormInternal() {
         <div {...containerProps} className={cx(containerClassName, styles.container)}>
           <div {...primaryProps} className={styles.primarySection}>
             <Box grow={1} padding={2} backgroundColor="primary">
-              <div className={sidePanelStyles.wrapper}>{formContent}</div>
+              <div className={sidePanelStyles.wrapper}>{renderFormLayout({ actions: [] })}</div>
             </Box>
           </div>
           <div {...splitterProps} />
@@ -233,7 +233,7 @@ function CheckFormInternal() {
 
   return (
     <>
-      {formContent}
+      {renderFormLayout({ actions })}
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmLeavingPage enabled={hasUnsavedChanges} />
     </>
@@ -270,7 +270,7 @@ const getSidePanelFormStyles = (theme: any) => ({
   wrapper: css`
     height: 100%;
     min-width: 0;
-    
+
     /* Single column layout with horizontal steps at top */
     & > div > div:first-child {
       display: grid;
@@ -279,7 +279,7 @@ const getSidePanelFormStyles = (theme: any) => ({
       height: 100%;
       gap: ${theme.spacing(2)};
     }
-    
+
     /* Horizontal form navigation */
     & ol[data-testid='form-sidebar'] {
       display: flex;
@@ -291,7 +291,7 @@ const getSidePanelFormStyles = (theme: any) => ({
       list-style-type: none;
       overflow-x: auto;
     }
-    
+
     /* Step dividers */
     & ol[data-testid='form-sidebar'] > div {
       border-bottom: 2px solid ${theme.colors.border.medium};
