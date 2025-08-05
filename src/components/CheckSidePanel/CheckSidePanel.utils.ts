@@ -1,7 +1,7 @@
 import { DataFrameJSON } from '@grafana/data';
 import { BadgeColor, IconName } from '@grafana/ui';
 
-import { LokiQueryResults, ProbeState } from './CheckSidePanel.types';
+import { LogEntry, LokiQueryResults, ProbeState } from './CheckSidePanel.types';
 
 // Constants
 export const TIMEOUT_SECONDS = 10;
@@ -84,7 +84,12 @@ function getFieldIndexMap({ schema = { fields: [] } }: DataFrameJSON) {
   }, indexMap);
 }
 
-export function loggify<RefId extends keyof any = 'A'>(result: LokiQueryResults<RefId>, refId: RefId = 'A' as RefId) {
+// Type guard for log line structure
+function isValidLogLine(line: unknown): line is { id?: string; probe?: string; [key: string]: unknown } {
+  return typeof line === 'object' && line !== null;
+}
+
+export function loggify<RefId extends keyof any = 'A'>(result: LokiQueryResults<RefId>, refId: RefId = 'A' as RefId): LogEntry[] {
   const refResult = result.results[refId].frames[0];
   const indexMap = getFieldIndexMap(refResult);
   if (indexMap.Time === null) {
@@ -92,7 +97,7 @@ export function loggify<RefId extends keyof any = 'A'>(result: LokiQueryResults<
   }
 
   return (
-    refResult?.data?.values[indexMap.Time].reduce<Array<Record<string, unknown>>>((acc, time, index) => {
+    refResult?.data?.values[indexMap.Time].reduce<LogEntry[]>((acc, time, index) => {
       let line;
       if (indexMap.Line !== null) {
         line = refResult?.data?.values[indexMap.Line][index];
@@ -102,12 +107,16 @@ export function loggify<RefId extends keyof any = 'A'>(result: LokiQueryResults<
           }
         } catch (_error) {
           // Unable to parse line
+          return acc;
         }
 
-        acc.push({
-          time,
-          line,
-        });
+        // Only add entries with valid log line structure
+        if (isValidLogLine(line)) {
+          acc.push({
+            time,
+            line,
+          });
+        }
       }
 
       return acc;

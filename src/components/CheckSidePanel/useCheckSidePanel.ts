@@ -3,7 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { dateTime } from '@grafana/data';
 
 import { CheckFormValues } from '../../types';
-import { ProbeStatus,RequestState } from './CheckSidePanel.types';
+import { ProbeStatus, RequestState } from './CheckSidePanel.types';
 
 import { useAdHocCheck } from '../../data/useChecks';
 import { useProbes } from '../../data/useProbes';
@@ -71,9 +71,7 @@ export function useCheckSidePanel() {
 
     for (const logData of logs) {
       const request =
-        // @ts-expect-error testing
         draft.find((request) => request.id === logData.line.id) ??
-        // @ts-expect-error testing
         requestState.find((request) => request.id === logData.line.id);
       if (!request || !request.logs.some((log) => log.state === 'pending')) {
         continue;
@@ -81,9 +79,7 @@ export function useCheckSidePanel() {
 
       const draftRequest: RequestState = {
         ...request,
-        // @ts-expect-error testing
         logs: request.logs.map((probeLogs) => {
-          // @ts-expect-error POC
           const subject = logs.find((log) => log.line.probe === probeLogs.probe);
           if (subject) {
             return {

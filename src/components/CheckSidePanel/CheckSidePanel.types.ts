@@ -36,4 +36,15 @@ export interface UseLogsQueryArgs {
   expr: string;
   from: string | number;
   to?: string | number;
+}
+
+export interface LogEntry {
+  time: unknown;
+  line: LogLine;
+}
+
+export interface LogLine {
+  id?: string;
+  probe?: string;
+  [key: string]: unknown;
 } 
