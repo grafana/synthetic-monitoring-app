@@ -11,6 +11,7 @@ export interface PredefinedAlertInterface {
     threshold: number;
     period?: (typeof ALERT_PERIODS)[number]['value'];
     isSelected: boolean;
+    runbookUrl?: string;
   };
   supportsPeriod: boolean;
 }
@@ -32,8 +33,9 @@ const TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT: PredefinedAlertInterface =
   unit: 'd',
   category: CheckAlertCategory.TLSCertificate,
   defaultValues: {
-    threshold: 1,
+    threshold: 30,
     isSelected: false,
+    runbookUrl: undefined,
   },
   query: `
 (
@@ -62,6 +64,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
       threshold: 1,
       period: '5m',
       isSelected: false,
+      runbookUrl: undefined,
     },
     query: `
     (
@@ -81,7 +84,84 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   },
 ];
 
-export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT];
+export const HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
+  type: CheckAlertType.HTTPRequestDurationTooHighAvg,
+  name: 'HTTP Request Duration Too High Avg',
+  description: 'The average HTTP request duration for this check',
+  query: `(
+    (
+      sum by(instance, job)(rate(probe_all_duration_seconds_sum{instance="$instance", job="$job"}[$period])) / 
+      sum by(instance, job)(rate(probe_all_duration_seconds_count{instance="$instance", job="$job"}[$period]))
+    ) * 1000 >= $threshold
+  ) * on (instance, job) 
+  group_right() 
+  max without(probe, region, geohash) (
+    sm_check_info{instance="$instance", job="$job"}
+  )`,
+  supportsPeriod: true,
+  unit: 'ms',
+  category: CheckAlertCategory.Latency,
+  defaultValues: {
+    threshold: 300,
+    period: '5m',
+    isSelected: false,
+  },
+};
+
+export const PING_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
+  type: CheckAlertType.PingRequestDurationTooHighAvg,
+  name: 'Ping Request Duration Too High Avg',
+  description: 'The average ping request duration for this check',
+  query: `(
+    (
+      sum by(instance, job)(rate(probe_all_duration_seconds_sum{instance="$instance", job="$job"}[$period])) / 
+      sum by(instance, job)(rate(probe_all_duration_seconds_count{instance="$instance", job="$job"}[$period]))
+    ) * 1000 >= $threshold
+  ) * on (instance, job) 
+  group_right() 
+  max without(probe, region, geohash) (
+    sm_check_info{instance="$instance", job="$job"}
+  )`,
+  supportsPeriod: true,
+  unit: 'ms',
+  category: CheckAlertCategory.Latency,
+  defaultValues: {
+    threshold: 50,
+    period: '5m',
+    isSelected: false,
+  },
+};
+
+export const DNS_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
+  type: CheckAlertType.DNSRequestDurationTooHighAvg,
+  name: 'DNS Request Duration Too High Avg',
+  description: 'The average DNS request duration for this check',
+  query: `(
+    (
+      sum by(instance, job)(rate(probe_all_duration_seconds_sum{instance="$instance", job="$job"}[$period])) / 
+      sum by(instance, job)(rate(probe_all_duration_seconds_count{instance="$instance", job="$job"}[$period]))
+    ) * 1000 >= $threshold
+  ) * on (instance, job) 
+  group_right() 
+  max without(probe, region, geohash) (
+    sm_check_info{instance="$instance", job="$job"}
+  )`,
+  supportsPeriod: true,
+  unit: 'ms',
+  category: CheckAlertCategory.Latency,
+  defaultValues: {
+    threshold: 100,
+    period: '5m',
+    isSelected: false,
+  },
+};
+
+export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
+  TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT,
+  HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT,
+];
+export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [PING_REQUEST_DURATION_TOO_HIGH_AVG_ALERT];
+export const DNS_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [DNS_REQUEST_DURATION_TOO_HIGH_AVG_ALERT];
 export const TCP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT];
 
 export const PREDEFINED_ALERTS: Record<CheckType, PredefinedAlertInterface[]> = Object.fromEntries(
@@ -91,6 +171,8 @@ export const PREDEFINED_ALERTS: Record<CheckType, PredefinedAlertInterface[]> = 
       ...GLOBAL_PREDEFINED_ALERTS,
       ...(checkType === CheckType.HTTP ? HTTP_PREDEFINED_ALERTS : []),
       ...(checkType === CheckType.TCP ? TCP_PREDEFINED_ALERTS : []),
+      ...(checkType === CheckType.PING ? PING_PREDEFINED_ALERTS : []),
+      ...(checkType === CheckType.DNS ? DNS_PREDEFINED_ALERTS : []),
     ],
   ])
 ) as Record<CheckType, PredefinedAlertInterface[]>;
@@ -99,4 +181,6 @@ export const ALL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   ...GLOBAL_PREDEFINED_ALERTS,
   ...HTTP_PREDEFINED_ALERTS,
   ...TCP_PREDEFINED_ALERTS,
+  ...PING_PREDEFINED_ALERTS,
+  ...DNS_PREDEFINED_ALERTS,
 ];

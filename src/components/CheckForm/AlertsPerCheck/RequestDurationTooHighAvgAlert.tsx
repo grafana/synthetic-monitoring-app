@@ -13,20 +13,21 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
-import { getTotalChecksPerPeriod } from 'checkUsageCalc';
-import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
-import pluralize from 'pluralize';
+import {
+  trackChangePeriod,
+  trackSelectAlert,
+  trackUnSelectAlert,
+} from 'features/tracking/perCheckAlertsEvents';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
-import { AlertEvaluationInfo } from './AlertEvaluationInfo';
 import { getAlertItemStyles } from './AlertItem';
 import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { RunbookUrl } from './RunbookUrl';
 import { ThresholdSelector } from './ThresholdSelector';
 
-export const FailedExecutionsAlert = ({
+export const RequestDurationTooHighAvgAlert = ({
   alert,
   selected,
   onSelectionChange,
@@ -37,12 +38,8 @@ export const FailedExecutionsAlert = ({
   onSelectionChange: (type: CheckAlertType) => void;
   tooltipContent: PopoverContent;
 }) => {
-  const {
-    formState: { disabled: isFormDisabled },
-  } = useFormContext();
   const { getValues, control, formState } = useFormContext<CheckFormValues>();
   const revalidateForm = useRevalidateForm();
-  const styles = useStyles2(getAlertItemStyles);
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
@@ -53,12 +50,13 @@ export const FailedExecutionsAlert = ({
     }
   };
 
-  const checkFrequency = getValues('frequency');
-  const probes = getValues('probes');
-  const threshold = getValues(`alerts.${alert.type}.threshold`);
-  const period = getValues(`alerts.${alert.type}.period`);
+  const isFormDisabled = formState.disabled;
+  const styles = useStyles2(getAlertItemStyles);
 
   const convertPeriod = useCallback((period: string) => durationToMilliseconds(parseDuration(period)), []);
+  const checkFrequency = getValues('frequency');
+  const checkType = getValues('checkType');
+  const periodError = formState.errors?.alerts?.[alert.type]?.period?.message;
 
   //min time range >= check frequency
   const validPeriods = useMemo(
@@ -74,17 +72,6 @@ export const FailedExecutionsAlert = ({
       }),
     [checkFrequency, convertPeriod]
   );
-
-  const testExecutionsPerPeriod = useMemo(() => {
-    if (!period) {
-      return '';
-    }
-
-    return getTotalChecksPerPeriod(probes.length, checkFrequency, convertPeriod(period));
-  }, [checkFrequency, period, probes, convertPeriod]);
-
-  const periodError = formState.errors?.alerts?.[alert.type]?.period?.message;
-
   return (
     <Stack direction={'column'}>
       <InlineFieldRow className={styles.alertRow}>
@@ -96,21 +83,9 @@ export const FailedExecutionsAlert = ({
           onClick={() => handleToggleAlert(alert.type)}
           checked={selected}
         />
-        <Text>Alert if at least</Text> <ThresholdSelector alert={alert} selected={selected} />
-        <div style={{ whiteSpace: 'break-spaces' }}>
-          <Stack direction="row" alignItems="center" gap={0}>
-            {testExecutionsPerPeriod !== 0 && (
-              <Text color={selected ? `warning` : undefined}>{`of ${testExecutionsPerPeriod} `}</Text>
-            )}
-            <Text>
-              {testExecutionsPerPeriod
-                ? `probe ${pluralize('execution', testExecutionsPerPeriod)}`
-                : pluralize(' execution', threshold)}{' '}
-              fail
-              {threshold === 1 && 's'} in the last
-            </Text>
-          </Stack>
-        </div>
+        <Text>Alert if the average {checkType} request duration exceeds </Text>{' '}
+        <ThresholdSelector alert={alert} selected={selected} suffix={alert.unit} width={9} />
+        <Text>over the last </Text>
         <InlineField
           htmlFor={`alert-period-${alert.type}`}
           invalid={!!periodError}
@@ -149,15 +124,6 @@ export const FailedExecutionsAlert = ({
         </div>
       </InlineFieldRow>
       <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
-
-      {selected && !!testExecutionsPerPeriod && (
-        <AlertEvaluationInfo
-          testExecutionsPerPeriod={testExecutionsPerPeriod}
-          checkFrequency={checkFrequency}
-          period={period}
-          probesNumber={probes.length}
-        />
-      )}
     </Stack>
   );
 };

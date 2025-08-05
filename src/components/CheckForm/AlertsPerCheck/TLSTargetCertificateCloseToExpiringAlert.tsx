@@ -19,6 +19,7 @@ import { CheckAlertType, CheckFormValues } from 'types';
 
 import { getAlertItemStyles } from './AlertItem';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { RunbookUrl } from './RunbookUrl';
 
 export const TLSTargetCertificateCloseToExpiringAlert = ({
   alert,
@@ -105,6 +106,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
+      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
     </Stack>
   );
 };

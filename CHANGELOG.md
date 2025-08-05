@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.33.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.33.1...v1.33.2) (2025-08-04)
+
+
+### Features
+
+* add new latency alerts ([#1188](https://github.com/grafana/synthetic-monitoring-app/issues/1188)) ([81a5917](https://github.com/grafana/synthetic-monitoring-app/commit/81a59172c5b6cf3c0fb453903bb3a6ca0753953d))
+* per check alerts runbooks UI support ([#1173](https://github.com/grafana/synthetic-monitoring-app/issues/1173)) ([80d78e2](https://github.com/grafana/synthetic-monitoring-app/commit/80d78e2085e858b8053c76f5bfa6a8bc7a6e52be))
+
+
+### Fixes
+
+* restrict secrets tab usage to admin users ([#1213](https://github.com/grafana/synthetic-monitoring-app/issues/1213)) ([be7475a](https://github.com/grafana/synthetic-monitoring-app/commit/be7475ae6c426a92886c617a10a08af50a4c1082))
+
+## [1.33.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.33.0...v1.33.1) (2025-07-28)
+
+
+### Fixes
+
+* github actions staging value passthrough ([#1208](https://github.com/grafana/synthetic-monitoring-app/issues/1208)) ([df58967](https://github.com/grafana/synthetic-monitoring-app/commit/df589679753fc33d09221c603255377dd78cbe5d))
+
+## [1.33.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.32.0...v1.33.0) (2025-07-24)
+
+
+### Features
+
+* add probe server api url alongside backend address for private probe creation ([#1194](https://github.com/grafana/synthetic-monitoring-app/issues/1194)) ([a69706e](https://github.com/grafana/synthetic-monitoring-app/commit/a69706e0c12207f06df40c53575d37e7848c0ca2))
+
+
+### Fixes
+
+* include body and headers in HTTP check Terraform export ([#1195](https://github.com/grafana/synthetic-monitoring-app/issues/1195)) ([1308ba7](https://github.com/grafana/synthetic-monitoring-app/commit/1308ba76e968bb9d0cbbd1c81cd0bdaa98261505))
+* prevent loading errorRateMap when data has not finished loading ([#1201](https://github.com/grafana/synthetic-monitoring-app/issues/1201)) ([ad93b4d](https://github.com/grafana/synthetic-monitoring-app/commit/ad93b4dcc91e0d2b9788fa41149817715cae5ba0))
+* use secret name, not UUID, to interact with the API ([#1205](https://github.com/grafana/synthetic-monitoring-app/issues/1205)) ([1ca2704](https://github.com/grafana/synthetic-monitoring-app/commit/1ca270499acdf56a8d7221839dd53317deef1c69))
+* validation logic for DNS targets and add appropriate tests ([#1193](https://github.com/grafana/synthetic-monitoring-app/issues/1193)) ([2bf2f93](https://github.com/grafana/synthetic-monitoring-app/commit/2bf2f930483a2b8dbe37188df6d6ea5783d2185f))
+
 ## [1.32.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.31.0...v1.32.0) (2025-07-15)
 
 

@@ -327,6 +327,7 @@ export interface CheckAlertFormValues {
   isSelected?: boolean;
   status?: string;
   creationError?: CheckAlertError;
+  runbookUrl?: string;
 }
 
 export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertFormValues>>;
@@ -658,12 +659,16 @@ export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 export enum CheckAlertType {
   ProbeFailedExecutionsTooHigh = 'ProbeFailedExecutionsTooHigh',
   TLSTargetCertificateCloseToExpiring = 'TLSTargetCertificateCloseToExpiring',
+  HTTPRequestDurationTooHighAvg = 'HTTPRequestDurationTooHighAvg',
+  PingRequestDurationTooHighAvg = 'PingRequestDurationTooHighAvg',
+  DNSRequestDurationTooHighAvg = 'DNSRequestDurationTooHighAvg',
 }
 
 export enum CheckAlertCategory {
   TLSCertificate = 'TLS Certificate',
   RequestDuration = 'Request Duration',
   FailedChecks = 'Failed Checks',
+  Latency = 'Latency',
 }
 
 export enum CheckAlertError {
@@ -676,6 +681,7 @@ export type CheckAlertDraft = {
   name: CheckAlertType;
   threshold: number;
   period?: string;
+  runbookUrl?: string;
 };
 
 export type CheckAlertPublished = CheckAlertDraft & {
@@ -684,6 +690,8 @@ export type CheckAlertPublished = CheckAlertDraft & {
   status: string;
   error?: CheckAlertError;
 };
+
+export type CheckAlertWithRunbookUrl = Omit<CheckAlertPublished, 'runbookUrl'> & { runbookUrl: string };
 
 export type ThresholdUnit = 'ms' | 's' | 'd' | '%' | 'no.';
 

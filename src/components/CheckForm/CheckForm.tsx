@@ -59,6 +59,7 @@ function CheckFormInternal() {
     check,
     checkState,
     getIsExistingCheck,
+    initialSection,
     isDisabled,
     schema,
     checkType,
@@ -142,6 +143,7 @@ function CheckFormInternal() {
         alerts={alerts}
         checkState={checkState}
         checkType={checkType}
+        initialSection={initialSection}
         onSubmit={handleSubmit}
         onValid={handleValid}
         onInvalid={handleInvalid}
