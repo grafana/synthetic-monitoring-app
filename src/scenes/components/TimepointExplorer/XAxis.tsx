@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 
 import {
   TIMEPOINT_GAP_PX,
+  TIMEPOINT_SIZE,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
@@ -33,7 +34,7 @@ export const XAxis = ({ timepoints }: XAxisProps) => {
 };
 
 const XAxisContent = ({ timepoints }: XAxisProps) => {
-  const { listWidth, timepointWidth } = useTimepointExplorerContext();
+  const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
   const [dashboardTimeRange] = useTimeRange();
   const crossesDays = doesTimeRangeCrossDays(dashboardTimeRange.from.toDate(), dashboardTimeRange.to.toDate());
@@ -42,16 +43,11 @@ const XAxisContent = ({ timepoints }: XAxisProps) => {
     [timepoints, crossesDays, timepointWidth]
   );
 
-  const renderedGaps = timepoints.length - 1;
-  const widthWithoutGaps = listWidth - renderedGaps * TIMEPOINT_GAP_PX;
-  const renderedTimepointWidth = widthWithoutGaps / timepoints.length;
-  const widthToUse = renderedTimepointWidth > timepointWidth ? timepointWidth : renderedTimepointWidth;
-
   return (
     <div className={styles.labelContainer}>
       {points.map((point) => {
         return (
-          <XAxisLabel key={point.label} index={point.index} timepointWidth={widthToUse}>
+          <XAxisLabel key={point.label} index={point.index}>
             {point.label}
           </XAxisLabel>
         );
@@ -60,20 +56,13 @@ const XAxisContent = ({ timepoints }: XAxisProps) => {
   );
 };
 
-const XAxisLabel = ({
-  children,
-  index,
-  timepointWidth,
-}: {
-  children: ReactNode;
-  index: number;
-  timepointWidth: number;
-}) => {
+const XAxisLabel = ({ children, index }: { children: ReactNode; index: number }) => {
   const styles = useStyles2(getStyles);
-  const offset = index * (timepointWidth + TIMEPOINT_GAP_PX);
+  const timepointWidth = TIMEPOINT_SIZE + TIMEPOINT_GAP_PX;
+  const offset = index * timepointWidth;
 
   return (
-    <div className={styles.label} style={{ right: offset + timepointWidth / 2 }}>
+    <div className={styles.label} style={{ right: -1 + offset + timepointWidth / 2 }}>
       <div className={styles.text}>{children}</div>
       <div className={styles.line} />
     </div>

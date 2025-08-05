@@ -7,7 +7,7 @@ import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer
 
 type TimepointVizItemProps = HTMLAttributes<HTMLElement> & {
   as?: ElementType;
-  state: `failure` | `success` | `unknown`;
+  state: `failure` | `success` | `unknown` | `pending`;
 };
 
 type TimepointVizOption = {
@@ -20,6 +20,7 @@ type TimepointVizOptions = {
   success: TimepointVizOption;
   failure: TimepointVizOption;
   unknown: TimepointVizOption;
+  pending: TimepointVizOption;
 };
 
 export const TimepointVizItem = forwardRef<HTMLElement, TimepointVizItemProps>(
@@ -44,6 +45,11 @@ export const TimepointVizItem = forwardRef<HTMLElement, TimepointVizItemProps>(
           border: option,
           backgroundColor: 'transparent',
           color: theme.colors.getContrastText(option),
+        },
+        pending: {
+          border: option,
+          backgroundColor: 'transparent',
+          color: option,
         },
       };
     }, [theme, option]);

@@ -7,7 +7,7 @@ import { PlainButton } from 'components/PlainButton';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
-const VIZ_STATES = [`failure`, `success`, `unknown`] as const;
+const VIZ_STATES = [`failure`, `success`, `unknown`, `pending`] as const;
 
 export const TimepointListVizLegend = () => {
   const styles = useStyles2(getStyles);

@@ -84,7 +84,7 @@ const TimepointMinimapContent = () => {
 
   return (
     <Box position="relative" paddingY={2}>
-      <Stack gap={0.25}>
+      <Stack gap={0}>
         {filler.map((_, index) => {
           return <Box key={index} flex={1} />;
         })}

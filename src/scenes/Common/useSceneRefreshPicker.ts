@@ -3,7 +3,7 @@ import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { sceneGraph, SceneRefreshPicker, SceneRefreshPickerState } from '@grafana/scenes';
 import { useSceneContext } from '@grafana/scenes-react';
 
-export function useSceneRefreshPicker() {
+export function useSceneRefreshPicker(onRefresh?: () => void) {
   const sceneContext = useSceneContext();
   const refreshPicker = sceneGraph.findObject(sceneContext, (obj) => obj instanceof SceneRefreshPicker);
   const state = refreshPicker?.state as SceneRefreshPickerState;
@@ -13,7 +13,7 @@ export function useSceneRefreshPicker() {
 
   useEffect(() => {
     const listener = () => {
-      console.log('clicked');
+      onRefresh?.();
     };
 
     el?.addEventListener('click', listener);
@@ -21,7 +21,7 @@ export function useSceneRefreshPicker() {
     return () => {
       el?.removeEventListener('click', listener);
     };
-  }, [el]);
+  }, [el, onRefresh]);
 
   if (refreshPicker?.state) {
     return {

@@ -13,7 +13,7 @@ import {
   StatelessTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
-import { getLabel } from 'scenes/components/TimepointExplorer/TimepointMinimapSection.utils';
+import { getLabel, getState } from 'scenes/components/TimepointExplorer/TimepointMinimapSection.utils';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
 interface MiniMapSectionProps {
@@ -63,8 +63,7 @@ const UptimeTimepoint = ({ timepoint, timepointIndex }: { timepoint: StatelessTi
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
   const width = `${100 / timepointsDisplayCount}%`;
-  const state =
-    statefulTimepoint.uptimeValue === 0 ? 'failure' : statefulTimepoint.uptimeValue === 1 ? 'success' : 'unknown';
+  const state = getState(statefulTimepoint);
 
   if (!vizDisplay.includes(state)) {
     return <div style={{ width }} />;
@@ -182,14 +181,15 @@ const MinimapSectionAnnotations = ({ timepointsInRange }: { timepointsInRange: S
   return (
     <div className={styles.container}>
       {annotationsToRender.map((annotation) => {
+        console.log(new Date(annotation.timepointStart.adjustedTime).toISOString());
         const timepointEndIndex = renderOrderedTimepoints.findIndex(
           (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime
         );
-        const right = (100 / timepointsDisplayCount) * timepointEndIndex;
+        const right = (100 / (timepointsDisplayCount - 1)) * timepointEndIndex;
 
         return (
           <div
-            key={annotation.checkEvent.label}
+            key={`${annotation.checkEvent.label}-${annotation.timepointEnd.adjustedTime}`}
             className={styles.annotation}
             style={{
               right: `${right}%`,
@@ -213,7 +213,6 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => ({
     justify-content: end;
     position: relative;
     z-index: 1;
-    gap: ${theme.spacing(0.25)};
 
     &:before,
     &:after {

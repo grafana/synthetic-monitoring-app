@@ -74,7 +74,7 @@ interface BuildTimepointsInRangeProps {
   checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
 }
 
-export function buildTimepoints({ from, to, checkConfigs }: BuildTimepointsInRangeProps) {
+export function buildTimepoints({ from, to, checkConfigs }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
   const configsToAndFrom = configTimeRanges(checkConfigs, to);
 
   const timepoints = configsToAndFrom.map((config) => {
@@ -107,7 +107,7 @@ interface BuildTimepointsForConfigProps {
 }
 
 export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsForConfigProps) {
-  let build: StatelessTimepoint[] = [];
+  let build: Array<Omit<StatelessTimepoint, 'index'>> = [];
   let currentTimepoint = timeshiftedTimepoint(to, config.frequency);
 
   while (currentTimepoint >= from) {
@@ -144,11 +144,9 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
 }
 
 export function constructCheckEvents({
-  timeRangeFrom,
   checkConfigs,
   checkCreation = -1,
 }: {
-  timeRangeFrom: UnixTimestamp;
   checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
   checkCreation?: UnixTimestamp;
 }): CheckEvent[] {
@@ -288,7 +286,7 @@ interface GetVisibleTimepointsProps {
 
 export function getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages }: GetVisibleTimepointsProps) {
   const [start, end] = miniMapPages[miniMapCurrentPage] || [0, timepoints.length];
-  return timepoints.slice(start, end);
+  return timepoints.slice(start, end + 1);
 }
 
 export function getVisibleTimepointsTimeRange({ timepoints }: { timepoints: StatelessTimepoint[] }) {
@@ -339,6 +337,7 @@ export function buildLogsMap(
       executions,
       uptimeValue: calculateUptimeValue(executions),
       maxProbeDuration: getMaxProbeDuration(executions),
+      index: timepoint.index,
     };
 
     return acc;
@@ -399,7 +398,7 @@ export function getIsResultPending({ check, logsMap, selectedProbes, timepoints,
   const latestTimepoint = timepoints[timepoints.length - 1];
 
   if (!latestTimepoint) {
-    return true;
+    return false;
   }
 
   const entry = logsMap[latestTimepoint.adjustedTime];
@@ -410,17 +409,21 @@ export function getIsResultPending({ check, logsMap, selectedProbes, timepoints,
 
   const entryResults = Object.values(entry.executions);
   const normalisedProbes = getNormalisedProbes(selectedProbes, check, probes);
-  const isResultPending = normalisedProbes.length !== entryResults.length;
+  const isResultPending = normalisedProbes.length > entryResults.length;
 
   return isResultPending;
 }
 
 function getNormalisedProbes(selectedProbes: Array<string | number>, check: Check, probes: Probe[]) {
-  const onlineProbes = probes.filter((probe) => probe.online).map((probe) => probe.id || -1);
-
   if (selectedProbes.includes('.*')) {
-    return onlineProbes.filter((probe) => check.probes.includes(probe));
+    return getSelectedOnlineProbes(check.probes, probes);
   }
 
-  return probes;
+  return getSelectedOnlineProbes(selectedProbes, probes);
+}
+
+export function getSelectedOnlineProbes(selectedProbes: Array<string | number>, probes: Probe[]) {
+  const onlineProbes = probes.filter((probe) => probe.online).map((probe) => probe.id || -1);
+
+  return onlineProbes.filter((probe) => selectedProbes.includes(probe));
 }

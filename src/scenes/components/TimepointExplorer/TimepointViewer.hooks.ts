@@ -2,6 +2,7 @@ import { parseCheckLogs } from 'features/parseCheckLogs/parseCheckLogs';
 
 import { ExecutionLabelType, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
+import { REF_ID_EXECUTION_VIEWER_LOGS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { filterProbes } from 'scenes/components/TimepointExplorer/TimepointViewer.utils';
 
@@ -17,7 +18,7 @@ export function useTimepointLogs({ timepoint, job, instance, refetchInterval, pr
   const probeExpr = probe?.join('|') || '.*';
 
   const props = useInfiniteLogs<UnknownExecutionLog['labels'], ExecutionLabelType>({
-    refId: `${job}-${instance}-${timepoint.adjustedTime}`,
+    refId: `${REF_ID_EXECUTION_VIEWER_LOGS}-${job}-${instance}-${timepoint.adjustedTime}`,
     expr: `{job="${job}", instance="${instance}", probe=~"${probeExpr}"} | logfmt`,
     start: timepoint.adjustedTime,
     end: timepoint.adjustedTime + timepoint.timepointDuration * 2,

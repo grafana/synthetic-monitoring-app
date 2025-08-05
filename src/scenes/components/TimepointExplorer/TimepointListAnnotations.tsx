@@ -4,15 +4,14 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import {
-  THEME_UNIT,
-  TIMEPOINT_GAP,
+  TIMEPOINT_GAP_PX,
   TIMEPOINT_LIST_ANNOTATIONS_ID,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export const TimepointListAnnotations = ({ timepointsInRange }: { timepointsInRange: StatelessTimepoint[] }) => {
-  const { annotations, timepointsDisplayCount, timepointWidth } = useTimepointExplorerContext();
+  const { annotations, timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
   const renderOrderedTimepoints = [...timepointsInRange].reverse();
   const timepointsInRangeAdjustedTimes = timepointsInRange.map((timepoint) => timepoint.adjustedTime);
@@ -29,14 +28,14 @@ export const TimepointListAnnotations = ({ timepointsInRange }: { timepointsInRa
         const timepointEndIndex = renderOrderedTimepoints.findIndex(
           (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime
         );
-        const right = (100 / timepointsDisplayCount) * timepointEndIndex;
+        const right = (timepointWidth + TIMEPOINT_GAP_PX) * (timepointEndIndex + 1);
 
         return (
           <div
             key={`${annotation.checkEvent.label}-${annotation.timepointEnd.adjustedTime}`}
             className={styles.annotation}
             style={{
-              right: `calc(${right}% + ${timepointWidth + (TIMEPOINT_GAP * THEME_UNIT) / 2}px)`,
+              right: `${right}px`,
             }}
           >
             <div className={styles.label}>{annotation.checkEvent.label}</div>

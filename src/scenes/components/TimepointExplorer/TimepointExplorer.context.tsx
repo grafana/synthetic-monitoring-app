@@ -13,16 +13,17 @@ import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
 
 import { Check } from 'types';
-import { useProbes } from 'data/useProbes';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
 import {
   MAX_PROBE_DURATION_DEFAULT,
   TIMEPOINT_EXPLORER_VIEW_OPTIONS,
   TIMEPOINT_GAP_PX,
   TIMEPOINT_SIZE,
+  VIZ_DISPLAY_OPTIONS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   useExecutionEndingLogs,
+  useIsResultPending,
   usePersistedCheckConfigs,
   usePersistedMaxProbeDuration,
   useTimepoints,
@@ -45,7 +46,6 @@ import {
   constructCheckEvents,
   findNearest,
   generateAnnotations,
-  getIsResultPending,
   getMiniMapPages,
   getMiniMapSections,
   getVisibleTimepoints,
@@ -73,7 +73,6 @@ type TimepointExplorerContextType = {
   maxProbeDuration: number;
   miniMapCurrentPage: number;
   miniMapCurrentPageSections: MiniMapSections;
-  miniMapCurrentPageTimeRange: { from: UnixTimestamp; to: UnixTimestamp };
   miniMapCurrentSectionIndex: number;
   miniMapPages: MiniMapPages;
   selectedTimepoint: SelectedTimepointState;
@@ -94,24 +93,23 @@ interface TimepointExplorerProviderProps extends PropsWithChildren {
 export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
   const [timeRange] = useTimeRange();
   const timeRangeRef = useRef<TimeRange>(timeRange);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
   const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
   const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
   const [timepointsDisplayCount, setTimepointsDisplayCount] = useState<number>(0);
   const theme = useTheme2();
-  const [vizDisplay, setVizDisplay] = useState<VizDisplay>([`success`, `failure`, `unknown`]);
+  const [vizDisplay, setVizDisplay] = useState<VizDisplay>(VIZ_DISPLAY_OPTIONS);
   const [vizOptions, setVizOptions] = useState<Record<VizDisplayValue, string>>({
     success: theme.visualization.getColorByName(`green`),
     failure: theme.visualization.getColorByName(`red`),
     unknown: theme.visualization.getColorByName(`gray`),
+    pending: theme.visualization.getColorByName(`blue`),
   });
   const [listWidth, setListWidth] = useState<number>(0);
   const [timepointWidth, setTimepointWidth] = useState<number>(TIMEPOINT_SIZE);
   const [hoveredExecution, setHoveredExecution] = useState<string | null>(null);
   const probeVar = useSceneVar('probe');
-  const { data: probes = [] } = useProbes();
 
   const {
     data: maxProbeDurationData,
@@ -188,11 +186,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const checkEvents = useMemo(
     () =>
       constructCheckEvents({
-        timeRangeFrom: miniMapCurrentPageTimeRange.from,
         checkConfigs,
         checkCreation: check.created,
       }),
-    [miniMapCurrentPageTimeRange.from, checkConfigs, check.created]
+    [checkConfigs, check.created]
   );
 
   const annotations = useMemo(
@@ -255,14 +252,14 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const handleVizDisplayChange = useCallback((display: VizDisplayValue, usedModifier: boolean) => {
     setVizDisplay((prev) => {
       const isSelected = prev.includes(display);
-      const allSelected = prev.length === 3;
+      const allSelected = prev.length === VIZ_DISPLAY_OPTIONS.length;
 
       if (usedModifier) {
         return isSelected ? prev.filter((value) => value !== display) : [...prev, display];
       }
 
       if (isSelected && !allSelected) {
-        return [`success`, `failure`, `unknown`];
+        return [`success`, `failure`, `unknown`, `pending`];
       }
 
       return [display];
@@ -279,36 +276,18 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     setHoveredExecution(executionId);
   }, []);
 
-  const isResultPending = getIsResultPending({ check, logsMap, selectedProbes: probeVar, timepoints, probes });
+  const handleIsPending = useCallback(() => {
+    refetchEndingLogs();
+    refetchCheckConfigs();
+    refetchMaxProbeDuration();
+  }, [refetchEndingLogs, refetchCheckConfigs, refetchMaxProbeDuration]);
 
-  useEffect(() => {
-    if (isResultPending && !intervalRef.current) {
-      console.log(`setting interval`);
-
-      intervalRef.current = setInterval(() => {
-        console.log(`refetching`);
-        refetchEndingLogs();
-        refetchCheckConfigs();
-        refetchMaxProbeDuration();
-      }, 3000);
-    }
-
-    if (!isResultPending) {
-      if (intervalRef.current) {
-        console.log(`clearing`);
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        console.log(`clearing - unmount`);
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [isResultPending, refetchEndingLogs, refetchCheckConfigs, refetchMaxProbeDuration]);
+  const isResultPending = useIsResultPending({
+    handleIsPending,
+    check,
+    logsMap,
+    timepoints: visibleTimepoints,
+  });
 
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
@@ -332,7 +311,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       maxProbeDuration,
       miniMapCurrentPage,
       miniMapCurrentPageSections,
-      miniMapCurrentPageTimeRange,
       miniMapCurrentSectionIndex,
       miniMapPages,
       selectedTimepoint,
@@ -364,7 +342,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     maxProbeDuration,
     miniMapCurrentPage,
     miniMapCurrentPageSections,
-    miniMapCurrentPageTimeRange,
     miniMapCurrentSectionIndex,
     miniMapPages,
     selectedTimepoint,

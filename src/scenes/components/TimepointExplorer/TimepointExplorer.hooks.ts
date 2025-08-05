@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TimeRange } from '@grafana/data';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
@@ -9,9 +9,12 @@ import { EndingLogLabels, ExecutionLabels, ExecutionLabelType } from 'features/p
 import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
+import { useProbes } from 'data/useProbes';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
+import { useSceneVar } from 'scenes/Common/useSceneVar';
 import {
-  REF_ID_CHECK_LOGS,
+  REF_ID_EXECUTION_LIST_LOGS,
   REF_ID_MAX_PROBE_DURATION,
   REF_ID_UNIQUE_CHECK_CONFIGS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
@@ -26,6 +29,7 @@ import {
   buildLogsMap,
   buildTimepoints,
   extractFrequenciesAndConfigs,
+  getIsResultPending,
   getVisibleTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
@@ -73,7 +77,7 @@ export function useExecutionEndingLogs({ timeRange, check, timepoints, probe }: 
     data: logsData = [],
     ...rest
   } = usePersistedInfiniteLogs<ExecutionLabels & EndingLogLabels, ExecutionLabelType>({
-    refId: REF_ID_CHECK_LOGS,
+    refId: REF_ID_EXECUTION_LIST_LOGS,
     expr: `{job="${check.job}", instance="${check.target}", probe=~"${probeExpr}"} | logfmt |="duration_seconds="`,
     start: timeRange.from,
     end: timeRange.to,
@@ -250,14 +254,72 @@ function useMaxProbeDuration({ timeRange, check, probe, refetchInterval }: UseMa
 }
 
 export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
-  const { logsMap, maxProbeDuration } = useTimepointExplorerContext();
+  const { logsMap, maxProbeDuration, timepoints, isResultPending } = useTimepointExplorerContext();
+  const isPendingEntry = isResultPending && timepoints.length - 1 === timepoint.index;
 
-  return (
-    logsMap[timepoint.adjustedTime] || {
-      uptimeValue: -1,
-      maxProbeDuration: maxProbeDuration / 2,
-      executions: [],
-      adjustedTime: timepoint.adjustedTime,
+  const defaultState: StatefulTimepoint = {
+    uptimeValue: isPendingEntry ? 2 : -1,
+    maxProbeDuration: maxProbeDuration / 2,
+    executions: [],
+    adjustedTime: timepoint.adjustedTime,
+    timepointDuration: timepoint.timepointDuration,
+    frequency: timepoint.frequency,
+    index: timepoint.index,
+  };
+
+  const entry = logsMap[timepoint.adjustedTime];
+
+  if (!entry) {
+    return defaultState;
+  }
+
+  return {
+    ...entry,
+    uptimeValue: isPendingEntry ? 2 : entry.uptimeValue,
+  };
+}
+
+interface UseIsResultPendingProps {
+  handleIsPending: () => void;
+  check: Check;
+  logsMap: Record<UnixTimestamp, StatefulTimepoint>;
+  timepoints: StatelessTimepoint[];
+}
+
+export function useIsResultPending({ handleIsPending, check, logsMap, timepoints }: UseIsResultPendingProps) {
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const selectedProbes = useSceneVar('probe');
+  const { data: probes = [] } = useProbes();
+  const isResultPending = getIsResultPending({ check, logsMap, selectedProbes, timepoints, probes });
+  const state = useSceneRefreshPicker();
+
+  const refreshInMs = state?.refreshInMs;
+
+  useEffect(() => {
+    if (refreshInMs) {
+      return;
     }
-  );
+
+    if (isResultPending && !intervalRef.current) {
+      intervalRef.current = setInterval(() => {
+        handleIsPending();
+      }, 3000);
+    }
+
+    if (!isResultPending) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isResultPending, handleIsPending, refreshInMs]);
+
+  return isResultPending;
 }

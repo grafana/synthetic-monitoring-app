@@ -1,5 +1,8 @@
 import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
-import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  TIMEPOINT_EXPLORER_VIEW_OPTIONS,
+  VIZ_DISPLAY_OPTIONS,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
 export type UnixTimestamp = number;
 
@@ -7,9 +10,10 @@ export type StatelessTimepoint = {
   adjustedTime: UnixTimestamp;
   timepointDuration: number;
   frequency: number;
+  index: number;
 };
 
-export type VizDisplayValue = `success` | `failure` | `unknown`;
+export type VizDisplayValue = (typeof VIZ_DISPLAY_OPTIONS)[number];
 export type VizDisplay = VizDisplayValue[];
 
 export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value'];
@@ -56,7 +60,8 @@ export interface StatefulTimepoint {
   adjustedTime: UnixTimestamp;
   timepointDuration: number;
   frequency: number;
-  uptimeValue: -1 | 0 | 1;
+  uptimeValue: -1 | 0 | 1 | 2; // -1: unknown, 0: failure, 1: success, 2: pending
   executions: ExecutionsInTimepoint[];
   maxProbeDuration: number;
+  index: number;
 }

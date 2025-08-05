@@ -3,7 +3,7 @@ import { promUniqueConfigs } from 'test/fixtures/httpCheck/promUniqueConfigs';
 
 import { ApiEntry } from 'test/handlers/types';
 import {
-  REF_ID_CHECK_LOGS,
+  REF_ID_EXECUTION_LIST_LOGS,
   REF_ID_UNIQUE_CHECK_CONFIGS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
@@ -19,7 +19,7 @@ export const getHttpDashboard: ApiEntry<unknown> = {
       };
     }
 
-    if (refId?.startsWith(REF_ID_CHECK_LOGS)) {
+    if (refId?.startsWith(REF_ID_EXECUTION_LIST_LOGS)) {
       return {
         // todo: fix this
         json: checksLogs1(`checkLogs-1745503200000`),

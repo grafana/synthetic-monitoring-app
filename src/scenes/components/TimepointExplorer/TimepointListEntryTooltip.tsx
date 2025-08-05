@@ -7,17 +7,19 @@ import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { formatDuration, formatSmallDurations } from 'utils';
 import { PlainButton } from 'components/PlainButton';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { StatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getIsExecutionSelected } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface TimepointListEntryTooltipProps {
-  statefulTimepoint: StatefulTimepoint;
+  timepoint: StatelessTimepoint;
 }
 
-export const TimepointListEntryTooltip = ({ statefulTimepoint }: TimepointListEntryTooltipProps) => {
+export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
   const { handleExecutionHover, handleSelectedTimepointChange, hoveredExecution, selectedTimepoint } =
     useTimepointExplorerContext();
+  const statefulTimepoint = useStatefulTimepoint(timepoint);
   const displayTime = new Date(statefulTimepoint.adjustedTime).toLocaleString();
   const probeCount = statefulTimepoint.executions.length;
 
@@ -27,8 +29,8 @@ export const TimepointListEntryTooltip = ({ statefulTimepoint }: TimepointListEn
       const duration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
       return sum + duration;
     }, 0) / probeCount;
-
   const renderedAvgDuration = Number.isNaN(avgDuration) ? `-` : formatSmallDurations(avgDuration);
+  const renderedFrequency = !statefulTimepoint.frequency ? `-` : formatDuration(statefulTimepoint.frequency, true);
 
   return (
     <Stack direction="column" gap={2}>
@@ -42,55 +44,59 @@ export const TimepointListEntryTooltip = ({ statefulTimepoint }: TimepointListEn
       </div>
 
       <Stack direction="column" gap={1}>
-        {statefulTimepoint.executions.map((execution) => {
-          const executionId = execution.id;
-          const { probe, probe_success, duration_seconds } = execution.execution[LokiFieldNames.Labels];
-          const isSuccess = probe_success === '1';
-          const duration = Number(duration_seconds) * 1000;
-          const isSelected = getIsExecutionSelected(statefulTimepoint, executionId, selectedTimepoint);
-          const isHovered = hoveredExecution === executionId;
+        {statefulTimepoint.executions
+          .sort((a, b) => a.probe.localeCompare(b.probe))
+          .map((execution) => {
+            const executionId = execution.id;
+            const { probe, probe_success, duration_seconds } = execution.execution[LokiFieldNames.Labels];
+            const isSuccess = probe_success === '1';
+            const duration = Number(duration_seconds) * 1000;
+            const isSelected = getIsExecutionSelected(statefulTimepoint, executionId, selectedTimepoint);
+            const isHovered = hoveredExecution === executionId;
 
-          return (
-            <div key={probe} className={styles.probeRow}>
-              <PlainButton
-                className={cx(styles.probeName, {
-                  [styles.hovered]: isHovered,
-                  [styles.selected]: isSelected,
-                })}
-                onClick={() => {
-                  handleSelectedTimepointChange(statefulTimepoint, executionId);
-                }}
-                onMouseEnter={() => handleExecutionHover(executionId)}
-                onMouseLeave={() => handleExecutionHover(null)}
-              >
-                {probe}
-              </PlainButton>
-              <Stack direction="row" gap={1} alignItems="center">
-                <Badge color={isSuccess ? 'green' : 'red'} text={isSuccess ? 'Success' : 'Fail'} />
-                <span className={styles.duration}>{formatSmallDurations(duration)}</span>
-              </Stack>
-            </div>
-          );
-        })}
+            return (
+              <div key={probe} className={styles.probeRow}>
+                <PlainButton
+                  className={cx(styles.probeName, {
+                    [styles.hovered]: isHovered,
+                    [styles.selected]: isSelected,
+                  })}
+                  onClick={() => {
+                    handleSelectedTimepointChange(statefulTimepoint, executionId);
+                  }}
+                  onMouseEnter={() => handleExecutionHover(executionId)}
+                  onMouseLeave={() => handleExecutionHover(null)}
+                >
+                  {probe}
+                </PlainButton>
+                <Stack direction="row" gap={1} alignItems="center">
+                  <Badge color={isSuccess ? 'green' : 'red'} text={isSuccess ? 'Success' : 'Fail'} />
+                  <span className={styles.duration}>{formatSmallDurations(duration)}</span>
+                </Stack>
+              </div>
+            );
+          })}
       </Stack>
 
       {/* Footer */}
       <div className={styles.footer}>
-        <span>Frequency: {formatDuration(statefulTimepoint.frequency, true)}</span>
+        <span>Frequency: {renderedFrequency}</span>
         <span>Avg: {renderedAvgDuration}</span>
       </div>
     </Stack>
   );
 };
 
-const StatusBadge = ({ status }: { status: number }) => {
+const StatusBadge = ({ status }: { status: -1 | 0 | 1 | 2 }) => {
   switch (status) {
+    case -1:
+      return <Badge color="orange" text="UNKNOWN" />;
     case 1:
       return <Badge color="green" text="UP" />;
     case 0:
       return <Badge color="red" text="DOWN" />;
-    default:
-      return <Badge color="orange" text="UNKNOWN" />;
+    case 2:
+      return <Badge color="blue" text="PENDING" />;
   }
 };
 

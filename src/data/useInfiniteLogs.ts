@@ -24,7 +24,7 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end, refetchInterval
         throw new Error('Logs data source not found');
       }
 
-      const pageRefId = `${refId}-${pageParam}`;
+      const pageRefId = `${refId}-${new Date(pageParam).toISOString()}`;
 
       const response = await queryLoki<T, R>({
         datasource: logsDS,
@@ -48,14 +48,7 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end, refetchInterval
       const res = data.pages.flatMap((page) => page);
 
       return res;
-
-      // computationally very expensive -- is it needed? Handle duplication on the frontend?
-      const flattenedLogs = data.pages.flatMap((page) => page);
-      const deduplicatedLogs = flattenedLogs.filter(
-        (log, index, self) => index === self.findIndex((t) => t.id === log.id)
-      );
-
-      return deduplicatedLogs.reverse();
     },
+    enabled: !Number.isNaN(start) && !Number.isNaN(end),
   });
 }
