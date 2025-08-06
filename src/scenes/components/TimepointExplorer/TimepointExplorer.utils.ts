@@ -151,30 +151,11 @@ export function constructCheckEvents({
   checkCreation?: UnixTimestamp;
   from: UnixTimestamp;
 }): CheckEvent[] {
-  const OUT_OF_TIMERANGE = {
-    label: CheckEventType.OUT_OF_TIMERANGE,
-    from,
-    to: from,
-  };
-
-  // const OUT_OF_RETENTION = {
-  //   label: `Out of retention`,
-  //   from: -1,
-  //   to: timeRangeFrom,
-  //   type: 'range',
-  // } as const;
-
   const checkCreatedDate = Math.round(checkCreation * 1000);
-
-  const CHECK_CREATED = {
-    label: CheckEventType.CHECK_CREATED,
-    from: checkCreatedDate,
-    to: checkCreatedDate,
-  };
 
   const FAKE_RANGE_RENDERING_CHECK = {
     label: CheckEventType.FAKE_RANGE_RENDERING_CHECK,
-    from: checkCreatedDate + 15000,
+    from: checkCreatedDate - 15000,
     to: checkCreatedDate + 15000 * 40,
   };
 
@@ -186,7 +167,7 @@ export function constructCheckEvents({
       to: config.date,
     }));
 
-  return [OUT_OF_TIMERANGE, FAKE_RANGE_RENDERING_CHECK, CHECK_CREATED, ...events];
+  return [FAKE_RANGE_RENDERING_CHECK, ...events];
 }
 
 export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
