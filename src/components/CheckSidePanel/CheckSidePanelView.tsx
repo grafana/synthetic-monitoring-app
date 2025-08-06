@@ -3,7 +3,7 @@ import { dateTimeFormat, GrafanaTheme2, LoadingState } from '@grafana/data';
 import { Alert, Badge, Box, Button, PanelChrome, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { CheckSidePanelTab, ProbeStatus } from './CheckSidePanel.types';
+import { CheckSidePanelTab, LogMessage, ProbeStatus } from './CheckSidePanel.types';
 
 import { Preformatted } from '../Preformatted';
 import { WikCard } from './components/WikCard';
@@ -59,7 +59,7 @@ export function CheckSidePanelView() {
                   Test
                 </Button>
               </div>
-              
+
               <div className={styles.rightAsideFlex}>
                 {[...requestState].reverse().map((state, index) => {
                   const probesInSegment = state.logs.map((item) => getProbeStatus(index, item.probe));
@@ -103,8 +103,7 @@ export function CheckSidePanelView() {
 
                               <div className={styles.steps}>
                                 {!!probeState.logs.logs &&
-                                  // @ts-expect-error testing
-                                  probeState.logs?.logs?.map(({ msg, ...logObj }, index) => {
+                                  probeState.logs.logs.map(({ msg, ...logObj }: LogMessage, index: number) => {
                                     const invalid =
                                       msg.search(
                                         /invalid|Uncaught \(in promise\)|script did not execute successfully/i
@@ -123,15 +122,14 @@ export function CheckSidePanelView() {
                                             <Preformatted className={styles.k6Info} highlight={HIGHLIGHT_PATTERNS}>
                                               {mess} {messInfo}
                                               {'\n'}
-                                              {/* @ts-expect-error testing */}
-                                              {restMesss.filter((val) => !!val).join('\n')}
+                                              {restMesss.filter((val): val is string => !!val).join('\n')}
                                             </Preformatted>
                                           )}
                                           {(invalid || expand) && (
                                             <Preformatted>
                                               {Object.entries(logObj).map(([key, value]) => (
                                                 <div key={key}>
-                                                  {key}: <span className={styles.mutedText}>{value}</span>
+                                                  {key}: <span className={styles.mutedText}>{`${value}`}</span>
                                                 </div>
                                               ))}
                                             </Preformatted>

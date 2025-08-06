@@ -5,7 +5,7 @@ export interface RequestState {
   id: string;
   logs: Array<{
     probe: string;
-    logs: Record<string, unknown>;
+    logs: ProbeLogData;
     state: 'pending' | 'success' | 'error' | 'timeout';
   }>;
   created: DateTime;
@@ -22,6 +22,18 @@ export interface ProbeStatus {
 export type ProbeState = 'pending' | 'success' | 'error' | 'timeout';
 
 export type CheckSidePanelTab = 'test-preview' | 'documentation';
+
+export interface LogMessage {
+  msg: string;
+  [key: string]: unknown;
+}
+
+export interface ProbeLogData {
+  message?: string;
+  timeseries?: unknown;
+  logs?: LogMessage[];
+  [key: string]: unknown;
+}
 
 // Loki query types
 export interface LokiQueryResults<RefId extends keyof any = 'A'> {
