@@ -5,6 +5,7 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
+import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
@@ -13,6 +14,7 @@ import {
   StatelessTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { TimepointExplorerAnnotations } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations';
 import { getLabel, getState } from 'scenes/components/TimepointExplorer/TimepointMinimapSection.utils';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
@@ -22,14 +24,22 @@ interface MiniMapSectionProps {
 }
 
 export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps) => {
-  const { handleMiniMapSectionChange, miniMapCurrentSectionIndex, timepoints, viewMode, timepointWidth } =
-    useTimepointExplorerContext();
+  const {
+    handleMiniMapSectionChange,
+    listWidth,
+    miniMapCurrentSectionIndex,
+    timepointsDisplayCount,
+    timepoints,
+    viewMode,
+    timepointWidth,
+  } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
   const [start, end] = section;
   const miniMapSectionTimepoints = timepoints.slice(start, end + 1);
   const ref = useRef<HTMLButtonElement>(null);
   const label = getLabel(miniMapSectionTimepoints);
   const isActive = miniMapCurrentSectionIndex === index;
+  const entryWidth = listWidth / MAX_MINIMAP_SECTIONS / timepointsDisplayCount;
 
   return (
     <Tooltip content={label} ref={ref}>
@@ -39,7 +49,7 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
         onClick={() => handleMiniMapSectionChange(index)}
         ref={ref}
       >
-        <MinimapSectionAnnotations timepointsInRange={miniMapSectionTimepoints} />
+        <TimepointExplorerAnnotations displayWidth={entryWidth} timepointsInRange={miniMapSectionTimepoints} />
         {miniMapSectionTimepoints.map((timepoint, index) => {
           if (viewMode === 'uptime') {
             return (
@@ -166,41 +176,6 @@ const ExecutionEntry = ({ containerHeight, offset, execution, timepoint }: Execu
   );
 };
 
-const MinimapSectionAnnotations = ({ timepointsInRange }: { timepointsInRange: StatelessTimepoint[] }) => {
-  const { annotations, timepointsDisplayCount } = useTimepointExplorerContext();
-  const renderOrderedTimepoints = [...timepointsInRange].reverse();
-  const styles = useStyles2(getAnnotationStyles);
-  const timepointsInRangeAdjustedTimes = renderOrderedTimepoints.map((timepoint) => timepoint.adjustedTime);
-
-  const annotationsToRender = annotations.filter((annotation) => {
-    return timepointsInRangeAdjustedTimes.some((timepoint) => {
-      return [annotation.timepointStart.adjustedTime, annotation.timepointEnd.adjustedTime].includes(timepoint);
-    });
-  });
-
-  return (
-    <div className={styles.container}>
-      {annotationsToRender.map((annotation) => {
-        console.log(new Date(annotation.timepointStart.adjustedTime).toISOString());
-        const timepointEndIndex = renderOrderedTimepoints.findIndex(
-          (timepoint) => timepoint.adjustedTime === annotation.timepointEnd.adjustedTime
-        );
-        const right = (100 / (timepointsDisplayCount - 1)) * timepointEndIndex;
-
-        return (
-          <div
-            key={`${annotation.checkEvent.label}-${annotation.timepointEnd.adjustedTime}`}
-            className={styles.annotation}
-            style={{
-              right: `${right}%`,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-};
-
 const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => ({
   section: css`
     width: 100%;
@@ -265,22 +240,3 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => ({
     border-radius: 50%;
   `,
 });
-
-const getAnnotationStyles = (theme: GrafanaTheme2) => {
-  return {
-    container: css`
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    `,
-    annotation: css`
-      height: 100%;
-      width: 1px;
-      border: 1px dashed yellow;
-      position: absolute;
-      bottom: 0;
-    `,
-  };
-};

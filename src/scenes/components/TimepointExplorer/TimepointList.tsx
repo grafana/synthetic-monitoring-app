@@ -5,11 +5,12 @@ import { css } from '@emotion/css';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
 import {
+  TIMEPOINT_GAP_PX,
   TIMEPOINT_LIST_ID,
   TIMEPOINT_THEME_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { TimepointListAnnotations } from 'scenes/components/TimepointExplorer/TimepointListAnnotations';
+import { TimepointExplorerAnnotations } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 import { TimepointListVizLegend } from 'scenes/components/TimepointExplorer/TimepointListVizLegend';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
@@ -25,6 +26,7 @@ export const TimepointList = () => {
     listWidth,
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
+    timepointWidth,
   } = useTimepointExplorerContext();
 
   const currentSectionRange = miniMapCurrentPageSections[miniMapCurrentSectionIndex];
@@ -50,7 +52,11 @@ export const TimepointList = () => {
       <div className={styles.container}>
         <YAxis maxProbeDuration={maxProbeDuration} width={listWidth} />
         <div className={styles.timepointsContainer}>
-          <TimepointListAnnotations timepointsInRange={timepointsInRange} />
+          <TimepointExplorerAnnotations
+            displayWidth={timepointWidth + TIMEPOINT_GAP_PX}
+            timepointsInRange={timepointsInRange}
+            displayLabels
+          />
           <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
             {timepointsInRange.map((timepoint, index) => {
               return <TimepointListEntry key={index} timepoint={timepoint} viewIndex={index} />;

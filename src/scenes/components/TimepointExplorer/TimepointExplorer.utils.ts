@@ -5,7 +5,6 @@ import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.t
 import { Check, Probe } from 'types';
 import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
-  Annotation,
   CheckConfig,
   CheckEvent,
   CheckEventType,
@@ -146,10 +145,18 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
 export function constructCheckEvents({
   checkConfigs,
   checkCreation = -1,
+  from,
 }: {
   checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
   checkCreation?: UnixTimestamp;
+  from: UnixTimestamp;
 }): CheckEvent[] {
+  const OUT_OF_TIMERANGE = {
+    label: CheckEventType.OUT_OF_TIMERANGE,
+    from,
+    to: from,
+  };
+
   // const OUT_OF_RETENTION = {
   //   label: `Out of retention`,
   //   from: -1,
@@ -165,57 +172,21 @@ export function constructCheckEvents({
     to: checkCreatedDate,
   };
 
-  return [
-    CHECK_CREATED,
-    ...checkConfigs
-      .filter((config) => config.date > checkCreatedDate)
-      .map<CheckEvent>((config) => ({
-        label: CheckEventType.CHECK_UPDATED,
-        from: config.date,
-        to: config.date,
-      })),
-  ];
-}
+  const FAKE_RANGE_RENDERING_CHECK = {
+    label: CheckEventType.FAKE_RANGE_RENDERING_CHECK,
+    from: checkCreatedDate + 15000,
+    to: checkCreatedDate + 15000 * 40,
+  };
 
-interface GenerateAnnotationsProps {
-  checkEvents: CheckEvent[];
-  timepoints: StatelessTimepoint[];
-}
+  const events = checkConfigs
+    .filter((config) => config.date > checkCreatedDate)
+    .map<CheckEvent>((config) => ({
+      label: CheckEventType.CHECK_UPDATED,
+      from: config.date,
+      to: config.date,
+    }));
 
-export function generateAnnotations({ checkEvents, timepoints }: GenerateAnnotationsProps): Annotation[] {
-  let build: Annotation[] = [];
-
-  checkEvents.forEach((checkEvent) => {
-    const annotationStartIndex = timepoints.findIndex((timepoint) => {
-      const timepointFrom = timepoint.adjustedTime - timepoint.timepointDuration;
-      const timepointTo = timepoint.adjustedTime;
-
-      return checkEvent.from >= timepointFrom && checkEvent.from <= timepointTo;
-    });
-
-    const annotationEndIndex = timepoints.findIndex((timepoint) => {
-      const timepointFrom = timepoint.adjustedTime - timepoint.timepointDuration;
-      const timepointTo = timepoint.adjustedTime;
-
-      return checkEvent.to >= timepointFrom && checkEvent.to <= timepointTo;
-    });
-
-    const isAnnotationStartInRange = annotationStartIndex !== -1;
-    const isAnnotationEndInRange = annotationEndIndex !== -1;
-
-    if (isAnnotationStartInRange || isAnnotationEndInRange) {
-      const startIndex = isAnnotationStartInRange ? annotationStartIndex : 0;
-      const endIndex = isAnnotationEndInRange ? annotationEndIndex : timepoints.length - 1;
-
-      build.push({
-        checkEvent,
-        timepointStart: timepoints[startIndex],
-        timepointEnd: timepoints[endIndex],
-      });
-    }
-  });
-
-  return build;
+  return [OUT_OF_TIMERANGE, FAKE_RANGE_RENDERING_CHECK, CHECK_CREATED, ...events];
 }
 
 export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {

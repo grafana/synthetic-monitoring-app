@@ -31,18 +31,15 @@ export type MiniMapPages = [MiniMapPage, ...MiniMapPage[]];
 export enum CheckEventType {
   CHECK_CREATED = 'check_created',
   CHECK_UPDATED = 'check_updated',
+  OUT_OF_TIMERANGE = 'out_of_timerange',
+  FAKE_RANGE_RENDERING_CHECK = 'fake_range_rendering_check',
 }
 
 export type CheckEvent = {
   label: CheckEventType;
   from: UnixTimestamp;
   to: UnixTimestamp;
-};
-
-export type Annotation = {
-  checkEvent: CheckEvent;
-  timepointStart: StatelessTimepoint;
-  timepointEnd: StatelessTimepoint;
+  offset?: boolean;
 };
 
 export type CheckConfig = {

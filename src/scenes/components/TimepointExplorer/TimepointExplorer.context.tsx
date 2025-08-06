@@ -29,8 +29,8 @@ import {
   useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
-  Annotation,
   CheckConfig,
+  CheckEvent,
   MiniMapPages,
   MiniMapSection,
   MiniMapSections,
@@ -45,7 +45,6 @@ import {
 import {
   constructCheckEvents,
   findNearest,
-  generateAnnotations,
   getMiniMapPages,
   getMiniMapSections,
   getVisibleTimepoints,
@@ -53,9 +52,9 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 type TimepointExplorerContextType = {
-  annotations: Annotation[];
   check: Check;
   checkConfigs: CheckConfig[];
+  checkEvents: CheckEvent[];
   handleExecutionHover: (executionId: string | null) => void;
   handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
   handleMiniMapPageChange: (page: number) => void;
@@ -188,13 +187,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       constructCheckEvents({
         checkConfigs,
         checkCreation: check.created,
+        from: timeRange.from.valueOf(),
       }),
-    [checkConfigs, check.created]
-  );
-
-  const annotations = useMemo(
-    () => generateAnnotations({ checkEvents, timepoints: visibleTimepoints }),
-    [checkEvents, visibleTimepoints]
+    [checkConfigs, check.created, timeRange.from]
   );
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
@@ -291,9 +286,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
-      annotations,
       check,
       checkConfigs,
+      checkEvents,
       handleExecutionHover,
       handleListWidthChange,
       handleMiniMapPageChange,
@@ -322,9 +317,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       vizOptions,
     };
   }, [
-    annotations,
     check,
     checkConfigs,
+    checkEvents,
     handleExecutionHover,
     handleListWidthChange,
     handleMiniMapPageChange,
