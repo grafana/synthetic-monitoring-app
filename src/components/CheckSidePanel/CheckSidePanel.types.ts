@@ -21,6 +21,8 @@ export interface ProbeStatus {
 
 export type ProbeState = 'pending' | 'success' | 'error' | 'timeout';
 
+export type CheckSidePanelTab = 'test-preview' | 'documentation';
+
 // Loki query types
 export interface LokiQueryResults<RefId extends keyof any = 'A'> {
   results: Record<
