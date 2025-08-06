@@ -33,7 +33,13 @@ export const TimepointRangeAnnotation = ({
         width: `${visibleWidth}px`,
       }}
     >
-      {displayLabels && <div className={styles.label}>{annotation.label}</div>}
+      {displayLabels && (
+        <div className={styles.label}>
+          {annotation.label}
+          <br />
+          {new Date(annotation.from).toLocaleString()} - {new Date(annotation.to).toLocaleString()}
+        </div>
+      )}
     </div>
   );
 };

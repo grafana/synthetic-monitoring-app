@@ -3,10 +3,9 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { OutOfTimeRangeAnnotation } from 'scenes/components/TimepointExplorer/OutOfTimeRangeAnnotation';
 import { TIMEPOINT_LIST_ANNOTATIONS_ID } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   getCheckEventsInRange,
   getClosestTimepointsToCheckEvent,
@@ -33,19 +32,7 @@ export const TimepointExplorerAnnotations = ({
   return (
     <div className={styles.container} id={TIMEPOINT_LIST_ANNOTATIONS_ID}>
       {annotationsToRender.map((annotation) => {
-        const isInstant = annotation.visibleStartIndex === annotation.visibleEndIndex;
-
-        if (annotation.label === CheckEventType.OUT_OF_TIMERANGE) {
-          return (
-            <OutOfTimeRangeAnnotation
-              key={`${annotation.label}-${annotation.to}`}
-              annotation={annotation}
-              displayLabels={displayLabels}
-              displayWidth={displayWidth}
-              timepointsInRange={timepointsInRange}
-            />
-          );
-        }
+        const isInstant = annotation.from === annotation.to;
 
         if (isInstant) {
           return (
