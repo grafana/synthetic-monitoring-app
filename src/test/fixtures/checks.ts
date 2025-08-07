@@ -271,6 +271,52 @@ export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = db.check.build(
   { transient: { type: CheckType.DNS } }
 ) as DNSCheck;
 
+// TEMPORARY: Check with invalid configuration to test failure logging
+export const INVALID_ALERT_CHECK: HTTPCheck = {
+  ...db.check.build(
+    {
+      job: 'test-invalid-alerts',
+      target: 'https://invalid-alert-test.com',
+      labels: [
+        {
+          name: 'testLabel',
+          value: 'invalidAlertTest',
+        },
+      ],
+      probes: [PRIVATE_PROBE.id] as number[],
+      settings: {
+        http: {
+          method: HttpMethod.GET,
+        },
+      },
+    },
+    { transient: { type: CheckType.HTTP } }
+  ),
+  // TEMPORARY: Adding alerts with missing required fields
+  alerts: [
+    {
+      name: 'InvalidAlertName', // This is not a valid alert name
+      threshold: 95,
+      // Missing required 'period' field - this will cause validation to fail
+    } as any,
+    {
+      name: 'ProbeFailedExecutionsTooHigh',
+      threshold: 291,
+      period: '1m',
+      invalid_field: true, // This field doesn't exist in the schema
+    } as any,
+  ],
+  // TEMPORARY: Override settings with invalid HTTP properties
+  settings: {
+    http: {
+      method: HttpMethod.GET,
+      // TEMPORARY: Adding invalid HTTP settings
+      invalid_http_setting: 'will_cause_error', // This doesn't exist in HTTP settings schema
+      fake_validation_field: 123, // Another invalid field
+    } as any,
+  },
+} as HTTPCheck;
+
 export const BASIC_CHECK_LIST: Check[] = [
   BASIC_DNS_CHECK,
   BASIC_HTTP_CHECK,
@@ -281,6 +327,7 @@ export const BASIC_CHECK_LIST: Check[] = [
   BASIC_TRACEROUTE_CHECK,
   FULL_HTTP_CHECK,
   CUSTOM_ALERT_SENSITIVITY_CHECK,
+  INVALID_ALERT_CHECK, // TEMPORARY: Adding invalid check to test failure
 ];
 
 export const CheckInfo = {
