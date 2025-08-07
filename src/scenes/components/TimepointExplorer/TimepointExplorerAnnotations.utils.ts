@@ -22,8 +22,6 @@ export function getCheckEventsInRange(checkEvents: CheckEvent[], timepointsInRan
 
 export type AnnotationWithIndices = {
   checkEvent: CheckEvent;
-  startingIndex: number;
-  endingIndex: number;
   isClippedStart: boolean;
   isClippedEnd: boolean;
   isInstant: boolean;
@@ -56,8 +54,6 @@ export function getClosestTimepointsToCheckEvent(
           timepointsInRange[timepointsInRange.length - 1].timepointDuration;
 
     return {
-      startingIndex: startingIndex === -1 ? -1 : startingIndex,
-      endingIndex: endingIndex === -1 ? -1 : endingIndex,
       isClippedStart,
       isClippedEnd,
       isInstant: checkEvent.to === checkEvent.from,
