@@ -62,26 +62,29 @@ export function generateXAxisPoints(
 
   return build.map((point) => {
     const date = new Date(point.label);
+    const label = crossesDays
+      ? date.toLocaleString(undefined, {
+          timeZone,
+          month: 'numeric',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : date.toLocaleTimeString(undefined, {
+          timeZone,
+          hour: '2-digit',
+          minute: '2-digit',
+        });
 
     return {
       ...point,
-      label: crossesDays
-        ? date.toLocaleString(undefined, {
-            timeZone,
-            month: 'numeric',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        : date.toLocaleTimeString(undefined, {
-            timeZone,
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
+      label,
     };
   });
 }
 
 export function doesTimeRangeCrossDays(from: Date, to: Date) {
-  return from.getDate() !== to.getDate();
+  return (
+    from.getDate() !== to.getDate() || from.getMonth() !== to.getMonth() || from.getFullYear() !== to.getFullYear()
+  );
 }
