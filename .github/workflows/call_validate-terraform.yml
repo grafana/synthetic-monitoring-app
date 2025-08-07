@@ -108,7 +108,6 @@ jobs:
                   
                   errors.forEach((error, index) => {
                     if (error.includes('Error:')) {
-                      message += `### Error ${index + 1}\n\n`;
                       
                       // Clean up the error text by removing box-drawing characters and formatting properly
                       const cleanError = error
@@ -276,17 +275,9 @@ jobs:
             echo "VALIDATION ERRORS:"
             echo "────────────────────────────────────────────────"
             
-            # Extract and display the terraform errors in a clean format
+            # Show the terraform validation output
             if [ -f /tmp/terraform_output.txt ]; then
-              # Clean up terraform output and show all validation errors
-              cat /tmp/terraform_output.txt | \
-                sed 's/\x1b\[[0-9;]*m//g' | \
-                sed 's/[[:cntrl:]]//g' | \
-                grep -v "Terraform has been successfully initialized" | \
-                grep -v "^$" | \
-                grep -v "^Initializing" | \
-                grep -v "^- " | \
-                head -30
+              cat /tmp/terraform_output.txt
             else
               echo "Unable to read terraform validation output"
             fi
