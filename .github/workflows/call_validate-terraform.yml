@@ -22,16 +22,29 @@ jobs:
           terraform_version: "~1.0"
       
       - name: Generate test Terraform configs
-        run: yarn build:generate-terraform-test-config
+        run: |
+          echo "🔧 Generating terraform test configurations..."
+          yarn build:generate-terraform-test-config
+          echo "✅ Test configuration generation completed"
       
       - name: Validate generated Terraform
         id: terraform-validate
         continue-on-error: true
         run: |
+          echo "🔍 Validating generated Terraform configuration..."
           if yarn verify:terraform-test-config > /tmp/terraform_output.txt 2>&1; then
             echo "validation_result=success" >> $GITHUB_OUTPUT
+            echo "✅ Terraform configuration validation succeeded!"
+            echo ""
+            echo "📋 Validation output:"
+            cat /tmp/terraform_output.txt
           else
             echo "validation_result=failed" >> $GITHUB_OUTPUT
+            echo "❌ Terraform configuration validation failed!"
+            echo ""
+            echo "📋 Validation errors:"
+            cat /tmp/terraform_output.txt
+            echo ""
             # Store the output using base64 encoding to avoid issues with special characters
             OUTPUT_BASE64=$(cat /tmp/terraform_output.txt | base64 -w 0)
             echo "TERRAFORM_OUTPUT_BASE64=$OUTPUT_BASE64" >> $GITHUB_OUTPUT
@@ -195,8 +208,38 @@ jobs:
               console.log('No previous terraform validation comment found, skipping success comment creation');
             }
       
+      - name: Log validation summary
+        run: |
+          echo ""
+          echo "================================================"
+          echo "🏁 TERRAFORM VALIDATION SUMMARY"
+          echo "================================================"
+          if [ "${{ steps.terraform-validate.outputs.validation_result }}" = "success" ]; then
+            echo "✅ Status: PASSED"
+            echo "🎉 All generated terraform configurations are valid!"
+            echo ""
+            echo "📋 Validated Resources:"
+            echo "  • grafana_synthetic_monitoring_check (HTTP, DNS, TCP, Ping, MultiHTTP, Scripted, Traceroute)"
+            echo "  • grafana_synthetic_monitoring_probe (Public, Private, Online, Offline)"  
+            echo "  • grafana_synthetic_monitoring_check_alerts (Alert configurations)"
+            echo ""
+            echo "✨ The terraform export functionality will work correctly."
+          else
+            echo "❌ Status: FAILED"
+            echo "💥 Generated terraform configurations have schema compatibility issues!"
+            echo ""
+            echo "⚠️  These issues would cause terraform operations to fail in production."
+            echo ""
+            echo "🔧 Next steps:"
+            echo "  1. Check the validation errors above"
+            echo "  2. Review the Grafana Terraform Provider documentation"
+            echo "  3. Update transformation functions in src/components/TerraformConfig/"
+            echo "  4. Test locally: yarn build:generate-terraform-test-config && yarn verify:terraform-test-config"
+          fi
+          echo "================================================"
+
       - name: Fail job if validation failed
         if: steps.terraform-validate.outputs.validation_result == 'failed'
         run: |
-          echo "Terraform configuration validation failed!"
+          echo "Failing job due to terraform validation errors"
           exit 1 
