@@ -26,12 +26,6 @@ async function generateConfigs() {
         check: fixtures.FULL_HTTP_CHECK,
         probe: probeFixtures.PRIVATE_PROBE,
       },
-      // TEMPORARY: Invalid alert check to test failure logging
-      {
-        name: 'invalid-alert-http',
-        check: fixtures.INVALID_ALERT_CHECK,
-        probe: probeFixtures.PRIVATE_PROBE,
-      },
       // DNS Check
       {
         name: 'basic-dns',
