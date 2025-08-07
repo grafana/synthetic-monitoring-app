@@ -3,9 +3,11 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { useSceneAnnotation } from 'scenes/Common/useSceneAnnotation';
+import { PreTimepointAnnotations } from 'scenes/components/TimepointExplorer/PreTimepointAnnotations';
 import { TIMEPOINT_LIST_ANNOTATIONS_ID } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   getCheckEventsInRange,
   getClosestTimepointsToCheckEvent,
@@ -16,6 +18,8 @@ import { TimepointRangeAnnotation } from 'scenes/components/TimepointExplorer/Ti
 interface TimepointExplorerAnnotationsProps {
   displayLabels?: boolean;
   displayWidth: number;
+  isBeginningSection: boolean;
+  parentWidth: number;
   timepointsInRange: StatelessTimepoint[];
 }
 
@@ -23,24 +27,53 @@ export const TimepointExplorerAnnotations = ({
   displayLabels,
   displayWidth,
   timepointsInRange,
+  isBeginningSection,
+  parentWidth,
 }: TimepointExplorerAnnotationsProps) => {
   const { checkEvents } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
-  const checkEventsInRange = getCheckEventsInRange(checkEvents, timepointsInRange);
+  const alertsFiring = useSceneAnnotation('Alerts firing');
+  const alertsPending = useSceneAnnotation('Alerts pending');
+
+  const alertFiringEvents = alertsFiring.map(([timeStart, timeEnd]) => ({
+    label: CheckEventType.ALERTS_FIRING,
+    to: timeEnd,
+    from: timeStart,
+    color: 'red',
+  }));
+
+  const alertPendingEvents = alertsPending.map(([timeStart, timeEnd]) => ({
+    label: CheckEventType.ALERTS_PENDING,
+    to: timeEnd,
+    from: timeStart,
+    color: 'yellow',
+  }));
+
+  const checkEventsInRange = getCheckEventsInRange(
+    [...checkEvents, ...alertFiringEvents, ...alertPendingEvents],
+    timepointsInRange
+  );
   const annotationsToRender = getClosestTimepointsToCheckEvent(checkEventsInRange, timepointsInRange);
 
   return (
     <div className={styles.container} id={TIMEPOINT_LIST_ANNOTATIONS_ID}>
-      {annotationsToRender.map((annotation) => {
-        const isInstant = annotation.from === annotation.to;
+      <PreTimepointAnnotations
+        isBeginningSection={isBeginningSection}
+        displayLabels={displayLabels}
+        displayWidth={displayWidth}
+        timepointsInRange={timepointsInRange}
+        parentWidth={parentWidth}
+      />
 
-        if (isInstant) {
+      {annotationsToRender.map((annotation) => {
+        if (annotation.isInstant) {
           return (
             <TimepointInstantAnnotation
-              key={`${annotation.label}-${annotation.to}`}
+              key={`${annotation.checkEvent.label}-${annotation.checkEvent.to}`}
               annotation={annotation}
               displayLabels={displayLabels}
               displayWidth={displayWidth}
+              parentWidth={parentWidth}
               timepointsInRange={timepointsInRange}
             />
           );
@@ -48,10 +81,11 @@ export const TimepointExplorerAnnotations = ({
 
         return (
           <TimepointRangeAnnotation
-            key={`${annotation.label}-${annotation.to}`}
+            key={`${annotation.checkEvent.label}-${annotation.checkEvent.to}`}
             annotation={annotation}
             displayLabels={displayLabels}
             displayWidth={displayWidth}
+            parentWidth={parentWidth}
             timepointsInRange={timepointsInRange}
           />
         );

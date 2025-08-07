@@ -29,17 +29,19 @@ export type MiniMapPage = [number, number];
 export type MiniMapPages = [MiniMapPage, ...MiniMapPage[]];
 
 export enum CheckEventType {
-  CHECK_CREATED = 'check_created',
-  CHECK_UPDATED = 'check_updated',
-  OUT_OF_TIMERANGE = 'out_of_timerange',
-  FAKE_RANGE_RENDERING_CHECK = 'fake_range_rendering_check',
+  CHECK_CREATED = 'Check created',
+  CHECK_UPDATED = 'Check updated',
+  OUT_OF_TIMERANGE = 'Out of selected timerange',
+  FAKE_RANGE_RENDERING_CHECK = 'Fake range rendering check',
+  ALERTS_FIRING = 'Alerts firing',
+  ALERTS_PENDING = 'Alerts pending',
 }
 
 export type CheckEvent = {
   label: CheckEventType;
   from: UnixTimestamp;
   to: UnixTimestamp;
-  offset?: boolean;
+  color: string;
 };
 
 export type CheckConfig = {

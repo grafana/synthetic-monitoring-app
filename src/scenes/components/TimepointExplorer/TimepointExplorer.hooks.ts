@@ -206,11 +206,7 @@ export function usePersistedMaxProbeDuration({ timeRange, check, probe }: UseMax
 function useMaxProbeDuration({ timeRange, check, probe, refetchInterval }: UseMaxProbeDurationProps) {
   const metricsDS = useMetricsDS();
 
-  const {
-    data = 0,
-    isLoading,
-    refetch,
-  } = useQuery({
+  return useQuery({
     queryKey: [
       'aggregation',
       metricsDS,
@@ -249,8 +245,6 @@ function useMaxProbeDuration({ timeRange, check, probe, refetchInterval }: UseMa
       return Math.round(max * MILLISECONDS_PER_SECOND);
     },
   });
-
-  return { data, isLoading, refetch };
 }
 
 export function useStatefulTimepoint(timepoint: StatelessTimepoint) {

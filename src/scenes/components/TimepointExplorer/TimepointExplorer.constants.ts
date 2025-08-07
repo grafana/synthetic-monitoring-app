@@ -20,7 +20,7 @@ export const TIMEPOINT_EXPLORER_VIEW_OPTIONS = [
   { label: 'Reachability', value: 'reachability' },
 ];
 
-export const MAX_MINIMAP_SECTIONS = 4;
+export const MAX_MINIMAP_SECTIONS = 5;
 
 const success = `success` as const;
 const failure = `failure` as const;

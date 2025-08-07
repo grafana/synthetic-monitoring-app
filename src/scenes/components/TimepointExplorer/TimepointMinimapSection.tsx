@@ -20,14 +20,15 @@ import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointV
 
 interface MiniMapSectionProps {
   index: number;
+  miniMapWidth: number;
   section: MiniMapSection;
 }
 
-export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps) => {
+export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMapSectionProps) => {
   const {
     handleMiniMapSectionChange,
-    listWidth,
     miniMapCurrentSectionIndex,
+    miniMapCurrentPageSections,
     timepointsDisplayCount,
     timepoints,
     viewMode,
@@ -39,7 +40,9 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
   const ref = useRef<HTMLButtonElement>(null);
   const label = getLabel(miniMapSectionTimepoints);
   const isActive = miniMapCurrentSectionIndex === index;
-  const entryWidth = listWidth / MAX_MINIMAP_SECTIONS / timepointsDisplayCount;
+  const sectionWidth = miniMapWidth / MAX_MINIMAP_SECTIONS;
+  const entryWidth = sectionWidth / timepointsDisplayCount;
+  const isBeginningSection = index === miniMapCurrentPageSections.length - 1;
 
   return (
     <Tooltip content={label} ref={ref}>
@@ -49,7 +52,12 @@ export const TimepointMiniMapSection = ({ index, section }: MiniMapSectionProps)
         onClick={() => handleMiniMapSectionChange(index)}
         ref={ref}
       >
-        <TimepointExplorerAnnotations displayWidth={entryWidth} timepointsInRange={miniMapSectionTimepoints} />
+        <TimepointExplorerAnnotations
+          displayWidth={entryWidth}
+          isBeginningSection={isBeginningSection}
+          timepointsInRange={miniMapSectionTimepoints}
+          parentWidth={sectionWidth}
+        />
         {miniMapSectionTimepoints.map((timepoint, index) => {
           if (viewMode === 'uptime') {
             return (

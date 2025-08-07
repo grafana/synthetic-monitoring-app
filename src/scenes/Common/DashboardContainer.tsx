@@ -38,6 +38,7 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
       iconColor: 'red',
       name: 'Alert firing',
       titleFormat: 'Alert firing',
+      step: `10s`,
     },
     {
       datasource: metricsDS,
@@ -49,6 +50,7 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
       iconColor: 'yellow',
       name: 'Alert pending',
       titleFormat: 'Alert pending',
+      step: `10s`,
     },
   ];
 

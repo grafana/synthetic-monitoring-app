@@ -78,7 +78,6 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
           })}
       </Stack>
 
-      {/* Footer */}
       <div className={styles.footer}>
         <span>Frequency: {renderedFrequency}</span>
         <span>Avg: {renderedAvgDuration}</span>
@@ -90,7 +89,8 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
 const StatusBadge = ({ status }: { status: -1 | 0 | 1 | 2 }) => {
   switch (status) {
     case -1:
-      return <Badge color="orange" text="UNKNOWN" />;
+      // @ts-expect-error - it does accept gray...
+      return <Badge color="gray" text="UNKNOWN" />;
     case 1:
       return <Badge color="green" text="UP" />;
     case 0:

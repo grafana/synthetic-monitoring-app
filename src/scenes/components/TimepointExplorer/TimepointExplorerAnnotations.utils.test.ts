@@ -7,7 +7,7 @@ import {
 
 describe('getCheckEventsInRange', () => {
   it('should return the check events that are in the range', () => {
-    const checkEvents = [{ from: 30000, to: 30000, label: CheckEventType.CHECK_CREATED }];
+    const checkEvents = [{ from: 30000, to: 30000, label: CheckEventType.CHECK_CREATED, color: 'blue' }];
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, date: 0 }],
       from: 30000,
@@ -20,8 +20,8 @@ describe('getCheckEventsInRange', () => {
 
   it('should not return the check events that do not intersect the range', () => {
     const checkEvents = [
-      { from: 10000, to: 15000, label: CheckEventType.CHECK_CREATED }, // completely before
-      { from: 120000, to: 130000, label: CheckEventType.CHECK_UPDATED }, // completely after
+      { from: 10000, to: 15000, label: CheckEventType.CHECK_CREATED, color: 'blue' }, // completely before
+      { from: 120000, to: 130000, label: CheckEventType.CHECK_UPDATED, color: 'blue' }, // completely after
     ];
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, date: 0 }],
@@ -35,9 +35,9 @@ describe('getCheckEventsInRange', () => {
 
   it('should return partially overlapping range annotations', () => {
     const checkEvents = [
-      { from: 20000, to: 35000, label: CheckEventType.CHECK_CREATED }, // starts before, ends in range
-      { from: 90000, to: 120000, label: CheckEventType.CHECK_UPDATED }, // starts in range, ends after
-      { from: 10000, to: 120000, label: CheckEventType.CHECK_UPDATED }, // spans entire range
+      { from: 20000, to: 35000, label: CheckEventType.CHECK_CREATED, color: 'blue' }, // starts before, ends in range
+      { from: 90000, to: 120000, label: CheckEventType.CHECK_UPDATED, color: 'blue' }, // starts in range, ends after
+      { from: 10000, to: 120000, label: CheckEventType.CHECK_UPDATED, color: 'blue' }, // spans entire range
     ];
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, date: 0 }],
@@ -53,7 +53,7 @@ describe('getCheckEventsInRange', () => {
 
 describe('getClosestTimepointsToCheckEvent', () => {
   it('should return the closest timepoints to the check event', () => {
-    const checkEvents = [{ from: 30000, to: 40001, label: CheckEventType.CHECK_CREATED }];
+    const checkEvents = [{ from: 30000, to: 40001, label: CheckEventType.CHECK_CREATED, color: 'blue' }];
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, date: 0 }],
       from: 30000,
@@ -77,7 +77,7 @@ describe('getClosestTimepointsToCheckEvent', () => {
   });
 
   it('should handle range annotations that start before visible range', () => {
-    const checkEvents = [{ from: 10000, to: 40001, label: CheckEventType.CHECK_UPDATED }];
+    const checkEvents = [{ from: 10000, to: 40001, label: CheckEventType.CHECK_UPDATED, color: 'blue' }];
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, date: 0 }],
       from: 30000,
@@ -96,7 +96,7 @@ describe('getClosestTimepointsToCheckEvent', () => {
   });
 
   it('should handle range annotations that end after visible range', () => {
-    const checkEvents = [{ from: 30000, to: 150000, label: CheckEventType.CHECK_UPDATED }];
+    const checkEvents = [{ from: 30000, to: 150000, label: CheckEventType.CHECK_UPDATED, color: 'blue' }];
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, date: 0 }],
       from: 30000,
@@ -114,7 +114,7 @@ describe('getClosestTimepointsToCheckEvent', () => {
   });
 
   it('should handle range annotations that span completely across visible range', () => {
-    const checkEvents = [{ from: 10000, to: 150000, label: CheckEventType.CHECK_UPDATED }];
+    const checkEvents = [{ from: 10000, to: 150000, label: CheckEventType.CHECK_UPDATED, color: 'blue' }];
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, date: 0 }],
       from: 30000,

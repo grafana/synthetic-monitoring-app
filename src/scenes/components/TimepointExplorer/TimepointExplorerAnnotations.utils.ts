@@ -8,7 +8,7 @@ export function getCheckEventsInRange(checkEvents: CheckEvent[], timepointsInRan
   const fromEntry = timepointsInRange[0];
   const toEntry = timepointsInRange[timepointsInRange.length - 1];
 
-  const rangeFrom = fromEntry.adjustedTime - fromEntry.timepointDuration;
+  const rangeFrom = fromEntry.adjustedTime;
   const rangeTo = toEntry.adjustedTime + toEntry.timepointDuration;
 
   // Include annotations that intersect with the visible range (not just fully contained)
@@ -20,11 +20,13 @@ export function getCheckEventsInRange(checkEvents: CheckEvent[], timepointsInRan
   return inRangeCheckEvents;
 }
 
-export type AnnotationWithIndices = CheckEvent & {
+export type AnnotationWithIndices = {
+  checkEvent: CheckEvent;
   startingIndex: number;
   endingIndex: number;
   isClippedStart: boolean;
   isClippedEnd: boolean;
+  isInstant: boolean;
   visibleStartIndex: number;
   visibleEndIndex: number;
 };
@@ -58,9 +60,10 @@ export function getClosestTimepointsToCheckEvent(
       endingIndex: endingIndex === -1 ? -1 : endingIndex,
       isClippedStart,
       isClippedEnd,
+      isInstant: checkEvent.to === checkEvent.from,
       visibleStartIndex,
       visibleEndIndex,
-      ...checkEvent,
+      checkEvent,
     };
   });
 }

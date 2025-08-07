@@ -47,6 +47,8 @@ export const TimepointList = () => {
     },
   });
 
+  const isBeginningSection = miniMapCurrentSectionIndex === miniMapCurrentPageSections.length - 1;
+
   return (
     <div>
       <div className={styles.container}>
@@ -56,6 +58,8 @@ export const TimepointList = () => {
             displayWidth={timepointWidth + TIMEPOINT_GAP_PX}
             timepointsInRange={timepointsInRange}
             displayLabels
+            isBeginningSection={isBeginningSection}
+            parentWidth={listWidth}
           />
           <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
             {timepointsInRange.map((timepoint, index) => {

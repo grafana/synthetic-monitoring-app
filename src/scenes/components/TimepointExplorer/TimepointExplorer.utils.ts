@@ -24,7 +24,7 @@ export function timeshiftedTimepoint(unixDate: UnixTimestamp, frequency: number)
 }
 
 // needed?
-export function configTimeRanges(
+export function buildConfigTimeRanges(
   checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>,
   timeRangeTo: UnixTimestamp
 ) {
@@ -74,10 +74,13 @@ interface BuildTimepointsInRangeProps {
 }
 
 export function buildTimepoints({ from, to, checkConfigs }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
-  const configsToAndFrom = configTimeRanges(checkConfigs, to);
+  const configsToAndFrom = buildConfigTimeRanges(checkConfigs, to);
 
   const timepoints = configsToAndFrom.map((config) => {
-    return buildTimepointsForConfig({ from: from > config.from ? from : config.from, to: config.to, config });
+    const configFrom = from > config.from ? from : config.from;
+    const configTo = config.to;
+
+    return buildTimepointsForConfig({ from: configFrom, to: configTo, config });
   });
 
   const flatTimepoints = timepoints.flat();
@@ -152,11 +155,13 @@ export function constructCheckEvents({
   from: UnixTimestamp;
 }): CheckEvent[] {
   const checkCreatedDate = Math.round(checkCreation * 1000);
+  const ONE_HOUR_IN_MS = 1000 * 60 * 60;
 
   const FAKE_RANGE_RENDERING_CHECK = {
     label: CheckEventType.FAKE_RANGE_RENDERING_CHECK,
-    from: checkCreatedDate - 15000,
-    to: checkCreatedDate + 15000 * 40,
+    from: new Date().getTime() - ONE_HOUR_IN_MS * 2,
+    to: new Date().getTime() - ONE_HOUR_IN_MS * 1,
+    color: 'purple',
   };
 
   const events = checkConfigs
@@ -165,6 +170,7 @@ export function constructCheckEvents({
       label: CheckEventType.CHECK_UPDATED,
       from: config.date,
       to: config.date,
+      color: 'blue',
     }));
 
   return [FAKE_RANGE_RENDERING_CHECK, ...events];
@@ -341,12 +347,12 @@ export function getIsExecutionSelected(
 interface GetPendingResultsProps {
   check: Check;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
+  probes: Probe[];
   selectedProbes: Array<string | number>;
   timepoints: StatelessTimepoint[];
-  probes: Probe[];
 }
 
-export function getIsResultPending({ check, logsMap, selectedProbes, timepoints, probes }: GetPendingResultsProps) {
+export function getIsResultPending({ check, logsMap, probes, selectedProbes, timepoints }: GetPendingResultsProps) {
   const latestTimepoint = timepoints[timepoints.length - 1];
 
   if (!latestTimepoint) {

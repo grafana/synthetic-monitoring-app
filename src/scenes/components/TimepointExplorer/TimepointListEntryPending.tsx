@@ -91,6 +91,7 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number, option: string,
       position: relative;
       display: flex;
       justify-content: center;
+      z-index: 2;
 
       &:hover .${GLOBAL_CLASS} {
         &:after {
