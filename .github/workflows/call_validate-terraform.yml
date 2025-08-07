@@ -32,6 +32,29 @@ jobs:
         continue-on-error: true
         run: |
           echo "🔍 Validating generated Terraform configuration..."
+          echo "📦 Checking Grafana provider version..."
+          
+          # Extract provider version constraint from generated config
+          if [ -f "artifacts/terraform-validation/testTerraformConfig.tf.json" ]; then
+            PROVIDER_CONSTRAINT=$(cat artifacts/terraform-validation/testTerraformConfig.tf.json | grep -A 10 '"required_providers"' | grep -A 5 '"grafana"' | grep '"version"' | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | head -1)
+            if [ ! -z "$PROVIDER_CONSTRAINT" ]; then
+              echo "📋 Provider version constraint: $PROVIDER_CONSTRAINT"
+            fi
+          fi
+          
+          # Get the actual resolved provider version from terraform
+          cd artifacts/terraform-validation
+          if terraform version > /tmp/tf_version.txt 2>&1; then
+            # Extract grafana provider version from terraform version output
+            RESOLVED_VERSION=$(cat /tmp/tf_version.txt | grep -i "provider.*grafana" | sed 's/.*v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
+            if [ ! -z "$RESOLVED_VERSION" ]; then
+              echo "🎯 Resolved Grafana provider version: v$RESOLVED_VERSION"
+            else
+              echo "⚠️  Could not determine resolved provider version"
+            fi
+          fi
+          cd ../..
+          
           if yarn verify:terraform-test-config > /tmp/terraform_output.txt 2>&1; then
             echo "validation_result=success" >> $GITHUB_OUTPUT
             echo "✅ Terraform configuration validation succeeded!"
@@ -212,12 +235,22 @@ jobs:
         run: |
           echo ""
           echo "================================================"
-          echo "🏁 TERRAFORM VALIDATION SUMMARY"
+          echo "TERRAFORM VALIDATION SUMMARY"
           echo "================================================"
           if [ "${{ steps.terraform-validate.outputs.validation_result }}" = "success" ]; then
             echo "✅ Status: PASSED"
             echo "🎉 All generated terraform configurations are valid!"
             echo ""
+            # Show resolved provider version info
+            cd artifacts/terraform-validation
+            if terraform version > /tmp/tf_version_summary.txt 2>&1; then
+              RESOLVED_VERSION=$(cat /tmp/tf_version_summary.txt | grep -i "provider.*grafana" | sed 's/.*v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
+              if [ ! -z "$RESOLVED_VERSION" ]; then
+                echo "📦 Grafana Provider Version: v$RESOLVED_VERSION"
+                echo ""
+              fi
+            fi
+            cd ../..
             echo "📋 Validated Resources:"
             echo "  • grafana_synthetic_monitoring_check (HTTP, DNS, TCP, Ping, MultiHTTP, Scripted, Traceroute)"
             echo "  • grafana_synthetic_monitoring_probe (Public, Private, Online, Offline)"  
@@ -228,11 +261,41 @@ jobs:
             echo "❌ Status: FAILED"
             echo "💥 Generated terraform configurations have schema compatibility issues!"
             echo ""
+            # Show resolved provider version info
+            cd artifacts/terraform-validation
+            if terraform version > /tmp/tf_version_summary.txt 2>&1; then
+              RESOLVED_VERSION=$(cat /tmp/tf_version_summary.txt | grep -i "provider.*grafana" | sed 's/.*v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
+              if [ ! -z "$RESOLVED_VERSION" ]; then
+                echo "📦 Grafana Provider Version: v$RESOLVED_VERSION"
+                echo ""
+              fi
+            fi
+            cd ../..
             echo "⚠️  These issues would cause terraform operations to fail in production."
             echo ""
+            echo "VALIDATION ERRORS:"
+            echo "────────────────────────────────────────────────"
+            
+            # Extract and display the terraform errors in a clean format
+            if [ -f /tmp/terraform_output.txt ]; then
+              # Clean up terraform output and show all validation errors
+              cat /tmp/terraform_output.txt | \
+                sed 's/\x1b\[[0-9;]*m//g' | \
+                sed 's/[[:cntrl:]]//g' | \
+                grep -v "Terraform has been successfully initialized" | \
+                grep -v "^$" | \
+                grep -v "^Initializing" | \
+                grep -v "^- " | \
+                head -30
+            else
+              echo "Unable to read terraform validation output"
+            fi
+            
+            echo "────────────────────────────────────────────────"
+            echo ""
             echo "🔧 Next steps:"
-            echo "  1. Check the validation errors above"
-            echo "  2. Review the Grafana Terraform Provider documentation"
+            echo "  1. Review the errors above"
+            echo "  2. Check the Grafana Terraform Provider documentation"
             echo "  3. Update transformation functions in src/components/TerraformConfig/"
             echo "  4. Test locally: yarn build:generate-terraform-test-config && yarn verify:terraform-test-config"
           fi
