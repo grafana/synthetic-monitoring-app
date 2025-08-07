@@ -87,15 +87,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
         value: 'httpLabelValue',
       },
     ],
-    alerts: [
-      ...BASIC_CHECK_ALERTS.alerts,
-      // TEMPORARY: Add invalid alert to cause validation failure  
-      {
-        name: 'InvalidAlert',
-        threshold: 95,
-        // Missing required 'period' field - this should fail on any provider version
-      } as any,
-    ],
+    alerts: [...BASIC_CHECK_ALERTS.alerts],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   },
   { transient: { type: CheckType.HTTP } }
