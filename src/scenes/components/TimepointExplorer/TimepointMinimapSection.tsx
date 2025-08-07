@@ -59,22 +59,22 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
           parentWidth={sectionWidth}
         />
         {miniMapSectionTimepoints.map((timepoint, index) => {
-          if (viewMode === 'uptime') {
-            return (
-              <UptimeTimepoint key={timepoint.adjustedTime} timepoint={timepoint} timepointIndex={index + start} />
-            );
+          if (timepoint.config.type === 'no-data') {
+            return <div key={timepoint.adjustedTime} />;
           }
 
-          return (
-            <ReachabilityTimepoint key={timepoint.adjustedTime} timepoint={timepoint} timepointIndex={index + start} />
-          );
+          if (viewMode === 'uptime') {
+            return <UptimeTimepoint key={timepoint.adjustedTime} timepoint={timepoint} />;
+          }
+
+          return <ReachabilityTimepoint key={timepoint.adjustedTime} timepoint={timepoint} />;
         })}
       </PlainButton>
     </Tooltip>
   );
 };
 
-const UptimeTimepoint = ({ timepoint, timepointIndex }: { timepoint: StatelessTimepoint; timepointIndex: number }) => {
+const UptimeTimepoint = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
   const { maxProbeDuration, selectedTimepoint, timepointsDisplayCount, vizDisplay } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
@@ -93,7 +93,7 @@ const UptimeTimepoint = ({ timepoint, timepointIndex }: { timepoint: StatelessTi
       className={cx(styles.uptimeTimepoint, {
         [styles.selected]: selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime,
       })}
-      data-testid={`uptime-timepoint-${timepointIndex}`}
+      data-testid={`uptime-timepoint-${timepoint.index}`}
       state={state}
       style={{ height: `${height}%`, width }}
     />
@@ -102,10 +102,9 @@ const UptimeTimepoint = ({ timepoint, timepointIndex }: { timepoint: StatelessTi
 
 interface ReachabilityTimepointProps {
   timepoint: StatelessTimepoint;
-  timepointIndex: number;
 }
 
-const ReachabilityTimepoint = ({ timepoint, timepointIndex }: ReachabilityTimepointProps) => {
+const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const { timepointsDisplayCount } = useTimepointExplorerContext();
   const width = `${100 / timepointsDisplayCount}%`;
@@ -130,7 +129,7 @@ const ReachabilityTimepoint = ({ timepoint, timepointIndex }: ReachabilityTimepo
       className={styles.reachabilityTimepoint}
       style={{ width }}
       ref={ref}
-      data-testid={`reachability-timepoint-${timepointIndex}`}
+      data-testid={`reachability-timepoint-${timepoint.index}`}
     >
       {statefulTimepoint.executions.map((execution) => {
         return (

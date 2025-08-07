@@ -30,7 +30,9 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
       return sum + duration;
     }, 0) / probeCount;
   const renderedAvgDuration = Number.isNaN(avgDuration) ? `-` : formatSmallDurations(avgDuration);
-  const renderedFrequency = !statefulTimepoint.frequency ? `-` : formatDuration(statefulTimepoint.frequency, true);
+  const renderedFrequency = !statefulTimepoint.config.frequency
+    ? `-`
+    : formatDuration(statefulTimepoint.config.frequency, true);
 
   return (
     <Stack direction="column" gap={2}>

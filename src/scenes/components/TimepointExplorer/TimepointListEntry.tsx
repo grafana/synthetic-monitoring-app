@@ -30,6 +30,10 @@ const Entry = (props: TimepointListEntryProps) => {
   const { viewMode, isResultPending, timepoints } = useTimepointExplorerContext();
   const isPendingEntry = timepoints.length - 1 === props.timepoint.index;
 
+  if (props.timepoint.config.type === 'no-data') {
+    return <div />;
+  }
+
   if (isResultPending && isPendingEntry) {
     return <TimepointListEntryPending {...props} />;
   }

@@ -6,6 +6,7 @@ import { Check, Probe } from 'types';
 import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   CheckConfig,
+  CheckConfigRaw,
   CheckEvent,
   CheckEventType,
   ExecutionsInTimepoint,
@@ -24,11 +25,8 @@ export function timeshiftedTimepoint(unixDate: UnixTimestamp, frequency: number)
 }
 
 // needed?
-export function buildConfigTimeRanges(
-  checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>,
-  timeRangeTo: UnixTimestamp
-) {
-  return checkConfigs.map(({ date, frequency }, i) => {
+export function buildConfigTimeRanges(checkConfigs: CheckConfigRaw[], timeRangeTo: UnixTimestamp): CheckConfig[] {
+  return checkConfigs.map(({ date, frequency, type }, i) => {
     const from = date;
     const nextConfig = checkConfigs[i + 1];
 
@@ -36,6 +34,7 @@ export function buildConfigTimeRanges(
       frequency,
       from,
       to: nextConfig ? nextConfig.date : timeRangeTo,
+      type,
     };
   });
 }
@@ -69,14 +68,11 @@ export function getEntryHeight(duration: number, maxProbeDurationData: number) {
 
 interface BuildTimepointsInRangeProps {
   from: UnixTimestamp;
-  to: UnixTimestamp;
-  checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
+  checkConfigs: CheckConfig[];
 }
 
-export function buildTimepoints({ from, to, checkConfigs }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
-  const configsToAndFrom = buildConfigTimeRanges(checkConfigs, to);
-
-  const timepoints = configsToAndFrom.map((config) => {
+export function buildTimepoints({ from, checkConfigs }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
+  const timepoints = checkConfigs.map((config) => {
     const configFrom = from > config.from ? from : config.from;
     const configTo = config.to;
 
@@ -105,7 +101,7 @@ export function buildTimepoints({ from, to, checkConfigs }: BuildTimepointsInRan
 interface BuildTimepointsForConfigProps {
   from: UnixTimestamp;
   to: UnixTimestamp;
-  config: { frequency: number; from: UnixTimestamp; to: UnixTimestamp };
+  config: CheckConfig;
 }
 
 export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsForConfigProps) {
@@ -116,7 +112,7 @@ export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsFo
     build.push({
       adjustedTime: currentTimepoint,
       timepointDuration: config.frequency,
-      frequency: config.frequency,
+      config,
     });
 
     currentTimepoint -= config.frequency;
@@ -128,7 +124,7 @@ export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsFo
 const NANOSECONDS_PER_MILLISECOND = 1000000;
 
 export function extractFrequenciesAndConfigs(data: DataFrame) {
-  let build: CheckConfig[] = [];
+  let build: CheckConfigRaw[] = [];
   const Value = data.fields[1];
 
   if (Value.labels) {
@@ -148,32 +144,39 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
 export function constructCheckEvents({
   checkConfigs,
   checkCreation = -1,
-  from,
 }: {
-  checkConfigs: Array<{ frequency: number; date: UnixTimestamp }>;
+  checkConfigs: CheckConfig[];
   checkCreation?: UnixTimestamp;
-  from: UnixTimestamp;
 }): CheckEvent[] {
   const checkCreatedDate = Math.round(checkCreation * 1000);
   const ONE_HOUR_IN_MS = 1000 * 60 * 60;
 
   const FAKE_RANGE_RENDERING_CHECK = {
     label: CheckEventType.FAKE_RANGE_RENDERING_CHECK,
-    from: new Date().getTime() - ONE_HOUR_IN_MS * 2,
+    from: new Date().getTime() - ONE_HOUR_IN_MS * 3,
     to: new Date().getTime() - ONE_HOUR_IN_MS * 1,
     color: 'purple',
   };
 
-  const events = checkConfigs
-    .filter((config) => config.date > checkCreatedDate)
+  const noDataEvents = checkConfigs
+    .filter((config) => config.type === 'no-data')
+    .map<CheckEvent>((config) => ({
+      label: CheckEventType.NO_DATA,
+      from: config.from,
+      to: config.to,
+      color: 'orange',
+    }));
+
+  const checkUpdatedEvents = checkConfigs
+    .filter((config) => config.from > checkCreatedDate)
     .map<CheckEvent>((config) => ({
       label: CheckEventType.CHECK_UPDATED,
-      from: config.date,
-      to: config.date,
+      from: config.from,
+      to: config.from,
       color: 'blue',
     }));
 
-  return [FAKE_RANGE_RENDERING_CHECK, ...events];
+  return [FAKE_RANGE_RENDERING_CHECK, ...checkUpdatedEvents, ...noDataEvents];
 }
 
 export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
@@ -291,7 +294,7 @@ export function buildLogsMap(
     acc[timeshiftedStartingTime] = {
       adjustedTime: timepoint.adjustedTime,
       timepointDuration: timepoint.timepointDuration,
-      frequency: timepoint.frequency,
+      config: timepoint.config,
       executions,
       uptimeValue: calculateUptimeValue(executions),
       maxProbeDuration: getMaxProbeDuration(executions),

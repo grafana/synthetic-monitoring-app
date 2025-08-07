@@ -22,14 +22,13 @@ import {
   VIZ_DISPLAY_OPTIONS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
+  useBuiltCheckConfigs,
   useExecutionEndingLogs,
   useIsResultPending,
-  usePersistedCheckConfigs,
   usePersistedMaxProbeDuration,
   useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
-  CheckConfig,
   CheckEvent,
   MiniMapPages,
   MiniMapSection,
@@ -53,7 +52,6 @@ import {
 
 type TimepointExplorerContextType = {
   check: Check;
-  checkConfigs: CheckConfig[];
   checkEvents: CheckEvent[];
   handleExecutionHover: (executionId: string | null) => void;
   handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
@@ -124,29 +122,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timeRangeRef.current = timeRange;
   }, [timeRange]);
 
-  const INITIAL_CHECK_CONFIG: CheckConfig = useMemo(() => {
-    return {
-      frequency: check.frequency,
-      date: Number(check.created),
-    };
-  }, [check]);
-
   const maxProbeDuration =
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
-  const {
-    data: checkConfigsData,
-    isLoading: checkConfigsIsLoading,
-    refetch: refetchCheckConfigs,
-  } = usePersistedCheckConfigs({
-    timeRange,
-    check,
-    probe: probeVar,
-  });
 
-  const checkConfigs = useMemo(() => {
-    return checkConfigsData || [INITIAL_CHECK_CONFIG];
-  }, [checkConfigsData, INITIAL_CHECK_CONFIG]);
-
+  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check);
   const timepoints = useTimepoints({ timeRange, checkConfigs });
   const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading;
 
@@ -187,9 +166,8 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       constructCheckEvents({
         checkConfigs,
         checkCreation: check.created,
-        from: timeRange.from.valueOf(),
       }),
-    [checkConfigs, check.created, timeRange.from]
+    [checkConfigs, check.created]
   );
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
@@ -287,7 +265,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
       check,
-      checkConfigs,
       checkEvents,
       handleExecutionHover,
       handleListWidthChange,
@@ -318,7 +295,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     };
   }, [
     check,
-    checkConfigs,
     checkEvents,
     handleExecutionHover,
     handleListWidthChange,

@@ -66,7 +66,7 @@ const TimepointHeader = ({
           <Text variant="h3">{new Date(timepoint.adjustedTime).toLocaleString()}</Text>
           <Stack direction={`row`} gap={1}>
             <Text color={'secondary'}>
-              <strong>Configured frequency:</strong> {formatDuration(timepoint.frequency)}
+              <strong>Configured frequency:</strong> {formatDuration(timepoint.config.frequency)}
             </Text>
           </Stack>
         </Stack>

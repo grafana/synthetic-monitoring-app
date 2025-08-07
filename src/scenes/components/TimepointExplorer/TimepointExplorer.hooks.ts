@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TimeRange } from '@grafana/data';
+import { useTimeRange } from '@grafana/scenes-react';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
@@ -21,11 +22,13 @@ import {
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import {
   CheckConfig,
+  CheckConfigRaw,
   StatefulTimepoint,
   StatelessTimepoint,
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
+  buildConfigTimeRanges,
   buildLogsMap,
   buildTimepoints,
   extractFrequenciesAndConfigs,
@@ -38,6 +41,58 @@ export function useVisibleTimepoints() {
   return getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages });
 }
 
+export function useBuiltCheckConfigs(check: Check) {
+  const [timeRange] = useTimeRange();
+  const probeVar = useSceneVar('probe');
+  const timeRangeFrom = timeRange.from.valueOf();
+  const timeRangeTo = timeRange.to.valueOf();
+  const checkCreated = check.created! * 1000;
+  const fillTo = checkCreated > timeRangeFrom ? checkCreated : timeRangeFrom;
+
+  const {
+    data: checkConfigsData,
+    isLoading: checkConfigsIsLoading,
+    refetch: refetchCheckConfigs,
+  } = usePersistedCheckConfigs({
+    timeRange,
+    check,
+    probe: probeVar,
+  });
+
+  const checkConfigsRaw = useMemo(() => {
+    if (checkConfigsData.length > 0) {
+      return checkConfigsData;
+    }
+
+    return [
+      {
+        frequency: check.frequency,
+        date: Number(fillTo),
+      },
+    ];
+  }, [checkConfigsData, check, fillTo]);
+
+  const firstConfig = checkConfigsRaw[0];
+  const needFiller = firstConfig.date > timeRangeFrom;
+
+  const checkConfigs = useMemo(() => {
+    const filler: CheckConfigRaw = {
+      frequency: firstConfig.frequency,
+      date: fillTo,
+      type: 'no-data',
+    };
+    const toUse = needFiller ? [filler, ...checkConfigsRaw] : checkConfigsRaw;
+
+    return buildConfigTimeRanges(toUse, timeRangeTo);
+  }, [checkConfigsRaw, timeRangeTo, firstConfig.frequency, needFiller, fillTo]);
+
+  return {
+    checkConfigs,
+    checkConfigsIsLoading,
+    refetchCheckConfigs,
+  };
+}
+
 interface UseTimepointsProps {
   timeRange: TimeRange;
   checkConfigs: CheckConfig[];
@@ -45,9 +100,8 @@ interface UseTimepointsProps {
 
 export function useTimepoints({ timeRange, checkConfigs }: UseTimepointsProps) {
   const from = timeRange.from.valueOf();
-  const to = timeRange.to.valueOf();
 
-  return useMemo(() => buildTimepoints({ from, to, checkConfigs }), [from, to, checkConfigs]);
+  return useMemo(() => buildTimepoints({ from, checkConfigs }), [from, checkConfigs]);
 }
 
 interface UseExecutionEndingLogsProps {
@@ -126,7 +180,7 @@ interface UseCheckConfigsProps {
 }
 
 export function usePersistedCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckConfigsProps) {
-  const [persistedCheckConfigs, setPersistedCheckConfigs] = useState<CheckConfig[]>([]);
+  const [persistedCheckConfigs, setPersistedCheckConfigs] = useState<CheckConfigRaw[]>([]);
 
   const { data = [], ...rest } = useCheckConfigs({ timeRange, check, probe, refetchInterval });
 
@@ -252,13 +306,13 @@ export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
   const isPendingEntry = isResultPending && timepoints.length - 1 === timepoint.index;
 
   const defaultState: StatefulTimepoint = {
-    uptimeValue: isPendingEntry ? 2 : -1,
-    maxProbeDuration: maxProbeDuration / 2,
-    executions: [],
     adjustedTime: timepoint.adjustedTime,
-    timepointDuration: timepoint.timepointDuration,
-    frequency: timepoint.frequency,
+    config: timepoint.config,
+    executions: [],
     index: timepoint.index,
+    maxProbeDuration: maxProbeDuration / 2,
+    timepointDuration: timepoint.timepointDuration,
+    uptimeValue: isPendingEntry ? 2 : -1,
   };
 
   const entry = logsMap[timepoint.adjustedTime];

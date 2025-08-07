@@ -10,7 +10,7 @@ describe(`filterProbes`, () => {
       timepointDuration: 60000, // 1 minute duration
       executions: [],
       uptimeValue: -1 as const,
-      frequency: 60000,
+      config: { frequency: 60000, from: 0, to: 1000000 },
       index: 0,
       maxProbeDuration: 30000,
     };

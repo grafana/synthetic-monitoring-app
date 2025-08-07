@@ -9,8 +9,8 @@ export type UnixTimestamp = number;
 export type StatelessTimepoint = {
   adjustedTime: UnixTimestamp;
   timepointDuration: number;
-  frequency: number;
   index: number;
+  config: CheckConfig;
 };
 
 export type VizDisplayValue = (typeof VIZ_DISPLAY_OPTIONS)[number];
@@ -35,6 +35,7 @@ export enum CheckEventType {
   FAKE_RANGE_RENDERING_CHECK = 'Fake range rendering check',
   ALERTS_FIRING = 'Alerts firing',
   ALERTS_PENDING = 'Alerts pending',
+  NO_DATA = 'No data',
 }
 
 export type CheckEvent = {
@@ -44,9 +45,19 @@ export type CheckEvent = {
   color: string;
 };
 
-export type CheckConfig = {
+export type CheckConfigType = 'no-data';
+
+export type CheckConfigRaw = {
   frequency: number;
   date: UnixTimestamp;
+  type?: CheckConfigType;
+};
+
+export type CheckConfig = {
+  frequency: number;
+  from: UnixTimestamp;
+  to: UnixTimestamp;
+  type?: CheckConfigType;
 };
 
 export interface ExecutionsInTimepoint {
@@ -58,9 +69,9 @@ export interface ExecutionsInTimepoint {
 export interface StatefulTimepoint {
   adjustedTime: UnixTimestamp;
   timepointDuration: number;
-  frequency: number;
   uptimeValue: -1 | 0 | 1 | 2; // -1: unknown, 0: failure, 1: success, 2: pending
   executions: ExecutionsInTimepoint[];
   maxProbeDuration: number;
   index: number;
+  config: CheckConfig;
 }
