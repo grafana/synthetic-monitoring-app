@@ -271,6 +271,8 @@ export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = db.check.build(
   { transient: { type: CheckType.DNS } }
 ) as DNSCheck;
 
+
+
 export const BASIC_CHECK_LIST: Check[] = [
   BASIC_DNS_CHECK,
   BASIC_HTTP_CHECK,
