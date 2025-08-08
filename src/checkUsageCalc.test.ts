@@ -1,7 +1,7 @@
 import { UsageValues } from 'types';
 import { ONE_SECOND_IN_MS } from 'utils.constants';
 
-import { calculateMultiHTTPUsage, calculateUsage, getTotalChecksPerMonth } from './checkUsageCalc';
+import { calculateMultiHTTPUsage, calculateUsage, getTotalChecksPerMonth, getTotalChecksPerPeriod } from './checkUsageCalc';
 
 describe('checkUsageCalc', () => {
   describe('getTotalChecksPerMonth', () => {
@@ -23,6 +23,52 @@ describe('checkUsageCalc', () => {
       const probeCount = 0;
       const frequency = 300 * ONE_SECOND_IN_MS;
       const result = getTotalChecksPerMonth(probeCount, frequency);
+      expect(result).toBe(0);
+    });
+  });
+
+  describe('getTotalChecksPerPeriod', () => {
+    it('should calculate correct executions for the reported issue case (6m frequency, 10m period)', () => {
+      const probeCount = 1;
+      const frequency = 6 * 60 * ONE_SECOND_IN_MS; // 6 minutes
+      const period = 10 * 60 * ONE_SECOND_IN_MS; // 10 minutes
+      const result = getTotalChecksPerPeriod(probeCount, frequency, period);
+      // floor(10m / 6m) * 1 = floor(1.667) * 1 = 1
+      expect(result).toBe(1);
+    });
+
+    it('should calculate correct executions when period is exactly divisible by frequency', () => {
+      const probeCount = 1;
+      const frequency = 5 * 60 * ONE_SECOND_IN_MS; // 5 minutes
+      const period = 10 * 60 * ONE_SECOND_IN_MS; // 10 minutes
+      const result = getTotalChecksPerPeriod(probeCount, frequency, period);
+      // floor(10m / 5m) * 1 = floor(2) * 1 = 2
+      expect(result).toBe(2);
+    });
+
+    it('should calculate correct executions with multiple probes', () => {
+      const probeCount = 3;
+      const frequency = 2 * 60 * ONE_SECOND_IN_MS; // 2 minutes
+      const period = 5 * 60 * ONE_SECOND_IN_MS; // 5 minutes
+      const result = getTotalChecksPerPeriod(probeCount, frequency, period);
+      // floor(5m / 2m) * 3 = floor(2.5) * 3 = 2 * 3 = 6
+      expect(result).toBe(6);
+    });
+
+    it('should return 0 when period is shorter than frequency', () => {
+      const probeCount = 1;
+      const frequency = 10 * 60 * ONE_SECOND_IN_MS; // 10 minutes
+      const period = 5 * 60 * ONE_SECOND_IN_MS; // 5 minutes
+      const result = getTotalChecksPerPeriod(probeCount, frequency, period);
+      // floor(5m / 10m) * 1 = floor(0.5) * 1 = 0
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 when probe count is 0', () => {
+      const probeCount = 0;
+      const frequency = 5 * 60 * ONE_SECOND_IN_MS;
+      const period = 10 * 60 * ONE_SECOND_IN_MS;
+      const result = getTotalChecksPerPeriod(probeCount, frequency, period);
       expect(result).toBe(0);
     });
   });
