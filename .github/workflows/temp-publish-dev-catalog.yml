@@ -1,4 +1,4 @@
-name: Temp - Publish to Dev Catalog (grafana-dev.com)
+name: Temp - Publish to Dev Catalog
 
 on:
   push:
@@ -26,11 +26,11 @@ jobs:
             GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
             GCOM_PUBLISH_TOKEN_DEV=plugins/gcom-publish-token:dev
 
-      - name: Build, sign and upload plugin
-        uses: ./.github/workflows/call_build-sign-upload-plugin.yml
-        with:
-          environment: dev
-        secrets: inherit
+      - name: Build, sign and package plugin
+        env:
+          GRAFANA_ACCESS_POLICY_TOKEN: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN }}
+        run: |
+          make build sign package-latest generate-version
 
       - name: Publish plugin to dev catalog
         env:
