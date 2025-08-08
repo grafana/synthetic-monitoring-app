@@ -32,7 +32,7 @@ jobs:
       plugin_version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}
 
   publish-to-grafana-com:
-    name: Publish to grafana.com
+    name: Publish to grafana.com (prod catalog)
     needs: build-sign-zip-upload
     runs-on: ubuntu-latest
     if: inputs.environment == 'production'
@@ -50,9 +50,35 @@ jobs:
           common_secrets: |
             GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
 
-      - name: Publish plugin to grafana.com
+      - name: Publish plugin to grafana.com (prod catalog)
         env:
           GRAFANA_API_KEY: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN }}
         run: |
           echo "Publishing plugin to grafana.com with version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}"
           ./scripts/publish-gcom.sh
+
+  publish-to-grafana-dev:
+    name: Publish to grafana-dev.com (dev catalog)
+    needs: build-sign-zip-upload
+    runs-on: ubuntu-latest
+    if: inputs.environment == 'dev'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Get signing token from Vault
+        uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
+        with:
+          common_secrets: |
+            GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
+
+      - name: Publish plugin to grafana-dev.com (dev catalog)
+        env:
+          GRAFANA_API_KEY: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN }}
+        run: |
+          echo "Publishing plugin to grafana-dev.com with version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}"
+          ./scripts/publish-gcom-dev.sh
