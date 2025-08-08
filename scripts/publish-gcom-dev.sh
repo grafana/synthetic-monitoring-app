@@ -2,8 +2,18 @@
 set -eufo pipefail
 
 ROOT_DIR=$(git rev-parse --show-toplevel)
-VERSION="$(grep version ${ROOT_DIR}/package.json | cut -d':' -f2 | tr -d "\"', \r")"
-DEV_GCS_URL="https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip"
+
+# Use the same version format as generate-version script
+if [ -f "${ROOT_DIR}/plugin_version.txt" ]; then
+  VERSION=$(cat "${ROOT_DIR}/plugin_version.txt")
+else
+  # Fallback to generating it manually
+  BASE_VERSION="$(grep version ${ROOT_DIR}/package.json | cut -d':' -f2 | tr -d "\"', \r")"
+  COMMIT_HASH="$(git rev-parse --short HEAD)"
+  VERSION="${BASE_VERSION}-${COMMIT_HASH:0:8}"
+fi
+
+DEV_GCS_URL="https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/grafana-synthetic-monitoring-app-latest.zip"
 
 curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer ${GCOM_PUBLISH_TOKEN}" \
 -d "download[any][url]=$DEV_GCS_URL" \
