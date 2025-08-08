@@ -44,6 +44,7 @@ jobs:
       - name: publish to catalog
         env:
           GCOM_PUBLISH_TOKEN_DEV: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
+          GCLOUD_AUTH_TOKEN: ${{ steps.auth.outputs.id_token }}
         uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@5c3428a6a5aca68e5292bd33829d676f84da9f33
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/grafana-synthetic-monitoring-app-latest.zip"]'
