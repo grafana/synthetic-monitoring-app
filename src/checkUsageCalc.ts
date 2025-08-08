@@ -31,11 +31,11 @@ export const getTotalChecksPerMonth = (probeCount: number, frequency: number) =>
 };
 
 export const getTotalChecksPerPeriod = (probeCount: number, frequency: number, period: number) => {
-  const frequencyInSeconds = frequency / ONE_SECOND_IN_MS;
-  const checksPerMinute = SECONDS_IN_MINUTE / frequencyInSeconds;
-  const checksPerPeriod = checksPerMinute * (period / ONE_SECOND_IN_MS / 60) * probeCount;
-
-  return Math.round(checksPerPeriod);
+  // Use same logic as backend: floor(period / frequency) * probeCount
+  // This counts only complete executions that can finish within the period
+  // https://github.com/grafana/synthetic-monitoring-api/blob/410d4c402829df22f3d6adf4d00fa0146ebe01ad/internal/alerts/rules.go#L235-L239
+  const maxExecutions = Math.floor(period / frequency);
+  return maxExecutions * probeCount;
 };
 
 const getLogsGbPerMonth = (probeCount: number, frequency: number) => {
