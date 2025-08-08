@@ -6,15 +6,7 @@ on:
       - migrate-plugin-cdn
 
 jobs:
-  build-and-upload:
-    uses: ./.github/workflows/call_build-sign-upload-plugin.yml
-    with:
-      environment: dev
-    secrets: inherit
-
-  publish-to-dev-catalog:
-    name: Publish to dev catalog
-    needs: build-and-upload
+  build-and-publish-dev:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -24,42 +16,25 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Login to Google Cloud (ID token for IAP)
-        id: gcloud
-        uses: google-github-actions/auth@b7593ed2efd1c1617e1b0254da33b86225adb2a5
-        with:
-          workload_identity_provider: "projects/304398677251/locations/global/workloadIdentityPools/github/providers/github-provider"
-          service_account: github-plugin-ci-workflows@grafanalabs-workload-identity.iam.gserviceaccount.com
-          token_format: id_token
-          id_token_audience: 194555723165-aftshfqa32nig79trcrh96ha94ta46jd.apps.googleusercontent.com
-          id_token_include_email: true
-          create_credentials_file: false
-          export_environment_variables: false
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-env
 
-      - name: Get secrets from Vault
+      - name: Get tokens from Vault
         uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
         with:
           common_secrets: |
+            GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
             GCOM_PUBLISH_TOKEN_DEV=plugins/gcom-publish-token:dev
 
-      - name: Construct GCS URLs
-        id: gcs-urls
-        run: |
-          PLUGIN_VERSION="${{ needs.build-and-upload.outputs.plugin_version }}"
-          GCS_BASE_URL="https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds"
-          
-          # For dev environment, we use the "latest" URL since that's what gets uploaded
-          ZIP_URL="$GCS_BASE_URL/grafana-synthetic-monitoring-app-latest.zip"
-          
-          echo "zip-urls=[\"$ZIP_URL\"]" >> $GITHUB_OUTPUT
-          echo "Using ZIP URL: $ZIP_URL"
+      - name: Build, sign and upload plugin
+        uses: ./.github/workflows/call_build-sign-upload-plugin.yml
+        with:
+          environment: dev
+        secrets: inherit
 
       - name: Publish plugin to dev catalog
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@main
-        with:
-          zips: ${{ steps.gcs-urls.outputs.zip-urls }}
-          environment: dev
-          scopes: universal
-          gcom-publish-token: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
-          gcloud-auth-token: ${{ steps.gcloud.outputs.id_token }}
-          ignore-conflicts: false
+        env:
+          GCOM_PUBLISH_TOKEN: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
+        run: |
+          echo "Publishing plugin to dev catalog"
+          ./scripts/publish-gcom-dev.sh
