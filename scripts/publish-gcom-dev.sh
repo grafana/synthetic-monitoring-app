@@ -1,14 +1,12 @@
 #!/bin/bash
-# Publish plugin to dev catalog (grafana-dev.com)
 set -eufo pipefail
 
 ROOT_DIR=$(git rev-parse --show-toplevel)
 VERSION="$(grep version ${ROOT_DIR}/package.json | cut -d':' -f2 | tr -d "\"', \r")"
+DEV_GCS_URL="https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip"
 
-echo "Publishing version ${VERSION} to dev catalog"
-
-curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer ${GRAFANA_API_KEY}" \
--d "download[any][url]=https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip" \
--d "download[any][md5]=$$(curl -sL https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip | md5sum | cut -d' ' -f1)" \
+curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer ${GCOM_PUBLISH_TOKEN}" \
+-d "download[any][url]=$DEV_GCS_URL" \
+-d "download[any][md5]=$$(curl -sL $DEV_GCS_URL | md5sum | cut -d' ' -f1)" \
 -d url=https://github.com/grafana/synthetic-monitoring-app \
 "https://grafana-dev.com/api/plugins"
