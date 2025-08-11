@@ -1,9 +1,7 @@
 name: Temp - Publish to Dev Catalog
 
 on:
-  pull_request:
-    branches:
-      - migrate-plugin-cdn
+  workflow_dispatch:
 
 jobs:
   build-and-publish-dev:
