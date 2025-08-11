@@ -1,7 +1,7 @@
 name: Temp - Publish to Dev Catalog
 
 on:
-  push:
+  pull_request:
     branches:
       - migrate-plugin-cdn
 
@@ -25,7 +25,6 @@ jobs:
           common_secrets: |
             GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
             GCOM_PUBLISH_TOKEN_DEV=plugins/gcom-publish-token:dev
-            GCP_UPLOAD_ARTIFACTS_KEY=grafana/integration-artifacts-uploader-service-account:'credentials.json'
 
       - name: Build, sign and package plugin
         env:
@@ -34,21 +33,25 @@ jobs:
           make build sign package-latest generate-version
 
       - name: authenticate to gcp
-        env:
-          GCP_UPLOAD_ARTIFACTS_KEY: ${{ env.GCP_UPLOAD_ARTIFACTS_KEY }}
-        id: auth
+        id: gcloud
         uses: google-github-actions/auth@b7593ed2efd1c1617e1b0254da33b86225adb2a5 # v2.1.12
         with:
-          credentials_json: ${{ env.GCP_UPLOAD_ARTIFACTS_KEY }}
+          workload_identity_provider: "projects/304398677251/locations/global/workloadIdentityPools/github/providers/github-provider"
+          service_account: github-plugin-ci-workflows@grafanalabs-workload-identity.iam.gserviceaccount.com
+          token_format: id_token
+          id_token_audience: 194555723165-aftshfqa32nig79trcrh96ha94ta46jd.apps.googleusercontent.com
+          id_token_include_email: true
+          create_credentials_file: false
+          export_environment_variables: false
 
       - name: publish to catalog
         env:
           GCOM_PUBLISH_TOKEN_DEV: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
-          GCLOUD_AUTH_TOKEN: ${{ steps.auth.outputs.id_token }}
+          GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
         uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@5c3428a6a5aca68e5292bd33829d676f84da9f33
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/grafana-synthetic-monitoring-app-latest.zip"]'
           environment: dev
           scopes: universal
           gcom-publish-token: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
-          gcloud-auth-token: ${{ steps.auth.outputs.id_token }}
+          gcloud-auth-token: ${{ steps.gcloud.outputs.id_token }}
