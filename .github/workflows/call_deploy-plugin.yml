@@ -1,7 +1,7 @@
 name: Update deployment tools
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       environment:
         description: Deployment environment for the plugin (dev, staging, production)

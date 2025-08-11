@@ -29,16 +29,16 @@ jobs:
       - name: Setup Build Environment
         uses: ./.github/actions/setup-env
 
-      - uses: grafana/shared-workflows/actions/login-to-gcs@main
-        id: login-to-gcs
+      # - uses: grafana/shared-workflows/actions/login-to-gcs@main
+      #   id: login-to-gcs
 
-      - name: log some details
-        env:
-          BUCKET: ${{ steps.login-to-gcs.outputs.bucket }}
-          ENVIRONMENT: ${{ inputs.environment }}
-        run: |
-          echo "bucket: $BUCKET"
-          echo "environment: $ENVIRONMENT"
+      # - name: log some details
+      #   env:
+      #     BUCKET: ${{ steps.login-to-gcs.outputs.bucket }}
+      #     ENVIRONMENT: ${{ inputs.environment }}
+      #   run: |
+      #     echo "bucket: $BUCKET"
+      #     echo "environment: $ENVIRONMENT"
 
       - name: Get signing token from Vault
         uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
@@ -73,29 +73,29 @@ jobs:
           echo "plugin_version=${PLUGIN_VERSION}" >> "${GITHUB_OUTPUT}"
           echo "Plugin version: ${PLUGIN_VERSION}"
 
-      - name: Validate and set bucket name
-        id: set-bucket
-        env:
-          ENVIRONMENT: ${{ inputs.environment }}
-        run: |
-          case "$ENVIRONMENT" in
-            "dev")
-              echo "bucket=grafanalabs-synthetic-monitoring-app-dev" >> "${GITHUB_OUTPUT}"
-              ;;
-            "prod")
-              echo "bucket=grafanalabs-synthetic-monitoring-app-prod" >> "${GITHUB_OUTPUT}"
-              ;;
-            *)
-              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
-              exit 1
-              ;;
-          esac
+      # - name: Validate and set bucket name
+      #   id: set-bucket
+      #   env:
+      #     ENVIRONMENT: ${{ inputs.environment }}
+      #   run: |
+      #     case "$ENVIRONMENT" in
+      #       "dev")
+      #         echo "bucket=grafanalabs-synthetic-monitoring-app-dev" >> "${GITHUB_OUTPUT}"
+      #         ;;
+      #       "prod")
+      #         echo "bucket=grafanalabs-synthetic-monitoring-app-prod" >> "${GITHUB_OUTPUT}"
+      #         ;;
+      #       *)
+      #         echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+      #         exit 1
+      #         ;;
+      #     esac
 
-      - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
-        uses: grafana/shared-workflows/actions/push-to-gcs@main
-        with:
-          path: ./artifacts
-          bucket: ${{ steps.set-bucket.outputs.bucket }}
-          environment: ${{ inputs.environment }}
-          predefinedAcl: publicRead
-          parent: false
+      # - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
+      #   uses: grafana/shared-workflows/actions/push-to-gcs@main
+      #   with:
+      #     path: ./artifacts
+      #     bucket: ${{ steps.set-bucket.outputs.bucket }}
+      #     environment: ${{ inputs.environment }}
+      #     predefinedAcl: publicRead
+      #     parent: false
