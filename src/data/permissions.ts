@@ -25,7 +25,7 @@ const isUserActionAllowed = (permission: PluginPermissions, fallbackOrgRole: Org
   const { permissions: userPermissions } = config.bootData.user;
 
   const rbacEnabled = isFeatureEnabled(FeatureName.RBAC);
-  if (config.featureToggles.accessControlOnCall && rbacEnabled) {
+  if (rbacEnabled) {
     return Boolean(userPermissions?.[permission]);
   }
 
