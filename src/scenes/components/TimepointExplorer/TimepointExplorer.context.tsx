@@ -44,6 +44,7 @@ import {
 import {
   constructCheckEvents,
   findNearest,
+  getIsCheckCreationWithinTimerange,
   getMiniMapPages,
   getMiniMapSections,
   getVisibleTimepoints,
@@ -63,6 +64,7 @@ type TimepointExplorerContextType = {
   handleVizDisplayChange: (display: VizDisplayValue, usedModifier: boolean) => void;
   handleVizOptionChange: (display: VizDisplayValue, color: string) => void;
   hoveredExecution: string | null;
+  isCheckCreationWithinTimerange: boolean;
   isLoading: boolean;
   isResultPending: boolean;
   listWidth: number;
@@ -88,6 +90,7 @@ interface TimepointExplorerProviderProps extends PropsWithChildren {
 }
 
 export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
+  const checkCreation = check.created!;
   const [timeRange] = useTimeRange();
   const timeRangeRef = useRef<TimeRange>(timeRange);
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
@@ -128,6 +131,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check);
   const timepoints = useTimepoints({ timeRange, checkConfigs });
   const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading;
+  const isCheckCreationWithinTimerange = getIsCheckCreationWithinTimerange(checkCreation, timepoints);
 
   const miniMapPages = useMemo(
     () => getMiniMapPages(timepoints.length, timepointsDisplayCount),
@@ -165,9 +169,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     () =>
       constructCheckEvents({
         checkConfigs,
-        checkCreation: check.created,
+        checkCreation,
       }),
-    [checkConfigs, check.created]
+    [checkConfigs, checkCreation]
   );
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
@@ -276,6 +280,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleVizDisplayChange,
       handleVizOptionChange,
       hoveredExecution,
+      isCheckCreationWithinTimerange,
       isLoading,
       isResultPending,
       listWidth,
@@ -306,6 +311,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleVizDisplayChange,
     handleVizOptionChange,
     hoveredExecution,
+    isCheckCreationWithinTimerange,
     isLoading,
     isResultPending,
     listWidth,

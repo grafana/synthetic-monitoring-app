@@ -1,10 +1,14 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { dateTimeFormat } from '@grafana/data';
-import { Box, IconButton, Pagination, Stack, Text } from '@grafana/ui';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
+import { Box, IconButton, Pagination, Stack, Text, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 import { useResizeObserver } from 'usehooks-ts';
 
 import { formatDuration } from 'utils';
-import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  MAX_MINIMAP_SECTIONS,
+  MINIMAP_SECTION_HEIGHT,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useVisibleTimepoints } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { getVisibleTimepointsTimeRange } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -72,8 +76,9 @@ export const TimepointMinimap = () => {
 
 const TimepointMinimapContent = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const styles = useStyles2(getStyles);
   const [miniMapWidth, setMiniMapWidth] = useState<number>(0);
-  const { miniMapCurrentPageSections } = useTimepointExplorerContext();
+  const { isCheckCreationWithinTimerange, miniMapCurrentPageSections } = useTimepointExplorerContext();
   const filler =
     miniMapCurrentPageSections.length < MAX_MINIMAP_SECTIONS
       ? Array(MAX_MINIMAP_SECTIONS - miniMapCurrentPageSections.length).fill(null)
@@ -91,7 +96,12 @@ const TimepointMinimapContent = () => {
     <Box position="relative" paddingY={2} flex={1} ref={ref}>
       <Stack gap={0}>
         {filler.map((_, index) => {
-          return <Box key={index} flex={1} />;
+          return (
+            <div
+              key={index}
+              className={cx(styles.filler, { [styles.outOfRangeMimic]: !isCheckCreationWithinTimerange })}
+            />
+          );
         })}
         {miniMapCurrentPageSections
           .map((section, index) => (
@@ -136,4 +146,21 @@ const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginati
   );
 
   return <Pagination currentPage={currentPage} numberOfPages={numberOfPages} onNavigate={handleNavigate} />;
+};
+
+const getStyles = (theme: GrafanaTheme2) => {
+  const borderColor = theme.visualization.getColorByName(`gray`);
+  const backgroundColor = `${borderColor}30`;
+
+  return {
+    filler: css`
+      width: 100%;
+      height: ${MINIMAP_SECTION_HEIGHT}px;
+      flex: 1;
+    `,
+    outOfRangeMimic: css`
+      background-color: ${backgroundColor};
+      border-bottom: 2px solid ${borderColor};
+    `,
+  };
 };

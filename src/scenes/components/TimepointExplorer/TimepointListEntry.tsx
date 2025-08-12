@@ -20,7 +20,7 @@ export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryP
   const styles = useStyles2(getStyles, timepointWidth);
 
   return (
-    <div className={styles.timepoint} data-testid={`timepoint-${timepoint.adjustedTime}`}>
+    <div className={styles.timepoint} data-testid={`timepoint-${timepoint.index}`}>
       <Entry timepoint={timepoint} viewIndex={viewIndex} />
     </div>
   );

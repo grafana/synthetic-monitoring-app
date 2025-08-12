@@ -20,15 +20,13 @@ export const PreTimepointAnnotations = ({
   timepointsInRange,
   parentWidth,
 }: PreTimepointAnnotationsProps) => {
-  const { check, miniMapCurrentPage, miniMapPages, timepoints } = useTimepointExplorerContext();
+  const { check, miniMapCurrentPage, miniMapPages, isCheckCreationWithinTimerange } = useTimepointExplorerContext();
   const checkCreation = check.created;
   const isFirstPage = miniMapCurrentPage === miniMapPages.length - 1;
 
   if (!(isBeginningSection && isFirstPage) || !checkCreation) {
     return null;
   }
-
-  const isCheckCreationWithinTimerange = getIsCheckCreationWithinTimerange(checkCreation, timepoints);
 
   return (
     <>
@@ -74,7 +72,7 @@ const CheckCreationAnnotation = ({
           label: CheckEventType.CHECK_CREATED,
           from: Math.round(checkCreation * 1000),
           to: Math.round(checkCreation * 1000),
-          color: 'blue',
+          color: 'yellow',
         },
         isClippedStart: false,
         isClippedEnd: false,
@@ -129,10 +127,3 @@ const OutOfRangeAnnotation = ({
     />
   );
 };
-
-function getIsCheckCreationWithinTimerange(checkCreation: number, timepoints: StatelessTimepoint[]) {
-  const checkCreationDate = Math.round(checkCreation * 1000);
-  const { adjustedTime, timepointDuration } = timepoints[0];
-
-  return checkCreationDate >= adjustedTime - timepointDuration;
-}

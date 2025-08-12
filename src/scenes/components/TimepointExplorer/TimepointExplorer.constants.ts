@@ -21,6 +21,7 @@ export const TIMEPOINT_EXPLORER_VIEW_OPTIONS = [
 ];
 
 export const MAX_MINIMAP_SECTIONS = 5;
+export const MINIMAP_SECTION_HEIGHT = 45;
 
 const success = `success` as const;
 const failure = `failure` as const;

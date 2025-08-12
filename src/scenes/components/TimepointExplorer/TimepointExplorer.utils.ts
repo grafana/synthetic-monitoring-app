@@ -143,10 +143,10 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
 
 export function constructCheckEvents({
   checkConfigs,
-  checkCreation = -1,
+  checkCreation,
 }: {
   checkConfigs: CheckConfig[];
-  checkCreation?: UnixTimestamp;
+  checkCreation: UnixTimestamp;
 }): CheckEvent[] {
   const checkCreatedDate = Math.round(checkCreation * 1000);
   const ONE_HOUR_IN_MS = 1000 * 60 * 60;
@@ -387,4 +387,11 @@ export function getSelectedOnlineProbes(selectedProbes: Array<string | number>, 
   const onlineProbes = probes.filter((probe) => probe.online).map((probe) => probe.id || -1);
 
   return onlineProbes.filter((probe) => selectedProbes.includes(probe));
+}
+
+export function getIsCheckCreationWithinTimerange(checkCreation: number, timepoints: StatelessTimepoint[]) {
+  const checkCreationDate = Math.round(checkCreation * 1000);
+  const { adjustedTime, timepointDuration } = timepoints[0];
+
+  return checkCreationDate >= adjustedTime - timepointDuration;
 }

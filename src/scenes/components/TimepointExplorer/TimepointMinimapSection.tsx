@@ -5,7 +5,10 @@ import { css, cx } from '@emotion/css';
 
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
-import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  MAX_MINIMAP_SECTIONS,
+  MINIMAP_SECTION_HEIGHT,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
@@ -189,7 +192,7 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => ({
     padding: 0;
     border: none;
     display: flex;
-    height: 45px;
+    height: ${MINIMAP_SECTION_HEIGHT}px;
     align-items: end;
     background-color: transparent;
     justify-content: end;
