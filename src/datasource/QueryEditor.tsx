@@ -202,6 +202,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     return (
       <div>
         <div className="gf-form">
+          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
           <Select
             options={types}
             value={types.find((t) => t.value === query.queryType)}
@@ -211,6 +212,7 @@ export class QueryEditor extends PureComponent<Props, State> {
         {query.queryType === QueryType.Traceroute && (
           <>
             <div className={styles.tracerouteFieldWrapper}>
+              {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
               <Select
                 options={tracerouteCheckOptions}
                 prefix="Check"

@@ -116,6 +116,7 @@ const RequestAssertions = ({ index }: { index: number }) => {
                       htmlFor={id}
                       data-fs-element="Assertion type select"
                     >
+                      {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
                       <Select
                         {...rest}
                         disabled={isFormDisabled}
@@ -246,7 +247,7 @@ function AssertionSubjectField({ assertionIndex, disabled, entryIndex }: Asserti
             invalid={Boolean(errorSubject)}
             label="Subject"
           >
-            <Select
+            <Select // eslint-disable-line @typescript-eslint/no-deprecated
               {...rest}
               disabled={disabled}
               inputId={id}
@@ -283,6 +284,7 @@ function AssertionConditionField({ assertionIndex, disabled, entryIndex }: Asser
             htmlFor={id}
             data-fs-element="Assertion condition select"
           >
+            {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
             <Select
               {...rest}
               disabled={disabled}

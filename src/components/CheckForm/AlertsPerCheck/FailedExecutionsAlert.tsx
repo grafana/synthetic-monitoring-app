@@ -3,11 +3,11 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import {
   Checkbox,
-  Combobox,
   Icon,
   InlineField,
   InlineFieldRow,
   PopoverContent,
+  Select,
   Stack,
   Text,
   Tooltip,
@@ -124,15 +124,14 @@ export const FailedExecutionsAlert = ({
               const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
 
               return (
-                <Combobox
+                <Select // eslint-disable-line @typescript-eslint/no-deprecated
                   {...fieldProps}
                   disabled={!selected || isFormDisabled}
                   data-testid="alertPendingPeriod"
                   id={`alert-period-${alert.type}`}
                   options={validPeriods}
                   value={field.value}
-                  onChange={(option) => {
-                    const value = option?.value ?? null;
+                  onChange={({ value = null } = {}) => {
                     field.onChange(value);
                     trackChangePeriod({ name: alert.type, period: value ?? '' });
                     // clear threshold error if new period is valid
