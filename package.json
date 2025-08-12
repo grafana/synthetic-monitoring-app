@@ -7,11 +7,11 @@
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
     "build:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/build-probe-api-mappings.ts",
     "build:generate-terraform-test-config": "npx tsx scripts/terraform-validation/generate-test-configs.ts",
-    "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
+    "build": "webpack -c webpack.config.ts --env production",
     "danger:ci": "yarn danger ci --dangerfile danger/dangerfile.ts",
     "danger:pr": "yarn danger pr --dangerfile danger/dangerfile.ts",
     "dev:msw": "REACT_APP_MSW=true webpack -w -c webpack.config.ts --env development",
-    "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "dev": "webpack -w -c webpack.config.ts --env development",
     "e2e:update": "yarn exec cypress install && yarn exec grafana-e2e run --update-screenshots",
     "e2e": "yarn exec cypress install && yarn exec grafana-e2e run",
     "lint:dashboards": "./scripts/lint-dashboards.sh",
@@ -153,7 +153,7 @@
     "zod": "3.24.2"
   },
   "resolutions": {
-    "rxjs": "7.8.1"
+    "rxjs": "7.8.2"
   },
   "packageManager": "yarn@1.22.19"
 }
