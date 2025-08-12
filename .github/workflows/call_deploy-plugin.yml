@@ -76,6 +76,11 @@ jobs:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_DEV=plugins/gcom-publish-token:dev
 
+      - name: Show version being published
+        run: |
+          echo "=== Publishing version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }} ==="
+          echo "Plugin version from build job: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}"
+
       - name: authenticate to gcp
         id: gcloud
         uses: google-github-actions/auth@b7593ed2efd1c1617e1b0254da33b86225adb2a5 # v2.1.12
