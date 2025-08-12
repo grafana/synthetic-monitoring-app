@@ -12,8 +12,9 @@ export interface ConstructActionsProps {
 }
 
 /**
- * Button to test a check ad-hoc.
- * @deprecated This is stupid
+ * Button to test a check adhoc.
+ * @todo Dont use type "submit" as it will cause an "invalid" form state.
+ * @todo Use "button" instead.
  */
 export const AdHocCheckButton = forwardRef<HTMLButtonElement, Omit<ConstructActionsProps, 'checkType'>>(
   ({ disabled, loading }, ref) => {
@@ -42,5 +43,4 @@ export const AdHocCheckButton = forwardRef<HTMLButtonElement, Omit<ConstructActi
   }
 );
 
-// eslint-disable-next-line @typescript-eslint/no-deprecated
 AdHocCheckButton.displayName = `AdHocCheckButton`;

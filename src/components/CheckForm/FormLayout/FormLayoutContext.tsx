@@ -126,9 +126,6 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
     getSectionLabel,
   ]);
 
-  // @ts-ignore
-  window['formLayoutContext'] = value; // For debugging purposes
-
   return <FormLayoutContext.Provider value={value}>{children}</FormLayoutContext.Provider>;
 }
 
@@ -139,13 +136,4 @@ export function useFormLayoutContextExtended() {
   }
 
   return context;
-}
-
-export function useSetActiveSectionByError() {
-  const context = React.useContext(FormLayoutContext);
-  if (!context) {
-    throw new Error('useFormLayoutContext must be used within a FormLayoutContextProvider');
-  }
-
-  return context.setActiveSectionByError;
 }

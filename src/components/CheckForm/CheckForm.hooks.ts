@@ -165,8 +165,8 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
       } catch (e) {
         console.log(`Error while submitting check`, e);
         // swallow the error
-        // it gets handled correctly by the the generic hooks and we have tests to prove that
-        // this isn't strictly necessary but jest complains about this...
+        // it gets handled correctly by the generic hooks, and we have tests to prove that
+        // this isn't strictly necessary, but jest complains about this...
       } finally {
         setSubmittingToApi(false);
       }

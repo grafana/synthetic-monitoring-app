@@ -28,6 +28,9 @@ interface CheckFormProps extends PropsWithChildren {
   disabled?: boolean;
 }
 
+/**
+ * CheckForm with conditional CheckFormContextProvider
+ */
 export function CheckForm({ check, disabled }: CheckFormProps) {
   const context = useContext(CheckFormContext);
   if (!context) {
@@ -206,7 +209,6 @@ function constructActions({ checkType, ...rest }: ConstructActionsProps) {
     ? [
         {
           index: 4,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
           element: <AdHocCheckButton {...rest} />,
         },
       ]
