@@ -42,9 +42,10 @@ describe('SecretsManagementTab', () => {
       render(<SecretsManagementTab />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Contact an admin: you don't have permissions to view secrets/)).toBeInTheDocument();
+        expect(screen.getByText(/Contact an admin: you need either read or create permissions for secrets/)).toBeInTheDocument();
       });
       expect(screen.getByText('secret.securevalues:read')).toBeInTheDocument();
+      expect(screen.getByText('secret.securevalues:create')).toBeInTheDocument();
       expect(screen.queryByTestId(DataTestIds.CENTERED_SPINNER)).not.toBeInTheDocument();
     });
 
@@ -129,9 +130,10 @@ describe('SecretsManagementTab', () => {
       render(<SecretsManagementTab />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Contact an admin: you don't have permissions to view secrets/)).toBeInTheDocument();
+        expect(screen.getByText(/Contact an admin: you need either read or create permissions for secrets/)).toBeInTheDocument();
       });
       expect(screen.getByText('secret.securevalues:read')).toBeInTheDocument();
+      expect(screen.getByText('secret.securevalues:create')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /create secret/i })).not.toBeInTheDocument();
     });
   });
