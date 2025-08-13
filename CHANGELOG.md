@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.34.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.33.2...v1.34.0) (2025-08-13)
+
+
+### Features
+
+* change redirect logic for editing a check ([#1203](https://github.com/grafana/synthetic-monitoring-app/issues/1203)) ([7f8a192](https://github.com/grafana/synthetic-monitoring-app/commit/7f8a192053ae014bda9a784fc1a654dad0626522))
+
+
+### Fixes
+
+* always use latest terraform provider version for validation check ([#1220](https://github.com/grafana/synthetic-monitoring-app/issues/1220)) ([bc75a19](https://github.com/grafana/synthetic-monitoring-app/commit/bc75a1958fd1bea3d0dae29ad233069722ab2df5))
+* make totalChecksPerPeriod calculation equal to backend ([#1221](https://github.com/grafana/synthetic-monitoring-app/issues/1221)) ([e45b993](https://github.com/grafana/synthetic-monitoring-app/commit/e45b993212ef813e70de3c6e54fa4a31268e5c4b))
+
+
+### Miscellaneous Chores
+
+* publish dev catalog ([#1224](https://github.com/grafana/synthetic-monitoring-app/issues/1224)) ([8585568](https://github.com/grafana/synthetic-monitoring-app/commit/8585568ff609258190fd9dc61484599f7f5c8ba0))
+* update create-plugin to latest version ([#1226](https://github.com/grafana/synthetic-monitoring-app/issues/1226)) ([8c91c83](https://github.com/grafana/synthetic-monitoring-app/commit/8c91c83f4b37a404274ea2356078a42ba2735d4c))
+
 ## [1.33.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.33.1...v1.33.2) (2025-08-04)
 
 
