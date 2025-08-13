@@ -13,6 +13,7 @@ import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
 
 import { Check } from 'types';
+import { useLogsRetentionPeriod } from 'data/useLogsRetention';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
 import {
   MAX_PROBE_DURATION_DEFAULT,
@@ -51,7 +52,7 @@ import {
   getVisibleTimepointsTimeRange,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
-type TimepointExplorerContextType = {
+interface TimepointExplorerContextType {
   check: Check;
   checkEvents: CheckEvent[];
   handleExecutionHover: (executionId: string | null) => void;
@@ -65,6 +66,7 @@ type TimepointExplorerContextType = {
   handleVizOptionChange: (display: VizDisplayValue, color: string) => void;
   hoveredExecution: string | null;
   isCheckCreationWithinTimerange: boolean;
+  isLogsRetentionPeriodWithinTimerange: boolean;
   isLoading: boolean;
   isResultPending: boolean;
   listWidth: number;
@@ -81,7 +83,7 @@ type TimepointExplorerContextType = {
   viewMode: ViewMode;
   vizDisplay: VizDisplay;
   vizOptions: Record<VizDisplayValue, string>;
-};
+}
 
 export const TimepointExplorerContext = createContext<TimepointExplorerContextType | null>(null);
 
@@ -93,6 +95,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const checkCreation = check.created!;
   const [timeRange] = useTimeRange();
   const timeRangeRef = useRef<TimeRange>(timeRange);
+  const logsRetentionPeriod = useLogsRetentionPeriod(timeRange.from.valueOf());
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- update date.now when timerange changes
+  const logsRetentionTo = useMemo(() => Date.now() - logsRetentionPeriod, [logsRetentionPeriod, timeRange]);
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
   const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
   const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
@@ -128,10 +133,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const maxProbeDuration =
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
 
-  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check);
-  const timepoints = useTimepoints({ timeRange, checkConfigs });
+  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check, logsRetentionTo);
+  const timepoints = useTimepoints({ timeRange, checkConfigs, logsRetentionTo });
   const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading;
   const isCheckCreationWithinTimerange = getIsCheckCreationWithinTimerange(checkCreation, timepoints);
+  const isLogsRetentionPeriodWithinTimerange = logsRetentionTo > timeRange.from.valueOf();
 
   const miniMapPages = useMemo(
     () => getMiniMapPages(timepoints.length, timepointsDisplayCount),
@@ -170,8 +176,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       constructCheckEvents({
         checkConfigs,
         checkCreation,
+        logsRetentionTo,
       }),
-    [checkConfigs, checkCreation]
+    [checkConfigs, checkCreation, logsRetentionTo]
   );
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
@@ -281,6 +288,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleVizOptionChange,
       hoveredExecution,
       isCheckCreationWithinTimerange,
+      isLogsRetentionPeriodWithinTimerange,
       isLoading,
       isResultPending,
       listWidth,
@@ -312,6 +320,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleVizOptionChange,
     hoveredExecution,
     isCheckCreationWithinTimerange,
+    isLogsRetentionPeriodWithinTimerange,
     isLoading,
     isResultPending,
     listWidth,

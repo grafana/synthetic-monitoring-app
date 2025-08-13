@@ -41,13 +41,14 @@ export function useVisibleTimepoints() {
   return getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages });
 }
 
-export function useBuiltCheckConfigs(check: Check) {
+export function useBuiltCheckConfigs(check: Check, logsRetentionTo: UnixTimestamp) {
   const [timeRange] = useTimeRange();
   const probeVar = useSceneVar('probe');
   const timeRangeFrom = timeRange.from.valueOf();
   const timeRangeTo = timeRange.to.valueOf();
   const checkCreated = check.created! * 1000;
-  const fillTo = checkCreated > timeRangeFrom ? checkCreated : timeRangeFrom;
+  const upto = Math.max(logsRetentionTo, checkCreated);
+  const fillTo = upto > timeRangeFrom ? upto : timeRangeFrom;
 
   const {
     data: checkConfigsData,
@@ -67,13 +68,13 @@ export function useBuiltCheckConfigs(check: Check) {
     return [
       {
         frequency: check.frequency,
-        date: Number(fillTo),
+        date: fillTo,
       },
     ];
   }, [checkConfigsData, check, fillTo]);
 
   const firstConfig = checkConfigsRaw[0];
-  const needFiller = firstConfig.date > timeRangeFrom;
+  const needFiller = firstConfig.date > fillTo;
 
   const checkConfigs = useMemo(() => {
     const filler: CheckConfigRaw = {
@@ -96,10 +97,11 @@ export function useBuiltCheckConfigs(check: Check) {
 interface UseTimepointsProps {
   timeRange: TimeRange;
   checkConfigs: CheckConfig[];
+  logsRetentionTo: UnixTimestamp;
 }
 
-export function useTimepoints({ timeRange, checkConfigs }: UseTimepointsProps) {
-  const from = timeRange.from.valueOf();
+export function useTimepoints({ timeRange, checkConfigs, logsRetentionTo }: UseTimepointsProps) {
+  const from = Math.max(timeRange.from.valueOf(), logsRetentionTo);
 
   return useMemo(() => buildTimepoints({ from, checkConfigs }), [from, checkConfigs]);
 }
@@ -223,7 +225,6 @@ function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckC
         end: timeRange.to.valueOf(),
         refId: REF_ID_UNIQUE_CHECK_CONFIGS,
         queryType,
-        maxDataPoints: 11000,
       });
     },
     refetchInterval,

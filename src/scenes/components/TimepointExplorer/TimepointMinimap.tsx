@@ -6,6 +6,8 @@ import { useResizeObserver } from 'usehooks-ts';
 
 import { formatDuration } from 'utils';
 import {
+  ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD,
+  ANNOTATION_COLOR_OUT_OF_TIMERANGE,
   MAX_MINIMAP_SECTIONS,
   MINIMAP_SECTION_HEIGHT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
@@ -78,7 +80,8 @@ const TimepointMinimapContent = () => {
   const ref = useRef<HTMLDivElement>(null);
   const styles = useStyles2(getStyles);
   const [miniMapWidth, setMiniMapWidth] = useState<number>(0);
-  const { isCheckCreationWithinTimerange, miniMapCurrentPageSections } = useTimepointExplorerContext();
+  const { isCheckCreationWithinTimerange, isLogsRetentionPeriodWithinTimerange, miniMapCurrentPageSections } =
+    useTimepointExplorerContext();
   const filler =
     miniMapCurrentPageSections.length < MAX_MINIMAP_SECTIONS
       ? Array(MAX_MINIMAP_SECTIONS - miniMapCurrentPageSections.length).fill(null)
@@ -99,7 +102,10 @@ const TimepointMinimapContent = () => {
           return (
             <div
               key={index}
-              className={cx(styles.filler, { [styles.outOfRangeMimic]: !isCheckCreationWithinTimerange })}
+              className={cx(styles.filler, {
+                [styles.outOfRangeMimic]: !isCheckCreationWithinTimerange,
+                [styles.outOfRetentionPeriodMimic]: isLogsRetentionPeriodWithinTimerange,
+              })}
             />
           );
         })}
@@ -149,8 +155,11 @@ const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginati
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
-  const borderColor = theme.visualization.getColorByName(`gray`);
-  const backgroundColor = `${borderColor}30`;
+  const outOfRangeBorderColor = theme.visualization.getColorByName(ANNOTATION_COLOR_OUT_OF_TIMERANGE);
+  const outOfRetentionPeriodBorderColor = theme.visualization.getColorByName(ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD);
+
+  const outOfRangeBackgroundColor = `${outOfRangeBorderColor}30`;
+  const outOfRetentionPeriodBackgroundColor = `${outOfRetentionPeriodBorderColor}30`;
 
   return {
     filler: css`
@@ -159,8 +168,12 @@ const getStyles = (theme: GrafanaTheme2) => {
       flex: 1;
     `,
     outOfRangeMimic: css`
-      background-color: ${backgroundColor};
-      border-bottom: 2px solid ${borderColor};
+      background-color: ${outOfRangeBackgroundColor};
+      border-bottom: 2px solid ${outOfRangeBorderColor};
+    `,
+    outOfRetentionPeriodMimic: css`
+      background-color: ${outOfRetentionPeriodBackgroundColor};
+      border-bottom: 2px solid ${outOfRetentionPeriodBorderColor};
     `,
   };
 };

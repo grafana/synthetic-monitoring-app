@@ -29,3 +29,10 @@ const unknown = `unknown` as const;
 const pending = `pending` as const;
 
 export const VIZ_DISPLAY_OPTIONS = [success, failure, unknown, pending];
+
+export const ANNOTATION_COLOR_OUT_OF_TIMERANGE = `gray`;
+export const ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD = `yellow`;
+export const ANNOTATION_COLOR_NO_DATA = `orange`;
+export const ANNOTATION_COLOR_CHECK_CREATED = `yellow`;
+export const ANNOTATION_COLOR_CHECK_UPDATED = `blue`;
+export const ANNOTATION_COLOR_ALERTS_FIRING = `red`;

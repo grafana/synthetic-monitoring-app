@@ -1,5 +1,10 @@
 import React from 'react';
 
+import {
+  ANNOTATION_COLOR_CHECK_CREATED,
+  ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD,
+  ANNOTATION_COLOR_OUT_OF_TIMERANGE,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointInstantAnnotation } from 'scenes/components/TimepointExplorer/TimepointInstantAnnotation';
@@ -72,7 +77,7 @@ const CheckCreationAnnotation = ({
           label: CheckEventType.CHECK_CREATED,
           from: Math.round(checkCreation * 1000),
           to: Math.round(checkCreation * 1000),
-          color: 'yellow',
+          color: ANNOTATION_COLOR_CHECK_CREATED,
         },
         isClippedStart: false,
         isClippedEnd: false,
@@ -101,18 +106,25 @@ const OutOfRangeAnnotation = ({
   parentWidth,
   timepointsInRange,
 }: OutOfRangeAnnotationProps) => {
-  const { timepointsDisplayCount } = useTimepointExplorerContext();
+  const { isLogsRetentionPeriodWithinTimerange, timepointsDisplayCount } = useTimepointExplorerContext();
   const visibleEndIndex = -1;
   const visibleStartIndex = visibleEndIndex - timepointsDisplayCount + timepointsInRange.length + 1;
+
+  const label = isLogsRetentionPeriodWithinTimerange
+    ? CheckEventType.OUT_OF_RETENTION_PERIOD
+    : CheckEventType.OUT_OF_TIMERANGE;
+  const color = isLogsRetentionPeriodWithinTimerange
+    ? ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD
+    : ANNOTATION_COLOR_OUT_OF_TIMERANGE;
 
   return (
     <TimepointRangeAnnotation
       annotation={{
         checkEvent: {
-          label: CheckEventType.OUT_OF_TIMERANGE,
+          label,
           from: new Date().getTime(),
           to: new Date().getTime(),
-          color: 'gray',
+          color,
         },
         isClippedStart: true,
         isClippedEnd: false,

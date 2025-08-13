@@ -3,7 +3,11 @@ import { DataFrame } from '@grafana/data';
 import { EndingLogLabels, ExecutionLabels, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check, Probe } from 'types';
-import { MAX_MINIMAP_SECTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  ANNOTATION_COLOR_CHECK_UPDATED,
+  ANNOTATION_COLOR_NO_DATA,
+  MAX_MINIMAP_SECTIONS,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   CheckConfig,
   CheckConfigRaw,
@@ -72,6 +76,8 @@ interface BuildTimepointsInRangeProps {
 }
 
 export function buildTimepoints({ from, checkConfigs }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
+  const startTime = performance.now();
+
   const timepoints = checkConfigs.map((config) => {
     const configFrom = from > config.from ? from : config.from;
     const configTo = config.to;
@@ -94,6 +100,10 @@ export function buildTimepoints({ from, checkConfigs }: BuildTimepointsInRangePr
 
       return { ...timepoint, timepointDuration, index: i };
     });
+
+  const endTime = performance.now();
+  const duration = endTime - startTime;
+  console.log(`buildTimepoints executed in ${duration.toFixed(2)} milliseconds`);
 
   return res;
 }
@@ -144,12 +154,15 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
 export function constructCheckEvents({
   checkConfigs,
   checkCreation,
+  logsRetentionTo,
 }: {
   checkConfigs: CheckConfig[];
   checkCreation: UnixTimestamp;
+  logsRetentionTo: number;
 }): CheckEvent[] {
   const checkCreatedDate = Math.round(checkCreation * 1000);
   const ONE_HOUR_IN_MS = 1000 * 60 * 60;
+  const upto = Math.max(logsRetentionTo, checkCreatedDate);
 
   const FAKE_RANGE_RENDERING_CHECK = {
     label: CheckEventType.FAKE_RANGE_RENDERING_CHECK,
@@ -164,16 +177,16 @@ export function constructCheckEvents({
       label: CheckEventType.NO_DATA,
       from: config.from,
       to: config.to,
-      color: 'orange',
+      color: ANNOTATION_COLOR_NO_DATA,
     }));
 
   const checkUpdatedEvents = checkConfigs
-    .filter((config) => config.from > checkCreatedDate)
+    .filter((config) => config.from > upto)
     .map<CheckEvent>((config) => ({
       label: CheckEventType.CHECK_UPDATED,
       from: config.from,
       to: config.from,
-      color: 'blue',
+      color: ANNOTATION_COLOR_CHECK_UPDATED,
     }));
 
   return [FAKE_RANGE_RENDERING_CHECK, ...checkUpdatedEvents, ...noDataEvents];
