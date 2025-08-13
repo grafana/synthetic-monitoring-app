@@ -15,10 +15,10 @@ import { SecretEditModal } from './SecretEditModal';
 export function SecretsManagementUI() {
   const [editMode, setEditMode] = useState<string | false>(false);
   const [deleteMode, setDeleteMode] = useState<SecretWithUuid | undefined>();
+  const { canCreateSecrets, canReadSecrets } = getUserPermissions();
   const { data: secrets, isLoading, isFetching } = useSecrets();
   const deleteSecret = useDeleteSecret();
-  const { canCreateSecrets } = getUserPermissions();
-  const emptyState = secrets?.length === 0;
+  const emptyState = (canReadSecrets && secrets?.length === 0) || (!canReadSecrets && canCreateSecrets);
 
   const existingNames = secrets?.map((secret) => secret.name) ?? [];
 
@@ -37,7 +37,7 @@ export function SecretsManagementUI() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && canReadSecrets) {
     return <ConfigContent loading ariaLoadingLabel="Loading secrets" />;
   }
 
@@ -83,11 +83,13 @@ export function SecretsManagementUI() {
               information such as passwords, API keys, and other sensitive data.
             </p>
           </div>
-          <ConfigContent.Section>
-            {secrets?.map((secret) => (
-              <SecretCard key={secret.uuid} secret={secret} onEdit={handleEditSecret} onDelete={handleDeleteSecret} />
-            ))}
-          </ConfigContent.Section>
+          {canReadSecrets && (
+            <ConfigContent.Section>
+              {secrets?.map((secret) => (
+                <SecretCard key={secret.uuid} secret={secret} onEdit={handleEditSecret} onDelete={handleDeleteSecret} />
+              ))}
+            </ConfigContent.Section>
+          )}
         </ConfigContent>
       )}
 
