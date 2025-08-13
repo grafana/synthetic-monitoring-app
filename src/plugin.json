@@ -280,6 +280,6 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=11.5.0"
+    "grafanaDependency": ">=12.0.0"
   }
 }

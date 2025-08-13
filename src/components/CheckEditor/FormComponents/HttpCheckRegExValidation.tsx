@@ -63,7 +63,8 @@ export const HttpCheckRegExValidation = () => {
                       render={({ field }) => {
                         const { ref, onChange, ...rest } = field;
                         return (
-                          <Select
+                          // eslint-disable-next-line @typescript-eslint/no-deprecated
+                        <Select
                             {...rest}
                             aria-label={`Validation Field Name ${userIndex}`}
                             disabled={isFormDisabled}

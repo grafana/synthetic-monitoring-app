@@ -58,7 +58,7 @@ export const MultiHttpVariables = ({ index }: { index: number }) => {
                     invalid={Boolean(errorPath?.type)}
                     label="Variable type"
                   >
-                    <Select
+                      <Select  // eslint-disable-line @typescript-eslint/no-deprecated
                       {...rest}
                       aria-label="Variable type"
                       disabled={isFormDisabled}

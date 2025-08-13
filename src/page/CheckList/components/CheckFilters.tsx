@@ -80,6 +80,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
       <CheckFilterGroup onReset={onReset} filters={checkFilters}>
         <div className={styles.flexRow}>
           {includeStatus && (
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             <Select
               prefix="Status"
               aria-label="Filter by status"
@@ -99,6 +100,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
               value={checkFilters.status}
             />
           )}
+          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
           <Select
             aria-label="Filter by type"
             prefix="Types"

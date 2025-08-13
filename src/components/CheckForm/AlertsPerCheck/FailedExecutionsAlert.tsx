@@ -124,7 +124,7 @@ export const FailedExecutionsAlert = ({
               const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
 
               return (
-                <Select
+                <Select // eslint-disable-line @typescript-eslint/no-deprecated
                   {...fieldProps}
                   disabled={!selected || isFormDisabled}
                   data-testid="alertPendingPeriod"

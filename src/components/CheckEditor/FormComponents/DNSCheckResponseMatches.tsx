@@ -33,6 +33,7 @@ export const DNSCheckResponseMatches = () => {
                     render={({ field }) => {
                       const { ref, onChange, ...rest } = field;
                       return (
+                        // eslint-disable-next-line @typescript-eslint/no-deprecated
                         <Select
                           {...rest}
                           aria-label={`DNS Response Match ${userIndex}`}
