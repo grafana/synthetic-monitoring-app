@@ -55,6 +55,6 @@ export type UnknownExecutionLog = ParsedExecutionLog;
 export type ExecutionLogs = [StartingLog, ...UnknownExecutionLog[], ExecutionEndedLog];
 
 export type PerExecutionLogs = {
-  probe: string;
+  probeName: string;
   executions: ExecutionLogs[];
 };

@@ -100,7 +100,7 @@ export const perCheckLogsFactory = Factory.define<PerExecutionLogs>(({ sequence 
   });
 
   return {
-    probe: probeName,
+    probeName,
     executions: executions,
   };
 });
@@ -135,7 +135,7 @@ export const createPerCheckLogsForTimeRange = (
     });
 
     return {
-      probe: probeName,
+      probeName,
       executions,
     };
   });

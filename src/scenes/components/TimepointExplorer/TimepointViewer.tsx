@@ -1,13 +1,16 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Box, Stack, Text } from '@grafana/ui';
 
 import { Check } from 'types';
 import { formatDuration } from 'utils';
+import { useProbes } from 'data/useProbes';
 import { CenteredSpinner } from 'components/CenteredSpinner';
-import { useSceneVar } from 'scenes/Common/useSceneVar';
+import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { getPendingProbes } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { useTimepointLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.hooks';
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
@@ -31,14 +34,42 @@ export const TimepointViewer = () => {
 
 const TimepointViewerContent = ({ timepoint, check }: { timepoint: StatelessTimepoint; check: Check }) => {
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
-  const probe = useSceneVar('probe');
+  const probe = useSceneVarProbes(check);
+  const statefulTimepoint = useStatefulTimepoint(timepoint);
+  const { data: probes = [] } = useProbes();
 
-  const { data, isLoading } = useTimepointLogs({
+  const { data, isLoading, refetch } = useTimepointLogs({
     timepoint,
     job: check.job,
     instance: check.target,
     probe,
   });
+
+  const pendingExecutions = getPendingProbes({
+    entryProbeNames: statefulTimepoint.executions.map((e) => e.probe),
+    selectedProbeNames: probe,
+    probes,
+  });
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout | null = null;
+
+    if (pendingExecutions.length) {
+      timeout = setTimeout(() => {
+        refetch();
+      }, 3000);
+    } else {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    }
+
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [refetch, pendingExecutions]);
 
   const onChangeLogsView = useCallback((view: LogsView) => {
     setLogsView(view);
@@ -47,7 +78,16 @@ const TimepointViewerContent = ({ timepoint, check }: { timepoint: StatelessTime
   return (
     <Stack direction={`column`} gap={1}>
       <TimepointHeader timepoint={timepoint} onChangeLogsView={onChangeLogsView} />
-      {isLoading ? <CenteredSpinner /> : <TimepointViewerExecutions check={check} logsView={logsView} data={data} />}
+      {isLoading ? (
+        <CenteredSpinner />
+      ) : (
+        <TimepointViewerExecutions
+          check={check}
+          logsView={logsView}
+          data={data}
+          pendingExecutions={pendingExecutions}
+        />
+      )}
     </Stack>
   );
 };

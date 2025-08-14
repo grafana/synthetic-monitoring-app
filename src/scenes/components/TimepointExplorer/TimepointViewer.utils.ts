@@ -2,7 +2,7 @@ import { ExecutionEndedLog, ExecutionLogs, PerExecutionLogs } from 'features/par
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function filterProbes(data: PerExecutionLogs[], timepoint: StatelessTimepoint) {
+export function filterProbes(data: PerExecutionLogs[], timepoint: StatelessTimepoint): PerExecutionLogs[] {
   return data.map((d) => {
     const { executions } = d;
 

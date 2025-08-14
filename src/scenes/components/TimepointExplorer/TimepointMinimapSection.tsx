@@ -16,7 +16,7 @@ import {
   MiniMapSection,
   StatelessTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getEntryHeight, getIsInTheFuture } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointExplorerAnnotations } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations';
 import { getLabel, getState } from 'scenes/components/TimepointExplorer/TimepointMinimapSection.utils';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
@@ -29,6 +29,7 @@ interface MiniMapSectionProps {
 
 export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMapSectionProps) => {
   const {
+    check,
     handleMiniMapSectionChange,
     miniMapCurrentSectionIndex,
     miniMapCurrentPageSections,
@@ -46,6 +47,7 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
   const sectionWidth = miniMapWidth / MAX_MINIMAP_SECTIONS;
   const entryWidth = sectionWidth / timepointsDisplayCount;
   const isBeginningSection = index === miniMapCurrentPageSections.length - 1;
+  const width = `${100 / timepointsDisplayCount}%`;
 
   return (
     <Tooltip content={label} ref={ref}>
@@ -62,28 +64,29 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
           parentWidth={sectionWidth}
         />
         {miniMapSectionTimepoints.map((timepoint, index) => {
-          if (timepoint.config.type === 'no-data') {
-            return <div key={timepoint.adjustedTime} />;
+          const isInTheFuture = getIsInTheFuture(timepoint, check);
+
+          if (timepoint.config.type === 'no-data' || isInTheFuture) {
+            return <div key={timepoint.adjustedTime} style={{ width }} />;
           }
 
           if (viewMode === 'uptime') {
-            return <UptimeTimepoint key={timepoint.adjustedTime} timepoint={timepoint} />;
+            return <UptimeTimepoint key={timepoint.adjustedTime} timepoint={timepoint} width={width} />;
           }
 
-          return <ReachabilityTimepoint key={timepoint.adjustedTime} timepoint={timepoint} />;
+          return <ReachabilityTimepoint key={timepoint.adjustedTime} timepoint={timepoint} width={width} />;
         })}
       </PlainButton>
     </Tooltip>
   );
 };
 
-const UptimeTimepoint = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
-  const { maxProbeDuration, selectedTimepoint, timepointsDisplayCount, vizDisplay } = useTimepointExplorerContext();
+const UptimeTimepoint = ({ timepoint, width }: { timepoint: StatelessTimepoint; width: string }) => {
+  const { maxProbeDuration, selectedTimepoint, vizDisplay } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
-  const width = `${100 / timepointsDisplayCount}%`;
   const state = getState(statefulTimepoint);
 
   if (!vizDisplay.includes(state)) {
@@ -105,12 +108,11 @@ const UptimeTimepoint = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
 
 interface ReachabilityTimepointProps {
   timepoint: StatelessTimepoint;
+  width: string;
 }
 
-const ReachabilityTimepoint = ({ timepoint }: ReachabilityTimepointProps) => {
+const ReachabilityTimepoint = ({ timepoint, width }: ReachabilityTimepointProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { timepointsDisplayCount } = useTimepointExplorerContext();
-  const width = `${100 / timepointsDisplayCount}%`;
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
   const ref = useRef<HTMLDivElement>(null);

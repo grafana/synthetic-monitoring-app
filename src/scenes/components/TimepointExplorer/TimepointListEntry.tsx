@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { getIsInTheFuture } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryPending } from 'scenes/components/TimepointExplorer/TimepointListEntryPending';
 import { TimepointListEntryReachability } from 'scenes/components/TimepointExplorer/TimepointListEntryReachability';
 import { TimepointListEntryUptime } from 'scenes/components/TimepointExplorer/TimepointListEntryUptime';
@@ -27,14 +28,15 @@ export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryP
 };
 
 const Entry = (props: TimepointListEntryProps) => {
-  const { viewMode, isResultPending, timepoints } = useTimepointExplorerContext();
-  const isPendingEntry = timepoints.length - 1 === props.timepoint.index;
+  const { viewMode, pendingResult, check } = useTimepointExplorerContext();
+  const [pendingResultTimepoint] = pendingResult || [];
+  const isInTheFuture = getIsInTheFuture(props.timepoint, check);
 
-  if (props.timepoint.config.type === 'no-data') {
+  if (props.timepoint.config.type === 'no-data' || isInTheFuture) {
     return <div />;
   }
 
-  if (isResultPending && isPendingEntry) {
+  if (pendingResultTimepoint?.index === props.timepoint.index) {
     return <TimepointListEntryPending {...props} />;
   }
 

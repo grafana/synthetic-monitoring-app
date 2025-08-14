@@ -14,6 +14,7 @@ import { useProbes } from 'data/useProbes';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
+import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import {
   REF_ID_EXECUTION_LIST_LOGS,
   REF_ID_MAX_PROBE_DURATION,
@@ -305,8 +306,9 @@ function useMaxProbeDuration({ timeRange, check, probe }: UseMaxProbeDurationPro
 }
 
 export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
-  const { logsMap, maxProbeDuration, timepoints, isResultPending } = useTimepointExplorerContext();
-  const isPendingEntry = isResultPending && timepoints.length - 1 === timepoint.index;
+  const { logsMap, maxProbeDuration, pendingResult } = useTimepointExplorerContext();
+  const [pendingResultTimepoint] = pendingResult || [];
+  const isPendingEntry = pendingResultTimepoint?.index === timepoint.index;
 
   const defaultState: StatefulTimepoint = {
     adjustedTime: timepoint.adjustedTime,
@@ -339,25 +341,33 @@ interface UseIsResultPendingProps {
 
 export function useIsResultPending({ handleIsPending, check, logsMap, timepoints }: UseIsResultPendingProps) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const selectedProbes = useSceneVar('probe');
+  const selectedProbes = useSceneVarProbes(check);
   const { data: probes = [] } = useProbes();
-  const isResultPending = getIsResultPending({ check, logsMap, selectedProbes, timepoints, probes });
+  const resultPending = getIsResultPending({
+    check,
+    logsMap,
+    selectedProbes,
+    timepoints,
+    probes,
+  });
   const state = useSceneRefreshPicker();
 
   const refreshInMs = state?.refreshInMs;
 
   useEffect(() => {
+    // because the timerange updates when the refresh picker is enabled
+    // that will trigger a refetch and it doesn't have to be handled manually
     if (refreshInMs) {
       return;
     }
 
-    if (isResultPending && !intervalRef.current) {
+    if (resultPending.length && !intervalRef.current) {
       intervalRef.current = setInterval(() => {
         handleIsPending();
       }, 3000);
     }
 
-    if (!isResultPending) {
+    if (!resultPending.length) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -370,7 +380,7 @@ export function useIsResultPending({ handleIsPending, check, logsMap, timepoints
         intervalRef.current = null;
       }
     };
-  }, [isResultPending, handleIsPending, refreshInMs]);
+  }, [resultPending, handleIsPending, refreshInMs]);
 
-  return isResultPending;
+  return useMemo(() => resultPending, [resultPending]);
 }

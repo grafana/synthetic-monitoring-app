@@ -1,4 +1,5 @@
 import { DataFrame } from '@grafana/data';
+import { difference } from 'lodash';
 
 import { EndingLogLabels, ExecutionLabels, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
@@ -6,7 +7,6 @@ import { Check, Probe } from 'types';
 import {
   ANNOTATION_COLOR_CHECK_UPDATED,
   ANNOTATION_COLOR_NO_DATA,
-  MAX_MINIMAP_SECTIONS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   CheckConfig,
@@ -184,11 +184,11 @@ export function constructCheckEvents({
   return [...checkUpdatedEvents, ...noDataEvents];
 }
 
-export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
-  return timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
-}
-
-export function getMiniMapPages(timepointsLength: number, timepointsDisplayCount: number): MiniMapPages {
+export function getMiniMapPages(
+  timepointsLength: number,
+  timepointsDisplayCount: number,
+  maxSections: number
+): MiniMapPages {
   if (!timepointsLength) {
     return [[0, 0]];
   }
@@ -198,7 +198,7 @@ export function getMiniMapPages(timepointsLength: number, timepointsDisplayCount
   }
 
   const pages = [];
-  const withSections = timepointsDisplayCount * MAX_MINIMAP_SECTIONS;
+  const withSections = timepointsDisplayCount * maxSections;
 
   // Start from the end and work backwards to get most recent pages first
   let remainingTimepoints = timepointsLength;
@@ -356,42 +356,51 @@ interface GetPendingResultsProps {
   check: Check;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   probes: Probe[];
-  selectedProbes: Array<string | number>;
+  selectedProbes: string[];
   timepoints: StatelessTimepoint[];
 }
 
-export function getIsResultPending({ check, logsMap, probes, selectedProbes, timepoints }: GetPendingResultsProps) {
+export function getIsResultPending({
+  check,
+  logsMap,
+  probes,
+  selectedProbes,
+  timepoints,
+}: GetPendingResultsProps): [StatelessTimepoint, string[]] | [] {
+  const adjustedTime = timeshiftedTimepoint(new Date().getTime(), check.frequency);
   const latestTimepoint = timepoints[timepoints.length - 1];
+  const timepointToUse = timepoints.find((t) => t.adjustedTime === adjustedTime) || latestTimepoint;
 
-  if (!latestTimepoint) {
-    return false;
+  if (!timepointToUse) {
+    return [];
   }
 
-  const entry = logsMap[latestTimepoint.adjustedTime];
+  const entry = logsMap[timepointToUse.adjustedTime];
 
   if (!entry) {
-    return true;
+    return [timepointToUse, selectedProbes];
   }
 
-  const entryResults = Object.values(entry.executions);
-  const normalisedProbes = getNormalisedProbes(selectedProbes, check, probes);
-  const isResultPending = normalisedProbes.length > entryResults.length;
+  const entryProbeNames = entry.executions.map((e) => e.probe);
+  const pendingOnlineProbes = getPendingProbes({ entryProbeNames, selectedProbeNames: selectedProbes, probes });
+  const isResultPending = Boolean(pendingOnlineProbes.length);
 
-  return isResultPending;
+  return isResultPending ? [timepointToUse, pendingOnlineProbes] : [];
 }
 
-function getNormalisedProbes(selectedProbes: Array<string | number>, check: Check, probes: Probe[]) {
-  if (selectedProbes.includes('.*')) {
-    return getSelectedOnlineProbes(check.probes, probes);
-  }
+export function getPendingProbes({
+  entryProbeNames,
+  selectedProbeNames,
+  probes,
+}: {
+  entryProbeNames: string[];
+  selectedProbeNames: string[];
+  probes: Probe[];
+}) {
+  const onlineProbeNames = probes.filter((probe) => probe.online).map((probe) => probe.name);
+  const selectedOnlineProbes = selectedProbeNames.filter((probeName) => onlineProbeNames.includes(probeName));
 
-  return getSelectedOnlineProbes(selectedProbes, probes);
-}
-
-export function getSelectedOnlineProbes(selectedProbes: Array<string | number>, probes: Probe[]) {
-  const onlineProbes = probes.filter((probe) => probe.online).map((probe) => probe.id || -1);
-
-  return onlineProbes.filter((probe) => selectedProbes.includes(probe));
+  return difference(selectedOnlineProbes, entryProbeNames);
 }
 
 export function getIsCheckCreationWithinTimerange(checkCreation: number, timepoints: StatelessTimepoint[]) {
@@ -399,4 +408,10 @@ export function getIsCheckCreationWithinTimerange(checkCreation: number, timepoi
   const { adjustedTime, timepointDuration } = timepoints[0] || {};
 
   return checkCreationDate >= adjustedTime - timepointDuration;
+}
+
+export function getIsInTheFuture(timepoint: StatelessTimepoint, check: Check) {
+  const adjustedTime = timeshiftedTimepoint(new Date().getTime(), check.frequency);
+
+  return timepoint.adjustedTime > adjustedTime;
 }

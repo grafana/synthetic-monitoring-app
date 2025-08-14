@@ -16,6 +16,7 @@ import { Check } from 'types';
 import { useLogsRetentionPeriod } from 'data/useLogsRetention';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
 import {
+  MAX_MINIMAP_SECTIONS,
   MAX_PROBE_DURATION_DEFAULT,
   TIMEPOINT_EXPLORER_VIEW_OPTIONS,
   TIMEPOINT_GAP_PX,
@@ -68,7 +69,7 @@ interface TimepointExplorerContextType {
   isCheckCreationWithinTimerange: boolean;
   isLogsRetentionPeriodWithinTimerange: boolean;
   isLoading: boolean;
-  isResultPending: boolean;
+  pendingResult: [StatelessTimepoint, string[]] | [];
   listWidth: number;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   maxProbeDuration: number;
@@ -140,7 +141,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const isLogsRetentionPeriodWithinTimerange = logsRetentionTo > timeRange.from.valueOf();
 
   const miniMapPages = useMemo(
-    () => getMiniMapPages(timepoints.length, timepointsDisplayCount),
+    () => getMiniMapPages(timepoints.length, timepointsDisplayCount, MAX_MINIMAP_SECTIONS),
     [timepoints, timepointsDisplayCount]
   );
 
@@ -204,7 +205,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const handleTimepointDisplayCountChange = useCallback(
     (count: number, currentSectionRange: MiniMapSection) => {
-      const newMiniMapPages = getMiniMapPages(timepoints.length, count);
+      const newMiniMapPages = getMiniMapPages(timepoints.length, count, MAX_MINIMAP_SECTIONS);
       const nearestPage = findNearest(newMiniMapPages, currentSectionRange);
       const newMiniMapSections = getMiniMapSections(newMiniMapPages[nearestPage], count);
       const nearestSection = findNearest(newMiniMapSections, currentSectionRange);
@@ -266,7 +267,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     refetchMaxProbeDuration();
   }, [refetchEndingLogs, refetchCheckConfigs, refetchMaxProbeDuration]);
 
-  const isResultPending = useIsResultPending({
+  const pendingResult = useIsResultPending({
     handleIsPending,
     check,
     logsMap,
@@ -290,7 +291,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       isCheckCreationWithinTimerange,
       isLogsRetentionPeriodWithinTimerange,
       isLoading,
-      isResultPending,
       listWidth,
       logsMap,
       maxProbeDuration,
@@ -298,6 +298,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       miniMapCurrentPageSections,
       miniMapCurrentSectionIndex,
       miniMapPages,
+      pendingResult,
       selectedTimepoint,
       timepointWidth,
       timepoints,
@@ -322,7 +323,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isCheckCreationWithinTimerange,
     isLogsRetentionPeriodWithinTimerange,
     isLoading,
-    isResultPending,
     listWidth,
     logsMap,
     maxProbeDuration,
@@ -330,6 +330,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
     miniMapPages,
+    pendingResult,
     selectedTimepoint,
     timepointWidth,
     timepoints,

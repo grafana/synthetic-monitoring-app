@@ -1,8 +1,11 @@
+import { db } from 'test/db';
+
 import { MiniMapPage, MiniMapPages, MiniMapSection } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   findNearest,
   getMiniMapPages,
   getMiniMapSections,
+  getPendingProbes,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 describe(`getMiniMapPages`, () => {
@@ -10,7 +13,7 @@ describe(`getMiniMapPages`, () => {
 
   it(`should return the correct mini map pages`, () => {
     const timepointsDisplayCount = 10;
-    const miniMapPages = getMiniMapPages(63, timepointsDisplayCount);
+    const miniMapPages = getMiniMapPages(63, timepointsDisplayCount, 6);
 
     expect(miniMapPages).toEqual([
       [3, 62],
@@ -89,5 +92,49 @@ describe(`findNearest`, () => {
 
       expect(nearestPage).toEqual(0);
     });
+  });
+});
+
+const ONLINE_PROBES = db.probe.buildList(3, {
+  online: true,
+});
+
+const OFFLINE_PROBES = db.probe.buildList(3, {
+  online: false,
+});
+
+const PROBES = [...ONLINE_PROBES, ...OFFLINE_PROBES];
+
+describe(`getPendingProbes`, () => {
+  it(`should return the correct pending probes -- all selected pending`, () => {
+    const entryProbeNames: string[] = [];
+    const selectedProbeNames = ONLINE_PROBES.map((p) => p.name);
+    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames, probes: ONLINE_PROBES });
+
+    expect(pendingProbes).toEqual(ONLINE_PROBES.map((p) => p.name));
+  });
+
+  it(`should return the correct pending probes -- all online selected pending`, () => {
+    const entryProbeNames: string[] = [];
+    const selectedProbeNames = PROBES.map((p) => p.name);
+    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames, probes: PROBES });
+
+    expect(pendingProbes).toEqual(ONLINE_PROBES.map((p) => p.name));
+  });
+
+  it(`should return the correct pending probes -- one entry pending`, () => {
+    const entryProbeNames: string[] = [ONLINE_PROBES[0].name, ONLINE_PROBES[1].name];
+    const selectedProbeNames = PROBES.map((p) => p.name);
+    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames, probes: PROBES });
+
+    expect(pendingProbes).toEqual([ONLINE_PROBES[2].name]);
+  });
+
+  it(`should return the correct pending probes -- no pending`, () => {
+    const entryProbeNames: string[] = ONLINE_PROBES.map((p) => p.name);
+    const selectedProbeNames = PROBES.map((p) => p.name);
+    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames, probes: PROBES });
+
+    expect(pendingProbes).toEqual([]);
   });
 });

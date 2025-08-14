@@ -26,7 +26,7 @@ describe(`filterProbes`, () => {
 
     // Verify that each probe has been processed
     result.forEach((probe, index) => {
-      expect(probe.probe).toBe(`probe${index + 1}`);
+      expect(probe.probeName).toBe(`probe${index + 1}`);
       expect(probe.executions).toBeInstanceOf(Array);
 
       // The factory creates 2 checks per probe - one in range, one out of range
