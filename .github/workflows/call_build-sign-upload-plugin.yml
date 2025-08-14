@@ -64,8 +64,8 @@ jobs:
         run: |
           case "$ENVIRONMENT" in
             "dev")
-              echo "Building for development"
-              make build sign package-latest
+              echo "Building for development with versioning"
+              make build sign package
               ;;
             "prod")
               echo "Building for production/staging with semantic versioning"

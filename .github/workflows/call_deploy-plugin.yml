@@ -99,7 +99,7 @@ jobs:
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
         uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@5c3428a6a5aca68e5292bd33829d676f84da9f33
         with:
-          zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/grafana-synthetic-monitoring-app-latest.zip"]'
+          zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: dev
           scopes: universal
           gcom-publish-token: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
