@@ -27,7 +27,7 @@ cat << EOF > config.json
   "update_jsonnet_attribute_configs": [
     {
       "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/staging.libsonnet",
-      "jsonnet_key": "version",
+      "jsonnet_key": "_catalog_version",
       "jsonnet_value_file": "plugin_version.txt"
     }
   ]
