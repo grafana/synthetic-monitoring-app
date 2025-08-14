@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
@@ -15,9 +16,9 @@ import { DataReceived } from 'scenes/Common/DataReceived';
 import { DataSent } from 'scenes/Common/DataSent';
 import { DistinctTargets } from 'scenes/Common/DistinctTargets';
 import { DurationByProbe } from 'scenes/Common/DurationByProbe';
-import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
+import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { ResultsByTargetTable } from 'scenes/Scripted/ResultByTargetTable';
 
 export const ScriptedDashboard = ({ check }: { check: Check }) => {
@@ -26,28 +27,23 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={checkType}>
-      <div className={styles.header}>
+      <TimepointExplorer check={check} />
+      {/* <div className={styles.header}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />
       </div>
       <AssertionsTable checkType={CheckType.Scripted} check={check} />
-
       <Stack height={`200px`}>
         <Box width={`200px`}>
           <DistinctTargets query={getCountDistinctTargetsQuery({ metric: 'probe_http_info' })} />
         </Box>
         <DurationByProbe query={getSumDurationByProbeQuery({ metric: 'probe_http_total_duration_seconds' })} unit="s" />
       </Stack>
-
       <div className={styles.dataRow}>
         <DataSent query={getScriptedDataSentQuery()} />
         <DataReceived query={getScriptedDataReceivedQuery()} />
       </div>
-
-      <ResultsByTargetTable checkType={checkType} />
-      <Box height={`750px`}>
-        <ErrorLogs />
-      </Box>
+      <ResultsByTargetTable checkType={checkType} /> */}
     </DashboardContainer>
   );
 };

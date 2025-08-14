@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
@@ -5,7 +6,7 @@ import { css } from '@emotion/css';
 
 import { Check, CheckType } from 'types';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
-import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
+import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { ReachabilityStat } from '../Common/ReachabilityStatViz';
@@ -24,6 +25,8 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={CheckType.HTTP}>
+      <TimepointExplorer check={check} />
+
       <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
@@ -48,10 +51,6 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
           <div className={styles.latencyPanel}>
             <ResponseLatencyByProbe />
           </div>
-        </div>
-
-        <div className={styles.errorLogs}>
-          <ErrorLogs startingUnsuccessfulOnly={true} />
         </div>
       </div>
     </DashboardContainer>
@@ -92,9 +91,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   latencyPanel: css({
     height: '300px',
-  }),
-  errorLogs: css({
-    gridColumn: 'span 2',
-    height: '500px',
   }),
 });

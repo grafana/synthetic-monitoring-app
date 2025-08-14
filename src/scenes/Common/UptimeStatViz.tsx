@@ -35,6 +35,7 @@ export const UptimeStat = ({ check }: { check: Check }) => {
   const dataProvider = useQueryRunner({
     queries,
     datasource: metricsDS,
+    maxDataPoints: uptimeQuery.maxDataPoints,
   });
 
   const transformation = {
