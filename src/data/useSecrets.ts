@@ -31,12 +31,16 @@ function secretsQuery(api: SMDataSource) {
 /**
  * Hook to fetch secrets
  *
+ * @param {boolean} enabled - Whether the query should be enabled
  * @throws {Error} If the query fails - Use ErrorBoundary to catch errors
  */
-export function useSecrets() {
+export function useSecrets(enabled: boolean) {
   const smDS = useSMDS();
 
-  return useQuery<SecretsResponse, unknown, SecretWithMetadata[]>(secretsQuery(smDS));
+  return useQuery<SecretsResponse, unknown, SecretWithMetadata[]>({
+    ...secretsQuery(smDS),
+    enabled,
+  });
 }
 
 /**
