@@ -104,4 +104,3 @@ jobs:
           scopes: universal
           gcom-publish-token: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
           gcloud-auth-token: ${{ steps.gcloud.outputs.id_token }}
-          ignore-conflicts: true
