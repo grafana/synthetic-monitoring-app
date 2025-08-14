@@ -33,7 +33,6 @@ export enum CheckEventType {
   CHECK_UPDATED = 'Check updated',
   OUT_OF_TIMERANGE = 'Out of selected timerange',
   OUT_OF_RETENTION_PERIOD = 'Out of retention period',
-  FAKE_RANGE_RENDERING_CHECK = 'Fake range rendering check',
   ALERTS_FIRING = 'Alerts firing',
   ALERTS_PENDING = 'Alerts pending',
   NO_DATA = 'No data',

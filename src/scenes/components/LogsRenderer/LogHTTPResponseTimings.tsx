@@ -1,4 +1,7 @@
 import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { HTTPResponseTimings } from 'features/parseCheckLogs/checkLogs.types.http';
 import { formatSmallDurations } from 'utils';
@@ -15,6 +18,8 @@ const TIMING_CALCULATIONS = {
 } as const;
 
 export const LogHTTPResponseTimings = ({ log }: { log: HTTPResponseTimings }) => {
+  const styles = useStyles2(getStyles);
+
   const timings = HTTP_REQUEST_ORDER.map((key) => {
     const [start, end] = TIMING_CALCULATIONS[key];
     const timing = getTiming(log.labels[start], log.labels[end]);
@@ -27,6 +32,10 @@ export const LogHTTPResponseTimings = ({ log }: { log: HTTPResponseTimings }) =>
   });
 
   const totalTiming = timings.filter((timing) => timing > 0).reduce((acc, timing) => acc + timing, 0);
+
+  if (totalTiming === 0) {
+    return <div>Request was aborted.</div>;
+  }
 
   return (
     <div>
@@ -43,7 +52,18 @@ export const LogHTTPResponseTimings = ({ log }: { log: HTTPResponseTimings }) =>
 
         return null;
       })}
-      <div>Total: {formatSmallDurations(totalTiming)}</div>
+      <div className={styles.total}>Total: {formatSmallDurations(totalTiming)}</div>
     </div>
   );
+};
+
+const getStyles = (theme: GrafanaTheme2) => {
+  return {
+    total: css`
+      display: inline-block;
+      border-top: 1px solid ${theme.colors.border.medium};
+      padding-top: ${theme.spacing(0.5)};
+      margin-top: ${theme.spacing(0.5)};
+    `,
+  };
 };

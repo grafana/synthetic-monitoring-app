@@ -22,35 +22,37 @@ export const TimepointViewerExecutions = ({ check, data, logsView }: TimepointVi
   return (
     <>
       <TabsBar>
-        {data.map(({ probe, executions }) => {
-          return executions.map((execution) => {
-            const id = getExecutionIdFromLogs(execution);
-            const active = id === executionToView;
-            const probeStatus = execution[0]?.[LokiFieldNames.Labels]?.probe_success;
-            const isSuccess = probeStatus === '1';
+        {data
+          .sort((a, b) => a.probe.localeCompare(b.probe))
+          .map(({ probe, executions }) => {
+            return executions.map((execution) => {
+              const id = getExecutionIdFromLogs(execution);
+              const active = id === executionToView;
+              const probeStatus = execution[0]?.[LokiFieldNames.Labels]?.probe_success;
+              const isSuccess = probeStatus === '1';
 
-            return (
-              <Tab
-                key={probe}
-                // @ts-expect-error - it accepts components despite its type
-                label={
-                  <div onMouseEnter={() => handleExecutionHover(id)} onMouseLeave={() => handleExecutionHover(null)}>
-                    <Stack direction="row">
-                      <div>{probe}</div>
-                      <Icon name={isSuccess ? 'check' : 'times'} color={isSuccess ? 'green' : 'red'} />
-                    </Stack>
-                  </div>
-                }
-                active={active}
-                onChangeTab={() => {
-                  if (!active && timepoint) {
-                    handleSelectedTimepointChange(timepoint, id);
+              return (
+                <Tab
+                  key={probe}
+                  // @ts-expect-error - it accepts components despite its type
+                  label={
+                    <div onMouseEnter={() => handleExecutionHover(id)} onMouseLeave={() => handleExecutionHover(null)}>
+                      <Stack direction="row">
+                        <div>{probe}</div>
+                        <Icon name={isSuccess ? 'check' : 'times'} color={isSuccess ? 'green' : 'red'} />
+                      </Stack>
+                    </div>
                   }
-                }}
-              />
-            );
-          });
-        })}
+                  active={active}
+                  onChangeTab={() => {
+                    if (!active && timepoint) {
+                      handleSelectedTimepointChange(timepoint, id);
+                    }
+                  }}
+                />
+              );
+            });
+          })}
       </TabsBar>
       <TabContent>
         {data.map(({ probe, executions }) => {

@@ -1,18 +1,17 @@
 import React from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
 import { HTTPResponseTimings } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
-import { formatSmallDurations } from 'utils';
 import { LogHTTPResponseTimings } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLabels';
 
-import { logDuations } from './LogsTimeline.utils';
+import { logDuations } from './LogsEvent.utils';
 
-export const LogsTimeline = <T extends ParsedLokiRecord<Record<string, string>, Record<string, string>>>({
+export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Record<string, string>>>({
   logs,
   mainKey,
 }: {
@@ -25,6 +24,8 @@ export const LogsTimeline = <T extends ParsedLokiRecord<Record<string, string>, 
   return (
     <div className={styles.timelineContainer}>
       {withDurations.map((log, index) => {
+        const level = log.labels.detected_level;
+
         return (
           <div key={log.id} className={styles.timelineItem}>
             <div className={styles.time}>
@@ -32,11 +33,18 @@ export const LogsTimeline = <T extends ParsedLokiRecord<Record<string, string>, 
                 defaultWithMS: true,
               })}
             </div>
-            <div className={styles.timelineItemLabel}>{log.labels[mainKey]}</div>
-            <div className={styles.timelineItemLabel}>
-              <LabelRenderer log={logs[index]} mainKey={mainKey} />
+            <div
+              className={cx(styles.level, {
+                [styles.error]: level === 'error',
+                [styles.info]: level === 'info',
+                [styles.warning]: level === 'warning',
+              })}
+            >
+              {level.toUpperCase()}
             </div>
-            <div className={styles.timelineItemDuration}>{formatSmallDurations(log.durationNs / 1000000)}</div>
+            <div className={styles.mainKey}>{log.labels[mainKey]}</div>
+            <LabelRenderer log={logs[index]} mainKey={mainKey} />
+            {/* <div>{formatSmallDurations(log.durationNs / 1000000)}</div> */}
           </div>
         );
       })}
@@ -70,29 +78,35 @@ const getStyles = (theme: GrafanaTheme2) => {
       position: relative;
       height: 100%;
       width: 100%;
+      font-family: ${theme.typography.fontFamilyMonospace};
     `,
     timelineItem: css`
       display: grid;
-      grid-template-columns: 200px 300px 1fr 50px;
+      grid-template-columns: 210px 65px 3fr minmax(300px, 2fr);
       align-items: center;
-      gap: ${theme.spacing(1)};
+      gap: ${theme.spacing(2)};
       border-bottom: 1px solid ${theme.colors.border.medium};
+      padding: ${theme.spacing(0.5)};
     `,
-    timelineItemLabel: css`
-      color: ${theme.colors.text.secondary};
-      flex: 1;
-    `,
-    timelineItemDuration: css`
-      color: ${theme.colors.text.secondary};
+    mainKey: css`
+      /* white-space: pre; */
+      overflow-x: auto;
     `,
     time: css`
       color: ${theme.colors.text.secondary};
+    `,
+    level: css`
+      color: ${theme.colors.text.secondary};
       font-family: ${theme.typography.fontFamilyMonospace};
     `,
-    uniqueLabels: css`
-      display: flex;
-      flex-wrap: wrap;
-      gap: ${theme.spacing(1)};
+    error: css`
+      color: ${theme.colors.error.text};
+    `,
+    info: css`
+      color: ${theme.colors.info.text};
+    `,
+    warning: css`
+      color: ${theme.colors.warning.text};
     `,
   };
 };

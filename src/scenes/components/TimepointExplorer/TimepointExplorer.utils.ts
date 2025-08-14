@@ -161,15 +161,7 @@ export function constructCheckEvents({
   logsRetentionTo: number;
 }): CheckEvent[] {
   const checkCreatedDate = Math.round(checkCreation * 1000);
-  const ONE_HOUR_IN_MS = 1000 * 60 * 60;
   const upto = Math.max(logsRetentionTo, checkCreatedDate);
-
-  const FAKE_RANGE_RENDERING_CHECK = {
-    label: CheckEventType.FAKE_RANGE_RENDERING_CHECK,
-    from: new Date().getTime() - ONE_HOUR_IN_MS * 3,
-    to: new Date().getTime() - ONE_HOUR_IN_MS * 1,
-    color: 'purple',
-  };
 
   const noDataEvents = checkConfigs
     .filter((config) => config.type === 'no-data')
@@ -189,7 +181,7 @@ export function constructCheckEvents({
       color: ANNOTATION_COLOR_CHECK_UPDATED,
     }));
 
-  return [FAKE_RANGE_RENDERING_CHECK, ...checkUpdatedEvents, ...noDataEvents];
+  return [...checkUpdatedEvents, ...noDataEvents];
 }
 
 export function getMaxVisibleMinimapTimepoints(timepointsDisplayCount: number) {
@@ -404,7 +396,7 @@ export function getSelectedOnlineProbes(selectedProbes: Array<string | number>, 
 
 export function getIsCheckCreationWithinTimerange(checkCreation: number, timepoints: StatelessTimepoint[]) {
   const checkCreationDate = Math.round(checkCreation * 1000);
-  const { adjustedTime, timepointDuration } = timepoints[0];
+  const { adjustedTime, timepointDuration } = timepoints[0] || {};
 
   return checkCreationDate >= adjustedTime - timepointDuration;
 }

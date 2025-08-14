@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   createDataFrame,
   DataFrame,
@@ -11,7 +11,7 @@ import {
 } from '@grafana/data';
 import { PanelRenderer } from '@grafana/runtime';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
-import { Link, Stack } from '@grafana/ui';
+import { Link } from '@grafana/ui';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
@@ -21,7 +21,7 @@ import { SelectedTimepoint } from 'scenes/components/TimepointExplorer/Timepoint
 
 const logPanelOptions = {
   showTime: true,
-  showLabels: false,
+  showLabels: true,
   showCommonLabels: false,
   wrapLogMessage: false,
   prettifyLogMessage: false,
@@ -29,6 +29,8 @@ const logPanelOptions = {
   dedupStrategy: LogsDedupStrategy.none,
   sortOrder: LogsSortOrder.Ascending,
 };
+
+const LOGS_HEIGHT = 400;
 
 // todo: make this more fully featured, such as:
 // having a search which either filters or highlights
@@ -45,6 +47,7 @@ export const LogsRaw = <T extends UnknownParsedLokiRecord>({
   selectedTimepoint: SelectedTimepoint;
   check: Check;
 }) => {
+  const [width, setWidth] = useState(0);
   const logsDS = useLogsDS();
   const [timepoint] = selectedTimepoint;
   const startTime = timepoint.adjustedTime;
@@ -58,22 +61,33 @@ export const LogsRaw = <T extends UnknownParsedLokiRecord>({
   });
 
   return (
-    <Stack direction="column" gap={1}>
+    <div>
       <Link href={exploreURL} target="_blank">
         Explore link
       </Link>
-      <PanelRenderer
-        title="Logs"
-        pluginId="logs"
-        width={innerWidth}
-        height={innerHeight}
-        data={getPanelData(logs)}
-        options={{
-          ...logPanelOptions,
-          wrapLogMessage: true,
+      <div
+        ref={(el) => {
+          if (el) {
+            setWidth(el.clientWidth);
+          }
         }}
-      />
-    </Stack>
+        style={{
+          height: `${LOGS_HEIGHT}px`,
+        }}
+      >
+        <PanelRenderer
+          title="Logs"
+          pluginId="logs"
+          width={width}
+          height={LOGS_HEIGHT}
+          data={getPanelData(logs)}
+          options={{
+            ...logPanelOptions,
+            wrapLogMessage: true,
+          }}
+        />
+      </div>
+    </div>
   );
 };
 

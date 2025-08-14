@@ -339,10 +339,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     vizOptions,
   ]);
 
-  if (!timepoints.length) {
-    return null;
-  }
-
   return <TimepointExplorerContext.Provider value={value}>{children}</TimepointExplorerContext.Provider>;
 };
 

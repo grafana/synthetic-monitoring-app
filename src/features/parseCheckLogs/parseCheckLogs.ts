@@ -9,11 +9,15 @@ import {
 
 export function parseCheckLogs(logs: UnknownExecutionLog[]): PerExecutionLogs[] {
   const groupedByProbe = groupByProbe(logs);
-  const groupedByCheck = Object.entries(groupedByProbe).map(([probe, logs]) => ({
-    probe,
-    executions: groupByExecution(logs),
-    id: logs[logs.length - 1].id, // use the last log id to id the check
-  }));
+  const groupedByCheck = Object.entries(groupedByProbe).map(([probe, logs]) => {
+    const executions = groupByExecution(logs);
+
+    return {
+      probe,
+      executions,
+      id: logs[logs.length - 1].id, // use the last log id to id the check
+    };
+  });
 
   return groupedByCheck;
 }

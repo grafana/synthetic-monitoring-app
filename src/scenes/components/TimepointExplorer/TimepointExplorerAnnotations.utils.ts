@@ -5,6 +5,10 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export function getCheckEventsInRange(checkEvents: CheckEvent[], timepointsInRange: StatelessTimepoint[]) {
+  if (timepointsInRange.length === 0) {
+    return [];
+  }
+
   const fromEntry = timepointsInRange[0];
   const toEntry = timepointsInRange[timepointsInRange.length - 1];
 

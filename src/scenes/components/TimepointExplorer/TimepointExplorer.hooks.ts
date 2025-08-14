@@ -240,7 +240,6 @@ const MILLISECONDS_PER_SECOND = 1000;
 interface UseMaxProbeDurationProps {
   timeRange: TimeRange;
   check: Check;
-  refetchInterval?: number;
   probe?: string[];
 }
 
@@ -258,7 +257,7 @@ export function usePersistedMaxProbeDuration({ timeRange, check, probe }: UseMax
   return { data: persistedMaxProbeDuration, ...rest };
 }
 
-function useMaxProbeDuration({ timeRange, check, probe, refetchInterval }: UseMaxProbeDurationProps) {
+function useMaxProbeDuration({ timeRange, check, probe }: UseMaxProbeDurationProps) {
   const metricsDS = useMetricsDS();
 
   return useQuery({
@@ -271,16 +270,18 @@ function useMaxProbeDuration({ timeRange, check, probe, refetchInterval }: UseMa
       timeRange.from,
       timeRange.to,
       probe,
+      check.frequency,
     ],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject('No metrics data source found');
       }
 
-      const { expr, queryType } = getCheckProbeMaxDuration({
+      const { expr, queryType, interval } = getCheckProbeMaxDuration({
         job: check.job,
         instance: check.target,
         probe: probe?.join('|'),
+        frequency: check.frequency,
       });
 
       return queryMimir({
@@ -290,13 +291,14 @@ function useMaxProbeDuration({ timeRange, check, probe, refetchInterval }: UseMa
         end: timeRange.to.valueOf(),
         refId: REF_ID_MAX_PROBE_DURATION,
         queryType,
+        interval,
       });
     },
-    refetchInterval,
     select: (data) => {
-      // Convert seconds to milliseconds
-      const values = data.map((d) => d.fields[1].values[0]);
+      const values = data.map((d) => d.fields[1].values).flat();
       const max = Math.max(...values);
+
+      // Convert seconds to milliseconds
       return Math.round(max * MILLISECONDS_PER_SECOND);
     },
   });

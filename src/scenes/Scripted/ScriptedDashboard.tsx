@@ -28,7 +28,7 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
   return (
     <DashboardContainer check={check} checkType={checkType}>
       <TimepointExplorer check={check} />
-      {/* <div className={styles.header}>
+      <div className={styles.header}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />
       </div>
@@ -43,7 +43,7 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
         <DataSent query={getScriptedDataSentQuery()} />
         <DataReceived query={getScriptedDataReceivedQuery()} />
       </div>
-      <ResultsByTargetTable checkType={checkType} /> */}
+      <ResultsByTargetTable checkType={checkType} />
     </DashboardContainer>
   );
 };
