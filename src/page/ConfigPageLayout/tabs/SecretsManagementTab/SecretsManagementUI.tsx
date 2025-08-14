@@ -16,7 +16,7 @@ export function SecretsManagementUI() {
   const [editMode, setEditMode] = useState<string | false>(false);
   const [deleteMode, setDeleteMode] = useState<SecretWithUuid | undefined>();
   const { canCreateSecrets, canReadSecrets } = getUserPermissions();
-  const { data: secrets, isLoading, isFetching } = useSecrets();
+  const { data: secrets, isLoading, isFetching } = useSecrets(canReadSecrets);
   const deleteSecret = useDeleteSecret();
   const emptyState = (canReadSecrets && secrets?.length === 0) || (!canReadSecrets && canCreateSecrets);
 
