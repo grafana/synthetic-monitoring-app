@@ -1,22 +1,21 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Box, Stack, Text } from '@grafana/ui';
 
 import { Check } from 'types';
 import { formatDuration } from 'utils';
-import { useProbes } from 'data/useProbes';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { useRefetchInterval } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getPendingProbes } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getPendingProbes, timeshiftedTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { useTimepointLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.hooks';
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
-  const { check, selectedTimepoint } = useTimepointExplorerContext();
-  const [timepoint] = selectedTimepoint;
+  const { check, selectedState } = useTimepointExplorerContext();
+  const [timepoint] = selectedState;
 
   return (
     <Box borderColor={'medium'} borderStyle={'solid'} padding={2} minHeight={30}>
@@ -33,43 +32,30 @@ export const TimepointViewer = () => {
 };
 
 const TimepointViewerContent = ({ timepoint, check }: { timepoint: StatelessTimepoint; check: Check }) => {
+  const adjustedTime = timeshiftedTimepoint(new Date().getTime(), check.frequency);
+  const isPendingEntry = adjustedTime === timepoint.adjustedTime;
+
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
   const probe = useSceneVarProbes(check);
-  const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { data: probes = [] } = useProbes();
 
   const { data, isLoading, refetch } = useTimepointLogs({
     timepoint,
     job: check.job,
     instance: check.target,
     probe,
+    staleTime: 0, // refetch to ensure we get the latest logs
   });
 
-  const pendingExecutions = getPendingProbes({
-    entryProbeNames: statefulTimepoint.executions.map((e) => e.probe),
-    selectedProbeNames: probe,
-    probes,
-  });
+  const pendingProbeNames = isPendingEntry
+    ? getPendingProbes({
+        entryProbeNames: data.map((d) => d.probeName),
+        selectedProbeNames: probe,
+      })
+    : [];
 
-  useEffect(() => {
-    let timeout: NodeJS.Timeout | null = null;
+  const enableRefetch = !!pendingProbeNames.length;
 
-    if (pendingExecutions.length) {
-      timeout = setTimeout(() => {
-        refetch();
-      }, 3000);
-    } else {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    }
-
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    };
-  }, [refetch, pendingExecutions]);
+  useRefetchInterval(enableRefetch, refetch);
 
   const onChangeLogsView = useCallback((view: LogsView) => {
     setLogsView(view);
@@ -85,7 +71,7 @@ const TimepointViewerContent = ({ timepoint, check }: { timepoint: StatelessTime
           check={check}
           logsView={logsView}
           data={data}
-          pendingExecutions={pendingExecutions}
+          pendingProbeNames={pendingProbeNames}
         />
       )}
     </Stack>

@@ -31,17 +31,18 @@ import {
   useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
+  CheckConfig,
   CheckEvent,
   MiniMapPages,
   MiniMapSection,
   MiniMapSections,
-  SelectedTimepointState,
+  SelectedState,
   StatefulTimepoint,
   StatelessTimepoint,
+  TimepointStatus,
   UnixTimestamp,
   ViewMode,
   VizDisplay,
-  VizDisplayValue,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   constructCheckEvents,
@@ -55,17 +56,18 @@ import {
 
 interface TimepointExplorerContextType {
   check: Check;
+  checkConfigs: CheckConfig[];
   checkEvents: CheckEvent[];
-  handleExecutionHover: (executionId: string | null) => void;
+  handleHoverStateChange: (state: SelectedState) => void;
   handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
   handleMiniMapPageChange: (page: number) => void;
   handleMiniMapSectionChange: (sectionIndex: number) => void;
-  handleSelectedTimepointChange: (timepoint: StatelessTimepoint, executionToView: string) => void;
+  handleSelectedStateChange: (state: SelectedState) => void;
   handleTimepointWidthChange: (timepointWidth: number, currentSectionRange: MiniMapSection) => void;
   handleViewModeChange: (viewMode: ViewMode) => void;
-  handleVizDisplayChange: (display: VizDisplayValue, usedModifier: boolean) => void;
-  handleVizOptionChange: (display: VizDisplayValue, color: string) => void;
-  hoveredExecution: string | null;
+  handleVizDisplayChange: (display: TimepointStatus, usedModifier: boolean) => void;
+  handleVizOptionChange: (display: TimepointStatus, color: string) => void;
+  hoveredState: SelectedState;
   isCheckCreationWithinTimerange: boolean;
   isLogsRetentionPeriodWithinTimerange: boolean;
   isLoading: boolean;
@@ -77,13 +79,13 @@ interface TimepointExplorerContextType {
   miniMapCurrentPageSections: MiniMapSections;
   miniMapCurrentSectionIndex: number;
   miniMapPages: MiniMapPages;
-  selectedTimepoint: SelectedTimepointState;
+  selectedState: SelectedState;
   timepointWidth: number;
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
   viewMode: ViewMode;
   vizDisplay: VizDisplay;
-  vizOptions: Record<VizDisplayValue, string>;
+  vizOptions: Record<TimepointStatus, string>;
 }
 
 export const TimepointExplorerContext = createContext<TimepointExplorerContextType | null>(null);
@@ -100,21 +102,21 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   // eslint-disable-next-line react-hooks/exhaustive-deps -- update date.now when timerange changes
   const logsRetentionTo = useMemo(() => Date.now() - logsRetentionPeriod, [logsRetentionPeriod, timeRange]);
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
-  const [selectedTimepoint, setSelectedTimepoint] = useState<SelectedTimepointState>([null, null]);
+  const [hoveredState, setHoveredState] = useState<SelectedState>([null, null, null]);
+  const [selectedState, setSelectedState] = useState<SelectedState>([null, null, null]);
   const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
   const [timepointsDisplayCount, setTimepointsDisplayCount] = useState<number>(0);
   const theme = useTheme2();
   const [vizDisplay, setVizDisplay] = useState<VizDisplay>(VIZ_DISPLAY_OPTIONS);
-  const [vizOptions, setVizOptions] = useState<Record<VizDisplayValue, string>>({
+  const [vizOptions, setVizOptions] = useState<Record<TimepointStatus, string>>({
     success: theme.visualization.getColorByName(`green`),
     failure: theme.visualization.getColorByName(`red`),
-    unknown: theme.visualization.getColorByName(`gray`),
+    missing: theme.visualization.getColorByName(`gray`),
     pending: theme.visualization.getColorByName(`blue`),
   });
   const [listWidth, setListWidth] = useState<number>(0);
   const [timepointWidth, setTimepointWidth] = useState<number>(TIMEPOINT_SIZE);
-  const [hoveredExecution, setHoveredExecution] = useState<string | null>(null);
   const probeVar = useSceneVar('probe');
 
   const {
@@ -195,11 +197,15 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     setViewMode(viewMode);
   }, []);
 
-  const handleSelectedTimepointChange = useCallback((timepoint: StatelessTimepoint, executionToView: string) => {
-    setSelectedTimepoint(([prevTimepoint, prevExecutionToView]) => {
-      return prevTimepoint?.adjustedTime === timepoint.adjustedTime && prevExecutionToView === executionToView
-        ? [null, null]
-        : [timepoint, executionToView];
+  const handleSelectedStateChange = useCallback((state: SelectedState) => {
+    const [timepoint, probeName, executionIndex] = state;
+
+    setSelectedState(([prevTimepoint, prevProbeName, prevExecutionIndex]) => {
+      return prevTimepoint?.adjustedTime === timepoint?.adjustedTime &&
+        prevProbeName === probeName &&
+        prevExecutionIndex === executionIndex
+        ? [null, null, null]
+        : state;
     });
   }, []);
 
@@ -234,7 +240,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     [listWidth, handleTimepointDisplayCountChange]
   );
 
-  const handleVizDisplayChange = useCallback((display: VizDisplayValue, usedModifier: boolean) => {
+  const handleVizDisplayChange = useCallback((display: TimepointStatus, usedModifier: boolean) => {
     setVizDisplay((prev) => {
       const isSelected = prev.includes(display);
       const allSelected = prev.length === VIZ_DISPLAY_OPTIONS.length;
@@ -244,31 +250,31 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       }
 
       if (isSelected && !allSelected) {
-        return [`success`, `failure`, `unknown`, `pending`];
+        return VIZ_DISPLAY_OPTIONS;
       }
 
       return [display];
     });
   }, []);
 
-  const handleVizOptionChange = useCallback((display: VizDisplayValue, color: string) => {
+  const handleVizOptionChange = useCallback((display: TimepointStatus, color: string) => {
     setVizOptions((prev) => {
       return { ...prev, [display]: color };
     });
   }, []);
 
-  const handleExecutionHover = useCallback((executionId: string | null) => {
-    setHoveredExecution(executionId);
+  const handleHoverStateChange = useCallback((state: SelectedState) => {
+    setHoveredState(state);
   }, []);
 
-  const handleIsPending = useCallback(() => {
+  const handleRefetch = useCallback(() => {
     refetchEndingLogs();
     refetchCheckConfigs();
     refetchMaxProbeDuration();
   }, [refetchEndingLogs, refetchCheckConfigs, refetchMaxProbeDuration]);
 
   const pendingResult = useIsResultPending({
-    handleIsPending,
+    handleRefetch,
     check,
     logsMap,
     timepoints: visibleTimepoints,
@@ -277,20 +283,21 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
       check,
+      checkConfigs,
       checkEvents,
-      handleExecutionHover,
       handleListWidthChange,
       handleMiniMapPageChange,
       handleMiniMapSectionChange,
-      handleSelectedTimepointChange,
+      handleSelectedStateChange,
+      handleHoverStateChange,
       handleTimepointWidthChange,
       handleViewModeChange,
       handleVizDisplayChange,
       handleVizOptionChange,
-      hoveredExecution,
+      hoveredState,
       isCheckCreationWithinTimerange,
-      isLogsRetentionPeriodWithinTimerange,
       isLoading,
+      isLogsRetentionPeriodWithinTimerange,
       listWidth,
       logsMap,
       maxProbeDuration,
@@ -299,30 +306,31 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       miniMapCurrentSectionIndex,
       miniMapPages,
       pendingResult,
-      selectedTimepoint,
-      timepointWidth,
+      selectedState,
       timepoints,
       timepointsDisplayCount,
+      timepointWidth,
       viewMode,
       vizDisplay,
       vizOptions,
     };
   }, [
     check,
+    checkConfigs,
     checkEvents,
-    handleExecutionHover,
     handleListWidthChange,
     handleMiniMapPageChange,
     handleMiniMapSectionChange,
-    handleSelectedTimepointChange,
+    handleSelectedStateChange,
+    handleHoverStateChange,
     handleTimepointWidthChange,
     handleViewModeChange,
     handleVizDisplayChange,
     handleVizOptionChange,
-    hoveredExecution,
+    hoveredState,
     isCheckCreationWithinTimerange,
-    isLogsRetentionPeriodWithinTimerange,
     isLoading,
+    isLogsRetentionPeriodWithinTimerange,
     listWidth,
     logsMap,
     maxProbeDuration,
@@ -331,10 +339,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     miniMapCurrentSectionIndex,
     miniMapPages,
     pendingResult,
-    selectedTimepoint,
-    timepointWidth,
+    selectedState,
     timepoints,
     timepointsDisplayCount,
+    timepointWidth,
     viewMode,
     vizDisplay,
     vizOptions,

@@ -20,16 +20,17 @@ const GLOBAL_CLASS = `uptime_bar`;
 
 export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint, vizDisplay, timepointWidth } =
+  const { handleSelectedStateChange, maxProbeDuration, selectedState, vizDisplay, timepointWidth } =
     useTimepointExplorerContext();
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles, timepointWidth);
-  const executionToView = statefulTimepoint.executions[0]?.id;
-  const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
+  const probeNameToView = Object.keys(statefulTimepoint.probeResults)[0];
+  const [selectedTimepoint] = selectedState;
+  const isSelected = selectedTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
   const state =
-    statefulTimepoint.uptimeValue === 0 ? 'failure' : statefulTimepoint.uptimeValue === 1 ? 'success' : 'unknown';
+    statefulTimepoint.uptimeValue === 0 ? 'failure' : statefulTimepoint.uptimeValue === 1 ? 'success' : 'missing';
 
   if (!vizDisplay.includes(state)) {
     return <div />;
@@ -46,7 +47,7 @@ export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps)
         <PlainButton
           className={styles.uptimeButton}
           ref={ref}
-          onClick={() => handleSelectedTimepointChange(timepoint, executionToView)}
+          onClick={() => handleSelectedStateChange([timepoint, probeNameToView, 0])}
           showFocusStyles={false}
         >
           <TimepointVizItem

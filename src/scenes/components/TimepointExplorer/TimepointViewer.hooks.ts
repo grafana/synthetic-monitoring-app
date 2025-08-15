@@ -10,11 +10,11 @@ interface UseTimepointLogsProps {
   timepoint: StatelessTimepoint;
   job: string;
   instance: string;
-  refetchInterval?: number;
   probe?: string[];
+  staleTime?: number;
 }
 
-export function useTimepointLogs({ timepoint, job, instance, refetchInterval, probe }: UseTimepointLogsProps) {
+export function useTimepointLogs({ timepoint, job, instance, probe, staleTime }: UseTimepointLogsProps) {
   const probeExpr = probe?.join('|') || '.*';
 
   const props = useInfiniteLogs<UnknownExecutionLog['labels'], ExecutionLabelType>({
@@ -22,7 +22,7 @@ export function useTimepointLogs({ timepoint, job, instance, refetchInterval, pr
     expr: `{job="${job}", instance="${instance}", probe=~"${probeExpr}"} | logfmt`,
     start: timepoint.adjustedTime,
     end: timepoint.adjustedTime + timepoint.timepointDuration * 2,
-    refetchInterval,
+    staleTime,
   });
 
   const { data } = props;

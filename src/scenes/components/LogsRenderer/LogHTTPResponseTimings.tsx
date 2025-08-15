@@ -37,6 +37,8 @@ export const LogHTTPResponseTimings = ({ log }: { log: HTTPResponseTimings }) =>
     return <div>Request was aborted.</div>;
   }
 
+  const emptyTimings = timings.filter((timing) => timing === 0);
+
   return (
     <div>
       {timings.map((timing, index) => {
@@ -53,6 +55,7 @@ export const LogHTTPResponseTimings = ({ log }: { log: HTTPResponseTimings }) =>
         return null;
       })}
       <div className={styles.total}>Total: {formatSmallDurations(totalTiming)}</div>
+      {emptyTimings.length > 0 && <div>Request was aborted.</div>}
     </div>
   );
 };

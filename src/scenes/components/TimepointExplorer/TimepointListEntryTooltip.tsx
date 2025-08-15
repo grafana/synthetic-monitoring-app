@@ -3,13 +3,14 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { formatDuration, formatSmallDurations } from 'utils';
 import { PlainButton } from 'components/PlainButton';
+import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getIsExecutionSelected } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface TimepointListEntryTooltipProps {
   timepoint: StatelessTimepoint;
@@ -17,22 +18,46 @@ interface TimepointListEntryTooltipProps {
 
 export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const { handleExecutionHover, handleSelectedTimepointChange, hoveredExecution, selectedTimepoint } =
+  const { check, handleHoverStateChange, handleSelectedStateChange, hoveredState, selectedState } =
     useTimepointExplorerContext();
+  const selectedProbeNames = useSceneVarProbes(check);
+
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const displayTime = new Date(statefulTimepoint.adjustedTime).toLocaleString();
-  const probeCount = statefulTimepoint.executions.length;
+  const [hoveredTimepoint, hoveredProbeName, hoveredExecutionIndex] = hoveredState;
+  const [selectedTimepoint, selectedProbeName, selectedExecutionIndex] = selectedState;
+  const executions = Object.values(statefulTimepoint.probeResults).flat();
 
   // Calculate average if not provided
   const avgDuration =
-    statefulTimepoint.executions.reduce((sum, execution) => {
-      const duration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
+    executions.reduce((sum, execution) => {
+      const duration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
       return sum + duration;
-    }, 0) / probeCount;
+    }, 0) / executions.length;
   const renderedAvgDuration = Number.isNaN(avgDuration) ? `-` : formatSmallDurations(avgDuration);
   const renderedFrequency = !statefulTimepoint.config.frequency
     ? `-`
     : formatDuration(statefulTimepoint.config.frequency, true);
+
+  const entriesToRender = selectedProbeNames
+    .map((probeName) => {
+      const probeResults = statefulTimepoint.probeResults[probeName] || [];
+
+      if (probeResults) {
+        return probeResults;
+      }
+
+      return [
+        {
+          [LokiFieldNames.Labels]: {
+            probe: probeName,
+            probe_success: '0',
+            duration_seconds: '0',
+          },
+        } as ExecutionEndedLog,
+      ];
+    })
+    .flat();
 
   return (
     <Stack direction="column" gap={2}>
@@ -46,30 +71,36 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
       </div>
 
       <Stack direction="column" gap={1}>
-        {statefulTimepoint.executions
-          .sort((a, b) => a.probe.localeCompare(b.probe))
+        {entriesToRender
+          .sort((a, b) => a[LokiFieldNames.Labels].probe.localeCompare(b[LokiFieldNames.Labels].probe))
           .map((execution) => {
-            const executionId = execution.id;
-            const { probe, probe_success, duration_seconds } = execution.execution[LokiFieldNames.Labels];
+            const index = 0;
+            const { probe: probeName, probe_success, duration_seconds } = execution[LokiFieldNames.Labels];
             const isSuccess = probe_success === '1';
             const duration = Number(duration_seconds) * 1000;
-            const isSelected = getIsExecutionSelected(statefulTimepoint, executionId, selectedTimepoint);
-            const isHovered = hoveredExecution === executionId;
+            const isSelected =
+              statefulTimepoint.adjustedTime === selectedTimepoint?.adjustedTime &&
+              selectedProbeName === probeName &&
+              selectedExecutionIndex === index;
+            const isHovered =
+              statefulTimepoint.adjustedTime === hoveredTimepoint?.adjustedTime &&
+              hoveredProbeName === probeName &&
+              hoveredExecutionIndex === index;
 
             return (
-              <div key={probe} className={styles.probeRow}>
+              <div key={probeName} className={styles.probeRow}>
                 <PlainButton
                   className={cx(styles.probeName, {
                     [styles.hovered]: isHovered,
                     [styles.selected]: isSelected,
                   })}
                   onClick={() => {
-                    handleSelectedTimepointChange(statefulTimepoint, executionId);
+                    handleSelectedStateChange([statefulTimepoint, probeName, index]);
                   }}
-                  onMouseEnter={() => handleExecutionHover(executionId)}
-                  onMouseLeave={() => handleExecutionHover(null)}
+                  onMouseEnter={() => handleHoverStateChange([statefulTimepoint, probeName, index])}
+                  onMouseLeave={() => handleHoverStateChange([null, null, null])}
                 >
-                  {probe}
+                  {probeName}
                 </PlainButton>
                 <Stack direction="row" gap={1} alignItems="center">
                   <Badge color={isSuccess ? 'green' : 'red'} text={isSuccess ? 'Success' : 'Fail'} />
@@ -92,7 +123,7 @@ const StatusBadge = ({ status }: { status: -1 | 0 | 1 | 2 }) => {
   switch (status) {
     case -1:
       // @ts-expect-error - it does accept gray...
-      return <Badge color="gray" text="UNKNOWN" />;
+      return <Badge color="gray" text="MISSING" />;
     case 1:
       return <Badge color="green" text="UP" />;
     case 0:

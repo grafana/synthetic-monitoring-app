@@ -1,8 +1,7 @@
-import { ExecutionEndedLog, ExecutionLogs, PerExecutionLogs } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { ExecutionLogs, ProbeExecutionLogs } from 'features/parseCheckLogs/checkLogs.types';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function filterProbes(data: PerExecutionLogs[], timepoint: StatelessTimepoint): PerExecutionLogs[] {
+export function filterProbes(data: ProbeExecutionLogs[], timepoint: StatelessTimepoint): ProbeExecutionLogs[] {
   return data.map((d) => {
     const { executions } = d;
 
@@ -26,10 +25,4 @@ export function filterExecutions(executions: ExecutionLogs[], timepoint: Statele
 
     return startingLog.Time >= timepointStart && startingLog.Time <= timepointEnd;
   });
-}
-
-export function getExecutionIdFromLogs(execution: ExecutionLogs) {
-  const endingLog = execution[execution.length - 1] as ExecutionEndedLog;
-
-  return endingLog[LokiFieldNames.ID];
 }

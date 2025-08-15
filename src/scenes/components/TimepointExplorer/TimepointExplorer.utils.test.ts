@@ -95,46 +95,28 @@ describe(`findNearest`, () => {
   });
 });
 
-const ONLINE_PROBES = db.probe.buildList(3, {
-  online: true,
-});
-
-const OFFLINE_PROBES = db.probe.buildList(3, {
-  online: false,
-});
-
-const PROBES = [...ONLINE_PROBES, ...OFFLINE_PROBES];
+const PROBES = db.probe.buildList(3);
 
 describe(`getPendingProbes`, () => {
   it(`should return the correct pending probes -- all selected pending`, () => {
     const entryProbeNames: string[] = [];
-    const selectedProbeNames = ONLINE_PROBES.map((p) => p.name);
-    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames, probes: ONLINE_PROBES });
-
-    expect(pendingProbes).toEqual(ONLINE_PROBES.map((p) => p.name));
-  });
-
-  it(`should return the correct pending probes -- all online selected pending`, () => {
-    const entryProbeNames: string[] = [];
     const selectedProbeNames = PROBES.map((p) => p.name);
-    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames, probes: PROBES });
+    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames });
 
-    expect(pendingProbes).toEqual(ONLINE_PROBES.map((p) => p.name));
+    expect(pendingProbes).toEqual(PROBES.map((p) => p.name));
   });
 
   it(`should return the correct pending probes -- one entry pending`, () => {
-    const entryProbeNames: string[] = [ONLINE_PROBES[0].name, ONLINE_PROBES[1].name];
+    const entryProbeNames: string[] = [PROBES[0].name, PROBES[1].name];
     const selectedProbeNames = PROBES.map((p) => p.name);
-    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames, probes: PROBES });
-
-    expect(pendingProbes).toEqual([ONLINE_PROBES[2].name]);
+    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames });
+    expect(pendingProbes).toEqual([PROBES[2].name]);
   });
 
   it(`should return the correct pending probes -- no pending`, () => {
-    const entryProbeNames: string[] = ONLINE_PROBES.map((p) => p.name);
+    const entryProbeNames: string[] = PROBES.map((p) => p.name);
     const selectedProbeNames = PROBES.map((p) => p.name);
-    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames, probes: PROBES });
-
+    const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames });
     expect(pendingProbes).toEqual([]);
   });
 });

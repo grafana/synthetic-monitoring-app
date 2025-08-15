@@ -12,7 +12,7 @@ import {
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getEntryHeight, getIsExecutionSelected } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getEntryHeight, getIsProbeSelected } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
@@ -26,22 +26,31 @@ const ICON_MAP: Record<number, IconName> = {
 };
 
 export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntryProps) => {
-  const { hoveredExecution, vizDisplay, timepointWidth } = useTimepointExplorerContext();
+  const {
+    handleHoverStateChange,
+    handleSelectedStateChange,
+    hoveredState,
+    maxProbeDuration,
+    vizDisplay,
+    selectedState,
+    timepointWidth,
+  } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const styles = useStyles2(getStyles, timepointWidth);
-  const { handleExecutionHover, handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint } =
-    useTimepointExplorerContext();
   const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
+  const [hoveredTimepoint, hoveredProbeName, hoveredExecutionIndex] = hoveredState;
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
   const height = `calc(${entryHeight}% + ${timepointWidth}px)`;
 
-  const executionsToRender = statefulTimepoint.executions.filter(({ execution }) => {
-    const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
-    const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
+  const executionsToRender = Object.values(statefulTimepoint.probeResults)
+    .flat()
+    .filter((execution) => {
+      const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
+      const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'missing';
 
-    return vizDisplay.includes(state);
-  });
+      return vizDisplay.includes(state);
+    });
 
   if (!executionsToRender.length) {
     return <div key={timepoint.adjustedTime} />;
@@ -50,21 +59,30 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
   return (
     <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} interactive placement="top">
       <div className={styles.reachabilityEntry} style={{ height }}>
-        {statefulTimepoint.executions.map(({ execution }) => {
+        {executionsToRender.map((execution) => {
+          const index = 0;
           const duration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
           const height = getEntryHeight(duration, maxProbeDuration);
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
-          const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
-          const executionId = execution.id;
-          const isSelected = getIsExecutionSelected(timepoint, executionId, selectedTimepoint);
-          const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
+          const { probe: probeName, probe_success } = execution[LokiFieldNames.Labels];
+          const isSelected = getIsProbeSelected(timepoint, probeName, selectedState);
+          const state = probe_success === '1' ? 'success' : probe_success === '0' ? 'failure' : 'missing';
 
           if (!vizDisplay.includes(state)) {
             return null;
           }
 
+          const isHovered =
+            timepoint.adjustedTime === hoveredTimepoint?.adjustedTime &&
+            hoveredProbeName === probeName &&
+            hoveredExecutionIndex === index;
+
           return (
-            <div className={styles.executionContainer} key={executionId} style={{ bottom: `${pixelHeight}px` }}>
+            <div
+              className={styles.executionContainer}
+              key={`${probeName}-${index}`}
+              style={{ bottom: `${pixelHeight}px` }}
+            >
               {isSelected && (
                 <div className={styles.selectedIcon}>
                   <Icon name="eye" />
@@ -73,15 +91,15 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
               <TimepointVizItem
                 as={PlainButton}
                 className={cx(styles.reachabilityExecution, {
-                  [styles.hovered]: hoveredExecution === executionId,
+                  [styles.hovered]: isHovered,
                   [styles.selected]: isSelected,
                 })}
-                onClick={() => handleSelectedTimepointChange(timepoint, executionId)}
-                onMouseEnter={() => handleExecutionHover(executionId)}
-                onMouseLeave={() => handleExecutionHover(null)}
+                onClick={() => handleSelectedStateChange([timepoint, probeName, index])}
+                onMouseEnter={() => handleHoverStateChange([timepoint, probeName, index])}
+                onMouseLeave={() => handleHoverStateChange([null, null, null])}
                 state={state}
               >
-                <Icon name={ICON_MAP[probeSuccess]} />
+                <Icon name={ICON_MAP[probe_success]} />
               </TimepointVizItem>
             </div>
           );

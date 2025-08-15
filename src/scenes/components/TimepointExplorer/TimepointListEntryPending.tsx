@@ -12,8 +12,9 @@ import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExp
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
-interface TimepointListEntryProps {
+interface TimepointListEntryPendingProps {
   timepoint: StatelessTimepoint;
+  pendingProbeNames?: string[];
 }
 
 const GLOBAL_CLASS = `pending_bar`;
@@ -26,18 +27,19 @@ const MAX_DURATION_MS = 4000;
 const DEFAULT_ANIMATION_DELAY = 300;
 const MAX_TRANSLATE_Y = (100 / BAR_HEIGHT_PERCENT) * 100;
 
-export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryProps) => {
+export const TimepointListEntryPending = ({ timepoint, pendingProbeNames }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
 
-  const { handleSelectedTimepointChange, maxProbeDuration, selectedTimepoint, timepointWidth, vizDisplay, vizOptions } =
+  const { handleSelectedStateChange, maxProbeDuration, selectedState, timepointWidth, vizDisplay, vizOptions } =
     useTimepointExplorerContext();
   const option = vizOptions.pending;
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const durationMs = Math.min(Math.max(Math.round(height * MILLISECONDS_PER_PIXEL), MIN_DURATION_MS), MAX_DURATION_MS);
   const styles = useStyles2(getStyles, timepointWidth, option, durationMs);
-  const executionToView = statefulTimepoint.executions[0]?.id;
-  const isSelected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime;
+  const probeNameToView = Object.keys(statefulTimepoint.probeResults)[0] || pendingProbeNames?.[0] || ``;
+  const [selectedTimepoint] = selectedState;
+  const isSelected = selectedTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
 
   if (!vizDisplay.includes(`pending`)) {
@@ -55,7 +57,7 @@ export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryProps
         <PlainButton
           className={styles.pendingButton}
           ref={ref}
-          onClick={() => handleSelectedTimepointChange(timepoint, executionToView)}
+          onClick={() => handleSelectedStateChange([timepoint, probeNameToView, 0])}
           showFocusStyles={false}
         >
           <TimepointVizItem

@@ -23,12 +23,12 @@ export type ExecutionLabelType = {
   job: string; // I
 };
 
-export type ParsedExecutionLog<T extends Record<string, string> = {}> = ParsedLokiRecord<
+export type UnknownExecutionLog<T extends Record<string, string> = {}> = ParsedLokiRecord<
   ExecutionLabels<T>,
   ExecutionLabelType
 >;
 
-export type StartingLog = ParsedExecutionLog<{
+export type StartingLog = UnknownExecutionLog<{
   msg: (typeof MSG_STRINGS_COMMON)['BeginningCheck'];
 }>;
 
@@ -36,13 +36,13 @@ export type EndingLogLabels = {
   duration_seconds: string;
 };
 
-export type ExecutionFailedLog = ParsedExecutionLog<
+export type ExecutionFailedLog = UnknownExecutionLog<
   EndingLogLabels & {
     msg: (typeof MSG_STRINGS_COMMON)['CheckFailed'];
   }
 >;
 
-export type ExecutionSucceededLog = ParsedExecutionLog<
+export type ExecutionSucceededLog = UnknownExecutionLog<
   EndingLogLabels & {
     msg: (typeof MSG_STRINGS_COMMON)['CheckSucceeded'];
   }
@@ -50,11 +50,9 @@ export type ExecutionSucceededLog = ParsedExecutionLog<
 
 export type ExecutionEndedLog = ExecutionFailedLog | ExecutionSucceededLog;
 
-export type UnknownExecutionLog = ParsedExecutionLog;
-
 export type ExecutionLogs = [StartingLog, ...UnknownExecutionLog[], ExecutionEndedLog];
 
-export type PerExecutionLogs = {
+export type ProbeExecutionLogs = {
   probeName: string;
   executions: ExecutionLogs[];
 };

@@ -25,10 +25,10 @@ export const MINIMAP_SECTION_HEIGHT = 45;
 
 const success = `success` as const;
 const failure = `failure` as const;
-const unknown = `unknown` as const;
+const missing = `missing` as const;
 const pending = `pending` as const;
 
-export const VIZ_DISPLAY_OPTIONS = [success, failure, unknown, pending];
+export const VIZ_DISPLAY_OPTIONS = [success, failure, missing, pending];
 
 export const ANNOTATION_COLOR_OUT_OF_TIMERANGE = `gray`;
 export const ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD = `yellow`;

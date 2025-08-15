@@ -1,19 +1,19 @@
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
-import { ParsedExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
+import { UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
 
-export type MakingHTTPRequestLog = ParsedExecutionLog<{
+export type MakingHTTPRequestLog = UnknownExecutionLog<{
   host: string;
   url: string;
   msg: (typeof MSG_STRINGS_HTTP)['MakingHTTPRequest'];
 }>;
 
-export type ReceivedHTTPResponseLog = ParsedExecutionLog<{
+export type ReceivedHTTPResponseLog = UnknownExecutionLog<{
   http_request: string;
   msg: (typeof MSG_STRINGS_HTTP)['ReceivedHTTPResponse'];
 }>;
 
-export type HTTPResponseTimings = ParsedExecutionLog<{
+export type HTTPResponseTimings = UnknownExecutionLog<{
   connectDone: string; // date
   dnsDone: string; // date
   end: string; // date

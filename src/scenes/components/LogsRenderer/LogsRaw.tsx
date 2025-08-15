@@ -17,7 +17,6 @@ import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLogs/pars
 import { Check } from 'types';
 import { getExploreUrl } from 'data/utils';
 import { useLogsDS } from 'hooks/useLogsDS';
-import { SelectedTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 const logPanelOptions = {
   showTime: true,
@@ -39,19 +38,18 @@ const LOGS_HEIGHT = 400;
 export const LogsRaw = <T extends UnknownParsedLokiRecord>({
   logs,
   mainKey,
-  selectedTimepoint,
+  startTime,
+  endTime,
   check,
 }: {
   logs: T[];
   mainKey: string;
-  selectedTimepoint: SelectedTimepoint;
+  startTime: number;
+  endTime: number;
   check: Check;
 }) => {
   const [width, setWidth] = useState(0);
   const logsDS = useLogsDS();
-  const [timepoint] = selectedTimepoint;
-  const startTime = timepoint.adjustedTime;
-  const endTime = timepoint.adjustedTime + timepoint.timepointDuration * 2;
   const probe = logs[0][LokiFieldNames.Labels].probe;
   const query = `{job="${check.job}", instance="${check.target}", probe="${probe}"} | logfmt`;
   const exploreURL = getExploreUrl(logsDS?.uid!, [query], {

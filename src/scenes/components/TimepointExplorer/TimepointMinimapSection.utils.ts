@@ -31,5 +31,5 @@ export function getState(statefulTimepoint: StatefulTimepoint) {
     return 'pending';
   }
 
-  return 'unknown';
+  return 'missing';
 }

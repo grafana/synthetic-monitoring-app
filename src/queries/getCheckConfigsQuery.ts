@@ -10,5 +10,5 @@ export function getCheckConfigsQuery({ job, instance, probe = `.*` }: CheckConfi
   return {
     expr: `count by(frequency, config_version) (sm_check_info{job="${job}", instance="${instance}", probe=~"${probe}"})`,
     queryType: 'range',
-  };
+  } as const;
 }

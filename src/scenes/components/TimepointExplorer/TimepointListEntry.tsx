@@ -29,7 +29,7 @@ export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryP
 
 const Entry = (props: TimepointListEntryProps) => {
   const { viewMode, pendingResult, check } = useTimepointExplorerContext();
-  const [pendingResultTimepoint] = pendingResult || [];
+  const [pendingResultTimepoint, pendingProbeNames] = pendingResult || [];
   const isInTheFuture = getIsInTheFuture(props.timepoint, check);
 
   if (props.timepoint.config.type === 'no-data' || isInTheFuture) {
@@ -37,7 +37,7 @@ const Entry = (props: TimepointListEntryProps) => {
   }
 
   if (pendingResultTimepoint?.index === props.timepoint.index) {
-    return <TimepointListEntryPending {...props} />;
+    return <TimepointListEntryPending {...props} pendingProbeNames={pendingProbeNames} />;
   }
 
   if (viewMode === 'uptime') {

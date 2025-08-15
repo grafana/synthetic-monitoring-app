@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TimeRange } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
+import { useTheme2 } from '@grafana/ui';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
@@ -10,7 +11,6 @@ import { EndingLogLabels, ExecutionLabels, ExecutionLabelType } from 'features/p
 import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
-import { useProbes } from 'data/useProbes';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
@@ -26,6 +26,8 @@ import {
   CheckConfigRaw,
   StatefulTimepoint,
   StatelessTimepoint,
+  TimepointStatus,
+  TimepointVizOptions,
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
@@ -309,20 +311,19 @@ export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
   const { logsMap, maxProbeDuration, pendingResult } = useTimepointExplorerContext();
   const [pendingResultTimepoint] = pendingResult || [];
   const isPendingEntry = pendingResultTimepoint?.index === timepoint.index;
-
-  const defaultState: StatefulTimepoint = {
-    adjustedTime: timepoint.adjustedTime,
-    config: timepoint.config,
-    executions: [],
-    index: timepoint.index,
-    maxProbeDuration: maxProbeDuration / 2,
-    timepointDuration: timepoint.timepointDuration,
-    uptimeValue: isPendingEntry ? 2 : -1,
-  };
-
   const entry = logsMap[timepoint.adjustedTime];
 
   if (!entry) {
+    const defaultState: StatefulTimepoint = {
+      adjustedTime: timepoint.adjustedTime,
+      config: timepoint.config,
+      probeResults: {},
+      index: timepoint.index,
+      maxProbeDuration: maxProbeDuration / 3,
+      timepointDuration: timepoint.timepointDuration,
+      uptimeValue: isPendingEntry ? 2 : -1,
+    };
+
     return defaultState;
   }
 
@@ -333,41 +334,44 @@ export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
 }
 
 interface UseIsResultPendingProps {
-  handleIsPending: () => void;
+  handleRefetch: () => void;
   check: Check;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   timepoints: StatelessTimepoint[];
 }
 
-export function useIsResultPending({ handleIsPending, check, logsMap, timepoints }: UseIsResultPendingProps) {
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+export function useIsResultPending({ handleRefetch, check, logsMap, timepoints }: UseIsResultPendingProps) {
   const selectedProbes = useSceneVarProbes(check);
-  const { data: probes = [] } = useProbes();
+  const refreshPickerState = useSceneRefreshPicker();
+  const refreshInMs = refreshPickerState?.refreshInMs;
+
   const resultPending = getIsResultPending({
     check,
     logsMap,
     selectedProbes,
     timepoints,
-    probes,
   });
-  const state = useSceneRefreshPicker();
 
-  const refreshInMs = state?.refreshInMs;
+  // because the timerange updates when the refresh picker is enabled
+  // that will trigger a refetch and it doesn't have to be handled manually
+  const enableRefetch = !!resultPending.length && !refreshInMs;
+
+  useRefetchInterval(enableRefetch, handleRefetch);
+
+  return useMemo(() => resultPending, [resultPending]);
+}
+
+export function useRefetchInterval(isPending: boolean, handleRefetch: () => void) {
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // because the timerange updates when the refresh picker is enabled
-    // that will trigger a refetch and it doesn't have to be handled manually
-    if (refreshInMs) {
-      return;
-    }
-
-    if (resultPending.length && !intervalRef.current) {
+    if (isPending && !intervalRef.current) {
       intervalRef.current = setInterval(() => {
-        handleIsPending();
+        handleRefetch();
       }, 3000);
     }
 
-    if (!resultPending.length) {
+    if (!isPending) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -380,7 +384,44 @@ export function useIsResultPending({ handleIsPending, check, logsMap, timepoints
         intervalRef.current = null;
       }
     };
-  }, [resultPending, handleIsPending, refreshInMs]);
+  }, [isPending, handleRefetch]);
+}
 
-  return useMemo(() => resultPending, [resultPending]);
+export function useTimepointVizOptions(state: TimepointStatus) {
+  const { vizOptions } = useTimepointExplorerContext();
+  const theme = useTheme2();
+  const option = vizOptions[state];
+
+  const options: TimepointVizOptions = useMemo(() => {
+    return {
+      success: {
+        border: option,
+        backgroundColor: 'transparent',
+        textColor: option,
+        statusColor: option,
+      },
+      failure: {
+        border: `transparent`,
+        backgroundColor: option,
+        textColor: theme.colors.getContrastText(option),
+        statusColor: option,
+      },
+      missing: {
+        border: option,
+        backgroundColor: 'transparent',
+        textColor: theme.colors.getContrastText(option),
+        statusColor: option,
+      },
+      pending: {
+        border: option,
+        backgroundColor: 'transparent',
+        textColor: option,
+        statusColor: option,
+      },
+    };
+  }, [theme, option]);
+
+  const vizOption = options[state];
+
+  return vizOption;
 }

@@ -11,9 +11,17 @@ export type InfiniteLogsParams<T, R> = {
   start: number;
   end: number;
   refetchInterval?: number;
+  staleTime?: number;
 };
 
-export function useInfiniteLogs<T, R>({ refId, expr, start, end, refetchInterval }: InfiniteLogsParams<T, R>) {
+export function useInfiniteLogs<T, R>({
+  refId,
+  expr,
+  start,
+  end,
+  refetchInterval,
+  staleTime,
+}: InfiniteLogsParams<T, R>) {
   const logsDS = useLogsDS();
 
   return useInfiniteQuery({
@@ -44,6 +52,7 @@ export function useInfiniteLogs<T, R>({ refId, expr, start, end, refetchInterval
       return lastPage[0].Time;
     },
     refetchInterval,
+    staleTime,
     select: (data): Array<ParsedLokiRecord<T, R>> => {
       const res = data.pages.flatMap((page) => page);
 

@@ -7,7 +7,7 @@ import {
   ExecutionLabelType,
   ExecutionLogs,
   ExecutionSucceededLog,
-  PerExecutionLogs,
+  ProbeExecutionLogs,
   StartingLog,
 } from 'features/parseCheckLogs/checkLogs.types';
 import { CheckType } from 'types';
@@ -84,7 +84,7 @@ const createFailedLog = (probeName: string, time: number): ExecutionFailedLog =>
 });
 
 // Factory for PerCheckLogs
-export const perCheckLogsFactory = Factory.define<PerExecutionLogs>(({ sequence }) => {
+export const perCheckLogsFactory = Factory.define<ProbeExecutionLogs>(({ sequence }) => {
   const probeName = `probe${sequence + 1}`;
   const checkCount = faker.number.int({ min: 1, max: 3 });
 

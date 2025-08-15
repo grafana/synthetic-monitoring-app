@@ -1,13 +1,8 @@
 import { MSG_STRINGS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
-import {
-  ExecutionLogs,
-  ParsedExecutionLog,
-  PerExecutionLogs,
-  UnknownExecutionLog,
-} from 'features/parseCheckLogs/checkLogs.types';
+import { ExecutionLogs, ProbeExecutionLogs, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
 
-export function parseCheckLogs(logs: UnknownExecutionLog[]): PerExecutionLogs[] {
+export function parseCheckLogs(logs: UnknownExecutionLog[]): ProbeExecutionLogs[] {
   const groupedByProbe = groupByProbe(logs);
   const groupedByCheck = Object.entries(groupedByProbe).map(([probeName, logs]) => {
     const executions = groupByExecution(logs);
@@ -15,15 +10,14 @@ export function parseCheckLogs(logs: UnknownExecutionLog[]): PerExecutionLogs[] 
     return {
       probeName,
       executions,
-      id: logs[logs.length - 1].id, // use the last log id to id the check
     };
   });
 
   return groupedByCheck;
 }
 
-export function groupByProbe(orderedLogs: ParsedExecutionLog[]) {
-  const res = orderedLogs.reduce<Record<string, ParsedExecutionLog[]>>((acc, log) => {
+export function groupByProbe(orderedLogs: UnknownExecutionLog[]) {
+  const res = orderedLogs.reduce<Record<string, UnknownExecutionLog[]>>((acc, log) => {
     const probe = log.labels.probe;
 
     if (!acc[probe]) {

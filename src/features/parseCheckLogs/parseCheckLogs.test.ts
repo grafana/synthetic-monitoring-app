@@ -10,8 +10,8 @@ import {
   ExecutionFailedLog,
   ExecutionLabelType,
   ExecutionSucceededLog,
-  ParsedExecutionLog,
   StartingLog,
+  UnknownExecutionLog,
 } from 'features/parseCheckLogs/checkLogs.types';
 import { MakingHTTPRequestLog, ReceivedHTTPResponseLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { CheckType } from 'types';
@@ -151,7 +151,7 @@ const probe2_log2: ExecutionSucceededLog = {
 
 describe('groupLogs', () => {
   it('should group logs by probe', () => {
-    const logs: ParsedExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2, discard1, discard2];
+    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2, discard1, discard2];
     const groupedLogs = parseCheckLogs(logs);
 
     expect(groupedLogs).toEqual([
@@ -171,7 +171,7 @@ describe('groupLogs', () => {
 
 describe('groupByProbe', () => {
   it('should group logs by probe', () => {
-    const logs: ParsedExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
+    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
     const groupedLogs = groupByProbe(logs);
 
     expect(groupedLogs).toEqual({
@@ -183,7 +183,7 @@ describe('groupByProbe', () => {
 
 describe('groupByExecution', () => {
   it('should group logs by exeuction', () => {
-    const logs: ParsedExecutionLog[] = [probe1_log1, probe1_log2];
+    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2];
     const groupedLogs = groupByExecution(logs);
 
     expect(groupedLogs).toEqual([[probe1_log1, probe1_log2]]);
@@ -192,7 +192,7 @@ describe('groupByExecution', () => {
 
 describe('discardIncompleteChecks', () => {
   it('should discard incomplete checks from the start', () => {
-    const logs: ParsedExecutionLog[] = [probe2_log2, probe1_log1, probe1_log2];
+    const logs: UnknownExecutionLog[] = [probe2_log2, probe1_log1, probe1_log2];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],
@@ -202,7 +202,7 @@ describe('discardIncompleteChecks', () => {
   });
 
   it('should discard incomplete checks from the end', () => {
-    const logs: ParsedExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1];
+    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.CheckFailed, MSG_STRINGS_COMMON.CheckSucceeded],
@@ -213,7 +213,7 @@ describe('discardIncompleteChecks', () => {
   });
 
   it(`should discard nothing if the logs are all complete`, () => {
-    const logs: ParsedExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
+    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],
@@ -225,7 +225,7 @@ describe('discardIncompleteChecks', () => {
 
 describe('splitMultipleExecutions', () => {
   it('should split multiple executions', () => {
-    const logs: ParsedExecutionLog[] = [probe1_log1, probe1_log2, probe1_log1, probe1_log2];
+    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe1_log1, probe1_log2];
     const result = groupByExecution(logs);
     expect(result).toEqual([
       [probe1_log1, probe1_log2],

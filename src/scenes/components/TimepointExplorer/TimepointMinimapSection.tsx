@@ -3,6 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import {
@@ -11,11 +12,7 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import {
-  ExecutionsInTimepoint,
-  MiniMapSection,
-  StatelessTimepoint,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { MiniMapSection, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight, getIsInTheFuture } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointExplorerAnnotations } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations';
 import { getLabel, getState } from 'scenes/components/TimepointExplorer/TimepointMinimapSection.utils';
@@ -82,12 +79,13 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
 };
 
 const UptimeTimepoint = ({ timepoint, width }: { timepoint: StatelessTimepoint; width: string }) => {
-  const { maxProbeDuration, selectedTimepoint, vizDisplay } = useTimepointExplorerContext();
+  const { maxProbeDuration, selectedState, vizDisplay } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
   const state = getState(statefulTimepoint);
+  const [selectedTimepoint] = selectedState;
 
   if (!vizDisplay.includes(state)) {
     return <div style={{ width }} />;
@@ -97,7 +95,7 @@ const UptimeTimepoint = ({ timepoint, width }: { timepoint: StatelessTimepoint; 
     <TimepointVizItem
       key={timepoint.adjustedTime}
       className={cx(styles.uptimeTimepoint, {
-        [styles.selected]: selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime,
+        [styles.selected]: selectedTimepoint?.adjustedTime === timepoint.adjustedTime,
       })}
       data-testid={`uptime-timepoint-${timepoint.index}`}
       state={state}
@@ -117,6 +115,7 @@ const ReachabilityTimepoint = ({ timepoint, width }: ReachabilityTimepointProps)
   const styles = useStyles2(getStyles, timepointWidth);
   const ref = useRef<HTMLDivElement>(null);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const executions = Object.values(statefulTimepoint.probeResults).flat();
 
   useLayoutEffect(() => {
     setContainer(ref.current);
@@ -136,7 +135,7 @@ const ReachabilityTimepoint = ({ timepoint, width }: ReachabilityTimepointProps)
       ref={ref}
       data-testid={`reachability-timepoint-${timepoint.index}`}
     >
-      {statefulTimepoint.executions.map((execution) => {
+      {executions.map((execution) => {
         return (
           <ExecutionEntry
             containerHeight={containerHeight}
@@ -154,23 +153,23 @@ const ReachabilityTimepoint = ({ timepoint, width }: ReachabilityTimepointProps)
 interface ExecutionEntryProps {
   containerHeight: number;
   offset: number;
-  execution: ExecutionsInTimepoint;
+  execution: ExecutionEndedLog;
   timepoint: StatelessTimepoint;
 }
 
 const ExecutionEntry = ({ containerHeight, offset, execution, timepoint }: ExecutionEntryProps) => {
-  const { timepointWidth } = useTimepointExplorerContext();
+  const { maxProbeDuration, selectedState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
-  const { maxProbeDuration, selectedTimepoint, vizDisplay } = useTimepointExplorerContext();
-  const probeSuccess = execution.execution[LokiFieldNames.Labels].probe_success;
-  const probeDuration = Number(execution.execution[LokiFieldNames.Labels].duration_seconds) * 1000;
-  const probeName = execution.probe;
+  const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
+  const probeDuration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
+  const probeName = execution.labels.probe;
   const bottom = getEntryHeight(probeDuration, maxProbeDuration) / 100;
+  const [timepointToView, probeNameToView] = selectedState;
 
   const bottomInPx = containerHeight * bottom - offset;
   const actualPosition = bottomInPx + offset > containerHeight ? containerHeight - offset : bottomInPx;
-  const selected = selectedTimepoint[0]?.adjustedTime === timepoint.adjustedTime && selectedTimepoint[1] === probeName;
-  const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'unknown';
+  const selected = timepointToView?.adjustedTime === timepoint.adjustedTime && probeNameToView === probeName;
+  const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'missing';
 
   if (!vizDisplay.includes(state)) {
     return <div />;

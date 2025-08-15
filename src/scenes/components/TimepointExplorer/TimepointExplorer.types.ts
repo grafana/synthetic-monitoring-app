@@ -13,14 +13,14 @@ export type StatelessTimepoint = {
   config: CheckConfig;
 };
 
-export type VizDisplayValue = (typeof VIZ_DISPLAY_OPTIONS)[number];
-export type VizDisplay = VizDisplayValue[];
-
 export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value'];
 
-export type SelectedTimepoint = [StatelessTimepoint, string];
+type ProbeName = string;
+type ExecutionIndex = number;
 
-export type SelectedTimepointState = [null, null] | SelectedTimepoint;
+export type SelectedTimepoint = [StatelessTimepoint, ProbeName, ExecutionIndex];
+
+export type SelectedState = [null, null, null] | SelectedTimepoint;
 
 export type MiniMapSection = [number, number];
 export type MiniMapSections = [MiniMapSection, ...MiniMapSection[]];
@@ -60,18 +60,27 @@ export type CheckConfig = {
   type?: CheckConfigType;
 };
 
-export interface ExecutionsInTimepoint {
-  probe: string;
-  execution: ExecutionEndedLog;
-  id: string; // id'd by using the log id of the ending log
-}
+export type ProbeResults = Record<string, ExecutionEndedLog[]>;
 
 export interface StatefulTimepoint {
   adjustedTime: UnixTimestamp;
   timepointDuration: number;
-  uptimeValue: -1 | 0 | 1 | 2; // -1: unknown, 0: failure, 1: success, 2: pending
-  executions: ExecutionsInTimepoint[];
+  uptimeValue: -1 | 0 | 1 | 2; // -1: missing, 0: failure, 1: success, 2: pending
+  probeResults: ProbeResults;
   maxProbeDuration: number;
   index: number;
   config: CheckConfig;
 }
+
+export type TimepointStatus = (typeof VIZ_DISPLAY_OPTIONS)[number];
+
+export type VizDisplay = TimepointStatus[];
+
+export type TimepointVizOption = {
+  border: string;
+  backgroundColor: string;
+  textColor: string;
+  statusColor: string;
+};
+
+export type TimepointVizOptions = Record<TimepointStatus, TimepointVizOption>;

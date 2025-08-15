@@ -1,9 +1,14 @@
 import { DataFrame } from '@grafana/data';
 import { difference } from 'lodash';
 
-import { EndingLogLabels, ExecutionLabels, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
+import {
+  EndingLogLabels,
+  ExecutionLabels,
+  ExecutionLabelType,
+  UnknownExecutionLog,
+} from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
-import { Check, Probe } from 'types';
+import { Check } from 'types';
 import {
   ANNOTATION_COLOR_CHECK_UPDATED,
   ANNOTATION_COLOR_NO_DATA,
@@ -13,14 +18,15 @@ import {
   CheckConfigRaw,
   CheckEvent,
   CheckEventType,
-  ExecutionsInTimepoint,
   MiniMapPage,
   MiniMapPages,
   MiniMapSection,
   MiniMapSections,
-  SelectedTimepointState,
+  ProbeResults,
+  SelectedState,
   StatefulTimepoint,
   StatelessTimepoint,
+  TimepointStatus,
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
@@ -43,24 +49,24 @@ export function buildConfigTimeRanges(checkConfigs: CheckConfigRaw[], timeRangeT
   });
 }
 
-export function calculateUptimeValue(executions: ExecutionsInTimepoint[]) {
+export function calculateUptimeValue(probeResults: ProbeResults) {
+  const executions = Object.values(probeResults)
+    .flat()
+    .map((execution) => execution[LokiFieldNames.Labels].probe_success);
+
   if (executions.length === 0) {
     return -1;
   }
 
-  return executions.every((execution) => execution.execution[LokiFieldNames.Labels].probe_success === '0') ? 0 : 1;
+  return executions.every((execution) => execution === '0') ? 0 : 1;
 }
 
-export function getMaxProbeDuration(executions: ExecutionsInTimepoint[]) {
-  return executions.reduce((acc, curr) => {
-    const duration = Math.round(Number(curr.execution[LokiFieldNames.Labels].duration_seconds) * 1000);
+export function getMaxProbeDuration(probeResults: ProbeResults) {
+  const executionDurations = Object.values(probeResults)
+    .flat()
+    .map((execution) => Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000);
 
-    if (duration > acc) {
-      return duration;
-    }
-
-    return acc;
-  }, 0);
+  return Math.max(...executionDurations);
 }
 
 export function getEntryHeight(duration: number, maxProbeDurationData: number) {
@@ -287,22 +293,22 @@ export function buildLogsMap(
     }
 
     const timeshiftedStartingTime = timeshiftedTimepoint(startingTime, check.frequency);
-    const executions = [
-      ...(acc[timeshiftedStartingTime]?.executions || []),
-      {
-        probe: log.labels.probe,
-        execution: log,
-        id: log[LokiFieldNames.ID],
-      },
-    ];
+    const existingProbeResults = acc[timeshiftedStartingTime]?.probeResults || {};
+    const executionProbeName = log.labels.probe;
+    const existingProbeResultsForProbe = existingProbeResults[executionProbeName] || [];
+
+    const probeResults = {
+      ...existingProbeResults,
+      [executionProbeName]: [...existingProbeResultsForProbe, log],
+    };
 
     acc[timeshiftedStartingTime] = {
       adjustedTime: timepoint.adjustedTime,
       timepointDuration: timepoint.timepointDuration,
       config: timepoint.config,
-      executions,
-      uptimeValue: calculateUptimeValue(executions),
-      maxProbeDuration: getMaxProbeDuration(executions),
+      probeResults,
+      uptimeValue: calculateUptimeValue(probeResults),
+      maxProbeDuration: getMaxProbeDuration(probeResults),
       index: timepoint.index,
     };
 
@@ -332,21 +338,17 @@ export function findNearest(pages: MiniMapPages | MiniMapSections, currentRange:
   return bestPageIndex;
 }
 
-export function getIsTimepointSelected(timepoint: StatelessTimepoint, selectedTimepoint: SelectedTimepointState) {
+export function getIsTimepointSelected(timepoint: StatelessTimepoint, selectedTimepoint: SelectedState) {
   const [timepointToView] = selectedTimepoint;
   const isTimepointSelected = timepointToView?.adjustedTime === timepoint.adjustedTime;
 
   return isTimepointSelected;
 }
 
-export function getIsExecutionSelected(
-  timepoint: StatelessTimepoint,
-  executionId: string,
-  selectedTimepoint: SelectedTimepointState
-) {
-  const [_, executionToView] = selectedTimepoint;
+export function getIsProbeSelected(timepoint: StatelessTimepoint, probeName: string, selectedTimepoint: SelectedState) {
+  const [_, probeNameToView] = selectedTimepoint;
   const isTimepointSelected = getIsTimepointSelected(timepoint, selectedTimepoint);
-  const isExecutionSelected = executionId === executionToView;
+  const isExecutionSelected = probeName === probeNameToView;
   const isSelected = isTimepointSelected && isExecutionSelected;
 
   return isSelected;
@@ -355,7 +357,6 @@ export function getIsExecutionSelected(
 interface GetPendingResultsProps {
   check: Check;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
-  probes: Probe[];
   selectedProbes: string[];
   timepoints: StatelessTimepoint[];
 }
@@ -363,7 +364,6 @@ interface GetPendingResultsProps {
 export function getIsResultPending({
   check,
   logsMap,
-  probes,
   selectedProbes,
   timepoints,
 }: GetPendingResultsProps): [StatelessTimepoint, string[]] | [] {
@@ -381,8 +381,8 @@ export function getIsResultPending({
     return [timepointToUse, selectedProbes];
   }
 
-  const entryProbeNames = entry.executions.map((e) => e.probe);
-  const pendingOnlineProbes = getPendingProbes({ entryProbeNames, selectedProbeNames: selectedProbes, probes });
+  const entryProbeNames = Object.keys(entry.probeResults);
+  const pendingOnlineProbes = getPendingProbes({ entryProbeNames, selectedProbeNames: selectedProbes });
   const isResultPending = Boolean(pendingOnlineProbes.length);
 
   return isResultPending ? [timepointToUse, pendingOnlineProbes] : [];
@@ -391,16 +391,11 @@ export function getIsResultPending({
 export function getPendingProbes({
   entryProbeNames,
   selectedProbeNames,
-  probes,
 }: {
   entryProbeNames: string[];
   selectedProbeNames: string[];
-  probes: Probe[];
 }) {
-  const onlineProbeNames = probes.filter((probe) => probe.online).map((probe) => probe.name);
-  const selectedOnlineProbes = selectedProbeNames.filter((probeName) => onlineProbeNames.includes(probeName));
-
-  return difference(selectedOnlineProbes, entryProbeNames);
+  return difference(selectedProbeNames, entryProbeNames);
 }
 
 export function getIsCheckCreationWithinTimerange(checkCreation: number, timepoints: StatelessTimepoint[]) {
@@ -414,4 +409,23 @@ export function getIsInTheFuture(timepoint: StatelessTimepoint, check: Check) {
   const adjustedTime = timeshiftedTimepoint(new Date().getTime(), check.frequency);
 
   return timepoint.adjustedTime > adjustedTime;
+}
+
+export function getProbeExecutionsStatus(
+  executionLog: UnknownExecutionLog | undefined,
+  pendingProbeNames: string[],
+  probeName: string
+): TimepointStatus {
+  if (!executionLog) {
+    if (pendingProbeNames.includes(probeName)) {
+      return 'pending';
+    }
+
+    return 'missing';
+  }
+
+  const probeStatus = executionLog[LokiFieldNames.Labels]?.probe_success;
+  const isSuccess = probeStatus === '1';
+
+  return isSuccess ? 'success' : 'failure';
 }

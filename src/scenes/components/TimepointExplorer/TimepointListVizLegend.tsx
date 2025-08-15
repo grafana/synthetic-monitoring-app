@@ -4,10 +4,9 @@ import { ColorPicker, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { PlainButton } from 'components/PlainButton';
+import { VIZ_DISPLAY_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
-
-const VIZ_STATES = [`failure`, `success`, `unknown`, `pending`] as const;
 
 export const TimepointListVizLegend = () => {
   const styles = useStyles2(getStyles);
@@ -15,7 +14,7 @@ export const TimepointListVizLegend = () => {
 
   return (
     <Stack gap={1.5}>
-      {VIZ_STATES.map((value) => {
+      {VIZ_DISPLAY_OPTIONS.map((value) => {
         const isSelected = vizDisplay.includes(value);
 
         return (
