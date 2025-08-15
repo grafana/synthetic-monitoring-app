@@ -1,17 +1,39 @@
 import React from 'react';
 import { FieldValues, FormProvider, useForm, useFormContext } from 'react-hook-form';
+import { Field, Input } from '@grafana/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { screen, within } from '@testing-library/react';
 import { z } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
 import { render } from 'test/render';
 
-import { CheckType } from 'types';
+import { CheckFormValues, CheckType } from 'types';
 
 import { FormLayout, type FormLayoutProps } from './FormLayout';
 import { FormLayoutContextProvider } from './FormLayoutContext';
 
+// The "submit" button is only visible as the last step (if not rendered outside the CheckForm)
+// This function navigates to the last step of the form and makes sure that there is a "submit" button
+async function goToStepOrLastStep(result: ReturnType<typeof render>) {
+  const navigationContainer = await screen.findByTestId(DataTestIds.FORM_SIDEBAR);
+  const steps = await within(navigationContainer).findAllByRole('button');
+  const lastStep = steps[steps.length - 1];
+  await result.user.click(lastStep);
+  await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON); // Wait for the form to be rendered
+
+  return result;
+}
+
+async function goToFirstStep(result: ReturnType<typeof render>) {
+  const navigationContainer = await screen.findByTestId(DataTestIds.FORM_SIDEBAR);
+  const [firstStep] = await within(navigationContainer).findAllByRole('button');
+  await result.user.click(firstStep);
+}
+
 describe(`FormLayout`, () => {
+  const errorIconName = 'times';
+  const successIconName = 'check';
+
   it(`automatically has the first step open`, async () => {
     const firstSectionText = `First section content`;
 
@@ -47,7 +69,7 @@ describe(`FormLayout`, () => {
   });
 
   it(`shows an error icon if any of the fields in that section have errors`, async () => {
-    const { container, user } = render(
+    const result = render(
       <TestForm>
         <FormLayout.Section index={0} label="First section" fields={[`job`]}>
           <JobInput />
@@ -58,9 +80,13 @@ describe(`FormLayout`, () => {
       </TestForm>
     );
 
+    const { user, container } = await goToStepOrLastStep(result);
+
     const submitButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
     await user.click(submitButton);
-    const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
+    await goToFirstStep(result);
+    const errorIcon = container.querySelector(`svg[name='${errorIconName}']`);
+    expect(screen.getByText(`TEST: job min(1)`)).toBeInTheDocument();
     expect(errorIcon).toBeInTheDocument();
   });
 
@@ -80,7 +106,7 @@ describe(`FormLayout`, () => {
     );
 
     expect(await screen.findByText(firstSectionText)).toBeInTheDocument();
-    const next = await screen.findByRole('button', { name: '2. Second section' });
+    const next = await screen.findByRole('button', { name: 'Second section' });
     await user.click(next);
     const text = await screen.findByText(secondSectionText);
     expect(text).toBeInTheDocument();
@@ -150,8 +176,8 @@ describe(`FormLayout`, () => {
 
     const next = await screen.findByText(/Third section/);
     await user.click(next);
-    const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
-    const validIcon = await container.querySelector(`svg[name='check']`);
+    const errorIcon = await container.querySelector(`svg[name='${errorIconName}']`);
+    const validIcon = await container.querySelector(`svg[name='${successIconName}']`);
     expect(errorIcon).toBeInTheDocument();
     expect(validIcon).toBeInTheDocument();
   });
@@ -173,8 +199,8 @@ describe(`FormLayout`, () => {
 
     const next = await screen.findByText(/Third section/);
     await user.click(next);
-    const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
-    const validIcon = await container.querySelector(`svg[name='check']`);
+    const errorIcon = await container.querySelector(`svg[name='${errorIconName}']`);
+    const validIcon = await container.querySelector(`svg[name='${successIconName}']`);
     expect(errorIcon).not.toBeInTheDocument();
     expect(validIcon).not.toBeInTheDocument();
   });
@@ -202,22 +228,23 @@ describe(`FormLayout`, () => {
     const actionsBar = await screen.findByTestId(DataTestIds.ACTIONS_BAR);
 
     // when on step 1
-    expect(within(actionsBar).getAllByRole(`button`).length).toBe(2);
+    // There should only be a "next" button since there is no previous step (submit button is only on last step)
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(1); // since there is no previous step
     expect(within(actionsBar).getByText(secondSectionLabel)).toBeInTheDocument();
     expect(within(actionsBar).queryByText(firstSectionLabel)).not.toBeInTheDocument();
-    expect(within(actionsBar).getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeInTheDocument();
 
     // when on step 2
     await user.click(within(actionsBar).getByText(secondSectionLabel));
-    expect(within(actionsBar).getAllByRole(`button`).length).toBe(3);
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(2); // since there is a previous step
     expect(within(actionsBar).getByText(firstSectionLabel)).toBeInTheDocument();
     expect(within(actionsBar).queryByText(secondSectionLabel)).not.toBeInTheDocument();
     expect(within(actionsBar).getByText(thirdSectionLabel)).toBeInTheDocument();
-    expect(within(actionsBar).getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeInTheDocument();
+    expect(within(actionsBar).queryByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeInTheDocument();
 
     // when on step 3
     await user.click(within(actionsBar).getByText(thirdSectionLabel));
-    expect(within(actionsBar).getAllByRole(`button`).length).toBe(2);
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(2); // next step replaced with submit button
     expect(within(actionsBar).queryByText(firstSectionLabel)).not.toBeInTheDocument();
     expect(within(actionsBar).getByText(secondSectionLabel)).toBeInTheDocument();
     expect(within(actionsBar).queryByText(thirdSectionLabel)).not.toBeInTheDocument();
@@ -368,8 +395,8 @@ type TestValues = {
 };
 
 const schema = z.object({
-  job: z.string().min(1),
-  target: z.string().min(1),
+  job: z.string().min(1, { message: `TEST: job min(1)` }),
+  target: z.string().min(1, { message: `TEST: target min(1)` }),
 });
 
 const TestForm = <T extends FieldValues>({
@@ -408,14 +435,12 @@ const TestForm = <T extends FieldValues>({
 };
 
 const JobInput = () => {
-  const { register } = useFormContext<TestValues>();
-  const id = `job`;
+  const { formState, register } = useFormContext<CheckFormValues>();
 
   return (
-    <>
-      <label htmlFor={id}>Job</label>
-      <input {...register('job')} id={id} />
-    </>
+    <Field label="Job" invalid={Boolean(formState.errors.job)} error={formState.errors.job?.message}>
+      <Input id="check-editor-job-input" {...register('job')} disabled={formState.disabled} type="text" />
+    </Field>
   );
 };
 

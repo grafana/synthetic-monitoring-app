@@ -15,6 +15,8 @@ import { CheckForm } from 'components/CheckForm/CheckForm';
 import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 import { PluginPageNotFound } from 'page/NotFound';
 
+import { PageActions } from '../../components/CheckForm/PageActions';
+
 export function NewCheck() {
   return (
     <CheckFormContextProvider>
@@ -47,7 +49,7 @@ export const NewCheckContent = () => {
   }
 
   return (
-    <PluginPage pageNav={navModel}>
+    <PluginPage pageNav={navModel} actions={<PageActions />}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
         <CheckForm key={isLoading ? `loading` : `ready`} />
       </div>

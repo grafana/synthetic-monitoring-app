@@ -23,7 +23,7 @@ describe(`DNSCheck - Section 5 (Execution) UI`, () => {
     const { user } = await renderNewForm(checkType);
     await goToSectionV2(user, FormStepOrder.Alerting); // last step
 
-    const actionsBar = screen.getByTestId(DataTestIds.ACTIONS_BAR);
+    const actionsBar = screen.getByTestId(DataTestIds.PAGE_ACTIONS);
     expect(within(actionsBar).getByText('Test')).toBeInTheDocument();
   });
 

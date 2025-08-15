@@ -8,24 +8,23 @@ export interface ConstructActionsProps {
   checkType: CheckType;
   disabled: boolean;
   loading: boolean;
+  onClick: (() => Promise<void>) | (() => void);
   ref: RefObject<HTMLButtonElement | null>;
 }
 
 /**
  * Button to test a check adhoc.
- * @todo Dont use type "submit" as it will cause an "invalid" form state.
- * @todo Use "button" instead.
  */
 export const AdHocCheckButton = forwardRef<HTMLButtonElement, Omit<ConstructActionsProps, 'checkType'>>(
-  ({ disabled, loading }, ref) => {
+  ({ disabled, loading, onClick }, ref) => {
     const canReadLogs = useCanReadLogs();
     const content = (
       <Button
         disabled={disabled || !canReadLogs}
         icon={loading ? `fa fa-spinner` : undefined}
         ref={ref}
-        type="submit"
         variant={`secondary`}
+        onClick={onClick}
       >
         Test
       </Button>

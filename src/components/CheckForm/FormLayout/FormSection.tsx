@@ -38,7 +38,7 @@ export const FormSection = ({ children, label, index, status, fields }: FormSect
       <Box marginBottom={4}>
         <Text element="h2" variant="h3">
           <div className={styles.header}>
-            {`${index + 1}. ${label}`}
+            {label}
             <Stack gap={1}>
               {status?.value && <NewStatusBadge status={status.value} />}
               {status && <CheckStatusInfo {...status} />}

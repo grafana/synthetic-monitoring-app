@@ -1,7 +1,8 @@
-import React, { PropsWithChildren, useEffect, useMemo } from 'react';
+import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { AdHocCheckResponse } from '../../../datasource/responses.types';
 import { Check, CheckFormValues } from 'types';
 
 import { useCheckFormMeta } from '../CheckForm.hooks';
@@ -23,6 +24,10 @@ export function CheckFormContextProvider({
 }: CheckFormContextProviderProps) {
   const checkFormMeta = useCheckFormMeta(check);
 
+  const [showAdhocTestModal, setShowAdhocTestModal] = useState(false);
+  const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
+  const [adhocTestError, setAdhocTestError] = useState<Error | null>(null);
+
   const methods = useForm<CheckFormValues>({
     disabled: disabled || checkFormMeta.isDisabled,
     defaultValues: checkFormMeta.defaultFormValues,
@@ -40,8 +45,17 @@ export function CheckFormContextProvider({
   }, [check, checkFormMeta.defaultFormValues, methods]);
 
   const value = useMemo(() => {
-    return { ...checkFormMeta, initialSection };
-  }, [checkFormMeta, initialSection]);
+    return {
+      ...checkFormMeta,
+      initialSection,
+      showAdhocTestModal,
+      setShowAdhocTestModal,
+      adhocTestData,
+      setAdhocTestData,
+      adhocTestError,
+      setAdhocTestError,
+    };
+  }, [adhocTestData, adhocTestError, checkFormMeta, initialSection, showAdhocTestModal]);
 
   return (
     <CheckFormContext.Provider value={value}>

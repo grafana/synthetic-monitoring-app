@@ -1,18 +1,19 @@
-import React, { BaseSyntheticEvent, ReactNode, useCallback } from 'react';
+import React, { BaseSyntheticEvent, ReactNode, useCallback, useEffect } from 'react';
 import { FieldErrors, FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Stack, useStyles2 } from '@grafana/ui';
+import { Button, Icon, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 import { ZodType } from 'zod';
-import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
 import { FORM_MAX_WIDTH, FORM_SECTION_STEPS, SectionName } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
+import { DataTestIds } from '../../../test/dataTestIds';
 import { useFormLayoutInternal } from './formlayout.utils';
+import { FormNavigation } from './FormNavigation';
 import { FormSection } from './FormSection';
-import { FormSidebar } from './FormSidebar';
+import { FormSubmitButton } from './FormSubmitButton';
 
 type ActionNode = {
   index: number;
@@ -43,7 +44,6 @@ export const FormLayout = <T extends FieldValues>({
   checkState,
   checkType,
   children,
-  initialSection = FORM_SECTION_STEPS[0],
   onSubmit,
   onValid,
   onInvalid,
@@ -56,6 +56,7 @@ export const FormLayout = <T extends FieldValues>({
     formState: { disabled },
   } = useFormContext();
   const {
+    formId,
     activeSection,
     goToSection,
     setVisited,
@@ -63,6 +64,9 @@ export const FormLayout = <T extends FieldValues>({
     stepOrder,
     setActiveSectionByError,
     getSectionLabel,
+    setSubmitDisabled,
+    isFirstSection,
+    isLastSection,
   } = useFormLayoutInternal();
 
   const handleVisited = useCallback(
@@ -92,6 +96,10 @@ export const FormLayout = <T extends FieldValues>({
 
   const disableSubmit = !hasUnsavedChanges || disabled;
 
+  useEffect(() => {
+    setSubmitDisabled(disableSubmit);
+  }, [disableSubmit, setSubmitDisabled]);
+
   const handleSectionClick = useCallback(
     (index: number) => {
       onSectionClick(index);
@@ -101,51 +109,58 @@ export const FormLayout = <T extends FieldValues>({
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.container}>
-        <FormSidebar
-          activeSection={activeSection}
-          checkState={checkState}
-          checkType={checkType}
-          onSectionClick={(index: number) => {
-            handleSectionClick(index);
-            goToSection(index);
-          }}
-          visitedSections={visitedSections}
-          schema={schema}
-        />
-        <form className={styles.form} onSubmit={onSubmit(handleValid, handleInvalid)}>
-          <div>{children}</div>
+      {alerts && <div className={styles.alerts}>{alerts}</div>}
+      <form id={formId} className={styles.form} onSubmit={onSubmit(handleValid, handleInvalid)}>
+        <div className={styles.container}>
+          <div className={styles.containerInner}>
+            <FormNavigation
+              activeSection={activeSection}
+              checkState={checkState}
+              checkType={checkType}
+              onSectionClick={(index: number) => {
+                handleSectionClick(index);
+                goToSection(index);
+              }}
+              visitedSections={visitedSections}
+              schema={schema}
+            />
+          </div>
 
-          <div>
-            {alerts && <div className={styles.alerts}>{alerts}</div>}
-            <hr />
-            <div className={cx(styles.actionsBar, styles.sectionContent)} data-testid={DataTestIds.ACTIONS_BAR}>
-              <div>
-                {activeSection !== 0 && (
-                  <Button
-                    onClick={() => {
-                      const newStep = activeSection - 1;
-                      trackNavigateWizardForm({
-                        checkState,
-                        checkType,
-                        component: 'back-button',
-                        step: FORM_SECTION_STEPS[newStep],
-                      });
-                      goToSection(newStep);
-                    }}
-                    icon="arrow-left"
-                    variant="secondary"
-                  >
-                    <Stack gap={0.5}>
-                      <div>{activeSection}.</div>
-                      <div>{getSectionLabel(activeSection - 1)}</div>
-                    </Stack>
-                  </Button>
-                )}
-              </div>
+          <div className={styles.divider} />
+
+          <div className={cx(styles.containerInner, styles.containerInnerOverflow)}>
+            <div className={styles.formContent}>{children}</div>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div data-testid={DataTestIds.ACTIONS_BAR} className={styles.containerInner}>
+            <Stack justifyContent="space-between">
+              {!isFirstSection ? (
+                <Button
+                  onClick={() => {
+                    const prevStep = activeSection - 1;
+                    trackNavigateWizardForm({
+                      checkState,
+                      checkType,
+                      component: 'back-button',
+                      step: FORM_SECTION_STEPS[prevStep],
+                    });
+                    goToSection(prevStep);
+                  }}
+                  icon="arrow-left"
+                  variant="secondary"
+                >
+                  <Stack gap={0.5}>
+                    <div>{getSectionLabel(activeSection - 1)}</div>
+                  </Stack>
+                </Button>
+              ) : (
+                <div />
+              )}
               <Stack>
                 {actionButtons}
-                {activeSection < Object.values(stepOrder).length - 1 && (
+                {!isLastSection ? (
                   <Button
                     onClick={() => {
                       const newStep = activeSection + 1;
@@ -157,70 +172,80 @@ export const FormLayout = <T extends FieldValues>({
                       });
                       goToSection(newStep);
                     }}
-                    icon="arrow-right"
                     type="button"
                   >
-                    <Stack>
-                      <div>{activeSection + 2}.</div>
+                    <Stack alignItems="center">
                       <div>{getSectionLabel(activeSection + 1)}</div>
+                      <Icon size="lg" name="arrow-right" />
                     </Stack>
                   </Button>
+                ) : (
+                  <FormSubmitButton />
                 )}
-                <Button
-                  data-testid={DataTestIds.CHECK_FORM_SUBMIT_BUTTON}
-                  disabled={disableSubmit}
-                  key="submit"
-                  type="submit"
-                >
-                  Save
-                </Button>
               </Stack>
-            </div>
+            </Stack>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
   const containerName = `formLayout`;
-  const breakpoint = theme.breakpoints.values.md;
-  const query = `(min-width: ${breakpoint + 1}px)`;
-  const containerQuery = `@container ${containerName} ${query}`;
-  const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
-
-  const containerRules = {
-    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH})`,
-    height: '100%',
-  };
+  // const breakpoint = theme.breakpoints.values.md;
+  // const query = `(min-width: ${breakpoint + 1}px)`;
+  // const containerQuery = `@container ${containerName} ${query}`;
+  //
+  // const containerRules = {
+  //   height: '100%',
+  // };
 
   return {
-    wrapper: css({
-      containerName,
-      containerType: `inline-size`,
-      height: '100%',
-      contain: 'layout',
-    }),
-    container: css({
-      display: 'grid',
-      gap: theme.spacing(4),
-      [containerQuery]: containerRules,
-      [mediaQuery]: containerRules,
+    wrapper: css`
+      container-name: ${containerName};
+      container-type: inline-size;
+      height: 100%;
+      display: flex;
+      contain: layout;
+      flex-direction: column;
+      position: relative;
+      overflow: auto;
+    `,
+    container: css`
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid ${theme.colors.border.medium};
+      position: relative;
+      height: 100%;
+    `,
+    divider: css`
+      height: 1px;
+      border-bottom: 1px solid ${theme.colors.border.medium};
+      flex: 0 0 1px;
+    `,
+    containerInner: css({
+      position: 'relative',
+      padding: theme.spacing(2),
     }),
     form: css({
       display: 'flex',
       flexDirection: 'column',
-      flexGrow: '1',
-      justifyContent: 'space-between',
-    }),
-    sectionContent: css({
-      maxWidth: FORM_MAX_WIDTH,
+      flexGrow: 1,
     }),
     alerts: css({
       marginTop: theme.spacing(2),
     }),
-    actionsBar: css({ display: 'flex', justifyContent: 'space-between', maxWidth: FORM_MAX_WIDTH }),
+    containerInnerOverflow: css`
+      overflow: auto;
+      flex: 1 1 0;
+    `,
+    formContent: css`
+      width: 100%;
+      max-width: ${FORM_MAX_WIDTH};
+      justify-self: center;
+    `,
   };
 };
 

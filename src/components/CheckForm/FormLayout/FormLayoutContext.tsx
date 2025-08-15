@@ -1,4 +1,4 @@
-import React, { createContext, PropsWithChildren, useCallback, useMemo, useState } from 'react';
+import React, { createContext, PropsWithChildren, useCallback, useId, useMemo, useState } from 'react';
 import { FieldErrors, FieldValues, useFormContext } from 'react-hook-form';
 import { uniq } from 'lodash';
 
@@ -9,14 +9,19 @@ import { normalizeFlattenedErrors } from './formlayout.utils';
 
 interface FormLayoutContextValue<T extends FieldValues = FieldValues> {
   activeSection: number;
-  goToSection: (index: number) => void;
-  // setActiveSection: React.Dispatch<React.SetStateAction<number>>;
-  setVisited: (visited: number[]) => void;
-  visitedSections: number[];
-  setActiveSectionByError: (errs: FieldErrors<T>) => void;
-  registerSection: (stepIndex: number, label: string, fields?: Section['fields']) => void;
-  stepOrder: Record<number, { label: string; fields?: Section['fields'] }>;
+  allSectionsVisited: boolean;
+  formId: string;
   getSectionLabel: (stepIndex: number) => string | null;
+  goToSection: (index: number) => void;
+  isFirstSection: boolean;
+  isLastSection: boolean;
+  registerSection: (stepIndex: number, label: string, fields?: Section['fields']) => void;
+  setActiveSectionByError: (errs: FieldErrors<T>) => void;
+  setSubmitDisabled: React.Dispatch<React.SetStateAction<boolean>>;
+  setVisited: (visited: number[]) => void;
+  stepOrder: Record<number, { label: string; fields?: Section['fields'] }>;
+  submitDisabled: boolean;
+  visitedSections: number[];
 }
 
 export const FormLayoutContext = createContext<FormLayoutContextValue | null>(null);
@@ -24,6 +29,7 @@ export const FormLayoutContext = createContext<FormLayoutContextValue | null>(nu
 export function FormLayoutContextProvider({ children }: PropsWithChildren) {
   const [visitedSections, setVisitedSections] = useState<number[]>([]);
   const [activeSection, setActiveSection] = useState(0);
+  const [submitDisabled, setSubmitDisabled] = useState(true); // default to true to prevent flickering
 
   const {
     formState: { disabled },
@@ -100,30 +106,44 @@ export function FormLayoutContextProvider({ children }: PropsWithChildren) {
     [stepOrder]
   );
 
+  const allSectionsVisited = visitedSections.length === Object.keys(stepOrder).length;
+  const isFirstSection = activeSection === 0;
+  const isLastSection = activeSection === Object.keys(stepOrder).length - 1;
+
+  const formId = useId();
+
   const value = useMemo(() => {
     return {
       activeSection,
-      goToSection,
-      // setActiveSection,
-      setVisited,
-      visitedSections,
-
-      setActiveSectionByError,
-
-      registerSection,
-      stepOrder,
+      allSectionsVisited,
+      formId,
       getSectionLabel,
+      goToSection,
+      isFirstSection,
+      isLastSection,
+      registerSection,
+      setActiveSectionByError,
+      setSubmitDisabled,
+      setVisited,
+      stepOrder,
+      submitDisabled,
+      visitedSections,
     };
   }, [
     activeSection,
-    goToSection,
-    setVisited,
-    visitedSections,
-
-    setActiveSectionByError,
-    registerSection,
-    stepOrder,
+    allSectionsVisited,
+    formId,
     getSectionLabel,
+    goToSection,
+    isFirstSection,
+    isLastSection,
+    registerSection,
+    setActiveSectionByError,
+    setSubmitDisabled,
+    setVisited,
+    stepOrder,
+    submitDisabled,
+    visitedSections,
   ]);
 
   return <FormLayoutContext.Provider value={value}>{children}</FormLayoutContext.Provider>;
