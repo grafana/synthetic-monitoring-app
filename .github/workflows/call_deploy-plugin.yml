@@ -23,8 +23,30 @@ jobs:
     with:
       environment: ${{ (inputs.environment == 'production' || inputs.environment == 'staging') && 'prod' || inputs.environment }}
 
-  update-deployment-tools:
-    needs: build-sign-zip-upload
+  update-deployment-tools-dev:
+    name: Update deployment tools (dev)
+    needs: [build-sign-zip-upload, publish-to-grafana-dev]
+    if: inputs.environment == 'dev'
+    uses: ./.github/workflows/call_update-deployment-tools.yml
+    with:
+      environment: ${{ inputs.environment }}
+      autoMerge: ${{ inputs.autoMerge }}
+      plugin_version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}
+
+  update-deployment-tools-staging:
+    name: Update deployment tools (staging)
+    needs: [build-sign-zip-upload, publish-to-grafana-ops]
+    if: inputs.environment == 'staging'
+    uses: ./.github/workflows/call_update-deployment-tools.yml
+    with:
+      environment: ${{ inputs.environment }}
+      autoMerge: ${{ inputs.autoMerge }}
+      plugin_version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}
+
+  update-deployment-tools-production:
+    name: Update deployment tools (production)
+    needs: [build-sign-zip-upload, publish-to-grafana-com]
+    if: inputs.environment == 'production'
     uses: ./.github/workflows/call_update-deployment-tools.yml
     with:
       environment: ${{ inputs.environment }}
