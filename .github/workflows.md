@@ -11,8 +11,7 @@
 
 ## On creating a PR that targets main
 
-... all of the above
-7. Check bundle size changes (DangerJS)
+... all of the above 7. Check bundle size changes (DangerJS)
 
 ## When pushing to main
 
@@ -22,7 +21,8 @@
 4. **Deploy to dev** (automatic):
    - Build, sign, and zip plugin
    - Upload to GCS dev bucket (`grafanalabs-synthetic-monitoring-app-dev`)
-   - Create deployment_tools PR that automatically merges
+   - Publish to dev catalog (grafana-dev.com)
+   - Create deployment_tools PR (waits for catalog publishing to succeed)
    - Updates dev environment in hosted Grafana
 
 ## Manual Deployments
@@ -30,33 +30,43 @@
 All manual deployments are triggered via GitHub Actions (`dispatch_deploy-plugin.yml`) with the following configuration options:
 
 **Configuration Options:**
+
 - `plugin_version`: The version of the plugin to deploy (required, default: 'latest')
-- `environment`: Deployment environment - 'dev', 'staging', or 'production' (required, default: 'dev')  
+- `environment`: Deployment environment - 'dev', 'staging', or 'production' (required, default: 'dev')
 - `autoMerge`: Whether to automatically merge the deployment PR (optional, default: 'false')
 
 ### Deploy to dev (manual)
+
 Manually triggered via GitHub Actions (`dispatch_deploy-plugin.yml`)
 Configuration: `environment: 'dev'`, `autoMerge: 'true'` (recommended)
+
 1. Build, sign, and zip plugin
 2. Upload to GCS dev bucket (`grafanalabs-synthetic-monitoring-app-dev`)
-3. Create deployment_tools PR for dev environment that automatically merges
-4. Updates dev wave in hosted Grafana
+3. Publish to dev catalog (grafana-dev.com)
+4. Create deployment_tools PR (waits for catalog publishing to succeed)
 
 ### Deploy to staging
+
 Manually triggered via GitHub Actions (`dispatch_deploy-plugin.yml`)
-Configuration: `environment: 'staging'`, `autoMerge: 'false'` (recommended)
+Configuration: `environment: 'staging'`, `autoMerge: 'true'` (recommended)
+
 1. Build, sign, and zip plugin
 2. Upload to GCS prod bucket (`grafanalabs-synthetic-monitoring-app-prod`)
-3. Create deployment_tools PR for staging environment
-4. Updates staging wave in hosted Grafana
+3. Publish to ops catalog (grafana-ops.com)
+4. Create deployment_tools PR (waits for catalog publishing to succeed)
 
 ### Deploy to prod
+
 Manually triggered via GitHub Actions (`dispatch_deploy-plugin.yml`)
-Configuration: `environment: 'production'`, `autoMerge: 'false'` (recommended)
-1. Create deployment_tools PR for prod environment
-2. Updates prod wave in hosted Grafana
+Configuration: `environment: 'production'`, `autoMerge: 'true'` (recommended)
+
+1. Build, sign, and zip plugin
+2. Upload to GCS prod bucket (`grafanalabs-synthetic-monitoring-app-prod`)
+3. Publish to prod catalog (grafana.com)
+4. Create deployment_tools PR (waits for catalog publishing to succeed)
 
 ### Manual Release Please
+
 Can be manually triggered via GitHub Actions to force a release-please run outside of the normal main branch commits.
 
 ## Release Process
@@ -72,6 +82,7 @@ Can be manually triggered via GitHub Actions to force a release-please run outsi
 The GitHub Actions setup uses reusable workflows organized into these categories:
 
 ### Core Workflows (Entry Points)
+
 - `on-pr-creation.yml` - **Triggered on PR creation** - Runs all PR validation checks
 - `on-push-to-main.yml` - **Triggered on main branch push** - Handles builds and auto-deployment
 - `dispatch_deploy-plugin.yml` - **Manual trigger** - Deployment to any environment
@@ -79,6 +90,7 @@ The GitHub Actions setup uses reusable workflows organized into these categories
 ### Reusable Workflow Components
 
 **Build & Test:**
+
 - `call_env-setup.yml` - Sets up plugin environment and caching
 - `call_lint.yml` - Runs ESLint checks
 - `call_integration-tests.yml` - Runs Jest integration and unit tests
@@ -86,15 +98,18 @@ The GitHub Actions setup uses reusable workflows organized into these categories
 - `call_grafana-compat.yml` - Checks compatibility with latest Grafana API
 
 **Quality & Analysis:**
+
 - `call_dangerJS.yml` - Runs bundle size comparison and PR checks
 - `call_main-bundle-size.yml` - Generates bundle size artifacts for comparison
 - `call_validate-policy-bot.yml` - Validates policy bot configuration
 
 **Deployment & Release:**
+
 - `call_build-sign-upload-plugin.yml` - Builds, signs, and uploads plugin to GCS
-- `call_deploy-plugin.yml` - Orchestrates deployment process
+- `call_deploy-plugin.yml` - Orchestrates deployment process with environment-specific jobs
 - `call_update-deployment-tools.yml` - Creates deployment_tools PRs
 - `call_release-please.yml` - Handles release management (auto + manual)
 
 **Documentation:**
+
 - `call_publish-techdocs.yml` - Publishes documentation to Backstage
