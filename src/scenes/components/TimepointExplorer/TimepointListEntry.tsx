@@ -28,16 +28,16 @@ export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryP
 };
 
 const Entry = (props: TimepointListEntryProps) => {
-  const { viewMode, pendingResult, check } = useTimepointExplorerContext();
-  const [pendingResultTimepoint, pendingProbeNames] = pendingResult || [];
-  const isInTheFuture = getIsInTheFuture(props.timepoint, check);
+  const { currentAdjustedTime, viewMode, pendingListResult } = useTimepointExplorerContext();
+  const [pendingListResultTimepoint, pendingListProbeNames] = pendingListResult || [];
+  const isInTheFuture = getIsInTheFuture(props.timepoint, currentAdjustedTime);
 
   if (props.timepoint.config.type === 'no-data' || isInTheFuture) {
     return <div />;
   }
 
-  if (pendingResultTimepoint?.index === props.timepoint.index) {
-    return <TimepointListEntryPending {...props} pendingProbeNames={pendingProbeNames} />;
+  if (pendingListResultTimepoint?.index === props.timepoint.index) {
+    return <TimepointListEntryPending {...props} pendingProbeNames={pendingListProbeNames} />;
   }
 
   if (viewMode === 'uptime') {

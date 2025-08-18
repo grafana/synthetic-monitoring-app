@@ -14,12 +14,12 @@ export const TimepointListVizLegend = () => {
 
   return (
     <Stack gap={1.5}>
-      {VIZ_DISPLAY_OPTIONS.map((value) => {
-        const isSelected = vizDisplay.includes(value);
+      {VIZ_DISPLAY_OPTIONS.map((status) => {
+        const isSelected = vizDisplay.includes(status);
 
         return (
-          <Stack key={value} alignItems="center">
-            <ColorPicker color={vizOptions[value]} onChange={(color) => handleVizOptionChange(value, color)}>
+          <Stack key={status} alignItems="center">
+            <ColorPicker color={vizOptions[status]} onChange={(color) => handleVizOptionChange(status, color)}>
               {({ ref, showColorPicker, hideColorPicker }) => (
                 <PlainButton
                   onClick={() => {
@@ -27,7 +27,7 @@ export const TimepointListVizLegend = () => {
                   }}
                   onMouseLeave={hideColorPicker}
                 >
-                  <TimepointVizItem ref={ref} className={styles.legendItem} state={value} />
+                  <TimepointVizItem ref={ref} className={styles.legendItem} status={status} />
                 </PlainButton>
               )}
             </ColorPicker>
@@ -36,10 +36,10 @@ export const TimepointListVizLegend = () => {
                 const { ctrlKey, metaKey, shiftKey } = event;
                 const usedModifier = ctrlKey || shiftKey || metaKey;
 
-                handleVizDisplayChange(value, usedModifier);
+                handleVizDisplayChange(status, usedModifier);
               }}
             >
-              <Text color={isSelected ? 'primary' : 'disabled'}>{value}</Text>
+              <Text color={isSelected ? 'primary' : 'disabled'}>{status}</Text>
             </PlainButton>
           </Stack>
         );

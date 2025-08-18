@@ -18,19 +18,13 @@ import {
 import { useTimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions.hooks';
 
 interface TimepointViewerExecutionsProps {
-  check: Check;
   data: ProbeExecutionLogs[];
   logsView: LogsView;
   pendingProbeNames: string[];
 }
 
-export const TimepointViewerExecutions = ({
-  check,
-  data,
-  logsView,
-  pendingProbeNames,
-}: TimepointViewerExecutionsProps) => {
-  const { handleHoverStateChange, handleSelectedStateChange, selectedState } = useTimepointExplorerContext();
+export const TimepointViewerExecutions = ({ data, logsView, pendingProbeNames }: TimepointViewerExecutionsProps) => {
+  const { check, handleHoverStateChange, handleSelectedStateChange, selectedState } = useTimepointExplorerContext();
   const [timepoint, probeNameToView] = selectedState;
   const tabsToRender = useTimepointViewerExecutions(data, pendingProbeNames, timepoint);
 

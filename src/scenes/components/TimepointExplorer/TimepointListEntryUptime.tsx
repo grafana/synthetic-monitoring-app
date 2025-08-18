@@ -20,19 +20,18 @@ const GLOBAL_CLASS = `uptime_bar`;
 
 export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
+  const { probeResults, status } = statefulTimepoint;
   const { handleSelectedStateChange, maxProbeDuration, selectedState, vizDisplay, timepointWidth } =
     useTimepointExplorerContext();
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles, timepointWidth);
-  const probeNameToView = Object.keys(statefulTimepoint.probeResults)[0];
+  const probeNameToView = Object.keys(probeResults)[0];
   const [selectedTimepoint] = selectedState;
   const isSelected = selectedTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
-  const state =
-    statefulTimepoint.uptimeValue === 0 ? 'failure' : statefulTimepoint.uptimeValue === 1 ? 'success' : 'missing';
 
-  if (!vizDisplay.includes(state)) {
+  if (!vizDisplay.includes(status)) {
     return <div />;
   }
 
@@ -54,15 +53,9 @@ export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps)
             className={cx(styles.uptimeBar, GLOBAL_CLASS, {
               [styles.selected]: isSelected,
             })}
-            state={state}
+            status={status}
           >
-            {statefulTimepoint.uptimeValue === 0 ? (
-              <Icon name={`times`} />
-            ) : statefulTimepoint.uptimeValue === 1 ? (
-              <Icon name={`check`} />
-            ) : (
-              `?`
-            )}
+            {status === 'failure' ? <Icon name={`times`} /> : status === 'success' ? <Icon name={`check`} /> : `?`}
           </TimepointVizItem>
         </PlainButton>
       </Tooltip>

@@ -25,8 +25,9 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   useBuiltCheckConfigs,
-  useExecutionEndingLogs,
-  useIsResultPending,
+  useCurrentAdjustedTime,
+  useExecutionDurationLogs,
+  useIsListResultPending,
   usePersistedMaxProbeDuration,
   useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
@@ -58,6 +59,7 @@ interface TimepointExplorerContextType {
   check: Check;
   checkConfigs: CheckConfig[];
   checkEvents: CheckEvent[];
+  currentAdjustedTime: UnixTimestamp;
   handleHoverStateChange: (state: SelectedState) => void;
   handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
   handleMiniMapPageChange: (page: number) => void;
@@ -71,7 +73,7 @@ interface TimepointExplorerContextType {
   isCheckCreationWithinTimerange: boolean;
   isLogsRetentionPeriodWithinTimerange: boolean;
   isLoading: boolean;
-  pendingResult: [StatelessTimepoint, string[]] | [];
+  pendingListResult: [StatelessTimepoint, string[]] | [];
   listWidth: number;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   maxProbeDuration: number;
@@ -108,6 +110,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
   const [timepointsDisplayCount, setTimepointsDisplayCount] = useState<number>(0);
   const theme = useTheme2();
+  const currentAdjustedTime = useCurrentAdjustedTime(check);
   const [vizDisplay, setVizDisplay] = useState<VizDisplay>(VIZ_DISPLAY_OPTIONS);
   const [vizOptions, setVizOptions] = useState<Record<TimepointStatus, string>>({
     success: theme.visualization.getColorByName(`green`),
@@ -167,11 +170,12 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     return getMiniMapSections(miniMapPages[miniMapCurrentPage], timepointsDisplayCount);
   }, [miniMapPages, miniMapCurrentPage, timepointsDisplayCount, timeRange.from, timeRange.to]);
 
-  const { logsMap, refetch: refetchEndingLogs } = useExecutionEndingLogs({
-    timeRange: miniMapCurrentPageTimeRange,
+  const { logsMap, refetch: refetchEndingLogs } = useExecutionDurationLogs({
     check,
-    timepoints,
+    currentAdjustedTime,
     probe: probeVar,
+    timepoints: visibleTimepoints, // no point building anything that is not visible
+    timeRange: miniMapCurrentPageTimeRange,
   });
 
   const checkEvents = useMemo(
@@ -273,7 +277,8 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     refetchMaxProbeDuration();
   }, [refetchEndingLogs, refetchCheckConfigs, refetchMaxProbeDuration]);
 
-  const pendingResult = useIsResultPending({
+  const pendingListResult = useIsListResultPending({
+    currentAdjustedTime,
     handleRefetch,
     check,
     logsMap,
@@ -285,6 +290,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       check,
       checkConfigs,
       checkEvents,
+      currentAdjustedTime,
       handleListWidthChange,
       handleMiniMapPageChange,
       handleMiniMapSectionChange,
@@ -305,7 +311,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       miniMapCurrentPageSections,
       miniMapCurrentSectionIndex,
       miniMapPages,
-      pendingResult,
+      pendingListResult,
       selectedState,
       timepoints,
       timepointsDisplayCount,
@@ -318,6 +324,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     check,
     checkConfigs,
     checkEvents,
+    currentAdjustedTime,
     handleListWidthChange,
     handleMiniMapPageChange,
     handleMiniMapSectionChange,
@@ -338,7 +345,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
     miniMapPages,
-    pendingResult,
+    pendingListResult,
     selectedState,
     timepoints,
     timepointsDisplayCount,

@@ -18,7 +18,7 @@ export function useTimepointViewerExecutions(
     .sort((a, b) => a.localeCompare(b))
     .map<TabToRender>((probeName) => {
       const probeExecutionLogs = data.find((d) => d.probeName === probeName);
-      const logWithProbeSuccess = probeExecutionLogs?.executions[0][0];
+      const logWithProbeSuccess = probeExecutionLogs?.executions[0]?.[0];
 
       return {
         probeName,

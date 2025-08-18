@@ -8,12 +8,12 @@ import { TimepointStatus, TimepointVizOption } from 'scenes/components/Timepoint
 
 type TimepointVizItemProps = HTMLAttributes<HTMLElement> & {
   as?: ElementType;
-  state: TimepointStatus;
+  status: TimepointStatus;
 };
 
 export const TimepointVizItem = forwardRef<HTMLElement, TimepointVizItemProps>(
-  ({ as: Component = 'div', children, className, state, ...props }, ref) => {
-    const vizOption = useTimepointVizOptions(state);
+  ({ as: Component = 'div', children, className, status, ...props }, ref) => {
+    const vizOption = useTimepointVizOptions(status);
     const styles = useStyles2((theme) => getStyles(theme, vizOption));
 
     return (

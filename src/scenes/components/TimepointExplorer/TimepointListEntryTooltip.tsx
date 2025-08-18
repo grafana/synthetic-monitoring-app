@@ -3,14 +3,17 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
-import { formatDuration, formatSmallDurations } from 'utils';
+import { formatDuration } from 'utils';
 import { PlainButton } from 'components/PlainButton';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint, TimepointStatus } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  getAverageDuration,
+  getEntriesToRender,
+  matchState,
+} from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip.utils';
 
 interface TimepointListEntryTooltipProps {
   timepoint: StatelessTimepoint;
@@ -18,46 +21,16 @@ interface TimepointListEntryTooltipProps {
 
 export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const { check, handleHoverStateChange, handleSelectedStateChange, hoveredState, selectedState } =
+  const { check, currentAdjustedTime, handleHoverStateChange, handleSelectedStateChange, hoveredState, selectedState } =
     useTimepointExplorerContext();
   const selectedProbeNames = useSceneVarProbes(check);
 
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const displayTime = new Date(statefulTimepoint.adjustedTime).toLocaleString();
-  const [hoveredTimepoint, hoveredProbeName, hoveredExecutionIndex] = hoveredState;
-  const [selectedTimepoint, selectedProbeName, selectedExecutionIndex] = selectedState;
-  const executions = Object.values(statefulTimepoint.probeResults).flat();
 
-  // Calculate average if not provided
-  const avgDuration =
-    executions.reduce((sum, execution) => {
-      const duration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
-      return sum + duration;
-    }, 0) / executions.length;
-  const renderedAvgDuration = Number.isNaN(avgDuration) ? `-` : formatSmallDurations(avgDuration);
-  const renderedFrequency = !statefulTimepoint.config.frequency
-    ? `-`
-    : formatDuration(statefulTimepoint.config.frequency, true);
-
-  const entriesToRender = selectedProbeNames
-    .map((probeName) => {
-      const probeResults = statefulTimepoint.probeResults[probeName] || [];
-
-      if (probeResults) {
-        return probeResults;
-      }
-
-      return [
-        {
-          [LokiFieldNames.Labels]: {
-            probe: probeName,
-            probe_success: '0',
-            duration_seconds: '0',
-          },
-        } as ExecutionEndedLog,
-      ];
-    })
-    .flat();
+  const renderedAvgDuration = getAverageDuration(statefulTimepoint.probeResults);
+  const renderedFrequency = formatDuration(statefulTimepoint.config.frequency, true);
+  const entriesToRender = getEntriesToRender(statefulTimepoint, selectedProbeNames, currentAdjustedTime);
 
   return (
     <Stack direction="column" gap={2}>
@@ -66,26 +39,18 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
           <Text variant="h5" element="h3">
             {displayTime}
           </Text>
-          <StatusBadge status={statefulTimepoint.uptimeValue} />
+          <StatusBadge status={statefulTimepoint.status} />
         </Stack>
       </div>
 
       <Stack direction="column" gap={1}>
         {entriesToRender
-          .sort((a, b) => a[LokiFieldNames.Labels].probe.localeCompare(b[LokiFieldNames.Labels].probe))
-          .map((execution) => {
+          .sort((a, b) => a.probeName.localeCompare(b.probeName))
+          .map((entry) => {
+            const { status, probeName, duration } = entry;
             const index = 0;
-            const { probe: probeName, probe_success, duration_seconds } = execution[LokiFieldNames.Labels];
-            const isSuccess = probe_success === '1';
-            const duration = Number(duration_seconds) * 1000;
-            const isSelected =
-              statefulTimepoint.adjustedTime === selectedTimepoint?.adjustedTime &&
-              selectedProbeName === probeName &&
-              selectedExecutionIndex === index;
-            const isHovered =
-              statefulTimepoint.adjustedTime === hoveredTimepoint?.adjustedTime &&
-              hoveredProbeName === probeName &&
-              hoveredExecutionIndex === index;
+            const isSelected = matchState(selectedState, [statefulTimepoint, probeName, index]);
+            const isHovered = matchState(hoveredState, [statefulTimepoint, probeName, index]);
 
             return (
               <div key={probeName} className={styles.probeRow}>
@@ -103,8 +68,8 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
                   {probeName}
                 </PlainButton>
                 <Stack direction="row" gap={1} alignItems="center">
-                  <Badge color={isSuccess ? 'green' : 'red'} text={isSuccess ? 'Success' : 'Fail'} />
-                  <span className={styles.duration}>{formatSmallDurations(duration)}</span>
+                  <StatusBadge status={status} />
+                  <span className={styles.duration}>{duration}</span>
                 </Stack>
               </div>
             );
@@ -119,16 +84,16 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
   );
 };
 
-const StatusBadge = ({ status }: { status: -1 | 0 | 1 | 2 }) => {
+const StatusBadge = ({ status }: { status: TimepointStatus }) => {
   switch (status) {
-    case -1:
+    case 'missing':
       // @ts-expect-error - it does accept gray...
       return <Badge color="gray" text="MISSING" />;
-    case 1:
+    case 'success':
       return <Badge color="green" text="UP" />;
-    case 0:
+    case 'failure':
       return <Badge color="red" text="DOWN" />;
-    case 2:
+    case 'pending':
       return <Badge color="blue" text="PENDING" />;
   }
 };

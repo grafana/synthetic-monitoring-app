@@ -30,7 +30,7 @@ import {
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function timeshiftedTimepoint(unixDate: UnixTimestamp, frequency: number): UnixTimestamp {
+export function getTimeAdjustedTimepoint(unixDate: UnixTimestamp, frequency: number): UnixTimestamp {
   return unixDate - (unixDate % frequency);
 }
 
@@ -49,16 +49,12 @@ export function buildConfigTimeRanges(checkConfigs: CheckConfigRaw[], timeRangeT
   });
 }
 
-export function calculateUptimeValue(probeResults: ProbeResults) {
+export function getTimepointStatus(probeResults: ProbeResults): TimepointStatus {
   const executions = Object.values(probeResults)
     .flat()
     .map((execution) => execution[LokiFieldNames.Labels].probe_success);
 
-  if (executions.length === 0) {
-    return -1;
-  }
-
-  return executions.every((execution) => execution === '0') ? 0 : 1;
+  return executions.every((execution) => execution === '0') ? 'failure' : 'success';
 }
 
 export function getMaxProbeDuration(probeResults: ProbeResults) {
@@ -122,7 +118,7 @@ interface BuildTimepointsForConfigProps {
 
 export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsForConfigProps) {
   let build: Array<Omit<StatelessTimepoint, 'index'>> = [];
-  let currentTimepoint = timeshiftedTimepoint(to, config.frequency);
+  let currentTimepoint = getTimeAdjustedTimepoint(to, config.frequency);
 
   while (currentTimepoint >= from) {
     build.push({
@@ -273,17 +269,18 @@ export function getVisibleTimepointsTimeRange({ timepoints }: { timepoints: Stat
   };
 }
 
-export function buildLogsMap(
-  logs: Array<ParsedLokiRecord<ExecutionLabels & EndingLogLabels, ExecutionLabelType>>,
-  timepoints: StatelessTimepoint[],
-  check: Check
-) {
+interface BuildLogsMapProps {
+  logs: Array<ParsedLokiRecord<ExecutionLabels & EndingLogLabels, ExecutionLabelType>>;
+  timepoints: StatelessTimepoint[];
+  check: Check;
+}
+
+export function buildLogsMap({ logs, timepoints, check }: BuildLogsMapProps) {
   return logs.reduce<Record<UnixTimestamp, StatefulTimepoint>>((acc, log) => {
     const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
     const startingTime = log.Time - duration;
 
-    // TODO: this is not efficient, we should find a better way to do this
-    // the problem is when a check is updated with a new frequency you get a non-standard timepoint
+    // not efficient, but somewhat migrated by just using visible timepoints to limit the work
     const timepoint = timepoints.find(
       (t: StatelessTimepoint) => startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration
     );
@@ -292,7 +289,7 @@ export function buildLogsMap(
       return acc;
     }
 
-    const timeshiftedStartingTime = timeshiftedTimepoint(startingTime, check.frequency);
+    const timeshiftedStartingTime = getTimeAdjustedTimepoint(startingTime, check.frequency);
     const existingProbeResults = acc[timeshiftedStartingTime]?.probeResults || {};
     const executionProbeName = log.labels.probe;
     const existingProbeResultsForProbe = existingProbeResults[executionProbeName] || [];
@@ -302,12 +299,14 @@ export function buildLogsMap(
       [executionProbeName]: [...existingProbeResultsForProbe, log],
     };
 
+    const status = getTimepointStatus(probeResults);
+
     acc[timeshiftedStartingTime] = {
       adjustedTime: timepoint.adjustedTime,
       timepointDuration: timepoint.timepointDuration,
       config: timepoint.config,
       probeResults,
-      uptimeValue: calculateUptimeValue(probeResults),
+      status,
       maxProbeDuration: getMaxProbeDuration(probeResults),
       index: timepoint.index,
     };
@@ -355,21 +354,20 @@ export function getIsProbeSelected(timepoint: StatelessTimepoint, probeName: str
 }
 
 interface GetPendingResultsProps {
-  check: Check;
+  currentAdjustedTime: UnixTimestamp;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   selectedProbes: string[];
   timepoints: StatelessTimepoint[];
 }
 
 export function getIsResultPending({
-  check,
+  currentAdjustedTime,
   logsMap,
   selectedProbes,
   timepoints,
 }: GetPendingResultsProps): [StatelessTimepoint, string[]] | [] {
-  const adjustedTime = timeshiftedTimepoint(new Date().getTime(), check.frequency);
   const latestTimepoint = timepoints[timepoints.length - 1];
-  const timepointToUse = timepoints.find((t) => t.adjustedTime === adjustedTime) || latestTimepoint;
+  const timepointToUse = timepoints.find((t) => t.adjustedTime === currentAdjustedTime) || latestTimepoint;
 
   if (!timepointToUse) {
     return [];
@@ -382,10 +380,10 @@ export function getIsResultPending({
   }
 
   const entryProbeNames = Object.keys(entry.probeResults);
-  const pendingOnlineProbes = getPendingProbes({ entryProbeNames, selectedProbeNames: selectedProbes });
-  const isResultPending = Boolean(pendingOnlineProbes.length);
+  const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames: selectedProbes });
+  const isResultPending = Boolean(pendingProbes.length);
 
-  return isResultPending ? [timepointToUse, pendingOnlineProbes] : [];
+  return isResultPending ? [timepointToUse, pendingProbes] : [];
 }
 
 export function getPendingProbes({
@@ -405,10 +403,8 @@ export function getIsCheckCreationWithinTimerange(checkCreation: number, timepoi
   return checkCreationDate >= adjustedTime - timepointDuration;
 }
 
-export function getIsInTheFuture(timepoint: StatelessTimepoint, check: Check) {
-  const adjustedTime = timeshiftedTimepoint(new Date().getTime(), check.frequency);
-
-  return timepoint.adjustedTime > adjustedTime;
+export function getIsInTheFuture(timepoint: StatelessTimepoint, currentAdjustedTime: UnixTimestamp) {
+  return timepoint.adjustedTime > currentAdjustedTime;
 }
 
 export function getProbeExecutionsStatus(

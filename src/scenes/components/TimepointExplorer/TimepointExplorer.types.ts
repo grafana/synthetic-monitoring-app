@@ -65,7 +65,7 @@ export type ProbeResults = Record<string, ExecutionEndedLog[]>;
 export interface StatefulTimepoint {
   adjustedTime: UnixTimestamp;
   timepointDuration: number;
-  uptimeValue: -1 | 0 | 1 | 2; // -1: missing, 0: failure, 1: success, 2: pending
+  status: TimepointStatus;
   probeResults: ProbeResults;
   maxProbeDuration: number;
   index: number;

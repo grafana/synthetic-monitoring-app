@@ -64,7 +64,7 @@ export const TimepointListEntryPending = ({ timepoint, pendingProbeNames }: Time
             className={cx(styles.pendingBar, GLOBAL_CLASS, {
               [styles.selected]: isSelected,
             })}
-            state={`pending`}
+            status={`pending`}
           >
             <div className={styles.loadingBar} />
           </TimepointVizItem>

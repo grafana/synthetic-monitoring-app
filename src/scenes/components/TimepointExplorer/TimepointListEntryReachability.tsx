@@ -66,9 +66,9 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
           const { probe: probeName, probe_success } = execution[LokiFieldNames.Labels];
           const isSelected = getIsProbeSelected(timepoint, probeName, selectedState);
-          const state = probe_success === '1' ? 'success' : probe_success === '0' ? 'failure' : 'missing';
+          const status = probe_success === '1' ? 'success' : probe_success === '0' ? 'failure' : 'missing';
 
-          if (!vizDisplay.includes(state)) {
+          if (!vizDisplay.includes(status)) {
             return null;
           }
 
@@ -97,7 +97,7 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
                 onClick={() => handleSelectedStateChange([timepoint, probeName, index])}
                 onMouseEnter={() => handleHoverStateChange([timepoint, probeName, index])}
                 onMouseLeave={() => handleHoverStateChange([null, null, null])}
-                state={state}
+                status={status}
               >
                 <Icon name={ICON_MAP[probe_success]} />
               </TimepointVizItem>

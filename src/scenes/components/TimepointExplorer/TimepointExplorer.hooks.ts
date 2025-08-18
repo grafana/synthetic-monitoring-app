@@ -36,6 +36,7 @@ import {
   buildTimepoints,
   extractFrequenciesAndConfigs,
   getIsResultPending,
+  getTimeAdjustedTimepoint,
   getVisibleTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
@@ -109,22 +110,29 @@ export function useTimepoints({ timeRange, checkConfigs, logsRetentionTo }: UseT
   return useMemo(() => buildTimepoints({ from, checkConfigs }), [from, checkConfigs]);
 }
 
-interface UseExecutionEndingLogsProps {
-  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
+interface UseExecutionDurationLogsProps {
   check: Check;
-  timepoints: StatelessTimepoint[];
+  currentAdjustedTime: UnixTimestamp;
   probe?: string[];
+  timepoints: StatelessTimepoint[];
+  timeRange: { from: UnixTimestamp; to: UnixTimestamp };
 }
 
-export function useExecutionEndingLogs({ timeRange, check, timepoints, probe }: UseExecutionEndingLogsProps) {
+export function useExecutionDurationLogs({
+  timeRange,
+  check,
+  timepoints,
+  probe,
+  currentAdjustedTime,
+}: UseExecutionDurationLogsProps) {
   const [logsMap, setLogsMap] = useState<Record<UnixTimestamp, StatefulTimepoint>>({});
   const probeExpr = probe?.join('|') || '.*';
 
   const onSuccess = useCallback(
-    (data: Array<ParsedLokiRecord<ExecutionLabels & EndingLogLabels, ExecutionLabelType>>) => {
+    (logs: Array<ParsedLokiRecord<ExecutionLabels & EndingLogLabels, ExecutionLabelType>>) => {
       setLogsMap((prev) => ({
         ...prev,
-        ...buildLogsMap(data, timepoints, check),
+        ...buildLogsMap({ logs, timepoints, check }),
       }));
     },
     [timepoints, check]
@@ -308,10 +316,12 @@ function useMaxProbeDuration({ timeRange, check, probe }: UseMaxProbeDurationPro
 }
 
 export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
-  const { logsMap, maxProbeDuration, pendingResult } = useTimepointExplorerContext();
-  const [pendingResultTimepoint] = pendingResult || [];
-  const isPendingEntry = pendingResultTimepoint?.index === timepoint.index;
+  const { currentAdjustedTime, logsMap, maxProbeDuration } = useTimepointExplorerContext();
   const entry = logsMap[timepoint.adjustedTime];
+
+  const couldBePending = [timepoint.adjustedTime, timepoint.adjustedTime + timepoint.timepointDuration].includes(
+    currentAdjustedTime
+  );
 
   if (!entry) {
     const defaultState: StatefulTimepoint = {
@@ -321,32 +331,36 @@ export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
       index: timepoint.index,
       maxProbeDuration: maxProbeDuration / 3,
       timepointDuration: timepoint.timepointDuration,
-      uptimeValue: isPendingEntry ? 2 : -1,
+      status: couldBePending ? 'pending' : 'missing',
     };
 
     return defaultState;
   }
 
-  return {
-    ...entry,
-    uptimeValue: isPendingEntry ? 2 : entry.uptimeValue,
-  };
+  return entry;
 }
 
 interface UseIsResultPendingProps {
-  handleRefetch: () => void;
   check: Check;
+  currentAdjustedTime: UnixTimestamp;
+  handleRefetch: () => void;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   timepoints: StatelessTimepoint[];
 }
 
-export function useIsResultPending({ handleRefetch, check, logsMap, timepoints }: UseIsResultPendingProps) {
+export function useIsListResultPending({
+  currentAdjustedTime,
+  handleRefetch,
+  check,
+  logsMap,
+  timepoints,
+}: UseIsResultPendingProps) {
   const selectedProbes = useSceneVarProbes(check);
   const refreshPickerState = useSceneRefreshPicker();
   const refreshInMs = refreshPickerState?.refreshInMs;
 
   const resultPending = getIsResultPending({
-    check,
+    currentAdjustedTime,
     logsMap,
     selectedProbes,
     timepoints,
@@ -387,10 +401,10 @@ export function useRefetchInterval(isPending: boolean, handleRefetch: () => void
   }, [isPending, handleRefetch]);
 }
 
-export function useTimepointVizOptions(state: TimepointStatus) {
+export function useTimepointVizOptions(status: TimepointStatus) {
   const { vizOptions } = useTimepointExplorerContext();
   const theme = useTheme2();
-  const option = vizOptions[state];
+  const option = vizOptions[status];
 
   const options: TimepointVizOptions = useMemo(() => {
     return {
@@ -421,7 +435,42 @@ export function useTimepointVizOptions(state: TimepointStatus) {
     };
   }, [theme, option]);
 
-  const vizOption = options[state];
+  const vizOption = options[status];
 
   return vizOption;
+}
+
+export function useCurrentAdjustedTime(check: Check) {
+  const timeNow = new Date().getTime();
+  const [currentAdjustedTime, setCurrentAdjustedTime] = useState<UnixTimestamp>(
+    getTimeAdjustedTimepoint(timeNow, check.frequency)
+  );
+  const delay = timeNow % check.frequency;
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const adjustedTime = getTimeAdjustedTimepoint(timeNow, check.frequency);
+      setCurrentAdjustedTime(adjustedTime);
+      clearTimeout(timeout);
+
+      setInterval(() => {
+        const adjustedTime = getTimeAdjustedTimepoint(new Date().getTime(), check.frequency);
+        setCurrentAdjustedTime(adjustedTime);
+      }, check.frequency);
+    }, delay);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [check.frequency, delay, timeNow]);
+
+  return currentAdjustedTime;
 }
