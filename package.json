@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.33.2",
+  "version": "1.33.2-test-ops",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "analytics-events:generate": "node --experimental-strip-types ./scripts/analytics/main.mts",
