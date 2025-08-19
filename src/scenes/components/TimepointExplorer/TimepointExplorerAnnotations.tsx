@@ -80,6 +80,7 @@ export const TimepointExplorerAnnotations = ({
               parentWidth={parentWidth}
               showLabels={showLabels}
               timepointsInRange={timepointsInRange}
+              triggerHeight={triggerHeight}
             />
           );
         }

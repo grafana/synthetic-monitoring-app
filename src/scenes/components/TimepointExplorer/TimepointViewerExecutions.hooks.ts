@@ -11,8 +11,9 @@ export function useTimepointViewerExecutions(
   pendingExecutions: string[],
   timepoint: StatelessTimepoint | null
 ) {
-  const { check, checkConfigs } = useTimepointExplorerContext();
+  const { check } = useTimepointExplorerContext();
   const selectedProbeNames = useSceneVarProbes(check);
+  const latestConfigDate = Math.round(check.modified! * 1000);
 
   const tabsToRender = selectedProbeNames
     .sort((a, b) => a.localeCompare(b))
@@ -27,5 +28,5 @@ export function useTimepointViewerExecutions(
       };
     });
 
-  return filterTabsToRender(tabsToRender, checkConfigs, timepoint);
+  return filterTabsToRender(latestConfigDate, tabsToRender, timepoint);
 }

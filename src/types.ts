@@ -103,7 +103,6 @@ export interface ExistingObject {
   id?: number;
   modified?: number; // seconds
   tenantId?: number;
-  updated?: number; // seconds
 }
 
 export interface Label {

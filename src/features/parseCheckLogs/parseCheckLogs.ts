@@ -44,7 +44,7 @@ export function groupByExecution(logs: UnknownExecutionLog[]): ExecutionLogs[] {
     reverse: true,
   });
 
-  const executions = [];
+  const executions: ExecutionLogs[] = [];
   let execution = [];
 
   for (const log of completeFromEnd) {
@@ -52,8 +52,12 @@ export function groupByExecution(logs: UnknownExecutionLog[]): ExecutionLogs[] {
 
     execution.push(log);
 
-    if ([MSG_STRINGS_COMMON.CheckFailed, MSG_STRINGS_COMMON.CheckSucceeded].includes(msg)) {
-      executions.push(execution);
+    if (
+      [MSG_STRINGS_COMMON.CheckFailed, MSG_STRINGS_COMMON.CheckSucceeded].includes(
+        msg as 'Check failed' | 'Check succeeded'
+      )
+    ) {
+      executions.push(execution as ExecutionLogs);
       execution = [];
     }
   }

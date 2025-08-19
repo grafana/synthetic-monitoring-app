@@ -48,7 +48,6 @@ import {
 import {
   constructCheckEvents,
   findNearest,
-  getIsCheckCreationWithinTimerange,
   getMiniMapPages,
   getMiniMapSections,
   getTimeFrom,
@@ -71,7 +70,6 @@ interface TimepointExplorerContextType {
   handleVizDisplayChange: (display: TimepointStatus, usedModifier: boolean) => void;
   handleVizOptionChange: (display: TimepointStatus, color: string) => void;
   hoveredState: SelectedState;
-  isCheckCreationWithinTimerange: boolean;
   isLogsRetentionPeriodWithinTimerange: boolean;
   isLoading: boolean;
   listWidth: number;
@@ -141,8 +139,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
 
   const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check, explorerTimeFrom);
-  const timepoints = useTimepoints({ checkConfigs, from: explorerTimeFrom });
-  const isCheckCreationWithinTimerange = getIsCheckCreationWithinTimerange(checkCreation, timepoints);
+  const timepoints = useTimepoints({ checkConfigs, from: explorerTimeFrom, to: timeRange.to.valueOf() });
   const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();
 
   const miniMapPages = useMemo(
@@ -176,7 +173,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     refetch: refetchEndingLogs,
   } = useExecutionDurationLogs({
     check,
-    currentAdjustedTime,
     probe: probeVar,
     timepoints: visibleTimepoints, // no point building anything that is not visible
     timeRange: miniMapCurrentPageTimeRange,
@@ -297,7 +293,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleVizDisplayChange,
       handleVizOptionChange,
       hoveredState,
-      isCheckCreationWithinTimerange,
       isLoading,
       isLogsRetentionPeriodWithinTimerange,
       listWidth,
@@ -330,7 +325,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleVizDisplayChange,
     handleVizOptionChange,
     hoveredState,
-    isCheckCreationWithinTimerange,
     isLoading,
     isLogsRetentionPeriodWithinTimerange,
     listWidth,

@@ -1,7 +1,15 @@
 import { db } from 'test/db';
+import { succeededLogFactory } from 'test/db/checkLogs';
 
-import { MiniMapPage, MiniMapPages, MiniMapSection } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
+  MiniMapPage,
+  MiniMapPages,
+  MiniMapSection,
+  StatefulTimepoint,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  buildLogsMap,
+  buildTimepoints,
   findNearest,
   getMiniMapPages,
   getMiniMapSections,
@@ -118,5 +126,49 @@ describe(`getPendingProbes`, () => {
     const selectedProbeNames = PROBES.map((p) => p.name);
     const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames });
     expect(pendingProbes).toEqual([]);
+  });
+});
+
+describe(`buildLogsMap`, () => {
+  it(`should build the correct logs map`, () => {
+    const Time = 40003;
+    const frequency = 10000;
+    const DASHBOARD_FROM = 30000;
+    const DASHBOARD_TO = 100000;
+
+    const config = { frequency, from: 0, to: DASHBOARD_TO };
+
+    const timepoints = buildTimepoints({
+      checkConfigs: [config],
+      from: DASHBOARD_FROM,
+      to: DASHBOARD_TO,
+    });
+
+    const firstEntry = timepoints[0];
+
+    const log = succeededLogFactory.build({
+      Time,
+      labels: {
+        duration_seconds: (frequency / 1000).toString(),
+      },
+    });
+
+    const logsMap = buildLogsMap({ logs: [log], timepoints });
+
+    const expectedEntry: StatefulTimepoint = {
+      adjustedTime: firstEntry.adjustedTime,
+      config,
+      probeResults: {
+        [log.labels.probe]: [log],
+      },
+      status: 'success',
+      timepointDuration: frequency,
+      maxProbeDuration: Number(log.labels.duration_seconds) * 1000,
+      index: 0,
+    };
+
+    expect(logsMap).toEqual({
+      [firstEntry.adjustedTime]: expectedEntry,
+    });
   });
 });

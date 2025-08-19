@@ -21,15 +21,8 @@ interface TimepointListEntryTooltipProps {
 
 export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const {
-    check,
-    checkConfigs,
-    currentAdjustedTime,
-    handleHoverStateChange,
-    handleSelectedStateChange,
-    hoveredState,
-    selectedState,
-  } = useTimepointExplorerContext();
+  const { check, currentAdjustedTime, handleHoverStateChange, handleSelectedStateChange, hoveredState, selectedState } =
+    useTimepointExplorerContext();
   const selectedProbeNames = useSceneVarProbes(check);
 
   const statefulTimepoint = useStatefulTimepoint(timepoint);
@@ -37,11 +30,12 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
 
   const renderedAvgDuration = getAverageDuration(statefulTimepoint.probeResults);
   const renderedFrequency = formatDuration(statefulTimepoint.config.frequency, true);
+  const latestConfigDate = Math.round(check.modified! * 1000);
   const entriesToRender = getEntriesToRender({
     statefulTimepoint,
     selectedProbeNames,
     currentAdjustedTime,
-    checkConfigs,
+    latestConfigDate,
   });
 
   return (

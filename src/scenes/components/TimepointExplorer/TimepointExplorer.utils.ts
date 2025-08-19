@@ -1,14 +1,8 @@
 import { DataFrame } from '@grafana/data';
 import { difference } from 'lodash';
 
-import {
-  EndingLogLabels,
-  ExecutionLabels,
-  ExecutionLabelType,
-  UnknownExecutionLog,
-} from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
-import { Check } from 'types';
+import { ExecutionEndedLog, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
+import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import {
   ANNOTATION_COLOR_CHECK_UPDATED,
   ANNOTATION_COLOR_NO_DATA,
@@ -80,16 +74,17 @@ export function getEntryHeightPx(duration: number, maxProbeDurationData: number,
 }
 
 interface BuildTimepointsInRangeProps {
-  from: UnixTimestamp;
   checkConfigs: CheckConfig[];
+  from: UnixTimestamp;
+  to: UnixTimestamp;
 }
 
-export function buildTimepoints({ from, checkConfigs }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
+export function buildTimepoints({ checkConfigs, from, to }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
   const startTime = performance.now();
 
   const timepoints = checkConfigs.map((config) => {
     const configFrom = from > config.from ? from : config.from;
-    const configTo = config.to;
+    const configTo = to < config.to ? to : config.to;
 
     return buildTimepointsForConfig({ from: configFrom, to: configTo, config });
   });
@@ -272,12 +267,11 @@ export function getVisibleTimepointsTimeRange({ timepoints }: { timepoints: Stat
 }
 
 interface BuildLogsMapProps {
-  logs: Array<ParsedLokiRecord<ExecutionLabels & EndingLogLabels, ExecutionLabelType>>;
+  logs: ExecutionEndedLog[];
   timepoints: StatelessTimepoint[];
-  check: Check;
 }
 
-export function buildLogsMap({ logs, timepoints, check }: BuildLogsMapProps) {
+export function buildLogsMap({ logs, timepoints }: BuildLogsMapProps) {
   return logs.reduce<Record<UnixTimestamp, StatefulTimepoint>>((acc, log) => {
     const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
     const startingTime = log.Time - duration;
@@ -291,7 +285,7 @@ export function buildLogsMap({ logs, timepoints, check }: BuildLogsMapProps) {
       return acc;
     }
 
-    const timeshiftedStartingTime = getTimeAdjustedTimepoint(startingTime, check.frequency);
+    const timeshiftedStartingTime = getTimeAdjustedTimepoint(startingTime, timepoint.config.frequency);
     const existingProbeResults = acc[timeshiftedStartingTime]?.probeResults || {};
     const executionProbeName = log.labels.probe;
     const existingProbeResultsForProbe = existingProbeResults[executionProbeName] || [];
@@ -382,13 +376,6 @@ export function getPendingProbes({
   return difference(selectedProbeNames, entryProbeNames);
 }
 
-export function getIsCheckCreationWithinTimerange(checkCreation: number, timepoints: StatelessTimepoint[]) {
-  const checkCreationDate = Math.round(checkCreation * 1000);
-  const { adjustedTime, timepointDuration } = timepoints[0] || {};
-
-  return checkCreationDate >= adjustedTime - timepointDuration;
-}
-
 export function getIsInTheFuture(timepoint: StatelessTimepoint, currentAdjustedTime: UnixTimestamp) {
   return timepoint.adjustedTime > currentAdjustedTime;
 }
@@ -428,11 +415,15 @@ interface GetTimeFromProps {
   timeRangeFrom: UnixTimestamp;
 }
 
+// if creation was before retention date - then retetention date should be used
+// if creation was after retention date - then creation date should be used
 export function getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom }: GetTimeFromProps) {
   const checkCreationDate = Math.round(checkCreation * 1000);
-  // get oldest
-  const creationOrRetention = Math.min(checkCreationDate, logsRetentionFrom);
+  const wasCreationBeforeRetention = BigInt(checkCreationDate) < BigInt(logsRetentionFrom);
 
-  // get newest
-  return Math.max(creationOrRetention, timeRangeFrom);
+  if (wasCreationBeforeRetention) {
+    return Math.max(logsRetentionFrom, timeRangeFrom);
+  }
+
+  return Math.max(checkCreationDate, timeRangeFrom);
 }

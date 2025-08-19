@@ -1,7 +1,7 @@
 export const MSG_STRINGS_COMMON = {
-  BeginningCheck: `Beginning check`,
-  CheckFailed: `Check failed`,
-  CheckSucceeded: `Check succeeded`,
+  BeginningCheck: `Beginning check` as const,
+  CheckFailed: `Check failed` as const,
+  CheckSucceeded: `Check succeeded` as const,
 };
 
 export const MSG_STRINGS_HTTP = {

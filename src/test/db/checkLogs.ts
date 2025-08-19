@@ -3,12 +3,13 @@ import { MSG_STRINGS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.
 import { Factory } from 'fishery';
 
 import {
+  ExecutionEndedLog,
   ExecutionFailedLog,
   ExecutionLabelType,
   ExecutionLogs,
   ExecutionSucceededLog,
-  ProbeExecutionLogs,
   StartingLog,
+  UnknownExecutionLog,
 } from 'features/parseCheckLogs/checkLogs.types';
 import { CheckType } from 'types';
 
@@ -20,123 +21,121 @@ const checkLabelTypeFactory = Factory.define<ExecutionLabelType>(() => ({
   job: 'I',
 }));
 
-// Helper functions to create individual log types
-const createStartingLog = (probeName: string, time: number): StartingLog => ({
-  Time: time,
-  tsNs: time * 1000,
-  labels: {
-    probe: probeName,
-    msg: MSG_STRINGS_COMMON.BeginningCheck,
-    check_name: CheckType.HTTP,
-    detected_level: 'info' as const,
-    instance: faker.internet.ip(),
-    job: faker.company.name(),
-    probe_success: faker.helpers.arrayElement(['0', '1']),
-    region: faker.location.countryCode(),
-    service_name: faker.company.name(),
-    source: 'synthetic-monitoring-agent' as const,
-  },
-  Line: faker.lorem.sentence(),
-  labelTypes: checkLabelTypeFactory.build(),
-  id: faker.string.uuid(),
-});
-
-const createSucceededLog = (probeName: string, time: number): ExecutionSucceededLog => ({
-  Time: time,
-  tsNs: time * 1000,
-  labels: {
-    probe: probeName,
-    duration_seconds: faker.number.float({ min: 0.1, max: 30.0, fractionDigits: 3 }).toString(),
-    msg: MSG_STRINGS_COMMON.CheckSucceeded,
-    check_name: CheckType.HTTP,
-    detected_level: 'info' as const,
-    instance: faker.internet.ip(),
-    job: faker.company.name(),
-    probe_success: '1' as const,
-    region: faker.location.countryCode(),
-    service_name: faker.company.name(),
-    source: 'synthetic-monitoring-agent' as const,
-  },
-  Line: faker.lorem.sentence(),
-  labelTypes: checkLabelTypeFactory.build(),
-  id: faker.string.uuid(),
-});
-
-const createFailedLog = (probeName: string, time: number): ExecutionFailedLog => ({
-  Time: time,
-  tsNs: time * 1000,
-  labels: {
-    probe: probeName,
-    duration_seconds: faker.number.float({ min: 0.1, max: 30.0, fractionDigits: 3 }).toString(),
-    msg: MSG_STRINGS_COMMON.CheckFailed,
-    check_name: CheckType.HTTP,
-    detected_level: 'error' as const,
-    instance: faker.internet.ip(),
-    job: faker.company.name(),
-    probe_success: '0' as const,
-    region: faker.location.countryCode(),
-    service_name: faker.company.name(),
-    source: 'synthetic-monitoring-agent' as const,
-  },
-  Line: faker.lorem.sentence(),
-  labelTypes: checkLabelTypeFactory.build(),
-  id: faker.string.uuid(),
-});
-
-// Factory for PerCheckLogs
-export const perCheckLogsFactory = Factory.define<ProbeExecutionLogs>(({ sequence }) => {
-  const probeName = `probe${sequence + 1}`;
-  const checkCount = faker.number.int({ min: 1, max: 3 });
-
-  const executions = Array.from({ length: checkCount }, (_, checkIndex) => {
-    const baseTime = faker.date.recent().getTime() - checkIndex * 60000; // Spread checks over time
-    const isSuccess = faker.datatype.boolean();
-    const endTime = baseTime + faker.number.int({ min: 100, max: 10000 });
-
-    const startingLog = createStartingLog(probeName, baseTime);
-    const endingLog = isSuccess ? createSucceededLog(probeName, endTime) : createFailedLog(probeName, endTime);
-
-    return [startingLog, endingLog] as ExecutionLogs;
-  });
+export const unknownExecutionLogFactory = Factory.define<UnknownExecutionLog>(({ params }) => {
+  const { Time = faker.date.recent().getTime() } = params;
+  const job = faker.company.name();
+  const instance = faker.internet.ip();
 
   return {
-    probeName,
-    executions: executions,
+    Time,
+    tsNs: Time * 1000,
+    labels: {
+      probe: ``,
+      msg: ``,
+      check_name: CheckType.HTTP,
+      detected_level: 'info' as const,
+      instance,
+      job,
+      probe_success: faker.datatype.boolean() ? '1' : '0',
+      region: faker.location.countryCode(),
+      service_name: job,
+      source: 'synthetic-monitoring-agent' as const,
+    },
+    Line: faker.lorem.sentence(),
+    labelTypes: checkLabelTypeFactory.build(),
+    id: faker.string.uuid(),
   };
 });
 
-// Convenience function to create multiple PerCheckLogs with different probe names
-export const createPerCheckLogsArray = (probeCount = 3) => {
-  return Array.from({ length: probeCount }, () => perCheckLogsFactory.build());
-};
+export const startingLogFactory = Factory.define<StartingLog>(({ params }) => {
+  const log = unknownExecutionLogFactory.build(params);
 
-// Convenience function to create test data with specific times for filtering tests
-export const createPerCheckLogsForTimeRange = (
-  probeCount = 2,
-  timepoint: { adjustedTime: number; timepointDuration: number }
-) => {
-  return Array.from({ length: probeCount }, (_, index) => {
-    const probeName = `probe${index + 1}`;
-    const checkCount = 2;
+  return {
+    ...log,
+    labels: {
+      ...log.labels,
+      msg: MSG_STRINGS_COMMON.BeginningCheck,
+    },
+  };
+});
 
-    const executions = Array.from({ length: checkCount }, (_, checkIndex) => {
-      // Create some logs within the timepoint range and some outside
-      const isInRange = checkIndex === 0;
-      const baseTime = isInRange
-        ? timepoint.adjustedTime - timepoint.timepointDuration / 2 // Within range
-        : timepoint.adjustedTime - timepoint.timepointDuration - 60000; // Outside range
+export const succeededLogFactory = Factory.define<ExecutionSucceededLog>(({ params }) => {
+  const log = unknownExecutionLogFactory.build(params);
 
-      const endTime = baseTime + faker.number.int({ min: 100, max: 5000 });
+  return {
+    ...log,
+    labels: {
+      ...log.labels,
+      duration_seconds: faker.number.float({ min: 0.1, max: 30.0, fractionDigits: 3 }).toString(),
+      msg: MSG_STRINGS_COMMON.CheckSucceeded,
+      probe_success: '1' as const,
+    },
+  };
+});
 
-      const startingLog = createStartingLog(probeName, baseTime);
-      const endingLog = createSucceededLog(probeName, endTime);
+export const failedLogFactory = Factory.define<ExecutionFailedLog>(({ params }) => {
+  const log = unknownExecutionLogFactory.build(params);
 
-      return [startingLog, endingLog] as ExecutionLogs;
-    });
+  return {
+    ...log,
+    labels: {
+      ...log.labels,
+      duration_seconds: faker.number.float({ min: 0.1, max: 30.0, fractionDigits: 3 }).toString(),
+      msg: MSG_STRINGS_COMMON.CheckFailed,
+      probe_success: '0' as const,
+    },
+  };
+});
 
-    return {
-      probeName,
-      executions,
-    };
+interface EndingLogTransientParams {
+  isSuccess: boolean;
+}
+
+export const endingLogFactory = Factory.define<ExecutionEndedLog, EndingLogTransientParams>(
+  ({ params, transientParams }) => {
+    const { isSuccess } = transientParams;
+    const { labels, ...rest } = params;
+    const { probe_success, ...restLabels } = labels ?? {};
+    console.log(rest.Time);
+
+    return isSuccess
+      ? succeededLogFactory.build({
+          labels: {
+            ...restLabels,
+            msg: MSG_STRINGS_COMMON.CheckSucceeded,
+          },
+          ...rest,
+        })
+      : failedLogFactory.build({
+          labels: {
+            ...restLabels,
+            msg: MSG_STRINGS_COMMON.CheckFailed,
+          },
+          ...rest,
+        });
+  }
+);
+
+export const executionLogsFactory = Factory.define<ExecutionLogs>(({ transientParams }) => {
+  const { isSuccess, probeName } = transientParams;
+
+  const labels = {
+    probe: probeName,
+  };
+
+  const startingLog = startingLogFactory.build({
+    labels: {
+      ...labels,
+      probe_success: isSuccess ? ('1' as const) : ('0' as const),
+    },
   });
-};
+  const endingLog = isSuccess
+    ? succeededLogFactory.build({
+        labels,
+      })
+    : failedLogFactory.build({
+        labels,
+      });
+
+  return [startingLog, endingLog];
+});

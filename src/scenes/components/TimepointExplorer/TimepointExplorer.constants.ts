@@ -34,6 +34,7 @@ export const ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX = 5;
 
 export const ANNOTATION_COLOR_OUT_OF_TIMERANGE = `gray`;
 export const ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD = `yellow`;
+export const ANNOTATION_COLOR_BEFORE_CREATION = `orange`;
 export const ANNOTATION_COLOR_NO_DATA = `orange`;
 export const ANNOTATION_COLOR_CHECK_CREATED = `yellow`;
 export const ANNOTATION_COLOR_CHECK_UPDATED = `blue`;

@@ -1,6 +1,5 @@
 import { formatSmallDurations } from 'utils';
 import {
-  CheckConfig,
   ProbeResults,
   SelectedState,
   StatefulTimepoint,
@@ -31,22 +30,24 @@ interface EntryToRender {
   index: number;
 }
 
+interface GetEntriesToRenderProps {
+  statefulTimepoint: StatefulTimepoint;
+  selectedProbeNames: string[];
+  currentAdjustedTime: UnixTimestamp;
+  latestConfigDate: UnixTimestamp;
+}
+
 export function getEntriesToRender({
   statefulTimepoint,
   selectedProbeNames,
   currentAdjustedTime,
-  checkConfigs,
-}: {
-  statefulTimepoint: StatefulTimepoint;
-  selectedProbeNames: string[];
-  currentAdjustedTime: UnixTimestamp;
-  checkConfigs: CheckConfig[];
-}): EntryToRender[] {
+  latestConfigDate,
+}: GetEntriesToRenderProps) {
   const { probeResults, config } = statefulTimepoint;
-  const isCurrentConfig = config.from === checkConfigs[checkConfigs.length - 1].from;
+  const isCurrentConfig = config.from === latestConfigDate;
 
   return selectedProbeNames
-    .map((probeName) => {
+    .map<EntryToRender[]>((probeName) => {
       const probeResultsForProbe = probeResults[probeName] || [];
 
       if (probeResultsForProbe.length) {

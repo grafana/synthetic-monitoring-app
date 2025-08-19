@@ -7,7 +7,7 @@ import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
 
-import { EndingLogLabels, ExecutionLabels, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
+import { ExecutionEndedLog, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
 import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
@@ -98,38 +98,32 @@ export function useBuiltCheckConfigs(check: Check, from: UnixTimestamp) {
 interface UseTimepointsProps {
   checkConfigs: CheckConfig[];
   from: UnixTimestamp;
+  to: UnixTimestamp;
 }
 
-export function useTimepoints({ checkConfigs, from }: UseTimepointsProps) {
-  return useMemo(() => buildTimepoints({ from, checkConfigs }), [from, checkConfigs]);
+export function useTimepoints({ checkConfigs, from, to }: UseTimepointsProps) {
+  return useMemo(() => buildTimepoints({ from, to, checkConfigs }), [from, to, checkConfigs]);
 }
 
 interface UseExecutionDurationLogsProps {
   check: Check;
-  currentAdjustedTime: UnixTimestamp;
   probe?: string[];
   timepoints: StatelessTimepoint[];
   timeRange: { from: UnixTimestamp; to: UnixTimestamp };
 }
 
-export function useExecutionDurationLogs({
-  timeRange,
-  check,
-  timepoints,
-  probe,
-  currentAdjustedTime,
-}: UseExecutionDurationLogsProps) {
+export function useExecutionDurationLogs({ check, probe, timepoints, timeRange }: UseExecutionDurationLogsProps) {
   const [logsMap, setLogsMap] = useState<Record<UnixTimestamp, StatefulTimepoint>>({});
   const probeExpr = probe?.join('|') || '.*';
 
   const onSuccess = useCallback(
-    (logs: Array<ParsedLokiRecord<ExecutionLabels & EndingLogLabels, ExecutionLabelType>>) => {
+    (logs: ExecutionEndedLog[]) => {
       setLogsMap((prev) => ({
         ...prev,
-        ...buildLogsMap({ logs, timepoints, check }),
+        ...buildLogsMap({ logs, timepoints }),
       }));
     },
-    [timepoints, check]
+    [timepoints]
   );
 
   const {
@@ -137,7 +131,7 @@ export function useExecutionDurationLogs({
     hasNextPage,
     data: logsData = [],
     ...rest
-  } = usePersistedInfiniteLogs<ExecutionLabels & EndingLogLabels, ExecutionLabelType>({
+  } = usePersistedInfiniteLogs<ExecutionEndedLog, ExecutionLabelType>({
     refId: REF_ID_EXECUTION_LIST_LOGS,
     expr: `{job="${check.job}", instance="${check.target}", probe=~"${probeExpr}"} | logfmt |="duration_seconds="`,
     start: timeRange.from,
@@ -151,7 +145,7 @@ export function useExecutionDurationLogs({
   }, [fetchNextPage, hasNextPage, logsData.length]);
 
   useEffect(() => {
-    onSuccess(logsData);
+    onSuccess(logsData as unknown as ExecutionEndedLog[]);
   }, [logsData, onSuccess]);
 
   return {

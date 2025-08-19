@@ -1,6 +1,7 @@
 import { CheckEventType } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { buildTimepoints } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import {
+  AnnotationWithIndices,
   getCheckEventsInRange,
   getClosestTimepointsToCheckEvent,
 } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations.utils';
@@ -11,6 +12,7 @@ describe('getCheckEventsInRange', () => {
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, from: 0, to: 100000 }],
       from: 30000,
+      to: 100000,
     });
 
     const result = getCheckEventsInRange(checkEvents, timepointsInRange);
@@ -25,6 +27,7 @@ describe('getCheckEventsInRange', () => {
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, from: 0, to: 100000 }],
       from: 30000,
+      to: 100000,
     });
 
     const result = getCheckEventsInRange(checkEvents, timepointsInRange);
@@ -40,6 +43,7 @@ describe('getCheckEventsInRange', () => {
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, from: 0, to: 100000 }],
       from: 30000,
+      to: 100000,
     });
 
     const result = getCheckEventsInRange(checkEvents, timepointsInRange);
@@ -54,22 +58,20 @@ describe('getClosestTimepointsToCheckEvent', () => {
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, from: 0, to: 100000 }],
       from: 30000,
+      to: 100000,
     });
 
     const result = getClosestTimepointsToCheckEvent(checkEvents, timepointsInRange);
-    expect(result).toEqual([
-      {
-        startingIndex: 0,
-        endingIndex: 1,
-        visibleStartIndex: 0,
-        visibleEndIndex: 1,
-        isClippedStart: false,
-        isClippedEnd: false,
-        from: 30000,
-        to: 40001,
-        label: CheckEventType.CHECK_CREATED,
-      },
-    ]);
+    const match: AnnotationWithIndices = {
+      checkEvent: checkEvents[0],
+      isClippedStart: false,
+      isClippedEnd: false,
+      isInstant: false,
+      visibleStartIndex: 0,
+      visibleEndIndex: 1,
+    };
+
+    expect(result).toMatchObject([match]);
   });
 
   it('should handle range annotations that start before visible range', () => {
@@ -77,17 +79,20 @@ describe('getClosestTimepointsToCheckEvent', () => {
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, from: 0, to: 100000 }],
       from: 30000,
+      to: 100000,
     });
 
     const result = getClosestTimepointsToCheckEvent(checkEvents, timepointsInRange);
-    expect(result[0]).toMatchObject({
-      startingIndex: -1,
-      endingIndex: 1,
-      visibleStartIndex: 0,
-      visibleEndIndex: 1,
+    const match: AnnotationWithIndices = {
+      checkEvent: checkEvents[0],
       isClippedStart: true,
       isClippedEnd: false,
-    });
+      isInstant: false,
+      visibleStartIndex: 0,
+      visibleEndIndex: 1,
+    };
+
+    expect(result).toMatchObject([match]);
   });
 
   it('should handle range annotations that end after visible range', () => {
@@ -95,16 +100,20 @@ describe('getClosestTimepointsToCheckEvent', () => {
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, from: 0, to: 100000 }],
       from: 30000,
+      to: 100000,
     });
 
     const result = getClosestTimepointsToCheckEvent(checkEvents, timepointsInRange);
-    expect(result[0]).toMatchObject({
-      startingIndex: 0,
-      endingIndex: -1,
-      visibleStartIndex: 0,
+    const match: AnnotationWithIndices = {
+      checkEvent: checkEvents[0],
       isClippedStart: false,
       isClippedEnd: true,
-    });
+      isInstant: false,
+      visibleStartIndex: 0,
+      visibleEndIndex: timepointsInRange.length - 1,
+    };
+
+    expect(result[0]).toMatchObject(match);
   });
 
   it('should handle range annotations that span completely across visible range', () => {
@@ -112,15 +121,19 @@ describe('getClosestTimepointsToCheckEvent', () => {
     const timepointsInRange = buildTimepoints({
       checkConfigs: [{ frequency: 10000, from: 0, to: 100000 }],
       from: 30000,
+      to: 100000,
     });
 
     const result = getClosestTimepointsToCheckEvent(checkEvents, timepointsInRange);
-    expect(result[0]).toMatchObject({
-      startingIndex: -1,
-      endingIndex: -1,
-      visibleStartIndex: 0,
+    const match: AnnotationWithIndices = {
+      checkEvent: checkEvents[0],
       isClippedStart: true,
       isClippedEnd: true,
-    });
+      isInstant: false,
+      visibleStartIndex: 0,
+      visibleEndIndex: timepointsInRange.length - 1,
+    };
+
+    expect(result).toMatchObject([match]);
   });
 });

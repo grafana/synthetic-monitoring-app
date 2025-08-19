@@ -12,6 +12,7 @@ interface TimepointInstantAnnotationProps {
   parentWidth: number;
   showLabels?: boolean;
   timepointsInRange: StatelessTimepoint[];
+  triggerHeight: number;
 }
 
 export const TimepointInstantAnnotation = ({
@@ -20,8 +21,9 @@ export const TimepointInstantAnnotation = ({
   parentWidth,
   showLabels,
   timepointsInRange,
+  triggerHeight,
 }: TimepointInstantAnnotationProps) => {
-  const styles = useStyles2((theme) => getStyles(theme, annotation, showLabels));
+  const styles = useStyles2((theme) => getStyles(theme, annotation, showLabels, triggerHeight));
   const displayIndex = timepointsInRange.length - annotation.visibleEndIndex;
   const centerOffset = displayWidth / 2;
   const right = displayWidth * displayIndex - centerOffset;
@@ -43,13 +45,18 @@ export const TimepointInstantAnnotation = ({
   );
 };
 
-const getStyles = (theme: GrafanaTheme2, annotation: AnnotationWithIndices, showLabels?: boolean) => {
+const getStyles = (
+  theme: GrafanaTheme2,
+  annotation: AnnotationWithIndices,
+  showLabels?: boolean,
+  triggerHeight?: number
+) => {
   const borderColor = theme.visualization.getColorByName(annotation?.checkEvent.color!);
 
   return {
     annotation: css`
       border-right: 1px dashed ${borderColor};
-      bottom: 0;
+      bottom: ${triggerHeight}px;
       height: ${showLabels ? '80%' : '100%'};
       pointer-events: none;
       position: absolute;

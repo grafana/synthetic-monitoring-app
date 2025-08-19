@@ -1,10 +1,12 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
+import { useTimeRange } from '@grafana/scenes-react';
 import { Box, IconButton, Pagination, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { useResizeObserver } from 'usehooks-ts';
 
 import {
+  ANNOTATION_COLOR_BEFORE_CREATION,
   ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD,
   ANNOTATION_COLOR_OUT_OF_TIMERANGE,
   MAX_MINIMAP_SECTIONS,
@@ -74,8 +76,12 @@ const TimepointMinimapContent = () => {
   const ref = useRef<HTMLDivElement>(null);
   const styles = useStyles2(getStyles);
   const [miniMapWidth, setMiniMapWidth] = useState<number>(0);
-  const { isCheckCreationWithinTimerange, isLogsRetentionPeriodWithinTimerange, miniMapCurrentPageSections } =
-    useTimepointExplorerContext();
+  const [timeRange] = useTimeRange();
+  const { check, isLogsRetentionPeriodWithinTimerange, miniMapCurrentPageSections } = useTimepointExplorerContext();
+  const checkCreation = Math.round(check.created! * 1000);
+  const isCheckCreationAfterFrom = checkCreation > timeRange.from.valueOf();
+  const isCheckCreationAfterTo = checkCreation > timeRange.to.valueOf();
+
   const filler =
     miniMapCurrentPageSections.length < MAX_MINIMAP_SECTIONS
       ? Array(MAX_MINIMAP_SECTIONS - miniMapCurrentPageSections.length).fill(null)
@@ -97,7 +103,8 @@ const TimepointMinimapContent = () => {
             <div
               key={index}
               className={cx(styles.filler, {
-                [styles.outOfRangeMimic]: !isCheckCreationWithinTimerange,
+                [styles.outOfRangeMimic]: !isCheckCreationAfterFrom && !isCheckCreationAfterTo,
+                [styles.beforeCreationMimic]: isCheckCreationAfterTo,
                 [styles.outOfRetentionPeriodMimic]: isLogsRetentionPeriodWithinTimerange,
               })}
             />
@@ -151,9 +158,11 @@ const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginati
 const getStyles = (theme: GrafanaTheme2) => {
   const outOfRangeBorderColor = theme.visualization.getColorByName(ANNOTATION_COLOR_OUT_OF_TIMERANGE);
   const outOfRetentionPeriodBorderColor = theme.visualization.getColorByName(ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD);
+  const beforeCreationBorderColor = theme.visualization.getColorByName(ANNOTATION_COLOR_BEFORE_CREATION);
 
   const outOfRangeBackgroundColor = `${outOfRangeBorderColor}30`;
   const outOfRetentionPeriodBackgroundColor = `${outOfRetentionPeriodBorderColor}30`;
+  const beforeCreationBackgroundColor = `${beforeCreationBorderColor}30`;
 
   return {
     filler: css`
@@ -168,6 +177,10 @@ const getStyles = (theme: GrafanaTheme2) => {
     outOfRetentionPeriodMimic: css`
       background-color: ${outOfRetentionPeriodBackgroundColor};
       border-bottom: 2px solid ${outOfRetentionPeriodBorderColor};
+    `,
+    beforeCreationMimic: css`
+      background-color: ${beforeCreationBackgroundColor};
+      border-bottom: 2px solid ${beforeCreationBorderColor};
     `,
   };
 };

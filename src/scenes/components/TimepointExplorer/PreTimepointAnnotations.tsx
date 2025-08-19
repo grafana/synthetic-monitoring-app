@@ -1,6 +1,8 @@
 import React from 'react';
+import { useTimeRange } from '@grafana/scenes-react';
 
 import {
+  ANNOTATION_COLOR_BEFORE_CREATION,
   ANNOTATION_COLOR_CHECK_CREATED,
   ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD,
   ANNOTATION_COLOR_OUT_OF_TIMERANGE,
@@ -27,8 +29,10 @@ export const PreTimepointAnnotations = ({
   triggerHeight,
   timepointsInRange,
 }: PreTimepointAnnotationsProps) => {
-  const { check, miniMapCurrentPage, miniMapPages, isCheckCreationWithinTimerange } = useTimepointExplorerContext();
-  const checkCreation = check.created;
+  const [timeRange] = useTimeRange();
+  const { check, miniMapCurrentPage, miniMapPages } = useTimepointExplorerContext();
+  const checkCreation = Math.round(check.created! * 1000);
+  const isCheckCreationWithinRange = checkCreation > timeRange.from.valueOf() && checkCreation < timeRange.to.valueOf();
   const isFirstPage = miniMapCurrentPage === miniMapPages.length - 1;
 
   if (!(isBeginningSection && isFirstPage) || !checkCreation) {
@@ -37,16 +41,18 @@ export const PreTimepointAnnotations = ({
 
   return (
     <>
-      {isCheckCreationWithinTimerange ? (
+      {isCheckCreationWithinRange ? (
         <CheckCreationAnnotation
           checkCreation={checkCreation}
           showLabels={showLabels}
           displayWidth={displayWidth}
           parentWidth={parentWidth}
           timepointsInRange={timepointsInRange}
+          triggerHeight={triggerHeight}
         />
       ) : (
         <OutOfRangeAnnotation
+          checkCreation={checkCreation}
           displayWidth={displayWidth}
           parentWidth={parentWidth}
           showLabels={showLabels}
@@ -64,6 +70,7 @@ interface CheckCreationAnnotationProps {
   displayWidth: number;
   parentWidth: number;
   timepointsInRange: StatelessTimepoint[];
+  triggerHeight: number;
 }
 
 const CheckCreationAnnotation = ({
@@ -72,14 +79,15 @@ const CheckCreationAnnotation = ({
   displayWidth,
   parentWidth,
   timepointsInRange,
+  triggerHeight,
 }: CheckCreationAnnotationProps) => {
   return (
     <TimepointInstantAnnotation
       annotation={{
         checkEvent: {
           label: CheckEventType.CHECK_CREATED,
-          from: Math.round(checkCreation * 1000),
-          to: Math.round(checkCreation * 1000),
+          from: checkCreation,
+          to: checkCreation,
           color: ANNOTATION_COLOR_CHECK_CREATED,
         },
         isClippedStart: false,
@@ -92,11 +100,13 @@ const CheckCreationAnnotation = ({
       parentWidth={parentWidth}
       showLabels={showLabels}
       timepointsInRange={timepointsInRange}
+      triggerHeight={triggerHeight}
     />
   );
 };
 
 interface OutOfRangeAnnotationProps {
+  checkCreation: number;
   displayWidth: number;
   parentWidth: number;
   showLabels?: boolean;
@@ -105,20 +115,28 @@ interface OutOfRangeAnnotationProps {
 }
 
 const OutOfRangeAnnotation = ({
+  checkCreation,
   displayWidth,
   parentWidth,
   showLabels,
   timepointsInRange,
   triggerHeight,
 }: OutOfRangeAnnotationProps) => {
+  const [timeRange] = useTimeRange();
   const { isLogsRetentionPeriodWithinTimerange, timepointsDisplayCount } = useTimepointExplorerContext();
   const visibleEndIndex = -1;
   const visibleStartIndex = visibleEndIndex - timepointsDisplayCount + timepointsInRange.length + 1;
+  const isCheckCreationAfterTo = checkCreation > timeRange.to.valueOf();
 
-  const label = isLogsRetentionPeriodWithinTimerange
+  const label = isCheckCreationAfterTo
+    ? CheckEventType.BEFORE_CREATION
+    : isLogsRetentionPeriodWithinTimerange
     ? CheckEventType.OUT_OF_RETENTION_PERIOD
     : CheckEventType.OUT_OF_TIMERANGE;
-  const color = isLogsRetentionPeriodWithinTimerange
+
+  const color = isCheckCreationAfterTo
+    ? ANNOTATION_COLOR_BEFORE_CREATION
+    : isLogsRetentionPeriodWithinTimerange
     ? ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD
     : ANNOTATION_COLOR_OUT_OF_TIMERANGE;
 

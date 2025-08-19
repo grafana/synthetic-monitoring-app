@@ -38,12 +38,14 @@ export type EndingLogLabels = {
 
 export type ExecutionFailedLog = UnknownExecutionLog<
   EndingLogLabels & {
+    probe_success: '0';
     msg: (typeof MSG_STRINGS_COMMON)['CheckFailed'];
   }
 >;
 
 export type ExecutionSucceededLog = UnknownExecutionLog<
   EndingLogLabels & {
+    probe_success: '1';
     msg: (typeof MSG_STRINGS_COMMON)['CheckSucceeded'];
   }
 >;

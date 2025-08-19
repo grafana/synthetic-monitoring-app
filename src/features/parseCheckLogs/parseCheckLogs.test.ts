@@ -156,14 +156,12 @@ describe('groupLogs', () => {
 
     expect(groupedLogs).toEqual([
       {
-        probe: 'probe1',
-        checks: [[probe1_log1, probe1_log2]],
-        id: `id2`,
+        probeName: 'probe1',
+        executions: [[probe1_log1, probe1_log2]],
       },
       {
-        probe: 'probe2',
-        checks: [[probe2_log1, probe2_log2]],
-        id: `id6`,
+        probeName: 'probe2',
+        executions: [[probe2_log1, probe2_log2]],
       },
     ]);
   });
