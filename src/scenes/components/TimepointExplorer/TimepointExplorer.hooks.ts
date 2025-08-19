@@ -46,14 +46,10 @@ export function useVisibleTimepoints() {
   return getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages });
 }
 
-export function useBuiltCheckConfigs(check: Check, logsRetentionFrom: UnixTimestamp) {
+export function useBuiltCheckConfigs(check: Check, from: UnixTimestamp) {
   const [timeRange] = useTimeRange();
   const probeVar = useSceneVar('probe');
-  const timeRangeFrom = timeRange.from.valueOf();
   const timeRangeTo = timeRange.to.valueOf();
-  const checkCreated = check.created! * 1000;
-  const upto = Math.max(logsRetentionFrom, checkCreated);
-  const fillTo = upto > timeRangeFrom ? upto : timeRangeFrom;
 
   const {
     data: checkConfigsData,
@@ -73,24 +69,24 @@ export function useBuiltCheckConfigs(check: Check, logsRetentionFrom: UnixTimest
     return [
       {
         frequency: check.frequency,
-        date: fillTo,
+        date: from,
       },
     ];
-  }, [checkConfigsData, check, fillTo]);
+  }, [checkConfigsData, check, from]);
 
   const firstConfig = checkConfigsRaw[0];
-  const needFiller = firstConfig.date > fillTo;
+  const needFiller = firstConfig.date > from;
 
   const checkConfigs = useMemo(() => {
     const filler: CheckConfigRaw = {
       frequency: firstConfig.frequency,
-      date: fillTo,
+      date: from,
       type: 'no-data',
     };
     const toUse = needFiller ? [filler, ...checkConfigsRaw] : checkConfigsRaw;
 
     return buildConfigTimeRanges(toUse, timeRangeTo);
-  }, [checkConfigsRaw, timeRangeTo, firstConfig.frequency, needFiller, fillTo]);
+  }, [checkConfigsRaw, timeRangeTo, firstConfig.frequency, needFiller, from]);
 
   return {
     checkConfigs,

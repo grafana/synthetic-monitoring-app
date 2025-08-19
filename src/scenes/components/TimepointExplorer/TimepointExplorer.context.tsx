@@ -51,6 +51,7 @@ import {
   getIsCheckCreationWithinTimerange,
   getMiniMapPages,
   getMiniMapSections,
+  getTimeFrom,
   getVisibleTimepoints,
   getVisibleTimepointsTimeRange,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -102,6 +103,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const logsRetentionPeriod = useLogsRetentionPeriod(timeRange.from.valueOf());
   // eslint-disable-next-line react-hooks/exhaustive-deps -- update date.now when timerange changes
   const logsRetentionFrom = useMemo(() => Date.now() - logsRetentionPeriod, [logsRetentionPeriod, timeRange]);
+  const explorerTimeFrom = getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom: timeRange.from.valueOf() });
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
   const [hoveredState, setHoveredState] = useState<SelectedState>([null, null, null]);
   const [selectedState, setSelectedState] = useState<SelectedState>([null, null, null]);
@@ -138,7 +140,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const maxProbeDuration =
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
 
-  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check, logsRetentionFrom);
+  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check, explorerTimeFrom);
   const timepoints = useTimepoints({ timeRange, checkConfigs, logsRetentionFrom });
   const isCheckCreationWithinTimerange = getIsCheckCreationWithinTimerange(checkCreation, timepoints);
   const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();
