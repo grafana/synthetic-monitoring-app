@@ -126,9 +126,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isLoading: maxProbeDurationIsLoading,
     refetch: refetchMaxProbeDuration,
   } = usePersistedMaxProbeDuration({
-    timeRange,
     check,
     probe: probeVar,
+    from: explorerTimeFrom,
+    to: timeRange.to.valueOf(),
   });
 
   useEffect(() => {
@@ -138,7 +139,12 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const maxProbeDuration =
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
 
-  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check, explorerTimeFrom);
+  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs({
+    check,
+    probe: probeVar,
+    from: explorerTimeFrom,
+    to: timeRange.to.valueOf(),
+  });
   const timepoints = useTimepoints({ checkConfigs, from: explorerTimeFrom, to: timeRange.to.valueOf() });
   const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();
 

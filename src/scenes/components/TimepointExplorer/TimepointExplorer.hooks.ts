@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TimeRange } from '@grafana/data';
-import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
@@ -13,7 +11,6 @@ import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
-import { useSceneVar } from 'scenes/Common/useSceneVar';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import {
   REF_ID_EXECUTION_LIST_LOGS,
@@ -46,19 +43,23 @@ export function useVisibleTimepoints() {
   return getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages });
 }
 
-export function useBuiltCheckConfigs(check: Check, from: UnixTimestamp) {
-  const [timeRange] = useTimeRange();
-  const probeVar = useSceneVar('probe');
-  const timeRangeTo = timeRange.to.valueOf();
+interface UseBuiltCheckConfigsProps {
+  check: Check;
+  from: UnixTimestamp;
+  probe?: string[];
+  to: UnixTimestamp;
+}
 
+export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckConfigsProps) {
   const {
     data: checkConfigsData,
     isLoading: checkConfigsIsLoading,
     refetch: refetchCheckConfigs,
   } = usePersistedCheckConfigs({
-    timeRange,
+    from,
+    to,
     check,
-    probe: probeVar,
+    probe,
   });
 
   const checkConfigsRaw = useMemo(() => {
@@ -75,7 +76,7 @@ export function useBuiltCheckConfigs(check: Check, from: UnixTimestamp) {
   }, [checkConfigsData, check, from]);
 
   const firstConfig = checkConfigsRaw[0];
-  const needFiller = firstConfig.date > from;
+  const needFiller = BigInt(firstConfig.date) > BigInt(from);
 
   const checkConfigs = useMemo(() => {
     const filler: CheckConfigRaw = {
@@ -85,8 +86,8 @@ export function useBuiltCheckConfigs(check: Check, from: UnixTimestamp) {
     };
     const toUse = needFiller ? [filler, ...checkConfigsRaw] : checkConfigsRaw;
 
-    return buildConfigTimeRanges(toUse, timeRangeTo);
-  }, [checkConfigsRaw, timeRangeTo, firstConfig.frequency, needFiller, from]);
+    return buildConfigTimeRanges(toUse, to);
+  }, [checkConfigsRaw, to, firstConfig.frequency, needFiller, from]);
 
   return {
     checkConfigs,
@@ -174,16 +175,15 @@ function usePersistedInfiniteLogs<T, R>(props: InfiniteLogsParams<T, R>) {
 }
 
 interface UseCheckConfigsProps {
-  timeRange: TimeRange;
   check: Check;
-  refetchInterval?: number;
+  from: UnixTimestamp;
   probe?: string[];
+  to: UnixTimestamp;
 }
 
-export function usePersistedCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckConfigsProps) {
+export function usePersistedCheckConfigs({ from, to, check, probe }: UseCheckConfigsProps) {
   const [persistedCheckConfigs, setPersistedCheckConfigs] = useState<CheckConfigRaw[]>([]);
-
-  const { data = [], ...rest } = useCheckConfigs({ timeRange, check, probe, refetchInterval });
+  const { data = [], ...rest } = useCheckConfigs({ from, to, check, probe });
 
   useEffect(() => {
     if (data.length > 0) {
@@ -194,7 +194,7 @@ export function usePersistedCheckConfigs({ timeRange, check, probe, refetchInter
   return { data: persistedCheckConfigs, ...rest };
 }
 
-function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckConfigsProps) {
+function useCheckConfigs({ from, to, check, probe }: UseCheckConfigsProps) {
   const metricsDS = useMetricsDS();
   const { expr, interval, queryType } = getCheckConfigsQuery({
     job: check.job,
@@ -203,16 +203,7 @@ function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckC
   });
 
   return useQuery({
-    queryKey: [
-      'uniqueCheckConfigs',
-      metricsDS,
-      expr,
-      queryType,
-      REF_ID_UNIQUE_CHECK_CONFIGS,
-      timeRange.from,
-      timeRange.to,
-      interval,
-    ],
+    queryKey: ['uniqueCheckConfigs', metricsDS, expr, queryType, REF_ID_UNIQUE_CHECK_CONFIGS, from, to, interval],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject('No metrics data source found');
@@ -221,14 +212,13 @@ function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckC
       return queryMimir({
         datasource: metricsDS,
         query: expr,
-        start: timeRange.from.valueOf(),
-        end: timeRange.to.valueOf(),
+        start: from,
+        end: to,
         refId: REF_ID_UNIQUE_CHECK_CONFIGS,
         queryType,
         interval,
       });
     },
-    refetchInterval,
     select: (data) => {
       const configs = data.map((d) => extractFrequenciesAndConfigs(d)).flat();
       return configs;
@@ -239,15 +229,16 @@ function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckC
 const MILLISECONDS_PER_SECOND = 1000;
 
 interface UseMaxProbeDurationProps {
-  timeRange: TimeRange;
   check: Check;
+  from: UnixTimestamp;
   probe?: string[];
+  to: UnixTimestamp;
 }
 
-export function usePersistedMaxProbeDuration({ timeRange, check, probe }: UseMaxProbeDurationProps) {
+export function usePersistedMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProps) {
   const [persistedMaxProbeDuration, setPersistedMaxProbeDuration] = useState<number>(0);
 
-  const { data = 0, ...rest } = useMaxProbeDuration({ timeRange, check, probe });
+  const { data = 0, ...rest } = useMaxProbeDuration({ from, to, check, probe });
 
   useEffect(() => {
     if (data > 0) {
@@ -258,41 +249,29 @@ export function usePersistedMaxProbeDuration({ timeRange, check, probe }: UseMax
   return { data: persistedMaxProbeDuration, ...rest };
 }
 
-function useMaxProbeDuration({ timeRange, check, probe }: UseMaxProbeDurationProps) {
+function useMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProps) {
   const metricsDS = useMetricsDS();
 
   return useQuery({
-    queryKey: [
-      'aggregation',
-      metricsDS,
-      check.job,
-      check.target,
-      REF_ID_MAX_PROBE_DURATION,
-      timeRange.from,
-      timeRange.to,
-      probe,
-      check.frequency,
-    ],
+    queryKey: ['aggregation', metricsDS, check.job, check.target, REF_ID_MAX_PROBE_DURATION, from, to, probe],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject('No metrics data source found');
       }
 
-      const { expr, queryType, interval } = getCheckProbeMaxDuration({
+      const { expr, queryType } = getCheckProbeMaxDuration({
         job: check.job,
         instance: check.target,
         probe: probe?.join('|'),
-        frequency: check.frequency,
       });
 
       return queryMimir({
         datasource: metricsDS,
         query: expr,
-        start: timeRange.from.valueOf(),
-        end: timeRange.to.valueOf(),
+        start: from,
+        end: to,
         refId: REF_ID_MAX_PROBE_DURATION,
         queryType,
-        interval,
       });
     },
     select: (data) => {

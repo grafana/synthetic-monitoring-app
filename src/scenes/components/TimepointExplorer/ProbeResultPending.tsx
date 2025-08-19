@@ -82,9 +82,7 @@ const ProbeExists = ({ probe, timepoint }: { probe: ProbeWithMetadata; timepoint
         </Text>
         .
       </Text>
-      <Text>
-        It was last {online ? `offline` : `online`} at {new Date(onlineChange * 1000).toLocaleString()}.
-      </Text>
+      {!online && <Text>It was last online at {new Date(onlineChange * 1000).toLocaleString()}.</Text>}
     </>
   );
 };

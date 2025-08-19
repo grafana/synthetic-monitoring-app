@@ -8,7 +8,7 @@ type CheckConfigsQuery = {
 
 export function getCheckConfigsQuery({ job, instance, probe = `.*` }: CheckConfigsQuery): DSQuery {
   return {
-    expr: `count by(frequency, config_version) (sm_check_info{job="${job}", instance="${instance}", probe=~"${probe}"})`,
-    queryType: 'range',
+    expr: `group by(frequency, config_version) (max_over_time(sm_check_info{job="${job}", instance="${instance}", probe=~"${probe}"}[$__range]))`,
+    queryType: 'instant',
   } as const;
 }
