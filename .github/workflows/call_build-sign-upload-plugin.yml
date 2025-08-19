@@ -114,7 +114,26 @@ jobs:
               ;;
           esac
 
+      - name: Check if plugin already exists in GCS
+        id: check-existing
+        env:
+          PLUGIN_VERSION: ${{ steps.read-version.outputs.plugin_version }}
+          BUCKET: ${{ steps.set-bucket.outputs.bucket }}
+        run: |
+          FILE_URL="https://storage.googleapis.com/${BUCKET}/builds/${PLUGIN_VERSION}/grafana-synthetic-monitoring-app-${PLUGIN_VERSION}.zip"
+          echo "Checking if file exists at: $FILE_URL"
+          
+          if curl --output /dev/null --silent --head --fail "$FILE_URL"; then
+            echo "✅ File already exists at $FILE_URL"
+            echo "This prevents overriding an existing build with potentially different asset hashes."
+            echo "skip_upload=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "📦 File does not exist, proceeding with upload"
+            echo "skip_upload=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
+        if: steps.check-existing.outputs.skip_upload == 'false'
         uses: grafana/shared-workflows/actions/push-to-gcs@main
         with:
           path: ./artifacts
@@ -122,3 +141,11 @@ jobs:
           environment: ${{ inputs.environment }}
           predefinedAcl: publicRead
           parent: false
+
+      - name: File upload status
+        run: |
+          if [[ "${{ steps.check-existing.outputs.skip_upload }}" == "true" ]]; then
+            echo "ℹ️  Upload skipped - file already exists. Catalog publishing will use existing file."
+          else
+            echo "✅ Upload completed successfully."
+          fi
