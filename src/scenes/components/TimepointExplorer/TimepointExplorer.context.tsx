@@ -141,7 +141,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
 
   const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check, explorerTimeFrom);
-  const timepoints = useTimepoints({ timeRange, checkConfigs, logsRetentionFrom });
+  const timepoints = useTimepoints({ checkConfigs, from: explorerTimeFrom });
   const isCheckCreationWithinTimerange = getIsCheckCreationWithinTimerange(checkCreation, timepoints);
   const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();
 

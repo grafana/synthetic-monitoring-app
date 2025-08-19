@@ -96,14 +96,11 @@ export function useBuiltCheckConfigs(check: Check, from: UnixTimestamp) {
 }
 
 interface UseTimepointsProps {
-  timeRange: TimeRange;
   checkConfigs: CheckConfig[];
-  logsRetentionFrom: UnixTimestamp;
+  from: UnixTimestamp;
 }
 
-export function useTimepoints({ timeRange, checkConfigs, logsRetentionFrom }: UseTimepointsProps) {
-  const from = Math.max(timeRange.from.valueOf(), logsRetentionFrom);
-
+export function useTimepoints({ checkConfigs, from }: UseTimepointsProps) {
   return useMemo(() => buildTimepoints({ from, checkConfigs }), [from, checkConfigs]);
 }
 
