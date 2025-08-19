@@ -186,10 +186,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     () =>
       constructCheckEvents({
         checkConfigs,
-        checkCreation,
-        logsRetentionFrom,
+        from: explorerTimeFrom,
       }),
-    [checkConfigs, checkCreation, logsRetentionFrom]
+    [checkConfigs, explorerTimeFrom]
   );
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {

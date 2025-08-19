@@ -162,16 +162,11 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
 
 export function constructCheckEvents({
   checkConfigs,
-  checkCreation,
-  logsRetentionFrom,
+  from,
 }: {
   checkConfigs: CheckConfig[];
-  checkCreation: UnixTimestamp;
-  logsRetentionFrom: UnixTimestamp;
+  from: UnixTimestamp;
 }): CheckEvent[] {
-  const checkCreatedDate = Math.round(checkCreation * 1000);
-  const upto = Math.max(logsRetentionFrom, checkCreatedDate);
-
   const noDataEvents = checkConfigs
     .filter((config) => config.type === 'no-data')
     .map<CheckEvent>((config) => ({
@@ -182,7 +177,7 @@ export function constructCheckEvents({
     }));
 
   const checkUpdatedEvents = checkConfigs
-    .filter((config) => config.from > upto)
+    .filter((config) => config.from > from)
     .map<CheckEvent>((config) => ({
       label: CheckEventType.CHECK_UPDATED,
       from: config.from,
