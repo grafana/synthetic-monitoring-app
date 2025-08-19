@@ -4,6 +4,7 @@ import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { PlainButton } from 'components/PlainButton';
+import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
@@ -20,13 +21,15 @@ const GLOBAL_CLASS = `uptime_bar`;
 
 export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { probeResults, status } = statefulTimepoint;
-  const { handleSelectedStateChange, maxProbeDuration, selectedState, vizDisplay, timepointWidth } =
+  const { status } = statefulTimepoint;
+  const { check, handleSelectedStateChange, maxProbeDuration, selectedState, vizDisplay, timepointWidth } =
     useTimepointExplorerContext();
+  const probeVar = useSceneVarProbes(check);
+  const probeResults = Object.keys(statefulTimepoint.probeResults).sort((a, b) => a.localeCompare(b));
+  const probeNameToView = probeResults.length ? probeResults[0] : probeVar[0];
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles, timepointWidth);
-  const probeNameToView = Object.keys(probeResults)[0];
   const [selectedTimepoint] = selectedState;
   const isSelected = selectedTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);

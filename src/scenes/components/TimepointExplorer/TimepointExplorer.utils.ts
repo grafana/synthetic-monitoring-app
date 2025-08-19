@@ -72,6 +72,13 @@ export function getEntryHeight(duration: number, maxProbeDurationData: number) {
   return percentage > 100 ? 100 : percentage;
 }
 
+export function getEntryHeightPx(duration: number, maxProbeDurationData: number, containerHeightPx: number) {
+  const percentage = getEntryHeight(duration, maxProbeDurationData);
+  const inPx = containerHeightPx * (percentage / 100);
+
+  return inPx;
+}
+
 interface BuildTimepointsInRangeProps {
   from: UnixTimestamp;
   checkConfigs: CheckConfig[];
@@ -156,14 +163,14 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
 export function constructCheckEvents({
   checkConfigs,
   checkCreation,
-  logsRetentionTo,
+  logsRetentionFrom,
 }: {
   checkConfigs: CheckConfig[];
   checkCreation: UnixTimestamp;
-  logsRetentionTo: number;
+  logsRetentionFrom: UnixTimestamp;
 }): CheckEvent[] {
   const checkCreatedDate = Math.round(checkCreation * 1000);
-  const upto = Math.max(logsRetentionTo, checkCreatedDate);
+  const upto = Math.max(logsRetentionFrom, checkCreatedDate);
 
   const noDataEvents = checkConfigs
     .filter((config) => config.type === 'no-data')
@@ -354,36 +361,20 @@ export function getIsProbeSelected(timepoint: StatelessTimepoint, probeName: str
 }
 
 interface GetPendingResultsProps {
-  currentAdjustedTime: UnixTimestamp;
-  logsMap: Record<UnixTimestamp, StatefulTimepoint>;
-  selectedProbes: string[];
-  timepoints: StatelessTimepoint[];
+  statefulTimepoint: StatefulTimepoint;
+  selectedProbeNames: string[];
 }
 
-export function getIsResultPending({
-  currentAdjustedTime,
-  logsMap,
-  selectedProbes,
-  timepoints,
-}: GetPendingResultsProps): [StatelessTimepoint, string[]] | [] {
-  const latestTimepoint = timepoints[timepoints.length - 1];
-  const timepointToUse = timepoints.find((t) => t.adjustedTime === currentAdjustedTime) || latestTimepoint;
-
-  if (!timepointToUse) {
-    return [];
+export function getPendingProbeNames({ statefulTimepoint, selectedProbeNames }: GetPendingResultsProps): string[] {
+  if (!statefulTimepoint) {
+    return selectedProbeNames;
   }
 
-  const entry = logsMap[timepointToUse.adjustedTime];
-
-  if (!entry) {
-    return [timepointToUse, selectedProbes];
-  }
-
-  const entryProbeNames = Object.keys(entry.probeResults);
-  const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames: selectedProbes });
+  const entryProbeNames = Object.keys(statefulTimepoint.probeResults);
+  const pendingProbes = getPendingProbes({ entryProbeNames, selectedProbeNames });
   const isResultPending = Boolean(pendingProbes.length);
 
-  return isResultPending ? [timepointToUse, pendingProbes] : [];
+  return isResultPending ? pendingProbes : [];
 }
 
 export function getPendingProbes({
@@ -424,4 +415,29 @@ export function getProbeExecutionsStatus(
   const isSuccess = probeStatus === '1';
 
   return isSuccess ? 'success' : 'failure';
+}
+
+export function getCouldBePending(timepoint: StatelessTimepoint, currentAdjustedTime: UnixTimestamp) {
+  // the previous timepoint could also be pending.
+  // e.g. if a check is running every minute and takes 30 seconds to complete
+  // if it begins at 10:00:59, it will complete at 10:01:29
+  // so even though the 'current' timepoint is 10:01:00 we are waiting on the result of the previous timepoint, too
+  const possibilities = [currentAdjustedTime - timepoint.timepointDuration, currentAdjustedTime];
+
+  return possibilities.includes(timepoint.adjustedTime);
+}
+
+interface GetTimeFromProps {
+  checkCreation: UnixTimestamp;
+  logsRetentionFrom: UnixTimestamp;
+  timeRangeFrom: UnixTimestamp;
+}
+
+export function getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom }: GetTimeFromProps) {
+  const checkCreationDate = Math.round(checkCreation * 1000);
+  // get oldest
+  const creationOrRetention = Math.min(checkCreationDate, logsRetentionFrom);
+
+  // get newest
+  return Math.max(creationOrRetention, timeRangeFrom);
 }

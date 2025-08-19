@@ -5,16 +5,13 @@ import { css } from '@emotion/css';
 
 import { ExecutionLogs, ProbeExecutionLogs, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
-import { Check } from 'types';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
+import { ProbeResultMissing } from 'scenes/components/TimepointExplorer/ProbeResultMissing';
+import { ProbeResultPending } from 'scenes/components/TimepointExplorer/ProbeResultPending';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useTimepointVizOptions } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import {
-  SelectedState,
-  StatelessTimepoint,
-  TimepointStatus,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { SelectedState, TimepointStatus } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { useTimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions.hooks';
 
 interface TimepointViewerExecutionsProps {
@@ -24,7 +21,7 @@ interface TimepointViewerExecutionsProps {
 }
 
 export const TimepointViewerExecutions = ({ data, logsView, pendingProbeNames }: TimepointViewerExecutionsProps) => {
-  const { check, handleHoverStateChange, handleSelectedStateChange, selectedState } = useTimepointExplorerContext();
+  const { handleHoverStateChange, handleSelectedStateChange, selectedState } = useTimepointExplorerContext();
   const [timepoint, probeNameToView] = selectedState;
   const tabsToRender = useTimepointViewerExecutions(data, pendingProbeNames, timepoint);
 
@@ -61,23 +58,15 @@ export const TimepointViewerExecutions = ({ data, logsView, pendingProbeNames }:
           }
 
           if (status === 'pending') {
-            return <div key={probeName}>Results will be here soon!</div>;
+            return <ProbeResultPending key={probeName} probeName={probeName} timepoint={timepoint} />;
           }
 
           if (status === 'missing') {
-            return <div key={probeName}>This probe didn&apos;t run for this timepoint.</div>;
+            return <ProbeResultMissing key={probeName} probeName={probeName} timepoint={timepoint} />;
           }
 
           if (executions.length > 1) {
-            return (
-              <MultipleExecutions
-                key={probeName}
-                executions={executions}
-                check={check}
-                logsView={logsView}
-                timepoint={timepoint}
-              />
-            );
+            return <MultipleExecutions key={probeName} executions={executions} logsView={logsView} />;
           }
 
           return (
@@ -85,13 +74,10 @@ export const TimepointViewerExecutions = ({ data, logsView, pendingProbeNames }:
               {executions.map((execution) => {
                 return (
                   <LogsRenderer<UnknownExecutionLog>
-                    check={check}
                     key={execution[0][LokiFieldNames.ID]}
                     logs={execution}
                     logsView={logsView}
                     mainKey="msg"
-                    startTime={timepoint.adjustedTime}
-                    endTime={timepoint.adjustedTime + timepoint.timepointDuration * 2}
                   />
                 );
               })}
@@ -151,17 +137,7 @@ const ProbeNameIcon = ({ status }: { status: TimepointStatus }) => {
   return <Icon name={ICON_MAP[status]} color={vizOption.statusColor} />;
 };
 
-const MultipleExecutions = ({
-  executions,
-  check,
-  logsView,
-  timepoint,
-}: {
-  executions: ExecutionLogs[];
-  check: Check;
-  logsView: LogsView;
-  timepoint: StatelessTimepoint;
-}) => {
+const MultipleExecutions = ({ executions, logsView }: { executions: ExecutionLogs[]; logsView: LogsView }) => {
   const styles = useStyles2(getStyles);
 
   return (
@@ -176,14 +152,7 @@ const MultipleExecutions = ({
             <>
               <div className={styles.multipleExecutions} key={execution[0][LokiFieldNames.ID]}>
                 <div className={styles.executionIndex}>{index + 1}</div>
-                <LogsRenderer<UnknownExecutionLog>
-                  check={check}
-                  logs={execution}
-                  logsView={logsView}
-                  mainKey="msg"
-                  startTime={timepoint.adjustedTime}
-                  endTime={timepoint.adjustedTime + timepoint.timepointDuration * 2}
-                />
+                <LogsRenderer<UnknownExecutionLog> logs={execution} logsView={logsView} mainKey="msg" />
               </div>
               {index !== executions.length - 1 && <div className={styles.divider} />}
             </>

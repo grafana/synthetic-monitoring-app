@@ -16,19 +16,23 @@ import { TimepointInstantAnnotation } from 'scenes/components/TimepointExplorer/
 import { TimepointRangeAnnotation } from 'scenes/components/TimepointExplorer/TimepointRangeAnnotation';
 
 interface TimepointExplorerAnnotationsProps {
-  displayLabels?: boolean;
   displayWidth: number;
   isBeginningSection: boolean;
   parentWidth: number;
+  showLabels?: boolean;
+  showTooltips?: boolean;
   timepointsInRange: StatelessTimepoint[];
+  triggerHeight: number;
 }
 
 export const TimepointExplorerAnnotations = ({
-  displayLabels,
   displayWidth,
-  timepointsInRange,
   isBeginningSection,
   parentWidth,
+  showLabels,
+  showTooltips,
+  timepointsInRange,
+  triggerHeight,
 }: TimepointExplorerAnnotationsProps) => {
   const { checkEvents } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
@@ -58,11 +62,12 @@ export const TimepointExplorerAnnotations = ({
   return (
     <div className={styles.container} id={TIMEPOINT_LIST_ANNOTATIONS_ID}>
       <PreTimepointAnnotations
-        isBeginningSection={isBeginningSection}
-        displayLabels={displayLabels}
         displayWidth={displayWidth}
-        timepointsInRange={timepointsInRange}
+        isBeginningSection={isBeginningSection}
         parentWidth={parentWidth}
+        showLabels={showLabels}
+        timepointsInRange={timepointsInRange}
+        triggerHeight={triggerHeight}
       />
 
       {annotationsToRender.map((annotation) => {
@@ -71,9 +76,9 @@ export const TimepointExplorerAnnotations = ({
             <TimepointInstantAnnotation
               key={`${annotation.checkEvent.label}-${annotation.checkEvent.to}`}
               annotation={annotation}
-              displayLabels={displayLabels}
               displayWidth={displayWidth}
               parentWidth={parentWidth}
+              showLabels={showLabels}
               timepointsInRange={timepointsInRange}
             />
           );
@@ -83,10 +88,12 @@ export const TimepointExplorerAnnotations = ({
           <TimepointRangeAnnotation
             key={`${annotation.checkEvent.label}-${annotation.checkEvent.to}`}
             annotation={annotation}
-            displayLabels={displayLabels}
             displayWidth={displayWidth}
             parentWidth={parentWidth}
+            showLabels={showLabels}
+            showTooltips={showTooltips}
             timepointsInRange={timepointsInRange}
+            triggerHeight={triggerHeight}
           />
         );
       })}

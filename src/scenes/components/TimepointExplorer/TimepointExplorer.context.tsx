@@ -73,7 +73,6 @@ interface TimepointExplorerContextType {
   isCheckCreationWithinTimerange: boolean;
   isLogsRetentionPeriodWithinTimerange: boolean;
   isLoading: boolean;
-  pendingListResult: [StatelessTimepoint, string[]] | [];
   listWidth: number;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
   maxProbeDuration: number;
@@ -102,7 +101,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const timeRangeRef = useRef<TimeRange>(timeRange);
   const logsRetentionPeriod = useLogsRetentionPeriod(timeRange.from.valueOf());
   // eslint-disable-next-line react-hooks/exhaustive-deps -- update date.now when timerange changes
-  const logsRetentionTo = useMemo(() => Date.now() - logsRetentionPeriod, [logsRetentionPeriod, timeRange]);
+  const logsRetentionFrom = useMemo(() => Date.now() - logsRetentionPeriod, [logsRetentionPeriod, timeRange]);
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
   const [hoveredState, setHoveredState] = useState<SelectedState>([null, null, null]);
   const [selectedState, setSelectedState] = useState<SelectedState>([null, null, null]);
@@ -139,11 +138,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const maxProbeDuration =
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
 
-  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check, logsRetentionTo);
-  const timepoints = useTimepoints({ timeRange, checkConfigs, logsRetentionTo });
-  const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading;
+  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs(check, logsRetentionFrom);
+  const timepoints = useTimepoints({ timeRange, checkConfigs, logsRetentionFrom });
   const isCheckCreationWithinTimerange = getIsCheckCreationWithinTimerange(checkCreation, timepoints);
-  const isLogsRetentionPeriodWithinTimerange = logsRetentionTo > timeRange.from.valueOf();
+  const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();
 
   const miniMapPages = useMemo(
     () => getMiniMapPages(timepoints.length, timepointsDisplayCount, MAX_MINIMAP_SECTIONS),
@@ -170,7 +168,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     return getMiniMapSections(miniMapPages[miniMapCurrentPage], timepointsDisplayCount);
   }, [miniMapPages, miniMapCurrentPage, timepointsDisplayCount, timeRange.from, timeRange.to]);
 
-  const { logsMap, refetch: refetchEndingLogs } = useExecutionDurationLogs({
+  const {
+    isLoading: isExecutionDurationLogsLoading,
+    logsMap,
+    refetch: refetchEndingLogs,
+  } = useExecutionDurationLogs({
     check,
     currentAdjustedTime,
     probe: probeVar,
@@ -183,9 +185,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       constructCheckEvents({
         checkConfigs,
         checkCreation,
-        logsRetentionTo,
+        logsRetentionFrom,
       }),
-    [checkConfigs, checkCreation, logsRetentionTo]
+    [checkConfigs, checkCreation, logsRetentionFrom]
   );
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
@@ -202,15 +204,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   }, []);
 
   const handleSelectedStateChange = useCallback((state: SelectedState) => {
-    const [timepoint, probeName, executionIndex] = state;
-
-    setSelectedState(([prevTimepoint, prevProbeName, prevExecutionIndex]) => {
-      return prevTimepoint?.adjustedTime === timepoint?.adjustedTime &&
-        prevProbeName === probeName &&
-        prevExecutionIndex === executionIndex
-        ? [null, null, null]
-        : state;
-    });
+    setSelectedState(state);
   }, []);
 
   const handleTimepointDisplayCountChange = useCallback(
@@ -277,13 +271,14 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     refetchMaxProbeDuration();
   }, [refetchEndingLogs, refetchCheckConfigs, refetchMaxProbeDuration]);
 
-  const pendingListResult = useIsListResultPending({
+  useIsListResultPending({
+    check,
     currentAdjustedTime,
     handleRefetch,
-    check,
     logsMap,
-    timepoints: visibleTimepoints,
   });
+
+  const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading || isExecutionDurationLogsLoading;
 
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
@@ -311,7 +306,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       miniMapCurrentPageSections,
       miniMapCurrentSectionIndex,
       miniMapPages,
-      pendingListResult,
       selectedState,
       timepoints,
       timepointsDisplayCount,
@@ -345,7 +339,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
     miniMapPages,
-    pendingListResult,
     selectedState,
     timepoints,
     timepointsDisplayCount,

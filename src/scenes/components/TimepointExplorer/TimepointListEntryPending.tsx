@@ -3,12 +3,17 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx, keyframes } from '@emotion/css';
 
+import { ChunkyLoadingBar } from 'components/ChunkyLoadingBar/ChunkyLoadingBar';
 import { PlainButton } from 'components/PlainButton';
-import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
+import {
+  TIMEPOINT_GAP_PX,
+  TIMEPOINT_THEME_HEIGHT_PX,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getEntryHeight, getEntryHeightPx } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
@@ -27,17 +32,19 @@ const MAX_DURATION_MS = 4000;
 const DEFAULT_ANIMATION_DELAY = 300;
 const MAX_TRANSLATE_Y = (100 / BAR_HEIGHT_PERCENT) * 100;
 
-export const TimepointListEntryPending = ({ timepoint, pendingProbeNames }: TimepointListEntryPendingProps) => {
+export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
 
-  const { handleSelectedStateChange, maxProbeDuration, selectedState, timepointWidth, vizDisplay, vizOptions } =
+  const { check, handleSelectedStateChange, maxProbeDuration, selectedState, timepointWidth, vizDisplay, vizOptions } =
     useTimepointExplorerContext();
   const option = vizOptions.pending;
+  const probeVar = useSceneVarProbes(check);
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
+  const heightInPx = getEntryHeightPx(statefulTimepoint.maxProbeDuration, maxProbeDuration, TIMEPOINT_THEME_HEIGHT_PX);
   const durationMs = Math.min(Math.max(Math.round(height * MILLISECONDS_PER_PIXEL), MIN_DURATION_MS), MAX_DURATION_MS);
   const styles = useStyles2(getStyles, timepointWidth, option, durationMs);
-  const probeNameToView = Object.keys(statefulTimepoint.probeResults)[0] || pendingProbeNames?.[0] || ``;
+  const probeNameToView = probeVar[0];
   const [selectedTimepoint] = selectedState;
   const isSelected = selectedTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
@@ -66,7 +73,7 @@ export const TimepointListEntryPending = ({ timepoint, pendingProbeNames }: Time
             })}
             status={`pending`}
           >
-            <div className={styles.loadingBar} />
+            <ChunkyLoadingBar height={heightInPx} width={timepointWidth} color={option} />
           </TimepointVizItem>
         </PlainButton>
       </Tooltip>

@@ -35,7 +35,8 @@ import {
   buildLogsMap,
   buildTimepoints,
   extractFrequenciesAndConfigs,
-  getIsResultPending,
+  getCouldBePending,
+  getPendingProbeNames,
   getTimeAdjustedTimepoint,
   getVisibleTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -45,13 +46,13 @@ export function useVisibleTimepoints() {
   return getVisibleTimepoints({ timepoints, miniMapCurrentPage, miniMapPages });
 }
 
-export function useBuiltCheckConfigs(check: Check, logsRetentionTo: UnixTimestamp) {
+export function useBuiltCheckConfigs(check: Check, logsRetentionFrom: UnixTimestamp) {
   const [timeRange] = useTimeRange();
   const probeVar = useSceneVar('probe');
   const timeRangeFrom = timeRange.from.valueOf();
   const timeRangeTo = timeRange.to.valueOf();
   const checkCreated = check.created! * 1000;
-  const upto = Math.max(logsRetentionTo, checkCreated);
+  const upto = Math.max(logsRetentionFrom, checkCreated);
   const fillTo = upto > timeRangeFrom ? upto : timeRangeFrom;
 
   const {
@@ -101,11 +102,11 @@ export function useBuiltCheckConfigs(check: Check, logsRetentionTo: UnixTimestam
 interface UseTimepointsProps {
   timeRange: TimeRange;
   checkConfigs: CheckConfig[];
-  logsRetentionTo: UnixTimestamp;
+  logsRetentionFrom: UnixTimestamp;
 }
 
-export function useTimepoints({ timeRange, checkConfigs, logsRetentionTo }: UseTimepointsProps) {
-  const from = Math.max(timeRange.from.valueOf(), logsRetentionTo);
+export function useTimepoints({ timeRange, checkConfigs, logsRetentionFrom }: UseTimepointsProps) {
+  const from = Math.max(timeRange.from.valueOf(), logsRetentionFrom);
 
   return useMemo(() => buildTimepoints({ from, checkConfigs }), [from, checkConfigs]);
 }
@@ -208,7 +209,7 @@ export function usePersistedCheckConfigs({ timeRange, check, probe, refetchInter
 
 function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckConfigsProps) {
   const metricsDS = useMetricsDS();
-  const { expr, queryType } = getCheckConfigsQuery({
+  const { expr, interval, queryType } = getCheckConfigsQuery({
     job: check.job,
     instance: check.target,
     probe: probe?.join('|'),
@@ -223,6 +224,7 @@ function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckC
       REF_ID_UNIQUE_CHECK_CONFIGS,
       timeRange.from,
       timeRange.to,
+      interval,
     ],
     queryFn: () => {
       if (!metricsDS) {
@@ -236,6 +238,7 @@ function useCheckConfigs({ timeRange, check, probe, refetchInterval }: UseCheckC
         end: timeRange.to.valueOf(),
         refId: REF_ID_UNIQUE_CHECK_CONFIGS,
         queryType,
+        interval,
       });
     },
     refetchInterval,
@@ -319,11 +322,9 @@ export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
   const { currentAdjustedTime, logsMap, maxProbeDuration } = useTimepointExplorerContext();
   const entry = logsMap[timepoint.adjustedTime];
 
-  const couldBePending = [timepoint.adjustedTime, timepoint.adjustedTime + timepoint.timepointDuration].includes(
-    currentAdjustedTime
-  );
-
   if (!entry) {
+    const couldBePending = getCouldBePending(timepoint, currentAdjustedTime);
+
     const defaultState: StatefulTimepoint = {
       adjustedTime: timepoint.adjustedTime,
       config: timepoint.config,
@@ -345,34 +346,29 @@ interface UseIsResultPendingProps {
   currentAdjustedTime: UnixTimestamp;
   handleRefetch: () => void;
   logsMap: Record<UnixTimestamp, StatefulTimepoint>;
-  timepoints: StatelessTimepoint[];
 }
 
 export function useIsListResultPending({
+  check,
   currentAdjustedTime,
   handleRefetch,
-  check,
   logsMap,
-  timepoints,
 }: UseIsResultPendingProps) {
-  const selectedProbes = useSceneVarProbes(check);
-  const refreshPickerState = useSceneRefreshPicker();
+  const selectedProbeNames = useSceneVarProbes(check);
+  const refreshPickerState = useSceneRefreshPicker(handleRefetch);
   const refreshInMs = refreshPickerState?.refreshInMs;
+  const entry = logsMap[currentAdjustedTime];
 
-  const resultPending = getIsResultPending({
-    currentAdjustedTime,
-    logsMap,
-    selectedProbes,
-    timepoints,
+  const probeNamesPending = getPendingProbeNames({
+    statefulTimepoint: entry,
+    selectedProbeNames,
   });
 
   // because the timerange updates when the refresh picker is enabled
   // that will trigger a refetch and it doesn't have to be handled manually
-  const enableRefetch = !!resultPending.length && !refreshInMs;
+  const enableRefetch = Boolean(probeNamesPending.length) && !refreshInMs;
 
   useRefetchInterval(enableRefetch, handleRefetch);
-
-  return useMemo(() => resultPending, [resultPending]);
 }
 
 export function useRefetchInterval(isPending: boolean, handleRefetch: () => void) {

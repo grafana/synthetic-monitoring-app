@@ -21,8 +21,15 @@ interface TimepointListEntryTooltipProps {
 
 export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const { check, currentAdjustedTime, handleHoverStateChange, handleSelectedStateChange, hoveredState, selectedState } =
-    useTimepointExplorerContext();
+  const {
+    check,
+    checkConfigs,
+    currentAdjustedTime,
+    handleHoverStateChange,
+    handleSelectedStateChange,
+    hoveredState,
+    selectedState,
+  } = useTimepointExplorerContext();
   const selectedProbeNames = useSceneVarProbes(check);
 
   const statefulTimepoint = useStatefulTimepoint(timepoint);
@@ -30,7 +37,12 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
 
   const renderedAvgDuration = getAverageDuration(statefulTimepoint.probeResults);
   const renderedFrequency = formatDuration(statefulTimepoint.config.frequency, true);
-  const entriesToRender = getEntriesToRender(statefulTimepoint, selectedProbeNames, currentAdjustedTime);
+  const entriesToRender = getEntriesToRender({
+    statefulTimepoint,
+    selectedProbeNames,
+    currentAdjustedTime,
+    checkConfigs,
+  });
 
   return (
     <Stack direction="column" gap={2}>
@@ -39,7 +51,7 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
           <Text variant="h5" element="h3">
             {displayTime}
           </Text>
-          <StatusBadge status={statefulTimepoint.status} />
+          <StatusBadge status={statefulTimepoint.status} type="uptime" />
         </Stack>
       </div>
 
@@ -47,8 +59,7 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
         {entriesToRender
           .sort((a, b) => a.probeName.localeCompare(b.probeName))
           .map((entry) => {
-            const { status, probeName, duration } = entry;
-            const index = 0;
+            const { status, probeName, duration, index } = entry;
             const isSelected = matchState(selectedState, [statefulTimepoint, probeName, index]);
             const isHovered = matchState(hoveredState, [statefulTimepoint, probeName, index]);
 
@@ -68,7 +79,7 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
                   {probeName}
                 </PlainButton>
                 <Stack direction="row" gap={1} alignItems="center">
-                  <StatusBadge status={status} />
+                  <StatusBadge status={status} type="reachability" />
                   <span className={styles.duration}>{duration}</span>
                 </Stack>
               </div>
@@ -84,15 +95,19 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
   );
 };
 
-const StatusBadge = ({ status }: { status: TimepointStatus }) => {
+const StatusBadge = ({ status, type }: { status: TimepointStatus; type: 'uptime' | 'reachability' }) => {
+  const missingText = type === 'uptime' ? 'UNKNOWN' : 'MISSING';
+  const successText = type === 'uptime' ? 'UP' : 'SUCCESS';
+  const failureText = type === 'uptime' ? 'DOWN' : 'FAILURE';
+
   switch (status) {
     case 'missing':
       // @ts-expect-error - it does accept gray...
-      return <Badge color="gray" text="MISSING" />;
+      return <Badge color="gray" text={missingText} />;
     case 'success':
-      return <Badge color="green" text="UP" />;
+      return <Badge color="green" text={successText} />;
     case 'failure':
-      return <Badge color="red" text="DOWN" />;
+      return <Badge color="red" text={failureText} />;
     case 'pending':
       return <Badge color="blue" text="PENDING" />;
   }
@@ -114,6 +129,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: ${theme.spacing(2)};
   `,
   hovered: css`
     text-decoration: underline;

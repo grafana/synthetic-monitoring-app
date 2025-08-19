@@ -40,8 +40,8 @@ export enum CheckEventType {
 
 export type CheckEvent = {
   label: CheckEventType;
-  from: UnixTimestamp;
-  to: UnixTimestamp;
+  from: UnixTimestamp | null;
+  to: UnixTimestamp | null;
   color: string;
 };
 

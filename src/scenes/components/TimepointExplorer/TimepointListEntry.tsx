@@ -3,10 +3,16 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getIsInTheFuture } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import {
+  getCouldBePending,
+  getIsInTheFuture,
+  getPendingProbeNames,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryPending } from 'scenes/components/TimepointExplorer/TimepointListEntryPending';
 import { TimepointListEntryReachability } from 'scenes/components/TimepointExplorer/TimepointListEntryReachability';
 import { TimepointListEntryUptime } from 'scenes/components/TimepointExplorer/TimepointListEntryUptime';
@@ -28,16 +34,19 @@ export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryP
 };
 
 const Entry = (props: TimepointListEntryProps) => {
-  const { currentAdjustedTime, viewMode, pendingListResult } = useTimepointExplorerContext();
-  const [pendingListResultTimepoint, pendingListProbeNames] = pendingListResult || [];
+  const { check, currentAdjustedTime, viewMode } = useTimepointExplorerContext();
+  const statefulTimepoint = useStatefulTimepoint(props.timepoint);
   const isInTheFuture = getIsInTheFuture(props.timepoint, currentAdjustedTime);
+  const selectedProbeNames = useSceneVarProbes(check);
+  const couldBePending = getCouldBePending(props.timepoint, currentAdjustedTime);
+  const pendingProbeNames = getPendingProbeNames({ statefulTimepoint, selectedProbeNames });
 
   if (props.timepoint.config.type === 'no-data' || isInTheFuture) {
     return <div />;
   }
 
-  if (pendingListResultTimepoint?.index === props.timepoint.index) {
-    return <TimepointListEntryPending {...props} pendingProbeNames={pendingListProbeNames} />;
+  if (couldBePending && pendingProbeNames.length) {
+    return <TimepointListEntryPending {...props} />;
   }
 
   if (viewMode === 'uptime') {

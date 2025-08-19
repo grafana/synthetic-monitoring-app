@@ -11,19 +11,21 @@ import { TimepointInstantAnnotation } from 'scenes/components/TimepointExplorer/
 import { TimepointRangeAnnotation } from 'scenes/components/TimepointExplorer/TimepointRangeAnnotation';
 
 interface PreTimepointAnnotationsProps {
-  isBeginningSection: boolean;
-  displayLabels?: boolean;
   displayWidth: number;
-  timepointsInRange: StatelessTimepoint[];
+  isBeginningSection: boolean;
   parentWidth: number;
+  showLabels?: boolean;
+  timepointsInRange: StatelessTimepoint[];
+  triggerHeight: number;
 }
 
 export const PreTimepointAnnotations = ({
-  isBeginningSection,
-  displayLabels,
   displayWidth,
-  timepointsInRange,
+  isBeginningSection,
   parentWidth,
+  showLabels,
+  triggerHeight,
+  timepointsInRange,
 }: PreTimepointAnnotationsProps) => {
   const { check, miniMapCurrentPage, miniMapPages, isCheckCreationWithinTimerange } = useTimepointExplorerContext();
   const checkCreation = check.created;
@@ -38,17 +40,18 @@ export const PreTimepointAnnotations = ({
       {isCheckCreationWithinTimerange ? (
         <CheckCreationAnnotation
           checkCreation={checkCreation}
-          displayLabels={displayLabels}
+          showLabels={showLabels}
           displayWidth={displayWidth}
           parentWidth={parentWidth}
           timepointsInRange={timepointsInRange}
         />
       ) : (
         <OutOfRangeAnnotation
-          displayLabels={displayLabels}
           displayWidth={displayWidth}
           parentWidth={parentWidth}
+          showLabels={showLabels}
           timepointsInRange={timepointsInRange}
+          triggerHeight={triggerHeight}
         />
       )}
     </>
@@ -57,7 +60,7 @@ export const PreTimepointAnnotations = ({
 
 interface CheckCreationAnnotationProps {
   checkCreation: number;
-  displayLabels?: boolean;
+  showLabels?: boolean;
   displayWidth: number;
   parentWidth: number;
   timepointsInRange: StatelessTimepoint[];
@@ -65,7 +68,7 @@ interface CheckCreationAnnotationProps {
 
 const CheckCreationAnnotation = ({
   checkCreation,
-  displayLabels,
+  showLabels,
   displayWidth,
   parentWidth,
   timepointsInRange,
@@ -85,26 +88,28 @@ const CheckCreationAnnotation = ({
         visibleStartIndex: -1,
         visibleEndIndex: -1,
       }}
-      displayLabels={displayLabels}
       displayWidth={displayWidth}
       parentWidth={parentWidth}
+      showLabels={showLabels}
       timepointsInRange={timepointsInRange}
     />
   );
 };
 
 interface OutOfRangeAnnotationProps {
-  displayLabels?: boolean;
   displayWidth: number;
   parentWidth: number;
+  showLabels?: boolean;
   timepointsInRange: StatelessTimepoint[];
+  triggerHeight: number;
 }
 
 const OutOfRangeAnnotation = ({
-  displayLabels,
   displayWidth,
   parentWidth,
+  showLabels,
   timepointsInRange,
+  triggerHeight,
 }: OutOfRangeAnnotationProps) => {
   const { isLogsRetentionPeriodWithinTimerange, timepointsDisplayCount } = useTimepointExplorerContext();
   const visibleEndIndex = -1;
@@ -122,8 +127,8 @@ const OutOfRangeAnnotation = ({
       annotation={{
         checkEvent: {
           label,
-          from: new Date().getTime(),
-          to: new Date().getTime(),
+          from: null,
+          to: null,
           color,
         },
         isClippedStart: true,
@@ -132,10 +137,11 @@ const OutOfRangeAnnotation = ({
         visibleStartIndex,
         visibleEndIndex,
       }}
-      displayLabels={displayLabels}
       displayWidth={displayWidth}
       parentWidth={parentWidth}
+      showLabels={showLabels}
       timepointsInRange={timepointsInRange}
+      triggerHeight={triggerHeight}
     />
   );
 };

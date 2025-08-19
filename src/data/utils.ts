@@ -1,4 +1,4 @@
-import { AppEvents, TimeRange } from '@grafana/data';
+import { AppEvents, dateTime } from '@grafana/data';
 import { FetchResponse, getBackendSrv, isFetchError } from '@grafana/runtime';
 import appEvents from 'grafana/app/core/app_events';
 import { firstValueFrom } from 'rxjs';
@@ -96,7 +96,7 @@ export function getStartEnd() {
 }
 
 // TODO: finish this off
-export function getExploreUrl(datasourceUid: string, queries: string[], { from, to }: TimeRange) {
+export function getExploreUrl(datasourceUid: string, queries: string[], { from, to }: { from: number; to: number }) {
   const left = encodeURIComponent(
     JSON.stringify({
       datasource: datasourceUid,
@@ -104,8 +104,8 @@ export function getExploreUrl(datasourceUid: string, queries: string[], { from, 
         expr: query,
       })),
       range: {
-        from,
-        to,
+        from: dateTime(from),
+        to: dateTime(to),
       },
     })
   );

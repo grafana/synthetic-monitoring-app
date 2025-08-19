@@ -11,12 +11,8 @@ import {
 } from '@grafana/data';
 import { PanelRenderer } from '@grafana/runtime';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
-import { Link } from '@grafana/ui';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
-import { Check } from 'types';
-import { getExploreUrl } from 'data/utils';
-import { useLogsDS } from 'hooks/useLogsDS';
 
 const logPanelOptions = {
   showTime: true,
@@ -35,34 +31,11 @@ const LOGS_HEIGHT = 400;
 // having a search which either filters or highlights
 // add option for wordwrap
 // add label / level filters, etc.
-export const LogsRaw = <T extends UnknownParsedLokiRecord>({
-  logs,
-  mainKey,
-  startTime,
-  endTime,
-  check,
-}: {
-  logs: T[];
-  mainKey: string;
-  startTime: number;
-  endTime: number;
-  check: Check;
-}) => {
+export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T[] }) => {
   const [width, setWidth] = useState(0);
-  const logsDS = useLogsDS();
-  const probe = logs[0][LokiFieldNames.Labels].probe;
-  const query = `{job="${check.job}", instance="${check.target}", probe="${probe}"} | logfmt`;
-  const exploreURL = getExploreUrl(logsDS?.uid!, [query], {
-    from: dateTime(startTime),
-    to: dateTime(endTime),
-    raw: { from: String(startTime), to: String(endTime) },
-  });
 
   return (
     <div>
-      <Link href={exploreURL} target="_blank">
-        Explore link
-      </Link>
       <div
         ref={(el) => {
           if (el) {

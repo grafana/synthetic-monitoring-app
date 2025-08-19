@@ -37,7 +37,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
               className={cx(styles.level, {
                 [styles.error]: level === 'error',
                 [styles.info]: level === 'info',
-                [styles.warning]: level === 'warning',
+                [styles.warning]: level === 'warn',
               })}
             >
               {level.toUpperCase()}

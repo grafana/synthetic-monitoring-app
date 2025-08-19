@@ -1,7 +1,7 @@
 export const TIMEPOINT_SIZE = 20;
-export const TIMEPOINT_GAP = 1;
+export const TIMEPOINT_THEME_GAP = 1;
 export const THEME_UNIT = 8;
-export const TIMEPOINT_GAP_PX = TIMEPOINT_GAP * THEME_UNIT;
+export const TIMEPOINT_GAP_PX = TIMEPOINT_THEME_GAP * THEME_UNIT;
 export const TIMEPOINT_THEME_HEIGHT = 60;
 export const TIMEPOINT_THEME_HEIGHT_PX = TIMEPOINT_THEME_HEIGHT * THEME_UNIT;
 
@@ -29,6 +29,8 @@ const missing = `missing` as const;
 const pending = `pending` as const;
 
 export const VIZ_DISPLAY_OPTIONS = [success, failure, missing, pending];
+
+export const ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX = 5;
 
 export const ANNOTATION_COLOR_OUT_OF_TIMERANGE = `gray`;
 export const ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD = `yellow`;

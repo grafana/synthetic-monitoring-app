@@ -14,7 +14,7 @@ export function useSceneVarProbes(check: Check) {
       if (probe) {
         acc.push(probe.name);
       }
-      return acc;
+      return acc.sort((a, b) => a.localeCompare(b));
     }, []);
   }, [data, check.probes]);
 
@@ -23,8 +23,8 @@ export function useSceneVarProbes(check: Check) {
   }
 
   if (probe.includes('.*')) {
-    return probeNames;
+    return probeNames.sort((a, b) => a.localeCompare(b));
   }
 
-  return probe;
+  return probe.sort((a, b) => a.localeCompare(b));
 }

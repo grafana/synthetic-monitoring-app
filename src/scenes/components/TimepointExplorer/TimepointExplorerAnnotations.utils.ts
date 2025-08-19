@@ -17,6 +17,10 @@ export function getCheckEventsInRange(checkEvents: CheckEvent[], timepointsInRan
 
   // Include annotations that intersect with the visible range (not just fully contained)
   const inRangeCheckEvents = checkEvents.filter((checkEvent) => {
+    if (typeof checkEvent.from !== 'number' || typeof checkEvent.to !== 'number') {
+      return false;
+    }
+
     // Annotation intersects if it starts before range ends AND ends after range starts
     return checkEvent.from <= rangeTo && checkEvent.to >= rangeFrom;
   });
@@ -38,6 +42,16 @@ export function getClosestTimepointsToCheckEvent(
   timepointsInRange: StatelessTimepoint[]
 ): AnnotationWithIndices[] {
   return checkEvents.map((checkEvent) => {
+    if (typeof checkEvent.from !== 'number' || typeof checkEvent.to !== 'number') {
+      return {
+        isClippedStart: false,
+        isClippedEnd: false,
+        isInstant: false,
+        visibleStartIndex: 0,
+        visibleEndIndex: 0,
+        checkEvent,
+      };
+    }
     // Find actual timepoint indices for the annotation start/end
     const startingIndex = timepointsInRange.findIndex((timepoint) => isInTimepoint(timepoint, checkEvent.from));
     const endingIndex = timepointsInRange.findIndex((timepoint) => isInTimepoint(timepoint, checkEvent.to));
@@ -68,7 +82,11 @@ export function getClosestTimepointsToCheckEvent(
   });
 }
 
-export function isInTimepoint(timepoint: StatelessTimepoint, unixtime: UnixTimestamp) {
+export function isInTimepoint(timepoint: StatelessTimepoint, unixtime: UnixTimestamp | null) {
+  if (!unixtime) {
+    return false;
+  }
+
   const timepointStart = timepoint.adjustedTime;
   const timepointEnd = timepoint.adjustedTime + timepoint.timepointDuration;
 

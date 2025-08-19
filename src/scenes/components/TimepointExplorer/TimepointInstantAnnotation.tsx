@@ -8,20 +8,20 @@ import { AnnotationWithIndices } from 'scenes/components/TimepointExplorer/Timep
 
 interface TimepointInstantAnnotationProps {
   annotation: AnnotationWithIndices;
-  displayLabels?: boolean;
   displayWidth: number;
   parentWidth: number;
+  showLabels?: boolean;
   timepointsInRange: StatelessTimepoint[];
 }
 
 export const TimepointInstantAnnotation = ({
   annotation,
-  displayLabels,
   displayWidth,
   parentWidth,
+  showLabels,
   timepointsInRange,
 }: TimepointInstantAnnotationProps) => {
-  const styles = useStyles2((theme) => getStyles(theme, annotation, displayLabels));
+  const styles = useStyles2((theme) => getStyles(theme, annotation, showLabels));
   const displayIndex = timepointsInRange.length - annotation.visibleEndIndex;
   const centerOffset = displayWidth / 2;
   const right = displayWidth * displayIndex - centerOffset;
@@ -38,19 +38,19 @@ export const TimepointInstantAnnotation = ({
         right: `${right}px`,
       }}
     >
-      {displayLabels && <div className={styles.label}>{annotation.checkEvent.label} </div>}
+      {showLabels && <div className={styles.label}>{annotation.checkEvent.label} </div>}
     </div>
   );
 };
 
-const getStyles = (theme: GrafanaTheme2, annotation: AnnotationWithIndices, displayLabels?: boolean) => {
+const getStyles = (theme: GrafanaTheme2, annotation: AnnotationWithIndices, showLabels?: boolean) => {
   const borderColor = theme.visualization.getColorByName(annotation?.checkEvent.color!);
 
   return {
     annotation: css`
       border-right: 1px dashed ${borderColor};
       bottom: 0;
-      height: ${displayLabels ? '80%' : '100%'};
+      height: ${showLabels ? '80%' : '100%'};
       pointer-events: none;
       position: absolute;
       z-index: 2;

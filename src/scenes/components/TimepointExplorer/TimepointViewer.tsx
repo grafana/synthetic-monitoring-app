@@ -1,7 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { Box, Stack, Text } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { formatDuration } from 'utils';
+import { getExploreUrl } from 'data/utils';
+import { useLogsDS } from 'hooks/useLogsDS';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
@@ -15,9 +19,10 @@ import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/T
 export const TimepointViewer = () => {
   const { selectedState } = useTimepointExplorerContext();
   const [selectedTimepoint] = selectedState;
+  const styles = useStyles2(getStyles);
 
   return (
-    <Box borderColor={'medium'} borderStyle={'solid'} padding={2} minHeight={30}>
+    <div className={styles.container}>
       {selectedTimepoint ? (
         <TimepointViewerContent timepoint={selectedTimepoint} />
       ) : (
@@ -26,9 +31,18 @@ export const TimepointViewer = () => {
           <Text>Select a timepoint to view logs.</Text>
         </Stack>
       )}
-    </Box>
+    </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css`
+    border-radius: ${theme.shape.radius.default};
+    border: 1px solid ${theme.colors.border.medium};
+    padding: ${theme.spacing(2)};
+    min-height: ${theme.spacing(30)};
+  `,
+});
 
 const TimepointViewerContent = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
   const { check, currentAdjustedTime } = useTimepointExplorerContext();
@@ -80,6 +94,16 @@ const TimepointHeader = ({
   timepoint: StatelessTimepoint;
   onChangeLogsView: (view: LogsView) => void;
 }) => {
+  const logsDS = useLogsDS();
+  const { check, selectedState } = useTimepointExplorerContext();
+  const [_, probeName] = selectedState;
+  const query = `{job="${check.job}", instance="${check.target}", probe="${probeName}"} | logfmt`;
+
+  const exploreURL = getExploreUrl(logsDS?.uid!, [query], {
+    from: timepoint.adjustedTime,
+    to: timepoint.adjustedTime + timepoint.timepointDuration,
+  });
+
   return (
     <Stack direction={`column`} gap={1}>
       <Stack direction={`row`} gap={1} justifyContent={'space-between'} alignItems={'center'}>
@@ -91,7 +115,12 @@ const TimepointHeader = ({
             </Text>
           </Stack>
         </Stack>
-        <LogsViewSelect onChange={onChangeLogsView} />
+        <Stack direction={`column`} gap={1} alignItems={'flex-end'}>
+          <LogsViewSelect onChange={onChangeLogsView} />
+          <TextLink href={exploreURL} external>
+            View in Explore
+          </TextLink>
+        </Stack>
       </Stack>
     </Stack>
   );

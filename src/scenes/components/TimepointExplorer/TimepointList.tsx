@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { colorManipulator, GrafanaTheme2 } from '@grafana/data';
+import { Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
 import {
+  ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX,
   TIMEPOINT_GAP_PX,
   TIMEPOINT_LIST_ID,
   TIMEPOINT_THEME_HEIGHT,
@@ -21,6 +22,7 @@ export const TimepointList = () => {
 
   const {
     handleListWidthChange,
+    isLoading,
     maxProbeDuration,
     timepoints,
     listWidth,
@@ -52,14 +54,21 @@ export const TimepointList = () => {
   return (
     <div>
       <div className={styles.container}>
+        {isLoading && (
+          <div className={styles.loading}>
+            <Spinner size={32} />
+          </div>
+        )}
         <YAxis maxProbeDuration={maxProbeDuration} width={listWidth} />
         <div className={styles.timepointsContainer}>
           <TimepointExplorerAnnotations
             displayWidth={timepointWidth + TIMEPOINT_GAP_PX}
-            timepointsInRange={timepointsInRange}
-            displayLabels
             isBeginningSection={isBeginningSection}
             parentWidth={listWidth}
+            showLabels
+            showTooltips
+            timepointsInRange={timepointsInRange}
+            triggerHeight={ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX}
           />
           <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
             {timepointsInRange.map((timepoint, index) => {
@@ -80,6 +89,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
     position: relative;
     z-index: 1;
   `,
+  loading: css`
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: ${colorManipulator.alpha(theme.colors.background.canvas, 0.3)};
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+  `,
   timepoints: css`
     display: flex;
     flex-direction: row;
@@ -93,6 +114,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1;
     overflow: hidden;
     padding-top: ${theme.spacing(3)};
+    padding-bottom: ${ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX}px;
   `,
   gridMarkers: css`
     display: flex;

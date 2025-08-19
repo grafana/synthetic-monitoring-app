@@ -5,6 +5,7 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import {
+  ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX,
   TIMEPOINT_GAP_PX,
   TIMEPOINT_SIZE,
   TIMEPOINT_THEME_HEIGHT,
@@ -94,7 +95,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     `,
     line: css`
       position: absolute;
-      top: ${theme.spacing(-3)};
+      top: calc(${theme.spacing(-3)} - ${ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX}px);
       width: 1px;
       height: calc(${theme.spacing(TIMEPOINT_THEME_HEIGHT)} + ${theme.spacing(3)});
       background-color: ${theme.colors.border.weak};
