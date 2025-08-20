@@ -6,7 +6,7 @@ import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer
 import { getProbeNameToUse } from 'scenes/components/TimepointExplorer/TimepointViewerNavigation.utils';
 
 export const TimepointViewerNavigation = () => {
-  const { check, handleSelectedStateChange, logsMap, selectedState, timepoints } = useTimepointExplorerContext();
+  const { check, handleSelectedStateChange, listLogsMap, selectedState, timepoints } = useTimepointExplorerContext();
   const [selectedTimepoint] = selectedState;
 
   const prevIndex = selectedTimepoint ? selectedTimepoint.index - 1 : undefined;
@@ -22,7 +22,7 @@ export const TimepointViewerNavigation = () => {
         disabled={!prevTimepoint}
         onClick={() => {
           if (prevTimepoint) {
-            const statefulPrevTimepoint = prevTimepoint ? logsMap[prevTimepoint.adjustedTime] : undefined;
+            const statefulPrevTimepoint = prevTimepoint ? listLogsMap[prevTimepoint.adjustedTime] : undefined;
             const probeName = getProbeNameToUse(probeVar, statefulPrevTimepoint);
             handleSelectedStateChange([prevTimepoint, probeName, 0]);
           }
@@ -34,7 +34,7 @@ export const TimepointViewerNavigation = () => {
         disabled={!nextTimepoint}
         onClick={() => {
           if (nextTimepoint) {
-            const statefulNextTimepoint = nextTimepoint ? logsMap[nextTimepoint.adjustedTime] : undefined;
+            const statefulNextTimepoint = nextTimepoint ? listLogsMap[nextTimepoint.adjustedTime] : undefined;
             const probeName = getProbeNameToUse(probeVar, statefulNextTimepoint);
             handleSelectedStateChange([nextTimepoint, probeName, 0]);
           }

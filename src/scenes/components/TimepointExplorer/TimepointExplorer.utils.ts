@@ -80,8 +80,6 @@ interface BuildTimepointsInRangeProps {
 }
 
 export function buildTimepoints({ checkConfigs, from, to }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
-  const startTime = performance.now();
-
   const timepoints = checkConfigs.map((config) => {
     const configFrom = from > config.from ? from : config.from;
     const configTo = to < config.to ? to : config.to;
@@ -104,10 +102,6 @@ export function buildTimepoints({ checkConfigs, from, to }: BuildTimepointsInRan
 
       return { ...timepoint, timepointDuration, index: i };
     });
-
-  const endTime = performance.now();
-  const duration = endTime - startTime;
-  console.log(`buildTimepoints executed in ${duration.toFixed(2)} milliseconds`);
 
   return res;
 }
@@ -266,12 +260,12 @@ export function getVisibleTimepointsTimeRange({ timepoints }: { timepoints: Stat
   };
 }
 
-interface BuildLogsMapProps {
+interface BuildlistLogsMapProps {
   logs: ExecutionEndedLog[];
   timepoints: StatelessTimepoint[];
 }
 
-export function buildLogsMap({ logs, timepoints }: BuildLogsMapProps) {
+export function buildlistLogsMap({ logs, timepoints }: BuildlistLogsMapProps) {
   return logs.reduce<Record<UnixTimestamp, StatefulTimepoint>>((acc, log) => {
     const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
     const startingTime = log.Time - duration;
@@ -398,6 +392,7 @@ interface GetTimeFromProps {
 
 // if creation was before retention date - then retetention date should be used
 // if creation was after retention date - then creation date should be used
+// if selected time range is more recent than both - use that
 export function getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom }: GetTimeFromProps) {
   const checkCreationDate = Math.round(checkCreation * 1000);
   const wasCreationBeforeRetention = BigInt(checkCreationDate) < BigInt(logsRetentionFrom);

@@ -73,7 +73,7 @@ interface TimepointExplorerContextType {
   isLogsRetentionPeriodWithinTimerange: boolean;
   isLoading: boolean;
   listWidth: number;
-  logsMap: Record<UnixTimestamp, StatefulTimepoint>;
+  listLogsMap: Record<UnixTimestamp, StatefulTimepoint>;
   maxProbeDuration: number;
   miniMapCurrentPage: number;
   miniMapCurrentPageSections: MiniMapSections;
@@ -175,7 +175,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const {
     isLoading: isExecutionDurationLogsLoading,
-    logsMap,
+    listLogsMap,
     refetch: refetchEndingLogs,
   } = useExecutionDurationLogs({
     check,
@@ -278,7 +278,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     check,
     currentAdjustedTime,
     handleRefetch,
-    logsMap,
+    listLogsMap,
   });
 
   const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading || isExecutionDurationLogsLoading;
@@ -302,7 +302,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       isLoading,
       isLogsRetentionPeriodWithinTimerange,
       listWidth,
-      logsMap,
+      listLogsMap,
       maxProbeDuration,
       miniMapCurrentPage,
       miniMapCurrentPageSections,
@@ -334,7 +334,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isLoading,
     isLogsRetentionPeriodWithinTimerange,
     listWidth,
-    logsMap,
+    listLogsMap,
     maxProbeDuration,
     miniMapCurrentPage,
     miniMapCurrentPageSections,

@@ -11,7 +11,7 @@ import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/L
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useRefetchInterval } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getPendingProbes } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getCouldBePending, getPendingProbes } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { useTimepointLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.hooks';
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 import { TimepointViewerNavigation } from 'scenes/components/TimepointExplorer/TimepointViewerNavigation';
@@ -50,9 +50,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 const TimepointViewerContent = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
   const { check, currentAdjustedTime } = useTimepointExplorerContext();
-  const lastAdjustedTime = currentAdjustedTime - check.frequency;
-  const couldResultBePending = [lastAdjustedTime, currentAdjustedTime].includes(timepoint.adjustedTime);
-
+  const couldResultBePending = getCouldBePending(timepoint, currentAdjustedTime);
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
   const probe = useSceneVarProbes(check);
 

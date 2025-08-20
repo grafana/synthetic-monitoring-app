@@ -8,7 +8,7 @@ import {
   StatefulTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
-  buildLogsMap,
+  buildlistLogsMap,
   buildTimepoints,
   findNearest,
   getMiniMapPages,
@@ -129,7 +129,7 @@ describe(`getPendingProbes`, () => {
   });
 });
 
-describe(`buildLogsMap`, () => {
+describe(`buildlistLogsMap`, () => {
   it(`should build the correct logs map`, () => {
     const Time = 40003;
     const frequency = 10000;
@@ -153,7 +153,7 @@ describe(`buildLogsMap`, () => {
       },
     });
 
-    const logsMap = buildLogsMap({ logs: [log], timepoints });
+    const listLogsMap = buildlistLogsMap({ logs: [log], timepoints });
 
     const expectedEntry: StatefulTimepoint = {
       adjustedTime: firstEntry.adjustedTime,
@@ -167,7 +167,7 @@ describe(`buildLogsMap`, () => {
       index: 0,
     };
 
-    expect(logsMap).toEqual({
+    expect(listLogsMap).toEqual({
       [firstEntry.adjustedTime]: expectedEntry,
     });
   });

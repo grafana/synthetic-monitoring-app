@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
@@ -29,7 +30,7 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   buildConfigTimeRanges,
-  buildLogsMap,
+  buildlistLogsMap,
   buildTimepoints,
   extractFrequenciesAndConfigs,
   getCouldBePending,
@@ -114,14 +115,14 @@ interface UseExecutionDurationLogsProps {
 }
 
 export function useExecutionDurationLogs({ check, probe, timepoints, timeRange }: UseExecutionDurationLogsProps) {
-  const [logsMap, setLogsMap] = useState<Record<UnixTimestamp, StatefulTimepoint>>({});
+  const [listLogsMap, setlistLogsMap] = useState<Record<UnixTimestamp, StatefulTimepoint>>({});
   const probeExpr = probe?.join('|') || '.*';
 
   const onSuccess = useCallback(
     (logs: ExecutionEndedLog[]) => {
-      setLogsMap((prev) => ({
+      setlistLogsMap((prev) => ({
         ...prev,
-        ...buildLogsMap({ logs, timepoints }),
+        ...buildlistLogsMap({ logs, timepoints }),
       }));
     },
     [timepoints]
@@ -151,7 +152,7 @@ export function useExecutionDurationLogs({ check, probe, timepoints, timeRange }
 
   return {
     data: logsData,
-    logsMap,
+    listLogsMap,
     ...rest,
   };
 }
@@ -285,8 +286,8 @@ function useMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProp
 }
 
 export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
-  const { currentAdjustedTime, logsMap, maxProbeDuration } = useTimepointExplorerContext();
-  const entry = logsMap[timepoint.adjustedTime];
+  const { currentAdjustedTime, listLogsMap, maxProbeDuration } = useTimepointExplorerContext();
+  const entry = listLogsMap[timepoint.adjustedTime];
 
   if (!entry) {
     const couldBePending = getCouldBePending(timepoint, currentAdjustedTime);
@@ -311,19 +312,23 @@ interface UseIsResultPendingProps {
   check: Check;
   currentAdjustedTime: UnixTimestamp;
   handleRefetch: () => void;
-  logsMap: Record<UnixTimestamp, StatefulTimepoint>;
+  listLogsMap: Record<UnixTimestamp, StatefulTimepoint>;
 }
 
 export function useIsListResultPending({
   check,
   currentAdjustedTime,
   handleRefetch,
-  logsMap,
+  listLogsMap,
 }: UseIsResultPendingProps) {
+  const [timeRange] = useTimeRange();
+
+  const isCurrentTimeInSelectedTimeRange =
+    currentAdjustedTime > timeRange.from.valueOf() && currentAdjustedTime < timeRange.to.valueOf();
   const selectedProbeNames = useSceneVarProbes(check);
   const refreshPickerState = useSceneRefreshPicker(handleRefetch);
   const refreshInMs = refreshPickerState?.refreshInMs;
-  const entry = logsMap[currentAdjustedTime];
+  const entry = listLogsMap[currentAdjustedTime];
 
   const probeNamesPending = getPendingProbeNames({
     statefulTimepoint: entry,
@@ -332,7 +337,7 @@ export function useIsListResultPending({
 
   // because the timerange updates when the refresh picker is enabled
   // that will trigger a refetch and it doesn't have to be handled manually
-  const enableRefetch = Boolean(probeNamesPending.length) && !refreshInMs;
+  const enableRefetch = isCurrentTimeInSelectedTimeRange && Boolean(probeNamesPending.length) && !refreshInMs;
 
   useRefetchInterval(enableRefetch, handleRefetch);
 }
