@@ -31,7 +31,7 @@ export type MiniMapPages = [MiniMapPage, ...MiniMapPage[]];
 export enum CheckEventType {
   CHECK_CREATED = 'Check created',
   CHECK_UPDATED = 'Check updated',
-  BEFORE_CREATION = 'Before creation',
+  BEFORE_CREATION = 'Before check was created',
   OUT_OF_TIMERANGE = 'Out of selected timerange',
   OUT_OF_RETENTION_PERIOD = 'Out of retention period',
   ALERTS_FIRING = 'Alerts firing',

@@ -1,12 +1,13 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Icon, IconName, Stack, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
+import { Alert, Box, Icon, IconName, Spinner, Stack, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ExecutionLogs, ProbeExecutionLogs, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
+import { CheckResultMissing } from 'scenes/components/TimepointExplorer/CheckResultMissing';
 import { ProbeResultMissing } from 'scenes/components/TimepointExplorer/ProbeResultMissing';
 import { ProbeResultPending } from 'scenes/components/TimepointExplorer/ProbeResultPending';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
@@ -15,15 +16,21 @@ import { SelectedState, TimepointStatus } from 'scenes/components/TimepointExplo
 import { useTimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions.hooks';
 
 interface TimepointViewerExecutionsProps {
-  data: ProbeExecutionLogs[];
+  isLoading: boolean;
   logsView: LogsView;
   pendingProbeNames: string[];
+  probeExecutions: ProbeExecutionLogs[];
 }
 
-export const TimepointViewerExecutions = ({ data, logsView, pendingProbeNames }: TimepointViewerExecutionsProps) => {
+export const TimepointViewerExecutions = ({
+  isLoading,
+  logsView,
+  pendingProbeNames,
+  probeExecutions = [],
+}: TimepointViewerExecutionsProps) => {
   const { handleHoverStateChange, handleSelectedStateChange, selectedState } = useTimepointExplorerContext();
   const [timepoint, probeNameToView] = selectedState;
-  const tabsToRender = useTimepointViewerExecutions(data, pendingProbeNames, timepoint);
+  const tabsToRender = useTimepointViewerExecutions({ probeExecutions, pendingProbeNames, timepoint, isLoading });
 
   return (
     <>
@@ -57,6 +64,14 @@ export const TimepointViewerExecutions = ({ data, logsView, pendingProbeNames }:
             return null;
           }
 
+          if (isLoading) {
+            return (
+              <Box key={probeName} minHeight={30} alignItems={'center'} justifyContent={'center'} display={'flex'}>
+                <Spinner size={32} />
+              </Box>
+            );
+          }
+
           if (status === 'pending') {
             return <ProbeResultPending key={probeName} probeName={probeName} timepoint={timepoint} />;
           }
@@ -84,6 +99,7 @@ export const TimepointViewerExecutions = ({ data, logsView, pendingProbeNames }:
             </Stack>
           );
         })}
+        {!tabsToRender.length && timepoint && <CheckResultMissing />}
       </TabContent>
     </>
   );

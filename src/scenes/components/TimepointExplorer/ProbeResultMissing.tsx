@@ -1,12 +1,12 @@
 import React from 'react';
-import { Alert, Stack, Text, TextLink } from '@grafana/ui';
+import { Text, TextLink } from '@grafana/ui';
 
 import { ProbeWithMetadata } from 'types';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { getExploreUrl } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { Ul } from 'components/Ul';
-import { ProbeResultUnknown } from 'scenes/components/TimepointExplorer/ProbeResultUnknown';
+import { ReasonsForMissingResult } from 'scenes/components/TimepointExplorer/ReasonsForMissingResult';
+import { ResultUnknown } from 'scenes/components/TimepointExplorer/ResultUnknown';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 import { grotPropsMagnifyingGlass } from 'img';
@@ -22,12 +22,12 @@ export const ProbeResultMissing = ({ probeName, timepoint }: ProbeResultMissingP
   const name = probe?.displayName || probeName;
 
   return (
-    <ProbeResultUnknown
+    <ResultUnknown
       title={`${name} didn't return a result for this timepoint`}
       image={<img src={grotPropsMagnifyingGlass} alt="" />}
     >
       {probe ? <ProbeExists probe={probe} timepoint={timepoint} /> : <ProbeUnknown />}
-    </ProbeResultUnknown>
+    </ResultUnknown>
   );
 };
 
@@ -72,29 +72,6 @@ const ProbeExists = ({ probe, timepoint }: { probe: ProbeWithMetadata; timepoint
       </Text>
       <ReasonsForMissingResult isPublic={isPublic} />
     </>
-  );
-};
-
-const ReasonsForMissingResult = ({ isPublic }: { isPublic: boolean }) => {
-  return (
-    <Alert title="Reasons for missing probe results:" severity="info">
-      <Stack direction="column" gap={2}>
-        <Ul>
-          <li>The probe may have been offline</li>
-          {!isPublic && <li>The probe&apos;s credentials may have expired</li>}
-          <li>The probe may have been restarted or the check was updated when this execution was scheduled</li>
-          <li>
-            If the probe was scheduled to run right at the end of this timepoint, it may have began its execution in the
-            timepoint after this one and reported its results there instead.
-          </li>
-        </Ul>
-        <Text>
-          Occasional missing probe results are normal due to the nature of the internet and the probe agent&apos;s
-          scheduling system but if probe results are consistently missing, it may indicate a larger problem that needs
-          investigating.
-        </Text>
-      </Stack>
-    </Alert>
   );
 };
 

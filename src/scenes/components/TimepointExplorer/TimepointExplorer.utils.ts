@@ -1,7 +1,7 @@
 import { DataFrame } from '@grafana/data';
 import { difference } from 'lodash';
 
-import { ExecutionEndedLog, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
+import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
 import {
   ANNOTATION_COLOR_CHECK_UPDATED,
@@ -378,25 +378,6 @@ export function getPendingProbes({
 
 export function getIsInTheFuture(timepoint: StatelessTimepoint, currentAdjustedTime: UnixTimestamp) {
   return timepoint.adjustedTime > currentAdjustedTime;
-}
-
-export function getProbeExecutionsStatus(
-  executionLog: UnknownExecutionLog | undefined,
-  pendingProbeNames: string[],
-  probeName: string
-): TimepointStatus {
-  if (!executionLog) {
-    if (pendingProbeNames.includes(probeName)) {
-      return 'pending';
-    }
-
-    return 'missing';
-  }
-
-  const probeStatus = executionLog[LokiFieldNames.Labels]?.probe_success;
-  const isSuccess = probeStatus === '1';
-
-  return isSuccess ? 'success' : 'failure';
 }
 
 export function getCouldBePending(timepoint: StatelessTimepoint, currentAdjustedTime: UnixTimestamp) {

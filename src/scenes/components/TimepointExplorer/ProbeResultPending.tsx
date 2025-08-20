@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { ProbeWithMetadata } from 'types';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { ChunkyLoadingBar } from 'components/ChunkyLoadingBar/ChunkyLoadingBar';
-import { ProbeResultUnknown } from 'scenes/components/TimepointExplorer/ProbeResultUnknown';
+import { ResultUnknown } from 'scenes/components/TimepointExplorer/ResultUnknown';
 import { useTimepointVizOptions } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
@@ -23,9 +23,9 @@ export const ProbeResultPending = ({ probeName, timepoint }: ProbeResultPendingP
   const name = probe?.displayName || probeName;
 
   return (
-    <ProbeResultUnknown title={`Waiting on results for ${name}...`} image={<PendingGrot />}>
+    <ResultUnknown title={`Waiting on results for ${name}...`} image={<PendingGrot />}>
       {probe ? <ProbeExists probe={probe} timepoint={timepoint} /> : <ProbeUnknown />}
-    </ProbeResultUnknown>
+    </ResultUnknown>
   );
 };
 

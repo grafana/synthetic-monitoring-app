@@ -6,7 +6,6 @@ import { css } from '@emotion/css';
 import { formatDuration } from 'utils';
 import { getExploreUrl } from 'data/utils';
 import { useLogsDS } from 'hooks/useLogsDS';
-import { CenteredSpinner } from 'components/CenteredSpinner';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
@@ -15,10 +14,12 @@ import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/Timepoin
 import { getPendingProbes } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { useTimepointLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.hooks';
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
+import { TimepointViewerNavigation } from 'scenes/components/TimepointExplorer/TimepointViewerNavigation';
 
 export const TimepointViewer = () => {
   const { selectedState } = useTimepointExplorerContext();
   const [selectedTimepoint] = selectedState;
+
   const styles = useStyles2(getStyles);
 
   return (
@@ -31,6 +32,7 @@ export const TimepointViewer = () => {
           <Text>Select a timepoint to view logs.</Text>
         </Stack>
       )}
+      <TimepointViewerNavigation />
     </div>
   );
 };
@@ -40,7 +42,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     border-radius: ${theme.shape.radius.default};
     border: 1px solid ${theme.colors.border.medium};
     padding: ${theme.spacing(2)};
-    min-height: ${theme.spacing(30)};
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.spacing(2)};
   `,
 });
 
@@ -78,11 +82,12 @@ const TimepointViewerContent = ({ timepoint }: { timepoint: StatelessTimepoint }
   return (
     <Stack direction={`column`} gap={1}>
       <TimepointHeader timepoint={timepoint} onChangeLogsView={onChangeLogsView} />
-      {isLoading ? (
-        <CenteredSpinner />
-      ) : (
-        <TimepointViewerExecutions logsView={logsView} data={data} pendingProbeNames={pendingProbeNames} />
-      )}
+      <TimepointViewerExecutions
+        isLoading={isLoading}
+        logsView={logsView}
+        probeExecutions={data}
+        pendingProbeNames={pendingProbeNames}
+      />
     </Stack>
   );
 };

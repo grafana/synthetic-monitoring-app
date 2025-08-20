@@ -3,13 +3,13 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-interface ProbeResultUnknownProps {
+interface ResultUnknownProps {
   children: ReactNode;
   image: ReactNode;
   title: string;
 }
 
-export const ProbeResultUnknown = ({ children, image, title }: ProbeResultUnknownProps) => {
+export const ResultUnknown = ({ children, image, title }: ResultUnknownProps) => {
   const styles = useStyles2(getStyles);
 
   return (
