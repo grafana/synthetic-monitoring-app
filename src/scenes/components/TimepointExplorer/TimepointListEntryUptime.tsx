@@ -1,129 +1,26 @@
-import React, { useRef } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import React from 'react';
+import { Icon } from '@grafana/ui';
 
-import { PlainButton } from 'components/PlainButton';
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
-import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
-import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
-import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
+import { TimepointListEntryBar } from 'scenes/components/TimepointExplorer/TimepointListEntryBar';
 
 interface TimepointListEntryProps {
   timepoint: StatelessTimepoint;
 }
 
-const GLOBAL_CLASS = `uptime_bar`;
-
 export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps) => {
-  const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { status } = statefulTimepoint;
-  const { check, handleSelectedStateChange, maxProbeDuration, selectedState, vizDisplay, timepointWidth } =
-    useTimepointExplorerContext();
-  const probeVar = useSceneVarProbes(check);
-  const probeResults = Object.keys(statefulTimepoint.probeResults).sort((a, b) => a.localeCompare(b));
-  const probeNameToView = probeResults.length ? probeResults[0] : probeVar[0];
-
-  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
-  const styles = useStyles2(getStyles, timepointWidth);
-  const [selectedTimepoint] = selectedState;
-  const isSelected = selectedTimepoint?.adjustedTime === timepoint.adjustedTime;
-  const ref = useRef<HTMLButtonElement>(null);
+  const { status } = useStatefulTimepoint(timepoint);
+  const { vizDisplay } = useTimepointExplorerContext();
 
   if (!vizDisplay.includes(status)) {
     return <div />;
   }
 
   return (
-    <div className={styles.container} style={{ height: `${height}%` }}>
-      {isSelected && (
-        <div className={styles.selectedIcon} style={{ bottom: `${height}%` }}>
-          <Icon name="eye" />
-        </div>
-      )}
-      <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
-        <PlainButton
-          className={styles.uptimeButton}
-          ref={ref}
-          onClick={() => handleSelectedStateChange([timepoint, probeNameToView, 0])}
-          showFocusStyles={false}
-        >
-          <TimepointVizItem
-            className={cx(styles.uptimeBar, GLOBAL_CLASS, {
-              [styles.selected]: isSelected,
-            })}
-            status={status}
-          >
-            {status === 'failure' ? <Icon name={`times`} /> : status === 'success' ? <Icon name={`check`} /> : `?`}
-          </TimepointVizItem>
-        </PlainButton>
-      </Tooltip>
-    </div>
+    <TimepointListEntryBar timepoint={timepoint} status={status}>
+      {status === 'failure' ? <Icon name={`times`} /> : status === 'success' ? <Icon name={`check`} /> : `?`}
+    </TimepointListEntryBar>
   );
-};
-
-const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
-  return {
-    container: css`
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    `,
-    uptimeButton: css`
-      width: calc(${timepointWidth}px + ${TIMEPOINT_GAP_PX}px);
-      height: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      position: relative;
-      display: flex;
-      justify-content: center;
-      z-index: 2;
-
-      &:hover .${GLOBAL_CLASS} {
-        &:after {
-          opacity: 0.3;
-        }
-      }
-
-      &:focus-visible {
-        .${GLOBAL_CLASS} {
-          ${styleMixins.getFocusStyles(theme)}
-        }
-      }
-    `,
-    uptimeBar: css`
-      height: 100%;
-      min-height: 2px;
-      width: ${timepointWidth}px;
-      display: flex;
-      align-items: end;
-      justify-content: center;
-      position: relative;
-      border-radius: ${theme.shape.radius.default};
-
-      &:after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
-        opacity: 0;
-        pointer-events: none;
-      }
-    `,
-    selected: css`
-      border-width: 2px;
-      z-index: 1;
-    `,
-    selectedIcon: css`
-      position: absolute;
-      bottom: 100%;
-    `,
-  };
 };

@@ -6,7 +6,12 @@ import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
 
-import { ExecutionEndedLog, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
+import {
+  ExecutionLabels,
+  ExecutionLabelType,
+  FailedLogLabels,
+  SucceededLogLabels,
+} from 'features/parseCheckLogs/checkLogs.types';
 import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
@@ -115,25 +120,15 @@ interface UseExecutionDurationLogsProps {
 }
 
 export function useExecutionDurationLogs({ check, probe, timepoints, timeRange }: UseExecutionDurationLogsProps) {
-  const [listLogsMap, setlistLogsMap] = useState<Record<UnixTimestamp, StatefulTimepoint>>({});
   const probeExpr = probe?.join('|') || '.*';
-
-  const onSuccess = useCallback(
-    (logs: ExecutionEndedLog[]) => {
-      setlistLogsMap((prev) => ({
-        ...prev,
-        ...buildlistLogsMap({ logs, timepoints }),
-      }));
-    },
-    [timepoints]
-  );
+  const prevListLogsMap = useRef({});
 
   const {
     fetchNextPage,
     hasNextPage,
     data: logsData = [],
     ...rest
-  } = usePersistedInfiniteLogs<ExecutionEndedLog, ExecutionLabelType>({
+  } = usePersistedInfiniteLogs<ExecutionLabels & (FailedLogLabels | SucceededLogLabels), ExecutionLabelType>({
     refId: REF_ID_EXECUTION_LIST_LOGS,
     expr: `{job="${check.job}", instance="${check.target}", probe=~"${probeExpr}"} | logfmt |="duration_seconds="`,
     start: timeRange.from,
@@ -146,9 +141,17 @@ export function useExecutionDurationLogs({ check, probe, timepoints, timeRange }
     }
   }, [fetchNextPage, hasNextPage, logsData.length]);
 
-  useEffect(() => {
-    onSuccess(logsData as unknown as ExecutionEndedLog[]);
-  }, [logsData, onSuccess]);
+  const listLogsMap = useMemo(() => {
+    const build = buildlistLogsMap({ logs: logsData, timepoints });
+    const res = {
+      ...prevListLogsMap.current,
+      ...build,
+    };
+
+    prevListLogsMap.current = res;
+
+    return res;
+  }, [logsData, timepoints]);
 
   return {
     data: logsData,
@@ -157,20 +160,23 @@ export function useExecutionDurationLogs({ check, probe, timepoints, timeRange }
   };
 }
 
+function usePersisted<T>(data: T, shouldUpdate: (data: T) => boolean) {
+  const persistedDataRef = useRef<T>(data);
+
+  if (shouldUpdate(data)) {
+    persistedDataRef.current = data;
+  }
+
+  return persistedDataRef.current;
+}
+
 function usePersistedInfiniteLogs<T, R>(props: InfiniteLogsParams<T, R>) {
-  const [persistedLogsData, setPersistedLogsData] = useState<Array<ParsedLokiRecord<T, R>>>([]);
-
   const { data = [], ...rest } = useInfiniteLogs<T, R>(props);
-
-  useEffect(() => {
-    if (data.length > 0) {
-      // todo: stitch together different pages of data here...
-      setPersistedLogsData(data);
-    }
-  }, [data]);
+  const shouldUpdate = useCallback((data: Array<ParsedLokiRecord<T, R>>) => data.length > 0, []);
+  const persistedData = usePersisted<Array<ParsedLokiRecord<T, R>>>(data, shouldUpdate);
 
   return {
-    data: persistedLogsData,
+    data: persistedData,
     ...rest,
   };
 }
@@ -183,16 +189,10 @@ interface UseCheckConfigsProps {
 }
 
 export function usePersistedCheckConfigs({ from, to, check, probe }: UseCheckConfigsProps) {
-  const [persistedCheckConfigs, setPersistedCheckConfigs] = useState<CheckConfigRaw[]>([]);
   const { data = [], ...rest } = useCheckConfigs({ from, to, check, probe });
+  const persistedData = usePersisted<CheckConfigRaw[]>(data, (data) => data.length > 0);
 
-  useEffect(() => {
-    if (data.length > 0) {
-      setPersistedCheckConfigs(data);
-    }
-  }, [data]);
-
-  return { data: persistedCheckConfigs, ...rest };
+  return { data: persistedData, ...rest };
 }
 
 function useCheckConfigs({ from, to, check, probe }: UseCheckConfigsProps) {
@@ -237,15 +237,9 @@ interface UseMaxProbeDurationProps {
 }
 
 export function usePersistedMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProps) {
-  const [persistedMaxProbeDuration, setPersistedMaxProbeDuration] = useState<number>(0);
-
   const { data = 0, ...rest } = useMaxProbeDuration({ from, to, check, probe });
-
-  useEffect(() => {
-    if (data > 0) {
-      setPersistedMaxProbeDuration(data);
-    }
-  }, [data]);
+  const shouldUpdate = useCallback((data: number) => data > 0, []);
+  const persistedMaxProbeDuration = usePersisted<number>(data, shouldUpdate);
 
   return { data: persistedMaxProbeDuration, ...rest };
 }

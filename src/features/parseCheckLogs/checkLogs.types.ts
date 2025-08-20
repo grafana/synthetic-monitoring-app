@@ -32,25 +32,23 @@ export type StartingLog = UnknownExecutionLog<{
   msg: (typeof MSG_STRINGS_COMMON)['BeginningCheck'];
 }>;
 
-export type EndingLogLabels = {
+export type FailedLogLabels = {
+  probe_success: '0';
+  msg: (typeof MSG_STRINGS_COMMON)['CheckFailed'];
   duration_seconds: string;
 };
 
-export type ExecutionFailedLog = UnknownExecutionLog<
-  EndingLogLabels & {
-    probe_success: '0';
-    msg: (typeof MSG_STRINGS_COMMON)['CheckFailed'];
-  }
->;
+export type SucceededLogLabels = {
+  probe_success: '1';
+  msg: (typeof MSG_STRINGS_COMMON)['CheckSucceeded'];
+  duration_seconds: string;
+};
 
-export type ExecutionSucceededLog = UnknownExecutionLog<
-  EndingLogLabels & {
-    probe_success: '1';
-    msg: (typeof MSG_STRINGS_COMMON)['CheckSucceeded'];
-  }
->;
+export type ExecutionFailedLog = UnknownExecutionLog<FailedLogLabels>;
 
-export type ExecutionEndedLog = ExecutionFailedLog | ExecutionSucceededLog;
+export type ExecutionSucceededLog = UnknownExecutionLog<SucceededLogLabels>;
+
+export type ExecutionEndedLog = UnknownExecutionLog<FailedLogLabels | SucceededLogLabels>;
 
 export type ExecutionLogs = [StartingLog, ...UnknownExecutionLog[], ExecutionEndedLog];
 

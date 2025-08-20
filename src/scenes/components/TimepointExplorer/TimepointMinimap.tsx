@@ -79,7 +79,7 @@ const TimepointMinimapContent = () => {
   const [timeRange] = useTimeRange();
   const { check, isLogsRetentionPeriodWithinTimerange, miniMapCurrentPageSections } = useTimepointExplorerContext();
   const checkCreation = Math.round(check.created! * 1000);
-  const isCheckCreationAfterFrom = checkCreation > timeRange.from.valueOf();
+  const isCheckCreationWithinRange = checkCreation > timeRange.from.valueOf() && checkCreation < timeRange.to.valueOf();
   const isCheckCreationAfterTo = checkCreation > timeRange.to.valueOf();
 
   const filler =
@@ -95,20 +95,19 @@ const TimepointMinimapContent = () => {
     },
   });
 
+  const className = isCheckCreationWithinRange
+    ? undefined
+    : isCheckCreationAfterTo
+    ? styles.beforeCreationMimic
+    : isLogsRetentionPeriodWithinTimerange
+    ? styles.outOfRetentionPeriodMimic
+    : styles.outOfRangeMimic;
+
   return (
     <Box position="relative" paddingY={2} flex={1} ref={ref}>
       <Stack gap={0}>
         {filler.map((_, index) => {
-          return (
-            <div
-              key={index}
-              className={cx(styles.filler, {
-                [styles.outOfRangeMimic]: !isCheckCreationAfterFrom && !isCheckCreationAfterTo,
-                [styles.beforeCreationMimic]: isCheckCreationAfterTo,
-                [styles.outOfRetentionPeriodMimic]: isLogsRetentionPeriodWithinTimerange,
-              })}
-            />
-          );
+          return <div key={index} className={cx(styles.filler, className)} />;
         })}
         {miniMapCurrentPageSections
           .map((section, index) => (

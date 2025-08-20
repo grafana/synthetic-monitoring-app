@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { colorManipulator, GrafanaTheme2 } from '@grafana/data';
-import { Spinner, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { LoadingBar, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
 
@@ -53,12 +53,8 @@ export const TimepointList = () => {
 
   return (
     <div>
+      {isLoading ? <LoadingBar width={listWidth} /> : <div style={{ height: 1 }} />}
       <div className={styles.container}>
-        {isLoading && (
-          <div className={styles.loading}>
-            <Spinner size={32} />
-          </div>
-        )}
         <YAxis maxProbeDuration={maxProbeDuration} width={listWidth} />
         <div className={styles.timepointsContainer}>
           <TimepointExplorerAnnotations
@@ -89,18 +85,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     position: relative;
     z-index: 1;
   `,
-  loading: css`
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: ${colorManipulator.alpha(theme.colors.background.canvas, 0.3)};
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 5;
-  `,
+  loading: css``,
   timepoints: css`
     display: flex;
     flex-direction: row;

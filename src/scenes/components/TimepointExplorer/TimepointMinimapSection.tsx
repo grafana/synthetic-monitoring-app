@@ -78,15 +78,16 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
 };
 
 const Entry = ({ timepoint, parentWidth }: { timepoint: StatelessTimepoint; parentWidth: number }) => {
-  const { check, currentAdjustedTime, timepointsDisplayCount, viewMode } = useTimepointExplorerContext();
+  const { check, currentAdjustedTime, isLoading, timepointsDisplayCount, viewMode } = useTimepointExplorerContext();
   const selectedProbeNames = useSceneVarProbes(check);
   const isInTheFuture = getIsInTheFuture(timepoint, currentAdjustedTime);
   const couldBePending = getCouldBePending(timepoint, currentAdjustedTime);
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const pendingProbeNames = getPendingProbeNames({ statefulTimepoint, selectedProbeNames });
   const width = parentWidth / timepointsDisplayCount;
+  const isEntryLoading = isLoading && statefulTimepoint.status === 'missing';
 
-  if (timepoint.config.type === 'no-data' || isInTheFuture) {
+  if (timepoint.config.type === 'no-data' || isInTheFuture || isEntryLoading) {
     return <div key={timepoint.adjustedTime} style={{ width }} />;
   }
 

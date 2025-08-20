@@ -13,6 +13,7 @@ import {
   getIsInTheFuture,
   getPendingProbeNames,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { TimepointListEntryLoading } from 'scenes/components/TimepointExplorer/TimepointListEntryLoading';
 import { TimepointListEntryPending } from 'scenes/components/TimepointExplorer/TimepointListEntryPending';
 import { TimepointListEntryReachability } from 'scenes/components/TimepointExplorer/TimepointListEntryReachability';
 import { TimepointListEntryUptime } from 'scenes/components/TimepointExplorer/TimepointListEntryUptime';
@@ -34,15 +35,20 @@ export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryP
 };
 
 const Entry = (props: TimepointListEntryProps) => {
-  const { check, currentAdjustedTime, viewMode } = useTimepointExplorerContext();
+  const { check, currentAdjustedTime, isLoading, viewMode } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(props.timepoint);
   const isInTheFuture = getIsInTheFuture(props.timepoint, currentAdjustedTime);
   const selectedProbeNames = useSceneVarProbes(check);
   const couldBePending = getCouldBePending(props.timepoint, currentAdjustedTime);
   const pendingProbeNames = getPendingProbeNames({ statefulTimepoint, selectedProbeNames });
+  const isEntryLoading = isLoading && statefulTimepoint.status === 'missing';
 
   if (props.timepoint.config.type === 'no-data' || isInTheFuture) {
     return <div />;
+  }
+
+  if (isEntryLoading) {
+    return <TimepointListEntryLoading />;
   }
 
   if (couldBePending && pendingProbeNames.length) {

@@ -14,7 +14,7 @@ import { useTheme2 } from '@grafana/ui';
 
 import { Check } from 'types';
 import { useLogsRetentionPeriod } from 'data/useLogsRetention';
-import { useSceneVar } from 'scenes/Common/useSceneVar';
+import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import {
   MAX_MINIMAP_SECTIONS,
   MAX_PROBE_DURATION_DEFAULT,
@@ -38,6 +38,7 @@ import {
   MiniMapSection,
   MiniMapSections,
   SelectedState,
+  SelectedTimepoint,
   StatefulTimepoint,
   StatelessTimepoint,
   TimepointStatus,
@@ -64,7 +65,7 @@ interface TimepointExplorerContextType {
   handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
   handleMiniMapPageChange: (page: number) => void;
   handleMiniMapSectionChange: (sectionIndex: number) => void;
-  handleSelectedStateChange: (state: SelectedState) => void;
+  handleSelectedStateChange: (state: SelectedTimepoint) => void;
   handleTimepointWidthChange: (timepointWidth: number, currentSectionRange: MiniMapSection) => void;
   handleViewModeChange: (viewMode: ViewMode) => void;
   handleVizDisplayChange: (display: TimepointStatus, usedModifier: boolean) => void;
@@ -79,7 +80,7 @@ interface TimepointExplorerContextType {
   miniMapCurrentPageSections: MiniMapSections;
   miniMapCurrentSectionIndex: number;
   miniMapPages: MiniMapPages;
-  selectedState: SelectedState;
+  selectedState: SelectedTimepoint;
   timepointWidth: number;
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
@@ -104,7 +105,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const explorerTimeFrom = getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom: timeRange.from.valueOf() });
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
   const [hoveredState, setHoveredState] = useState<SelectedState>([null, null, null]);
-  const [selectedState, setSelectedState] = useState<SelectedState>([null, null, null]);
   const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
   const [timepointsDisplayCount, setTimepointsDisplayCount] = useState<number>(0);
@@ -119,7 +119,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   });
   const [listWidth, setListWidth] = useState<number>(0);
   const [timepointWidth, setTimepointWidth] = useState<number>(TIMEPOINT_SIZE);
-  const probeVar = useSceneVar('probe');
+  const probeVar = useSceneVarProbes(check);
 
   const {
     data: maxProbeDurationData,
@@ -193,6 +193,12 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     [checkConfigs, explorerTimeFrom]
   );
 
+  const [selectedState, setSelectedState] = useState<SelectedTimepoint>([
+    timepoints[timepoints.length - 1],
+    probeVar[0],
+    0,
+  ]);
+
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
     setMiniMapCurrentSectionIndex(sectionIndex);
   }, []);
@@ -206,7 +212,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     setViewMode(viewMode);
   }, []);
 
-  const handleSelectedStateChange = useCallback((state: SelectedState) => {
+  const handleSelectedStateChange = useCallback((state: SelectedTimepoint) => {
     setSelectedState(state);
   }, []);
 
