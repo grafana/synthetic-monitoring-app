@@ -3,6 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { formatDate } from 'utils';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { AnnotationWithIndices } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations.utils';
 
@@ -40,7 +41,12 @@ export const TimepointInstantAnnotation = ({
         right: `${right}px`,
       }}
     >
-      {showLabels && <div className={styles.label}>{annotation.checkEvent.label} </div>}
+      {showLabels && (
+        <div className={styles.label}>
+          <div>{annotation.checkEvent.label}</div>
+          {annotation.checkEvent.from && <div>{formatDate(annotation.checkEvent.from, true)}</div>}
+        </div>
+      )}
     </div>
   );
 };

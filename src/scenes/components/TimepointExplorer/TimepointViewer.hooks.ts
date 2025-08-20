@@ -21,7 +21,7 @@ export function useTimepointLogs({ timepoint, job, instance, probe, staleTime }:
     refId: `${REF_ID_EXECUTION_VIEWER_LOGS}-${job}-${instance}-${timepoint.adjustedTime}`,
     expr: `{job="${job}", instance="${instance}", probe=~"${probeExpr}"} | logfmt`,
     start: timepoint.adjustedTime,
-    end: timepoint.adjustedTime + timepoint.timepointDuration * 2,
+    end: timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency,
     staleTime,
   });
 

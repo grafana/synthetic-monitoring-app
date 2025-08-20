@@ -264,13 +264,14 @@ export function getRandomProbes(probes: number[], quantity: number): number[] {
   return Array.from(randomProbes).sort((a, b) => a - b);
 }
 
-export function formatDate(number: number) {
+export function formatDate(number: number, seconds?: boolean) {
   return new Date(number).toLocaleString('en-US', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    second: seconds ? '2-digit' : undefined,
   });
 }
 
@@ -400,7 +401,7 @@ export function formatDuration(milliseconds: number, compact = false) {
   const seconds = milliseconds / 1000;
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
+  const remainingSeconds = Math.round(seconds % 60);
 
   const parts: string[] = [];
 

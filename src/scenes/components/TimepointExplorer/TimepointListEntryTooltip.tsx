@@ -43,7 +43,7 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
       <div className={styles.header}>
         <Stack direction="row" alignItems="center" gap={3} justifyContent="space-between">
           <Text variant="h5" element="h3">
-            {displayTime}
+            {displayTime} - {formatDuration(statefulTimepoint.timepointDuration, true)}
           </Text>
           <StatusBadge status={statefulTimepoint.status} type="uptime" />
         </Stack>

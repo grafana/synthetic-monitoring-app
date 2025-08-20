@@ -57,6 +57,8 @@ interface UseBuiltCheckConfigsProps {
 }
 
 export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckConfigsProps) {
+  const lastModified = Math.round(check.modified! * 1000);
+
   const {
     data: checkConfigsData,
     isLoading: checkConfigsIsLoading,
@@ -81,7 +83,23 @@ export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckCo
     ];
   }, [checkConfigsData, check, from]);
 
-  const firstConfig = checkConfigsRaw[0];
+  const withLatest = useMemo(() => {
+    const latest = checkConfigsRaw[checkConfigsRaw.length - 1];
+
+    if (latest.date === lastModified) {
+      return checkConfigsRaw;
+    }
+
+    return [
+      ...checkConfigsRaw,
+      {
+        date: lastModified,
+        frequency: check.frequency,
+      },
+    ];
+  }, [checkConfigsRaw, lastModified, check]);
+
+  const firstConfig = withLatest[0];
   const needFiller = BigInt(firstConfig.date) > BigInt(from);
 
   const checkConfigs = useMemo(() => {
@@ -90,10 +108,21 @@ export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckCo
       date: from,
       type: 'no-data',
     };
-    const toUse = needFiller ? [filler, ...checkConfigsRaw] : checkConfigsRaw;
+    const toUse = needFiller ? [filler, ...withLatest] : withLatest;
 
     return buildConfigTimeRanges(toUse, to);
-  }, [checkConfigsRaw, to, firstConfig.frequency, needFiller, from]);
+  }, [withLatest, to, firstConfig.frequency, needFiller, from]);
+
+  useEffect(() => {
+    console.log(
+      checkConfigs.map((c) => ({
+        from: new Date(c.from).toISOString(),
+        to: new Date(c.to).toISOString(),
+        frequency: c.frequency,
+        type: c.type,
+      }))
+    );
+  }, [checkConfigs]);
 
   return {
     checkConfigs,

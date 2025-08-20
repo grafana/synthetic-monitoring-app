@@ -10,11 +10,74 @@ import {
 import {
   buildlistLogsMap,
   buildTimepoints,
+  buildTimepointsForConfig,
   findNearest,
   getMiniMapPages,
   getMiniMapSections,
   getPendingProbes,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+
+describe(`buildTimepointsForConfig`, () => {
+  it(`should build the correct timepoints for a single config`, () => {
+    const CONFIG_ONE = {
+      frequency: 100,
+      from: 0,
+      to: 300,
+    };
+
+    const timepoints = buildTimepointsForConfig({ from: CONFIG_ONE.from, to: CONFIG_ONE.to, config: CONFIG_ONE });
+
+    expect(timepoints).toEqual([
+      { adjustedTime: 0, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 100, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 200, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+    ]);
+  });
+
+  it(`should set the correct duration for the first timepoint`, () => {
+    const CONFIG_ONE = {
+      frequency: 100,
+      from: 4,
+      to: 300,
+    };
+
+    const timepoints = buildTimepointsForConfig({ from: CONFIG_ONE.from, to: CONFIG_ONE.to, config: CONFIG_ONE });
+
+    expect(timepoints).toEqual([
+      { adjustedTime: 0, timepointDuration: 96, config: CONFIG_ONE },
+      { adjustedTime: 100, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 200, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+    ]);
+  });
+
+  it(`should set the correct duration for the last timepoint`, () => {
+    const CONFIG_ONE = {
+      frequency: 100,
+      from: 0,
+      to: 296,
+    };
+
+    const timepoints = buildTimepointsForConfig({ from: CONFIG_ONE.from, to: CONFIG_ONE.to, config: CONFIG_ONE });
+
+    expect(timepoints).toEqual([
+      { adjustedTime: 0, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 100, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 200, timepointDuration: 96, config: CONFIG_ONE },
+    ]);
+  });
+
+  it(`should set the correct duration for a single timepoint that is less than the frequency`, () => {
+    const CONFIG_ONE = {
+      frequency: 100,
+      from: 4,
+      to: 99,
+    };
+
+    const timepoints = buildTimepointsForConfig({ from: CONFIG_ONE.from, to: CONFIG_ONE.to, config: CONFIG_ONE });
+
+    expect(timepoints).toEqual([{ adjustedTime: 0, timepointDuration: 95, config: CONFIG_ONE }]);
+  });
+});
 
 describe(`getMiniMapPages`, () => {
   it(`should not get into an infinite loop`, () => {});
