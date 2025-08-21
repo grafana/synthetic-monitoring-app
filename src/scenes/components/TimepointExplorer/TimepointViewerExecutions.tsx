@@ -42,9 +42,10 @@ export const TimepointViewerExecutions = ({
   return (
     <>
       <TabsBar>
-        {tabsToRender.map(({ probeName, status }) => {
+        {tabsToRender.map(({ probeName, status, executions }) => {
           const active = probeNameToView === probeName;
           const hoveredState: HoveredState = timepoint ? [timepoint, probeName, 0] : [];
+          const label = executions.length > 1 ? `${probeName} (${executions.length})` : probeName;
 
           return (
             <ProbeNameTab
@@ -58,55 +59,57 @@ export const TimepointViewerExecutions = ({
               handleMouseEnter={() => handleHoverStateChange(hoveredState)}
               handleMouseLeave={() => handleHoverStateChange([])}
               status={status}
-              probeName={probeName}
+              probeName={label}
             />
           );
         })}
       </TabsBar>
       <TabContent>
-        {tabsToRender.map(({ probeName, executions, status }) => {
-          const active = probeNameToView === probeName;
+        <Box paddingY={2}>
+          {tabsToRender.map(({ probeName, executions, status }) => {
+            const active = probeNameToView === probeName;
 
-          if (!active) {
-            return null;
-          }
+            if (!active) {
+              return null;
+            }
 
-          if (isLoading) {
+            if (isLoading) {
+              return (
+                <Box key={probeName} minHeight={30} alignItems={'center'} justifyContent={'center'} display={'flex'}>
+                  <Spinner size={32} />
+                </Box>
+              );
+            }
+
+            if (status === 'pending') {
+              return <ProbeResultPending key={probeName} probeName={probeName} timepoint={timepoint} />;
+            }
+
+            if (status === 'missing') {
+              return <ProbeResultMissing key={probeName} probeName={probeName} timepoint={timepoint} />;
+            }
+
+            if (executions.length > 1) {
+              return <MultipleExecutions key={probeName} executions={executions} logsView={logsView} />;
+            }
+
             return (
-              <Box key={probeName} minHeight={30} alignItems={'center'} justifyContent={'center'} display={'flex'}>
-                <Spinner size={32} />
-              </Box>
+              <Stack direction="column" gap={8} key={probeName}>
+                {executions.map((execution) => {
+                  return (
+                    <LogsRenderer<UnknownExecutionLog>
+                      key={execution[0][LokiFieldNames.ID]}
+                      logs={execution}
+                      logsView={logsView}
+                      mainKey="msg"
+                    />
+                  );
+                })}
+              </Stack>
             );
-          }
-
-          if (status === 'pending') {
-            return <ProbeResultPending key={probeName} probeName={probeName} timepoint={timepoint} />;
-          }
-
-          if (status === 'missing') {
-            return <ProbeResultMissing key={probeName} probeName={probeName} timepoint={timepoint} />;
-          }
-
-          if (executions.length > 1) {
-            return <MultipleExecutions key={probeName} executions={executions} logsView={logsView} />;
-          }
-
-          return (
-            <Stack direction="column" gap={8} key={probeName}>
-              {executions.map((execution) => {
-                return (
-                  <LogsRenderer<UnknownExecutionLog>
-                    key={execution[0][LokiFieldNames.ID]}
-                    logs={execution}
-                    logsView={logsView}
-                    mainKey="msg"
-                  />
-                );
-              })}
-            </Stack>
-          );
-        })}
-        {!tabsToRender.length && timepoint && <CheckResultMissing />}
+          })}
+          {!tabsToRender.length && timepoint && <CheckResultMissing />}
+        </Box>
       </TabContent>
     </>
   );
@@ -162,19 +165,30 @@ const ProbeNameIcon = ({ status }: { status: TimepointStatus }) => {
 
 const MultipleExecutions = ({ executions, logsView }: { executions: ExecutionLogs[]; logsView: LogsView }) => {
   const styles = useStyles2(getStyles);
+  const success = useTimepointVizOptions('success');
+  const failure = useTimepointVizOptions('failure');
 
   return (
-    <Stack direction="column" gap={4}>
+    <Stack direction="column" gap={2}>
       <Alert title="Multiple executions" severity="info">
         {/* TODO: Add a list of reasons why this happened */}
         <div>This timepoint had multiple executions for this probe.</div>
       </Alert>
       <Stack direction="column" gap={4}>
         {executions.map((execution, index) => {
+          const { probe_success } = execution[0].labels;
+          const id = execution[0][LokiFieldNames.ID];
+
           return (
             <>
-              <div className={styles.multipleExecutions} key={execution[0][LokiFieldNames.ID]}>
-                <div className={styles.executionIndex}>{index + 1}</div>
+              <div className={styles.multipleExecutions} key={id}>
+                <Stack direction="column" gap={2} alignItems="center">
+                  <div className={styles.executionIndex}>{index + 1}</div>
+                  <Icon
+                    name={probe_success === '1' ? 'check' : 'times'}
+                    color={`${probe_success === '1' ? success.statusColor : failure.statusColor}`}
+                  />
+                </Stack>
                 <LogsRenderer<UnknownExecutionLog> logs={execution} logsView={logsView} mainKey="msg" />
               </div>
               {index !== executions.length - 1 && <div className={styles.divider} />}

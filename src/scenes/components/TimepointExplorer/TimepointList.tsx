@@ -13,6 +13,7 @@ import {
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { TimepointExplorerAnnotations } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations';
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
+import { TimepointListErrorButton } from 'scenes/components/TimepointExplorer/TimepointListErrorButton';
 import { TimepointListVizLegend } from 'scenes/components/TimepointExplorer/TimepointListVizLegend';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
 import { YAxis } from 'scenes/components/TimepointExplorer/YAxis';
@@ -22,7 +23,8 @@ export const TimepointList = () => {
 
   const {
     handleListWidthChange,
-    isLoading,
+    isError,
+    isFetching,
     maxProbeDuration,
     timepoints,
     listWidth,
@@ -53,8 +55,13 @@ export const TimepointList = () => {
 
   return (
     <div>
-      {isLoading ? <LoadingBar width={listWidth} /> : <div style={{ height: 1 }} />}
+      {isFetching ? <LoadingBar width={listWidth} /> : <div style={{ height: 1 }} />}
       <div className={styles.container}>
+        {isError && (
+          <div className={styles.error}>
+            <TimepointListErrorButton />
+          </div>
+        )}
         <YAxis maxProbeDuration={maxProbeDuration} width={listWidth} />
         <div className={styles.timepointsContainer}>
           <TimepointExplorerAnnotations
@@ -85,7 +92,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
     position: relative;
     z-index: 1;
   `,
-  loading: css``,
+  error: css`
+    position: absolute;
+    top: ${theme.spacing(2)};
+    right: ${theme.spacing(2)};
+    z-index: 1000;
+  `,
   timepoints: css`
     display: flex;
     flex-direction: row;

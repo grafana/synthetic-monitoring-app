@@ -23,6 +23,7 @@ export function useTimepointLogs({ timepoint, job, instance, probe, staleTime }:
     start: timepoint.adjustedTime,
     end: timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency,
     staleTime,
+    throwOnError: true,
   });
 
   const { data } = props;

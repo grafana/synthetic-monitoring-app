@@ -1,9 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Stack, Text, useStyles2 } from '@grafana/ui';
+import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useResizeObserver } from 'usehooks-ts';
 
 import { formatDuration } from 'utils';
+import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
@@ -15,47 +17,55 @@ import { TimepointViewerActions } from 'scenes/components/TimepointExplorer/Time
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
-  const { viewerState } = useTimepointExplorerContext();
+  const { isInitialised, viewerState } = useTimepointExplorerContext();
+  const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
   const [viewerTimepoint, viewerProbeName] = viewerState;
   const styles = useStyles2(getStyles);
+
+  const handleChangeLogsView = useCallback((view: LogsView) => {
+    setLogsView(view);
+  }, []);
 
   return (
     <div className={styles.container}>
       {viewerTimepoint && viewerProbeName ? (
-        <TimepointViewerContent probeNameToView={viewerProbeName} timepoint={viewerTimepoint} />
+        <div>
+          <Box padding={2} gap={1} direction="column" position="relative">
+            <TimepointHeader timepoint={viewerTimepoint} onChangeLogsView={handleChangeLogsView} />
+            <QueryErrorBoundary key={viewerTimepoint.adjustedTime}>
+              <TimepointViewerContent
+                logsView={logsView}
+                probeNameToView={viewerProbeName}
+                timepoint={viewerTimepoint}
+              />
+            </QueryErrorBoundary>
+          </Box>
+        </div>
       ) : (
         <Stack justifyContent={'center'} alignItems={'center'} height={30} direction={'column'}>
-          <Text variant="h2">No timepoint selected</Text>
-          <Text>Select a timepoint to view logs.</Text>
+          <Text variant="h2">{isInitialised ? 'No timepoint selected' : 'Loading...'}</Text>
+          {isInitialised && <Text>Select a timepoint to view logs.</Text>}
         </Stack>
       )}
     </div>
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  container: css`
-    border-radius: ${theme.shape.radius.default};
-    border: 1px solid ${theme.colors.border.medium};
-    padding: ${theme.spacing(2)};
-    display: flex;
-    flex-direction: column;
-    gap: ${theme.spacing(2)};
-  `,
-});
-
 interface TimepointViewerContentProps {
+  logsView: LogsView;
   probeNameToView: string;
   timepoint: StatelessTimepoint;
 }
 
-const TimepointViewerContent = ({ probeNameToView, timepoint }: TimepointViewerContentProps) => {
+const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: TimepointViewerContentProps) => {
+  const elRef = useRef<HTMLDivElement>(null);
+  const [viewerWidth, setViewerWidth] = useState<number>(0);
   const { check, currentAdjustedTime } = useTimepointExplorerContext();
   const couldResultBePending = getCouldBePending(timepoint, currentAdjustedTime);
-  const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
   const probe = useSceneVarProbes(check);
+  const styles = useStyles2(getStyles);
 
-  const { data, isLoading, refetch } = useTimepointLogs({
+  const { data, isFetching, isLoading, refetch } = useTimepointLogs({
     timepoint,
     job: check.job,
     instance: check.target,
@@ -74,13 +84,20 @@ const TimepointViewerContent = ({ probeNameToView, timepoint }: TimepointViewerC
 
   useRefetchInterval(enableRefetch, refetch);
 
-  const onChangeLogsView = useCallback((view: LogsView) => {
-    setLogsView(view);
-  }, []);
+  useResizeObserver({
+    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
+    ref: elRef,
+    onResize: (element) => {
+      setViewerWidth(element.width ?? 0);
+    },
+  });
 
   return (
-    <Stack direction={`column`} gap={1}>
-      <TimepointHeader timepoint={timepoint} onChangeLogsView={onChangeLogsView} />
+    <>
+      <div className={styles.loadingBarContainer} ref={elRef}>
+        {isFetching && <LoadingBar width={viewerWidth} />}
+      </div>
+
       <TimepointViewerExecutions
         isLoading={isLoading}
         logsView={logsView}
@@ -89,7 +106,7 @@ const TimepointViewerContent = ({ probeNameToView, timepoint }: TimepointViewerC
         probeNameToView={probeNameToView}
         timepoint={timepoint}
       />
-    </Stack>
+    </>
   );
 };
 
@@ -119,3 +136,20 @@ const TimepointHeader = ({
     </Stack>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css`
+    border-radius: ${theme.shape.radius.default};
+    border: 1px solid ${theme.colors.border.medium};
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.spacing(2)};
+  `,
+  loadingBarContainer: css`
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+  `,
+});

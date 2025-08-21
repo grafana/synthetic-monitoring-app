@@ -59,11 +59,7 @@ interface UseBuiltCheckConfigsProps {
 export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckConfigsProps) {
   const lastModified = Math.round(check.modified! * 1000);
 
-  const {
-    data: checkConfigsData,
-    isLoading: checkConfigsIsLoading,
-    refetch: refetchCheckConfigs,
-  } = usePersistedCheckConfigs({
+  const { data: checkConfigsData, ...rest } = usePersistedCheckConfigs({
     from,
     to,
     check,
@@ -115,8 +111,7 @@ export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckCo
 
   return {
     checkConfigs,
-    checkConfigsIsLoading,
-    refetchCheckConfigs,
+    ...rest,
   };
 }
 
@@ -361,7 +356,7 @@ export function useRefetchInterval(isPending: boolean, handleRefetch: () => void
     if (isPending && !intervalRef.current) {
       intervalRef.current = setInterval(() => {
         handleRefetch();
-      }, 3000);
+      }, 5000);
     }
 
     if (!isPending) {
@@ -420,18 +415,22 @@ export function useTimepointVizOptions(status: TimepointStatus) {
 }
 
 export function useCurrentAdjustedTime(check: Check) {
-  const timeNow = new Date().getTime();
-  const [currentAdjustedTime, setCurrentAdjustedTime] = useState<UnixTimestamp>(
-    getTimeAdjustedTimepoint(timeNow, check.frequency)
-  );
-  const delay = timeNow % check.frequency;
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [currentAdjustedTime, setCurrentAdjustedTime] = useState<UnixTimestamp>(
+    getTimeAdjustedTimepoint(new Date().getTime(), check.frequency)
+  );
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      const adjustedTime = getTimeAdjustedTimepoint(timeNow, check.frequency);
+    const delay = check.frequency - (new Date().getTime() % check.frequency);
+
+    timeoutRef.current = setTimeout(() => {
+      const adjustedTime = getTimeAdjustedTimepoint(new Date().getTime(), check.frequency);
       setCurrentAdjustedTime(adjustedTime);
-      clearTimeout(timeout);
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
 
       setInterval(() => {
         const adjustedTime = getTimeAdjustedTimepoint(new Date().getTime(), check.frequency);
@@ -445,11 +444,11 @@ export function useCurrentAdjustedTime(check: Check) {
         intervalRef.current = null;
       }
 
-      if (timeout) {
-        clearTimeout(timeout);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
     };
-  }, [check.frequency, delay, timeNow]);
+  }, [check.frequency]);
 
   return currentAdjustedTime;
 }

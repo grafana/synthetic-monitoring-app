@@ -49,6 +49,7 @@ import {
 import {
   constructCheckEvents,
   findNearest,
+  getIsInitialised,
   getIsInTheFuture,
   getMiniMapPages,
   getMiniMapSections,
@@ -66,25 +67,29 @@ interface TimepointExplorerContextType {
   handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
   handleMiniMapPageChange: (page: number) => void;
   handleMiniMapSectionChange: (sectionIndex: number) => void;
-  handleViewerStateChange: (state: ViewerState) => void;
+  handleRefetch: () => void;
   handleTimepointWidthChange: (timepointWidth: number, currentSectionRange: MiniMapSection) => void;
+  handleViewerStateChange: (state: ViewerState) => void;
   handleViewModeChange: (viewMode: ViewMode) => void;
   handleVizDisplayChange: (display: TimepointStatus, usedModifier: boolean) => void;
   handleVizOptionChange: (display: TimepointStatus, color: string) => void;
   hoveredState: HoveredState;
-  isLogsRetentionPeriodWithinTimerange: boolean;
+  isError: boolean;
+  isFetching: boolean;
+  isInitialised: boolean;
   isLoading: boolean;
-  listWidth: number;
+  isLogsRetentionPeriodWithinTimerange: boolean;
   listLogsMap: Record<UnixTimestamp, StatefulTimepoint>;
+  listWidth: number;
   maxProbeDuration: number;
   miniMapCurrentPage: number;
   miniMapCurrentPageSections: MiniMapSections;
   miniMapCurrentSectionIndex: number;
   miniMapPages: MiniMapPages;
-  viewerState: ViewerState;
-  timepointWidth: number;
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
+  timepointWidth: number;
+  viewerState: ViewerState;
   viewMode: ViewMode;
   vizDisplay: VizDisplay;
   vizOptions: Record<TimepointStatus, string>;
@@ -124,8 +129,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const {
     data: maxProbeDurationData,
-    isLoading: maxProbeDurationIsLoading,
+    isError: isMaxProbeDurationError,
+    isFetching: isMaxProbeDurationFetching,
+    isLoading: isMaxProbeDurationLoading,
     refetch: refetchMaxProbeDuration,
+    dataUpdatedAt: maxProbeDurationUpdatedAt,
   } = usePersistedMaxProbeDuration({
     check,
     probe: probeVar,
@@ -140,12 +148,29 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const maxProbeDuration =
     maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
 
-  const { checkConfigs, checkConfigsIsLoading, refetchCheckConfigs } = useBuiltCheckConfigs({
+  const {
+    checkConfigs,
+    isError: isCheckConfigsError,
+    isFetching: isCheckConfigsFetching,
+    isLoading: isCheckConfigsLoading,
+    refetch: refetchCheckConfigs,
+    dataUpdatedAt: checkConfigsUpdatedAt,
+  } = useBuiltCheckConfigs({
     check,
     probe: probeVar,
     from: explorerTimeFrom,
     to: timeRange.to.valueOf(),
   });
+
+  const checkEvents = useMemo(
+    () =>
+      constructCheckEvents({
+        checkConfigs,
+        from: explorerTimeFrom,
+      }),
+    [checkConfigs, explorerTimeFrom]
+  );
+
   const timepoints = useTimepoints({ checkConfigs, from: explorerTimeFrom, to: timeRange.to.valueOf() });
   const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();
 
@@ -175,9 +200,12 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   }, [miniMapPages, miniMapCurrentPage, timepointsDisplayCount, timeRange.from, timeRange.to]);
 
   const {
+    isFetching: isExecutionDurationLogsFetching,
     isLoading: isExecutionDurationLogsLoading,
+    isError: isExecutionDurationLogsError,
     listLogsMap,
     refetch: refetchEndingLogs,
+    dataUpdatedAt: logsUpdatedAt,
   } = useExecutionDurationLogs({
     check,
     probe: probeVar,
@@ -185,27 +213,25 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timeRange: miniMapCurrentPageTimeRange,
   });
 
-  const checkEvents = useMemo(
-    () =>
-      constructCheckEvents({
-        checkConfigs,
-        from: explorerTimeFrom,
-      }),
-    [checkConfigs, explorerTimeFrom]
-  );
-
-  const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading || isExecutionDurationLogsLoading;
+  const isLoading = isCheckConfigsLoading || isExecutionDurationLogsLoading || isMaxProbeDurationLoading;
+  const isFetching = isCheckConfigsFetching || isExecutionDurationLogsFetching || isMaxProbeDurationFetching;
+  const isInitialised = getIsInitialised(logsUpdatedAt, checkConfigsUpdatedAt, maxProbeDurationUpdatedAt);
+  const isError = isCheckConfigsError || isExecutionDurationLogsError || isMaxProbeDurationError;
 
   const [viewerState, setViewerState] = useState<ViewerState>([]);
 
   useEffect(() => {
-    if (!isLoading) {
+    // we have to wait until we have the checkConfigs and subsequent timepoints built
+    // before knowing what timepoints are available and what to select
+
+    if (isInitialised) {
       const notInTheFuture = timepoints.filter((t) => !getIsInTheFuture(t, currentAdjustedTime));
       const lastNotInTheFuture = notInTheFuture[notInTheFuture.length - 1];
       const firstProbe = probeVar[0];
       setViewerState([lastNotInTheFuture, firstProbe, 0]);
     }
-  }, [isLoading, timepoints, probeVar, currentAdjustedTime]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- we only want to run this once
+  }, [isInitialised]);
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
     setMiniMapCurrentSectionIndex(sectionIndex);
@@ -305,12 +331,16 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleListWidthChange,
       handleMiniMapPageChange,
       handleMiniMapSectionChange,
+      handleRefetch,
       handleTimepointWidthChange,
       handleViewerStateChange,
       handleViewModeChange,
       handleVizDisplayChange,
       handleVizOptionChange,
       hoveredState,
+      isError,
+      isFetching,
+      isInitialised,
       isLoading,
       isLogsRetentionPeriodWithinTimerange,
       listLogsMap,
@@ -337,12 +367,16 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleListWidthChange,
     handleMiniMapPageChange,
     handleMiniMapSectionChange,
+    handleRefetch,
     handleTimepointWidthChange,
     handleViewerStateChange,
     handleViewModeChange,
     handleVizDisplayChange,
     handleVizOptionChange,
     hoveredState,
+    isError,
+    isFetching,
+    isInitialised,
     isLoading,
     isLogsRetentionPeriodWithinTimerange,
     listLogsMap,

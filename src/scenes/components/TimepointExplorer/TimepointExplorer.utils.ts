@@ -381,7 +381,7 @@ export function getCouldBePending(timepoint: StatelessTimepoint, currentAdjusted
   // e.g. if a check is running every minute and takes 30 seconds to complete
   // if it begins at 10:00:59, it will complete at 10:01:29
   // so even though the 'current' timepoint is 10:01:00 we are waiting on the result of the previous timepoint, too
-  const possibilities = [currentAdjustedTime - timepoint.timepointDuration, currentAdjustedTime];
+  const possibilities = [currentAdjustedTime];
 
   return possibilities.includes(timepoint.adjustedTime);
 }
@@ -404,4 +404,12 @@ export function getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom }:
   }
 
   return Math.max(checkCreationDate, timeRangeFrom);
+}
+
+export function getIsInitialised(
+  logsUpdatedAt: number,
+  checkConfigsUpdatedAt: number,
+  maxProbeDurationUpdatedAt: number
+) {
+  return logsUpdatedAt > 0 && checkConfigsUpdatedAt > 0 && maxProbeDurationUpdatedAt > 0;
 }

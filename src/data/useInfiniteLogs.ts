@@ -12,6 +12,7 @@ export type InfiniteLogsParams<T, R> = {
   end: number;
   refetchInterval?: number;
   staleTime?: number;
+  throwOnError?: boolean;
 };
 
 export function useInfiniteLogs<T, R>({
@@ -21,6 +22,7 @@ export function useInfiniteLogs<T, R>({
   end,
   refetchInterval,
   staleTime,
+  throwOnError,
 }: InfiniteLogsParams<T, R>) {
   const logsDS = useLogsDS();
 
@@ -32,7 +34,8 @@ export function useInfiniteLogs<T, R>({
         throw new Error('Logs data source not found');
       }
 
-      const pageRefId = `${refId}-${new Date(pageParam).toISOString()}`;
+      // const pageRefId = `${refId}-${new Date(pageParam).toISOString()}`;
+      const pageRefId = refId;
 
       const response = await queryLoki<T, R>({
         datasource: logsDS,
@@ -59,5 +62,6 @@ export function useInfiniteLogs<T, R>({
       return res;
     },
     enabled: !Number.isNaN(start) && !Number.isNaN(end),
+    throwOnError,
   });
 }

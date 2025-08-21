@@ -11,11 +11,17 @@ import {
   ANNOTATION_COLOR_OUT_OF_TIMERANGE,
   MAX_MINIMAP_SECTIONS,
   MINIMAP_SECTION_HEIGHT,
+  THEME_UNIT,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useVisibleTimepoints } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { getVisibleTimepointsTimeRange } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointMiniMapSection } from 'scenes/components/TimepointExplorer/TimepointMinimapSection';
+
+const THEME_GAP = 2;
+const GAP_PX = THEME_UNIT * THEME_GAP;
+const BUTTON_WIDTH = 16;
+const BUTTON_SPACE = GAP_PX + BUTTON_WIDTH;
 
 export const TimepointMinimap = () => {
   const {
@@ -35,7 +41,7 @@ export const TimepointMinimap = () => {
 
   return (
     <Stack direction="column">
-      <Stack gap={2}>
+      <Stack gap={THEME_GAP}>
         <MiniMapNavigation
           disabled={isLastSectionInLastPage}
           direction="left"
@@ -104,7 +110,7 @@ const TimepointMinimapContent = () => {
     : styles.outOfRangeMimic;
 
   return (
-    <Box position="relative" paddingY={2} flex={1} ref={ref}>
+    <Box position="relative" paddingY={2} flex={1} ref={ref} maxWidth={`calc(100% - ${BUTTON_SPACE * 2}px)`}>
       <Stack gap={0}>
         {filler.map((_, index) => {
           return <div key={index} className={cx(styles.filler, className)} />;
