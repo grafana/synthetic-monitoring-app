@@ -121,6 +121,7 @@ export interface Probe extends ExistingObject {
   labels: Label[];
   version: string;
   deprecated: boolean;
+  k6Version?: string; // For legacy probes: static version like "v0.54.1". For modern probes: may be empty
   capabilities: ProbeCapabilities;
 }
 
@@ -731,6 +732,7 @@ export enum FeatureName {
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
   CheckEditor = 'synthetic-monitoring-check-editor',
+  VersionManagement = 'synthetic-monitoring-version-management',
   __TURNOFF = 'test-only-do-not-use',
 }
 
@@ -889,3 +891,18 @@ export type PluginPermissions =
 export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | 'write' | 'delete'}`;
 
 export type AlertingType = 'alerting' | 'sensitivity';
+
+export interface K6Channel {
+  name: string;
+  default: boolean;
+  deprecatedAfter: string;
+  manifest: string; // "k6>=1", "k6>1,k6>=0.53"
+}
+
+export interface K6ChannelWithCurrent extends K6Channel {
+  currentVersion?: string;
+}
+
+export interface ListChannelsResponse {
+  channels: Record<string, K6Channel>;
+}
