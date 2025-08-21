@@ -44,7 +44,7 @@ export function useInfiniteLogs<T, R>({
         refId: pageRefId,
       });
 
-      return parseLokiLogs<T, R>(response);
+      return parseLokiLogs<T, R>(response[0]);
     },
     getNextPageParam: (lastPage) => {
       if (lastPage.length < 1000) {

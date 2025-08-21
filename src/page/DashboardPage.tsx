@@ -8,7 +8,6 @@ import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
-import { useProbes } from 'data/useProbes';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
@@ -27,11 +26,9 @@ function DashboardPageContent() {
   const smDS = useSMDS();
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
-  const { isLoading: isProbesLoading } = useProbes();
-  const { data: checks = [], isLoading: isChecksLoading } = useChecks();
+  const { data: checks = [], isLoading } = useChecks();
   const { id } = useParams<CheckPageParams>();
   const check = checks.find((check) => String(check.id) === id);
-  const isLoading = isProbesLoading || isChecksLoading;
 
   const scene = useMemo(() => {
     const metricsDef = {
@@ -121,10 +118,6 @@ function DashboardPageContent() {
       }
     }
   }, [smDS, metricsDS, logsDS, check]);
-
-  if (isLoading) {
-    return <Spinner />;
-  }
 
   if (!isLoading && !check) {
     return <CheckNotFound />;

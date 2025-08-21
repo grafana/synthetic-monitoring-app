@@ -25,6 +25,8 @@ export function queryLoki<T, R>({ datasource, query, start, end, refId }: QueryL
     start,
     end,
   }).then((data) => {
-    return data[refId][0] as LokiDataFrame<T, R>;
+    const dataFrames = data[refId] as Array<LokiDataFrame<T, R>>;
+
+    return dataFrames;
   });
 }

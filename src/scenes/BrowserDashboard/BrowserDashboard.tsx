@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
@@ -30,7 +29,7 @@ export const BrowserDashboard = ({ check }: { check: Check }) => {
   return (
     <DashboardContainer check={check} checkType={checkType}>
       <TimepointExplorer check={check} />
-      {/* <div className={styles.header}>
+      <div className={styles.header}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />
       </div>
@@ -49,7 +48,7 @@ export const BrowserDashboard = ({ check }: { check: Check }) => {
       <div className={styles.dataRow}>
         <DataSent query={getBrowserDataSentQuery()} />
         <DataReceived query={getBrowserDataReceivedQuery()} />
-      </div> */}
+      </div>
     </DashboardContainer>
   );
 };
