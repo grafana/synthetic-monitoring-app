@@ -240,7 +240,7 @@
     {
       "role": {
         "name": "Editor",
-        "description": "Add, update and delete checks, probes, alerts, thresholds, and access tokens in the Synthetic Monitoring app",
+        "description": "Add, update and delete checks, probes, alerts, and thresholds in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
           { "action": "grafana-synthetic-monitoring-app:read" },
