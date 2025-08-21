@@ -113,17 +113,6 @@ export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckCo
     return buildConfigTimeRanges(toUse, to);
   }, [withLatest, to, firstConfig.frequency, needFiller, from]);
 
-  useEffect(() => {
-    console.log(
-      checkConfigs.map((c) => ({
-        from: new Date(c.from).toISOString(),
-        to: new Date(c.to).toISOString(),
-        frequency: c.frequency,
-        type: c.type,
-      }))
-    );
-  }, [checkConfigs]);
-
   return {
     checkConfigs,
     checkConfigsIsLoading,

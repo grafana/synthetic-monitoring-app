@@ -37,7 +37,7 @@ export function buildConfigTimeRanges(checkConfigs: CheckConfigRaw[], timeRangeT
     return {
       frequency,
       from,
-      to: nextConfig ? nextConfig.date : timeRangeTo,
+      to: nextConfig ? nextConfig.date : timeRangeTo + frequency, // this is the current config so ensure we include enough time to get the result
       type,
     };
   });
@@ -81,7 +81,7 @@ interface BuildTimepointsInRangeProps {
 
 export function buildTimepoints({ checkConfigs, from, to }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
   const timepoints = checkConfigs.map((config) => {
-    const configFrom = from > config.from ? from : config.from;
+    const configFrom = getTimeAdjustedTimepoint(from > config.from ? from : config.from, config.frequency);
     const configTo = to < config.to ? to : config.to;
 
     return buildTimepointsForConfig({ from: configFrom, to: configTo, config });
@@ -89,9 +89,11 @@ export function buildTimepoints({ checkConfigs, from, to }: BuildTimepointsInRan
 
   const flatTimepoints = timepoints.flat();
 
-  const res = flatTimepoints.map((timepoint, i) => {
-    return { ...timepoint, index: i };
-  });
+  const res = flatTimepoints
+    .sort((a, b) => a.adjustedTime - b.adjustedTime)
+    .map((timepoint, i) => {
+      return { ...timepoint, index: i };
+    });
 
   return res;
 }
@@ -107,13 +109,13 @@ export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsFo
   let currentTimepoint = getTimeAdjustedTimepoint(from, config.frequency);
 
   while (currentTimepoint < to) {
-    const isAdjustedTimeBeforeFrom = currentTimepoint < from ? currentTimepoint - from : 0;
-    const isAdjustedTimePlusFrequencyBeyondTo =
-      currentTimepoint + config.frequency > to ? to - currentTimepoint : config.frequency;
-    const timepointDuration = isAdjustedTimeBeforeFrom + isAdjustedTimePlusFrequencyBeyondTo;
+    const configStartDifference = currentTimepoint < config.from ? currentTimepoint - config.from : 0;
+    const configEndDifference =
+      currentTimepoint + config.frequency > config.to ? config.to - currentTimepoint : config.frequency;
+    const timepointDuration = configStartDifference + configEndDifference;
 
     build.push({
-      adjustedTime: currentTimepoint,
+      adjustedTime: currentTimepoint - configStartDifference,
       timepointDuration,
       config,
     });
@@ -262,17 +264,15 @@ interface BuildlistLogsMapProps {
 
 export function buildlistLogsMap({ logs, timepoints }: BuildlistLogsMapProps) {
   return logs.reduce<Record<UnixTimestamp, StatefulTimepoint>>((acc, log) => {
-    const duration = log.labels.duration_seconds ? Number(log.labels.duration_seconds) * 1000 : 0;
+    const duration = Number(log.labels.duration_seconds) * 1000;
     const startingTime = log.Time - duration;
     const executionProbeName = log.labels.probe;
 
-    // not efficient, but somewhat mitigated by just using visible timepoints to limit the work
+    // not efficient, but mitigated by just passing in visible timepoints to limit the calculation
     const timepoint = timepoints.find((t: StatelessTimepoint) => {
       const withinTimepoint = startingTime >= t.adjustedTime && startingTime <= t.adjustedTime + t.timepointDuration;
-      const logsEntry = getTimeAdjustedTimepoint(startingTime, t.config.frequency);
-      const existingProbeResults = acc[logsEntry]?.probeResults;
 
-      if (!existingProbeResults && withinTimepoint) {
+      if (withinTimepoint) {
         return true;
       }
 
@@ -283,8 +283,7 @@ export function buildlistLogsMap({ logs, timepoints }: BuildlistLogsMapProps) {
       return acc;
     }
 
-    const timeshiftedStartingTime = getTimeAdjustedTimepoint(startingTime, timepoint.config.frequency);
-    const existingProbeResults = acc[timeshiftedStartingTime]?.probeResults || {};
+    const existingProbeResults = acc[timepoint.adjustedTime]?.probeResults || {};
     const existingProbeResultsForProbe = existingProbeResults[executionProbeName] || [];
 
     const probeResults = {
@@ -294,7 +293,7 @@ export function buildlistLogsMap({ logs, timepoints }: BuildlistLogsMapProps) {
 
     const status = getTimepointStatus(probeResults);
 
-    acc[timeshiftedStartingTime] = {
+    acc[timepoint.adjustedTime] = {
       adjustedTime: timepoint.adjustedTime,
       timepointDuration: timepoint.timepointDuration,
       config: timepoint.config,

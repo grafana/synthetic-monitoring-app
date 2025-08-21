@@ -2,12 +2,15 @@ import { db } from 'test/db';
 import { succeededLogFactory } from 'test/db/checkLogs';
 
 import {
+  CheckConfig,
+  CheckConfigRaw,
   MiniMapPage,
   MiniMapPages,
   MiniMapSection,
   StatefulTimepoint,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
+  buildConfigTimeRanges,
   buildlistLogsMap,
   buildTimepoints,
   buildTimepointsForConfig,
@@ -16,6 +19,45 @@ import {
   getMiniMapSections,
   getPendingProbes,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+
+describe(`buildConfigTimeRanges`, () => {
+  it(`should build the correct time range for a single config`, () => {
+    const CONFIG_RAW_ONE = { frequency: 100, date: 0 };
+    const checkConfigs: CheckConfigRaw[] = [CONFIG_RAW_ONE];
+    const timeRangeTo = 300;
+    const timeRanges = buildConfigTimeRanges(checkConfigs, timeRangeTo);
+
+    const MATCH: CheckConfig = { frequency: 100, from: 0, to: 400, type: undefined };
+
+    expect(timeRanges).toEqual([MATCH]);
+  });
+
+  it(`should build the correct time range for two configs`, () => {
+    const CONFIG_RAW_ONE = { frequency: 100, date: 0 };
+    const CONFIG_RAW_TWO = { frequency: 100, date: 100 };
+    const checkConfigs: CheckConfigRaw[] = [CONFIG_RAW_ONE, CONFIG_RAW_TWO];
+    const timeRangeTo = 300;
+    const timeRanges = buildConfigTimeRanges(checkConfigs, timeRangeTo);
+
+    const MATCH_ONE: CheckConfig = { frequency: 100, from: 0, to: 100, type: undefined };
+    const MATCH_TWO: CheckConfig = { frequency: 100, from: 100, to: 400, type: undefined };
+
+    expect(timeRanges).toEqual([MATCH_ONE, MATCH_TWO]);
+  });
+
+  it(`should build the correct time range for a config that doesn't last one frequency length`, () => {
+    const CONFIG_RAW_ONE = { frequency: 100, date: 4 };
+    const CONFIG_RAW_TWO = { frequency: 100, date: 97 };
+    const checkConfigs: CheckConfigRaw[] = [CONFIG_RAW_ONE, CONFIG_RAW_TWO];
+    const timeRangeTo = 300;
+    const timeRanges = buildConfigTimeRanges(checkConfigs, timeRangeTo);
+
+    const MATCH_ONE: CheckConfig = { frequency: 100, from: 4, to: 97, type: undefined };
+    const MATCH_TWO: CheckConfig = { frequency: 100, from: 97, to: 400, type: undefined };
+
+    expect(timeRanges).toEqual([MATCH_ONE, MATCH_TWO]);
+  });
+});
 
 describe(`buildTimepointsForConfig`, () => {
   it(`should build the correct timepoints for a single config`, () => {
@@ -41,10 +83,10 @@ describe(`buildTimepointsForConfig`, () => {
       to: 300,
     };
 
-    const timepoints = buildTimepointsForConfig({ from: CONFIG_ONE.from, to: CONFIG_ONE.to, config: CONFIG_ONE });
+    const timepoints = buildTimepointsForConfig({ from: 0, to: 300, config: CONFIG_ONE });
 
     expect(timepoints).toEqual([
-      { adjustedTime: 0, timepointDuration: 96, config: CONFIG_ONE },
+      { adjustedTime: 4, timepointDuration: 96, config: CONFIG_ONE },
       { adjustedTime: 100, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
       { adjustedTime: 200, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
     ]);
@@ -57,7 +99,7 @@ describe(`buildTimepointsForConfig`, () => {
       to: 296,
     };
 
-    const timepoints = buildTimepointsForConfig({ from: CONFIG_ONE.from, to: CONFIG_ONE.to, config: CONFIG_ONE });
+    const timepoints = buildTimepointsForConfig({ from: 0, to: 296, config: CONFIG_ONE });
 
     expect(timepoints).toEqual([
       { adjustedTime: 0, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
@@ -73,9 +115,9 @@ describe(`buildTimepointsForConfig`, () => {
       to: 99,
     };
 
-    const timepoints = buildTimepointsForConfig({ from: CONFIG_ONE.from, to: CONFIG_ONE.to, config: CONFIG_ONE });
+    const timepoints = buildTimepointsForConfig({ from: 0, to: 100, config: CONFIG_ONE });
 
-    expect(timepoints).toEqual([{ adjustedTime: 0, timepointDuration: 95, config: CONFIG_ONE }]);
+    expect(timepoints).toEqual([{ adjustedTime: 4, timepointDuration: 95, config: CONFIG_ONE }]);
   });
 });
 

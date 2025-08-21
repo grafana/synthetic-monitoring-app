@@ -67,6 +67,10 @@ const getStyles = (
       pointer-events: none;
       position: absolute;
       z-index: 2;
+
+      &:hover {
+        z-index: 3;
+      }
     `,
     label: css`
       background-color: ${theme.colors.background.primary};
