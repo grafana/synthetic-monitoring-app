@@ -1,8 +1,8 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { parseLokiLogs } from 'features/parseLogs/parseLokiLogs';
+import { parseLokiLogs } from 'features/parseLokiLogs/parseLokiLogs';
 import { queryLoki } from 'features/queryDatasources/queryLoki';
 
-import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 
 export type InfiniteLogsParams<T, R> = {
@@ -34,8 +34,7 @@ export function useInfiniteLogs<T, R>({
         throw new Error('Logs data source not found');
       }
 
-      // const pageRefId = `${refId}-${new Date(pageParam).toISOString()}`;
-      const pageRefId = refId;
+      const pageRefId = `${refId}-${new Date(pageParam).toISOString()}`;
 
       const response = await queryLoki<T, R>({
         datasource: logsDS,

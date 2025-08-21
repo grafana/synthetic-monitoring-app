@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
-import { DataFrame } from '@grafana/data';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
 import { InlineSwitch } from '@grafana/ui';
-import { parseCheckLogs } from 'features/parseCheckLogs/parseCheckLogs';
-import { parseLokiLogs } from 'features/parseLogs/parseLokiLogs';
 
-import { ExecutionLabels, ExecutionLabelType } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiSeries } from 'features/parseLogs/parseLogs.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
@@ -45,19 +40,6 @@ export const ErrorLogs = ({ startingUnsuccessfulOnly = false }: { startingUnsucc
     currentTimeRange,
     variables: ['job', 'probe', 'instance'],
   });
-
-  if (data?.data) {
-    const seriesArray = data.data.series as DataFrame[];
-    const series = seriesArray[0] as LokiSeries<ExecutionLabels, ExecutionLabelType>;
-    console.log(series);
-
-    if (series) {
-      const parsedLogs = parseLokiLogs(series);
-      console.log(parsedLogs);
-      const checkLogs = parseCheckLogs(parsedLogs);
-      console.log(checkLogs);
-    }
-  }
 
   return (
     <VizPanel

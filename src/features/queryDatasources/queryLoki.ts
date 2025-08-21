@@ -1,6 +1,6 @@
 import { queryDS } from 'features/queryDatasources/queryDS';
 
-import { LokiSeries } from 'features/parseLogs/parseLogs.types';
+import { LokiSeries } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 export interface QueryLokiArgs {
   datasource: { uid: string; type: string };

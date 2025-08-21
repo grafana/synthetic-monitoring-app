@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { IconName } from '@grafana/data';
 
-import { getExploreUrl } from 'data/utils';
+import { getExploreUrl } from 'utils';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';

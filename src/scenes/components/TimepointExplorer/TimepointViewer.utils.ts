@@ -1,7 +1,7 @@
 import { ExecutionLogs, ProbeExecutionLogs } from 'features/parseCheckLogs/checkLogs.types';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
-export function filterProbes(data: ProbeExecutionLogs[], timepoint: StatelessTimepoint): ProbeExecutionLogs[] {
+export function filterProbeExecutions(data: ProbeExecutionLogs[], timepoint: StatelessTimepoint): ProbeExecutionLogs[] {
   return data.map((d) => {
     const { executions } = d;
 

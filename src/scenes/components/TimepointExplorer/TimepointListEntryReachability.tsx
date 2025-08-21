@@ -3,7 +3,7 @@ import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Icon, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import {
   TIMEPOINT_GAP_PX,

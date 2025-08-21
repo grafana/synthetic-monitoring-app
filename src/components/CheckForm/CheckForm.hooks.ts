@@ -31,7 +31,7 @@ import { useLimits } from 'hooks/useLimits';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
-import { fallbackCheckMap } from '../constants';
+import { DEFAULT_FROM_TIME, fallbackCheckMap } from '../constants';
 import { SectionName } from './FormLayout/FormLayout.constants';
 import { layoutMap } from './FormLayouts/constants';
 import {
@@ -137,7 +137,11 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
       const additionalDuration = getAdditionalDuration(frequency, 20);
       const duration = formatDuration(additionalDuration, true);
 
-      navigate(`${generateRoutePath(AppRoutes.CheckDashboard, { id: result.id! })}?from=now-3h&to=now%2B${duration}`);
+      navigate(
+        `${generateRoutePath(AppRoutes.CheckDashboard, {
+          id: result.id!,
+        })}?from=now$2B${DEFAULT_FROM_TIME}&to=now%2B${duration}`
+      );
     },
     [navigate]
   );

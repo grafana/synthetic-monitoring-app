@@ -1,4 +1,4 @@
-import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 // investigate further
 type EventSpan = {

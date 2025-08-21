@@ -1,7 +1,7 @@
 import { FieldType } from '@grafana/data';
-import { flattenLogs, parseLokiLogs, sortLogs } from 'features/parseLogs/parseLokiLogs';
+import { flattenLogs, parseLokiLogs, sortLogs } from 'features/parseLokiLogs/parseLokiLogs';
 
-import { Labels, LokiFieldNames, LokiFields, ParsedLokiRecord, TsNs } from 'features/parseLogs/parseLogs.types';
+import { Labels, LokiFieldNames, LokiFields, ParsedLokiRecord, TsNs } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 const INPUT_LOGS = constructLokiFields({
   tsNsValues: [`2000000`, `1000000`, `3000000`],

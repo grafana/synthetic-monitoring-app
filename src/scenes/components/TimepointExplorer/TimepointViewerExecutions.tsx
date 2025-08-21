@@ -4,7 +4,7 @@ import { Alert, Box, Icon, IconName, Spinner, Stack, Tab, TabContent, TabsBar, u
 import { css } from '@emotion/css';
 
 import { ExecutionLogs, ProbeExecutionLogs, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { CheckResultMissing } from 'scenes/components/TimepointExplorer/CheckResultMissing';

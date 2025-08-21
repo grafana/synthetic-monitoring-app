@@ -1,4 +1,4 @@
-import { DataSourceInstanceSettings, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
+import { DataSourceInstanceSettings, dateTime, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
 // todo: update this when we move to grafana 11.2
 // https://github.com/grafana/grafana/pull/89047
@@ -452,4 +452,21 @@ export function formatSmallDurations(milliseconds: number) {
 
   // Otherwise, return with up to 2 decimal places, removing trailing zeros
   return `${parseFloat(seconds.toFixed(2))}s`;
+}
+
+export function getExploreUrl(datasourceUid: string, queries: string[], { from, to }: { from: number; to: number }) {
+  const left = encodeURIComponent(
+    JSON.stringify({
+      datasource: datasourceUid,
+      queries: queries.map((query) => ({
+        expr: query,
+      })),
+      range: {
+        from: dateTime(from),
+        to: dateTime(to),
+      },
+    })
+  );
+
+  return `/explore?left=${left}`;
 }

@@ -4,7 +4,7 @@ import { ExecutionLabelType, UnknownExecutionLog } from 'features/parseCheckLogs
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
 import { REF_ID_EXECUTION_VIEWER_LOGS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { filterProbes } from 'scenes/components/TimepointExplorer/TimepointViewer.utils';
+import { filterProbeExecutions } from 'scenes/components/TimepointExplorer/TimepointViewer.utils';
 
 interface UseTimepointLogsProps {
   timepoint: StatelessTimepoint;
@@ -27,10 +27,11 @@ export function useTimepointLogs({ timepoint, job, instance, probe, staleTime }:
   });
 
   const { data } = props;
-  const parsedCheckLogs = data ? filterProbes(parseCheckLogs(data), timepoint) : [];
+  const parsedCheckLogs = data ? parseCheckLogs(data) : [];
+  const filteredCheckLogs = filterProbeExecutions(parsedCheckLogs, timepoint);
 
   return {
     ...props,
-    data: parsedCheckLogs,
+    data: filteredCheckLogs,
   };
 }

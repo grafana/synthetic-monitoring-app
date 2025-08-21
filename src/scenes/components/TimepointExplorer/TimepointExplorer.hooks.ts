@@ -12,7 +12,7 @@ import {
   FailedLogLabels,
   SucceededLogLabels,
 } from 'features/parseCheckLogs/checkLogs.types';
-import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';

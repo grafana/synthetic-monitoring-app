@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { LogsEvent } from 'scenes/components/LogsRenderer/LogsEvent';
 import { LogsRaw } from 'scenes/components/LogsRenderer/LogsRaw';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';

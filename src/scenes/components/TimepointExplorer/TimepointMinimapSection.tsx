@@ -4,7 +4,7 @@ import { Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import {

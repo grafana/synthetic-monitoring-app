@@ -5,7 +5,7 @@ import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
 import { HTTPResponseTimings } from 'features/parseCheckLogs/checkLogs.types.http';
-import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { LogHTTPResponseTimings } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLabels';
 

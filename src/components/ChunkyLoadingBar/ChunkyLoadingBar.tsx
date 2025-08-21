@@ -5,20 +5,18 @@ import { css, cx, keyframes } from '@emotion/css';
 
 interface ChunkyLoadingBarProps {
   className?: string;
-  direction?: 'vertical' | 'horizontal';
+  color: string;
+  direction: 'vertical' | 'horizontal';
   height: number;
   width: number;
-  color: string;
 }
 
-const BAR_HEIGHT_PERCENT = 28;
-const BAR_WIDTH_PERCENT = 28;
+const BAR_SIZE = 28;
 const MILLISECONDS_PER_PIXEL = 2.4;
 const MIN_DURATION_MS = 2000;
 const MAX_DURATION_MS = 4000;
 const DEFAULT_ANIMATION_DELAY = 300;
-const MAX_TRANSLATE_Y = (100 / BAR_HEIGHT_PERCENT) * 100;
-const MAX_TRANSLATE_X = (100 / BAR_WIDTH_PERCENT) * 100;
+const MAX_TRANSLATE = (100 / BAR_SIZE) * 100;
 
 export const ChunkyLoadingBar = ({
   className,
@@ -52,7 +50,7 @@ const getStyles = (
     },
     // this gives us a delay between iterations
     '85%, 100%': {
-      transform: `translateY(${MAX_TRANSLATE_Y}%)`,
+      transform: `translateY(${MAX_TRANSLATE}%)`,
     },
   });
 
@@ -61,13 +59,13 @@ const getStyles = (
       transform: 'translateX(-100%)',
     },
     '85%, 100%': {
-      transform: `translateX(${MAX_TRANSLATE_X}%)`,
+      transform: `translateX(${MAX_TRANSLATE}%)`,
     },
   });
 
   const animation = direction === 'vertical' ? verticalAnimation : horizontalAnimation;
-  const renderedHeight = direction === 'vertical' ? BAR_HEIGHT_PERCENT + '%' : height;
-  const renderedWidth = direction === 'horizontal' ? BAR_WIDTH_PERCENT + '%' : width;
+  const renderedHeight = direction === 'vertical' ? BAR_SIZE + 'px' : height;
+  const renderedWidth = direction === 'horizontal' ? BAR_SIZE + 'px' : width;
   const background =
     direction === 'vertical'
       ? `linear-gradient(180deg, transparent 0%, ${color} 80.75%, transparent 100%)`

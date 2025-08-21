@@ -4,7 +4,7 @@ import { Stack, Tag, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { LOG_LABELS_COMMON, LOG_LABELS_SM } from 'features/parseCheckLogs/checkLogs.constants.labels';
 
-import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 export const UniqueLogLabels = ({ log }: { log: ParsedLokiRecord<Record<string, string>, Record<string, string>> }) => {
   const labels = uniqueLabels(log);

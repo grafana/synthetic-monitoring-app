@@ -15,7 +15,7 @@ export const TimepointListEntryLoading = () => {
 
   return (
     <div className={styles.container}>
-      <ChunkyLoadingBar height={heightInPx} width={timepointWidth} color={color} />
+      <ChunkyLoadingBar color={color} direction="vertical" height={heightInPx} width={timepointWidth} />
     </div>
   );
 };

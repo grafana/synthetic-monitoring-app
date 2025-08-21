@@ -12,7 +12,7 @@ import {
 import { PanelRenderer } from '@grafana/runtime';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
 
-import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 const logPanelOptions = {
   showTime: true,

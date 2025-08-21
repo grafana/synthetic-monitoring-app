@@ -1,5 +1,5 @@
 import { UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import {
   StatelessTimepoint,
   TimepointStatus,

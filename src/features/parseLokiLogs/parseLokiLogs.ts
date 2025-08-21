@@ -1,4 +1,4 @@
-import { LokiFieldNames, LokiFields, LokiSeries, ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames, LokiFields, LokiSeries, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 type FieldParser = Partial<Record<LokiFieldNames, (value: any) => any>>;
 

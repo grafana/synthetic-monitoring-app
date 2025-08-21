@@ -2,7 +2,7 @@ import { DataFrame } from '@grafana/data';
 import { difference } from 'lodash';
 
 import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLogs/parseLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import {
   ANNOTATION_COLOR_CHECK_UPDATED,
   ANNOTATION_COLOR_NO_DATA,

@@ -1,4 +1,4 @@
-import { ParsedLokiRecord } from 'features/parseLogs/parseLogs.types';
+import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { CheckType } from 'types';
 
 import { MSG_STRINGS_COMMON } from './checkLogs.constants.msgs';

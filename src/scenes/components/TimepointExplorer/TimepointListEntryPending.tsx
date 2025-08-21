@@ -20,7 +20,7 @@ export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryPendi
 
   return (
     <TimepointListEntryBar timepoint={timepoint} status={`pending`}>
-      <ChunkyLoadingBar height={heightInPx} width={timepointWidth} color={option} />
+      <ChunkyLoadingBar color={option} direction="vertical" height={heightInPx} width={timepointWidth} />
     </TimepointListEntryBar>
   );
 };

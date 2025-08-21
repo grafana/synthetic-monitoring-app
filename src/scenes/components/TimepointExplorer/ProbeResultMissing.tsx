@@ -2,8 +2,8 @@ import React from 'react';
 import { Text, TextLink } from '@grafana/ui';
 
 import { ProbeWithMetadata } from 'types';
+import { getExploreUrl } from 'utils';
 import { useProbesWithMetadata } from 'data/useProbes';
-import { getExploreUrl } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { ReasonsForMissingResult } from 'scenes/components/TimepointExplorer/ReasonsForMissingResult';
 import { ResultUnknown } from 'scenes/components/TimepointExplorer/ResultUnknown';
