@@ -12,7 +12,7 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { doesTimeRangeCrossDays, generateXAxisPoints } from 'scenes/components/TimepointExplorer/XAxis.utils';
+import { buildXAxisPoints, doesTimeRangeCrossDays } from 'scenes/components/TimepointExplorer/XAxis.utils';
 
 interface XAxisProps {
   timepoints: StatelessTimepoint[];
@@ -40,7 +40,7 @@ const XAxisContent = ({ timepoints }: XAxisProps) => {
   const [dashboardTimeRange] = useTimeRange();
   const crossesDays = doesTimeRangeCrossDays(dashboardTimeRange.from.toDate(), dashboardTimeRange.to.toDate());
   const points = useMemo(
-    () => generateXAxisPoints(timepoints, crossesDays, timepointWidth),
+    () => buildXAxisPoints({ timepoints, crossesDays, timepointWidth }),
     [timepoints, crossesDays, timepointWidth]
   );
 

@@ -47,7 +47,7 @@ import {
   VizDisplay,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
-  constructCheckEvents,
+  buildCheckEvents,
   findNearest,
   getIsInitialised,
   getIsInTheFuture,
@@ -164,14 +164,14 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const checkEvents = useMemo(
     () =>
-      constructCheckEvents({
+      buildCheckEvents({
         checkConfigs,
         from: explorerTimeFrom,
       }),
     [checkConfigs, explorerTimeFrom]
   );
 
-  const timepoints = useTimepoints({ checkConfigs, from: explorerTimeFrom, to: timeRange.to.valueOf() });
+  const timepoints = useTimepoints({ checkConfigs, limitFrom: explorerTimeFrom, limitTo: timeRange.to.valueOf() });
   const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();
 
   const miniMapPages = useMemo(

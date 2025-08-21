@@ -245,8 +245,8 @@ describe(`buildlistLogsMap`, () => {
 
     const timepoints = buildTimepoints({
       checkConfigs: [config],
-      from: DASHBOARD_FROM,
-      to: DASHBOARD_TO,
+      limitFrom: DASHBOARD_FROM,
+      limitTo: DASHBOARD_TO,
     });
 
     const firstEntry = timepoints[0];

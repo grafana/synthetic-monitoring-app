@@ -11,7 +11,7 @@ export enum LokiFieldNames {
 
 export type LokiFields<T, R> = [Labels<T>, Time, Line, TsNs, LabelTypes<R>, ID];
 
-export interface LokiSeries<T, R> extends DataFrame {
+export interface LokiDataFrame<T, R> extends DataFrame {
   fields: LokiFields<T, R>;
 }
 

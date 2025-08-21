@@ -1,9 +1,14 @@
-import { LokiFieldNames, LokiFields, LokiSeries, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import {
+  LokiDataFrame,
+  LokiFieldNames,
+  LokiFields,
+  ParsedLokiRecord,
+} from 'features/parseLokiLogs/parseLokiLogs.types';
 
 type FieldParser = Partial<Record<LokiFieldNames, (value: any) => any>>;
 
 // ensure to send logfmt to Loki so the line is fully parsed
-export function parseLokiLogs<T, R>(dataFrame: LokiSeries<T, R>, parser?: FieldParser) {
+export function parseLokiLogs<T, R>(dataFrame: LokiDataFrame<T, R>, parser?: FieldParser) {
   const flattenedLogs = flattenLogs(dataFrame.fields, parser);
 
   return sortLogs(flattenedLogs);

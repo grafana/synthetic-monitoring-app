@@ -3,7 +3,7 @@ import { flattenLogs, parseLokiLogs, sortLogs } from 'features/parseLokiLogs/par
 
 import { Labels, LokiFieldNames, LokiFields, ParsedLokiRecord, TsNs } from 'features/parseLokiLogs/parseLokiLogs.types';
 
-const INPUT_LOGS = constructLokiFields({
+const INPUT_LOGS = buildLokiFields({
   tsNsValues: [`2000000`, `1000000`, `3000000`],
   labelsValues: [{ msg: 'msg 2' }, { msg: 'msg 1' }, { msg: 'msg 3' }],
 });
@@ -61,7 +61,7 @@ describe(`flattenLogs`, () => {
   });
 });
 
-function constructLokiFields({ tsNsValues, labelsValues }: { tsNsValues: string[]; labelsValues: unknown[] }) {
+function buildLokiFields({ tsNsValues, labelsValues }: { tsNsValues: string[]; labelsValues: unknown[] }) {
   const labels: Labels<unknown> = {
     name: LokiFieldNames.Labels,
     type: FieldType.other,

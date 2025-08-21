@@ -75,14 +75,18 @@ export function getEntryHeightPx(duration: number, maxProbeDurationData: number,
 
 interface BuildTimepointsInRangeProps {
   checkConfigs: CheckConfig[];
-  from: UnixTimestamp;
-  to: UnixTimestamp;
+  limitFrom?: UnixTimestamp;
+  limitTo?: UnixTimestamp;
 }
 
-export function buildTimepoints({ checkConfigs, from, to }: BuildTimepointsInRangeProps): StatelessTimepoint[] {
+export function buildTimepoints({
+  checkConfigs,
+  limitFrom = 0,
+  limitTo = Infinity,
+}: BuildTimepointsInRangeProps): StatelessTimepoint[] {
   const timepoints = checkConfigs.map((config) => {
-    const configFrom = getTimeAdjustedTimepoint(from > config.from ? from : config.from, config.frequency);
-    const configTo = to < config.to ? to : config.to;
+    const configFrom = Math.max(limitFrom, config.from);
+    const configTo = Math.min(limitTo, config.to);
 
     return buildTimepointsForConfig({ from: configFrom, to: configTo, config });
   });
@@ -146,7 +150,7 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
   return build;
 }
 
-export function constructCheckEvents({
+export function buildCheckEvents({
   checkConfigs,
   from,
 }: {

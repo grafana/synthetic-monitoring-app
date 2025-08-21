@@ -117,12 +117,14 @@ export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckCo
 
 interface UseTimepointsProps {
   checkConfigs: CheckConfig[];
-  from: UnixTimestamp;
-  to: UnixTimestamp;
+  limitFrom: UnixTimestamp;
+  limitTo: UnixTimestamp;
 }
 
-export function useTimepoints({ checkConfigs, from, to }: UseTimepointsProps) {
-  return useMemo(() => buildTimepoints({ from, to, checkConfigs }), [from, to, checkConfigs]);
+export function useTimepoints({ checkConfigs, limitFrom, limitTo }: UseTimepointsProps) {
+  return useMemo(() => {
+    return buildTimepoints({ checkConfigs, limitFrom, limitTo });
+  }, [limitFrom, limitTo, checkConfigs]);
 }
 
 interface UseExecutionDurationLogsProps {

@@ -1,6 +1,6 @@
 import { queryDS } from 'features/queryDatasources/queryDS';
 
-import { LokiSeries } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { LokiDataFrame } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 export interface QueryLokiArgs {
   datasource: { uid: string; type: string };
@@ -25,6 +25,6 @@ export function queryLoki<T, R>({ datasource, query, start, end, refId }: QueryL
     start,
     end,
   }).then((data) => {
-    return data[refId][0] as LokiSeries<T, R>;
+    return data[refId][0] as LokiDataFrame<T, R>;
   });
 }
