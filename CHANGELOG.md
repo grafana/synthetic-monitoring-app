@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.34.0...v1.34.1) (2025-08-21)
+
+
+### Fixes
+
+* update tsconfig for `monaco` (confirmed with k6 core dev) ([#1232](https://github.com/grafana/synthetic-monitoring-app/issues/1232)) ([3a082bd](https://github.com/grafana/synthetic-monitoring-app/commit/3a082bd1a11e64ddee8342bbcd11a0fd9f99e77f))
+
 ## [1.34.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.33.2...v1.34.0) (2025-08-19)
 
 
