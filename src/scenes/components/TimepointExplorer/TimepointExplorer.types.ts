@@ -20,7 +20,8 @@ type ExecutionIndex = number;
 
 export type SelectedTimepoint = [StatelessTimepoint, ProbeName, ExecutionIndex];
 
-export type SelectedState = [null, null, null] | SelectedTimepoint;
+export type ViewerState = SelectedTimepoint | [];
+export type HoveredState = SelectedTimepoint | [];
 
 export type MiniMapSection = [number, number];
 export type MiniMapSections = [MiniMapSection, ...MiniMapSection[]];

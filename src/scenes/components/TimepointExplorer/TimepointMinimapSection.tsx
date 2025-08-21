@@ -108,12 +108,12 @@ interface EntryProps {
 }
 
 const PendingTimepoint = ({ statefulTimepoint, width }: EntryProps) => {
-  const { maxProbeDuration, selectedState, vizDisplay } = useTimepointExplorerContext();
+  const { maxProbeDuration, viewerState, vizDisplay } = useTimepointExplorerContext();
   const { status } = statefulTimepoint;
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
-  const [selectedTimepoint] = selectedState;
+  const [viewerTimepoint] = viewerState;
 
   if (!vizDisplay.includes(status)) {
     return <div style={{ width }} />;
@@ -123,7 +123,7 @@ const PendingTimepoint = ({ statefulTimepoint, width }: EntryProps) => {
     <TimepointVizItem
       key={statefulTimepoint.adjustedTime}
       className={cx(styles.uptimeTimepoint, {
-        [styles.selected]: selectedTimepoint?.adjustedTime === statefulTimepoint.adjustedTime,
+        [styles.selected]: viewerTimepoint?.adjustedTime === statefulTimepoint.adjustedTime,
       })}
       data-testid={`pending-timepoint-${statefulTimepoint.index}`}
       status={`pending`}
@@ -133,12 +133,12 @@ const PendingTimepoint = ({ statefulTimepoint, width }: EntryProps) => {
 };
 
 const UptimeTimepoint = ({ statefulTimepoint, width }: EntryProps) => {
-  const { maxProbeDuration, selectedState, vizDisplay } = useTimepointExplorerContext();
+  const { maxProbeDuration, viewerState, vizDisplay } = useTimepointExplorerContext();
   const { status } = statefulTimepoint;
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
-  const [selectedTimepoint] = selectedState;
+  const [selectedTimepoint] = viewerState;
 
   if (!vizDisplay.includes(status)) {
     return <div style={{ width }} />;
@@ -207,17 +207,17 @@ interface ExecutionEntryProps {
 }
 
 const ExecutionEntry = ({ containerHeight, offset, execution, timepoint, width }: ExecutionEntryProps) => {
-  const { maxProbeDuration, selectedState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const { maxProbeDuration, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
   const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
   const probeDuration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
   const probeName = execution.labels.probe;
   const bottom = getEntryHeight(probeDuration, maxProbeDuration) / 100;
-  const [timepointToView, probeNameToView] = selectedState;
+  const [viewerTimepoint, viewerProbeName] = viewerState;
 
   const bottomInPx = containerHeight * bottom - offset;
   const actualPosition = bottomInPx + offset > containerHeight ? containerHeight - offset : bottomInPx;
-  const selected = timepointToView?.adjustedTime === timepoint.adjustedTime && probeNameToView === probeName;
+  const selected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime && viewerProbeName === probeName;
   const status = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'missing';
 
   if (!vizDisplay.includes(status)) {

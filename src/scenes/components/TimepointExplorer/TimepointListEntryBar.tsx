@@ -24,15 +24,15 @@ const GLOBAL_CLASS = `list_entry_bar`;
 export const TimepointListEntryBar = ({ children, timepoint, status }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
 
-  const { check, handleSelectedStateChange, maxProbeDuration, selectedState, timepointWidth, vizDisplay } =
+  const { check, handleViewerStateChange, maxProbeDuration, viewerState, timepointWidth, vizDisplay } =
     useTimepointExplorerContext();
   const probeVar = useSceneVarProbes(check);
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
   const styles = useStyles2(getStyles, timepointWidth, height);
   const probeNameToView = probeVar[0];
-  const [selectedTimepoint] = selectedState;
-  const isSelected = selectedTimepoint?.adjustedTime === timepoint.adjustedTime;
+  const [viewerTimepoint] = viewerState;
+  const isSelected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
 
   if (!vizDisplay.includes(status)) {
@@ -50,7 +50,7 @@ export const TimepointListEntryBar = ({ children, timepoint, status }: Timepoint
         <PlainButton
           className={styles.button}
           ref={ref}
-          onClick={() => handleSelectedStateChange([timepoint, probeNameToView, 0])}
+          onClick={() => handleViewerStateChange([timepoint, probeNameToView, 0])}
           showFocusStyles={false}
         >
           <TimepointVizItem

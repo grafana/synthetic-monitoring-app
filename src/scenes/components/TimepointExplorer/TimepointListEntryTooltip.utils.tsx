@@ -1,7 +1,7 @@
 import { formatSmallDurations } from 'utils';
 import {
+  HoveredState,
   ProbeResults,
-  SelectedState,
   StatefulTimepoint,
   TimepointStatus,
   UnixTimestamp,
@@ -86,7 +86,7 @@ export function getEntriesToRender({
     });
 }
 
-export function matchState(current: SelectedState, matchState: SelectedState) {
+export function matchState(current: HoveredState, matchState: HoveredState) {
   const [currentTimepoint, currentProbeName, currentExecutionIndex] = current;
   const [selectedTimepoint, selectedProbeName, selectedExecutionIndex] = matchState;
 

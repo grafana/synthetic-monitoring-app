@@ -12,7 +12,7 @@ import {
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getEntryHeight, getIsProbeSelected } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getEntryHeight, getIsProbeBeingViewed } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
@@ -28,17 +28,17 @@ const ICON_MAP: Record<number, IconName> = {
 export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntryProps) => {
   const {
     handleHoverStateChange,
-    handleSelectedStateChange,
+    handleViewerStateChange,
     hoveredState,
     maxProbeDuration,
-    vizDisplay,
-    selectedState,
     timepointWidth,
+    viewerState,
+    vizDisplay,
   } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const styles = useStyles2(getStyles, timepointWidth);
   const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
-  const [hoveredTimepoint, hoveredProbeName, hoveredExecutionIndex] = hoveredState;
+  const [hoveredTimepoint, hoveredProbeName, hoveredExecutionIndex] = hoveredState || [];
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
   const height = `calc(${entryHeight}% + ${timepointWidth}px)`;
@@ -65,7 +65,7 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
           const height = getEntryHeight(duration, maxProbeDuration);
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
           const { probe: probeName, probe_success } = execution[LokiFieldNames.Labels];
-          const isSelected = getIsProbeSelected(timepoint, probeName, selectedState);
+          const isBeingViewed = getIsProbeBeingViewed(timepoint, probeName, viewerState);
           const status = probe_success === '1' ? 'success' : probe_success === '0' ? 'failure' : 'missing';
 
           if (!vizDisplay.includes(status)) {
@@ -83,8 +83,8 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
               key={`${probeName}-${index}`}
               style={{ bottom: `${pixelHeight}px` }}
             >
-              {isSelected && (
-                <div className={styles.selectedIcon}>
+              {isBeingViewed && (
+                <div className={styles.viewerIcon}>
                   <Icon name="eye" />
                 </div>
               )}
@@ -92,11 +92,11 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
                 as={PlainButton}
                 className={cx(styles.reachabilityExecution, {
                   [styles.hovered]: isHovered,
-                  [styles.selected]: isSelected,
+                  [styles.viewed]: isBeingViewed,
                 })}
-                onClick={() => handleSelectedStateChange([timepoint, probeName, index])}
+                onClick={() => handleViewerStateChange([timepoint, probeName, index])}
                 onMouseEnter={() => handleHoverStateChange([timepoint, probeName, index])}
-                onMouseLeave={() => handleHoverStateChange([null, null, null])}
+                onMouseLeave={() => handleHoverStateChange([])}
                 status={status}
               >
                 <Icon name={ICON_MAP[probe_success]} />
@@ -157,7 +157,7 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
         border-radius: 50%;
       }
     `,
-    selected: css`
+    viewed: css`
       border-width: 2px;
       z-index: 1;
     `,
@@ -166,7 +166,7 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
         opacity: 0.3;
       }
     `,
-    selectedIcon: css`
+    viewerIcon: css`
       position: absolute;
       bottom: 100%;
     `,

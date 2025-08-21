@@ -18,9 +18,9 @@ interface Action {
 
 export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   const logsDS = useLogsDS();
-  const { check, handleSelectedStateChange, listLogsMap, selectedState, timepoints } = useTimepointExplorerContext();
-  const [_, probeName] = selectedState;
-  const query = `{job="${check.job}", instance="${check.target}", probe="${probeName}"} | logfmt`;
+  const { check, handleViewerStateChange, listLogsMap, viewerState, timepoints } = useTimepointExplorerContext();
+  const [_, viewerProbeName] = viewerState;
+  const query = `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"} | logfmt`;
 
   const prevTimepoint = timepoints[timepoint.index - 1];
   const nextTimepoint = timepoints[timepoint.index + 1];
@@ -35,17 +35,17 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
     if (prevTimepoint) {
       const statefulPrevTimepoint = prevTimepoint ? listLogsMap[prevTimepoint.adjustedTime] : undefined;
       const probeName = getProbeNameToUse(probeVar, statefulPrevTimepoint);
-      handleSelectedStateChange([prevTimepoint, probeName, 0]);
+      handleViewerStateChange([prevTimepoint, probeName, 0]);
     }
-  }, [prevTimepoint, listLogsMap, probeVar, handleSelectedStateChange]);
+  }, [prevTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
   const handleNextTimepoint = useCallback(() => {
     if (nextTimepoint) {
       const statefulNextTimepoint = nextTimepoint ? listLogsMap[nextTimepoint.adjustedTime] : undefined;
       const probeName = getProbeNameToUse(probeVar, statefulNextTimepoint);
-      handleSelectedStateChange([nextTimepoint, probeName, 0]);
+      handleViewerStateChange([nextTimepoint, probeName, 0]);
     }
-  }, [nextTimepoint, listLogsMap, probeVar, handleSelectedStateChange]);
+  }, [nextTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
   return useMemo<Action[]>(
     () => [

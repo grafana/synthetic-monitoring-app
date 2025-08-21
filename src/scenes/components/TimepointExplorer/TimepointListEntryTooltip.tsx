@@ -21,7 +21,7 @@ interface TimepointListEntryTooltipProps {
 
 export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const { check, currentAdjustedTime, handleHoverStateChange, handleSelectedStateChange, hoveredState, selectedState } =
+  const { check, currentAdjustedTime, handleHoverStateChange, handleViewerStateChange, hoveredState, viewerState } =
     useTimepointExplorerContext();
   const selectedProbeNames = useSceneVarProbes(check);
 
@@ -54,7 +54,7 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
           .sort((a, b) => a.probeName.localeCompare(b.probeName))
           .map((entry) => {
             const { status, probeName, duration, index } = entry;
-            const isSelected = matchState(selectedState, [statefulTimepoint, probeName, index]);
+            const isSelected = matchState(viewerState, [statefulTimepoint, probeName, index]);
             const isHovered = matchState(hoveredState, [statefulTimepoint, probeName, index]);
 
             return (
@@ -65,10 +65,10 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
                     [styles.selected]: isSelected,
                   })}
                   onClick={() => {
-                    handleSelectedStateChange([statefulTimepoint, probeName, index]);
+                    handleViewerStateChange([statefulTimepoint, probeName, index]);
                   }}
                   onMouseEnter={() => handleHoverStateChange([statefulTimepoint, probeName, index])}
-                  onMouseLeave={() => handleHoverStateChange([null, null, null])}
+                  onMouseLeave={() => handleHoverStateChange([])}
                 >
                   {probeName}
                 </PlainButton>

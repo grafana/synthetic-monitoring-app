@@ -12,7 +12,11 @@ import { ProbeResultMissing } from 'scenes/components/TimepointExplorer/ProbeRes
 import { ProbeResultPending } from 'scenes/components/TimepointExplorer/ProbeResultPending';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useTimepointVizOptions } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import { SelectedState, TimepointStatus } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  HoveredState,
+  StatelessTimepoint,
+  TimepointStatus,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { useTimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions.hooks';
 
 interface TimepointViewerExecutionsProps {
@@ -20,6 +24,8 @@ interface TimepointViewerExecutionsProps {
   logsView: LogsView;
   pendingProbeNames: string[];
   probeExecutions: ProbeExecutionLogs[];
+  probeNameToView: string;
+  timepoint: StatelessTimepoint;
 }
 
 export const TimepointViewerExecutions = ({
@@ -27,9 +33,10 @@ export const TimepointViewerExecutions = ({
   logsView,
   pendingProbeNames,
   probeExecutions = [],
+  probeNameToView,
+  timepoint,
 }: TimepointViewerExecutionsProps) => {
-  const { handleHoverStateChange, handleSelectedStateChange, selectedState } = useTimepointExplorerContext();
-  const [timepoint, probeNameToView] = selectedState;
+  const { handleHoverStateChange, handleViewerStateChange } = useTimepointExplorerContext();
   const tabsToRender = useTimepointViewerExecutions({ probeExecutions, pendingProbeNames, timepoint, isLoading });
 
   return (
@@ -37,19 +44,19 @@ export const TimepointViewerExecutions = ({
       <TabsBar>
         {tabsToRender.map(({ probeName, status }) => {
           const active = probeNameToView === probeName;
-          const hoveredState: SelectedState = timepoint ? [timepoint, probeName, 0] : [null, null, null];
+          const hoveredState: HoveredState = timepoint ? [timepoint, probeName, 0] : [];
 
           return (
             <ProbeNameTab
               key={probeName}
               handleChangeTab={() => {
                 if (!active && timepoint) {
-                  handleSelectedStateChange([timepoint, probeName, 0]);
+                  handleViewerStateChange([timepoint, probeName, 0]);
                 }
               }}
               active={active}
               handleMouseEnter={() => handleHoverStateChange(hoveredState)}
-              handleMouseLeave={() => handleHoverStateChange([null, null, null])}
+              handleMouseLeave={() => handleHoverStateChange([])}
               status={status}
               probeName={probeName}
             />

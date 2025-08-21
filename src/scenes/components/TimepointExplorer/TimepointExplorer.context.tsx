@@ -34,21 +34,22 @@ import {
 import {
   CheckConfig,
   CheckEvent,
+  HoveredState,
   MiniMapPages,
   MiniMapSection,
   MiniMapSections,
-  SelectedState,
-  SelectedTimepoint,
   StatefulTimepoint,
   StatelessTimepoint,
   TimepointStatus,
   UnixTimestamp,
+  ViewerState,
   ViewMode,
   VizDisplay,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   constructCheckEvents,
   findNearest,
+  getIsInTheFuture,
   getMiniMapPages,
   getMiniMapSections,
   getTimeFrom,
@@ -61,16 +62,16 @@ interface TimepointExplorerContextType {
   checkConfigs: CheckConfig[];
   checkEvents: CheckEvent[];
   currentAdjustedTime: UnixTimestamp;
-  handleHoverStateChange: (state: SelectedState) => void;
+  handleHoverStateChange: (state: HoveredState) => void;
   handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
   handleMiniMapPageChange: (page: number) => void;
   handleMiniMapSectionChange: (sectionIndex: number) => void;
-  handleSelectedStateChange: (state: SelectedTimepoint) => void;
+  handleViewerStateChange: (state: ViewerState) => void;
   handleTimepointWidthChange: (timepointWidth: number, currentSectionRange: MiniMapSection) => void;
   handleViewModeChange: (viewMode: ViewMode) => void;
   handleVizDisplayChange: (display: TimepointStatus, usedModifier: boolean) => void;
   handleVizOptionChange: (display: TimepointStatus, color: string) => void;
-  hoveredState: SelectedState;
+  hoveredState: HoveredState;
   isLogsRetentionPeriodWithinTimerange: boolean;
   isLoading: boolean;
   listWidth: number;
@@ -80,7 +81,7 @@ interface TimepointExplorerContextType {
   miniMapCurrentPageSections: MiniMapSections;
   miniMapCurrentSectionIndex: number;
   miniMapPages: MiniMapPages;
-  selectedState: SelectedTimepoint;
+  viewerState: ViewerState;
   timepointWidth: number;
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
@@ -104,7 +105,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const logsRetentionFrom = useMemo(() => Date.now() - logsRetentionPeriod, [logsRetentionPeriod, timeRange]);
   const explorerTimeFrom = getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom: timeRange.from.valueOf() });
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
-  const [hoveredState, setHoveredState] = useState<SelectedState>([null, null, null]);
+  const [hoveredState, setHoveredState] = useState<HoveredState>([]);
   const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<ViewMode>(TIMEPOINT_EXPLORER_VIEW_OPTIONS[0].value);
   const [timepointsDisplayCount, setTimepointsDisplayCount] = useState<number>(0);
@@ -193,11 +194,18 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     [checkConfigs, explorerTimeFrom]
   );
 
-  const [selectedState, setSelectedState] = useState<SelectedTimepoint>([
-    timepoints[timepoints.length - 1],
-    probeVar[0],
-    0,
-  ]);
+  const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading || isExecutionDurationLogsLoading;
+
+  const [viewerState, setViewerState] = useState<ViewerState>([]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      const notInTheFuture = timepoints.filter((t) => !getIsInTheFuture(t, currentAdjustedTime));
+      const lastNotInTheFuture = notInTheFuture[notInTheFuture.length - 1];
+      const firstProbe = probeVar[0];
+      setViewerState([lastNotInTheFuture, firstProbe, 0]);
+    }
+  }, [isLoading, timepoints, probeVar, currentAdjustedTime]);
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
     setMiniMapCurrentSectionIndex(sectionIndex);
@@ -212,8 +220,8 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     setViewMode(viewMode);
   }, []);
 
-  const handleSelectedStateChange = useCallback((state: SelectedTimepoint) => {
-    setSelectedState(state);
+  const handleViewerStateChange = useCallback((state: ViewerState) => {
+    setViewerState(state);
   }, []);
 
   const handleTimepointDisplayCountChange = useCallback(
@@ -270,7 +278,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     });
   }, []);
 
-  const handleHoverStateChange = useCallback((state: SelectedState) => {
+  const handleHoverStateChange = useCallback((state: HoveredState) => {
     setHoveredState(state);
   }, []);
 
@@ -287,37 +295,35 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     listLogsMap,
   });
 
-  const isLoading = maxProbeDurationIsLoading || checkConfigsIsLoading || isExecutionDurationLogsLoading;
-
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
       check,
       checkConfigs,
       checkEvents,
       currentAdjustedTime,
+      handleHoverStateChange,
       handleListWidthChange,
       handleMiniMapPageChange,
       handleMiniMapSectionChange,
-      handleSelectedStateChange,
-      handleHoverStateChange,
       handleTimepointWidthChange,
+      handleViewerStateChange,
       handleViewModeChange,
       handleVizDisplayChange,
       handleVizOptionChange,
       hoveredState,
       isLoading,
       isLogsRetentionPeriodWithinTimerange,
-      listWidth,
       listLogsMap,
+      listWidth,
       maxProbeDuration,
       miniMapCurrentPage,
       miniMapCurrentPageSections,
       miniMapCurrentSectionIndex,
       miniMapPages,
-      selectedState,
       timepoints,
       timepointsDisplayCount,
       timepointWidth,
+      viewerState,
       viewMode,
       vizDisplay,
       vizOptions,
@@ -327,29 +333,29 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     checkConfigs,
     checkEvents,
     currentAdjustedTime,
+    handleHoverStateChange,
     handleListWidthChange,
     handleMiniMapPageChange,
     handleMiniMapSectionChange,
-    handleSelectedStateChange,
-    handleHoverStateChange,
     handleTimepointWidthChange,
+    handleViewerStateChange,
     handleViewModeChange,
     handleVizDisplayChange,
     handleVizOptionChange,
     hoveredState,
     isLoading,
     isLogsRetentionPeriodWithinTimerange,
-    listWidth,
     listLogsMap,
+    listWidth,
     maxProbeDuration,
     miniMapCurrentPage,
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
     miniMapPages,
-    selectedState,
     timepoints,
     timepointsDisplayCount,
     timepointWidth,
+    viewerState,
     viewMode,
     vizDisplay,
     vizOptions,

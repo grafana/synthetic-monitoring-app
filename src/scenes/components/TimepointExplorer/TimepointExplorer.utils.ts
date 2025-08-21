@@ -17,11 +17,11 @@ import {
   MiniMapSection,
   MiniMapSections,
   ProbeResults,
-  SelectedState,
   StatefulTimepoint,
   StatelessTimepoint,
   TimepointStatus,
   UnixTimestamp,
+  ViewerState,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export function getTimeAdjustedTimepoint(unixDate: UnixTimestamp, frequency: number): UnixTimestamp {
@@ -329,17 +329,17 @@ export function findNearest(pages: MiniMapPages | MiniMapSections, currentRange:
   return bestPageIndex;
 }
 
-export function getIsTimepointSelected(timepoint: StatelessTimepoint, selectedTimepoint: SelectedState) {
-  const [timepointToView] = selectedTimepoint;
-  const isTimepointSelected = timepointToView?.adjustedTime === timepoint.adjustedTime;
+export function getIsTimepointSelected(timepoint: StatelessTimepoint, viewerState: ViewerState) {
+  const [viewerTimepoint] = viewerState;
+  const isTimepointSelected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime;
 
   return isTimepointSelected;
 }
 
-export function getIsProbeSelected(timepoint: StatelessTimepoint, probeName: string, selectedTimepoint: SelectedState) {
-  const [_, probeNameToView] = selectedTimepoint;
-  const isTimepointSelected = getIsTimepointSelected(timepoint, selectedTimepoint);
-  const isExecutionSelected = probeName === probeNameToView;
+export function getIsProbeBeingViewed(timepoint: StatelessTimepoint, probeName: string, viewerState: ViewerState) {
+  const [_, viewerProbeName] = viewerState;
+  const isTimepointSelected = getIsTimepointSelected(timepoint, viewerState);
+  const isExecutionSelected = probeName === viewerProbeName;
   const isSelected = isTimepointSelected && isExecutionSelected;
 
   return isSelected;

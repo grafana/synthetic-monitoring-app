@@ -15,14 +15,14 @@ import { TimepointViewerActions } from 'scenes/components/TimepointExplorer/Time
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
-  const { selectedState } = useTimepointExplorerContext();
-  const [selectedTimepoint] = selectedState;
+  const { viewerState } = useTimepointExplorerContext();
+  const [viewerTimepoint, viewerProbeName] = viewerState;
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.container}>
-      {selectedTimepoint ? (
-        <TimepointViewerContent timepoint={selectedTimepoint} />
+      {viewerTimepoint && viewerProbeName ? (
+        <TimepointViewerContent probeNameToView={viewerProbeName} timepoint={viewerTimepoint} />
       ) : (
         <Stack justifyContent={'center'} alignItems={'center'} height={30} direction={'column'}>
           <Text variant="h2">No timepoint selected</Text>
@@ -44,7 +44,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-const TimepointViewerContent = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
+interface TimepointViewerContentProps {
+  probeNameToView: string;
+  timepoint: StatelessTimepoint;
+}
+
+const TimepointViewerContent = ({ probeNameToView, timepoint }: TimepointViewerContentProps) => {
   const { check, currentAdjustedTime } = useTimepointExplorerContext();
   const couldResultBePending = getCouldBePending(timepoint, currentAdjustedTime);
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
@@ -81,6 +86,8 @@ const TimepointViewerContent = ({ timepoint }: { timepoint: StatelessTimepoint }
         logsView={logsView}
         probeExecutions={data}
         pendingProbeNames={pendingProbeNames}
+        probeNameToView={probeNameToView}
+        timepoint={timepoint}
       />
     </Stack>
   );
