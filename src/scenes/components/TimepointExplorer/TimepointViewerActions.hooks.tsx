@@ -6,7 +6,7 @@ import { useLogsDS } from 'hooks/useLogsDS';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getProbeNameToUse } from 'scenes/components/TimepointExplorer/TimepointViewerNavigation.utils';
+import { getProbeNameToUse } from 'scenes/components/TimepointExplorer/TimepointViewerActions.utils';
 
 interface Action {
   icon: IconName;

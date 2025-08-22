@@ -2,8 +2,9 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { capitalize } from 'lodash';
 
-import { HTTPResponseTimings } from 'features/parseCheckLogs/checkLogs.types.http';
+import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { formatSmallDurations } from 'utils';
 import { getTiming } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings.utils';
 
@@ -17,7 +18,7 @@ const TIMING_CALCULATIONS = {
   transfer: [`responseStart`, `end`],
 } as const;
 
-export const LogHTTPResponseTimings = ({ log }: { log: HTTPResponseTimings }) => {
+export const LogHTTPResponseTimings = ({ log }: { log: HTTPResponseTimingsLog }) => {
   const styles = useStyles2(getStyles);
 
   const timings = HTTP_REQUEST_ORDER.map((key) => {
@@ -45,7 +46,7 @@ export const LogHTTPResponseTimings = ({ log }: { log: HTTPResponseTimings }) =>
         if (timing > 0) {
           return (
             <div key={HTTP_REQUEST_ORDER[index]}>
-              {key}: {formatSmallDurations(timing)}
+              {capitalize(key)}: {formatSmallDurations(timing)}
             </div>
           );
         }

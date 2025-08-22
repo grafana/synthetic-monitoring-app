@@ -2,9 +2,9 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Stack, Tag, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { LOG_LABELS_COMMON, LOG_LABELS_SM } from 'features/parseCheckLogs/checkLogs.constants.labels';
 
-import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { uniqueLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels.utils';
 
 export const UniqueLogLabels = ({ log }: { log: ParsedLokiRecord<Record<string, string>, Record<string, string>> }) => {
   const labels = uniqueLabels(log);
@@ -18,17 +18,6 @@ export const UniqueLogLabels = ({ log }: { log: ParsedLokiRecord<Record<string, 
     </Stack>
   );
 };
-
-function uniqueLabels(log: ParsedLokiRecord<Record<string, string>, Record<string, string>>) {
-  const labels = Object.keys(log[LokiFieldNames.Labels]);
-
-  const labelsFiltered = labels
-    .filter((key) => !LOG_LABELS_COMMON.includes(key) && !LOG_LABELS_SM.includes(key))
-    .filter((key) => key !== 'msg' && !key.includes(`_extracted`) && !key.includes(`label_`))
-    .filter((key) => key !== 'time'); // seems redundant as it corresponds to the log timestamp
-
-  return labelsFiltered;
-}
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {

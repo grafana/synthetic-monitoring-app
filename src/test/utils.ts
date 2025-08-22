@@ -332,3 +332,19 @@ export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
     },
   });
 }
+
+// Chris: seems non-standard across languages
+// example: 2025-08-20T15:03:51.793479631Z
+// example: 2024-06-20 02:40:00.86273212Z +0000 UTC
+export function constructGoTimestamp(unixTimestamp: number, nanoseconds = 0) {
+  const date = new Date(unixTimestamp);
+  const yyyy = date.getUTCFullYear();
+  const mm = String(date.getUTCMonth()).padStart(2, '0');
+  const dd = String(date.getUTCDate()).padStart(2, '0');
+  const HH = String(date.getUTCHours()).padStart(2, '0');
+  const MM = String(date.getUTCMinutes()).padStart(2, '0');
+  const SS = String(date.getUTCSeconds()).padStart(2, '0');
+
+  const nanoStr = String(nanoseconds).padStart(8, '0').slice(0, 8);
+  return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}.${nanoStr}Z +0000 UTC`;
+}

@@ -1,9 +1,8 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { formatDate } from 'utils';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { AnnotationWithIndices } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations.utils';
 
@@ -44,7 +43,9 @@ export const TimepointInstantAnnotation = ({
       {showLabels && (
         <div className={styles.label}>
           <div>{annotation.checkEvent.label}</div>
-          {annotation.checkEvent.from && <div>{formatDate(annotation.checkEvent.from, true)}</div>}
+          {annotation.checkEvent.from && (
+            <div>{dateTimeFormat(annotation.checkEvent.from, { format: 'yyyy-MM-DD HH:mm:ss' })}</div>
+          )}
         </div>
       )}
     </div>

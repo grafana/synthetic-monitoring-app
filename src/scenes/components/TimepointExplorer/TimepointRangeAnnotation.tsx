@@ -1,9 +1,8 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Box, measureText, Text, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { formatDate } from 'utils';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { AnnotationWithIndices } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations.utils';
 
@@ -86,7 +85,7 @@ const AnnotationTooltip = ({ annotation }: { annotation: AnnotationWithIndices }
         <>
           <Box padding={1}>
             <Text>
-              {formatDate(annotation.checkEvent.from)} - {formatDate(annotation.checkEvent.to)}
+              {dateTimeFormat(annotation.checkEvent.from)} - {dateTimeFormat(annotation.checkEvent.to)}
             </Text>
           </Box>
           <div className={styles.divider} />

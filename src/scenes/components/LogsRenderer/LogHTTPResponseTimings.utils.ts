@@ -1,11 +1,11 @@
 export function getTiming(start: string, end: string) {
-  const startTime = parseTimestampToMilliseconds(start);
-  const endTime = parseTimestampToMilliseconds(end);
+  const startTime = parseGoTimestampToMilliseconds(start);
+  const endTime = parseGoTimestampToMilliseconds(end);
 
   return endTime - startTime;
 }
 
-function parseTimestampToMilliseconds(timestamp: string): number {
+function parseGoTimestampToMilliseconds(timestamp: string): number {
   // Split the timestamp to get the fractional seconds part
   const [dateTimePart, rest = ''] = timestamp.split('.');
   const [fractionalPart = '0'] = rest.split(' ');

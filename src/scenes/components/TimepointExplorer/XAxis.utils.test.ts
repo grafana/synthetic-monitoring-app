@@ -99,7 +99,7 @@ describe('buildXAxisPoints', () => {
     });
 
     const result = buildXAxisPoints({ timepoints, crossesDays: true, timepointWidth: 20 });
-    expect(result[0].label).toBe(`1/1, 12:00 AM`);
+    expect(result[0].label).toBe(`1/1, 00:00:00`);
   });
 
   it(`should display the correct labels when crossesDays is false`, () => {
@@ -113,6 +113,6 @@ describe('buildXAxisPoints', () => {
     });
 
     const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20 });
-    expect(result[0].label).toBe(`12:00 AM`);
+    expect(result[0].label).toBe(`00:00:00`);
   });
 });

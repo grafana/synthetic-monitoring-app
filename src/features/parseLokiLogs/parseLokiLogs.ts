@@ -10,8 +10,13 @@ type FieldParser = Partial<Record<LokiFieldNames, (value: any) => any>>;
 // ensure to send logfmt to Loki so the line is fully parsed
 export function parseLokiLogs<T, R>(dataFrame: LokiDataFrame<T, R>, parser?: FieldParser) {
   const flattenedLogs = flattenLogs(dataFrame.fields, parser);
+  const sortedLogs = sortLogs(flattenedLogs);
 
-  return sortLogs(flattenedLogs);
+  return sortedLogs;
+}
+
+export function sortLogs<T, R>(logs: Array<ParsedLokiRecord<T, R>>) {
+  return logs.sort((a, b) => a[LokiFieldNames.TsNs] - b[LokiFieldNames.TsNs]);
 }
 
 export function flattenLogs<T, R>(fields: LokiFields<T, R>, parser?: FieldParser) {
@@ -46,8 +51,4 @@ export function flattenLogs<T, R>(fields: LokiFields<T, R>, parser?: FieldParser
   }
 
   return flattenedLogs;
-}
-
-export function sortLogs<T, R>(logs: Array<ParsedLokiRecord<T, R>>) {
-  return logs.sort((a, b) => a[LokiFieldNames.TsNs] - b[LokiFieldNames.TsNs]);
 }

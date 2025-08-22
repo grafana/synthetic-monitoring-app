@@ -1,167 +1,77 @@
-import { MSG_STRINGS_COMMON, MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
+import { MSG_STRINGS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 import {
   discardIncompleteChecks,
   groupByExecution,
   groupByProbe,
   parseCheckLogs,
 } from 'features/parseCheckLogs/parseCheckLogs';
-
 import {
-  ExecutionFailedLog,
-  ExecutionLabelType,
-  ExecutionSucceededLog,
-  StartingLog,
-  UnknownExecutionLog,
-} from 'features/parseCheckLogs/checkLogs.types';
-import { MakingHTTPRequestLog, ReceivedHTTPResponseLog } from 'features/parseCheckLogs/checkLogs.types.http';
-import { CheckType } from 'types';
+  failedLogFactory,
+  startingLogFactory,
+  succeededLogFactory,
+  unknownExecutionLogFactory,
+} from 'test/factories/executionLogs';
+import { httpResponseTimingsLogFactory } from 'test/factories/executionLogs.http';
 
-const labelTypes: ExecutionLabelType = {
-  check_name: 'I',
-  detected_level: 'S',
-  instance: 'I',
-  job: 'I',
-};
+import { UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
 
-const discard1: MakingHTTPRequestLog = {
-  Time: 1713859200000,
-  tsNs: 17138592000001000,
+const probe1_discard1 = httpResponseTimingsLogFactory.build({
   labels: {
     probe: 'probe1',
-    host: 'host1',
-    url: 'url1',
-    msg: MSG_STRINGS_HTTP.MakingHTTPRequest,
-    check_name: CheckType.HTTP,
-    detected_level: 'info',
-    instance: 'instance1',
-    job: 'job1',
-    probe_success: '0',
-    region: 'region1',
-    service_name: 'service1',
-    source: 'synthetic-monitoring-agent',
   },
-  Line: 'line1',
-  labelTypes,
-  id: 'id1',
-};
+});
 
-const discard2: ReceivedHTTPResponseLog = {
-  Time: 1713859200,
-  tsNs: 17138592000002000,
+const probe1_discard2 = unknownExecutionLogFactory.build({
   labels: {
     probe: 'probe1',
-    http_request: 'http_request1',
-    msg: MSG_STRINGS_HTTP.ReceivedHTTPResponse,
-    check_name: CheckType.HTTP,
-    detected_level: 'info',
-    instance: 'instance1',
-    job: 'job1',
-    probe_success: '0',
-    region: 'region1',
-    service_name: 'service1',
-    source: 'synthetic-monitoring-agent',
   },
-  Line: 'line2',
-  labelTypes,
-  id: 'id2',
-};
+});
 
-// todo: need a log factory
-const probe1_log1: StartingLog = {
-  Time: 1713859200000,
-  tsNs: 17138592000001000,
+const probe1_startingLog = startingLogFactory.build({
   labels: {
     probe: 'probe1',
-    msg: MSG_STRINGS_COMMON.BeginningCheck,
-    check_name: CheckType.HTTP,
-    detected_level: 'info',
-    instance: 'instance1',
-    job: 'job1',
-    probe_success: '0',
-    region: 'region1',
-    service_name: 'service1',
-    source: 'synthetic-monitoring-agent',
   },
-  Line: 'line3',
-  labelTypes,
-  id: 'id3',
-};
+});
 
-const probe1_log2: ExecutionFailedLog = {
-  Time: 1713859200000,
-  tsNs: 17138592000002000,
+const probe1_failedLog = failedLogFactory.build({
   labels: {
     probe: 'probe1',
-    duration_seconds: '10',
-    msg: MSG_STRINGS_COMMON.CheckFailed,
-    check_name: CheckType.HTTP,
-    detected_level: 'error',
-    instance: 'instance2',
-    job: 'job2',
-    probe_success: '0',
-    region: 'region2',
-    service_name: 'service2',
-    source: 'synthetic-monitoring-agent',
   },
-  Line: 'line4',
-  labelTypes,
-  id: 'id4',
-};
+});
 
-const probe2_log1: StartingLog = {
-  Time: 1713859200000,
-  tsNs: 17138592000001000,
+const probe2_startingLog = startingLogFactory.build({
   labels: {
     probe: 'probe2',
-    msg: MSG_STRINGS_COMMON.BeginningCheck,
-    check_name: CheckType.HTTP,
-    detected_level: 'info',
-    instance: 'instance1',
-    job: 'job1',
-    probe_success: '1',
-    region: 'region1',
-    service_name: 'service1',
-    source: 'synthetic-monitoring-agent',
   },
-  Line: 'line5',
-  labelTypes,
-  id: 'id5',
-};
+});
 
-const probe2_log2: ExecutionSucceededLog = {
-  Time: 1713859200000,
-  tsNs: 17138592000002000,
+const probe2_succeededLog = succeededLogFactory.build({
   labels: {
     probe: 'probe2',
     duration_seconds: '10',
-    msg: MSG_STRINGS_COMMON.CheckSucceeded,
-    check_name: CheckType.HTTP,
-    detected_level: 'info',
-    instance: 'instance2',
-    job: 'job2',
-    probe_success: '1',
-    region: 'region2',
-    service_name: 'service2',
-    source: 'synthetic-monitoring-agent',
   },
-  Line: 'line6',
-  labelTypes,
-  id: 'id6',
-};
+});
 
 describe('groupLogs', () => {
   it('should group logs by probe', () => {
-    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2, discard1, discard2];
+    const logs: UnknownExecutionLog[] = [
+      probe1_startingLog,
+      probe1_failedLog,
+      probe2_startingLog,
+      probe2_succeededLog,
+      probe1_discard1,
+      probe1_discard2,
+    ];
     const groupedLogs = parseCheckLogs(logs);
 
     expect(groupedLogs).toEqual([
       {
         probeName: 'probe1',
-        executions: [[probe1_log1, probe1_log2]],
+        executions: [[probe1_startingLog, probe1_failedLog]],
       },
       {
         probeName: 'probe2',
-        executions: [[probe2_log1, probe2_log2]],
+        executions: [[probe2_startingLog, probe2_succeededLog]],
       },
     ]);
   });
@@ -169,49 +79,49 @@ describe('groupLogs', () => {
 
 describe('groupByProbe', () => {
   it('should group logs by probe', () => {
-    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
+    const logs: UnknownExecutionLog[] = [probe1_startingLog, probe1_failedLog, probe2_startingLog, probe2_succeededLog];
     const groupedLogs = groupByProbe(logs);
 
     expect(groupedLogs).toEqual({
-      probe1: [probe1_log1, probe1_log2],
-      probe2: [probe2_log1, probe2_log2],
+      probe1: [probe1_startingLog, probe1_failedLog],
+      probe2: [probe2_startingLog, probe2_succeededLog],
     });
   });
 });
 
 describe('groupByExecution', () => {
   it('should group logs by exeuction', () => {
-    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2];
+    const logs: UnknownExecutionLog[] = [probe1_startingLog, probe1_failedLog];
     const groupedLogs = groupByExecution(logs);
 
-    expect(groupedLogs).toEqual([[probe1_log1, probe1_log2]]);
+    expect(groupedLogs).toEqual([[probe1_startingLog, probe1_failedLog]]);
   });
 });
 
 describe('discardIncompleteChecks', () => {
   it('should discard incomplete checks from the start', () => {
-    const logs: UnknownExecutionLog[] = [probe2_log2, probe1_log1, probe1_log2];
+    const logs: UnknownExecutionLog[] = [probe2_succeededLog, probe1_startingLog, probe1_failedLog];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],
     });
 
-    expect(filteredLogs).toEqual([probe1_log1, probe1_log2]);
+    expect(filteredLogs).toEqual([probe1_startingLog, probe1_failedLog]);
   });
 
   it('should discard incomplete checks from the end', () => {
-    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1];
+    const logs: UnknownExecutionLog[] = [probe1_startingLog, probe1_failedLog, probe2_startingLog];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.CheckFailed, MSG_STRINGS_COMMON.CheckSucceeded],
       reverse: true,
     });
 
-    expect(filteredLogs).toEqual([probe1_log1, probe1_log2]);
+    expect(filteredLogs).toEqual([probe1_startingLog, probe1_failedLog]);
   });
 
   it(`should discard nothing if the logs are all complete`, () => {
-    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe2_log1, probe2_log2];
+    const logs: UnknownExecutionLog[] = [probe1_startingLog, probe1_failedLog, probe2_startingLog, probe2_succeededLog];
     const filteredLogs = discardIncompleteChecks({
       logs,
       matchMsg: [MSG_STRINGS_COMMON.BeginningCheck],
@@ -223,11 +133,11 @@ describe('discardIncompleteChecks', () => {
 
 describe('splitMultipleExecutions', () => {
   it('should split multiple executions', () => {
-    const logs: UnknownExecutionLog[] = [probe1_log1, probe1_log2, probe1_log1, probe1_log2];
+    const logs: UnknownExecutionLog[] = [probe1_startingLog, probe1_failedLog, probe1_startingLog, probe1_failedLog];
     const result = groupByExecution(logs);
     expect(result).toEqual([
-      [probe1_log1, probe1_log2],
-      [probe1_log1, probe1_log2],
+      [probe1_startingLog, probe1_failedLog],
+      [probe1_startingLog, probe1_failedLog],
     ]);
   });
 });

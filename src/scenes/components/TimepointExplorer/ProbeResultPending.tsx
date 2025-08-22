@@ -1,5 +1,5 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -24,7 +24,7 @@ export const ProbeResultPending = ({ probeName, timepoint }: ProbeResultPendingP
 
   return (
     <ResultUnknown title={`Waiting on results for ${name}...`} image={<PendingGrot />}>
-      {probe ? <ProbeExists probe={probe} timepoint={timepoint} /> : <ProbeUnknown />}
+      {probe ? <ProbeExists probe={probe} /> : <ProbeUnknown />}
     </ResultUnknown>
   );
 };
@@ -59,7 +59,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-const ProbeExists = ({ probe, timepoint }: { probe: ProbeWithMetadata; timepoint: StatelessTimepoint }) => {
+const ProbeExists = ({ probe }: { probe: ProbeWithMetadata }) => {
   const { region, public: isPublic, online, onlineChange } = probe;
 
   return (
@@ -82,7 +82,7 @@ const ProbeExists = ({ probe, timepoint }: { probe: ProbeWithMetadata; timepoint
         </Text>
         .
       </Text>
-      {!online && <Text>It was last online at {new Date(onlineChange * 1000).toLocaleString()}.</Text>}
+      {!online && <Text>It was last online at {dateTimeFormat(onlineChange * 1000)}.</Text>}
     </>
   );
 };

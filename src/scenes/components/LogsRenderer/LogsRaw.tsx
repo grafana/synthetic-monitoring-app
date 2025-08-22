@@ -27,10 +27,6 @@ const logPanelOptions = {
 
 const LOGS_HEIGHT = 400;
 
-// todo: make this more fully featured, such as:
-// having a search which either filters or highlights
-// add option for wordwrap
-// add label / level filters, etc.
 export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T[] }) => {
   const [width, setWidth] = useState(0);
 

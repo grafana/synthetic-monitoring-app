@@ -28,7 +28,6 @@ export function getTimeAdjustedTimepoint(unixDate: UnixTimestamp, frequency: num
   return unixDate - (unixDate % frequency);
 }
 
-// needed?
 export function buildConfigTimeRanges(checkConfigs: CheckConfigRaw[], timeRangeTo: UnixTimestamp): CheckConfig[] {
   return checkConfigs.map(({ date, frequency, type }, i) => {
     const from = date;
@@ -43,37 +42,7 @@ export function buildConfigTimeRanges(checkConfigs: CheckConfigRaw[], timeRangeT
   });
 }
 
-export function getTimepointStatus(probeResults: ProbeResults): TimepointStatus {
-  const executions = Object.values(probeResults)
-    .flat()
-    .map((execution) => execution[LokiFieldNames.Labels].probe_success);
-
-  return executions.every((execution) => execution === '0') ? 'failure' : 'success';
-}
-
-export function getMaxProbeDuration(probeResults: ProbeResults) {
-  const executionDurations = Object.values(probeResults)
-    .flat()
-    .map((execution) => Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000);
-
-  return Math.max(...executionDurations);
-}
-
-export function getEntryHeight(duration: number, maxProbeDurationData: number) {
-  const percentage = (duration / maxProbeDurationData) * 100;
-
-  // TODO: fix this at the root of the problem
-  return percentage > 100 ? 100 : percentage;
-}
-
-export function getEntryHeightPx(duration: number, maxProbeDurationData: number, containerHeightPx: number) {
-  const percentage = getEntryHeight(duration, maxProbeDurationData);
-  const inPx = containerHeightPx * (percentage / 100);
-
-  return inPx;
-}
-
-interface BuildTimepointsInRangeProps {
+interface BuildTimepointsProps {
   checkConfigs: CheckConfig[];
   limitFrom?: UnixTimestamp;
   limitTo?: UnixTimestamp;
@@ -83,7 +52,7 @@ export function buildTimepoints({
   checkConfigs,
   limitFrom = 0,
   limitTo = Infinity,
-}: BuildTimepointsInRangeProps): StatelessTimepoint[] {
+}: BuildTimepointsProps): StatelessTimepoint[] {
   const timepoints = checkConfigs.map((config) => {
     const configFrom = Math.max(limitFrom, config.from);
     const configTo = Math.min(limitTo, config.to);
@@ -128,6 +97,36 @@ export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsFo
   }
 
   return build;
+}
+
+export function getTimepointStatus(probeResults: ProbeResults): TimepointStatus {
+  const executions = Object.values(probeResults)
+    .flat()
+    .map((execution) => execution[LokiFieldNames.Labels].probe_success);
+
+  return executions.every((execution) => execution === '0') ? 'failure' : 'success';
+}
+
+export function getMaxProbeDuration(probeResults: ProbeResults) {
+  const executionDurations = Object.values(probeResults)
+    .flat()
+    .map((execution) => Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000);
+
+  return Math.max(...executionDurations);
+}
+
+export function getEntryHeight(duration: number, maxProbeDurationData: number) {
+  const percentage = (duration / maxProbeDurationData) * 100;
+
+  // TODO: fix this at the root of the problem
+  return percentage > 100 ? 100 : percentage;
+}
+
+export function getEntryHeightPx(duration: number, maxProbeDurationData: number, containerHeightPx: number) {
+  const percentage = getEntryHeight(duration, maxProbeDurationData);
+  const inPx = containerHeightPx * (percentage / 100);
+
+  return inPx;
 }
 
 const NANOSECONDS_PER_MILLISECOND = 1000000;
@@ -311,7 +310,10 @@ export function buildlistLogsMap({ logs, timepoints }: BuildlistLogsMapProps) {
   }, {});
 }
 
-export function findNearest(pages: MiniMapPages | MiniMapSections, currentRange: MiniMapPage | MiniMapSection) {
+export function findNearestPageIndex(
+  pages: MiniMapPages | MiniMapSections,
+  currentRange: MiniMapPage | MiniMapSection
+) {
   let bestPageIndex = 0;
   let maxOverlap = 0;
 
@@ -381,16 +383,12 @@ export function getIsInTheFuture(timepoint: StatelessTimepoint, currentAdjustedT
 }
 
 export function getCouldBePending(timepoint: StatelessTimepoint, currentAdjustedTime: UnixTimestamp) {
-  // the previous timepoint could also be pending.
-  // e.g. if a check is running every minute and takes 30 seconds to complete
-  // if it begins at 10:00:59, it will complete at 10:01:29
-  // so even though the 'current' timepoint is 10:01:00 we are waiting on the result of the previous timepoint, too
   const possibilities = [currentAdjustedTime];
 
   return possibilities.includes(timepoint.adjustedTime);
 }
 
-interface GetTimeFromProps {
+interface GetExplorerTimeFromProps {
   checkCreation: UnixTimestamp;
   logsRetentionFrom: UnixTimestamp;
   timeRangeFrom: UnixTimestamp;
@@ -399,7 +397,7 @@ interface GetTimeFromProps {
 // if creation was before retention date - then retetention date should be used
 // if creation was after retention date - then creation date should be used
 // if selected time range is more recent than both - use that
-export function getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom }: GetTimeFromProps) {
+export function getExplorerTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom }: GetExplorerTimeFromProps) {
   const checkCreationDate = Math.round(checkCreation * 1000);
   const wasCreationBeforeRetention = BigInt(checkCreationDate) < BigInt(logsRetentionFrom);
 

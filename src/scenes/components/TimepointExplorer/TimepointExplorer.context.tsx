@@ -48,12 +48,12 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   buildCheckEvents,
-  findNearest,
+  findNearestPageIndex,
+  getExplorerTimeFrom,
   getIsInitialised,
   getIsInTheFuture,
   getMiniMapPages,
   getMiniMapSections,
-  getTimeFrom,
   getVisibleTimepoints,
   getVisibleTimepointsTimeRange,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -108,7 +108,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const logsRetentionPeriod = useLogsRetentionPeriod(timeRange.from.valueOf());
   // eslint-disable-next-line react-hooks/exhaustive-deps -- update date.now when timerange changes
   const logsRetentionFrom = useMemo(() => Date.now() - logsRetentionPeriod, [logsRetentionPeriod, timeRange]);
-  const explorerTimeFrom = getTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom: timeRange.from.valueOf() });
+  const explorerTimeFrom = getExplorerTimeFrom({
+    checkCreation,
+    logsRetentionFrom,
+    timeRangeFrom: timeRange.from.valueOf(),
+  });
   const [miniMapCurrentPage, setMiniMapPage] = useState(0);
   const [hoveredState, setHoveredState] = useState<HoveredState>([]);
   const [miniMapCurrentSectionIndex, setMiniMapCurrentSectionIndex] = useState<number>(0);
@@ -253,9 +257,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const handleTimepointDisplayCountChange = useCallback(
     (count: number, currentSectionRange: MiniMapSection) => {
       const newMiniMapPages = getMiniMapPages(timepoints.length, count, MAX_MINIMAP_SECTIONS);
-      const nearestPage = findNearest(newMiniMapPages, currentSectionRange);
+      const nearestPage = findNearestPageIndex(newMiniMapPages, currentSectionRange);
       const newMiniMapSections = getMiniMapSections(newMiniMapPages[nearestPage], count);
-      const nearestSection = findNearest(newMiniMapSections, currentSectionRange);
+      const nearestSection = findNearestPageIndex(newMiniMapSections, currentSectionRange);
       setTimepointsDisplayCount(count);
       setMiniMapPage(nearestPage);
       setMiniMapCurrentSectionIndex(nearestSection);

@@ -1,4 +1,4 @@
-import { getTimeZone } from '@grafana/data';
+import { dateTimeFormat } from '@grafana/data';
 
 import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -68,24 +68,12 @@ export function buildXAxisPoints({ timepoints, crossesDays, timepointWidth }: Bu
       });
     }
   }
-  const timeZoneData = getTimeZone();
-  const timeZone = timeZoneData === 'browser' ? undefined : timeZoneData;
 
   return build.map((point) => {
     const date = new Date(point.label);
-    const label = crossesDays
-      ? date.toLocaleString(undefined, {
-          timeZone,
-          month: 'numeric',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : date.toLocaleTimeString(undefined, {
-          timeZone,
-          hour: '2-digit',
-          minute: '2-digit',
-        });
+    const label = dateTimeFormat(date, {
+      format: crossesDays ? 'M/D, HH:mm:ss' : 'HH:mm:ss',
+    });
 
     return {
       ...point,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Badge, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
@@ -26,7 +26,7 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
   const selectedProbeNames = useSceneVarProbes(check);
 
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const displayTime = new Date(statefulTimepoint.adjustedTime).toLocaleString();
+  const displayTime = dateTimeFormat(statefulTimepoint.adjustedTime);
 
   const renderedAvgDuration = getAverageDuration(statefulTimepoint.probeResults);
   const renderedFrequency = formatDuration(statefulTimepoint.config.frequency, true);

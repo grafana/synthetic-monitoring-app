@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useResizeObserver } from 'usehooks-ts';
@@ -121,7 +121,7 @@ const TimepointHeader = ({
     <Stack direction={`column`} gap={1}>
       <Stack direction={`row`} gap={1} justifyContent={'space-between'} alignItems={'center'}>
         <Stack direction={`column`} gap={1}>
-          <Text variant="h3">{new Date(timepoint?.adjustedTime).toLocaleString()}</Text>
+          <Text variant="h3">{dateTimeFormat(timepoint.adjustedTime)}</Text>
           <Stack direction={`row`} gap={1}>
             <Text color={'secondary'}>
               <strong>Configured frequency:</strong> {formatDuration(timepoint.config.frequency)}

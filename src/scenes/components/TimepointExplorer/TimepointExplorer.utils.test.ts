@@ -1,5 +1,5 @@
 import { db } from 'test/db';
-import { succeededLogFactory } from 'test/db/checkLogs';
+import { succeededLogFactory } from 'test/factories/executionLogs';
 
 import {
   CheckConfig,
@@ -14,7 +14,7 @@ import {
   buildlistLogsMap,
   buildTimepoints,
   buildTimepointsForConfig,
-  findNearest,
+  findNearestPageIndex,
   getMiniMapPages,
   getMiniMapSections,
   getPendingProbes,
@@ -167,7 +167,7 @@ describe(`getMiniMapSections`, () => {
   });
 });
 
-describe(`findNearest`, () => {
+describe(`findNearestPageIndex`, () => {
   describe(`increase in pages (decreased width)`, () => {
     it(`should return the new page index with the most overlapping indices`, () => {
       const newPages: MiniMapPages = [
@@ -177,7 +177,7 @@ describe(`findNearest`, () => {
         [7, 9],
       ];
       const currentSectionRange: MiniMapSection = [4, 7];
-      const nearestPage = findNearest(newPages, currentSectionRange);
+      const nearestPage = findNearestPageIndex(newPages, currentSectionRange);
 
       // favour further all things equal
       expect(nearestPage).toEqual(2);
@@ -190,7 +190,7 @@ describe(`findNearest`, () => {
         [20, 29],
       ];
       const currentSectionRange: MiniMapSection = [0, 29];
-      const nearestPage = findNearest(newPages, currentSectionRange);
+      const nearestPage = findNearestPageIndex(newPages, currentSectionRange);
 
       // favour newest all things equal
       expect(nearestPage).toEqual(2);
@@ -201,7 +201,7 @@ describe(`findNearest`, () => {
     it(`should return the correct nearest page`, () => {
       const newPages: MiniMapPages = [[0, 29]];
       const currentSectionRange: MiniMapSection = [11, 13];
-      const nearestPage = findNearest(newPages, currentSectionRange);
+      const nearestPage = findNearestPageIndex(newPages, currentSectionRange);
 
       expect(nearestPage).toEqual(0);
     });

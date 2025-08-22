@@ -4,12 +4,10 @@ import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
-import { HTTPResponseTimings } from 'features/parseCheckLogs/checkLogs.types.http';
+import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { LogHTTPResponseTimings } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings';
-import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLabels';
-
-import { logDuations } from './LogsEvent.utils';
+import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels';
 
 export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Record<string, string>>>({
   logs,
@@ -19,15 +17,14 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
   mainKey: string;
 }) => {
   const styles = useStyles2(getStyles);
-  const withDurations = logDuations(logs);
 
   return (
     <div className={styles.timelineContainer}>
-      {withDurations.map((log, index) => {
+      {logs.map((log, index) => {
         const level = log.labels.detected_level;
 
         return (
-          <div key={log.id} className={styles.timelineItem}>
+          <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>
             <div className={styles.time}>
               {dateTimeFormat(log[LokiFieldNames.Time], {
                 defaultWithMS: true,
@@ -44,7 +41,6 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
             </div>
             <div className={styles.mainKey}>{log.labels[mainKey]}</div>
             <LabelRenderer log={logs[index]} mainKey={mainKey} />
-            {/* <div>{formatSmallDurations(log.durationNs / 1000000)}</div> */}
           </div>
         );
       })}
@@ -66,7 +62,7 @@ const LabelRenderer = ({
   const Component = MSG_MAP[log.labels[mainKey]];
 
   if (Component) {
-    return <Component log={log as unknown as HTTPResponseTimings} />;
+    return <Component log={log as unknown as HTTPResponseTimingsLog} />;
   }
 
   return <UniqueLogLabels log={log} />;
@@ -89,7 +85,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       padding: ${theme.spacing(0.5)};
     `,
     mainKey: css`
-      /* white-space: pre; */
+      /* white-space: pre; // for scripted / browser checks?  */
       overflow-x: auto;
     `,
     time: css`
