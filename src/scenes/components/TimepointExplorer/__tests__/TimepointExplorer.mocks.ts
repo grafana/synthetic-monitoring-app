@@ -24,3 +24,5 @@ jest.mock('scenes/Common/useSceneRefreshPicker', () => ({
 jest.mock('scenes/Common/useSceneAnnotation', () => ({
   useSceneAnnotation: jest.fn(() => []),
 }));
+
+test.skip(`should inherit the mocks...`, () => {});
