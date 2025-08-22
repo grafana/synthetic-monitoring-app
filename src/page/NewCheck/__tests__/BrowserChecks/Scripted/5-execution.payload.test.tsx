@@ -1,8 +1,9 @@
 import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
-import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSectionV2, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
+import { FormStepOrder } from '../../../../../components/CheckForm/constants';
 import { fillMandatoryFields } from '../../../../__testHelpers__/scripted';
 
 const checkType = CheckType.Browser;
@@ -24,7 +25,7 @@ describe(`BrowserCheck - Section 5 (Execution) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Execution);
 
     await selectBasicFrequency(user, '2m');
 
@@ -41,7 +42,7 @@ describe(`BrowserCheck - Section 5 (Execution) payload`, () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
-    await goToSection(user, 2);
+    await goToSectionV2(user, FormStepOrder.Uptime);
 
     const timeoutMinutesInput = screen.getByLabelText('timeout minutes input');
     const timeoutSecondsInput = screen.getByLabelText('timeout seconds input');

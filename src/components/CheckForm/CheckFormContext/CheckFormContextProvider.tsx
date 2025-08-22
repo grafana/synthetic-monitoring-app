@@ -6,6 +6,7 @@ import { Check, CheckFormValues } from 'types';
 
 import { useCheckFormMeta } from '../CheckForm.hooks';
 import { FORM_SECTION_STEPS, SectionName } from '../FormLayout/FormLayout.constants';
+import { FormLayoutContextProvider } from '../FormLayout/FormLayoutContext';
 import { CheckFormContext } from './CheckFormContext';
 
 interface CheckFormContextProviderProps extends PropsWithChildren {
@@ -27,6 +28,8 @@ export function CheckFormContextProvider({
     defaultValues: checkFormMeta.defaultFormValues,
     shouldFocusError: false, // we manage focus manually
     resolver: zodResolver(checkFormMeta.schema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
   });
 
   useEffect(() => {
@@ -42,7 +45,9 @@ export function CheckFormContextProvider({
 
   return (
     <CheckFormContext.Provider value={value}>
-      <FormProvider {...methods}>{children}</FormProvider>
+      <FormProvider {...methods}>
+        <FormLayoutContextProvider>{children}</FormLayoutContextProvider>
+      </FormProvider>
     </CheckFormContext.Provider>
   );
 }

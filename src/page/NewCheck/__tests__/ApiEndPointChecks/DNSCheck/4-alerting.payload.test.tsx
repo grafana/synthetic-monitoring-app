@@ -3,7 +3,8 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
-import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
+import { FormStepOrder } from 'components/CheckForm/constants';
+import { goToSectionV2, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
@@ -13,7 +14,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Alerting);
     await submitForm(user);
     const { body } = await read();
 
@@ -27,11 +28,11 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -68,7 +69,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     
     // Set frequency to 10 minutes using the proper helper - go to section 4 (Execution)
-    await goToSection(user, 4);
+    await goToSectionV2(user, FormStepOrder.Execution);
     await selectBasicFrequency(user, '10m');
 
     // Then go to section 4 for probes selection (this is the Execution section)
@@ -76,7 +77,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     await user.click(probeCheckbox);
 
     // Now go to section 5 for alerts
-    await goToSection(user, 5);
+    await goToSectionV2(user, FormStepOrder.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 

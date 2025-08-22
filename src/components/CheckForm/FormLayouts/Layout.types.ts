@@ -5,13 +5,13 @@ import { CheckFormValues } from 'types';
 
 export enum LayoutSection {
   Check = `Request`,
-  Uptime = `Define Uptime`,
+  Uptime = `Uptime`,
   Labels = `Labels`,
   Alerting = `Alerting`,
   Probes = `Execution`,
 }
 
-export type Section<T extends CheckFormValues> = {
+export type Section<T extends CheckFormValues = CheckFormValues> = {
   fields: Array<FieldPath<T>>;
   Component: ReactElement;
 };
