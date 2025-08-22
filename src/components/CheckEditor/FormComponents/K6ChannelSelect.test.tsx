@@ -150,4 +150,29 @@ describe('K6ChannelSelect', () => {
     const v1Option = Array.from(selectElement.options).find(opt => opt.value === 'v1');
     expect(v1Option?.textContent).toContain('(default)');
   });
+
+  it('should display error message when channels fail to load', () => {
+    const errorMessage = 'K6 version channels are not available. This feature may not be supported by your Synthetic Monitoring instance.';
+    
+    mockUseFeatureFlag.mockReturnValue({ isEnabled: true });
+    mockUseK6Channels.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error(errorMessage),
+    });
+    mockUseCurrentK6Version.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    });
+
+    render(
+      <TestWrapper>
+        <K6ChannelSelect />
+      </TestWrapper>
+    );
+
+    expect(screen.getByText('Failed to load K6 version channels')).toBeInTheDocument();
+    expect(screen.getByText(errorMessage)).toBeInTheDocument();
+  });
 });
