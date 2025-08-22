@@ -56,13 +56,13 @@ describe('K6ChannelSelect', () => {
     channels: {
       v1: {
         name: 'v1',
-        default: false,
+        default: true,
         deprecatedAfter: '2025-12-31T00:00:00Z',
         manifest: 'k6>=1,k6<2',
       },
       v2: {
         name: 'v2',
-        default: true,
+        default: false,
         deprecatedAfter: '2026-12-31T00:00:00Z',
         manifest: 'k6>=2',
       },
@@ -134,5 +134,20 @@ describe('K6ChannelSelect', () => {
 
     // The options are in the Combobox component, they'll be visible when opened
     expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
+  });
+
+  it('should auto-select the default channel and show (default) label', () => {
+    render(
+      <TestWrapper>
+        <K6ChannelSelect />
+      </TestWrapper>
+    );
+
+    const combobox = screen.getByLabelText(/k6 version/i);
+    expect(combobox).toHaveValue('v1');
+    
+    const selectElement = combobox as HTMLSelectElement;
+    const v1Option = Array.from(selectElement.options).find(opt => opt.value === 'v1');
+    expect(v1Option?.textContent).toContain('(default)');
   });
 });
