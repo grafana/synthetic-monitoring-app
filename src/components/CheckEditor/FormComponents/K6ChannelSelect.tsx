@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Combobox, Field, Stack } from '@grafana/ui';
+import { Alert, Combobox, Field, Stack } from '@grafana/ui';
 
 import { CheckFormValues, FeatureName } from 'types';
 import { useK6Channels } from 'data/useK6Channels';
@@ -17,7 +17,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
   const { control } = useFormContext<CheckFormValues>();
   const id = 'k6-channel-select';
 
-  const { data: channelsResponse, isLoading: isLoadingChannels } = useK6Channels(isEnabled);
+  const { data: channelsResponse, isLoading: isLoadingChannels, error: channelsError } = useK6Channels(isEnabled);
 
   const channels = useMemo(() => channelsResponse?.channels || {}, [channelsResponse?.channels]);
 
@@ -42,6 +42,14 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 
   if (!isEnabled) {
     return null;
+  }
+
+  if (channelsError) {
+    return (
+      <Alert severity="warning" title="">
+        {channelsError.message}
+      </Alert>
+    );
   }
 
   return (

@@ -484,7 +484,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
 
   async listK6Channels(): Promise<ListChannelsResponse> {
-    return this.fetchAPI<ListChannelsResponse>(`sm/channels/k6`);
+    return this.fetchAPI<ListChannelsResponse>(`sm/channels/k6`, {
+      showErrorAlert: false,
+    });
   }
 
   async getCurrentK6Version(channelId: string): Promise<string> {

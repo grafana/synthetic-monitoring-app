@@ -14,7 +14,11 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
   const theme = useTheme2();
 
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
-  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(validChannelId, enabled);
+  const {
+    data: currentVersion,
+    isLoading: isLoadingVersion,
+    error: versionError,
+  } = useCurrentK6Version(validChannelId, enabled);
 
   if (!validChannelId) {
     return (
@@ -48,17 +52,23 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
           {channel.manifest}
         </code>
       </Text>
-      
+
       {currentVersion && (
         <Text variant="bodySmall">
           Current resolved version: <strong>{currentVersion}</strong>
         </Text>
       )}
-      
+
       {isLoadingVersion && (
         <Text variant="bodySmall" color="secondary">
           Loading current version...
         </Text>
+      )}
+
+      {versionError && (
+        <Alert severity="warning" title="Error loading current version">
+          {versionError.message}
+        </Alert>
       )}
 
       {isDeprecated && (
