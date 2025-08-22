@@ -3,7 +3,10 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { Combobox, Field } from '@grafana/ui';
 
 import { CheckFormValues, FeatureName } from 'types';
+import { useK6Channels } from 'data/useK6Channels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+
+import { ChannelDetails } from './ChannelDetails';
 
 interface K6ChannelSelectProps {
   disabled?: boolean;
@@ -14,55 +17,68 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
   const { control } = useFormContext<CheckFormValues>();
   const id = 'k6-channel-select';
   
-  // TODO: Add actual channel data and validation logic
-  const mockChannelOptions = useMemo(() => [
-    {
-      label: 'Probe Default',
-      value: '', // Use empty string instead of null for Combobox
-      description: 'Use the default k6 version of each probe',
-    },
-    {
-      label: 'v1.x (v1.9.2)',
-      value: 'v1',
-      description: 'k6 version range: k6>=1',
-    },
-    {
-      label: 'v2.x (v2.0.1)',
-      value: 'v2', 
-      description: 'k6 version range: k6>=2',
-    },
-  ], []);
+  const { data: channelsResponse, isLoading: isLoadingChannels } = useK6Channels();
+  
+  const channels = useMemo(() => channelsResponse?.channels || {}, [channelsResponse?.channels]);
+  
+  const channelOptions = useMemo(() => {
+    const options = [
+      {
+        label: 'Probe Default',
+        value: '',
+        description: 'Use the default k6 version of each probe',
+      },
+    ];
+    
+    Object.entries(channels).forEach(([channelId, channel]) => {
+      options.push({
+        label: `${channel.name}.x`,
+        value: channelId,
+        description: `k6 version range: ${channel.manifest}`,
+      });
+    });
+    
+    return options;
+  }, [channels]);
 
-  // Don't render if feature flag is disabled
   if (!isEnabled) {
     return null;
   }
 
   return (
-    <Field
-      label="k6 Version"
-      description="Select the k6 version channel for this check"
-      htmlFor={id}
-      data-fs-element="k6 channel select"
-    >
-      <Controller
-        name="channel"
-        control={control}
-        render={({ field, fieldState }) => {
-          const { ref, onChange, ...rest } = field;
-          return (
-            <Combobox
-              {...rest}
-              disabled={disabled}
-              options={mockChannelOptions}
-              id={id}
-              onChange={(value) => onChange(value)}
-              placeholder="Select k6 version channel"
-              invalid={!!fieldState.error}
-            />
-          );
-        }}
-      />
-    </Field>
+    <div>
+      <Field
+        label="k6 Version"
+        description="Select the k6 version channel for this check"
+        htmlFor={id}
+        data-fs-element="k6 channel select"
+      >
+        <Controller
+          name="channel"
+          control={control}
+          render={({ field, fieldState }) => {
+            const { ref, onChange, ...rest } = field;
+            return (
+              <>
+                <Combobox
+                  {...rest}
+                  disabled={disabled || isLoadingChannels}
+                  options={channelOptions}
+                  id={id}
+                  onChange={(value) => onChange(value)}
+                  placeholder={isLoadingChannels ? "Loading channels..." : "Select k6 version channel"}
+                  invalid={!!fieldState.error}
+                />
+                
+                <ChannelDetails
+                  channelId={field.value || null}
+                  channels={channels}
+                />
+              </>
+            );
+          }}
+        />
+      </Field>
+    </div>
   );
 }
