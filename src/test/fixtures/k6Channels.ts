@@ -9,13 +9,13 @@ export const K6_CHANNELS: Record<string, K6Channel> = {
   },
   v1: {
     name: 'v1',
-    default: false,
+    default: true,
     deprecatedAfter: '2025-12-31T00:00:00Z',
     manifest: 'k6>=1,k6<2',
   },
   v2: {
     name: 'v2',
-    default: true,
+    default: false,
     deprecatedAfter: '2026-12-31T00:00:00Z',
     manifest: 'k6>=2',
   },

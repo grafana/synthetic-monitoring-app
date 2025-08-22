@@ -18,7 +18,7 @@ export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
   if (!validChannelId) {
     return (
       <Text variant="bodySmall" color="secondary">
-        Each probe will use its default k6 version. This may vary between probes.
+        Each probe will use its default k6 version.
       </Text>
     );
   }

@@ -21,18 +21,17 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 
   const channels = useMemo(() => channelsResponse?.channels || {}, [channelsResponse?.channels]);
 
+  const defaultChannelId = useMemo(() => {
+    return Object.entries(channels).find(([, channel]) => channel.default)?.[0] || '';
+  }, [channels]);
+
   const channelOptions = useMemo(() => {
-    const options = [
-      {
-        label: 'Probe Default',
-        value: '',
-        description: 'Use the default k6 version of each probe',
-      },
-    ];
+    const options: Array<{ label: string; value: string; description: string }> = [];
 
     Object.entries(channels).forEach(([channelId, channel]) => {
+      const isDefault = channel.default;
       options.push({
-        label: `${channel.name}.x`,
+        label: `${channel.name}.x${isDefault ? ' (default)' : ''}`,
         value: channelId,
         description: `k6 version range: ${channel.manifest}`,
       });
@@ -57,10 +56,12 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
         control={control}
         render={({ field, fieldState }) => {
           const { ref, onChange, ...rest } = field;
+          const currentValue = field.value || defaultChannelId;
           return (
             <Stack direction="column" gap={2}>
               <Combobox
                 {...rest}
+                value={currentValue}
                 disabled={disabled || isLoadingChannels}
                 options={channelOptions}
                 id={id}
@@ -73,7 +74,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
                 invalid={!!fieldState.error}
               />
 
-              <ChannelDetails channelId={field.value || null} channels={channels} />
+              <ChannelDetails channelId={currentValue || null} channels={channels} />
             </Stack>
           );
         }}
