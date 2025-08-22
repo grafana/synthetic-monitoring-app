@@ -12,7 +12,7 @@ import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runti
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, CheckAlertDraft, Probe, ThresholdSettings } from '../types';
+import { Check, CheckAlertDraft, ListChannelsResponse, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
   AddCheckResult,
@@ -457,6 +457,19 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
       method: 'DELETE',
     });
+  }
+
+  //--------------------------------------------------------------------------------
+  // VERSION MANAGEMENT
+  //--------------------------------------------------------------------------------
+
+  async listK6Channels(): Promise<ListChannelsResponse> {
+    return this.fetchAPI<ListChannelsResponse>(`sm/channels/k6`);
+  }
+
+  async getCurrentK6Version(channelId: string): Promise<string> {
+    const response = await this.fetchAPI<{ version: string }>(`sm/channel/k6/${channelId}/current`);
+    return response.version;
   }
 
   //--------------------------------------------------------------------------------
