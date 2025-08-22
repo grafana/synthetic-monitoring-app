@@ -433,6 +433,10 @@ export function formatDuration(milliseconds: number, compact = false) {
 }
 
 export function formatSmallDurations(milliseconds: number) {
+  if (milliseconds === 0) {
+    return '0ms';
+  }
+
   if (milliseconds < 1) {
     return `<1ms`;
   }
@@ -454,12 +458,20 @@ export function formatSmallDurations(milliseconds: number) {
   return `${parseFloat(seconds.toFixed(2))}s`;
 }
 
-export function getExploreUrl(datasourceUid: string, queries: string[], { from, to }: { from: number; to: number }) {
+interface Query {
+  expr: string;
+  instant?: boolean;
+  format?: 'heatmap' | 'table' | 'timeseries';
+}
+
+export function getExploreUrl(datasourceUid: string, queries: Query[], { from, to }: { from: number; to: number }) {
   const left = encodeURIComponent(
     JSON.stringify({
       datasource: datasourceUid,
       queries: queries.map((query) => ({
-        expr: query,
+        expr: query.expr,
+        instant: query.instant,
+        format: query.format,
       })),
       range: {
         from: dateTime(from),

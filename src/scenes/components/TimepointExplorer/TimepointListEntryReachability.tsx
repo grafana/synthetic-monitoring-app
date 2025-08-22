@@ -30,14 +30,14 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
     handleHoverStateChange,
     handleViewerStateChange,
     hoveredState,
-    maxProbeDuration,
     timepointWidth,
     viewerState,
     vizDisplay,
+    yAxisMax,
   } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const styles = useStyles2(getStyles, timepointWidth);
-  const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
+  const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
   const [hoveredTimepoint, hoveredProbeName, hoveredExecutionIndex] = hoveredState || [];
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
@@ -62,7 +62,7 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
         {executionsToRender.map((execution) => {
           const index = 0;
           const duration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
-          const height = getEntryHeight(duration, maxProbeDuration);
+          const height = getEntryHeight(duration, yAxisMax);
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
           const { probe: probeName, probe_success } = execution[LokiFieldNames.Labels];
           const isBeingViewed = getIsProbeBeingViewed(timepoint, probeName, viewerState);

@@ -13,8 +13,6 @@ export const REF_ID_EXECUTION_LIST_LOGS = `executionListLogs`;
 export const REF_ID_EXECUTION_VIEWER_LOGS = `executionViewerLogs`;
 export const REF_ID_MAX_PROBE_DURATION = `maxProbeDuration`;
 
-export const MAX_PROBE_DURATION_DEFAULT = 1000;
-
 export const TIMEPOINT_EXPLORER_VIEW_OPTIONS = [
   { label: 'Uptime', value: 'uptime' },
   { label: 'Reachability', value: 'reachability' },

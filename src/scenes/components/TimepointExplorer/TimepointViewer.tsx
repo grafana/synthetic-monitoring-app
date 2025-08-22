@@ -121,7 +121,7 @@ const TimepointHeader = ({
     <Stack direction={`column`} gap={1}>
       <Stack direction={`row`} gap={1} justifyContent={'space-between'} alignItems={'center'}>
         <Stack direction={`column`} gap={1}>
-          <Text variant="h3">{dateTimeFormat(timepoint.adjustedTime)}</Text>
+          <Text variant="h3">{dateTimeFormat(timepoint.adjustedTime, { format: 'yyyy/MM/DD HH:mm:ss' })}</Text>
           <Stack direction={`row`} gap={1}>
             <Text color={'secondary'}>
               <strong>Configured frequency:</strong> {formatDuration(timepoint.config.frequency)}

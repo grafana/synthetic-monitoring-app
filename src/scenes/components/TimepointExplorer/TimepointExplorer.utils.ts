@@ -383,7 +383,11 @@ export function getIsInTheFuture(timepoint: StatelessTimepoint, currentAdjustedT
 }
 
 export function getCouldBePending(timepoint: StatelessTimepoint, currentAdjustedTime: UnixTimestamp) {
-  const possibilities = [currentAdjustedTime];
+  // the previous timepoint could also be pending.
+  // e.g. if a check is running every minute and takes 30 seconds to complete
+  // if it begins at 10:00:59, it will complete at 10:01:29
+  // so even though the 'current' timepoint is 10:01:00 we are waiting on the result of the previous timepoint, too
+  const possibilities = [currentAdjustedTime, currentAdjustedTime - timepoint.timepointDuration];
 
   return possibilities.includes(timepoint.adjustedTime);
 }
@@ -414,4 +418,42 @@ export function getIsInitialised(
   maxProbeDurationUpdatedAt: number
 ) {
   return logsUpdatedAt > 0 && checkConfigsUpdatedAt > 0 && maxProbeDurationUpdatedAt > 0;
+}
+
+export function getYAxisMax(highestValue: number, timeout: number) {
+  const nonRoundedYAxisMax = getNonRoundedYAxisMax(highestValue, timeout);
+  const roundedYAxisMax = getRoundedYAxisMax(nonRoundedYAxisMax);
+
+  return roundedYAxisMax;
+}
+
+export function getRoundedYAxisMax(nonRoundedYAxisMax: number) {
+  if (nonRoundedYAxisMax < 100) {
+    return 100;
+  }
+
+  if (nonRoundedYAxisMax < 500) {
+    return 500;
+  }
+
+  if (nonRoundedYAxisMax < 1000) {
+    return 1000;
+  }
+
+  const remainder = nonRoundedYAxisMax % 3;
+  const difference = remainder > 0 ? 3 - remainder : 0;
+
+  return nonRoundedYAxisMax + difference;
+}
+
+export function getNonRoundedYAxisMax(highestValue: number, timeout: number) {
+  if (!highestValue) {
+    return 1000;
+  }
+
+  if (timeout * 0.75 < highestValue) {
+    return timeout;
+  }
+
+  return highestValue * 1.25;
 }

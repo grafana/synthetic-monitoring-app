@@ -25,12 +25,12 @@ export const TimepointList = () => {
     handleListWidthChange,
     isError,
     isFetching,
-    maxProbeDuration,
     timepoints,
     listWidth,
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
     timepointWidth,
+    yAxisMax,
   } = useTimepointExplorerContext();
 
   const currentSectionRange = miniMapCurrentPageSections[miniMapCurrentSectionIndex];
@@ -62,7 +62,7 @@ export const TimepointList = () => {
             <TimepointListErrorButton />
           </div>
         )}
-        <YAxis maxProbeDuration={maxProbeDuration} width={listWidth} />
+        <YAxis max={yAxisMax} width={listWidth} />
         <div className={styles.timepointsContainer}>
           <TimepointExplorerAnnotations
             displayWidth={timepointWidth + TIMEPOINT_GAP_PX}

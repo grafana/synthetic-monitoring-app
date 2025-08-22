@@ -17,7 +17,6 @@ import { useLogsRetentionPeriod } from 'data/useLogsRetention';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import {
   MAX_MINIMAP_SECTIONS,
-  MAX_PROBE_DURATION_DEFAULT,
   TIMEPOINT_EXPLORER_VIEW_OPTIONS,
   TIMEPOINT_GAP_PX,
   TIMEPOINT_SIZE,
@@ -56,6 +55,7 @@ import {
   getMiniMapSections,
   getVisibleTimepoints,
   getVisibleTimepointsTimeRange,
+  getYAxisMax,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface TimepointExplorerContextType {
@@ -81,7 +81,6 @@ interface TimepointExplorerContextType {
   isLogsRetentionPeriodWithinTimerange: boolean;
   listLogsMap: Record<UnixTimestamp, StatefulTimepoint>;
   listWidth: number;
-  maxProbeDuration: number;
   miniMapCurrentPage: number;
   miniMapCurrentPageSections: MiniMapSections;
   miniMapCurrentSectionIndex: number;
@@ -93,6 +92,7 @@ interface TimepointExplorerContextType {
   viewMode: ViewMode;
   vizDisplay: VizDisplay;
   vizOptions: Record<TimepointStatus, string>;
+  yAxisMax: number;
 }
 
 export const TimepointExplorerContext = createContext<TimepointExplorerContextType | null>(null);
@@ -149,8 +149,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timeRangeRef.current = timeRange;
   }, [timeRange]);
 
-  const maxProbeDuration =
-    maxProbeDurationData < MAX_PROBE_DURATION_DEFAULT ? MAX_PROBE_DURATION_DEFAULT : maxProbeDurationData;
+  const yAxisMax = getYAxisMax(maxProbeDurationData, check.timeout);
 
   const {
     checkConfigs,
@@ -349,7 +348,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       isLogsRetentionPeriodWithinTimerange,
       listLogsMap,
       listWidth,
-      maxProbeDuration,
       miniMapCurrentPage,
       miniMapCurrentPageSections,
       miniMapCurrentSectionIndex,
@@ -361,6 +359,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       viewMode,
       vizDisplay,
       vizOptions,
+      yAxisMax,
     };
   }, [
     check,
@@ -385,7 +384,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isLogsRetentionPeriodWithinTimerange,
     listLogsMap,
     listWidth,
-    maxProbeDuration,
     miniMapCurrentPage,
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
@@ -397,6 +395,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     viewMode,
     vizDisplay,
     vizOptions,
+    yAxisMax,
   ]);
 
   return <TimepointExplorerContext.Provider value={value}>{children}</TimepointExplorerContext.Provider>;

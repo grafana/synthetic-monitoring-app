@@ -24,11 +24,11 @@ const GLOBAL_CLASS = `list_entry_bar`;
 export const TimepointListEntryBar = ({ children, timepoint, status }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
 
-  const { check, handleViewerStateChange, maxProbeDuration, viewerState, timepointWidth, vizDisplay } =
+  const { check, handleViewerStateChange, yAxisMax, viewerState, timepointWidth, vizDisplay } =
     useTimepointExplorerContext();
   const probeVar = useSceneVarProbes(check);
 
-  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
+  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
   const styles = useStyles2(getStyles, timepointWidth, height);
   const probeNameToView = probeVar[0];
   const [viewerTimepoint] = viewerState;

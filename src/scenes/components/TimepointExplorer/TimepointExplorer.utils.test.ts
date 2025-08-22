@@ -17,7 +17,9 @@ import {
   findNearestPageIndex,
   getMiniMapPages,
   getMiniMapSections,
+  getNonRoundedYAxisMax,
   getPendingProbes,
+  getRoundedYAxisMax,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 describe(`buildConfigTimeRanges`, () => {
@@ -275,5 +277,49 @@ describe(`buildlistLogsMap`, () => {
     expect(listLogsMap).toEqual({
       [firstEntry.adjustedTime]: expectedEntry,
     });
+  });
+});
+
+describe(`getNonRoundedYAxisMax`, () => {
+  it(`should return 1000 by default when no data`, () => {
+    const yAxisMax = getNonRoundedYAxisMax(0, 1000);
+    expect(yAxisMax).toEqual(1000);
+  });
+
+  it(`should return the timeout when the highest value is more than 75% of the timeout`, () => {
+    const yAxisMax = getNonRoundedYAxisMax(751, 1000);
+    expect(yAxisMax).toEqual(1000);
+  });
+
+  it(`should return the highest value * 1.25 when the highest value is less than 75% of the timeout`, () => {
+    const yAxisMax = getNonRoundedYAxisMax(750, 1000);
+    expect(yAxisMax).toEqual(937.5);
+  });
+});
+
+describe(`getRoundedYAxisMax`, () => {
+  it(`if the value is less than 100 it should return 100`, () => {
+    const yAxisMax = getRoundedYAxisMax(97);
+    expect(yAxisMax).toEqual(100);
+  });
+
+  it(`if the value is less than 500 it should return 500`, () => {
+    const yAxisMax = getRoundedYAxisMax(497);
+    expect(yAxisMax).toEqual(500);
+  });
+
+  it(`if the value is less than 1000 it should return 1000`, () => {
+    const yAxisMax = getRoundedYAxisMax(997);
+    expect(yAxisMax).toEqual(1000);
+  });
+
+  it(`if the value is greater than 1000 it should return a value that neatly divides into 4`, () => {
+    const yAxisMax = getRoundedYAxisMax(55000);
+    expect(yAxisMax).toEqual(60000);
+  });
+
+  it(`if the value is greater than 1000 it should return a value that neatly divides into 4`, () => {
+    const yAxisMax = getRoundedYAxisMax(61234);
+    expect(yAxisMax).toEqual(65000);
   });
 });

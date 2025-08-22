@@ -3,44 +3,45 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { formatSmallDurations } from 'utils';
 import { TIMEPOINT_THEME_HEIGHT } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { getTextOffset } from 'scenes/components/TimepointExplorer/YAxis.utils';
 
 const GRID_MARKERS = Array.from({ length: 5 }, (_, index) => index);
 
-export const YAxis = ({ maxProbeDuration, width }: { maxProbeDuration: number; width: number }) => {
+export const YAxis = ({ max, width }: { max: number; width: number }) => {
   const styles = useStyles2(getStyles);
 
   return (
     <Stack gap={2}>
       <div className={styles.container}>
         {GRID_MARKERS.map((marker) => {
-          return <GridText key={marker} marker={marker} maxProbeDuration={maxProbeDuration} />;
+          return <GridText key={marker} marker={marker} max={max} />;
         }).reverse()}
       </div>
       <div className={styles.container}>
         {GRID_MARKERS.map((marker) => {
-          return <GridLine key={marker} marker={marker} maxProbeDuration={maxProbeDuration} width={width} />;
+          return <GridLine key={marker} width={width} />;
         }).reverse()}
       </div>
     </Stack>
   );
 };
 
-const GridText = ({ marker, maxProbeDuration }: { marker: number; maxProbeDuration: number }) => {
+const GridText = ({ marker, max }: { marker: number; max: number }) => {
   const markerPercentage = (marker * 100) / (GRID_MARKERS.length - 1);
-  const value = (markerPercentage * maxProbeDuration) / 100;
+  const value = (markerPercentage * max) / 100;
   const textOffset = getTextOffset(marker, GRID_MARKERS.length);
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.gridMarker} data-marker={marker}>
-      <div style={{ transform: `translateY(${textOffset}%)` }}>{Math.round(value)}ms</div>
+      <div style={{ transform: `translateY(${textOffset}%)` }}>{formatSmallDurations(value)}</div>
     </div>
   );
 };
 
-const GridLine = ({ width }: { marker: number; maxProbeDuration: number; width: number }) => {
+const GridLine = ({ width }: { width: number }) => {
   const styles = useStyles2(getStyles);
   return (
     <div className={styles.gridMarker}>

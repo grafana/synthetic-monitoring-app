@@ -108,9 +108,9 @@ interface EntryProps {
 }
 
 const PendingTimepoint = ({ statefulTimepoint, width }: EntryProps) => {
-  const { maxProbeDuration, viewerState, vizDisplay } = useTimepointExplorerContext();
+  const { yAxisMax, viewerState, vizDisplay } = useTimepointExplorerContext();
   const { status } = statefulTimepoint;
-  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
+  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
   const [viewerTimepoint] = viewerState;
@@ -133,9 +133,9 @@ const PendingTimepoint = ({ statefulTimepoint, width }: EntryProps) => {
 };
 
 const UptimeTimepoint = ({ statefulTimepoint, width }: EntryProps) => {
-  const { maxProbeDuration, viewerState, vizDisplay } = useTimepointExplorerContext();
+  const { yAxisMax, viewerState, vizDisplay } = useTimepointExplorerContext();
   const { status } = statefulTimepoint;
-  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, maxProbeDuration);
+  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
   const [selectedTimepoint] = viewerState;
@@ -207,12 +207,12 @@ interface ExecutionEntryProps {
 }
 
 const ExecutionEntry = ({ containerHeight, offset, execution, timepoint, width }: ExecutionEntryProps) => {
-  const { maxProbeDuration, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const { yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
   const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
   const probeDuration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
   const probeName = execution.labels.probe;
-  const bottom = getEntryHeight(probeDuration, maxProbeDuration) / 100;
+  const bottom = getEntryHeight(probeDuration, yAxisMax) / 100;
   const [viewerTimepoint, viewerProbeName] = viewerState;
 
   const bottomInPx = containerHeight * bottom - offset;

@@ -35,7 +35,7 @@ export const ProbeResultMissing = ({ probeName, timepoint }: ProbeResultMissingP
 const ProbeExists = ({ probe, timepoint }: { probe: ProbeWithMetadata; timepoint: StatelessTimepoint }) => {
   const { region, public: isPublic, online, onlineChange } = probe;
   const metricsDS = useMetricsDS();
-  const exploreLink = getExploreUrl(metricsDS?.uid!, [`probe_success{probe="${probe.name}"}`], {
+  const exploreLink = getExploreUrl(metricsDS?.uid!, [{ expr: `probe_success{probe="${probe.name}"}` }], {
     from: timepoint.adjustedTime,
     to: timepoint.adjustedTime + timepoint.timepointDuration,
   });

@@ -44,7 +44,7 @@ export const TimepointInstantAnnotation = ({
         <div className={styles.label}>
           <div>{annotation.checkEvent.label}</div>
           {annotation.checkEvent.from && (
-            <div>{dateTimeFormat(annotation.checkEvent.from, { format: 'yyyy-MM-DD HH:mm:ss' })}</div>
+            <div>{dateTimeFormat(annotation.checkEvent.from, { format: 'yyyy/MM/DD HH:mm:ss' })}</div>
           )}
         </div>
       )}

@@ -26,7 +26,9 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
   const selectedProbeNames = useSceneVarProbes(check);
 
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const displayTime = dateTimeFormat(statefulTimepoint.adjustedTime);
+  const displayTime = dateTimeFormat(statefulTimepoint.adjustedTime, {
+    format: 'yyyy/MM/DD HH:mm:ss',
+  });
 
   const renderedAvgDuration = getAverageDuration(statefulTimepoint.probeResults);
   const renderedFrequency = formatDuration(statefulTimepoint.config.frequency, true);

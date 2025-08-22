@@ -195,6 +195,14 @@ describe(`formatDuration`, () => {
 });
 
 describe(`formatSmallDurations`, () => {
+  it(`formats duration for zero`, () => {
+    expect(formatSmallDurations(0)).toBe('0ms');
+  });
+
+  it(`formats duration for less than a millisecond`, () => {
+    expect(formatSmallDurations(0.999)).toBe('<1ms');
+  });
+
   it(`formats duration for a single second`, () => {
     expect(formatSmallDurations(1000)).toBe('1s');
   });

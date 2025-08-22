@@ -3,6 +3,7 @@ import { IconName } from '@grafana/data';
 
 import { getExploreUrl } from 'utils';
 import { useLogsDS } from 'hooks/useLogsDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -18,15 +19,26 @@ interface Action {
 
 export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   const logsDS = useLogsDS();
+  const metricsDS = useMetricsDS();
   const { check, handleViewerStateChange, listLogsMap, viewerState, timepoints } = useTimepointExplorerContext();
   const [_, viewerProbeName] = viewerState;
-  const query = `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"} | logfmt`;
+  const logsQuery = { expr: `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"} | logfmt` };
+  const metricsQuery = {
+    expr: `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"}[$__range]`,
+    format: 'heatmap',
+    instant: true,
+  } as const;
 
   const prevTimepoint = timepoints[timepoint.index - 1];
   const nextTimepoint = timepoints[timepoint.index + 1];
   const probeVar = useSceneVarProbes(check);
 
-  const exploreURL = getExploreUrl(logsDS?.uid!, [query], {
+  const exploreLogsURL = getExploreUrl(logsDS?.uid!, [logsQuery], {
+    from: timepoint.adjustedTime,
+    to: timepoint.adjustedTime + timepoint.timepointDuration,
+  });
+
+  const exploreMetricsURL = getExploreUrl(metricsDS?.uid!, [metricsQuery], {
     from: timepoint.adjustedTime,
     to: timepoint.adjustedTime + timepoint.timepointDuration,
   });
@@ -63,10 +75,15 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
       },
       {
         icon: 'compass',
-        label: 'View in Explore',
-        href: exploreURL,
+        label: 'View Logs in Explore',
+        href: exploreLogsURL,
+      },
+      {
+        icon: `gf-prometheus`,
+        label: 'View Metrics in Explore',
+        href: exploreMetricsURL,
       },
     ],
-    [prevTimepoint, nextTimepoint, exploreURL, handleNextTimepoint, handlePreviousTimepoint]
+    [prevTimepoint, nextTimepoint, exploreLogsURL, exploreMetricsURL, handleNextTimepoint, handlePreviousTimepoint]
   );
 }

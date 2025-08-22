@@ -295,23 +295,23 @@ function useMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProp
 }
 
 export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
-  const { currentAdjustedTime, listLogsMap, maxProbeDuration } = useTimepointExplorerContext();
+  const { currentAdjustedTime, listLogsMap, yAxisMax } = useTimepointExplorerContext();
   const entry = listLogsMap[timepoint.adjustedTime];
 
   if (!entry) {
     const couldBePending = getCouldBePending(timepoint, currentAdjustedTime);
 
-    const defaultState: StatefulTimepoint = {
+    const UNKNOWN_STATE: StatefulTimepoint = {
       adjustedTime: timepoint.adjustedTime,
       config: timepoint.config,
       probeResults: {},
       index: timepoint.index,
-      maxProbeDuration: maxProbeDuration / 3,
+      maxProbeDuration: yAxisMax / 3,
       timepointDuration: timepoint.timepointDuration,
       status: couldBePending ? 'pending' : 'missing',
     };
 
-    return defaultState;
+    return UNKNOWN_STATE;
   }
 
   return entry;

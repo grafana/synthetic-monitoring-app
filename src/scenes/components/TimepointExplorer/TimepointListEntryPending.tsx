@@ -14,9 +14,9 @@ interface TimepointListEntryPendingProps {
 
 export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { maxProbeDuration, timepointWidth, vizOptions } = useTimepointExplorerContext();
+  const { yAxisMax, timepointWidth, vizOptions } = useTimepointExplorerContext();
   const option = vizOptions.pending;
-  const heightInPx = getEntryHeightPx(statefulTimepoint.maxProbeDuration, maxProbeDuration, TIMEPOINT_THEME_HEIGHT_PX);
+  const heightInPx = getEntryHeightPx(statefulTimepoint.maxProbeDuration, yAxisMax, TIMEPOINT_THEME_HEIGHT_PX);
 
   return (
     <TimepointListEntryBar timepoint={timepoint} status={`pending`}>
