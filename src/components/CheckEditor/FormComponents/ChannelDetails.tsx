@@ -1,49 +1,29 @@
 import React from 'react';
-import { Alert, Text } from '@grafana/ui';
+import { Alert, Stack, Text, useTheme2 } from '@grafana/ui';
 
-import { K6Channel, Probe } from 'types';
+import { K6Channel } from 'types';
 import { useCurrentK6Version } from 'data/useK6Channels';
 
 interface ChannelDetailsProps {
   channelId: string | null;
   channels: Record<string, K6Channel>;
-  selectedProbes?: Probe[];
 }
 
-export function ChannelDetails({ channelId, channels, selectedProbes }: ChannelDetailsProps) {
-  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(channelId || undefined);
+export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
+  const theme = useTheme2();
 
-  if (!channelId) {
+  const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
+  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(validChannelId);
+
+  if (!validChannelId) {
     return (
-      <div className="channel-details">
-        <Text variant="bodySmall" color="secondary">
-          Each probe will use its default k6 version. This may vary between probes.
-        </Text>
-        {selectedProbes && (
-          <div style={{ marginTop: '8px' }}>
-            <Text variant="bodySmall" color="secondary">
-              Probe versions:
-            </Text>
-            {selectedProbes.map((probe) => (
-              <div key={probe.name} style={{ marginLeft: '16px' }}>
-                <Text variant="bodySmall">
-                  {probe.name}: {probe.k6Version || 'Unknown'}
-                  {!probe.supportsBinaryProvisioning && (
-                    <Text variant="bodySmall" color="secondary">
-                      {' '}
-                      (legacy)
-                    </Text>
-                  )}
-                </Text>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <Text variant="bodySmall" color="secondary">
+        Each probe will use its default k6 version. This may vary between probes.
+      </Text>
     );
   }
 
-  const channel = channels[channelId];
+  const channel = channels[validChannelId];
   if (!channel) {
     return null;
   }
@@ -51,46 +31,33 @@ export function ChannelDetails({ channelId, channels, selectedProbes }: ChannelD
   const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
 
   return (
-    <div className="channel-details">
+    <Stack direction="column" gap={1}>
       <Text variant="bodySmall" color="secondary">
-        k6 version constraint: {channel.manifest}
+        k6 version constraint:{' '}
+        <code
+          style={{
+            backgroundColor: theme.colors.background.secondary,
+            color: theme.colors.text.primary,
+            padding: '2px 6px',
+            borderRadius: theme.shape.radius.default,
+            fontSize: theme.typography.bodySmall.fontSize,
+            fontFamily: theme.typography.fontFamilyMonospace,
+          }}
+        >
+          {channel.manifest}
+        </code>
       </Text>
+      
       {currentVersion && (
         <Text variant="bodySmall">
           Current resolved version: <strong>{currentVersion}</strong>
         </Text>
       )}
+      
       {isLoadingVersion && (
         <Text variant="bodySmall" color="secondary">
           Loading current version...
         </Text>
-      )}
-
-      {/* Show probe compatibility information */}
-      {selectedProbes && selectedProbes.length > 0 && (
-        <div style={{ marginTop: '8px' }}>
-          <Text variant="bodySmall" color="secondary">
-            Probe compatibility:
-          </Text>
-          {selectedProbes.map((probe) => {
-            const isModernProbe = probe.supportsBinaryProvisioning;
-            const versionToShow = isModernProbe ? currentVersion : probe.k6Version;
-
-            return (
-              <div key={probe.name} style={{ marginLeft: '16px' }}>
-                <Text variant="bodySmall">
-                  {probe.name}: {versionToShow || 'Unknown'}
-                  {!isModernProbe && (
-                    <Text variant="bodySmall" color="secondary">
-                      {' '}
-                      (static, legacy probe)
-                    </Text>
-                  )}
-                </Text>
-              </div>
-            );
-          })}
-        </div>
       )}
 
       {isDeprecated && (
@@ -99,6 +66,6 @@ export function ChannelDetails({ channelId, channels, selectedProbes }: ChannelD
           Consider migrating to a newer channel.
         </Alert>
       )}
-    </div>
+    </Stack>
   );
 }
