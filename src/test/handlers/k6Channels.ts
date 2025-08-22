@@ -14,10 +14,13 @@ export const listK6Channels: ApiEntry<ListChannelsResponse> = {
 };
 
 export const getCurrentK6Version: ApiEntry<{ version: string }> = {
-  route: `/sm/channel/k6/:channelId/current`,
+  route: `/sm/channel/k6/\\w+/current`,
   method: `get`,
   result: (req) => {
-    const channelId = req.params.channelId as string;
+
+    const url = req.url.pathname;
+    const match = url.match(/\/sm\/channel\/k6\/(\w+)\/current/);
+    const channelId = match ? match[1] : '';
     
     // Mock version resolution based on channel
     const versionMap: Record<string, string> = {

@@ -6,12 +6,10 @@ import { CheckFormValues, FeatureName } from 'types';
 
 import { K6ChannelSelect } from './K6ChannelSelect';
 
-// Mock the useFeatureFlag hook
 jest.mock('hooks/useFeatureFlag', () => ({
   useFeatureFlag: jest.fn(),
 }));
 
-// Mock the API hooks
 jest.mock('data/useK6Channels', () => ({
   useK6Channels: jest.fn(),
   useCurrentK6Version: jest.fn(),
