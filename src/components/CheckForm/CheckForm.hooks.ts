@@ -16,6 +16,7 @@ import {
   FeatureName,
 } from '../../types';
 import { LayoutSection } from './FormLayouts/Layout.types';
+import { formatDuration } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
@@ -30,10 +31,15 @@ import { useLimits } from 'hooks/useLimits';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
-import { fallbackCheckMap } from '../constants';
+import { DEFAULT_FROM_TIME, fallbackCheckMap } from '../constants';
 import { SectionName } from './FormLayout/FormLayout.constants';
 import { layoutMap } from './FormLayouts/constants';
-import { broadcastFailedSubmission, findFieldToFocus, getIsExistingCheck } from './CheckForm.utils';
+import {
+  broadcastFailedSubmission,
+  findFieldToFocus,
+  getAdditionalDuration,
+  getIsExistingCheck,
+} from './CheckForm.utils';
 import { SCHEMA_MAP } from './constants';
 import { useFormCheckType, useFormCheckTypeGroup } from './useCheckType';
 
@@ -126,7 +132,17 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
   const navigateToCheckDashboard = useCallback(
-    (result: Check) => navigate(generateRoutePath(AppRoutes.CheckDashboard, { id: result.id! })),
+    (result: Check) => {
+      const { frequency } = result;
+      const additionalDuration = getAdditionalDuration(frequency, 20);
+      const duration = formatDuration(additionalDuration, true);
+
+      navigate(
+        `${generateRoutePath(AppRoutes.CheckDashboard, {
+          id: result.id!,
+        })}?from=now$2B${DEFAULT_FROM_TIME}&to=now%2B${duration}`
+      );
+    },
     [navigate]
   );
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
