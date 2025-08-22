@@ -6,6 +6,7 @@ import { CheckFormValuesBrowser, CheckType } from 'types';
 import { BrowserFields } from 'components/CheckEditor/CheckEditor.types';
 import { BrowserCheckInstance } from 'components/CheckEditor/FormComponents/BrowserCheckInstance';
 import { BrowserCheckScript } from 'components/CheckEditor/FormComponents/BrowserCheckScript';
+import { K6ChannelSelect } from 'components/CheckEditor/FormComponents/K6ChannelSelect';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
 export const BROWSER_CHECK_FIELDS: BrowserFields = {
@@ -19,11 +20,12 @@ export const BROWSER_CHECK_FIELDS: BrowserFields = {
 
 export const BrowserCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesBrowser>>> = {
   [LayoutSection.Check]: {
-    fields: Object.values(BROWSER_CHECK_FIELDS).map((field) => field.name),
+    fields: [...Object.values(BROWSER_CHECK_FIELDS).map((field) => field.name), 'channel'],
     Component: (
       <>
         <BrowserCheckInstance />
         <BrowserCheckScript />
+        <K6ChannelSelect />
       </>
     ),
   },

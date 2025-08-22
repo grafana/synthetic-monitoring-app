@@ -1,6 +1,6 @@
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
-import { K6ChannelWithCurrent, ListChannelsResponse } from 'types';
+import { ListChannelsResponse } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { useSMDS } from 'hooks/useSMDS';
 
