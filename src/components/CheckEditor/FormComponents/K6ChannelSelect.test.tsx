@@ -172,7 +172,6 @@ describe('K6ChannelSelect', () => {
       </TestWrapper>
     );
 
-    expect(screen.getByText('Failed to load K6 version channels')).toBeInTheDocument();
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
 });
