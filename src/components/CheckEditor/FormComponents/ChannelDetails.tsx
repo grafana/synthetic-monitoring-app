@@ -7,13 +7,14 @@ import { useCurrentK6Version } from 'data/useK6Channels';
 interface ChannelDetailsProps {
   channelId: string | null;
   channels: Record<string, K6Channel>;
+  enabled?: boolean;
 }
 
-export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
+export function ChannelDetails({ channelId, channels, enabled = true }: ChannelDetailsProps) {
   const theme = useTheme2();
 
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
-  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(validChannelId);
+  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(validChannelId, enabled);
 
   if (!validChannelId) {
     return (

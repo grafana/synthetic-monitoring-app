@@ -17,7 +17,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
   const { control } = useFormContext<CheckFormValues>();
   const id = 'k6-channel-select';
 
-  const { data: channelsResponse, isLoading: isLoadingChannels } = useK6Channels();
+  const { data: channelsResponse, isLoading: isLoadingChannels } = useK6Channels(isEnabled);
 
   const channels = useMemo(() => channelsResponse?.channels || {}, [channelsResponse?.channels]);
 
@@ -74,7 +74,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
                 invalid={!!fieldState.error}
               />
 
-              <ChannelDetails channelId={currentValue || null} channels={channels} />
+              <ChannelDetails channelId={currentValue || null} channels={channels} enabled={isEnabled} />
             </Stack>
           );
         }}
