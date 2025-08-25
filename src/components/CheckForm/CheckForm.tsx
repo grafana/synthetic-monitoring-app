@@ -1,9 +1,8 @@
-import React, { PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react';
+import React, { PropsWithChildren, useCallback, useContext, useMemo } from 'react';
 import { SubmitErrorHandler, SubmitHandler, useFormContext } from 'react-hook-form';
 import { Alert, Stack } from '@grafana/ui';
 
-import { Check, CheckFormValues, CheckType, FeatureName } from 'types';
-import { AdHocCheckResponse } from 'datasource/responses.types';
+import { Check, CheckFormValues, FeatureName } from 'types';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
@@ -15,33 +14,23 @@ import { ConfirmLeavingPage } from 'components/ConfirmLeavingPage';
 import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
-import { AdHocCheckButton, ConstructActionsProps } from './AdHocCheckButton';
+import { useCheckFormContext } from './CheckFormContext/CheckFormContext';
 import { AlertsPerCheckSection } from './AlertsPerCheckSection';
 import { useCheckForm, useCheckTypeFormLayout } from './CheckForm.hooks';
-import { checkHasChanges } from './CheckForm.utils';
-import { CheckFormContext, CheckFormContextProvider, useCheckFormMetaContext } from './CheckFormContext';
+import { checkHasChanges, getStep1Label } from './CheckForm.utils';
+import { CheckFormContext, CheckFormContextProvider } from './CheckFormContext';
+import { FormStepOrder } from './constants';
 import { FormLayout } from './FormLayout';
-
-const checkTypeStep1Label = {
-  [CheckType.DNS]: `Request`,
-  [CheckType.HTTP]: `Request`,
-  [CheckType.MULTI_HTTP]: `Requests`,
-  [CheckType.Scripted]: `Script`,
-  [CheckType.PING]: `Request`,
-  [CheckType.TCP]: `Request`,
-  [CheckType.Traceroute]: `Request`,
-  [CheckType.GRPC]: `Request`,
-  [CheckType.Browser]: `Script`,
-};
 
 interface CheckFormProps extends PropsWithChildren {
   check?: Check;
   disabled?: boolean;
 }
 
+/**
+ * CheckForm with conditional CheckFormContextProvider
+ */
 export function CheckForm({ check, disabled }: CheckFormProps) {
-  // If the context is not available, we create a new one.
-  // This allows the CheckForm to be used both as a standalone component and within the CheckFormContextProvider.
   const context = useContext(CheckFormContext);
   if (!context) {
     return (
@@ -60,36 +49,32 @@ function CheckFormInternal() {
     checkState,
     getIsExistingCheck,
     initialSection,
-    isDisabled,
     schema,
     checkType,
     checkTypeGroup,
     defaultFormValues,
     checkTypeStatus,
-  } = useCheckFormMetaContext();
+    adhocTestData,
+    setShowAdhocTestModal,
+    showAdhocTestModal,
+    adhocTestError,
+  } = useCheckFormContext();
 
   const isExistingCheck = getIsExistingCheck(check);
-  const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
-  const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
 
   const formMethods = useFormContext<CheckFormValues>();
 
-  const { error, handleInvalid, handleValid, submittingToApi, testButtonRef, testCheckError, testCheckPending } =
-    useCheckForm({
-      check,
-      checkType,
-      checkState,
-      onTestSuccess: (data) => {
-        setAdhocTestData(data);
-        setOpenTestCheckModal(true);
-      },
-    });
+  const { error, handleInvalid, handleValid, submittingToApi } = useCheckForm({
+    check,
+    checkType,
+  });
 
   const {
     checkFields,
     uptimeFields,
     probesFields,
     labelsFields,
+    alertsFields,
     CheckComponent,
     UptimeComponent,
     ProbesComponent,
@@ -100,32 +85,25 @@ function CheckFormInternal() {
     formMethods.handleSubmit(onValid, onInvalid);
 
   const closeModal = useCallback(() => {
-    setOpenTestCheckModal(false);
-  }, []);
+    setShowAdhocTestModal(false);
+  }, [setShowAdhocTestModal]);
 
-  const actions = constructActions({
-    checkType,
-    disabled: isDisabled,
-    loading: testCheckPending,
-    ref: testButtonRef,
-  });
+  const formValues = formMethods.getValues();
 
-  const alerts = (error || testCheckError) && (
+  const alerts = (error || adhocTestError) && (
     <Stack direction={`column`}>
       {error && (
         <Alert title="Save failed" severity="error">
           {error.message}
         </Alert>
       )}
-      {testCheckError && (
+      {adhocTestError && (
         <Alert title="Test failed" severity="error">
-          {testCheckError.message}
+          {adhocTestError.message}
         </Alert>
       )}
     </Stack>
   );
-
-  const formValues = formMethods.getValues();
 
   // @todo Ideally, we dont submit the form when running ad-hoc check and instead use `isDirty`
   const isFormModified = useMemo(() => {
@@ -139,7 +117,6 @@ function CheckFormInternal() {
   return (
     <>
       <FormLayout<CheckFormValues>
-        actions={actions}
         alerts={alerts}
         checkState={checkState}
         checkType={checkType}
@@ -153,7 +130,8 @@ function CheckFormInternal() {
         {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
         <FormLayout.Section
-          label={checkTypeStep1Label[checkType]}
+          index={FormStepOrder.Check}
+          label={getStep1Label(checkType)}
           fields={[`job`, ...checkFields]}
           status={checkTypeStatus}
         >
@@ -165,21 +143,23 @@ function CheckFormInternal() {
             </Stack>
           </Stack>
         </FormLayout.Section>
-        <FormLayout.Section label="Uptime" fields={uptimeFields} status={checkTypeStatus}>
+
+        <FormLayout.Section index={FormStepOrder.Uptime} label="Uptime" fields={uptimeFields} status={checkTypeStatus}>
           {UptimeComponent}
         </FormLayout.Section>
-        <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]} status={checkTypeStatus}>
+
+        <FormLayout.Section
+          index={FormStepOrder.Labels}
+          label="Labels"
+          fields={[`labels`, ...labelsFields]}
+          status={checkTypeStatus}
+        >
           {LabelsComponent}
           <LabelField labelDestination="check" />
         </FormLayout.Section>
 
-        {!isAlertsPerCheckOn && (
-          <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={checkTypeStatus}>
-            <CheckFormAlert />
-          </FormLayout.Section>
-        )}
-
         <FormLayout.Section
+          index={FormStepOrder.Execution}
           label="Execution"
           fields={[`probes`, `frequency`, ...probesFields]}
           status={checkTypeStatus}
@@ -191,25 +171,17 @@ function CheckFormInternal() {
           </Stack>
         </FormLayout.Section>
 
-        {isAlertsPerCheckOn && (
-          <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={checkTypeStatus}>
-            <AlertsPerCheckSection />
-          </FormLayout.Section>
-        )}
+        <FormLayout.Section
+          index={FormStepOrder.Alerting}
+          label="Alerting"
+          fields={alertsFields}
+          status={checkTypeStatus}
+        >
+          {isAlertsPerCheckOn ? <AlertsPerCheckSection /> : <CheckFormAlert />}
+        </FormLayout.Section>
       </FormLayout>
-      <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
+      <CheckTestResultsModal isOpen={showAdhocTestModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmLeavingPage enabled={hasUnsavedChanges} />
     </>
   );
-}
-
-function constructActions({ checkType, ...rest }: ConstructActionsProps) {
-  return checkType !== CheckType.Traceroute
-    ? [
-        {
-          index: 4,
-          element: <AdHocCheckButton {...rest} />,
-        },
-      ]
-    : [];
 }

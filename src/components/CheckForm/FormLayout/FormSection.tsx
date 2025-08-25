@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { FieldPath } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
@@ -9,8 +9,9 @@ import { FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.const
 import { CheckStatusInfo, type CheckStatusInfoProps } from 'components/CheckStatusInfo';
 import { NewStatusBadge } from 'components/NewStatusBadge';
 
+import { useFormLayoutInternal } from './formlayout.utils';
+
 export type FormSectionProps = {
-  activeSection: number;
   children: ReactNode;
   label: string;
   fields?: Array<FieldPath<CheckFormValues>>;
@@ -18,13 +19,14 @@ export type FormSectionProps = {
   status?: CheckStatusInfoProps;
 };
 
-// return doesn't matter as we take over how this behaves internally
-export const FormSection = (props: Omit<FormSectionProps, 'index' | 'activeSection'>) => {
-  return props.children;
-};
-
-export const FormSectionInternal = ({ activeSection, children, label, index, status }: FormSectionProps) => {
+export const FormSection = ({ children, label, index, status, fields }: FormSectionProps) => {
   const styles = useStyles2(getStyles);
+
+  const { registerSection, activeSection } = useFormLayoutInternal();
+  useEffect(() => {
+    registerSection(index, label, fields);
+  }, [label, index, registerSection, fields]);
+
   const isActive = activeSection === index;
 
   if (!isActive) {
@@ -36,7 +38,7 @@ export const FormSectionInternal = ({ activeSection, children, label, index, sta
       <Box marginBottom={4}>
         <Text element="h2" variant="h3">
           <div className={styles.header}>
-            {`${index + 1}. ${label}`}
+            {label}
             <Stack gap={1}>
               {status?.value && <NewStatusBadge status={status.value} />}
               {status && <CheckStatusInfo {...status} />}
