@@ -27,6 +27,7 @@ export const BrowserCheckInstance = () => {
           >
             <Icon name="info-circle" className={styles.infoIcon} />
           </Tooltip>
+          &nbsp;*
         </Label>
       }
       invalid={Boolean(formState.errors.target)}

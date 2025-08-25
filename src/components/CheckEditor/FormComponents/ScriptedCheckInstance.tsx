@@ -14,7 +14,7 @@ export const ScriptedCheckInstance = () => {
     <Field
       label={
         <Label htmlFor="target">
-          Instance&nbsp;
+          Instance&nbsp;*&nbsp;
           <Tooltip
             content={
               <span>
