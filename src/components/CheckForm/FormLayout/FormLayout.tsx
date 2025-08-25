@@ -35,7 +35,6 @@ export type FormLayoutProps<T extends FieldValues> = {
   onInvalid?: (errs: FieldErrors<T>) => void;
   schema: ZodType;
   hasUnsavedChanges?: boolean;
-  onSectionClick: (index: number) => void;
 };
 
 export const FormLayout = <T extends FieldValues>({
@@ -48,7 +47,6 @@ export const FormLayout = <T extends FieldValues>({
   onValid,
   onInvalid,
   schema,
-  onSectionClick,
   hasUnsavedChanges = true, // default to true to prevent accidentally disabling the submit button
 }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
@@ -100,13 +98,6 @@ export const FormLayout = <T extends FieldValues>({
     setSubmitDisabled(disableSubmit);
   }, [disableSubmit, setSubmitDisabled]);
 
-  const handleSectionClick = useCallback(
-    (index: number) => {
-      onSectionClick(index);
-    },
-    [onSectionClick]
-  );
-
   return (
     <div className={styles.wrapper}>
       {alerts && <div className={styles.alerts}>{alerts}</div>}
@@ -117,10 +108,7 @@ export const FormLayout = <T extends FieldValues>({
               activeSection={activeSection}
               checkState={checkState}
               checkType={checkType}
-              onSectionClick={(index: number) => {
-                handleSectionClick(index);
-                goToSection(index);
-              }}
+              onSectionClick={goToSection}
               visitedSections={visitedSections}
               schema={schema}
             />

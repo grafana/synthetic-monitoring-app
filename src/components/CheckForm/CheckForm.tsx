@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react';
+import React, { PropsWithChildren, useCallback, useContext, useMemo } from 'react';
 import { SubmitErrorHandler, SubmitHandler, useFormContext } from 'react-hook-form';
 import { Alert, Stack } from '@grafana/ui';
 
@@ -114,9 +114,6 @@ function CheckFormInternal() {
 
   const isAlertsPerCheckOn = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
-  // @todo Remove this
-  const [, setActiveSection] = useState<number>(0);
-
   return (
     <>
       <FormLayout<CheckFormValues>
@@ -129,7 +126,6 @@ function CheckFormInternal() {
         onInvalid={handleInvalid}
         schema={schema}
         hasUnsavedChanges={hasUnsavedChanges}
-        onSectionClick={setActiveSection}
       >
         {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
