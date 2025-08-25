@@ -15,7 +15,7 @@ export const BrowserCheckInstance = () => {
     <Field
       label={
         <Label htmlFor="target">
-          Instance&nbsp;
+          Instance&nbsp;*&nbsp;
           <Tooltip
             content={
               <span>
@@ -27,7 +27,6 @@ export const BrowserCheckInstance = () => {
           >
             <Icon name="info-circle" className={styles.infoIcon} />
           </Tooltip>
-          &nbsp;*
         </Label>
       }
       invalid={Boolean(formState.errors.target)}
