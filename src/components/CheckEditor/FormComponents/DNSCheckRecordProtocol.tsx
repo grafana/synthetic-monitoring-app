@@ -16,6 +16,7 @@ export const DNSCheckRecordProtocol = ({ disabled }: { disabled?: boolean }) => 
         render={({ field }) => {
           const { ref, onChange, ...rest } = field;
           return (
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             <Select
               {...rest}
               disabled={disabled}

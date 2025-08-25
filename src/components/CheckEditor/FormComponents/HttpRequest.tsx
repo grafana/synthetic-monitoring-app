@@ -60,6 +60,7 @@ export const HttpRequest = forwardRef<
 
               return (
                 <div>
+                  {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
                   <Select
                     {...rest}
                     aria-label={fields.method['aria-label'] || `Request method *`}

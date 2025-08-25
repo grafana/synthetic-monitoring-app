@@ -1,4 +1,4 @@
-import * as webpack from 'webpack';
+import webpack, { type Compiler } from 'webpack';
 
 const PLUGIN_NAME = 'BuildModeWebpack';
 
@@ -14,7 +14,6 @@ export class BuildModeWebpackPlugin {
           const assets = compilation.getAssets();
           for (const asset of assets) {
             if (asset.name.endsWith('plugin.json')) {
-              console.log(asset.name);
               const pluginJsonString = asset.source.source().toString();
               const pluginJsonWithBuildMode = JSON.stringify(
                 {

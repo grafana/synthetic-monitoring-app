@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { FieldErrors, useFormContext } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
@@ -17,6 +18,7 @@ import {
 } from '../../types';
 import { LayoutSection, Section } from './FormLayouts/Layout.types';
 import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { queryClient } from 'data/queryClient';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
@@ -25,7 +27,6 @@ import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs } from 'hooks/useDSPermission';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useLimits } from 'hooks/useLimits';
-import { useNavigation } from 'hooks/useNavigation';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
@@ -118,10 +119,13 @@ interface UseCheckFormProps {
 
 export function useCheckForm({ check, checkType }: UseCheckFormProps) {
   const [submittingToApi, setSubmittingToApi] = useState(false);
-  const navigate = useNavigation();
+  const navigate = useNavigate();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
 
-  const navigateToChecks = useCallback(() => navigate(AppRoutes.Checks), [navigate]);
+  const navigateToCheckDashboard = useCallback(
+    (result: Check) => navigate(generateRoutePath(AppRoutes.CheckDashboard, { id: result.id! })),
+    [navigate]
+  );
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
   const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
@@ -130,20 +134,14 @@ export function useCheckForm({ check, checkType }: UseCheckFormProps) {
 
   const runAdhocCheck = useRunAdhocCheck();
 
-  const handleAlertsAndNavigate = useCallback(
+  const handleAlerts = useCallback(
     async (result: Check, alerts?: CheckAlertFormRecord) => {
-      try {
-        if (alerts) {
-          const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
-          await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
-        }
-
-        navigateToChecks();
-      } finally {
-        queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      if (alerts) {
+        const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
+        await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
       }
     },
-    [navigateToChecks, updateAlertsForCheck]
+    [updateAlertsForCheck]
   );
 
   const mutateCheck = useCallback(
@@ -160,7 +158,9 @@ export function useCheckForm({ check, checkType }: UseCheckFormProps) {
         } else {
           result = await createCheck(newCheck);
         }
-        await handleAlertsAndNavigate(result, alerts);
+        await handleAlerts(result, alerts);
+        await queryClient.invalidateQueries({ queryKey: queryKeys.list });
+        navigateToCheckDashboard(result);
       } catch (e) {
         console.log(`Error while submitting check`, e);
         // swallow the error
@@ -170,7 +170,7 @@ export function useCheckForm({ check, checkType }: UseCheckFormProps) {
         setSubmittingToApi(false);
       }
     },
-    [check?.id, check?.tenantId, createCheck, updateCheck, handleAlertsAndNavigate]
+    [check?.id, check?.tenantId, createCheck, updateCheck, handleAlerts, navigateToCheckDashboard]
   );
 
   const handleValid = useCallback(
