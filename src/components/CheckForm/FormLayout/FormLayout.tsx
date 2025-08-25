@@ -134,7 +134,7 @@ export const FormLayout = <T extends FieldValues>({
 
           <div className={styles.divider} />
 
-          <div data-testid={DataTestIds.ACTIONS_BAR} className={styles.containerInner}>
+          <div data-testid={DataTestIds.ACTIONS_BAR} className={cx(styles.actionBar, styles.containerInner)}>
             <Stack justifyContent="space-between">
               {!isFirstSection ? (
                 <Button
@@ -245,6 +245,11 @@ const getStyles = (theme: GrafanaTheme2) => {
       width: 100%;
       max-width: ${FORM_MAX_WIDTH};
       justify-self: center;
+    `,
+    actionBar: css`
+      width: 100%;
+      max-width: ${FORM_MAX_WIDTH};
+      margin: 0 auto;
     `,
   };
 };
