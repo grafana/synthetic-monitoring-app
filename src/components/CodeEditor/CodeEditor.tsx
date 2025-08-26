@@ -94,7 +94,11 @@ export const CodeEditor = forwardRef(function CodeEditor(
     const compilerOptions = monaco.languages.typescript.javascriptDefaults.getCompilerOptions();
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
       ...compilerOptions,
-      checkJs, // show errors for JS files, by default it check only TS
+      checkJs, // show errors for JS files; by default, it checks only TS
+
+      // To allow for top-level await (a combination of `target` and `module` options is required).
+      target: monaco.languages.typescript.ScriptTarget.ESNext, // Was ESNext by default, now it's set explicitly.
+      module: monaco.languages.typescript.ModuleKind.ESNext,
     });
 
     // Needed to make `checkJs` work and highlight errors

@@ -58,6 +58,7 @@ export const SearchFilter = ({
       </div>
       {showEmptyState && (
         <div className={styles.emptyState}>
+          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
           <EmptySearchResult>{emptyText}</EmptySearchResult>
         </div>
       )}

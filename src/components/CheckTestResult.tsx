@@ -11,8 +11,11 @@ interface Props {
   logs: DataFrame;
 }
 
+const LOGS_HEIGHT = 300;
+
 export function CheckTestResult({ probeName, success, loading, logs }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const [width, setWidth] = useState(0);
   const styles = useStyles2(getStyles);
   const header = (
     <div className={styles.header}>
@@ -43,12 +46,21 @@ export function CheckTestResult({ probeName, success, loading, logs }: Props) {
       }}
     >
       {!loading && logs ? (
-        <div>
+        <div
+          ref={(el) => {
+            if (el) {
+              setWidth(el.clientWidth);
+            }
+          }}
+          style={{
+            height: `${LOGS_HEIGHT}px`,
+          }}
+        >
           <PanelRenderer
             title="Logs"
             pluginId="logs"
-            width={658}
-            height={300}
+            width={width}
+            height={LOGS_HEIGHT}
             data={{
               state: LoadingState.Done,
               series: [logs],
@@ -60,6 +72,9 @@ export function CheckTestResult({ probeName, success, loading, logs }: Props) {
                   to: 'now',
                 },
               },
+            }}
+            options={{
+              detailsMode: `inline`,
             }}
           />
         </div>

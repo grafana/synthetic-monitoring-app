@@ -880,4 +880,6 @@ export type PluginPermissions =
   | `${PermissionBase}.access-tokens:${'write'}`
   | `${PermissionBase}.plugin:${'write'}`;
 
+export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | 'write' | 'delete'}`;
+
 export type AlertingType = 'alerting' | 'sensitivity';

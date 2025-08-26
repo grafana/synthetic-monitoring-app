@@ -1,7 +1,7 @@
 import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
-import { FeatureName, PluginPermissions } from 'types';
+import { FeatureName, FixedSecretPermission, PluginPermissions } from 'types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 
 const roleHierarchy: Record<OrgRole, OrgRole[]> = {
@@ -21,11 +21,14 @@ const hasMinFallbackRole = (fallbackOrgRole: OrgRole) => {
   return roleHierarchy[fallbackOrgRole]?.includes(orgRole) || false;
 };
 
-const isUserActionAllowed = (permission: PluginPermissions, fallbackOrgRole: OrgRole): boolean => {
+const isUserActionAllowed = (
+  permission: PluginPermissions | FixedSecretPermission,
+  fallbackOrgRole: OrgRole
+): boolean => {
   const { permissions: userPermissions } = config.bootData.user;
 
   const rbacEnabled = isFeatureEnabled(FeatureName.RBAC);
-  if (config.featureToggles.accessControlOnCall && rbacEnabled) {
+  if (rbacEnabled) {
     return Boolean(userPermissions?.[permission]);
   }
 
@@ -53,6 +56,11 @@ export const getUserPermissions = () => ({
   canWritePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:write', OrgRole.Admin),
 
   canWriteSM: isUserActionAllowed('grafana-synthetic-monitoring-app:write', OrgRole.Editor),
+
+  canCreateSecrets: isUserActionAllowed('secret.securevalues:create', OrgRole.Admin),
+  canReadSecrets: isUserActionAllowed('secret.securevalues:read', OrgRole.Admin),
+  canUpdateSecrets: isUserActionAllowed('secret.securevalues:write', OrgRole.Admin),
+  canDeleteSecrets: isUserActionAllowed('secret.securevalues:delete', OrgRole.Admin),
 
   isAdmin: hasMinFallbackRole(OrgRole.Admin),
 });

@@ -44,7 +44,7 @@ export const CheckFormAlert = () => {
           render={({ field }) => {
             const { ref, ...rest } = field;
             return (
-              <Select
+                <Select // eslint-disable-line @typescript-eslint/no-deprecated
                 {...rest}
                 aria-label="Select alert sensitivity"
                 width={40}
