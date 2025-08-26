@@ -35,6 +35,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
     Object.entries(channels).forEach(([channelId, channel]) => {
       const isDefault = channel.default;
       const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
+      const isDisabled = new Date(channel.disabledAfter) < new Date();
       
       if (isDeprecated && !isExistingCheck) {
         return; // Skip deprecated channels for new checks
@@ -42,6 +43,14 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
       
       if (isDeprecated && isExistingCheck && channelId !== previousChannelId) {
         return; // Skip deprecated channels for existing checks unless it was previously assigned
+      }
+
+      if (isDisabled && !isExistingCheck) {
+        return; // Skip disabled channels for new checks
+      }
+      
+      if (isDisabled && isExistingCheck && channelId !== previousChannelId) {
+        return; // Skip disabled channels for existing checks unless it was previously assigned
       }
 
       let labelSuffix = '';
