@@ -5,6 +5,7 @@ import { Alert, Combobox, Field, Stack } from '@grafana/ui';
 import { CheckFormValues, FeatureName } from 'types';
 import { useK6Channels } from 'data/useK6Channels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 
 import { ChannelDetails } from './ChannelDetails';
 
@@ -15,11 +16,14 @@ interface K6ChannelSelectProps {
 export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
   const { isEnabled } = useFeatureFlag(FeatureName.VersionManagement);
   const { control } = useFormContext<CheckFormValues>();
+  const { check, isExistingCheck } = useCheckFormMetaContext();
   const id = 'k6-channel-select';
 
   const { data: channelsResponse, isLoading: isLoadingChannels, error: channelsError } = useK6Channels(isEnabled);
 
   const channels = useMemo(() => channelsResponse?.channels || {}, [channelsResponse?.channels]);
+  
+  const previousChannelId = isExistingCheck ? check?.channel : null;
 
   const defaultChannelId = useMemo(() => {
     return Object.entries(channels).find(([, channel]) => channel.default)?.[0] || '';
@@ -30,6 +34,15 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 
     Object.entries(channels).forEach(([channelId, channel]) => {
       const isDefault = channel.default;
+      const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
+      
+      if (isDeprecated && !isExistingCheck) {
+        return; // Skip deprecated channels for new checks
+      }
+      
+      if (isDeprecated && isExistingCheck && channelId !== previousChannelId) {
+        return; // Skip deprecated channels for existing checks unless it was previously assigned
+      }
 
       let labelSuffix = '';
       if (isDefault) {
@@ -44,7 +57,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
     });
 
     return options;
-  }, [channels]);
+  }, [channels, isExistingCheck, previousChannelId]);
 
   if (!isEnabled) {
     return null;

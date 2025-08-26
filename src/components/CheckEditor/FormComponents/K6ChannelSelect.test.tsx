@@ -3,6 +3,9 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { render, screen } from '@testing-library/react';
 
 import { CheckFormValues, FeatureName } from 'types';
+import { useCurrentK6Version,useK6Channels } from 'data/useK6Channels';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 
 import { K6ChannelSelect } from './K6ChannelSelect';
 
@@ -29,9 +32,12 @@ jest.mock('@grafana/ui', () => ({
   )),
 }));
 
-const mockUseFeatureFlag = jest.mocked(require('hooks/useFeatureFlag').useFeatureFlag);
-const mockUseK6Channels = jest.mocked(require('data/useK6Channels').useK6Channels);
-const mockUseCurrentK6Version = jest.mocked(require('data/useK6Channels').useCurrentK6Version);
+jest.mock('components/CheckForm/CheckFormContext');
+
+const mockUseFeatureFlag = useFeatureFlag as jest.Mock;
+const mockUseK6Channels = useK6Channels as jest.Mock;
+const mockUseCurrentK6Version = useCurrentK6Version as jest.Mock;
+const mockUseCheckFormMetaContext = useCheckFormMetaContext as jest.Mock;
 
 // Test wrapper with form context
 function TestWrapper({ children, featureEnabled = true }: { children: React.ReactNode; featureEnabled?: boolean }) {
@@ -41,7 +47,6 @@ function TestWrapper({ children, featureEnabled = true }: { children: React.Reac
     }
   });
   
-  // Mock feature flag
   mockUseFeatureFlag.mockReturnValue({ isEnabled: featureEnabled });
   
   return (
@@ -74,25 +79,22 @@ describe('K6ChannelSelect', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Default mock returns for API hooks
     mockUseK6Channels.mockReturnValue({
       data: mockChannelsResponse,
       isLoading: false,
       error: null,
-      isError: false,
-      isSuccess: true,
-      isFetching: false,
-      refetch: jest.fn(),
     });
     
     mockUseCurrentK6Version.mockReturnValue({
       data: 'v1.9.2',
       isLoading: false,
       error: null,
-      isError: false,
-      isSuccess: true,
-      isFetching: false,
-      refetch: jest.fn(),
+    });
+
+    mockUseCheckFormMetaContext.mockReturnValue({
+      check: undefined,
+      isExistingCheck: false,
+      getIsExistingCheck: () => false,
     });
   });
 
@@ -175,5 +177,98 @@ describe('K6ChannelSelect', () => {
     );
 
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
+  });
+
+  it('should hide deprecated channels for new checks', () => {
+    const channelsWithDeprecated = {
+      channels: {
+        v1: {
+          name: 'v1',
+          default: true,
+          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
+          disabledAfter: '2026-12-31T00:00:00Z',
+          manifest: 'k6>=1,k6<2',
+        },
+        deprecated: {
+          name: 'deprecated',
+          default: false,
+          deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
+          disabledAfter: '2027-12-31T00:00:00Z',
+          manifest: 'k6>=0.5,k6<1',
+        },
+      },
+    };
+
+    mockUseK6Channels.mockReturnValue({
+      data: channelsWithDeprecated,
+      isLoading: false,
+      error: null,
+    });
+
+    mockUseCheckFormMetaContext.mockReturnValue({
+      check: undefined,
+      isExistingCheck: false,
+      getIsExistingCheck: () => false,
+    });
+
+    render(
+      <TestWrapper>
+        <K6ChannelSelect />
+      </TestWrapper>
+    );
+
+    const combobox = screen.getByRole('combobox');
+    expect(combobox).toBeInTheDocument();
+    
+    // Should show v1 but not deprecated channel
+    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
+    expect(screen.queryByText(/deprecated/)).not.toBeInTheDocument();
+  });
+
+  it('should show deprecated channel for existing checks if it was previously assigned', () => {
+    const channelsWithDeprecated = {
+      channels: {
+        v1: {
+          name: 'v1',
+          default: true,
+          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
+          disabledAfter: '2026-12-31T00:00:00Z',
+          manifest: 'k6>=1,k6<2',
+        },
+        deprecated: {
+          name: 'deprecated',
+          default: false,
+          deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
+          disabledAfter: '2027-12-31T00:00:00Z',
+          manifest: 'k6>=0.5,k6<1',
+        },
+      },
+    };
+
+    mockUseK6Channels.mockReturnValue({
+      data: channelsWithDeprecated,
+      isLoading: false,
+      error: null,
+    });
+
+    // Mock existing check scenario with deprecated channel previously assigned
+    mockUseCheckFormMetaContext.mockReturnValue({
+      check: { channel: 'deprecated' },
+      isExistingCheck: true,
+      getIsExistingCheck: () => true,
+    });
+
+    render(
+      <TestWrapper>
+        <K6ChannelSelect />
+      </TestWrapper>
+    );
+
+    const combobox = screen.getByRole('combobox');
+    expect(combobox).toBeInTheDocument();
+    
+    // Should show both v1 and the previously assigned deprecated channel
+    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
+    expect(screen.getByText('deprecated.x')).toBeInTheDocument();
   });
 });
