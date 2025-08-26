@@ -271,4 +271,151 @@ describe('K6ChannelSelect', () => {
     expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
     expect(screen.getByText('deprecated.x')).toBeInTheDocument();
   });
+
+  it('should hide disabled channels for new checks', () => {
+    const channelsWithDisabled = {
+      channels: {
+        v1: {
+          name: 'v1',
+          default: true,
+          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
+          disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
+          manifest: 'k6>=1,k6<2',
+        },
+        disabled: {
+          name: 'disabled',
+          default: false,
+          deprecatedAfter: '2025-12-31T00:00:00Z',
+          disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
+          manifest: 'k6>=0.5,k6<1',
+        },
+      },
+    };
+
+    mockUseK6Channels.mockReturnValue({
+      data: channelsWithDisabled,
+      isLoading: false,
+      error: null,
+    });
+
+    mockUseCheckFormMetaContext.mockReturnValue({
+      check: undefined,
+      isExistingCheck: false,
+      getIsExistingCheck: () => false,
+    });
+
+    render(
+      <TestWrapper>
+        <K6ChannelSelect />
+      </TestWrapper>
+    );
+
+    const combobox = screen.getByRole('combobox');
+    expect(combobox).toBeInTheDocument();
+    
+    // Should show v1 but not disabled channel
+    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
+    expect(screen.queryByText(/disabled/)).not.toBeInTheDocument();
+  });
+
+  it('should show disabled channel for existing checks if it was previously assigned', () => {
+    const channelsWithDisabled = {
+      channels: {
+        v1: {
+          name: 'v1',
+          default: true,
+          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
+          disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
+          manifest: 'k6>=1,k6<2',
+        },
+        disabled: {
+          name: 'disabled',
+          default: false,
+          deprecatedAfter: '2025-12-31T00:00:00Z',
+          disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
+          manifest: 'k6>=0.5,k6<1',
+        },
+      },
+    };
+
+    mockUseK6Channels.mockReturnValue({
+      data: channelsWithDisabled,
+      isLoading: false,
+      error: null,
+    });
+
+    // Mock existing check scenario with disabled channel previously assigned
+    mockUseCheckFormMetaContext.mockReturnValue({
+      check: { channel: 'disabled' },
+      isExistingCheck: true,
+      getIsExistingCheck: () => true,
+    });
+
+    render(
+      <TestWrapper>
+        <K6ChannelSelect />
+      </TestWrapper>
+    );
+
+    const combobox = screen.getByRole('combobox');
+    expect(combobox).toBeInTheDocument();
+    
+    // Should show both v1 and the previously assigned disabled channel
+    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
+    expect(screen.getByText('disabled.x')).toBeInTheDocument();
+  });
+
+  it('should hide both deprecated and disabled channels for new checks', () => {
+    const channelsWithBoth = {
+      channels: {
+        v1: {
+          name: 'v1',
+          default: true,
+          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
+          disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
+          manifest: 'k6>=1,k6<2',
+        },
+        deprecated: {
+          name: 'deprecated',
+          default: false,
+          deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
+          disabledAfter: '2027-12-31T00:00:00Z',
+          manifest: 'k6>=0.5,k6<1',
+        },
+        disabled: {
+          name: 'disabled',
+          default: false,
+          deprecatedAfter: '2025-12-31T00:00:00Z',
+          disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
+          manifest: 'k6>=0.3,k6<0.5',
+        },
+      },
+    };
+
+    mockUseK6Channels.mockReturnValue({
+      data: channelsWithBoth,
+      isLoading: false,
+      error: null,
+    });
+
+    mockUseCheckFormMetaContext.mockReturnValue({
+      check: undefined,
+      isExistingCheck: false,
+      getIsExistingCheck: () => false,
+    });
+
+    render(
+      <TestWrapper>
+        <K6ChannelSelect />
+      </TestWrapper>
+    );
+
+    const combobox = screen.getByRole('combobox');
+    expect(combobox).toBeInTheDocument();
+    
+    // Should only show v1, not deprecated or disabled channels
+    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
+    expect(screen.queryByText(/deprecated/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/disabled/)).not.toBeInTheDocument();
+  });
 });
