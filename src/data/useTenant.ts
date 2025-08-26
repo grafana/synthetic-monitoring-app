@@ -1,4 +1,4 @@
-import { useQuery, QueryKey } from '@tanstack/react-query';
+import { QueryKey, useQuery } from '@tanstack/react-query';
 
 import { useSMDS } from 'hooks/useSMDS';
 
