@@ -14,15 +14,14 @@ import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { ResponseLatency } from 'scenes/Common/ResponseLatency';
 import { ResponseLatencyByProbe } from 'scenes/Common/ResponseLatencyByProbe';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
-import { SSLExpiry } from 'scenes/HTTP/stats/SSLExpiryViz';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export const HttpDashboard = ({ check }: { check: Check }) => {
+export const PingDashboard = ({ check }: { check: Check }) => {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.HTTP}>
+    <DashboardContainer check={check} checkType={CheckType.PING}>
       <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
@@ -33,7 +32,6 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
             <UptimeStat check={check} />
             <ReachabilityStat check={check} />
             <AvgLatency />
-            <SSLExpiry />
             <Frequency />
           </div>
 
@@ -42,7 +40,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
 
         <div className={styles.latencyRow}>
           <div className={styles.latencyPanel}>
-            <ResponseLatency metric={`probe_http_duration_seconds`} />
+            <ResponseLatency metric={`probe_icmp_duration_seconds`} />
           </div>
           <div className={styles.latencyPanel}>
             <ResponseLatencyByProbe />
