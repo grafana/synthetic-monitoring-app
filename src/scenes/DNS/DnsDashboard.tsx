@@ -24,7 +24,6 @@ export const DNSDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={CheckType.DNS}>
-        <div>hola</div>
       <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
