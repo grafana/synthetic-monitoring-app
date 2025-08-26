@@ -14,7 +14,7 @@ import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { ResponseLatency } from 'scenes/Common/ResponseLatency';
 import { ResponseLatencyByProbe } from 'scenes/Common/ResponseLatencyByProbe';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
-import { SSLExpiry } from 'scenes/HTTP/stats/SSLExpiryViz';
+import { SSLExpiry } from 'scenes/HTTP/SSLExpiryViz';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 export const HttpDashboard = ({ check }: { check: Check }) => {
