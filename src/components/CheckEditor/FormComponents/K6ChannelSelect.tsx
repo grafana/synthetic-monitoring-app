@@ -30,8 +30,14 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 
     Object.entries(channels).forEach(([channelId, channel]) => {
       const isDefault = channel.default;
+
+      let labelSuffix = '';
+      if (isDefault) {
+        labelSuffix = ' (default)';
+      }
+
       options.push({
-        label: `${channel.name}.x${isDefault ? ' (default)' : ''}`,
+        label: `${channel.name}.x${labelSuffix}`,
         value: channelId,
         description: `k6 version range: ${channel.manifest}`,
       });

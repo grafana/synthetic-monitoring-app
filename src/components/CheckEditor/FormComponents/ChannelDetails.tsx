@@ -34,6 +34,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
   }
 
   const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
+  const isDisabled = new Date(channel.disabledAfter) < new Date();
 
   return (
     <Stack direction="column" gap={1}>
@@ -71,7 +72,14 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
         </Alert>
       )}
 
-      {isDeprecated && (
+      {isDisabled && (
+        <Alert severity="error" title="Disabled Channel">
+          This channel is disabled and cannot be used after {new Date(channel.disabledAfter).toLocaleDateString()}.
+          Please select a different channel.
+        </Alert>
+      )}
+
+      {isDeprecated && !isDisabled && (
         <Alert severity="warning" title="Deprecated Channel">
           This channel is deprecated and will be removed after {new Date(channel.deprecatedAfter).toLocaleDateString()}.
           Consider migrating to a newer channel.

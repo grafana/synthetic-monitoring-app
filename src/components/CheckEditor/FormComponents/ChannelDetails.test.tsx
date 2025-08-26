@@ -18,6 +18,7 @@ describe('ChannelDetails', () => {
       name: 'v1',
       default: false,
       deprecatedAfter: '2025-12-31T00:00:00Z',
+      disabledAfter: '2026-12-31T00:00:00Z',
       manifest: 'k6>=1',
       currentVersion: 'v1.9.2',
     },
@@ -25,6 +26,7 @@ describe('ChannelDetails', () => {
       name: 'v2',
       default: true,
       deprecatedAfter: '2026-12-31T00:00:00Z',
+      disabledAfter: '2027-12-31T00:00:00Z',
       manifest: 'k6>=2',
       currentVersion: 'v2.0.1',
     },
@@ -32,6 +34,7 @@ describe('ChannelDetails', () => {
       name: 'deprecated',
       default: false,
       deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
+      disabledAfter: '2030-01-01T00:00:00Z', // Not yet disabled
       manifest: 'k6>=0.5',
       currentVersion: 'v0.54.1',
     },
