@@ -1,4 +1,5 @@
 import React from 'react';
+import { dateTimeFormat } from '@grafana/data';
 import { Alert, Stack, Text, useTheme2 } from '@grafana/ui';
 
 import { K6Channel } from 'types';
@@ -74,14 +75,14 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
 
       {isDisabled && (
         <Alert severity="error" title="Disabled Channel">
-          This channel is disabled and cannot be used after {new Date(channel.disabledAfter).toLocaleDateString()}.
+          This channel is disabled and cannot be used after {dateTimeFormat(new Date(channel.disabledAfter))}.
           Please select a different channel.
         </Alert>
       )}
 
       {isDeprecated && !isDisabled && (
         <Alert severity="warning" title="Deprecated Channel">
-          This channel is deprecated and will be removed after {new Date(channel.deprecatedAfter).toLocaleDateString()}.
+          This channel is deprecated and will be removed after {dateTimeFormat(new Date(channel.deprecatedAfter))}.
           Consider migrating to a newer channel.
         </Alert>
       )}
