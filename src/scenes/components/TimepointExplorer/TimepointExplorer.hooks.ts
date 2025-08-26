@@ -32,6 +32,7 @@ import {
   TimepointStatus,
   TimepointVizOptions,
   UnixTimestamp,
+  ViewerState,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   buildConfigTimeRanges,
@@ -39,6 +40,7 @@ import {
   buildTimepoints,
   extractFrequenciesAndConfigs,
   getCouldBePending,
+  getIsInTheFuture,
   getPendingProbeNames,
   getTimeAdjustedTimepoint,
   getVisibleTimepoints,
@@ -82,7 +84,9 @@ export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckCo
   const withLatest = useMemo(() => {
     const latest = checkConfigsRaw[checkConfigsRaw.length - 1];
 
-    if (latest.date === lastModified) {
+    // apparently they aren't exact...
+    // reduce to second accurate rather than millisecond accurate
+    if (Math.round(latest.date / 1000) === Math.round(lastModified / 1000)) {
       return checkConfigsRaw;
     }
 
@@ -239,6 +243,7 @@ function useCheckConfigs({ from, to, check, probe }: UseCheckConfigsProps) {
       const configs = data.map((d) => extractFrequenciesAndConfigs(d)).flat();
       return configs;
     },
+    enabled: from < to,
   });
 }
 
@@ -291,6 +296,7 @@ function useMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProp
       // Convert seconds to milliseconds
       return Math.round(max * MILLISECONDS_PER_SECOND);
     },
+    enabled: from < to,
   });
 }
 
@@ -453,4 +459,46 @@ export function useCurrentAdjustedTime(check: Check) {
   }, [check.frequency]);
 
   return currentAdjustedTime;
+}
+
+interface UseIsInitialisedProps {
+  check: Check;
+  currentAdjustedTime: UnixTimestamp;
+  handleViewerStateChange: (viewerState: ViewerState) => void;
+  isLoading: boolean;
+  timepoints: StatelessTimepoint[];
+}
+
+export function useIsInitialised({
+  check,
+  isLoading,
+  handleViewerStateChange,
+  timepoints,
+  currentAdjustedTime,
+}: UseIsInitialisedProps) {
+  const probeVar = useSceneVarProbes(check);
+  const persistedIsLoading = usePersisted(isLoading, (isLoading) => !isLoading);
+
+  const handleOnInitialised = useCallback(() => {
+    const notInTheFuture = timepoints.filter((t) => !getIsInTheFuture(t, currentAdjustedTime));
+    // todo: add logic to pick a sensible entry depending on how close a timepoint is to the creation date
+    // e.g. if you create a time point with two seconds until the end of the timepoint, the user will essentially
+    // see a missing result as the first entry
+    // might make sense to bump the creation time artificially so it aligns with the timepoint?
+    const lastNotInTheFuture = notInTheFuture[notInTheFuture.length - 1] || timepoints[0];
+    const firstProbe = probeVar[0];
+
+    handleViewerStateChange([lastNotInTheFuture, firstProbe, 0]);
+  }, [currentAdjustedTime, probeVar, timepoints, handleViewerStateChange]);
+
+  useEffect(() => {
+    // we have to wait until we have the checkConfigs and subsequent timepoints built
+    // before knowing what timepoints are available and what to select
+    if (!persistedIsLoading) {
+      handleOnInitialised();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- we only want to run this once
+  }, [persistedIsLoading]);
+
+  return !persistedIsLoading;
 }

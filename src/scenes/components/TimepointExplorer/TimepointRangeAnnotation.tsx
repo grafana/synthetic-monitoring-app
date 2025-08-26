@@ -127,6 +127,10 @@ const getStyles = (theme: GrafanaTheme2, annotation?: AnnotationWithIndices, tri
       top: 50%;
       transform: translate(-50%, -50%);
       z-index: 1;
+
+      &:hover {
+        z-index: 1000;
+      }
     `,
     annotationInformation: css`
       background-color: ${borderColor};

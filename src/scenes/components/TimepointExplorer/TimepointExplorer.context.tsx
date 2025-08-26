@@ -14,7 +14,7 @@ import { useTheme2 } from '@grafana/ui';
 
 import { Check } from 'types';
 import { useLogsRetentionPeriod } from 'data/useLogsRetention';
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
+import { useSceneVar } from 'scenes/Common/useSceneVar';
 import {
   MAX_MINIMAP_SECTIONS,
   TIMEPOINT_EXPLORER_VIEW_OPTIONS,
@@ -26,6 +26,7 @@ import {
   useBuiltCheckConfigs,
   useCurrentAdjustedTime,
   useExecutionDurationLogs,
+  useIsInitialised,
   useIsListResultPending,
   usePersistedMaxProbeDuration,
   useTimepoints,
@@ -49,8 +50,6 @@ import {
   buildCheckEvents,
   findNearestPageIndex,
   getExplorerTimeFrom,
-  getIsInitialised,
-  getIsInTheFuture,
   getMiniMapPages,
   getMiniMapSections,
   getVisibleTimepoints,
@@ -63,6 +62,7 @@ interface TimepointExplorerContextType {
   checkConfigs: CheckConfig[];
   checkEvents: CheckEvent[];
   currentAdjustedTime: UnixTimestamp;
+  explorerTimeFrom: UnixTimestamp;
   handleHoverStateChange: (state: HoveredState) => void;
   handleListWidthChange: (listWidth: number, currentSectionRange: MiniMapSection) => void;
   handleMiniMapPageChange: (page: number) => void;
@@ -129,7 +129,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   });
   const [listWidth, setListWidth] = useState<number>(0);
   const [timepointWidth, setTimepointWidth] = useState<number>(TIMEPOINT_SIZE);
-  const probeVar = useSceneVarProbes(check);
+  const probeVarRaw = useSceneVar('probe');
 
   const {
     data: maxProbeDurationData,
@@ -137,10 +137,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isFetching: isMaxProbeDurationFetching,
     isLoading: isMaxProbeDurationLoading,
     refetch: refetchMaxProbeDuration,
-    dataUpdatedAt: maxProbeDurationUpdatedAt,
   } = usePersistedMaxProbeDuration({
     check,
-    probe: probeVar,
+    probe: probeVarRaw,
     from: explorerTimeFrom,
     to: timeRange.to.valueOf(),
   });
@@ -157,10 +156,9 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isFetching: isCheckConfigsFetching,
     isLoading: isCheckConfigsLoading,
     refetch: refetchCheckConfigs,
-    dataUpdatedAt: checkConfigsUpdatedAt,
   } = useBuiltCheckConfigs({
     check,
-    probe: probeVar,
+    probe: probeVarRaw,
     from: explorerTimeFrom,
     to: timeRange.to.valueOf(),
   });
@@ -208,33 +206,18 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isError: isExecutionDurationLogsError,
     listLogsMap,
     refetch: refetchEndingLogs,
-    dataUpdatedAt: logsUpdatedAt,
   } = useExecutionDurationLogs({
     check,
-    probe: probeVar,
+    probe: probeVarRaw,
     timepoints: visibleTimepoints, // no point building anything that is not visible
     timeRange: miniMapCurrentPageTimeRange,
   });
 
   const isLoading = isCheckConfigsLoading || isExecutionDurationLogsLoading || isMaxProbeDurationLoading;
   const isFetching = isCheckConfigsFetching || isExecutionDurationLogsFetching || isMaxProbeDurationFetching;
-  const isInitialised = getIsInitialised(logsUpdatedAt, checkConfigsUpdatedAt, maxProbeDurationUpdatedAt);
   const isError = isCheckConfigsError || isExecutionDurationLogsError || isMaxProbeDurationError;
 
   const [viewerState, setViewerState] = useState<ViewerState>([]);
-
-  useEffect(() => {
-    // we have to wait until we have the checkConfigs and subsequent timepoints built
-    // before knowing what timepoints are available and what to select
-
-    if (isInitialised) {
-      const notInTheFuture = timepoints.filter((t) => !getIsInTheFuture(t, currentAdjustedTime));
-      const lastNotInTheFuture = notInTheFuture[notInTheFuture.length - 1];
-      const firstProbe = probeVar[0];
-      setViewerState([lastNotInTheFuture, firstProbe, 0]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- we only want to run this once
-  }, [isInitialised]);
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
     setMiniMapCurrentSectionIndex(sectionIndex);
@@ -324,12 +307,21 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     listLogsMap,
   });
 
+  const isInitialised = useIsInitialised({
+    check,
+    isLoading,
+    handleViewerStateChange,
+    timepoints,
+    currentAdjustedTime,
+  });
+
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
       check,
       checkConfigs,
       checkEvents,
       currentAdjustedTime,
+      explorerTimeFrom,
       handleHoverStateChange,
       handleListWidthChange,
       handleMiniMapPageChange,
@@ -366,6 +358,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     checkConfigs,
     checkEvents,
     currentAdjustedTime,
+    explorerTimeFrom,
     handleHoverStateChange,
     handleListWidthChange,
     handleMiniMapPageChange,

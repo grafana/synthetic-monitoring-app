@@ -74,8 +74,13 @@ export const TimepointList = () => {
             triggerHeight={ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX}
           />
           <div ref={ref} className={styles.timepoints} id={TIMEPOINT_LIST_ID}>
-            {timepointsInRange.map((timepoint, index) => {
-              return <TimepointListEntry key={index} timepoint={timepoint} viewIndex={index} />;
+            {timepointsInRange.map((timepoint) => {
+              return (
+                <TimepointListEntry
+                  key={`${timepoint.index}-${timepoint.config.from}-${timepoint.config.to}`}
+                  timepoint={timepoint}
+                />
+              );
             })}
           </div>
         </div>

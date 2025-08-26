@@ -10,5 +10,9 @@ export const TimepointExplorerVisibleOverview = () => {
   const { from, to } = getVisibleTimepointsTimeRange({ timepoints: visibleTimepoints });
   const lengthOfTime = to - from;
 
-  return <Text variant="body">{lengthOfTime ? formatDuration(lengthOfTime) : ''} overview</Text>;
+  if (Number.isNaN(lengthOfTime)) {
+    return <div />;
+  }
+
+  return <Text variant="body">{formatDuration(lengthOfTime)} overview</Text>;
 };

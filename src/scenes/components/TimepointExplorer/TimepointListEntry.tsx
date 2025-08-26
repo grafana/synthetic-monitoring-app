@@ -20,16 +20,15 @@ import { TimepointListEntryUptime } from 'scenes/components/TimepointExplorer/Ti
 
 interface TimepointListEntryProps {
   timepoint: StatelessTimepoint;
-  viewIndex: number;
 }
 
-export const TimepointListEntry = ({ timepoint, viewIndex }: TimepointListEntryProps) => {
+export const TimepointListEntry = ({ timepoint }: TimepointListEntryProps) => {
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
 
   return (
     <div className={styles.timepoint} data-testid={`timepoint-${timepoint.index}`}>
-      <Entry timepoint={timepoint} viewIndex={viewIndex} />
+      <Entry timepoint={timepoint} />
     </div>
   );
 };

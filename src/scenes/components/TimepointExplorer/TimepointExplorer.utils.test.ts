@@ -64,62 +64,62 @@ describe(`buildConfigTimeRanges`, () => {
 describe(`buildTimepointsForConfig`, () => {
   it(`should build the correct timepoints for a single config`, () => {
     const CONFIG_ONE = {
-      frequency: 100,
+      frequency: 10000,
       from: 0,
-      to: 300,
+      to: 30000,
     };
 
     const timepoints = buildTimepointsForConfig({ from: CONFIG_ONE.from, to: CONFIG_ONE.to, config: CONFIG_ONE });
 
     expect(timepoints).toEqual([
       { adjustedTime: 0, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
-      { adjustedTime: 100, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
-      { adjustedTime: 200, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 10000, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 20000, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
     ]);
   });
 
   it(`should set the correct duration for the first timepoint`, () => {
     const CONFIG_ONE = {
-      frequency: 100,
+      frequency: 10000,
       from: 4,
-      to: 300,
+      to: 30000,
     };
 
-    const timepoints = buildTimepointsForConfig({ from: 0, to: 300, config: CONFIG_ONE });
+    const timepoints = buildTimepointsForConfig({ from: 0, to: 30000, config: CONFIG_ONE });
 
     expect(timepoints).toEqual([
-      { adjustedTime: 4, timepointDuration: 96, config: CONFIG_ONE },
-      { adjustedTime: 100, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
-      { adjustedTime: 200, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 4, timepointDuration: 9000, config: CONFIG_ONE },
+      { adjustedTime: 10000, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 20000, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
     ]);
   });
 
   it(`should set the correct duration for the last timepoint`, () => {
     const CONFIG_ONE = {
-      frequency: 100,
+      frequency: 10000,
       from: 0,
-      to: 296,
+      to: 29600,
     };
 
-    const timepoints = buildTimepointsForConfig({ from: 0, to: 296, config: CONFIG_ONE });
+    const timepoints = buildTimepointsForConfig({ from: 0, to: 29600, config: CONFIG_ONE });
 
     expect(timepoints).toEqual([
       { adjustedTime: 0, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
-      { adjustedTime: 100, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
-      { adjustedTime: 200, timepointDuration: 96, config: CONFIG_ONE },
+      { adjustedTime: 10000, timepointDuration: CONFIG_ONE.frequency, config: CONFIG_ONE },
+      { adjustedTime: 20000, timepointDuration: 9000, config: CONFIG_ONE },
     ]);
   });
 
   it(`should set the correct duration for a single timepoint that is less than the frequency`, () => {
     const CONFIG_ONE = {
-      frequency: 100,
-      from: 4,
-      to: 99,
+      frequency: 10000,
+      from: 400,
+      to: 9900,
     };
 
-    const timepoints = buildTimepointsForConfig({ from: 0, to: 100, config: CONFIG_ONE });
+    const timepoints = buildTimepointsForConfig({ from: 0, to: 10000, config: CONFIG_ONE });
 
-    expect(timepoints).toEqual([{ adjustedTime: 4, timepointDuration: 95, config: CONFIG_ONE }]);
+    expect(timepoints).toEqual([{ adjustedTime: 400, timepointDuration: 9000, config: CONFIG_ONE }]);
   });
 });
 
@@ -313,6 +313,11 @@ describe(`getRoundedYAxisMax`, () => {
     expect(yAxisMax).toEqual(1000);
   });
 
+  it(`if the value is 1000 it should return 1000`, () => {
+    const yAxisMax = getRoundedYAxisMax(1000);
+    expect(yAxisMax).toEqual(1000);
+  });
+
   it(`if the value is greater than 1000 it should return a value that neatly divides into 4`, () => {
     const yAxisMax = getRoundedYAxisMax(55000);
     expect(yAxisMax).toEqual(60000);
@@ -320,6 +325,6 @@ describe(`getRoundedYAxisMax`, () => {
 
   it(`if the value is greater than 1000 it should return a value that neatly divides into 4`, () => {
     const yAxisMax = getRoundedYAxisMax(61234);
-    expect(yAxisMax).toEqual(65000);
+    expect(yAxisMax).toEqual(80000);
   });
 });

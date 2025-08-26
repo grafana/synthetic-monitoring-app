@@ -85,7 +85,8 @@ export function buildTimepointsForConfig({ from, to, config }: BuildTimepointsFo
     const configStartDifference = currentTimepoint < config.from ? currentTimepoint - config.from : 0;
     const configEndDifference =
       currentTimepoint + config.frequency > config.to ? config.to - currentTimepoint : config.frequency;
-    const timepointDuration = configStartDifference + configEndDifference;
+    const timepointDurationMs = configStartDifference + configEndDifference;
+    const timepointDuration = Math.floor(timepointDurationMs / 1000) * 1000;
 
     build.push({
       adjustedTime: currentTimepoint - configStartDifference,
@@ -412,14 +413,6 @@ export function getExplorerTimeFrom({ checkCreation, logsRetentionFrom, timeRang
   return Math.max(checkCreationDate, timeRangeFrom);
 }
 
-export function getIsInitialised(
-  logsUpdatedAt: number,
-  checkConfigsUpdatedAt: number,
-  maxProbeDurationUpdatedAt: number
-) {
-  return logsUpdatedAt > 0 && checkConfigsUpdatedAt > 0 && maxProbeDurationUpdatedAt > 0;
-}
-
 export function getYAxisMax(highestValue: number, timeout: number) {
   const nonRoundedYAxisMax = getNonRoundedYAxisMax(highestValue, timeout);
   const roundedYAxisMax = getRoundedYAxisMax(nonRoundedYAxisMax);
@@ -428,22 +421,38 @@ export function getYAxisMax(highestValue: number, timeout: number) {
 }
 
 export function getRoundedYAxisMax(nonRoundedYAxisMax: number) {
-  if (nonRoundedYAxisMax < 100) {
-    return 100;
+  // Find the next "nice" number that creates clean Y-axis intervals
+  // The Y-axis has 5 markers (0, 25%, 50%, 75%, 100%), so we need values that divide nicely by 4
+  const orderOfMagnitude = Math.pow(10, Math.floor(Math.log10(nonRoundedYAxisMax)));
+  const normalizedValue = nonRoundedYAxisMax / orderOfMagnitude;
+
+  // Round up to nice numbers that create clean intervals
+  let niceValue;
+  if (normalizedValue <= 1.0) {
+    niceValue = 1.0;
+  } else if (normalizedValue <= 1.2) {
+    niceValue = 1.2;
+  } else if (normalizedValue <= 1.5) {
+    niceValue = 1.5;
+  } else if (normalizedValue <= 2.0) {
+    niceValue = 2.0;
+  } else if (normalizedValue <= 2.5) {
+    niceValue = 2.5;
+  } else if (normalizedValue <= 3.0) {
+    niceValue = 3.0;
+  } else if (normalizedValue <= 4.0) {
+    niceValue = 4.0;
+  } else if (normalizedValue <= 5.0) {
+    niceValue = 5.0;
+  } else if (normalizedValue <= 6.0) {
+    niceValue = 6.0;
+  } else if (normalizedValue <= 8.0) {
+    niceValue = 8.0;
+  } else {
+    niceValue = 10.0;
   }
 
-  if (nonRoundedYAxisMax < 500) {
-    return 500;
-  }
-
-  if (nonRoundedYAxisMax < 1000) {
-    return 1000;
-  }
-
-  const remainder = nonRoundedYAxisMax % 3;
-  const difference = remainder > 0 ? 3 - remainder : 0;
-
-  return nonRoundedYAxisMax + difference;
+  return Math.round(niceValue * orderOfMagnitude);
 }
 
 export function getNonRoundedYAxisMax(highestValue: number, timeout: number) {

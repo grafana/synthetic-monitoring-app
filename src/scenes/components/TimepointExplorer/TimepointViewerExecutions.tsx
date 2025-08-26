@@ -37,7 +37,13 @@ export const TimepointViewerExecutions = ({
   timepoint,
 }: TimepointViewerExecutionsProps) => {
   const { handleHoverStateChange, handleViewerStateChange } = useTimepointExplorerContext();
-  const tabsToRender = useTimepointViewerExecutions({ probeExecutions, pendingProbeNames, timepoint, isLoading });
+  const tabsToRender = useTimepointViewerExecutions({
+    isLoading,
+    pendingProbeNames,
+    probeExecutions,
+    probeNameToView,
+    timepoint,
+  });
 
   return (
     <>

@@ -30,9 +30,9 @@ export const PreTimepointAnnotations = ({
   timepointsInRange,
 }: PreTimepointAnnotationsProps) => {
   const [timeRange] = useTimeRange();
-  const { check, miniMapCurrentPage, miniMapPages } = useTimepointExplorerContext();
+  const { check, explorerTimeFrom, miniMapCurrentPage, miniMapPages } = useTimepointExplorerContext();
   const checkCreation = Math.round(check.created! * 1000);
-  const isCheckCreationWithinRange = checkCreation > timeRange.from.valueOf() && checkCreation < timeRange.to.valueOf();
+  const isCheckCreationWithinRange = checkCreation > explorerTimeFrom - 1 && checkCreation < timeRange.to.valueOf();
   const isFirstPage = miniMapCurrentPage === miniMapPages.length - 1;
 
   if (!(isBeginningSection && isFirstPage) || !checkCreation) {

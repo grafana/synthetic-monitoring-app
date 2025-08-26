@@ -6,6 +6,7 @@ import { useResizeObserver } from 'usehooks-ts';
 
 import { formatDuration } from 'utils';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
+import { useSceneVar } from 'scenes/Common/useSceneVar';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
@@ -62,21 +63,22 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
   const [viewerWidth, setViewerWidth] = useState<number>(0);
   const { check, currentAdjustedTime } = useTimepointExplorerContext();
   const couldResultBePending = getCouldBePending(timepoint, currentAdjustedTime);
-  const probe = useSceneVarProbes(check);
+  const probeVarRaw = useSceneVar('probe');
+  const probeVar = useSceneVarProbes(check);
   const styles = useStyles2(getStyles);
 
   const { data, isFetching, isLoading, refetch } = useTimepointLogs({
     timepoint,
     job: check.job,
     instance: check.target,
-    probe,
+    probe: probeVarRaw,
     staleTime: 0, // refetch to ensure we get the latest logs
   });
 
   const pendingProbeNames = couldResultBePending
     ? getPendingProbes({
         entryProbeNames: data.filter((d) => d.executions.length).map((d) => d.probeName),
-        selectedProbeNames: probe,
+        selectedProbeNames: probeVar,
       })
     : [];
 
