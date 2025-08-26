@@ -30,7 +30,8 @@ export const TimepointListEntryBar = ({ children, timepoint, status }: Timepoint
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
   const styles = useStyles2(getStyles, timepointWidth, height);
-  const probeNameToView = Object.keys(statefulTimepoint.probeResults).sort()[0] || probeVar[0];
+  const probeNameToView =
+    Object.keys(statefulTimepoint.probeResults).sort((a, b) => a.localeCompare(b))[0] || probeVar[0];
   const [viewerTimepoint] = viewerState;
   const isSelected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);

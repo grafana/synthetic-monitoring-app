@@ -15,11 +15,11 @@ They are ordered so as to display the most macro overview first, then a detailed
 
 There are some important concepts to understand when using the Timepoint Explorer:
 
-- **A timepoint is a convenient abstraction**: A timepoint builds on the same abstraction that Grafana (and Prometheus) use for time series data, and subsquently that we use to calculate [uptime](../uptime/uptime.md).
+- **A timepoint is a convenient abstraction**: A timepoint builds on the same abstraction that Grafana uses for time series data, and subsequently that we use to calculate [uptime](../uptime/uptime.md).
   - A single timepoint is the same length as what the Synthetic Monitoring's frequency was for that time period. This means that a timepoint might not be uniform across the entire time range. If a check's frequency changed, then several timepoints may have different lengths.
   - Timepoints are absolutely positioned using clock alignment and are not relative to the selected time range. If you have a 15-second frequency, then the first timepoint will start at 00:00:00, the second at 00:00:15, the third at 00:00:30, and so on. The exceptions to this are when a check was created and when it was updated. The timepoint will shrink accordingly so that clock alignment is maintained.
-- **Probe executions are independent**: Probes perform executions on their own schedule and they have no concept of a timepoint. The Timepoint Explorer decides what executions belong to which timepoint. An execution belongs to a timepoint based on its starting time. NOT its finished time. This means an execution might end in the following timepoint.
-- **x-axis time may not be displayed in a linear fashion**: For the same reasons as above, the x-axis may not display time in a linear fashion. For example, if the Timepoint Explorer two configurations, where half the displayed timepoints have a 15-second frequency and the other half have a one-minute frequency, the second half of the x-axis represents four times the length of time as the first half.
+- **Probe executions are independent**: Probes perform executions on their own schedule and they have no concept of a timepoint. The Timepoint Explorer decides what executions belong to which timepoint. An execution belongs to a timepoint based on its starting time and NOT its finished time. This means an execution might end in the following timepoint.
+- **x-axis time may not be displayed in a linear fashion**: For the same reasons as above, the x-axis may not display time in a linear fashion. For example, if the Timepoint Explorer has two configurations, where half the displayed timepoints have a 15-second frequency and the other half have a one-minute frequency, the second half of the x-axis represents four times the length of time as the first half.
 
 ## How it works
 
@@ -29,7 +29,7 @@ The Timepoint Explorer has three API calls to display the **minimap** and **list
 
 ### Building the timepoints in the selected time range
 
-The first API call is used to buiild a `stateless` timepoints array.
+The first API call is used to build a `stateless` timepoints array.
 
 1. A request to Mimir to get the `sm_check_info` metrics for the selected time range. It extracts the `config_version` and `frequency` labels that are attached to these metrics and creates a check configs array. The `config_version` very conveniently is a nano-second timestamp of when that configuration was created so we with this information we know the duration of any single configuration, and also the duration of a timepoint during this configuration.
   - Whilst we are waiting on this API call we build a timepoint array that is based on the information we have so far: the check's creation date, its last updated date and its current frequency.
@@ -63,7 +63,7 @@ In the top left it has a toggle to show uptime or reachability for the minimap a
 
 ![](./images/TimepointListReachability.png)
 
-*The timepoint list displaying an overview of timepoints for reachability. Here we can see the individual executions that make up the timepoints.*
+*The timepoint list displaying an overview of timepoints for reachability. Here we can see the individual executions that make up the timepoints. There is an additional hover state which works both ways - when hovering over a reachability entry it underlines the associated probe in the tooltip, and when hovering the probe name in the tooltip it highlights the reachability entry.*
 
 The timepoint list displays a graph of timepoints for the selected section on the minimap. It is used to give a detailed overview of the data and to navigate to a specific timepoint by clicking on it.
 
@@ -71,9 +71,9 @@ Its x-axis displays the time points, ascending in time from left to right.
 
 The y-axis displays the duration of the executions. When in uptime view mode, by default the uptime value is calculated by taking the maximum duration of the executions in the timepoint.
 
-When in reachability view mode, each execution's duration is ploted independently.
+When in reachability view mode, each execution's duration is plotted independently.
 
-Regardless of view mode, each timepoint entry has the same tooltip which gives a detailed breakdown of the state of the timepoint. Either by clicking on the probe name in the tooltip, or clicking the timepoint entry itself,
+Regardless of view mode, each timepoint entry has the same tooltip which gives a detailed breakdown of the state of the timepoint. Either by clicking on the probe name in the tooltip, or clicking the timepoint entry itself you are able to view an individual timepoint in the Timepoint Viewer.
 
 ### The Timepoint Viewer
 
@@ -116,7 +116,7 @@ The Timepoint Explorer has at least one failed API call.
 
 ![](./images/TimepointExplorerFetching.png)
 
-The Timepoint Explorer is refetching data.
+The Timepoint Explorer is refetching data. (The loading bars at the top of each section denote where the refetching is happening).
 
 ### Timepoint Explorer Annotations
 
@@ -134,40 +134,40 @@ Shows when the check was created.
 
 Shows when the check was updated. This annotation is derived from two sources: the `check.modified` value and also by parsing the nanosecond date returned by the `config_version` labels on the `sm_check_info` metric (see above).
 
-Note: Because we derive the updated times from the config versions, if a situation were to occur where we have no results whatsoever for a config version prior to the most recent update (such as changing the target/instance labels) we can't create this annotation as it can't be derived from the data.
+*Note: Because we derive the updated times from the config versions, if a situation were to occur where we have no results whatsoever for a config version prior to the most recent update (such as changing the target/instance labels) we can't create the annotation for that check update as it essentially doesn't exist in the data.*
 
 
-#### Alert annotations
+#### Alert annotations (range / instant)
 
 ![](./images/TimepointExplorerAnnotationAlertsFiring.png)
 
-Shows when alerts were firing aligned with the timepoints.
+Shows when alerts were firing aligned with the timepoints. If an alert only fires for a short space of time and a timepoint's duration is longer than the time the alert fired for, it will be rendered as an **instant** annotation rather than a range.
 
-#### Before check was created
+#### Before check was created (pre-timepoint range)
 
 ![](./images/TimepointExplorerAnnotationBeforeCreation.png)
 
-The Timepoint Explorer cannot render anything because the selected time range is before the check's creation date. Note that this renders differently if the check's creation date is within the selected time range (see the check creation annotation as an example). This annotation exists purely to make it clear why no data is being shown in the Timepoint Explorer.
+The Timepoint Explorer cannot render anything because the selected time range is before the check's creation date. Note that this renders differently if the check's creation date is within the selected time range ([see the check creation annotation as an example](#check-created-instant)). This annotation exists purely to make it clear why no data is being shown in the Timepoint Explorer.
 
-#### No data
+#### No data (pre-timepoint range)
 
 ![](./images/TimepointExplorerAnnotationNoData.png)
 
 The selected time range has no configurations found. This is likely to be caused because the job/instance values of the check have been updated. We ID our metric data on this combination - the Timepoint Explorer can see when the check was created and can see that nothing has been returned between the selected time range and the creation date.
 
-#### Out of selected time range
+#### Out of selected time range (pre-timepoint range)
 
 ![](./images/TimepointExplorerAnnotationOutOfSelectedTimerange.png)
 
 This part of the Timepoint Explorer will not render any timepoints because they are out of the selected time range.
 
-#### Out of retention period
+#### Out of retention period (pre-timepoint range)
 
 ![](./images/TimepointExplorerAnnotationOutOfRetention.png)
 
 The selected time range includes when the logs will be out of the stack's retention period (and thus unavailable).
 
-*Note: You can end up in a confusing situation when viewing timepoints on the edge of the retention period. As the Timepoint List makes API calls to the Loki datasource independently to the Timepoint Viewer, you may have a situation where the viewer cannot find the logs which the list component just did (as within those few seconds the timepont has crossed into 'out of the retention period').*
+*Note: You can end up in a confusing situation when viewing timepoints on the edge of the retention period. As the Timepoint List makes API calls to the Loki datasource independently to the Timepoint Viewer, you may have a situation where the viewer cannot find the logs which the list component just did (as within those few seconds the timepoint has crossed into the out of the retention period).*
 
 ### Timepoint Probe States
 
@@ -187,7 +187,7 @@ The probe's execution returned a value of `probe_success = 0`.
 
 #### 3. Pending
 
-![](./images/TimepointViewerPending.png)
+![](./images/TimepointExecutionPending.png)
 
 The probe's execution is currently pending. This state is when no result for this probe exists for the timepoint yet and also either:
 
@@ -196,19 +196,23 @@ The probe's execution is currently pending. This state is when no result for thi
 
 It is possible the previous probe's timepoint is still pending a result because executions belong to a timepoint where they **began**. If the execution started right at the end of the timepoint and take almost a full check frequency to complete, it is possible it is still awaiting its result.
 
+Two pending timepoints adjacent each either on a regular basis can be a symptom of an offline probe.
+
 #### 4. Missing
 
 ![](./images/TimepointExecutionMissing.png)
 
 This is a special state that can only be derived if viewing executions which belong to the **most recent configuration**.
 
-By cross-referencing the current check's configured probes we can see if a result exists for it or not. It is not possible to have a missing state in the Timepoint Explorer when viewing exeuctions that happened in a configuration that is not the most recent.
+By cross-referencing the current check's configured probes we can see if a result exists for it or not. It is not possible to have a missing state in the Timepoint Explorer when viewing executions that happened in a configuration that is not the most recent.
 
 #### Multiple Executions
 
 ![](./images/TimepointProbeMultipleExecutions.png)
 
-It is possible that a timepoint has multiple executions that belong to it. This isn't desirable behaviour on a whole but it can happen if the probe agents get restart or other scheduling pecularities.
+It is possible that a timepoint has multiple executions that belong to it. This isn't desirable behaviour on a whole but it can happen if the probe agents get restart or have other scheduling peculiarities.
+
+[ ] Todo: add reasons in the UI why this happens
 
 ### No probe results
 
@@ -216,11 +220,26 @@ It is possible that a timepoint has multiple executions that belong to it. This 
 
 It is possible that a timepoint has no probe results and because the check has been updated since we are unable to derive what probes it should have ran on.
 
+#### Vizualization options
 
+![](./images/TimepointExplorerVisOptions.png)
 
+The Timepoint Explorer has a bespoke visibility legend which matches the same behaviour as any other visualization panel in Grafana, including:
 
+- Choosing different colours for each visualization option
+- Toggling visualization options on and off (including the user of the meta key to toggle multiple on and off)
 
+The key difference is it accessible by default. Error entries are coloured in bold (considered the most important) and the other entries only have a bordered outline.
 
+#### Noteworthy architectural decisions
+
+There are a few things in the Timepoint Explorer that are worth highlighting in its implementation:
+
+1. If a selected time range includes results that are pending, it will automatically engage a refetching mechanism that runs regularly regardless if a refresh option is enabled in the global dashboard state.
+  - This mechanism is taken advantage of when creating / editing a check by setting the timerange to's date on the dashboard to a point in the future. It creates a much better experience when first creating a check.
+  - If a global refresh option is enabled in the Dashboard this wins over the Timepoint Explorer's own refetching mechanism and it defaults to the refresh period for refetching data.
+2. Because of the use of React Query and the way requests are cached in the QueryClient, there is a hook called `usePersisted` which the three main calls are wrapped in (as well as the `useInitialised` hook). This creates a much better experience so that the loading states aren't continously rendered every time the timerange changes.
+3. Much of the state in the Timepoint Explorer is derived from the `config_version` and cross-referencing what the current settings are in the `check` with what data is available from the Loki and Mimir datasources for the check. This makes following some of the logic very difficult and convoluted (particularly the `pending` / `missing` states). If in the future we had an audit log so we could look up what check configuration belonged to what `config_version` we could provide a better experience for users whilst also reducing our tech debt and maintenance burden.
 
 
 

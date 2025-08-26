@@ -39,7 +39,7 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
                 <InitialisedRouter />
               </DevTools>
             </PermissionsContextProvider>
-            {/* <ReactQueryDevtools /> */}
+            <ReactQueryDevtools />
           </SMDatasourceProvider>
         </FeatureFlagProvider>
       </MetaContextProvider>

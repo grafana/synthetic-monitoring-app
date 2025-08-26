@@ -16,7 +16,6 @@ const MILLISECONDS_PER_PIXEL = 2.4;
 const MIN_DURATION_MS = 2000;
 const MAX_DURATION_MS = 4000;
 const DEFAULT_ANIMATION_DELAY = 300;
-const MAX_TRANSLATE = (100 / BAR_SIZE) * 100;
 
 export const ChunkyLoadingBar = ({
   className,
@@ -50,7 +49,7 @@ const getStyles = (
     },
     // this gives us a delay between iterations
     '85%, 100%': {
-      transform: `translateY(${MAX_TRANSLATE}%)`,
+      transform: `translateY(${height}px)`,
     },
   });
 
@@ -59,7 +58,7 @@ const getStyles = (
       transform: 'translateX(-100%)',
     },
     '85%, 100%': {
-      transform: `translateX(${MAX_TRANSLATE}%)`,
+      transform: `translateX(${width}px)`,
     },
   });
 

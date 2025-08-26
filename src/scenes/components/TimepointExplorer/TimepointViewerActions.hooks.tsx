@@ -7,6 +7,7 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { getIsInTheFuture } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { getProbeNameToUse } from 'scenes/components/TimepointExplorer/TimepointViewerActions.utils';
 
 interface Action {
@@ -20,7 +21,8 @@ interface Action {
 export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   const logsDS = useLogsDS();
   const metricsDS = useMetricsDS();
-  const { check, handleViewerStateChange, listLogsMap, viewerState, timepoints } = useTimepointExplorerContext();
+  const { check, currentAdjustedTime, handleViewerStateChange, listLogsMap, viewerState, timepoints } =
+    useTimepointExplorerContext();
   const [_, viewerProbeName] = viewerState;
   const logsQuery = { expr: `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"} | logfmt` };
   const metricsQuery = {
@@ -29,8 +31,9 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
     instant: true,
   } as const;
 
+  const futureLessTimepoints = timepoints.filter((t) => !getIsInTheFuture(t, currentAdjustedTime));
   const prevTimepoint = timepoints[timepoint.index - 1];
-  const nextTimepoint = timepoints[timepoint.index + 1];
+  const nextTimepoint = futureLessTimepoints[timepoint.index + 1];
   const probeVar = useSceneVarProbes(check);
 
   const exploreLogsURL = getExploreUrl(logsDS?.uid!, [logsQuery], {
