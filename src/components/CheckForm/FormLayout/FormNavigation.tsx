@@ -10,7 +10,7 @@ import { ZodType } from 'zod';
 import { CheckFormValues, CheckType } from 'types';
 
 import { DataTestIds } from '../../../test/dataTestIds';
-import { FORM_SECTION_STEPS } from './FormLayout.constants';
+import { FORM_SECTION_ORDER } from '../constants';
 import { checkForErrors, useFormLayoutInternal } from './formlayout.utils';
 
 type FormNavigationProps = {
@@ -54,7 +54,7 @@ export const FormNavigation = ({
                     checkState,
                     checkType,
                     component: 'stepper',
-                    step: FORM_SECTION_STEPS[index],
+                    step: FORM_SECTION_ORDER[index],
                   });
                   onSectionClick(index);
                 }}

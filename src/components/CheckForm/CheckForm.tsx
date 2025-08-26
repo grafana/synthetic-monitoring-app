@@ -19,7 +19,7 @@ import { AlertsPerCheckSection } from './AlertsPerCheckSection';
 import { useCheckForm, useCheckTypeFormLayout } from './CheckForm.hooks';
 import { checkHasChanges, getStep1Label } from './CheckForm.utils';
 import { CheckFormContext, CheckFormContextProvider } from './CheckFormContext';
-import { FormStepOrder } from './constants';
+import { FormSectionIndex } from './constants';
 import { FormLayout } from './FormLayout';
 
 interface CheckFormProps extends PropsWithChildren {
@@ -130,7 +130,7 @@ function CheckFormInternal() {
         {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
         <FormLayout.Section
-          index={FormStepOrder.Check}
+          index={FormSectionIndex.Check}
           label={getStep1Label(checkType)}
           fields={[`job`, ...checkFields]}
           status={checkTypeStatus}
@@ -144,12 +144,17 @@ function CheckFormInternal() {
           </Stack>
         </FormLayout.Section>
 
-        <FormLayout.Section index={FormStepOrder.Uptime} label="Uptime" fields={uptimeFields} status={checkTypeStatus}>
+        <FormLayout.Section
+          index={FormSectionIndex.Uptime}
+          label="Uptime"
+          fields={uptimeFields}
+          status={checkTypeStatus}
+        >
           {UptimeComponent}
         </FormLayout.Section>
 
         <FormLayout.Section
-          index={FormStepOrder.Labels}
+          index={FormSectionIndex.Labels}
           label="Labels"
           fields={[`labels`, ...labelsFields]}
           status={checkTypeStatus}
@@ -159,7 +164,7 @@ function CheckFormInternal() {
         </FormLayout.Section>
 
         <FormLayout.Section
-          index={FormStepOrder.Execution}
+          index={FormSectionIndex.Execution}
           label="Execution"
           fields={[`probes`, `frequency`, ...probesFields]}
           status={checkTypeStatus}
@@ -172,7 +177,7 @@ function CheckFormInternal() {
         </FormLayout.Section>
 
         <FormLayout.Section
-          index={FormStepOrder.Alerting}
+          index={FormSectionIndex.Alerting}
           label="Alerting"
           fields={alertsFields}
           status={checkTypeStatus}

@@ -13,7 +13,7 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
 
-import { FormStepOrder } from '../../components/CheckForm/constants';
+import { FormSectionIndex } from '../../components/CheckForm/constants';
 
 export const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',
@@ -82,7 +82,7 @@ export async function renderEditForm(id: Check['id']) {
   };
 }
 
-export async function goToSectionV2(user: UserEvent, section: FormStepOrder) {
+export async function goToSectionV2(user: UserEvent, section: FormSectionIndex) {
   const formSidebar = await screen.findByTestId(DataTestIds.FORM_SIDEBAR);
   const buttons = await within(formSidebar).findAllByRole('button');
 

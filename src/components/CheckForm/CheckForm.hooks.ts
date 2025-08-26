@@ -31,11 +31,10 @@ import { useLimits } from 'hooks/useLimits';
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
 import { fallbackCheckMap } from '../constants';
-import { SectionName } from './FormLayout/FormLayout.constants';
 import { useFormLayoutContextExtended } from './FormLayout/FormLayoutContext';
 import { layoutMap } from './FormLayouts/constants';
 import { broadcastFailedSubmission, findFieldToFocus, getIsExistingCheck } from './CheckForm.utils';
-import { SCHEMA_MAP } from './constants';
+import { FormSectionIndex, SCHEMA_MAP } from './constants';
 import { useFormCheckType, useFormCheckTypeGroup } from './useCheckType';
 
 type CheckFormMetaReturn = {
@@ -55,7 +54,7 @@ type CheckFormMetaReturn = {
   isDisabled: boolean;
   isLoading: boolean;
   defaultFormValues: CheckFormValues;
-  initialSection?: SectionName;
+  initialSection?: FormSectionIndex;
 };
 
 export function useCheckFormMeta(check?: Check, forceDisabled = false): CheckFormMetaReturn {
@@ -229,7 +228,7 @@ export function useGetFormValidationErrors(): () => Promise<null | FieldErrors<C
       return null;
     }
 
-    return errors as FieldErrors<CheckFormValues>;
+    return errors;
   }, [getValues, resolver]);
 }
 

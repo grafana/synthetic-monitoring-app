@@ -1,9 +1,10 @@
 import { createContext, useContext } from 'react';
 
 import { useCheckFormMeta } from '../CheckForm.hooks';
+import { FormSectionIndex } from '../constants';
 
 type CheckFormContextValue = ReturnType<typeof useCheckFormMeta> & {
-  initialSection: string;
+  initialSection?: FormSectionIndex;
   showAdhocTestModal: boolean;
   setShowAdhocTestModal: (show: boolean) => void;
   adhocTestData?: any;

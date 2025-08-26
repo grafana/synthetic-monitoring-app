@@ -249,7 +249,7 @@ export function useAdHocCheck() {
       const data = await dataSource.testCheck(check);
       if (!data) {
         throw new Error(
-          'AdHocCheckError: Sever returned an empty response. Most likely due to malformed check settings.'
+          'AdHocCheckError: Server returned an empty response. Most likely due to malformed check settings.'
         );
       }
 

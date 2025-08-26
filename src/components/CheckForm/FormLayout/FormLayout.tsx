@@ -7,9 +7,10 @@ import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 import { ZodType } from 'zod';
 
 import { CheckType } from 'types';
-import { FORM_MAX_WIDTH, FORM_SECTION_STEPS, SectionName } from 'components/CheckForm/FormLayout/FormLayout.constants';
+import { FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 import { DataTestIds } from '../../../test/dataTestIds';
+import { FORM_SECTION_ORDER, FormSectionIndex } from '../constants';
 import { useFormLayoutInternal } from './formlayout.utils';
 import { FormNavigation } from './FormNavigation';
 import { FormSection } from './FormSection';
@@ -26,7 +27,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   children: ReactNode;
   checkState: 'new' | 'existing';
   checkType: CheckType;
-  initialSection?: SectionName;
+  initialSection?: FormSectionIndex;
   onSubmit: (
     onValid: SubmitHandler<T>,
     onInvalid: (errs: FieldErrors<T>) => void
@@ -132,7 +133,7 @@ export const FormLayout = <T extends FieldValues>({
                       checkState,
                       checkType,
                       component: 'back-button',
-                      step: FORM_SECTION_STEPS[prevStep],
+                      step: FORM_SECTION_ORDER[prevStep],
                     });
                     goToSection(prevStep);
                   }}
@@ -156,7 +157,7 @@ export const FormLayout = <T extends FieldValues>({
                         checkState,
                         checkType,
                         component: 'forward-button',
-                        step: FORM_SECTION_STEPS[newStep],
+                        step: FORM_SECTION_ORDER[newStep],
                       });
                       goToSection(newStep);
                     }}

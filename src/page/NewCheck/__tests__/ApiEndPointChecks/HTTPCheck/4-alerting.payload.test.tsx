@@ -5,7 +5,7 @@ import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
 import { CheckType, FeatureName } from 'types';
 import { goToSectionV2, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
-import { FormStepOrder } from '../../../../../components/CheckForm/constants';
+import { FormSectionIndex } from '../../../../../components/CheckForm/constants';
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.HTTP;
@@ -14,7 +14,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSectionV2(user, FormStepOrder.Alerting);
+    await goToSectionV2(user, FormSectionIndex.Alerting);
     await submitForm(user);
     const { body } = await read();
 
@@ -28,11 +28,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await goToSectionV2(user, FormStepOrder.Execution);
+    await goToSectionV2(user, FormSectionIndex.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await goToSectionV2(user, FormStepOrder.Alerting);
+    await goToSectionV2(user, FormSectionIndex.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -65,11 +65,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await goToSectionV2(user, FormStepOrder.Execution);
+    await goToSectionV2(user, FormSectionIndex.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await goToSectionV2(user, FormStepOrder.Alerting);
+    await goToSectionV2(user, FormSectionIndex.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -104,11 +104,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await goToSectionV2(user, FormStepOrder.Execution);
+    await goToSectionV2(user, FormSectionIndex.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await goToSectionV2(user, FormStepOrder.Alerting);
+    await goToSectionV2(user, FormSectionIndex.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
     expect(screen.getByText(`Failed Checks`)).toBeInTheDocument();
@@ -134,11 +134,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await goToSectionV2(user, FormStepOrder.Execution);
+    await goToSectionV2(user, FormSectionIndex.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await goToSectionV2(user, FormStepOrder.Alerting);
+    await goToSectionV2(user, FormSectionIndex.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -188,14 +188,14 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    
-    await goToSectionV2(user, FormStepOrder.Execution);
+
+    await goToSectionV2(user, FormSectionIndex.Execution);
     await selectBasicFrequency(user, '10m');
 
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await goToSectionV2(user, FormStepOrder.Alerting);
+    await goToSectionV2(user, FormSectionIndex.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -207,7 +207,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     const periodContainer = document.getElementById('alert-period-HTTPRequestDurationTooHighAvg');
     const periodSelector = within(periodContainer as HTMLElement).getByTestId('alertPendingPeriod');
     await user.click(periodSelector);
-    
+
     // Wait for dropdown to open and click "5 min" within the opened dropdown
     const dropdown = await screen.findByRole('listbox');
     await user.click(within(dropdown).getByText('5 min'));
@@ -216,8 +216,6 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     const errorMsg = await screen.findByRole('alert');
     expect(errorMsg).toBeInTheDocument();
-    expect(errorMsg).toHaveTextContent(
-      'Period (5m) must be equal or higher to the frequency (10 minutes)'
-    );
+    expect(errorMsg).toHaveTextContent('Period (5m) must be equal or higher to the frequency (10 minutes)');
   });
 });

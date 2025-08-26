@@ -5,6 +5,10 @@ import { getCheckType } from 'utils';
 import { CHECK_TYPE_OPTIONS, useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
+function isValidCheckType(checkType: unknown): checkType is CheckType {
+  return Object.values(CheckType).includes(checkType as CheckType);
+}
+
 export function useFormCheckType(existingCheck?: Check) {
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
   const options = useCheckTypeOptions();
@@ -15,9 +19,14 @@ export function useFormCheckType(existingCheck?: Check) {
     return getCheckType(existingCheck.settings);
   }
 
-  const checkType = urlSearchParams.get('checkType') as CheckType;
+  const checkType = urlSearchParams.get('checkType');
 
-  return checkType || fallback[0]?.value || options[0].value;
+  // Prevent the app from crashing if checkType is not valid (since it comes from search params).
+  if (!isValidCheckType(checkType)) {
+    return fallback[0]?.value || options[0].value;
+  }
+
+  return checkType;
 }
 
 export function useFormCheckTypeGroup(check?: Check) {
@@ -28,10 +37,9 @@ export function useFormCheckTypeGroup(check?: Check) {
     return CHECK_TYPE_OPTIONS.find(({ value }) => value === checkType)?.group;
   }
 
-  // A default group is required for the form to render correctly, so we default to bbe/api-endpoint if no group is provided
-  if (!checkTypeGroup) {
-    return CheckTypeGroup.ApiTest;
+  if (checkTypeGroup && Object.values(CheckTypeGroup).includes(checkTypeGroup)) {
+    return checkTypeGroup;
   }
 
-  return checkTypeGroup;
+  return CheckTypeGroup.ApiTest;
 }

@@ -425,7 +425,6 @@ const TestForm = <T extends FieldValues>({
           onValid={(v) => v}
           schema={schema}
           hasUnsavedChanges={hasUnsavedChanges}
-          onSectionClick={(m) => m}
         >
           {children}
         </FormLayout>

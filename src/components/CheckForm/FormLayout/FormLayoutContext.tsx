@@ -5,6 +5,7 @@ import { uniq } from 'lodash';
 import { Section } from '../FormLayouts/Layout.types';
 
 import { flattenKeys } from '../CheckForm.utils';
+import { FormSectionIndex } from '../constants';
 import { normalizeFlattenedErrors } from './formlayout.utils';
 
 interface FormLayoutContextValue<T extends FieldValues = FieldValues> {
@@ -26,9 +27,19 @@ interface FormLayoutContextValue<T extends FieldValues = FieldValues> {
 
 export const FormLayoutContext = createContext<FormLayoutContextValue | null>(null);
 
-export function FormLayoutContextProvider({ children }: PropsWithChildren) {
+export function FormLayoutContextProvider({
+  children,
+  initialSection,
+}: PropsWithChildren<{ initialSection?: FormSectionIndex }>) {
   const [visitedSections, setVisitedSections] = useState<number[]>([]);
-  const [activeSection, setActiveSection] = useState(0);
+  const getInitialSectionIndex = (sectionIndex?: FormSectionIndex): number => {
+    if (sectionIndex === undefined) {
+      return FormSectionIndex.Check;
+    }
+
+    return sectionIndex;
+  };
+  const [activeSection, setActiveSection] = useState(getInitialSectionIndex(initialSection));
   const [submitDisabled, setSubmitDisabled] = useState(true); // default to true to prevent flickering
 
   const {

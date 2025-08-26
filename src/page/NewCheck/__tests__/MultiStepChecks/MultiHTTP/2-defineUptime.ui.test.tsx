@@ -4,7 +4,7 @@ import { DataTestIds } from 'test/dataTestIds';
 import { CheckType } from 'types';
 import { goToSectionV2, renderNewForm } from 'page/__testHelpers__/checkForm';
 
-import { FormStepOrder } from '../../../../../components/CheckForm/constants';
+import { FormSectionIndex } from '../../../../../components/CheckForm/constants';
 
 const checkType = CheckType.MULTI_HTTP;
 
@@ -41,7 +41,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) UI`, () => {
     await user.click(screen.getByText(`Add request`));
     await user.click(screen.getByText(`Add request`));
 
-    await goToSectionV2(user, FormStepOrder.Uptime);
+    await goToSectionV2(user, FormSectionIndex.Uptime);
 
     const selector = new RegExp(`^${DataTestIds.REQUEST_ASSERTION}-`);
     expect(screen.getAllByTestId(selector)).toHaveLength(3);

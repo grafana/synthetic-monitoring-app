@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
 
-import { FormStepOrder } from '../../../../../components/CheckForm/constants';
+import { FormSectionIndex } from '../../../../../components/CheckForm/constants';
 import { goToSectionV2, renderNewForm, submitForm } from '../../../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../../../__testHelpers__/multiStep';
 
@@ -17,7 +17,7 @@ describe(`MultiHTTPCheck - Section 3 (Labels) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSectionV2(user, FormStepOrder.Labels);
+    await goToSectionV2(user, FormSectionIndex.Labels);
 
     const addLabelButton = screen.getByText('Add Label', { exact: false });
     await user.click(addLabelButton);

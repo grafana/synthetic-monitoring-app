@@ -6,21 +6,21 @@ import { AdHocCheckResponse } from '../../../datasource/responses.types';
 import { Check, CheckFormValues } from 'types';
 
 import { useCheckFormMeta } from '../CheckForm.hooks';
-import { FORM_SECTION_STEPS, SectionName } from '../FormLayout/FormLayout.constants';
+import { FormSectionIndex } from '../constants';
 import { FormLayoutContextProvider } from '../FormLayout/FormLayoutContext';
 import { CheckFormContext } from './CheckFormContext';
 
 interface CheckFormContextProviderProps extends PropsWithChildren {
   check?: Check;
   disabled?: boolean;
-  initialSection?: SectionName;
+  initialSection?: FormSectionIndex;
 }
 
 export function CheckFormContextProvider({
   check,
   children,
   disabled = false,
-  initialSection = FORM_SECTION_STEPS[0],
+  initialSection = FormSectionIndex.Check,
 }: CheckFormContextProviderProps) {
   const checkFormMeta = useCheckFormMeta(check);
 
@@ -60,7 +60,7 @@ export function CheckFormContextProvider({
   return (
     <CheckFormContext.Provider value={value}>
       <FormProvider {...methods}>
-        <FormLayoutContextProvider>{children}</FormLayoutContextProvider>
+        <FormLayoutContextProvider initialSection={initialSection}>{children}</FormLayoutContextProvider>
       </FormProvider>
     </CheckFormContext.Provider>
   );

@@ -2,7 +2,7 @@ import { selectOption } from 'test/utils';
 
 import { AlertSensitivity, CheckType } from 'types';
 
-import { FormStepOrder } from '../../../../../components/CheckForm/constants';
+import { FormSectionIndex } from '../../../../../components/CheckForm/constants';
 import { goToSectionV2, renderNewForm, submitForm } from '../../../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../../../__testHelpers__/multiStep';
 
@@ -13,7 +13,7 @@ describe(`Section 4 (alerting)`, () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
-    await goToSectionV2(user, FormStepOrder.Alerting);
+    await goToSectionV2(user, FormSectionIndex.Alerting);
     await selectOption(user, { label: `Select alert sensitivity`, option: `Medium` });
 
     await submitForm(user);

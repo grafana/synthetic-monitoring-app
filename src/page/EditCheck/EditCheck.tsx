@@ -17,6 +17,7 @@ import { CenteredSpinner } from 'components/CenteredSpinner';
 import { CheckForm } from 'components/CheckForm/CheckForm';
 import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 
+import { FormSectionIndex } from '../../components/CheckForm/constants';
 import { PageActions } from '../../components/CheckForm/PageActions';
 
 export const EditCheck = () => {
@@ -25,8 +26,8 @@ export const EditCheck = () => {
   const check = checks?.find((c) => c.id === Number(id));
   const urlSearchParams = useURLSearchParams();
 
-  // Check for runbook missing notification to determine an initial section
-  const initialSection = !!urlSearchParams.get('runbookMissing') ? 'alerting' : undefined;
+  // Check for runbook missing notification to determine the initial section
+  const initialSection = !!urlSearchParams.get('runbookMissing') ? FormSectionIndex.Alerting : undefined;
 
   // Only show spinner for the initial fetch.
   if (isLoading && !isFetched) {
