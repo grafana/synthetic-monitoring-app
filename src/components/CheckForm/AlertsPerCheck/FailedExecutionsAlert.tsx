@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { durationToMilliseconds, parseDuration } from '@grafana/data';
+import { OptionProps } from 'react-select';
+import { durationToMilliseconds, GrafanaTheme2, parseDuration } from '@grafana/data';
 import {
   Checkbox,
   Icon,
@@ -13,6 +14,7 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import pluralize from 'pluralize';
@@ -60,19 +62,41 @@ export const FailedExecutionsAlert = ({
 
   const convertPeriod = useCallback((period: string) => durationToMilliseconds(parseDuration(period)), []);
 
+  const checkFreqMinutes = checkFrequency / (60 * 1000);
+  const shouldShowRecommendations = checkFreqMinutes >= 2 && checkFreqMinutes <= 20;
+
+  // Check if period follows the recommended 2.5x frequency rule for frequencies 2m-20m
+  const isRecommendedPeriod = useCallback(
+    (periodMs: number) => {
+      const periodMinutes = periodMs / (60 * 1000); // Convert to minutes
+
+      // Recommended: periods > 2.5x frequency for better precision
+      if (shouldShowRecommendations) {
+        return periodMinutes > 2.5 * checkFreqMinutes;
+      }
+
+      return true; // For other frequencies, we don't show recommendations
+    },
+    [checkFreqMinutes, shouldShowRecommendations]
+  );
+
   //min time range >= check frequency
   const validPeriods = useMemo(
     () =>
       ALERT_PERIODS.map((period) => {
-        const isValid = convertPeriod(period.value) >= checkFrequency;
+        const periodMs = convertPeriod(period.value);
+        const isValid = periodMs >= checkFrequency;
+        const showWarning = !isRecommendedPeriod(periodMs);
 
         return {
-          ...period,
+          label: period.label,
+          value: period.value,
           isDisabled: !isValid,
           description: !isValid ? 'Invalid' : undefined,
+          showWarning: shouldShowRecommendations && showWarning,
         };
       }),
-    [checkFrequency, convertPeriod]
+    [checkFrequency, convertPeriod, isRecommendedPeriod, shouldShowRecommendations]
   );
 
   const testExecutionsPerPeriod = useMemo(() => {
@@ -137,6 +161,9 @@ export const FailedExecutionsAlert = ({
                     // clear threshold error if new period is valid
                     revalidateForm<CheckFormValues>(`alerts.${alert.type}`);
                   }}
+                  components={{
+                    Option: PeriodOption,
+                  }}
                 />
               );
             }}
@@ -161,3 +188,63 @@ export const FailedExecutionsAlert = ({
     </Stack>
   );
 };
+
+interface PeriodOptionData {
+  label: string;
+  value: string;
+  isDisabled?: boolean;
+  description?: string;
+  showWarning?: boolean;
+}
+
+type PeriodOptionProps = OptionProps<PeriodOptionData>;
+
+const PeriodOption = (props: PeriodOptionProps) => {
+  const { data, children, innerRef, innerProps } = props;
+  const styles = useStyles2(getOptionStyles);
+
+  const className = `${styles.option} ${(data.showWarning && styles.notRecommended) || ''}`;
+
+  const tooltipText = 'Value not recommended. Period should be > 2.5 times the check frequency for optimal alerting';
+
+  const getTooltipContent = () => {
+    if (data.showWarning) {
+      return tooltipText;
+    }
+    return undefined;
+  };
+
+  const tooltipContent = getTooltipContent();
+
+  if (tooltipContent) {
+    return (
+      <Tooltip content={tooltipContent} placement="right">
+        <div ref={innerRef} {...innerProps} className={className}>
+          {children}
+        </div>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <div ref={innerRef} {...innerProps} className={className}>
+      {children}
+    </div>
+  );
+};
+
+const getOptionStyles = (theme: GrafanaTheme2) => ({
+  option: css({
+    padding: theme.spacing(1),
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: theme.colors.background.secondary,
+    },
+  }),
+  recommended: css({
+    borderLeft: `3px solid ${theme.colors.success.main}`,
+  }),
+  notRecommended: css({
+    borderLeft: `3px solid ${theme.colors.warning.main}`,
+  }),
+});
