@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Badge, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { formatDuration } from 'utils';
 import { PlainButton } from 'components/PlainButton';
@@ -45,6 +46,17 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
     latestConfigDate,
   });
 
+  const handleProbeClick = useCallback(
+    (probeName: string, index: number) => {
+      trackTimepointDetailsClicked({
+        component: 'tooltip',
+        status: statefulTimepoint.status,
+      });
+      handleViewerStateChange([statefulTimepoint, probeName, index]);
+    },
+    [statefulTimepoint, handleViewerStateChange]
+  );
+
   return (
     <Stack direction="column" gap={2}>
       <div className={styles.header}>
@@ -71,9 +83,7 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
                     [styles.hovered]: isHovered,
                     [styles.selected]: isSelected,
                   })}
-                  onClick={() => {
-                    handleViewerStateChange([statefulTimepoint, probeName, index]);
-                  }}
+                  onClick={() => handleProbeClick(probeName, index)}
                   onMouseEnter={() => handleHoverStateChange([statefulTimepoint, probeName, index])}
                   onMouseLeave={() => handleHoverStateChange([])}
                 >

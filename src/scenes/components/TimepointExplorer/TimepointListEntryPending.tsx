@@ -19,7 +19,7 @@ export const TimepointListEntryPending = ({ timepoint }: TimepointListEntryPendi
   const heightInPx = getEntryHeightPx(statefulTimepoint.maxProbeDuration, yAxisMax, TIMEPOINT_THEME_HEIGHT_PX);
 
   return (
-    <TimepointListEntryBar timepoint={timepoint} status={`pending`}>
+    <TimepointListEntryBar analyticsEventName={`pending-entry`} timepoint={timepoint} status={`pending`}>
       <ChunkyLoadingBar color={option} direction="vertical" height={heightInPx} width={timepointWidth} />
     </TimepointListEntryBar>
   );

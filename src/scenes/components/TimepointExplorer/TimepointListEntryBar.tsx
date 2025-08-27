@@ -1,7 +1,8 @@
-import React, { ReactNode, useRef } from 'react';
+import React, { ReactNode, useCallback, useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { TimepointDetailsClick, trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { PlainButton } from 'components/PlainButton';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
@@ -14,6 +15,7 @@ import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/T
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
 interface TimepointListEntryPendingProps {
+  analyticsEventName: TimepointDetailsClick['component'];
   children: ReactNode;
   timepoint: StatelessTimepoint;
   status: TimepointStatus;
@@ -21,7 +23,12 @@ interface TimepointListEntryPendingProps {
 
 const GLOBAL_CLASS = `list_entry_bar`;
 
-export const TimepointListEntryBar = ({ children, timepoint, status }: TimepointListEntryPendingProps) => {
+export const TimepointListEntryBar = ({
+  analyticsEventName,
+  children,
+  status,
+  timepoint,
+}: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
 
   const { check, handleViewerStateChange, yAxisMax, viewerState, timepointWidth, vizDisplay } =
@@ -36,6 +43,14 @@ export const TimepointListEntryBar = ({ children, timepoint, status }: Timepoint
   const isSelected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
 
+  const handleViewerStateClick = useCallback(() => {
+    trackTimepointDetailsClicked({
+      component: analyticsEventName,
+      status,
+    });
+    handleViewerStateChange([timepoint, probeNameToView, 0]);
+  }, [analyticsEventName, status, timepoint, probeNameToView, handleViewerStateChange]);
+
   if (!vizDisplay.includes(status)) {
     return <div />;
   }
@@ -48,12 +63,7 @@ export const TimepointListEntryBar = ({ children, timepoint, status }: Timepoint
         </div>
       )}
       <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
-        <PlainButton
-          className={styles.button}
-          ref={ref}
-          onClick={() => handleViewerStateChange([timepoint, probeNameToView, 0])}
-          showFocusStyles={false}
-        >
+        <PlainButton className={styles.button} ref={ref} onClick={handleViewerStateClick} showFocusStyles={false}>
           <TimepointVizItem
             className={cx(styles.bar, GLOBAL_CLASS, {
               [styles.selected]: isSelected,

@@ -1,16 +1,29 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ColorPicker, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackTimepointVizLegendColorClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { PlainButton } from 'components/PlainButton';
 import { VIZ_DISPLAY_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { TimepointStatus } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
 
 export const TimepointListVizLegend = () => {
   const styles = useStyles2(getStyles);
   const { handleVizDisplayChange, vizDisplay, vizOptions, handleVizOptionChange } = useTimepointExplorerContext();
+
+  const handleVizOptionClick = useCallback(
+    (status: TimepointStatus, color: string) => {
+      trackTimepointVizLegendColorClicked({
+        vizOption: status,
+        color,
+      });
+      handleVizOptionChange(status, color);
+    },
+    [handleVizOptionChange]
+  );
 
   return (
     <Stack gap={1.5}>
@@ -19,7 +32,7 @@ export const TimepointListVizLegend = () => {
 
         return (
           <Stack key={status} alignItems="center">
-            <ColorPicker color={vizOptions[status]} onChange={(color) => handleVizOptionChange(status, color)}>
+            <ColorPicker color={vizOptions[status]} onChange={(color) => handleVizOptionClick(status, color)}>
               {({ ref, showColorPicker, hideColorPicker }) => (
                 <PlainButton
                   onClick={() => {

@@ -3,6 +3,7 @@ import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { Box, IconButton, Pagination, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { trackMiniMapPageClicked, trackMiniMapSectionClicked } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
 
 import {
@@ -46,11 +47,18 @@ export const TimepointMinimap = () => {
           disabled={isLastSectionInLastPage}
           direction="left"
           onClick={() => {
+            const index = isLastSection ? 0 : miniMapCurrentSectionIndex + 1;
+
+            trackMiniMapSectionClicked({
+              index,
+              component: 'left-arrow',
+            });
+
             if (isLastSection) {
               handleMiniMapPageChange(miniMapCurrentPage + 1);
-              handleMiniMapSectionChange(0);
+              handleMiniMapSectionChange(index);
             } else {
-              handleMiniMapSectionChange(miniMapCurrentSectionIndex + 1);
+              handleMiniMapSectionChange(index);
             }
           }}
         />
@@ -59,12 +67,20 @@ export const TimepointMinimap = () => {
           direction="right"
           disabled={isFirstSectionInFirstPage}
           onClick={() => {
-            if (miniMapCurrentSectionIndex === 0) {
+            const isFirstSection = miniMapCurrentSectionIndex === 0;
+            const index = isFirstSection ? MAX_MINIMAP_SECTIONS - 1 : miniMapCurrentSectionIndex - 1;
+
+            trackMiniMapSectionClicked({
+              index,
+              component: 'right-arrow',
+            });
+
+            if (isFirstSection) {
               const newPageIndex = miniMapCurrentPage - 1;
               handleMiniMapPageChange(newPageIndex);
-              handleMiniMapSectionChange(MAX_MINIMAP_SECTIONS - 1);
+              handleMiniMapSectionChange(index);
             } else {
-              handleMiniMapSectionChange(miniMapCurrentSectionIndex - 1);
+              handleMiniMapSectionChange(index);
             }
           }}
         />
@@ -152,7 +168,11 @@ const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginati
 
   const handleNavigate = useCallback(
     (page: number) => {
-      handleMiniMapPageChange(numberOfPages - page);
+      const index = numberOfPages - page;
+      trackMiniMapPageClicked({
+        index,
+      });
+      handleMiniMapPageChange(index);
     },
     [handleMiniMapPageChange, numberOfPages]
   );

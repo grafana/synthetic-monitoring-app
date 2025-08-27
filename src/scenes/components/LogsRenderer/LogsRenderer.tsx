@@ -18,7 +18,7 @@ export const LogsRenderer = <T extends UnknownParsedLokiRecord>({
     return <LogsEvent<T> logs={logs} mainKey={mainKey} />;
   }
 
-  if (logsView === 'raw') {
+  if (logsView === 'raw-logs') {
     return <LogsRaw<T> logs={logs} />;
   }
 

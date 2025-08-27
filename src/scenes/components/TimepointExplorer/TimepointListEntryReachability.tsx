@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Icon, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { PlainButton } from 'components/PlainButton';
@@ -52,6 +53,17 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
       return vizDisplay.includes(state);
     });
 
+  const handleProbeClick = useCallback(
+    (probeName: string, index: number) => {
+      trackTimepointDetailsClicked({
+        component: 'reachability-entry',
+        status: statefulTimepoint.status,
+      });
+      handleViewerStateChange([statefulTimepoint, probeName, index]);
+    },
+    [statefulTimepoint, handleViewerStateChange]
+  );
+
   if (!executionsToRender.length) {
     return <div key={timepoint.adjustedTime} />;
   }
@@ -94,7 +106,7 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
                   [styles.hovered]: isHovered,
                   [styles.viewed]: isBeingViewed,
                 })}
-                onClick={() => handleViewerStateChange([timepoint, probeName, index])}
+                onClick={() => handleProbeClick(probeName, index)}
                 onMouseEnter={() => handleHoverStateChange([timepoint, probeName, index])}
                 onMouseLeave={() => handleHoverStateChange([])}
                 status={status}

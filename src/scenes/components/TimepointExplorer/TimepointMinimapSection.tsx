@@ -1,7 +1,8 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { trackMiniMapSectionClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { ExecutionEndedLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
@@ -53,12 +54,20 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
   const entryWidth = sectionWidth / timepointsDisplayCount;
   const isBeginningSection = index === miniMapCurrentPageSections.length - 1;
 
+  const handleMiniMapSectionClick = useCallback(() => {
+    trackMiniMapSectionClicked({
+      index,
+      component: 'section',
+    });
+    handleMiniMapSectionChange(index);
+  }, [index, handleMiniMapSectionChange]);
+
   return (
     <Tooltip content={label} ref={ref}>
       <PlainButton
         aria-label={label}
         className={cx(styles.section, { [styles.active]: isActive })}
-        onClick={() => handleMiniMapSectionChange(index)}
+        onClick={handleMiniMapSectionClick}
         ref={ref}
       >
         <TimepointExplorerAnnotations
