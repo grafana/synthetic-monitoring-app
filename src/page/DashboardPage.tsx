@@ -18,7 +18,7 @@ import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
 import { PingDashboard } from 'scenes/PING/PingDashboard';
 import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
-import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
+import { TracerouteDashboard } from 'scenes/Traceroute/TracerouteDashboard';
 
 import { CheckNotFound } from './NotFound/CheckNotFound';
 
@@ -75,17 +75,6 @@ function DashboardPageContent() {
           ],
         });
       }
-      case CheckType.Traceroute: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getTracerouteScene(config, check),
-            }),
-          ],
-        });
-      }
 
       case CheckType.GRPC: {
         return new SceneApp({
@@ -99,6 +88,7 @@ function DashboardPageContent() {
         });
       }
 
+      case CheckType.Traceroute:
       case CheckType.PING:
       case CheckType.Browser:
       case CheckType.MULTI_HTTP:
@@ -119,6 +109,10 @@ function DashboardPageContent() {
 
   if (check && getCheckType(check.settings) === CheckType.HTTP) {
     return <HttpDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.Traceroute) {
+    return <TracerouteDashboard check={check} />;
   }
 
   if (
