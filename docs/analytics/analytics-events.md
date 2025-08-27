@@ -50,7 +50,7 @@ Tracks navigation events within the check form wizard.
 | name      | type                                                                                                     | description                                     |
 | --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check.                              |
-| step      | `"job" \| "uptime" \| "labels" \| "alerting" \| "execution"`                                             | The current step in the wizard.                 |
+| step      | `string`                                                                                                 | The current step in the wizard.                 |
 | component | `"forward-button" \| "back-button" \| "stepper"`                                                         | The UI component that triggered the navigation. |
 
 #### synthetic-monitoring_check_form_adhoc_test_created
@@ -84,6 +84,31 @@ Tracks when a check is successfully updated.
 | --------- | -------------------------------------------------------------------------------------------------------- | ------------------ |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check. |
 
+### feature_feedback
+
+#### synthetic-monitoring_feature_feedback_feature_feedback_submitted
+
+Tracks when a feature feedback thumbs up or a thumbs down is clicked.
+
+##### Properties
+
+| name     | type              | description                  |
+| -------- | ----------------- | ---------------------------- |
+| feature  | `string`          | The type of feature.         |
+| reaction | `"good" \| "bad"` | The reaction to the feature. |
+
+#### synthetic-monitoring_feature_feedback_feature_feedback_comment_submitted
+
+Tracks when a feature feedback comment is submitted.
+
+##### Properties
+
+| name     | type              | description                  |
+| -------- | ----------------- | ---------------------------- |
+| feature  | `string`          | The type of feature.         |
+| reaction | `"good" \| "bad"` | The reaction to the feature. |
+| comment  | `string`          | The comment text.            |
+
 ### per_check_alerts
 
 #### synthetic-monitoring_per_check_alerts_select_alert
@@ -92,9 +117,9 @@ Tracks when an alert is selected from the per-check alerts list
 
 ##### Properties
 
-| name | type                                                                      | description           |
-| ---- | ------------------------------------------------------------------------- | --------------------- |
-| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring"` | The name of the alert |
+| name | type                                                                                                                                                                              | description           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
 
 #### synthetic-monitoring_per_check_alerts_unselect_alert
 
@@ -102,9 +127,9 @@ Tracks when an alert is unselected from the per-check alerts list
 
 ##### Properties
 
-| name | type                                                                      | description           |
-| ---- | ------------------------------------------------------------------------- | --------------------- |
-| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring"` | The name of the alert |
+| name | type                                                                                                                                                                              | description           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
 
 #### synthetic-monitoring_per_check_alerts_change_period
 
@@ -112,10 +137,10 @@ Tracks when the period of an alert is changed
 
 ##### Properties
 
-| name   | type                                                                      | description             |
-| ------ | ------------------------------------------------------------------------- | ----------------------- |
-| name   | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring"` | The name of the alert   |
-| period | `string`                                                                  | The period of the alert |
+| name   | type                                                                                                                                                                              | description             |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| name   | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert   |
+| period | `string`                                                                                                                                                                          | The period of the alert |
 
 #### synthetic-monitoring_per_check_alerts_change_threshold
 
@@ -123,10 +148,10 @@ Tracks when the threshold of an alert is changed
 
 ##### Properties
 
-| name      | type                                                                      | description                |
-| --------- | ------------------------------------------------------------------------- | -------------------------- |
-| name      | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring"` | The name of the alert      |
-| threshold | `number`                                                                  | The threshold of the alert |
+| name      | type                                                                                                                                                                              | description                |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| name      | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert      |
+| threshold | `string`                                                                                                                                                                          | The threshold of the alert |
 
 #### synthetic-monitoring_per_check_alerts_creation_success
 
@@ -134,9 +159,9 @@ Tracks when an alert is created successfully
 
 ##### Properties
 
-| name | type                                                                      | description           |
-| ---- | ------------------------------------------------------------------------- | --------------------- |
-| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring"` | The name of the alert |
+| name | type                                                                                                                                                                              | description           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
 
 #### synthetic-monitoring_per_check_alerts_deletion_success
 
@@ -144,6 +169,6 @@ Tracks when an alert is deleted successfully
 
 ##### Properties
 
-| name | type                                                                      | description           |
-| ---- | ------------------------------------------------------------------------- | --------------------- |
-| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring"` | The name of the alert |
+| name | type                                                                                                                                                                              | description           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
