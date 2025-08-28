@@ -24,8 +24,8 @@ export const BrowserCheckLayout: Partial<Record<LayoutSection, Section<CheckForm
     Component: (
       <>
         <BrowserCheckInstance />
-        <BrowserCheckScript />
         <K6ChannelSelect />
+        <BrowserCheckScript />
       </>
     ),
   },
