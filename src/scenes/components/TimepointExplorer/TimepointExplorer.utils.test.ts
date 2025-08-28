@@ -286,14 +286,9 @@ describe(`getNonRoundedYAxisMax`, () => {
     expect(yAxisMax).toEqual(1000);
   });
 
-  it(`should return the timeout when the highest value is more than 75% of the timeout`, () => {
+  it(`should return the timeout when the highest value is less but within 75% of the timeout`, () => {
     const yAxisMax = getNonRoundedYAxisMax(751, 1000);
     expect(yAxisMax).toEqual(1000);
-  });
-
-  it(`should return the highest value * 1.25 when the highest value is less than 75% of the timeout`, () => {
-    const yAxisMax = getNonRoundedYAxisMax(750, 1000);
-    expect(yAxisMax).toEqual(937.5);
   });
 });
 
@@ -326,5 +321,10 @@ describe(`getRoundedYAxisMax`, () => {
   it(`if the value is greater than 1000 it should return a value that neatly divides into 4`, () => {
     const yAxisMax = getRoundedYAxisMax(61234);
     expect(yAxisMax).toEqual(80000);
+  });
+
+  it(`it should round to 4000 when the value is less than 4000 but greater than 3000`, () => {
+    const yAxisMax = getRoundedYAxisMax(3331);
+    expect(yAxisMax).toEqual(4000);
   });
 });

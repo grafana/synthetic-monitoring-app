@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { LOG_LABELS_COMMON } from 'features/parseCheckLogs/checkLogs.constants.labels';
 import { startingLogFactory, unknownExecutionLogFactory } from 'test/factories/executionLogs';
 
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels';
@@ -28,5 +29,59 @@ describe('UniqueLogLabels', () => {
 
     render(<UniqueLogLabels log={unknownLog} />);
     expect(screen.getByText(`${KEY}=${VALUE}`)).toBeInTheDocument();
+  });
+
+  it(`should filter label keys that are suffixed with _extracted`, () => {
+    const KEY = `some_key_extracted`;
+    const VALUE = `some_value`;
+
+    const log = unknownExecutionLogFactory.build({
+      labels: {
+        [KEY]: VALUE,
+      },
+    });
+
+    render(<UniqueLogLabels log={log} />);
+    expect(screen.queryByText(`${KEY}=${VALUE}`)).not.toBeInTheDocument();
+  });
+
+  it(`should filter label keys that are prefixed with label_`, () => {
+    const KEY = `some_key_extracted`;
+    const VALUE = `some_value`;
+
+    const log = unknownExecutionLogFactory.build({
+      labels: {
+        [KEY]: VALUE,
+      },
+    });
+
+    render(<UniqueLogLabels log={log} />);
+    expect(screen.queryByText(`${KEY}=${VALUE}`)).not.toBeInTheDocument();
+  });
+
+  it(`should filter label keys that are in the default common labels`, () => {
+    const KEY = LOG_LABELS_COMMON[0];
+
+    const log = unknownExecutionLogFactory.build();
+    const VALUE = log.labels[KEY];
+
+    render(<UniqueLogLabels log={log} />);
+    expect(log.labels[KEY]).toBeDefined();
+    expect(screen.queryByText(`${KEY}=${VALUE}`)).not.toBeInTheDocument();
+  });
+
+  it(`should filter the msg label key`, () => {
+    const KEY = `msg`;
+    const VALUE = `some_value`;
+
+    const log = unknownExecutionLogFactory.build({
+      labels: {
+        [KEY]: VALUE,
+      },
+    });
+
+    render(<UniqueLogLabels log={log} />);
+    expect(log.labels[KEY]).toBeDefined();
+    expect(screen.queryByText(`${KEY}=${VALUE}`)).not.toBeInTheDocument();
   });
 });

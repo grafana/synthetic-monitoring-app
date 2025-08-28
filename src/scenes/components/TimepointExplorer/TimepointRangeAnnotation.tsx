@@ -47,11 +47,7 @@ export const TimepointRangeAnnotation = ({
       }}
     >
       {showLabels && <div className={styles.label}>{annotation.checkEvent.label}</div>}
-      <AnnotationInformation
-        annotation={annotation}
-        showTooltips={annotationTooSlimForLabel ? true : showTooltipsProp}
-        triggerHeight={triggerHeight}
-      />
+      <AnnotationInformation annotation={annotation} showTooltips={showTooltipsProp} triggerHeight={triggerHeight} />
     </div>
   );
 };

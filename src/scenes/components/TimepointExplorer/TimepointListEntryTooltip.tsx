@@ -6,10 +6,11 @@ import { trackTimepointDetailsClicked } from 'features/tracking/timepointExplore
 
 import { formatDuration } from 'utils';
 import { PlainButton } from 'components/PlainButton';
-import { useSceneVar } from 'scenes/Common/useSceneVar';
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import {
+  useSelectedProbeNames,
+  useStatefulTimepoint,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint, TimepointStatus } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   getAverageDuration,
@@ -23,10 +24,8 @@ interface TimepointListEntryTooltipProps {
 
 export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const { check, currentAdjustedTime, handleHoverStateChange, handleViewerStateChange, hoveredState, viewerState } =
+  const { currentAdjustedTime, handleHoverStateChange, handleViewerStateChange, hoveredState, viewerState } =
     useTimepointExplorerContext();
-  const probeVarRaw = useSceneVar('probe');
-  const probeVar = useSceneVarProbes(check);
 
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const displayTime = dateTimeFormat(statefulTimepoint.adjustedTime, {
@@ -35,15 +34,12 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
 
   const renderedAvgDuration = getAverageDuration(statefulTimepoint.probeResults);
   const renderedFrequency = formatDuration(statefulTimepoint.config.frequency, true);
-  const latestConfigDate = Math.round(check.modified! * 1000);
-  const isCurrentConfig = timepoint.config.from === latestConfigDate;
+  const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
 
   const entriesToRender = getEntriesToRender({
     statefulTimepoint,
-    selectedProbeNames:
-      !isCurrentConfig && probeVarRaw.includes('.*') ? Object.keys(statefulTimepoint.probeResults) : probeVar,
+    selectedProbeNames,
     currentAdjustedTime,
-    latestConfigDate,
   });
 
   const handleProbeClick = useCallback(

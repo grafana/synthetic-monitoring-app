@@ -134,9 +134,9 @@ const NANOSECONDS_PER_MILLISECOND = 1000000;
 
 export function extractFrequenciesAndConfigs(data: DataFrame) {
   let build: CheckConfigRaw[] = [];
-  const Value = data.fields[1];
+  const Value = data.fields?.[1];
 
-  if (Value.labels) {
+  if (Value?.labels) {
     const { config_version, frequency } = Value.labels;
     const toUnixTimestamp = Math.round(Number(config_version) / NANOSECONDS_PER_MILLISECOND);
     const date: UnixTimestamp = toUnixTimestamp;
@@ -457,12 +457,12 @@ export function getRoundedYAxisMax(nonRoundedYAxisMax: number) {
 
 export function getNonRoundedYAxisMax(highestValue: number, timeout: number) {
   if (!highestValue) {
-    return 1000;
+    return 1000; // default it to 1 second
   }
 
-  if (timeout * 0.75 < highestValue) {
+  if (highestValue < timeout && highestValue > timeout * 0.75) {
     return timeout;
   }
 
-  return highestValue * 1.25;
+  return highestValue;
 }

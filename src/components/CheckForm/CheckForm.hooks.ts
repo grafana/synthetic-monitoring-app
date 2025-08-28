@@ -1,6 +1,7 @@
 import { BaseSyntheticEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom-v5-compat';
+import { dateTimeFormat } from '@grafana/data';
 import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { ZodType } from 'zod';
@@ -31,7 +32,7 @@ import { useLimits } from 'hooks/useLimits';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
-import { DEFAULT_FROM_TIME, fallbackCheckMap } from '../constants';
+import { DEFAULT_QUERY_FROM_TIME, fallbackCheckMap } from '../constants';
 import { SectionName } from './FormLayout/FormLayout.constants';
 import { layoutMap } from './FormLayouts/constants';
 import {
@@ -136,14 +137,17 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
       const { frequency } = result;
       const additionalDuration = getAdditionalDuration(frequency, 20);
       const duration = formatDuration(additionalDuration, true);
+      const created = Math.round(result.created! * 1000);
+      const dateTime = dateTimeFormat(created, { format: 'yyyy-MM-DD HH:mm:ss', timeZone: `utc` });
+      const from = checkState === 'new' ? dateTime : `now$2B${DEFAULT_QUERY_FROM_TIME}`;
 
       navigate(
         `${generateRoutePath(AppRoutes.CheckDashboard, {
           id: result.id!,
-        })}?from=now$2B${DEFAULT_FROM_TIME}&to=now%2B${duration}`
+        })}?from=${from}&to=now%2B${duration}`
       );
     },
-    [navigate]
+    [checkState, navigate]
   );
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 

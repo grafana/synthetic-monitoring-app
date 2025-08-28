@@ -17,6 +17,7 @@ import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
+import { useSceneVar } from 'scenes/Common/useSceneVar';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import {
   REF_ID_EXECUTION_LIST_LOGS,
@@ -290,7 +291,8 @@ function useMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProp
       });
     },
     select: (data) => {
-      const values = data.map((d) => d.fields[1].values).flat();
+      const values = data.map((d) => d.fields?.[1]?.values || []).flat();
+
       const max = Math.max(...values);
 
       // Convert seconds to milliseconds
@@ -423,11 +425,12 @@ export function useTimepointVizOptions(status: TimepointStatus) {
 }
 
 export function useCurrentAdjustedTime(check: Check) {
+  const checkCreation = Math.round(check.created! * 1000);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [currentAdjustedTime, setCurrentAdjustedTime] = useState<UnixTimestamp>(
-    getTimeAdjustedTimepoint(new Date().getTime(), check.frequency)
-  );
+  const adjustedNowTime = getTimeAdjustedTimepoint(new Date().getTime(), check.frequency);
+  const initial = Math.max(adjustedNowTime, checkCreation);
+  const [currentAdjustedTime, setCurrentAdjustedTime] = useState<UnixTimestamp>(initial);
 
   useEffect(() => {
     const delay = check.frequency - (new Date().getTime() % check.frequency);
@@ -501,4 +504,14 @@ export function useIsInitialised({
   }, [persistedIsLoading]);
 
   return !persistedIsLoading;
+}
+
+export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
+  const { check, checkConfigs } = useTimepointExplorerContext();
+  const latestConfigDate = checkConfigs[checkConfigs.length - 1].from;
+  const isCurrentConfig = statefulTimepoint.config.from === latestConfigDate;
+  const probeVarRaw = useSceneVar('probe');
+  const probeVar = useSceneVarProbes(check);
+
+  return !isCurrentConfig && probeVarRaw.includes('.*') ? Object.keys(statefulTimepoint.probeResults) : probeVar;
 }
