@@ -457,12 +457,12 @@ export function getRoundedYAxisMax(nonRoundedYAxisMax: number) {
 
 export function getNonRoundedYAxisMax(highestValue: number, timeout: number) {
   if (!highestValue) {
-    return 1000;
+    return 1000; // default it to 1 second
   }
 
-  if (timeout * 0.75 < highestValue) {
+  if (highestValue < timeout && highestValue > timeout * 0.75) {
     return timeout;
   }
 
-  return highestValue * 1.25;
+  return highestValue;
 }
