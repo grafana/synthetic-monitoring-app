@@ -7,6 +7,7 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
 
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
+import { DataTestIds } from 'test/dataTestIds';
 
 function renderTimepointExplorer() {
   return <TimepointExplorer check={BASIC_HTTP_CHECK} />;
@@ -15,6 +16,7 @@ function renderTimepointExplorer() {
 describe('TimepointExplorer', () => {
   it('should render', async () => {
     render(renderTimepointExplorer());
-    await waitFor(() => screen.findByText('Timepoint Explorer'));
+    await waitFor(() => screen.findByTestId(DataTestIds.TIMEPOINT_LIST));
+    screen.debug();
   });
 });
