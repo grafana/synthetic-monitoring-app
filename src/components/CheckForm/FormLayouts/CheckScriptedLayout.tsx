@@ -24,8 +24,8 @@ export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFor
     Component: (
       <>
         <ScriptedCheckInstance />
-        <ScriptedCheckScript />
         <K6ChannelSelect />
+        <ScriptedCheckScript />
       </>
     ),
   },
