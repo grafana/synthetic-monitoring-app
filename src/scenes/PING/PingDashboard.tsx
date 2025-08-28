@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { Check, CheckType } from 'types';
 import { AvgLatency } from 'scenes/Common/AvgLatencyViz';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
+import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { ErrorRateMap } from 'scenes/Common/ErrorRateMapViz';
 import { ErrorRate } from 'scenes/Common/ErrorRateViz';
 import { Frequency } from 'scenes/Common/FrequencyViz';
@@ -13,18 +14,14 @@ import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { ResponseLatency } from 'scenes/Common/ResponseLatency';
 import { ResponseLatencyByProbe } from 'scenes/Common/ResponseLatencyByProbe';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
-import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
-import { SSLExpiry } from 'scenes/HTTP/SSLExpiryViz';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export const HttpDashboard = ({ check }: { check: Check }) => {
+export const PingDashboard = ({ check }: { check: Check }) => {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.HTTP}>
-      <TimepointExplorer check={check} />
-
+    <DashboardContainer check={check} checkType={CheckType.PING}>
       <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
@@ -35,7 +32,6 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
             <UptimeStat check={check} />
             <ReachabilityStat check={check} />
             <AvgLatency />
-            <SSLExpiry />
             <Frequency />
           </div>
 
@@ -44,11 +40,15 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
 
         <div className={styles.latencyRow}>
           <div className={styles.latencyPanel}>
-            <ResponseLatency metric={`probe_http_duration_seconds`} />
+            <ResponseLatency metric={`probe_icmp_duration_seconds`} />
           </div>
           <div className={styles.latencyPanel}>
             <ResponseLatencyByProbe />
           </div>
+        </div>
+
+        <div className={styles.errorLogs}>
+          <ErrorLogs startingUnsuccessfulOnly={true} />
         </div>
       </div>
     </DashboardContainer>
@@ -89,5 +89,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   latencyPanel: css({
     height: '300px',
+  }),
+  errorLogs: css({
+    gridColumn: 'span 2',
+    height: '500px',
   }),
 });

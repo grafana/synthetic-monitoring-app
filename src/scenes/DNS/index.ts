@@ -1,1 +1,0 @@
-export { getDNSScene } from './dnsScene';
