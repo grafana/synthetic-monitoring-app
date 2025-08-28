@@ -1,26 +1,29 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { apiRoute } from 'test/handlers';
+import { render } from 'test/render';
+import { server } from 'test/server';
 
-import { K6ChannelWithCurrent } from 'types';
+import { K6Channel } from 'types';
 
 import { ChannelDetails } from './ChannelDetails';
 
-jest.mock('data/useK6Channels', () => ({
-  useCurrentK6Version: jest.fn(),
-}));
-
-const { useCurrentK6Version } = require('data/useK6Channels');
-const mockUseCurrentK6Version = useCurrentK6Version as jest.MockedFunction<typeof useCurrentK6Version>;
-
 describe('ChannelDetails', () => {
-  const mockChannels: Record<string, K6ChannelWithCurrent> = {
+  beforeEach(() => {
+    server.use(
+      apiRoute('getCurrentK6Version', { 
+        result: () => ({ json: { version: 'v1.9.2' } }) 
+      })
+    );
+  });
+
+  const mockChannels: Record<string, K6Channel> = {
     v1: {
       name: 'v1',
       default: false,
       deprecatedAfter: '2025-12-31T00:00:00Z',
       disabledAfter: '2026-12-31T00:00:00Z',
       manifest: 'k6>=1',
-      currentVersion: 'v1.9.2',
     },
     v2: {
       name: 'v2',
@@ -28,7 +31,6 @@ describe('ChannelDetails', () => {
       deprecatedAfter: '2026-12-31T00:00:00Z',
       disabledAfter: '2027-12-31T00:00:00Z',
       manifest: 'k6>=2',
-      currentVersion: 'v2.0.1',
     },
     deprecated: {
       name: 'deprecated',
@@ -36,27 +38,10 @@ describe('ChannelDetails', () => {
       deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
       disabledAfter: '2030-01-01T00:00:00Z', // Not yet disabled
       manifest: 'k6>=0.5',
-      currentVersion: 'v0.54.1',
     },
   };
 
-
-
-  beforeEach(() => {
-    mockUseCurrentK6Version.mockReturnValue({
-      data: 'v1.9.2',
-      isLoading: false,
-      error: null,
-      isError: false,
-      isSuccess: true,
-      isPending: false,
-      isStale: false,
-      dataUpdatedAt: Date.now(),
-      refetch: jest.fn(),
-    });
-  });
-
-  it('should show probe default message when no channel is selected', () => {
+  it('should show probe default message when no channel is selected', async () => {
     render(
       <ChannelDetails
         channelId={null}
@@ -64,12 +49,12 @@ describe('ChannelDetails', () => {
       />
     );
 
-    expect(screen.getByText(/each probe will use its default k6 version/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/each probe will use its default k6 version/i)).toBeInTheDocument();
+    });
   });
 
-
-
-  it('should show channel details when a channel is selected', () => {
+  it('should show channel details when a channel is selected', async () => {
     render(
       <ChannelDetails
         channelId="v1"
@@ -77,15 +62,26 @@ describe('ChannelDetails', () => {
       />
     );
 
-    expect(screen.getByText(/k6 version constraint:/i)).toBeInTheDocument();
-    expect(screen.getByText(/k6>=1/)).toBeInTheDocument();
-    expect(screen.getByText(/current resolved version:/i)).toBeInTheDocument();
-    expect(screen.getByText(/v1\.9\.2/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/k6 version constraint:/i)).toBeInTheDocument();
+      expect(screen.getByText(/k6>=1/)).toBeInTheDocument();
+    });
+    
+    // Wait for the API call to resolve
+    await waitFor(() => {
+      expect(screen.getByText(/current resolved version:/i)).toBeInTheDocument();
+      expect(screen.getByText(/v1\.9\.2/)).toBeInTheDocument();
+    });
   });
 
+  it('should show deprecation warning for deprecated channels', async () => {
+    // Override default mock for this specific test
+    server.use(
+      apiRoute('getCurrentK6Version', { 
+        result: () => ({ json: { version: 'v0.54.1' } }) 
+      })
+    );
 
-
-  it('should show deprecation warning for deprecated channels', () => {
     render(
       <ChannelDetails
         channelId="deprecated"
@@ -93,11 +89,13 @@ describe('ChannelDetails', () => {
       />
     );
 
-    expect(screen.getByText(/deprecated channel/i)).toBeInTheDocument();
-    expect(screen.getByText(/will be removed after/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/deprecated channel/i)).toBeInTheDocument();
+      expect(screen.getByText(/will be removed after/i)).toBeInTheDocument();
+    });
   });
 
-  it('should handle missing channel gracefully', () => {
+  it('should handle missing channel gracefully', async () => {
     render(
       <ChannelDetails
         channelId="nonexistent"
@@ -105,7 +103,8 @@ describe('ChannelDetails', () => {
       />
     );
 
-    // Should render nothing when channel doesn't exist
-    expect(screen.queryByText(/k6 version constraint/i)).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText(/k6 version constraint:/i)).not.toBeInTheDocument();
+    });
   });
 });

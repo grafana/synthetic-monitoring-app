@@ -1,82 +1,30 @@
 import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { render, screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { apiRoute } from 'test/handlers';
+import { render } from 'test/render';
+import { server } from 'test/server';
+import { mockFeatureToggles } from 'test/utils';
 
 import { CheckFormValues, FeatureName } from 'types';
-import { useCurrentK6Version,useK6Channels } from 'data/useK6Channels';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 
 import { K6ChannelSelect } from './K6ChannelSelect';
 
-jest.mock('hooks/useFeatureFlag', () => ({
-  useFeatureFlag: jest.fn(),
-}));
-
-jest.mock('data/useK6Channels', () => ({
-  useK6Channels: jest.fn(),
-  useCurrentK6Version: jest.fn(),
-}));
-
 jest.mock('components/CheckForm/CheckFormContext');
 
-const mockUseFeatureFlag = useFeatureFlag as jest.Mock;
-const mockUseK6Channels = useK6Channels as jest.Mock;
-const mockUseCurrentK6Version = useCurrentK6Version as jest.Mock;
 const mockUseCheckFormMetaContext = useCheckFormMetaContext as jest.Mock;
 
-// Test wrapper with form context
-function TestWrapper({ children, featureEnabled = true }: { children: React.ReactNode; featureEnabled?: boolean }) {
-  const methods = useForm<CheckFormValues>({
-    defaultValues: {
-      channel: null,
-    }
-  });
+const FormWrapper = ({ children }: { children: React.ReactNode }) => {
+  const form = useForm<CheckFormValues>();
   
-  mockUseFeatureFlag.mockReturnValue({ isEnabled: featureEnabled });
-  
-  return (
-    <FormProvider {...methods}>
-      {children}
-    </FormProvider>
-  );
-}
+  return <FormProvider {...form}>{children}</FormProvider>;
+};
 
 describe('K6ChannelSelect', () => {
-  const mockChannelsResponse = {
-    channels: {
-      v1: {
-        name: 'v1',
-        default: true,
-        deprecatedAfter: '2025-12-31T00:00:00Z',
-        disabledAfter: '2026-12-31T00:00:00Z',
-        manifest: 'k6>=1,k6<2',
-      },
-      v2: {
-        name: 'v2',
-        default: false,
-        deprecatedAfter: '2026-12-31T00:00:00Z',
-        disabledAfter: '2027-12-31T00:00:00Z',
-        manifest: 'k6>=2',
-      },
-    },
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
     
-    mockUseK6Channels.mockReturnValue({
-      data: mockChannelsResponse,
-      isLoading: false,
-      error: null,
-    });
-    
-    mockUseCurrentK6Version.mockReturnValue({
-      data: 'v1.9.2',
-      isLoading: false,
-      error: null,
-    });
-
     mockUseCheckFormMetaContext.mockReturnValue({
       check: undefined,
       isExistingCheck: false,
@@ -85,87 +33,103 @@ describe('K6ChannelSelect', () => {
   });
 
   it('should not render when feature flag is disabled', () => {
-    render(
-      <TestWrapper featureEnabled={false}>
-        <K6ChannelSelect />
-      </TestWrapper>
-    );
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: false,
+    });
     
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
     expect(screen.queryByLabelText(/k6 version/i)).not.toBeInTheDocument();
   });
 
-  it('should render when feature flag is enabled', () => {
+  it('should render when feature flag is enabled', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
+    
     render(
-      <TestWrapper featureEnabled={true}>
+      <FormWrapper>
         <K6ChannelSelect />
-      </TestWrapper>
+      </FormWrapper>
     );
     
-    expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
+    });
     expect(screen.getByText(/select the k6 version channel/i)).toBeInTheDocument();
   });
 
-  it('should call useFeatureFlag with correct feature name', () => {
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
-    );
-
-    expect(mockUseFeatureFlag).toHaveBeenCalledWith(FeatureName.VersionManagement);
-  });
-
-  it('should show mock channel options', () => {
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
-    );
-
-    // The options are in the Combobox component, they'll be visible when opened
-    expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
-  });
-
-  it('should auto-select the default channel and show (default) label', () => {
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
-    );
-
-    const combobox = screen.getByLabelText(/k6 version/i);
-    expect(combobox).toHaveValue('v1');
+  it('should show mock channel options', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
     
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should auto-select the default channel and show (default) label', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
+    
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
+    await waitFor(() => {
+      const combobox = screen.getByLabelText(/k6 version/i);
+      expect(combobox).toHaveValue('v1');
+    });
+    
+    const combobox = screen.getByLabelText(/k6 version/i);
     const selectElement = combobox as HTMLSelectElement;
     const v1Option = Array.from(selectElement.options).find(opt => opt.value === 'v1');
     expect(v1Option?.textContent).toContain('(default)');
   });
 
-  it('should display error message when channels fail to load', () => {
-    const errorMessage = 'K6 version channels are not available. This feature may not be supported by your Synthetic Monitoring instance.';
+  it('should display error message when channels fail to load', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
     
-    mockUseFeatureFlag.mockReturnValue({ isEnabled: true });
-    mockUseK6Channels.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: new Error(errorMessage),
-    });
-    mockUseCurrentK6Version.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: null,
-    });
-
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
+    server.use(
+      apiRoute('listK6Channels', { 
+        result: () => ({ status: 500, body: 'Failed to load K6 version channels. Please try again later.' }) 
+      })
     );
 
-    expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/error loading k6 version channels/i)).toBeInTheDocument();
+    });
+    expect(screen.getByText(/failed to load version channels/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /retry request/i })).toBeInTheDocument();
   });
 
-  it('should hide deprecated channels for new checks', () => {
+  it('should hide deprecated channels for new checks', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
+    
     const channelsWithDeprecated = {
       channels: {
         v1: {
@@ -185,33 +149,33 @@ describe('K6ChannelSelect', () => {
       },
     };
 
-    mockUseK6Channels.mockReturnValue({
-      data: channelsWithDeprecated,
-      isLoading: false,
-      error: null,
-    });
-
-    mockUseCheckFormMetaContext.mockReturnValue({
-      check: undefined,
-      isExistingCheck: false,
-      getIsExistingCheck: () => false,
-    });
-
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
+    server.use(
+      apiRoute('listK6Channels', { 
+        result: () => ({ json: channelsWithDeprecated }) 
+      })
     );
 
-    const combobox = screen.getByRole('combobox');
-    expect(combobox).toBeInTheDocument();
-    
-    // Should show v1 but not deprecated channel
-    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
-    expect(screen.queryByText(/deprecated/)).not.toBeInTheDocument();
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
+    await waitFor(() => {
+      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
+      const options = Array.from(combobox.options);
+      
+      // Should have v1 but not deprecated channel
+      expect(options.some(opt => opt.value === 'v1')).toBe(true);
+      expect(options.some(opt => opt.value === 'deprecated')).toBe(false);
+    });
   });
 
-  it('should show deprecated channel for existing checks if it was previously assigned', () => {
+  it('should show deprecated channel for existing checks if it was previously assigned', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
+    
     const channelsWithDeprecated = {
       channels: {
         v1: {
@@ -231,40 +195,45 @@ describe('K6ChannelSelect', () => {
       },
     };
 
-    mockUseK6Channels.mockReturnValue({
-      data: channelsWithDeprecated,
-      isLoading: false,
-      error: null,
-    });
-
-    // Mock existing check scenario with deprecated channel previously assigned
     mockUseCheckFormMetaContext.mockReturnValue({
       check: { channel: 'deprecated' },
       isExistingCheck: true,
       getIsExistingCheck: () => true,
     });
 
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
+    server.use(
+      apiRoute('listK6Channels', { 
+        result: () => ({ json: channelsWithDeprecated }) 
+      })
     );
 
-    const combobox = screen.getByRole('combobox');
-    expect(combobox).toBeInTheDocument();
-    
-    // Should show both v1 and the previously assigned deprecated channel
-    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
-    expect(screen.getByText('deprecated.x')).toBeInTheDocument();
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
+    await waitFor(() => {
+      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
+      const options = Array.from(combobox.options);
+      
+      // Should have both v1 and deprecated channel since it was previously assigned
+      expect(options.some(opt => opt.value === 'v1')).toBe(true);
+      expect(options.some(opt => opt.value === 'deprecated')).toBe(true);
+    });
   });
 
-  it('should hide disabled channels for new checks', () => {
+  it('should hide disabled channels for new checks', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
+    
     const channelsWithDisabled = {
       channels: {
         v1: {
           name: 'v1',
           default: true,
-          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
+          deprecatedAfter: '2025-12-31T00:00:00Z',
           disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
           manifest: 'k6>=1,k6<2',
         },
@@ -278,39 +247,38 @@ describe('K6ChannelSelect', () => {
       },
     };
 
-    mockUseK6Channels.mockReturnValue({
-      data: channelsWithDisabled,
-      isLoading: false,
-      error: null,
-    });
-
-    mockUseCheckFormMetaContext.mockReturnValue({
-      check: undefined,
-      isExistingCheck: false,
-      getIsExistingCheck: () => false,
-    });
-
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
+    server.use(
+      apiRoute('listK6Channels', { 
+        result: () => ({ json: channelsWithDisabled }) 
+      })
     );
 
-    const combobox = screen.getByRole('combobox');
-    expect(combobox).toBeInTheDocument();
-    
-    // Should show v1 but not disabled channel
-    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
-    expect(screen.queryByText(/disabled/)).not.toBeInTheDocument();
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
+    await waitFor(() => {
+      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
+      const options = Array.from(combobox.options);
+      
+      expect(options.some(opt => opt.value === 'v1')).toBe(true);
+      expect(options.some(opt => opt.value === 'disabled')).toBe(false);
+    });
   });
 
-  it('should show disabled channel for existing checks if it was previously assigned', () => {
+  it('should show disabled channel for existing checks if it was previously assigned', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
+    
     const channelsWithDisabled = {
       channels: {
         v1: {
           name: 'v1',
           default: true,
-          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
+          deprecatedAfter: '2025-12-31T00:00:00Z',
           disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
           manifest: 'k6>=1,k6<2',
         },
@@ -324,34 +292,38 @@ describe('K6ChannelSelect', () => {
       },
     };
 
-    mockUseK6Channels.mockReturnValue({
-      data: channelsWithDisabled,
-      isLoading: false,
-      error: null,
-    });
-
-    // Mock existing check scenario with disabled channel previously assigned
     mockUseCheckFormMetaContext.mockReturnValue({
       check: { channel: 'disabled' },
       isExistingCheck: true,
       getIsExistingCheck: () => true,
     });
 
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
+    server.use(
+      apiRoute('listK6Channels', { 
+        result: () => ({ json: channelsWithDisabled }) 
+      })
     );
 
-    const combobox = screen.getByRole('combobox');
-    expect(combobox).toBeInTheDocument();
-    
-    // Should show both v1 and the previously assigned disabled channel
-    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
-    expect(screen.getByText('disabled.x')).toBeInTheDocument();
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
+    await waitFor(() => {
+      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
+      const options = Array.from(combobox.options);
+      
+      expect(options.some(opt => opt.value === 'v1')).toBe(true);
+      expect(options.some(opt => opt.value === 'disabled')).toBe(true);
+    });
   });
 
-  it('should hide both deprecated and disabled channels for new checks', () => {
+  it('should hide both deprecated and disabled channels for new checks', async () => {
+    mockFeatureToggles({
+      [FeatureName.VersionManagement]: true,
+    });
+    
     const channelsWithBoth = {
       channels: {
         v1: {
@@ -365,43 +337,38 @@ describe('K6ChannelSelect', () => {
           name: 'deprecated',
           default: false,
           deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
-          disabledAfter: '2027-12-31T00:00:00Z',
+          disabledAfter: '2027-12-31T00:00:00Z', // Not disabled
           manifest: 'k6>=0.5,k6<1',
         },
         disabled: {
           name: 'disabled',
           default: false,
-          deprecatedAfter: '2025-12-31T00:00:00Z',
+          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
           disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
-          manifest: 'k6>=0.3,k6<0.5',
+          manifest: 'k6>=0.3,k6<1',
         },
       },
     };
 
-    mockUseK6Channels.mockReturnValue({
-      data: channelsWithBoth,
-      isLoading: false,
-      error: null,
-    });
-
-    mockUseCheckFormMetaContext.mockReturnValue({
-      check: undefined,
-      isExistingCheck: false,
-      getIsExistingCheck: () => false,
-    });
-
-    render(
-      <TestWrapper>
-        <K6ChannelSelect />
-      </TestWrapper>
+    server.use(
+      apiRoute('listK6Channels', { 
+        result: () => ({ json: channelsWithBoth }) 
+      })
     );
 
-    const combobox = screen.getByRole('combobox');
-    expect(combobox).toBeInTheDocument();
-    
-    // Should only show v1, not deprecated or disabled channels
-    expect(screen.getByText('v1.x (default)')).toBeInTheDocument();
-    expect(screen.queryByText(/deprecated/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/disabled/)).not.toBeInTheDocument();
+    render(
+      <FormWrapper>
+        <K6ChannelSelect />
+      </FormWrapper>
+    );
+
+    await waitFor(() => {
+      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
+      const options = Array.from(combobox.options);
+      
+      expect(options.some(opt => opt.value === 'v1')).toBe(true);
+      expect(options.some(opt => opt.value === 'deprecated')).toBe(false);
+      expect(options.some(opt => opt.value === 'disabled')).toBe(false);
+    });
   });
 });
