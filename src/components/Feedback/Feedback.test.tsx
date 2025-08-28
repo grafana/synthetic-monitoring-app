@@ -9,9 +9,9 @@ describe('Feedback', () => {
     render(<Feedback feature="test" />);
   });
 
-  it('should show the feedback form when the button is clicked', () => {
+  it('should show the feedback form when the button is clicked', async () => {
     render(<Feedback feature="test" />);
-    userEvent.click(screen.getByRole('button', { name: 'I love this feature' }));
+    await userEvent.click(screen.getByRole('button', { name: 'I love this feature' }));
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 });

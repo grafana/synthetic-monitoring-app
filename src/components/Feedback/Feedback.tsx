@@ -39,6 +39,7 @@ export const Feedback = ({ about, feature }: FeedbackProps) => {
         }
       >
         <Button
+          aria-label="I love this feature"
           fill="text"
           onClick={() => trackFeatureFeedback({ feature, reaction: 'good' })}
           size="sm"
@@ -58,6 +59,7 @@ export const Feedback = ({ about, feature }: FeedbackProps) => {
           }
         >
           <Button
+            aria-label="I don't like this feature"
             fill="text"
             onClick={() => trackFeatureFeedback({ feature, reaction: 'bad' })}
             size="sm"
