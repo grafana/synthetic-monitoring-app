@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckType } from 'types';
@@ -23,68 +23,39 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={CheckType.HTTP}>
-      <div className={styles.statsRow}>
+      <Stack height={`90px`}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />
         <AvgLatency />
         <SSLExpiry />
         <Frequency />
-      </div>
+      </Stack>
       <TimepointExplorer check={check} />
 
-      <div className={styles.vizLayout}>
-        <div className={styles.errorRateMap}>
-          <ErrorRateMap minStep={minStep} />
-        </div>
+      <div className={styles.errorRateRow}>
+        <ErrorRateMap minStep={minStep} />
+        <ErrorRate minStep={minStep} />
+      </div>
 
-        <div className={styles.errorRate}>
-          <ErrorRate minStep={minStep} />
-        </div>
-
-        <div className={styles.latencyRow}>
-          <div className={styles.latencyPanel}>
-            <ResponseLatency metric={`probe_http_duration_seconds`} />
-          </div>
-          <div className={styles.latencyPanel}>
-            <ResponseLatencyByProbe />
-          </div>
-        </div>
+      <div className={styles.latencyRow}>
+        <ResponseLatency metric={`probe_http_duration_seconds`} />
+        <ResponseLatencyByProbe />
       </div>
     </DashboardContainer>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  vizLayout: css({
-    display: 'grid',
-    gridTemplateColumns: '500px 1fr',
-    gridTemplateRows: 'auto auto auto',
-    columnGap: '8px',
-    rowGap: '8px',
-    height: '100%',
-  }),
-  errorRateMap: css({
-    width: '500px',
-    height: '500px',
-  }),
-  errorRate: css({
-    height: '500px',
-    rowGap: '8px',
-  }),
-  statsRow: css({
-    display: 'flex',
-    justifyContent: 'space-between',
-    height: '90px',
-    gap: '8px',
-  }),
-  latencyRow: css({
-    gridColumn: 'span 2',
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gridAutoRows: '300px',
-    gap: '8px',
-  }),
-  latencyPanel: css({
-    height: '300px',
-  }),
+  errorRateRow: css`
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    gap: ${theme.spacing(1)};
+    height: 500px;
+  `,
+  latencyRow: css`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: ${theme.spacing(1)};
+    height: 300px;
+  `,
 });

@@ -36,8 +36,8 @@ export const TimepointExplorerAnnotations = ({
 }: TimepointExplorerAnnotationsProps) => {
   const { checkEvents } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
-  const alertsFiring = useSceneAnnotation('Alerts firing');
-  const alertsPending = useSceneAnnotation('Alerts pending');
+  const alertsFiring = useSceneAnnotation('Show Alerts firing');
+  const alertsPending = useSceneAnnotation('Show Alerts pending');
 
   const alertFiringEvents = alertsFiring.map(([timeStart, timeEnd]) => ({
     label: CheckEventType.ALERTS_FIRING,

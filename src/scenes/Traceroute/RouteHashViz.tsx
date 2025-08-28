@@ -1,16 +1,12 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 import { AxisPlacement, GraphDrawStyle } from '@grafana/schema';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const RouteHash = () => {
-  const styles = useStyles2(getStyles);
   const metricsDS = useMetricsDS();
 
   const query = {
@@ -31,15 +27,13 @@ export const RouteHash = () => {
   });
 
   return (
-    <div className={styles.routeHash}>
-      <VizPanel
-        dataProvider={dataProvider}
-        description={`Shows the hashed value of all the hosts traversed in a single traceroute. Can be used to determine the volatility of the routes over time`}
-        menu={menu}
-        title={`Route hash`}
-        viz={viz}
-      />
-    </div>
+    <VizPanel
+      dataProvider={dataProvider}
+      description={`Shows the hashed value of all the hosts traversed in a single traceroute. Can be used to determine the volatility of the routes over time`}
+      menu={menu}
+      title={`Route hash`}
+      viz={viz}
+    />
   );
 };
 
@@ -54,9 +48,3 @@ const viz = VizConfigBuilders.timeseries()
       .overrideCustomFieldConfig(`axisPlacement`, AxisPlacement.Hidden);
   })
   .build();
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  routeHash: css({
-    height: '300px',
-  }),
-});

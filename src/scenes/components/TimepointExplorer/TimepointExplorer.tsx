@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, RadioButtonGroup, Stack, Text } from '@grafana/ui';
+import { Box, RadioButtonGroup, Stack } from '@grafana/ui';
 
 import { Check } from 'types';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
@@ -30,9 +30,6 @@ const TimepointExplorerInternal = () => {
   return (
     <Box paddingTop={2}>
       <Stack direction={`column`} gap={2}>
-        <Text element={`h2`} variant={`h5`}>
-          Timepoint Explorer
-        </Text>
         <Stack direction="row" gap={2} justifyContent={`space-between`} alignItems={`center`}>
           <TimepointExplorerVisibleOverview />
           <div>
