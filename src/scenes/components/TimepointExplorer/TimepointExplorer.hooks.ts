@@ -291,7 +291,8 @@ function useMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProp
       });
     },
     select: (data) => {
-      const values = data.map((d) => d.fields[1].values).flat();
+      const values = data.map((d) => d.fields?.[1]?.values || []).flat();
+
       const max = Math.max(...values);
 
       // Convert seconds to milliseconds
@@ -424,11 +425,12 @@ export function useTimepointVizOptions(status: TimepointStatus) {
 }
 
 export function useCurrentAdjustedTime(check: Check) {
+  const checkCreation = Math.round(check.created! * 1000);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [currentAdjustedTime, setCurrentAdjustedTime] = useState<UnixTimestamp>(
-    getTimeAdjustedTimepoint(new Date().getTime(), check.frequency)
-  );
+  const adjustedCurrentTime = getTimeAdjustedTimepoint(checkCreation, check.frequency);
+  const initial = Math.max(adjustedCurrentTime, checkCreation);
+  const [currentAdjustedTime, setCurrentAdjustedTime] = useState<UnixTimestamp>(initial);
 
   useEffect(() => {
     const delay = check.frequency - (new Date().getTime() % check.frequency);

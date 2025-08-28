@@ -134,9 +134,9 @@ const NANOSECONDS_PER_MILLISECOND = 1000000;
 
 export function extractFrequenciesAndConfigs(data: DataFrame) {
   let build: CheckConfigRaw[] = [];
-  const Value = data.fields[1];
+  const Value = data.fields?.[1];
 
-  if (Value.labels) {
+  if (Value?.labels) {
     const { config_version, frequency } = Value.labels;
     const toUnixTimestamp = Math.round(Number(config_version) / NANOSECONDS_PER_MILLISECOND);
     const date: UnixTimestamp = toUnixTimestamp;
