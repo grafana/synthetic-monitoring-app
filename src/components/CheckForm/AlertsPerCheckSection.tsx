@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Stack, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { AlertingType } from 'types';
+import { useLegacyAlertsRestriction } from 'hooks/useLegacyAlertsRestriction';
 import { AlertsPerCheck } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 
 export const AlertsPerCheckSection: React.FC = () => {
+  const { isRestricted, isLoading } = useLegacyAlertsRestriction();
   const [selectedAlertingTab, setSelectedAlertingTab] = useState<AlertingType>('alerting');
 
   return (
@@ -16,11 +18,13 @@ export const AlertsPerCheckSection: React.FC = () => {
           onChangeTab={() => setSelectedAlertingTab('alerting')}
           active={selectedAlertingTab === 'alerting'}
         />
-        <Tab
-          label="Legacy alerts"
-          onChangeTab={() => setSelectedAlertingTab('sensitivity')}
-          active={selectedAlertingTab === 'sensitivity'}
-        />
+        {!isLoading && !isRestricted && (
+          <Tab
+            label="Legacy alerts"
+            onChangeTab={() => setSelectedAlertingTab('sensitivity')}
+            active={selectedAlertingTab === 'sensitivity'}
+          />
+        )}
       </TabsBar>
       <TabContent>
         {selectedAlertingTab === 'alerting' && <AlertsPerCheck />}
