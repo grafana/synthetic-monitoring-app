@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
-import { Alert, Combobox, Field, Stack } from '@grafana/ui';
+import { useController, useFormContext } from 'react-hook-form';
+import { Combobox, Field, Stack } from '@grafana/ui';
 
 import { CheckFormValues, FeatureName } from 'types';
 import { useK6Channels } from 'data/useK6Channels';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
+import { FeatureFlag } from 'components/FeatureFlag';
+import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
 import { ChannelDetails } from './ChannelDetails';
 
@@ -14,15 +15,34 @@ interface K6ChannelSelectProps {
 }
 
 export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
-  const { isEnabled } = useFeatureFlag(FeatureName.VersionManagement);
+  return (
+    <FeatureFlag name={FeatureName.VersionManagement}>
+      {({ isEnabled }) => (isEnabled ? (
+        <QueryErrorBoundary 
+          title="Error loading K6 version channels"
+          content="Failed to load version channels. Please check your connection and try again."
+        >
+          <K6ChannelSelectContent disabled={disabled} />
+        </QueryErrorBoundary>
+      ) : null)}
+    </FeatureFlag>
+  );
+}
+
+function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   const { control } = useFormContext<CheckFormValues>();
   const { check, isExistingCheck } = useCheckFormMetaContext();
   const id = 'k6-channel-select';
 
-  const { data: channelsResponse, isLoading: isLoadingChannels, error: channelsError } = useK6Channels(isEnabled);
+  const { field, fieldState } = useController({
+    control,
+    name: 'channel',
+  });
+
+  const { data: channelsResponse, isLoading: isLoadingChannels } = useK6Channels(true);
 
   const channels = useMemo(() => channelsResponse?.channels || {}, [channelsResponse?.channels]);
-  
+
   const previousChannelId = isExistingCheck ? check?.channel : null;
 
   const defaultChannelId = useMemo(() => {
@@ -30,55 +50,43 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
   }, [channels]);
 
   const channelOptions = useMemo(() => {
-    const options: Array<{ label: string; value: string; description: string }> = [];
+    return Object.entries(channels)
+      .filter(([channelId, channel]) => {
+        const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
+        const isDisabled = new Date(channel.disabledAfter) < new Date();
+        
+        // Skip deprecated channels for new checks
+        if (isDeprecated && !isExistingCheck) {
+          return false;
+        }
 
-    Object.entries(channels).forEach(([channelId, channel]) => {
-      const isDefault = channel.default;
-      const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
-      const isDisabled = new Date(channel.disabledAfter) < new Date();
-      
-      if (isDeprecated && !isExistingCheck) {
-        return; // Skip deprecated channels for new checks
-      }
-      
-      if (isDeprecated && isExistingCheck && channelId !== previousChannelId) {
-        return; // Skip deprecated channels for existing checks unless it was previously assigned
-      }
+        // Skip deprecated channels for existing checks unless it was previously assigned
+        if (isDeprecated && isExistingCheck && channelId !== previousChannelId) {
+          return false;
+        }
 
-      if (isDisabled && !isExistingCheck) {
-        return; // Skip disabled channels for new checks
-      }
-      
-      if (isDisabled && isExistingCheck && channelId !== previousChannelId) {
-        return; // Skip disabled channels for existing checks unless it was previously assigned
-      }
+        // Skip disabled channels for new checks
+        if (isDisabled && !isExistingCheck) {
+          return false;
+        }
 
-      let labelSuffix = '';
-      if (isDefault) {
-        labelSuffix = ' (default)';
-      }
+        // Skip disabled channels for existing checks unless it was previously assigned
+        if (isDisabled && isExistingCheck && channelId !== previousChannelId) {
+          return false;
+        }
 
-      options.push({
-        label: `${channel.name}.x${labelSuffix}`,
-        value: channelId,
-        description: `k6 version range: ${channel.manifest}`,
+        return true;
+      })
+      .map(([channelId, channel]) => {
+        const labelSuffix = channel.default ? ' (default)' : '';
+        
+        return {
+          label: `${channel.name}.x${labelSuffix}`,
+          value: channelId,
+          description: `k6 version range: ${channel.manifest}`,
+        };
       });
-    });
-
-    return options;
   }, [channels, isExistingCheck, previousChannelId]);
-
-  if (!isEnabled) {
-    return null;
-  }
-
-  if (channelsError) {
-    return (
-      <Alert severity="warning" title="">
-        {channelsError.message}
-      </Alert>
-    );
-  }
 
   return (
     <Field
@@ -87,34 +95,24 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
       htmlFor={id}
       data-fs-element="k6 channel select"
     >
-      <Controller
-        name="channel"
-        control={control}
-        render={({ field, fieldState }) => {
-          const { ref, onChange, ...rest } = field;
-          const currentValue = field.value || defaultChannelId;
-          return (
-            <Stack direction="column" gap={2}>
-              <Combobox
-                {...rest}
-                value={currentValue}
-                disabled={disabled || isLoadingChannels}
-                options={channelOptions}
-                id={id}
-                createCustomValue={false}
-                onChange={(value) => {
-                  const channelValue = typeof value === 'string' ? value : value?.value || '';
-                  onChange(channelValue);
-                }}
-                placeholder={isLoadingChannels ? 'Loading channels...' : 'Select k6 version channel'}
-                invalid={!!fieldState.error}
-              />
+      <Stack direction="column" gap={2}>
+        <Combobox
+          {...field}
+          value={field.value || defaultChannelId}
+          disabled={disabled || isLoadingChannels}
+          options={channelOptions}
+          id={id}
+          createCustomValue={false}
+          onChange={(value) => {
+            const channelValue = typeof value === 'string' ? value : value?.value || '';
+            field.onChange(channelValue);
+          }}
+          placeholder={isLoadingChannels ? 'Loading channels...' : 'Select k6 version channel'}
+          invalid={!!fieldState.error}
+        />
 
-              <ChannelDetails channelId={currentValue || null} channels={channels} enabled={isEnabled} />
-            </Stack>
-          );
-        }}
-      />
+        <ChannelDetails channelId={field.value || defaultChannelId || null} channels={channels} enabled={true} />
+      </Stack>
     </Field>
   );
 }

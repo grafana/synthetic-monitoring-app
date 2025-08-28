@@ -4,7 +4,6 @@ import { Alert, Stack, Text, useTheme2 } from '@grafana/ui';
 
 import { K6Channel } from 'types';
 import { useCurrentK6Version } from 'data/useK6Channels';
-
 interface ChannelDetailsProps {
   channelId: string | null;
   channels: Record<string, K6Channel>;
@@ -15,11 +14,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
   const theme = useTheme2();
 
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
-  const {
-    data: currentVersion,
-    isLoading: isLoadingVersion,
-    error: versionError,
-  } = useCurrentK6Version(validChannelId, enabled);
+  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(validChannelId, enabled);
 
   if (!validChannelId) {
     return (
@@ -67,16 +62,10 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
         </Text>
       )}
 
-      {versionError && (
-        <Alert severity="warning" title="Error loading current version">
-          {versionError.message}
-        </Alert>
-      )}
-
       {isDisabled && (
         <Alert severity="error" title="Disabled Channel">
-          This channel is disabled and cannot be used after {dateTimeFormat(new Date(channel.disabledAfter))}.
-          Please select a different channel.
+          This channel is disabled and cannot be used after {dateTimeFormat(new Date(channel.disabledAfter))}. Please
+          select a different channel.
         </Alert>
       )}
 
