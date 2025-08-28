@@ -18,20 +18,6 @@ jest.mock('data/useK6Channels', () => ({
   useCurrentK6Version: jest.fn(),
 }));
 
-// Mock the Combobox component to avoid canvas-related errors in tests
-jest.mock('@grafana/ui', () => ({
-  ...jest.requireActual('@grafana/ui'),
-  Combobox: jest.fn(({ id, placeholder, options }) => (
-    <select id={id} data-testid={id} title={placeholder}>
-      {options?.map((option: any, index: number) => (
-        <option key={index} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  )),
-}));
-
 jest.mock('components/CheckForm/CheckFormContext');
 
 const mockUseFeatureFlag = useFeatureFlag as jest.Mock;
