@@ -15,7 +15,7 @@ import { Stack } from '@grafana/ui';
 
 import { Check, CheckType } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { EditCheckButton } from 'scenes/Common/editButton';
+import { EditCheckButton } from 'scenes/Common/EditCheckButton';
 
 interface DashboardContainerProps extends PropsWithChildren {
   check: Check;
