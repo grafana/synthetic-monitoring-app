@@ -29,7 +29,7 @@ export const TimepointViewer = () => {
 
   return (
     <div className={styles.container}>
-      {viewerTimepoint && viewerProbeName ? (
+      {viewerTimepoint ? (
         <div>
           <Box padding={2} gap={1} direction="column" position="relative">
             <TimepointHeader timepoint={viewerTimepoint} onChangeLogsView={handleChangeLogsView} />
@@ -54,7 +54,7 @@ export const TimepointViewer = () => {
 
 interface TimepointViewerContentProps {
   logsView: LogsView;
-  probeNameToView: string;
+  probeNameToView?: string;
   timepoint: StatelessTimepoint;
 }
 

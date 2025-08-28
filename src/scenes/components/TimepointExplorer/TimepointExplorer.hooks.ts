@@ -17,6 +17,7 @@ import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
+import { useSceneVar } from 'scenes/Common/useSceneVar';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import {
   REF_ID_EXECUTION_LIST_LOGS,
@@ -501,4 +502,14 @@ export function useIsInitialised({
   }, [persistedIsLoading]);
 
   return !persistedIsLoading;
+}
+
+export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
+  const { check, checkConfigs } = useTimepointExplorerContext();
+  const latestConfigDate = checkConfigs[checkConfigs.length - 1].from;
+  const isCurrentConfig = statefulTimepoint.config.from === latestConfigDate;
+  const probeVarRaw = useSceneVar('probe');
+  const probeVar = useSceneVarProbes(check);
+
+  return !isCurrentConfig && probeVarRaw.includes('.*') ? Object.keys(statefulTimepoint.probeResults) : probeVar;
 }

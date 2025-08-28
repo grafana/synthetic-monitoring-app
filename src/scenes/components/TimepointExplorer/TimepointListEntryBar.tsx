@@ -4,10 +4,12 @@ import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { PlainButton } from 'components/PlainButton';
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import {
+  useSelectedProbeNames,
+  useStatefulTimepoint,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint, TimepointStatus } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
@@ -23,15 +25,12 @@ const GLOBAL_CLASS = `list_entry_bar`;
 
 export const TimepointListEntryBar = ({ children, timepoint, status }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-
-  const { check, handleViewerStateChange, yAxisMax, viewerState, timepointWidth, vizDisplay } =
-    useTimepointExplorerContext();
-  const probeVar = useSceneVarProbes(check);
+  const { handleViewerStateChange, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
   const styles = useStyles2(getStyles, timepointWidth, height);
-  const probeNameToView =
-    Object.keys(statefulTimepoint.probeResults).sort((a, b) => a.localeCompare(b))[0] || probeVar[0];
+  const probeNameToView = selectedProbeNames.sort((a, b) => a.localeCompare(b))[0];
   const [viewerTimepoint] = viewerState;
   const isSelected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime;
   const ref = useRef<HTMLButtonElement>(null);
@@ -51,7 +50,9 @@ export const TimepointListEntryBar = ({ children, timepoint, status }: Timepoint
         <PlainButton
           className={styles.button}
           ref={ref}
-          onClick={() => handleViewerStateChange([timepoint, probeNameToView, 0])}
+          onClick={() => {
+            handleViewerStateChange([timepoint, probeNameToView, 0]);
+          }}
           showFocusStyles={false}
         >
           <TimepointVizItem

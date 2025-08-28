@@ -31,7 +31,7 @@ import { useLimits } from 'hooks/useLimits';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
-import { DEFAULT_FROM_TIME, fallbackCheckMap } from '../constants';
+import { DEFAULT_QUERY_FROM_TIME, fallbackCheckMap } from '../constants';
 import { SectionName } from './FormLayout/FormLayout.constants';
 import { layoutMap } from './FormLayouts/constants';
 import {
@@ -140,7 +140,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
       navigate(
         `${generateRoutePath(AppRoutes.CheckDashboard, {
           id: result.id!,
-        })}?from=now$2B${DEFAULT_FROM_TIME}&to=now%2B${duration}`
+        })}?from=now$2B${DEFAULT_QUERY_FROM_TIME}&to=now%2B${duration}`
       );
     },
     [navigate]

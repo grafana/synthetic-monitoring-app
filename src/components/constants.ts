@@ -525,4 +525,5 @@ export const STANDARD_REFRESH_INTERVAL = 1000 * 60;
 
 export const CHECK_FORM_ERROR_EVENT = `sm-check-form-error`;
 
-export const DEFAULT_FROM_TIME = '3h';
+/* For all dashboard panels and queries, the default time range is the last 3 hours. */
+export const DEFAULT_QUERY_FROM_TIME = '3h';

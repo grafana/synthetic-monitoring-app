@@ -24,7 +24,7 @@ interface TimepointViewerExecutionsProps {
   logsView: LogsView;
   pendingProbeNames: string[];
   probeExecutions: ProbeExecutionLogs[];
-  probeNameToView: string;
+  probeNameToView?: string;
   timepoint: StatelessTimepoint;
 }
 
@@ -41,7 +41,6 @@ export const TimepointViewerExecutions = ({
     isLoading,
     pendingProbeNames,
     probeExecutions,
-    probeNameToView,
     timepoint,
   });
 

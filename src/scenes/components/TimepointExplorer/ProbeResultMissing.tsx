@@ -24,7 +24,7 @@ export const ProbeResultMissing = ({ probeName, timepoint }: ProbeResultMissingP
 
   return (
     <ResultUnknown
-      title={`${name} didn't return a result for this timepoint`}
+      title={`No result found from ${name} for this timepoint`}
       image={<img src={grotPropsMagnifyingGlass} alt="" />}
     >
       {probe ? <ProbeExists probe={probe} timepoint={timepoint} /> : <ProbeUnknown />}
@@ -54,15 +54,15 @@ const ProbeExists = ({ probe, timepoint }: { probe: ProbeWithMetadata; timepoint
         .
       </div>
       <div>
-        We are unable to determine this probe&apos;s status when this execution was scheduled. It may be worth checking
-        if this probe reported any results for other checks that ran at{' '}
+        We cannot determine this probe&apos;s status when the check was scheduled. Check if this probe reported results
+        for other checks that ran at{' '}
         <TextLink href={exploreLink} external>
           the same time
         </TextLink>
         .
       </div>
       <Text>
-        Its status right now is{' '}
+        Current status:{' '}
         <Text element={`span`} color={online ? 'success' : 'error'} weight="bold">
           {online ? `online` : `offline`}
         </Text>
@@ -70,7 +70,7 @@ const ProbeExists = ({ probe, timepoint }: { probe: ProbeWithMetadata; timepoint
       </Text>
       {!isPublic && (
         <Text>
-          It was last {online ? `offline` : `online`} at {dateTimeFormat(onlineChange * 1000)}.
+          Last {online ? `offline` : `online`}: {dateTimeFormat(onlineChange * 1000)}
         </Text>
       )}
       <ReasonsForMissingResult isPublic={isPublic} />

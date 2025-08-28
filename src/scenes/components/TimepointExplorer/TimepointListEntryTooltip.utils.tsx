@@ -34,17 +34,14 @@ interface GetEntriesToRenderProps {
   statefulTimepoint: StatefulTimepoint;
   selectedProbeNames: string[];
   currentAdjustedTime: UnixTimestamp;
-  latestConfigDate: UnixTimestamp;
 }
 
 export function getEntriesToRender({
   statefulTimepoint,
   selectedProbeNames,
   currentAdjustedTime,
-  latestConfigDate,
 }: GetEntriesToRenderProps) {
-  const { probeResults, config } = statefulTimepoint;
-  const isCurrentConfig = config.from === latestConfigDate;
+  const { probeResults } = statefulTimepoint;
 
   return selectedProbeNames
     .map<EntryToRender[]>((probeName) => {
@@ -76,14 +73,7 @@ export function getEntriesToRender({
         },
       ];
     })
-    .flat()
-    .filter((entry) => {
-      if (isCurrentConfig) {
-        return true;
-      }
-
-      return entry.status !== 'missing';
-    });
+    .flat();
 }
 
 export function matchState(current: HoveredState, matchState: HoveredState) {

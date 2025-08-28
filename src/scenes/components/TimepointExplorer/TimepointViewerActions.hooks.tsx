@@ -77,7 +77,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
         onClick: handleNextTimepoint,
       },
       {
-        icon: 'compass',
+        icon: 'gf-logs',
         label: 'View Logs in Explore',
         href: exploreLogsURL,
       },
