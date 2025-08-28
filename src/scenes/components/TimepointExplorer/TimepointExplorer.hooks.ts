@@ -428,8 +428,8 @@ export function useCurrentAdjustedTime(check: Check) {
   const checkCreation = Math.round(check.created! * 1000);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const adjustedCurrentTime = getTimeAdjustedTimepoint(checkCreation, check.frequency);
-  const initial = Math.max(adjustedCurrentTime, checkCreation);
+  const adjustedNowTime = getTimeAdjustedTimepoint(new Date().getTime(), check.frequency);
+  const initial = Math.max(adjustedNowTime, checkCreation);
   const [currentAdjustedTime, setCurrentAdjustedTime] = useState<UnixTimestamp>(initial);
 
   useEffect(() => {
