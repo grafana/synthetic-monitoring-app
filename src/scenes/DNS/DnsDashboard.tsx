@@ -11,18 +11,19 @@ import { ErrorRateMap } from 'scenes/Common/ErrorRateMapViz';
 import { ErrorRate } from 'scenes/Common/ErrorRateViz';
 import { Frequency } from 'scenes/Common/FrequencyViz';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
-import { ResponseLatency } from 'scenes/Common/ResponseLatency';
 import { ResponseLatencyByProbe } from 'scenes/Common/ResponseLatencyByProbe';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
-import { SSLExpiry } from 'scenes/HTTP/SSLExpiryViz';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export const HttpDashboard = ({ check }: { check: Check }) => {
+import { AnswerRecords } from './AnswerRecordsViz';
+import { ResourceRecords } from './ResourceRecordsViz';
+
+export const DNSDashboard = ({ check }: { check: Check }) => {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.HTTP}>
+    <DashboardContainer check={check} checkType={CheckType.DNS}>
       <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
@@ -33,7 +34,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
             <UptimeStat check={check} />
             <ReachabilityStat check={check} />
             <AvgLatency />
-            <SSLExpiry />
+            <AnswerRecords />
             <Frequency />
           </div>
 
@@ -42,10 +43,10 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
 
         <div className={styles.latencyRow}>
           <div className={styles.latencyPanel}>
-            <ResponseLatency metric={`probe_http_duration_seconds`} />
+            <ResponseLatencyByProbe />
           </div>
           <div className={styles.latencyPanel}>
-            <ResponseLatencyByProbe />
+            <ResourceRecords />
           </div>
         </div>
 

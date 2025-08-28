@@ -12,13 +12,13 @@ import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
-import { getDNSScene } from 'scenes/DNS';
+import { DNSDashboard } from 'scenes/DNS/DnsDashboard';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
-import { getPingScene } from 'scenes/PING/pingScene';
+import { PingDashboard } from 'scenes/PING/PingDashboard';
 import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
-import { getTcpScene } from 'scenes/TCP/getTcpScene';
-import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
+import { TcpDashboard } from 'scenes/TCP/TcpDashboard';
+import { TracerouteDashboard } from 'scenes/Traceroute/TracerouteDashboard';
 
 import { CheckNotFound } from './NotFound/CheckNotFound';
 
@@ -53,51 +53,6 @@ function DashboardPageContent() {
     const checkType = getCheckType(check.settings);
     const url = generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! });
     switch (checkType) {
-      case CheckType.DNS: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getDNSScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.PING: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getPingScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.TCP: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getTcpScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.Traceroute: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getTracerouteScene(config, check),
-            }),
-          ],
-        });
-      }
-
       case CheckType.GRPC: {
         return new SceneApp({
           pages: [
@@ -110,6 +65,10 @@ function DashboardPageContent() {
         });
       }
 
+      case CheckType.Traceroute:
+      case CheckType.DNS:
+      case CheckType.TCP:
+      case CheckType.PING:
       case CheckType.Browser:
       case CheckType.MULTI_HTTP:
       case CheckType.Scripted:
@@ -123,8 +82,24 @@ function DashboardPageContent() {
     return <CheckNotFound />;
   }
 
+  if (check && getCheckType(check.settings) === CheckType.TCP) {
+    return <TcpDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.DNS) {
+    return <DNSDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.PING) {
+    return <PingDashboard check={check} />;
+  }
+
   if (check && getCheckType(check.settings) === CheckType.HTTP) {
     return <HttpDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.Traceroute) {
+    return <TracerouteDashboard check={check} />;
   }
 
   if (

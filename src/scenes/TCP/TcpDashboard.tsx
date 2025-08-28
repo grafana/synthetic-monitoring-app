@@ -11,18 +11,17 @@ import { ErrorRateMap } from 'scenes/Common/ErrorRateMapViz';
 import { ErrorRate } from 'scenes/Common/ErrorRateViz';
 import { Frequency } from 'scenes/Common/FrequencyViz';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
-import { ResponseLatency } from 'scenes/Common/ResponseLatency';
 import { ResponseLatencyByProbe } from 'scenes/Common/ResponseLatencyByProbe';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
 import { SSLExpiry } from 'scenes/HTTP/SSLExpiryViz';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export const HttpDashboard = ({ check }: { check: Check }) => {
+export const TcpDashboard = ({ check }: { check: Check }) => {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.HTTP}>
+    <DashboardContainer check={check} checkType={CheckType.TCP}>
       <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
@@ -41,9 +40,6 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
         </div>
 
         <div className={styles.latencyRow}>
-          <div className={styles.latencyPanel}>
-            <ResponseLatency metric={`probe_http_duration_seconds`} />
-          </div>
           <div className={styles.latencyPanel}>
             <ResponseLatencyByProbe />
           </div>
@@ -84,10 +80,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   latencyRow: css({
     gridColumn: 'span 2',
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gridAutoRows: '300px',
-    gap: '8px',
   }),
   latencyPanel: css({
     height: '300px',
