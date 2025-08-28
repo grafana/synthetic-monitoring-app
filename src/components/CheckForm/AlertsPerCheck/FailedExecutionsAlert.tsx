@@ -86,14 +86,16 @@ export const FailedExecutionsAlert = ({
       ALERT_PERIODS.map((period) => {
         const periodMs = convertPeriod(period.value);
         const isValid = periodMs >= checkFrequency;
-        const showWarning = !isRecommendedPeriod(periodMs);
+        const isRecommended = isRecommendedPeriod(periodMs);
+        
+        const showWarning = shouldShowRecommendations && isValid && !isRecommended;
 
         return {
           label: period.label,
           value: period.value,
           isDisabled: !isValid,
           description: !isValid ? 'Invalid' : undefined,
-          showWarning: shouldShowRecommendations && showWarning,
+          showWarning,
         };
       }),
     [checkFrequency, convertPeriod, isRecommendedPeriod, shouldShowRecommendations]
@@ -203,32 +205,40 @@ const PeriodOption = (props: PeriodOptionProps) => {
   const { data, children, innerRef, innerProps } = props;
   const styles = useStyles2(getOptionStyles);
 
-  const className = `${styles.option} ${(data.showWarning && styles.notRecommended) || ''}`;
-
-  const tooltipText = 'Value not recommended. Period should be > 2.5 times the check frequency for optimal alerting';
+  const getClassName = () => {
+    let className = styles.option;
+    if (data.isDisabled) {
+      className += ` ${styles.disabled}`;
+    }
+    return className;
+  };
 
   const getTooltipContent = () => {
+    if (data.isDisabled) {
+      return 'Period must be greater than or equal to check frequency';
+    }
     if (data.showWarning) {
-      return tooltipText;
+      return 'Higher time periods are recommended for better alert precision';
     }
     return undefined;
   };
 
   const tooltipContent = getTooltipContent();
+  const displayContent = data.isDisabled ? `${children} (Invalid)` : children;
 
   if (tooltipContent) {
     return (
       <Tooltip content={tooltipContent} placement="right">
-        <div ref={innerRef} {...innerProps} className={className}>
-          {children}
+        <div ref={innerRef} {...innerProps} className={getClassName()}>
+          {displayContent}
         </div>
       </Tooltip>
     );
   }
 
   return (
-    <div ref={innerRef} {...innerProps} className={className}>
-      {children}
+    <div ref={innerRef} {...innerProps} className={getClassName()}>
+      {displayContent}
     </div>
   );
 };
@@ -241,10 +251,12 @@ const getOptionStyles = (theme: GrafanaTheme2) => ({
       backgroundColor: theme.colors.background.secondary,
     },
   }),
-  recommended: css({
-    borderLeft: `3px solid ${theme.colors.success.main}`,
-  }),
-  notRecommended: css({
-    borderLeft: `3px solid ${theme.colors.warning.main}`,
+  disabled: css({
+    opacity: 0.6,
+    cursor: 'not-allowed',
+    color: theme.colors.text.disabled,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
   }),
 });
