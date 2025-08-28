@@ -53,7 +53,6 @@ function DashboardPageContent() {
     const checkType = getCheckType(check.settings);
     const url = generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! });
     switch (checkType) {
-
       case CheckType.TCP: {
         return new SceneApp({
           pages: [
