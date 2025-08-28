@@ -23,6 +23,13 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={CheckType.HTTP}>
+      <div className={styles.statsRow}>
+        <UptimeStat check={check} />
+        <ReachabilityStat check={check} />
+        <AvgLatency />
+        <SSLExpiry />
+        <Frequency />
+      </div>
       <TimepointExplorer check={check} />
 
       <div className={styles.vizLayout}>
@@ -30,15 +37,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
           <ErrorRateMap minStep={minStep} />
         </div>
 
-        <div className={styles.nestedGrid}>
-          <div className={styles.statsRow}>
-            <UptimeStat check={check} />
-            <ReachabilityStat check={check} />
-            <AvgLatency />
-            <SSLExpiry />
-            <Frequency />
-          </div>
-
+        <div className={styles.errorRate}>
           <ErrorRate minStep={minStep} />
         </div>
 
@@ -68,9 +67,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     width: '500px',
     height: '500px',
   }),
-  nestedGrid: css({
-    display: 'grid',
-    gridTemplateRows: '90px 1fr',
+  errorRate: css({
     height: '500px',
     rowGap: '8px',
   }),
