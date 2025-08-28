@@ -18,7 +18,7 @@ import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
 import { PingDashboard } from 'scenes/PING/PingDashboard';
 import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
 import { TcpDashboard } from 'scenes/TCP/TcpDashboard';
-import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
+import { TracerouteDashboard } from 'scenes/Traceroute/TracerouteDashboard';
 
 import { CheckNotFound } from './NotFound/CheckNotFound';
 
@@ -53,18 +53,6 @@ function DashboardPageContent() {
     const checkType = getCheckType(check.settings);
     const url = generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! });
     switch (checkType) {
-      case CheckType.Traceroute: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getTracerouteScene(config, check),
-            }),
-          ],
-        });
-      }
-
       case CheckType.GRPC: {
         return new SceneApp({
           pages: [
@@ -77,6 +65,7 @@ function DashboardPageContent() {
         });
       }
 
+      case CheckType.Traceroute:
       case CheckType.DNS:
       case CheckType.TCP:
       case CheckType.PING:
@@ -107,6 +96,10 @@ function DashboardPageContent() {
 
   if (check && getCheckType(check.settings) === CheckType.HTTP) {
     return <HttpDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.Traceroute) {
+    return <TracerouteDashboard check={check} />;
   }
 
   if (
