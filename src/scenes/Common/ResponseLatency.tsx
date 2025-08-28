@@ -1,7 +1,7 @@
 import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
-import { GraphDrawStyle, StackingMode, ThresholdsMode } from '@grafana/schema';
+import { GraphDrawStyle, LegendDisplayMode, StackingMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
@@ -29,6 +29,13 @@ export const ResponseLatency = ({ metric }: ResponseLatencyProps) => {
   });
 
   const viz = VizConfigBuilders.timeseries()
+    .setUnit(`s`)
+    .setOption('legend', {
+      showLegend: true,
+      displayMode: LegendDisplayMode.Table,
+      placement: 'right',
+      calcs: ['mean', 'lastNotNull'],
+    })
     .setCustomFieldConfig('drawStyle', GraphDrawStyle.Bars)
     .setCustomFieldConfig('fillOpacity', 100)
     .setCustomFieldConfig('stacking', { mode: StackingMode.Normal, group: 'A' })

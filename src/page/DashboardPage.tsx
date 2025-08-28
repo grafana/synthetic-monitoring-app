@@ -12,7 +12,7 @@ import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
-import { getDNSScene } from 'scenes/DNS';
+import { DNSDashboard } from 'scenes/DNS/DnsDashboard';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
 import { PingDashboard } from 'scenes/PING/PingDashboard';
@@ -53,17 +53,6 @@ function DashboardPageContent() {
     const checkType = getCheckType(check.settings);
     const url = generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! });
     switch (checkType) {
-      case CheckType.DNS: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getDNSScene(config, check),
-            }),
-          ],
-        });
-      }
       case CheckType.Traceroute: {
         return new SceneApp({
           pages: [
@@ -88,6 +77,7 @@ function DashboardPageContent() {
         });
       }
 
+      case CheckType.DNS:
       case CheckType.TCP:
       case CheckType.PING:
       case CheckType.Browser:
@@ -105,6 +95,10 @@ function DashboardPageContent() {
 
   if (check && getCheckType(check.settings) === CheckType.TCP) {
     return <TcpDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.DNS) {
+    return <DNSDashboard check={check} />;
   }
 
   if (check && getCheckType(check.settings) === CheckType.PING) {
