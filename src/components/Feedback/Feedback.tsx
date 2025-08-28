@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, Button, Icon, Label, Link, Stack, Text, TextArea, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { trackFeatureFeedback, trackFeatureFeedbackComment } from 'features/tracking/feedbackEvents';
 
 import { Toggletip } from 'components/Toggletip';
@@ -10,7 +10,7 @@ import { Toggletip } from 'components/Toggletip';
 interface FeedbackAboutProps {
   text: string;
   link?: string;
-  linkText?: string;
+  tooltipText?: string;
 }
 
 interface FeedbackProps {
@@ -19,69 +19,48 @@ interface FeedbackProps {
 }
 
 export const Feedback = ({ about, feature }: FeedbackProps) => {
-  const styles = useStyles2(getStyles);
-  // because the form is in a toggletip, we want to save the feedback if they
-  // haven't submitted it in case they accidentally close the toggletip
-  const [savedGoodFeedback, setSavedGoodFeedback] = useState<string>(``);
-  const [savedBadFeedback, setSavedBadFeedback] = useState<string>(``);
+  const [active, setActive] = useState<'good' | 'bad' | null>(null);
 
   return (
     <Stack direction="row" gap={0.5} alignItems="center">
       {about && <FeedbackAbout {...about} />}
-      <Toggletip
-        content={
-          <FeedbackForm
-            feature={feature}
-            reaction="good"
-            savedFeedback={savedGoodFeedback}
-            handleSaveFeedback={setSavedGoodFeedback}
-          />
-        }
-      >
-        <Button
-          aria-label="I love this feature"
-          fill="text"
-          onClick={() => trackFeatureFeedback({ feature, reaction: 'good' })}
-          size="sm"
-          icon="thumbs-up"
-          tooltip="I love this feature"
-        />
-      </Toggletip>
-      <div className={styles.upsideDown}>
-        <Toggletip
-          content={
-            <FeedbackForm
-              feature={feature}
-              reaction="bad"
-              savedFeedback={savedBadFeedback}
-              handleSaveFeedback={setSavedBadFeedback}
-            />
-          }
-        >
-          <Button
-            aria-label="I don't like this feature"
-            fill="text"
-            onClick={() => trackFeatureFeedback({ feature, reaction: 'bad' })}
-            size="sm"
-            icon="thumbs-up"
-            tooltip="I don't like this feature"
-          />
-        </Toggletip>
-      </div>
+      <FeedbackButton
+        feature={feature}
+        isActive={active === 'good'}
+        onClick={() => {
+          setActive('good');
+          trackFeatureFeedback({ feature, reaction: 'good' });
+        }}
+        onClose={() => setActive(null)}
+        reaction="good"
+        tooltip="I love this feature"
+      />
+      <FeedbackButton
+        feature={feature}
+        isActive={active === 'bad'}
+        onClick={() => {
+          setActive('bad');
+          trackFeatureFeedback({ feature, reaction: 'bad' });
+        }}
+        onClose={() => setActive(null)}
+        reaction="bad"
+        tooltip="I don't like this feature"
+      />
     </Stack>
   );
 };
 
-const FeedbackAbout = ({ text, link, linkText = `Learn more` }: FeedbackAboutProps) => {
+const FeedbackAbout = ({ text, link, tooltipText = `Learn more` }: FeedbackAboutProps) => {
   if (!link) {
-    return <Badge color="blue" text={text} />;
+    return <Badge color="blue" icon="rocket" text={text} />;
   }
 
   return (
-    <Tooltip content={linkText}>
+    <Tooltip content={tooltipText}>
       <Link href={link} target="_blank">
         <Badge
           color="blue"
+          icon="rocket"
           text={
             <Stack direction="row" gap={0.5} alignItems="center">
               {text}
@@ -91,6 +70,50 @@ const FeedbackAbout = ({ text, link, linkText = `Learn more` }: FeedbackAboutPro
         />
       </Link>
     </Tooltip>
+  );
+};
+
+interface ToggletipAndButtonProps {
+  feature: string;
+  isActive: boolean;
+  onClick: () => void;
+  onClose: () => void;
+  reaction: 'good' | 'bad';
+  tooltip: string;
+}
+
+const FeedbackButton = ({ feature, isActive, onClick, onClose, reaction, tooltip }: ToggletipAndButtonProps) => {
+  // because the form is in a toggletip, we want to save the feedback if they
+  // haven't submitted it in case they accidentally close the toggletip
+  const [savedFeedback, setSavedFeedback] = useState<string>(``);
+  const styles = useStyles2(getStyles);
+
+  return (
+    <Toggletip
+      content={
+        <FeedbackForm
+          feature={feature}
+          reaction={reaction}
+          savedFeedback={savedFeedback}
+          handleSaveFeedback={setSavedFeedback}
+        />
+      }
+      onClose={onClose}
+      show={isActive}
+    >
+      {/* Need to wrap in a div to prevent the toggletip from cloning the button and removing the onClick handler */}
+      <div>
+        <Button
+          aria-label={tooltip}
+          className={cx({ [styles.upsideDown]: reaction === 'bad' }, { [styles.active]: isActive })}
+          fill="text"
+          onClick={onClick}
+          size="sm"
+          icon="thumbs-up"
+          tooltip={tooltip}
+        />
+      </div>
+    </Toggletip>
   );
 };
 
@@ -159,6 +182,9 @@ const FeedbackForm = ({ feature, reaction, savedFeedback, handleSaveFeedback }: 
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
+    active: css`
+      color: ${theme.colors.text.primary};
+    `,
     upsideDown: css`
       svg {
         transform: rotate(180deg);

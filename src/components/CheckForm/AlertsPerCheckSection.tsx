@@ -26,9 +26,9 @@ export const AlertsPerCheckSection: React.FC = () => {
           <div style={{ marginLeft: 'auto' }}>
             <Feedback
               about={{
-                text: 'New feature',
+                text: 'New!',
                 link: 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/configure-per-check-alerts/',
-                linkText: 'Read the docs',
+                tooltipText: 'Read more about per-check alerts',
               }}
               feature="alerts_per_check"
             />
