@@ -1,37 +1,25 @@
 import React, { Fragment } from 'react';
-import { FieldValues, useFormContext } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, IconName, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
-import { ZodType } from 'zod';
 
-import { CheckFormValues, CheckType } from 'types';
+import { CheckFormValues } from 'types';
 
 import { DataTestIds } from '../../../test/dataTestIds';
+import { FORM_CONTAINER_NAME } from '../../CheckEditor/FormRoot.constants';
+import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { FORM_SECTION_ORDER } from '../constants';
 import { checkForErrors, useFormLayoutInternal } from './formlayout.utils';
 
-type FormNavigationProps = {
-  activeSection: number;
-  checkState: 'new' | 'existing';
-  checkType: CheckType;
-  onSectionClick: (index: number) => void;
-  visitedSections: number[];
-  schema: ZodType<FieldValues>;
-};
+export function FormNavigation() {
+  const { checkState, schema, checkType } = useCheckFormContext();
 
-export const FormNavigation = ({
-  checkState,
-  checkType,
-  onSectionClick,
-  visitedSections,
-  schema,
-}: FormNavigationProps) => {
   const styles = useStyles2(getStyles);
   const values = useFormContext<CheckFormValues>().watch();
-  const { stepOrder, activeSection } = useFormLayoutInternal();
+  const { stepOrder, activeSection, goToSection, visitedSections } = useFormLayoutInternal();
 
   return (
     <ol className={styles.container} data-testid={DataTestIds.FORM_SIDEBAR}>
@@ -56,7 +44,7 @@ export const FormNavigation = ({
                     component: 'stepper',
                     step: FORM_SECTION_ORDER[index],
                   });
-                  onSectionClick(index);
+                  goToSection(index);
                 }}
               >
                 <Prefix index={index + 1} visited={hasBeenVisited} hasErrors={hasErrors} />
@@ -69,7 +57,7 @@ export const FormNavigation = ({
       })}
     </ol>
   );
-};
+}
 
 function getPrefixStyles(theme: GrafanaTheme2) {
   return {
@@ -113,10 +101,9 @@ const Prefix = ({ index, hasErrors, visited }: any) => {
 };
 
 function getStyles(theme: GrafanaTheme2) {
-  const containerName = `formLayout`;
   const breakpoint = theme.breakpoints.values.md;
   const query = `(max-width: ${breakpoint}px)`;
-  const containerQuery = `@container ${containerName} ${query}`;
+  const containerQuery = `@container ${FORM_CONTAINER_NAME} ${query}`;
 
   const isActive = css``;
 

@@ -30,4 +30,7 @@ export enum DataTestIds {
   TEST_ROUTER_INFO_PATHNAME = 'test-router-info-pathname',
   TEST_ROUTER_INFO_SEARCH = 'test-router-info-search',
   FORM_SIDEBAR = 'form-sidebar',
+  CHECK_EDITOR = 'check-editor',
+  CHECK_EDITOR_INITIALIZING = 'check-editor-initializing',
+  CHECK_EDITOR_MAIN_NAVIGATION = 'check-editor-main-navigation',
 }

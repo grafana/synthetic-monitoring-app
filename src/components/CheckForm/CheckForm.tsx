@@ -64,10 +64,7 @@ function CheckFormInternal() {
 
   const formMethods = useFormContext<CheckFormValues>();
 
-  const { error, handleInvalid, handleValid, submittingToApi } = useCheckForm({
-    check,
-    checkType,
-  });
+  const { error, handleInvalid, handleValid, submittingToApi } = useCheckForm();
 
   const {
     checkFields,
@@ -185,6 +182,7 @@ function CheckFormInternal() {
           {isAlertsPerCheckOn ? <AlertsPerCheckSection /> : <CheckFormAlert />}
         </FormLayout.Section>
       </FormLayout>
+      <div>Right aside</div>
       <CheckTestResultsModal isOpen={showAdhocTestModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmLeavingPage enabled={hasUnsavedChanges} />
     </>

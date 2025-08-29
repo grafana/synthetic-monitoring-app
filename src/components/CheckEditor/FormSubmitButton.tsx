@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, ButtonProps } from '@grafana/ui';
+import { DataTestIds } from 'test/dataTestIds';
 
-import { DataTestIds } from '../../../test/dataTestIds';
-import { useFormLayoutInternal } from './formlayout.utils';
+import { useCheckEditorContext } from './CheckEditorContext';
 
 export function FormSubmitButton({
   children = 'Save',
@@ -11,7 +11,7 @@ export function FormSubmitButton({
   children?: React.ReactNode;
   variant?: ButtonProps['variant'];
 }) {
-  const { formId, submitDisabled, isLastSection, allSectionsVisited } = useFormLayoutInternal();
+  const { formId, submitDisabled, isLastSection, allSectionsVisited } = useCheckEditorContext();
 
   return (
     <Button

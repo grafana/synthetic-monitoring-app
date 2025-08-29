@@ -10,6 +10,7 @@ import { CheckType } from 'types';
 import { FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
 import { DataTestIds } from '../../../test/dataTestIds';
+import { FORM_CONTAINER_NAME } from '../../CheckEditor/FormRoot.constants';
 import { FORM_SECTION_ORDER, FormSectionIndex } from '../constants';
 import { useFormLayoutInternal } from './formlayout.utils';
 import { FormNavigation } from './FormNavigation';
@@ -36,6 +37,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   onInvalid?: (errs: FieldErrors<T>) => void;
   schema: ZodType;
   hasUnsavedChanges?: boolean;
+  hideFormNavigation?: boolean;
 };
 
 export const FormLayout = <T extends FieldValues>({
@@ -47,8 +49,8 @@ export const FormLayout = <T extends FieldValues>({
   onSubmit,
   onValid,
   onInvalid,
-  schema,
   hasUnsavedChanges = true, // default to true to prevent accidentally disabling the submit button
+  hideFormNavigation = false,
 }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
   const {
@@ -59,7 +61,6 @@ export const FormLayout = <T extends FieldValues>({
     activeSection,
     goToSection,
     setVisited,
-    visitedSections,
     stepOrder,
     setActiveSectionByError,
     getSectionLabel,
@@ -104,16 +105,11 @@ export const FormLayout = <T extends FieldValues>({
       {alerts && <div className={styles.alerts}>{alerts}</div>}
       <form id={formId} className={styles.form} onSubmit={onSubmit(handleValid, handleInvalid)}>
         <div className={styles.container}>
-          <div className={styles.containerInner}>
-            <FormNavigation
-              activeSection={activeSection}
-              checkState={checkState}
-              checkType={checkType}
-              onSectionClick={goToSection}
-              visitedSections={visitedSections}
-              schema={schema}
-            />
-          </div>
+          {!hideFormNavigation && (
+            <div className={styles.containerInner}>
+              <FormNavigation />
+            </div>
+          )}
 
           <div className={styles.divider} />
 
@@ -181,7 +177,7 @@ export const FormLayout = <T extends FieldValues>({
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
-  const containerName = `formLayout`;
+  const containerName = FORM_CONTAINER_NAME;
   // const breakpoint = theme.breakpoints.values.md;
   // const query = `(min-width: ${breakpoint + 1}px)`;
   // const containerQuery = `@container ${containerName} ${query}`;

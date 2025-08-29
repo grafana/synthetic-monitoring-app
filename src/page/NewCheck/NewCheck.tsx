@@ -6,28 +6,36 @@ import { TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckFormPageParams } from 'types';
+import { CheckFormPageParams, CheckTypeGroup } from 'types';
 import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { CHECK_TYPE_GROUP_OPTIONS, useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
-import { CheckForm } from 'components/CheckForm/CheckForm';
-import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
+import { CheckEditor } from 'components/CheckEditor/CheckEditor';
+import { CheckEditorContextProvider, useCheckEditorContext } from 'components/CheckEditor/CheckEditorContext';
 import { PluginPageNotFound } from 'page/NotFound';
 
-import { PageActions } from '../../components/CheckForm/PageActions';
+import { useURLSearchParams } from '../../hooks/useURLSearchParams';
+import { PageActions } from './components/PageActions';
 
 export function NewCheck() {
+  const { checkTypeGroup = CheckTypeGroup.ApiTest } = useParams<CheckFormPageParams>();
+  const urlSearchParams = useURLSearchParams();
+  const checkType = urlSearchParams.get('checkType');
+
   return (
-    <CheckFormContextProvider>
+    <CheckEditorContextProvider checkTypeGroup={checkTypeGroup} checkType={checkType}>
       <NewCheckContent />
-    </CheckFormContextProvider>
+    </CheckEditorContextProvider>
   );
 }
 
 export const NewCheckContent = () => {
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
-  const { isLoading } = useCheckFormMetaContext();
+  const {
+    checkMeta: { isLoading },
+  } = useCheckEditorContext();
+
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
   const group = CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup);
   const styles = useStyles2(getStyles);
@@ -51,7 +59,7 @@ export const NewCheckContent = () => {
   return (
     <PluginPage pageNav={navModel} actions={<PageActions />}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <CheckForm key={isLoading ? `loading` : `ready`} />
+        <CheckEditor key={isLoading ? `loading` : `ready`} />
       </div>
     </PluginPage>
   );

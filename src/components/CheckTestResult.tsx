@@ -39,6 +39,9 @@ export function CheckTestResult({ probeName, success, loading, logs }: Props) {
     <Collapse
       label={header}
       isOpen={isOpen}
+      className={css`
+        margin-top: 16px;
+      `}
       onToggle={(isOpen) => {
         if (!loading) {
           setIsOpen(isOpen);

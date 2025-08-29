@@ -57,18 +57,11 @@ export function FormLayoutContextProvider({
 
   const goToSection = useCallback(
     (index: number) => {
-      setActiveSection(index);
       const previous = new Array(index).fill(0).map((_, i) => i);
-      setVisited(previous);
+      setVisited([...previous, activeSection]);
+      setActiveSection(index);
     },
-    [setVisited]
-  );
-
-  const handleVisited = useCallback(
-    (indices: number[]) => {
-      setVisited(indices);
-    },
-    [setVisited]
+    [activeSection, setVisited]
   );
 
   const [stepOrder, setStepOrder] = useState<Record<number, { label: string; fields?: Section['fields'] }>>({});
@@ -90,7 +83,7 @@ export function FormLayoutContextProvider({
 
   const setActiveSectionByError = useCallback(
     (errs: FieldErrors) => {
-      handleVisited(Object.keys(stepOrder).map((indexKey) => Number(indexKey)));
+      setVisited(Object.keys(stepOrder).map((indexKey) => Number(indexKey)));
 
       const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errs));
       let index = 0;
@@ -107,7 +100,7 @@ export function FormLayoutContextProvider({
         setActiveSection(index);
       }
     },
-    [handleVisited, stepOrder]
+    [setVisited, stepOrder]
   );
 
   const getSectionLabel = useCallback(

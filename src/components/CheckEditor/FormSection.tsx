@@ -5,28 +5,28 @@ import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
-import { FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
-import { CheckStatusInfo, type CheckStatusInfoProps } from 'components/CheckStatusInfo';
-import { NewStatusBadge } from 'components/NewStatusBadge';
 
-import { useFormLayoutInternal } from './formlayout.utils';
+import { FORM_MAX_WIDTH } from '../CheckForm/FormLayout/FormLayout.constants';
+import { CheckStatusInfo, type CheckStatusInfoProps } from '../CheckStatusInfo';
+import { NewStatusBadge } from '../NewStatusBadge';
+import { useCheckEditorContext } from './CheckEditorContext';
 
-export type FormSectionProps = {
+interface FormSectionProps {
   children: ReactNode;
   label: string;
   fields?: Array<FieldPath<CheckFormValues>>;
   index: number;
   status?: CheckStatusInfoProps;
-};
+}
 
-export const FormSection = ({ children, label, index, status, fields }: FormSectionProps) => {
+export function FormSection({ children, label, index, status, fields }: FormSectionProps) {
   const styles = useStyles2(getStyles);
 
-  const { registerSection, activeSection } = useFormLayoutInternal();
+  const { registerSection, activeSection } = useCheckEditorContext();
 
   useEffect(() => {
     registerSection(index, label, fields);
-  }, [label, index, registerSection, fields]);
+  }, [label, index, fields, registerSection]);
 
   const isActive = activeSection === index;
 
@@ -50,21 +50,21 @@ export const FormSection = ({ children, label, index, status, fields }: FormSect
       <div className={styles.sectionContent}>{children}</div>
     </div>
   );
-};
+}
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
-    header: css({
-      position: 'relative',
-      display: 'flex',
-      gap: theme.spacing(2),
-    }),
-    sectionContent: css({
-      maxWidth: FORM_MAX_WIDTH,
-    }),
+    header: css`
+      position: relative;
+      display: flex;
+      gap: ${theme.spacing(2)};
+    `,
+    sectionContent: css`
+      max-width: ${FORM_MAX_WIDTH};
+    `,
 
-    formContainer: css({
-      position: 'relative',
-    }),
+    formContainer: css`
+      position: relative;
+    `,
   };
 };

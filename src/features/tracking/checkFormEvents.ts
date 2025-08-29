@@ -1,8 +1,7 @@
 import { createSMEventFactory, TrackingEventProps } from 'features/tracking/utils';
 
 import { CheckType } from 'types';
-
-import { FormSectionName } from '../../components/CheckForm/constants';
+import { FormSectionName } from 'components/CheckEditor/CheckEditor.constants';
 
 const checkFormEvents = createSMEventFactory('check_form');
 
