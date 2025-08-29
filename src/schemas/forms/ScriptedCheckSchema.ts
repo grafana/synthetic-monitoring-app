@@ -5,7 +5,7 @@ import { z, ZodType } from 'zod';
 import { CheckFormValuesScripted, CheckType, ScriptedSettings } from 'types';
 import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
-import { maxSizeValidation, validateNonBrowserScript } from './script/validation';
+import { channelValidation, maxSizeValidation, validateNonBrowserScript } from './script/validation';
 import { baseCheckSchema } from './BaseCheckSchema';
 
 export const MIN_FREQUENCY_SCRIPTED = ONE_MINUTE_IN_MS;
@@ -32,4 +32,5 @@ export const scriptedCheckSchema: ZodType<CheckFormValuesScripted> = baseCheckSc
       frequency: createFrequencySchema(MIN_FREQUENCY_SCRIPTED),
       timeout: createTimeoutSchema(MIN_TIMEOUT_SCRIPTED, MAX_TIMEOUT_SCRIPTED),
     })
-  );
+  )
+  .superRefine(channelValidation);
