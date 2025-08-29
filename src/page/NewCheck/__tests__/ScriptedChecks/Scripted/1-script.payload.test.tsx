@@ -1,8 +1,8 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
-import { fillMandatoryFields } from 'page/__testHelpers__/scripted';
+import { fillMandatoryFields, setupChannelTest, setupFormWithChannelSelector } from 'page/__testHelpers__/scripted';
 
 const checkType = CheckType.Scripted;
 
@@ -37,5 +37,25 @@ describe(`ScriptedCheck - 1 (Script) payload`, () => {
 
   it.skip(`can add a script`, async () => {
     // it uses MonacoEditor, which is not supported by the current testing setup
+  });
+
+  it(`can add a channel to the payload`, async () => {
+    setupChannelTest();
+    const { read, user } = await setupFormWithChannelSelector(checkType);
+    await submitForm(user);
+    const { body } = await read();
+    expect(body.channel).toBe('v1');
+  });
+
+  it(`can select and submit a non-default channel`, async () => {
+    setupChannelTest();
+    const { read, user, channelSelector } = await setupFormWithChannelSelector(checkType);
+    await user.selectOptions(channelSelector, 'v2');
+    await waitFor(() => {
+      expect(channelSelector).toHaveValue('v2');
+    });
+    await submitForm(user);
+    const { body } = await read();
+    expect(body.channel).toBe('v2');
   });
 });

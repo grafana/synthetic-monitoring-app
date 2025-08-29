@@ -51,6 +51,13 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     return Object.entries(channels).find(([, channel]) => channel.default)?.[0] || '';
   }, [channels]);
 
+  // Set the field value to the default channel if no value is currently set and we have a default
+  useEffect(() => {
+    if (!field.value && defaultChannelId && channels[defaultChannelId]) {
+      field.onChange(defaultChannelId);
+    }
+  }, [defaultChannelId, channels, field]);
+
   // Set channelDisabled flag when channels load or current value changes
   useEffect(() => {
     const currentChannelId = field.value || defaultChannelId;
