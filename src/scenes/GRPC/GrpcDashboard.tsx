@@ -12,16 +12,15 @@ import { ErrorRate } from 'scenes/Common/ErrorRateViz';
 import { Frequency } from 'scenes/Common/FrequencyViz';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { ResponseLatencyByProbe } from 'scenes/Common/ResponseLatencyByProbe';
-import { SSLExpiry } from 'scenes/Common/SSLExpiryViz';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export const TcpDashboard = ({ check }: { check: Check }) => {
+export const GrpcDashboard = ({ check }: { check: Check }) => {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.TCP}>
+    <DashboardContainer check={check} checkType={CheckType.GRPC}>
       <div className={styles.vizLayout}>
         <div className={styles.errorRateMap}>
           <ErrorRateMap minStep={minStep} />
@@ -32,7 +31,6 @@ export const TcpDashboard = ({ check }: { check: Check }) => {
             <UptimeStat check={check} />
             <ReachabilityStat check={check} />
             <AvgLatency />
-            <SSLExpiry />
             <Frequency />
           </div>
 
