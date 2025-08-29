@@ -172,3 +172,88 @@ Tracks when an alert is deleted successfully
 | name | type                                                                                                                                                                              | description           |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
 | name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
+
+### timepoint_explorer
+
+#### synthetic-monitoring_timepoint_explorer_view_toggle
+
+Tracks when the Timepoint Explorer view type is changed.
+
+##### Properties
+
+| name     | type     | description    |
+| -------- | -------- | -------------- |
+| viewMode | `string` | The view type. |
+
+#### synthetic-monitoring_timepoint_explorer_mini_map_section_clicked
+
+Tracks when a section of the Timepoint Explorer mini map is clicked.
+
+##### Properties
+
+| name      | type                                         | description                                                |
+| --------- | -------------------------------------------- | ---------------------------------------------------------- |
+| index     | `number`                                     | The index of the section of the mini map that was clicked. |
+| component | `"left-arrow" \| "right-arrow" \| "section"` | The UI component that was clicked.                         |
+
+#### synthetic-monitoring_timepoint_explorer_mini_map_page_clicked
+
+Tracks when the Timepoint Explorer mini map page is changed.
+
+##### Properties
+
+| name  | type     | description                             |
+| ----- | -------- | --------------------------------------- |
+| index | `number` | The index of the page that was clicked. |
+
+#### synthetic-monitoring_timepoint_explorer_timepoint_click
+
+Tracks when a probe entry in the Timepoint Viewer is clicked.
+
+##### Properties
+
+| name      | type                                                                                     | description                                              |
+| --------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| component | `"tooltip" \| "reachability-entry" \| "viewer-tab" \| "uptime-entry" \| "pending-entry"` | The UI component that was clicked.                       |
+| status    | `"success" \| "failure" \| "missing" \| "pending"`                                       | The status of the Timepoint List entry that was clicked. |
+
+#### synthetic-monitoring_timepoint_explorer_timepoint_viz_legend_toggled
+
+Tracks when a Timepoint Viz Legend is clicked.
+
+##### Properties
+
+| name       | type     | description                        |
+| ---------- | -------- | ---------------------------------- |
+| vizOptions | `string` | The viz options that were toggled. |
+
+#### synthetic-monitoring_timepoint_explorer_timepoint_viz_legend_color_clicked
+
+Tracks when a Timepoint Viz Legend color is clicked.
+
+##### Properties
+
+| name      | type                                               | description                                   |
+| --------- | -------------------------------------------------- | --------------------------------------------- |
+| color     | `string`                                           | The color of the viz option that was clicked. |
+| vizOption | `"success" \| "failure" \| "missing" \| "pending"` | The viz option that was clicked.              |
+
+#### synthetic-monitoring_timepoint_explorer_timepoint_viewer_action_clicked
+
+Tracks when a Timepoint Viewer action is clicked
+
+##### Properties
+
+| name   | type                                                                                        | description                  |
+| ------ | ------------------------------------------------------------------------------------------- | ---------------------------- |
+| action | `"previous-timepoint" \| "next-timepoint" \| "view-explore-logs" \| "view-explore-metrics"` | The action that was clicked. |
+
+#### synthetic-monitoring_timepoint_explorer_timepoint_viewer_logs_view_toggled
+
+Tracks when the Timepoint Viewer logs view is toggled
+
+##### Properties
+
+| name   | type                    | description                  |
+| ------ | ----------------------- | ---------------------------- |
+| action | `"event" \| "raw-logs"` | The action that was clicked. |

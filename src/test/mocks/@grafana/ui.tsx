@@ -26,5 +26,6 @@ jest.mock('@grafana/ui', () => {
       </div>
     ),
     CodeEditor,
+    measureText: jest.fn(() => ({ width: 100, height: 14 })),
   };
 });

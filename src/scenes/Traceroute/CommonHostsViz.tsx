@@ -1,15 +1,13 @@
 import React from 'react';
-import { DataTransformerID, GrafanaTheme2 } from '@grafana/data';
+import { DataTransformerID } from '@grafana/data';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
-import { TableCellDisplayMode, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { TableCellDisplayMode } from '@grafana/ui';
 
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const CommonHosts = () => {
-  const styles = useStyles2(getStyles);
   const logsDS = useLogsDS();
 
   const query = {
@@ -45,15 +43,13 @@ export const CommonHosts = () => {
   });
 
   return (
-    <div className={styles.commonHosts}>
-      <VizPanel
-        dataProvider={dataTransformer}
-        description={`Shows the common hosts traversed in a single traceroute`}
-        menu={menu}
-        title={`Common hosts`}
-        viz={viz}
-      />
-    </div>
+    <VizPanel
+      dataProvider={dataTransformer}
+      description={`Shows the common hosts traversed in a single traceroute`}
+      menu={menu}
+      title={`Common hosts`}
+      viz={viz}
+    />
   );
 };
 
@@ -76,9 +72,3 @@ const viz = VizConfigBuilders.table()
     },
   ])
   .build();
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  commonHosts: css({
-    height: '300px',
-  }),
-});

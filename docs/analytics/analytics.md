@@ -30,7 +30,7 @@ For each feature you wish to track, create a new file in the `src/features/track
 To generate the `analytics-events.md` file, run the following command:
 
 ```bash
-yarn analytics-events:generate
+yarn build:analytics-events
 ```
 
 This will generate the `analytics-events.md` file in the `docs/analytics` directory. Do not edit it directly - if it needs to be updated, edit the events and their JSDoc comments then run the command again.

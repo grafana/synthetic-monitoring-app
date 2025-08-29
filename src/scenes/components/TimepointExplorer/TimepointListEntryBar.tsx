@@ -1,0 +1,142 @@
+import React, { ReactNode, useCallback, useRef } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
+import { TimepointDetailsClick, trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
+
+import { PlainButton } from 'components/PlainButton';
+import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import {
+  useSelectedProbeNames,
+  useStatefulTimepoint,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { StatelessTimepoint, TimepointStatus } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { TimepointListEntryTooltip } from 'scenes/components/TimepointExplorer/TimepointListEntryTooltip';
+import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointVizItem';
+
+interface TimepointListEntryPendingProps {
+  analyticsEventName: TimepointDetailsClick['component'];
+  children: ReactNode;
+  timepoint: StatelessTimepoint;
+  status: TimepointStatus;
+}
+
+const GLOBAL_CLASS = `list_entry_bar`;
+
+export const TimepointListEntryBar = ({
+  analyticsEventName,
+  children,
+  status,
+  timepoint,
+}: TimepointListEntryPendingProps) => {
+  const statefulTimepoint = useStatefulTimepoint(timepoint);
+  const { handleViewerStateChange, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
+
+  const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
+  const styles = useStyles2(getStyles, timepointWidth, height);
+  const probeNameToView = selectedProbeNames.sort((a, b) => a.localeCompare(b))[0];
+  const [viewerTimepoint] = viewerState;
+  const isSelected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime;
+  const ref = useRef<HTMLButtonElement>(null);
+
+  const handleViewerStateClick = useCallback(() => {
+    trackTimepointDetailsClicked({
+      component: analyticsEventName,
+      status,
+    });
+    handleViewerStateChange([timepoint, probeNameToView, 0]);
+  }, [analyticsEventName, status, timepoint, probeNameToView, handleViewerStateChange]);
+
+  if (!vizDisplay.includes(status)) {
+    return <div />;
+  }
+
+  return (
+    <div className={styles.container}>
+      {isSelected && (
+        <div className={styles.selectedIcon}>
+          <Icon name="eye" />
+        </div>
+      )}
+      <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
+        <PlainButton className={styles.button} ref={ref} onClick={handleViewerStateClick} showFocusStyles={false}>
+          <TimepointVizItem
+            className={cx(styles.bar, GLOBAL_CLASS, {
+              [styles.selected]: isSelected,
+            })}
+            status={status}
+          >
+            {children}
+          </TimepointVizItem>
+        </PlainButton>
+      </Tooltip>
+    </div>
+  );
+};
+
+const getStyles = (theme: GrafanaTheme2, timepointWidth: number, height: number) => {
+  return {
+    container: css`
+      height: ${height}%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    `,
+    button: css`
+      width: calc(${timepointWidth}px + ${TIMEPOINT_GAP_PX}px);
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      position: relative;
+      display: flex;
+      justify-content: center;
+      z-index: 2;
+
+      &:hover .${GLOBAL_CLASS} {
+        &:after {
+          opacity: 0.3;
+        }
+      }
+
+      &:focus-visible {
+        .${GLOBAL_CLASS} {
+          ${styleMixins.getFocusStyles(theme)}
+        }
+      }
+    `,
+    bar: css`
+      height: 100%;
+      min-height: 2px;
+      width: ${timepointWidth}px;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      position: relative;
+      border-radius: ${theme.shape.radius.default};
+      overflow: hidden;
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: ${theme.colors.getContrastText(theme.colors.background.primary, 0.1)};
+        opacity: 0;
+        pointer-events: none;
+      }
+    `,
+    selected: css`
+      border-width: 2px;
+      z-index: 1;
+    `,
+    selectedIcon: css`
+      position: absolute;
+      bottom: ${height}%;
+    `,
+  };
+};
