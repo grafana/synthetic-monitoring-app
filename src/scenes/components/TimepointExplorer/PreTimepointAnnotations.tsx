@@ -29,39 +29,43 @@ export const PreTimepointAnnotations = ({
   triggerHeight,
   timepointsInRange,
 }: PreTimepointAnnotationsProps) => {
-  const [timeRange] = useTimeRange();
-  const { check, explorerTimeFrom, miniMapCurrentPage, miniMapPages } = useTimepointExplorerContext();
+  const { check, isCheckCreationWithinTimeRange, miniMapCurrentPage, miniMapPages, renderingStrategy } =
+    useTimepointExplorerContext();
   const checkCreation = Math.round(check.created! * 1000);
-  const isCheckCreationWithinRange = checkCreation > explorerTimeFrom - 1 && checkCreation < timeRange.to.valueOf();
   const isFirstPage = miniMapCurrentPage === miniMapPages.length - 1;
 
   if (!(isBeginningSection && isFirstPage) || !checkCreation) {
     return null;
   }
 
-  return (
-    <>
-      {isCheckCreationWithinRange ? (
-        <CheckCreationAnnotation
-          checkCreation={checkCreation}
-          showLabels={showLabels}
-          displayWidth={displayWidth}
-          parentWidth={parentWidth}
-          timepointsInRange={timepointsInRange}
-          triggerHeight={triggerHeight}
-        />
-      ) : (
-        <OutOfRangeAnnotation
-          checkCreation={checkCreation}
-          displayWidth={displayWidth}
-          parentWidth={parentWidth}
-          showLabels={showLabels}
-          timepointsInRange={timepointsInRange}
-          triggerHeight={triggerHeight}
-        />
-      )}
-    </>
-  );
+  if (isCheckCreationWithinTimeRange) {
+    return (
+      <CheckCreationAnnotation
+        checkCreation={checkCreation}
+        showLabels={showLabels}
+        displayWidth={displayWidth}
+        parentWidth={parentWidth}
+        renderingStrategy={renderingStrategy}
+        timepointsInRange={timepointsInRange}
+        triggerHeight={triggerHeight}
+      />
+    );
+  }
+
+  if (renderingStrategy === 'end') {
+    return (
+      <OutOfRangeAnnotation
+        checkCreation={checkCreation}
+        displayWidth={displayWidth}
+        parentWidth={parentWidth}
+        showLabels={showLabels}
+        timepointsInRange={timepointsInRange}
+        triggerHeight={triggerHeight}
+      />
+    );
+  }
+
+  return null;
 };
 
 interface CheckCreationAnnotationProps {
@@ -69,6 +73,7 @@ interface CheckCreationAnnotationProps {
   showLabels?: boolean;
   displayWidth: number;
   parentWidth: number;
+  renderingStrategy: 'start' | 'end';
   timepointsInRange: StatelessTimepoint[];
   triggerHeight: number;
 }
@@ -78,6 +83,7 @@ const CheckCreationAnnotation = ({
   showLabels,
   displayWidth,
   parentWidth,
+  renderingStrategy,
   timepointsInRange,
   triggerHeight,
 }: CheckCreationAnnotationProps) => {
@@ -98,6 +104,7 @@ const CheckCreationAnnotation = ({
       }}
       displayWidth={displayWidth}
       parentWidth={parentWidth}
+      renderingStrategy={renderingStrategy}
       showLabels={showLabels}
       timepointsInRange={timepointsInRange}
       triggerHeight={triggerHeight}
@@ -157,6 +164,7 @@ const OutOfRangeAnnotation = ({
       }}
       displayWidth={displayWidth}
       parentWidth={parentWidth}
+      renderingStrategy={`end`}
       showLabels={showLabels}
       timepointsInRange={timepointsInRange}
       triggerHeight={triggerHeight}

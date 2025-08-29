@@ -403,14 +403,13 @@ interface GetExplorerTimeFromProps {
 // if creation was after retention date - then creation date should be used
 // if selected time range is more recent than both - use that
 export function getExplorerTimeFrom({ checkCreation, logsRetentionFrom, timeRangeFrom }: GetExplorerTimeFromProps) {
-  const checkCreationDate = Math.round(checkCreation * 1000);
-  const wasCreationBeforeRetention = BigInt(checkCreationDate) < BigInt(logsRetentionFrom);
+  const wasCreationBeforeRetention = BigInt(checkCreation) < BigInt(logsRetentionFrom);
 
   if (wasCreationBeforeRetention) {
     return Math.max(logsRetentionFrom, timeRangeFrom);
   }
 
-  return Math.max(checkCreationDate, timeRangeFrom);
+  return Math.max(checkCreation, timeRangeFrom);
 }
 
 export function getYAxisMax(highestValue: number, timeout: number) {
@@ -465,4 +464,8 @@ export function getNonRoundedYAxisMax(highestValue: number, timeout: number) {
   }
 
   return highestValue;
+}
+
+export function getIsCheckCreationWithinRange(checkCreation: UnixTimestamp, from: UnixTimestamp, to: UnixTimestamp) {
+  return BigInt(checkCreation) >= BigInt(from) && BigInt(checkCreation) <= BigInt(to);
 }

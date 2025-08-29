@@ -52,6 +52,7 @@ import {
   buildCheckEvents,
   findNearestPageIndex,
   getExplorerTimeFrom,
+  getIsCheckCreationWithinRange,
   getMiniMapPages,
   getMiniMapSections,
   getVisibleTimepoints,
@@ -77,6 +78,7 @@ interface TimepointExplorerContextType {
   handleVizDisplayChange: (display: TimepointStatus, usedModifier: boolean) => void;
   handleVizOptionChange: (display: TimepointStatus, color: string) => void;
   hoveredState: HoveredState;
+  isCheckCreationWithinTimeRange: boolean;
   isError: boolean;
   isFetching: boolean;
   isInitialised: boolean;
@@ -88,6 +90,7 @@ interface TimepointExplorerContextType {
   miniMapCurrentPageSections: MiniMapSections;
   miniMapCurrentSectionIndex: number;
   miniMapPages: MiniMapPages;
+  renderingStrategy: 'start' | 'end';
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
   timepointWidth: number;
@@ -105,7 +108,7 @@ interface TimepointExplorerProviderProps extends PropsWithChildren {
 }
 
 export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
-  const checkCreation = check.created!;
+  const checkCreation = Math.round(check.created! * 1000);
   const [timeRange] = useTimeRange();
   const timeRangeRef = useRef<TimeRange>(timeRange);
   const logsRetentionPeriod = useLogsRetentionPeriod(timeRange.from.valueOf());
@@ -325,6 +328,13 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     currentAdjustedTime,
   });
 
+  const renderingStrategy = timepoints.length > timepointsDisplayCount ? 'end' : 'start';
+  const isCheckCreationWithinTimeRange = getIsCheckCreationWithinRange(
+    checkCreation,
+    explorerTimeFrom,
+    timeRange.to.valueOf()
+  );
+
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
       alertEvents,
@@ -344,6 +354,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleVizDisplayChange,
       handleVizOptionChange,
       hoveredState,
+      isCheckCreationWithinTimeRange,
       isError,
       isFetching,
       isInitialised,
@@ -355,6 +366,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       miniMapCurrentPageSections,
       miniMapCurrentSectionIndex,
       miniMapPages,
+      renderingStrategy,
       timepoints,
       timepointsDisplayCount,
       timepointWidth,
@@ -382,6 +394,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleVizDisplayChange,
     handleVizOptionChange,
     hoveredState,
+    isCheckCreationWithinTimeRange,
     isError,
     isFetching,
     isInitialised,
@@ -393,6 +406,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
     miniMapPages,
+    renderingStrategy,
     timepoints,
     timepointsDisplayCount,
     timepointWidth,

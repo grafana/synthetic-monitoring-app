@@ -22,8 +22,16 @@ interface MinimapCanvasProps {
 }
 
 export const TimepointMinimapSectionCanvas = ({ timepoints, width, height }: MinimapCanvasProps) => {
-  const { check, currentAdjustedTime, isLoading, timepointsDisplayCount, viewMode, yAxisMax, vizDisplay } =
-    useTimepointExplorerContext();
+  const {
+    check,
+    currentAdjustedTime,
+    isLoading,
+    renderingStrategy,
+    timepointsDisplayCount,
+    viewMode,
+    yAxisMax,
+    vizDisplay,
+  } = useTimepointExplorerContext();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const selectedProbeNames = useSceneVarProbes(check);
   const pendingVizOption = useTimepointVizOptions('pending');
@@ -62,16 +70,23 @@ export const TimepointMinimapSectionCanvas = ({ timepoints, width, height }: Min
 
     const entryWidth = width / timepointsDisplayCount;
 
-    // Count renderable timepoints for right-alignment
-    const renderableCount = processedTimepoints.filter((timepoint) => {
-      const isInTheFuture = getIsInTheFuture(timepoint, currentAdjustedTime);
-      const isEntryLoading = isLoading && timepoint.status === 'missing';
-      return timepoint.config.type !== 'no-data' && !isInTheFuture && !isEntryLoading;
-    }).length;
+    // Use renderingStrategy to determine alignment
+    let currentX: number;
 
-    // Start from right edge, accounting for the width needed for renderable timepoints
-    const totalRenderWidth = renderableCount * entryWidth;
-    let currentX = width - totalRenderWidth;
+    if (renderingStrategy === 'start') {
+      // Left-align: start from left edge
+      currentX = 0;
+    } else {
+      // Right-align: count renderable timepoints and start from right edge
+      const renderableCount = processedTimepoints.filter((timepoint) => {
+        const isInTheFuture = getIsInTheFuture(timepoint, currentAdjustedTime);
+        const isEntryLoading = isLoading && timepoint.status === 'missing';
+        return timepoint.config.type !== 'no-data' && !isInTheFuture && !isEntryLoading;
+      }).length;
+
+      const totalRenderWidth = renderableCount * entryWidth;
+      currentX = width - totalRenderWidth;
+    }
 
     processedTimepoints.forEach((statefulTimepoint) => {
       const isInTheFuture = getIsInTheFuture(statefulTimepoint, currentAdjustedTime);
@@ -80,7 +95,11 @@ export const TimepointMinimapSectionCanvas = ({ timepoints, width, height }: Min
       const pendingProbeNames = getPendingProbeNames({ statefulTimepoint, selectedProbeNames });
 
       if (statefulTimepoint.config.type === 'no-data' || isInTheFuture || isEntryLoading) {
-        // Don't increment currentX for non-renderable timepoints since we're right-aligning
+        // For left-alignment (start), increment to maintain spacing
+        // For right-alignment (end), don't increment since we only counted renderable timepoints
+        if (renderingStrategy === 'start') {
+          currentX += entryWidth;
+        }
         return;
       }
 
@@ -118,6 +137,7 @@ export const TimepointMinimapSectionCanvas = ({ timepoints, width, height }: Min
     missingVizOption,
     pendingVizOption,
     processedTimepoints,
+    renderingStrategy,
     selectedProbeNames,
     successVizOption,
     timepointsDisplayCount,

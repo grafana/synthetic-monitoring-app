@@ -35,7 +35,7 @@ export const XAxis = ({ timepoints }: XAxisProps) => {
 };
 
 const XAxisContent = ({ timepoints }: XAxisProps) => {
-  const { timepointWidth } = useTimepointExplorerContext();
+  const { renderingStrategy, timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
   const [dashboardTimeRange] = useTimeRange();
   const crossesDays = doesTimeRangeCrossDays(dashboardTimeRange.from.toDate(), dashboardTimeRange.to.toDate());
@@ -48,7 +48,7 @@ const XAxisContent = ({ timepoints }: XAxisProps) => {
     <div className={styles.labelContainer}>
       {points.map((point) => {
         return (
-          <XAxisLabel key={point.label} index={point.index}>
+          <XAxisLabel key={point.label} index={point.index} renderingStrategy={renderingStrategy}>
             {point.label}
           </XAxisLabel>
         );
@@ -57,13 +57,20 @@ const XAxisContent = ({ timepoints }: XAxisProps) => {
   );
 };
 
-const XAxisLabel = ({ children, index }: { children: ReactNode; index: number }) => {
+interface XAxisLabelProps {
+  children: ReactNode;
+  index: number;
+  renderingStrategy: 'start' | 'end';
+}
+
+const XAxisLabel = ({ children, index, renderingStrategy }: XAxisLabelProps) => {
   const styles = useStyles2(getStyles);
   const timepointWidth = TIMEPOINT_SIZE + TIMEPOINT_GAP_PX;
   const offset = index * timepointWidth;
+  const direction = renderingStrategy === 'start' ? 'left' : 'right';
 
   return (
-    <div className={styles.label} style={{ right: -1 + offset + timepointWidth / 2 }}>
+    <div className={styles.label} style={{ [direction]: -1 + offset + timepointWidth / 2 }}>
       <div className={styles.text}>{children}</div>
       <div className={styles.line} />
     </div>

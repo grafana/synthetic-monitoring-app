@@ -10,6 +10,7 @@ interface TimepointInstantAnnotationProps {
   annotation: AnnotationWithIndices;
   displayWidth: number;
   parentWidth: number;
+  renderingStrategy: 'start' | 'end';
   showLabels?: boolean;
   timepointsInRange: StatelessTimepoint[];
   triggerHeight: number;
@@ -19,15 +20,14 @@ export const TimepointInstantAnnotation = ({
   annotation,
   displayWidth,
   parentWidth,
+  renderingStrategy,
   showLabels,
   timepointsInRange,
   triggerHeight,
 }: TimepointInstantAnnotationProps) => {
   const styles = useStyles2((theme) => getStyles(theme, annotation, showLabels, triggerHeight));
-  const displayIndex = timepointsInRange.length - annotation.visibleEndIndex;
-  const centerOffset = displayWidth / 2;
-  const right = displayWidth * displayIndex - centerOffset;
-  const isOutsideOfVisibleRange = right > parentWidth;
+  const { direction, offset } = getOffsetAndDirection(renderingStrategy, displayWidth, timepointsInRange, annotation);
+  const isOutsideOfVisibleRange = offset > parentWidth;
 
   if (isOutsideOfVisibleRange) {
     return null;
@@ -37,7 +37,7 @@ export const TimepointInstantAnnotation = ({
     <div
       className={styles.annotation}
       style={{
-        right: `${right}px`,
+        [direction]: `${offset}px`,
       }}
     >
       {showLabels && (
@@ -51,6 +51,27 @@ export const TimepointInstantAnnotation = ({
     </div>
   );
 };
+
+function getOffsetAndDirection(
+  renderingStrategy: 'start' | 'end',
+  displayWidth: number,
+  timepointsInRange: StatelessTimepoint[],
+  annotation: AnnotationWithIndices
+) {
+  if (renderingStrategy === 'start') {
+    return {
+      direction: 'left',
+      offset: displayWidth * annotation.visibleEndIndex + displayWidth / 2,
+    };
+  }
+
+  const displayIndex = timepointsInRange.length - annotation.visibleEndIndex;
+
+  return {
+    direction: 'right',
+    offset: displayWidth * displayIndex - displayWidth / 2,
+  };
+}
 
 const getStyles = (
   theme: GrafanaTheme2,
@@ -79,9 +100,9 @@ const getStyles = (
       left: 50%;
       padding: ${theme.spacing(1)};
       pointer-events: all;
-      position: relative;
-      transform: translate(0, -100%);
-      width: 100%;
+      position: absolute;
+      transform: translate(-50%, -100%);
+      width: 170px;
     `,
   };
 };

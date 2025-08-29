@@ -1,9 +1,11 @@
-export const TIMEPOINT_SIZE = 25;
+export const TIMEPOINT_SIZE = 20;
 export const TIMEPOINT_THEME_GAP = 1;
 export const THEME_UNIT = 8;
 export const TIMEPOINT_GAP_PX = TIMEPOINT_THEME_GAP * THEME_UNIT;
 export const TIMEPOINT_THEME_HEIGHT = 60;
 export const TIMEPOINT_THEME_HEIGHT_PX = TIMEPOINT_THEME_HEIGHT * THEME_UNIT;
+
+export const TIMEPOINT_CREATION_PADDING = 5;
 
 export const TIMEPOINT_LIST_ID = `timepoint-list`;
 export const TIMEPOINT_LIST_ANNOTATIONS_ID = `timepoint-list-annotations`;

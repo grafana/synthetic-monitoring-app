@@ -99,10 +99,16 @@ const TimepointMinimapContent = () => {
   const styles = useStyles2(getStyles);
   const [miniMapWidth, setMiniMapWidth] = useState<number>(0);
   const [timeRange] = useTimeRange();
-  const { check, isLogsRetentionPeriodWithinTimerange, miniMapCurrentPageSections } = useTimepointExplorerContext();
+  const {
+    check,
+    isCheckCreationWithinTimeRange,
+    isLogsRetentionPeriodWithinTimerange,
+    miniMapCurrentPageSections,
+    miniMapCurrentPage,
+  } = useTimepointExplorerContext();
   const checkCreation = Math.round(check.created! * 1000);
-  const isCheckCreationWithinRange = checkCreation > timeRange.from.valueOf() && checkCreation < timeRange.to.valueOf();
   const isCheckCreationAfterTo = checkCreation > timeRange.to.valueOf();
+  const isFirstPage = miniMapCurrentPage === 0;
 
   const filler =
     miniMapCurrentPageSections.length < MAX_MINIMAP_SECTIONS
@@ -118,7 +124,7 @@ const TimepointMinimapContent = () => {
   });
 
   const className = useMemo(() => {
-    if (isCheckCreationWithinRange) {
+    if (isCheckCreationWithinTimeRange) {
       return undefined;
     }
     if (isCheckCreationAfterTo) {
@@ -128,14 +134,15 @@ const TimepointMinimapContent = () => {
       return styles.outOfRetentionPeriodMimic;
     }
     return styles.outOfRangeMimic;
-  }, [isCheckCreationWithinRange, isCheckCreationAfterTo, isLogsRetentionPeriodWithinTimerange, styles]);
+  }, [isCheckCreationWithinTimeRange, isCheckCreationAfterTo, isLogsRetentionPeriodWithinTimerange, styles]);
 
   return (
     <Box position="relative" paddingY={2} flex={1} ref={ref} maxWidth={`calc(100% - ${BUTTON_SPACE * 2}px)`}>
       <Stack gap={0}>
-        {filler.map((_, index) => {
-          return <div key={index} className={cx(styles.filler, className)} />;
-        })}
+        {!isFirstPage &&
+          filler.map((_, index) => {
+            return <div key={index} className={cx(styles.filler, className)} />;
+          })}
         {miniMapCurrentPageSections
           .map((section, index) => (
             <Box key={index} flex={1}>
@@ -143,6 +150,10 @@ const TimepointMinimapContent = () => {
             </Box>
           ))
           .reverse()}
+        {isFirstPage &&
+          filler.map((_, index) => {
+            return <div key={index} className={styles.filler} />;
+          })}
       </Stack>
     </Box>
   );

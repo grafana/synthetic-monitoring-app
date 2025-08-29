@@ -1,6 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Tooltip, useStyles2 } from '@grafana/ui';
+import { Box, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackMiniMapSectionClicked } from 'features/tracking/timepointExplorerEvents';
 
@@ -8,6 +8,7 @@ import { PlainButton } from 'components/PlainButton';
 import {
   MAX_MINIMAP_SECTIONS,
   MINIMAP_SECTION_HEIGHT,
+  TIMEPOINT_CREATION_PADDING,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { MiniMapSection } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -24,12 +25,13 @@ interface MiniMapSectionProps {
 export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMapSectionProps) => {
   const {
     handleMiniMapSectionChange,
-    miniMapCurrentSectionIndex,
+    isCheckCreationWithinTimeRange,
     miniMapCurrentPageSections,
-    timepointsDisplayCount,
+    miniMapCurrentSectionIndex,
+    renderingStrategy,
     timepoints,
+    timepointsDisplayCount,
   } = useTimepointExplorerContext();
-  const styles = useStyles2(getStyles);
   const [start, end] = section;
   const miniMapSectionTimepoints = timepoints.slice(start, end + 1);
   const ref = useRef<HTMLButtonElement>(null);
@@ -38,6 +40,7 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
   const sectionWidth = miniMapWidth / MAX_MINIMAP_SECTIONS;
   const entryWidth = sectionWidth / timepointsDisplayCount;
   const isBeginningSection = index === miniMapCurrentPageSections.length - 1;
+  const styles = useStyles2((theme) => getStyles(theme, entryWidth));
 
   const handleMiniMapSectionClick = useCallback(() => {
     trackMiniMapSectionClicked({
@@ -47,33 +50,37 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
     handleMiniMapSectionChange(index);
   }, [index, handleMiniMapSectionChange]);
 
+  const padStart = renderingStrategy === 'start' && isCheckCreationWithinTimeRange;
+
   return (
     <Tooltip content={label} ref={ref}>
       <PlainButton
         aria-label={label}
-        className={cx(styles.section, { [styles.active]: isActive })}
+        className={cx(styles.section, { [styles.active]: isActive, [styles.padStart]: padStart })}
         onClick={handleMiniMapSectionClick}
         ref={ref}
       >
-        <TimepointExplorerAnnotations
-          displayWidth={entryWidth}
-          isBeginningSection={isBeginningSection}
-          parentWidth={sectionWidth}
-          showTooltips={false}
-          timepointsInRange={miniMapSectionTimepoints}
-          triggerHeight={2}
-        />
-        <TimepointMinimapSectionCanvas
-          timepoints={miniMapSectionTimepoints}
-          width={sectionWidth}
-          height={MINIMAP_SECTION_HEIGHT}
-        />
+        <Box position="relative">
+          <TimepointExplorerAnnotations
+            displayWidth={entryWidth}
+            isBeginningSection={isBeginningSection}
+            parentWidth={sectionWidth}
+            showTooltips={false}
+            timepointsInRange={miniMapSectionTimepoints}
+            triggerHeight={2}
+          />
+          <TimepointMinimapSectionCanvas
+            timepoints={miniMapSectionTimepoints}
+            width={sectionWidth}
+            height={MINIMAP_SECTION_HEIGHT}
+          />
+        </Box>
       </PlainButton>
     </Tooltip>
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
+const getStyles = (theme: GrafanaTheme2, entryWidth: number) => ({
   section: css`
     width: 100%;
     padding: 0;
@@ -114,5 +121,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     &:after {
       border: 1px solid ${theme.colors.warning.border};
     }
+  `,
+  padStart: css`
+    padding-left: ${TIMEPOINT_CREATION_PADDING * entryWidth}px;
   `,
 });

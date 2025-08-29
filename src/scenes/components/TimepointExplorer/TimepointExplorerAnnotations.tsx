@@ -33,7 +33,7 @@ export const TimepointExplorerAnnotations = ({
   timepointsInRange,
   triggerHeight,
 }: TimepointExplorerAnnotationsProps) => {
-  const { alertEvents, checkEvents } = useTimepointExplorerContext();
+  const { alertEvents, checkEvents, renderingStrategy } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
 
   const checkEventsInRange = getCheckEventsInRange([...checkEvents, ...alertEvents], timepointsInRange);
@@ -58,6 +58,7 @@ export const TimepointExplorerAnnotations = ({
               annotation={annotation}
               displayWidth={displayWidth}
               parentWidth={parentWidth}
+              renderingStrategy={renderingStrategy}
               showLabels={showLabels}
               timepointsInRange={timepointsInRange}
               triggerHeight={triggerHeight}
@@ -71,6 +72,7 @@ export const TimepointExplorerAnnotations = ({
             annotation={annotation}
             displayWidth={displayWidth}
             parentWidth={parentWidth}
+            renderingStrategy={renderingStrategy}
             showLabels={showLabels}
             showTooltips={showTooltips}
             timepointsInRange={timepointsInRange}

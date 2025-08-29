@@ -5,11 +5,13 @@ import { css } from '@emotion/css';
 
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { AnnotationWithIndices } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations.utils';
+import { getOffsetAndDirection } from 'scenes/components/TimepointExplorer/TimepointRangeAnnotation.utils';
 
 interface TimepointRangeAnnotationProps {
   annotation: AnnotationWithIndices;
   displayWidth: number;
   parentWidth: number;
+  renderingStrategy: 'start' | 'end';
   showLabels?: boolean;
   showTooltips?: boolean;
   timepointsInRange: StatelessTimepoint[];
@@ -20,29 +22,25 @@ export const TimepointRangeAnnotation = ({
   annotation,
   displayWidth,
   parentWidth,
+  renderingStrategy,
   showLabels: showLabelsProp,
   showTooltips: showTooltipsProp,
   timepointsInRange,
   triggerHeight,
 }: TimepointRangeAnnotationProps) => {
   const styles = useStyles2((theme) => getStyles(theme, annotation, triggerHeight));
+  const { offset, direction } = getOffsetAndDirection(renderingStrategy, displayWidth, timepointsInRange, annotation);
   const visibleWidth = displayWidth * (annotation.visibleEndIndex - annotation.visibleStartIndex + 1);
-  const rightOffset = displayWidth * (timepointsInRange.length - annotation.visibleEndIndex - 1);
-  const isOutsideOfVisibleRange = rightOffset > parentWidth;
   const theme = useTheme2();
   const annotationTooSlimForLabel =
     visibleWidth < measureText(annotation.checkEvent.label, 14).width + parseInt(theme.spacing(2), 10);
   const showLabels = showLabelsProp && !annotationTooSlimForLabel;
 
-  if (isOutsideOfVisibleRange) {
-    return null;
-  }
-
   return (
     <div
       className={styles.annotation}
       style={{
-        right: `${rightOffset}px`,
+        [direction]: `${offset}px`,
         width: `${visibleWidth}px`,
       }}
     >

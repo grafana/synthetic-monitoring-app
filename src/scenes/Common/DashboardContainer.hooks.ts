@@ -18,7 +18,7 @@ export function useDashboardContainerAnnotations(check: Check) {
     refId: 'alertsAnnotation',
     enable: true,
     iconColor: 'red',
-    name: 'Show Alerts firing',
+    name: 'Show alerts firing',
     titleFormat: 'Alert firing',
     step: `10s`,
   };
@@ -30,7 +30,7 @@ export function useDashboardContainerAnnotations(check: Check) {
     refId: 'alertsAnnotation',
     enable: true,
     iconColor: 'yellow',
-    name: 'Show Alerts pending',
+    name: 'Show alerts pending',
     titleFormat: 'Alert pending',
     step: `10s`,
   };

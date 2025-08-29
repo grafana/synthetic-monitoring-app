@@ -526,8 +526,8 @@ export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
 }
 
 export function useSceneAnnotationEvents() {
-  const alertsFiring = useSceneAnnotation('Alerts firing');
-  const alertsPending = useSceneAnnotation('Alerts pending');
+  const alertsFiring = useSceneAnnotation('Show alerts firing');
+  const alertsPending = useSceneAnnotation('Show alerts pending');
 
   const alertFiringEvents = alertsFiring.map<CheckEvent>(([timeStart, timeEnd]) => ({
     label: CheckEventType.ALERTS_FIRING,
