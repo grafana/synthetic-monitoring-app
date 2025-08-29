@@ -62,13 +62,6 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
         </Text>
       )}
 
-      {isDisabled && (
-        <Alert severity="error" title="Disabled Channel">
-          This channel is disabled and cannot be used after {dateTimeFormat(new Date(channel.disabledAfter))}. Please
-          select a different channel.
-        </Alert>
-      )}
-
       {isDeprecated && !isDisabled && (
         <Alert severity="warning" title="Deprecated Channel">
           This channel is deprecated and will be removed after {dateTimeFormat(new Date(channel.deprecatedAfter))}.
