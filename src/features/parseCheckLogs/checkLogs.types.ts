@@ -18,10 +18,10 @@ export type ExecutionLabels<T extends Record<string, string> = {}> = T & {
 };
 
 export type ExecutionLabelType = {
-  check_name: string; // I
-  detected_level: string; // S
-  instance: string; // I
-  job: string; // I
+  check_name: 'I';
+  detected_level: 'S';
+  instance: 'I';
+  job: 'I';
 };
 
 export type UnknownExecutionLog<T extends Record<string, string> = Record<string, string>> = ParsedLokiRecord<

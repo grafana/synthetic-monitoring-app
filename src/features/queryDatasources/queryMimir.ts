@@ -31,8 +31,8 @@ export function queryMimir<T>({
       {
         refId,
         expr: query,
-        range: queryType === 'range' ? true : false,
-        instant: queryType === 'instant' ? true : false,
+        range: queryType === 'range',
+        instant: queryType === 'instant',
         datasource,
         intervalMs,
         interval,

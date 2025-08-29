@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 
 import { Check } from 'types';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
-import { EditCheckButton } from 'scenes/Common/editButton';
+import { EditCheckButton } from 'scenes/Common/EditCheckButton';
 
 interface DashboardHeaderProps {
   annotations: AnnotationQuery[];

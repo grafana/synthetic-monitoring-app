@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { colorManipulator } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
@@ -16,6 +17,7 @@ import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSceneAnnotation } from 'scenes/Common/useSceneAnnotation';
 import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
@@ -28,6 +30,8 @@ import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer
 import {
   CheckConfig,
   CheckConfigRaw,
+  CheckEvent,
+  CheckEventType,
   StatefulTimepoint,
   StatelessTimepoint,
   TimepointStatus,
@@ -341,7 +345,8 @@ export function useIsListResultPending({
   const [timeRange] = useTimeRange();
 
   const isCurrentTimeInSelectedTimeRange =
-    currentAdjustedTime > timeRange.from.valueOf() && currentAdjustedTime < timeRange.to.valueOf();
+    currentAdjustedTime - check.frequency > timeRange.from.valueOf() &&
+    currentAdjustedTime - check.frequency < timeRange.to.valueOf();
   const selectedProbeNames = useSceneVarProbes(check);
   const refreshPickerState = useSceneRefreshPicker(handleRefetch);
   const refreshInMs = refreshPickerState?.refreshInMs;
@@ -385,17 +390,21 @@ export function useRefetchInterval(isPending: boolean, handleRefetch: () => void
   }, [isPending, handleRefetch]);
 }
 
+const ALPHA_OPACITY = 0.25;
+
 export function useTimepointVizOptions(status: TimepointStatus) {
   const { vizOptions } = useTimepointExplorerContext();
   const theme = useTheme2();
   const option = vizOptions[status];
 
   const options: TimepointVizOptions = useMemo(() => {
+    const alphaOption = colorManipulator.alpha(option, ALPHA_OPACITY);
+
     return {
       success: {
         border: option,
-        backgroundColor: 'transparent',
-        textColor: option,
+        backgroundColor: alphaOption,
+        textColor: theme.colors.getContrastText(alphaOption),
         statusColor: option,
       },
       failure: {
@@ -406,14 +415,14 @@ export function useTimepointVizOptions(status: TimepointStatus) {
       },
       missing: {
         border: option,
-        backgroundColor: 'transparent',
-        textColor: theme.colors.getContrastText(option),
+        backgroundColor: alphaOption,
+        textColor: theme.colors.getContrastText(alphaOption),
         statusColor: option,
       },
       pending: {
         border: option,
-        backgroundColor: 'transparent',
-        textColor: option,
+        backgroundColor: alphaOption,
+        textColor: theme.colors.getContrastText(alphaOption),
         statusColor: option,
       },
     };
@@ -514,4 +523,25 @@ export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
   const probeVar = useSceneVarProbes(check);
 
   return !isCurrentConfig && probeVarRaw.includes('.*') ? Object.keys(statefulTimepoint.probeResults) : probeVar;
+}
+
+export function useSceneAnnotationEvents() {
+  const alertsFiring = useSceneAnnotation('Alerts firing');
+  const alertsPending = useSceneAnnotation('Alerts pending');
+
+  const alertFiringEvents = alertsFiring.map<CheckEvent>(([timeStart, timeEnd]) => ({
+    label: CheckEventType.ALERTS_FIRING,
+    to: timeEnd,
+    from: timeStart,
+    color: 'red',
+  }));
+
+  const alertPendingEvents = alertsPending.map<CheckEvent>(([timeStart, timeEnd]) => ({
+    label: CheckEventType.ALERTS_PENDING,
+    to: timeEnd,
+    from: timeStart,
+    color: 'yellow',
+  }));
+
+  return [...alertFiringEvents, ...alertPendingEvents];
 }

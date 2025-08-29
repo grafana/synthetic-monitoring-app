@@ -10,7 +10,7 @@ export const useSceneAnnotation = (name: string) => {
   useEffect(() => {
     scene.subscribeToState((sceneState) => {
       // @ts-expect-error -- not typed...
-      const layers = sceneState.$data?.state.layers as SceneDataLayerSet[];
+      const layers = (sceneState.$data?.state.layers as SceneDataLayerSet[]) || [];
       const layer = layers.find((layer) => layer.state.name === name);
 
       if (layer) {

@@ -11,9 +11,9 @@ import { ErrorRate } from 'scenes/Common/ErrorRateViz';
 import { Frequency } from 'scenes/Common/FrequencyViz';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { ResponseLatencyByProbe } from 'scenes/Common/ResponseLatencyByProbe';
+import { SSLExpiry } from 'scenes/Common/SSLExpiryViz';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
-import { SSLExpiry } from 'scenes/HTTP/SSLExpiryViz';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 export const TcpDashboard = ({ check }: { check: Check }) => {

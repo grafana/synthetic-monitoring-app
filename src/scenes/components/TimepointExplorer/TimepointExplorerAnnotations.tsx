@@ -3,11 +3,10 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { useSceneAnnotation } from 'scenes/Common/useSceneAnnotation';
 import { PreTimepointAnnotations } from 'scenes/components/TimepointExplorer/PreTimepointAnnotations';
 import { TIMEPOINT_LIST_ANNOTATIONS_ID } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { CheckEventType, StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   getCheckEventsInRange,
   getClosestTimepointsToCheckEvent,
@@ -34,29 +33,10 @@ export const TimepointExplorerAnnotations = ({
   timepointsInRange,
   triggerHeight,
 }: TimepointExplorerAnnotationsProps) => {
-  const { checkEvents } = useTimepointExplorerContext();
+  const { alertEvents, checkEvents } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
-  const alertsFiring = useSceneAnnotation('Show Alerts firing');
-  const alertsPending = useSceneAnnotation('Show Alerts pending');
 
-  const alertFiringEvents = alertsFiring.map(([timeStart, timeEnd]) => ({
-    label: CheckEventType.ALERTS_FIRING,
-    to: timeEnd,
-    from: timeStart,
-    color: 'red',
-  }));
-
-  const alertPendingEvents = alertsPending.map(([timeStart, timeEnd]) => ({
-    label: CheckEventType.ALERTS_PENDING,
-    to: timeEnd,
-    from: timeStart,
-    color: 'yellow',
-  }));
-
-  const checkEventsInRange = getCheckEventsInRange(
-    [...checkEvents, ...alertFiringEvents, ...alertPendingEvents],
-    timepointsInRange
-  );
+  const checkEventsInRange = getCheckEventsInRange([...checkEvents, ...alertEvents], timepointsInRange);
   const annotationsToRender = getClosestTimepointsToCheckEvent(checkEventsInRange, timepointsInRange);
 
   return (

@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, RadioButtonGroup, Stack } from '@grafana/ui';
 
 import { Check } from 'types';
+import { Feedback } from 'components/Feedback';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   TimepointExplorerProvider,
@@ -32,13 +33,19 @@ const TimepointExplorerInternal = () => {
       <Stack direction={`column`} gap={2}>
         <Stack direction="row" gap={2} justifyContent={`space-between`} alignItems={`center`}>
           <TimepointExplorerVisibleOverview />
-          <div>
+          <Stack>
+            <Feedback
+              feature="timepoint-explorer"
+              about={{
+                text: `New feature!`,
+              }}
+            />
             <RadioButtonGroup
               options={TIMEPOINT_EXPLORER_VIEW_OPTIONS}
               value={viewMode}
               onChange={handleViewModeChange}
             />
-          </div>
+          </Stack>
         </Stack>
 
         <Stack direction="column" gap={2}>

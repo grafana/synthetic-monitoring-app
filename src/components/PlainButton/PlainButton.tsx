@@ -7,19 +7,17 @@ interface PlainButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   showFocusStyles?: boolean;
 }
 
-export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
-  ({ children, showFocusStyles = true, ...props }, ref) => {
-    const styles = getStyles(useTheme2(), showFocusStyles);
-
-    return (
-      <button {...props} className={cx(styles.button, props.className)} ref={ref}>
-        {children}
-      </button>
-    );
-  }
-);
-
-PlainButton.displayName = 'PlainButton';
+export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(function PlainButton(
+  { children, showFocusStyles = true, ...props },
+  ref
+) {
+  const styles = getStyles(useTheme2(), showFocusStyles);
+  return (
+    <button {...props} className={cx(styles.button, props.className)} ref={ref}>
+      {children}
+    </button>
+  );
+});
 
 const getStyles = (theme: GrafanaTheme2, showFocusStyles: boolean) => {
   const overrideFocusStyles = css`
