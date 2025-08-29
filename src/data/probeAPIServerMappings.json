@@ -96,6 +96,12 @@
     "backendAddress": "synthetic-monitoring-api-eu-north-0.grafana.net"
   },
   {
+    "region": "Switzerland",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-eu-central-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-eu-central-0.grafana.net"
+  },
+  {
     "region": "UAE",
     "provider": "AWS",
     "apiServerURL": "synthetic-monitoring-grpc-me-central-1.grafana.net:443",
