@@ -1,5 +1,7 @@
 import { RefinementCtx, ZodIssueCode } from 'zod';
 
+import { CheckFormValuesBase } from 'types';
+
 import { extractImportStatement, extractOptionsExport, getProperty, parseScript } from './parser';
 
 const MAX_SCRIPT_IN_KB = 128;
@@ -95,6 +97,22 @@ export function validateNonBrowserScript(script: string, context: RefinementCtx)
     return context.addIssue({
       code: ZodIssueCode.custom,
       message: "Script must not import { browser } from 'k6/browser'",
+    });
+  }
+}
+
+export function channelValidation(data: CheckFormValuesBase, ctx: RefinementCtx) {
+  if (!data.channel) {
+    return;
+  }
+
+  if (data.channelDisabled) {
+    const errorMessage = 'The selected k6 channel is disabled. Please select a different one.';
+
+    ctx.addIssue({
+      path: ['channel'],
+      message: errorMessage,
+      code: ZodIssueCode.custom,
     });
   }
 }
