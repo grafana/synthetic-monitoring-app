@@ -1,19 +1,20 @@
-import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useCallback, useMemo } from 'react';
+import React, { BaseSyntheticEvent, ReactNode, useCallback, useEffect } from 'react';
 import { FieldErrors, FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Stack, useStyles2 } from '@grafana/ui';
+import { Button, Icon, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 import { ZodType } from 'zod';
-import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
-import { flattenKeys } from 'components/CheckForm/CheckForm.utils';
-import { FORM_MAX_WIDTH, FORM_SECTION_STEPS, SectionName } from 'components/CheckForm/FormLayout/FormLayout.constants';
+import { FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
-import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
-import { FormSection, FormSectionInternal, FormSectionProps } from './FormSection';
-import { FormSidebar } from './FormSidebar';
+import { DataTestIds } from '../../../test/dataTestIds';
+import { FORM_SECTION_ORDER, FormSectionIndex } from '../constants';
+import { useFormLayoutInternal } from './formlayout.utils';
+import { FormNavigation } from './FormNavigation';
+import { FormSection } from './FormSection';
+import { FormSubmitButton } from './FormSubmitButton';
 
 type ActionNode = {
   index: number;
@@ -26,7 +27,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   children: ReactNode;
   checkState: 'new' | 'existing';
   checkType: CheckType;
-  initialSection?: SectionName;
+  initialSection?: FormSectionIndex;
   onSubmit: (
     onValid: SubmitHandler<T>,
     onInvalid: (errs: FieldErrors<T>) => void
@@ -43,7 +44,6 @@ export const FormLayout = <T extends FieldValues>({
   checkState,
   checkType,
   children,
-  initialSection = FORM_SECTION_STEPS[0],
   onSubmit,
   onValid,
   onInvalid,
@@ -54,36 +54,19 @@ export const FormLayout = <T extends FieldValues>({
   const {
     formState: { disabled },
   } = useFormContext();
-
-  const initialSectionIndex = FORM_SECTION_STEPS.indexOf(initialSection);
-  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(
-    disabled,
-    initialSectionIndex
-  );
-
-  const sections = useMemo(() => {
-    let index = -1;
-
-    return (
-      Children.map(children, (child) => {
-        if (!isValidElement(child)) {
-          return null;
-        }
-
-        if (child.type === FormSection) {
-          index++;
-
-          const sectionProps = child.props as Omit<FormSectionProps, 'index' | 'activeSection'>;
-
-          return <FormSectionInternal {...sectionProps} index={index} activeSection={activeSection} />;
-        }
-
-        return child;
-      }) || []
-    );
-  }, [activeSection, children]);
-
-  const formSections = sections.filter((section) => section.type === FormSectionInternal);
+  const {
+    formId,
+    activeSection,
+    goToSection,
+    setVisited,
+    visitedSections,
+    stepOrder,
+    setActiveSectionByError,
+    getSectionLabel,
+    setSubmitDisabled,
+    isFirstSection,
+    isLastSection,
+  } = useFormLayoutInternal();
 
   const handleVisited = useCallback(
     (indices: number[]) => {
@@ -94,83 +77,79 @@ export const FormLayout = <T extends FieldValues>({
 
   const handleValid = useCallback(
     (formValues: T, event: BaseSyntheticEvent | undefined) => {
-      handleVisited(formSections.map((section) => section.props.index));
+      handleVisited(Object.keys(stepOrder).map((indexKey) => Number(indexKey)));
       onValid(formValues, event);
     },
-    [handleVisited, onValid, formSections]
+    [handleVisited, onValid, stepOrder]
   );
 
   const handleInvalid = useCallback(
     (errs: FieldErrors<T>) => {
-      handleVisited(formSections.map((section) => section.props.index));
-      const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errs));
-
-      const errSection = formSections?.find((section) => {
-        const fields = section.props.fields;
-
-        return flattenedErrors.find((errName: string) => {
-          return fields?.some((field: string) => errName.startsWith(field));
-        });
-      });
-
-      if (errSection !== undefined) {
-        setActiveSection(errSection.props.index);
-      }
-
+      setActiveSectionByError(errs);
       onInvalid?.(errs);
     },
-    [handleVisited, onInvalid, formSections, setActiveSection]
+    [setActiveSectionByError, onInvalid]
   );
 
   const actionButtons = actions?.find((action) => action.index === activeSection)?.element;
 
   const disableSubmit = !hasUnsavedChanges || disabled;
 
+  useEffect(() => {
+    setSubmitDisabled(disableSubmit);
+  }, [disableSubmit, setSubmitDisabled]);
+
   return (
     <div className={styles.wrapper}>
-      <div className={styles.container}>
-        <FormSidebar
-          activeSection={activeSection}
-          checkState={checkState}
-          checkType={checkType}
-          onSectionClick={goToSection}
-          sections={formSections}
-          visitedSections={visitedSections}
-          schema={schema}
-        />
-        <form className={styles.form} onSubmit={onSubmit(handleValid, handleInvalid)}>
-          <div>{sections}</div>
+      {alerts && <div className={styles.alerts}>{alerts}</div>}
+      <form id={formId} className={styles.form} onSubmit={onSubmit(handleValid, handleInvalid)}>
+        <div className={styles.container}>
+          <div className={styles.containerInner}>
+            <FormNavigation
+              activeSection={activeSection}
+              checkState={checkState}
+              checkType={checkType}
+              onSectionClick={goToSection}
+              visitedSections={visitedSections}
+              schema={schema}
+            />
+          </div>
 
-          <div>
-            {alerts && <div className={styles.alerts}>{alerts}</div>}
-            <hr />
-            <div className={cx(styles.actionsBar, styles.sectionContent)} data-testid={DataTestIds.ACTIONS_BAR}>
-              <div>
-                {activeSection !== 0 && (
-                  <Button
-                    onClick={() => {
-                      const newStep = activeSection - 1;
-                      trackNavigateWizardForm({
-                        checkState,
-                        checkType,
-                        component: 'back-button',
-                        step: FORM_SECTION_STEPS[newStep],
-                      });
-                      goToSection(newStep);
-                    }}
-                    icon="arrow-left"
-                    variant="secondary"
-                  >
-                    <Stack gap={0.5}>
-                      <div>{activeSection}.</div>
-                      <div>{formSections[activeSection - 1].props.label}</div>
-                    </Stack>
-                  </Button>
-                )}
-              </div>
+          <div className={styles.divider} />
+
+          <div className={cx(styles.containerInner, styles.containerInnerOverflow)}>
+            <div className={styles.formContent}>{children}</div>
+          </div>
+
+          <div className={styles.divider} />
+
+          <div data-testid={DataTestIds.ACTIONS_BAR} className={cx(styles.actionBar, styles.containerInner)}>
+            <Stack justifyContent="space-between">
+              {!isFirstSection ? (
+                <Button
+                  onClick={() => {
+                    const prevStep = activeSection - 1;
+                    trackNavigateWizardForm({
+                      checkState,
+                      checkType,
+                      component: 'back-button',
+                      step: FORM_SECTION_ORDER[prevStep],
+                    });
+                    goToSection(prevStep);
+                  }}
+                  icon="arrow-left"
+                  variant="secondary"
+                >
+                  <Stack gap={0.5}>
+                    <div>{getSectionLabel(activeSection - 1)}</div>
+                  </Stack>
+                </Button>
+              ) : (
+                <div />
+              )}
               <Stack>
                 {actionButtons}
-                {activeSection < formSections.length - 1 && (
+                {!isLastSection ? (
                   <Button
                     onClick={() => {
                       const newStep = activeSection + 1;
@@ -178,74 +157,89 @@ export const FormLayout = <T extends FieldValues>({
                         checkState,
                         checkType,
                         component: 'forward-button',
-                        step: FORM_SECTION_STEPS[newStep],
+                        step: FORM_SECTION_ORDER[newStep],
                       });
                       goToSection(newStep);
                     }}
-                    icon="arrow-right"
                     type="button"
                   >
-                    <Stack>
-                      <div>{activeSection + 2}.</div>
-                      <div>{formSections[activeSection + 1].props.label}</div>
+                    <Stack alignItems="center">
+                      <div>{getSectionLabel(activeSection + 1)}</div>
+                      <Icon size="lg" name="arrow-right" />
                     </Stack>
                   </Button>
+                ) : (
+                  <FormSubmitButton />
                 )}
-                <Button
-                  data-testid={DataTestIds.CHECK_FORM_SUBMIT_BUTTON}
-                  disabled={disableSubmit}
-                  key="submit"
-                  type="submit"
-                >
-                  Save
-                </Button>
               </Stack>
-            </div>
+            </Stack>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
   const containerName = `formLayout`;
-  const breakpoint = theme.breakpoints.values.md;
-  const query = `(min-width: ${breakpoint + 1}px)`;
-  const containerQuery = `@container ${containerName} ${query}`;
-  const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
-
-  const containerRules = {
-    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH}) minmax(50px, auto)`,
-    height: '100%',
-  };
+  // const breakpoint = theme.breakpoints.values.md;
+  // const query = `(min-width: ${breakpoint + 1}px)`;
+  // const containerQuery = `@container ${containerName} ${query}`;
+  //
+  // const containerRules = {
+  //   height: '100%',
+  // };
 
   return {
-    wrapper: css({
-      containerName,
-      containerType: `inline-size`,
-      height: '100%',
-      contain: 'layout',
-    }),
-    container: css({
-      display: 'grid',
-      gap: theme.spacing(4),
-      [containerQuery]: containerRules,
-      [mediaQuery]: containerRules,
+    wrapper: css`
+      container-name: ${containerName};
+      container-type: inline-size;
+      height: 100%;
+      display: flex;
+      contain: layout;
+      flex-direction: column;
+      position: relative;
+      overflow: auto;
+    `,
+    container: css`
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid ${theme.colors.border.medium};
+      position: relative;
+      height: 100%;
+    `,
+    divider: css`
+      height: 1px;
+      border-bottom: 1px solid ${theme.colors.border.medium};
+      flex: 0 0 1px;
+    `,
+    containerInner: css({
+      position: 'relative',
+      padding: theme.spacing(2),
     }),
     form: css({
       display: 'flex',
       flexDirection: 'column',
-      flexGrow: '1',
-      justifyContent: 'space-between',
-    }),
-    sectionContent: css({
-      maxWidth: FORM_MAX_WIDTH,
+      flexGrow: 1,
     }),
     alerts: css({
       marginTop: theme.spacing(2),
     }),
-    actionsBar: css({ display: 'flex', justifyContent: 'space-between', maxWidth: FORM_MAX_WIDTH }),
+    containerInnerOverflow: css`
+      overflow: auto;
+      flex: 1 1 0;
+    `,
+    formContent: css`
+      width: 100%;
+      max-width: ${FORM_MAX_WIDTH};
+      justify-self: center;
+    `,
+    actionBar: css`
+      width: 100%;
+      max-width: ${FORM_MAX_WIDTH};
+      margin: 0 auto;
+    `,
   };
 };
 

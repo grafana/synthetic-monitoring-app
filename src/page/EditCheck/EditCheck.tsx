@@ -17,14 +17,17 @@ import { CenteredSpinner } from 'components/CenteredSpinner';
 import { CheckForm } from 'components/CheckForm/CheckForm';
 import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 
+import { FormSectionIndex } from '../../components/CheckForm/constants';
+import { PageActions } from '../../components/CheckForm/PageActions';
+
 export const EditCheck = () => {
   const { id } = useParams<CheckPageParams>();
   const { data: checks, isError, isLoading, error, refetch, isFetched } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
   const urlSearchParams = useURLSearchParams();
 
-  // Check for runbook missing notification to determine initial section
-  const initialSection = !!urlSearchParams.get('runbookMissing') ? 'alerting' : undefined;
+  // Check for runbook missing notification to determine the initial section
+  const initialSection = !!urlSearchParams.get('runbookMissing') ? FormSectionIndex.Alerting : undefined;
 
   // Only show spinner for the initial fetch.
   if (isLoading && !isFetched) {
@@ -63,6 +66,7 @@ const EditCheckContent = ({ isLoading = false }: { isLoading: boolean }) => {
     <PluginPage
       pageNav={navModel}
       renderTitle={isExistingCheck ? () => <Text element="h1">{`Editing ${check.job}`}</Text> : undefined}
+      actions={<PageActions />}
     >
       <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
         <CheckForm key={check ? `loading` : `ready`} />

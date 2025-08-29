@@ -15,7 +15,7 @@ export const BrowserCheckInstance = () => {
     <Field
       label={
         <Label htmlFor="target">
-          Instance&nbsp;
+          Instance&nbsp;*&nbsp;
           <Tooltip
             content={
               <span>

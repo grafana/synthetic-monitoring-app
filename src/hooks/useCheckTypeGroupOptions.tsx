@@ -116,5 +116,9 @@ export function useCheckTypeGroupOptions() {
 }
 
 export function useCheckTypeGroupOption(checkTypeGroup?: CheckTypeGroup) {
-  return useCheckTypeGroupOptions().find(({ value }) => value === checkTypeGroup);
+  const options = useCheckTypeGroupOptions();
+
+  return options.find(({ value }) => {
+    return value === checkTypeGroup;
+  });
 }
