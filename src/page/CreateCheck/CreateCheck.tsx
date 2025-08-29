@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 
 import { createNavModel } from 'utils';
 import { CheckForm } from 'components/CheckForm/CheckForm';
+import { CheckFormContextProvider } from 'components/CheckForm/CheckFormContext';
 
 export function CreateCheck() {
   const styles = useStyles2(getStyles);
@@ -19,9 +20,11 @@ export function CreateCheck() {
 
   return (
     <PluginPage pageNav={pageNavModel}>
-      <div className={styles.wrapper}>
-        <CheckForm />
-      </div>
+      <CheckFormContextProvider>
+        <div className={styles.wrapper}>
+          <CheckForm />
+        </div>
+      </CheckFormContextProvider>
     </PluginPage>
   );
 }

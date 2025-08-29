@@ -3,11 +3,17 @@ import { FieldPath, FieldValues } from 'react-hook-form';
 import { uniq } from 'lodash';
 import { ZodType } from 'zod';
 
+import { useFormLayoutContextExtended } from './FormLayoutContext';
+
 // because we have separated multihttp assertions we need a way to say that no matter the
 // entry's index this error belongs to the steps section or the uptime definition step
 // so we have to wildcard the entry index in form errors
 // -1 works well because it is type safe as it is a number but it is also impossible to be a valid index
 export const ENTRY_INDEX_CHAR = `-1`;
+
+export function useFormLayoutInternal() {
+  return useFormLayoutContextExtended();
+}
 
 export function useFormLayout(disabled?: boolean, initialSection = 0) {
   const [visitedSections, setVisitedSections] = useState<number[]>([]);

@@ -21,3 +21,11 @@ export const SCHEMA_MAP = {
   [CheckType.TCP]: tcpCheckSchema,
   [CheckType.Traceroute]: tracerouteCheckSchema,
 };
+
+export enum FormStepOrder {
+  Check,
+  Uptime,
+  Labels,
+  Execution,
+  Alerting,
+}

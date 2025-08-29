@@ -1,4 +1,4 @@
-import React, { Fragment, ReactElement } from 'react';
+import React, { Fragment } from 'react';
 import { FieldValues, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
@@ -10,42 +10,31 @@ import { ZodType } from 'zod';
 import { CheckFormValues, CheckType } from 'types';
 
 import { FORM_SECTION_STEPS } from './FormLayout.constants';
-import { checkForErrors } from './formlayout.utils';
-import { FormSectionProps } from './FormSection';
+import { checkForErrors, useFormLayoutInternal } from './formlayout.utils';
 
 type FormSidebarProps = {
   activeSection: number;
   checkState: 'new' | 'existing';
   checkType: CheckType;
   onSectionClick: (index: number) => void;
-  sections: Array<ReactElement<FormSectionProps>>;
   visitedSections: number[];
   schema: ZodType<FieldValues>;
 };
 
-export const FormSidebar = ({
-  activeSection,
-  checkState,
-  checkType,
-  onSectionClick,
-  sections,
-  visitedSections,
-  schema,
-}: FormSidebarProps) => {
+export const FormSidebar = ({ checkState, checkType, onSectionClick, visitedSections, schema }: FormSidebarProps) => {
   const styles = useStyles2(getStyles);
   const values = useFormContext<CheckFormValues>().watch();
+  const { stepOrder, activeSection } = useFormLayoutInternal();
 
   return (
     <ol className={styles.container} data-testid="form-sidebar">
-      {sections.map(({ props }) => {
-        const sectionIndex = props.index;
-        const label = props.label;
-        const hasBeenVisited = visitedSections.includes(sectionIndex);
-        const fields = props.fields || [];
+      {Object.entries(stepOrder).map(([indexKey, { label, fields = [] }]) => {
+        const index = Number(indexKey);
+        const hasBeenVisited = visitedSections.includes(index);
         const { errors } = checkForErrors({ fields, values, schema });
         const hasErrors = errors.length > 0;
-        const isActive = activeSection === sectionIndex;
-        const isLast = sectionIndex === sections.length - 1;
+        const isActive = activeSection === index;
+        const isLast = index === Object.entries(stepOrder).length - 1;
 
         return (
           <Fragment key={label}>
@@ -58,12 +47,12 @@ export const FormSidebar = ({
                     checkState,
                     checkType,
                     component: 'stepper',
-                    step: FORM_SECTION_STEPS[sectionIndex],
+                    step: FORM_SECTION_STEPS[index],
                   });
-                  onSectionClick(sectionIndex);
+                  onSectionClick(index);
                 }}
               >
-                <Prefix index={sectionIndex + 1} visited={hasBeenVisited} hasErrors={hasErrors} />
+                <Prefix index={index + 1} visited={hasBeenVisited} hasErrors={hasErrors} />
                 <div className={cx(styles.label, { [styles.activeLabel]: isActive })}>{`${label}`}</div>
               </button>
             </li>
@@ -102,7 +91,7 @@ function getStyles(theme: GrafanaTheme2) {
   const label = css({
     [`&:not(.${activeLabel})`]: {
       [containerQuery]: {
-        display: 'none',
+        // display: 'none',
       },
       [mediaQuery]: {
         display: 'none',
@@ -154,7 +143,11 @@ function getStyles(theme: GrafanaTheme2) {
       margin: theme.spacing(1, 1.5),
 
       [containerQuery]: {
+        borderBottom: `2px solid ${theme.colors.border.medium}`,
         margin: theme.spacing(0, 0.5),
+        width: theme.spacing(2),
+        borderLeft: 'unset',
+        height: 'unset',
       },
       [mediaQuery]: {
         margin: theme.spacing(0, 0.5),
