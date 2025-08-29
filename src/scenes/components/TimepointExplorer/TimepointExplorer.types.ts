@@ -13,6 +13,16 @@ export type StatelessTimepoint = {
   config: CheckConfig;
 };
 
+export interface StatefulTimepoint {
+  adjustedTime: UnixTimestamp;
+  timepointDuration: number;
+  status: TimepointStatus;
+  probeResults: ProbeResults;
+  maxProbeDuration: number;
+  index: number;
+  config: CheckConfig;
+}
+
 export type ViewMode = (typeof TIMEPOINT_EXPLORER_VIEW_OPTIONS)[number]['value'];
 
 type ProbeName = string;
@@ -63,16 +73,6 @@ export type CheckConfig = {
 };
 
 export type ProbeResults = Record<string, ExecutionEndedLog[]>;
-
-export interface StatefulTimepoint {
-  adjustedTime: UnixTimestamp;
-  timepointDuration: number;
-  status: TimepointStatus;
-  probeResults: ProbeResults;
-  maxProbeDuration: number;
-  index: number;
-  config: CheckConfig;
-}
 
 export type TimepointStatus = (typeof VIZ_DISPLAY_OPTIONS)[number];
 
