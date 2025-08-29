@@ -2,6 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackTimepointViewerLogsViewToggled } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
 
 import { formatDuration } from 'utils';
@@ -24,6 +25,9 @@ export const TimepointViewer = () => {
   const styles = useStyles2(getStyles);
 
   const handleChangeLogsView = useCallback((view: LogsView) => {
+    trackTimepointViewerLogsViewToggled({
+      action: view,
+    });
     setLogsView(view);
   }, []);
 

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Box, Icon, IconName, Spinner, Stack, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { ExecutionLogs, ProbeExecutionLogs, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
@@ -44,6 +45,17 @@ export const TimepointViewerExecutions = ({
     timepoint,
   });
 
+  const handleChangeTab = useCallback(
+    (probeName: string, status: TimepointStatus) => {
+      handleViewerStateChange([timepoint, probeName, 0]);
+      trackTimepointDetailsClicked({
+        component: 'viewer-tab',
+        status,
+      });
+    },
+    [handleViewerStateChange, timepoint]
+  );
+
   return (
     <>
       <TabsBar>
@@ -55,11 +67,7 @@ export const TimepointViewerExecutions = ({
           return (
             <ProbeNameTab
               key={probeName}
-              handleChangeTab={() => {
-                if (!active && timepoint) {
-                  handleViewerStateChange([timepoint, probeName, 0]);
-                }
-              }}
+              handleChangeTab={() => handleChangeTab(probeName, status)}
               active={active}
               handleMouseEnter={() => handleHoverStateChange(hoveredState)}
               handleMouseLeave={() => handleHoverStateChange([])}

@@ -11,6 +11,7 @@ import React, {
 import { TimeRange } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
+import { trackTimepointVizLegendToggled, trackViewToggle } from 'features/tracking/timepointExplorerEvents';
 
 import { Check } from 'types';
 import { useLogsRetentionPeriod } from 'data/useLogsRetention';
@@ -232,6 +233,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   }, []);
 
   const handleViewModeChange = useCallback((viewMode: ViewMode) => {
+    trackViewToggle({ viewMode });
     setViewMode(viewMode);
   }, []);
 
@@ -274,16 +276,21 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     setVizDisplay((prev) => {
       const isSelected = prev.includes(display);
       const allSelected = prev.length === VIZ_DISPLAY_OPTIONS.length;
+      let newVizDisplay = [display];
 
       if (usedModifier) {
-        return isSelected ? prev.filter((value) => value !== display) : [...prev, display];
+        newVizDisplay = isSelected ? prev.filter((value) => value !== display) : [...prev, display];
       }
 
       if (isSelected && !allSelected) {
-        return VIZ_DISPLAY_OPTIONS;
+        newVizDisplay = VIZ_DISPLAY_OPTIONS;
       }
 
-      return [display];
+      trackTimepointVizLegendToggled({
+        vizOptions: newVizDisplay.sort().join(','),
+      });
+
+      return newVizDisplay;
     });
   }, []);
 

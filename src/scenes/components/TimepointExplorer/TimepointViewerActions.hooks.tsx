@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { IconName } from '@grafana/data';
+import { trackTimepointViewerActionClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { getExploreUrl } from 'utils';
 import { useLogsDS } from 'hooks/useLogsDS';
@@ -51,6 +52,9 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
       const statefulPrevTimepoint = prevTimepoint ? listLogsMap[prevTimepoint.adjustedTime] : undefined;
       const probeName = getProbeNameToUse(probeVar, statefulPrevTimepoint);
       handleViewerStateChange([prevTimepoint, probeName, 0]);
+      trackTimepointViewerActionClicked({
+        action: 'previous-timepoint',
+      });
     }
   }, [prevTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
@@ -59,6 +63,9 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
       const statefulNextTimepoint = nextTimepoint ? listLogsMap[nextTimepoint.adjustedTime] : undefined;
       const probeName = getProbeNameToUse(probeVar, statefulNextTimepoint);
       handleViewerStateChange([nextTimepoint, probeName, 0]);
+      trackTimepointViewerActionClicked({
+        action: 'next-timepoint',
+      });
     }
   }, [nextTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
@@ -80,11 +87,21 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
         icon: 'gf-logs',
         label: 'View Logs in Explore',
         href: exploreLogsURL,
+        onClick: () => {
+          trackTimepointViewerActionClicked({
+            action: 'view-explore-logs',
+          });
+        },
       },
       {
         icon: `gf-prometheus`,
         label: 'View Metrics in Explore',
         href: exploreMetricsURL,
+        onClick: () => {
+          trackTimepointViewerActionClicked({
+            action: 'view-explore-metrics',
+          });
+        },
       },
     ],
     [prevTimepoint, nextTimepoint, exploreLogsURL, exploreMetricsURL, handleNextTimepoint, handlePreviousTimepoint]

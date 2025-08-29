@@ -13,14 +13,16 @@ interface TimepointListEntryProps {
 export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps) => {
   const { status } = useStatefulTimepoint(timepoint);
   const { vizDisplay } = useTimepointExplorerContext();
+  const isSuccess = status === 'success';
+  const isFailure = status === 'failure';
 
   if (!vizDisplay.includes(status)) {
     return <div />;
   }
 
   return (
-    <TimepointListEntryBar timepoint={timepoint} status={status}>
-      {status === 'failure' ? <Icon name={`times`} /> : status === 'success' ? <Icon name={`check`} /> : `?`}
+    <TimepointListEntryBar analyticsEventName={`uptime-entry`} timepoint={timepoint} status={status}>
+      {isFailure ? <Icon name={`times`} key={`times`} /> : isSuccess ? <Icon name={`check`} key={`check`} /> : `?`}
     </TimepointListEntryBar>
   );
 };

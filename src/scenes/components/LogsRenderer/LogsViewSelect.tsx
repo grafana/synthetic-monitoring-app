@@ -3,7 +3,7 @@ import { RadioButtonGroup } from '@grafana/ui';
 
 export const LOGS_VIEW_OPTIONS = [
   { label: 'Event', value: 'event' },
-  { label: 'Raw logs', value: 'raw' },
+  { label: 'Raw logs', value: 'raw-logs' },
 ] as const;
 
 export type LogsView = (typeof LOGS_VIEW_OPTIONS)[number]['value'];

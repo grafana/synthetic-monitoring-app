@@ -3,8 +3,8 @@
   "version": "1.34.1",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
-    "analytics-events:generate": "node --experimental-strip-types ./scripts/analytics/main.mts",
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
+    "build:analytics-events": "node --experimental-strip-types ./scripts/analytics/main.mts",
     "build:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/build-probe-api-mappings.ts",
     "build:generate-terraform-test-config": "npx tsx scripts/terraform-validation/generate-test-configs.ts",
     "build": "webpack -c webpack.config.ts --env production",
