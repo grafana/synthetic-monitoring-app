@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.35.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.34.1...v1.35.0) (2025-08-29)
+
+
+### Features
+
+* add lightweight feedback feature ([#1246](https://github.com/grafana/synthetic-monitoring-app/issues/1246)) ([3a83003](https://github.com/grafana/synthetic-monitoring-app/commit/3a830035fd7bfe6e4fbc0561043d0b89f0d420d3))
+
+
+### Fixes
+
+* update probe mappings ([#1251](https://github.com/grafana/synthetic-monitoring-app/issues/1251)) ([8cf8083](https://github.com/grafana/synthetic-monitoring-app/commit/8cf80834f8e087847957eda629851acec920fbc3))
+
+
+### Miscellaneous Chores
+
+* add gRPC dashboard and remove unused scenes components ([#1249](https://github.com/grafana/synthetic-monitoring-app/issues/1249)) ([1d14f43](https://github.com/grafana/synthetic-monitoring-app/commit/1d14f4318bd2b91874c20803fc7509fc7f32b0c1))
+* convert tcp dashboard to react scenes ([#1241](https://github.com/grafana/synthetic-monitoring-app/issues/1241)) ([14ecef7](https://github.com/grafana/synthetic-monitoring-app/commit/14ecef718fb65a6c8bc248b1e64b7cd19f06ffad))
+* convert traceroute dashboard to react scenes ([#1244](https://github.com/grafana/synthetic-monitoring-app/issues/1244)) ([3f14757](https://github.com/grafana/synthetic-monitoring-app/commit/3f14757ea95a5962de36178e52c0786de355f603))
+* converted dns dashboard to react scenes ([#1240](https://github.com/grafana/synthetic-monitoring-app/issues/1240)) ([a29f5ad](https://github.com/grafana/synthetic-monitoring-app/commit/a29f5ad3ce271656b6ca038124ed840a889f5b78))
+* converted ping dashboard to react scenes ([#1239](https://github.com/grafana/synthetic-monitoring-app/issues/1239)) ([9481b0d](https://github.com/grafana/synthetic-monitoring-app/commit/9481b0d49302f62d44838238d5c8e4281e6cb348))
+
 ## [1.34.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.34.0...v1.34.1) (2025-08-21)
 
 
