@@ -15,15 +15,32 @@ jest.mock('@grafana/ui', () => {
   });
   CodeEditor.displayName = 'CodeEditor';
 
-  const Combobox = jest.fn(({ id, placeholder, options }) => (
-    <select id={id} data-testid={id} title={placeholder}>
-      {options?.map((option: any, index: number) => (
-        <option key={index} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  ));
+  const Combobox = jest.fn(({ id, placeholder, options, value, onChange, disabled, name, onBlur, onFocus, ...props }) => {
+    return (
+      <select 
+        id={id} 
+        data-testid={id} 
+        title={placeholder}
+        value={value || ''}
+        disabled={disabled}
+        name={name}
+        onChange={(e) => {
+          if (onChange) {
+            // Call onChange with the new value (matching real Combobox behavior)
+            onChange(e.target.value);
+          }
+        }}
+        onBlur={onBlur}
+        onFocus={onFocus}
+      >
+        {options?.map((option: any, index: number) => (
+          <option key={index} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    );
+  });
 
   return {
     ...actual,
