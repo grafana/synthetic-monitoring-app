@@ -1,4 +1,4 @@
-export const TIMEPOINT_SIZE = 20;
+export const TIMEPOINT_SIZE = 25;
 export const TIMEPOINT_THEME_GAP = 1;
 export const THEME_UNIT = 8;
 export const TIMEPOINT_GAP_PX = TIMEPOINT_THEME_GAP * THEME_UNIT;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { colorManipulator } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
@@ -388,17 +389,21 @@ export function useRefetchInterval(isPending: boolean, handleRefetch: () => void
   }, [isPending, handleRefetch]);
 }
 
+const ALPHA_OPACITY = 0.25;
+
 export function useTimepointVizOptions(status: TimepointStatus) {
   const { vizOptions } = useTimepointExplorerContext();
   const theme = useTheme2();
   const option = vizOptions[status];
 
   const options: TimepointVizOptions = useMemo(() => {
+    const alphaOption = colorManipulator.alpha(option, ALPHA_OPACITY);
+
     return {
       success: {
         border: option,
-        backgroundColor: 'transparent',
-        textColor: option,
+        backgroundColor: alphaOption,
+        textColor: theme.colors.getContrastText(alphaOption),
         statusColor: option,
       },
       failure: {
@@ -409,14 +414,14 @@ export function useTimepointVizOptions(status: TimepointStatus) {
       },
       missing: {
         border: option,
-        backgroundColor: 'transparent',
-        textColor: theme.colors.getContrastText(option),
+        backgroundColor: alphaOption,
+        textColor: theme.colors.getContrastText(alphaOption),
         statusColor: option,
       },
       pending: {
         border: option,
-        backgroundColor: 'transparent',
-        textColor: option,
+        backgroundColor: alphaOption,
+        textColor: theme.colors.getContrastText(alphaOption),
         statusColor: option,
       },
     };

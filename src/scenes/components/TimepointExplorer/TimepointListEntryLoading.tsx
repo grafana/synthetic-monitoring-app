@@ -1,5 +1,5 @@
-import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import React, { useRef } from 'react';
+import { colorManipulator, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -8,25 +8,28 @@ import { TIMEPOINT_THEME_HEIGHT_PX } from 'scenes/components/TimepointExplorer/T
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 
 export const TimepointListEntryLoading = () => {
+  const ref = useRef<number>(TIMEPOINT_THEME_HEIGHT_PX * (0.1 + Math.random() * 0.4));
   const { timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles, timepointWidth);
-  const heightInPx = TIMEPOINT_THEME_HEIGHT_PX * (0.1 + Math.random() * 0.4);
   const color = useTheme2().colors.border.medium;
 
   return (
     <div className={styles.container}>
-      <ChunkyLoadingBar color={color} direction="vertical" height={heightInPx} width={timepointWidth} />
+      <ChunkyLoadingBar color={color} direction="vertical" height={ref.current} width={timepointWidth} />
     </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
+  const borderColor = theme.colors.border.medium;
+
   return {
     container: css`
       display: flex;
       flex-direction: column;
       align-items: center;
-      border: 1px solid ${theme.colors.border.medium};
+      background-color: ${colorManipulator.alpha(borderColor, 0.05)};
+      border: 1px solid ${borderColor};
       border-radius: ${theme.shape.radius.default};
       width: ${timepointWidth}px;
     `,
