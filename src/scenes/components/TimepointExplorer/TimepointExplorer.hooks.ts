@@ -345,7 +345,8 @@ export function useIsListResultPending({
   const [timeRange] = useTimeRange();
 
   const isCurrentTimeInSelectedTimeRange =
-    currentAdjustedTime > timeRange.from.valueOf() && currentAdjustedTime < timeRange.to.valueOf();
+    currentAdjustedTime - check.frequency > timeRange.from.valueOf() &&
+    currentAdjustedTime - check.frequency < timeRange.to.valueOf();
   const selectedProbeNames = useSceneVarProbes(check);
   const refreshPickerState = useSceneRefreshPicker(handleRefetch);
   const refreshInMs = refreshPickerState?.refreshInMs;
