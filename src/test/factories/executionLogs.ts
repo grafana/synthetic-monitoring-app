@@ -20,7 +20,7 @@ const labelTypes = {
   detected_level: 'S',
   instance: 'I',
   job: 'I',
-};
+} as const;
 
 // these are factories that create parsedLokiLogs
 // they do not create logs which are returned by the datasource

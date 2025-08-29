@@ -84,6 +84,31 @@ Tracks when a check is successfully updated.
 | --------- | -------------------------------------------------------------------------------------------------------- | ------------------ |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check. |
 
+### feature_feedback
+
+#### synthetic-monitoring_feature_feedback_feature_feedback_submitted
+
+Tracks when a feature feedback thumbs up or a thumbs down is clicked.
+
+##### Properties
+
+| name     | type              | description                  |
+| -------- | ----------------- | ---------------------------- |
+| feature  | `string`          | The type of feature.         |
+| reaction | `"good" \| "bad"` | The reaction to the feature. |
+
+#### synthetic-monitoring_feature_feedback_feature_feedback_comment_submitted
+
+Tracks when a feature feedback comment is submitted.
+
+##### Properties
+
+| name     | type              | description                  |
+| -------- | ----------------- | ---------------------------- |
+| feature  | `string`          | The type of feature.         |
+| reaction | `"good" \| "bad"` | The reaction to the feature. |
+| comment  | `string`          | The comment text.            |
+
 ### per_check_alerts
 
 #### synthetic-monitoring_per_check_alerts_select_alert

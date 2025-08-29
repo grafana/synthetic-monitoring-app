@@ -7,7 +7,8 @@ import {
 
 type FieldParser = Partial<Record<LokiFieldNames, (value: any) => any>>;
 
-// ensure to send logfmt to Loki so the line is fully parsed
+// Expects structured log data from Loki. LogQL queries must include '| logfmt'
+// parser to extract individual fields before calling this function.
 export function parseLokiLogs<T, R>(dataFrame: LokiDataFrame<T, R>, parser?: FieldParser) {
   const flattenedLogs = flattenLogs(dataFrame.fields, parser);
   const sortedLogs = sortLogs(flattenedLogs);

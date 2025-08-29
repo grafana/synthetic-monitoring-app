@@ -1,5 +1,4 @@
 import React from 'react';
-import { SceneReactObject } from '@grafana/scenes';
 import { LinkButton } from '@grafana/ui';
 
 import { Check } from 'types';
@@ -7,11 +6,11 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 
-interface Props {
+interface EditCheckButtonProps {
   id: Check['id'];
 }
 
-export function EditCheckButton({ id }: Props) {
+export const EditCheckButton = ({ id }: EditCheckButtonProps) => {
   const { canWriteChecks } = getUserPermissions();
   const url = id ? `${generateRoutePath(AppRoutes.EditCheck, { id })}` : undefined;
 
@@ -22,13 +21,4 @@ export function EditCheckButton({ id }: Props) {
       Edit check
     </LinkButton>
   );
-}
-
-export function getEditButton({ id }: Props) {
-  return new SceneReactObject({
-    component: EditCheckButton,
-    props: {
-      id,
-    },
-  });
-}
+};

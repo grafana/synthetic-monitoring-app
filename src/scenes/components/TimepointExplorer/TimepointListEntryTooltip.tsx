@@ -109,8 +109,7 @@ const StatusBadge = ({ status, type }: { status: TimepointStatus; type: 'uptime'
 
   switch (status) {
     case 'missing':
-      // @ts-expect-error - it does accept gray...
-      return <Badge color="gray" text={missingText} />;
+      return <Badge color="darkgrey" text={missingText} />;
     case 'success':
       return <Badge color="green" text={successText} />;
     case 'failure':

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { Box, IconButton, Pagination, Stack, Text, useStyles2 } from '@grafana/ui';
@@ -117,13 +117,18 @@ const TimepointMinimapContent = () => {
     },
   });
 
-  const className = isCheckCreationWithinRange
-    ? undefined
-    : isCheckCreationAfterTo
-    ? styles.beforeCreationMimic
-    : isLogsRetentionPeriodWithinTimerange
-    ? styles.outOfRetentionPeriodMimic
-    : styles.outOfRangeMimic;
+  const className = useMemo(() => {
+    if (isCheckCreationWithinRange) {
+      return undefined;
+    }
+    if (isCheckCreationAfterTo) {
+      return styles.beforeCreationMimic;
+    }
+    if (isLogsRetentionPeriodWithinTimerange) {
+      return styles.outOfRetentionPeriodMimic;
+    }
+    return styles.outOfRangeMimic;
+  }, [isCheckCreationWithinRange, isCheckCreationAfterTo, isLogsRetentionPeriodWithinTimerange, styles]);
 
   return (
     <Box position="relative" paddingY={2} flex={1} ref={ref} maxWidth={`calc(100% - ${BUTTON_SPACE * 2}px)`}>
