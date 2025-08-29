@@ -5,7 +5,7 @@ import { z, ZodType } from 'zod';
 import { BrowserSettings, CheckFormValuesBrowser, CheckType } from 'types';
 import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
-import { maxSizeValidation, validateBrowserScript } from './script/validation';
+import { channelValidation, maxSizeValidation, validateBrowserScript } from './script/validation';
 import { baseCheckSchema } from './BaseCheckSchema';
 
 export const MIN_FREQUENCY_BROWSER = ONE_MINUTE_IN_MS;
@@ -32,4 +32,5 @@ export const browserCheckSchema: ZodType<CheckFormValuesBrowser> = baseCheckSche
       frequency: createFrequencySchema(MIN_FREQUENCY_BROWSER),
       timeout: createTimeoutSchema(MIN_TIMEOUT_BROWSER, MAX_TIMEOUT_BROWSER),
     })
-  );
+  )
+  .superRefine(channelValidation);
