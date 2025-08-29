@@ -16,6 +16,7 @@ import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSceneAnnotation } from 'scenes/Common/useSceneAnnotation';
 import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
@@ -28,6 +29,8 @@ import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer
 import {
   CheckConfig,
   CheckConfigRaw,
+  CheckEvent,
+  CheckEventType,
   StatefulTimepoint,
   StatelessTimepoint,
   TimepointStatus,
@@ -514,4 +517,25 @@ export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
   const probeVar = useSceneVarProbes(check);
 
   return !isCurrentConfig && probeVarRaw.includes('.*') ? Object.keys(statefulTimepoint.probeResults) : probeVar;
+}
+
+export function useSceneAnnotationEvents() {
+  const alertsFiring = useSceneAnnotation('Alerts firing');
+  const alertsPending = useSceneAnnotation('Alerts pending');
+
+  const alertFiringEvents = alertsFiring.map<CheckEvent>(([timeStart, timeEnd]) => ({
+    label: CheckEventType.ALERTS_FIRING,
+    to: timeEnd,
+    from: timeStart,
+    color: 'red',
+  }));
+
+  const alertPendingEvents = alertsPending.map<CheckEvent>(([timeStart, timeEnd]) => ({
+    label: CheckEventType.ALERTS_PENDING,
+    to: timeEnd,
+    from: timeStart,
+    color: 'yellow',
+  }));
+
+  return [...alertFiringEvents, ...alertPendingEvents];
 }

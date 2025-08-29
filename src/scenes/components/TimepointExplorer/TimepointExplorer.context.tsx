@@ -29,6 +29,7 @@ import {
   useIsInitialised,
   useIsListResultPending,
   usePersistedMaxProbeDuration,
+  useSceneAnnotationEvents,
   useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
@@ -58,6 +59,7 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface TimepointExplorerContextType {
+  alertEvents: CheckEvent[];
   check: Check;
   checkConfigs: CheckConfig[];
   checkEvents: CheckEvent[];
@@ -171,6 +173,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       }),
     [checkConfigs, explorerTimeFrom]
   );
+  const alertEvents = useSceneAnnotationEvents();
 
   const timepoints = useTimepoints({ checkConfigs, limitFrom: explorerTimeFrom, limitTo: timeRange.to.valueOf() });
   const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();
@@ -317,6 +320,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
+      alertEvents,
       check,
       checkConfigs,
       checkEvents,
@@ -354,6 +358,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       yAxisMax,
     };
   }, [
+    alertEvents,
     check,
     checkConfigs,
     checkEvents,
