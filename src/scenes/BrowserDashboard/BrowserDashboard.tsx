@@ -13,11 +13,13 @@ import { MetricsByURL } from 'scenes/BrowserDashboard/MetricsByURL';
 import { WebVitalsAverageRow } from 'scenes/BrowserDashboard/WebVitalsAverageRow';
 import { WebVitalsOverTimeRow } from 'scenes/BrowserDashboard/WebVitalsOverTimeRow';
 import { AssertionsTable } from 'scenes/Common/AssertionsTable';
+import { AvgLatency } from 'scenes/Common/AvgLatencyViz';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
 import { DataReceived } from 'scenes/Common/DataReceived';
 import { DataSent } from 'scenes/Common/DataSent';
 import { DistinctTargets } from 'scenes/Common/DistinctTargets';
 import { DurationByProbe } from 'scenes/Common/DurationByProbe';
+import { Frequency } from 'scenes/Common/FrequencyViz';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
@@ -28,15 +30,16 @@ export const BrowserDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={checkType}>
-      <TimepointExplorer check={check} />
-      <div className={styles.header}>
+      <Stack height={`90px`}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />
-      </div>
+        <AvgLatency />
+        <Frequency />
+      </Stack>
+      <TimepointExplorer check={check} />
       <WebVitalsAverageRow />
       <WebVitalsOverTimeRow />
       <MetricsByURL />
-      <AssertionsTable checkType={CheckType.Scripted} check={check} />
 
       <Stack height={`200px`}>
         <Box width={`200px`}>
@@ -49,31 +52,16 @@ export const BrowserDashboard = ({ check }: { check: Check }) => {
         <DataSent query={getBrowserDataSentQuery()} />
         <DataReceived query={getBrowserDataReceivedQuery()} />
       </div>
+      <AssertionsTable checkType={CheckType.Scripted} check={check} />
     </DashboardContainer>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  header: css({
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '8px',
-    height: '150px',
-  }),
-  body: css({
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gap: '8px',
-  }),
-  distinctRow: css({
-    display: 'flex',
-    gap: '8px',
-    height: '200px',
-  }),
-  dataRow: css({
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '8px',
-    height: '200px',
-  }),
+  dataRow: css`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: ${theme.spacing(1)};
+    height: 200px;
+  `,
 });

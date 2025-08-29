@@ -3,6 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { LoadingBar, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
+import { DataTestIds } from 'test/dataTestIds';
 
 import {
   ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX,
@@ -54,7 +55,7 @@ export const TimepointList = () => {
   const isBeginningSection = miniMapCurrentSectionIndex === miniMapCurrentPageSections.length - 1;
 
   return (
-    <div>
+    <div data-testid={DataTestIds.TIMEPOINT_LIST}>
       {isFetching ? <LoadingBar width={listWidth} /> : <div style={{ height: 1 }} />}
       <div className={styles.container}>
         {isError && (

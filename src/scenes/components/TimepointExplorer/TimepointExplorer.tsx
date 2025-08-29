@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, RadioButtonGroup, Stack, Text } from '@grafana/ui';
+import { Box, RadioButtonGroup, Stack } from '@grafana/ui';
 
 import { Check } from 'types';
 import { Feedback } from 'components/Feedback';
@@ -29,9 +29,8 @@ const TimepointExplorerInternal = () => {
   const { viewMode, handleViewModeChange } = useTimepointExplorerContext();
 
   return (
-    <Box paddingTop={4}>
+    <Box paddingTop={2}>
       <Stack direction={`column`} gap={2}>
-        <Text element={`h2`}>Timepoint Explorer</Text>
         <Stack direction="row" gap={2} justifyContent={`space-between`} alignItems={`center`}>
           <TimepointExplorerVisibleOverview />
           <Stack>
