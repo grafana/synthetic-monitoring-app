@@ -135,5 +135,35 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
       const err = await screen.findByText("Script can't define iterations > 1 for this check");
       expect(err).toBeInTheDocument();
     });
+
+    it(`will display an error when it contains a k6 version pragma`, async () => {
+      const { user } = await renderNewForm(checkType);
+      const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+      await user.clear(scriptTextAreaPreSubmit);
+
+      const scriptWithPragma = `"use k6 >= v1.0.0"
+${browserImport}
+${exportCorrectOptions}`;
+      await user.type(scriptTextAreaPreSubmit, scriptWithPragma);
+
+      await submitForm(user);
+      const err = await screen.findByText('Script contains a k6 version pragma which is not allowed. Please remove the "use k6" directive.');
+      expect(err).toBeInTheDocument();
+    });
+
+    it(`will display an error when it imports k6 extensions`, async () => {
+      const { user } = await renderNewForm(checkType);
+      const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+      await user.clear(scriptTextAreaPreSubmit);
+
+      const scriptWithExtension = `import { Kubernetes } from "k6/x/kubernetes";
+${browserImport}
+${exportCorrectOptions}`;
+      await user.type(scriptTextAreaPreSubmit, scriptWithExtension);
+
+      await submitForm(user);
+      const err = await screen.findByText('Script imports k6 extensions which are not allowed. Please remove imports from k6/x/ paths.');
+      expect(err).toBeInTheDocument();
+    });
   });
 });
