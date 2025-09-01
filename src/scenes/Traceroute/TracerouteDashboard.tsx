@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { Check, CheckType } from 'types';
 import { AvgLatency } from 'scenes/Common/AvgLatencyViz';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
+import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { Frequency } from 'scenes/Common/FrequencyViz';
 import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
@@ -39,6 +40,7 @@ export const TracerouteDashboard = ({ check }: { check: Check }) => {
         <PacketLoss />
         <TraceTime />
       </div>
+      <ErrorLogs startingUnsuccessfulOnly />
     </DashboardContainer>
   );
 };

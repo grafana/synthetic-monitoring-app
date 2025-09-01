@@ -7,12 +7,12 @@ interface FlagProps {
   isEnabled: boolean;
 }
 
-interface Props {
+interface FeatureFlagProps {
   name: FeatureName;
   children: (flagProps: FlagProps) => ReactElement | null;
 }
 
-export const FeatureFlag = ({ name, children }: Props) => {
+export const FeatureFlag = ({ name, children }: FeatureFlagProps) => {
   const { isEnabled } = useFeatureFlag(name);
   return children({ isEnabled });
 };

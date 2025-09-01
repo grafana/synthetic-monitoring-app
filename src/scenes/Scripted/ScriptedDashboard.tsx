@@ -16,6 +16,7 @@ import { DataReceived } from 'scenes/Common/DataReceived';
 import { DataSent } from 'scenes/Common/DataSent';
 import { DistinctTargets } from 'scenes/Common/DistinctTargets';
 import { DurationByProbe } from 'scenes/Common/DurationByProbe';
+import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { ErrorRateMap } from 'scenes/Common/ErrorRateMapViz';
 import { ErrorRate } from 'scenes/Common/ErrorRateViz';
 import { Frequency } from 'scenes/Common/FrequencyViz';
@@ -56,6 +57,7 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
       </div>
       <AssertionsTable checkType={CheckType.Scripted} check={check} />
       <ResultsByTargetTable checkType={checkType} />
+      <ErrorLogs startingUnsuccessfulOnly={false} />
     </DashboardContainer>
   );
 };

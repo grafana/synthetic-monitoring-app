@@ -3,7 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check } from 'types';
+import { Check, FeatureName } from 'types';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { Feedback } from 'components/Feedback';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
@@ -21,9 +22,15 @@ interface TimepointExplorerProps {
 
 export const TimepointExplorer = ({ check }: TimepointExplorerProps) => {
   return (
-    <TimepointExplorerProvider check={check}>
-      <TimepointExplorerInternal />
-    </TimepointExplorerProvider>
+    <FeatureFlag name={FeatureName.TimepointExplorer}>
+      {({ isEnabled }) =>
+        isEnabled ? (
+          <TimepointExplorerProvider check={check}>
+            <TimepointExplorerInternal />
+          </TimepointExplorerProvider>
+        ) : null
+      }
+    </FeatureFlag>
   );
 };
 

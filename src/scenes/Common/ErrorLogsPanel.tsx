@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
-import { InlineSwitch } from '@grafana/ui';
+import { Box, InlineSwitch } from '@grafana/ui';
 
+import { FeatureName } from 'types';
 import { useLogsDS } from 'hooks/useLogsDS';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 const viz = VizConfigBuilders.logs()
@@ -42,20 +44,28 @@ export const ErrorLogs = ({ startingUnsuccessfulOnly = false }: { startingUnsucc
   });
 
   return (
-    <VizPanel
-      title="Logs for checks: $probe ⮕ $job / $instance"
-      viz={viz}
-      dataProvider={dataProvider}
-      menu={menu}
-      headerActions={
-        <InlineSwitch
-          label="Unsuccessful runs only"
-          transparent
-          showLabel
-          defaultChecked={unsuccessfulOnly}
-          onChange={() => setUnsuccessfulOnly(!unsuccessfulOnly)}
-        />
+    <FeatureFlag name={FeatureName.TimepointExplorer}>
+      {({ isEnabled }) =>
+        !isEnabled ? (
+          <Box height={`850px`}>
+            <VizPanel
+              title="Logs for checks: $probe ⮕ $job / $instance"
+              viz={viz}
+              dataProvider={dataProvider}
+              menu={menu}
+              headerActions={
+                <InlineSwitch
+                  label="Unsuccessful runs only"
+                  transparent
+                  showLabel
+                  defaultChecked={unsuccessfulOnly}
+                  onChange={() => setUnsuccessfulOnly(!unsuccessfulOnly)}
+                />
+              }
+            />
+          </Box>
+        ) : null
       }
-    />
+    </FeatureFlag>
   );
 };

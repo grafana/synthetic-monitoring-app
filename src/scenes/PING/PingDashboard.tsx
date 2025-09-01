@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { Check, CheckType } from 'types';
 import { AvgLatency } from 'scenes/Common/AvgLatencyViz';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
+import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
 import { ErrorRateMap } from 'scenes/Common/ErrorRateMapViz';
 import { ErrorRate } from 'scenes/Common/ErrorRateViz';
 import { Frequency } from 'scenes/Common/FrequencyViz';
@@ -39,6 +40,7 @@ export const PingDashboard = ({ check }: { check: Check }) => {
         <ResponseLatency metric={`probe_icmp_duration_seconds`} />
         <ResponseLatencyByProbe />
       </div>
+      <ErrorLogs startingUnsuccessfulOnly />
     </DashboardContainer>
   );
 };
