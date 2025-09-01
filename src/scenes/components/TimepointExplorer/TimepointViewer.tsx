@@ -123,8 +123,10 @@ const TimepointHeader = ({
   timepoint: StatelessTimepoint;
   onChangeLogsView: (view: LogsView) => void;
 }) => {
+  const styles = useStyles2(getHeaderStyles);
+
   return (
-    <Stack direction={`row`} gap={1} justifyContent={'space-between'} alignItems={'center'}>
+    <div className={styles.container}>
       <Stack direction={`column`} gap={1}>
         <Text variant="h3">{dateTimeFormat(timepoint.adjustedTime, { format: 'yyyy/MM/DD HH:mm:ss' })}</Text>
         <Stack direction={`row`} gap={1}>
@@ -133,18 +135,22 @@ const TimepointHeader = ({
           </Text>
         </Stack>
       </Stack>
-      <Stack direction={`row`} gap={3}>
+      <div className={styles.actions}>
         <TimepointViewerActions timepoint={timepoint} />
         <LogsViewSelect onChange={onChangeLogsView} />
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   );
 };
+
+const CONTAINER_NAME = 'timepoint-viewer';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     border-radius: ${theme.shape.radius.default};
     border: 1px solid ${theme.colors.border.medium};
+    container-name: ${CONTAINER_NAME};
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
     gap: ${theme.spacing(2)};
@@ -157,3 +163,34 @@ const getStyles = (theme: GrafanaTheme2) => ({
     height: 1px;
   `,
 });
+
+const getHeaderStyles = (theme: GrafanaTheme2) => {
+  const breakpoint = theme.breakpoints.values.md;
+  const query = `(max-width: ${breakpoint}px)`;
+  const containerQuery = `@container ${CONTAINER_NAME} ${query}`;
+
+  return {
+    container: css`
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      gap: ${theme.spacing(1)};
+      justify-content: space-between;
+
+      ${containerQuery} {
+        flex-direction: column;
+        align-items: start;
+      }
+    `,
+    actions: css`
+      display: flex;
+      flex-direction: row;
+      gap: ${theme.spacing(1)};
+
+      ${containerQuery} {
+        justify-content: space-between;
+        width: 100%;
+      }
+    `,
+  };
+};

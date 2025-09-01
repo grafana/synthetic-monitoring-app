@@ -75,6 +75,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       height: 100%;
       width: 100%;
       font-family: ${theme.typography.fontFamilyMonospace};
+      overflow-x: auto;
     `,
     timelineItem: css`
       display: grid;

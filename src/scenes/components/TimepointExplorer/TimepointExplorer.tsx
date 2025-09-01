@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, RadioButtonGroup, Stack } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { Check } from 'types';
 import { Feedback } from 'components/Feedback';
@@ -25,15 +27,18 @@ export const TimepointExplorer = ({ check }: TimepointExplorerProps) => {
   );
 };
 
+const CONTAINER_NAME = 'timepoint-explorer';
+
 const TimepointExplorerInternal = () => {
   const { viewMode, handleViewModeChange } = useTimepointExplorerContext();
+  const styles = useStyles2(getStyles);
 
   return (
-    <Box paddingTop={2}>
+    <div className={styles.container}>
       <Stack direction={`column`} gap={2}>
-        <Stack direction="row" gap={2} justifyContent={`space-between`} alignItems={`center`}>
+        <div className={styles.header}>
           <TimepointExplorerVisibleOverview />
-          <Stack>
+          <div className={styles.actions}>
             <Feedback
               feature="timepoint-explorer"
               about={{
@@ -45,8 +50,8 @@ const TimepointExplorerInternal = () => {
               value={viewMode}
               onChange={handleViewModeChange}
             />
-          </Stack>
-        </Stack>
+          </div>
+        </div>
 
         <Stack direction="column" gap={2}>
           <TimepointMinimap />
@@ -54,6 +59,46 @@ const TimepointExplorerInternal = () => {
           <TimepointViewer />
         </Stack>
       </Stack>
-    </Box>
+    </div>
   );
+};
+
+const getStyles = (theme: GrafanaTheme2) => {
+  const breakpoint = theme.breakpoints.values.md;
+  const query = `(max-width: ${breakpoint}px)`;
+  const containerQuery = `@container ${CONTAINER_NAME} ${query}`;
+
+  return {
+    container: css`
+      padding-top: ${theme.spacing(2)};
+      container-name: ${CONTAINER_NAME};
+      container-type: inline-size;
+    `,
+    header: css`
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: ${theme.spacing(2)};
+
+      ${containerQuery} {
+        flex-direction: column;
+        align-items: start;
+
+        > :first-child {
+          order: 1;
+        }
+      }
+    `,
+    actions: css`
+      display: flex;
+      flex-direction: row;
+      gap: ${theme.spacing(1)};
+      justify-content: space-between;
+
+      ${containerQuery} {
+        width: 100%;
+      }
+    `,
+  };
 };
