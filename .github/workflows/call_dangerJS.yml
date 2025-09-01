@@ -28,10 +28,8 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Download currentBundleSize
-        uses: dawidd6/action-download-artifact@80620a5d27ce0ae443b965134db88467fc607b43 # v7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
-          workflow: on-pr-creation.yml
-          commit: ${{ github.sha }}
           name: currentBundleSize
           path: artifacts
 
