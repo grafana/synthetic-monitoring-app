@@ -10,7 +10,6 @@ import { getOffsetAndDirection } from 'scenes/components/TimepointExplorer/Timep
 interface TimepointRangeAnnotationProps {
   annotation: AnnotationWithIndices;
   displayWidth: number;
-  parentWidth: number;
   renderingStrategy: 'start' | 'end';
   showLabels?: boolean;
   showTooltips?: boolean;
@@ -21,7 +20,6 @@ interface TimepointRangeAnnotationProps {
 export const TimepointRangeAnnotation = ({
   annotation,
   displayWidth,
-  parentWidth,
   renderingStrategy,
   showLabels: showLabelsProp,
   showTooltips: showTooltipsProp,
@@ -32,8 +30,9 @@ export const TimepointRangeAnnotation = ({
   const { offset, direction } = getOffsetAndDirection(renderingStrategy, displayWidth, timepointsInRange, annotation);
   const visibleWidth = displayWidth * (annotation.visibleEndIndex - annotation.visibleStartIndex + 1);
   const theme = useTheme2();
-  const annotationTooSlimForLabel =
-    visibleWidth < measureText(annotation.checkEvent.label, 14).width + parseInt(theme.spacing(2), 10);
+  const annotationTooSlimForLabel = showLabelsProp
+    ? visibleWidth < measureText(annotation.checkEvent.label, 14).width + parseInt(theme.spacing(2), 10)
+    : false;
   const showLabels = showLabelsProp && !annotationTooSlimForLabel;
 
   return (
@@ -45,21 +44,32 @@ export const TimepointRangeAnnotation = ({
       }}
     >
       {showLabels && <div className={styles.label}>{annotation.checkEvent.label}</div>}
-      <AnnotationInformation annotation={annotation} showTooltips={showTooltipsProp} triggerHeight={triggerHeight} />
+      <AnnotationInformation
+        annotation={annotation}
+        annotationTooSlimForLabel={annotationTooSlimForLabel}
+        showTooltips={showTooltipsProp}
+        triggerHeight={triggerHeight}
+      />
     </div>
   );
 };
 
 interface AnnotationInformationProps {
   annotation: AnnotationWithIndices;
+  annotationTooSlimForLabel: boolean;
   showTooltips?: boolean;
   triggerHeight: number;
 }
 
-const AnnotationInformation = ({ annotation, showTooltips, triggerHeight }: AnnotationInformationProps) => {
+const AnnotationInformation = ({
+  annotation,
+  annotationTooSlimForLabel,
+  showTooltips,
+  triggerHeight,
+}: AnnotationInformationProps) => {
   const styles = useStyles2((theme) => getStyles(theme, annotation, triggerHeight));
 
-  if (!showTooltips) {
+  if (!showTooltips && !annotationTooSlimForLabel) {
     return <div className={styles.annotationInformation} />;
   }
 

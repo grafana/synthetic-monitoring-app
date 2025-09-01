@@ -163,7 +163,6 @@ const OutOfRangeAnnotation = ({
         visibleEndIndex,
       }}
       displayWidth={displayWidth}
-      parentWidth={parentWidth}
       renderingStrategy={`end`}
       showLabels={showLabels}
       timepointsInRange={timepointsInRange}

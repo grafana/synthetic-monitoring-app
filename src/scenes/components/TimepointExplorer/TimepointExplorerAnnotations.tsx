@@ -71,7 +71,6 @@ export const TimepointExplorerAnnotations = ({
             key={`${annotation.checkEvent.label}-${annotation.checkEvent.to}`}
             annotation={annotation}
             displayWidth={displayWidth}
-            parentWidth={parentWidth}
             renderingStrategy={renderingStrategy}
             showLabels={showLabels}
             showTooltips={showTooltips}
