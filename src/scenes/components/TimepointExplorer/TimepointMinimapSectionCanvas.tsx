@@ -79,9 +79,8 @@ export const TimepointMinimapSectionCanvas = ({ timepoints, width, height }: Min
     } else {
       // Right-align: count renderable timepoints and start from right edge
       const renderableCount = processedTimepoints.filter((timepoint) => {
-        const isInTheFuture = getIsInTheFuture(timepoint, currentAdjustedTime);
         const isEntryLoading = isLoading && timepoint.status === 'missing';
-        return timepoint.config.type !== 'no-data' && !isInTheFuture && !isEntryLoading;
+        return timepoint.config.type !== 'no-data' && !isEntryLoading;
       }).length;
 
       const totalRenderWidth = renderableCount * entryWidth;
