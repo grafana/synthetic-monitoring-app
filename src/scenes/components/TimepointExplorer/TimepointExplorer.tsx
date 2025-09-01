@@ -52,11 +52,13 @@ const TimepointExplorerInternal = () => {
                 text: `New feature!`,
               }}
             />
-            <RadioButtonGroup
-              options={TIMEPOINT_EXPLORER_VIEW_OPTIONS}
-              value={viewMode}
-              onChange={handleViewModeChange}
-            />
+            <div>
+              <RadioButtonGroup
+                options={TIMEPOINT_EXPLORER_VIEW_OPTIONS}
+                value={viewMode}
+                onChange={handleViewModeChange}
+              />
+            </div>
           </div>
         </div>
 

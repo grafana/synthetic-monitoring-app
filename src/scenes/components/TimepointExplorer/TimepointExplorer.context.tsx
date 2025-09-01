@@ -55,6 +55,7 @@ import {
   getIsCheckCreationWithinRange,
   getMiniMapPages,
   getMiniMapSections,
+  getRenderingStrategy,
   getVisibleTimepoints,
   getVisibleTimepointsTimeRange,
   getYAxisMax,
@@ -328,7 +329,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     currentAdjustedTime,
   });
 
-  const renderingStrategy = timepoints.length > timepointsDisplayCount ? 'end' : 'start';
+  const renderingStrategy = getRenderingStrategy({
+    isLogsRetentionPeriodWithinTimerange,
+    timepoints,
+    timepointsDisplayCount,
+  });
   const isCheckCreationWithinTimeRange = getIsCheckCreationWithinRange(
     checkCreation,
     explorerTimeFrom,

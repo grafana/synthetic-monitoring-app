@@ -469,3 +469,21 @@ export function getNonRoundedYAxisMax(highestValue: number, timeout: number) {
 export function getIsCheckCreationWithinRange(checkCreation: UnixTimestamp, from: UnixTimestamp, to: UnixTimestamp) {
   return BigInt(checkCreation) >= BigInt(from) && BigInt(checkCreation) <= BigInt(to);
 }
+
+interface GetRenderingStrategyProps {
+  isLogsRetentionPeriodWithinTimerange: boolean;
+  timepoints: StatelessTimepoint[];
+  timepointsDisplayCount: number;
+}
+
+export function getRenderingStrategy({
+  isLogsRetentionPeriodWithinTimerange,
+  timepoints,
+  timepointsDisplayCount,
+}: GetRenderingStrategyProps) {
+  if (timepoints.length > timepointsDisplayCount || isLogsRetentionPeriodWithinTimerange) {
+    return 'end';
+  }
+
+  return 'start';
+}

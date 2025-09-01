@@ -60,7 +60,7 @@ export function useInfiniteLogs<T, R>({
 
       return res;
     },
-    enabled: !Number.isNaN(start) && !Number.isNaN(end),
+    enabled: !Number.isNaN(start) && !Number.isNaN(end) && start < end,
     throwOnError,
   });
 }
