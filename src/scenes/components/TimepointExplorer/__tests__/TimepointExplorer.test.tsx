@@ -8,15 +8,23 @@ import { render } from 'test/render';
 
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { DataTestIds } from 'test/dataTestIds';
+import { mockFeatureToggles } from 'test/utils';
+import { FeatureName } from 'types';
 
 function renderTimepointExplorer() {
   return <TimepointExplorer check={BASIC_HTTP_CHECK} />;
 }
 
 describe('TimepointExplorer', () => {
-  it('should render', async () => {
+  it(`should not render if the feature flag is off`, async () => {
+    render(renderTimepointExplorer());
+    await waitFor(() => screen.queryByTestId(DataTestIds.TIMEPOINT_LIST));
+    expect(screen.queryByTestId(DataTestIds.TIMEPOINT_LIST)).not.toBeInTheDocument();
+  });
+
+  it('should render if the feature flag is on', async () => {
+    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
     render(renderTimepointExplorer());
     await waitFor(() => screen.findByTestId(DataTestIds.TIMEPOINT_LIST));
-    screen.debug();
   });
 });
