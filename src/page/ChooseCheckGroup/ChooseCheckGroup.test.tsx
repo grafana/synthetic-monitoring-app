@@ -36,7 +36,7 @@ it('shows check type options correctly with feature flags off', async () => {
 
   expect(screen.queryByRole('link', { name: `API Endpoint` })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: `Multi Step` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: `Scripted` })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: `Scripted` })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: `Browser` })).not.toBeInTheDocument();
 });
 
