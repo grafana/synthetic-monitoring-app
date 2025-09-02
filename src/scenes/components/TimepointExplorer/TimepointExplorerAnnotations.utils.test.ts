@@ -136,4 +136,25 @@ describe('getClosestTimepointsToCheckEvent', () => {
 
     expect(result).toMatchObject([match]);
   });
+
+  it(`should favour the later timepoint when the event happens at the start of one and beginning of another`, () => {
+    const checkEvents = [{ from: 10000, to: 10000, label: CheckEventType.CHECK_CREATED, color: 'blue' }];
+    const timepointsInRange = buildTimepoints({
+      checkConfigs: [{ frequency: 10000, from: 0, to: 20000 }],
+      limitFrom: 0,
+      limitTo: 20000,
+    });
+
+    const result = getClosestTimepointsToCheckEvent(checkEvents, timepointsInRange);
+    const match: AnnotationWithIndices = {
+      checkEvent: checkEvents[0],
+      isClippedStart: false,
+      isClippedEnd: false,
+      isInstant: true,
+      visibleStartIndex: 1,
+      visibleEndIndex: 1,
+    };
+
+    expect(result).toMatchObject([match]);
+  });
 });

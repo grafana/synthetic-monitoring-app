@@ -20,6 +20,7 @@ import {
   getNonRoundedYAxisMax,
   getPendingProbes,
   getRoundedYAxisMax,
+  removeProbableDuplicates,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 describe(`buildConfigTimeRanges`, () => {
@@ -326,5 +327,27 @@ describe(`getRoundedYAxisMax`, () => {
   it(`it should round to 4000 when the value is less than 4000 but greater than 3000`, () => {
     const yAxisMax = getRoundedYAxisMax(3331);
     expect(yAxisMax).toEqual(4000);
+  });
+});
+
+describe(`removeProbableDuplicates`, () => {
+  it(`should remove the first duplicate`, () => {
+    const CONFIG_ONE_DUPLICATE = { date: 3, frequency: 100 };
+    const CONFIG_TWO_KEEP = { date: 1003, frequency: 100 };
+    const CONFIG_THREE_KEEP = { date: 10000, frequency: 100 };
+
+    const configs: CheckConfigRaw[] = [CONFIG_ONE_DUPLICATE, CONFIG_TWO_KEEP, CONFIG_THREE_KEEP];
+    const removed = removeProbableDuplicates(configs, 1000);
+    expect(removed).toEqual([CONFIG_TWO_KEEP, CONFIG_THREE_KEEP]);
+  });
+
+  it(`should keep everything`, () => {
+    const CONFIG_ONE_KEEP = { date: 0, frequency: 100 };
+    const CONFIG_TWO_KEEP = { date: 1003, frequency: 100 };
+    const CONFIG_THREE_KEEP = { date: 10000, frequency: 100 };
+
+    const configs: CheckConfigRaw[] = [CONFIG_ONE_KEEP, CONFIG_TWO_KEEP, CONFIG_THREE_KEEP];
+    const removed = removeProbableDuplicates(configs, 1000);
+    expect(removed).toEqual([CONFIG_ONE_KEEP, CONFIG_TWO_KEEP, CONFIG_THREE_KEEP]);
   });
 });

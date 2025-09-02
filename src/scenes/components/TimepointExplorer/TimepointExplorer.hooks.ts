@@ -49,6 +49,7 @@ import {
   getPendingProbeNames,
   getTimeAdjustedTimepoint,
   getVisibleTimepoints,
+  removeProbableDuplicates,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 export function useVisibleTimepoints() {
@@ -64,7 +65,7 @@ interface UseBuiltCheckConfigsProps {
 }
 
 export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckConfigsProps) {
-  const lastModified = Math.round(check.modified! * 1000);
+  const lastModified = Math.ceil(check.modified!) * 1000;
 
   const { data: checkConfigsData, ...rest } = usePersistedCheckConfigs({
     from,
@@ -91,7 +92,7 @@ export function useBuiltCheckConfigs({ check, from, to, probe }: UseBuiltCheckCo
 
     // apparently they aren't exact...
     // reduce to second accurate rather than millisecond accurate
-    if (Math.round(latest.date / 1000) === Math.round(lastModified / 1000)) {
+    if (latest.date === lastModified) {
       return checkConfigsRaw;
     }
 
@@ -246,7 +247,8 @@ function useCheckConfigs({ from, to, check, probe }: UseCheckConfigsProps) {
     },
     select: (data) => {
       const configs = data.map((d) => extractFrequenciesAndConfigs(d)).flat();
-      return configs;
+
+      return removeProbableDuplicates(configs, 1000);
     },
     enabled: from < to,
   });

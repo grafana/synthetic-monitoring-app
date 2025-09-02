@@ -139,7 +139,7 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
   if (Value?.labels) {
     const { config_version, frequency } = Value.labels;
     const toUnixTimestamp = Math.round(Number(config_version) / NANOSECONDS_PER_MILLISECOND);
-    const date: UnixTimestamp = toUnixTimestamp;
+    const date: UnixTimestamp = Math.ceil(toUnixTimestamp / 1000) * 1000;
 
     build.push({
       frequency: Number(frequency),
@@ -148,6 +148,40 @@ export function extractFrequenciesAndConfigs(data: DataFrame) {
   }
 
   return build;
+}
+
+export function removeProbableDuplicates(configs: CheckConfigRaw[], tolerance = 1000) {
+  // if any check config is within 1 second of another check config, remove the duplicate and keep the newest
+  if (!configs?.length) {
+    return [];
+  }
+
+  const sorted = [...configs].sort((a, b) => a.date - b.date);
+  const result: CheckConfigRaw[] = [];
+
+  let clusterLatest: CheckConfigRaw | null = null;
+
+  for (const cfg of sorted) {
+    if (!clusterLatest) {
+      clusterLatest = cfg;
+      continue;
+    }
+
+    if (cfg.date - clusterLatest.date <= tolerance) {
+      // within tolerance: keep only the newest in the cluster
+      clusterLatest = cfg;
+    } else {
+      // new cluster begins
+      result.push(clusterLatest);
+      clusterLatest = cfg;
+    }
+  }
+
+  if (clusterLatest) {
+    result.push(clusterLatest);
+  }
+
+  return result;
 }
 
 export function buildCheckEvents({

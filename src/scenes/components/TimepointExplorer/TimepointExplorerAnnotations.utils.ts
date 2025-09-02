@@ -88,7 +88,9 @@ export function isInTimepoint(timepoint: StatelessTimepoint, unixtime: UnixTimes
   }
 
   const timepointStart = timepoint.adjustedTime;
-  const timepointEnd = timepoint.adjustedTime + timepoint.timepointDuration;
+  // -1 because it makes the possibilities unique. Without the -1 an event might belong to two timepoints,
+  // so now a timepoint + its duration - 1 is a different timestamp to the beginning of the next timepoint
+  const timepointEnd = timepoint.adjustedTime + timepoint.timepointDuration - 1;
 
   if (unixtime >= timepointStart && unixtime <= timepointEnd) {
     return true;
