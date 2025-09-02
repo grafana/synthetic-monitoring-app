@@ -31,28 +31,13 @@ async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = 
   return res;
 }
 
-it('shows check type options correctly with feature flags off', async () => {
+it('shows check type options correctly', async () => {
   await renderChooseCheckGroup();
 
   expect(screen.queryByRole('link', { name: `API Endpoint` })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: `Multi Step` })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: `Scripted` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: `Browser` })).not.toBeInTheDocument();
-});
-
-it('shows the scripted card', async () => {
-  await renderChooseCheckGroup();
-  expect(screen.getByRole('link', { name: `Scripted` })).toBeInTheDocument();
-});
-
-it('shows the browser card with correct feature flag on', async () => {
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.BrowserChecks]: true,
-  });
-
-  await renderChooseCheckGroup();
-  expect(screen.getByRole('link', { name: `Browser` })).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: `Browser` })).toBeInTheDocument();
 });
 
 it(`doesn't show gRPC option by default`, async () => {
@@ -78,11 +63,6 @@ it('shows error alert when check limit is reached', async () => {
 
 it(`shows an error alert when user is HG Free user with over 100k execution limit`, async () => {
   runTestAsHGFreeUserOverLimit();
-
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.BrowserChecks]: true,
-  });
 
   await renderChooseCheckGroup();
   const alert = await screen.findByText(/You have reached your monthly execution limit of/);
