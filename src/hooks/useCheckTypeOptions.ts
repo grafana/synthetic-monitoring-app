@@ -56,7 +56,6 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'Scripted',
     value: CheckType.Scripted,
     description: 'Write a k6 script to run custom checks.',
-    featureToggle: FeatureName.ScriptedChecks,
     group: CheckTypeGroup.Scripted,
   },
   {

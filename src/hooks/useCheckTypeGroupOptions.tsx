@@ -59,13 +59,12 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     protocols: [
       {
         label: `HTTP`,
-        featureToggle: FeatureName.ScriptedChecks,
         href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Scripted}`,
         onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Scripted, protocol: `HTTP` }),
       },
       // todo: we don't support these yet
       // { label: `gRPC` },
-      { label: `WebSockets`, featureToggle: FeatureName.ScriptedChecks },
+      { label: `WebSockets` },
       // todo: we don't support these yet
       // {
       //   label: `+More`,
