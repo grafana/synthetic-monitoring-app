@@ -13,6 +13,8 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
 
+import { FormSectionIndex } from '../../components/CheckForm/constants';
+
 export const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',
   [CheckType.GRPC]: 'grafana.com:50051',
@@ -40,7 +42,7 @@ export async function renderNewForm(checkType: CheckType) {
 
   const typeButReallyPaste = async (target: Element, value: string, args?: any) => {
     if (target instanceof HTMLElement) {
-      await act(() => {
+      act(() => {
         target.focus();
       });
       await res.user.paste(value);
@@ -80,22 +82,22 @@ export async function renderEditForm(id: Check['id']) {
   };
 }
 
-export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 | 5) {
-  const formSidebar = await screen.findByTestId('form-sidebar');
-  const buttons = formSidebar.querySelectorAll('button');
+export async function goToSectionV2(user: UserEvent, section: FormSectionIndex) {
+  const formSidebar = await screen.findByTestId(DataTestIds.FORM_SIDEBAR);
+  const buttons = await within(formSidebar).findAllByRole('button');
 
-  const targetButton = buttons[sectionIndex - 1];
+  const targetButton = buttons[section];
 
   await user.click(targetButton);
 }
 
 export async function submitForm(user: UserEvent) {
-  const saveButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+  const [saveButton] = await screen.findAllByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
   await user.click(saveButton);
 }
 
 export async function testCheck(user: UserEvent) {
-  const actionsBar = screen.getByTestId(DataTestIds.ACTIONS_BAR);
+  const actionsBar = screen.getByTestId(DataTestIds.PAGE_ACTIONS);
   const testButton = await within(actionsBar).findByText('Test');
   await user.click(testButton);
 }

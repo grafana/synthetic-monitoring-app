@@ -3,7 +3,9 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { mockFeatureToggles } from 'test/utils';
 
 import { CheckAlertType, FeatureName } from 'types';
-import { goToSection, renderEditForm } from 'page/__testHelpers__/checkForm';
+import { goToSectionV2, renderEditForm } from 'page/__testHelpers__/checkForm';
+
+import { FormSectionIndex } from '../constants';
 
 describe('RunbookUrl', () => {
   beforeEach(() => {
@@ -14,30 +16,33 @@ describe('RunbookUrl', () => {
 
   it('renders the runbook URL inputs for pre-selected alerts', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
-
+    await goToSectionV2(user, FormSectionIndex.Alerting);
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
-    expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)).toBeInTheDocument();
+    expect(
+      screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)
+    ).toBeInTheDocument();
     expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.ProbeFailedExecutionsTooHigh}`)).toBeInTheDocument();
     expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.HTTPRequestDurationTooHighAvg}`)).toBeInTheDocument();
-    
+
     expect(screen.getAllByText('Runbook URL (optional):')).toHaveLength(3);
     expect(screen.getAllByPlaceholderText('https://example.com/runbook')).toHaveLength(3);
   });
 
   it('displays existing runbook URL values from test data', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    await goToSectionV2(user, FormSectionIndex.Alerting);
     expect(screen.getByDisplayValue('https://example.com/runbooks/tls-certificate')).toBeInTheDocument();
     expect(screen.getByDisplayValue('https://example.com/runbooks/probe-failures')).toBeInTheDocument();
   });
 
   it('allows user to modify an existing runbook URL', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
-    const tlsRunbookInput = screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`);
-    
+    await goToSectionV2(user, FormSectionIndex.Alerting);
+    const tlsRunbookInput = screen.getByTestId(
+      `alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`
+    );
+
     await user.clear(tlsRunbookInput);
     await user.type(tlsRunbookInput, 'https://mycompany.com/runbooks/modified-tls-cert');
 
@@ -46,9 +51,11 @@ describe('RunbookUrl', () => {
 
   it('allows user to modify the failed executions runbook URL', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
-    const failedExecRunbookInput = screen.getByTestId(`alert-runbook-url-${CheckAlertType.ProbeFailedExecutionsTooHigh}`);
-  
+    await goToSectionV2(user, FormSectionIndex.Alerting);
+    const failedExecRunbookInput = screen.getByTestId(
+      `alert-runbook-url-${CheckAlertType.ProbeFailedExecutionsTooHigh}`
+    );
+
     await user.clear(failedExecRunbookInput);
     await user.type(failedExecRunbookInput, 'https://mycompany.com/runbooks/modified-failed-exec');
 
@@ -57,9 +64,11 @@ describe('RunbookUrl', () => {
 
   it('allows user to modify the HTTP request duration runbook URL', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
-    const httpDurationRunbookInput = screen.getByTestId(`alert-runbook-url-${CheckAlertType.HTTPRequestDurationTooHighAvg}`);
-  
+    await goToSectionV2(user, FormSectionIndex.Alerting);
+    const httpDurationRunbookInput = screen.getByTestId(
+      `alert-runbook-url-${CheckAlertType.HTTPRequestDurationTooHighAvg}`
+    );
+
     await user.clear(httpDurationRunbookInput);
     await user.type(httpDurationRunbookInput, 'https://mycompany.com/runbooks/modified-http-duration');
 
@@ -68,9 +77,11 @@ describe('RunbookUrl', () => {
 
   it('allows user to clear a runbook URL', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
-    const tlsRunbookInput = screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`);
-    
+    await goToSectionV2(user, FormSectionIndex.Alerting);
+    const tlsRunbookInput = screen.getByTestId(
+      `alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`
+    );
+
     await user.clear(tlsRunbookInput);
 
     expect(tlsRunbookInput).toHaveValue('');
@@ -78,12 +89,16 @@ describe('RunbookUrl', () => {
 
   it('shows runbook URL input as disabled when alert is deselected', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    await goToSectionV2(user, FormSectionIndex.Alerting);
 
-    expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)).toBeInTheDocument();
+    expect(
+      screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)
+    ).toBeInTheDocument();
     const tlsCheckbox = screen.getByTestId(`checkbox-alert-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`);
     await user.click(tlsCheckbox);
 
-    expect(screen.queryByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)).toHaveAttribute('disabled');
+    expect(
+      screen.queryByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)
+    ).toHaveAttribute('disabled');
   });
 });
