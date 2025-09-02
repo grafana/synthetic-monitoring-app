@@ -113,24 +113,7 @@ describe('CheckList - Filtering', () => {
     expect(checks.length).toBe(1);
   });
 
-  test('scripted checks do not appear in the filters by default', async () => {
-    const { user } = await renderCheckList();
-    const additionalFilters = await screen.findByText(/Additional filters/i);
-    await user.click(additionalFilters);
-
-    const select = await getSelect({ label: `Filter by type` });
-    await user.click(select[0]);
-    const listBox = screen.getByLabelText(`Select options menu`);
-
-    expect(within(listBox).queryByText(`Scripted`)).not.toBeInTheDocument();
-  });
-
-  test('scripted checks appear in the filters when the feature flag is enabled', async () => {
-    jest.replaceProperty(config, 'featureToggles', {
-      // @ts-expect-error
-      [FeatureName.ScriptedChecks]: true,
-    });
-
+  test('scripted checks appear in the filters', async () => {
     const { user } = await renderCheckList();
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);

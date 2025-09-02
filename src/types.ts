@@ -721,7 +721,6 @@ export enum HTTPCompressionAlgo {
 export enum FeatureName {
   BrowserChecks = 'browser-checks',
   GRPCChecks = 'grpc-checks',
-  ScriptedChecks = 'scripted-checks',
   RBAC = 'synthetic-monitoring-rbac',
   AlertsPerCheck = 'sm-alerts-per-check',
   SecretsManagement = 'synthetic-monitoring-secrets-management',

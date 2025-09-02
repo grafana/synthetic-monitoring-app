@@ -40,12 +40,7 @@ it('shows check type options correctly with feature flags off', async () => {
   expect(screen.queryByRole('link', { name: `Browser` })).not.toBeInTheDocument();
 });
 
-it('shows the scripted card with correct feature flag on', async () => {
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.ScriptedChecks]: true,
-  });
-
+it('shows the scripted card', async () => {
   await renderChooseCheckGroup();
   expect(screen.getByRole('link', { name: `Scripted` })).toBeInTheDocument();
 });
@@ -86,7 +81,6 @@ it(`shows an error alert when user is HG Free user with over 100k execution limi
 
   jest.replaceProperty(config, 'featureToggles', {
     // @ts-expect-error
-    [FeatureName.ScriptedChecks]: true,
     [FeatureName.BrowserChecks]: true,
   });
 
