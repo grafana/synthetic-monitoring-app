@@ -6,7 +6,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 import { mockFeatureToggles } from 'test/utils';
 
-import { CheckFormValues, FeatureName } from 'types';
+import { CheckFormValues, CheckFormValuesBrowser, CheckType, FeatureName } from 'types';
 import { useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 
 import { K6ChannelSelect } from './K6ChannelSelect';
@@ -15,9 +15,13 @@ jest.mock('components/CheckForm/CheckFormContext');
 
 const mockUseCheckFormMetaContext = useCheckFormMetaContext as jest.Mock;
 
-const FormWrapper = ({ children }: { children: React.ReactNode }) => {
-  const form = useForm<CheckFormValues>();
-  
+const FormWrapper = ({ children, defaultValues }: { children: React.ReactNode; defaultValues?: Partial<CheckFormValuesBrowser> }) => {
+  const form = useForm<CheckFormValues>({ 
+    defaultValues: {
+      ...defaultValues,
+      checkType: CheckType.Browser,
+    }
+  });
   return <FormProvider {...form}>{children}</FormProvider>;
 };
 
@@ -131,22 +135,24 @@ describe('K6ChannelSelect', () => {
     });
     
     const channelsWithDeprecated = {
-      channels: {
-        v1: {
+      channels: [
+        {
+          id: 'v1',
           name: 'v1',
           default: true,
           deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
           disabledAfter: '2026-12-31T00:00:00Z',
           manifest: 'k6>=1,k6<2',
         },
-        deprecated: {
+        {
+          id: 'deprecated',
           name: 'deprecated',
           default: false,
           deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
           disabledAfter: '2027-12-31T00:00:00Z',
           manifest: 'k6>=0.5,k6<1',
         },
-      },
+      ],
     };
 
     server.use(
@@ -177,26 +183,35 @@ describe('K6ChannelSelect', () => {
     });
     
     const channelsWithDeprecated = {
-      channels: {
-        v1: {
+      channels: [
+        {
+          id: 'v1',
           name: 'v1',
           default: true,
           deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
           disabledAfter: '2026-12-31T00:00:00Z',
           manifest: 'k6>=1,k6<2',
         },
-        deprecated: {
+        {
+          id: 'deprecated',
           name: 'deprecated',
           default: false,
           deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
           disabledAfter: '2027-12-31T00:00:00Z',
           manifest: 'k6>=0.5,k6<1',
         },
-      },
+      ],
     };
 
     mockUseCheckFormMetaContext.mockReturnValue({
-      check: { channel: 'deprecated' },
+      check: { 
+        settings: { 
+          browser: { 
+            script: 'test script',
+            channel: 'deprecated' 
+          } 
+        } 
+      },
       isExistingCheck: true,
       getIsExistingCheck: () => true,
     });
@@ -229,22 +244,24 @@ describe('K6ChannelSelect', () => {
     });
     
     const channelsWithDisabled = {
-      channels: {
-        v1: {
+      channels: [
+        {
+          id: 'v1',
           name: 'v1',
           default: true,
           deprecatedAfter: '2025-12-31T00:00:00Z',
           disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
           manifest: 'k6>=1,k6<2',
         },
-        disabled: {
+        {
+          id: 'disabled',
           name: 'disabled',
           default: false,
           deprecatedAfter: '2025-12-31T00:00:00Z',
           disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
           manifest: 'k6>=0.5,k6<1',
         },
-      },
+      ],
     };
 
     server.use(
@@ -274,26 +291,35 @@ describe('K6ChannelSelect', () => {
     });
     
     const channelsWithDisabled = {
-      channels: {
-        v1: {
+      channels: [
+        {
+          id: 'v1',
           name: 'v1',
           default: true,
           deprecatedAfter: '2025-12-31T00:00:00Z',
           disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
           manifest: 'k6>=1,k6<2',
         },
-        disabled: {
+        {
+          id: 'disabled',
           name: 'disabled',
           default: false,
           deprecatedAfter: '2025-12-31T00:00:00Z',
           disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
           manifest: 'k6>=0.5,k6<1',
         },
-      },
+      ],
     };
 
     mockUseCheckFormMetaContext.mockReturnValue({
-      check: { channel: 'disabled' },
+      check: { 
+        settings: { 
+          browser: { 
+            script: 'test script',
+            channel: 'disabled' 
+          } 
+        } 
+      },
       isExistingCheck: true,
       getIsExistingCheck: () => true,
     });
@@ -325,29 +351,32 @@ describe('K6ChannelSelect', () => {
     });
     
     const channelsWithBoth = {
-      channels: {
-        v1: {
+      channels: [
+        {
+          id: 'v1',
           name: 'v1',
           default: true,
           deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
           disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
           manifest: 'k6>=1,k6<2',
         },
-        deprecated: {
+        {
+          id: 'deprecated',
           name: 'deprecated',
           default: false,
           deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
           disabledAfter: '2027-12-31T00:00:00Z', // Not disabled
           manifest: 'k6>=0.5,k6<1',
         },
-        disabled: {
+        {
+          id: 'disabled',
           name: 'disabled',
           default: false,
           deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
           disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
           manifest: 'k6>=0.3,k6<1',
         },
-      },
+      ],
     };
 
     server.use(

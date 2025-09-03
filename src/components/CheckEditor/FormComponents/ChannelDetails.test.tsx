@@ -17,29 +17,32 @@ describe('ChannelDetails', () => {
     );
   });
 
-  const mockChannels: Record<string, K6Channel> = {
-    v1: {
+  const mockChannels: K6Channel[] = [
+    {
+      id: 'v1',
       name: 'v1',
       default: false,
       deprecatedAfter: '2025-12-31T00:00:00Z',
       disabledAfter: '2026-12-31T00:00:00Z',
       manifest: 'k6>=1',
     },
-    v2: {
+    {
+      id: 'v2',
       name: 'v2',
       default: true,
       deprecatedAfter: '2026-12-31T00:00:00Z',
       disabledAfter: '2027-12-31T00:00:00Z',
       manifest: 'k6>=2',
     },
-    deprecated: {
+    {
+      id: 'deprecated',
       name: 'deprecated',
       default: false,
       deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
       disabledAfter: '2030-01-01T00:00:00Z', // Not yet disabled
       manifest: 'k6>=0.5',
     },
-  };
+  ];
 
   it('should show probe default message when no channel is selected', async () => {
     render(

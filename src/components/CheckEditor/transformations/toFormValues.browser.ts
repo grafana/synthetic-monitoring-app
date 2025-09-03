@@ -12,6 +12,7 @@ export function getBrowserCheckFormValues(check: BrowserCheck): CheckFormValuesB
     settings: {
       browser: {
         script: decode(check.settings?.browser?.script),
+        channel: check.settings?.browser?.channel || null,
       },
     },
   };
