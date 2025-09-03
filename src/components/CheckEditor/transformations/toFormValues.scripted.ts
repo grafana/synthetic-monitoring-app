@@ -12,6 +12,7 @@ export function getScriptedCheckFormValues(check: ScriptedCheck): CheckFormValue
     settings: {
       scripted: {
         script: decode(check.settings?.scripted?.script),
+        channel: check.settings?.scripted?.channel || null,
       },
     },
   };
