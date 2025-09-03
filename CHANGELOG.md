@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.35.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.34.1...v1.35.0) (2025-09-03)
+
+
+### Features
+
+* add lightweight feedback feature ([#1246](https://github.com/grafana/synthetic-monitoring-app/issues/1246)) ([3a83003](https://github.com/grafana/synthetic-monitoring-app/commit/3a830035fd7bfe6e4fbc0561043d0b89f0d420d3))
+* Timepoint Explorer ([#1122](https://github.com/grafana/synthetic-monitoring-app/issues/1122)) ([f9142d3](https://github.com/grafana/synthetic-monitoring-app/commit/f9142d3afc7ce9ad1a0afe3ad0c5099b9682404c))
+
+
+### Fixes
+
+* correct danger js PR stats ([#1254](https://github.com/grafana/synthetic-monitoring-app/issues/1254)) ([5b191eb](https://github.com/grafana/synthetic-monitoring-app/commit/5b191eb5dfc115b5aa425fc6a4a9b7e48dea2dc5))
+* update probe mappings ([#1251](https://github.com/grafana/synthetic-monitoring-app/issues/1251)) ([8cf8083](https://github.com/grafana/synthetic-monitoring-app/commit/8cf80834f8e087847957eda629851acec920fbc3))
+
+
+### Miscellaneous Chores
+
+* add gRPC dashboard and remove unused scenes components ([#1249](https://github.com/grafana/synthetic-monitoring-app/issues/1249)) ([1d14f43](https://github.com/grafana/synthetic-monitoring-app/commit/1d14f4318bd2b91874c20803fc7509fc7f32b0c1))
+* convert tcp dashboard to react scenes ([#1241](https://github.com/grafana/synthetic-monitoring-app/issues/1241)) ([14ecef7](https://github.com/grafana/synthetic-monitoring-app/commit/14ecef718fb65a6c8bc248b1e64b7cd19f06ffad))
+* convert traceroute dashboard to react scenes ([#1244](https://github.com/grafana/synthetic-monitoring-app/issues/1244)) ([3f14757](https://github.com/grafana/synthetic-monitoring-app/commit/3f14757ea95a5962de36178e52c0786de355f603))
+* converted dns dashboard to react scenes ([#1240](https://github.com/grafana/synthetic-monitoring-app/issues/1240)) ([a29f5ad](https://github.com/grafana/synthetic-monitoring-app/commit/a29f5ad3ce271656b6ca038124ed840a889f5b78))
+* converted ping dashboard to react scenes ([#1239](https://github.com/grafana/synthetic-monitoring-app/issues/1239)) ([9481b0d](https://github.com/grafana/synthetic-monitoring-app/commit/9481b0d49302f62d44838238d5c8e4281e6cb348))
+* remove rbac feature flag ([#1257](https://github.com/grafana/synthetic-monitoring-app/issues/1257)) ([e999f92](https://github.com/grafana/synthetic-monitoring-app/commit/e999f92630755a3802cdb583cb7d2f2109b83504))
+* remove scripted and unifiedAlerting feature flags ([#1255](https://github.com/grafana/synthetic-monitoring-app/issues/1255)) ([a449a74](https://github.com/grafana/synthetic-monitoring-app/commit/a449a7449e8e40f04440a118523374da656ad19f))
+* update editor role description in plugins.json ([#1234](https://github.com/grafana/synthetic-monitoring-app/issues/1234)) ([d315240](https://github.com/grafana/synthetic-monitoring-app/commit/d31524090bb2d71cd425d08422a804f1aea0774f))
+
 ## [1.34.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.34.0...v1.34.1) (2025-08-21)
 
 
