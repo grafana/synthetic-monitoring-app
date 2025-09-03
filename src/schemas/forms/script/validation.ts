@@ -1,33 +1,22 @@
 import { RefinementCtx, ZodIssueCode } from 'zod';
 
 import { extractImportStatement, extractOptionsExport, getProperty, parseScript } from './parser';
+import { hasK6ExtensionImports, hasK6Pragma, K6_EXTENSION_MESSAGE, K6_PRAGMA_MESSAGE } from './rules';
 
 const MAX_SCRIPT_IN_KB = 128;
-
-function hasK6Pragma(script: string): boolean {
-  // Match patterns like: "use k6 >= v1.0.0", "use k6 > 0.52", etc.
-  const pragmaPattern = /["']use\s+k6\s*[><=!]+\s*v?\d+/i;
-  return pragmaPattern.test(script);
-}
-
-function hasK6ExtensionImports(script: string): boolean {
-  // Match import statements that include k6/x/ paths
-  const extensionPattern = /import\s+.*from\s*['"`][^'"`]*k6\/x\/[^'"`]*['"`]/i;
-  return extensionPattern.test(script);
-}
 
 function validateScriptPragmasAndExtensions(script: string, context: RefinementCtx): void {
   if (hasK6Pragma(script)) {
     context.addIssue({
       code: ZodIssueCode.custom,
-      message: 'Script contains a k6 version pragma which is not allowed. Please remove the "use k6" directive.',
+      message: K6_PRAGMA_MESSAGE,
     });
   }
 
   if (hasK6ExtensionImports(script)) {
     context.addIssue({
       code: ZodIssueCode.custom,
-      message: 'Script imports k6 extensions which are not allowed. Please remove imports from k6/x/ paths.',
+      message: K6_EXTENSION_MESSAGE,
     });
   }
 }

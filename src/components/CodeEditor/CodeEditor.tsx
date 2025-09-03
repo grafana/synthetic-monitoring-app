@@ -9,6 +9,7 @@ import { CodeEditorProps, ConstrainedEditorProps } from './CodeEditor.types';
 import k6Types from './k6.types';
 
 import { initializeConstrainedInstance, updateConstrainedEditorRanges } from './CodeEditor.utils';
+import { wireCustomValidation } from './monacoValidation';
 
 const addK6Types = (monaco: typeof monacoType) => {
   Object.entries(k6Types).map(([name, type]) => {
@@ -116,6 +117,9 @@ export const CodeEditor = forwardRef(function CodeEditor(
       handleValidation(monaco, editor);
     });
 
+    // Wire custom red-squiggle markers for forbidden syntax
+    const disposeCustomValidation = wireCustomValidation(monaco, editor);
+
     if (constrainedRanges) {
       const instance = initializeConstrainedInstance(monaco, editor);
       const model = editor.getModel();
@@ -126,6 +130,13 @@ export const CodeEditor = forwardRef(function CodeEditor(
       updateConstrainedEditorRanges(instance, model, value, constrainedRanges, onDidChangeContentInEditableRange);
       setConstrainedInstance(instance);
     }
+
+    // Cleanup subscriptions on dispose
+    editor.onDidDispose(() => {
+      if (typeof disposeCustomValidation === 'function') {
+        disposeCustomValidation();
+      }
+    });
   };
 
   useEffect(() => {
