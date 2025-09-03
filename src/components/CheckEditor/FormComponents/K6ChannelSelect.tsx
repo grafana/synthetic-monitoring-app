@@ -32,28 +32,41 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 }
 
 function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
-  const { control, setValue } = useFormContext<CheckFormValues>();
+  const { control, setValue, getValues } = useFormContext<CheckFormValues>();
   const { check, isExistingCheck } = useCheckFormMetaContext();
   const id = 'k6-channel-select';
 
+  const checkType = getValues('checkType');
+
   const { field, fieldState } = useController({
     control,
-    name: 'channel',
+    name: `settings.${checkType === 'scripted' ? 'scripted' : 'browser'}.channel`,
   });
 
   const { data: channelsResponse, isLoading: isLoadingChannels } = useK6Channels(true);
 
-  const channels = useMemo(() => channelsResponse?.channels || {}, [channelsResponse?.channels]);
+  const channels = useMemo(() => channelsResponse?.channels || [], [channelsResponse?.channels]);
 
-  const previousChannelId = isExistingCheck ? check?.channel : null;
+  const previousChannelId = isExistingCheck
+    ? (() => {
+        if (checkType === 'scripted' && check?.settings && 'scripted' in check.settings) {
+          return check.settings.scripted.channel || null;
+        }
+        if (checkType === 'browser' && check?.settings && 'browser' in check.settings) {
+          return check.settings.browser.channel || null;
+        }
+        return null;
+      })()
+    : null;
 
   const defaultChannelId = useMemo(() => {
-    return Object.entries(channels).find(([, channel]) => channel.default)?.[0] || '';
+    return channels.find((channel) => channel.default)?.id || '';
   }, [channels]);
 
   // Set the field value to the default channel if no value is currently set and we have a default
   useEffect(() => {
-    if (!field.value && defaultChannelId && channels[defaultChannelId]) {
+    const defaultChannel = channels.find((channel) => channel.id === defaultChannelId);
+    if (!field.value && defaultChannelId && defaultChannel) {
       field.onChange(defaultChannelId);
     }
   }, [defaultChannelId, channels, field]);
@@ -61,8 +74,8 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   // Set channelDisabled flag when channels load or current value changes
   useEffect(() => {
     const currentChannelId = field.value || defaultChannelId;
-    if (currentChannelId && channels[currentChannelId]) {
-      const selectedChannel = channels[currentChannelId];
+    const selectedChannel = channels.find((channel) => channel.id === currentChannelId);
+    if (currentChannelId && selectedChannel) {
       const isDisabled = new Date(selectedChannel.disabledAfter) < new Date();
       setValue('channelDisabled', isDisabled);
     } else {
@@ -71,8 +84,8 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   }, [field.value, defaultChannelId, channels, setValue]);
 
   const channelOptions = useMemo(() => {
-    return Object.entries(channels)
-      .filter(([channelId, channel]) => {
+    return channels
+      .filter((channel) => {
         const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
         const isDisabled = new Date(channel.disabledAfter) < new Date();
 
@@ -82,7 +95,7 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
         }
 
         // Skip deprecated channels for existing checks unless it was previously assigned
-        if (isDeprecated && isExistingCheck && channelId !== previousChannelId) {
+        if (isDeprecated && isExistingCheck && channel.id !== previousChannelId) {
           return false;
         }
 
@@ -92,18 +105,18 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
         }
 
         // Skip disabled channels for existing checks unless it was previously assigned
-        if (isDisabled && isExistingCheck && channelId !== previousChannelId) {
+        if (isDisabled && isExistingCheck && channel.id !== previousChannelId) {
           return false;
         }
 
         return true;
       })
-      .map(([channelId, channel]) => {
+      .map((channel) => {
         const labelSuffix = channel.default ? ' (default)' : '';
 
         return {
           label: `${channel.name}.x${labelSuffix}`,
-          value: channelId,
+          value: channel.id,
           description: `k6 version range: ${channel.manifest}`,
         };
       });

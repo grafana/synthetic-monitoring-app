@@ -6,7 +6,7 @@ import { K6Channel } from 'types';
 import { useCurrentK6Version } from 'data/useK6Channels';
 interface ChannelDetailsProps {
   channelId: string | null;
-  channels: Record<string, K6Channel>;
+  channels: K6Channel[];
   enabled?: boolean;
 }
 
@@ -24,7 +24,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
     );
   }
 
-  const channel = channels[validChannelId];
+  const channel = channels.find(ch => ch.id === validChannelId);
   if (!channel) {
     return null;
   }

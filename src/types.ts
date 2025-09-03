@@ -181,10 +181,12 @@ export interface DnsSettingsFormValues
 
 export interface ScriptedSettings {
   script: string;
+  channel?: string | null;
 }
 
 export interface BrowserSettings {
   script: string;
+  channel?: string | null;
 }
 
 export interface TcpSettings {
@@ -894,6 +896,7 @@ export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | '
 export type AlertingType = 'alerting' | 'sensitivity';
 
 export interface K6Channel {
+  id: string;
   name: string;
   default: boolean;
   deprecatedAfter: string;
@@ -906,5 +909,5 @@ export interface K6ChannelWithCurrent extends K6Channel {
 }
 
 export interface ListChannelsResponse {
-  channels: Record<string, K6Channel>;
+  channels: K6Channel[];
 }

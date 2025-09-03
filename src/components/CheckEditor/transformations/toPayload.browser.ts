@@ -11,6 +11,7 @@ export function getBrowserPayload(formValues: CheckFormValuesBrowser): BrowserCh
     settings: {
       browser: {
         script: encode(formValues.settings.browser.script),
+        channel: formValues.settings.browser.channel || null,
       },
     },
   };

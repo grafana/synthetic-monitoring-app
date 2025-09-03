@@ -1,11 +1,11 @@
 import { createFrequencySchema } from 'schemas/general/Frequency';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
-import { z, ZodType } from 'zod';
+import { z, ZodIssueCode, ZodType } from 'zod';
 
 import { BrowserSettings, CheckFormValuesBrowser, CheckType } from 'types';
 import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
-import { channelValidation, maxSizeValidation, validateBrowserScript } from './script/validation';
+import { maxSizeValidation, validateBrowserScript } from './script/validation';
 import { baseCheckSchema } from './BaseCheckSchema';
 
 export const MIN_FREQUENCY_BROWSER = ONE_MINUTE_IN_MS;
@@ -14,6 +14,7 @@ export const MAX_TIMEOUT_BROWSER = ONE_MINUTE_IN_MS * 3;
 
 const browserSettingsSchema: ZodType<BrowserSettings> = z.object({
   script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation).superRefine(validateBrowserScript),
+  channel: z.string().nullable().optional(),
 });
 
 export const browserCheckSchema: ZodType<CheckFormValuesBrowser> = baseCheckSchema
@@ -33,4 +34,18 @@ export const browserCheckSchema: ZodType<CheckFormValuesBrowser> = baseCheckSche
       timeout: createTimeoutSchema(MIN_TIMEOUT_BROWSER, MAX_TIMEOUT_BROWSER),
     })
   )
-  .superRefine(channelValidation);
+  .superRefine((data, ctx) => {
+    if (!data.settings.browser.channel) {
+      return;
+    }
+
+    if (data.channelDisabled) {
+      const errorMessage = 'The selected k6 channel is disabled. Please select a different one.';
+
+      ctx.addIssue({
+        path: ['settings', 'browser', 'channel'],
+        message: errorMessage,
+        code: ZodIssueCode.custom,
+      });
+    }
+  });

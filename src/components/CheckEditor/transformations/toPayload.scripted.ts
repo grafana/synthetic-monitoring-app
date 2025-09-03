@@ -11,6 +11,7 @@ export function getScriptedPayload(formValues: CheckFormValuesScripted): Scripte
     settings: {
       scripted: {
         script: encode(formValues.settings.scripted.script),
+        channel: formValues.settings.scripted.channel || null,
       },
     },
   };
