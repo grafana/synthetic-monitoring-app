@@ -38,22 +38,24 @@ export async function fillMandatoryFields({ user, fieldsToOmit = [], checkType }
 
 // Channel testing helpers for scripted checks
 export const mockChannelsResponse = {
-  channels: {
-    v1: {
+  channels: [
+    {
+      id: 'v1',
       name: 'v1',
       default: true,
       deprecatedAfter: '2025-12-31T00:00:00Z',
       disabledAfter: '2026-12-31T00:00:00Z',
       manifest: 'k6>=1,k6<2',
     },
-    v2: {
+    {
+      id: 'v2',
       name: 'v2',
       default: false,
       deprecatedAfter: '2026-12-31T00:00:00Z',
       disabledAfter: '2027-12-31T00:00:00Z',
       manifest: 'k6>=2',
     },
-  },
+  ],
 };
 
 export const setupChannelTest = () => {
