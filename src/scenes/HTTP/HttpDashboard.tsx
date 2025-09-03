@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckType } from 'types';
@@ -15,6 +15,7 @@ import { ResponseLatency } from 'scenes/Common/ResponseLatency';
 import { ResponseLatencyByProbe } from 'scenes/Common/ResponseLatencyByProbe';
 import { SSLExpiry } from 'scenes/Common/SSLExpiryViz';
 import { UptimeStat } from 'scenes/Common/UptimeStatViz';
+import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 export const HttpDashboard = ({ check }: { check: Check }) => {
@@ -23,77 +24,40 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={CheckType.HTTP}>
-      <div className={styles.vizLayout}>
-        <div className={styles.errorRateMap}>
-          <ErrorRateMap minStep={minStep} />
-        </div>
+      <Stack height={`90px`}>
+        <UptimeStat check={check} />
+        <ReachabilityStat check={check} />
+        <AvgLatency />
+        <SSLExpiry />
+        <Frequency />
+      </Stack>
+      <TimepointExplorer check={check} />
 
-        <div className={styles.nestedGrid}>
-          <div className={styles.statsRow}>
-            <UptimeStat check={check} />
-            <ReachabilityStat check={check} />
-            <AvgLatency />
-            <SSLExpiry />
-            <Frequency />
-          </div>
-
-          <ErrorRate minStep={minStep} />
-        </div>
-
-        <div className={styles.latencyRow}>
-          <div className={styles.latencyPanel}>
-            <ResponseLatency metric={`probe_http_duration_seconds`} />
-          </div>
-          <div className={styles.latencyPanel}>
-            <ResponseLatencyByProbe />
-          </div>
-        </div>
-
-        <div className={styles.errorLogs}>
-          <ErrorLogs startingUnsuccessfulOnly={true} />
-        </div>
+      <div className={styles.errorRateRow}>
+        <ErrorRateMap minStep={minStep} />
+        <ErrorRate minStep={minStep} />
       </div>
+
+      <div className={styles.latencyRow}>
+        <ResponseLatency metric={`probe_http_duration_seconds`} />
+        <ResponseLatencyByProbe />
+      </div>
+      <ErrorLogs startingUnsuccessfulOnly />
     </DashboardContainer>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  vizLayout: css({
-    display: 'grid',
-    gridTemplateColumns: '500px 1fr',
-    gridTemplateRows: 'auto auto auto',
-    columnGap: '8px',
-    rowGap: '8px',
-    height: '100%',
-  }),
-  errorRateMap: css({
-    width: '500px',
-    height: '500px',
-  }),
-  nestedGrid: css({
-    display: 'grid',
-    gridTemplateRows: '90px 1fr',
-    height: '500px',
-    rowGap: '8px',
-  }),
-  statsRow: css({
-    display: 'flex',
-    justifyContent: 'space-between',
-    height: '90px',
-    gap: '8px',
-  }),
-  latencyRow: css({
-    gridColumn: 'span 2',
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gridAutoRows: '300px',
-    gap: '8px',
-  }),
-  latencyPanel: css({
-    height: '300px',
-  }),
-  errorLogs: css({
-    gridColumn: 'span 2',
-    height: '500px',
-  }),
+  errorRateRow: css`
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    gap: ${theme.spacing(1)};
+    height: 500px;
+  `,
+  latencyRow: css`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: ${theme.spacing(1)};
+    height: 300px;
+  `,
 });

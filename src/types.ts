@@ -103,7 +103,6 @@ export interface ExistingObject {
   id?: number;
   modified?: number; // seconds
   tenantId?: number;
-  updated?: number; // seconds
 }
 
 export interface Label {
@@ -723,6 +722,7 @@ export enum FeatureName {
   GRPCChecks = 'grpc-checks',
   AlertsPerCheck = 'sm-alerts-per-check',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
+  TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
   __TURNOFF = 'test-only-do-not-use',
 }
 

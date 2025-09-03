@@ -1,0 +1,41 @@
+export const TIMEPOINT_SIZE = 20;
+export const TIMEPOINT_THEME_GAP = 1;
+export const THEME_UNIT = 8;
+export const TIMEPOINT_GAP_PX = TIMEPOINT_THEME_GAP * THEME_UNIT;
+export const TIMEPOINT_THEME_HEIGHT = 60;
+export const TIMEPOINT_THEME_HEIGHT_PX = TIMEPOINT_THEME_HEIGHT * THEME_UNIT;
+
+export const TIMEPOINT_CREATION_PADDING = 5;
+
+export const TIMEPOINT_LIST_ID = `timepoint-list`;
+export const TIMEPOINT_LIST_ANNOTATIONS_ID = `timepoint-list-annotations`;
+
+export const REF_ID_UNIQUE_CHECK_CONFIGS = `uniqueCheckConfigs`;
+export const REF_ID_EXECUTION_LIST_LOGS = `executionListLogs`;
+export const REF_ID_EXECUTION_VIEWER_LOGS = `executionViewerLogs`;
+export const REF_ID_MAX_PROBE_DURATION = `maxProbeDuration`;
+
+export const TIMEPOINT_EXPLORER_VIEW_OPTIONS = [
+  { label: 'Uptime', value: 'uptime' },
+  { label: 'Reachability', value: 'reachability' },
+];
+
+export const MAX_MINIMAP_SECTIONS = 5;
+export const MINIMAP_SECTION_HEIGHT = 45;
+
+const success = `success` as const;
+const failure = `failure` as const;
+const missing = `missing` as const;
+const pending = `pending` as const;
+
+export const VIZ_DISPLAY_OPTIONS = [success, failure, missing, pending];
+
+export const ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX = 5;
+
+export const ANNOTATION_COLOR_OUT_OF_TIMERANGE = `gray`;
+export const ANNOTATION_COLOR_OUT_OF_RETENTION_PERIOD = `yellow`;
+export const ANNOTATION_COLOR_BEFORE_CREATION = `orange`;
+export const ANNOTATION_COLOR_NO_DATA = `orange`;
+export const ANNOTATION_COLOR_CHECK_CREATED = `yellow`;
+export const ANNOTATION_COLOR_CHECK_UPDATED = `blue`;
+export const ANNOTATION_COLOR_ALERTS_FIRING = `red`;

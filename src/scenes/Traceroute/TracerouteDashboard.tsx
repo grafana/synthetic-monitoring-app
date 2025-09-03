@@ -1,11 +1,16 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Grid, useStyles2 } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckType } from 'types';
+import { AvgLatency } from 'scenes/Common/AvgLatencyViz';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
 import { ErrorLogs } from 'scenes/Common/ErrorLogsPanel';
+import { Frequency } from 'scenes/Common/FrequencyViz';
+import { ReachabilityStat } from 'scenes/Common/ReachabilityStatViz';
+import { UptimeStat } from 'scenes/Common/UptimeStatViz';
+import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { AvgHops } from 'scenes/Traceroute/AvgHopsViz';
 import { CommonHosts } from 'scenes/Traceroute/CommonHostsViz';
 import { NodeGraph } from 'scenes/Traceroute/NodeGraphViz';
@@ -18,26 +23,33 @@ export const TracerouteDashboard = ({ check }: { check: Check }) => {
 
   return (
     <DashboardContainer check={check} checkType={CheckType.Traceroute}>
+      <Stack height={`90px`}>
+        <UptimeStat check={check} />
+        <ReachabilityStat check={check} />
+        <AvgLatency />
+        <AvgHops />
+        <Frequency />
+      </Stack>
       <NodeGraph />
-      <Grid columns={2} gap={1}>
+      <TimepointExplorer check={check} />
+      <div className={styles.grid}>
         <RouteHash />
         <CommonHosts />
-      </Grid>
-      <Grid columns={3} gap={1}>
+      </div>
+      <div className={styles.grid}>
         <PacketLoss />
         <TraceTime />
-        <AvgHops />
-      </Grid>
-      <div className={styles.errorLogs}>
-        <ErrorLogs />
       </div>
+      <ErrorLogs startingUnsuccessfulOnly />
     </DashboardContainer>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  errorLogs: css({
-    gridColumn: 'span 2',
-    height: '500px',
-  }),
+  grid: css`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: ${theme.spacing(1)};
+    height: 300px;
+  `,
 });
