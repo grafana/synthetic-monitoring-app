@@ -32,7 +32,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 }
 
 function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
-  const { control, setValue, getValues } = useFormContext<CheckFormValues>();
+  const { control, getValues } = useFormContext<CheckFormValues>();
   const { check, isExistingCheck } = useCheckFormMetaContext();
   const id = 'k6-channel-select';
 
@@ -43,7 +43,12 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     name: `settings.${checkType === 'scripted' ? 'scripted' : 'browser'}.channel`,
   });
 
-  const { data: channelsResponse, isLoading: isLoadingChannels } = useK6Channels(true);
+  const { data: channelsResponse, isLoading: isLoadingChannels, isError: hasChannelError, error: channelError } = useK6Channels(true);
+
+  // Throw error to be caught by QueryErrorBoundary if there's an error
+  if (hasChannelError && channelError) {
+    throw channelError;
+  }
 
   const channels = useMemo(() => channelsResponse?.channels || [], [channelsResponse?.channels]);
 
@@ -71,17 +76,6 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     }
   }, [defaultChannelId, channels, field]);
 
-  // Set channelDisabled flag when channels load or current value changes
-  useEffect(() => {
-    const currentChannelId = field.value || defaultChannelId;
-    const selectedChannel = channels.find((channel) => channel.id === currentChannelId);
-    if (currentChannelId && selectedChannel) {
-      const isDisabled = new Date(selectedChannel.disabledAfter) < new Date();
-      setValue('channelDisabled', isDisabled);
-    } else {
-      setValue('channelDisabled', false);
-    }
-  }, [field.value, defaultChannelId, channels, setValue]);
 
   const channelOptions = useMemo(() => {
     return channels

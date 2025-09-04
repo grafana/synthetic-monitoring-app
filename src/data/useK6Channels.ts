@@ -1,6 +1,8 @@
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
+import { FeatureName } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const queryKeys: Record<'list' | 'current', (channelId?: string) => QueryKey> = {
@@ -8,7 +10,7 @@ export const queryKeys: Record<'list' | 'current', (channelId?: string) => Query
   current: (channelId) => ['k6-channel-current', channelId],
 };
 
-const channelsQuery = (api: SMDataSource, enabled = true) => ({
+const channelsQuery = (api: SMDataSource, enabled: boolean) => ({
   queryKey: queryKeys.list(),
   queryFn: async () => {
     try {
@@ -18,10 +20,10 @@ const channelsQuery = (api: SMDataSource, enabled = true) => ({
     }
   },
   enabled,
-  throwOnError: true,
+  throwOnError: false,
 });
 
-const currentVersionQuery = (api: SMDataSource, channelId: string, enabled = true) => ({
+const currentVersionQuery = (api: SMDataSource, channelId: string, enabled: boolean) => ({
   queryKey: queryKeys.current(channelId),
   queryFn: async () => {
     try {
@@ -34,12 +36,15 @@ const currentVersionQuery = (api: SMDataSource, channelId: string, enabled = tru
   throwOnError: true,
 });
 
-export function useK6Channels(enabled = true) {
+export function useK6Channels(isScriptedOrBrowser: boolean) {
   const smDS = useSMDS();
+  const isVersionManagementEnabled = useFeatureFlag(FeatureName.VersionManagement).isEnabled;
+
+  const enabled = isVersionManagementEnabled && isScriptedOrBrowser;
   return useQuery(channelsQuery(smDS, enabled));
 }
 
-export function useCurrentK6Version(channelId?: string, enabled = true) {
+export function useCurrentK6Version(enabled: boolean, channelId?: string) {
   const smDS = useSMDS();
   return useQuery(currentVersionQuery(smDS, channelId || '', enabled));
 }
