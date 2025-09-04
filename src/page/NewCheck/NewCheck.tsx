@@ -6,18 +6,23 @@ import { TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckFormPageParams } from 'types';
+import { CheckFormPageParams, CheckTypeGroup } from 'types';
 import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
+import { useK6Channels } from 'data/useK6Channels';
 import { CHECK_TYPE_GROUP_OPTIONS, useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { CheckForm } from 'components/CheckForm/CheckForm';
 import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 import { PluginPageNotFound } from 'page/NotFound';
-
 export function NewCheck() {
+  const { checkTypeGroup } = useParams<CheckFormPageParams>();
+  const isScriptedOrBrowser = checkTypeGroup === CheckTypeGroup.Scripted || checkTypeGroup === CheckTypeGroup.Browser;
+  const { data: channelsResponse } = useK6Channels(isScriptedOrBrowser);
+  const k6Channels = channelsResponse?.channels || [];
+
   return (
-    <CheckFormContextProvider>
+    <CheckFormContextProvider k6Channels={k6Channels}>
       <NewCheckContent />
     </CheckFormContextProvider>
   );
