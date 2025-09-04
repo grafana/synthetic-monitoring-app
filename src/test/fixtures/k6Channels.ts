@@ -5,8 +5,8 @@ export const K6_CHANNELS: K6Channel[] = [
     id: 'v0',
     name: 'v0',
     default: false,
-    deprecatedAfter: '2024-12-31T00:00:00Z', // Already deprecated
-    disabledAfter: '2025-12-31T00:00:00Z',
+    disabledAfter: '2024-12-31T00:00:00Z', // Already disabled
+    deprecatedAfter: '2025-12-31T00:00:00Z',
     manifest: 'k6>=0.5,k6<1',
   },
   {
