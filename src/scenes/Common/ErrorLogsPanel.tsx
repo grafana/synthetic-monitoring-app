@@ -26,7 +26,9 @@ export const ErrorLogs = ({ startingUnsuccessfulOnly = false }: { startingUnsucc
   const dataProvider = useQueryRunner({
     queries: [
       {
-        expr: '{probe=~"$probe", instance="$instance", job="$job"} | logfmt',
+        expr: `{probe=~"$probe", instance="$instance", job="$job", probe_success=~"${
+          unsuccessfulOnly ? '0' : '.*'
+        }"} | logfmt`,
         refId: 'Execution_Logs',
       },
     ],
