@@ -3,7 +3,10 @@ import { decode } from 'js-base64';
 import { CheckFormValuesScripted, CheckType, ScriptedCheck } from 'types';
 import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
 
-export function getScriptedCheckFormValues(check: ScriptedCheck): CheckFormValuesScripted {
+export function getScriptedCheckFormValues(
+  check: ScriptedCheck, 
+  defaultChannelId?: string
+): CheckFormValuesScripted {
   const base = getBaseFormValuesFromCheck(check);
 
   return {
@@ -12,7 +15,7 @@ export function getScriptedCheckFormValues(check: ScriptedCheck): CheckFormValue
     settings: {
       scripted: {
         script: decode(check.settings?.scripted?.script),
-        channel: check.settings?.scripted?.channel || null,
+        channel: check.settings?.scripted?.channel || defaultChannelId || null,
       },
     },
   };

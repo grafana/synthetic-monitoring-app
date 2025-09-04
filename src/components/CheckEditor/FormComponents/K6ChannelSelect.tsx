@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { Combobox, Field, Stack } from '@grafana/ui';
 
 import { CheckFormValues, FeatureName } from 'types';
-import { useK6Channels } from 'data/useK6Channels';
+import { useFilteredK6Channels } from 'data/useK6Channels';
 import { useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -43,15 +43,6 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     name: `settings.${checkType === 'scripted' ? 'scripted' : 'browser'}.channel`,
   });
 
-  const { data: channelsResponse, isLoading: isLoadingChannels, isError: hasChannelError, error: channelError } = useK6Channels(true);
-
-  // Throw error to be caught by QueryErrorBoundary if there's an error
-  if (hasChannelError && channelError) {
-    throw channelError;
-  }
-
-  const channels = useMemo(() => channelsResponse?.channels || [], [channelsResponse?.channels]);
-
   const previousChannelId = isExistingCheck
     ? (() => {
         if (checkType === 'scripted' && check?.settings && 'scripted' in check.settings) {
@@ -64,57 +55,33 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
       })()
     : null;
 
-  const defaultChannelId = useMemo(() => {
-    return channels.find((channel) => channel.default)?.id || '';
-  }, [channels]);
+  const { 
+    channels, 
+    defaultChannelId, 
+    isLoading: isLoadingChannels, 
+    isError: hasChannelError, 
+    error: channelError 
+  } = useFilteredK6Channels(true, {
+    isExistingCheck,
+    previousChannelId,
+  });
 
-  // Set the field value to the default channel if no value is currently set and we have a default
-  useEffect(() => {
-    const defaultChannel = channels.find((channel) => channel.id === defaultChannelId);
-    if (!field.value && defaultChannelId && defaultChannel) {
-      field.onChange(defaultChannelId);
-    }
-  }, [defaultChannelId, channels, field]);
-
+  // Throw error to be caught by QueryErrorBoundary if there's an error
+  if (hasChannelError && channelError) {
+    throw channelError;
+  }
 
   const channelOptions = useMemo(() => {
-    return channels
-      .filter((channel) => {
-        const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
-        const isDisabled = new Date(channel.disabledAfter) < new Date();
+    return channels.map((channel) => {
+      const labelSuffix = channel.default ? ' (default)' : '';
 
-        // Skip deprecated channels for new checks
-        if (isDeprecated && !isExistingCheck) {
-          return false;
-        }
-
-        // Skip deprecated channels for existing checks unless it was previously assigned
-        if (isDeprecated && isExistingCheck && channel.id !== previousChannelId) {
-          return false;
-        }
-
-        // Skip disabled channels for new checks
-        if (isDisabled && !isExistingCheck) {
-          return false;
-        }
-
-        // Skip disabled channels for existing checks unless it was previously assigned
-        if (isDisabled && isExistingCheck && channel.id !== previousChannelId) {
-          return false;
-        }
-
-        return true;
-      })
-      .map((channel) => {
-        const labelSuffix = channel.default ? ' (default)' : '';
-
-        return {
-          label: `${channel.name}.x${labelSuffix}`,
-          value: channel.id,
-          description: `k6 version range: ${channel.manifest}`,
-        };
-      });
-  }, [channels, isExistingCheck, previousChannelId]);
+      return {
+        label: `${channel.name}.x${labelSuffix}`,
+        value: channel.id,
+        description: `k6 version range: ${channel.manifest}`,
+      };
+    });
+  }, [channels]);
 
   return (
     <div>
