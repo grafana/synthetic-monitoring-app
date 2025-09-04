@@ -22,7 +22,6 @@ export const baseCheckSchema = z.object({
   publishAdvancedMetrics: z.boolean(),
   alerts: checkAlertsSchema.optional(),
   channel: z.string().nullable().optional(),
-  channelDisabled: z.boolean().optional(),
 });
 
 export function addRefinements<T extends CheckFormValuesBase>(schema: ZodType<T, any, any>) {

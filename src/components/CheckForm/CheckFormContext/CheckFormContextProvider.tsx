@@ -2,7 +2,7 @@ import React, { PropsWithChildren, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
-import { Check, CheckFormValues } from 'types';
+import { Check, CheckFormValues, K6Channel } from 'types';
 
 import { useCheckFormMeta } from '../CheckForm.hooks';
 import { FORM_SECTION_STEPS, SectionName } from '../FormLayout/FormLayout.constants';
@@ -12,6 +12,7 @@ interface CheckFormContextProviderProps extends PropsWithChildren {
   check?: Check;
   disabled?: boolean;
   initialSection?: SectionName;
+  k6Channels?: K6Channel[];
 }
 
 export function CheckFormContextProvider({
@@ -19,8 +20,9 @@ export function CheckFormContextProvider({
   children,
   disabled = false,
   initialSection = FORM_SECTION_STEPS[0],
+  k6Channels = [],
 }: CheckFormContextProviderProps) {
-  const checkFormMeta = useCheckFormMeta(check);
+  const checkFormMeta = useCheckFormMeta(check, disabled, k6Channels);
   const schema = checkFormMeta.schema;
 
   const methods = useForm<CheckFormValues>({

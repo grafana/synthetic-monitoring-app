@@ -14,7 +14,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
   const theme = useTheme2();
 
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
-  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(validChannelId, enabled);
+  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(enabled, validChannelId);
 
   if (!validChannelId) {
     return (
