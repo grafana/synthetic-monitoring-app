@@ -338,7 +338,6 @@ export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertForm
 export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 'alerts'> & {
   publishAdvancedMetrics: boolean;
   alerts?: CheckAlertFormRecord;
-  channelDisabled?: boolean;
 };
 
 export type CheckFormValuesHttp = CheckFormValuesBase & {
