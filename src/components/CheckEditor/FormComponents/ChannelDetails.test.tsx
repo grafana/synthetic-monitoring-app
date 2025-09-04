@@ -94,7 +94,7 @@ describe('ChannelDetails', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/deprecated channel/i)).toBeInTheDocument();
-      expect(screen.getByText(/will be removed after/i)).toBeInTheDocument();
+      expect(screen.getByText(/consider migrating to a newer channel/i)).toBeInTheDocument();
     });
   });
 
