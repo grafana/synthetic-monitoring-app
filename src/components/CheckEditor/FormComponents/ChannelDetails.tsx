@@ -1,6 +1,7 @@
 import React from 'react';
-import { dateTimeFormat } from '@grafana/data';
-import { Alert, Stack, Text, useTheme2 } from '@grafana/ui';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
+import { Alert, Stack, Text, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { K6Channel } from 'types';
 import { useCurrentK6Version } from 'data/useK6Channels';
@@ -11,7 +12,7 @@ interface ChannelDetailsProps {
 }
 
 export function ChannelDetails({ channelId, channels, enabled = true }: ChannelDetailsProps) {
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
   const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(enabled, validChannelId);
@@ -35,19 +36,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
   return (
     <Stack direction="column" gap={1}>
       <Text variant="bodySmall" color="secondary">
-        k6 version constraint:{' '}
-        <code
-          style={{
-            backgroundColor: theme.colors.background.secondary,
-            color: theme.colors.text.primary,
-            padding: '2px 6px',
-            borderRadius: theme.shape.radius.default,
-            fontSize: theme.typography.bodySmall.fontSize,
-            fontFamily: theme.typography.fontFamilyMonospace,
-          }}
-        >
-          {channel.manifest}
-        </code>
+        k6 version constraint: <code className={styles.manifest}>{channel.manifest}</code>
       </Text>
 
       {currentVersion && (
@@ -71,3 +60,16 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
     </Stack>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => {
+  return {
+    manifest: css({
+      backgroundColor: theme.colors.background.secondary,
+      color: theme.colors.text.primary,
+      padding: '2px 6px',
+      borderRadius: theme.shape.radius.default,
+      fontSize: theme.typography.bodySmall.fontSize,
+      fontFamily: theme.typography.fontFamilyMonospace,
+    }),
+  };
+};
