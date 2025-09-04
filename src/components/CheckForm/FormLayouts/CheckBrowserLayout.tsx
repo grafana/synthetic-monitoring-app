@@ -20,7 +20,7 @@ export const BROWSER_CHECK_FIELDS: BrowserFields = {
 
 export const BrowserCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesBrowser>>> = {
   [LayoutSection.Check]: {
-    fields: [...Object.values(BROWSER_CHECK_FIELDS).map((field) => field.name), 'channel'],
+    fields: [...Object.values(BROWSER_CHECK_FIELDS).map((field) => field.name), 'settings.browser.channel'],
     Component: (
       <>
         <BrowserCheckInstance />
