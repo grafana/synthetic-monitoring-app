@@ -79,7 +79,7 @@ export function useCheckFormMeta(
   const options = useCheckTypeOptions();
   const isOverLimit = useIsOverlimit(!isNew, checkType);
   const permission = useFormPermissions();
-  const defaultFormValues = useCheckFormDefaultValues(check);
+  const defaultFormValues = useCheckFormDefaultValues(check, k6Channels);
   const isExistingCheck = getIsExistingCheck(check);
 
   return useMemo(() => {
@@ -276,13 +276,14 @@ export function useIsOverlimit(isExistingCheck: boolean, checkType: CheckType) {
   );
 }
 
-export function useCheckFormDefaultValues(check?: Check) {
+export function useCheckFormDefaultValues(check?: Check, k6Channels: K6Channel[] = []) {
   const checkType = useFormCheckType(check);
   const checkWithFallback = check || fallbackCheckMap[checkType];
 
   return useMemo(() => {
-    return toFormValues(checkWithFallback, checkType);
-  }, [checkType, checkWithFallback]);
+    const defaultChannelId = k6Channels.find((channel) => channel.default)?.id;
+    return toFormValues(checkWithFallback, checkType, defaultChannelId);
+  }, [checkType, checkWithFallback, k6Channels]);
 }
 
 export function useCheckTypeFormLayout(checkType: CheckType) {
