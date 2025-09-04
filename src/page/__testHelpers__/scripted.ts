@@ -80,6 +80,8 @@ export const setupFormWithChannelSelector = async (checkType: CheckType) => {
   }); 
   
   const channelSelector = screen.getByLabelText(/k6 version/i);
+  
+  await user.selectOptions(channelSelector, 'v1');
   await waitFor(() => {
     expect(channelSelector).toHaveValue('v1');
   });
