@@ -24,7 +24,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
     );
   }
 
-  const channel = channels.find(ch => ch.id === validChannelId);
+  const channel = channels.find((ch) => ch.id === validChannelId);
   if (!channel) {
     return null;
   }
@@ -64,8 +64,8 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
 
       {isDeprecated && !isDisabled && (
         <Alert severity="warning" title="Deprecated Channel">
-          This channel is deprecated and will be removed after {dateTimeFormat(new Date(channel.deprecatedAfter))}.
-          Consider migrating to a newer channel.
+          This channel is deprecated since {dateTimeFormat(new Date(channel.deprecatedAfter))}. Consider migrating to a
+          newer channel.
         </Alert>
       )}
     </Stack>
