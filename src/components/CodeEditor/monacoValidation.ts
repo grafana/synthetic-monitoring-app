@@ -34,7 +34,7 @@ export function wireCustomValidation(monaco: typeof monacoType, editor: monacoTy
   applyCustomScriptMarkers(monaco, model);
 
   // Update on content changes
-  const d1 = editor.onDidChangeModelContent(() => {
+  const disposeOnChangeModelContent = editor.onDidChangeModelContent(() => {
     const currentModel = editor.getModel();
     if (currentModel) {
       applyCustomScriptMarkers(monaco, currentModel);
@@ -42,7 +42,7 @@ export function wireCustomValidation(monaco: typeof monacoType, editor: monacoTy
   });
 
   // Update when model changes
-  const d2 = editor.onDidChangeModel(() => {
+  const disposeOnChangeModel = editor.onDidChangeModel(() => {
     const currentModel = editor.getModel();
     if (currentModel) {
       applyCustomScriptMarkers(monaco, currentModel);
@@ -50,7 +50,7 @@ export function wireCustomValidation(monaco: typeof monacoType, editor: monacoTy
   });
 
   return () => {
-    d1.dispose();
-    d2.dispose();
+    disposeOnChangeModelContent.dispose();
+    disposeOnChangeModel.dispose();
   };
 }
