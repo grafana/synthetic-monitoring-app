@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 const checkType = CheckType.Browser;
 
@@ -147,7 +148,7 @@ ${exportCorrectOptions}`;
       await user.type(scriptTextAreaPreSubmit, scriptWithPragma);
 
       await submitForm(user);
-      const err = await screen.findByText('Script contains a k6 version pragma which is not allowed. Please remove the "use k6" directive.');
+      const err = await screen.findByText(K6_PRAGMA_MESSAGE);
       expect(err).toBeInTheDocument();
     });
 
