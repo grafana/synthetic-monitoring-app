@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react';
+import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
@@ -133,6 +134,36 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
 
       await submitForm(user);
       const err = await screen.findByText("Script can't define iterations > 1 for this check");
+      expect(err).toBeInTheDocument();
+    });
+
+    it(`will display an error when it contains a k6 version pragma`, async () => {
+      const { user } = await renderNewForm(checkType);
+      const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+      await user.clear(scriptTextAreaPreSubmit);
+
+      const scriptWithPragma = `"use k6 >= v1.0.0"
+${browserImport}
+${exportCorrectOptions}`;
+      await user.type(scriptTextAreaPreSubmit, scriptWithPragma);
+
+      await submitForm(user);
+      const err = await screen.findByText(K6_PRAGMA_MESSAGE);
+      expect(err).toBeInTheDocument();
+    });
+
+    it(`will display an error when it imports k6 extensions`, async () => {
+      const { user } = await renderNewForm(checkType);
+      const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+      await user.clear(scriptTextAreaPreSubmit);
+
+      const scriptWithExtension = `import { Kubernetes } from "k6/x/kubernetes";
+${browserImport}
+${exportCorrectOptions}`;
+      await user.type(scriptTextAreaPreSubmit, scriptWithExtension);
+
+      await submitForm(user);
+      const err = await screen.findByText('Script imports k6 extensions which are not allowed. Please remove imports from k6/x/ paths.');
       expect(err).toBeInTheDocument();
     });
   });

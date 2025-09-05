@@ -1,8 +1,25 @@
 import { RefinementCtx, ZodIssueCode } from 'zod';
 
 import { extractImportStatement, extractOptionsExport, getProperty, parseScript } from './parser';
+import { hasK6ExtensionImports, hasK6Pragma, K6_EXTENSION_MESSAGE, K6_PRAGMA_MESSAGE } from './rules';
 
 const MAX_SCRIPT_IN_KB = 128;
+
+function validateScriptPragmasAndExtensions(script: string, context: RefinementCtx): void {
+  if (hasK6Pragma(script)) {
+    context.addIssue({
+      code: ZodIssueCode.custom,
+      message: K6_PRAGMA_MESSAGE,
+    });
+  }
+
+  if (hasK6ExtensionImports(script)) {
+    context.addIssue({
+      code: ZodIssueCode.custom,
+      message: K6_EXTENSION_MESSAGE,
+    });
+  }
+}
 
 export const maxSizeValidation = (val: string, context: RefinementCtx) => {
   const textBlob = new Blob([val], { type: 'text/plain' });
@@ -18,6 +35,8 @@ export const maxSizeValidation = (val: string, context: RefinementCtx) => {
 };
 
 export function validateBrowserScript(script: string, context: RefinementCtx) {
+  validateScriptPragmasAndExtensions(script, context);
+
   const program = parseScript(script);
 
   if (program === null) {
@@ -81,6 +100,8 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
 }
 
 export function validateNonBrowserScript(script: string, context: RefinementCtx) {
+  validateScriptPragmasAndExtensions(script, context);
+
   const program = parseScript(script);
 
   if (program === null) {
