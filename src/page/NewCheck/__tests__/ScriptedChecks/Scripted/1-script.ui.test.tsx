@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
@@ -51,7 +52,7 @@ export default function() {
     await fillMandatoryFields({ user, fieldsToOmit: [`probes`], checkType });
 
     await submitForm(user);
-    const err = await screen.findByText('Script contains a k6 version pragma which is not allowed. Please remove the "use k6" directive.');
+    const err = await screen.findByText(K6_PRAGMA_MESSAGE);
     expect(err).toBeInTheDocument();
   });
 
