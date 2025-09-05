@@ -1,1 +1,1 @@
-export { getPageInsightsTable } from './PageInsightsTable';
+export { PageInsightsTable } from './PageInsightsTable';

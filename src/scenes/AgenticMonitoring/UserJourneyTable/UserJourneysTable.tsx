@@ -1,30 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
 import { Badge, CollapsableSection, PanelChrome, Stack } from '@grafana/ui';
 
 import { UserJourneyStepIndexed, UserJourneyTest } from '../types';
 
-import userJourneyTests from '../data/user-journeys.json';
-
-interface UserJourneysTableState extends SceneObjectState {
-  userJourneyTests: UserJourneyTest[];
-}
-
-export class UserJourneysTable extends SceneObjectBase<UserJourneysTableState> {
-  static Component = UserJourneysTableRenderer;
-
-  public constructor(state: UserJourneysTableState) {
-    super(state);
-  }
-
-  public useUserJourneyTests() {
-    return this.useState().userJourneyTests;
-  }
-}
-
-function UserJourneysTableRenderer({ model }: SceneComponentProps<UserJourneysTable>) {
-  const userJourneyTests = model.useUserJourneyTests();
-
+export const UserJourneysTable = ({ userJourneyTests }: { userJourneyTests: UserJourneyTest[] }) => {
   const memory = useMemo(() => {
     return userJourneyTests
       .flatMap((test) => test.steps)
@@ -41,19 +20,18 @@ function UserJourneysTableRenderer({ model }: SceneComponentProps<UserJourneysTa
           ))}
         </Stack>
         <div style={{ paddingLeft: '32px', marginTop: '20px' }}>
-        <CollapsableSection label={<h6>Knowledge base</h6>} isOpen={false}>
-          {memory.map((memory, index) => (
-            <p key={`$memory-${index}`}>{memory}</p>
-          ))}
-        </CollapsableSection>
+          <CollapsableSection label={<h6>Knowledge base</h6>} isOpen={false}>
+            {memory.map((memory, index) => (
+              <p key={`$memory-${index}`}>{memory}</p>
+            ))}
+          </CollapsableSection>
         </div>
-
       </PanelChrome>
     </div>
   );
-}
+};
 
-function UserJourneyTestItem({ test }: { test: UserJourneyTest }) {
+const UserJourneyTestItem = ({ test }: { test: UserJourneyTest }) => {
   const [collapsed, setCollapsed] = useState(true);
 
   const stepGroups = test.steps.reduce((acc, step, index) => {
@@ -120,11 +98,4 @@ function UserJourneyTestItem({ test }: { test: UserJourneyTest }) {
       </div>
     </CollapsableSection>
   );
-}
-export function getUserJourneysTable() {
-  return new SceneFlexItem({
-    body: new UserJourneysTable({
-      userJourneyTests: userJourneyTests,
-    }),
-  });
-}
+};

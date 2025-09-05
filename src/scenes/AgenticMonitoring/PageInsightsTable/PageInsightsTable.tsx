@@ -1,96 +1,11 @@
 import React, { useState } from 'react';
-
-import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
 import { Badge, Card, Collapse, PanelChrome, Stack, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
-import pageInsights from '../data/example-output.json';
 import { InsightsCategory, NodeData, PageInsightsIssue } from '../types';
 
-interface PageInsightsTableState extends SceneObjectState {
-  insights: NodeData[];
-  type: InsightsCategory;
-}
-
-const getScoreBadgeColor = (score: number) => {
-  if (score >= 90) {
-    return 'green';
-  } else if (score >= 50) {
-    return 'orange';
-  }
-  return 'red';
-};
-
-const getBadgeColor = (severity: string) => {
-  switch (severity) {
-    case 'critical':
-
-    case 'high':
-      return 'red';
-
-    case 'medium':
-      return 'orange';
-
-    case 'low':
-      return 'blue';
-
-    default:
-      return 'purple';
-  }
-};
-
-const getBadgeIcon = (severity: string) => {
-  switch (severity) {
-    case 'critical':
-      return 'exclamation-circle';
-
-    case 'high':
-      return 'exclamation-circle';
-
-    case 'medium':
-      return 'exclamation-triangle';
-
-    case 'low':
-      return 'info-circle';
-
-    default:
-      return 'circle';
-  }
-};
-
-export class PageInsightsTable extends SceneObjectBase<PageInsightsTableState> {
-  static Component = PageInsightsTableRenderer;
-
-  public constructor(state: PageInsightsTableState) {
-    super(state);
-  }
-
-  public useInsights() {
-    return this.useState().insights;
-  }
-
-  public useType() {
-    return this.useState().type;
-  }
-}
-
-function getBadge(severity: string, index: number, count: number) {
-  return (
-    <Badge
-      key={`${severity}-${index}`}
-      text={`${severity} ${count}`}
-      color={getBadgeColor(severity)}
-      icon={getBadgeIcon(severity)}
-      style={{ marginRight: '8px', marginBottom: '0' }}
-    />
-  );
-}
-
-function PageInsightsTableRenderer({ model }: SceneComponentProps<PageInsightsTable>) {
-  const insights = model.useInsights();
-  const type = model.useType();
-
+export const PageInsightsTable = ({ insights, type }: { insights: NodeData[]; type: InsightsCategory }) => {
   const PANEL_TITLE_MAP = {
     accessibility: 'Accessibility',
     content: 'Content',
@@ -108,9 +23,9 @@ function PageInsightsTableRenderer({ model }: SceneComponentProps<PageInsightsTa
       </PanelChrome>
     </div>
   );
-}
+};
 
-function PageInsightsItem({ item, type }: { item: NodeData; type: InsightsCategory }) {
+const PageInsightsItem = ({ item, type }: { item: NodeData; type: InsightsCategory }) => {
   const styles = useStyles2(getStyles);
   const [collapsed, setCollapsed] = useState(true);
   const insightsByCategory = item.page_insights.insights_by_category[type];
@@ -209,15 +124,65 @@ function PageInsightsItem({ item, type }: { item: NodeData; type: InsightsCatego
       </div>
     </Collapse>
   );
-}
-export function getPageInsightsTable(type: InsightsCategory): SceneFlexItem {
-  return new SceneFlexItem({
-    body: new PageInsightsTable({
-      insights: pageInsights.nodes.map((node) => node.data),
-      type: type,
-    }),
-  });
-}
+};
+
+const getScoreBadgeColor = (score: number) => {
+  if (score >= 90) {
+    return 'green';
+  } else if (score >= 50) {
+    return 'orange';
+  }
+  return 'red';
+};
+
+const getBadge = (severity: string, index: number, count: number) => {
+  return (
+    <Badge
+      key={`${severity}-${index}`}
+      text={`${severity} ${count}`}
+      color={getBadgeColor(severity)}
+      icon={getBadgeIcon(severity)}
+      style={{ marginRight: '8px', marginBottom: '0' }}
+    />
+  );
+};
+
+const getBadgeColor = (severity: string) => {
+  switch (severity) {
+    case 'critical':
+
+    case 'high':
+      return 'red';
+
+    case 'medium':
+      return 'orange';
+
+    case 'low':
+      return 'blue';
+
+    default:
+      return 'purple';
+  }
+};
+
+const getBadgeIcon = (severity: string) => {
+  switch (severity) {
+    case 'critical':
+      return 'exclamation-circle';
+
+    case 'high':
+      return 'exclamation-circle';
+
+    case 'medium':
+      return 'exclamation-triangle';
+
+    case 'low':
+      return 'info-circle';
+
+    default:
+      return 'circle';
+  }
+};
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {

@@ -1,1 +1,1 @@
-export { getExploredNodesGraph } from './ExploredNodesGraph';
+export { ExploredNodesGraph } from './ExploredNodesGraph';

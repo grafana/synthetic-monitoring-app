@@ -1,54 +1,23 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-
+import { GrafanaTheme2 } from '@grafana/data';
+import { LegendDisplayMode, PanelChrome, Stack, useStyles2, VizLegend } from '@grafana/ui';
 import { Graphin } from '@antv/graphin';
 import { css } from '@emotion/css';
-import { GrafanaTheme2 } from '@grafana/data';
-import { SceneComponentProps, SceneFlexItem, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
-import { LegendDisplayMode, PanelChrome, Stack, useStyles2, VizLegend } from '@grafana/ui';
 
-import { NodeData } from 'scenes/AgenticMonitoring/types';
 import { UserJourneyTest } from '../types';
+import { NodeData } from 'scenes/AgenticMonitoring/types';
 
-import pageInsights from '../data/example-output.json';
-import userJourneyTests from '../data/user-journeys.json';
-
-function getNodeColor(score: number) {
-  if (score > 80) {
-    return '#83bd71'; // green
-  } else if (score > 50) {
-    return '#f19e45'; // yellow
-  }
-  return '#e1575e'; // red
-}
-
-interface ExploredNodesGraphState extends SceneObjectState {
+export const ExploredNodesGraph = ({
+  checkId,
+  userJourneyTests,
+  pageInsights,
+}: {
   checkId: number;
   userJourneyTests: UserJourneyTest[];
   pageInsights: any;
-}
-
-export class ExploredNodesGraph extends SceneObjectBase<ExploredNodesGraphState> {
-  static Component = ExploredNodesGraphRenderer;
-
-  public constructor(state: ExploredNodesGraphState) {
-    super(state);
-  }
-
-  public useCheckId() {
-    return this.useState().checkId;
-  }
-  public useUserJourneyTests() {
-    return this.useState().userJourneyTests;
-  }
-  public usePageInsights() {
-    return this.useState().pageInsights;
-  }
-}
-
-function ExploredNodesGraphRenderer({ model }: SceneComponentProps<ExploredNodesGraph>) {
+}) => {
   const styles = useStyles2(getStyles);
   const graphinRef = useRef<any>(null);
-  const checkId = model.useCheckId();
   const [isMounted, setIsMounted] = useState(false);
   const [hasError, setHasError] = useState(false);
 
@@ -242,8 +211,10 @@ function ExploredNodesGraphRenderer({ model }: SceneComponentProps<ExploredNodes
                               type: 'hull',
                               key: focusedJourney.user_flow.title,
                               members: pageInsights.nodes
-                                .filter((node) => focusedJourney.steps.some((step) => step.url === node.data.url))
-                                .map((node) => node.id),
+                                .filter((node: { data: { url: string } }) =>
+                                  focusedJourney.steps.some((step) => step.url === node.data.url)
+                                )
+                                .map((node: { id: any }) => node.id),
                             },
                           ]
                         : []),
@@ -286,16 +257,15 @@ function ExploredNodesGraphRenderer({ model }: SceneComponentProps<ExploredNodes
       {/* <PageInsightsSection /> */}
     </div>
   );
-}
+};
 
-export function getExploredNodesGraph(checkId: number) {
-  return new SceneFlexItem({
-    body: new ExploredNodesGraph({
-      checkId: checkId,
-      userJourneyTests: userJourneyTests,
-      pageInsights: pageInsights,
-    }),
-  });
+function getNodeColor(score: number) {
+  if (score > 80) {
+    return '#83bd71'; // green
+  } else if (score > 50) {
+    return '#f19e45'; // yellow
+  }
+  return '#e1575e'; // red
 }
 
 // Simple Error Boundary component

@@ -24,15 +24,6 @@ export type UserJourneyStepIndexed = UserJourneyStep & {
   index: number;
 };
 
-export type UserJourneyTableRow = {
-  stepIndex: number;
-  title: string;
-  description: string;
-  success: boolean;
-  url: string;
-  reasoning: string;
-};
-
 export type NodeData = {
   url: string;
   title: string;
@@ -59,14 +50,6 @@ export type PageInsightsCategory = {
 
 export type PageInsightsIssue = {
   severity: string;
-  description: string;
-  reason: string;
-  recommendation: string;
-};
-
-export type PageInsightsTableRow = {
-  url: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
   description: string;
   reason: string;
   recommendation: string;

@@ -1,1 +1,1 @@
-export { getUserJourneysTable } from './UserJourneysTable';
+export { UserJourneysTable } from './UserJourneysTable';
