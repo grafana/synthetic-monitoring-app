@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.35.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.0...v1.35.1) (2025-09-05)
+
+
+### Fixes
+
+* unsuccessful switch in logs panel ([#1260](https://github.com/grafana/synthetic-monitoring-app/issues/1260)) ([10094da](https://github.com/grafana/synthetic-monitoring-app/commit/10094da4529566d40b9420328c5c3d20e7e54ca4))
+
 ## [1.35.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.34.1...v1.35.0) (2025-09-03)
 
 
