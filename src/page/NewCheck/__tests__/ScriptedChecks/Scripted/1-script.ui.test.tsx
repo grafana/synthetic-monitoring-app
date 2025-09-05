@@ -1,9 +1,9 @@
 import { screen, waitFor } from '@testing-library/react';
+import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/scripted';
-import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 const checkType = CheckType.Scripted;
 

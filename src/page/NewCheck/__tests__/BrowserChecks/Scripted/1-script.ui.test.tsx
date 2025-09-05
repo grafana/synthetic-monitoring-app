@@ -1,8 +1,8 @@
 import { screen } from '@testing-library/react';
+import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
-import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 const checkType = CheckType.Browser;
 
