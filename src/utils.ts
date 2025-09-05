@@ -1,4 +1,4 @@
-import { DataSourceInstanceSettings, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
+import { DataSourceInstanceSettings, dateTime, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
 // todo: update this when we move to grafana 11.2
 // https://github.com/grafana/grafana/pull/89047
@@ -126,7 +126,7 @@ export function enumToStringArray(enumObject: {}) {
 // Matches a string against multiple options
 export const matchStrings = (string: string, comparisons: string[]): boolean => {
   const lowerCased = string.toLowerCase();
-  return comparisons.some((comparison) => comparison.toLowerCase().match(lowerCased));
+  return comparisons.some((comparison) => comparison.toLowerCase().includes(lowerCased));
 };
 
 export function getCheckType(settings: Settings): CheckType {
@@ -264,13 +264,14 @@ export function getRandomProbes(probes: number[], quantity: number): number[] {
   return Array.from(randomProbes).sort((a, b) => a - b);
 }
 
-export function formatDate(number: number) {
+export function formatDate(number: number, seconds?: boolean) {
   return new Date(number).toLocaleString('en-US', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    second: seconds ? '2-digit' : undefined,
   });
 }
 
@@ -400,7 +401,7 @@ export function formatDuration(milliseconds: number, compact = false) {
   const seconds = milliseconds / 1000;
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
+  const remainingSeconds = Math.round(seconds % 60);
 
   const parts: string[] = [];
 
@@ -429,4 +430,55 @@ export function formatDuration(milliseconds: number, compact = false) {
   }
 
   return parts.join(' ');
+}
+
+export function formatSmallDurations(milliseconds: number) {
+  if (milliseconds === 0) {
+    return '0ms';
+  }
+
+  if (milliseconds < 1) {
+    return `<1ms`;
+  }
+
+  const ms = Math.floor(milliseconds);
+
+  if (ms < 1000) {
+    return `${ms}ms`;
+  }
+
+  const seconds = ms / 1000;
+
+  // If it's exactly a second, return without decimals
+  if (ms % 1000 === 0) {
+    return `${seconds}s`;
+  }
+
+  // Otherwise, return with up to 2 decimal places, removing trailing zeros
+  return `${parseFloat(seconds.toFixed(2))}s`;
+}
+
+interface Query {
+  expr: string;
+  instant?: boolean;
+  format?: 'heatmap' | 'table' | 'timeseries';
+}
+
+export function getExploreUrl(datasourceUid: string, queries: Query[], { from, to }: { from: number; to: number }) {
+  const left = encodeURIComponent(
+    JSON.stringify({
+      datasource: datasourceUid,
+      queries: queries.map((query) => ({
+        expr: query.expr,
+        instant: query.instant,
+        format: query.format,
+      })),
+      range: {
+        from: dateTime(from),
+        to: dateTime(to),
+      },
+    })
+  );
+
+  return `/explore?left=${left}`;
 }

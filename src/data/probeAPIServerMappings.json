@@ -1,0 +1,152 @@
+[
+  {
+    "region": "Amsterdam",
+    "provider": "Azure",
+    "apiServerURL": "synthetic-monitoring-grpc-eu-west-3.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-eu-west-3.grafana.net"
+  },
+  {
+    "region": "Australia",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-au-southeast.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-au-southeast.grafana.net"
+  },
+  {
+    "region": "Australia",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-au-southeast-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-au-southeast-1.grafana.net"
+  },
+  {
+    "region": "Brazil",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-sa-east-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-sa-east-0.grafana.net"
+  },
+  {
+    "region": "Brazil",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-sa-east-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-sa-east-1.grafana.net"
+  },
+  {
+    "region": "Canada",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-ca-east-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-ca-east-0.grafana.net"
+  },
+  {
+    "region": "Europe",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-eu-west-2.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-eu-west-2.grafana.net"
+  },
+  {
+    "region": "Europe",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-eu-west.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-eu-west.grafana.net"
+  },
+  {
+    "region": "India",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-ap-south-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-ap-south-0.grafana.net"
+  },
+  {
+    "region": "India",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-ap-south-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-ap-south-1.grafana.net"
+  },
+  {
+    "region": "Japan",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-ap-northeast-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-ap-northeast-0.grafana.net"
+  },
+  {
+    "region": "Saudi Arabia",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-me-central-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-grpc-me-central-0.grafana.net"
+  },
+  {
+    "region": "Singapore",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-ap-southeast-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-ap-southeast-0.grafana.net"
+  },
+  {
+    "region": "Singapore",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-ap-southeast-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-ap-southeast-1.grafana.net"
+  },
+  {
+    "region": "Indonesia",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-ap-southeast-2.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-ap-southeast-2.grafana.net"
+  },
+  {
+    "region": "Sweden",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-eu-north-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-eu-north-0.grafana.net"
+  },
+  {
+    "region": "Switzerland",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-eu-central-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-eu-central-0.grafana.net"
+  },
+  {
+    "region": "UAE",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-me-central-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-grpc-me-central-1.grafana.net"
+  },
+  {
+    "region": "UK",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-gb-south.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-gb-south.grafana.net"
+  },
+  {
+    "region": "UK",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-gb-south-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-gb-south-1.grafana.net"
+  },
+  {
+    "region": "United States East",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-us-east-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-us-east-0.grafana.net"
+  },
+  {
+    "region": "United States East",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc-us-east-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-us-east-1.grafana.net"
+  },
+  {
+    "region": "United States West",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-us-west-0.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-us-west-0.grafana.net"
+  },
+  {
+    "region": "United States",
+    "provider": "Azure",
+    "apiServerURL": "synthetic-monitoring-grpc-us-central2.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-us-central2.grafana.net"
+  },
+  {
+    "region": "United States",
+    "provider": "GCP",
+    "apiServerURL": "synthetic-monitoring-grpc.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api.grafana.net"
+  }
+]

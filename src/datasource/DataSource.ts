@@ -431,27 +431,30 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async getSecret(id: string | number): Promise<SecretWithMetadata> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+  async getSecret(name: string): Promise<SecretWithMetadata> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
       method: 'GET',
     });
   }
 
   async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
     if (secret.uuid) {
-      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${secret.uuid}`, {
+      // For updates: use name for URL but exclude it from payload
+      const { name, ...secretWithoutName } = secret;
+      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
         method: 'PUT',
-        data: secret,
+        data: secretWithoutName,
       });
     }
+    // For creates: include name in payload
     return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
       method: 'POST',
       data: secret,
     });
   }
 
-  async deleteSecret(id: string | number): Promise<unknown> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${id}`, {
+  async deleteSecret(name: string): Promise<unknown> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
       method: 'DELETE',
     });
   }

@@ -61,7 +61,7 @@
     },
     {
       "type": "page",
-      "name": "Alerts",
+      "name": "Alerts (Legacy)",
       "path": "/a/grafana-synthetic-monitoring-app/alerts",
       "action": "grafana-synthetic-monitoring-app.alerts:read",
       "addToNav": true
@@ -70,7 +70,7 @@
       "type": "page",
       "name": "Config",
       "path": "/a/grafana-synthetic-monitoring-app/config",
-      "action": "grafana-synthetic-monitoring-app:write",
+      "action": "grafana-synthetic-monitoring-app:read",
       "addToNav": true
     },
     {
@@ -240,7 +240,7 @@
     {
       "role": {
         "name": "Editor",
-        "description": "Add, update and delete checks, probes, alerts, thresholds, and access tokens in the Synthetic Monitoring app",
+        "description": "Add, update and delete checks, probes, alerts, and thresholds in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
           { "action": "grafana-synthetic-monitoring-app:read" },
@@ -280,6 +280,6 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=11.5.0"
+    "grafanaDependency": ">=12.0.0"
   }
 }

@@ -1,8 +1,9 @@
 import React from 'react';
 
+import { GRAFANA_DEV_ENTRY } from 'hooks/useProbeApiServer';
+
 import { LinkedDatasourceView } from '../../../components/LinkedDatasourceView';
 import { DataTestIds } from '../../../test/dataTestIds';
-import { SM_DATASOURCE } from '../../../test/fixtures/datasources';
 import { render } from '../../../test/render';
 import { GeneralTab } from './GeneralTab';
 
@@ -33,10 +34,11 @@ describe('GeneralTab', () => {
   it('should have a section on private probes', async () => {
     const { getByText, getByTestId } = await renderGeneralTab();
     expect(getByText('Private probes', { selector: 'h3' })).toBeInTheDocument();
-    expect(getByText('Backend address', { selector: 'h4' })).toBeInTheDocument();
+    expect(getByText('Probe API Server URL')).toBeInTheDocument();
+    expect(getByText('Your backend address is:')).toBeInTheDocument();
 
-    const expectedBackendAddress = SM_DATASOURCE.jsonData.apiHost.replace('https://', '');
-    expect(getByTestId(DataTestIds.PREFORMATTED)).toHaveTextContent(expectedBackendAddress);
+    expect(getByTestId(DataTestIds.PREFORMATTED)).toHaveTextContent(GRAFANA_DEV_ENTRY.apiServerURL);
+    expect(getByText(GRAFANA_DEV_ENTRY.backendAddress)).toBeInTheDocument();
   });
 
   it('should have a section on data sources', async () => {

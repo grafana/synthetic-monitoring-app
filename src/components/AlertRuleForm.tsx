@@ -227,6 +227,7 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
                   <Controller
                     render={({ field }) => {
                       const { ref, ...rest } = field;
+                      // eslint-disable-next-line @typescript-eslint/no-deprecated
                       return <Select {...rest} options={ALERT_SENSITIVITY_OPTIONS} disabled={!canEdit} />;
                     }}
                     control={control}
@@ -268,6 +269,7 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
                     render={({ field }) => {
                       const { ref, ...rest } = field;
                       return (
+                        // eslint-disable-next-line @typescript-eslint/no-deprecated
                         <Select {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" disabled={!canEdit} />
                       );
                     }}

@@ -1,7 +1,7 @@
 ROOT_DIR := $(shell git rev-parse --show-toplevel)
 VERSION := $(shell grep version $(ROOT_DIR)/package.json | cut -d':' -f2 | tr -d "\"', \r")
 PACKAGE_NAME := grafana-synthetic-monitoring-app-$(VERSION).zip
-PACKAGE_NAME_LATEST := grafana-synthetic-monitoring-app-latest.zip
+
 ARTIFACTS_DIR ?= $(ROOT_DIR)/artifacts/builds
 PROM_VERSION := 2.48.1
 
@@ -67,13 +67,6 @@ package:
 .PHONY: gh-release
 gh-release:
 	node ./scripts/github-release.js
-
-.PHONY: package-latest
-package-latest:
-	mkdir -p $(ARTIFACTS_DIR)
-	ln -s dist grafana-synthetic-monitoring-app
-	zip -r $(ARTIFACTS_DIR)/$(PACKAGE_NAME_LATEST) grafana-synthetic-monitoring-app
-	rm grafana-synthetic-monitoring-app
 
 .PHONY: generate-version
 generate-version:

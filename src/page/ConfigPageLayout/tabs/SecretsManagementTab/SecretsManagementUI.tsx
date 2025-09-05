@@ -3,6 +3,7 @@ import { Button, ConfirmModal, EmptyState } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { SecretWithUuid } from './types';
+import { getUserPermissions } from 'data/permissions';
 import { useDeleteSecret, useSecrets } from 'data/useSecrets';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 
@@ -14,9 +15,10 @@ import { SecretEditModal } from './SecretEditModal';
 export function SecretsManagementUI() {
   const [editMode, setEditMode] = useState<string | false>(false);
   const [deleteMode, setDeleteMode] = useState<SecretWithUuid | undefined>();
-  const { data: secrets, isLoading, isFetching } = useSecrets();
+  const { canCreateSecrets, canReadSecrets } = getUserPermissions();
+  const { data: secrets, isLoading, isFetching } = useSecrets(canReadSecrets);
   const deleteSecret = useDeleteSecret();
-  const emptyState = secrets?.length === 0;
+  const emptyState = (canReadSecrets && secrets?.length === 0) || (!canReadSecrets && canCreateSecrets);
 
   const existingNames = secrets?.map((secret) => secret.name) ?? [];
 
@@ -24,18 +26,18 @@ export function SecretsManagementUI() {
     setEditMode(SECRETS_EDIT_MODE_ADD);
   };
 
-  const handleEditSecret = (id?: string) => {
-    setEditMode(id ?? false);
+  const handleEditSecret = (name?: string) => {
+    setEditMode(name ?? false);
   };
 
-  const handleDeleteSecret = (id: string) => {
-    const secret = secrets?.find((s) => s.uuid === id);
+  const handleDeleteSecret = (name: string) => {
+    const secret = secrets?.find((s) => s.name === name);
     if (secret) {
       setDeleteMode(secret);
     }
   };
 
-  if (isLoading) {
+  if (isLoading && canReadSecrets) {
     return <ConfigContent loading ariaLoadingLabel="Loading secrets" />;
   }
 
@@ -47,23 +49,32 @@ export function SecretsManagementUI() {
             variant="call-to-action"
             message="You don't have any secrets yet."
             button={
-              <Button onClick={handleAddSecret} icon="plus">
-                Create secret
-              </Button>
+              canCreateSecrets ? (
+                <Button onClick={handleAddSecret} icon="plus">
+                  Create secret
+                </Button>
+              ) : undefined
             }
           >
             You can use secrets to store private information such as passwords, API keys, and other sensitive data.
+            {!canCreateSecrets && (
+              <div style={{ marginTop: '16px', fontSize: '14px', color: '#6c757d' }}>
+                Contact an admin to create secrets.
+              </div>
+            )}
           </EmptyState>
         </ConfigContent>
       ) : (
         <ConfigContent
           title="Secrets management"
           actions={
-            <div>
-              <Button size="sm" icon="plus" onClick={handleAddSecret}>
-                Create secret
-              </Button>
-            </div>
+            canCreateSecrets ? (
+              <div>
+                <Button size="sm" icon="plus" onClick={handleAddSecret}>
+                  Create secret
+                </Button>
+              </div>
+            ) : undefined
           }
         >
           <div>
@@ -72,16 +83,18 @@ export function SecretsManagementUI() {
               information such as passwords, API keys, and other sensitive data.
             </p>
           </div>
-          <ConfigContent.Section>
-            {secrets?.map((secret) => (
-              <SecretCard key={secret.uuid} secret={secret} onEdit={handleEditSecret} onDelete={handleDeleteSecret} />
-            ))}
-          </ConfigContent.Section>
+          {canReadSecrets && (
+            <ConfigContent.Section>
+              {secrets?.map((secret) => (
+                <SecretCard key={secret.uuid} secret={secret} onEdit={handleEditSecret} onDelete={handleDeleteSecret} />
+              ))}
+            </ConfigContent.Section>
+          )}
         </ConfigContent>
       )}
 
       {editMode && (
-        <SecretEditModal id={editMode} existingNames={existingNames} open onDismiss={() => handleEditSecret()} />
+        <SecretEditModal name={editMode} existingNames={existingNames} open onDismiss={() => handleEditSecret()} />
       )}
 
       <ConfirmModal
@@ -101,7 +114,7 @@ export function SecretsManagementUI() {
           </div>
         }
         onConfirm={() => {
-          deleteMode && deleteSecret.mutate(deleteMode.uuid);
+          deleteMode && deleteSecret.mutate(deleteMode.name);
           setDeleteMode(undefined);
         }}
         onDismiss={() => setDeleteMode(undefined)}

@@ -3,6 +3,7 @@ import { getAlertRules, getGrafanaAlertRules, getPromAlertRules } from 'test/han
 import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
 import { getDashboard } from 'test/handlers/dashboards';
 import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
+import { getHttpDashboard } from 'test/handlers/httpDashboard';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
@@ -26,6 +27,7 @@ const apiRoutes = {
   getInstantMetrics,
   getRangeMetrics,
   getSMDS,
+  getHttpDashboard,
   getLogsDS,
   getMetricsDS,
   getTenant,
@@ -94,7 +96,7 @@ export function getServerRequests() {
     try {
       body = await request?.json();
     } catch (e) {
-      // eslint-disable-next-line no-console
+
       console.error(e);
     }
 

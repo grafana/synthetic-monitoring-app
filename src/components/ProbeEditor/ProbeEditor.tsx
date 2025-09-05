@@ -237,7 +237,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       display: 'grid',
       gridTemplateColumns: `repeat(2, 1fr)`,
       gap: theme.spacing(4),
-      width: `850px`,
+      width: `860px`,
       maxWidth: `100%`,
 
       [containerQuery]: {

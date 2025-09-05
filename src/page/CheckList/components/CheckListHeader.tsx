@@ -123,6 +123,7 @@ export const CheckListHeader = ({
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
           )}
         </div>
+        {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
         <Select
           aria-label="Sort checks by"
           prefix={

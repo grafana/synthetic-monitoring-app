@@ -1,5 +1,5 @@
 import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useCallback, useMemo } from 'react';
-import { FieldErrors, FieldValues, SubmitHandler } from 'react-hook-form';
+import { FieldErrors, FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -8,9 +8,9 @@ import { ZodType } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
-import { ANALYTICS_STEP_MAP, FORM_MAX_WIDTH } from 'components/CheckForm/FormLayout/FormLayout.constants';
+import { flattenKeys } from 'components/CheckForm/CheckForm.utils';
+import { FORM_MAX_WIDTH, FORM_SECTION_STEPS, SectionName } from 'components/CheckForm/FormLayout/FormLayout.constants';
 
-import { flattenKeys } from '../checkForm.utils';
 import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal, FormSectionProps } from './FormSection';
 import { FormSidebar } from './FormSidebar';
@@ -26,7 +26,7 @@ export type FormLayoutProps<T extends FieldValues> = {
   children: ReactNode;
   checkState: 'new' | 'existing';
   checkType: CheckType;
-  disabled?: boolean;
+  initialSection?: SectionName;
   onSubmit: (
     onValid: SubmitHandler<T>,
     onInvalid: (errs: FieldErrors<T>) => void
@@ -42,8 +42,8 @@ export const FormLayout = <T extends FieldValues>({
   alerts,
   checkState,
   checkType,
-  disabled,
   children,
+  initialSection = FORM_SECTION_STEPS[0],
   onSubmit,
   onValid,
   onInvalid,
@@ -51,7 +51,15 @@ export const FormLayout = <T extends FieldValues>({
   hasUnsavedChanges = true, // default to true to prevent accidentally disabling the submit button
 }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
-  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(disabled);
+  const {
+    formState: { disabled },
+  } = useFormContext();
+
+  const initialSectionIndex = FORM_SECTION_STEPS.indexOf(initialSection);
+  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(
+    disabled,
+    initialSectionIndex
+  );
 
   const sections = useMemo(() => {
     let index = -1;
@@ -146,7 +154,7 @@ export const FormLayout = <T extends FieldValues>({
                         checkState,
                         checkType,
                         component: 'back-button',
-                        step: ANALYTICS_STEP_MAP[newStep],
+                        step: FORM_SECTION_STEPS[newStep],
                       });
                       goToSection(newStep);
                     }}
@@ -170,7 +178,7 @@ export const FormLayout = <T extends FieldValues>({
                         checkState,
                         checkType,
                         component: 'forward-button',
-                        step: ANALYTICS_STEP_MAP[newStep],
+                        step: FORM_SECTION_STEPS[newStep],
                       });
                       goToSection(newStep);
                     }}

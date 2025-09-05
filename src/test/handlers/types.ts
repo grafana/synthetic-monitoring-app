@@ -22,5 +22,5 @@ export type Result<T> =
 export type ApiEntry<T = any> = {
   route: string | RegExp;
   method: `get` | `post` | `put` | `patch` | `delete`;
-  result: (req: RequestRes) => Result<T>;
+  result: (req: RequestRes) => Promise<Result<T>> | Result<T>;
 };

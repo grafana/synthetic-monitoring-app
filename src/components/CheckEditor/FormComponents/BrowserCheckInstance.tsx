@@ -5,11 +5,10 @@ import { Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValuesBrowser } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 export const BrowserCheckInstance = () => {
   const { formState, register } = useFormContext<CheckFormValuesBrowser>();
-  const { isFormDisabled } = useCheckFormContext();
+
   const styles = useStyles2(getStyles);
 
   return (
@@ -34,7 +33,7 @@ export const BrowserCheckInstance = () => {
       error={formState.errors.target?.message}
       required
     >
-      <Input id="target" {...register('target')} disabled={isFormDisabled} />
+      <Input id="target" {...register('target')} disabled={formState.disabled} />
     </Field>
   );
 };

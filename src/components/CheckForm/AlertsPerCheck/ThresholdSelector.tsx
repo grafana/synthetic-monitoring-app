@@ -6,19 +6,18 @@ import { useDebounceCallback } from 'usehooks-ts';
 
 import { CheckFormValues } from 'types';
 
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 
 interface ThresholdSelectorProps {
   alert: PredefinedAlertInterface;
   selected: boolean;
+  suffix?: string;
+  width?: number;
 }
 
-export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, selected }) => {
-  const { isFormDisabled } = useCheckFormContext();
-
+export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, selected, suffix, width = 5 }) => {
   const { formState, control } = useFormContext<CheckFormValues>();
-
+  const isFormDisabled = formState.disabled;
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
 
   const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);
@@ -38,6 +37,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
             {...field}
             aria-disabled={!selected}
             data-testid={`alert-threshold-${alert.type}`}
+            suffix={suffix}
             type="number"
             step="any"
             id={`alert-threshold-${alert.type}`}
@@ -46,7 +46,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
               debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
               return field.onChange(value !== '' ? Number(value) : '');
             }}
-            width={5}
+            width={width}
             disabled={!selected || isFormDisabled}
           />
         )}

@@ -53,7 +53,7 @@ function getStyles(theme: GrafanaTheme2) {
       maxHeight: '100%',
       whiteSpace: 'pre-wrap',
       backgroundColor: theme.colors.background.canvas,
-      marginBottom: theme.spacing(2),
+      marginBottom: 0,
       '& strong': {
         color: theme.colors.warning.text,
       },

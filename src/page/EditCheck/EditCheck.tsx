@@ -1,36 +1,82 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom-v5-compat';
-import { Alert, Button, LinkButton, Modal } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { PluginPage } from '@grafana/runtime';
+import { Alert, Button, LinkButton, Modal, Text, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckPageParams } from 'types';
+import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
-import { getRoute } from 'routing/utils';
-import { useListAlertsForCheck } from 'data/useCheckAlerts';
+import { generateRoutePath, getRoute } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
+import { CenteredSpinner } from 'components/CenteredSpinner';
 import { CheckForm } from 'components/CheckForm/CheckForm';
+import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 
 export const EditCheck = () => {
-  return <EditCheckContent />;
-};
-
-const EditCheckContent = () => {
   const { id } = useParams<CheckPageParams>();
-  const { data: checks, isError, isLoading, error, refetch } = useChecks();
+  const { data: checks, isError, isLoading, error, refetch, isFetched } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
+  const urlSearchParams = useURLSearchParams();
 
-  // Alerts for the check are obtained by requesting them to a separate endpoint.
-  // Calling it async here so that they're pre-fetched when the user reaches the Alerting step of the form.
-  useListAlertsForCheck(check?.id);
+  // Check for runbook missing notification to determine initial section
+  const initialSection = !!urlSearchParams.get('runbookMissing') ? 'alerting' : undefined;
+
+  // Only show spinner for the initial fetch.
+  if (isLoading && !isFetched) {
+    return <CenteredSpinner />;
+  }
 
   return (
-    <>
-      <CheckForm check={check} disabled={isLoading || isError} key={check ? `loading` : `ready`} />
+    <CheckFormContextProvider check={check} disabled={isLoading || isError} initialSection={initialSection}>
+      <EditCheckContent isLoading={isLoading} />
       {checks && !check && <NotFoundModal />}
       {error && <ErrorModal error={error} onClick={refetch} />}
-    </>
+    </CheckFormContextProvider>
   );
 };
+
+const EditCheckContent = ({ isLoading = false }: { isLoading: boolean }) => {
+  const { check, getIsExistingCheck, isLoading: isLoadingMeta } = useCheckFormMetaContext();
+
+  const isExistingCheck = getIsExistingCheck(check);
+
+  const isReady = !isLoading && !isLoadingMeta;
+
+  const styles = useStyles2(getStyles);
+
+  const navModel = useMemo(() => {
+    return createNavModel(
+      {
+        text: check?.job ?? 'unknown',
+        url: check?.id ? generateRoutePath(AppRoutes.CheckDashboard, { id: check.id }) : '',
+      },
+      [{ text: `Edit` }]
+    );
+  }, [check]);
+
+  return (
+    <PluginPage
+      pageNav={navModel}
+      renderTitle={isExistingCheck ? () => <Text element="h1">{`Editing ${check.job}`}</Text> : undefined}
+    >
+      <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
+        <CheckForm key={check ? `loading` : `ready`} />
+      </div>
+    </PluginPage>
+  );
+};
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  wrapper: css({
+    paddingTop: theme.spacing(2),
+    height: `100%`,
+  }),
+});
 
 const NotFoundModal = () => {
   const navigate = useNavigation();

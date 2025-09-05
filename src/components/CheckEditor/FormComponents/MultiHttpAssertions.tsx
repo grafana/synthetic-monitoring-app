@@ -14,7 +14,6 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormValuesMultiHttp, MultiHttpAssertionType } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import {
   ASSERTION_CONDITION_OPTIONS,
   ASSERTION_SUBJECT_OPTIONS,
@@ -82,8 +81,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
 const RequestAssertions = ({ index }: { index: number }) => {
   const styles = useStyles2(getRequestAssertionsStyles);
   const assertionFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.checks`;
-  const { control } = useFormContext<CheckFormValuesMultiHttp>();
-  const { isFormDisabled } = useCheckFormContext();
+  const {
+    control,
+    formState: { disabled: isFormDisabled },
+  } = useFormContext<CheckFormValuesMultiHttp>();
+
   const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: assertionFieldName,
@@ -114,6 +116,7 @@ const RequestAssertions = ({ index }: { index: number }) => {
                       htmlFor={id}
                       data-fs-element="Assertion type select"
                     >
+                      {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
                       <Select
                         {...rest}
                         disabled={isFormDisabled}
@@ -244,7 +247,7 @@ function AssertionSubjectField({ assertionIndex, disabled, entryIndex }: Asserti
             invalid={Boolean(errorSubject)}
             label="Subject"
           >
-            <Select
+            <Select // eslint-disable-line @typescript-eslint/no-deprecated
               {...rest}
               disabled={disabled}
               inputId={id}
@@ -281,6 +284,7 @@ function AssertionConditionField({ assertionIndex, disabled, entryIndex }: Asser
             htmlFor={id}
             data-fs-element="Assertion condition select"
           >
+            {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
             <Select
               {...rest}
               disabled={disabled}

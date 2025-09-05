@@ -19,7 +19,7 @@ export const ProbeRegionsSelect = ({ disabled, id, invalid, onChange, value }: P
   const options = regions.map((region) => ({ label: region, value: region }));
 
   return (
-    <Select
+    <Select //eslint-disable-line @typescript-eslint/no-deprecated
       inputId={id}
       options={options}
       value={value || null}

@@ -1,8 +1,7 @@
 import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
-import { FeatureName, PluginPermissions } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { FixedSecretPermission, PluginPermissions } from 'types';
 
 const roleHierarchy: Record<OrgRole, OrgRole[]> = {
   [OrgRole.Viewer]: [OrgRole.Viewer, OrgRole.Editor, OrgRole.Admin],
@@ -21,36 +20,38 @@ const hasMinFallbackRole = (fallbackOrgRole: OrgRole) => {
   return roleHierarchy[fallbackOrgRole]?.includes(orgRole) || false;
 };
 
-const isUserActionAllowed = (permission: PluginPermissions, fallbackOrgRole: OrgRole): boolean => {
+const isUserActionAllowed = (permission: PluginPermissions | FixedSecretPermission): boolean => {
   const { permissions: userPermissions } = config.bootData.user;
 
-  const rbacEnabled = isFeatureEnabled(FeatureName.RBAC);
-  if (config.featureToggles.accessControlOnCall && rbacEnabled) {
-    return Boolean(userPermissions?.[permission]);
-  }
-
-  return hasMinFallbackRole(fallbackOrgRole);
+  return Boolean(userPermissions?.[permission]);
 };
 
 export const getUserPermissions = () => ({
-  canReadChecks: isUserActionAllowed('grafana-synthetic-monitoring-app.checks:read', OrgRole.Viewer),
-  canWriteChecks: isUserActionAllowed('grafana-synthetic-monitoring-app.checks:write', OrgRole.Editor),
-  canDeleteChecks: isUserActionAllowed('grafana-synthetic-monitoring-app.checks:delete', OrgRole.Editor),
+  canReadChecks: isUserActionAllowed('grafana-synthetic-monitoring-app.checks:read'),
+  canWriteChecks: isUserActionAllowed('grafana-synthetic-monitoring-app.checks:write'),
+  canDeleteChecks: isUserActionAllowed('grafana-synthetic-monitoring-app.checks:delete'),
 
-  canReadProbes: isUserActionAllowed('grafana-synthetic-monitoring-app.probes:read', OrgRole.Viewer),
-  canWriteProbes: isUserActionAllowed('grafana-synthetic-monitoring-app.probes:write', OrgRole.Editor),
-  canDeleteProbes: isUserActionAllowed('grafana-synthetic-monitoring-app.probes:delete', OrgRole.Editor),
+  canReadProbes: isUserActionAllowed('grafana-synthetic-monitoring-app.probes:read'),
+  canWriteProbes: isUserActionAllowed('grafana-synthetic-monitoring-app.probes:write'),
+  canDeleteProbes: isUserActionAllowed('grafana-synthetic-monitoring-app.probes:delete'),
 
-  canReadAlerts: isUserActionAllowed('grafana-synthetic-monitoring-app.alerts:read', OrgRole.Viewer),
-  canWriteAlerts: isUserActionAllowed('grafana-synthetic-monitoring-app.alerts:write', OrgRole.Editor),
-  canDeleteAlerts: isUserActionAllowed('grafana-synthetic-monitoring-app.alerts:delete', OrgRole.Editor),
+  canReadAlerts: isUserActionAllowed('grafana-synthetic-monitoring-app.alerts:read'),
+  canWriteAlerts: isUserActionAllowed('grafana-synthetic-monitoring-app.alerts:write'),
+  canDeleteAlerts: isUserActionAllowed('grafana-synthetic-monitoring-app.alerts:delete'),
 
-  canReadThresholds: isUserActionAllowed('grafana-synthetic-monitoring-app.thresholds:read', OrgRole.Viewer),
-  canWriteThresholds: isUserActionAllowed('grafana-synthetic-monitoring-app.thresholds:write', OrgRole.Editor),
+  canReadThresholds: isUserActionAllowed('grafana-synthetic-monitoring-app.thresholds:read'),
+  canWriteThresholds: isUserActionAllowed('grafana-synthetic-monitoring-app.thresholds:write'),
 
-  canWriteTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:write', OrgRole.Editor),
+  canWriteTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:write'),
 
-  canWritePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:write', OrgRole.Admin),
+  canWritePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:write'),
 
-  canWriteSM: isUserActionAllowed('grafana-synthetic-monitoring-app:write', OrgRole.Editor),
+  canWriteSM: isUserActionAllowed('grafana-synthetic-monitoring-app:write'),
+
+  canCreateSecrets: isUserActionAllowed('secret.securevalues:create'),
+  canReadSecrets: isUserActionAllowed('secret.securevalues:read'),
+  canUpdateSecrets: isUserActionAllowed('secret.securevalues:write'),
+  canDeleteSecrets: isUserActionAllowed('secret.securevalues:delete'),
+
+  isAdmin: hasMinFallbackRole(OrgRole.Admin),
 });

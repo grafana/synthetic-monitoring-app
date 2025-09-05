@@ -1,0 +1,198 @@
+name: Update deployment tools
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment for the plugin (dev, staging, production)
+        required: true
+        type: string
+      autoMerge:
+        description: Whether to automatically merge the deployment PR
+        required: false
+        type: string
+        default: 'false'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-sign-zip-upload:
+    uses: ./.github/workflows/call_build-sign-upload-plugin.yml
+    with:
+      environment: ${{ (inputs.environment == 'production' || inputs.environment == 'staging') && 'prod' || inputs.environment }}
+
+  update-deployment-tools-dev:
+    name: Update deployment tools (dev)
+    needs: [build-sign-zip-upload, publish-to-grafana-dev]
+    if: inputs.environment == 'dev'
+    uses: ./.github/workflows/call_update-deployment-tools.yml
+    with:
+      environment: ${{ inputs.environment }}
+      autoMerge: ${{ inputs.autoMerge }}
+      plugin_version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}
+
+  update-deployment-tools-staging:
+    name: Update deployment tools (staging)
+    needs: [build-sign-zip-upload, publish-to-grafana-ops]
+    if: inputs.environment == 'staging'
+    uses: ./.github/workflows/call_update-deployment-tools.yml
+    with:
+      environment: ${{ inputs.environment }}
+      autoMerge: ${{ inputs.autoMerge }}
+      plugin_version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}
+
+  update-deployment-tools-production:
+    name: Update deployment tools (production)
+    needs: [build-sign-zip-upload, publish-to-grafana-com]
+    if: inputs.environment == 'production'
+    uses: ./.github/workflows/call_update-deployment-tools.yml
+    with:
+      environment: ${{ inputs.environment }}
+      autoMerge: ${{ inputs.autoMerge }}
+      plugin_version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}
+
+  publish-to-grafana-com:
+    name: Publish to grafana.com (prod catalog)
+    needs: build-sign-zip-upload
+    runs-on: ubuntu-latest
+    if: inputs.environment == 'production'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Get prod catalog token from Vault
+        uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
+        with:
+          common_secrets: |
+            GCOM_PUBLISH_TOKEN_PROD=plugins/gcom-publish-token:prod
+
+      - name: Show version being published
+        run: |
+          echo "=== Publishing version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }} ==="
+          echo "Plugin version from build job: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}"
+
+      - name: authenticate to gcp
+        id: gcloud
+        uses: google-github-actions/auth@b7593ed2efd1c1617e1b0254da33b86225adb2a5 # v2.1.12
+        with:
+          workload_identity_provider: "projects/304398677251/locations/global/workloadIdentityPools/github/providers/github-provider"
+          service_account: github-plugin-ci-workflows@grafanalabs-workload-identity.iam.gserviceaccount.com
+          token_format: id_token
+          id_token_audience: 194555723165-aftshfqa32nig79trcrh96ha94ta46jd.apps.googleusercontent.com
+          id_token_include_email: true
+          create_credentials_file: false
+          export_environment_variables: false
+
+      - name: publish to prod catalog
+        env:
+          GCOM_PUBLISH_TOKEN_PROD: ${{ env.GCOM_PUBLISH_TOKEN_PROD }}
+          GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@5c3428a6a5aca68e5292bd33829d676f84da9f33
+        with:
+          zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-prod/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
+          environment: prod
+          scopes: universal
+          gcom-publish-token: ${{ env.GCOM_PUBLISH_TOKEN_PROD }}
+          gcloud-auth-token: ${{ steps.gcloud.outputs.id_token }}
+
+  publish-to-grafana-dev:
+    name: Publish to grafana-dev.com (dev catalog)
+    needs: build-sign-zip-upload
+    runs-on: ubuntu-latest
+    if: inputs.environment == 'dev'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Get dev catalog token from Vault
+        uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
+        with:
+          common_secrets: |
+            GCOM_PUBLISH_TOKEN_DEV=plugins/gcom-publish-token:dev
+
+      - name: Show version being published
+        run: |
+          echo "=== Publishing version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }} ==="
+          echo "Plugin version from build job: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}"
+
+      - name: authenticate to gcp
+        id: gcloud
+        uses: google-github-actions/auth@b7593ed2efd1c1617e1b0254da33b86225adb2a5 # v2.1.12
+        with:
+          workload_identity_provider: "projects/304398677251/locations/global/workloadIdentityPools/github/providers/github-provider"
+          service_account: github-plugin-ci-workflows@grafanalabs-workload-identity.iam.gserviceaccount.com
+          token_format: id_token
+          id_token_audience: 194555723165-aftshfqa32nig79trcrh96ha94ta46jd.apps.googleusercontent.com
+          id_token_include_email: true
+          create_credentials_file: false
+          export_environment_variables: false
+
+      - name: publish to dev catalog
+        env:
+          GCOM_PUBLISH_TOKEN_DEV: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
+          GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@5c3428a6a5aca68e5292bd33829d676f84da9f33
+        with:
+          zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
+          environment: dev
+          scopes: universal
+          gcom-publish-token: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
+          gcloud-auth-token: ${{ steps.gcloud.outputs.id_token }}
+
+  publish-to-grafana-ops:
+    name: Publish to grafana-ops.com (ops catalog)
+    needs: build-sign-zip-upload
+    runs-on: ubuntu-latest
+    if: inputs.environment == 'staging'
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Get ops catalog token from Vault
+        uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
+        with:
+          common_secrets: |
+            GCOM_PUBLISH_TOKEN_OPS=plugins/gcom-publish-token:ops
+
+      - name: Show version being published
+        run: |
+          echo "=== Publishing version: ${{ needs.build-sign-zip-upload.outputs.plugin_version }} ==="
+          echo "Plugin version from build job: ${{ needs.build-sign-zip-upload.outputs.plugin_version }}"
+
+      - name: authenticate to gcp
+        id: gcloud
+        uses: google-github-actions/auth@b7593ed2efd1c1617e1b0254da33b86225adb2a5 # v2.1.12
+        with:
+          workload_identity_provider: "projects/304398677251/locations/global/workloadIdentityPools/github/providers/github-provider"
+          service_account: github-plugin-ci-workflows@grafanalabs-workload-identity.iam.gserviceaccount.com
+          token_format: id_token
+          id_token_audience: 194555723165-aftshfqa32nig79trcrh96ha94ta46jd.apps.googleusercontent.com
+          id_token_include_email: true
+          create_credentials_file: false
+          export_environment_variables: false
+
+      - name: publish to ops catalog
+        env:
+          GCOM_PUBLISH_TOKEN_OPS: ${{ env.GCOM_PUBLISH_TOKEN_OPS }}
+          GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@5c3428a6a5aca68e5292bd33829d676f84da9f33
+        with:
+          zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-prod/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
+          environment: ops
+          scopes: universal
+          gcom-publish-token: ${{ env.GCOM_PUBLISH_TOKEN_OPS }}
+          gcloud-auth-token: ${{ steps.gcloud.outputs.id_token }}

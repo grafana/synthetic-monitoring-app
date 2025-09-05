@@ -1,52 +1,121 @@
-import { BaseSyntheticEvent, useCallback, useRef, useState } from 'react';
+import { BaseSyntheticEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { FieldErrors } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom-v5-compat';
+import { dateTimeFormat } from '@grafana/data';
 import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
-import { aiAgentCheckSchema } from 'schemas/forms/AiAgentCheckSchema';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
-import { browserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
-import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
-import { grpcCheckSchema } from 'schemas/forms/GRPCCheckSchema';
-import { httpCheckSchema } from 'schemas/forms/HttpCheckSchema';
-import { multiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
-import { pingCheckSchema } from 'schemas/forms/PingCheckSchema';
-import { scriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
-import { tcpCheckSchema } from 'schemas/forms/TCPCheckSchema';
-import { tracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
+import { ZodType } from 'zod';
 
-import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType, FeatureName } from 'types';
+import {
+  Check,
+  CheckAlertDraft,
+  CheckAlertFormRecord,
+  CheckFormValues,
+  CheckStatus,
+  CheckType,
+  CheckTypeGroup,
+  FeatureName,
+} from '../../types';
+import { LayoutSection } from './FormLayouts/Layout.types';
+import { formatDuration } from 'utils';
 import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { getUserPermissions } from 'data/permissions';
 import { queryClient } from 'data/queryClient';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { queryKeys, useCUDChecks, useTestCheck } from 'data/useChecks';
+import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
+import { useCanReadLogs } from 'hooks/useDSPermission';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { useNavigation } from 'hooks/useNavigation';
-import { toPayload } from 'components/CheckEditor/checkFormTransformations';
-import { getAlertsPayload } from 'components/CheckEditor/transformations/toPayload.alerts';
+import { useLimits } from 'hooks/useLimits';
 
-import { broadcastFailedSubmission, findFieldToFocus } from './checkForm.utils';
-import { useFormCheckType } from './useCheckType';
+import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
+import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
+import { DEFAULT_QUERY_FROM_TIME, fallbackCheckMap } from '../constants';
+import { SectionName } from './FormLayout/FormLayout.constants';
+import { layoutMap } from './FormLayouts/constants';
+import {
+  broadcastFailedSubmission,
+  findFieldToFocus,
+  getAdditionalDuration,
+  getIsExistingCheck,
+} from './CheckForm.utils';
+import { SCHEMA_MAP } from './constants';
+import { useFormCheckType, useFormCheckTypeGroup } from './useCheckType';
 
-const schemaMap = {
-  [CheckType.AiAgent]: aiAgentCheckSchema,
-  [CheckType.Browser]: browserCheckSchema,
-  [CheckType.DNS]: dnsCheckSchema,
-  [CheckType.GRPC]: grpcCheckSchema,
-  [CheckType.HTTP]: httpCheckSchema,
-  [CheckType.MULTI_HTTP]: multiHttpCheckSchema,
-  [CheckType.PING]: pingCheckSchema,
-  [CheckType.Scripted]: scriptedCheckSchema,
-  [CheckType.TCP]: tcpCheckSchema,
-  [CheckType.Traceroute]: tracerouteCheckSchema,
+type CheckFormMetaReturn = {
+  check?: Check;
+  isNew: boolean;
+  isExistingCheck: boolean;
+  getIsExistingCheck: typeof getIsExistingCheck;
+  schema: ZodType;
+  checkType: CheckType;
+  checkTypeGroup: CheckTypeGroup | undefined;
+  checkState: 'new' | 'existing';
+  checkTypeStatus?: {
+    value: CheckStatus;
+    description: string;
+  };
+  isOverLimit: boolean | null;
+  isDisabled: boolean;
+  isLoading: boolean;
+  defaultFormValues: CheckFormValues;
+  initialSection?: SectionName;
 };
+
+export function useCheckFormMeta(check?: Check, forceDisabled = false): CheckFormMetaReturn {
+  const isNew = !getIsExistingCheck(check);
+
+  // Hook usage
+  const checkType = useFormCheckType(check);
+  const checkTypeGroup = useFormCheckTypeGroup(check);
+  const schema = useCheckFormSchema(check);
+  const options = useCheckTypeOptions();
+  const isOverLimit = useIsOverlimit(!isNew, checkType);
+  const permission = useFormPermissions();
+  const defaultFormValues = useCheckFormDefaultValues(check);
+  const isExistingCheck = getIsExistingCheck(check);
+
+  return useMemo(() => {
+    const checkOptions = options.find((option) => option.value === checkType);
+    const isLoading = isOverLimit === null;
+    return {
+      check,
+      isNew: !isExistingCheck,
+      isExistingCheck,
+      getIsExistingCheck, // use this for type narrowing of `check` param
+      checkState: isExistingCheck ? 'existing' : 'new',
+      schema,
+      checkType,
+      checkTypeGroup,
+      checkTypeStatus: checkOptions?.status,
+      isOverLimit,
+      isDisabled: forceDisabled || isLoading || isOverLimit || !permission.canWriteChecks,
+      isLoading,
+      defaultFormValues,
+    };
+  }, [
+    check,
+    options,
+    isOverLimit,
+    isExistingCheck,
+    schema,
+    checkType,
+    checkTypeGroup,
+    forceDisabled,
+    permission.canWriteChecks,
+    defaultFormValues,
+  ]);
+}
 
 export function useCheckFormSchema(check?: Check) {
   const checkType = useFormCheckType(check);
+  const schema = SCHEMA_MAP[checkType];
 
-  const schema = schemaMap[checkType];
-  const withRefinements = addRefinements(schema);
-
-  return withRefinements;
+  return useMemo(() => {
+    return addRefinements(schema);
+  }, [schema]);
 }
 
 interface UseCheckFormProps {
@@ -58,32 +127,42 @@ interface UseCheckFormProps {
 
 export function useCheckForm({ check, checkType, checkState, onTestSuccess }: UseCheckFormProps) {
   const [submittingToApi, setSubmittingToApi] = useState(false);
-  const navigate = useNavigation();
+  const navigate = useNavigate();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
   const testButtonRef = useRef<HTMLButtonElement>(null);
   const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
-  const navigateToChecks = useCallback(() => navigate(AppRoutes.Checks), [navigate]);
+  const navigateToCheckDashboard = useCallback(
+    (result: Check) => {
+      const { frequency } = result;
+      const additionalDuration = getAdditionalDuration(frequency, 20);
+      const duration = formatDuration(additionalDuration, true);
+      const created = Math.round(result.created! * 1000);
+      const dateTime = dateTimeFormat(created, { format: 'yyyy-MM-DD HH:mm:ss', timeZone: `utc` });
+      const from = checkState === 'new' ? dateTime : `now$2B${DEFAULT_QUERY_FROM_TIME}`;
+
+      navigate(
+        `${generateRoutePath(AppRoutes.CheckDashboard, {
+          id: result.id!,
+        })}?from=${from}&to=now%2B${duration}`
+      );
+    },
+    [checkState, navigate]
+  );
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
   const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
     prevAlerts: check?.alerts,
   });
 
-  const handleAlertsAndNavigate = useCallback(
+  const handleAlerts = useCallback(
     async (result: Check, alerts?: CheckAlertFormRecord) => {
-      try {
-        if (alerts) {
-          const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
-          await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
-        }
-
-        navigateToChecks();
-      } finally {
-        queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      if (alerts) {
+        const checkAlerts: CheckAlertDraft[] = getAlertsPayload(alerts, result.id);
+        await updateAlertsForCheck({ alerts: checkAlerts, checkId: result.id! });
       }
     },
-    [navigateToChecks, updateAlertsForCheck]
+    [updateAlertsForCheck]
   );
 
   const mutateCheck = useCallback(
@@ -100,8 +179,11 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
         } else {
           result = await createCheck(newCheck);
         }
-        await handleAlertsAndNavigate(result, alerts);
+        await handleAlerts(result, alerts);
+        await queryClient.invalidateQueries({ queryKey: queryKeys.list });
+        navigateToCheckDashboard(result);
       } catch (e) {
+        console.log(`Error while submitting check`, e);
         // swallow the error
         // it gets handled correctly by the the generic hooks and we have tests to prove that
         // this isn't strictly necessary but jest complains about this...
@@ -109,7 +191,7 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
         setSubmittingToApi(false);
       }
     },
-    [check?.id, check?.tenantId, createCheck, updateCheck, handleAlertsAndNavigate]
+    [check?.id, check?.tenantId, createCheck, updateCheck, handleAlerts, navigateToCheckDashboard]
   );
 
   const handleValid = useCallback(
@@ -150,4 +232,87 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
     handleInvalid,
     submittingToApi,
   };
+}
+
+export function useFormPermissions() {
+  const { canWriteChecks } = getUserPermissions();
+  const canReadLogs = useCanReadLogs();
+
+  return useMemo(() => {
+    return {
+      canReadLogs,
+      canWriteChecks,
+    };
+  }, [canReadLogs, canWriteChecks]);
+}
+
+export function useIsOverlimit(isExistingCheck: boolean, checkType: CheckType) {
+  const { isOverBrowserLimit, isOverHgExecutionLimit, isOverCheckLimit, isOverScriptedLimit, isReady } = useLimits();
+  // It should always be possible to edit existing checks
+  if (isExistingCheck) {
+    return false;
+  }
+
+  if (!isReady) {
+    // null indicates loading/pending state
+    return null;
+  }
+
+  return (
+    isOverHgExecutionLimit ||
+    isOverCheckLimit ||
+    (checkType === CheckType.Browser && isOverBrowserLimit) ||
+    ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit)
+  );
+}
+
+export function useCheckFormDefaultValues(check?: Check) {
+  const checkType = useFormCheckType(check);
+  const checkWithFallback = check || fallbackCheckMap[checkType];
+
+  return useMemo(() => {
+    return toFormValues(checkWithFallback, checkType);
+  }, [checkType, checkWithFallback]);
+}
+
+export function useCheckTypeFormLayout(checkType: CheckType) {
+  const layout = layoutMap[checkType];
+
+  const checkSection = layout[LayoutSection.Check];
+  const checkFields = checkSection?.fields;
+  const CheckComponent = checkSection?.Component;
+
+  const uptimeSection = layout[LayoutSection.Uptime];
+  const uptimeFields = uptimeSection?.fields;
+  const UptimeComponent = uptimeSection?.Component;
+
+  const probesSection = layout[LayoutSection.Probes];
+  const probesFields = probesSection?.fields;
+  const ProbesComponent = probesSection?.Component;
+
+  const labelsSection = layout[LayoutSection.Labels];
+  const labelsFields = labelsSection?.fields;
+  const LabelsComponent = labelsSection?.Component;
+
+  return useMemo(() => {
+    return {
+      checkFields: checkFields ?? [],
+      uptimeFields: uptimeFields ?? [],
+      probesFields: probesFields ?? [],
+      labelsFields: labelsFields ?? [],
+      CheckComponent,
+      UptimeComponent,
+      ProbesComponent,
+      LabelsComponent,
+    };
+  }, [
+    CheckComponent,
+    LabelsComponent,
+    ProbesComponent,
+    UptimeComponent,
+    checkFields,
+    labelsFields,
+    probesFields,
+    uptimeFields,
+  ]);
 }

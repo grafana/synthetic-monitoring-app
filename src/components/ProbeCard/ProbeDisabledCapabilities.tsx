@@ -9,7 +9,6 @@ interface ProbeDisabledCapabilitiesProps {
 }
 export function ProbeDisabledCapabilities({ probe }: ProbeDisabledCapabilitiesProps) {
   // as we only want to show that a feature is disabled if the user can use the feature to start with
-  const scriptedFeature = useFeatureFlag(FeatureName.ScriptedChecks);
   const browserFeature = useFeatureFlag(FeatureName.BrowserChecks);
 
   const browserChecksDisabled = probe.capabilities.disableBrowserChecks;
@@ -18,7 +17,7 @@ export function ProbeDisabledCapabilities({ probe }: ProbeDisabledCapabilitiesPr
 
   const disabledChecks = useMemo(() => {
     const disabledChecks = [];
-    if (scriptedFeature.isEnabled && scriptedChecksDisabled) {
+    if (scriptedChecksDisabled) {
       disabledChecks.push('Scripted');
     }
 
@@ -27,7 +26,7 @@ export function ProbeDisabledCapabilities({ probe }: ProbeDisabledCapabilitiesPr
     }
 
     return disabledChecks.join(', ');
-  }, [browserChecksDisabled, browserFeature.isEnabled, scriptedChecksDisabled, scriptedFeature.isEnabled]);
+  }, [browserChecksDisabled, browserFeature.isEnabled, scriptedChecksDisabled]);
 
   if (!disabledChecks) {
     return <div />;

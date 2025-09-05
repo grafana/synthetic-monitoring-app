@@ -5,14 +5,13 @@ import { Button, Checkbox, IconButton, Input, Label, Select, Stack, useStyles2 }
 import { css } from '@emotion/css';
 
 import { CheckFormValuesDns, ResponseMatchType } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
 
 export const DNSCheckResponseMatches = () => {
   const styles = useStyles2(getStyles);
   const { control, register, formState } = useFormContext<CheckFormValuesDns>();
-  const { isFormDisabled } = useCheckFormContext();
   const { fields, append, remove } = useFieldArray<CheckFormValuesDns>({ control, name: `settings.dns.validations` });
+  const isFormDisabled = formState.disabled;
 
   return (
     <Stack direction={`column`}>
@@ -34,10 +33,11 @@ export const DNSCheckResponseMatches = () => {
                     render={({ field }) => {
                       const { ref, onChange, ...rest } = field;
                       return (
+                        // eslint-disable-next-line @typescript-eslint/no-deprecated
                         <Select
                           {...rest}
                           aria-label={`DNS Response Match ${userIndex}`}
-                          disabled={isFormDisabled}
+                          disabled={formState.disabled}
                           invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
                           onChange={({ value }) => onChange(value)}
                           options={DNS_RESPONSE_MATCH_OPTIONS}

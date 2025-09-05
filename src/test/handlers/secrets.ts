@@ -44,7 +44,7 @@ export const listSecrets: ApiEntry<SecretsResponse> = {
  * - `result`: A function representing the response handler, returning a mock JSON payload containing the secret data.
  */
 export const getSecret: ApiEntry<SecretWithMetadata> = {
-  route: `/api/v1alpha1/secrets/${MOCKED_SECRETS_API_RESPONSE.secrets[0].uuid}`,
+  route: `/api/v1alpha1/secrets/${MOCKED_SECRETS_API_RESPONSE.secrets[0].name}`,
   method: `get`,
   result: () => {
     return {
@@ -84,7 +84,7 @@ export const createSecret: ApiEntry<SecretFormValues> = {
  * - `result`: A function that returns the expected result of the API call, which is a JSON response with a value of `null`.
  */
 export const updateSecret: ApiEntry<SecretFormValues> = {
-  route: `/api/v1alpha1/secrets/${MOCKED_SECRETS_API_RESPONSE.secrets[0].uuid}`,
+  route: `/api/v1alpha1/secrets/${MOCKED_SECRETS_API_RESPONSE.secrets[0].name}`,
   method: `put`,
   result: () => {
     return {

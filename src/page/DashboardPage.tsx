@@ -1,168 +1,68 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom-v5-compat';
-import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
-import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
+import { CheckPageParams, CheckType } from 'types';
 import { getCheckType } from 'utils';
-import { AppRoutes } from 'routing/types';
-import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
-import { useLogsDS } from 'hooks/useLogsDS';
-import { useMetricsDS } from 'hooks/useMetricsDS';
-import { useSMDS } from 'hooks/useSMDS';
-import { getAiAgentScene } from 'scenes/AIAGENT/aiAgentScene';
-import { getBrowserScene } from 'scenes/BROWSER/browserScene';
-import { getDNSScene } from 'scenes/DNS';
-import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
+import { AgenticMonitoringDashboard } from 'scenes/AgenticMonitoring/AgenticMonitoringDashboard';
+import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
+import { DNSDashboard } from 'scenes/DNS/DnsDashboard';
+import { GrpcDashboard } from 'scenes/GRPC/GrpcDashboard';
 import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
-import { getPingScene } from 'scenes/PING/pingScene';
-import { getScriptedScene } from 'scenes/SCRIPTED';
-import { getTcpScene } from 'scenes/TCP/getTcpScene';
-import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
+import { PingDashboard } from 'scenes/PING/PingDashboard';
+import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
+import { TcpDashboard } from 'scenes/TCP/TcpDashboard';
+import { TracerouteDashboard } from 'scenes/Traceroute/TracerouteDashboard';
 
 import { CheckNotFound } from './NotFound/CheckNotFound';
 
 function DashboardPageContent() {
-  const smDS = useSMDS();
-  const metricsDS = useMetricsDS();
-  const logsDS = useLogsDS();
   const { data: checks = [], isLoading } = useChecks();
   const { id } = useParams<CheckPageParams>();
   const check = checks.find((check) => String(check.id) === id);
 
-  const scene = useMemo(() => {
-    const metricsDef = {
-      uid: metricsDS?.uid,
-      type: metricsDS?.type,
-    };
-    const logsDef = {
-      uid: logsDS?.uid,
-      type: logsDS?.type,
-    };
-    const smDef = {
-      uid: smDS.uid,
-      type: smDS.type,
-    };
-
-    const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef };
-
-    if (!check) {
-      return null;
-    }
-
-    const checkType = getCheckType(check.settings);
-    const url = generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! });
-    switch (checkType) {
-      case CheckType.DNS: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getDNSScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.Browser:
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getBrowserScene(config, check, checkType),
-            }),
-          ],
-        });
-      // fallthrough
-      case CheckType.Scripted:
-      case CheckType.MULTI_HTTP: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getScriptedScene(config, check, checkType),
-            }),
-          ],
-        });
-      }
-      case CheckType.PING: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getPingScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.TCP: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getTcpScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.Traceroute: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getTracerouteScene(config, check),
-            }),
-          ],
-        });
-      }
-      case CheckType.AiAgent:
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getAiAgentScene(config, check),
-            }),
-          ],
-        });
-      case CheckType.GRPC: {
-        return new SceneApp({
-          pages: [
-            new SceneAppPage({
-              title: check.job,
-              url,
-              getScene: getGRPCScene(config, check),
-            }),
-          ],
-        });
-      }
-
-      case CheckType.HTTP: {
-        return null;
-      }
-    }
-  }, [smDS, metricsDS, logsDS, check]);
-
   if (!isLoading && !check) {
     return <CheckNotFound />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.GRPC) {
+    return <GrpcDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.TCP) {
+    return <TcpDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.DNS) {
+    return <DNSDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.PING) {
+    return <PingDashboard check={check} />;
   }
 
   if (check && getCheckType(check.settings) === CheckType.HTTP) {
     return <HttpDashboard check={check} />;
   }
 
-  if (scene) {
-    if (check && getCheckType(check.settings) === CheckType.AiAgent) {
-      return <scene.Component model={scene} />;
-    }
+  if (check && getCheckType(check.settings) === CheckType.Traceroute) {
+    return <TracerouteDashboard check={check} />;
+  }
 
-    return <scene.Component model={scene} />;
+  if (
+    check &&
+    (getCheckType(check.settings) === CheckType.Scripted || getCheckType(check.settings) === CheckType.MULTI_HTTP)
+  ) {
+    return <ScriptedDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.Browser) {
+    return <BrowserDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.AiAgent) {
+    return <AgenticMonitoringDashboard check={check} />;
   }
 
   return <Spinner />;

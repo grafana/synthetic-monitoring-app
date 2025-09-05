@@ -20,10 +20,10 @@ import pluralize from 'pluralize';
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
-import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 import { AlertEvaluationInfo } from './AlertEvaluationInfo';
 import { getAlertItemStyles } from './AlertItem';
 import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { RunbookUrl } from './RunbookUrl';
 import { ThresholdSelector } from './ThresholdSelector';
 
 export const FailedExecutionsAlert = ({
@@ -37,7 +37,9 @@ export const FailedExecutionsAlert = ({
   onSelectionChange: (type: CheckAlertType) => void;
   tooltipContent: PopoverContent;
 }) => {
-  const { isFormDisabled } = useCheckFormContext();
+  const {
+    formState: { disabled: isFormDisabled },
+  } = useFormContext();
   const { getValues, control, formState } = useFormContext<CheckFormValues>();
   const revalidateForm = useRevalidateForm();
   const styles = useStyles2(getAlertItemStyles);
@@ -122,7 +124,7 @@ export const FailedExecutionsAlert = ({
               const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
 
               return (
-                <Select
+                <Select // eslint-disable-line @typescript-eslint/no-deprecated
                   {...fieldProps}
                   disabled={!selected || isFormDisabled}
                   data-testid="alertPendingPeriod"
@@ -146,6 +148,7 @@ export const FailedExecutionsAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
+      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
 
       {selected && !!testExecutionsPerPeriod && (
         <AlertEvaluationInfo

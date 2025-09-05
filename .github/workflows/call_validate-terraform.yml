@@ -1,0 +1,299 @@
+name: Terraform Configuration Validation
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_call:
+
+jobs:
+  validate-terraform-generation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
+        with:
+          terraform_version: "~1.0"
+      
+      - name: Generate test Terraform configs
+        run: |
+          echo "🔧 Generating terraform test configurations..."
+          yarn build:generate-terraform-test-config
+          echo "✅ Test configuration generation completed"
+      
+      - name: Validate generated Terraform
+        id: terraform-validate
+        continue-on-error: true
+        run: |
+          echo "🔍 Validating generated Terraform configuration..."
+          echo "📦 Checking Grafana provider version..."
+          
+          # Extract provider version constraint from generated config
+          if [ -f "artifacts/terraform-validation/testTerraformConfig.tf.json" ]; then
+            PROVIDER_CONSTRAINT=$(cat artifacts/terraform-validation/testTerraformConfig.tf.json | grep -A 10 '"required_providers"' | grep -A 5 '"grafana"' | grep '"version"' | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | head -1)
+            if [ ! -z "$PROVIDER_CONSTRAINT" ]; then
+              echo "📋 Provider version constraint: $PROVIDER_CONSTRAINT"
+            fi
+          fi
+          
+          # Get the actual resolved provider version from terraform
+          cd artifacts/terraform-validation
+          if terraform version > /tmp/tf_version.txt 2>&1; then
+            # Extract grafana provider version from terraform version output
+            RESOLVED_VERSION=$(cat /tmp/tf_version.txt | grep -i "provider.*grafana" | sed 's/.*v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
+            if [ ! -z "$RESOLVED_VERSION" ]; then
+              echo "🎯 Resolved Grafana provider version: v$RESOLVED_VERSION"
+            else
+              echo "⚠️  Could not determine resolved provider version"
+            fi
+          fi
+          cd ../..
+          
+          if yarn verify:terraform-test-config > /tmp/terraform_output.txt 2>&1; then
+            echo "validation_result=success" >> $GITHUB_OUTPUT
+            echo "✅ Terraform configuration validation succeeded!"
+            echo ""
+            echo "📋 Validation output:"
+            cat /tmp/terraform_output.txt
+          else
+            echo "validation_result=failed" >> $GITHUB_OUTPUT
+            echo "❌ Terraform configuration validation failed!"
+            echo ""
+            echo "📋 Validation errors:"
+            cat /tmp/terraform_output.txt
+            echo ""
+            # Store the output using base64 encoding to avoid issues with special characters
+            OUTPUT_BASE64=$(cat /tmp/terraform_output.txt | base64 -w 0)
+            echo "TERRAFORM_OUTPUT_BASE64=$OUTPUT_BASE64" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Comment on PR if validation failed
+        if: steps.terraform-validate.outputs.validation_result == 'failed' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentIdentifier = '❌ **Terraform Configuration Validation Failed**';
+
+            let message = commentIdentifier + '\n\n';
+            message += 'The generated terraform configurations have schema compatibility issues with the Grafana provider.\n\n';
+            message += '**⚠️ These issues would cause terraform operations to fail in production.**\n\n';
+
+            const outputBase64 = '${{ steps.terraform-validate.outputs.TERRAFORM_OUTPUT_BASE64 }}';
+            if (outputBase64 && outputBase64.trim() !== '') {
+              try {
+                const output = Buffer.from(outputBase64, 'base64').toString('utf8');
+                const cleanOutput = output
+                  .split('\n')
+                  .filter(line => 
+                    !line.includes('Terraform has been successfully initialized') &&
+                    !line.includes('Warning: Provider development overrides are in effect')
+                  )
+                  .join('\n')
+                  .trim()
+                  .replace(/\x1b\[[0-9;]*m/g, '') // Remove ANSI color codes
+                  .replace(/[\x00-\x1f\x7f-\x9f]/g, ''); // Remove control characters
+                
+                if (cleanOutput) {
+                  // Format errors in a more readable way
+                  message += '## Validation Errors\n\n';
+                  
+                  // Split into individual errors and format each one
+                  const errors = cleanOutput.split('╷').filter(section => section.trim());
+                  
+                  errors.forEach((error, index) => {
+                    if (error.includes('Error:')) {
+                      
+                      // Clean up the error text by removing box-drawing characters and formatting properly
+                      const cleanError = error
+                        .replace(/│/g, '\n') // Replace box-drawing characters with newlines
+                        .replace(/[╷╵]/g, '') // Remove remaining box-drawing characters  
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0)
+                        .join('\n');
+                      
+                      message += '```\n';
+                      message += cleanError;
+                      message += '\n```\n\n';
+                    }
+                  });
+                }
+              } catch (e) {
+                console.log('Error processing terraform output:', e);
+                message += '## Validation Errors\n\n';
+                message += '```\n' + outputBase64 + '\n```\n\n';
+              }
+            }
+
+            message += '## 🔧 How to Fix\n\n';
+            message += '1. **Check field naming and requirements** according to the [Grafana Terraform Provider Documentation](https://registry.terraform.io/providers/grafana/grafana/latest/docs)\n';
+            message += '2. **Ensure all required fields are present** for each resource type\n';
+            message += '3. **Verify data types match** the provider schema expectations\n';
+            message += '4. **Update the transformation functions** in `src/components/TerraformConfig/`\n\n';
+            message += '## 🧪 To test locally\n\n';
+            message += '```bash\n';
+            message += 'yarn build:generate-terraform-test-config\n';
+            message += 'yarn verify:terraform-test-config\n';
+            message += '```';
+
+            // Look for existing comment to update
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            console.log(`Found ${comments.data.length} total comments`);
+
+            const existingComment = comments.data.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes(commentIdentifier)
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Updated existing failure comment:', existingComment.id);
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Created new failure comment');
+            }
+
+      - name: Comment on PR if validation passed
+        if: steps.terraform-validate.outputs.validation_result == 'success' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentIdentifier = '✅ **Terraform Configuration Validation Passed**';
+
+            let message = commentIdentifier + '\n\n';
+            message += 'All generated terraform configurations are valid and compatible with the Grafana provider schema. 🎉\n\n';
+            message += '**Validated Resources:**\n';
+            message += '- `grafana_synthetic_monitoring_check` (HTTP, DNS, TCP, Ping, MultiHTTP, Scripted, Traceroute)\n';
+            message += '- `grafana_synthetic_monitoring_probe` (Public, Private, Online, Offline)\n';
+            message += '- `grafana_synthetic_monitoring_check_alerts` (Alert configurations)\n\n';
+            message += 'The terraform export functionality will work correctly with these changes.\n\n';
+
+            // Look for existing terraform validation comment to update
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const existingFailureComment = comments.data.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('❌ **Terraform Configuration Validation Failed**')
+            );
+
+            const existingSuccessComment = comments.data.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('✅ **Terraform Configuration Validation Passed**')
+            );
+
+            if (existingFailureComment) {
+              // Update existing failure comment to success
+              await github.rest.issues.updateComment({
+                comment_id: existingFailureComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Updated existing failure comment to success:', existingFailureComment.id);
+            } else if (existingSuccessComment) {
+              // Update existing success comment (refresh)
+              await github.rest.issues.updateComment({
+                comment_id: existingSuccessComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+              console.log('Updated existing success comment:', existingSuccessComment.id);
+            } else {
+              console.log('No previous terraform validation comment found, skipping success comment creation');
+            }
+      
+      - name: Log validation summary
+        run: |
+          echo ""
+          echo "================================================"
+          echo "TERRAFORM VALIDATION SUMMARY"
+          echo "================================================"
+          if [ "${{ steps.terraform-validate.outputs.validation_result }}" = "success" ]; then
+            echo "✅ Status: PASSED"
+            echo "🎉 All generated terraform configurations are valid!"
+            echo ""
+            # Show resolved provider version info
+            cd artifacts/terraform-validation
+            if terraform version > /tmp/tf_version_summary.txt 2>&1; then
+              RESOLVED_VERSION=$(cat /tmp/tf_version_summary.txt | grep -i "provider.*grafana" | sed 's/.*v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
+              if [ ! -z "$RESOLVED_VERSION" ]; then
+                echo "📦 Grafana Provider Version: v$RESOLVED_VERSION"
+                echo ""
+              fi
+            fi
+            cd ../..
+            echo "📋 Validated Resources:"
+            echo "  • grafana_synthetic_monitoring_check (HTTP, DNS, TCP, Ping, MultiHTTP, Scripted, Traceroute)"
+            echo "  • grafana_synthetic_monitoring_probe (Public, Private, Online, Offline)"  
+            echo "  • grafana_synthetic_monitoring_check_alerts (Alert configurations)"
+            echo ""
+            echo "✨ The terraform export functionality will work correctly."
+          else
+            echo "❌ Status: FAILED"
+            echo "💥 Generated terraform configurations have schema compatibility issues!"
+            echo ""
+            # Show resolved provider version info
+            cd artifacts/terraform-validation
+            if terraform version > /tmp/tf_version_summary.txt 2>&1; then
+              RESOLVED_VERSION=$(cat /tmp/tf_version_summary.txt | grep -i "provider.*grafana" | sed 's/.*v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
+              if [ ! -z "$RESOLVED_VERSION" ]; then
+                echo "📦 Grafana Provider Version: v$RESOLVED_VERSION"
+                echo ""
+              fi
+            fi
+            cd ../..
+            echo "⚠️  These issues would cause terraform operations to fail in production."
+            echo ""
+            echo "VALIDATION ERRORS:"
+            echo "────────────────────────────────────────────────"
+            
+            # Show the terraform validation output
+            if [ -f /tmp/terraform_output.txt ]; then
+              cat /tmp/terraform_output.txt
+            else
+              echo "Unable to read terraform validation output"
+            fi
+            
+            echo "────────────────────────────────────────────────"
+            echo ""
+            echo "🔧 Next steps:"
+            echo "  1. Review the errors above"
+            echo "  2. Check the Grafana Terraform Provider documentation"
+            echo "  3. Update transformation functions in src/components/TerraformConfig/"
+            echo "  4. Test locally: yarn build:generate-terraform-test-config && yarn verify:terraform-test-config"
+          fi
+          echo "================================================"
+
+      - name: Fail job if validation failed
+        if: steps.terraform-validate.outputs.validation_result == 'failed'
+        run: |
+          echo "Failing job due to terraform validation errors"
+          exit 1 

@@ -62,8 +62,12 @@ export const AlertsPerCheck = () => {
             Enable and configure thresholds for common alerting scenarios. Use Grafana Alerting to{' '}
             <TextLink href="alerting/new/alerting" external={true}>
               create a custom alert rule
-            </TextLink>
-            .
+            </TextLink>{' '}
+            and view{' '}
+            <TextLink href="alerting/routes" external={true}>
+              notification policies
+            </TextLink>{' '}
+            to see where your alerts will be routed.
           </p>
         </div>
 

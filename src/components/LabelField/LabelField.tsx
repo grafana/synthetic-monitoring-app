@@ -54,12 +54,14 @@ function getDescription(labelDestination: LabelFieldProps['labelDestination'], l
   );
 }
 
-export const LabelField = <T extends FormWithLabels>({ disabled, labelDestination }: LabelFieldProps) => {
+export const LabelField = <T extends FormWithLabels>({ labelDestination, disabled }: LabelFieldProps) => {
   const { data: limits, isLoading, error, isRefetching, refetch } = useTenantLimits();
   const { formState } = useFormContext<FormWithLabels>();
   const limit = getLimit(labelDestination, limits);
   const description = getDescription(labelDestination, limit, limits?.maxAllowedLogLabels ?? 5);
   const labelError = formState.errors?.labels?.message || formState.errors?.labels?.root?.message;
+
+  const isFormDisabled = disabled || formState.disabled;
 
   return (
     <Field
@@ -75,7 +77,7 @@ export const LabelField = <T extends FormWithLabels>({ disabled, labelDestinatio
           {error ? <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} /> : null}
           <NameValueInput
             data-fs-element="Labels input"
-            disabled={disabled}
+            disabled={isFormDisabled}
             label="label"
             limit={limit}
             name="labels"

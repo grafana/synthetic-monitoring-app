@@ -1,0 +1,151 @@
+name: Build, Sign, Zip and Upload Plugin
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment for the plugin (dev or prod mapped from staging/production)
+        required: true
+        type: string
+        default: dev
+    outputs:
+      plugin_version:
+        description: The version of the plugin that was built.
+        value: ${{ jobs.build-publish.outputs.plugin_version }}
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      plugin_version: ${{ steps.read-version.outputs.plugin_version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-env
+
+      - uses: grafana/shared-workflows/actions/login-to-gcs@main
+        id: login-to-gcs
+
+      - name: log some details
+        env:
+          BUCKET: ${{ steps.login-to-gcs.outputs.bucket }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          echo "bucket: $BUCKET"
+          echo "environment: $ENVIRONMENT"
+
+      - name: Get signing token from Vault
+        uses: grafana/shared-workflows/actions/get-vault-secrets@75804962c1ba608148988c1e2dc35fbb0ee21746
+        with:
+          common_secrets: |
+            GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
+
+      - name: Replace plugin version with suffix
+        if: ${{ inputs.environment == 'dev' }}
+        run: |
+          package_json_path="package.json"
+          version=$(jq -r .version "$package_json_path")
+          commit_sha=$(git rev-parse --short=8 HEAD)
+          pr_version="$version+$commit_sha"
+          
+          echo "Replacing plugin version \"$version\" with \"$pr_version\" in $package_json_path"
+          jq --arg pr_version "$pr_version" '.version = $pr_version' "$package_json_path" > /tmp/package.json
+          mv /tmp/package.json "$package_json_path"
+
+      - name: Build, Sign and Zip Plugin
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          case "$ENVIRONMENT" in
+            "dev")
+              echo "Building for development with versioning"
+              make build sign package
+              ;;
+            "prod")
+              echo "Building for production/staging with semantic versioning"
+              make build sign package
+              ;;
+            *)
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+              echo "Note: This workflow receives mapped values from call_deploy-plugin.yml" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Update dist/plugin.json with suffixed version
+        if: ${{ inputs.environment == 'dev' }}
+        run: |
+          # Get the suffixed version from package.json and apply it to dist/plugin.json
+          suffixed_version=$(jq -r .version package.json)
+          echo "Updating dist/plugin.json version to: $suffixed_version"
+          jq --arg version "$suffixed_version" '.info.version = $version' dist/plugin.json > /tmp/plugin.json
+          mv /tmp/plugin.json dist/plugin.json
+          echo "Updated dist/plugin.json version to: $(jq -r .info.version dist/plugin.json)"
+
+      - name: Read plugin version
+        id: read-version
+        run: |
+          # Read version from the built plugin.json
+          PLUGIN_VERSION=$(jq -r .info.version dist/plugin.json)
+          echo "plugin_version=${PLUGIN_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "Plugin version: ${PLUGIN_VERSION}"
+
+      - name: Validate and set bucket name
+        id: set-bucket
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          case "$ENVIRONMENT" in
+            "dev")
+              echo "bucket=grafanalabs-synthetic-monitoring-app-dev" >> "${GITHUB_OUTPUT}"
+              ;;
+            "prod")
+              echo "bucket=grafanalabs-synthetic-monitoring-app-prod" >> "${GITHUB_OUTPUT}"
+              ;;
+            *)
+              echo "Error: Invalid environment '$ENVIRONMENT'. Must be 'dev' or 'prod'." >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Check if plugin already exists in GCS
+        id: check-existing
+        env:
+          PLUGIN_VERSION: ${{ steps.read-version.outputs.plugin_version }}
+          BUCKET: ${{ steps.set-bucket.outputs.bucket }}
+        run: |
+          FILE_URL="https://storage.googleapis.com/${BUCKET}/builds/${PLUGIN_VERSION}/grafana-synthetic-monitoring-app-${PLUGIN_VERSION}.zip"
+          echo "Checking if file exists at: $FILE_URL"
+          
+          if curl --output /dev/null --silent --head --fail "$FILE_URL"; then
+            echo "✅ File already exists at $FILE_URL"
+            echo "This prevents overriding an existing build with potentially different asset hashes."
+            echo "skip_upload=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "📦 File does not exist, proceeding with upload"
+            echo "skip_upload=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Upload zipped plugin assets to Google Cloud Storage (GCS)
+        if: steps.check-existing.outputs.skip_upload == 'false'
+        uses: grafana/shared-workflows/actions/push-to-gcs@main
+        with:
+          path: ./artifacts
+          bucket: ${{ steps.set-bucket.outputs.bucket }}
+          environment: ${{ inputs.environment }}
+          predefinedAcl: publicRead
+          parent: false
+
+      - name: File upload status
+        run: |
+          if [[ "${{ steps.check-existing.outputs.skip_upload }}" == "true" ]]; then
+            echo "ℹ️  Upload skipped - file already exists. Catalog publishing will use existing file."
+          else
+            echo "✅ Upload completed successfully."
+          fi
