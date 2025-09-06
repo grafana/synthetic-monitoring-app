@@ -91,7 +91,6 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     protocols: [
       {
         label: `HTTP`,
-        featureToggle: FeatureName.BrowserChecks,
         href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Browser}`,
         onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Browser, protocol: `HTTP` }),
       },
