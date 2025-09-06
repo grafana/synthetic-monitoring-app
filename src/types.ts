@@ -121,6 +121,8 @@ export interface Probe extends ExistingObject {
   labels: Label[];
   version: string;
   deprecated: boolean;
+  k6Version?: string; // For legacy probes: static version like "v0.54.1". For modern probes: may be empty
+  supportsBinaryProvisioning?: boolean; // whether probe supports version management
   capabilities: ProbeCapabilities;
 }
 
@@ -180,10 +182,12 @@ export interface DnsSettingsFormValues
 
 export interface ScriptedSettings {
   script: string;
+  channel?: string | null;
 }
 
 export interface BrowserSettings {
   script: string;
+  channel?: string | null;
 }
 
 export interface TcpSettings {
@@ -410,6 +414,7 @@ export interface CheckBase {
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   probes: number[];
   alerts?: CheckAlertPublished[];
+  channel?: string | null; // Channel ID (v0, v1, v2) or null for probe default
 }
 
 export type Check =
@@ -723,6 +728,7 @@ export enum FeatureName {
   AlertsPerCheck = 'sm-alerts-per-check',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
+  VersionManagement = 'synthetic-monitoring-version-management',
   __TURNOFF = 'test-only-do-not-use',
 }
 
@@ -881,3 +887,20 @@ export type PluginPermissions =
 export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | 'write' | 'delete'}`;
 
 export type AlertingType = 'alerting' | 'sensitivity';
+
+export interface K6Channel {
+  id: string;
+  name: string;
+  default: boolean;
+  deprecatedAfter: string;
+  disabledAfter: string;
+  manifest: string; // "k6>=1", "k6>1,k6>=0.53"
+}
+
+export interface K6ChannelWithCurrent extends K6Channel {
+  currentVersion?: string;
+}
+
+export interface ListChannelsResponse {
+  channels: K6Channel[];
+}
