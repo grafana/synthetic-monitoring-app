@@ -93,7 +93,7 @@
       "path": "api/v1alpha1/",
       "method": "PUT",
       "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "reqAction": "grafana-synthetic-monitoring-app:read",
       "headers": [
         {
           "name": "Authorization",
@@ -105,7 +105,7 @@
       "path": "api/v1alpha1/",
       "method": "POST",
       "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "reqAction": "grafana-synthetic-monitoring-app:read",
       "headers": [
         {
           "name": "Authorization",
@@ -117,7 +117,7 @@
       "path": "api/v1alpha1/",
       "method": "DELETE",
       "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "reqAction": "grafana-synthetic-monitoring-app:read",
       "headers": [
         {
           "name": "Authorization",
