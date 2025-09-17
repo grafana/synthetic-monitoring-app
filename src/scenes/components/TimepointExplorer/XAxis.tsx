@@ -40,8 +40,8 @@ const XAxisContent = ({ timepoints }: XAxisProps) => {
   const [dashboardTimeRange] = useTimeRange();
   const crossesDays = doesTimeRangeCrossDays(dashboardTimeRange.from.toDate(), dashboardTimeRange.to.toDate());
   const points = useMemo(
-    () => buildXAxisPoints({ timepoints, crossesDays, timepointWidth }),
-    [timepoints, crossesDays, timepointWidth]
+    () => buildXAxisPoints({ timepoints, crossesDays, timepointWidth, renderingStrategy }),
+    [timepoints, crossesDays, timepointWidth, renderingStrategy]
   );
 
   return (
