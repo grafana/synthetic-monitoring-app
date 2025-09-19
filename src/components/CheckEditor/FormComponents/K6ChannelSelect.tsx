@@ -33,7 +33,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 
 function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   const { control, getValues } = useFormContext<CheckFormValues>();
-  const { check, isExistingCheck } = useCheckFormMetaContext();
+  const { check } = useCheckFormMetaContext();
   const id = 'k6-channel-select';
 
   const checkType = getValues('checkType');
@@ -43,28 +43,13 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     name: `settings.${checkType === 'scripted' ? 'scripted' : 'browser'}.channel`,
   });
 
-  const previousChannelId = isExistingCheck
-    ? (() => {
-        if (checkType === 'scripted' && check?.settings && 'scripted' in check.settings) {
-          return check.settings.scripted.channel || null;
-        }
-        if (checkType === 'browser' && check?.settings && 'browser' in check.settings) {
-          return check.settings.browser.channel || null;
-        }
-        return null;
-      })()
-    : null;
-
   const { 
     channels, 
     defaultChannelId, 
     isLoading: isLoadingChannels, 
     isError: hasChannelError, 
     error: channelError 
-  } = useFilteredK6Channels(true, {
-    isExistingCheck,
-    previousChannelId,
-  });
+  } = useFilteredK6Channels(true, check); // Always true since this component only renders for scripted/browser
 
   // Throw error to be caught by QueryErrorBoundary if there's an error
   if (hasChannelError && channelError) {
