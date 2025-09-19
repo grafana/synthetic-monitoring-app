@@ -1,7 +1,7 @@
-import { db } from 'test/db';
-
 import { CheckAlertError, CheckAlertType } from 'types';
 import { CheckAlertsResponse } from 'datasource/responses.types';
+
+import { db } from '../db';
 
 export const BASIC_CHECK_ALERTS: CheckAlertsResponse = {
   alerts: [
