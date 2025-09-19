@@ -12,12 +12,13 @@ import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
-import { useK6Channels } from 'data/useK6Channels';
+import { useFilteredK6Channels } from 'data/useK6Channels';
 import { useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { CheckForm } from 'components/CheckForm/CheckForm';
 import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
+
 export const EditCheck = () => {
   const { id } = useParams<CheckPageParams>();
   const { data: checks, isError, isLoading, error, refetch, isFetched } = useChecks();
@@ -28,8 +29,7 @@ export const EditCheck = () => {
   const initialSection = !!urlSearchParams.get('runbookMissing') ? 'alerting' : undefined;
 
   const isScriptedOrBrowser = !!(check && (isScriptedCheck(check) || isBrowserCheck(check)));
-  const { data: channelsResponse } = useK6Channels(isScriptedOrBrowser);
-  const k6Channels = channelsResponse?.channels || [];
+  const { channels: k6Channels } = useFilteredK6Channels(isScriptedOrBrowser, check);
 
   // Only show spinner for the initial fetch.
   if (isLoading && !isFetched) {
