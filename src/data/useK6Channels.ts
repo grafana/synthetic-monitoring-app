@@ -1,15 +1,11 @@
 import { useMemo } from 'react';
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
-import { FeatureName } from 'types';
+import { Check, FeatureName, K6Channel } from 'types';
+import { isBrowserCheck, isScriptedCheck } from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useSMDS } from 'hooks/useSMDS';
-
-interface UseFilteredK6ChannelsOptions {
-  isExistingCheck: boolean;
-  previousChannelId?: string | null;
-}
 
 export const queryKeys: Record<'list' | 'current', (channelId?: string) => QueryKey> = {
   list: () => ['k6-channels'],
@@ -55,57 +51,73 @@ export function useCurrentK6Version(enabled: boolean, channelId?: string) {
   return useQuery(currentVersionQuery(smDS, channelId || '', enabled));
 }
 
-export function useFilteredK6Channels(isScriptedOrBrowser: boolean, options: UseFilteredK6ChannelsOptions) {
+// Filter channels based on deprecation/disabled status
+export function getFilteredChannels(
+  channels: K6Channel[],
+  isExistingCheck: boolean,
+  previousChannelId?: string | null
+): K6Channel[] {
+  if (!channels.length) {
+    return [];
+  }
+
+  return channels.filter((channel) => {
+    const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
+    const isDisabled = new Date(channel.disabledAfter) < new Date();
+
+    // Skip deprecated channels for new checks
+    if (isDeprecated && !isExistingCheck) {
+      return false;
+    }
+
+    // Skip deprecated channels for existing checks unless it was previously assigned
+    if (isDeprecated && isExistingCheck && channel.id !== previousChannelId) {
+      return false;
+    }
+
+    // Skip disabled channels for new checks
+    if (isDisabled && !isExistingCheck) {
+      return false;
+    }
+
+    // Skip disabled channels for existing checks unless it was previously assigned
+    if (isDisabled && isExistingCheck && channel.id !== previousChannelId) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+
+export function useFilteredK6Channels(isScriptedOrBrowser: boolean, check?: Check) {
   const { data: channelsResponse, ...queryResult } = useK6Channels(isScriptedOrBrowser);
-  const { isExistingCheck, previousChannelId } = options;
-
-  const filteredChannels = useMemo(() => {
-    if (!channelsResponse?.channels) {
-      return [];
-    }
-
-    return channelsResponse.channels.filter((channel) => {
-      const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
-      const isDisabled = new Date(channel.disabledAfter) < new Date();
-
-      // Skip deprecated channels for new checks
-      if (isDeprecated && !isExistingCheck) {
-        return false;
-      }
-
-      // Skip deprecated channels for existing checks unless it was previously assigned
-      if (isDeprecated && isExistingCheck && channel.id !== previousChannelId) {
-        return false;
-      }
-
-      // Skip disabled channels for new checks
-      if (isDisabled && !isExistingCheck) {
-        return false;
-      }
-
-      // Skip disabled channels for existing checks unless it was previously assigned
-      if (isDisabled && isExistingCheck && channel.id !== previousChannelId) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [channelsResponse?.channels, isExistingCheck, previousChannelId]);
-
-  const defaultChannelId = useMemo(() => {
-    if (!channelsResponse?.channels) {
-      return '';
-    }
+  
+  const { filteredChannels, defaultChannelId } = useMemo(() => {
+    const originalChannels = channelsResponse?.channels || [];
+    const isExistingCheck = !!check;
     
-    // Find the default channel from original channels
-    const originalDefault = channelsResponse.channels.find((channel) => channel.default);
+    // Get the previous channel ID for existing checks
+    const previousChannelId = isExistingCheck && check
+      ? (() => {
+          if (isScriptedCheck(check) && check.settings && 'scripted' in check.settings) {
+            return check.settings.scripted.channel || null;
+          }
+          if (isBrowserCheck(check) && check.settings && 'browser' in check.settings) {
+            return check.settings.browser.channel || null;
+          }
+          return null;
+        })()
+      : null;
     
-    // Check if the default channel is available in filtered channels
-    const isDefaultAvailable = originalDefault && filteredChannels.some((channel) => channel.id === originalDefault.id);
+    const filteredChannels = getFilteredChannels(originalChannels, isExistingCheck, previousChannelId);
     
-    // Return the original default if available, otherwise the first available channel
-    return isDefaultAvailable ? originalDefault.id : (filteredChannels[0]?.id || '');
-  }, [channelsResponse?.channels, filteredChannels]);
+    // Find the default channel from filtered channels
+    const defaultChannel = filteredChannels.find((channel) => channel.default) || filteredChannels[0];
+    const defaultChannelId = defaultChannel?.id || '';
+    
+    return { filteredChannels, defaultChannelId };
+  }, [channelsResponse?.channels, check]);
 
   return {
     ...queryResult,
