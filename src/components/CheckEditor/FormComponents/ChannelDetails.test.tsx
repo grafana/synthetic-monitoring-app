@@ -44,11 +44,47 @@ describe('ChannelDetails', () => {
     },
   ];
 
-  it('should show probe default message when no channel is selected', async () => {
+  it('should show probe default message when no channels are available', async () => {
+    // This occurs when no k6 channels are configured on the backend,
+    // so the API returns an empty array and no default channel can be determined
     render(
       <ChannelDetails
         channelId={null}
-        channels={mockChannels}
+        channels={[]}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/each probe will use its default k6 version/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should show probe default message when all channels are deprecated/disabled', async () => {
+    // This occurs when the backend returns channels but they are all deprecated/disabled,
+    // so after filtering, no channels are available for new checks
+    const allDeprecatedChannels: K6Channel[] = [
+      {
+        id: 'old-v1',
+        name: 'old-v1',
+        default: true,
+        deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
+        disabledAfter: '2026-12-31T00:00:00Z',
+        manifest: 'k6>=1,k6<2',
+      },
+      {
+        id: 'old-v2',
+        name: 'old-v2',
+        default: false,
+        deprecatedAfter: '2021-01-01T00:00:00Z', // Already deprecated
+        disabledAfter: '2027-12-31T00:00:00Z',
+        manifest: 'k6>=2,k6<3',
+      },
+    ];
+
+    render(
+      <ChannelDetails
+        channelId={null}
+        channels={allDeprecatedChannels}
       />
     );
 

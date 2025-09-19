@@ -17,6 +17,9 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
   const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(enabled, validChannelId);
 
+  // Show default message when no specific channel is selected
+  // This happens when no channels are available or when all channels are filtered out
+  // (e.g., all are deprecated/disabled for new checks)
   if (!validChannelId) {
     return (
       <Text variant="bodySmall" color="secondary">
