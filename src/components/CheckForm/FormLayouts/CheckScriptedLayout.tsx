@@ -16,11 +16,14 @@ export const SCRIPTED_CHECK_FIELDS: ScriptedFields = {
   target: {
     name: `target`,
   },
+  channel: {
+    name: `settings.scripted.channel`,
+  },
 };
 
 export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesScripted>>> = {
   [LayoutSection.Check]: {
-    fields: [...Object.values(SCRIPTED_CHECK_FIELDS).map((field) => field.name), 'settings.scripted.channel'],
+    fields: Object.values(SCRIPTED_CHECK_FIELDS).map((field) => field.name),
     Component: (
       <>
         <ScriptedCheckInstance />
