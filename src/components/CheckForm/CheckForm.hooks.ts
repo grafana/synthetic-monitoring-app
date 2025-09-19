@@ -262,8 +262,8 @@ export function useCheckFormDefaultValues(check?: Check, k6Channels: K6Channel[]
 
   return useMemo(() => {
     const defaultChannelId = k6Channels.find((channel) => channel.default)?.id;
-    return toFormValues(checkWithFallback, checkType, defaultChannelId);
-  }, [checkType, checkWithFallback, k6Channels]);
+    return toFormValues(checkWithFallback, defaultChannelId);
+  }, [checkWithFallback, k6Channels]);
 }
 
 export function useCheckTypeFormLayout(checkType: CheckType) {
