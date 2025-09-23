@@ -139,34 +139,40 @@ export const ProbesList = ({
                 checked={selectedProbes.includes(probe.id!)}
                 disabled={isProbeDisabled}
               />
-              <Label htmlFor={`probe-${probe.id}`}>
-                <div className={`${styles.columnLabel} ${!isCompatible ? styles.incompatibleLabel : ''}`}>
-                  <ProbeStatus probe={probe} />{' '}
-                  {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
-                    probe.provider ? `(${probe.provider})` : ''
-                  }`}
-                  {k6Version && <span className={styles.k6Version}> (k6: {k6Version})</span>}
-                  {!isCompatible && selectedChannel && (
-                    <span className={styles.incompatibleText}> (incompatible with {selectedChannel})</span>
-                  )}
-                  {probe.deprecated && (
-                    <DeprecationNotice
-                      tooltipContent={
-                        <div>
-                          This probe is deprecated and will be removed soon. For more information{' '}
-                          <TextLink
-                            variant={'bodySmall'}
-                            href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
-                            external
-                          >
-                            click here.
-                          </TextLink>
-                        </div>
-                      }
-                    />
-                  )}
-                </div>
-              </Label>
+              <div className={styles.probeContent}>
+                <Label htmlFor={`probe-${probe.id}`}>
+                  <div className={`${styles.columnLabel} ${!isCompatible ? styles.incompatibleLabel : ''}`}>
+                    <ProbeStatus probe={probe} />{' '}
+                    {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
+                      probe.provider ? `(${probe.provider})` : ''
+                    }`}
+                    {!isCompatible && selectedChannel && (
+                      <span className={styles.incompatibleText}> (incompatible with {selectedChannel})</span>
+                    )}
+                    {probe.deprecated && (
+                      <DeprecationNotice
+                        tooltipContent={
+                          <div>
+                            This probe is deprecated and will be removed soon. For more information{' '}
+                            <TextLink
+                              variant={'bodySmall'}
+                              href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
+                              external
+                            >
+                              click here.
+                            </TextLink>
+                          </div>
+                        }
+                      />
+                    )}
+                  </div>
+                </Label>
+                {k6Version && (
+                  <div className={styles.k6Version}>
+                    (k6: {k6Version})
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
@@ -228,6 +234,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.h6.fontSize,
     lineHeight: theme.typography.body.lineHeight,
     marginBottom: '0',
+  }),
+
+  probeContent: css({
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: theme.spacing(1),
   }),
 
   k6Version: css({
