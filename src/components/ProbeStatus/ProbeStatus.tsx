@@ -13,12 +13,13 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe } from 'types';
+import { type ExtendedProbe, FeatureName } from 'types';
 import { formatDate } from 'utils';
 import { useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
@@ -98,6 +99,18 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
       <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} description={PROBE_REACHABILITY_DESCRIPTION} />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
+        <FeatureFlag name={FeatureName.VersionManagement}>
+          {({ isEnabled }) =>
+            isEnabled ? (
+              <>
+                {!probe.public && probe.k6Version && <Meta title="k6 version:" value={probe.k6Version} />}
+                {probe.supportsBinaryProvisioning && (
+                  <Meta title="k6 version management:" value="supported" />
+                )}
+              </>
+            ) : null
+          }
+        </FeatureFlag>
         <Meta
           title={`Last ${probe.online ? `offline` : `online`}:`}
           value={neverOnline ? `Never` : formatDate(probe.onlineChange * 1000)}
