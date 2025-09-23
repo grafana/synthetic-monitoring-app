@@ -39,7 +39,7 @@ export const ResponseLatencyByProbe = () => {
   });
 
   const viz = VizConfigBuilders.timeseries()
-    .setUnit('s')
+    .setUnit('ms')
 
     .setCustomFieldConfig('drawStyle', GraphDrawStyle.Points)
     .setCustomFieldConfig('lineInterpolation', LineInterpolation.Linear)
@@ -90,7 +90,7 @@ export const ResponseLatencyByProbe = () => {
           color: 'green',
         },
         {
-          value: 80,
+          value: 800,
           color: 'red',
         },
       ],

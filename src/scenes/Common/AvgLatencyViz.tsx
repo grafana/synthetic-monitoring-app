@@ -87,10 +87,10 @@ export const AvgLatency = () => {
 
   const viz = VizConfigBuilders.stat()
     .setOption('graphMode', BigValueGraphMode.None)
-    .setUnit('s')
-    .setDecimals(2)
+    .setUnit('ms')
+    .setDecimals(0)
     .setMin(0)
-    .setMax(1)
+    .setMax(5000)
     .setNoValue('N/A')
     .setThresholds({
       mode: ThresholdsMode.Absolute,
@@ -101,11 +101,11 @@ export const AvgLatency = () => {
         },
         {
           color: 'yellow',
-          value: 1,
+          value: 1000,
         },
         {
           color: 'red',
-          value: 2,
+          value: 2000,
         },
       ],
     })
