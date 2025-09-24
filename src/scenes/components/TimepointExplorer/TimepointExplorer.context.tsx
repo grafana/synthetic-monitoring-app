@@ -109,7 +109,7 @@ interface TimepointExplorerProviderProps extends PropsWithChildren {
 }
 
 export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
-  const checkCreation = Math.round(check.created! * 1000);
+  const checkCreation = Math.ceil(check.created!) * 1000;
   const [timeRange] = useTimeRange();
   const timeRangeRef = useRef<TimeRange>(timeRange);
   const logsRetentionPeriod = useLogsRetentionPeriod(timeRange.from.valueOf());
