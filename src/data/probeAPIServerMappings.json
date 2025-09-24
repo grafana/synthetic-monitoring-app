@@ -43,6 +43,12 @@
   },
   {
     "region": "Europe",
+    "provider": "Azure",
+    "apiServerURL": "synthetic-monitoring-grpc-eu-west-5.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-eu-west-5.grafana.net"
+  },
+  {
+    "region": "Europe",
     "provider": "GCP",
     "apiServerURL": "synthetic-monitoring-grpc-eu-west.grafana.net:443",
     "backendAddress": "synthetic-monitoring-api-eu-west.grafana.net"
