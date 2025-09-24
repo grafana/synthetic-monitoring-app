@@ -16,9 +16,9 @@ import { VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig } from 'types';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
-import { getSummaryAlertAnnotations } from 'scenes/Common/alertAnnotations';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getTimeRange } from 'scenes/Common/timeRange';
+import { getSummaryAlertAnnotations } from 'scenes/Summary/alertAnnotations';
+import { getEmptyScene } from 'scenes/Summary/emptyScene';
 
 import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
 import { getErrorRateMapPanel } from './errorRateMap';

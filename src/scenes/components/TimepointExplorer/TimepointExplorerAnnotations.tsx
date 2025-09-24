@@ -1,0 +1,94 @@
+import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
+import { PreTimepointAnnotations } from 'scenes/components/TimepointExplorer/PreTimepointAnnotations';
+import { TIMEPOINT_LIST_ANNOTATIONS_ID } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  getCheckEventsInRange,
+  getClosestTimepointsToCheckEvent,
+} from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations.utils';
+import { TimepointInstantAnnotation } from 'scenes/components/TimepointExplorer/TimepointInstantAnnotation';
+import { TimepointRangeAnnotation } from 'scenes/components/TimepointExplorer/TimepointRangeAnnotation';
+
+interface TimepointExplorerAnnotationsProps {
+  displayWidth: number;
+  isBeginningSection: boolean;
+  parentWidth: number;
+  showLabels?: boolean;
+  showTooltips?: boolean;
+  timepointsInRange: StatelessTimepoint[];
+  triggerHeight: number;
+}
+
+export const TimepointExplorerAnnotations = ({
+  displayWidth,
+  isBeginningSection,
+  parentWidth,
+  showLabels,
+  showTooltips,
+  timepointsInRange,
+  triggerHeight,
+}: TimepointExplorerAnnotationsProps) => {
+  const { alertEvents, checkEvents, renderingStrategy } = useTimepointExplorerContext();
+  const styles = useStyles2(getStyles);
+
+  const checkEventsInRange = getCheckEventsInRange([...checkEvents, ...alertEvents], timepointsInRange);
+  const annotationsToRender = getClosestTimepointsToCheckEvent(checkEventsInRange, timepointsInRange);
+
+  return (
+    <div className={styles.container} id={TIMEPOINT_LIST_ANNOTATIONS_ID}>
+      <PreTimepointAnnotations
+        displayWidth={displayWidth}
+        isBeginningSection={isBeginningSection}
+        parentWidth={parentWidth}
+        showLabels={showLabels}
+        timepointsInRange={timepointsInRange}
+        triggerHeight={triggerHeight}
+      />
+
+      {annotationsToRender.map((annotation) => {
+        if (annotation.isInstant) {
+          return (
+            <TimepointInstantAnnotation
+              key={`${annotation.checkEvent.label}-${annotation.checkEvent.to}`}
+              annotation={annotation}
+              displayWidth={displayWidth}
+              parentWidth={parentWidth}
+              renderingStrategy={renderingStrategy}
+              showLabels={showLabels}
+              timepointsInRange={timepointsInRange}
+              triggerHeight={triggerHeight}
+            />
+          );
+        }
+
+        return (
+          <TimepointRangeAnnotation
+            key={`${annotation.checkEvent.label}-${annotation.checkEvent.to}`}
+            annotation={annotation}
+            displayWidth={displayWidth}
+            renderingStrategy={renderingStrategy}
+            showLabels={showLabels}
+            showTooltips={showTooltips}
+            timepointsInRange={timepointsInRange}
+            triggerHeight={triggerHeight}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css`
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+  `,
+});

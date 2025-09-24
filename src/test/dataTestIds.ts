@@ -29,5 +29,6 @@ export enum DataTestIds {
   TEST_ROUTER_INFO = 'test-router-info',
   TEST_ROUTER_INFO_PATHNAME = 'test-router-info-pathname',
   TEST_ROUTER_INFO_SEARCH = 'test-router-info-search',
+  TIMEPOINT_LIST = 'timepoint-list',
   FORM_SIDEBAR = 'form-sidebar',
 }

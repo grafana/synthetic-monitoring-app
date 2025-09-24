@@ -6,11 +6,10 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { probeSchema } from 'schemas/forms/ProbeSchema';
 
-import { ExtendedProbe, FeatureName, Probe } from 'types';
+import { ExtendedProbe, Probe } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
-import { FeatureFlag } from 'components/FeatureFlag';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
@@ -174,19 +173,13 @@ export const ProbeEditor = ({
                     disabled={!writeMode}
                     id="capabilities.disableScriptedChecks"
                   />
-                  <FeatureFlag name={FeatureName.BrowserChecks}>
-                    {({ isEnabled }) =>
-                      isEnabled ? (
-                        <HorizontalCheckboxField
-                          {...form.register('capabilities.disableBrowserChecks')}
-                          label="Disable browser checks"
-                          description="Prevent probe from running k6 based browser checks."
-                          disabled={!writeMode}
-                          id="capabilities.disableBrowserChecks"
-                        />
-                      ) : null
-                    }
-                  </FeatureFlag>
+                  <HorizontalCheckboxField
+                    {...form.register('capabilities.disableBrowserChecks')}
+                    label="Disable browser checks"
+                    description="Prevent probe from running k6 based browser checks."
+                    disabled={!writeMode}
+                    id="capabilities.disableBrowserChecks"
+                  />
                 </div>
                 <div className={styles.buttonWrapper}>
                   {canWriteProbes && (

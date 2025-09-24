@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
-import { FieldErrors, useFormContext } from 'react-hook-form';
+import { BaseSyntheticEvent, useCallback, useMemo, useRef, useState } from 'react';
+import { FieldErrors } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { dateTimeFormat } from '@grafana/data';
 import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { ZodType } from 'zod';
@@ -16,6 +17,7 @@ import {
   CheckTypeGroup,
   FeatureName,
 } from '../../types';
+import { formatDuration } from 'utils';
 import { LayoutSection, Section } from './FormLayouts/Layout.types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -32,9 +34,18 @@ import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
 import { fallbackCheckMap } from '../constants';
 import { useFormLayoutContextExtended } from './FormLayout/FormLayoutContext';
+import { DEFAULT_QUERY_FROM_TIME, fallbackCheckMap } from '../constants';
+import { SectionName } from './FormLayout/FormLayout.constants';
 import { layoutMap } from './FormLayouts/constants';
 import { broadcastFailedSubmission, findFieldToFocus, getIsExistingCheck } from './CheckForm.utils';
 import { FormSectionIndex, SCHEMA_MAP } from './constants';
+import {
+  broadcastFailedSubmission,
+  findFieldToFocus,
+  getAdditionalDuration,
+  getIsExistingCheck,
+} from './CheckForm.utils';
+import { SCHEMA_MAP } from './constants';
 import { useFormCheckType, useFormCheckTypeGroup } from './useCheckType';
 
 type CheckFormMetaReturn = {
@@ -113,17 +124,34 @@ export function useCheckFormSchema(check?: Check) {
 
 interface UseCheckFormProps {
   check?: Check;
+  checkState: 'new' | 'existing';
   checkType: CheckType;
+  onTestSuccess: (data: AdHocCheckResponse) => void;
 }
 
-export function useCheckForm({ check, checkType }: UseCheckFormProps) {
+export function useCheckForm({ check, checkType, checkState, onTestSuccess }: UseCheckFormProps) {
   const [submittingToApi, setSubmittingToApi] = useState(false);
   const navigate = useNavigate();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
+  const testButtonRef = useRef<HTMLButtonElement>(null);
+  const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
   const navigateToCheckDashboard = useCallback(
-    (result: Check) => navigate(generateRoutePath(AppRoutes.CheckDashboard, { id: result.id! })),
-    [navigate]
+    (result: Check) => {
+      const { frequency } = result;
+      const additionalDuration = getAdditionalDuration(frequency, 20);
+      const duration = formatDuration(additionalDuration, true);
+      const created = Math.round(result.created! * 1000);
+      const dateTime = dateTimeFormat(created, { format: 'yyyy-MM-DD HH:mm:ss', timeZone: `utc` });
+      const from = checkState === 'new' ? dateTime : `now$2B${DEFAULT_QUERY_FROM_TIME}`;
+
+      navigate(
+        `${generateRoutePath(AppRoutes.CheckDashboard, {
+          id: result.id!,
+        })}?from=${from}&to=now%2B${duration}`
+      );
+    },
+    [checkState, navigate]
   );
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 

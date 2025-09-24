@@ -1,11 +1,10 @@
-import { Check, CheckType, FeatureName } from 'types';
+import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { ListCheckResult, ListTenantLimitsResponse } from 'datasource/responses.types';
 import { useChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
 
 import { useAtHgExecutionLimit } from './useAtHgExecutionLimit';
-import { useFeatureFlag } from './useFeatureFlag';
 
 export function useLimits() {
   const {
@@ -18,10 +17,8 @@ export function useLimits() {
   const { data: isOverHgExecutionLimit, isLoading: isLoadingHgLimit } = useAtHgExecutionLimit();
 
   const isOverCheckLimit = getIsOverCheckLimit({ checks, tenantLimits });
-  const isScriptedOn = useFeatureFlag(FeatureName.ScriptedChecks);
-  const isBrowserOn = useFeatureFlag(FeatureName.BrowserChecks);
-  const isOverScriptedLimit = isScriptedOn && getIsOverScriptedLimit({ checks, tenantLimits });
-  const isOverBrowserLimit = isBrowserOn && getIsOverBrowserLimit({ checks, tenantLimits });
+  const isOverScriptedLimit = getIsOverScriptedLimit({ checks, tenantLimits });
+  const isOverBrowserLimit = getIsOverBrowserLimit({ checks, tenantLimits });
 
   return {
     tenantLimits: tenantLimits,

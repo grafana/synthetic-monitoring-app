@@ -1,15 +1,19 @@
-import React, { ReactElement, ReactNode } from 'react';
+import React, { ComponentProps, ReactElement, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Toggletip as GrafanaToggletip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-type ToggletipProps = {
+interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, 'content'> {
   content: ReactNode;
   children: ReactElement;
-};
+}
 
-export const Toggletip = ({ children, content }: ToggletipProps) => {
-  return <GrafanaToggletip content={<ContentWrapper>{content}</ContentWrapper>}>{children}</GrafanaToggletip>;
+export const Toggletip = ({ children, content, ...props }: ToggletipProps) => {
+  return (
+    <GrafanaToggletip content={<ContentWrapper>{content}</ContentWrapper>} {...props}>
+      {children}
+    </GrafanaToggletip>
+  );
 };
 
 type ContentWrapperProps = {

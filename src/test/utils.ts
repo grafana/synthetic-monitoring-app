@@ -11,15 +11,16 @@ import {
 import { ExtendedProbe, FeatureName, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
 import { pascalCaseToSentence } from 'utils';
 
-import { 
-  FULL_ADMIN_ACCESS, 
-  FULL_READONLY_ACCESS, 
-  FULL_WRITER_ACCESS, 
-  SECRETS_CREATOR_ACCESS, 
-  SECRETS_EDITOR_ACCESS, 
-  SECRETS_FULL_ACCESS, 
-  SECRETS_NO_ACCESS, 
-  SECRETS_READ_ONLY_ACCESS} from './fixtures/rbacPermissions';
+import {
+  FULL_ADMIN_ACCESS,
+  FULL_READONLY_ACCESS,
+  FULL_WRITER_ACCESS,
+  SECRETS_CREATOR_ACCESS,
+  SECRETS_EDITOR_ACCESS,
+  SECRETS_FULL_ACCESS,
+  SECRETS_NO_ACCESS,
+  SECRETS_READ_ONLY_ACCESS,
+} from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
 import { server } from './server';
 
@@ -84,15 +85,10 @@ export function runTestAsSMViewer() {
     ...config,
     bootData: {
       ...config.bootData,
-
-      featureToggles: {
-        ...runtime.config.featureToggles,
-        [FeatureName.RBAC]: false,
-      },
-
       user: {
         ...config.bootData.user,
         orgRole: OrgRole.Viewer,
+        permissions: FULL_READONLY_ACCESS,
       },
     },
   });
@@ -105,13 +101,10 @@ export function runTestAsSMEditor() {
     ...config,
     bootData: {
       ...config.bootData,
-      featureToggles: {
-        ...runtime.config.featureToggles,
-        [FeatureName.RBAC]: false,
-      },
       user: {
         ...config.bootData.user,
         orgRole: OrgRole.Editor,
+        permissions: FULL_WRITER_ACCESS,
       },
     },
   });
@@ -125,6 +118,7 @@ export function runTestAsSMAdmin() {
       user: {
         ...config.bootData.user,
         orgRole: OrgRole.Admin,
+        permissions: FULL_ADMIN_ACCESS,
       },
     },
   });
@@ -201,12 +195,6 @@ export function runTestAsRBACReader() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {
     ...config,
-    featureToggles: {
-      ...runtime.config.featureToggles,
-      accessControlOnCall: true,
-      [FeatureName.RBAC]: true,
-    },
-
     bootData: {
       ...runtime.config.bootData,
       user: {
@@ -220,12 +208,6 @@ export function runTestAsRBACEditor() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {
     ...config,
-    featureToggles: {
-      ...runtime.config.featureToggles,
-      accessControlOnCall: true,
-      [FeatureName.RBAC]: true,
-    },
-
     bootData: {
       ...runtime.config.bootData,
       user: {
@@ -239,12 +221,6 @@ export function runTestAsRBACAdmin() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {
     ...config,
-    featureToggles: {
-      ...runtime.config.featureToggles,
-      accessControlOnCall: true,
-      [FeatureName.RBAC]: true,
-    },
-
     bootData: {
       ...runtime.config.bootData,
       user: {
@@ -258,12 +234,6 @@ function runTestAsSecretsWithPermissions(permissions: Record<string, boolean>) {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {
     ...config,
-    featureToggles: {
-      ...runtime.config.featureToggles,
-      accessControlOnCall: true,
-      [FeatureName.RBAC]: true,
-    },
-
     bootData: {
       ...runtime.config.bootData,
       user: {
@@ -378,4 +348,20 @@ export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
       ...overrides,
     },
   });
+}
+
+// Chris: seems non-standard across languages
+// example: 2025-08-20T15:03:51.793479631Z
+// example: 2024-06-20 02:40:00.86273212Z +0000 UTC
+export function constructGoTimestamp(unixTimestamp: number, nanoseconds = 0) {
+  const date = new Date(unixTimestamp);
+  const yyyy = date.getUTCFullYear();
+  const mm = String(date.getUTCMonth()).padStart(2, '0');
+  const dd = String(date.getUTCDate()).padStart(2, '0');
+  const HH = String(date.getUTCHours()).padStart(2, '0');
+  const MM = String(date.getUTCMinutes()).padStart(2, '0');
+  const SS = String(date.getUTCSeconds()).padStart(2, '0');
+
+  const nanoStr = String(nanoseconds).padStart(8, '0').slice(0, 8);
+  return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}.${nanoStr}Z +0000 UTC`;
 }

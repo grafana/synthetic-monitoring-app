@@ -1,11 +1,8 @@
 import React from 'react';
-import { config } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-
-import { FeatureName } from 'types';
 
 import { OverLimitAlert } from './OverLimitAlert';
 
@@ -47,33 +44,18 @@ it('shows error alert when check limit is reached', async () => {
 });
 
 it('shows error alert when scripted check limit is reached', async () => {
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.ScriptedChecks]: true,
-  });
-
   await renderOverLimitAlert({ scriptedLimit: 0 });
   const limitError = await screen.findByText(/You have reached your Scripted and Multi Step check limit of/);
   expect(limitError).toBeInTheDocument();
 });
 
 it('shows error alert when browser check limit is reached', async () => {
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.BrowserChecks]: true,
-  });
-
   await renderOverLimitAlert({ browserLimit: 0 });
   const limitError = await screen.findByText(/You have reached your Browser check limit of/);
   expect(limitError).toBeInTheDocument();
 });
 
 it('shows total check limit over scripted check limit error if both are reached', async () => {
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.ScriptedChecks]: true,
-  });
-
   await renderOverLimitAlert({ checkLimit: 1, scriptedLimit: 0 });
   const limitError = await screen.findByText(/You have reached your check limit of /);
   expect(limitError).toBeInTheDocument();

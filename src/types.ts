@@ -103,7 +103,6 @@ export interface ExistingObject {
   id?: number;
   modified?: number; // seconds
   tenantId?: number;
-  updated?: number; // seconds
 }
 
 export interface Label {
@@ -719,13 +718,10 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
-  BrowserChecks = 'browser-checks',
   GRPCChecks = 'grpc-checks',
-  ScriptedChecks = 'scripted-checks',
-  UnifiedAlerting = 'ngalert',
-  RBAC = 'synthetic-monitoring-rbac',
   AlertsPerCheck = 'sm-alerts-per-check',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
+  TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
   __TURNOFF = 'test-only-do-not-use',
 }
 

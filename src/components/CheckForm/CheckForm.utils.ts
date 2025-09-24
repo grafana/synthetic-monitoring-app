@@ -109,3 +109,11 @@ export function getStep1Label(checkType: CheckType): string {
       return `Request`;
   }
 }
+
+export function getAdditionalDuration(frequency: number, additionalTimepoints: number) {
+  const adjusted = frequency * additionalTimepoints;
+  const totalSeconds = Math.floor(adjusted / 1000);
+  const wholeMinutes = Math.floor(totalSeconds / 60);
+
+  return wholeMinutes * 60 * 1000;
+}
