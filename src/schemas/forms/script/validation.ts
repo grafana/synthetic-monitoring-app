@@ -1,19 +1,21 @@
 import { RefinementCtx, ZodIssueCode } from 'zod';
 
 import { extractImportStatement, extractOptionsExport, getProperty, parseScript } from './parser';
-import { hasK6ExtensionImports, hasK6Pragma, K6_EXTENSION_MESSAGE, K6_PRAGMA_MESSAGE } from './rules';
+import { K6_EXTENSION_MESSAGE, K6_PRAGMA_MESSAGE, validateK6Restrictions } from './rules';
 
 const MAX_SCRIPT_IN_KB = 128;
 
 function validateScriptPragmasAndExtensions(script: string, context: RefinementCtx): void {
-  if (hasK6Pragma(script)) {
+  const validation = validateK6Restrictions(script, parseScript);
+  
+  if (validation.hasPragmas) {
     context.addIssue({
       code: ZodIssueCode.custom,
       message: K6_PRAGMA_MESSAGE,
     });
   }
 
-  if (hasK6ExtensionImports(script)) {
+  if (validation.hasExtensions) {
     context.addIssue({
       code: ZodIssueCode.custom,
       message: K6_EXTENSION_MESSAGE,
