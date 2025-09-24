@@ -1,7 +1,6 @@
 import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 import { trackCheckCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
-import { useSessionStorage } from 'usehooks-ts';
 
 import { type MutationProps } from 'data/types';
 import { type Check, CheckType, FeatureName } from 'types';
@@ -263,21 +262,6 @@ export function useAdHocCheck() {
       id: 'run-ad-hoc-check',
     },
   });
-}
-
-export interface AdHocCheckCache {
-  id: number | null;
-  reference: string;
-  pending: boolean;
-}
-
-export function useAdHocChecks(id?: number) {
-  const [adHocChecks] = useSessionStorage<AdHocCheckCache[]>('adHocChecks', []);
-
-  const data = adHocChecks.filter((item) => item.id === id);
-  const isPending = data.some((item) => item.pending);
-
-  return { data, isPending };
 }
 
 export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<AdHocCheckResponse> = {}) {

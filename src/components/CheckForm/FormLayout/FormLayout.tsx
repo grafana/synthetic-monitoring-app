@@ -182,13 +182,6 @@ export const FormLayout = <T extends FieldValues>({
 
 const getStyles = (theme: GrafanaTheme2) => {
   const containerName = `formLayout`;
-  // const breakpoint = theme.breakpoints.values.md;
-  // const query = `(min-width: ${breakpoint + 1}px)`;
-  // const containerQuery = `@container ${containerName} ${query}`;
-  //
-  // const containerRules = {
-  //   height: '100%',
-  // };
 
   return {
     wrapper: css`

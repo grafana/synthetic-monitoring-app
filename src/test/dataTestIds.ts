@@ -12,6 +12,7 @@ export enum DataTestIds {
   CONFIG_CONTENT_LOADING = 'config-content-loading',
   CONFIG_PAGE_LAYOUT_ACTIVE_TAB = 'config-page-layout-active-tab',
   CONFIRM_UNSAVED_MODAL_HEADING = 'confirm-unsaved-modal-heading',
+  FORM_SIDEBAR = 'form-sidebar',
   FREQUENCY_COMPONENT = 'frequency-component',
   INDIVIDUAL_ASSERTION = 'individual-assertion',
   MULTI_HTTP_REQUEST = 'multihttp-request',
@@ -30,5 +31,4 @@ export enum DataTestIds {
   TEST_ROUTER_INFO_PATHNAME = 'test-router-info-pathname',
   TEST_ROUTER_INFO_SEARCH = 'test-router-info-search',
   TIMEPOINT_LIST = 'timepoint-list',
-  FORM_SIDEBAR = 'form-sidebar',
 }
