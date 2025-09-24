@@ -1,8 +1,8 @@
-import { BaseSyntheticEvent, useCallback, useMemo, useRef, useState } from 'react';
-import { FieldErrors } from 'react-hook-form';
+import { useCallback, useMemo, useState } from 'react';
+import { FieldErrors, useFormContext } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { dateTimeFormat } from '@grafana/data';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { ZodType } from 'zod';
@@ -17,8 +17,8 @@ import {
   CheckTypeGroup,
   FeatureName,
 } from '../../types';
-import { formatDuration } from 'utils';
 import { LayoutSection, Section } from './FormLayouts/Layout.types';
+import { formatDuration } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
@@ -32,20 +32,16 @@ import { useLimits } from 'hooks/useLimits';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
-import { fallbackCheckMap } from '../constants';
-import { useFormLayoutContextExtended } from './FormLayout/FormLayoutContext';
 import { DEFAULT_QUERY_FROM_TIME, fallbackCheckMap } from '../constants';
-import { SectionName } from './FormLayout/FormLayout.constants';
+import { useFormLayoutContextExtended } from './FormLayout/FormLayoutContext';
 import { layoutMap } from './FormLayouts/constants';
-import { broadcastFailedSubmission, findFieldToFocus, getIsExistingCheck } from './CheckForm.utils';
-import { FormSectionIndex, SCHEMA_MAP } from './constants';
 import {
   broadcastFailedSubmission,
   findFieldToFocus,
   getAdditionalDuration,
   getIsExistingCheck,
 } from './CheckForm.utils';
-import { SCHEMA_MAP } from './constants';
+import { FormSectionIndex, SCHEMA_MAP } from './constants';
 import { useFormCheckType, useFormCheckTypeGroup } from './useCheckType';
 
 type CheckFormMetaReturn = {
@@ -126,15 +122,12 @@ interface UseCheckFormProps {
   check?: Check;
   checkState: 'new' | 'existing';
   checkType: CheckType;
-  onTestSuccess: (data: AdHocCheckResponse) => void;
 }
 
-export function useCheckForm({ check, checkType, checkState, onTestSuccess }: UseCheckFormProps) {
+export function useCheckForm({ check, checkType, checkState }: UseCheckFormProps) {
   const [submittingToApi, setSubmittingToApi] = useState(false);
   const navigate = useNavigate();
   const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
-  const testButtonRef = useRef<HTMLButtonElement>(null);
-  const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
   const navigateToCheckDashboard = useCallback(
     (result: Check) => {

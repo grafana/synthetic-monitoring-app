@@ -67,6 +67,7 @@ function CheckFormInternal() {
   const { error, handleInvalid, handleValid, submittingToApi } = useCheckForm({
     check,
     checkType,
+    checkState,
   });
 
   const {
