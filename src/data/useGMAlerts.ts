@@ -43,13 +43,15 @@ function queryAlertApi() {
 
 function findGroupWithMatchingRule(
   groups: PrometheusAlertsGroup[],
-  alertName: string
+  alert: { name: string; period?: string }
 ): PrometheusAlertsGroup | undefined {
-  return groups.find((group) => group.rules.some((rule) => rule.name.includes(alertName)));
+  const fullAlertName = alert.period ? `${alert.name} [${alert.period}]` : alert.name;
+  return groups.find((group) => group.rules.some((rule) => rule.name === fullAlertName));
 }
 
-function extractMatchingRules(group: PrometheusAlertsGroup, alertName: string) {
-  return group.rules.filter((rule) => rule.name.includes(alertName));
+function extractMatchingRules(group: PrometheusAlertsGroup, alert: { name: string; period?: string }) {
+  const fullAlertName = alert.period ? `${alert.name} [${alert.period}]` : alert.name;
+  return group.rules.filter((rule) => rule.name === fullAlertName);
 }
 
 function constructDummyGroup(alertName: string): PrometheusAlertsGroup {
@@ -92,11 +94,11 @@ export function findRelevantAlertGroups(
   const grafanaGroups = groups.filter((group) => group.folderUid === GRAFANA_SM_FOLDER_UID);
 
   return alerts.map((alert) => {
-    const groupWithRule = findGroupWithMatchingRule(grafanaGroups, alert.name);
+    const groupWithRule = findGroupWithMatchingRule(grafanaGroups, alert);
     if (groupWithRule) {
       return {
         ...groupWithRule,
-        rules: extractMatchingRules(groupWithRule, alert.name),
+        rules: extractMatchingRules(groupWithRule, alert),
       };
     }
     return constructDummyGroup(alert.name);
