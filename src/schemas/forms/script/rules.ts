@@ -1,4 +1,5 @@
-// Shared script validation rules for both Zod validation and Monaco markers
+import type { Node } from 'acorn';
+import { simple as walk, SimpleVisitors } from 'acorn-walk';
 
 export const K6_PRAGMA_MESSAGE =
   'Version directives cannot be used within scripts. Please remove any "use k6" statements.';
@@ -6,63 +7,80 @@ export const K6_PRAGMA_MESSAGE =
 export const K6_EXTENSION_MESSAGE =
   'Script imports k6 extensions which are not allowed. Please remove imports from k6/x/ paths.';
 
-const VALIDATION_RULES = {
-  pragma: {
-    // Match patterns like: "use k6 >= v1.0.0", "use k6 > 0.52", `use k6 >= v1.0.0`, etc.
-    pattern: /["'`]use\s+k6\s*[><=!]+\s*v?\d+(?:\.\d*)*(?:[-+][\w.]+)*["'`]/i,
-    message: K6_PRAGMA_MESSAGE,
-  },
-  extension: {
-    // Match import statements that include k6/x/ paths
-    pattern: /import\s+.*from\s*[\'"`][^'"`]*k6\/x\/[^'"`]*[\'"`]/i,
-    message: K6_EXTENSION_MESSAGE,
-  },
-} as const;
+const K6_VERSION_DIRECTIVE_PATTERN = /^use\s+k6(\s+with\s+k6\/x\/[\w/-]+)?\s*[><=!]+\s*v?\d+(?:\.\d*)*(?:[-+][\w.]*)*$/i;
 
-export function hasK6Pragma(script: string): boolean {
-  return VALIDATION_RULES.pragma.pattern.test(script);
+export function isK6VersionDirective(value: string): boolean {
+  return K6_VERSION_DIRECTIVE_PATTERN.test(value.trim());
 }
-
-export function hasK6ExtensionImports(script: string): boolean {
-  return VALIDATION_RULES.extension.pattern.test(script);
-}
-
-export type ScriptRuleMatch = {
-  startIndex: number;
-  endIndex: number;
+export interface K6ValidationIssue {
+  type: 'pragma' | 'extension';
+  node: Node;
   message: string;
-};
+  code: string;
+}
 
-/**
- * Finds all matches for a specific pattern in the script
- */
-const findPatternMatches = (script: string, pattern: RegExp, message: string): ScriptRuleMatch[] => {
-  const matches: ScriptRuleMatch[] = [];
-  // Create a new global regex from the pattern to avoid global state issues
-  const globalPattern = new RegExp(pattern.source, pattern.flags + 'g');
-  
-  let match: RegExpExecArray | null;
-  while ((match = globalPattern.exec(script))) {
-    matches.push({ 
-      startIndex: match.index, 
-      endIndex: match.index + match[0].length, 
-      message 
-    });
-    
-    // Prevent infinite loops on zero-length matches
-    if (globalPattern.lastIndex === match.index) {
-      globalPattern.lastIndex++;
-    }
+export interface K6ValidationResult {
+  hasPragmas: boolean;
+  hasExtensions: boolean;
+  issues: K6ValidationIssue[];
+}
+
+// Single AST walk that serves both Monaco (needs locations) and Zod (needs booleans)
+export function validateK6Restrictions(script: string, parseScript: (script: string) => Node | null): K6ValidationResult {
+  const ast = parseScript(script);
+  if (!ast) {
+    return { hasPragmas: false, hasExtensions: false, issues: [] };
   }
-  
-  return matches;
-};
 
-/**
- * Finds all script validation rule violations
- */
-export function findRuleViolations(script: string): ScriptRuleMatch[] {
-  return Object.values(VALIDATION_RULES).flatMap(rule =>
-    findPatternMatches(script, rule.pattern, rule.message)
-  );
+  const issues: K6ValidationIssue[] = [];
+
+  const visitors: SimpleVisitors<{}> = {
+    ExpressionStatement(node) {
+      if (node.expression.type === 'Literal' && typeof node.expression.value === 'string') {
+        if (isK6VersionDirective(node.expression.value)) {
+          issues.push({
+            type: 'pragma',
+            node: node.expression,
+            message: K6_PRAGMA_MESSAGE,
+            code: 'k6-pragma-forbidden',
+          });
+        }
+      }
+
+      if (node.expression.type === 'TemplateLiteral' && node.expression.quasis) {
+        node.expression.quasis.forEach((quasi) => {
+          if (quasi.value?.raw && isK6VersionDirective(quasi.value.raw)) {
+            issues.push({
+              type: 'pragma',
+              node: quasi,
+              message: K6_PRAGMA_MESSAGE,
+              code: 'k6-pragma-forbidden',
+            });
+          }
+        });
+      }
+    },
+
+    ImportDeclaration(node) {
+      if (node.source?.type === 'Literal' && typeof node.source.value === 'string') {
+        const importPath = node.source.value;
+        if (importPath.startsWith('k6/x/')) {
+          issues.push({
+            type: 'extension',
+            node: node,
+            message: K6_EXTENSION_MESSAGE,
+            code: 'k6-extension-forbidden',
+          });
+        }
+      }
+    },
+  };
+
+  walk(ast, visitors, undefined, {});
+  
+  return {
+    hasPragmas: issues.some(issue => issue.type === 'pragma'),
+    hasExtensions: issues.some(issue => issue.type === 'extension'),
+    issues,
+  };
 }
