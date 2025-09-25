@@ -74,6 +74,7 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
           name: alert.name,
           threshold: alert.threshold,
           period: alert.period,
+          runbook_url: alert.runbookUrl || "",
         })),
       };
       return acc;
