@@ -12,6 +12,7 @@ services:
       - 3000:3000/tcp
     volumes:
       - ./dist:/var/lib/grafana/plugins/grafana-synthetic-monitoring-app
+      - ../grafana-assistant-app/dist:/var/lib/grafana/plugins/grafana-assistant-app
       - ./dev/provisioning:/etc/grafana/provisioning
       - ./dev/custom.ini:/etc/grafana/grafana.ini
       - ./dev/license.jwt:/var/lib/grafana/license.jwt
