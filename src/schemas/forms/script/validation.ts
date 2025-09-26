@@ -1,8 +1,27 @@
 import { RefinementCtx, ZodIssueCode } from 'zod';
 
 import { extractImportStatement, extractOptionsExport, getProperty, parseScript } from './parser';
+import { K6_EXTENSION_MESSAGE, K6_PRAGMA_MESSAGE, validateK6Restrictions } from './rules';
 
 const MAX_SCRIPT_IN_KB = 128;
+
+function validateScriptPragmasAndExtensions(script: string, context: RefinementCtx): void {
+  const validation = validateK6Restrictions(script, parseScript);
+  
+  if (validation.hasPragmas) {
+    context.addIssue({
+      code: ZodIssueCode.custom,
+      message: K6_PRAGMA_MESSAGE,
+    });
+  }
+
+  if (validation.hasExtensions) {
+    context.addIssue({
+      code: ZodIssueCode.custom,
+      message: K6_EXTENSION_MESSAGE,
+    });
+  }
+}
 
 export const maxSizeValidation = (val: string, context: RefinementCtx) => {
   const textBlob = new Blob([val], { type: 'text/plain' });
@@ -18,6 +37,8 @@ export const maxSizeValidation = (val: string, context: RefinementCtx) => {
 };
 
 export function validateBrowserScript(script: string, context: RefinementCtx) {
+  validateScriptPragmasAndExtensions(script, context);
+
   const program = parseScript(script);
 
   if (program === null) {
@@ -81,6 +102,8 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
 }
 
 export function validateNonBrowserScript(script: string, context: RefinementCtx) {
+  validateScriptPragmasAndExtensions(script, context);
+
   const program = parseScript(script);
 
   if (program === null) {
