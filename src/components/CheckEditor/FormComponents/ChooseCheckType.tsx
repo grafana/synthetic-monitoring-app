@@ -84,11 +84,8 @@ function updateCheckTypeValues(refValues: RefType, checkType: CheckType, current
     return refValues[checkType];
   }
 
-  return toFormValues(
-    {
-      ...fallbackCheckMap[checkType],
-      job: refValues?.[currentCheckType]?.job || fallbackCheckMap[checkType].job,
-    },
-    checkType
-  );
+  return toFormValues({
+    ...fallbackCheckMap[checkType],
+    job: refValues?.[currentCheckType]?.job || fallbackCheckMap[checkType].job,
+  });
 }

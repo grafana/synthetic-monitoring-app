@@ -1,6 +1,6 @@
-import { db } from 'test/db';
-
 import { Probe } from 'types';
+
+import { db } from '../db';
 
 export const PRIVATE_PROBE: Probe = db.probe.build({
   labels: [
