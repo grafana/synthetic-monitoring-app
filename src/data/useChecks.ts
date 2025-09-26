@@ -240,6 +240,30 @@ export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationP
   });
 }
 
+export function useAdHocCheck() {
+  // const [, setAdHocChecks] = useSessionStorage<AdHocCheckCache[]>('adHocChecks', []);
+  const dataSource = useSMDS();
+  return useMutation<AdHocCheckResponse, Error, Check, UseMutationResult>({
+    mutationFn: async ({ id, ...check }) => {
+      const data = await dataSource.testCheck(check);
+      if (!data) {
+        throw new Error(
+          'AdHocCheckError: Server returned an empty response. Most likely due to malformed check settings.'
+        );
+      }
+
+      return data;
+    },
+    meta: {
+      eventType: FaroEvent.TEST_CHECK,
+    },
+    // @ts-expect-error Supported property
+    scope: {
+      id: 'run-ad-hoc-check',
+    },
+  });
+}
+
 export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<AdHocCheckResponse> = {}) {
   const smDS = useSMDS();
   const eventType = FaroEvent.TEST_CHECK;

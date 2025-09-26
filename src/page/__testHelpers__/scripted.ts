@@ -5,7 +5,8 @@ import { probeToMetadataProbe } from 'test/utils';
 
 import { CheckType } from 'types';
 
-import { goToSection, TARGET_MAP } from './checkForm';
+import { FormSectionIndex } from '../../components/CheckForm/constants';
+import { goToSectionV2, TARGET_MAP } from './checkForm';
 
 interface FillMandatoryFieldsOptions {
   user: UserEvent;
@@ -14,7 +15,7 @@ interface FillMandatoryFieldsOptions {
 }
 
 export async function fillMandatoryFields({ user, fieldsToOmit = [], checkType }: FillMandatoryFieldsOptions) {
-  await goToSection(user, 1);
+  await goToSectionV2(user, FormSectionIndex.Check);
 
   if (!fieldsToOmit.includes('job')) {
     const jobNameInput = screen.getByLabelText('Job name', { exact: false });
@@ -26,7 +27,7 @@ export async function fillMandatoryFields({ user, fieldsToOmit = [], checkType }
     await user.type(targetInput, TARGET_MAP[checkType]);
   }
 
-  await goToSection(user, 5);
+  await goToSectionV2(user, FormSectionIndex.Execution);
 
   if (!fieldsToOmit.includes('probes')) {
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
