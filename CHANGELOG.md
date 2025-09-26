@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.35.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.2...v1.35.3) (2025-09-26)
+
+
+### Fixes
+
+* adapt terraform config to runbook_url ([#1276](https://github.com/grafana/synthetic-monitoring-app/issues/1276)) ([12ff3db](https://github.com/grafana/synthetic-monitoring-app/commit/12ff3dbed82f2f2f42b56df9075334aac25a09bd))
+* resolve incorrect alert rule group matching ([#1274](https://github.com/grafana/synthetic-monitoring-app/issues/1274)) ([83cf287](https://github.com/grafana/synthetic-monitoring-app/commit/83cf287988db24f9a392ab9cc73b9696ffbdb714))
+
 ## [1.35.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.1...v1.35.2) (2025-09-25)
 
 
