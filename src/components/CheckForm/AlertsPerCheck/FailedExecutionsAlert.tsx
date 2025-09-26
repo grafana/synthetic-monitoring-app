@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { durationToMilliseconds, parseDuration } from '@grafana/data';
+import { OptionProps } from 'react-select';
+import { durationToMilliseconds, GrafanaTheme2, parseDuration } from '@grafana/data';
 import {
   Checkbox,
   Icon,
@@ -13,6 +14,7 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import pluralize from 'pluralize';
@@ -60,19 +62,43 @@ export const FailedExecutionsAlert = ({
 
   const convertPeriod = useCallback((period: string) => durationToMilliseconds(parseDuration(period)), []);
 
+  const checkFreqMinutes = checkFrequency / (60 * 1000);
+  const shouldShowRecommendations = checkFreqMinutes >= 2 && checkFreqMinutes <= 20;
+
+  // Check if period follows the recommended 2.5x frequency rule for frequencies 2m-20m
+  const isRecommendedPeriod = useCallback(
+    (periodMs: number) => {
+      const periodMinutes = periodMs / (60 * 1000); // Convert to minutes
+
+      // Recommended: periods > 2.5x frequency for better precision
+      if (shouldShowRecommendations) {
+        return periodMinutes > 2.5 * checkFreqMinutes;
+      }
+
+      return true; // For other frequencies, we don't show recommendations
+    },
+    [checkFreqMinutes, shouldShowRecommendations]
+  );
+
   //min time range >= check frequency
   const validPeriods = useMemo(
     () =>
       ALERT_PERIODS.map((period) => {
-        const isValid = convertPeriod(period.value) >= checkFrequency;
+        const periodMs = convertPeriod(period.value);
+        const isValid = periodMs >= checkFrequency;
+        const isRecommended = isRecommendedPeriod(periodMs);
+        
+        const showWarning = shouldShowRecommendations && isValid && !isRecommended;
 
         return {
-          ...period,
+          label: period.label,
+          value: period.value,
           isDisabled: !isValid,
           description: !isValid ? 'Invalid' : undefined,
+          showWarning,
         };
       }),
-    [checkFrequency, convertPeriod]
+    [checkFrequency, convertPeriod, isRecommendedPeriod, shouldShowRecommendations]
   );
 
   const testExecutionsPerPeriod = useMemo(() => {
@@ -137,6 +163,9 @@ export const FailedExecutionsAlert = ({
                     // clear threshold error if new period is valid
                     revalidateForm<CheckFormValues>(`alerts.${alert.type}`);
                   }}
+                  components={{
+                    Option: PeriodOption,
+                  }}
                 />
               );
             }}
@@ -161,3 +190,73 @@ export const FailedExecutionsAlert = ({
     </Stack>
   );
 };
+
+interface PeriodOptionData {
+  label: string;
+  value: string;
+  isDisabled?: boolean;
+  description?: string;
+  showWarning?: boolean;
+}
+
+type PeriodOptionProps = OptionProps<PeriodOptionData>;
+
+const PeriodOption = (props: PeriodOptionProps) => {
+  const { data, children, innerRef, innerProps } = props;
+  const styles = useStyles2(getOptionStyles);
+
+  const getClassName = () => {
+    let className = styles.option;
+    if (data.isDisabled) {
+      className += ` ${styles.disabled}`;
+    }
+    return className;
+  };
+
+  const getTooltipContent = () => {
+    if (data.isDisabled) {
+      return 'Period must be greater than or equal to check frequency';
+    }
+    if (data.showWarning) {
+      return 'Higher time periods are recommended for better alert precision';
+    }
+    return undefined;
+  };
+
+  const tooltipContent = getTooltipContent();
+  const displayContent = data.isDisabled ? `${children} (Invalid)` : children;
+
+  if (tooltipContent) {
+    return (
+      <Tooltip content={tooltipContent} placement="right">
+        <div ref={innerRef} {...innerProps} className={getClassName()}>
+          {displayContent}
+        </div>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <div ref={innerRef} {...innerProps} className={getClassName()}>
+      {displayContent}
+    </div>
+  );
+};
+
+const getOptionStyles = (theme: GrafanaTheme2) => ({
+  option: css({
+    padding: theme.spacing(1),
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: theme.colors.background.secondary,
+    },
+  }),
+  disabled: css({
+    opacity: 0.6,
+    cursor: 'not-allowed',
+    color: theme.colors.text.disabled,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+  }),
+});
