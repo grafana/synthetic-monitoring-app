@@ -1,6 +1,5 @@
 import { CheckAlertCategory, CheckAlertType, CheckType, ThresholdUnit } from 'types';
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export interface PredefinedAlertInterface {
   type: CheckAlertType;
   name: string;
@@ -17,7 +16,6 @@ export interface PredefinedAlertInterface {
   supportsPeriod: boolean;
 }
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const ALERT_PERIODS = [
   { label: '5 min', value: '5m' },
   { label: '10 min', value: '10m' },
@@ -54,7 +52,6 @@ max without(probe, region, geohash) (
 `,
 };
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
@@ -87,7 +84,6 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   },
 ];
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
   type: CheckAlertType.HTTPRequestDurationTooHighAvg,
   name: 'HTTP Request Duration Too High Avg',
@@ -112,7 +108,6 @@ export const HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface 
   },
 };
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const PING_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
   type: CheckAlertType.PingRequestDurationTooHighAvg,
   name: 'Ping Request Duration Too High Avg',
@@ -137,7 +132,6 @@ export const PING_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface 
   },
 };
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const DNS_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
   type: CheckAlertType.DNSRequestDurationTooHighAvg,
   name: 'DNS Request Duration Too High Avg',
@@ -162,19 +156,14 @@ export const DNS_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface =
   },
 };
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const HTTP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT,
   HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT,
 ];
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const PING_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [PING_REQUEST_DURATION_TOO_HIGH_AVG_ALERT];
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const DNS_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [DNS_REQUEST_DURATION_TOO_HIGH_AVG_ALERT];
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const TCP_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT];
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const PREDEFINED_ALERTS: Record<CheckType, PredefinedAlertInterface[]> = Object.fromEntries(
   Object.values(CheckType).map((checkType) => [
     checkType,
@@ -188,7 +177,6 @@ export const PREDEFINED_ALERTS: Record<CheckType, PredefinedAlertInterface[]> = 
   ])
 ) as Record<CheckType, PredefinedAlertInterface[]>;
 
-/** @deprecated use imports from `constants/alerts.ts` instead */
 export const ALL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   ...GLOBAL_PREDEFINED_ALERTS,
   ...HTTP_PREDEFINED_ALERTS,
