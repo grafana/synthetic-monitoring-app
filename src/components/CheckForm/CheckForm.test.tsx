@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { render } from 'test/render';
 
 import { Check } from '../../types';
@@ -13,11 +13,21 @@ interface RenderCheckFormProps {
   disabled?: boolean;
 }
 
-async function renderCheckForm(props?: RenderCheckFormProps) {
-  const result = render(<CheckForm {...props} />);
+// The "submit" button is only visible as the last step (if not rendered outside the CheckForm)
+// This function navigates to the last step of the form and makes sure that there is a "submit" button
+async function goToLastStep(result: ReturnType<typeof render>) {
+  const navigationContainer = await screen.findByTestId(DataTestIds.FORM_SIDEBAR);
+  const steps = await within(navigationContainer).findAllByRole('button');
+  const lastStep = steps[steps.length - 1];
+  await result.user.click(lastStep);
   await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON); // Wait for the form to be rendered
 
   return result;
+}
+
+async function renderCheckForm(props?: RenderCheckFormProps) {
+  const result = render(<CheckForm {...props} />);
+  return await goToLastStep(result);
 }
 
 async function renderCheckFormWithContext({ check, ...props }: RenderCheckFormProps = {}) {
@@ -26,9 +36,8 @@ async function renderCheckFormWithContext({ check, ...props }: RenderCheckFormPr
       <CheckForm {...props} />
     </CheckFormContextProvider>
   );
-  await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON); // Wait for the form to be rendered
 
-  return result;
+  return await goToLastStep(result);
 }
 
 describe(`<CheckForm />`, () => {
