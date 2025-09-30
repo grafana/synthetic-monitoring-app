@@ -28,14 +28,27 @@ export enum IpVersion {
   V6 = 'V6',
 }
 
+// Http Methods supported by blackbox exporter
 export enum HttpMethod {
-  DELETE = 'DELETE',
   GET = 'GET',
+  // CONNECT = 'CONNECT',
+  DELETE = 'DELETE',
   HEAD = 'HEAD',
   OPTIONS = 'OPTIONS',
-  PATCH = 'PATCH',
   POST = 'POST',
   PUT = 'PUT',
+  // TRACE = 'TRACE',
+  PATCH = 'PATCH',
+}
+
+export enum BBEValidHttpMethod {
+  GET = 'GET',
+  DELETE = 'DELETE',
+  HEAD = 'HEAD',
+  OPTIONS = 'OPTIONS',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
 }
 
 export enum HttpVersion {
