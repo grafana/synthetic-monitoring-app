@@ -52,7 +52,7 @@ describe('useLegacyAlertsRestriction', () => {
   });
 
   it('should return isRestricted as false for users created before the cutoff date', () => {
-    // Date before 2025-10-01 (cutoff date in the hook)
+    // Date before 2025-10-15 (cutoff date in the hook)
     const oldTenantCreated = 1640995200; // 2022-01-01
 
     mockUseTenant.mockReturnValue({
@@ -68,8 +68,8 @@ describe('useLegacyAlertsRestriction', () => {
   });
 
   it('should return isRestricted as true for users created after the cutoff date', () => {
-    // Date after 2025-10-01 (cutoff date in the hook)
-    const newTenantCreated = 1759363200; // 2025-10-02 (one day after cutoff)
+    // Date after 2025-10-15 (cutoff date in the hook)
+    const newTenantCreated = 1760572800; // 2025-10-16 (one day after cutoff)
 
     mockUseTenant.mockReturnValue({
       data: { id: 1, created: newTenantCreated },
