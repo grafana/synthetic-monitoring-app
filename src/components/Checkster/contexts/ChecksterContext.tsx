@@ -44,14 +44,18 @@ export function useChecksterContext() {
   return context;
 }
 
-export function ChecksterProvider({ children }: PropsWithChildren) {
+interface ChecksterProviderProps extends PropsWithChildren {
+  check?: Check | CheckInstrumentation;
+}
+
+export function ChecksterProvider({ children, check: _checkViaProps = DEFAULT_CHECK_CONFIG }: ChecksterProviderProps) {
   const formId = useDOMId();
   useDebugHook('formId', formId);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   useDebugHook('isLoading', isLoading);
 
-  const [_check, _setCheck] = useState<Check | CheckInstrumentation | undefined>();
+  const [_check, _setCheck] = useState<Check | CheckInstrumentation | undefined>(_checkViaProps);
   useDebugHook('_check', _check);
 
   const [check, setCheck] = useState<Check>(DEFAULT_CHECK_CONFIG);
