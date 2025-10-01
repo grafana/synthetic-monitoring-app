@@ -31,6 +31,8 @@ import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
+import { DevChecksterPage } from '../components/Checkster/dev/DevChecksterPage';
+
 export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
@@ -139,6 +141,10 @@ export const InitialisedRouter = () => {
       <Route path={AppRoutes.Redirect} element={<SceneRedirecter />} />
 
       <Route path={AppRoutes.Scene} element={<SceneRedirecter />} />
+
+      {/* TODO: START REMOVE THIS */}
+      <Route path="/dev" element={<DevChecksterPage />} />
+      {/* TODO: END REMOVE THIS */}
 
       <Route
         path="*"

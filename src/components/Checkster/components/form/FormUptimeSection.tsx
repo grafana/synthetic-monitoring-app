@@ -4,7 +4,12 @@ import { FormSectionName } from '../../types';
 import { CheckType } from 'types';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
+import { DnsUptimeSection } from './layouts/DnsUptimeSection';
+import { GrpcUptimeSection } from './layouts/GrpcUptimeSection';
 import { HttpUptimeSection } from './layouts/HttpUptimeSection';
+import { PingUptimeSection } from './layouts/PingUptimeSection';
+import { TcpUptimeSection } from './layouts/TcpUptimeSection';
+import { TracerouteUptimeSection } from './layouts/TracerouteUptimeSection';
 import { FormSection } from './FormSection';
 
 export function FormUptimeSection() {
@@ -16,6 +21,11 @@ export function FormUptimeSection() {
     <FormSection sectionName={FormSectionName.Uptime}>
       <h2>Uptime</h2>
       {type === CheckType.HTTP && <HttpUptimeSection />}
+      {type === CheckType.PING && <PingUptimeSection />}
+      {type === CheckType.GRPC && <GrpcUptimeSection />}
+      {type === CheckType.DNS && <DnsUptimeSection />}
+      {type === CheckType.TCP && <TcpUptimeSection />}
+      {type === CheckType.Traceroute && <TracerouteUptimeSection />}
     </FormSection>
   );
 }

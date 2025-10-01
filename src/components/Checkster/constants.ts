@@ -38,6 +38,7 @@ import {
   IpVersion,
   MultiHTTPCheck,
   PingCheck,
+  ResponseMatchType,
   ScriptedCheck,
   TCPCheck,
   TracerouteCheck,
@@ -577,6 +578,14 @@ export const CHECK_TYPE_TIMEOUT_MAP: Record<CheckType, { min: number; max: numbe
   [CheckType.TCP]: baseTimeoutMap,
   [CheckType.Traceroute]: { min: MIN_TIMEOUT_TRACEROUTE, max: MAX_TIMEOUT_TRACEROUTE }, // fixed value (min === max)
 };
+
+export const DEFAULT_EXAMPLE_HOSTNAME = 'grafana.com';
+
+export const DNS_RESPONSE_MATCH_OPTIONS = [
+  { label: ResponseMatchType.Authority, value: ResponseMatchType.Authority },
+  { label: ResponseMatchType.Answer, value: ResponseMatchType.Answer },
+  { label: ResponseMatchType.Additional, value: ResponseMatchType.Additional },
+];
 
 // Css
 export const CSS_PRIMARY_CONTAINER_NAME = 'checkEditor-primary-container';

@@ -4,13 +4,13 @@ import { TextArea } from '@grafana/ui';
 
 import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues } from 'types';
+import { useDOMId } from 'hooks/useDOMId';
 
-import { useDOMId } from '../../../../../hooks/useDOMId';
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
 
 interface GenericTextareaFieldProps {
-  label: string;
+  label?: string;
   description?: string;
   required?: true;
   field: CheckFormFieldPath; // Adjust the type as necessary
@@ -18,6 +18,7 @@ interface GenericTextareaFieldProps {
   interpolationVariables?: Record<string, string>;
   fsDataElement?: string;
   placeholder?: string;
+  className?: ComponentProps<typeof TextArea>['className'];
 }
 
 export function GenericTextareaField({

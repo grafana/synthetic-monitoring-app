@@ -7,7 +7,7 @@ import { css, cx } from '@emotion/css';
 import { CheckFormValues, HttpMethod } from 'types';
 import { getMethodColor } from 'utils';
 
-import { ALLOWED_HTTP_REQUEST_METHODS } from '../../constants';
+import { ALLOWED_HTTP_REQUEST_METHODS, DEFAULT_EXAMPLE_HOSTNAME } from '../../constants';
 import { QueryParamsEditor } from '../QueryParamsEditor';
 import { Indent } from '../ui/Indent';
 import { SecondaryContainer } from '../ui/SecondaryContainer';
@@ -39,8 +39,13 @@ interface MethodsProps {
 }
 function Methods({ field }: MethodsProps) {
   const { register, setValue, watch, getValues } = useFormContext<CheckFormValues>();
-  const formValue = watch(field);
+  const formValue = watch(field) as HttpMethod;
   const [value, _setValue] = useState<HttpMethod>(formValue as HttpMethod);
+
+  const debugValue = watch(field);
+  useEffect(() => {
+    console.log('[DEBUG] RequestMethodMenu', debugValue);
+  }, [debugValue]);
 
   useEffect(() => {
     if (field && value && getValues(field) !== value) {
@@ -48,13 +53,13 @@ function Methods({ field }: MethodsProps) {
     }
   }, [field, getValues, setValue, value]);
 
-  const styles = useStyles2(getMethodsStyles, value);
+  const styles = useStyles2(getMethodsStyles, formValue);
 
   return (
     <>
       <Dropdown overlay={<RequestMethodMenu onChange={_setValue} />}>
         <div role="button" aria-label={`Request method *`} className={styles.container}>
-          <span className={styles.methodValue}>{value}</span>
+          <span className={styles.methodValue}>{formValue}</span>
           <Icon name="angle-down" />
         </div>
       </Dropdown>
@@ -86,12 +91,14 @@ interface RequestMethodTargetFieldsProps {
   field: FieldPath<CheckFormValues>;
   methodField?: FieldPath<CheckFormValues>;
   withQueryParams?: true;
+  placeholder?: string;
 }
 
 export function RequestMethodTargetFields({
   field = 'target',
   methodField,
   withQueryParams,
+  placeholder = `https://www.${DEFAULT_EXAMPLE_HOSTNAME}/`,
 }: RequestMethodTargetFieldsProps) {
   const styles = useStyles2(getStyles);
 
@@ -121,7 +128,7 @@ export function RequestMethodTargetFields({
       >
         <Input
           id="check-editor-target-input"
-          placeholder="https://www.grafana.com"
+          placeholder={placeholder}
           prefix={!!methodField && <Methods field={methodField} />}
           {...register(field)}
           type="text"

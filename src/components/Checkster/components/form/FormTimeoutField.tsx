@@ -1,5 +1,6 @@
 import React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
+import { Input } from '@grafana/ui';
 
 import { CheckFormFieldPath } from '../../types';
 import { CheckFormValues } from 'types';
@@ -33,22 +34,28 @@ export function FormTimeoutField({ field, min, max }: FormTimeoutFieldProps) {
   const maxInSeconds = max / 1000;
 
   // TODO: Handle "readOnly" (traceroute) - When min and max are the same, disable the slider and show a tooltip explaining why
+  const isReadonly = min >= maxInSeconds;
+
   return (
     <StyledField
       label="Timeout"
-      description="Maximum execution time for a check"
+      description="Maximum execution time for the check"
       {...getFieldErrorProps(errors, field)}
     >
-      <TimeSlider
-        {...fieldProps}
-        disabled={disabled}
-        value={valueInSeconds}
-        analyticsLabel="timeout"
-        ariaLabelForHandle="timeout"
-        min={minInSeconds}
-        max={maxInSeconds}
-        onChange={handleOnChange}
-      />
+      {isReadonly ? (
+        <Input width={20} disabled {...fieldProps} value={valueInSeconds} suffix="Seconds" />
+      ) : (
+        <TimeSlider
+          {...fieldProps}
+          disabled={disabled}
+          value={valueInSeconds}
+          analyticsLabel="timeout"
+          ariaLabelForHandle="timeout"
+          min={minInSeconds}
+          max={maxInSeconds}
+          onChange={handleOnChange}
+        />
+      )}
     </StyledField>
   );
 }

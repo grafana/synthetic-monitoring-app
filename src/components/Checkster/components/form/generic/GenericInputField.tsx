@@ -9,7 +9,7 @@ import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
 
 interface GenericInputFieldFormInputFieldProps {
-  label: string;
+  label?: string;
   description?: string;
   required?: true;
   field: CheckFormFieldPath; // Adjust the type as necessary

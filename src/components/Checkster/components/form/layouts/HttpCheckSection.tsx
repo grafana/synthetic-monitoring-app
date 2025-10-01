@@ -55,7 +55,10 @@ export function HttpCheckSection() {
                 description="Follow HTTP redirects instead of stopping at the first response."
               />
 
-              <FormIpVersionRadioField field="settings.http.ipVersion" />
+              <FormIpVersionRadioField
+                field="settings.http.ipVersion"
+                description="The IP protocol of the HTTP request."
+              />
             </FormTabContent>
 
             <FormTabContent label="Body">

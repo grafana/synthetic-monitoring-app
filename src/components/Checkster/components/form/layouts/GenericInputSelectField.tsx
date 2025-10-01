@@ -1,0 +1,54 @@
+import React, { ComponentProps } from 'react';
+import { useFormContext } from 'react-hook-form';
+
+import { CheckFormFieldPath } from '../../../types';
+import { CheckFormValues } from 'types';
+import { useDOMId } from 'hooks/useDOMId';
+
+import { getFieldErrorProps } from '../../../utils/form';
+import { InputSelect } from '../../InputSelect';
+import { StyledField } from '../../ui/StyledField';
+
+interface GenericInputSelectFieldProps {
+  field: CheckFormFieldPath;
+  label?: ComponentProps<typeof StyledField>['label'];
+  description?: ComponentProps<typeof StyledField>['description'];
+  options: ComponentProps<typeof InputSelect>['options'];
+  placeholder?: ComponentProps<typeof InputSelect>['placeholder'];
+  width?: number;
+  className?: string;
+}
+
+export function GenericInputSelectField({
+  field,
+  label,
+  placeholder,
+  description,
+  options = [],
+  className,
+  width = 20,
+}: GenericInputSelectFieldProps) {
+  const id = useDOMId();
+  const {
+    register,
+    watch,
+    formState: { errors, disabled },
+  } = useFormContext<CheckFormValues>();
+
+  const value = watch(field);
+
+  return (
+    <StyledField label={label} description={description} htmlFor={id} {...getFieldErrorProps(errors, field)}>
+      <InputSelect
+        value={value}
+        id={id}
+        width={width}
+        {...register(field)}
+        placeholder={placeholder}
+        options={options}
+        disabled={disabled}
+        className={className}
+      />
+    </StyledField>
+  );
+}

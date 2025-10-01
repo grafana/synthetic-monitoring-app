@@ -6,7 +6,7 @@ import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues } from 'types';
 
 interface GenericCheckboxFieldProps {
-  label: string;
+  label?: string;
   field: CheckFormFieldPath;
   description?: string;
 }

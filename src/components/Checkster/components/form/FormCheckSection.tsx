@@ -1,17 +1,31 @@
 import React from 'react';
 
-import { CheckType } from '../../../../types';
 import { FormSectionName } from '../../types';
+import { CheckType } from 'types';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
+import { DnsCheckSection } from './layouts/DnsCheckSection';
+import { GrpcCheckSection } from './layouts/GrpcCheckSection';
 import { HttpCheckSection } from './layouts/HttpCheckSection';
+import { PingCheckSection } from './layouts/PingCheckSection';
+import { TcpCheckSection } from './layouts/TcpCheckSection';
+import { TracerouteCheckSection } from './layouts/TracerouteCheckSection';
 import { FormSection } from './FormSection';
 
 export function FormCheckSection() {
   const {
     checkMeta: { type },
   } = useChecksterContext();
+
+  // TODO: h2 should be set from this file (preferably)
   return (
-    <FormSection sectionName={FormSectionName.Check}>{type === CheckType.HTTP && <HttpCheckSection />}</FormSection>
+    <FormSection sectionName={FormSectionName.Check}>
+      {type === CheckType.HTTP && <HttpCheckSection />}
+      {type === CheckType.PING && <PingCheckSection />}
+      {type === CheckType.GRPC && <GrpcCheckSection />}
+      {type === CheckType.DNS && <DnsCheckSection />}
+      {type === CheckType.TCP && <TcpCheckSection />}
+      {type === CheckType.Traceroute && <TracerouteCheckSection />}
+    </FormSection>
   );
 }

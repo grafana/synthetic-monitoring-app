@@ -6,7 +6,6 @@ import { TLSBaseFieldPath } from '../../types';
 import { FIELD_SPACING } from '../../constants';
 import { GenericCheckboxField } from './generic/GenericCheckboxField';
 import { GenericInputField } from './generic/GenericInputField';
-import { GenericSwitchField } from './generic/GenericSwitchField';
 import { GenericTextareaField } from './generic/GenericTextareaField';
 
 interface FormTLSConfigFieldProps {
@@ -31,7 +30,7 @@ export function FormTLSConfigField({ field, useTLS }: FormTLSConfigFieldProps) {
   return (
     <Stack direction="column" gap={FIELD_SPACING}>
       {useTLS && (
-        <GenericSwitchField
+        <GenericCheckboxField
           field={tlsField}
           label="Use TLS"
           description="Whether or not TLS is used when the connection is initiated."
