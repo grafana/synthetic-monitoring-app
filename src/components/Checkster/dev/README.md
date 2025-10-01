@@ -1,6 +1,12 @@
 # Checkster development
 
-## Add route to `/routing/InitializedRouter.tsx`
+## Checkster?
+
+Just a project name. The intended name is `CheckEditor`
+
+## Add route
+
+`/routing/InitializedRouter.tsx`
 
 ```typescript jsx
 {/* TODO: START REMOVE THIS */}
@@ -10,4 +16,8 @@ import {DevChecksterPage} from "./DevChecksterPage";
 {/* TODO: END REMOVE THIS */}
 ```
 
-Start rocking!
+## Important
+**DO NOT** import anything from `components/CheckForm/**` \
+**DO** Instead migrate the file/export you need, to a "global directory", or if to `components/Checkster`
+
+### Start rocking!
