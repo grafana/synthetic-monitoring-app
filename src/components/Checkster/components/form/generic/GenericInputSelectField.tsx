@@ -1,5 +1,5 @@
 import React, { ComponentProps } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 
 import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues } from 'types';
@@ -30,24 +30,28 @@ export function GenericInputSelectField({
 }: GenericInputSelectFieldProps) {
   const id = useDOMId();
   const {
-    register,
-    watch,
+    control,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
 
-  const value = watch(field);
-
   return (
     <StyledField label={label} description={description} htmlFor={id} {...getFieldErrorProps(errors, field)}>
-      <InputSelect
-        value={value}
-        id={id}
-        width={width}
-        {...register(field)}
-        placeholder={placeholder}
-        options={options}
-        disabled={disabled}
-        className={className}
+      <Controller
+        control={control}
+        name={field}
+        render={({ field }) => {
+          return (
+            <InputSelect
+              id={id}
+              width={width}
+              {...field}
+              placeholder={placeholder}
+              options={options}
+              disabled={disabled}
+              className={className}
+            />
+          );
+        }}
       />
     </StyledField>
   );

@@ -34,7 +34,7 @@ export function FormTimeoutField({ field, min, max }: FormTimeoutFieldProps) {
   const maxInSeconds = max / 1000;
 
   // TODO: Handle "readOnly" (traceroute) - When min and max are the same, disable the slider and show a tooltip explaining why
-  const isReadonly = min >= maxInSeconds;
+  const isReadonly = min >= max;
 
   return (
     <StyledField

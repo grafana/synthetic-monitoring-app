@@ -5,6 +5,7 @@ import { FIELD_SPACING } from '../../../constants';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { ChooseCheckType } from '../ChooseCheckType';
 import { FormHttpAuthenticationField } from '../FormHttpAuthenticationField';
+import { FormHttpRequestMethodTargetFields } from '../FormHttpRequestMethodTargetFields';
 import { FormIpVersionRadioField } from '../FormIpVersionRadioField';
 import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
@@ -13,7 +14,6 @@ import { GenericCheckboxField } from '../generic/GenericCheckboxField';
 import { GenericInputField } from '../generic/GenericInputField';
 import { GenericNameValueField } from '../generic/GenericNameValueField';
 import { GenericTextareaField } from '../generic/GenericTextareaField';
-import { RequestMethodTargetFields } from '../RequestMethodTargetFields';
 
 export function HttpCheckSection() {
   return (
@@ -25,7 +25,7 @@ export function HttpCheckSection() {
         <ChooseCheckType />
 
         {/* TODO: Would be nice to write root fields like `.target` (instead of `target`) */}
-        <RequestMethodTargetFields field="target" methodField="settings.http.method" withQueryParams />
+        <FormHttpRequestMethodTargetFields field="target" methodField="settings.http.method" withQueryParams />
 
         <AdditionalSettings indent buttonLabel="Request options">
           <FormTabs>

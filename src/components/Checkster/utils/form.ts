@@ -68,3 +68,20 @@ export function getHttpAuthType(
 
   return HTTPAuthType.None;
 }
+
+export function checkFormFieldPath(path: string, checkType?: CheckType) {
+  if (path[0] === '.') {
+    const [_root, ...rest] = path;
+    return rest.join('');
+  }
+
+  if (path.startsWith('settings.')) {
+    return path;
+  }
+
+  if (!checkType) {
+    throw new Error('CheckType is required for short syntax (except for root paths)');
+  }
+
+  return `settings.${checkType}.${path}` as const;
+}

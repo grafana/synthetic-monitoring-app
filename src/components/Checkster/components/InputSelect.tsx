@@ -39,7 +39,9 @@ export const InputSelect = forwardRef<HTMLInputElement, InputSelectProps>(functi
     ? css`
         width: ${theme.spacing(width)};
       `
-    : undefined;
+    : css`
+        width: 100%;
+      `;
   const label = options.find((option) => internalValue === option.value)?.label ?? value;
   const overlay = useMemo(() => {
     return (

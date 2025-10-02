@@ -6,6 +6,7 @@ import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues } from 'types';
 import { useDOMId } from 'hooks/useDOMId';
 
+import { useCheckFormFieldPath } from '../../../hooks/useCheckFormFieldPath';
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
 
@@ -24,7 +25,7 @@ interface GenericTextareaFieldProps {
 export function GenericTextareaField({
   label,
   description,
-  field,
+  field: _field,
   required,
   rows,
   placeholder,
@@ -32,6 +33,9 @@ export function GenericTextareaField({
   ...props
 }: GenericTextareaFieldProps) {
   const id = useDOMId();
+  // TODO: Work in progress
+  const field = useCheckFormFieldPath(_field);
+
   const {
     register,
     formState: { disabled, errors },

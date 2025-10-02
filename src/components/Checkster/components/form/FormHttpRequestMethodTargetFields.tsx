@@ -87,19 +87,19 @@ function getMethodsStyles(theme: GrafanaTheme2, method: HttpMethod) {
   };
 }
 
-interface RequestMethodTargetFieldsProps {
+interface FormHttpRequestMethodTargetFieldsProps {
   field: FieldPath<CheckFormValues>;
   methodField?: FieldPath<CheckFormValues>;
   withQueryParams?: true;
   placeholder?: string;
 }
 
-export function RequestMethodTargetFields({
-  field = 'target',
-  methodField,
+export function FormHttpRequestMethodTargetFields({
+  field = 'target', // TODO: fix this
+  methodField, // TODO: and this
   withQueryParams,
   placeholder = `https://www.${DEFAULT_EXAMPLE_HOSTNAME}/`,
-}: RequestMethodTargetFieldsProps) {
+}: FormHttpRequestMethodTargetFieldsProps) {
   const styles = useStyles2(getStyles);
 
   const {

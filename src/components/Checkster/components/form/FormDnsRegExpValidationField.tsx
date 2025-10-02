@@ -13,7 +13,7 @@ import { createPath } from '../../utils/form';
 import { StyledField } from '../ui/StyledField';
 import { GenericCheckboxField } from './generic/GenericCheckboxField';
 import { GenericInputField } from './generic/GenericInputField';
-import { GenericInputSelectField } from './layouts/GenericInputSelectField';
+import { GenericInputSelectField } from './generic/GenericInputSelectField';
 
 interface FormDnsRegExpValidationFieldProps {
   field: CheckFormFieldPath;
