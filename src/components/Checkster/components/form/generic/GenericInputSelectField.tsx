@@ -26,7 +26,7 @@ export function GenericInputSelectField({
   description,
   options = [],
   className,
-  width = 20,
+  width = 20, // 0 means undefined TODO: Remove the default value
 }: GenericInputSelectFieldProps) {
   const id = useDOMId();
   const {
@@ -43,7 +43,7 @@ export function GenericInputSelectField({
           return (
             <InputSelect
               id={id}
-              width={width}
+              width={width > 0 ? width : undefined}
               {...field}
               placeholder={placeholder}
               options={options}

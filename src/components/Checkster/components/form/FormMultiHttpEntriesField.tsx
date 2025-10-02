@@ -90,7 +90,7 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
 
   const isFirst = index === 0;
   const isLast = index === entryCount - 1;
-  console.log('MultiHttpEntry', target);
+
   return (
     <CollapsibleRequestEntry
       method={method}
