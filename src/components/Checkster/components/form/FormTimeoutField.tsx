@@ -2,7 +2,6 @@ import React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { Input } from '@grafana/ui';
 
-import { CheckFormFieldPath } from '../../types';
 import { CheckFormValues } from 'types';
 import { TimeSlider } from 'components/TimeSlider';
 
@@ -10,7 +9,7 @@ import { getFieldErrorProps } from '../../utils/form';
 import { StyledField } from '../ui/StyledField';
 
 interface FormTimeoutFieldProps {
-  field: CheckFormFieldPath;
+  field: 'timeout';
   min: number;
   max: number;
 }

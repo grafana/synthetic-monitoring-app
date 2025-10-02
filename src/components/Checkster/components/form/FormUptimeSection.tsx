@@ -7,6 +7,7 @@ import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { DnsUptimeSection } from './layouts/DnsUptimeSection';
 import { GrpcUptimeSection } from './layouts/GrpcUptimeSection';
 import { HttpUptimeSection } from './layouts/HttpUptimeSection';
+import { MultiHttpUptimeSections } from './layouts/MultiHttpUptimeSections';
 import { PingUptimeSection } from './layouts/PingUptimeSection';
 import { TcpUptimeSection } from './layouts/TcpUptimeSection';
 import { TracerouteUptimeSection } from './layouts/TracerouteUptimeSection';
@@ -26,6 +27,7 @@ export function FormUptimeSection() {
       {type === CheckType.DNS && <DnsUptimeSection />}
       {type === CheckType.TCP && <TcpUptimeSection />}
       {type === CheckType.Traceroute && <TracerouteUptimeSection />}
+      {type === CheckType.MULTI_HTTP && <MultiHttpUptimeSections />}
     </FormSection>
   );
 }

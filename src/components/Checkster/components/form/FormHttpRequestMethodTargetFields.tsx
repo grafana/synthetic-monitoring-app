@@ -8,6 +8,7 @@ import { CheckFormValues, HttpMethod } from 'types';
 import { getMethodColor } from 'utils';
 
 import { ALLOWED_HTTP_REQUEST_METHODS, DEFAULT_EXAMPLE_HOSTNAME } from '../../constants';
+import { getFieldErrorProps } from '../../utils/form';
 import { QueryParamsEditor } from '../QueryParamsEditor';
 import { Indent } from '../ui/Indent';
 import { SecondaryContainer } from '../ui/SecondaryContainer';
@@ -88,7 +89,7 @@ function getMethodsStyles(theme: GrafanaTheme2, method: HttpMethod) {
 }
 
 interface FormHttpRequestMethodTargetFieldsProps {
-  field: FieldPath<CheckFormValues>;
+  field: 'target' | `settings.multihttp.entries.${number}.request.url`;
   methodField?: FieldPath<CheckFormValues>;
   withQueryParams?: true;
   placeholder?: string;
@@ -122,8 +123,7 @@ export function FormHttpRequestMethodTargetFields({
       <StyledField
         label="Request target"
         description="Full URL to send requests to"
-        invalid={Boolean(errors.target)}
-        error={errors.target?.message}
+        {...getFieldErrorProps(errors, field)}
         required
       >
         <Input

@@ -3,7 +3,7 @@ import { Stack } from '@grafana/ui';
 
 import { FIELD_SPACING } from '../../../constants';
 import { FormJobField } from '../FormJobField';
-import { FormMultiHttpEntriesField } from './FormMultiHttpEntriesField';
+import { FormMultiHttpEntriesField } from '../FormMultiHttpEntriesField';
 
 export function MultiHttpCheckSections() {
   return (

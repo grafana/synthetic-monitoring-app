@@ -13,9 +13,15 @@ interface AdditionalSettingsProps extends PropsWithChildren {
   // TODO: Consider fieldContext?
   containsFields?: Array<FieldPath<CheckFormValues>>;
   indent?: true;
+  isOpen?: boolean;
 }
-export function AdditionalSettings({ buttonLabel = 'Additional settings', children, indent }: AdditionalSettingsProps) {
-  const [isOpen, setIsOpen] = React.useState(false);
+export function AdditionalSettings({
+  buttonLabel = 'Additional settings',
+  children,
+  indent,
+  isOpen: externalIsOpen,
+}: AdditionalSettingsProps) {
+  const [isOpen, setIsOpen] = React.useState(externalIsOpen);
 
   const ContentWrapper = indent ? Indent : Fragment;
 
@@ -26,7 +32,7 @@ export function AdditionalSettings({ buttonLabel = 'Additional settings', childr
           aria-expanded={isOpen}
           fill="text"
           icon={isOpen ? `arrow-down` : `arrow-right`}
-          onClick={() => setIsOpen((v) => !v)}
+          onClick={() => setIsOpen((value) => !value)}
           type="button"
         >
           {buttonLabel}
