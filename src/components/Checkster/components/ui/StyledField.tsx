@@ -61,6 +61,9 @@ export function StyledField({
         css`
           margin: 0;
           flex-grow: 1;
+          & > div:first-child {
+            max-width: unset; // is 480 by default
+          }
         `,
         className
       )}

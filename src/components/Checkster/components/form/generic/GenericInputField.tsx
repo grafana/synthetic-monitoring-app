@@ -9,8 +9,8 @@ import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
 
 interface GenericInputFieldFormInputFieldProps {
-  label?: string;
-  description?: string;
+  label?: ComponentProps<typeof StyledField>['label'];
+  description?: ComponentProps<typeof StyledField>['description'];
   required?: true;
   field: CheckFormFieldPath; // Adjust the type as necessary
   placeholder?: ComponentProps<typeof Input>['placeholder'];
