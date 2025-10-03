@@ -119,7 +119,7 @@ describe('TerraformTab', () => {
       expect(getByText('Import existing checks into Terraform', { selector: 'h3' })).toBeInTheDocument();
       const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
       expect(preformatted[1]).toHaveTextContent(
-        'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 5'
+        'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 6'
       );
     });
 
