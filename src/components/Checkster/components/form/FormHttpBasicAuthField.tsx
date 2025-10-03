@@ -27,10 +27,22 @@ export function FormHttpBasicAuthField({ field }: FormHttpBasicAuthFieldProps) {
   return (
     <Stack direction="row" gap={1}>
       {/* TODO: Seems to be required if one of the other is not empty? */}
-      <StyledField label="Username" required htmlFor={usernameInputId} {...getFieldErrorProps(errors, usernameField)}>
+      <StyledField
+        grow
+        label="Username"
+        required
+        htmlFor={usernameInputId}
+        {...getFieldErrorProps(errors, usernameField)}
+      >
         <Input id={usernameInputId} {...register(usernameField)} disabled={disabled} />
       </StyledField>
-      <StyledField htmlFor={passwordInputId} label="Password" required {...getFieldErrorProps(errors, passwordField)}>
+      <StyledField
+        grow
+        htmlFor={passwordInputId}
+        label="Password"
+        required
+        {...getFieldErrorProps(errors, passwordField)}
+      >
         <PasswordInput id={passwordInputId} {...register(passwordField)} disabled={disabled} />
       </StyledField>
     </Stack>

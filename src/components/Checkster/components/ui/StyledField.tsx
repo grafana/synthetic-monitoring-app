@@ -4,9 +4,10 @@ import { css, cx } from '@emotion/css';
 
 export function StyledField({
   className,
+  grow,
   emulate, // When there is no valid `id` to use with `htmlFor`, use `emulate` to keep the look, without a11y issues
   ...props
-}: ComponentProps<typeof Field> & { emulate?: true }): JSX.Element {
+}: ComponentProps<typeof Field> & { emulate?: true; grow?: boolean }): JSX.Element {
   const theme = useTheme2();
 
   // Would have been sweet to use `Text`, but it doesn't play nice when it comes to line-height
@@ -16,8 +17,11 @@ export function StyledField({
         className={cx(
           css`
             margin: 0;
-            flex-grow: 1;
           `,
+          grow &&
+            css`
+              flex-grow: 1;
+            `,
           className
         )}
       >
@@ -60,11 +64,14 @@ export function StyledField({
       className={cx(
         css`
           margin: 0;
-          flex-grow: 1;
           & > div:first-child {
             max-width: unset; // is 480 by default
           }
         `,
+        grow &&
+          css`
+            flex-grow: 1;
+          `,
         className
       )}
       {...props}

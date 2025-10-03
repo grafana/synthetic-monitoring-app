@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { CheckType } from '../../../types';
 import { FormNavigationState, FormSectionName } from '../types';
 
+import { FORM_NAVIGATION_SECTION_LABEL_MAP } from '../constants';
 import { getFormSectionOrder } from '../utils/form';
 
 export function useFormNavigationState(checkType: CheckType): FormNavigationState {
@@ -15,6 +16,7 @@ export function useFormNavigationState(checkType: CheckType): FormNavigationStat
       sectionOrder,
       sections,
       active,
+      activeLabel: FORM_NAVIGATION_SECTION_LABEL_MAP[active],
       isSectionActive(sectionName: FormSectionName) {
         return sectionName === active;
       },

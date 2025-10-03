@@ -1,7 +1,7 @@
-import React, { Children, Fragment, isValidElement, PropsWithChildren, ReactElement, ReactNode, useState } from 'react';
+import React, { Children, isValidElement, PropsWithChildren, ReactElement, ReactNode, useState } from 'react';
 import { FieldPath } from 'react-hook-form';
 import { Tab, TabContent, TabsBar, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
 
@@ -24,7 +24,11 @@ export function FormTabs({ children, actions }: FormTabProps) {
 
   return (
     <>
-      <TabsBar>
+      <TabsBar
+        className={css`
+          flex-shrink: 0;
+        `}
+      >
         {Children.map(children, (child, index) => {
           if (!isValidTabChild(child)) {
             console.warn('FormTabs only accepts FormTabs.Tab as children');
@@ -54,23 +58,43 @@ export function FormTabs({ children, actions }: FormTabProps) {
           {actions}
         </div>
       </TabsBar>
-      <TabContent
-        className={css`
-          background-color: transparent;
-          padding: ${theme.spacing(1)};
-          display: flex;
-          flex-direction: column;
-          gap: ${theme.spacing(FIELD_SPACING)};
-        `}
-      >
-        {Children.map(children, (child, index) => {
-          if (!isValidTabChild(child)) {
-            return null;
-          }
+      {Children.map(children, (child, index) => {
+        if (!isValidTabChild(child)) {
+          return null;
+        }
 
-          return active === index ? <Fragment key={index}>{child.props.children}</Fragment> : null;
-        })}
-      </TabContent>
+        return active === index ? (
+          <TabContent
+            className={cx(
+              css`
+                background-color: transparent;
+                display: flex;
+                flex-direction: column;
+              `,
+              !child.props.vanilla &&
+                css`
+                  gap: ${theme.spacing(FIELD_SPACING)};
+                  padding: ${theme.spacing(1)};
+                `,
+              child.props.fillVertical &&
+                css`
+                  min-height: 300px;
+                  flex: 1 1 0;
+                  overflow: auto;
+                  & > div {
+                    flex-grow: 1;
+                    margin-bottom: unset;
+                    overflow: unset;
+                  }
+                `,
+              child.props.className
+            )}
+            key={index}
+          >
+            {child.props.children}
+          </TabContent>
+        ) : null;
+      })}
     </>
   );
 }
@@ -79,6 +103,9 @@ interface FormTabContentProps extends PropsWithChildren {
   label: string;
   containsFields?: FieldPath<CheckFormValues>;
   actions?: ReactNode;
+  className?: string;
+  fillVertical?: boolean;
+  vanilla?: boolean; // Skip content padding and any other "normal" styling, content takes responsibility
 }
 
 export function FormTabContent({ children }: FormTabContentProps) {

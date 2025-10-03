@@ -9,6 +9,7 @@ import { GrpcUptimeSection } from './layouts/GrpcUptimeSection';
 import { HttpUptimeSection } from './layouts/HttpUptimeSection';
 import { MultiHttpUptimeSections } from './layouts/MultiHttpUptimeSections';
 import { PingUptimeSection } from './layouts/PingUptimeSection';
+import { ScriptedUptimeSection } from './layouts/ScriptedUptimeSection';
 import { TcpUptimeSection } from './layouts/TcpUptimeSection';
 import { TracerouteUptimeSection } from './layouts/TracerouteUptimeSection';
 import { FormSection } from './FormSection';
@@ -20,14 +21,16 @@ export function FormUptimeSection() {
 
   return (
     <FormSection sectionName={FormSectionName.Uptime}>
-      <h2>Uptime</h2>
+      {/* Protocol checks (blackbox exporter)*/}
       {type === CheckType.HTTP && <HttpUptimeSection />}
       {type === CheckType.PING && <PingUptimeSection />}
       {type === CheckType.GRPC && <GrpcUptimeSection />}
       {type === CheckType.DNS && <DnsUptimeSection />}
       {type === CheckType.TCP && <TcpUptimeSection />}
       {type === CheckType.Traceroute && <TracerouteUptimeSection />}
+      {/* Scripted checks (k6) */}
       {type === CheckType.MULTI_HTTP && <MultiHttpUptimeSections />}
+      {type === CheckType.Scripted && <ScriptedUptimeSection />}
     </FormSection>
   );
 }

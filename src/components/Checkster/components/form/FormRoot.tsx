@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { FormAlertingSection } from './FormAlertingSection';
@@ -11,18 +11,19 @@ import { FormUptimeSection } from './FormUptimeSection';
 export function FormRoot() {
   const { formId } = useChecksterContext();
   return (
-    <form id={formId}>
-      <Stack gap={1} direction="column">
-        <FormCheckSection />
-
-        <FormUptimeSection />
-
-        <FormLabelSection />
-
-        <FormExecutionSection />
-
-        <FormAlertingSection />
-      </Stack>
+    <form
+      className={css`
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0;
+      `}
+      id={formId}
+    >
+      <FormCheckSection />
+      <FormUptimeSection />
+      <FormLabelSection />
+      <FormExecutionSection />
+      <FormAlertingSection />
     </form>
   );
 }

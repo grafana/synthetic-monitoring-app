@@ -9,6 +9,7 @@ import { GrpcCheckSection } from './layouts/GrpcCheckSection';
 import { HttpCheckSection } from './layouts/HttpCheckSection';
 import { MultiHttpCheckSections } from './layouts/MultiHttpCheckSections';
 import { PingCheckSection } from './layouts/PingCheckSection';
+import { ScriptedCheckSection } from './layouts/ScriptedCheckSection';
 import { TcpCheckSection } from './layouts/TcpCheckSection';
 import { TracerouteCheckSection } from './layouts/TracerouteCheckSection';
 import { FormSection } from './FormSection';
@@ -18,7 +19,6 @@ export function FormCheckSection() {
     checkMeta: { type },
   } = useChecksterContext();
 
-  // TODO: h2 should be set from this file (preferably)
   return (
     <FormSection sectionName={FormSectionName.Check}>
       {/* Protocol checks (blackbox exporter)*/}
@@ -29,7 +29,8 @@ export function FormCheckSection() {
       {type === CheckType.TCP && <TcpCheckSection />}
       {type === CheckType.Traceroute && <TracerouteCheckSection />}
       {/* Scripted checks (k6) */}
-      {type === CheckType.MULTI_HTTP && <MultiHttpCheckSections />}
+      {type === CheckType.MULTI_HTTP && <MultiHttpCheckSections label="Requests" />}
+      {type === CheckType.Scripted && <ScriptedCheckSection label="Script" />}
     </FormSection>
   );
 }

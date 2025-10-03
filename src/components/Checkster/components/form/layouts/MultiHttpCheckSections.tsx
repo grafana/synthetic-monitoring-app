@@ -1,18 +1,15 @@
 import React from 'react';
-import { Stack } from '@grafana/ui';
 
-import { FIELD_SPACING } from '../../../constants';
+import { SectionContent } from '../../ui/SectionContent';
 import { FormJobField } from '../FormJobField';
 import { FormMultiHttpEntriesField } from '../FormMultiHttpEntriesField';
 
-export function MultiHttpCheckSections() {
+// Don't set label here, set it explicitly, where the component is used (for readability)
+export function MultiHttpCheckSections({ label }: { label: string }) {
   return (
-    <>
-      <h2>Requests</h2>
-      <Stack direction="column" gap={FIELD_SPACING}>
-        <FormJobField field="job" />
-        <FormMultiHttpEntriesField field="settings.multihttp.entries" />
-      </Stack>
-    </>
+    <SectionContent label={label}>
+      <FormJobField field="job" />
+      <FormMultiHttpEntriesField field="settings.multihttp.entries" />
+    </SectionContent>
   );
 }

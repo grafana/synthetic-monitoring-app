@@ -1,17 +1,16 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Stack } from '@grafana/ui';
 
 import { CheckFormValues, HttpMethod } from 'types';
 
 import {
   CHECK_TYPE_TIMEOUT_MAP,
-  FIELD_SPACING,
   HTTP_COMPRESSION_ALGO_OPTIONS,
   HTTP_SSL_OPTIONS,
   VALID_HTTP_STATUS_CODE_OPTIONS,
   VALID_HTTP_VERSION_OPTIONS,
 } from '../../../constants';
+import { SectionContent } from '../../ui/SectionContent';
 import { FormHttpRegExpValidationField } from '../FormHttpRegExpValidationField';
 import { FormTimeoutField } from '../FormTimeoutField';
 import { GenericMultiSelectField } from '../generic/GenericMultiSelectField';
@@ -22,7 +21,7 @@ export function HttpUptimeSection() {
   const disallowBodyMatching = watch('settings.http.method') === HttpMethod.HEAD;
 
   return (
-    <Stack direction="column" gap={FIELD_SPACING}>
+    <SectionContent>
       <GenericMultiSelectField
         options={VALID_HTTP_STATUS_CODE_OPTIONS}
         field="settings.http.validStatusCodes"
@@ -60,6 +59,6 @@ export function HttpUptimeSection() {
       />
 
       <FormTimeoutField field="timeout" {...CHECK_TYPE_TIMEOUT_MAP.http} />
-    </Stack>
+    </SectionContent>
   );
 }

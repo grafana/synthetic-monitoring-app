@@ -1,13 +1,13 @@
 import React from 'react';
-import { Stack } from '@grafana/ui';
 
-import { CHECK_TYPE_TIMEOUT_MAP, FIELD_SPACING } from '../../../constants';
+import { CHECK_TYPE_TIMEOUT_MAP } from '../../../constants';
+import { SectionContent } from '../../ui/SectionContent';
 import { FormTimeoutField } from '../FormTimeoutField';
 
 export function GrpcUptimeSection() {
   return (
-    <Stack direction="column" gap={FIELD_SPACING}>
+    <SectionContent>
       <FormTimeoutField field="timeout" {...CHECK_TYPE_TIMEOUT_MAP.grpc} />
-    </Stack>
+    </SectionContent>
   );
 }

@@ -9,6 +9,8 @@ export function LayoutSectionContent({ children }: PropsWithChildren) {
 
 function getClassName() {
   return css`
+    display: flex;
+    flex-direction: column;
     flex-basis: 0;
     flex-grow: 1;
     overflow: auto;

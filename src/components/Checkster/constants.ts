@@ -587,6 +587,19 @@ export const DNS_RESPONSE_MATCH_OPTIONS = [
   { label: ResponseMatchType.Additional, value: ResponseMatchType.Additional },
 ];
 
+export const FORM_NAVIGATION_SECTION_LABEL_MAP: Record<FormSectionName, string> = Object.entries(
+  FormSectionName
+).reduce<Record<FormSectionName, string>>(
+  (acc, [name, value]) => {
+    if (value !== FormSectionName.Check) {
+      acc[value] = name;
+    }
+
+    return acc;
+  },
+  { [FormSectionName.Check]: 'Request' } as any
+); // Override check since it's only used internally
+
 // Css
 export const CSS_PRIMARY_CONTAINER_NAME = 'checkEditor-primary-container';
 export const FIELD_SPACING = 2;

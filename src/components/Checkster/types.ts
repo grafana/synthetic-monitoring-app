@@ -35,9 +35,6 @@ export interface CheckTypeGroupOption {
   featureToggle?: FeatureName; // require a feature flag to be TRUE to use this check group
 }
 
-/** @deprecated no need for using a Promise here, just pass the CheckInstrumentationOrCheck directly */
-export type CheckOrPromise = CheckOrInstrumentation | Promise<CheckOrInstrumentation>;
-
 export enum FormSectionName {
   Check = 'check',
   Uptime = 'uptime',
@@ -49,6 +46,8 @@ export enum FormSectionName {
 export type FormSectionOrder = FormSectionName[];
 
 export interface FormNavigationState {
+  active: FormSectionName;
+  activeLabel: string;
   sections: unknown[];
   sectionOrder: FormSectionOrder;
   isSectionActive(sectionName: FormSectionName): boolean;

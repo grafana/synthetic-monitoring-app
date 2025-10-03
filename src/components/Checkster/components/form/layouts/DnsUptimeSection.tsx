@@ -1,16 +1,17 @@
 import React from 'react';
-import { Stack, TextLink } from '@grafana/ui';
+import { TextLink } from '@grafana/ui';
 
 import { DNS_RESPONSE_CODES } from 'components/constants';
 
-import { CHECK_TYPE_TIMEOUT_MAP, FIELD_SPACING } from '../../../constants';
+import { CHECK_TYPE_TIMEOUT_MAP } from '../../../constants';
+import { SectionContent } from '../../ui/SectionContent';
 import { FormDnsRegExpValidationField } from '../FormDnsRegExpValidationField';
 import { FormTimeoutField } from '../FormTimeoutField';
 import { GenericMultiSelectField } from '../generic/GenericMultiSelectField';
 
 export function DnsUptimeSection() {
   return (
-    <Stack direction="column" gap={FIELD_SPACING}>
+    <SectionContent>
       <GenericMultiSelectField
         placeholder="Select valid response codes"
         field="settings.dns.validRCodes"
@@ -34,6 +35,6 @@ export function DnsUptimeSection() {
       />
 
       <FormTimeoutField field="timeout" {...CHECK_TYPE_TIMEOUT_MAP.dns} />
-    </Stack>
+    </SectionContent>
   );
 }

@@ -1,8 +1,7 @@
 import React from 'react';
-import { Stack } from '@grafana/ui';
 
-import { FIELD_SPACING } from '../../../constants';
 import { AdditionalSettings } from '../../AdditionalSettings';
+import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
 import { FormHttpAuthenticationField } from '../FormHttpAuthenticationField';
 import { FormHttpRequestMethodTargetFields } from '../FormHttpRequestMethodTargetFields';
@@ -17,90 +16,87 @@ import { GenericTextareaField } from '../generic/GenericTextareaField';
 
 export function HttpCheckSection() {
   return (
-    <>
-      <h2>Request</h2>
-      <Stack direction="column" gap={FIELD_SPACING}>
-        <FormJobField field="job" />
+    <SectionContent>
+      <FormJobField field="job" />
 
-        <ChooseCheckType />
+      <ChooseCheckType />
 
-        {/* TODO: Would be nice to write root fields like `.target` (instead of `target`) */}
-        <FormHttpRequestMethodTargetFields field="target" methodField="settings.http.method" withQueryParams />
+      {/* TODO: Would be nice to write root fields like `.target` (instead of `target`) */}
+      <FormHttpRequestMethodTargetFields field="target" methodField="settings.http.method" withQueryParams />
 
-        <AdditionalSettings indent buttonLabel="Request options">
-          <FormTabs>
-            <FormTabContent label="Options">
-              {/* TODO: Would be nice to write settings fields like `headers` (instead of `settings.http.headers`)*/}
-              {/* TODO: Revisit if it's worth storing the check type as a key in the form settings? */}
+      <AdditionalSettings indent buttonLabel="Request options">
+        <FormTabs>
+          <FormTabContent label="Options">
+            {/* TODO: Would be nice to write settings fields like `headers` (instead of `settings.http.headers`)*/}
+            {/* TODO: Revisit if it's worth storing the check type as a key in the form settings? */}
 
-              <GenericInputField
-                field="settings.http.cacheBustingQueryParamName"
-                label="Cache busting query parameter"
-                description="Name of the query parameter that prevents cached responses. Each probe assigns a random value to this parameter for every request."
-                placeholder="cache-bust"
-              />
+            <GenericInputField
+              field="settings.http.cacheBustingQueryParamName"
+              label="Cache busting query parameter"
+              description="Name of the query parameter that prevents cached responses. Each probe assigns a random value to this parameter for every request."
+              placeholder="cache-bust"
+            />
 
-              <GenericNameValueField
-                label="Request headers"
-                description="The HTTP headers to be sent with the request."
-                allowEmpty
-                field="settings.http.headers"
-                addButtonText="Header"
-                interpolationVariables={{ type: 'Header' }}
-              />
+            <GenericNameValueField
+              label="Request headers"
+              description="The HTTP headers to be sent with the request."
+              allowEmpty
+              field="settings.http.headers"
+              addButtonText="Header"
+              interpolationVariables={{ type: 'Header' }}
+            />
 
-              <GenericCheckboxField
-                field="settings.http.followRedirects"
-                label="Follow redirects"
-                description="Follow HTTP redirects instead of stopping at the first response."
-              />
+            <GenericCheckboxField
+              field="settings.http.followRedirects"
+              label="Follow redirects"
+              description="Follow HTTP redirects instead of stopping at the first response."
+            />
 
-              <FormIpVersionRadioField
-                field="settings.http.ipVersion"
-                description="The IP protocol of the HTTP request."
-              />
-            </FormTabContent>
+            <FormIpVersionRadioField
+              field="settings.http.ipVersion"
+              description="The IP protocol of the HTTP request."
+            />
+          </FormTabContent>
 
-            <FormTabContent label="Body">
-              <GenericTextareaField
-                label="Request body"
-                description="The body to be used with the HTTP request."
-                field="settings.http.body"
-                rows={10}
-              />
-            </FormTabContent>
+          <FormTabContent label="Body">
+            <GenericTextareaField
+              label="Request body"
+              description="The body to be used with the HTTP request."
+              field="settings.http.body"
+              rows={10}
+            />
+          </FormTabContent>
 
-            <FormTabContent label="Authentication">
-              {/* TODO: Use base settings field instead of two fields? */}
-              <FormHttpAuthenticationField
-                basicAuthField="settings.http.basicAuth"
-                bearerTokenField="settings.http.bearerToken"
-              />
-            </FormTabContent>
+          <FormTabContent label="Authentication">
+            {/* TODO: Use base settings field instead of two fields? */}
+            <FormHttpAuthenticationField
+              basicAuthField="settings.http.basicAuth"
+              bearerTokenField="settings.http.bearerToken"
+            />
+          </FormTabContent>
 
-            <FormTabContent label="TLS">
-              <FormTLSConfigField field="settings.http" />
-            </FormTabContent>
+          <FormTabContent label="TLS">
+            <FormTLSConfigField field="settings.http" />
+          </FormTabContent>
 
-            <FormTabContent label="Proxy">
-              <GenericInputField
-                field="settings.http.proxyURL"
-                label="Proxy URL"
-                description="HTTP proxy server to use to connect to the target."
-              />
-              <GenericNameValueField
-                label="Proxy connect headers"
-                description="The HTTP headers sent to the proxy."
-                allowEmpty
-                field="settings.http.proxyConnectHeaders"
-                addButtonText="Proxy connect header"
-                type="Header" // {type} interpolation in error messages TODO: improve
-                interpolationVariables={{ type: 'Header' }}
-              />
-            </FormTabContent>
-          </FormTabs>
-        </AdditionalSettings>
-      </Stack>
-    </>
+          <FormTabContent label="Proxy">
+            <GenericInputField
+              field="settings.http.proxyURL"
+              label="Proxy URL"
+              description="HTTP proxy server to use to connect to the target."
+            />
+            <GenericNameValueField
+              label="Proxy connect headers"
+              description="The HTTP headers sent to the proxy."
+              allowEmpty
+              field="settings.http.proxyConnectHeaders"
+              addButtonText="Proxy connect header"
+              type="Header" // {type} interpolation in error messages TODO: improve
+              interpolationVariables={{ type: 'Header' }}
+            />
+          </FormTabContent>
+        </FormTabs>
+      </AdditionalSettings>
+    </SectionContent>
   );
 }
