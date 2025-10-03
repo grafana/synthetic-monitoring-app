@@ -3,6 +3,7 @@ import React from 'react';
 import { FormSectionName } from '../../types';
 import { CheckType } from 'types';
 
+import { BROWSER_EXAMPLES, SCRIPT_EXAMPLES } from '../../../WelcomeTabs/constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { DnsCheckSection } from './layouts/DnsCheckSection';
 import { GrpcCheckSection } from './layouts/GrpcCheckSection';
@@ -30,7 +31,16 @@ export function FormCheckSection() {
       {type === CheckType.Traceroute && <TracerouteCheckSection />}
       {/* Scripted checks (k6) */}
       {type === CheckType.MULTI_HTTP && <MultiHttpCheckSections label="Requests" />}
-      {type === CheckType.Scripted && <ScriptedCheckSection label="Script" />}
+      {type === CheckType.Scripted && (
+        <ScriptedCheckSection scriptField="settings.scripted.script" label="Script" examples={SCRIPT_EXAMPLES} />
+      )}
+      {type === CheckType.Browser && (
+        <ScriptedCheckSection
+          scriptField="settings.browser.script"
+          label="Browser script"
+          examples={BROWSER_EXAMPLES}
+        />
+      )}
     </FormSection>
   );
 }

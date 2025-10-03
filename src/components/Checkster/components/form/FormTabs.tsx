@@ -6,15 +6,15 @@ import { css, cx } from '@emotion/css';
 import { CheckFormValues } from 'types';
 
 import { FIELD_SPACING } from '../../constants';
-
-type FormTabChild = ReactElement<FormTabContentProps>;
+type FormTabContentChild = ReactElement<FormTabContentProps>;
+type FormTabChild = undefined | false | FormTabContentChild;
 
 interface FormTabProps {
-  children: FormTabChild | FormTabChild[];
+  children?: FormTabChild | FormTabChild[];
   actions?: ReactNode;
 }
 
-function isValidTabChild(child: ReactNode): child is FormTabChild {
+function isValidTabChild(child: ReactNode): child is FormTabContentChild {
   return isValidElement(child) && child.type === FormTabContent;
 }
 

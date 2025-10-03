@@ -30,7 +30,7 @@ export function FormUptimeSection() {
       {type === CheckType.Traceroute && <TracerouteUptimeSection />}
       {/* Scripted checks (k6) */}
       {type === CheckType.MULTI_HTTP && <MultiHttpUptimeSections />}
-      {type === CheckType.Scripted && <ScriptedUptimeSection />}
+      {[CheckType.Scripted, CheckType.Browser].includes(type) && <ScriptedUptimeSection />}
     </FormSection>
   );
 }

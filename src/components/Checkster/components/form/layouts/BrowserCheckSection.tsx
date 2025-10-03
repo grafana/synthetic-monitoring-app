@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTheme2 } from '@grafana/ui';
 
-import { CheckType } from '../../../../../types';
+import { ExampleScript } from 'components/ScriptExamplesMenu/constants';
+import { BROWSER_EXAMPLES } from 'components/WelcomeTabs/constants';
 
-import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { FIELD_SPACING } from '../../../constants';
 import { codeSnippetWrapper } from '../../../styles';
 import { ScriptExamples } from '../../ScriptExamples';
@@ -14,14 +14,8 @@ import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
 import { GenericScriptField } from '../generic/GenericScriptField';
 
-interface ScriptedCheckSectionProps {
-  label: string;
-  scriptField: `settings.${CheckType.Scripted | CheckType.Browser}.script`;
-  examples?: ExampleScript[];
-}
-
 // Don't set label here, set it explicitly, where the component is used (for readability)
-export function ScriptedCheckSection({ label, examples, scriptField }: ScriptedCheckSectionProps) {
+export function ScriptedCheckSection({ label, examples }: { label: string; examples?: ExampleScript[] }) {
   const theme = useTheme2();
   const hasExamples = examples && examples?.length > 0;
 
@@ -34,11 +28,11 @@ export function ScriptedCheckSection({ label, examples, scriptField }: ScriptedC
       <Column fill>
         <FormTabs>
           <FormTabContent label="Script" fillVertical vanilla>
-            <GenericScriptField field={scriptField} />
+            <GenericScriptField field="settings.scripted.script" />
           </FormTabContent>
           {hasExamples && (
-            <FormTabContent label="Examples" fillVertical vanilla className={codeSnippetWrapper}>
-              <ScriptExamples examples={examples} />
+            <FormTabContent label="Examples" fillVertical className={codeSnippetWrapper}>
+              <ScriptExamples examples={BROWSER_EXAMPLES} />
             </FormTabContent>
           )}
         </FormTabs>
