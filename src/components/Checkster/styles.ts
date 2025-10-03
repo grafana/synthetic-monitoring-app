@@ -21,10 +21,17 @@ export function getInputFocusStyles(theme: GrafanaTheme2) {
   `;
 }
 
-export const codeSnippetWrapper = css`
-  // Handle code snippet border
-  & > div,
-  & > div > div {
-    border: none;
-  }
-`;
+export function codeSnippetWrapper(theme: GrafanaTheme2) {
+  return css`
+    // Handle code snippet border
+    & > div,
+    & > div > div {
+      border: none;
+    }
+
+    // Change code snippet menu background
+    & section > div > div {
+      background-color: ${theme.colors.background.primary};
+    }
+  `;
+}

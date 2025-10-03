@@ -37,7 +37,7 @@ export function ScriptedCheckSection({ label, examples, scriptField }: ScriptedC
             <GenericScriptField field={scriptField} />
           </FormTabContent>
           {hasExamples && (
-            <FormTabContent label="Examples" fillVertical vanilla className={codeSnippetWrapper}>
+            <FormTabContent label="Examples" fillVertical vanilla className={codeSnippetWrapper(theme)}>
               <ScriptExamples examples={examples} />
             </FormTabContent>
           )}
