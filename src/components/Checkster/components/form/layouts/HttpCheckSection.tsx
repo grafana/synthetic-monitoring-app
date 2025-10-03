@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { CheckFormFieldPath } from '../../../types';
+
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
@@ -13,6 +15,19 @@ import { GenericCheckboxField } from '../generic/GenericCheckboxField';
 import { GenericInputField } from '../generic/GenericInputField';
 import { GenericNameValueField } from '../generic/GenericNameValueField';
 import { GenericTextareaField } from '../generic/GenericTextareaField';
+
+export const HTTP_CHECK_FIELDS_MAP: Record<string, CheckFormFieldPath> = {
+  job: 'job',
+  target: 'target',
+  cacheBustingQueryParamName: 'settings.http.cacheBustingQueryParamName',
+  headers: 'settings.http.headers',
+  followRedirects: 'settings.http.followRedirects',
+  ipVersion: 'settings.http.ipVersion',
+  body: 'settings.http.body',
+  basicAuth: 'settings.http.basicAuth',
+  proxyURL: 'settings.http.proxyURL',
+  proxyConnectHeaders: 'settings.http.proxyConnectHeaders',
+};
 
 export function HttpCheckSection() {
   return (
@@ -76,6 +91,7 @@ export function HttpCheckSection() {
           </FormTabContent>
 
           <FormTabContent label="TLS">
+            {/* TODO: This is not super transparent */}
             <FormTLSConfigField field="settings.http" />
           </FormTabContent>
 
@@ -91,7 +107,6 @@ export function HttpCheckSection() {
               allowEmpty
               field="settings.http.proxyConnectHeaders"
               addButtonText="Proxy connect header"
-              type="Header" // {type} interpolation in error messages TODO: improve
               interpolationVariables={{ type: 'Header' }}
             />
           </FormTabContent>

@@ -19,7 +19,6 @@ interface GenericNameValueFieldProps {
   allowEmpty?: true; // Leave undefined to disallow empty key/value pairs
   addButtonText?: string;
   required?: true;
-  type?: string;
   interpolationVariables?: Record<string, string>;
   namePrefix?: ReactNode;
   namePlaceholder?: string;

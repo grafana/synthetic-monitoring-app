@@ -7,7 +7,7 @@ import { FormSection } from './FormSection';
 
 export function FormLabelSection() {
   return (
-    <FormSection sectionName={FormSectionName.Labels}>
+    <FormSection sectionName={FormSectionName.Labels} fields={['labels']}>
       <GenericLabelSection />
     </FormSection>
   );

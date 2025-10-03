@@ -24,7 +24,7 @@ export function GenericAlertingSection() {
             />
           }
         >
-          <GenericAlertingField />
+          <GenericAlertingField field="alerts" />
         </FormTabContent>
         <FormTabContent label="Legacy alerts">
           <GenericLegacyAlertingField />

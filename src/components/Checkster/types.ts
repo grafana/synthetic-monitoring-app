@@ -1,5 +1,5 @@
 import { ComponentProps, FormEvent } from 'react';
-import { FieldPath } from 'react-hook-form';
+import { FieldErrors, FieldPath } from 'react-hook-form';
 import { IconName } from '@grafana/ui';
 
 import { Check, CheckFormValues, CheckStatus, CheckType, CheckTypeGroup, FeatureName } from 'types';
@@ -45,6 +45,8 @@ export enum FormSectionName {
 
 export type FormSectionOrder = FormSectionName[];
 
+export type SectionIncludedField = CheckFormFieldPath | RegExp;
+
 export interface FormNavigationState {
   active: FormSectionName;
   activeLabel: string;
@@ -52,6 +54,12 @@ export interface FormNavigationState {
   sectionOrder: FormSectionOrder;
   isSectionActive(sectionName: FormSectionName): boolean;
   setSectionActive(sectionName: FormSectionName): void;
+  registerSectionFields(sectionName: FormSectionName, fields: SectionIncludedField[]): void;
+  sectionByErrors(errors: FieldErrors): void;
+  getSectionFields(sectionName: FormSectionName): Array<CheckFormFieldPath | SectionIncludedField>;
+  isSeenStep(sectionName: FormSectionName): boolean;
+  getSectionLabel(sectionName: FormSectionName): string;
+  completeAllSteps(): void;
 }
 
 // From `CheckEditor.types.ts`

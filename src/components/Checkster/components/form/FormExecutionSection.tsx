@@ -7,7 +7,7 @@ import { FormSection } from './FormSection';
 
 export function FormExecutionSection() {
   return (
-    <FormSection sectionName={FormSectionName.Execution}>
+    <FormSection sectionName={FormSectionName.Execution} fields={['probes']}>
       <GenericExecutionSection />
     </FormSection>
   );

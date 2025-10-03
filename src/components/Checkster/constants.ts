@@ -600,6 +600,18 @@ export const FORM_NAVIGATION_SECTION_LABEL_MAP: Record<FormSectionName, string> 
   { [FormSectionName.Check]: 'Request' } as any
 ); // Override check since it's only used internally
 
+/**
+ * Because we have separated "multi-http" assertions, we need a
+ * way to say that regardless of the entry's index, this error
+ * belongs to the steps section or the uptime definition step.
+ *
+ * We have to wildcard the entry index in form errors.
+ *
+ * `-1` works well because it is type safe as it is a number, but
+ * it is also impossible to be a valid index
+ */
+export const ENTRY_INDEX_CHAR = `-1`;
+
 // Css
 export const CSS_PRIMARY_CONTAINER_NAME = 'checkEditor-primary-container';
 export const FIELD_SPACING = 2;
