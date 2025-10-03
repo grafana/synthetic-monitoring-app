@@ -60,6 +60,11 @@ export interface FormNavigationState {
   isSeenStep(sectionName: FormSectionName): boolean;
   getSectionLabel(sectionName: FormSectionName): string;
   completeAllSteps(): void;
+  stepActions: {
+    next: { name: FormSectionName; label: string } | null;
+    previous: { name: FormSectionName; label: string } | null;
+  };
+  isStepsComplete: boolean;
 }
 
 // From `CheckEditor.types.ts`

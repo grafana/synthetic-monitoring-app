@@ -52,6 +52,19 @@ export function useFormNavigationState(checkType: CheckType): FormNavigationStat
     setRemainingSteps([]);
   }, []);
 
+  const stepActions = useMemo(() => {
+    const activeIndex = sectionOrder.indexOf(active);
+    const previous = sectionOrder[activeIndex - 1];
+    const next = sectionOrder[activeIndex + 1];
+
+    return {
+      previous: previous ? { name: previous, label: FORM_NAVIGATION_SECTION_LABEL_MAP[previous] } : null,
+      next: next ? { name: next, label: FORM_NAVIGATION_SECTION_LABEL_MAP[next] } : null,
+    };
+  }, [active, sectionOrder]);
+
+  const isStepsComplete = remainingSteps.length === 0;
+
   return useMemo(() => {
     return {
       sectionOrder,
@@ -93,6 +106,8 @@ export function useFormNavigationState(checkType: CheckType): FormNavigationStat
       isSeenStep,
       getSectionLabel,
       completeAllSteps,
+      stepActions,
+      isStepsComplete,
     };
   }, [
     sectionOrder,
@@ -104,5 +119,7 @@ export function useFormNavigationState(checkType: CheckType): FormNavigationStat
     isSeenStep,
     getSectionLabel,
     completeAllSteps,
+    stepActions,
+    isStepsComplete,
   ]);
 }
