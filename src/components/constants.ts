@@ -148,64 +148,78 @@ export const TIME_UNIT_OPTIONS = [
 export const TEN_MINUTES_IN_MS = 1000 * 60 * 10;
 export const FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
 
-const EXAMPLE_SCRIPT_SCRIPTED = btoa(`import { check, fail } from 'k6'
+const EXAMPLE_SCRIPT_SCRIPTED = btoa(`import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
+import { check } from 'k6'
 import http from 'k6/http'
+import secrets from 'k6/secrets';
 
-export default function main() {
-  const result = http.get('http://test.k6.io/');
+// This example authenticates against the quick pizza API
+export default async function main() {
+  const authURL = 'https://quickpizza.grafana.com/api/users/token/login';
 
-  // console.log will be represented as logs in Loki
-  console.log('got a response');
-  
-  // Use check() to test conditions. These show as 'assertions' in the dashboard
-  // Note: failed check() calls do not impact uptime and reachability
-  const pass = check(result, {
-    'is status 200': (r) => r.status === 200,
-  });
-
-  // Use fail() to abort and fail a test, impacting uptime and reachability
-  if(!pass){
-    fail(\`non 200 result \${result.status}\`);
+  // TIP: Secure your credentials using secrets.get()
+  // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/
+  const authInfo = {
+    username: 'default', // username: await secrets.get('quickpizza-username');
+    password: '12345678' // password: await secrets.get('quickpizza-password');
   }
+
+  const resp = http.post( authURL, JSON.stringify(authInfo), { headers: { 'Content-Type': 'application/json' }});
+
+  console.log('got a response: ', resp.status); // will appear as logs in Loki
+
+  // TIP: Use expect() to immediately abort execution and fail a test (impacts uptime/reachability)
+  expect(resp.status, 'status should be 200').toBe(200);
+
+  // TIP: Use check() to report test results in the 'assertions' dashboard panel
+  // Scripts continue to run even if a check fails. Failed checks don't impact uptime and reachability
+  check(resp, { 'status should be 200': (r) => r.status === 200 });
+
 }`);
 
-const EXAMPLE_SCRIPT_BROWSER = btoa(`import { browser } from 'k6/browser';
+const EXAMPLE_SCRIPT_BROWSER = btoa(`import { browser } from "k6/browser";
+import { expect } from "https://jslib.k6.io/k6-testing/0.5.0/index.js";
 import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
+import secrets from 'k6/secrets';
+
+// ------------------------------------------------------------//
+//   Record your browser script using Grafana k6 Studio!       //
+//   Visit https://grafana.com/docs/k6-studio/set-up/install/  //
+// ------------------------------------------------------------//
 
 export const options = {
   scenarios: {
-    ui: {
-      executor: 'shared-iterations',
-      options: {
-        browser: {
-          type: 'chromium',
-        },
-      },
+    default: {
+      executor: "shared-iterations",
+      options: { browser: { type: "chromium" } },
     },
-  },
-  thresholds: {
-    checks: ['rate==1.0'],
   },
 };
 
+// This example logs into quickpizza.grafana.com
 export default async function () {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-
+  const page = await browser.newPage();
   try {
-    await page.goto("https://test.k6.io/my_messages.php");
+    await page.goto("https://quickpizza.grafana.com/login");
 
-    await page.locator('input[name="login"]').type("admin");
-    await page.locator('input[name="password"]').type("123");
+    // TIP: Secure your credentials using secrets.get()
+    // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/
+    const username = 'default'; // username = await secrets.get('quickpizza-username');
+    const password = '12345678'; // password = await secrets.get('quickpizza-password');
 
-    await Promise.all([
-      page.waitForNavigation(),
-      page.locator('input[type="submit"]').click(),
-    ]);
+    await page.locator("#username").fill(username);
+    await page.locator("#password").fill(password);
+    await page.locator("button").click();
 
-    await check(page.locator("h2"), {
-      header: async (locator) => (await locator.textContent()) == "Welcome, admin!",
-    });
+    console.log('H2 header: ',await page.locator("//h2").textContent()) // will appear as logs in Loki
+
+    // TIP: Use expect() to immediately abort execution and fail a test (impacts uptime/reachability)
+    await expect(page.locator("//h2")).toContainText("Your Pizza Ratings:");
+
+    // TIP: Use check() to report test results in the 'assertions' dashboard panel
+    // Scripts continue to run even if a check fails. Failed checks don't impact uptime and reachability
+    await check(page.locator("//h2"), async (l) => (await l.textContent()) == "Your Pizza Ratings:");
+
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;
