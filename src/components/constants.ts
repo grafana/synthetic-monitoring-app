@@ -198,27 +198,31 @@ export const options = {
 
 // This example logs into quickpizza.grafana.com
 export default async function () {
-  const page = await browser.newPage();
+  const context = await browser.newContext();
+  const page = await context.newPage();
   try {
-    await page.goto("https://quickpizza.grafana.com/login");
+    await page.goto("https://quickpizza.grafana.com/admin");
 
     // TIP: Secure your credentials using secrets.get()
     // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/
-    const username = 'default'; // username = await secrets.get('quickpizza-username');
-    const password = '12345678'; // password = await secrets.get('quickpizza-password');
+    const username = 'admin'; // username = await secrets.get('quickpizza-username');
+    const password = 'admin'; // password = await secrets.get('quickpizza-password');
 
     await page.locator("#username").fill(username);
     await page.locator("#password").fill(password);
     await page.locator("button").click();
 
-    console.log('H2 header: ',await page.locator("//h2").textContent()) // will appear as logs in Loki
+    const heading = page.locator('//h2');
+    await heading.waitFor({ state: "visible", timeout: 5000 });
+
+    console.log('H2 header: ', await heading.textContent()); // will appear as logs in Loki
 
     // TIP: Use expect() to immediately abort execution and fail a test (impacts uptime/reachability)
-    await expect(page.locator("//h2")).toContainText("Your Pizza Ratings:");
+    await expect(heading).toContainText("Latest pizza recommendations");
 
     // TIP: Use check() to report test results in the 'assertions' dashboard panel
     // Scripts continue to run even if a check fails. Failed checks don't impact uptime and reachability
-    await check(page.locator("//h2"), async (l) => (await l.textContent()) == "Your Pizza Ratings:");
+    await check(heading, async (h) => (await h.textContent()) == "Latest pizza recommendations");
 
   } catch (e) {
     console.log('Error during execution:', e);
