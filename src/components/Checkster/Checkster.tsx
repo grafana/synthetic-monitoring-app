@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import { Check } from '../../types';
 import { CheckInstrumentation } from './types';
 
-import { ContextDebugger } from './components/ContextDebugger';
 import { FormRoot } from './components/form/FormRoot';
 import { FormSectionNavigation } from './components/FormSectionNavigation/FormSectionNavigation';
 import { ChooseCheckTypeModal } from './components/modals/ChooseCheckTypeModal';
@@ -11,6 +10,7 @@ import { AppContainer } from './components/ui/AppContainer';
 import { PrimaryLayoutSection } from './components/ui/PrimaryLayoutSection';
 import { SecondaryLayoutSection } from './components/ui/SecondaryLayoutSection';
 import { InternalConditionalProvider, useChecksterContext } from './contexts/ChecksterContext';
+import { RightAside as AdHocCheckRightAside } from './feature/adhoc-check/RightAside';
 
 interface ChecksterProps {
   check?: Check | CheckInstrumentation;
@@ -40,7 +40,7 @@ function ChecksterInternal({ check }: ChecksterProps) {
           <FormRoot />
         </PrimaryLayoutSection>
         <SecondaryLayoutSection headerContent={null}>
-          <ContextDebugger />
+          <AdHocCheckRightAside />
         </SecondaryLayoutSection>
       </AppContainer>
       <ChooseCheckTypeModal isOpen={false} />

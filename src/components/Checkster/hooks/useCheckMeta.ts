@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { Check, CheckFormValues, CheckType, CheckTypeGroup } from 'types';
 
-import { FORM_CHECK_TYPE_SCHEMA_MAP } from '../constants';
+import { FORM_CHECK_TYPE_SCHEMA_MAP, K6_CHECK_TYPES } from '../constants';
 import { useCheckTypes } from './useCheckTypes';
 import { useFormDefaultValues } from './useFormDefaultValues';
 
@@ -12,6 +12,7 @@ export interface CheckMeta {
   schema: (typeof FORM_CHECK_TYPE_SCHEMA_MAP)[CheckType];
   defaultFormValues: CheckFormValues;
   isNew: boolean;
+  isK6Check: boolean;
 }
 
 export function useCheckMeta(check: Check): CheckMeta {
@@ -21,6 +22,6 @@ export function useCheckMeta(check: Check): CheckMeta {
   const isNew = !check.id;
 
   return useMemo(() => {
-    return { type, group, schema, defaultFormValues, isNew };
+    return { type, group, schema, defaultFormValues, isNew, isK6Check: K6_CHECK_TYPES.includes(type) };
   }, [type, group, schema, defaultFormValues, isNew]);
 }

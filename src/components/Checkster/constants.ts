@@ -612,6 +612,9 @@ export const FORM_NAVIGATION_SECTION_LABEL_MAP: Record<FormSectionName, string> 
  */
 export const ENTRY_INDEX_CHAR = `-1`;
 
+// Checks that are executed with k6 rather than blackbox exporter
+export const K6_CHECK_TYPES = [CheckType.MULTI_HTTP, CheckType.Browser, CheckType.Scripted];
+
 // Css
 export const CSS_PRIMARY_CONTAINER_NAME = 'checkEditor-primary-container';
 export const FIELD_SPACING = 2;
