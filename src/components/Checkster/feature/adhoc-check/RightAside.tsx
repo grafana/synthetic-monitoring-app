@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { dateTime } from '@grafana/data';
+import { dateTime, dateTimeFormat } from '@grafana/data';
 import { Button, EmptyState } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -8,7 +8,9 @@ import { AdHocCheckState, ProbeStateStatus } from './types.adhoc-check';
 import { CheckFormValues } from 'types';
 import { useProbes } from 'data/useProbes';
 
+import { Column } from '../../components/ui/Column';
 import { toPayload } from '../../utils/adaptors';
+import { DEFAULT_GC_INTERVAL_IN_MILLISECONDS, DEFAULT_TIMEOUT_IN_SECONDS } from './constants';
 import { LogsPanel } from './LogsPanel';
 import { useAdHocCheck } from './useAdHocCheck';
 import { useAdHocLogs } from './useAdHocLogs';
@@ -50,7 +52,7 @@ export function RightAside() {
         const now = dateTime();
         setLogState((prevState) => {
           return pendingIds.reduce<AdHocCheckStateMap>((acc, id) => {
-            if (acc[id] && now.diff(acc[id].created, 'seconds') > 10) {
+            if (acc[id] && now.diff(acc[id].created, 'seconds') > DEFAULT_TIMEOUT_IN_SECONDS) {
               return {
                 ...acc,
                 [id]: {
@@ -74,7 +76,7 @@ export function RightAside() {
             return acc;
           }, prevState);
         });
-      }, 5000);
+      }, DEFAULT_GC_INTERVAL_IN_MILLISECONDS);
 
       return () => clearInterval(interval);
     }
@@ -167,51 +169,76 @@ export function RightAside() {
     console.log('responseData', responseData);
   }, [responseData]);
 
+  const hasPendingChecks = pendingIds.length > 0;
+
   if (isLoadingProbes) {
     return <div>Loading probes...</div>;
   }
 
   if (!items.length) {
     return (
-      <EmptyState
-        message={`You can test your check to see how it behaves in the wild`}
-        variant={'completed'}
-        button={
-          <Button variant="secondary" type="button" onClick={handleAdHocCheck}>
-            Test
-          </Button>
-        }
+      <div
+        className={css`
+          padding: 8px 8px 8px 0;
+        `}
       >
-        Before you save your check, test how it will behave.
-      </EmptyState>
+        <EmptyState
+          message={`You can test your check to see how it behaves in the wild`}
+          variant={'completed'}
+          button={
+            <Button variant="secondary" type="button" onClick={handleAdHocCheck}>
+              Test
+            </Button>
+          }
+        >
+          Before you save your check, test how it will behave.
+        </EmptyState>
+      </div>
     );
   }
 
   return (
-    <div
+    <Column
+      gap={2}
       className={css`
         padding: 8px 8px 8px 0;
       `}
     >
-      <Button variant="secondary" type="button" onClick={handleAdHocCheck}>
-        Test
-      </Button>
-      <h6>Test results</h6>
-      {items.map((item) => (
-        <div key={item.id}>
-          {Object.values(item.probeState).map((state) => {
-            return (
-              <LogsPanel
-                key={state.name}
-                timeseries={state.timeseries}
-                logs={state.logs}
-                probe={state.name}
-                state={state.state}
-              />
-            );
-          })}
-        </div>
-      ))}
-    </div>
+      <div>
+        <Button
+          disabled={hasPendingChecks}
+          tooltip={
+            hasPendingChecks
+              ? `You'll have to wait for pending checks to complete/timeout before you can trigger a new test`
+              : undefined
+          }
+          variant="secondary"
+          type="button"
+          onClick={handleAdHocCheck}
+        >
+          Test
+        </Button>
+      </div>
+
+      <Column gap={1}>
+        <h6>Test results</h6>
+        {[...items].reverse().map((item) => (
+          <Column gap={1} key={item.id}>
+            <div>{dateTimeFormat(item.created)}</div>
+            {Object.values(item.probeState).map((state) => {
+              return (
+                <LogsPanel
+                  key={state.name}
+                  timeseries={state.timeseries}
+                  logs={state.logs}
+                  probe={state.name}
+                  state={state.state}
+                />
+              );
+            })}
+          </Column>
+        ))}
+      </Column>
+    </Column>
   );
 }

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Icon, useStyles2, useTheme2 } from '@grafana/ui';
+import { Badge, Icon, Text, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx, keyframes } from '@emotion/css';
 
 import { AdHocResult, ProbeStateStatus } from './types.adhoc-check';
 
 import { Preformatted } from '../../../Preformatted';
+import { getLogLevelFromMessage, getProbeSuccess } from './utils';
 
 interface LogsPanelProps {
   logs: AdHocResult['line']['logs'];
@@ -16,29 +17,37 @@ interface LogsPanelProps {
 export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
+  const probeState = useMemo(() => {
+    return getProbeSuccess(state, timeseries);
+  }, [state, timeseries]);
+
   return (
     <div className={styles.wrapper}>
-      <div className={cx(styles.probe, styles.backgroundHover)}>
-        <div className={cx(styles.probeStatus, `LogsPanel__state-${state}`)} />
+      <div className={cx(styles.probe, styles.backgroundHover)} onClick={() => setIsOpen(!isOpen)}>
+        <div className={cx(styles.probeStatus, `LogsPanel__state-${probeState}`)} />
         <div className={styles.probeLabel}>
           <span>{probe}</span>
           {state === 'pending' && <Icon name="fa fa-spinner" />}
           {state === 'success' && (
-            <Button
-              fill="text"
-              size="sm"
-              variant="success"
-              type="button"
-              icon="gf-logs"
-              onClick={() => setIsOpen(!isOpen)}
-            >
+            <Text variant="bodySmall">
               Logs: {logs.length}, Metrics: {timeseries?.length ?? 0}
-            </Button>
+            </Text>
           )}
+          {state === ProbeStateStatus.Timeout && <Badge color="orange" text="Timed out" />}
         </div>
       </div>
       {isOpen && (
         <div className={styles.steps}>
+          {!logs.length && state === ProbeStateStatus.Pending && (
+            <Text variant="bodySmall" element="span" color="secondary">
+              Waiting for logs to arrive...
+            </Text>
+          )}
+          {!logs.length && state === ProbeStateStatus.Timeout && (
+            <Text variant="bodySmall" element="span" color="warning">
+              Timed out while waiting for logs.
+            </Text>
+          )}
           {logs.map((log, index) => (
             <LogItem key={`${log.time}-${index}`} log={log} />
           ))}
@@ -49,19 +58,20 @@ export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
 }
 
 function getLogColor(level: string, theme: GrafanaTheme2) {
-  switch (level) {
-    case 'info':
-      return theme.colors.info.text;
+  switch (level.toLowerCase()) {
+    case 'warning':
     case 'warn':
       return theme.colors.warning.text;
     case 'error':
       return theme.colors.error.text;
+    case 'info':
+    // return theme.colors.info.text;
     default:
-      return theme.colors.text.secondary;
+      return theme.colors.text.primary;
   }
 }
 
-function LogMessage({ log }: { log: AdHocResult['line']['logs'][number] }) {
+function LogMessage({ log, logLevel }: { log: AdHocResult['line']['logs'][number]; logLevel: string }) {
   const theme = useTheme2();
 
   if ('check' in log) {
@@ -83,7 +93,7 @@ function LogMessage({ log }: { log: AdHocResult['line']['logs'][number] }) {
   return (
     <span
       className={css`
-        color: ${getLogColor(log.level, theme)};
+        color: ${getLogColor(logLevel, theme)};
       `}
     >
       {log.msg}
@@ -93,14 +103,15 @@ function LogMessage({ log }: { log: AdHocResult['line']['logs'][number] }) {
 
 function LogItem({ log }: { log: AdHocResult['line']['logs'][number] }) {
   const { msg, ...props } = log;
-  const [isOpen, setIsOpen] = useState(false);
+  const logLevel = getLogLevelFromMessage(log.msg, log.level);
+  const [isOpen, setIsOpen] = useState(logLevel === 'error');
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.logWrapper}>
       <div className={cx(styles.msg, styles.backgroundHover)} onClick={() => setIsOpen(!isOpen)}>
         <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
-        <LogMessage log={log} />
+        <LogMessage log={log} logLevel={logLevel} />
       </div>
       <div className={styles.stepContent}>
         {isOpen && (
@@ -141,17 +152,18 @@ function getStyles(theme: GrafanaTheme2) {
       position: relative;
       //min-height: ${theme.spacing(2)};
       padding-left: ${theme.spacing(2)};
-
-      &:before {
-        content: '';
-        border-left: 2px solid ${theme.colors.border.weak};
-        position: absolute;
-        left: -8px;
-        top: -20px;
-        border-top: 2px solid rgba(204, 204, 220, 0.12);
-        width: 8px;
-        bottom: -19px;
-      }
+      padding-bottom: ${theme.spacing(2)};
+      //
+      // &:before {
+      //   content: '';
+      //   border-left: 2px solid ${theme.colors.border.weak};
+      //   position: absolute;
+      //   left: -8px;
+      //   top: -20px;
+      //   border-top: 2px solid rgba(204, 204, 220, 0.12);
+      //   width: 8px;
+      //   bottom: -19px;
+      // }
     `,
     msg: css`
       display: flex;
@@ -160,6 +172,7 @@ function getStyles(theme: GrafanaTheme2) {
       cursor: pointer;
       border-radius: ${theme.shape.radius.default};
       color: ${theme.colors.text.secondary};
+      align-items: center;
 
       & span {
         font-family: ${theme.typography.fontFamilyMonospace};
@@ -181,6 +194,9 @@ function getStyles(theme: GrafanaTheme2) {
       gap: ${theme.spacing(1)};
       align-items: center;
       padding: ${theme.spacing(1)};
+      cursor: pointer;
+      border-radius: ${theme.shape.radius.default};
+      background-color: ${theme.colors.background.secondary};
     `,
     probeStatus: css`
       border-radius: ${theme.shape.radius.circle};
