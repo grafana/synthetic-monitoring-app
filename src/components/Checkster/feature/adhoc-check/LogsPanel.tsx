@@ -64,8 +64,8 @@ function getLogColor(level: string, theme: GrafanaTheme2) {
       return theme.colors.warning.text;
     case 'error':
       return theme.colors.error.text;
-    case 'info':
-    // return theme.colors.info.text;
+    case 'info+': // means that it's an upgraded "info"
+      return theme.colors.info.text;
     default:
       return theme.colors.text.primary;
   }
@@ -115,7 +115,7 @@ function LogItem({ log }: { log: AdHocResult['line']['logs'][number] }) {
       </div>
       <div className={styles.stepContent}>
         {isOpen && (
-          <Preformatted>
+          <Preformatted className={styles.stepContentPreformatted}>
             {Object.entries(props).map(([key, value]) => {
               return (
                 <div key={key}>
@@ -152,7 +152,6 @@ function getStyles(theme: GrafanaTheme2) {
       position: relative;
       //min-height: ${theme.spacing(2)};
       padding-left: ${theme.spacing(2)};
-      padding-bottom: ${theme.spacing(2)};
       //
       // &:before {
       //   content: '';
@@ -164,6 +163,9 @@ function getStyles(theme: GrafanaTheme2) {
       //   width: 8px;
       //   bottom: -19px;
       // }
+    `,
+    stepContentPreformatted: css`
+      padding-bottom: ${theme.spacing(2)};
     `,
     msg: css`
       display: flex;

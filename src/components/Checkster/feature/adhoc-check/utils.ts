@@ -25,7 +25,9 @@ export function getLogLevelFromMessage(message: string, defaultLevel = 'log') {
   for (const subject of UPGRADED_LOG_MESSAGE) {
     if (Array.isArray(subject)) {
       const [subjectMessage, level] = subject;
-      if (message.startsWith(subjectMessage)) {
+      if (subjectMessage instanceof RegExp && subjectMessage.test(message)) {
+        return level;
+      } else if (typeof subjectMessage === 'string' && message.startsWith(subjectMessage)) {
         return level;
       }
     } else if (message.startsWith(subject)) {
