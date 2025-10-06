@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { Check } from '../../types';
+import { Check, CheckFormValues } from '../../types';
 import { CheckInstrumentation } from './types';
 
 import { FormRoot } from './components/form/FormRoot';
@@ -14,7 +14,7 @@ import { RightAside as AdHocCheckRightAside } from './feature/adhoc-check/RightA
 
 interface ChecksterProps {
   check?: Check | CheckInstrumentation;
-  onSave(check: Check): Promise<void>;
+  onSave(check: Check, formValues: CheckFormValues): Promise<void>;
 }
 
 export function Checkster(props: ChecksterProps) {
@@ -25,7 +25,7 @@ export function Checkster(props: ChecksterProps) {
   );
 }
 
-function ChecksterInternal({ check }: ChecksterProps) {
+function ChecksterInternal({ check, onSave }: ChecksterProps) {
   const { setCheck, isLoading, error } = useChecksterContext();
 
   useEffect(() => {
@@ -37,7 +37,7 @@ function ChecksterInternal({ check }: ChecksterProps) {
     <>
       <AppContainer isLoading={isLoading} error={error}>
         <PrimaryLayoutSection headerContent={<FormSectionNavigation />}>
-          <FormRoot />
+          <FormRoot onSave={onSave} />
         </PrimaryLayoutSection>
         <SecondaryLayoutSection headerContent={null}>
           <AdHocCheckRightAside />

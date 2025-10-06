@@ -2,9 +2,10 @@ import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { css } from '@emotion/css';
 
-import { CheckFormValues } from 'types';
+import { Check, CheckFormValues } from 'types';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
+import { toPayload } from '../../utils/adaptors';
 import { FormAlertingSection } from './FormAlertingSection';
 import { FormCheckSection } from './FormCheckSection';
 import { FormExecutionSection } from './FormExecutionSection';
@@ -12,7 +13,7 @@ import { FormFooter } from './FormFooter';
 import { FormLabelSection } from './FormLabelSection';
 import { FormUptimeSection } from './FormUptimeSection';
 
-export function FormRoot() {
+export function FormRoot({ onSave }: { onSave(payload: Check, formValues: CheckFormValues): Promise<void> }) {
   const {
     formId,
     formNavigation: { sectionByErrors, completeAllSteps },
@@ -31,9 +32,9 @@ export function FormRoot() {
   return (
     <form
       onSubmit={handleSubmit(
-        (...success) => {
-          console.log('success');
-          console.log(...success);
+        (data) => {
+          const check = toPayload(data);
+          onSave(check, data);
         },
         (errors) => {
           sectionByErrors(errors);

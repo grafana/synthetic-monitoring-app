@@ -101,7 +101,6 @@ export function ChecksterProvider({ children, check: _checkViaProps = DEFAULT_CH
     if (check) {
       // Reset form values when check changes
       formMethods.reset(checkMeta.defaultFormValues);
-      console.log('Form values after reset:', formMethods.getValues());
     }
   }, [check, checkMeta.defaultFormValues, formMethods]);
 
