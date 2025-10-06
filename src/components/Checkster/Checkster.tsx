@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import { Check, CheckFormValues } from '../../types';
 import { CheckInstrumentation } from './types';
 
+import { ConfirmLeavingPage } from '../ConfirmLeavingPage';
 import { FormRoot } from './components/form/FormRoot';
 import { FormSectionNavigation } from './components/FormSectionNavigation/FormSectionNavigation';
 import { ChooseCheckTypeModal } from './components/modals/ChooseCheckTypeModal';
@@ -27,7 +29,9 @@ export function Checkster(props: ChecksterProps) {
 
 function ChecksterInternal({ check, onSave }: ChecksterProps) {
   const { setCheck, isLoading, error } = useChecksterContext();
-
+  const {
+    formState: { isDirty },
+  } = useFormContext();
   useEffect(() => {
     setCheck(check);
   }, [check, setCheck]);
@@ -42,7 +46,9 @@ function ChecksterInternal({ check, onSave }: ChecksterProps) {
           <AdHocCheckRightAside />
         </SecondaryLayoutSection>
       </AppContainer>
+      {/* TODO: Do we want to use/keep this or just remove it? */}
       <ChooseCheckTypeModal isOpen={false} />
+      <ConfirmLeavingPage enabled={isDirty} />
     </>
   );
 }

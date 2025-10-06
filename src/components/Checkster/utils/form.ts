@@ -18,11 +18,6 @@ function interpolate(template: string, variables: Record<string, string>): strin
   return template.replace(/\{(\w+)}/g, (_, key) => variables[key] ?? `{${key}}`);
 }
 
-export function getByPath(subject: object, ...pathSegments: Array<string | number>): unknown {
-  const path = createPath(...pathSegments);
-  return get(subject, path);
-}
-
 // TODO: Probably a better way to use typings here
 export function createPath(...pathSegments: Array<CheckFormFieldPath | string | number>): any {
   return pathSegments.join('.');

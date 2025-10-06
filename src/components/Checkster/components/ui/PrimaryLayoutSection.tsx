@@ -26,7 +26,7 @@ export function PrimaryLayoutSection({ children, headerContent }: PrimaryLayoutS
   );
 }
 
-function getClassName(theme: GrafanaTheme2) {
+function getClassName(_theme: GrafanaTheme2) {
   return css`
     container-name: ${CSS_PRIMARY_CONTAINER_NAME};
     container-type: inline-size;

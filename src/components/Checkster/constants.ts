@@ -105,15 +105,6 @@ export const CHECK_TYPE_GROUP_OPTIONS_MAP: Record<CheckTypeGroup, CheckTypeGroup
   },
 };
 
-// This decides the order of the groups when rendering
-// @ts-expect-error unused for now TODO: remove if not needed
-const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
-  CheckTypeGroup.ApiTest,
-  CheckTypeGroup.MultiStep,
-  CheckTypeGroup.Scripted,
-  CheckTypeGroup.Browser,
-].map((checkTypeGroup) => CHECK_TYPE_GROUP_OPTIONS_MAP[checkTypeGroup]);
-
 // Do not export, this is meant for internal use only
 function getCheckTypeGroup(type: CheckType): CheckTypeGroup {
   const [group] = Object.entries(CHECK_TYPE_GROUP_MAP).find(([, types]) => types.includes(type)) ?? [];
@@ -255,8 +246,6 @@ export default async function () {
 }`);
 
 export const DEFAULT_CHECK_TYPE: CheckType = CheckType.HTTP;
-// Don't set manually, derive from DEFAULT_CHECK_TYPE
-export const DEFAULT_CHECK_TYPE_GROUP: CheckTypeGroup = CHECK_TYPE_OPTION_MAP[DEFAULT_CHECK_TYPE].group;
 
 const CHECK_BASE_CONFIG: Omit<Check, 'settings'> = {
   job: '',
@@ -417,8 +406,6 @@ export const DEFAULT_FORM_SECTION_ORDER: FormSectionOrder = [
 ];
 
 export const OVERRIDE_DEFAULT_SECTION_ORDER: Partial<Record<CheckType, FormSectionOrder>> = {};
-
-export const DEFAULT_HTTP_COMPRESSION_ALGO = HTTPCompressionAlgo.none;
 
 // Allowed HTTP methods for HTTP and MultiHTTP checks
 // Note: Order matters, as it determines the order in which they are displayed in the UI.
@@ -599,18 +586,6 @@ export const FORM_NAVIGATION_SECTION_LABEL_MAP: Record<FormSectionName, string> 
   },
   { [FormSectionName.Check]: 'Request' } as any
 ); // Override check since it's only used internally
-
-/**
- * Because we have separated "multi-http" assertions, we need a
- * way to say that regardless of the entry's index, this error
- * belongs to the steps section or the uptime definition step.
- *
- * We have to wildcard the entry index in form errors.
- *
- * `-1` works well because it is type safe as it is a number, but
- * it is also impossible to be a valid index
- */
-export const ENTRY_INDEX_CHAR = `-1`;
 
 // Checks that are executed with k6 rather than blackbox exporter
 export const K6_CHECK_TYPES = [CheckType.MULTI_HTTP, CheckType.Browser, CheckType.Scripted];

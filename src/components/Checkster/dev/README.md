@@ -4,17 +4,10 @@
 
 Just a project name. The intended name is `CheckEditor`
 
-## Add route
+## How to run Checkster?
 
-`/routing/InitializedRouter.tsx`
+Enable feature toggle `synthetic-monitoring-check-editor`
 
-```typescript jsx
-{/* TODO: START REMOVE THIS */}
-import {DevChecksterPage} from "./DevChecksterPage";
-...
-<Route path="/dev" element={<DevChecksterPage/>}/>
-{/* TODO: END REMOVE THIS */}
-```
 
 ## Important
 **DO NOT** import anything from `components/CheckForm/**` \

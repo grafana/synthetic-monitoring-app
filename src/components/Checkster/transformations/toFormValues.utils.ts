@@ -1,5 +1,3 @@
-import { SelectableValue } from '@grafana/data';
-
 import { Check, CheckAlertPublished, CheckFormValues, TLSConfig } from 'types';
 import { fromBase64 } from 'utils';
 
@@ -8,11 +6,6 @@ import {
   PredefinedAlertInterface,
 } from '../components/form/generic/GenericAlertingField/AlertsPerCheck/AlertsPerCheck.constants';
 import { getCheckAlertsFormValues } from './toFormValues.alerts';
-
-export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
-  const labelValue = String(value);
-  return { label: label ?? labelValue, value };
-}
 
 export const getTlsConfigFormValues = (tlsConfig?: TLSConfig) => {
   if (!tlsConfig || Object.keys(tlsConfig).length === 0) {

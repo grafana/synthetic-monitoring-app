@@ -1,4 +1,4 @@
-import React, { ComponentProps, forwardRef, useEffect, useMemo } from 'react';
+import React, { ComponentProps, useEffect, useMemo } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { ThemeComponents } from '@grafana/data/dist/types/themes/createComponents';
 import { Dropdown, Icon, Menu, useTheme2 } from '@grafana/ui';
@@ -28,10 +28,19 @@ interface InputSelectProps {
 }
 
 // TODO: Make sure a11y is what it should be
-export const InputSelect = forwardRef<HTMLInputElement, InputSelectProps>(function InputSelect(
-  { id, value, placement, options, className, onChange, invalid, disabled, width, placeholder = 'Select', size = 'md' },
-  ref
-) {
+export function InputSelect({
+  id,
+  value,
+  placement,
+  options,
+  className,
+  onChange,
+  invalid,
+  disabled,
+  width,
+  placeholder = 'Select',
+  size = 'md',
+}: InputSelectProps) {
   const [internalValue, setInternalValue] = React.useState<SelectableValue['value'] | undefined>(value);
   const theme = useTheme2();
   const styles = getStyles(theme, size);
@@ -95,7 +104,7 @@ export const InputSelect = forwardRef<HTMLInputElement, InputSelectProps>(functi
       </Dropdown>
     </div>
   );
-});
+}
 
 function getStyles(theme: GrafanaTheme2, size: InputSize = 'md') {
   const inputSize = theme.components.height[size] ?? theme.components.height.md;
