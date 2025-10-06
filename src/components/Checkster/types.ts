@@ -45,7 +45,7 @@ export enum FormSectionName {
 
 export type FormSectionOrder = FormSectionName[];
 
-export type SectionIncludedField = CheckFormFieldPath | RegExp;
+export type FormFieldMatch = CheckFormFieldPath | RegExp | string;
 
 export interface FormNavigationState {
   active: FormSectionName;
@@ -54,9 +54,9 @@ export interface FormNavigationState {
   sectionOrder: FormSectionOrder;
   isSectionActive(sectionName: FormSectionName): boolean;
   setSectionActive(sectionName: FormSectionName): void;
-  registerSectionFields(sectionName: FormSectionName, fields: SectionIncludedField[]): void;
+  registerSectionFields(sectionName: FormSectionName, fields: FormFieldMatch[]): void;
   sectionByErrors(errors: FieldErrors): void;
-  getSectionFields(sectionName: FormSectionName): Array<CheckFormFieldPath | SectionIncludedField>;
+  getSectionFields(sectionName: FormSectionName): Array<CheckFormFieldPath | FormFieldMatch>;
   isSeenStep(sectionName: FormSectionName): boolean;
   getSectionLabel(sectionName: FormSectionName): string;
   completeAllSteps(): void;
@@ -65,6 +65,7 @@ export interface FormNavigationState {
     previous: { name: FormSectionName; label: string } | null;
   };
   isStepsComplete: boolean;
+  errors: string[] | undefined;
 }
 
 // From `CheckEditor.types.ts`

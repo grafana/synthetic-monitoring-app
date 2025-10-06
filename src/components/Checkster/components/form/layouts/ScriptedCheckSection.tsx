@@ -20,6 +20,8 @@ interface ScriptedCheckSectionProps {
   examples?: ExampleScript[];
 }
 
+export const SCRIPTED_CHECK_FIELDS = ['job', 'target', /settings\.[a-z]+\.script/];
+
 // Don't set label here, set it explicitly, where the component is used (for readability)
 export function ScriptedCheckSection({ label, examples, scriptField }: ScriptedCheckSectionProps) {
   const theme = useTheme2();

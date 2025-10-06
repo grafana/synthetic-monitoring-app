@@ -6,25 +6,12 @@ import { Icon, IconName, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 
-import { SectionIncludedField } from '../../types';
 import { CheckFormValues } from 'types';
 
 import { CSS_PRIMARY_CONTAINER_NAME } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { getAllErrorFields } from '../../utils/form';
-
-function getHasSectionError(sectionFields: SectionIncludedField[], errors: string[]) {
-  const testErrors = errors.join('|');
-  return sectionFields.some((field) => {
-    if (field instanceof RegExp) {
-      return field.test(testErrors);
-    }
-
-    return errors.some((path) => {
-      return field.startsWith(path);
-    });
-  });
-}
+import { getHasSectionError } from '../../utils/navigation';
 
 export function FormSectionNavigation() {
   const {

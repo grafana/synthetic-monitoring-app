@@ -2,29 +2,30 @@ import React from 'react';
 
 import { FormSectionName } from '../../types';
 import { CheckType } from 'types';
+import { BROWSER_EXAMPLES, SCRIPT_EXAMPLES } from 'components/WelcomeTabs/constants';
 
-import { BROWSER_EXAMPLES, SCRIPT_EXAMPLES } from '../../../WelcomeTabs/constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { DnsCheckSection } from './layouts/DnsCheckSection';
 import { GrpcCheckSection } from './layouts/GrpcCheckSection';
-import { HTTP_CHECK_FIELDS_MAP, HttpCheckSection } from './layouts/HttpCheckSection';
+import { HTTP_CHECK_FIELDS, HttpCheckSection } from './layouts/HttpCheckSection';
 import { MULTI_HTTP_CHECK_REG_EXP_LIST, MultiHttpCheckSections } from './layouts/MultiHttpCheckSections';
 import { PingCheckSection } from './layouts/PingCheckSection';
-import { ScriptedCheckSection } from './layouts/ScriptedCheckSection';
+import { SCRIPTED_CHECK_FIELDS, ScriptedCheckSection } from './layouts/ScriptedCheckSection';
 import { TcpCheckSection } from './layouts/TcpCheckSection';
 import { TracerouteCheckSection } from './layouts/TracerouteCheckSection';
 import { FormSection } from './FormSection';
 
 function getCheckTypeFields(checkType: CheckType) {
-  if (checkType === CheckType.HTTP) {
-    return Object.values(HTTP_CHECK_FIELDS_MAP);
+  switch (checkType) {
+    case CheckType.HTTP:
+      return HTTP_CHECK_FIELDS;
+    case CheckType.MULTI_HTTP:
+      return MULTI_HTTP_CHECK_REG_EXP_LIST;
+    case CheckType.Scripted:
+      return SCRIPTED_CHECK_FIELDS;
+    default:
+      return undefined;
   }
-
-  if (checkType === CheckType.MULTI_HTTP) {
-    return MULTI_HTTP_CHECK_REG_EXP_LIST;
-  }
-
-  return [];
 }
 
 export function FormCheckSection() {

@@ -1,5 +1,13 @@
-import React, { Children, isValidElement, PropsWithChildren, ReactElement, ReactNode, useState } from 'react';
-import { FieldPath } from 'react-hook-form';
+import React, {
+  Children,
+  isValidElement,
+  PropsWithChildren,
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useState,
+} from 'react';
+import { FieldPath, useFormContext } from 'react-hook-form';
 import { Tab, TabContent, TabsBar, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
@@ -12,14 +20,45 @@ type FormTabChild = undefined | false | FormTabContentChild;
 interface FormTabProps {
   children?: FormTabChild | FormTabChild[];
   actions?: ReactNode;
+  activeIndex?: number;
+  tabErrorIndexes?: boolean[];
+}
+
+function TabErrorIndicator() {
+  const theme = useTheme2();
+  return (
+    <div
+      className={css`
+        display: inline-block;
+        border-radius: ${theme.shape.radius.circle};
+        background-color: ${theme.colors.secondary.text};
+        width: ${theme.spacing(1)};
+        height: ${theme.spacing(1)};
+        background-color: ${theme.colors.error.text};
+        margin-left: ${theme.spacing(1)};
+      `}
+    />
+  );
 }
 
 function isValidTabChild(child: ReactNode): child is FormTabContentChild {
   return isValidElement(child) && child.type === FormTabContent;
 }
 
-export function FormTabs({ children, actions }: FormTabProps) {
-  const [active, setActive] = useState(0);
+export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }: FormTabProps) {
+  const {
+    formState: { submitCount },
+  } = useFormContext<CheckFormValues>();
+
+  const [active, setActive] = useState(activeIndex >= 0 ? activeIndex : 0);
+
+  useEffect(() => {
+    // If form is submitted, resync activeIndex prop, to show validation errors
+    if (activeIndex >= 0) {
+      setActive(activeIndex);
+    }
+  }, [activeIndex, submitCount]);
+
   const theme = useTheme2();
 
   return (
@@ -35,7 +74,13 @@ export function FormTabs({ children, actions }: FormTabProps) {
             return null;
           }
           return (
-            <Tab key={index} active={active === index} label={child.props.label} onChangeTab={() => setActive(index)}>
+            <Tab
+              suffix={tabErrorIndexes && tabErrorIndexes[index] ? TabErrorIndicator : undefined}
+              key={index}
+              active={active === index}
+              label={child.props.label}
+              onChangeTab={() => setActive(index)}
+            >
               {child}
             </Tab>
           );

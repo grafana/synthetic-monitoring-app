@@ -1,26 +1,25 @@
-import React, { PropsWithChildren, useEffect, useRef } from 'react';
+import React, { PropsWithChildren, useEffect } from 'react';
 
-import { FormSectionName, SectionIncludedField } from '../../types';
+import { FormFieldMatch, FormSectionName } from '../../types';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 
 interface FormSectionProps extends PropsWithChildren {
   sectionName: FormSectionName;
-  fields?: SectionIncludedField[];
+  fields?: Array<FormFieldMatch | RegExp | string>;
 }
 
-export function FormSection({ sectionName, children, fields = [] }: FormSectionProps) {
-  const fieldsRef = useRef<SectionIncludedField[]>([]);
-  fieldsRef.current = fields;
-  const fieldsChecksum = JSON.stringify(fields.map((item) => (item instanceof RegExp ? item.source : item)));
-
+export function FormSection({ sectionName, children, fields }: FormSectionProps) {
   const {
     formNavigation: { isSectionActive, registerSectionFields },
   } = useChecksterContext();
 
   useEffect(() => {
-    registerSectionFields(sectionName, fieldsRef.current);
-  }, [fieldsChecksum, registerSectionFields, sectionName, fieldsRef]);
+    console.log('setting shit');
+    if (fields && Array.isArray(fields)) {
+      registerSectionFields(sectionName, fields);
+    }
+  }, [fields, registerSectionFields, sectionName]);
 
   const isActive = isSectionActive(sectionName);
 

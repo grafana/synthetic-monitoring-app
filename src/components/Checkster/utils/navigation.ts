@@ -1,3 +1,5 @@
+import { FormFieldMatch } from '../types';
+
 import { ENTRY_INDEX_CHAR } from '../constants';
 
 export function normalizeFlattenedErrors(errors: string[]) {
@@ -7,5 +9,22 @@ export function normalizeFlattenedErrors(errors: string[]) {
     }
 
     return error;
+  });
+}
+
+export function getHasSectionError(sectionFields: FormFieldMatch[], errors: string[]) {
+  const testErrors = errors.join('|');
+  return sectionFields.some((field) => {
+    if (!field) {
+      return false;
+    }
+
+    if (field instanceof RegExp) {
+      return field.test(testErrors);
+    }
+
+    return errors.some((path) => {
+      return field.startsWith(path);
+    });
   });
 }

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-import { CheckFormFieldPath } from '../../../types';
-
+import { useChecksterContext } from '../../../contexts/ChecksterContext';
+import { useGetIndexFieldError } from '../../../hooks/useGetIndexFieldError';
+import { useHasFieldsError } from '../../../hooks/useHasFieldsError';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
@@ -16,20 +17,34 @@ import { GenericInputField } from '../generic/GenericInputField';
 import { GenericNameValueField } from '../generic/GenericNameValueField';
 import { GenericTextareaField } from '../generic/GenericTextareaField';
 
-export const HTTP_CHECK_FIELDS_MAP: Record<string, CheckFormFieldPath> = {
-  job: 'job',
-  target: 'target',
-  cacheBustingQueryParamName: 'settings.http.cacheBustingQueryParamName',
-  headers: 'settings.http.headers',
-  followRedirects: 'settings.http.followRedirects',
-  ipVersion: 'settings.http.ipVersion',
-  body: 'settings.http.body',
-  basicAuth: 'settings.http.basicAuth',
-  proxyURL: 'settings.http.proxyURL',
-  proxyConnectHeaders: 'settings.http.proxyConnectHeaders',
-};
+const REQUEST_OPTIONS_TAB_FIELDS = [
+  [/\.headers/], // Options
+  undefined, // Body
+  [/\.basicAuth\./], // Authentication
+  [/\.tlsConfig\./], // TSL
+  [/\.proxyConnectHeaders\.\d+\./], // Proxy
+];
+
+const REQUEST_OPTIONS_FIELDS = REQUEST_OPTIONS_TAB_FIELDS.filter((field) => {
+  return field !== undefined;
+}).flat();
+
+export const HTTP_CHECK_FIELDS = ['job', 'target', ...REQUEST_OPTIONS_FIELDS];
 
 export function HttpCheckSection() {
+  const {
+    formNavigation: { errors },
+  } = useChecksterContext();
+  useEffect(() => {
+    console.log('errors', errors);
+  }, [errors]);
+
+  const hasRequestOptionError = useHasFieldsError(REQUEST_OPTIONS_FIELDS);
+  const tabIndexErrors = useGetIndexFieldError(REQUEST_OPTIONS_TAB_FIELDS);
+  const activeTab = tabIndexErrors.findIndex((value) => {
+    return value;
+  });
+
   return (
     <SectionContent>
       <FormJobField field="job" />
@@ -39,8 +54,8 @@ export function HttpCheckSection() {
       {/* TODO: Would be nice to write root fields like `.target` (instead of `target`) */}
       <FormHttpRequestMethodTargetFields field="target" methodField="settings.http.method" withQueryParams />
 
-      <AdditionalSettings indent buttonLabel="Request options">
-        <FormTabs>
+      <AdditionalSettings indent buttonLabel="Request options" isOpen={hasRequestOptionError}>
+        <FormTabs activeIndex={activeTab} tabErrorIndexes={tabIndexErrors}>
           <FormTabContent label="Options">
             {/* TODO: Would be nice to write settings fields like `headers` (instead of `settings.http.headers`)*/}
             {/* TODO: Revisit if it's worth storing the check type as a key in the form settings? */}

@@ -2,8 +2,6 @@ import React, { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormFieldPath } from '../../types';
-
 import { FIELD_SPACING } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { Column } from './Column';
@@ -11,7 +9,6 @@ import { Column } from './Column';
 interface SectionContentProps extends PropsWithChildren {
   label?: ReactNode;
   vanilla?: boolean; // No content styling
-  fields?: CheckFormFieldPath[];
 }
 
 export function SectionContent({ label, vanilla, children }: SectionContentProps) {
