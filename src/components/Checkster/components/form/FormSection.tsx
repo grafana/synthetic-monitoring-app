@@ -15,7 +15,6 @@ export function FormSection({ sectionName, children, fields }: FormSectionProps)
   } = useChecksterContext();
 
   useEffect(() => {
-    console.log('setting shit');
     if (fields && Array.isArray(fields)) {
       registerSectionFields(sectionName, fields);
     }
