@@ -4,10 +4,10 @@ import { CHECK_TYPE_TIMEOUT_MAP } from '../../../constants';
 import { SectionContent } from '../../ui/SectionContent';
 import { FormTimeoutField } from '../FormTimeoutField';
 
-export function PingUptimeSection() {
+export function GrpcUptimeContent() {
   return (
     <SectionContent>
-      <FormTimeoutField field="timeout" {...CHECK_TYPE_TIMEOUT_MAP.ping} />
+      <FormTimeoutField field="timeout" {...CHECK_TYPE_TIMEOUT_MAP.grpc} />
     </SectionContent>
   );
 }

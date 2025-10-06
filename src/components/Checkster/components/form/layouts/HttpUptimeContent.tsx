@@ -16,7 +16,7 @@ import { FormTimeoutField } from '../FormTimeoutField';
 import { GenericMultiSelectField } from '../generic/GenericMultiSelectField';
 import { GenericRadioButtonGroupField } from '../generic/GenericRadioButtonGroupField';
 
-export function HttpUptimeSection() {
+export function HttpUptimeContent() {
   const { watch } = useFormContext<CheckFormValues>();
   const disallowBodyMatching = watch('settings.http.method') === HttpMethod.HEAD;
 

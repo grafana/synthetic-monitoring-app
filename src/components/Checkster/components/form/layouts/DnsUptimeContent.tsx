@@ -9,7 +9,7 @@ import { FormDnsRegExpValidationField } from '../FormDnsRegExpValidationField';
 import { FormTimeoutField } from '../FormTimeoutField';
 import { GenericMultiSelectField } from '../generic/GenericMultiSelectField';
 
-export function DnsUptimeSection() {
+export function DnsUptimeContent() {
   return (
     <SectionContent>
       <GenericMultiSelectField

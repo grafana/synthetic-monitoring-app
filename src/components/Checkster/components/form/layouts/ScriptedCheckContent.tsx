@@ -4,6 +4,7 @@ import { useTheme2 } from '@grafana/ui';
 import { CheckType } from '../../../../../types';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
+import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
 import { FIELD_SPACING } from '../../../constants';
 import { codeSnippetWrapper } from '../../../styles';
 import { ScriptExamples } from '../../ScriptExamples';
@@ -15,15 +16,19 @@ import { FormTabContent, FormTabs } from '../FormTabs';
 import { GenericScriptField } from '../generic/GenericScriptField';
 
 interface ScriptedCheckSectionProps {
-  label: string;
-  scriptField: `settings.${CheckType.Scripted | CheckType.Browser}.script`;
+  label?: string;
+  scriptField?: `settings.${CheckType.Scripted | CheckType.Browser}.script`;
   examples?: ExampleScript[];
 }
 
 export const SCRIPTED_CHECK_FIELDS = ['job', 'target', /settings\.[a-z]+\.script/];
 
 // Don't set label here, set it explicitly, where the component is used (for readability)
-export function ScriptedCheckSection({ label, examples, scriptField }: ScriptedCheckSectionProps) {
+export function ScriptedCheckContent({
+  label = 'Script',
+  examples = SCRIPT_EXAMPLES,
+  scriptField = 'settings.scripted.script',
+}: ScriptedCheckSectionProps) {
   const theme = useTheme2();
   const hasExamples = examples && examples?.length > 0;
 

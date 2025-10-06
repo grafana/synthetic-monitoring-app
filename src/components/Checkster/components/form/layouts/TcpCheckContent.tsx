@@ -4,43 +4,32 @@ import { DEFAULT_EXAMPLE_HOSTNAME } from '../../../constants';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
+import { FormIpVersionRadioField } from '../FormIpVersionRadioField';
 import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
-import { GenericCheckboxField } from '../generic/GenericCheckboxField';
+import { FormTLSConfigField } from '../FormTLSConfigField';
 import { GenericInputField } from '../generic/GenericInputField';
 
-export function TracerouteCheckSection() {
+export function TcpCheckContent() {
   return (
     <SectionContent>
       <FormJobField field="job" />
       <ChooseCheckType />
-
       <GenericInputField
         field="target"
         label="Request target"
-        description="Hostname to send traceroute."
-        placeholder={DEFAULT_EXAMPLE_HOSTNAME}
+        description="Host:port to connect to."
+        placeholder={`${DEFAULT_EXAMPLE_HOSTNAME}:80`}
         required
       />
 
       <AdditionalSettings indent buttonLabel="Request options">
         <FormTabs>
           <FormTabContent label="Options">
-            <GenericInputField
-              field="settings.traceroute.maxHops"
-              label="Max hops"
-              description="Maximum TTL for the trace."
-            />
-            <GenericInputField
-              field="settings.traceroute.maxUnknownHops"
-              label="Max unknown hops"
-              description="Maximimum number of hosts to traverse that give no response."
-            />
-            <GenericCheckboxField
-              field="settings.traceroute.ptrLookup"
-              label="PTR lookup"
-              description="Reverse lookup hostnames from IP addresses."
-            />
+            <FormIpVersionRadioField field="settings.tcp.ipVersion" description="The IP protocol of the TCP request." />
+          </FormTabContent>
+          <FormTabContent label="TLS">
+            <FormTLSConfigField field="settings.tcp" useTLS />
           </FormTabContent>
         </FormTabs>
       </AdditionalSettings>

@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 import { SectionContent } from '../../ui/SectionContent';
 import { GenericNameValueField } from '../generic/GenericNameValueField';
 
-export function GenericLabelSection() {
+export function GenericLabelContent() {
   return (
     <SectionContent>
       <GenericNameValueField

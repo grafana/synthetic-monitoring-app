@@ -6,12 +6,12 @@ import { Check, CheckFormValues } from 'types';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { toPayload } from '../../utils/adaptors';
-import { FormAlertingSection } from './FormAlertingSection';
-import { FormCheckSection } from './FormCheckSection';
-import { FormExecutionSection } from './FormExecutionSection';
+import { AlertingSection } from './sections/AlertingSection';
+import { CheckSection } from './sections/CheckSection';
+import { ExecutionSection } from './sections/ExecutionSection';
+import { LabelSection } from './sections/LabelSection';
+import { UptimeSection } from './sections/UptimeSection';
 import { FormFooter } from './FormFooter';
-import { FormLabelSection } from './FormLabelSection';
-import { FormUptimeSection } from './FormUptimeSection';
 
 export function FormRoot({ onSave }: { onSave(payload: Check, formValues: CheckFormValues): Promise<void> }) {
   const {
@@ -47,11 +47,11 @@ export function FormRoot({ onSave }: { onSave(payload: Check, formValues: CheckF
       `}
       id={formId}
     >
-      <FormCheckSection />
-      <FormUptimeSection />
-      <FormLabelSection />
-      <FormExecutionSection />
-      <FormAlertingSection />
+      <CheckSection />
+      <UptimeSection />
+      <LabelSection />
+      <ExecutionSection />
+      <AlertingSection />
 
       <FormFooter />
     </form>

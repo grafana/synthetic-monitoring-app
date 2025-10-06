@@ -10,7 +10,7 @@ import { FormTabContent, FormTabs } from '../FormTabs';
 import { FormTLSConfigField } from '../FormTLSConfigField';
 import { GenericInputField } from '../generic/GenericInputField';
 
-export function GrpcCheckSection() {
+export function GrpcCheckContent() {
   return (
     <SectionContent>
       <FormJobField field="job" />

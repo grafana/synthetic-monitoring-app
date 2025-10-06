@@ -7,10 +7,9 @@ import { FormMultiHttpEntriesField } from '../FormMultiHttpEntriesField';
 // Any field path that belongs to the multi http check section
 export const MULTI_HTTP_CHECK_REG_EXP_LIST = [/\.multihttp\.entries\.\d+\.request/];
 
-// Don't set label here, set it explicitly, where the component is used (for readability)
-export function MultiHttpCheckSections({ label }: { label: string }) {
+export function MultiHttpCheckContent() {
   return (
-    <SectionContent label={label}>
+    <SectionContent label="Requests">
       <FormJobField field="job" />
       <FormMultiHttpEntriesField field="settings.multihttp.entries" />
     </SectionContent>

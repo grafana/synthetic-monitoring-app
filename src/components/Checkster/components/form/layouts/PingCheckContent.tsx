@@ -7,10 +7,10 @@ import { ChooseCheckType } from '../ChooseCheckType';
 import { FormIpVersionRadioField } from '../FormIpVersionRadioField';
 import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
-import { FormTLSConfigField } from '../FormTLSConfigField';
+import { GenericCheckboxField } from '../generic/GenericCheckboxField';
 import { GenericInputField } from '../generic/GenericInputField';
 
-export function TcpCheckSection() {
+export function PingCheckContent() {
   return (
     <SectionContent>
       <FormJobField field="job" />
@@ -18,18 +18,23 @@ export function TcpCheckSection() {
       <GenericInputField
         field="target"
         label="Request target"
-        description="Host:port to connect to."
-        placeholder={`${DEFAULT_EXAMPLE_HOSTNAME}:80`}
+        description="Send an ICMP echo request to a target."
+        placeholder={DEFAULT_EXAMPLE_HOSTNAME}
         required
       />
 
       <AdditionalSettings indent buttonLabel="Request options">
         <FormTabs>
           <FormTabContent label="Options">
-            <FormIpVersionRadioField field="settings.tcp.ipVersion" description="The IP protocol of the TCP request." />
-          </FormTabContent>
-          <FormTabContent label="TLS">
-            <FormTLSConfigField field="settings.tcp" useTLS />
+            <FormIpVersionRadioField
+              field="settings.ping.ipVersion"
+              description="The IP protocol of the ICMP request."
+            />
+            <GenericCheckboxField
+              field="settings.ping.dontFragment"
+              label="Do not fragment"
+              description="Set the DF-bit in the IP-header. Only works with ipV4."
+            />
           </FormTabContent>
         </FormTabs>
       </AdditionalSettings>

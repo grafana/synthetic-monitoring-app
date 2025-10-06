@@ -6,7 +6,7 @@ import { GenericCheckboxField } from '../generic/GenericCheckboxField';
 import { GenericFrequencyField } from '../generic/GenericFrequencyField';
 import { GenericProbesSelectField } from '../generic/GenericProbesSelectField';
 
-export function GenericExecutionSection({ publishAdvancedMetrics }: { publishAdvancedMetrics: boolean }) {
+export function GenericExecutionContent({ publishAdvancedMetrics }: { publishAdvancedMetrics: boolean }) {
   return (
     <SectionContent>
       <GenericProbesSelectField />

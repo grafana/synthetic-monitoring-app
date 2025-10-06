@@ -1,17 +1,11 @@
 import React, { Fragment, PropsWithChildren } from 'react';
-import { FieldPath } from 'react-hook-form';
 import { Button, Stack } from '@grafana/ui';
-
-import { CheckFormValues } from '../../../types';
 
 import { Indent } from './ui/Indent';
 import { SecondaryContainer } from './ui/SecondaryContainer';
 
 interface AdditionalSettingsProps extends PropsWithChildren {
   buttonLabel?: string;
-  // Required to expand settings when there are field errors
-  // TODO: Consider fieldContext?
-  containsFields?: Array<FieldPath<CheckFormValues>>;
   indent?: true;
   isOpen?: boolean;
 }

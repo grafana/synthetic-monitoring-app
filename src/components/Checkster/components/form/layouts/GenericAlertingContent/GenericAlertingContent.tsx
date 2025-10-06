@@ -7,7 +7,7 @@ import { FormTabContent, FormTabs } from '../../FormTabs';
 import { GenericAlertingField } from '../../generic/GenericAlertingField';
 import { GenericLegacyAlertingField } from '../../generic/GenericLegacyAlertingField';
 
-export function GenericAlertingSection() {
+export function GenericAlertingContent() {
   return (
     <SectionContent>
       <FormTabs>

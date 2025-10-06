@@ -5,7 +5,7 @@ import { SectionContent } from '../../ui/SectionContent';
 import { FormMultiHttpAssertionsField } from '../FormMultiHttpAssertionsField';
 import { FormTimeoutField } from '../FormTimeoutField';
 
-export function MultiHttpUptimeSections() {
+export function MultiHttpUptimeContent() {
   return (
     <SectionContent>
       <FormMultiHttpAssertionsField field="settings.multihttp.entries" />

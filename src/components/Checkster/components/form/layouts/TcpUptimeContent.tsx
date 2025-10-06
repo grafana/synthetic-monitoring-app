@@ -5,7 +5,7 @@ import { SectionContent } from '../../ui/SectionContent';
 import { FormTcpQueryAndResponseField } from '../FormTcpQueryAndResponseField';
 import { FormTimeoutField } from '../FormTimeoutField';
 
-export function TcpUptimeSection() {
+export function TcpUptimeContent() {
   return (
     <SectionContent>
       <FormTcpQueryAndResponseField

@@ -5,7 +5,7 @@ import { CHECK_TYPE_TIMEOUT_MAP } from '../../../constants';
 import { SectionContent } from '../../ui/SectionContent';
 import { FormTimeoutField } from '../FormTimeoutField';
 
-export function ScriptedUptimeSection() {
+export function ScriptedUptimeContent() {
   return (
     <SectionContent>
       <div>
@@ -14,7 +14,7 @@ export function ScriptedUptimeSection() {
           running checks in a k6 script.
         </TextLink>
       </div>
-      <FormTimeoutField field="timeout" {...CHECK_TYPE_TIMEOUT_MAP.tcp} />
+      <FormTimeoutField field="timeout" {...CHECK_TYPE_TIMEOUT_MAP.scripted} />
     </SectionContent>
   );
 }

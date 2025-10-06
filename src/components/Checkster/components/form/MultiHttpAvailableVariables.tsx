@@ -25,7 +25,7 @@ export function MultiHttpAvailableVariables({ requestIndex }: FormMultiHttpAvail
         <div />
       </StyledField>
       <Stack wrap="wrap" gap={1}>
-        {availableVariables.map(({ type, expression, name, attribute }, index) => {
+        {availableVariables.map(({ type, name }, index) => {
           const variableName = '${' + name + '}';
           return (
             <ClipboardButton

@@ -30,7 +30,7 @@ const REQUEST_OPTIONS_FIELDS = REQUEST_OPTIONS_TAB_FIELDS.filter((field) => {
 
 export const HTTP_CHECK_FIELDS = ['job', 'target', ...REQUEST_OPTIONS_FIELDS];
 
-export function HttpCheckSection() {
+export function HttpCheckContent() {
   const hasRequestOptionError = useHasFieldsError(REQUEST_OPTIONS_FIELDS);
   const tabIndexErrors = useGetIndexFieldError(REQUEST_OPTIONS_TAB_FIELDS);
   const activeTab = tabIndexErrors.findIndex((value) => {
