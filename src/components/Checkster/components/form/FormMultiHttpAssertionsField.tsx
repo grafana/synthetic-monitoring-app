@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Button, IconButton, Stack, Text, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -12,7 +12,9 @@ import {
 import { Assertion, AssertionConditionVariant, AssertionSubjectVariant } from 'components/MultiHttp/MultiHttpTypes';
 
 import { FIELD_SPACING } from '../../constants';
+import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { createPath } from '../../utils/form';
+import { getHasSectionError } from '../../utils/navigation';
 import { CollapsibleRequestEntry } from '../CollapsibleRequestEntry';
 import { GenericInputField } from './generic/GenericInputField';
 import { GenericInputSelectField } from './generic/GenericInputSelectField';
@@ -21,11 +23,21 @@ interface FormMultiHttpAssertionsFieldProps {
   field: 'settings.multihttp.entries';
 }
 
+export const MULTI_HTTP_UPTIME_FIELDS = [/\.entries\.\d+\.checks\.\d+/];
+
 export function FormMultiHttpAssertionsField({ field }: FormMultiHttpAssertionsFieldProps) {
   const { watch, setValue } = useFormContext<CheckFormValues>();
   const { getValues } = useFormContext<CheckFormValues>();
 
-  const entries = getValues(field);
+  const {
+    formNavigation: { errors },
+  } = useChecksterContext();
+
+  // Need to re-fetch entries if errors change
+  const entries = useMemo(() => {
+    return getValues(field);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [field, getValues, errors]);
 
   return (
     <Stack direction="column" gap={FIELD_SPACING}>
@@ -35,10 +47,13 @@ export function FormMultiHttpAssertionsField({ field }: FormMultiHttpAssertionsF
       {entries.map((entry, index) => {
         // Simplest way to maintain collapsible state while moving stuff around
         const isOpen = watch(createPath(field, index, '_isOpen.request'), true);
+        const hasError =
+          errors && errors.length ? getHasSectionError([createPath(field, index, 'checks')], errors) : false;
 
         const handleToggle = () => setValue(createPath(field, index, '_isOpen.request'), !isOpen);
         return (
           <CollapsibleRequestEntry
+            hasError={hasError}
             open={isOpen}
             key={`${entry.request.url}entry-${index}`}
             method={entry.request.method}

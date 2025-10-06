@@ -3,11 +3,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { CheckFormFieldPath, FormNavigationState, FormSectionName } from '../types';
 import { CheckType } from 'types';
 
-import { flattenKeys } from '../../CheckForm/CheckForm.utils';
-import { normalizeFlattenedErrors } from '../../CheckForm/FormLayout/formlayout.utils';
 import { FORM_NAVIGATION_SECTION_LABEL_MAP } from '../constants';
 import { getFormSectionOrder } from '../utils/form';
-import { getHasSectionError } from '../utils/navigation';
+import { flattenKeys, getHasSectionError } from '../utils/navigation';
 
 type SectionFieldsState = Partial<Record<FormSectionName, CheckFormFieldPath[]>>;
 
@@ -26,6 +24,7 @@ export function useFormNavigationState(checkType: CheckType, initialSection?: Fo
       if (sectionName in prevState && prevState[sectionName] === fields) {
         return prevState;
       }
+
       return {
         ...prevState,
         [sectionName]: fields,
@@ -45,16 +44,17 @@ export function useFormNavigationState(checkType: CheckType, initialSection?: Fo
     [sectionFields]
   );
 
-  // TODO: implement!
   const sectionByErrors = useCallback<FormNavigationState['sectionByErrors']>(
     (errors) => {
-      const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errors));
+      const flattenedErrors = flattenKeys(errors);
       setErrors(flattenedErrors.length ? flattenedErrors : undefined); // Store for the rest of the app
       for (const section of sectionOrder) {
         const sectionFields = getSectionFields(section);
         if (getHasSectionError(sectionFields, flattenedErrors)) {
           _setActive(section);
-          break;
+          return;
+        } else {
+          console.warn('unhandled section field', flattenedErrors);
         }
       }
     },

@@ -54,7 +54,7 @@ export interface FormNavigationState {
   sectionOrder: FormSectionOrder;
   isSectionActive(sectionName: FormSectionName): boolean;
   setSectionActive(sectionName: FormSectionName): void;
-  registerSectionFields(sectionName: FormSectionName, fields: FormFieldMatch[]): void;
+  registerSectionFields(sectionName: FormSectionName, fields: FormFieldMatch[] | undefined): void;
   sectionByErrors(errors: FieldErrors): void;
   getSectionFields(sectionName: FormSectionName): Array<CheckFormFieldPath | FormFieldMatch>;
   isSeenStep(sectionName: FormSectionName): boolean;

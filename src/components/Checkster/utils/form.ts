@@ -1,11 +1,11 @@
-import { FieldPath, FieldValues } from 'react-hook-form';
+import { FieldValues } from 'react-hook-form';
 import { get } from 'lodash';
 import { ZodType } from 'zod';
 
 import { CheckFormFieldPath, FormSectionOrder, HTTPAuthType } from '../types';
 import { CheckType } from 'types';
 
-import { DEFAULT_FORM_SECTION_ORDER, ENTRY_INDEX_CHAR, OVERRIDE_DEFAULT_SECTION_ORDER } from '../constants';
+import { DEFAULT_FORM_SECTION_ORDER, OVERRIDE_DEFAULT_SECTION_ORDER } from '../constants';
 
 export function getFormSectionOrder(checkType?: CheckType): FormSectionOrder {
   if (checkType && OVERRIDE_DEFAULT_SECTION_ORDER[checkType]) {
@@ -88,11 +88,6 @@ export function checkFormFieldPath(path: string, checkType?: CheckType) {
   return `settings.${checkType}.${path}` as const;
 }
 
-// export function matchAgainst(fields: CheckFormFieldPath[], errorFields: CheckFormFieldPath[]) {
-//   const bonus = /^settings\.multihttp\.entires\.\d+\.request/gm;
-//   return fields.reduce((acc, field) => {}, []);
-// }
-
 export function getAllErrorFields<T extends FieldValues>(schema: ZodType<T>, values: T) {
   const result = schema.safeParse(values);
   if (result.success) {
@@ -104,36 +99,4 @@ export function getAllErrorFields<T extends FieldValues>(schema: ZodType<T>, val
 
     return acc;
   }, []);
-}
-
-export function checkForErrors<T extends FieldValues>({
-  fields = [],
-  values,
-  schema,
-}: {
-  values: T;
-  fields: Array<FieldPath<T>>;
-  schema: ZodType<T>;
-}) {
-  const result = schema.safeParse(values);
-
-  if (!result.success) {
-    const errors = result.error.errors.reduce<string[]>((acc, err) => {
-      const path = err.path.map((e) => (typeof e === 'number' ? ENTRY_INDEX_CHAR : e)).join('.');
-      const isRelevant = fields.some((f) => path.startsWith(f));
-
-      if (isRelevant) {
-        return [...acc, path];
-      }
-
-      return acc;
-    }, []);
-    return {
-      errors,
-    };
-  }
-
-  return {
-    errors: [],
-  };
 }

@@ -6,7 +6,7 @@ import { useChecksterContext } from '../../../contexts/ChecksterContext';
 import { FormSection } from '../FormSection';
 import { GenericExecutionContent } from '../layouts/GenericExecutionContent';
 
-const EXECUTION_SECTION_FIELDS = ['probes'];
+const defaultExecutionFields = ['probes'];
 
 export function ExecutionSection() {
   const {
@@ -14,7 +14,7 @@ export function ExecutionSection() {
   } = useChecksterContext();
 
   return (
-    <FormSection sectionName={FormSectionName.Execution} fields={EXECUTION_SECTION_FIELDS}>
+    <FormSection sectionName={FormSectionName.Execution} fields={defaultExecutionFields}>
       <GenericExecutionContent publishAdvancedMetrics={!isK6Check} />
     </FormSection>
   );

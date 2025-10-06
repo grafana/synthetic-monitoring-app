@@ -5,6 +5,8 @@ import { Button, IconButton, Stack } from '@grafana/ui';
 import { CheckFormValues, HttpMethod } from 'types';
 
 import { FIELD_SPACING } from '../../constants';
+import { useEntryHasError } from '../../hooks/useEntryHasError';
+import { useGetIndexFieldError } from '../../hooks/useGetIndexFieldError';
 import { createPath } from '../../utils/form';
 import { AdditionalSettings } from '../AdditionalSettings';
 import { CollapsibleRequestEntry } from '../CollapsibleRequestEntry';
@@ -66,6 +68,11 @@ export function FormMultiHttpEntriesField({ field }: FormMultiHttpEntriesFieldPr
   );
 }
 
+const REQUEST_OPTIONS_TAB_FIELDS = [
+  [/\.entries\.\d+\.request\.headers/], // Options
+  [/\.entries\.\d+\.request\.queryFields/], // Query parameters
+];
+
 interface MultiHttpEntryProps extends FormMultiHttpEntriesFieldProps {
   index: number;
   onDelete(index: number): void;
@@ -81,6 +88,10 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
 
+  const hasError = useEntryHasError(field, index);
+  const tabIndexErrors = useGetIndexFieldError(REQUEST_OPTIONS_TAB_FIELDS);
+  const hasRequestOptionError = tabIndexErrors.some((item) => item);
+
   const method = getValues(createPath(field, index, 'request.method'));
   const target = getValues(createPath(field, index, 'request.url'));
 
@@ -93,6 +104,7 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
 
   return (
     <CollapsibleRequestEntry
+      hasError={hasError}
       method={method}
       target={target}
       placeholder={`Request ${index + 1}`}
@@ -127,8 +139,8 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
         field={createPath(field, index, 'request.url')}
         methodField={createPath(field, index, 'request.method')}
       />
-      <AdditionalSettings isOpen buttonLabel="Request options" indent>
-        <FormTabs>
+      <AdditionalSettings isOpen={hasRequestOptionError} buttonLabel="Request options" indent>
+        <FormTabs tabErrorIndexes={tabIndexErrors}>
           <FormTabContent label="Options">
             <GenericNameValueField
               label="Request headers"

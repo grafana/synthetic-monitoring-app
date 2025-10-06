@@ -33,9 +33,6 @@ export const HTTP_CHECK_FIELDS = ['job', 'target', ...REQUEST_OPTIONS_FIELDS];
 export function HttpCheckContent() {
   const hasRequestOptionError = useHasFieldsError(REQUEST_OPTIONS_FIELDS);
   const tabIndexErrors = useGetIndexFieldError(REQUEST_OPTIONS_TAB_FIELDS);
-  const activeTab = tabIndexErrors.findIndex((value) => {
-    return value;
-  });
 
   return (
     <SectionContent>
@@ -47,7 +44,7 @@ export function HttpCheckContent() {
       <FormHttpRequestMethodTargetFields field="target" methodField="settings.http.method" withQueryParams />
 
       <AdditionalSettings indent buttonLabel="Request options" isOpen={hasRequestOptionError}>
-        <FormTabs activeIndex={activeTab} tabErrorIndexes={tabIndexErrors}>
+        <FormTabs tabErrorIndexes={tabIndexErrors}>
           <FormTabContent label="Options">
             {/* TODO: Would be nice to write settings fields like `headers` (instead of `settings.http.headers`)*/}
             {/* TODO: Revisit if it's worth storing the check type as a key in the form settings? */}

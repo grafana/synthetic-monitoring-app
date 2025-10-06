@@ -14,6 +14,7 @@ import { css, cx } from '@emotion/css';
 import { CheckFormValues } from 'types';
 
 import { FIELD_SPACING } from '../../constants';
+import { ErrorIcon } from '../ErrorIcon';
 type FormTabContentChild = ReactElement<FormTabContentProps>;
 type FormTabChild = undefined | false | FormTabContentChild;
 
@@ -26,15 +27,11 @@ interface FormTabProps {
 
 function TabErrorIndicator() {
   const theme = useTheme2();
+
   return (
-    <div
+    <ErrorIcon
       className={css`
         display: inline-block;
-        border-radius: ${theme.shape.radius.circle};
-        background-color: ${theme.colors.secondary.text};
-        width: ${theme.spacing(1)};
-        height: ${theme.spacing(1)};
-        background-color: ${theme.colors.error.text};
         margin-left: ${theme.spacing(1)};
       `}
     />
@@ -50,14 +47,15 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
     formState: { submitCount },
   } = useFormContext<CheckFormValues>();
 
-  const [active, setActive] = useState(activeIndex >= 0 ? activeIndex : 0);
+  const [active, setActive] = useState(activeIndex);
 
   useEffect(() => {
     // If form is submitted, resync activeIndex prop, to show validation errors
-    if (activeIndex >= 0) {
-      setActive(activeIndex);
+    const firstErrorIndex = tabErrorIndexes?.findIndex((item) => item) ?? undefined;
+    if (firstErrorIndex !== undefined && firstErrorIndex >= 0) {
+      setActive(firstErrorIndex);
     }
-  }, [activeIndex, submitCount]);
+  }, [tabErrorIndexes, submitCount]);
 
   const theme = useTheme2();
 

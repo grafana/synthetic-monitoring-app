@@ -21,7 +21,16 @@ interface ScriptedCheckSectionProps {
   examples?: ExampleScript[];
 }
 
-export const SCRIPTED_CHECK_FIELDS = ['job', 'target', /settings\.[a-z]+\.script/];
+const GRPC_REQUEST_OPTIONS_TAB_FIELDS = [
+  undefined, // Options
+  [/\.tlsConfig\./], // TSL
+];
+
+const GRPC_REQUEST_OPTIONS_FIELDS = GRPC_REQUEST_OPTIONS_TAB_FIELDS.filter((field) => {
+  return field !== undefined;
+}).flat();
+
+export const SCRIPTED_CHECK_FIELDS = ['job', 'target', ...GRPC_REQUEST_OPTIONS_FIELDS];
 
 // Don't set label here, set it explicitly, where the component is used (for readability)
 export function ScriptedCheckContent({

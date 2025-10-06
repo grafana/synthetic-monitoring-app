@@ -4,11 +4,12 @@ import { FormSectionName } from '../../../types';
 import { CheckType } from 'types';
 
 import { useChecksterContext } from '../../../contexts/ChecksterContext';
+import { MULTI_HTTP_UPTIME_FIELDS } from '../FormMultiHttpAssertionsField';
 import { FormSection } from '../FormSection';
 import { BrowserUptimeContent } from '../layouts/BrowserUptimeContent';
 import { DnsUptimeContent } from '../layouts/DnsUptimeContent';
 import { GrpcUptimeContent } from '../layouts/GrpcUptimeContent';
-import { HttpUptimeContent } from '../layouts/HttpUptimeContent';
+import { HTTP_UPTIME_FIELDS, HttpUptimeContent } from '../layouts/HttpUptimeContent';
 import { MultiHttpUptimeContent } from '../layouts/MultiHttpUptimeContent';
 import { PingUptimeContent } from '../layouts/PingUptimeContent';
 import { ScriptedUptimeContent } from '../layouts/ScriptedUptimeContent';
@@ -29,15 +30,29 @@ const checkTypeLayoutMap: Record<CheckType, ComponentType> = {
   [CheckType.Browser]: BrowserUptimeContent,
 };
 
+const defaultUptimeFields = ['timeout'];
+
+function getCheckTypeFields(checkType: CheckType) {
+  switch (checkType) {
+    case CheckType.MULTI_HTTP:
+      return MULTI_HTTP_UPTIME_FIELDS;
+    case CheckType.HTTP:
+      return HTTP_UPTIME_FIELDS;
+    default:
+      return defaultUptimeFields;
+  }
+}
+
 export function UptimeSection() {
   const {
     checkMeta: { type },
   } = useChecksterContext();
 
   const SectionComponent = checkTypeLayoutMap[type] ?? null;
+  const fields = getCheckTypeFields(type);
 
   return (
-    <FormSection sectionName={FormSectionName.Uptime}>
+    <FormSection sectionName={FormSectionName.Uptime} fields={fields}>
       <SectionComponent data-checkType={type} />
     </FormSection>
   );

@@ -1,5 +1,8 @@
-import React, { Fragment, PropsWithChildren } from 'react';
+import React, { Fragment, PropsWithChildren, useEffect, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { Button, Stack } from '@grafana/ui';
+
+import { CheckFormValues } from 'types';
 
 import { Indent } from './ui/Indent';
 import { SecondaryContainer } from './ui/SecondaryContainer';
@@ -15,7 +18,19 @@ export function AdditionalSettings({
   indent,
   isOpen: externalIsOpen,
 }: AdditionalSettingsProps) {
-  const [isOpen, setIsOpen] = React.useState(externalIsOpen);
+  const {
+    formState: { submitCount },
+  } = useFormContext<CheckFormValues>();
+
+  const [isOpen, setIsOpen] = useState(externalIsOpen);
+
+  useEffect(() => {
+    if (externalIsOpen) {
+      setIsOpen((prevState) => {
+        return prevState || externalIsOpen;
+      });
+    }
+  }, [submitCount, externalIsOpen]);
 
   const ContentWrapper = indent ? Indent : Fragment;
 

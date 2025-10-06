@@ -39,7 +39,12 @@ export function GenericInputField({
       required={required}
       {...getFieldErrorProps(errors, field, interpolationVariables)}
     >
-      <Input disabled={disabled} placeholder={placeholder} type={type} {...register(field as any)} />
+      <Input
+        disabled={disabled}
+        placeholder={placeholder}
+        type={type}
+        {...register(field as any, { valueAsNumber: type === 'number' })}
+      />
     </StyledField>
   );
 }

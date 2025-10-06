@@ -17,6 +17,8 @@ export function FormSection({ sectionName, children, fields }: FormSectionProps)
   useEffect(() => {
     if (fields && Array.isArray(fields)) {
       registerSectionFields(sectionName, fields);
+    } else {
+      registerSectionFields(sectionName, undefined);
     }
   }, [fields, registerSectionFields, sectionName]);
 

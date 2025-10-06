@@ -3,6 +3,8 @@ import React from 'react';
 import { DNS_PROTOCOLS } from 'components/constants';
 
 import { DEFAULT_EXAMPLE_HOSTNAME } from '../../../constants';
+import { useGetIndexFieldError } from '../../../hooks/useGetIndexFieldError';
+import { useHasFieldsError } from '../../../hooks/useHasFieldsError';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
@@ -13,7 +15,17 @@ import { FormTabContent, FormTabs } from '../FormTabs';
 import { GenericInputField } from '../generic/GenericInputField';
 import { GenericRadioButtonGroupField } from '../generic/GenericRadioButtonGroupField';
 
+const DNS_REQUEST_OPTIONS_TAB_FIELDS = [['settings.dns.server', 'settings.dns.port']];
+
+const DNS_CHECK_REQUEST_OPTIONS_FIELDS = DNS_REQUEST_OPTIONS_TAB_FIELDS.filter((field) => {
+  return field !== undefined;
+}).flat();
+
+export const DNS_CHECK_FIELDS = ['job', 'target', ...DNS_CHECK_REQUEST_OPTIONS_FIELDS];
+
 export function DnsCheckContent() {
+  const hasRequestOptionError = useHasFieldsError(DNS_CHECK_FIELDS);
+  const tabIndexErrors = useGetIndexFieldError(DNS_REQUEST_OPTIONS_TAB_FIELDS);
   return (
     <SectionContent>
       <FormJobField field="job" />
@@ -26,14 +38,14 @@ export function DnsCheckContent() {
         required
       />
 
-      <AdditionalSettings indent buttonLabel="Request options">
-        <FormTabs>
+      <AdditionalSettings indent buttonLabel="Request options" isOpen={hasRequestOptionError}>
+        <FormTabs tabErrorIndexes={tabIndexErrors}>
           <FormTabContent label="Options">
             <FormIpVersionRadioField field="settings.dns.ipVersion" description="The IP protocol of the DNS request" />
             <FormDnsRecordTypeField field="settings.dns.recordType" />
             <GenericInputField field="settings.dns.server" label="Server" required />
             <GenericRadioButtonGroupField field="settings.dns.protocol" label="Protocol" options={DNS_PROTOCOLS} />
-            <GenericInputField field="settings.dns.port" label="Port" required />
+            <GenericInputField field="settings.dns.port" type="number" label="Port" required />
           </FormTabContent>
         </FormTabs>
       </AdditionalSettings>

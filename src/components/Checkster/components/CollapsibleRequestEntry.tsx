@@ -6,6 +6,8 @@ import { css, cx } from '@emotion/css';
 import { HttpMethod } from 'types';
 import { getMethodColor } from 'utils';
 
+import { ErrorIcon } from './ErrorIcon';
+
 interface CollapsibleRequestEntryProps extends PropsWithChildren {
   method: HttpMethod;
   target?: string;
@@ -13,6 +15,7 @@ interface CollapsibleRequestEntryProps extends PropsWithChildren {
   open: boolean;
   actions?: ReactNode;
   onToggle(): void;
+  hasError?: boolean;
 }
 export function CollapsibleRequestEntry({
   children,
@@ -22,6 +25,7 @@ export function CollapsibleRequestEntry({
   method,
   target,
   actions,
+  hasError,
 }: CollapsibleRequestEntryProps) {
   const theme = useTheme2();
   const styles = getStyles(theme, method);
@@ -31,6 +35,7 @@ export function CollapsibleRequestEntry({
       <div className={styles.header}>
         <Text element="h4" variant="h5" onClick={onToggle}>
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
+          {hasError && <ErrorIcon />}
           <span className={styles.methodSpan}>{method}</span>
           <span className={cx(!target && styles.placeholder)}>{target || placeholder}</span>
         </Text>
