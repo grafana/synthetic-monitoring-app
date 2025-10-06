@@ -1,4 +1,17 @@
-import { Check, CheckFormValues, CheckType, DNSCheck, GRPCCheck, HTTPCheck, MultiHTTPCheck, PingCheck, ScriptedCheck, TCPCheck, TracerouteCheck, BrowserCheck } from 'types';
+import {
+  BrowserCheck,
+  Check,
+  CheckFormValues,
+  CheckType,
+  DNSCheck,
+  GRPCCheck,
+  HTTPCheck,
+  MultiHTTPCheck,
+  PingCheck,
+  ScriptedCheck,
+  TCPCheck,
+  TracerouteCheck,
+} from 'types';
 import { getCheckType } from 'utils';
 
 import { getBrowserCheckFormValues } from '../transformations/toFormValues.browser';
