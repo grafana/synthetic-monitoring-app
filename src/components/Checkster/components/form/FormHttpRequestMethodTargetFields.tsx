@@ -43,11 +43,6 @@ function Methods({ field }: MethodsProps) {
   const formValue = watch(field) as HttpMethod;
   const [value, _setValue] = useState<HttpMethod>(formValue as HttpMethod);
 
-  const debugValue = watch(field);
-  useEffect(() => {
-    console.log('[DEBUG] RequestMethodMenu', debugValue);
-  }, [debugValue]);
-
   useEffect(() => {
     if (field && value && getValues(field) !== value) {
       setValue(field, value);

@@ -34,6 +34,7 @@ export function useFormNavigationState(checkType: CheckType, initialSection?: Fo
     [remainingSteps]
   );
 
+  // TODO: implement!
   const sectionByErrors = useCallback<FormNavigationState['sectionByErrors']>((errors) => {
     const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errors));
     console.log('sectionByErrors changed', flattenedErrors);

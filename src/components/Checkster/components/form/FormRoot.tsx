@@ -38,8 +38,6 @@ export function FormRoot({ onSave }: { onSave(payload: Check, formValues: CheckF
         },
         (errors) => {
           sectionByErrors(errors);
-          console.log('error');
-          console.log(errors);
         }
       )}
       className={css`

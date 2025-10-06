@@ -144,7 +144,6 @@ export function RightAside() {
           }
 
           const slice = acc[line.id];
-          console.log('the time series', line.timeseries);
           return {
             ...acc,
             [line.id]: {
@@ -163,10 +162,6 @@ export function RightAside() {
         }, prevState);
       });
     }
-  }, [responseData]);
-
-  useEffect(() => {
-    console.log('responseData', responseData);
   }, [responseData]);
 
   const hasPendingChecks = pendingIds.length > 0;

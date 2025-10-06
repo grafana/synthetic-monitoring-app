@@ -30,7 +30,6 @@ function ChecksterInternal({ check, onSave }: ChecksterProps) {
 
   useEffect(() => {
     setCheck(check);
-    console.log('Checkster received check prop:', check);
   }, [check, setCheck]);
 
   return (
