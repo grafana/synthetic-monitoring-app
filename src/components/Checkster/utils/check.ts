@@ -19,6 +19,7 @@ import {
   CHECK_TYPE_GROUP_MAP,
   CHECK_TYPE_GROUP_OPTIONS_MAP,
   CHECK_TYPE_OPTION_MAP,
+  DEFAULT_CHECK_CONFIG,
   DEFAULT_CHECK_CONFIG_MAP,
   DEFAULT_CHECK_TYPE,
 } from '../constants';
@@ -117,7 +118,7 @@ export function createInstrumentedCheck({ type, group }: CheckInstrumentation) {
 }
 
 export function createCheck(checkType: CheckType = CheckType.HTTP) {
-  return DEFAULT_CHECK_CONFIG_MAP[checkType];
+  return DEFAULT_CHECK_CONFIG_MAP[checkType] ?? DEFAULT_CHECK_CONFIG;
 }
 
 // Returns the CheckType of a Check, or DEFAULT_CHECK_TYPE check is undefined (or invalid)
