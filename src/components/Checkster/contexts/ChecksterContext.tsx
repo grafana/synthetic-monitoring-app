@@ -17,7 +17,6 @@ import { Check, CheckFormValues } from 'types';
 import { useDOMId } from '../../../hooks/useDOMId';
 import { DEFAULT_CHECK_CONFIG } from '../constants';
 import { CheckMeta, useCheckMeta } from '../hooks/useCheckMeta';
-import { useDebugHook } from '../hooks/useDebugHook';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
 import { createInstrumentedCheck, isCheck } from '../utils/check';
 
@@ -50,21 +49,16 @@ interface ChecksterProviderProps extends PropsWithChildren {
 
 export function ChecksterProvider({ children, check: _checkViaProps = DEFAULT_CHECK_CONFIG }: ChecksterProviderProps) {
   const formId = useDOMId();
-  useDebugHook('formId', formId);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  useDebugHook('isLoading', isLoading);
 
   const [_check, _setCheck] = useState<Check | CheckInstrumentation | undefined>(_checkViaProps);
-  useDebugHook('_check', _check);
 
   const [check, setCheck] = useState<Check>(DEFAULT_CHECK_CONFIG);
-  useDebugHook('check', check);
 
   const checkMeta = useCheckMeta(check);
 
   const [error, setError] = useState<Error | undefined>();
-  useDebugHook('error', error);
 
   const formNavigation = useFormNavigationState(checkMeta.type);
 
@@ -74,19 +68,15 @@ export function ChecksterProvider({ children, check: _checkViaProps = DEFAULT_CH
     }
 
     if (isCheck(_check)) {
-      console.log('[Effect] settings check', _check);
       setCheck(_check);
       return;
     }
 
     // Create a new check
     if (isCheckInstrumentation(_check)) {
-      console.log('[Effect] instrumenting check', _check);
       setCheck(createInstrumentedCheck(_check));
       return;
     }
-
-    console.log('[Effect] check changed, no action', _check);
   }, [_check]);
 
   // Form stuff
