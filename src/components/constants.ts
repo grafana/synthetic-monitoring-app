@@ -151,7 +151,7 @@ export const FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
 const EXAMPLE_SCRIPT_SCRIPTED = btoa(`import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 import { check } from 'k6'
 import http from 'k6/http'
-import secrets from 'k6/secrets';
+// import secrets from 'k6/secrets';
 
 // This example authenticates against the quick pizza API
 export default async function main() {
@@ -160,11 +160,14 @@ export default async function main() {
   // TIP: Secure your credentials using secrets.get()
   // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/
   const authInfo = {
-    username: 'default', // username: await secrets.get('quickpizza-username');
-    password: '12345678' // password: await secrets.get('quickpizza-password');
+    username: 'default', // username: await secrets.get('quickpizza-username'),
+    password: '12345678' // password: await secrets.get('quickpizza-password'),
   }
+  const headers = {
+    headers: { 'Content-Type': 'application/json' },
+  };
 
-  const resp = http.post( authURL, JSON.stringify(authInfo), { headers: { 'Content-Type': 'application/json' }});
+  const resp = http.post( authURL, JSON.stringify(authInfo), headers);
 
   console.log('got a response: ', resp.status); // will appear as logs in Loki
 
@@ -180,7 +183,7 @@ export default async function main() {
 const EXAMPLE_SCRIPT_BROWSER = btoa(`import { browser } from "k6/browser";
 import { expect } from "https://jslib.k6.io/k6-testing/0.5.0/index.js";
 import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
-import secrets from 'k6/secrets';
+// import secrets from 'k6/secrets';
 
 // ------------------------------------------------------------//
 //   Record your browser script using Grafana k6 Studio!       //
