@@ -12,6 +12,14 @@ const config = async (env): Promise<Configuration> => {
   const baseConfig = await grafanaConfig(env);
   const analyzerPlugin = process.env.ANALYZE_BUNDLE === 'true' ? [new BundleAnalyzerPlugin({})] : [];
   const customConfig = {
+    resolve: {
+      alias: {
+        // Help resolve tinycolor2 for @grafana/alerting - the package is looking for a relative path
+        '../../../../node_modules/tinycolor2/esm/tinycolor.mjs': require.resolve('tinycolor2'),
+        'tinycolor2/esm/tinycolor.mjs': require.resolve('tinycolor2'),
+        'tinycolor2': require.resolve('tinycolor2'),
+      }
+    },
     // this is used by DangerJS to get the bundle size, but we need to disable it
     // if we want to see files in the bundle analysis
     stats:
