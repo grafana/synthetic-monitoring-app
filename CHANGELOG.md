@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.36.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.3...v1.36.0) (2025-10-07)
+
+
+### Features
+
+* add legacy alerts restriction for new users ([#1242](https://github.com/grafana/synthetic-monitoring-app/issues/1242)) ([69c485d](https://github.com/grafana/synthetic-monitoring-app/commit/69c485dcb995e1884efe1bea20d5ca6df832cb94))
+
 ## [1.35.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.2...v1.35.3) (2025-09-26)
 
 
