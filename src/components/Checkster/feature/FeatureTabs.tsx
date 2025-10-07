@@ -5,9 +5,11 @@ import { css } from '@emotion/css';
 import { useFeatureTabsContext } from '../contexts/FeatureTabsContext';
 
 export function FeatureTabs() {
-  const { tabs, activeTab } = useFeatureTabsContext();
+  const { tabs, activeTab, setActive } = useFeatureTabsContext();
 
   const [activeLabel] = activeTab;
+
+  console.log('tabs loaded');
 
   return (
     <TabsBar
@@ -18,7 +20,16 @@ export function FeatureTabs() {
       `}
     >
       {tabs.map(([label], index) => {
-        return <Tab key={`${label}.${index}`} label={label} active={label === activeLabel} />;
+        return (
+          <Tab
+            key={`${label}.${index}`}
+            label={label}
+            active={label === activeLabel}
+            onChangeTab={() => {
+              setActive(label);
+            }}
+          />
+        );
       })}
     </TabsBar>
   );
