@@ -7,10 +7,12 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckPageParams } from 'types';
+import { isBrowserCheck, isScriptedCheck } from 'utils.types';
 import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
+import { useFilteredK6Channels } from 'data/useK6Channels';
 import { useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { CenteredSpinner } from 'components/CenteredSpinner';
@@ -26,13 +28,21 @@ export const EditCheck = () => {
   // Check for runbook missing notification to determine initial section
   const initialSection = !!urlSearchParams.get('runbookMissing') ? 'alerting' : undefined;
 
+  const isScriptedOrBrowser = !!(check && (isScriptedCheck(check) || isBrowserCheck(check)));
+  const { channels: k6Channels } = useFilteredK6Channels(isScriptedOrBrowser, check);
+
   // Only show spinner for the initial fetch.
   if (isLoading && !isFetched) {
     return <CenteredSpinner />;
   }
 
   return (
-    <CheckFormContextProvider check={check} disabled={isLoading || isError} initialSection={initialSection}>
+    <CheckFormContextProvider
+      check={check}
+      disabled={isLoading || isError}
+      initialSection={initialSection}
+      k6Channels={k6Channels}
+    >
       <EditCheckContent isLoading={isLoading} />
       {checks && !check && <NotFoundModal />}
       {error && <ErrorModal error={error} onClick={refetch} />}
