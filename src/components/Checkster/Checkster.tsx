@@ -12,7 +12,9 @@ import { AppContainer } from './components/ui/AppContainer';
 import { PrimaryLayoutSection } from './components/ui/PrimaryLayoutSection';
 import { SecondaryLayoutSection } from './components/ui/SecondaryLayoutSection';
 import { InternalConditionalProvider, useChecksterContext } from './contexts/ChecksterContext';
-import { RightAside as AdHocCheckRightAside } from './feature/adhoc-check/RightAside';
+import { FeatureTabsContextProvider } from './contexts/FeatureTabsContext';
+import { FeatureContent } from './feature/FeatureContent';
+import { FeatureTabs } from './feature/FeatureTabs';
 
 interface ChecksterProps {
   check?: Check | CheckInstrumentation;
@@ -42,9 +44,11 @@ function ChecksterInternal({ check, onSave }: ChecksterProps) {
         <PrimaryLayoutSection headerContent={<FormSectionNavigation />}>
           <FormRoot onSave={onSave} />
         </PrimaryLayoutSection>
-        <SecondaryLayoutSection headerContent={null}>
-          <AdHocCheckRightAside />
-        </SecondaryLayoutSection>
+        <FeatureTabsContextProvider>
+          <SecondaryLayoutSection headerContent={<FeatureTabs />}>
+            <FeatureContent />
+          </SecondaryLayoutSection>
+        </FeatureTabsContextProvider>
       </AppContainer>
       {/* TODO: Do we want to use/keep this or just remove it? */}
       <ChooseCheckTypeModal isOpen={false} />

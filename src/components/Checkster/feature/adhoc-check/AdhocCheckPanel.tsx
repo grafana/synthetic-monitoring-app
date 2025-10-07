@@ -28,7 +28,7 @@ function createProbeState(id: number, name: string, isPublic: boolean, state = P
   };
 }
 
-export function RightAside() {
+export function AdhocCheckPanel() {
   const { getValues, trigger } = useFormContext<CheckFormValues>();
   const [logState, setLogState] = useState<AdHocCheckStateMap>({});
   const { data: probes, isLoading: isLoadingProbes } = useProbes(); // This will also make the execution step work, fix so that it always works

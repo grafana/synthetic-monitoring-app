@@ -1,6 +1,6 @@
-import { ComponentProps } from 'react';
+import { ComponentProps, ComponentType } from 'react';
 import { FieldErrors, FieldPath } from 'react-hook-form';
-import { IconName } from '@grafana/ui';
+import { IconName, Tab } from '@grafana/ui';
 
 import { CheckFormValues, CheckStatus, CheckType, CheckTypeGroup, FeatureName } from 'types';
 
@@ -73,6 +73,15 @@ export enum HTTPAuthType {
 }
 
 // End of `CheckEditor.types.ts`
+
+export enum RightAsideFeatures {
+  Test = 'test',
+  Secrets = 'secrets',
+  Docs = 'docs',
+}
+
+export type FeatureTabLabel = ComponentProps<typeof Tab>['label'];
+export type FeatureTabConfig = [FeatureTabLabel, ComponentType, CheckType[]];
 
 export type CheckFormFieldPath = FieldPath<CheckFormValues>;
 
