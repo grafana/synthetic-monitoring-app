@@ -7,5 +7,9 @@ export function FeatureContent() {
 
   const [, FeatureContentComponent] = activeTab;
 
+  if (!FeatureContentComponent) {
+    return null;
+  }
+
   return <FeatureContentComponent />;
 }
