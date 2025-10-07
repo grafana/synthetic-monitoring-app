@@ -3,12 +3,13 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Card, Link, LinkButton, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe, type Label } from 'types';
+import { type ExtendedProbe, FeatureName,type Label } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
@@ -54,6 +55,18 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
 
       <Card.Meta>
         <div>Version: {probe.version}</div>
+        <FeatureFlag name={FeatureName.VersionManagement}>
+          {({ isEnabled }) =>
+            isEnabled ? (
+              <>
+                {!probe.public && probe.k6Version && <div>k6 version: {probe.k6Version}</div>}
+                {probe.supportsBinaryProvisioning && (
+                  <div>k6 version management: supported</div>
+                )}
+              </>
+            ) : null
+          }
+        </FeatureFlag>
       </Card.Meta>
 
       <Card.Description className={styles.extendedDescription}>

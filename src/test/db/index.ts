@@ -33,25 +33,34 @@ const baseCheckModel = ({ sequence }: { sequence: number }) => ({
   created: Math.floor(faker.date.past().getTime() / 1000),
 });
 
-const baseProbeModel = ({ sequence }: { sequence: number }) => ({
-  id: sequence,
-  name: `${faker.lorem.word()}_${sequence}`,
-  public: faker.datatype.boolean(),
-  latitude: faker.location.latitude(),
-  longitude: faker.location.longitude(),
-  region: faker.helpers.arrayElement(['EMEA', 'AMER', 'APAC']),
-  labels: [{ name: faker.animal.petName(), value: faker.color.human() }],
-  online: true,
-  onlineChange: Math.floor(faker.date.past().getTime() / 1000),
-  version: faker.system.semver(),
-  deprecated: false,
-  modified: Math.floor(faker.date.recent().getTime() / 1000),
-  created: Math.floor(faker.date.past().getTime() / 1000),
-  capabilities: {
-    disableScriptedChecks: false,
-    disableBrowserChecks: false,
-  },
-});
+const baseProbeModel = ({ sequence }: { sequence: number }) => {
+  const supportsBinaryProvisioning = faker.datatype.boolean();
+  
+  return {
+    id: sequence,
+    name: `${faker.lorem.word()}_${sequence}`,
+    public: faker.datatype.boolean(),
+    latitude: faker.location.latitude(),
+    longitude: faker.location.longitude(),
+    region: faker.helpers.arrayElement(['EMEA', 'AMER', 'APAC']),
+    labels: [{ name: faker.animal.petName(), value: faker.color.human() }],
+    online: true,
+    onlineChange: Math.floor(faker.date.past().getTime() / 1000),
+    version: faker.system.semver(),
+    deprecated: false,
+    modified: Math.floor(faker.date.recent().getTime() / 1000),
+    created: Math.floor(faker.date.past().getTime() / 1000),
+    k6Version: supportsBinaryProvisioning ? undefined : faker.system.semver(), // Legacy probes have static k6 version
+    supportsBinaryProvisioning,
+    supportedChannels: supportsBinaryProvisioning 
+      ? faker.helpers.arrayElements(['v1', 'v2', 'fast'], { min: 1, max: 3 })
+      : faker.helpers.arrayElements(['v1'], { min: 1, max: 1 }), // Legacy probes support limited channels
+    capabilities: {
+      disableScriptedChecks: false,
+      disableBrowserChecks: false,
+    },
+  };
+};
 
 const tlsConfig = () => ({
   caCert: faker.helpers.maybe(() => faker.string.uuid()),
