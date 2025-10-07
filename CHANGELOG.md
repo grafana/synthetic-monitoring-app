@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.35.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.2...v1.35.3) (2025-09-26)
+
+
+### Fixes
+
+* adapt terraform config to runbook_url ([#1276](https://github.com/grafana/synthetic-monitoring-app/issues/1276)) ([12ff3db](https://github.com/grafana/synthetic-monitoring-app/commit/12ff3dbed82f2f2f42b56df9075334aac25a09bd))
+* resolve incorrect alert rule group matching ([#1274](https://github.com/grafana/synthetic-monitoring-app/issues/1274)) ([83cf287](https://github.com/grafana/synthetic-monitoring-app/commit/83cf287988db24f9a392ab9cc73b9696ffbdb714))
+
+## [1.35.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.1...v1.35.2) (2025-09-25)
+
+
+### Fixes
+
+* change user permissions for secrets endpoints ([#1267](https://github.com/grafana/synthetic-monitoring-app/issues/1267)) ([0be86b2](https://github.com/grafana/synthetic-monitoring-app/commit/0be86b2862fa574452e477a3284105b505d73961))
+* probe api mappings ([#1270](https://github.com/grafana/synthetic-monitoring-app/issues/1270)) ([f5b5d48](https://github.com/grafana/synthetic-monitoring-app/commit/f5b5d48004e68bb9cb129172c6ca9b1083fdb1fa))
+* upgrade Grafana dependencies to resolve API compatibility check ([#1273](https://github.com/grafana/synthetic-monitoring-app/issues/1273)) ([9b28968](https://github.com/grafana/synthetic-monitoring-app/commit/9b28968bde3dafd9161f84b9ceae7f156d6b921a))
+* xaxis and check creation rounding ([#1266](https://github.com/grafana/synthetic-monitoring-app/issues/1266)) ([7a4b9d1](https://github.com/grafana/synthetic-monitoring-app/commit/7a4b9d1a52ba639b8156e5fa91f524e21d0acfe2))
+
+
+### Miscellaneous Chores
+
+* remove browser feature flag ([#1256](https://github.com/grafana/synthetic-monitoring-app/issues/1256)) ([5df8309](https://github.com/grafana/synthetic-monitoring-app/commit/5df8309f9c19d866ce3ca20f11ea5978ec362098))
+
 ## [1.35.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.0...v1.35.1) (2025-09-05)
 
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, ButtonVariant, IconButton } from '@grafana/ui';
 
-interface CopyToClipboardProps extends React.ComponentProps<typeof Button> {
+interface CopyToClipboardProps {
   content: string;
   buttonText: string;
   buttonTextCopied: string;
@@ -9,6 +9,8 @@ interface CopyToClipboardProps extends React.ComponentProps<typeof Button> {
   onClipboardError?(err: string): void;
   variant?: ButtonVariant;
   iconButton?: boolean;
+  className?: string;
+  fill?: 'solid' | 'outline' | 'text';
 }
 
 export const CopyToClipboard = ({
@@ -18,7 +20,9 @@ export const CopyToClipboard = ({
   buttonText,
   buttonTextCopied,
   iconButton = false,
-  ...rest
+  className,
+  variant,
+  fill,
 }: CopyToClipboardProps) => {
   const [copied, setCopied] = useState(false);
 
@@ -49,7 +53,13 @@ export const CopyToClipboard = ({
   }
 
   return (
-    <Button onClick={copyContent} icon={copied ? 'check' : 'clipboard-alt'} {...rest}>
+    <Button 
+      onClick={copyContent} 
+      icon={copied ? 'check' : 'clipboard-alt'}
+      className={className}
+      variant={variant}
+      fill={fill}
+    >
       {copied ? buttonTextCopied : buttonText}
     </Button>
   );

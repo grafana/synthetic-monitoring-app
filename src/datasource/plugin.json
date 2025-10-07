@@ -78,10 +78,10 @@
       ]
     },
     {
-      "path": "api/v1alpha1/",
+      "path": "api/v1alpha1/secrets",
       "method": "GET",
-      "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
-      "reqAction": "grafana-synthetic-monitoring-app:read",
+      "url": "{{.JsonData.apiHost}}/api/v1alpha1/secrets",
+      "reqAction": "secret.securevalues:read",
       "headers": [
         {
           "name": "Authorization",
@@ -90,10 +90,10 @@
       ]
     },
     {
-      "path": "api/v1alpha1/",
+      "path": "api/v1alpha1/secrets",
       "method": "PUT",
-      "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "url": "{{.JsonData.apiHost}}/api/v1alpha1/secrets",
+      "reqAction": "secret.securevalues:write",
       "headers": [
         {
           "name": "Authorization",
@@ -102,10 +102,10 @@
       ]
     },
     {
-      "path": "api/v1alpha1/",
+      "path": "api/v1alpha1/secrets",
       "method": "POST",
-      "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "url": "{{.JsonData.apiHost}}/api/v1alpha1/secrets",
+      "reqAction": "secret.securevalues:create",
       "headers": [
         {
           "name": "Authorization",
@@ -114,10 +114,10 @@
       ]
     },
     {
-      "path": "api/v1alpha1/",
+      "path": "api/v1alpha1/secrets",
       "method": "DELETE",
-      "url": "{{.JsonData.apiHost}}/api/v1alpha1/",
-      "reqAction": "grafana-synthetic-monitoring-app:write",
+      "url": "{{.JsonData.apiHost}}/api/v1alpha1/secrets",
+      "reqAction": "secret.securevalues:delete",
       "headers": [
         {
           "name": "Authorization",

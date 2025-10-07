@@ -261,5 +261,6 @@ export interface TFCheckAlerts {
     name: string;
     threshold: number;
     period?: string;
+    runbook_url?: string;
   }>;
 }

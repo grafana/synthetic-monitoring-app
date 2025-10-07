@@ -57,7 +57,7 @@ describe('buildXAxisPoints', () => {
       checkConfigs: [{ frequency: 1, from: 0, to: 1 }],
     });
 
-    const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20 });
+    const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20, renderingStrategy: 'end' });
     expect(result.length).toBe(1);
   });
 
@@ -66,7 +66,7 @@ describe('buildXAxisPoints', () => {
       checkConfigs: [{ frequency: 1, from: 0, to: 2 }],
     });
 
-    const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20 });
+    const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20, renderingStrategy: 'end' });
     expect(result.length).toBe(1);
   });
 
@@ -75,7 +75,7 @@ describe('buildXAxisPoints', () => {
       checkConfigs: [{ frequency: 1, from: 0, to: 10 }],
     });
 
-    const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20 });
+    const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20, renderingStrategy: 'end' });
     expect(result.length).toBe(2);
   });
 
@@ -84,7 +84,7 @@ describe('buildXAxisPoints', () => {
       checkConfigs: [{ frequency: 1, from: 0, to: 20 }],
     });
 
-    const result = buildXAxisPoints({ timepoints, crossesDays: true, timepointWidth: 20 });
+    const result = buildXAxisPoints({ timepoints, crossesDays: true, timepointWidth: 20, renderingStrategy: 'end' });
     expect(result.length).toBe(3);
   });
 
@@ -98,7 +98,7 @@ describe('buildXAxisPoints', () => {
       checkConfigs: [{ frequency, from: fromTime, to: toTime }],
     });
 
-    const result = buildXAxisPoints({ timepoints, crossesDays: true, timepointWidth: 20 });
+    const result = buildXAxisPoints({ timepoints, crossesDays: true, timepointWidth: 20, renderingStrategy: 'end' });
     expect(result[0].label).toBe(`1/1, 00:00:00`);
   });
 
@@ -112,7 +112,25 @@ describe('buildXAxisPoints', () => {
       checkConfigs: [{ frequency, from: fromTime, to: toTime }],
     });
 
-    const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20 });
+    const result = buildXAxisPoints({ timepoints, crossesDays: false, timepointWidth: 20, renderingStrategy: 'end' });
     expect(result[0].label).toBe(`00:00:00`);
+  });
+
+  it(`should add the correct index when renderingStrategy is start`, () => {
+    const timepoints = buildTimepoints({
+      checkConfigs: [{ frequency: 1, from: 0, to: 20 }],
+    });
+
+    const result = buildXAxisPoints({ timepoints, crossesDays: true, timepointWidth: 20, renderingStrategy: 'start' });
+    expect(result[0].index).toBe(0);
+  });
+
+  it(`should add the correct index when renderingStrategy is end`, () => {
+    const timepoints = buildTimepoints({
+      checkConfigs: [{ frequency: 1, from: 0, to: 20 }],
+    });
+
+    const result = buildXAxisPoints({ timepoints, crossesDays: true, timepointWidth: 20, renderingStrategy: 'end' });
+    expect(result[0].index).toBe(19);
   });
 });

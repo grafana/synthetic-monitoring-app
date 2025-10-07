@@ -7,6 +7,7 @@ import { css } from '@emotion/css';
 import { AlertFormValues, AlertRule } from 'types';
 import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 import { useAlerts } from 'hooks/useAlerts';
+import { useLegacyAlertsRestriction } from 'hooks/useLegacyAlertsRestriction';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
 
@@ -28,6 +29,45 @@ export const AlertingPage = () => {
 const Alerting = () => {
   const styles = useStyles2(getStyles);
   const { canReadAlerts } = useAlertAccessControl();
+  const { isRestricted, isLoading } = useLegacyAlertsRestriction();
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  if (isRestricted) {
+    return (
+      <div>
+        <Alert title="Per-Check Alerts" severity="info">
+          <p>
+            You have access to the new <strong>per-check alerts</strong> system. Per-check alerts allow you to set
+            specific thresholds and conditions for individual checks, providing more granular control over your
+            monitoring and alerting.
+          </p>
+          <p>
+            To configure alerts for your checks, navigate to any check and use the &quot;Alerting&quot; section when
+            creating or editing the check. You can set up custom thresholds for various metrics like response time,
+            success rate, and more.
+          </p>
+          <p>
+            <TextLink
+              href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/configure-per-check-alerts/"
+              external={true}
+            >
+              Learn more about per-check alerts for Synthetic Monitoring
+            </TextLink>
+          </p>
+        </Alert>
+
+        <Alert title="Legacy Alerts Not Available" severity="warning">
+          <p>
+            Legacy alerts (with High, Medium, Low sensitivity settings) are no longer available. The per-check alerts
+            system provides more flexibility and control over your alerting configuration.
+          </p>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div>

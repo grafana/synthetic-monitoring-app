@@ -140,8 +140,8 @@
   {
     "region": "United States",
     "provider": "Azure",
-    "apiServerURL": "synthetic-monitoring-grpc-us-central2.grafana.net:443",
-    "backendAddress": "synthetic-monitoring-api-us-central2.grafana.net"
+    "apiServerURL": "synthetic-monitoring-grpc-us-central-7.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-us-central-7.grafana.net"
   },
   {
     "region": "United States",

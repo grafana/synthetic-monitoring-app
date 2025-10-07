@@ -9,9 +9,15 @@ interface BuildXAxisPointsProps {
   timepoints: StatelessTimepoint[];
   crossesDays: boolean;
   timepointWidth: number;
+  renderingStrategy: 'start' | 'end';
 }
 
-export function buildXAxisPoints({ timepoints, crossesDays, timepointWidth }: BuildXAxisPointsProps) {
+export function buildXAxisPoints({
+  timepoints,
+  crossesDays,
+  timepointWidth,
+  renderingStrategy,
+}: BuildXAxisPointsProps) {
   const timepointCount = timepoints.length;
 
   if (timepointCount === 0) {
@@ -34,7 +40,7 @@ export function buildXAxisPoints({ timepoints, crossesDays, timepointWidth }: Bu
 
     build.push({
       label: firstTimepoint.adjustedTime,
-      index: timepointCount - 1, // Reversed index
+      index: renderingStrategy === 'end' ? timepointCount - 1 : 0, // Reversed index
     });
   }
   // If we need 2 points, show first and last
@@ -44,7 +50,7 @@ export function buildXAxisPoints({ timepoints, crossesDays, timepointWidth }: Bu
 
     build.push({
       label: firstTimepoint.adjustedTime,
-      index: timepointCount - 1, // Reversed index
+      index: renderingStrategy === 'end' ? timepointCount - 1 : 0, // Reversed index
     });
 
     // Last point
@@ -52,7 +58,7 @@ export function buildXAxisPoints({ timepoints, crossesDays, timepointWidth }: Bu
 
     build.push({
       label: lastTimepoint.adjustedTime,
-      index: 0, // Reversed index
+      index: renderingStrategy === 'end' ? 0 : timepointCount - 1, // Reversed index
     });
   } else {
     // Calculate evenly spaced indices
@@ -64,7 +70,7 @@ export function buildXAxisPoints({ timepoints, crossesDays, timepointWidth }: Bu
 
       build.push({
         label: timepoint.adjustedTime,
-        index: timepointCount - 1 - index, // Reversed index for rendering
+        index: renderingStrategy === 'end' ? timepointCount - 1 - index : index, // Reversed index for rendering
       });
     }
   }

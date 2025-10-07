@@ -95,6 +95,7 @@ async function generateConfigs() {
             name: alert.name,
             threshold: alert.threshold,
             period: alert.period,
+            runbook_url: alert.runbookUrl || "",
           })),
         };
         console.log(`  → Added alerts for ${testCase.name}: ${testCase.check.alerts.length} alert(s)`);
