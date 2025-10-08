@@ -30,6 +30,7 @@ interface ChecksterContextValue {
   check: Check | undefined;
   checkMeta: CheckMeta;
   formNavigation: FormNavigationState;
+  setIsSubmitting: Dispatch<SetStateAction<boolean>>;
 }
 
 export const ChecksterContext = createContext<ChecksterContextValue | null>(null);
@@ -84,12 +85,15 @@ export function ChecksterProvider({
     }
   }, [_check]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Form stuff
   const formMethods = useForm<CheckFormValues>({
     defaultValues: checkMeta.defaultFormValues,
     resolver: zodResolver(checkMeta.schema),
     mode: 'onChange', // onBlur is a bit fiddly
     reValidateMode: 'onChange',
+    disabled: isLoading || isSubmitting,
   });
 
   useEffect(() => {
@@ -100,7 +104,18 @@ export function ChecksterProvider({
   }, [check, checkMeta.defaultFormValues, formMethods]);
 
   const value = useMemo(() => {
-    return { formId, isLoading, setIsLoading, error, setError, setCheck: _setCheck, check, checkMeta, formNavigation };
+    return {
+      formId,
+      isLoading,
+      setIsLoading,
+      error,
+      setError,
+      setCheck: _setCheck,
+      check,
+      checkMeta,
+      formNavigation,
+      setIsSubmitting,
+    };
   }, [error, isLoading, _setCheck, check, checkMeta, formId, formNavigation]);
 
   if (!check) {

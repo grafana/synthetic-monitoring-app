@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { css } from '@emotion/css';
 
@@ -13,14 +13,21 @@ import { LabelSection } from './sections/LabelSection';
 import { UptimeSection } from './sections/UptimeSection';
 import { FormFooter } from './FormFooter';
 
-export function FormRoot({ onSave }: { onSave(payload: Check, formValues: CheckFormValues): Promise<void> }) {
+export function FormRoot({
+  onSave,
+}: {
+  onSave(payload: Check, formValues: CheckFormValues): Promise<Function | void>;
+}) {
   const {
     formId,
+    setIsSubmitting,
     formNavigation: { sectionByErrors, completeAllSteps },
   } = useChecksterContext();
+
   const {
     handleSubmit,
-    formState: { submitCount },
+    reset,
+    formState: { submitCount, isDirty, isSubmitting },
   } = useFormContext<CheckFormValues>();
 
   useEffect(() => {
@@ -29,12 +36,38 @@ export function FormRoot({ onSave }: { onSave(payload: Check, formValues: CheckF
     }
   }, [completeAllSteps, submitCount]);
 
+  const [onSaveCallback, setOnSaveCallback] = useState<Function | undefined>();
+
+  // sync submitting state with parent context (mainly to disable form when submitting)
+  // `isSubmitting is not
+  useEffect(() => {
+    setIsSubmitting(isSubmitting);
+  }, [isSubmitting, setIsSubmitting]);
+
+  // Handle after save callback
+  // Wait for formState to be reset before calling onSave callback
+  useEffect(() => {
+    if (!isDirty && typeof onSaveCallback === 'function') {
+      onSaveCallback();
+    }
+  }, [onSaveCallback, isDirty]);
+
   return (
     <form
       onSubmit={handleSubmit(
-        (data) => {
+        async (data) => {
           const check = toPayload(data);
-          onSave(check, data);
+          try {
+            const callback = await onSave(check, data);
+            reset(data);
+            if (callback) {
+              // To avoid potential race condition with requestAnimationFrame and state updates caused by `reset`
+              // Faster than taking last position in event loop (useTimeout(cb, 0))
+              setOnSaveCallback(() => callback);
+            }
+          } catch (_error) {
+            // TODO: handle this
+          }
         },
         (errors) => {
           sectionByErrors(errors);

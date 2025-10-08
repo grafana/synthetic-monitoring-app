@@ -116,6 +116,7 @@ export function GenericNameValueField({
                 value={unregisteredRow.name}
                 onChange={(e) => handleUnregisteredChange('name', e.currentTarget.value)}
                 placeholder={namePlaceholder}
+                disabled={disabled}
               />
             </StyledField>
             <StyledField className={styles.field}>
@@ -123,6 +124,7 @@ export function GenericNameValueField({
                 value={unregisteredRow.value}
                 onChange={(e) => handleUnregisteredChange('value', e.currentTarget.value)}
                 placeholder={valuePlaceholder}
+                disabled={disabled}
               />
             </StyledField>
             <IconButton

@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Icon, Text, useStyles2, useTheme2 } from '@grafana/ui';
+import { Badge, Icon, Text, useStyles2 } from '@grafana/ui';
 import { css, cx, keyframes } from '@emotion/css';
 
 import { AdHocResult, ProbeStateStatus } from './types.adhoc-check';
 
-import { Preformatted } from '../../../Preformatted';
-import { getLogLevelFromMessage, getProbeSuccess } from './utils';
+import { LogItem } from './LogItem';
+import { getProbeSuccess } from './utils';
 
 interface LogsPanelProps {
   logs: AdHocResult['line']['logs'];
@@ -17,12 +17,13 @@ interface LogsPanelProps {
 export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
+
   const probeState = useMemo(() => {
     return getProbeSuccess(state, timeseries);
   }, [state, timeseries]);
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.container}>
       <div className={cx(styles.probe, styles.backgroundHover)} onClick={() => setIsOpen(!isOpen)}>
         <div className={cx(styles.probeStatus, `LogsPanel__state-${probeState}`)} />
         <div className={styles.probeLabel}>
@@ -57,79 +58,6 @@ export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
   );
 }
 
-function getLogColor(level: string, theme: GrafanaTheme2) {
-  switch (level.toLowerCase()) {
-    case 'warning':
-    case 'warn':
-      return theme.colors.warning.text;
-    case 'error':
-      return theme.colors.error.text;
-    case 'info+': // means that it's an upgraded "info"
-      return theme.colors.info.text;
-    default:
-      return theme.colors.text.primary;
-  }
-}
-
-function LogMessage({ log, logLevel }: { log: AdHocResult['line']['logs'][number]; logLevel: string }) {
-  const theme = useTheme2();
-
-  if ('check' in log) {
-    const value = Number(log?.value ?? 0);
-    return (
-      <span>
-        Check:{' '}
-        <Icon
-          className={css`
-            color: ${value ? theme.colors.success.text : theme.colors.error.text};
-          `}
-          name={value ? 'times' : 'check'}
-        />{' '}
-        {log.check}
-      </span>
-    );
-  }
-
-  return (
-    <span
-      className={css`
-        color: ${getLogColor(logLevel, theme)};
-      `}
-    >
-      {log.msg}
-    </span>
-  );
-}
-
-function LogItem({ log }: { log: AdHocResult['line']['logs'][number] }) {
-  const { msg, ...props } = log;
-  const logLevel = getLogLevelFromMessage(log.msg, log.level);
-  const [isOpen, setIsOpen] = useState(logLevel === 'error');
-  const styles = useStyles2(getStyles);
-
-  return (
-    <div className={styles.logWrapper}>
-      <div className={cx(styles.msg, styles.backgroundHover)} onClick={() => setIsOpen(!isOpen)}>
-        <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
-        <LogMessage log={log} logLevel={logLevel} />
-      </div>
-      <div className={styles.stepContent}>
-        {isOpen && (
-          <Preformatted className={styles.stepContentPreformatted}>
-            {Object.entries(props).map(([key, value]) => {
-              return (
-                <div key={key}>
-                  {key}: <span className={styles.muted}>{value}</span>
-                </div>
-              );
-            })}
-          </Preformatted>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function getStyles(theme: GrafanaTheme2) {
   const breathAnimation = keyframes`
     0% {
@@ -148,49 +76,11 @@ function getStyles(theme: GrafanaTheme2) {
         border-left: unset;
       }
     `,
-    stepContent: css`
-      position: relative;
-      //min-height: ${theme.spacing(2)};
-      padding-left: ${theme.spacing(2)};
-      //
-      // &:before {
-      //   content: '';
-      //   border-left: 2px solid ${theme.colors.border.weak};
-      //   position: absolute;
-      //   left: -8px;
-      //   top: -20px;
-      //   border-top: 2px solid rgba(204, 204, 220, 0.12);
-      //   width: 8px;
-      //   bottom: -19px;
-      // }
-    `,
-    stepContentPreformatted: css`
-      padding-bottom: ${theme.spacing(2)};
-    `,
-    msg: css`
-      display: flex;
-      gap: ${theme.spacing(1)};
-      padding: ${theme.spacing(0.5, 1)};
-      cursor: pointer;
-      border-radius: ${theme.shape.radius.default};
-      color: ${theme.colors.text.secondary};
-      align-items: center;
-      word-break: break-all;
-
-      & span {
-        font-family: ${theme.typography.fontFamilyMonospace};
-        font-size: ${theme.typography.bodySmall.fontSize};
-      }
-    `,
     backgroundHover: css`
       &:hover {
         background-color: ${theme.colors.action.hover};
         transition: ${theme.transitions.create(['background-color'])};
       }
-    `,
-    muted: css`
-      // TODO: This should be a grafana defined color (not random opacity)
-      opacity: 0.6;
     `,
     probe: css`
       display: flex;
@@ -231,15 +121,10 @@ function getStyles(theme: GrafanaTheme2) {
       justify-content: space-between;
       align-items: center;
     `,
-    wrapper: css`
+    container: css`
       display: flex;
       flex-direction: column;
       gap: ${theme.spacing(1)};
-    `,
-    logWrapper: css`
-      display: flex;
-      flex-direction: column;
-      gap: ${theme.spacing(0.5)};
     `,
   };
 }

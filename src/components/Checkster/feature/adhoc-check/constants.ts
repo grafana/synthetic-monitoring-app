@@ -14,5 +14,12 @@ export const UPGRADED_LOG_MESSAGE: Array<string | [string, string] | [RegExp, st
 export const DEFAULT_TIMEOUT_IN_SECONDS = 30;
 export const DEFAULT_GC_INTERVAL_IN_MILLISECONDS = 3000;
 
+// Multi-line `msg` sometimes includes a "heading" kind of line, remove them
+export const REDUNDANT_FIRST_LINES = [
+  '', // Remove empty lines (no known use-case)
+  'Response:', // k6 response logs
+  'Request:', // k6 request logs
+];
+
 // Empty means All
 export const ADHOC_CHECK_COMPATABILITY: CheckType[] = [];

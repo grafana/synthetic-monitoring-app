@@ -18,7 +18,10 @@ import { FeatureTabs } from './feature/FeatureTabs';
 
 interface ChecksterProps {
   check?: Check | CheckInstrumentation;
-  onSave(check: Check, formValues: CheckFormValues): Promise<void>;
+  // Resolve with a function if a call back should be made after the fact
+  // that the check is saved (and the form knows everything when OK)
+  // Example: when we want to navigate from the form after a successful save
+  onSave(check: Check, formValues: CheckFormValues): Promise<Function | void>;
 }
 
 export function Checkster(props: ChecksterProps) {

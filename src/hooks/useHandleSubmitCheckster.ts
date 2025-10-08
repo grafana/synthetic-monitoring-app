@@ -44,7 +44,8 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
       }
       await handleAlerts(result, alertsEnabled ? formValues.alerts : undefined);
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
-      navigateToCheckDashboard(result, payload?.id !== undefined);
+
+      return () => navigateToCheckDashboard(result, payload?.id !== undefined);
     },
     [alertsEnabled, initialCheck, createCheck, handleAlerts, navigateToCheckDashboard, updateCheck]
   );

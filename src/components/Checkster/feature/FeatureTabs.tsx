@@ -9,8 +9,6 @@ export function FeatureTabs() {
 
   const [activeLabel] = activeTab;
 
-  console.log('tabs loaded');
-
   return (
     <TabsBar
       className={css`
