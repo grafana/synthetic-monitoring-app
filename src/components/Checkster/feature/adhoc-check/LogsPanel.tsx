@@ -175,6 +175,7 @@ function getStyles(theme: GrafanaTheme2) {
       border-radius: ${theme.shape.radius.default};
       color: ${theme.colors.text.secondary};
       align-items: center;
+      word-break: break-all;
 
       & span {
         font-family: ${theme.typography.fontFamilyMonospace};
