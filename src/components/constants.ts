@@ -153,26 +153,27 @@ import { check } from 'k6'
 import http from 'k6/http'
 // import secrets from 'k6/secrets';
 
-// This example authenticates against the quick pizza API
+// This example fetches a pizza recommendation using an auth token
 export default async function main() {
-  const authURL = 'https://quickpizza.grafana.com/api/users/token/login';
+  const authURL = 'https://quickpizza.grafana.com/api/pizza';
 
   // TIP: Secure your credentials using secrets.get()
   // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/
-  const authInfo = {
-    username: 'default', // username: await secrets.get('quickpizza-username'),
-    password: '12345678' // password: await secrets.get('quickpizza-password'),
-  }
+  const authToken = 'token abcdef0123456789' // await secrets.get('quickpizza-auth-token'),
+  
   const headers = {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': authToken,
+    },
   };
 
-  const resp = http.post( authURL, JSON.stringify(authInfo), headers);
+  const resp = http.post( authURL, JSON.stringify({minNumberOfToppings: 2}), headers);
 
   console.log('got a response: ', resp.status); // will appear as logs in Loki
 
   // TIP: Use expect() to immediately abort execution and fail a test (impacts uptime/reachability)
-  expect(resp.status, 'status should be 200').toBe(200);
+  expect(resp.status).toBe(200);
 
   // TIP: Use check() to report test results in the 'assertions' dashboard panel
   // Scripts continue to run even if a check fails. Failed checks don't impact uptime and reachability
