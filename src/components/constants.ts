@@ -155,7 +155,7 @@ import http from 'k6/http'
 
 // This example fetches a pizza recommendation using an auth token
 export default async function main() {
-  const authURL = 'https://quickpizza.grafana.com/api/pizza';
+  const pizzaURL = 'https://quickpizza.grafana.com/api/pizza';
 
   // TIP: Secure your credentials using secrets.get()
   // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/
@@ -168,7 +168,7 @@ export default async function main() {
     },
   };
 
-  const resp = http.post( authURL, JSON.stringify({minNumberOfToppings: 2}), headers);
+  const resp = http.post( pizzaURL, JSON.stringify({minNumberOfToppings: 2}), headers);
 
   console.log('got a response: ', resp.status); // will appear as logs in Loki
 
