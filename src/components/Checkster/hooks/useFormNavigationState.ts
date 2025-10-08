@@ -23,7 +23,10 @@ export function useFormNavigationState(
 
   useEffect(() => {
     const newErrors = flattenKeys(formErrors);
-    setErrors(newErrors.length ? newErrors : undefined);
+    const hasErrors = newErrors.length > 0;
+    setErrors(hasErrors ? newErrors : undefined);
+    // Means that form has been submitted or trigger has run on the whole form
+    hasErrors && setRemainingSteps([]);
   }, [formErrors]);
 
   // Section progression.

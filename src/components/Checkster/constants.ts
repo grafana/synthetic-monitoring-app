@@ -574,6 +574,7 @@ export const DNS_RESPONSE_MATCH_OPTIONS = [
   { label: ResponseMatchType.Additional, value: ResponseMatchType.Additional },
 ];
 
+// TODO: This is dependent on checkType
 export const FORM_NAVIGATION_SECTION_LABEL_MAP: Record<FormSectionName, string> = Object.entries(
   FormSectionName
 ).reduce<Record<FormSectionName, string>>(
