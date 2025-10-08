@@ -1,19 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
 import { dateTime, dateTimeFormat } from '@grafana/data';
 import { Button, EmptyState } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AdHocCheckState, ProbeStateStatus } from './types.adhoc-check';
-import { CheckFormValues } from 'types';
 import { useProbes } from 'data/useProbes';
 
 import { Column } from '../../components/ui/Column';
-import { toPayload } from '../../utils/adaptors';
 import { DEFAULT_GC_INTERVAL_IN_MILLISECONDS, DEFAULT_TIMEOUT_IN_SECONDS } from './constants';
 import { LogsPanel } from './LogsPanel';
-import { useAdHocCheck } from './useAdHocCheck';
 import { useAdHocLogs } from './useAdHocLogs';
+import { useOnBeforeAdhocCheck } from './useOnBeforeAdhocCheck';
 
 type AdHocCheckStateMap = Record<AdHocCheckState['id'], AdHocCheckState>;
 
@@ -29,10 +26,9 @@ function createProbeState(id: number, name: string, isPublic: boolean, state = P
 }
 
 export function AdhocCheckPanel() {
-  const { getValues, trigger } = useFormContext<CheckFormValues>();
   const [logState, setLogState] = useState<AdHocCheckStateMap>({});
   const { data: probes, isLoading: isLoadingProbes } = useProbes(); // This will also make the execution step work, fix so that it always works
-
+  const { disabled, doAdhocCheck, data: newHocCheckRequest } = useOnBeforeAdhocCheck();
   const items = useMemo(() => {
     return Object.values(logState);
   }, [logState]);
@@ -85,7 +81,6 @@ export function AdhocCheckPanel() {
   }, [pendingIds]);
 
   const { data: responseData } = useAdHocLogs(expr, 'now-1h', 'now');
-  const { mutate: doAdhocCheck, data: newHocCheckRequest } = useAdHocCheck();
 
   useEffect(() => {
     if (!newHocCheckRequest || !probes) {
@@ -117,16 +112,9 @@ export function AdhocCheckPanel() {
   }, [newHocCheckRequest, probes]);
 
   const handleAdHocCheck = () => {
-    trigger().then((isValid) => {
-      if (!isValid) {
-        return;
-      }
-      const formValues = getValues();
-      const adHocCheckPayload = toPayload(formValues);
-      if (adHocCheckPayload) {
-        doAdhocCheck(adHocCheckPayload);
-      }
-    });
+    if (!disabled) {
+      doAdhocCheck();
+    }
   };
 
   useEffect(() => {
@@ -181,7 +169,7 @@ export function AdhocCheckPanel() {
           message={`You can test your check to see how it behaves in the wild`}
           variant={'completed'}
           button={
-            <Button variant="secondary" type="button" onClick={handleAdHocCheck}>
+            <Button disabled={disabled} variant="secondary" type="button" onClick={handleAdHocCheck}>
               Test
             </Button>
           }

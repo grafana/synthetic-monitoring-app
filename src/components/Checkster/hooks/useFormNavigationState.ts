@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { FieldErrors } from 'react-hook-form';
 
 import { CheckFormFieldPath, FormNavigationState, FormSectionName } from '../types';
-import { CheckType } from 'types';
+import { CheckFormValues, CheckType } from 'types';
 
 import { FORM_NAVIGATION_SECTION_LABEL_MAP } from '../constants';
 import { getFormSectionOrder } from '../utils/form';
@@ -9,12 +10,21 @@ import { flattenKeys, getHasSectionError } from '../utils/navigation';
 
 type SectionFieldsState = Partial<Record<FormSectionName, CheckFormFieldPath[]>>;
 
-export function useFormNavigationState(checkType: CheckType, initialSection?: FormSectionName): FormNavigationState {
+export function useFormNavigationState(
+  checkType: CheckType,
+  formErrors: FieldErrors<CheckFormValues>,
+  initialSection?: FormSectionName
+): FormNavigationState {
   const sectionOrder = getFormSectionOrder(checkType);
   const [sections, _setSectionsInternal] = useState<unknown[]>([]);
   const [active, _setActive] = useState(initialSection ?? sectionOrder[0]);
   const [sectionFields, setSectionFields] = useState<SectionFieldsState>({});
   const [errors, setErrors] = useState<string[] | undefined>(undefined);
+
+  useEffect(() => {
+    const newErrors = flattenKeys(formErrors);
+    setErrors(newErrors.length ? newErrors : undefined);
+  }, [formErrors]);
 
   // Section progression.
   const [remainingSteps, setRemainingSteps] = useState<FormSectionName[]>(sectionOrder);
@@ -45,20 +55,30 @@ export function useFormNavigationState(checkType: CheckType, initialSection?: Fo
   );
 
   const sectionByErrors = useCallback<FormNavigationState['sectionByErrors']>(
-    (errors) => {
-      const flattenedErrors = flattenKeys(errors);
-      setErrors(flattenedErrors.length ? flattenedErrors : undefined); // Store for the rest of the app
+    (_errors) => {
+      let flattenedErrors = errors;
+      if (_errors) {
+        flattenedErrors = Array.isArray(_errors) ? _errors : flattenKeys(_errors);
+      }
+
+      if (!flattenedErrors) {
+        return;
+      }
+
       for (const section of sectionOrder) {
         const sectionFields = getSectionFields(section);
         if (getHasSectionError(sectionFields, flattenedErrors)) {
           _setActive(section);
           return;
         } else {
-          console.warn('unhandled section field', flattenedErrors);
+          if (process.env.NODE_ENV === 'development') {
+            // Only for development
+            console.warn('unhandled section field', flattenedErrors);
+          }
         }
       }
     },
-    [getSectionFields, sectionOrder]
+    [errors, getSectionFields, sectionOrder]
   );
 
   const getSectionLabel = useCallback<FormNavigationState['getSectionLabel']>((sectionName) => {

@@ -66,8 +66,6 @@ export function ChecksterProvider({
 
   const [error, setError] = useState<Error | undefined>();
 
-  const formNavigation = useFormNavigationState(checkMeta.type, initialSection);
-
   useEffect(() => {
     if (!_check) {
       return;
@@ -102,6 +100,8 @@ export function ChecksterProvider({
       formMethods.reset(checkMeta.defaultFormValues);
     }
   }, [check, checkMeta.defaultFormValues, formMethods]);
+
+  const formNavigation = useFormNavigationState(checkMeta.type, formMethods.formState.errors, initialSection);
 
   const value = useMemo(() => {
     return {
