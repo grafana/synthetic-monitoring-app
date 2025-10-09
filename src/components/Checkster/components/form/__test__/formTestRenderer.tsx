@@ -1,4 +1,11 @@
-import React, { ComponentPropsWithoutRef, ElementType, Fragment, PropsWithChildren } from 'react';
+import React, {
+  ComponentPropsWithoutRef,
+  ElementType,
+  Fragment,
+  isValidElement,
+  PropsWithChildren,
+  ReactNode,
+} from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,6 +15,18 @@ export enum TestFormTestId {
   InfoContainer = 'TestForm TestFormValueInfo',
   Value = 'TestForm TestFormValueInfo Value',
   TypeOf = 'TestForm TestFormValueInfo Type',
+}
+
+function outputValue(value: unknown): ReactNode {
+  if (!isValidElement(value) && typeof value === 'object' && value !== null) {
+    try {
+      return JSON.stringify(value);
+    } catch (error) {
+      console.error('outputValue error:', error);
+      return null;
+    }
+  }
+  return value as ReactNode;
 }
 
 function TestForm({ children, defaultValues = {} }: PropsWithChildren<{ defaultValues: any }>) {
@@ -30,7 +49,7 @@ function TestFormValueInfo({ field }: { field: string }) {
   const value = watch(field);
   return (
     <div data-testid="TestForm TestFormValueInfo">
-      <div data-testid={TestFormTestId.Value}>{value}</div>
+      <div data-testid={TestFormTestId.Value}>{outputValue(value)}</div>
       <div data-testid={TestFormTestId.TypeOf}>{typeof value}</div>
     </div>
   );
@@ -38,7 +57,7 @@ function TestFormValueInfo({ field }: { field: string }) {
 
 export function formTestRenderer<T extends ElementType = ElementType>(
   FieldComponent: T,
-  props: ComponentPropsWithoutRef<T>,
+  props?: ComponentPropsWithoutRef<T>,
   defaultValues: any = {}, // `disabled` is reserved for disabling the form @see `TestForm`
   Wrapper?: ElementType
 ) {
@@ -49,7 +68,7 @@ export function formTestRenderer<T extends ElementType = ElementType>(
       <TestForm defaultValues={defaultValues}>
         {/* @ts-expect-error */}
         <FieldComponent {...props} />
-        <TestFormValueInfo field={props.field} />
+        {props?.field && <TestFormValueInfo field={props?.field} />}
       </TestForm>
     </WrapperComponent>
   );

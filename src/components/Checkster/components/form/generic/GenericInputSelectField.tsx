@@ -26,7 +26,7 @@ export function GenericInputSelectField({
   description,
   options = [],
   className,
-  width = 20, // 0 means undefined TODO: Remove the default value
+  width = 20, // 0 means undefined
 }: GenericInputSelectFieldProps) {
   const id = useDOMId();
   const {
@@ -39,7 +39,7 @@ export function GenericInputSelectField({
       <Controller
         control={control}
         name={field}
-        render={({ field }) => {
+        render={({ field: { ref, ...field } }) => {
           return (
             <InputSelect
               id={id}

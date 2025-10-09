@@ -4,6 +4,7 @@ import { ThemeComponents } from '@grafana/data/dist/types/themes/createComponent
 import { Dropdown, Icon, Menu, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+import { useDOMId } from '../../../hooks/useDOMId';
 import { getInputFocusStyles } from '../styles';
 
 interface TargetValueHandler<T> {
@@ -27,7 +28,6 @@ interface InputSelectProps {
   width?: number;
 }
 
-// TODO: Make sure a11y is what it should be
 export function InputSelect({
   id,
   value,
@@ -41,6 +41,9 @@ export function InputSelect({
   placeholder = 'Select',
   size = 'md',
 }: InputSelectProps) {
+  const fallbackId = useDOMId();
+  const idWithFallback = id || fallbackId;
+
   const [internalValue, setInternalValue] = React.useState<SelectableValue['value'] | undefined>(value);
   const theme = useTheme2();
   const styles = getStyles(theme, size);
@@ -52,9 +55,10 @@ export function InputSelect({
         width: 100%;
       `;
   const label = options.find((option) => internalValue === option.value)?.label ?? value;
+  const dropdownId = `${idWithFallback}-options`;
   const overlay = useMemo(() => {
     return (
-      <Menu>
+      <Menu id={dropdownId}>
         {options.map((option, index) => {
           const isSelected = option.value === value;
           const optionLabel = option?.label ?? option.value;
@@ -74,7 +78,7 @@ export function InputSelect({
         })}
       </Menu>
     );
-  }, [options, value]);
+  }, [dropdownId, options, value]);
 
   useEffect(() => {
     setInternalValue(value);
@@ -91,10 +95,14 @@ export function InputSelect({
       <Dropdown placement={placement} overlay={overlay}>
         <button
           disabled={disabled}
-          id={id}
+          id={idWithFallback}
           type="button"
-          role="menu"
+          role="combobox"
+          aria-controls={dropdownId}
+          value={internalValue}
+          aria-haspopup="listbox"
           className={cx(styles.button, widthStyles, invalid && styles.invalid, className)}
+          aria-valuetext={label}
         >
           <span className={styles.value} title={label}>
             {label || <span className={styles.placeholder}>{placeholder}</span>}

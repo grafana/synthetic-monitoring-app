@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
 
+import { useDOMId } from '../../../../../hooks/useDOMId';
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
 
@@ -39,6 +40,7 @@ export function GenericNameValueField({
   namePlaceholder = 'Name',
   valuePlaceholder = 'Value',
 }: GenericNameValueFieldProps) {
+  const id = useDOMId();
   const {
     register,
     setFocus,
@@ -77,6 +79,7 @@ export function GenericNameValueField({
       description={description}
       {...getFieldErrorProps(errors, fieldName, interpolationVariables)}
       required={required}
+      htmlFor={id}
     >
       <Stack direction="column" gap={0.5}>
         {fields.map((field, index) => (
@@ -86,6 +89,7 @@ export function GenericNameValueField({
               {...getFieldErrorProps(errors, [fieldName, index, 'name'], interpolationVariables)}
             >
               <Input
+                {...(!allowEmpty && index === 0 ? { id } : undefined)}
                 prefix={namePrefix}
                 {...register(`${fieldName}.${index}.name`)}
                 placeholder={namePlaceholder}
@@ -112,6 +116,7 @@ export function GenericNameValueField({
           <Stack alignItems="start">
             <StyledField className={styles.field}>
               <Input
+                id={id}
                 prefix={namePrefix}
                 value={unregisteredRow.name}
                 onChange={(e) => handleUnregisteredChange('name', e.currentTarget.value)}
