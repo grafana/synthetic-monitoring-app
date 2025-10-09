@@ -108,7 +108,6 @@ export function ChecksterProvider({
   const formNavigation = useFormNavigationState(checkMeta.type, formMethods.formState.errors, initialSection);
 
   useEffect(() => {
-    console.log('running');
     if (!checkMeta.isNew && !formNavigation.isStepsComplete) {
       formNavigation.completeAllSteps();
     }
