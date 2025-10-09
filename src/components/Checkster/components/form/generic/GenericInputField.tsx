@@ -5,6 +5,7 @@ import { Input } from '@grafana/ui';
 import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues } from 'types';
 
+import { useDOMId } from '../../../../../hooks/useDOMId';
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
 
@@ -32,14 +33,18 @@ export function GenericInputField({
     formState: { disabled, errors },
   } = useFormContext<CheckFormValues>();
 
+  const id = useDOMId();
+
   return (
     <StyledField
       label={label}
       description={description}
       required={required}
+      htmlFor={id}
       {...getFieldErrorProps(errors, field, interpolationVariables)}
     >
       <Input
+        id={id}
         disabled={disabled}
         placeholder={placeholder}
         type={type}

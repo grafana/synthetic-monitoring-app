@@ -17,7 +17,6 @@ export function GenericCheckboxField({ field, label, description }: GenericCheck
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
 
-  // TODO: Use `getFieldErrorProps`?
   return (
     <Stack>
       <Checkbox label={label} description={description} {...register(field)} disabled={disabled} />
