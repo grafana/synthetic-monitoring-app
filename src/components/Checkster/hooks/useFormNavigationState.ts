@@ -130,7 +130,7 @@ export function useFormNavigationState(
       sectionOrder,
       sections,
       active,
-      activeLabel: FORM_NAVIGATION_SECTION_LABEL_MAP[active],
+      activeLabel: getSectionLabel(active),
       isSectionActive(sectionName: FormSectionName) {
         return sectionName === active;
       },
