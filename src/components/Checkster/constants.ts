@@ -585,6 +585,9 @@ export const FORM_NAVIGATION_SECTION_LABEL_MAP: Record<FormSectionName, string> 
   return acc;
 }, {} as any); // Override check since it's only used internally
 
+export const DEFAULT_MAX_ALLOWED_METRIC_LABELS = 10;
+export const DEFAULT_MAX_ALLOWED_LOG_LABELS = 5;
+
 // Checks that are executed with k6 rather than blackbox exporter
 export const K6_CHECK_TYPES = [CheckType.MULTI_HTTP, CheckType.Browser, CheckType.Scripted];
 

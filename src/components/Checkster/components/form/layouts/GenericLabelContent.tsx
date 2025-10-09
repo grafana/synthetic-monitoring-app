@@ -1,18 +1,21 @@
 import React from 'react';
-import { Tooltip } from '@grafana/ui';
+import { LoadingPlaceholder, Tooltip } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { SectionContent } from '../../ui/SectionContent';
 import { GenericNameValueField } from '../generic/GenericNameValueField';
 
-export function GenericLabelContent() {
+export function GenericLabelContent({ description, isLoading }: { description: string; isLoading?: boolean }) {
+  if (isLoading) {
+    return <LoadingPlaceholder text="Loading label limits" />;
+  }
   return (
     <SectionContent>
       <GenericNameValueField
         allowEmpty
         field="labels"
         label="Custom labels"
-        description="FIX ME: Custom labels to be included with collected metrics and logs. You can add up to 10. If you add more than 5 labels, they will potentially not be used to index logs, and rather added as part of the log message."
+        description={description}
         addButtonText="Label"
         interpolationVariables={{ type: 'Label' }}
         namePlaceholder="name" // Looks a bit wonky with "label_Name"
