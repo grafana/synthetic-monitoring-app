@@ -20,6 +20,7 @@ export function useFormNavigationState(
   const [active, _setActive] = useState(initialSection ?? sectionOrder[0]);
   const [sectionFields, setSectionFields] = useState<SectionFieldsState>({});
   const [errors, setErrors] = useState<string[] | undefined>(undefined);
+  const [labelMap, setLabelMap] = useState<Record<FormSectionName, string>>(FORM_NAVIGATION_SECTION_LABEL_MAP);
 
   useEffect(() => {
     const newErrors = flattenKeys(formErrors);
@@ -32,18 +33,34 @@ export function useFormNavigationState(
   // Section progression.
   const [remainingSteps, setRemainingSteps] = useState<FormSectionName[]>(sectionOrder);
 
-  const registerSectionFields = useCallback<FormNavigationState['registerSectionFields']>((sectionName, fields) => {
-    setSectionFields((prevState) => {
-      if (sectionName in prevState && prevState[sectionName] === fields) {
-        return prevState;
-      }
+  const registerSection = useCallback<FormNavigationState['registerSection']>(
+    (sectionName, fields, navLabel) => {
+      setSectionFields((prevState) => {
+        if (sectionName in prevState && prevState[sectionName] === fields) {
+          return prevState;
+        }
 
-      return {
-        ...prevState,
-        [sectionName]: fields,
-      };
-    });
-  }, []);
+        return {
+          ...prevState,
+          [sectionName]: fields,
+        };
+      });
+      // Override default nav label (which is the enum key of FormSectionName)
+      // Mainly used for the `check` section
+      if (navLabel) {
+        setLabelMap((prevState) => {
+          if (sectionName in labelMap && labelMap[sectionName] === navLabel) {
+            return prevState;
+          }
+          return {
+            ...prevState,
+            [sectionName]: navLabel,
+          };
+        });
+      }
+    },
+    [labelMap]
+  );
 
   const isSeenStep = useCallback<FormNavigationState['isSeenStep']>(
     (section) => {
@@ -84,9 +101,12 @@ export function useFormNavigationState(
     [errors, getSectionFields, sectionOrder]
   );
 
-  const getSectionLabel = useCallback<FormNavigationState['getSectionLabel']>((sectionName) => {
-    return FORM_NAVIGATION_SECTION_LABEL_MAP[sectionName] ?? sectionName;
-  }, []);
+  const getSectionLabel = useCallback<FormNavigationState['getSectionLabel']>(
+    (sectionName) => {
+      return labelMap[sectionName] ?? sectionName;
+    },
+    [labelMap]
+  );
 
   const completeAllSteps = useCallback(() => {
     setRemainingSteps([]);
@@ -98,10 +118,10 @@ export function useFormNavigationState(
     const next = sectionOrder[activeIndex + 1];
 
     return {
-      previous: previous ? { name: previous, label: FORM_NAVIGATION_SECTION_LABEL_MAP[previous] } : null,
-      next: next ? { name: next, label: FORM_NAVIGATION_SECTION_LABEL_MAP[next] } : null,
+      previous: previous ? { name: previous, label: labelMap[previous] } : null,
+      next: next ? { name: next, label: labelMap[next] } : null,
     };
-  }, [active, sectionOrder]);
+  }, [active, sectionOrder, labelMap]);
 
   const isStepsComplete = remainingSteps.length === 0;
 
@@ -140,7 +160,7 @@ export function useFormNavigationState(
           _setActive(sectionName);
         }
       },
-      registerSectionFields,
+      registerSection,
       sectionByErrors,
       getSectionFields,
       isSeenStep,
@@ -154,7 +174,7 @@ export function useFormNavigationState(
     sectionOrder,
     sections,
     active,
-    registerSectionFields,
+    registerSection,
     sectionByErrors,
     getSectionFields,
     isSeenStep,

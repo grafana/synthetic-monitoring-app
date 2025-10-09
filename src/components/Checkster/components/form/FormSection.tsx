@@ -7,20 +7,20 @@ import { useChecksterContext } from '../../contexts/ChecksterContext';
 interface FormSectionProps extends PropsWithChildren {
   sectionName: FormSectionName;
   fields?: Array<FormFieldMatch | RegExp | string>;
+  // Use this to change the section label, including nav label
+  // Default: value of FormSectioName enum key
+  navLabel?: string;
 }
 
-export function FormSection({ sectionName, children, fields }: FormSectionProps) {
+export function FormSection({ sectionName, children, fields, navLabel }: FormSectionProps) {
   const {
-    formNavigation: { isSectionActive, registerSectionFields },
+    formNavigation: { isSectionActive, registerSection },
   } = useChecksterContext();
 
   useEffect(() => {
-    if (fields && Array.isArray(fields)) {
-      registerSectionFields(sectionName, fields);
-    } else {
-      registerSectionFields(sectionName, undefined);
-    }
-  }, [fields, registerSectionFields, sectionName]);
+    const fieldsToRegister = fields && Array.isArray(fields) ? fields : undefined;
+    registerSection(sectionName, fieldsToRegister, navLabel);
+  }, [fields, navLabel, registerSection, sectionName]);
 
   const isActive = isSectionActive(sectionName);
 

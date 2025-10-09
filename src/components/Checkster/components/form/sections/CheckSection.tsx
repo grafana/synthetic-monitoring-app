@@ -17,7 +17,6 @@ import { TRACEROUTE_CHECK_FIELDS, TracerouteCheckContent } from '../layouts/Trac
 
 const defaultCheckFields = ['job', 'target'];
 
-// TODO: Finish this!
 function getCheckTypeFields(checkType: CheckType) {
   switch (checkType) {
     case CheckType.HTTP:
@@ -55,6 +54,18 @@ const checkTypeLayoutMap: Record<CheckType, ComponentType> = {
   [CheckType.Browser]: BrowserCheckContent,
 };
 
+function getNavLabel(checkType: CheckType) {
+  switch (checkType) {
+    case CheckType.Browser:
+    case CheckType.Scripted:
+      return 'Script';
+    case CheckType.MULTI_HTTP:
+      return 'Requests';
+    default:
+      return 'Request';
+  }
+}
+
 export function CheckSection() {
   const {
     checkMeta: { type },
@@ -64,7 +75,7 @@ export function CheckSection() {
   const fields = getCheckTypeFields(type);
 
   return (
-    <FormSection sectionName={FormSectionName.Check} fields={fields}>
+    <FormSection navLabel={getNavLabel(type)} sectionName={FormSectionName.Check} fields={fields}>
       <SectionComponent />
     </FormSection>
   );

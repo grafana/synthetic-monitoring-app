@@ -574,19 +574,16 @@ export const DNS_RESPONSE_MATCH_OPTIONS = [
   { label: ResponseMatchType.Additional, value: ResponseMatchType.Additional },
 ];
 
-// TODO: This is dependent on checkType
+// To override, change `navLabel` prob when rendering `<FormSection />`
 export const FORM_NAVIGATION_SECTION_LABEL_MAP: Record<FormSectionName, string> = Object.entries(
   FormSectionName
-).reduce<Record<FormSectionName, string>>(
-  (acc, [name, value]) => {
-    if (value !== FormSectionName.Check) {
-      acc[value] = name;
-    }
+).reduce<Record<FormSectionName, string>>((acc, [name, value]) => {
+  if (value !== FormSectionName.Check) {
+    acc[value] = name;
+  }
 
-    return acc;
-  },
-  { [FormSectionName.Check]: 'Request' } as any
-); // Override check since it's only used internally
+  return acc;
+}, {} as any); // Override check since it's only used internally
 
 // Checks that are executed with k6 rather than blackbox exporter
 export const K6_CHECK_TYPES = [CheckType.MULTI_HTTP, CheckType.Browser, CheckType.Scripted];

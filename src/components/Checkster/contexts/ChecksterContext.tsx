@@ -13,8 +13,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { CheckInstrumentation, FormNavigationState, FormSectionName } from '../types';
 import { Check, CheckFormValues } from 'types';
+import { useDOMId } from 'hooks/useDOMId';
 
-import { useDOMId } from '../../../hooks/useDOMId';
 import { DEFAULT_CHECK_CONFIG } from '../constants';
 import { CheckMeta, useCheckMeta } from '../hooks/useCheckMeta';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
@@ -98,10 +98,21 @@ export function ChecksterProvider({
     if (check) {
       // Reset form values when check changes
       formMethods.reset(checkMeta.defaultFormValues);
+      if (!checkMeta.isNew) {
+        // Trigger form validation on existing checks
+        formMethods.trigger();
+      }
     }
-  }, [check, checkMeta.defaultFormValues, formMethods]);
+  }, [check, checkMeta.defaultFormValues, formMethods, checkMeta.isNew]);
 
   const formNavigation = useFormNavigationState(checkMeta.type, formMethods.formState.errors, initialSection);
+
+  useEffect(() => {
+    console.log('running');
+    if (!checkMeta.isNew && !formNavigation.isStepsComplete) {
+      formNavigation.completeAllSteps();
+    }
+  }, [checkMeta, formNavigation]);
 
   const value = useMemo(() => {
     return {
