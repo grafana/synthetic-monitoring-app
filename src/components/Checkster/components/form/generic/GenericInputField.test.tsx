@@ -7,7 +7,6 @@ import { GenericInputField } from './GenericInputField';
 const defaultProps = {
   field: 'value',
   label: 'Test Label',
-  defaultValue: '',
 } as any;
 
 function renderGenericInputField(

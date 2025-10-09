@@ -6,7 +6,6 @@ import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues } from 'types';
 import { useDOMId } from 'hooks/useDOMId';
 
-import { useCheckFormFieldPath } from '../../../hooks/useCheckFormFieldPath';
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
 
@@ -17,7 +16,6 @@ interface GenericTextareaFieldProps {
   field: CheckFormFieldPath; // Adjust the type as necessary
   rows?: ComponentProps<typeof TextArea>['rows'];
   interpolationVariables?: Record<string, string>;
-  fsDataElement?: string;
   placeholder?: string;
   className?: ComponentProps<typeof TextArea>['className'];
 }
@@ -25,16 +23,14 @@ interface GenericTextareaFieldProps {
 export function GenericTextareaField({
   label,
   description,
-  field: _field,
+  field,
   required,
-  rows,
+  rows = 5,
   placeholder,
   interpolationVariables,
   ...props
 }: GenericTextareaFieldProps) {
   const id = useDOMId();
-  // TODO: Work in progress
-  const field = useCheckFormFieldPath(_field);
 
   const {
     register,
