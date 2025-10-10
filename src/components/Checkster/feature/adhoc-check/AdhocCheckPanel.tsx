@@ -28,7 +28,7 @@ function createProbeState(id: number, name: string, isPublic: boolean, state = P
 export function AdhocCheckPanel() {
   const [logState, setLogState] = useState<AdHocCheckStateMap>({});
   const { data: probes, isLoading: isLoadingProbes } = useProbes(); // This will also make the execution step work, fix so that it always works
-  const { disabled, doAdhocCheck, data: newHocCheckRequest } = useOnBeforeAdhocCheck();
+  const { doAdhocCheck, data: newHocCheckRequest } = useOnBeforeAdhocCheck();
   const items = useMemo(() => {
     return Object.values(logState);
   }, [logState]);
@@ -112,9 +112,7 @@ export function AdhocCheckPanel() {
   }, [newHocCheckRequest, probes]);
 
   const handleAdHocCheck = () => {
-    if (!disabled) {
-      doAdhocCheck();
-    }
+    doAdhocCheck();
   };
 
   useEffect(() => {
@@ -169,7 +167,7 @@ export function AdhocCheckPanel() {
           message={`You can test your check to see how it behaves in the wild`}
           variant={'completed'}
           button={
-            <Button disabled={disabled} variant="secondary" type="button" onClick={handleAdHocCheck}>
+            <Button variant="secondary" type="button" onClick={handleAdHocCheck}>
               Test
             </Button>
           }
