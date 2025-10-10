@@ -20,7 +20,7 @@ export function NewCheckV2() {
   const [params] = useSearchParams({});
   const checkType = params.get('checkType');
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
-  const { isLoading } = useProbes();
+  const { isLoading: isLoadingProbes, isFetched: isProbesFetched } = useProbes();
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
   const group = CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup);
   const styles = useStyles2(getStyles);
@@ -34,6 +34,8 @@ export function NewCheckV2() {
       group: checkTypeGroup,
     };
   }, [checkType, checkTypeGroup]);
+
+  const isLoading = isLoadingProbes && !isProbesFetched;
 
   const handleSubmit = useHandleSubmitCheckster();
 
@@ -53,7 +55,7 @@ export function NewCheckV2() {
   return (
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <Checkster key={isLoading ? `loading` : `ready`} check={instrumentation} onSave={handleSubmit} />
+        <Checkster check={instrumentation} onSave={handleSubmit} />
       </div>
     </PluginPage>
   );
