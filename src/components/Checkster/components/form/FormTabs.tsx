@@ -121,7 +121,6 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
                 `,
               child.props.fillVertical &&
                 css`
-                  min-height: 300px;
                   flex: 1 1 0;
                   overflow: auto;
                   & > div {

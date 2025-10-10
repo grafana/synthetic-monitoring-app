@@ -19,9 +19,22 @@ export function PrimaryLayoutSection({ children, headerContent }: PrimaryLayoutS
   const className = useStyles2(getClassName);
 
   return (
-    <div className={cx(primaryClassName, className)} {...primaryProps}>
-      <LayoutSectionHeader primary>{headerContent}</LayoutSectionHeader>
-      <LayoutSectionContent>{children}</LayoutSectionContent>
+    <div className={cx(primaryClassName)} {...primaryProps}>
+      <div
+        className={cx(
+          className,
+          css`
+            display: flex;
+            flex-direction: column;
+            min-width: 50px; // Just to avoid splitter to get stuck
+            flex-grow: 1;
+            height: 100%;
+          `
+        )}
+      >
+        <LayoutSectionHeader primary>{headerContent}</LayoutSectionHeader>
+        <LayoutSectionContent>{children}</LayoutSectionContent>
+      </div>
     </div>
   );
 }

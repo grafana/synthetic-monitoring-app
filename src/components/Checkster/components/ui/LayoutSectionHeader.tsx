@@ -22,6 +22,7 @@ function getClassName(theme: GrafanaTheme2) {
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
+    overflow-x: auto;
     &.CheckEditor__main-content {
       // This is needed to fill the gap between the main content and the splitter
     }

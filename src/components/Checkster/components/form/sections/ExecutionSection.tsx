@@ -6,7 +6,7 @@ import { useChecksterContext } from '../../../contexts/ChecksterContext';
 import { FormSection } from '../FormSection';
 import { GenericExecutionContent } from '../layouts/GenericExecutionContent';
 
-const defaultExecutionFields = ['probes'];
+const defaultExecutionFields = ['probes', 'frequency'];
 
 export function ExecutionSection() {
   const {

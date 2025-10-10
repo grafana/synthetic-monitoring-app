@@ -34,7 +34,7 @@ export function SectionContent({ label, vanilla, children }: SectionContentProps
       `}
     >
       <h2>{label || activeLabel}</h2>
-      <Wrapper fill gap={FIELD_SPACING} padding={theme.spacing(0, 2, 2, 2)}>
+      <Wrapper overflow="auto" fill gap={FIELD_SPACING} padding={theme.spacing(0, 2, 2, 2)}>
         {children}
       </Wrapper>
     </div>

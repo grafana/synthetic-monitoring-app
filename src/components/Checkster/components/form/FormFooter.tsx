@@ -17,11 +17,13 @@ export function FormFooter() {
   return (
     <div
       className={css`
+        position: relative;
         padding: ${theme.spacing(2)};
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: ${theme.spacing(1)};
+        border-top: 1px solid ${theme.colors.border.medium};
       `}
     >
       <div>

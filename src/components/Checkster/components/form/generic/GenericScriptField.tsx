@@ -1,7 +1,7 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { FieldValidationMessage, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues } from 'types';
@@ -28,12 +28,17 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
   return (
     <Column
       grow
-      className={css`
-        & > div:first-child {
-          flex: 1 1 0;
-          overflow: auto;
-        }
-      `}
+      className={cx(
+        css`
+          & > div:first-child {
+            flex: 1 1 0;
+            overflow: auto;
+          }
+          & > div > div {
+            min-height: unset; // code editor
+          }
+        `
+      )}
     >
       <Controller
         control={control}
