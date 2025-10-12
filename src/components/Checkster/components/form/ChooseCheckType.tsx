@@ -1,37 +1,32 @@
 import React from 'react';
-import { Label, RadioButtonGroup, Stack, Text } from '@grafana/ui';
+import { RadioButtonGroup, Stack, Text } from '@grafana/ui';
 
 import { CheckType } from 'types';
 
+import { CHECK_TYPE_OPTION_MAP } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { useCheckTypeOptions } from '../../hooks/useCheckTypeOptions';
 import { getCheckTypeOption } from '../../utils/check';
+import { StyledField } from '../ui/StyledField';
 
 export function ChooseCheckType() {
-  const {
-    setCheck,
-    checkMeta: { type, group, isNew },
-  } = useChecksterContext();
+  const { changeCheckType, checkType, isNew } = useChecksterContext();
 
-  // TODO: Do we need to use `updateCheckTypeValues` and `reset`? (@see ChooseCheckType in old Checkster)
+  const options = useCheckTypeOptions(CHECK_TYPE_OPTION_MAP[checkType].group);
 
-  const options = useCheckTypeOptions(group);
-
-  const handleCheckTypeChange = (newValue: CheckType) => {
-    // This should probably trigger an emitting of some sort (if we want to update search params or something).
-    setCheck({ type: newValue });
+  const handleCheckTypeChange = (newType: CheckType) => {
+    changeCheckType(newType);
   };
 
-  const { description } = getCheckTypeOption(type);
+  const { description } = getCheckTypeOption(checkType);
 
   return (
-    <Stack direction="column" gap={0}>
-      <Label>Request type</Label>
+    <StyledField label="Request type" emulate>
       <Stack direction="column">
         <div>
           <RadioButtonGroup
             disabled={!isNew}
-            value={type}
+            value={checkType}
             aria-label={`Request type`}
             options={options}
             onChange={handleCheckTypeChange}
@@ -43,6 +38,6 @@ export function ChooseCheckType() {
           </Text>
         )}
       </Stack>
-    </Stack>
+    </StyledField>
   );
 }

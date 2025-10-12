@@ -5,8 +5,8 @@ import { CheckFormFieldPath, FormNavigationState, FormSectionName } from '../typ
 import { CheckFormValues, CheckType } from 'types';
 
 import { FORM_NAVIGATION_SECTION_LABEL_MAP } from '../constants';
-import { getFormSectionOrder } from '../utils/form';
-import { flattenKeys, getHasSectionError } from '../utils/navigation';
+import { getFlattenErrors, getFormSectionOrder } from '../utils/form';
+import { getHasSectionError } from '../utils/navigation';
 
 type SectionFieldsState = Partial<Record<FormSectionName, CheckFormFieldPath[]>>;
 
@@ -23,10 +23,11 @@ export function useFormNavigationState(
   const [labelMap, setLabelMap] = useState<Record<FormSectionName, string>>(FORM_NAVIGATION_SECTION_LABEL_MAP);
 
   useEffect(() => {
-    const newErrors = flattenKeys(formErrors);
+    const newErrors = getFlattenErrors(formErrors);
     const hasErrors = newErrors.length > 0;
     setErrors(hasErrors ? newErrors : undefined);
     // Means that form has been submitted or trigger has run on the whole form
+    // TODO: this is not totally true (trigger on a field will also cause this, need to fix)
     hasErrors && setRemainingSteps([]);
   }, [formErrors]);
 
@@ -78,7 +79,7 @@ export function useFormNavigationState(
     (_errors) => {
       let flattenedErrors = errors;
       if (_errors) {
-        flattenedErrors = Array.isArray(_errors) ? _errors : flattenKeys(_errors);
+        flattenedErrors = Array.isArray(_errors) ? _errors : getFlattenErrors(_errors);
       }
 
       if (!flattenedErrors) {

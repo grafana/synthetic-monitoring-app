@@ -1,6 +1,3 @@
-import { FieldErrors } from 'react-hook-form';
-
-import { CheckFormValues } from '../../../types';
 import { FormFieldMatch } from '../types';
 
 export function getHasSectionError(sectionFields: FormFieldMatch[], errors: string[]) {
@@ -17,24 +14,4 @@ export function getHasSectionError(sectionFields: FormFieldMatch[], errors: stri
       return path.startsWith(field);
     });
   });
-}
-
-function isBottomOfPath(obj: any) {
-  const keys = Object.keys(obj);
-
-  return keys.every((key) => [`ref`, `message`, `type`].includes(key));
-}
-
-export function flattenKeys(errs: FieldErrors<CheckFormValues>) {
-  const build: string[] = [];
-
-  Object.entries(errs).forEach(([key, value]) => {
-    if (isBottomOfPath(value)) {
-      build.push(key);
-    } else {
-      build.push(...flattenKeys(value).map((subKey) => `${key}.${subKey}`));
-    }
-  });
-
-  return build;
 }

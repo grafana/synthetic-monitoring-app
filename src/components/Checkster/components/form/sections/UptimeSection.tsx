@@ -44,16 +44,14 @@ function getCheckTypeFields(checkType: CheckType) {
 }
 
 export function UptimeSection() {
-  const {
-    checkMeta: { type },
-  } = useChecksterContext();
+  const { checkType } = useChecksterContext();
 
-  const SectionComponent = checkTypeLayoutMap[type] ?? null;
-  const fields = getCheckTypeFields(type);
+  const SectionComponent = checkTypeLayoutMap[checkType] ?? null;
+  const fields = getCheckTypeFields(checkType);
 
   return (
     <FormSection sectionName={FormSectionName.Uptime} fields={fields}>
-      <SectionComponent data-checkType={type} />
+      <SectionComponent data-checkType={checkType} />
     </FormSection>
   );
 }

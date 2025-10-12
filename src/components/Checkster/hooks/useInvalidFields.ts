@@ -10,7 +10,7 @@ export function useInvalidFields(ifErrors = true) {
   const { getValues, formState } = useFormContext();
   const {
     formNavigation: { errors },
-    checkMeta: { schema },
+    schema,
   } = useChecksterContext();
 
   const hasFormStateErrors = !ifErrors || (errors !== undefined && errors.length > 0);

@@ -4,9 +4,7 @@ import { useChecksterContext } from '../../../../contexts/ChecksterContext';
 import { ProbeOptions } from './ProbeOptions';
 
 export function GenericProbesSelectField() {
-  const {
-    checkMeta: { type },
-  } = useChecksterContext();
+  const { checkType } = useChecksterContext();
 
-  return <ProbeOptions checkType={type} />;
+  return <ProbeOptions checkType={checkType} />;
 }

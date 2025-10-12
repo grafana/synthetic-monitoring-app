@@ -4,18 +4,23 @@ import { FormFieldMatch } from '../types';
 
 import { useChecksterContext } from '../contexts/ChecksterContext';
 import { getHasSectionError } from '../utils/navigation';
+import { useSilentErrors } from './useSilentErrors';
 
 export function useGetIndexFieldError(indexFields: Array<FormFieldMatch[] | undefined>): boolean[] {
   const {
-    formNavigation: { errors },
+    formNavigation: { errors: formErrors },
   } = useChecksterContext();
+
+  const liveErrors = useSilentErrors();
+
+  const errors = formErrors?.filter((field) => liveErrors.some((liveError) => liveError.startsWith(field)));
 
   return useMemo(() => {
     if (!indexFields) {
       return [];
     }
 
-    if (!errors) {
+    if (!errors || errors.length === 0) {
       return new Array(indexFields.length).fill(false);
     }
 

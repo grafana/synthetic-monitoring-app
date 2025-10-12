@@ -173,20 +173,15 @@ describe('Checkster.tsx', () => {
         target: 'https://example.com',
       };
 
-      render(<Checkster {...defaultProps} check={customCheck} />);
+      render(<Checkster {...defaultProps} checkOrCheckType={customCheck} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('form-root')).toBeInTheDocument();
       });
     });
 
-    it('should handle CheckInstrumentation prop', async () => {
-      const checkInstrumentation = {
-        type: CheckType.HTTP,
-        group: undefined,
-      };
-
-      render(<Checkster {...defaultProps} check={checkInstrumentation} />);
+    it('should handle check type via props', async () => {
+      render(<Checkster {...defaultProps} checkOrCheckType={CheckType.HTTP} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('form-root')).toBeInTheDocument();

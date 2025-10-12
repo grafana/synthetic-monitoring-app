@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom-v5-compat';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
@@ -18,7 +18,7 @@ import { PluginPageNotFound } from 'page/NotFound';
 
 export function NewCheckV2() {
   const [params] = useSearchParams({});
-  const checkType = params.get('checkType');
+  const checkType = (params.get('checkType') as CheckType) ?? undefined;
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
   const { isLoading: isLoadingProbes, isFetched: isProbesFetched } = useProbes();
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
@@ -27,13 +27,6 @@ export function NewCheckV2() {
   const navModel = createNavModel({ text: `Choose a check type`, url: generateRoutePath(AppRoutes.ChooseCheckGroup) }, [
     { text: `${checkTypeGroupOption?.label ?? 'Check not found'}` },
   ]);
-
-  const instrumentation = useMemo(() => {
-    return {
-      type: (checkType as CheckType) || undefined,
-      group: checkTypeGroup,
-    };
-  }, [checkType, checkTypeGroup]);
 
   const isLoading = isLoadingProbes && !isProbesFetched;
 
@@ -55,7 +48,7 @@ export function NewCheckV2() {
   return (
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <Checkster check={instrumentation} onSave={handleSubmit} />
+        <Checkster checkOrCheckType={checkType} onSave={handleSubmit} />
       </div>
     </PluginPage>
   );

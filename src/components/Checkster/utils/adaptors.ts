@@ -14,6 +14,7 @@ import {
 } from 'types';
 import { getCheckType } from 'utils';
 
+import { DEFAULT_CHECK_CONFIG, DEFAULT_CHECK_CONFIG_MAP } from '../constants';
 import { getBrowserCheckFormValues } from '../transformations/toFormValues.browser';
 import { getDNSCheckFormValues } from '../transformations/toFormValues.dns';
 import { getGRPCCheckFormValues } from '../transformations/toFormValues.grpc';
@@ -32,6 +33,17 @@ import { getPingPayload } from '../transformations/toPayload.ping';
 import { getScriptedPayload } from '../transformations/toPayload.scripted';
 import { getTCPPayload } from '../transformations/toPayload.tcp';
 import { getTraceroutePayload } from '../transformations/toPayload.traceroute';
+
+export function getDefaultFormValues(checkType: CheckType = CheckType.HTTP) {
+  const check: Check = DEFAULT_CHECK_CONFIG_MAP[checkType] ?? DEFAULT_CHECK_CONFIG;
+  if (process.env.NODE_ENV === 'development') {
+    if (!(checkType in DEFAULT_CHECK_CONFIG_MAP)) {
+      console.warn(`getDefaultFormValues: Unable to get default form values for ${checkType}. Using fallback.`);
+    }
+  }
+
+  return toFormValues(check);
+}
 
 export function toFormValues(check: Check): CheckFormValues {
   const checkType = getCheckType(check.settings);

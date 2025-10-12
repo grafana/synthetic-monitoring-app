@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { Input } from '@grafana/ui';
 
@@ -16,6 +16,9 @@ interface FormTimeoutFieldProps {
 
 export function FormTimeoutField({ field, min, max }: FormTimeoutFieldProps) {
   const {
+    trigger,
+    setValue,
+    getValues,
     formState: { errors, disabled },
     control,
   } = useFormContext<CheckFormValues>();
@@ -34,6 +37,18 @@ export function FormTimeoutField({ field, min, max }: FormTimeoutFieldProps) {
 
   // TODO: Handle "readOnly" (traceroute) - When min and max are the same, disable the slider and show a tooltip explaining why
   const isReadonly = min >= max;
+  const readOnlyValue = isReadonly ? getValues(field) : undefined;
+  // New checks can switch between check types, hence causing an invalid state
+  // ReadOnly but no way to change the invalid value
+
+  useEffect(() => {
+    if (readOnlyValue !== undefined && (readOnlyValue > max || readOnlyValue < min)) {
+      // At this moment, readOnly means that min and max are identical
+      // Let's still make sure this effect works if that assumption no longer holds true
+      setValue(field, Math.max(min, Math.min(readOnlyValue, max)));
+      trigger(field);
+    }
+  }, [field, max, min, readOnlyValue, setValue, trigger]);
 
   return (
     <StyledField

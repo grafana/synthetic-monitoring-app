@@ -19,15 +19,13 @@ const panicTab = ['', null, []];
 export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const [activeLabel, setActiveLabel] = useState<string>('');
 
-  const {
-    checkMeta: { type },
-  } = useChecksterContext();
+  const { checkType } = useChecksterContext();
 
   const tabs = useMemo(() => {
     return FEATURE_TABS.filter(
-      ([, , checkCompatibility]) => checkCompatibility.length === 0 || checkCompatibility.includes(type)
+      ([, , checkCompatibility]) => checkCompatibility.length === 0 || checkCompatibility.includes(checkType)
     );
-  }, [type]);
+  }, [checkType]);
 
   const activeTab = useMemo(() => {
     const tab = tabs.find(([label]) => label === activeLabel);

@@ -9,9 +9,7 @@ import { GenericExecutionContent } from '../layouts/GenericExecutionContent';
 const defaultExecutionFields = ['probes', 'frequency'];
 
 export function ExecutionSection() {
-  const {
-    checkMeta: { isK6Check },
-  } = useChecksterContext();
+  const { isK6Check } = useChecksterContext();
 
   return (
     <FormSection sectionName={FormSectionName.Execution} fields={defaultExecutionFields}>

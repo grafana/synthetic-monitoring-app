@@ -1,5 +1,5 @@
 import { FieldValues } from 'react-hook-form';
-import { get } from 'lodash';
+import { get, isPlainObject } from 'lodash';
 import { ZodType } from 'zod';
 
 import { CheckFormFieldPath, FormSectionOrder, HTTPAuthType } from '../types';
@@ -94,4 +94,48 @@ export function getAllErrorFields<T extends FieldValues>(schema: ZodType<T>, val
 
     return acc;
   }, []);
+}
+
+export function isNotErrorObject(subject: unknown): subject is Record<string, unknown> {
+  if (!subject || (!Array.isArray(subject) && !isPlainObject(subject))) {
+    return false;
+  }
+
+  const keys = Object.keys(subject);
+  return !keys.every((key) => ['ref', 'type', 'message'].includes(key));
+}
+
+function hasNestedRecord(subject: unknown): subject is IterableValue {
+  return !!subject && (isPlainObject(subject) || Array.isArray(subject));
+}
+
+type DeepRecord<T> = Record<string, Record<string, T | unknown>> | ArrayLike<T>;
+
+interface HasNestedEntriesCallback {
+  (subject: unknown): subject is IterableValue;
+}
+
+type IterableValue = Record<string, unknown> | ArrayLike<unknown>;
+
+export function flattenObjectKeys<T>(
+  subject: Record<string, T> | DeepRecord<T>,
+  hasNestedRecordCallback: HasNestedEntriesCallback = hasNestedRecord
+) {
+  return Object.entries(subject).reduce<string[]>((acc, [key, value]) => {
+    if (hasNestedRecordCallback(value)) {
+      acc.push(...flattenObjectKeys(value, hasNestedRecordCallback).map((subKey) => `${key}.${subKey}`));
+    } else {
+      acc.push(key);
+    }
+
+    return acc;
+  }, []);
+}
+
+// Note: validation errors
+export function getFlattenErrors(errors: IterableValue | undefined) {
+  if (errors === undefined) {
+    return [];
+  }
+  return flattenObjectKeys(errors, isNotErrorObject);
 }

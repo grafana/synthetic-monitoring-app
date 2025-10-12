@@ -6,11 +6,6 @@ import { CheckFormValues, CheckStatus, CheckType, CheckTypeGroup, FeatureName } 
 
 import { StyledField } from './components/ui/StyledField';
 
-export interface CheckInstrumentation {
-  type?: CheckType;
-  group?: CheckTypeGroup;
-}
-
 export interface CheckTypeOption {
   label: string;
   value: CheckType;

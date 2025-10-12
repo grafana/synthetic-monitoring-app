@@ -13,14 +13,13 @@ export interface CheckMeta {
   group: CheckTypeGroup;
   schema: ZodType;
   defaultFormValues: CheckFormValues;
-  isNew: boolean;
   isK6Check: boolean;
 }
 
+/** @deprecated stupid */
 export function useCheckMeta(check: Check): CheckMeta {
   const [type, group] = useCheckTypes(check);
   const defaultFormValues = useFormDefaultValues(check);
-  const isNew = !check.id;
 
   // Add refinements to get a complete schema
   const schema = useMemo(() => {
@@ -29,6 +28,6 @@ export function useCheckMeta(check: Check): CheckMeta {
   }, [type]);
 
   return useMemo(() => {
-    return { type, group, schema, defaultFormValues, isNew, isK6Check: K6_CHECK_TYPES.includes(type) };
-  }, [type, group, schema, defaultFormValues, isNew]);
+    return { type, group, schema, defaultFormValues, isK6Check: K6_CHECK_TYPES.includes(type) };
+  }, [type, group, schema, defaultFormValues]);
 }

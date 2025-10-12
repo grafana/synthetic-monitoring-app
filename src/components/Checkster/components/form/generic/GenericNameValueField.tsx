@@ -79,7 +79,7 @@ export function GenericNameValueField({
       description={description}
       {...getFieldErrorProps(errors, fieldName, interpolationVariables)}
       required={required}
-      htmlFor={id}
+      emulate
     >
       <Stack direction="column" gap={0.5}>
         {fields.map((field, index) => (
@@ -89,18 +89,23 @@ export function GenericNameValueField({
               {...getFieldErrorProps(errors, [fieldName, index, 'name'], interpolationVariables)}
             >
               <Input
-                {...(!allowEmpty && index === 0 ? { id } : undefined)}
                 prefix={namePrefix}
                 {...register(`${fieldName}.${index}.name`)}
                 placeholder={namePlaceholder}
                 disabled={disabled}
+                aria-label={`${label} ${index + 1} name`}
               />
             </StyledField>
             <StyledField
               className={styles.field}
               {...getFieldErrorProps(errors, [fieldName, index, 'value'], interpolationVariables)}
             >
-              <Input {...register(`${fieldName}.${index}.value`)} placeholder={valuePlaceholder} disabled={disabled} />
+              <Input
+                {...register(`${fieldName}.${index}.value`)}
+                placeholder={valuePlaceholder}
+                disabled={disabled}
+                aria-label={`${label} ${index + 1} value`}
+              />
             </StyledField>
             <IconButton
               style={{ marginTop: '8px' }}
@@ -116,7 +121,7 @@ export function GenericNameValueField({
           <Stack alignItems="start">
             <StyledField className={styles.field}>
               <Input
-                id={id}
+                id={`${id}-unregistered-name`}
                 prefix={namePrefix}
                 value={unregisteredRow.name}
                 onChange={(e) => handleUnregisteredChange('name', e.currentTarget.value)}
@@ -126,6 +131,7 @@ export function GenericNameValueField({
             </StyledField>
             <StyledField className={styles.field}>
               <Input
+                id={`${id}-unregistered-value`}
                 value={unregisteredRow.value}
                 onChange={(e) => handleUnregisteredChange('value', e.currentTarget.value)}
                 placeholder={valuePlaceholder}

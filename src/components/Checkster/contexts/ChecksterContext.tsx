@@ -3,22 +3,36 @@ import React, {
   Dispatch,
   PropsWithChildren,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { isEqual } from 'lodash';
+import { addRefinements } from 'schemas/forms/BaseCheckSchema';
+import { ZodSchema } from 'zod';
 
-import { CheckInstrumentation, FormNavigationState, FormSectionName } from '../types';
-import { Check, CheckFormValues } from 'types';
+import { FormNavigationState, FormSectionName } from '../types';
+import { Check, CheckFormValues, CheckType } from 'types';
+import { getCheckType } from 'utils';
 import { useDOMId } from 'hooks/useDOMId';
 
-import { DEFAULT_CHECK_CONFIG } from '../constants';
-import { CheckMeta, useCheckMeta } from '../hooks/useCheckMeta';
+import {
+  ASSISTED_FORM_MERGE_FIELDS,
+  CheckFormMergeMethod,
+  DEFAULT_CHECK_FORM_MERGE_METHOD,
+  DEFAULT_CHECK_TYPE,
+  FORM_CHECK_TYPE_SCHEMA_MAP,
+  K6_CHECK_TYPES,
+} from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
-import { createInstrumentedCheck, isCheck } from '../utils/check';
+import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
+import { isCheck } from '../utils/check';
+import { flattenObjectKeys } from '../utils/form';
 
 interface ChecksterContextValue {
   formId: string;
@@ -26,11 +40,14 @@ interface ChecksterContextValue {
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   error?: Error;
   setError: Dispatch<SetStateAction<Error | undefined>>;
-  setCheck: Dispatch<SetStateAction<Check | CheckInstrumentation | undefined>>;
   check: Check | undefined;
-  checkMeta: CheckMeta;
   formNavigation: FormNavigationState;
   setIsSubmitting: Dispatch<SetStateAction<boolean>>;
+  changeCheckType: (checkType: CheckType) => void;
+  schema: ZodSchema;
+  checkType: CheckType;
+  isNew: boolean;
+  isK6Check: boolean;
 }
 
 export const ChecksterContext = createContext<ChecksterContextValue | null>(null);
@@ -45,73 +62,193 @@ export function useChecksterContext() {
 }
 
 interface ChecksterProviderProps extends PropsWithChildren {
-  check?: Check | CheckInstrumentation;
+  checkOrCheckType?: Check | CheckType;
   initialSection?: FormSectionName;
+}
+
+interface StashedValues {
+  root: Omit<CheckFormValues, 'settings'>;
+  settings: Record<string, unknown> | undefined;
+}
+
+function useFormValuesMeta(checkType: CheckType, check?: Check) {
+  return useMemo(
+    () => ({
+      defaultFormValues: check ? toFormValues(check) : getDefaultFormValues(checkType),
+      schema: addRefinements(FORM_CHECK_TYPE_SCHEMA_MAP[checkType]),
+    }),
+    [checkType, check]
+  );
 }
 
 export function ChecksterProvider({
   children,
-  check: _checkViaProps = DEFAULT_CHECK_CONFIG,
+  checkOrCheckType,
   initialSection,
-}: ChecksterProviderProps) {
+}: PropsWithChildren<ChecksterProviderProps>) {
+  const check = isCheck(checkOrCheckType) ? checkOrCheckType : undefined;
+  const [checkType, setCheckType] = useState<CheckType>(
+    isCheck(checkOrCheckType) ? getCheckType(checkOrCheckType.settings) : checkOrCheckType ?? DEFAULT_CHECK_TYPE
+  );
   const formId = useDOMId();
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [_check, _setCheck] = useState<Check | CheckInstrumentation | undefined>(_checkViaProps);
-
-  const [check, setCheck] = useState<Check>(DEFAULT_CHECK_CONFIG);
-
-  const checkMeta = useCheckMeta(check);
-
   const [error, setError] = useState<Error | undefined>();
-
-  useEffect(() => {
-    if (!_check) {
-      return;
-    }
-
-    if (isCheck(_check)) {
-      setCheck(_check);
-      return;
-    }
-
-    // Create a new check
-    if (isCheckInstrumentation(_check)) {
-      setCheck(createInstrumentedCheck(_check));
-      return;
-    }
-  }, [_check]);
-
+  const isNew = !check || !check.id;
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check);
+
+  const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
+
+  const values = useMemo(() => {
+    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.None) {
+      return undefined; // Will persist dirty values
+    }
+    const checkType = defaultFormValues.checkType;
+    const { root, settings, ...dumpedFormValues } = stashedValues;
+    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.AssistedForm) {
+      return ASSISTED_FORM_MERGE_FIELDS.reduce((acc, assistedKey) => {
+        if (
+          root &&
+          assistedKey in root &&
+          assistedKey in defaultFormValues &&
+          !isEqual(root[assistedKey], defaultFormValues[assistedKey])
+        ) {
+          return {
+            ...acc,
+            [assistedKey]: root[assistedKey],
+          };
+        }
+
+        return acc;
+      }, defaultFormValues);
+    }
+
+    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.Legacy) {
+      const job = root?.job;
+      // @ts-expect-error We know what we're doing, right? // TODO: revisit typings
+      const settings = checkType in dumpedFormValues ? dumpedFormValues[checkType] : undefined;
+
+      if (settings) {
+        return {
+          ...settings,
+          job,
+        };
+      }
+
+      if (job) {
+        return {
+          ...defaultFormValues,
+          job,
+        };
+      }
+
+      return defaultFormValues;
+    }
+
+    return undefined;
+  }, [defaultFormValues, stashedValues]);
 
   // Form stuff
   const formMethods = useForm<CheckFormValues>({
-    defaultValues: checkMeta.defaultFormValues,
-    resolver: zodResolver(checkMeta.schema),
+    defaultValues: defaultFormValues,
+    resolver: zodResolver(schema),
     mode: 'onChange', // onBlur is a bit fiddly
     reValidateMode: 'onChange',
     disabled: isLoading || isSubmitting,
   });
 
   useEffect(() => {
-    if (check) {
-      // Reset form values when check changes
-      formMethods.reset(checkMeta.defaultFormValues);
-      if (!checkMeta.isNew) {
-        // Trigger form validation on existing checks
-        formMethods.trigger();
-      }
+    if (!isNew && check) {
+      // Trigger form validation on existing checks
+      formMethods.trigger();
     }
-  }, [check, checkMeta.defaultFormValues, formMethods, checkMeta.isNew]);
-
-  const formNavigation = useFormNavigationState(checkMeta.type, formMethods.formState.errors, initialSection);
+  }, [check, formMethods, isNew]);
 
   useEffect(() => {
-    if (!checkMeta.isNew && !formNavigation.isStepsComplete) {
+    if (isCheck(check)) {
+      const type = getCheckType(check.settings);
+      setCheckType(type);
+    }
+  }, [check, formMethods, isNew]);
+
+  const formMethodRef = useRef(formMethods);
+
+  useEffect(() => {
+    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.None) {
+      formMethods.reset(defaultFormValues);
+      return;
+    }
+
+    if ([CheckFormMergeMethod.Form, CheckFormMergeMethod.AssistedForm].includes(DEFAULT_CHECK_FORM_MERGE_METHOD)) {
+      // This works as long as the user doesnt change type two times in a row
+      formMethods.reset(defaultFormValues, {
+        keepDirty: true,
+        keepDirtyValues: true,
+        keepSubmitCount: true,
+      });
+
+      if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.AssistedForm) {
+        ASSISTED_FORM_MERGE_FIELDS.forEach((field) => {
+          values &&
+            formMethodRef.current.setValue(field, values[field], {
+              shouldDirty: true,
+              shouldTouch: true,
+            });
+        });
+
+        const touchedFields = flattenObjectKeys(formMethodRef.current.formState.touchedFields as any);
+        if (touchedFields.length > 0) {
+          formMethods.trigger(touchedFields as any);
+        }
+      }
+    }
+
+    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.Legacy) {
+      if (values !== defaultFormValues) {
+        formMethodRef.current.reset(values);
+      }
+    }
+  }, [check, checkType, defaultFormValues, formMethodRef, formMethods, isNew, values]);
+
+  const formNavigation = useFormNavigationState(checkType, formMethods.formState.errors, initialSection);
+
+  useEffect(() => {
+    if (!isNew && !formNavigation.isStepsComplete) {
       formNavigation.completeAllSteps();
     }
-  }, [checkMeta, formNavigation]);
+  }, [formNavigation, isNew]);
+
+  const stashCurrentValues = useCallback((formValues: CheckFormValues) => {
+    const { settings, ...rootProps } = formValues;
+
+    setStashedValues((prevState) => {
+      return {
+        ...prevState,
+        root: {
+          ...prevState?.root,
+          ...rootProps,
+        },
+        settings: {
+          ...prevState.settings,
+          // @ts-expect-error TODO: work the types a little
+          ...settings[rootProps.checkType],
+        },
+        [formValues.checkType]: formValues,
+      };
+    });
+  }, []);
+
+  const changeCheckType = useCallback(
+    (checkType: CheckType) => {
+      if (!isNew) {
+        return;
+      }
+      stashCurrentValues(formMethods.getValues());
+      setCheckType(checkType);
+    },
+    [formMethods, isNew, stashCurrentValues]
+  );
 
   const value = useMemo(() => {
     return {
@@ -120,17 +257,17 @@ export function ChecksterProvider({
       setIsLoading,
       error,
       setError,
-      setCheck: _setCheck,
       check,
-      checkMeta,
       formNavigation,
       setIsSubmitting,
+      changeCheckType,
+      checkType,
+      schema,
+      isNew,
+      isK6Check: K6_CHECK_TYPES.includes(checkType),
+      stashCheckTypeFormValues: stashCurrentValues,
     };
-  }, [error, isLoading, _setCheck, check, checkMeta, formId, formNavigation]);
-
-  if (!check) {
-    return null; // or a loading spinner, or some placeholder
-  }
+  }, [formId, isLoading, error, check, formNavigation, changeCheckType, checkType, schema, isNew, stashCurrentValues]);
 
   return (
     <ChecksterContext.Provider value={value}>
@@ -142,16 +279,11 @@ export function ChecksterProvider({
 // This component checks if there is already a ChecksterContext provider in the tree.
 // If there is, it simply renders the children.
 // If there isn't, it wraps the children with a ChecksterProvider.
-export function InternalConditionalProvider({ children }: PropsWithChildren) {
+export function InternalConditionalProvider({ children, ...props }: ChecksterProviderProps) {
   const context = useContext(ChecksterContext);
   if (context) {
     return <>{children}</>;
   }
 
-  return <ChecksterProvider>{children}</ChecksterProvider>;
-}
-
-// utils
-function isCheckInstrumentation(subject: unknown): subject is CheckInstrumentation {
-  return !!subject && typeof subject === 'object' && ('type' in subject || 'group' in subject);
+  return <ChecksterProvider {...props}>{children}</ChecksterProvider>;
 }

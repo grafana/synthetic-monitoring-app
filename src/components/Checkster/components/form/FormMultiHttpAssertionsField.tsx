@@ -12,7 +12,7 @@ import {
 import { Assertion, AssertionConditionVariant, AssertionSubjectVariant } from 'components/MultiHttp/MultiHttpTypes';
 
 import { FIELD_SPACING } from '../../constants';
-import { useChecksterContext } from '../../contexts/ChecksterContext';
+import { useRelevantErrors } from '../../hooks/useRelevantErrors';
 import { createPath } from '../../utils/form';
 import { getHasSectionError } from '../../utils/navigation';
 import { CollapsibleRequestEntry } from '../CollapsibleRequestEntry';
@@ -29,9 +29,7 @@ export function FormMultiHttpAssertionsField({ field }: FormMultiHttpAssertionsF
   const { watch, setValue } = useFormContext<CheckFormValues>();
   const { getValues } = useFormContext<CheckFormValues>();
 
-  const {
-    formNavigation: { errors },
-  } = useChecksterContext();
+  const errors = useRelevantErrors();
 
   // Need to re-fetch entries if errors change
   const entries = useMemo(() => {

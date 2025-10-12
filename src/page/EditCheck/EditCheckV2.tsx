@@ -56,7 +56,7 @@ export const EditCheckV2 = () => {
       renderTitle={() => <Text element="h1">{`Editing ${check?.job ?? 'unknown'}`}</Text>}
     >
       <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <ChecksterProvider check={check} initialSection={initialSection}>
+        <ChecksterProvider checkOrCheckType={check} initialSection={initialSection}>
           <Checkster onSave={handleSubmit} />
         </ChecksterProvider>
         {checks && !check && <NotFoundModal />}

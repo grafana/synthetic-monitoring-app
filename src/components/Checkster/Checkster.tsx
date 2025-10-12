@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { Check, CheckFormValues } from '../../types';
-import { CheckInstrumentation } from './types';
+import { Check, CheckFormValues, CheckType } from '../../types';
 
 import { ConfirmLeavingPage } from '../ConfirmLeavingPage';
 import { FormRoot } from './components/form/FormRoot';
@@ -17,29 +16,26 @@ import { FeatureContent } from './feature/FeatureContent';
 import { FeatureTabs } from './feature/FeatureTabs';
 
 interface ChecksterProps {
-  check?: Check | CheckInstrumentation;
+  checkOrCheckType?: Check | CheckType;
   // Resolve with a function if a call back should be made after the fact
   // that the check is saved (and the form knows everything when OK)
   // Example: when we want to navigate from the form after a successful save
   onSave(check: Check, formValues: CheckFormValues): Promise<Function | void>;
 }
 
-export function Checkster(props: ChecksterProps) {
+export function Checkster({ onSave, ...props }: ChecksterProps) {
   return (
-    <InternalConditionalProvider>
-      <ChecksterInternal {...props} />
+    <InternalConditionalProvider {...props}>
+      <ChecksterInternal onSave={onSave} />
     </InternalConditionalProvider>
   );
 }
 
-function ChecksterInternal({ check, onSave }: ChecksterProps) {
-  const { setCheck, isLoading, error } = useChecksterContext();
+function ChecksterInternal({ onSave }: ChecksterProps) {
+  const { isLoading, error } = useChecksterContext();
   const {
     formState: { isDirty },
   } = useFormContext();
-  useEffect(() => {
-    setCheck(check);
-  }, [check, setCheck]);
 
   return (
     <>

@@ -1,16 +1,14 @@
 import { useMemo } from 'react';
 
-import { useChecksterContext } from '../contexts/ChecksterContext';
 import { getHasSectionError } from '../utils/navigation';
+import { useRelevantErrors } from './useRelevantErrors';
 
 type EntryFieldPath = 'settings.multihttp.entries';
 export function useEntryHasError(field: EntryFieldPath, index: number) {
-  const {
-    formNavigation: { errors },
-  } = useChecksterContext();
+  const errors = useRelevantErrors();
 
   return useMemo(() => {
-    if (!errors) {
+    if (!errors || errors.length === 0) {
       return false;
     }
     return getHasSectionError([`${field}.${index}`], errors);

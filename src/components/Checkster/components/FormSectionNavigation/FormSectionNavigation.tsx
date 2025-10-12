@@ -1,30 +1,23 @@
 import React, { Fragment } from 'react';
-import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, IconName, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 
-import { CheckFormValues } from 'types';
-
 import { CSS_PRIMARY_CONTAINER_NAME } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
-import { getAllErrorFields } from '../../utils/form';
+import { useSilentErrors } from '../../hooks/useSilentErrors';
 import { getHasSectionError } from '../../utils/navigation';
 
 export function FormSectionNavigation() {
   const {
-    checkMeta: { schema },
+    isNew,
+    checkType,
     formNavigation: { sectionOrder, setSectionActive, isSectionActive, getSectionFields, isSeenStep, getSectionLabel },
   } = useChecksterContext();
   const styles = useStyles2(getStyles);
-  const { watch } = useFormContext<CheckFormValues>();
-  const values = watch();
-  const allErrors = getAllErrorFields(schema, values);
-  const {
-    checkMeta: { isNew, type },
-  } = useChecksterContext();
+  const allErrors = useSilentErrors();
 
   return (
     <ol className={styles.container}>
@@ -46,7 +39,7 @@ export function FormSectionNavigation() {
                 onClick={() => {
                   trackNavigateWizardForm({
                     checkState: isNew ? 'new' : 'existing',
-                    checkType: type,
+                    checkType,
                     component: 'stepper',
                     step: sectionName === 'check' ? 'job' : sectionName,
                   });
