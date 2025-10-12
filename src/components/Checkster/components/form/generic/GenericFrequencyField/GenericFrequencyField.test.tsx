@@ -8,8 +8,7 @@ import { GenericFrequencyField } from './GenericFrequencyField';
 
 // Mock the ChecksterContext
 const mockChecksterContext = {
-  checkMeta: { type: CheckType.HTTP },
-  // Add other context properties as needed
+  checkType: CheckType.HTTP, // Add other context properties as needed
 };
 
 jest.mock('../../../../contexts/ChecksterContext', () => ({
@@ -48,7 +47,7 @@ function renderGenericFrequencyField(
 describe('GenericFrequencyField', () => {
   beforeEach(() => {
     // Reset mock context before each test
-    mockChecksterContext.checkMeta.type = CheckType.HTTP;
+    mockChecksterContext.checkType = CheckType.HTTP;
   });
 
   it('renders the Frequency component', () => {
@@ -61,7 +60,7 @@ describe('GenericFrequencyField', () => {
 
   describe('passes check type from context to Frequency component', () => {
     it.each(Object.values(CheckType))('%s', (checkType) => {
-      mockChecksterContext.checkMeta.type = checkType;
+      mockChecksterContext.checkType = checkType;
       renderGenericFrequencyField();
 
       expect(screen.getByText(`Check Type: ${checkType}`)).toBeInTheDocument();
