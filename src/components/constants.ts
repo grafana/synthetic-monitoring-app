@@ -226,7 +226,9 @@ export default async function () {
 
     // TIP: Use check() to report test results in the 'assertions' dashboard panel
     // Scripts continue to run even if a check fails. Failed checks don't impact uptime and reachability
-    await check(heading, async (h) => (await h.textContent()) == "Latest pizza recommendations");
+    await check(heading, {
+      ["Header is present"]: async (h) => (await h.textContent()) == "Latest pizza recommendations"
+    });
 
   } catch (e) {
     console.log('Error during execution:', e);
