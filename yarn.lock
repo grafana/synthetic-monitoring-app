@@ -923,16 +923,18 @@
     qs "^6.10.1"
     xcase "^2.0.1"
 
-"@grafana/alerting@^12.3.0-18226975446":
-  version "12.3.0-18226975446"
-  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18226975446.tgz#56eb6613557b00c98326e06aea4c69f52daf6d3e"
-  integrity sha512-aAYY+cZ7OFlbSa5k3+P+o+zKEbU2SsmMTvC1Zvy+lxsudig1OrIo+aPtZ1URORtwzqL72dVDzRNosjRYo5Cbag==
+"@grafana/alerting@canary":
+  version "12.3.0-18469191248"
+  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18469191248.tgz#9bbd1071a886aed142b55e8ad507f7e4d48339cb"
+  integrity sha512-I5m1PWYMkznOPHbhDVJprL1pspr7hz75oDif2a3n8ZVVAa2LaRI2PClldJL/WDHQ6uTAgFQr1Cp4GKXqRODKYA==
   dependencies:
     "@emotion/css" "11.13.5"
     "@faker-js/faker" "^9.8.0"
-    "@grafana/i18n" "12.3.0-18226975446"
+    "@grafana/i18n" "12.3.0-18469191248"
+    "@reduxjs/toolkit" "^2.9.0"
     fishery "^2.3.1"
     lodash "^4.17.21"
+    tinycolor2 "^1.6.0"
 
 "@grafana/data@12.2.0", "@grafana/data@^12.1.0":
   version "12.2.0"
@@ -1012,10 +1014,10 @@
     micro-memoize "^4.1.2"
     react-i18next "^15.0.0"
 
-"@grafana/i18n@12.3.0-18226975446":
-  version "12.3.0-18226975446"
-  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18226975446.tgz#10ea9a40ca493a8bfbb60df3ba9a81cafe17d699"
-  integrity sha512-c6pMTRR4dLWwCX+hFEMMMS9uO6N6l8LGvEsDnCWxlUwvpaTkVdniSpG5IIkxJlX3+gUbg/XpUbLTTxyS7db0fg==
+"@grafana/i18n@12.3.0-18469191248":
+  version "12.3.0-18469191248"
+  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18469191248.tgz#edf23bcd635feb84c67c439b0fb848d7e37a010c"
+  integrity sha512-EIjgMKmzAl22tb1JrWTbicYevg7P0dBKjeQ0jZjyF6DdbJZeNFQSpCnk+WbYaoMRkO44L9arIpEw3/HLZiEv9w==
   dependencies:
     "@formatjs/intl-durationformat" "^0.7.0"
     "@typescript-eslint/utils" "^8.33.1"
