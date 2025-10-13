@@ -15,7 +15,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
   const styles = useStyles2(getStyles);
 
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
-  const { data: currentVersion, isLoading: isLoadingVersion } = useCurrentK6Version(enabled, validChannelId);
+  const { data: currentVersion, isLoading: isLoadingVersion, isError: hasVersionError } = useCurrentK6Version(enabled, validChannelId);
 
   // Show default message when no specific channel is selected
   // This happens when no channels are available or when all channels are filtered out
@@ -51,6 +51,12 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
       {isLoadingVersion && (
         <Text variant="bodySmall" color="secondary">
           Loading current version...
+        </Text>
+      )}
+
+      {hasVersionError && !isLoadingVersion && (
+        <Text variant="bodySmall" color="warning">
+          Unable to resolve current version
         </Text>
       )}
 
