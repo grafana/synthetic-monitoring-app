@@ -11,8 +11,8 @@ import { ChannelDetails } from './ChannelDetails';
 describe('ChannelDetails', () => {
   beforeEach(() => {
     server.use(
-      apiRoute('getCurrentK6Version', { 
-        result: () => ({ json: { version: 'v1.9.2' } }) 
+      apiRoute('getCurrentK6Version', {
+        result: () => ({ json: { version: 'v1.9.2' } }),
       })
     );
   });
@@ -47,12 +47,7 @@ describe('ChannelDetails', () => {
   it('should show probe default message when no channels are available', async () => {
     // This occurs when no k6 channels are configured on the backend,
     // so the API returns an empty array and no default channel can be determined
-    render(
-      <ChannelDetails
-        channelId={null}
-        channels={[]}
-      />
-    );
+    render(<ChannelDetails channelId={null} channels={[]} />);
 
     await waitFor(() => {
       expect(screen.getByText(/each probe will use its default k6 version/i)).toBeInTheDocument();
@@ -81,12 +76,7 @@ describe('ChannelDetails', () => {
       },
     ];
 
-    render(
-      <ChannelDetails
-        channelId={null}
-        channels={allDeprecatedChannels}
-      />
-    );
+    render(<ChannelDetails channelId={null} channels={allDeprecatedChannels} />);
 
     await waitFor(() => {
       expect(screen.getByText(/each probe will use its default k6 version/i)).toBeInTheDocument();
@@ -94,18 +84,13 @@ describe('ChannelDetails', () => {
   });
 
   it('should show channel details when a channel is selected', async () => {
-    render(
-      <ChannelDetails
-        channelId="v1"
-        channels={mockChannels}
-      />
-    );
+    render(<ChannelDetails channelId="v1" channels={mockChannels} />);
 
     await waitFor(() => {
       expect(screen.getByText(/k6 version constraint:/i)).toBeInTheDocument();
       expect(screen.getByText(/k6>=1/)).toBeInTheDocument();
     });
-    
+
     // Wait for the API call to resolve
     await waitFor(() => {
       expect(screen.getByText(/current resolved version:/i)).toBeInTheDocument();
@@ -116,17 +101,12 @@ describe('ChannelDetails', () => {
   it('should show deprecation warning for deprecated channels', async () => {
     // Override default mock for this specific test
     server.use(
-      apiRoute('getCurrentK6Version', { 
-        result: () => ({ json: { version: 'v0.54.1' } }) 
+      apiRoute('getCurrentK6Version', {
+        result: () => ({ json: { version: 'v0.54.1' } }),
       })
     );
 
-    render(
-      <ChannelDetails
-        channelId="deprecated"
-        channels={mockChannels}
-      />
-    );
+    render(<ChannelDetails channelId="deprecated" channels={mockChannels} />);
 
     await waitFor(() => {
       expect(screen.getByText(/deprecated channel/i)).toBeInTheDocument();
@@ -135,15 +115,31 @@ describe('ChannelDetails', () => {
   });
 
   it('should handle missing channel gracefully', async () => {
-    render(
-      <ChannelDetails
-        channelId="nonexistent"
-        channels={mockChannels}
-      />
-    );
+    render(<ChannelDetails channelId="nonexistent" channels={mockChannels} />);
 
     await waitFor(() => {
       expect(screen.queryByText(/k6 version constraint:/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('should show warning when current version API fails', async () => {
+    // Mock API failure for current version
+    server.use(
+      apiRoute('getCurrentK6Version', {
+        result: () => ({ status: 500, body: 'Failed to fetch current version' }),
+      })
+    );
+
+    render(<ChannelDetails channelId="v1" channels={mockChannels} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/k6 version constraint:/i)).toBeInTheDocument();
+      expect(screen.getByText(/k6>=1/)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/unable to resolve current version/i)).toBeInTheDocument();
+      expect(screen.queryByText(/current resolved version:/i)).not.toBeInTheDocument();
     });
   });
 });

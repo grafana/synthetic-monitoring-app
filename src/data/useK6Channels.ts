@@ -35,7 +35,7 @@ const currentVersionQuery = (api: SMDataSource, channelId: string, enabled: bool
     }
   },
   enabled: Boolean(channelId) && enabled,
-  throwOnError: true,
+  throwOnError: false,
 });
 
 export function useK6Channels(isScriptedOrBrowser: boolean) {
