@@ -36,6 +36,18 @@ const baseCheckModel = ({ sequence }: { sequence: number }) => ({
 const baseProbeModel = ({ sequence }: { sequence: number }) => {
   const supportsBinaryProvisioning = faker.datatype.boolean();
   
+  const availableChannels = ['v0', 'v1', 'v2'];
+  
+  const probeChannel = supportsBinaryProvisioning 
+    ? null 
+    : faker.helpers.arrayElement(availableChannels);
+  
+  const k6VersionsByChannel = {
+    v0: ['v0.54.1', 'v0.48.0', 'v0.52.3'],
+    v1: ['v1.0.0', 'v1.2.3', 'v1.5.1'], 
+    v2: ['v2.0.0', 'v2.1.2', 'v2.3.4']
+  };
+  
   return {
     id: sequence,
     name: `${faker.lorem.word()}_${sequence}`,
@@ -50,11 +62,13 @@ const baseProbeModel = ({ sequence }: { sequence: number }) => {
     deprecated: false,
     modified: Math.floor(faker.date.recent().getTime() / 1000),
     created: Math.floor(faker.date.past().getTime() / 1000),
-    k6Version: supportsBinaryProvisioning ? undefined : faker.system.semver(), // Legacy probes have static k6 version
+    k6Version: supportsBinaryProvisioning 
+      ? undefined 
+      : faker.helpers.arrayElement(k6VersionsByChannel[probeChannel as keyof typeof k6VersionsByChannel]),
     supportsBinaryProvisioning,
     supportedChannels: supportsBinaryProvisioning 
-      ? faker.helpers.arrayElements(['v1', 'v2', 'fast'], { min: 1, max: 3 })
-      : faker.helpers.arrayElements(['v1'], { min: 1, max: 1 }), // Legacy probes support limited channels
+      ? faker.helpers.arrayElements(availableChannels, { min: 1, max: 3 })
+      : [probeChannel!], 
     capabilities: {
       disableScriptedChecks: false,
       disableBrowserChecks: false,

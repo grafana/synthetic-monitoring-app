@@ -9,14 +9,14 @@ export const PRIVATE_PROBE: Probe = db.probe.build({
   ],
   k6Version: 'v0.54.1',
   supportsBinaryProvisioning: false,
-  supportedChannels: ['v1'],
+  supportedChannels: ['v0'],
 });
 
 export const PUBLIC_PROBE: Probe = db.probe.build({
   public: true,
   online: false,
   supportsBinaryProvisioning: true,
-  supportedChannels: ['v1', 'v2', 'fast'],
+  supportedChannels: ['v1', 'v2'],
 });
 
 export const ONLINE_PROBE: Probe = db.probe.build({
@@ -28,7 +28,7 @@ export const OFFLINE_PROBE: Probe = db.probe.build({
   online: false,
   k6Version: 'v1.2.3',
   supportsBinaryProvisioning: false,
-  supportedChannels: ['v1'],
+  supportedChannels: ['v0', 'v1'],
 });
 
 export const SCRIPTED_DISABLED_PROBE: Probe = db.probe.build({
