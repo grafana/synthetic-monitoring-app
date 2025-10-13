@@ -20,7 +20,7 @@ export function FormSectionNavigation() {
   const allErrors = useSilentErrors();
 
   return (
-    <ol className={styles.container}>
+    <ol aria-label="Check form navigation" role="navigation" className={styles.container}>
       {sectionOrder.map((sectionName, index) => {
         const sectionFields = getSectionFields(sectionName);
         // Only show errors in nav for seen (or skipped) steps

@@ -25,13 +25,13 @@ export const TARGET_MAP = {
   [CheckType.Traceroute]: 'grafana.com',
 };
 
-export async function renderNewForm(checkType: CheckType) {
+export async function renderNewForm(checkType: CheckType, CheckComponent = NewCheck) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`addCheck`, {}, record));
   server.use(apiRoute(`updateAlertsForCheck`, { method: 'put' }, record));
   const checkTypeGroup = getCheckTypeGroup(checkType);
 
-  const res = render(<NewCheck />, {
+  const res = render(<CheckComponent />, {
     path: `${generateRoutePath(AppRoutes.NewCheck)}/${checkTypeGroup}?checkType=${checkType}`,
     route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
   });
@@ -81,10 +81,16 @@ export async function renderEditForm(id: Check['id']) {
 }
 
 export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 | 5) {
-  const formSidebar = await screen.findByTestId('form-sidebar');
+  // const formSidebar = await screen.findByTestId('form-sidebar');
+  const formSidebar = await Promise.race([screen.findByTestId('form-sidebar'), screen.findByRole('navigation')]);
+  let indexMap = [0, 1, 2, 3, 4];
+  if (formSidebar.getAttribute('role') === 'navigation') {
+    indexMap = [0, 1, 2, 4, 3]; // Alerting has moved possition
+  }
+
   const buttons = formSidebar.querySelectorAll('button');
 
-  const targetButton = buttons[sectionIndex - 1];
+  const targetButton = buttons[indexMap[sectionIndex - 1]];
 
   await user.click(targetButton);
 }

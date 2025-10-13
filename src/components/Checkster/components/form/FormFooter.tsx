@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Icon, Stack, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { DataTestIds } from '../../../../test/dataTestIds';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 
 export function FormFooter() {
@@ -53,7 +54,11 @@ export function FormFooter() {
             </Stack>
           </Button>
         )}
-        <Button type="submit" variant={isStepsComplete || !next ? 'primary' : 'secondary'}>
+        <Button
+          type="submit"
+          data-testid={DataTestIds.CHECK_FORM_SUBMIT_BUTTON}
+          variant={isStepsComplete || !next ? 'primary' : 'secondary'}
+        >
           Save
         </Button>
       </div>

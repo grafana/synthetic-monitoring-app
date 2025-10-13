@@ -94,7 +94,7 @@ export function FormHttpRequestMethodTargetFields({
   field = 'target', // TODO: fix this
   methodField, // TODO: and this
   withQueryParams,
-  placeholder = `https://www.${DEFAULT_EXAMPLE_HOSTNAME}/`,
+  placeholder = `https://${DEFAULT_EXAMPLE_HOSTNAME}/`,
 }: FormHttpRequestMethodTargetFieldsProps) {
   const styles = useStyles2(getStyles);
 
