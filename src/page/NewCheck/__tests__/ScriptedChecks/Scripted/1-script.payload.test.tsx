@@ -58,4 +58,12 @@ describe(`ScriptedCheck - 1 (Script) payload`, () => {
     const { body } = await read();
     expect(body.settings.scripted.channel).toBe('v2');
   });
+
+  it(`omits channel from payload when no channel is selected`, async () => {
+    const { read, user } = await renderNewForm(checkType);
+    await fillMandatoryFields({ user, fieldsToOmit: [], checkType });
+    await submitForm(user);
+    const { body } = await read();
+    expect(body.settings.scripted).not.toHaveProperty('channel');
+  });
 });
