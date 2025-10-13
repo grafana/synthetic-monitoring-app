@@ -17,26 +17,32 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
     return <Text variant="body">No routing information available.</Text>;
   }
   const processAllMatchedRoutes = () => {
-    
+
     const routesToRender: Array<{
       route: Route;
       level: number;
+      isEffective: boolean;
     }> = [];
 
     const processedRouteIds = new Set<string>();
 
     routeMatch.matchedRoutes.forEach((matchedRoute) => {
       const matchingJourney = matchedRoute.matchDetails?.matchingJourney || [];
-      
+      // Find the effective index (the last route with a receiver, where it will get delivered)
+      const effectiveIndex = matchingJourney.findLastIndex((item) => (item.route as Route).receiver);
+
       matchingJourney.forEach((journeyItem, index) => {
         const route = journeyItem.route;
-        
+
         if (!processedRouteIds.has(route.id)) {
           processedRouteIds.add(route.id);
-          
+
+          const isEffective = index === effectiveIndex;
+
           routesToRender.push({
             route,
             level: index, // Use journey index as hierarchy level
+            isEffective,
           });
         }
       });
@@ -50,13 +56,14 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
   return (
     <div className={styles.routeTree}>
       {routesToRender.map((routeInfo, index) => {
-        const { route, level } = routeInfo;
+        const { route, level, isEffective } = routeInfo;
         return (
           <div key={route.id || `route-${level}-${index}`} style={{ marginLeft: level * 16 }}>
             <RouteNode
               route={route}
               level={level}
               routingStops={level > 0 && !route.continue}
+              isEffective={isEffective}
             />
           </div>
         );
@@ -69,7 +76,8 @@ const RouteNode: React.FC<{
   route: Route;
   level: number;
   routingStops?: boolean;
-}> = ({ route, level, routingStops }) => {
+  isEffective?: boolean;
+}> = ({ route, level, routingStops, isEffective = false }) => {
   const styles = useStyles2(getStyles);
   const hasMatchers = route.matchers && route.matchers.length > 0;
   const isDefaultPolicy = level === 0 && !hasMatchers;
@@ -97,7 +105,7 @@ const RouteNode: React.FC<{
           )}
         </div>
         <div className={styles.routeDetails}>
-          {route.receiver && (
+          {route.receiver && isEffective && (
             <Text variant="bodySmall">
               Delivered to{' '}
               <TextLink
