@@ -6,13 +6,19 @@ import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformat
 export function getBrowserPayload(formValues: CheckFormValuesBrowser): BrowserCheck {
   const base = getBasePayloadValuesFromForm(formValues);
 
+  const browserSettings: { script: string; channel?: string } = {
+    script: encode(formValues.settings.browser.script),
+  };
+
+  // Only include channel if it has a value
+  if (formValues.settings.browser.channel) {
+    browserSettings.channel = formValues.settings.browser.channel;
+  }
+
   return {
     ...base,
     settings: {
-      browser: {
-        script: encode(formValues.settings.browser.script),
-        channel: formValues.settings.browser.channel || null,
-      },
+      browser: browserSettings,
     },
   };
 }
