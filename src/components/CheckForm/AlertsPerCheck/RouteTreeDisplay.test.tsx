@@ -18,7 +18,6 @@ describe('RouteTreeDisplay', () => {
 
       // Level 0: Default policy
       expect(screen.getByText('Default policy')).toBeInTheDocument();
-      expect(screen.getByText('grafana-default-email')).toBeInTheDocument();
 
       // Level 1: alertname policy with stop icon (continue=false)
       expect(screen.getByText('alertname=ProbeFailedExecutionsTooHigh')).toBeInTheDocument();
@@ -30,17 +29,17 @@ describe('RouteTreeDisplay', () => {
       expect(screen.getByText('label_per_check_alerts=true')).toBeInTheDocument();
       expect(screen.getByText('check_name=http')).toBeInTheDocument();
 
-      // Should show "Email contact point" 4 times (routes 4, 5, 6, 7)
+      // Only the deepest route (check_name=http) should show "Email contact point"
       const emailContactPoints = screen.getAllByText('Email contact point');
-      expect(emailContactPoints.length).toBe(4);
+      expect(emailContactPoints.length).toBe(1);
 
       // Should show 2 stop icons (routes 4 and 5 have continue=false)
       const stopIcons = screen.getAllByText('⏹️');
       expect(stopIcons.length).toBe(2);
 
-      // Should have 5 contact point links total (1 grafana-default-email + 4 Email contact point)
+      // Should have 1 contact point link (only the effective route)
       const contactPointLinks = screen.getAllByRole('link');
-      expect(contactPointLinks.length).toBe(5);
+      expect(contactPointLinks.length).toBe(1);
     });
 
     it('should display HTTPRequestDurationTooHighAvg alert with multiple policies', () => {
@@ -56,15 +55,15 @@ describe('RouteTreeDisplay', () => {
       // Level 0: Default policy
       expect(screen.getByText('Default policy')).toBeInTheDocument();
       
-      // Should have 2 grafana-default-email entries (Default policy + label_notification policy)
+      // Only the effective routes should show contact points
+      // Based on the routing logic, only the deepest matched routes will show contact points
       const grafanaDefaultEmails = screen.getAllByText('grafana-default-email');
-      expect(grafanaDefaultEmails.length).toBe(2);
+      expect(grafanaDefaultEmails.length).toBe(1); // Only the effective route
 
       // Level 1: Three "* (matches all)" policies for routes without matchers
       const matchesAllElements = screen.getAllByText('* (matches all)');
       expect(matchesAllElements.length).toBe(3); // route-8, route-9, route-10
 
-      // Should show the specific contact points
       expect(screen.getByText('Grafana Alerting ❤️')).toBeInTheDocument();
       expect(screen.getByText('Grafana Alerting 👻')).toBeInTheDocument();
       expect(screen.getByText('Grafana Alerting Name change 2 😊')).toBeInTheDocument();
@@ -72,9 +71,9 @@ describe('RouteTreeDisplay', () => {
       // Level 1: label_notification policy
       expect(screen.getByText('label_notification=email')).toBeInTheDocument();
 
-      // Should have 5 contact point links total (2 grafana-default-email + 3 Grafana Alerting)
+      // Should have 4 contact point links total (only effective routes show links)
       const contactPointLinks = screen.getAllByRole('link');
-      expect(contactPointLinks.length).toBe(5);
+      expect(contactPointLinks.length).toBe(4);
       
       // Should not show any stop icons since all policies have continue=true
       const stopIcons = screen.queryAllByText('⏹️');
