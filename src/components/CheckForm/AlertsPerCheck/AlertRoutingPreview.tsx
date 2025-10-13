@@ -8,7 +8,12 @@ import { css } from '@emotion/css';
 import { CheckAlertType, CheckFormValues } from 'types';
 
 import { AlertLabelsDisplay } from './AlertLabelsDisplay';
-import { convertLabelsToLabelPairs, extractMatchersFromRoutes, generateAlertLabels } from './alertRoutingUtils';
+import {
+  convertLabelsToLabelPairs,
+  encodeReceiverForUrl,
+  extractMatchersFromRoutes,
+  generateAlertLabels,
+} from './alertRoutingUtils';
 import { RouteTreeDisplay } from './RouteTreeDisplay';
 
 interface AlertRoutingPreviewProps {
@@ -30,7 +35,12 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
     return generateAlertLabels(alertType, { checkType, frequency, customLabels, job, instance });
   }, [alertType, checkType, frequency, customLabels, job, instance]);
 
-  const { matchInstancesToRouteTrees, isLoading, isError } = useMatchInstancesToRouteTrees();
+  const {
+    matchInstancesToRouteTrees,
+    isLoading,
+    isError,
+    currentData: routingTreeData,
+  } = useMatchInstancesToRouteTrees();
 
   const routeMatches = useMemo(() => {
     if (!matchInstancesToRouteTrees || isLoading || isError) {
@@ -47,11 +57,32 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
     return extractMatchersFromRoutes(routeMatches);
   }, [routeMatches]);
 
+  const defaultPolicyInfo = useMemo(() => {
+    if (!routingTreeData?.items || routingTreeData.items.length === 0) {
+      return null;
+    }
+
+    // Find the default routing tree (usually the first one)
+    const defaultTree = routingTreeData.items[0];
+    if (!defaultTree?.spec?.defaults) {
+      return null;
+    }
+
+    const defaultReceiver = defaultTree.spec.defaults.receiver;
+    if (!defaultReceiver) {
+      return null;
+    }
+
+    return {
+      receiverName: defaultReceiver,
+    };
+  }, [routingTreeData]);
+
   if (isLoading) {
     return <LoadingPlaceholder text="Loading routing information..." />;
   }
 
-  if (isError || (!isLoading && routeMatches.length === 0)) {
+  if (isError) {
     return (
       <Alert severity="info" title="Notification policies preview unavailable">
         <div>
@@ -94,7 +125,30 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
             <RouteTreeDisplay routeMatch={routeMatches[0]} />
           ) : (
             <div className={styles.contactPointsSection}>
-              <Text variant="body">No specific routing policies matched. Alert will use default routing.</Text>
+              <Alert severity="info" title="Default notification policy will be used">
+                <div>
+                  <Text variant="body">
+                    No specific notification policies matched this alert. The alert will be routed using the default
+                    notification policy, which handles all alerts that don&apos;t match any specific routing rules.
+                  </Text>
+                  {defaultPolicyInfo && (
+                    <div className={styles.defaultPolicyDetails}>
+                      <Text variant="bodySmall">
+                        <strong>Default contact point:</strong>{' '}
+                        <TextLink
+                          href={`/alerting/notifications/receivers/${encodeReceiverForUrl(
+                            defaultPolicyInfo.receiverName
+                          )}/edit`}
+                          external={true}
+                          variant="bodySmall"
+                        >
+                          {defaultPolicyInfo.receiverName}
+                        </TextLink>
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              </Alert>
             </div>
           )}
         </div>
@@ -182,5 +236,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     backgroundColor: theme.colors.background.secondary,
     border: `1px solid ${theme.colors.border.weak}`,
     borderRadius: theme.shape.radius.default,
+  }),
+
+  defaultPolicyDetails: css({
+    marginTop: theme.spacing(1.5),
+    paddingTop: theme.spacing(1.5),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
   }),
 });
