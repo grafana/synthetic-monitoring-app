@@ -421,5 +421,47 @@ describe('terraformJsonToHcl', () => {
         'resource "grafana_synthetic_monitoring_check"',
       ]);
     });
+
+    it('should add newlines between resources for better readability', () => {
+      const config = createConfig({
+        grafana_synthetic_monitoring_check: {
+          first_check: {
+            job: 'first-job',
+            target: 'https://first.com',
+            enabled: true,
+            probes: [1],
+            labels: {},
+            settings: {
+              http: {
+                method: HttpMethod.GET,
+                ip_version: 'V4',
+              },
+            },
+            frequency: 60000,
+            timeout: 3000,
+          },
+          second_check: {
+            job: 'second-job',
+            target: 'https://second.com',
+            enabled: true,
+            probes: [2],
+            labels: {},
+            settings: {
+              http: {
+                method: HttpMethod.POST,
+                ip_version: 'V4',
+              },
+            },
+            frequency: 30000,
+            timeout: 5000,
+          },
+        },
+      });
+
+      const hcl = jsonToHcl(config);
+
+      // Check that resources are separated by newlines - should have pattern: }\n\nresource
+      expect(hcl).toMatch(/}\s*\n\s*\nresource "grafana_synthetic_monitoring_check" "second_check"/);
+    });
   });
 });

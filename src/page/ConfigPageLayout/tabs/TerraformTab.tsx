@@ -12,6 +12,7 @@ import { Clipboard } from 'components/Clipboard';
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../ConfigContent';
+import { TerraformConfigDisplay } from './TerraformConfigDisplay';
 
 type ConfigFormat = 'hcl' | 'json';
 
@@ -79,67 +80,21 @@ export function TerraformTab() {
         
         <TabContent>
           {activeFormat === 'hcl' ? (
-            <>
-              <Alert title="Terraform HCL" severity="info">
-                The exported config is using{' '}
-                <TextLink href="https://www.terraform.io/docs/language/syntax/configuration.html" external>
-                  Terraform HCL syntax
-                </TextLink>
-                . You can place this config in a file with a <code>.tf</code> extension and import as a module. See the{' '}
-                <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs" external>
-                  Terraform provider docs
-                </TextLink>{' '}
-                for more details.
-              </Alert>
-              <Text element="span" color="secondary">
-                Replace{' '}
-                <TextLink href="https://grafana.com/docs/grafana/latest/administration/service-accounts/" external>
-                  <strong className={styles.codeLink}>{'<GRAFANA_SERVICE_TOKEN>'}</strong>
-                </TextLink>{' '}
-                and{' '}
-                <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
-                  <strong className={styles.codeLink}>{'<SM_ACCESS_TOKEN>'}</strong>
-                </TextLink>
-                , with their respective value.
-              </Text>
-              <Clipboard
-                highlight={['<GRAFANA_SERVICE_TOKEN>', '<SM_ACCESS_TOKEN>']}
-                content={hclConfig}
-                className={styles.clipboard}
-                isCode
-              />
-            </>
+            <TerraformConfigDisplay
+              title="Terraform HCL"
+              syntaxName="Terraform HCL syntax"
+              docsUrl="https://www.terraform.io/docs/language/syntax/configuration.html"
+              fileExtension=".tf"
+              content={hclConfig}
+            />
           ) : (
-            <>
-              <Alert title="Terraform JSON" severity="info">
-                The exported config is using{' '}
-                <TextLink href="https://www.terraform.io/docs/language/syntax/json.html" external>
-                  Terraform JSON syntax
-                </TextLink>
-                . You can place this config in a file with a <code>tf.json</code> extension and import as a module. See the{' '}
-                <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs" external>
-                  Terraform provider docs
-                </TextLink>{' '}
-                for more details.
-              </Alert>
-              <Text element="span" color="secondary">
-                Replace{' '}
-                <TextLink href="https://grafana.com/docs/grafana/latest/administration/service-accounts/" external>
-                  <strong className={styles.codeLink}>{'<GRAFANA_SERVICE_TOKEN>'}</strong>
-                </TextLink>{' '}
-                and{' '}
-                <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
-                  <strong className={styles.codeLink}>{'<SM_ACCESS_TOKEN>'}</strong>
-                </TextLink>
-                , with their respective value.
-              </Text>
-              <Clipboard
-                highlight={['<GRAFANA_SERVICE_TOKEN>', '<SM_ACCESS_TOKEN>']}
-                content={JSON.stringify(config, null, 2)}
-                className={styles.clipboard}
-                isCode
-              />
-            </>
+            <TerraformConfigDisplay
+              title="Terraform JSON"
+              syntaxName="Terraform JSON syntax"
+              docsUrl="https://www.terraform.io/docs/language/syntax/json.html"
+              fileExtension="tf.json"
+              content={JSON.stringify(config, null, 2)}
+            />
           )}
         </TabContent>
       </ConfigContent.Section>

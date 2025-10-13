@@ -163,11 +163,22 @@ export function renderResourceBlocks(
     if (resources && typeof resources === 'object') {
       Object.entries(resources).forEach(([resourceName, resourceConfig]) => {
         if (resourceConfig && typeof resourceConfig === 'object') {
-          lines.push(...renderSingleResource(resourceType, resourceName, resourceConfig, writer, formatCheckSettings));
+          const resourceLines = renderSingleResource(resourceType, resourceName, resourceConfig, writer, formatCheckSettings);
+          if (resourceLines.length > 0) {
+            // Add the resource lines
+            lines.push(...resourceLines);
+            // Add a newline after each resource for better readability
+            lines.push('');
+          }
         }
       });
     }
   });
+
+  // Remove the trailing empty line if it exists
+  if (lines.length > 0 && lines[lines.length - 1] === '') {
+    lines.pop();
+  }
 
   return lines;
 }
