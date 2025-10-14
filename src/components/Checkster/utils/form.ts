@@ -42,10 +42,21 @@ export function getFieldPathError<T extends CheckFormFieldPath = CheckFormFieldP
 export function getFieldErrorProps<T extends CheckFormFieldPath = CheckFormFieldPath>(
   errors: Record<string, unknown>,
   name: keyof T | string | Array<string | number>,
-  variables?: Record<string, string>
+  variables?: Record<string, string>,
+  relevantErrors?: string[]
 ) {
   const path = Array.isArray(name) ? name.join('.') : name;
-  const invalid = Boolean(get(errors, Array.isArray(name) ? name.join('.') : name));
+
+  if (relevantErrors) {
+    if (relevantErrors.length === 0 || !relevantErrors.includes(path as string)) {
+      return {
+        invalid: false,
+        error: undefined,
+      };
+    }
+  }
+
+  const invalid = Boolean(get(errors, path));
   const error: undefined | string = getFieldPathError<T>(errors, path, variables);
 
   return { invalid, error };

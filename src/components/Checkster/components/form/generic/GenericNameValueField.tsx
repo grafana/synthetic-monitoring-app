@@ -7,6 +7,7 @@ import { css } from '@emotion/css';
 import { CheckFormValues } from 'types';
 
 import { useDOMId } from '../../../../../hooks/useDOMId';
+import { useRelevantErrors } from '../../../hooks/useRelevantErrors';
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
 
@@ -71,13 +72,15 @@ export function GenericNameValueField({
     }
   };
 
+  // Field array root error tends to not clear when fixing error (unless submitting).
+  const relevantErrors = useRelevantErrors();
   const limitReached = limit !== undefined && fields.length >= limit;
 
   return (
     <StyledField
       label={label}
       description={description}
-      {...getFieldErrorProps(errors, fieldName, interpolationVariables)}
+      {...getFieldErrorProps(errors, fieldName, interpolationVariables, relevantErrors)}
       required={required}
       emulate
     >
