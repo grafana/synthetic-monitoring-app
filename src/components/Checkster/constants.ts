@@ -599,6 +599,13 @@ export enum CheckFormMergeMethod {
   Combined = 'combined', // Legacy + AssistedForm would probably be the best user experience
 }
 
+export const CHECK_TYPE_GROUP_DEFAULT_CHECK: Record<CheckTypeGroup, CheckType> = {
+  [CheckTypeGroup.ApiTest]: CheckType.HTTP,
+  [CheckTypeGroup.MultiStep]: CheckType.MULTI_HTTP,
+  [CheckTypeGroup.Browser]: CheckType.Browser,
+  [CheckTypeGroup.Scripted]: CheckType.Scripted,
+};
+
 export const DEFAULT_CHECK_FORM_MERGE_METHOD: CheckFormMergeMethod = CheckFormMergeMethod.AssistedForm;
 
 export const ASSISTED_FORM_MERGE_FIELDS = ['job', 'target', 'probes', 'frequency', 'labels', 'timeout'] as const;

@@ -16,6 +16,8 @@ import { useHandleSubmitCheckster } from 'hooks/useHandleSubmitCheckster';
 import { Checkster } from 'components/Checkster';
 import { PluginPageNotFound } from 'page/NotFound';
 
+import { CHECK_TYPE_GROUP_DEFAULT_CHECK } from '../../components/Checkster/constants';
+
 export function NewCheckV2() {
   const [params] = useSearchParams({});
   const checkType = (params.get('checkType') as CheckType) ?? undefined;
@@ -48,7 +50,7 @@ export function NewCheckV2() {
   return (
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <Checkster checkOrCheckType={checkType} onSave={handleSubmit} />
+        <Checkster checkOrCheckType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]} onSave={handleSubmit} />
       </div>
     </PluginPage>
   );
