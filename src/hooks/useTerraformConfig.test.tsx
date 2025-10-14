@@ -379,7 +379,6 @@ describe('terraform config generation', () => {
             name: PRIVATE_PROBE.name,
             public: false,
             region: PRIVATE_PROBE.region,
-            k6Versions: PRIVATE_PROBE.k6Versions,
             disable_browser_checks: PRIVATE_PROBE.capabilities.disableBrowserChecks,
             disable_scripted_checks: PRIVATE_PROBE.capabilities.disableScriptedChecks,
           },
