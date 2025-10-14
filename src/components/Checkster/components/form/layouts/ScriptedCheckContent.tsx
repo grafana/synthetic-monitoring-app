@@ -21,7 +21,7 @@ interface ScriptedCheckSectionProps {
   examples?: ExampleScript[];
 }
 
-export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'script'];
+export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'settings.scripted.script'];
 
 // Don't set label here, set it explicitly, where the component is used (for readability)
 export function ScriptedCheckContent({

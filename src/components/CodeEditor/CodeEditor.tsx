@@ -55,6 +55,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
     readOnly,
     renderHeader,
     value,
+    ...rest // Allow for custom data-attributes
   }: CodeEditorProps & ConstrainedEditorProps,
   ref
 ) {
@@ -150,7 +151,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
   }, [value, constrainedRanges]);
 
   return (
-    <div data-fs-element="Code editor" id={id}>
+    <div data-fs-element="Code editor" id={id} {...rest}>
       {renderHeader && renderHeader({ scriptValue: value })}
       {/* {overlayMessage && <Overlay>{overlayMessage}</Overlay>} */}
       <GrafanaCodeEditor

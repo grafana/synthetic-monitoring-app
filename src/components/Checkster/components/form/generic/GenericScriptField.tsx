@@ -44,7 +44,14 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
         control={control}
         name={field}
         render={({ field: fieldProps }) => {
-          return <CodeEditor {...(fieldProps as any)} readOnly={disabled} />;
+          return (
+            <CodeEditor
+              {...(fieldProps as any)}
+              readOnly={disabled}
+              data-form-name={field}
+              data-form-element-selector="textarea"
+            />
+          );
         }}
       />
       {fieldErrorProps.error && (
