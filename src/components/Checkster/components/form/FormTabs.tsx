@@ -49,13 +49,19 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
 
   const [active, setActive] = useState(activeIndex);
 
+  const [submitCountMemory, setSubmitCountMemory] = useState(submitCount);
+
   useEffect(() => {
+    if (submitCountMemory === submitCount) {
+      return;
+    }
     // If form is submitted, resync activeIndex prop, to show validation errors
     const firstErrorIndex = tabErrorIndexes?.findIndex((item) => item) ?? undefined;
     if (firstErrorIndex !== undefined && firstErrorIndex >= 0) {
       setActive(firstErrorIndex);
+      setSubmitCountMemory(submitCount);
     }
-  }, [tabErrorIndexes, submitCount]);
+  }, [tabErrorIndexes, submitCount, submitCountMemory]);
 
   const theme = useTheme2();
 

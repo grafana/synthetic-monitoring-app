@@ -13,7 +13,9 @@ export function useGetIndexFieldError(indexFields: Array<FormFieldMatch[] | unde
 
   const liveErrors = useSilentErrors();
 
-  const errors = formErrors?.filter((field) => liveErrors.some((liveError) => liveError.startsWith(field)));
+  const errors = useMemo(() => {
+    return formErrors?.filter((field) => liveErrors.some((liveError) => liveError.startsWith(field)));
+  }, [formErrors, liveErrors]);
 
   return useMemo(() => {
     if (!indexFields) {
