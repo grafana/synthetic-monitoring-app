@@ -85,7 +85,7 @@ export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 |
   const formSidebar = await Promise.race([screen.findByTestId('form-sidebar'), screen.findByRole('navigation')]);
   let indexMap = [0, 1, 2, 3, 4];
   if (formSidebar.getAttribute('role') === 'navigation') {
-    indexMap = [0, 1, 2, 4, 3]; // Alerting has moved possition
+    indexMap = [0, 1, 2, 4, 3]; // Alerting has moved position
   }
 
   const buttons = formSidebar.querySelectorAll('button');

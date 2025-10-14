@@ -1,11 +1,13 @@
 import { ComponentProps } from 'react';
 import { screen, waitFor } from '@testing-library/react';
 
+import { ChecksterProvider } from '../../../contexts/ChecksterContext';
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericNameValueField } from './GenericNameValueField';
 
 // Mock dependencies
 jest.mock('../../../utils/form', () => ({
+  ...jest.requireActual('../../../utils/form'),
   getFieldErrorProps: jest.fn((errors, field, interpolationVariables) => ({
     error: errors?.[field]?.message,
     invalid: !!errors?.[field],
@@ -29,7 +31,7 @@ function renderGenericNameValueField(
   props?: Partial<ComponentProps<typeof GenericNameValueField>>,
   formValues: any = { value: '' }
 ) {
-  return formTestRenderer(GenericNameValueField, { ...defaultProps, ...props }, formValues);
+  return formTestRenderer(GenericNameValueField, { ...defaultProps, ...props }, formValues, ChecksterProvider);
 }
 
 describe('GenericNameValueField', () => {
