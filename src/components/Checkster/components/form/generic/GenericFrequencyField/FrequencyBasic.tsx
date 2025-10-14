@@ -9,6 +9,7 @@ import { FREQUENCY_OPTIONS } from './Frequency.constants';
 export const FrequencyBasic = ({ value, onChange, min, max, disabled }: FrequencyComponentProps) => {
   return (
     <RadioButtonGroup
+      data-form-name="frequency"
       options={FREQUENCY_OPTIONS.filter((option) => option >= min && option <= max).map((option) => ({
         label: formatDuration(option, true),
         value: option,

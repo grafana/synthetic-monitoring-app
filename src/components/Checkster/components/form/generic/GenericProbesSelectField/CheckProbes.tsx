@@ -16,6 +16,8 @@ interface CheckProbesProps {
   invalid?: boolean;
   error?: string;
 }
+
+// Note: On validation error, ProbesFilter will be focus target.
 export function CheckProbes({ probes, availableProbes, onChange, error, disabled }: CheckProbesProps) {
   const [filteredProbes, setFilteredProbes] = useState<ProbeWithMetadata[]>(availableProbes);
 

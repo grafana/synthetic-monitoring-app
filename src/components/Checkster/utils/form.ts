@@ -150,3 +150,26 @@ export function getFlattenErrors(errors: IterableValue | undefined) {
   }
   return flattenObjectKeys(errors, isNotErrorObject);
 }
+
+export function isFocusingError(errors: string[]) {
+  const activeElement = document.activeElement;
+  return activeElement && 'name' in activeElement && !errors.includes(activeElement.name as string);
+}
+
+export function onErrorFocusFallback(errors: string[]) {
+  const targetElement = document.querySelectorAll(errors.map((error) => `[data-form-name='${error}']`).join(', '))[0];
+  if (targetElement && targetElement instanceof HTMLElement) {
+    targetElement.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    const childElements = targetElement.querySelectorAll(`[data-form-name='${targetElement.dataset.formName}']`);
+    if (childElements.length > 0) {
+      const lastElement = childElements[childElements.length - 1];
+      if (lastElement instanceof HTMLElement) {
+        lastElement.focus();
+      }
+    } else {
+      targetElement.focus();
+    }
+  } else if (process.env.NODE_ENV === 'development') {
+    console.warn('Form error has occurred without proper handling of scroll/focus.');
+  }
+}

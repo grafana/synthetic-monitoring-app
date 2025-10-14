@@ -35,6 +35,7 @@ export const ProbesFilter = ({
   return (
     <>
       <SearchFilter
+        data-form-name="probes"
         onSearch={handleSearch}
         id={PROBES_FILTER_ID}
         value={filterText}

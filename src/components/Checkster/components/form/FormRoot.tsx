@@ -6,6 +6,7 @@ import { Check, CheckFormValues } from 'types';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { toPayload } from '../../utils/adaptors';
+import { getFlattenErrors, isFocusingError, onErrorFocusFallback } from '../../utils/form';
 import { AlertingSection } from './sections/AlertingSection';
 import { CheckSection } from './sections/CheckSection';
 import { ExecutionSection } from './sections/ExecutionSection';
@@ -71,6 +72,14 @@ export function FormRoot({
         },
         (errors) => {
           sectionByErrors(errors);
+
+          // Check that we have a focus on an error, if not, try to focus with use of `data-form-name`
+          setTimeout(() => {
+            const errorList = getFlattenErrors(errors);
+            if (!isFocusingError(errorList)) {
+              onErrorFocusFallback(errorList);
+            }
+          }, 0);
         }
       )}
       className={css`

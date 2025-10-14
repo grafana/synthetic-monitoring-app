@@ -67,6 +67,7 @@ export const FrequencyCustom = ({ value, onChange, min, max, disabled }: Frequen
       <Stack>
         <Field label="Minutes" className={styles.field}>
           <Input
+            data-form-name="frequency"
             onChange={handleMinutesChange}
             value={inputMinutes}
             width={INPUT_WIDTH}
