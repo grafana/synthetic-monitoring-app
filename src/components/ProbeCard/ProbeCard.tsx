@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Card, Link, LinkButton, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe, FeatureName,type Label } from 'types';
+import { type ExtendedProbe, FeatureName, type Label } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
@@ -12,6 +12,7 @@ import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotic
 import { FeatureFlag } from 'components/FeatureFlag';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
+import { getFormattedK6Versions } from '../ProbeStatus/ProbeStatus';
 import { ProbeUsageLink } from '../ProbeUsageLink';
 import { ProbeDisabledCapabilities } from './ProbeDisabledCapabilities';
 import { ProbeLabels } from './ProbeLabels';
@@ -56,16 +57,17 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
       <Card.Meta>
         <div>Version: {probe.version}</div>
         <FeatureFlag name={FeatureName.VersionManagement}>
-          {({ isEnabled }) =>
-            isEnabled ? (
-              <>
-                {!probe.public && probe.k6Version && <div>k6 version: {probe.k6Version}</div>}
-                {probe.supportsBinaryProvisioning && (
-                  <div>k6 version management: supported</div>
-                )}
-              </>
-            ) : null
-          }
+          {({ isEnabled }) => {
+            if (!isEnabled) {
+              return null;
+            }
+            
+            const supportedVersions = getFormattedK6Versions(probe);
+            
+            return supportedVersions ? (
+              <div>k6: {supportedVersions}</div>
+            ) : null;
+          }}
         </FeatureFlag>
       </Card.Meta>
 

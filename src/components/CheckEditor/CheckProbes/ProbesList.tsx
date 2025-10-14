@@ -5,7 +5,6 @@ import { Checkbox, Label, Stack, Text, TextLink, useStyles2 } from '@grafana/ui'
 import { css } from '@emotion/css';
 
 import { CheckFormValues, FeatureName, ProbeWithMetadata } from 'types';
-import { useCurrentK6Version } from 'data/useK6Channels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { ProbeStatus } from 'components/ProbeCard/ProbeStatus';
@@ -42,34 +41,20 @@ export const ProbesList = ({
     return { selectedChannel, isScriptedOrBrowser };
   }, [getValues]);
 
-  const { data: currentChannelVersion } = useCurrentK6Version(
-    isVersionManagementEnabled && isScriptedOrBrowser && Boolean(selectedChannel),
-    selectedChannel
-  );
-
   const getProbeK6Version = (probe: ProbeWithMetadata) => {
-    if (!isVersionManagementEnabled || !isScriptedOrBrowser) {
+    if (!isVersionManagementEnabled || !isScriptedOrBrowser || !selectedChannel) {
       return null; // Feature not enabled or not relevant for non-scripted/browser checks
     }
 
-    // For legacy probes (no binary provisioning), show their static k6 version
-    if (!probe.supportsBinaryProvisioning && probe.k6Version) {
-      return probe.k6Version;
-    }
-
-    // For probes with binary provisioning, show the resolved channel version
-    if (probe.supportsBinaryProvisioning && currentChannelVersion) {
-      return currentChannelVersion;
-    }
-
-    return null;
+    return probe.k6Versions?.[selectedChannel] || null;
   };
 
   const isProbeCompatible = (probe: ProbeWithMetadata): boolean => {
     if (!isVersionManagementEnabled || !isScriptedOrBrowser || !selectedChannel) {
       return true;
     }
-    return probe.supportedChannels?.includes(selectedChannel) ?? false;
+    // Probe is compatible if it has a k6 version for the selected channel (not null)
+    return probe.k6Versions?.[selectedChannel] !== null && probe.k6Versions?.[selectedChannel] !== undefined;
   };
 
   const handleToggleAll = () => {
