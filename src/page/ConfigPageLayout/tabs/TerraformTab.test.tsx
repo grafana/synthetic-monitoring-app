@@ -1,5 +1,6 @@
 import React from 'react';
 import { within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { DataTestIds } from '../../../test/dataTestIds';
 import { BASIC_PING_CHECK } from '../../../test/fixtures/checks';
@@ -45,13 +46,34 @@ describe('TerraformTab', () => {
     expect(getByText('Synthetic Monitoring access token', { selector: 'a' })).toBeInTheDocument();
   });
 
-  it('should show "Terraform and JSON" <Alert severity="info" />', async () => {
-    const { getByTestId } = await renderTerraformTab();
-    // Terraform and JSON
+  it('should show HCL tab as default', async () => {
+    const { getByText } = await renderTerraformTab();
+    expect(getByText('HCL')).toBeInTheDocument();
+    expect(getByText('JSON')).toBeInTheDocument();
+    
+    // HCL should be active by default
+    const hclTab = getByText('HCL').closest('button');
+    expect(hclTab).toHaveAttribute('aria-selected', 'true');
+  });
 
+  it('should show "Terraform HCL" alert by default', async () => {
+    const { getByTestId } = await renderTerraformTab();
     const alert = getByTestId('data-testid Alert info');
-    expect(within(alert).getByText('Terraform and JSON')).toBeInTheDocument();
+    expect(within(alert).getByText('Terraform HCL')).toBeInTheDocument();
     expect(alert).toBeInTheDocument();
+  });
+
+  it('should switch to JSON tab and show "Terraform JSON" alert', async () => {
+    const user = userEvent.setup();
+    const { getByText, getByTestId } = await renderTerraformTab();
+    
+    // Click JSON tab
+    const jsonTab = getByText('JSON');
+    await user.click(jsonTab);
+    
+    // Should show JSON alert
+    const alert = getByTestId('data-testid Alert info');
+    expect(within(alert).getByText('Terraform JSON')).toBeInTheDocument();
   });
 
   it('should show `tf.json` with replace vars', async () => {
@@ -61,8 +83,25 @@ describe('TerraformTab', () => {
     expect(getByText('SM_ACCESS_TOKEN', { selector: 'a > strong', exact: false })).toBeInTheDocument();
   });
 
-  it('should show correct terraform config', async () => {
+  it('should show correct terraform HCL config by default', async () => {
     const { getAllByTestId } = await renderTerraformTab();
+    const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+    const content = preformatted[0].textContent ?? '';
+    
+    // Should contain HCL syntax elements
+    expect(content).toContain('terraform {');
+    expect(content).toContain('provider "grafana" {');
+    expect(content).toContain('resource "grafana_synthetic_monitoring_check"');
+  });
+
+  it('should show correct terraform JSON config when JSON tab is selected', async () => {
+    const user = userEvent.setup();
+    const { getByText, getAllByTestId } = await renderTerraformTab();
+    
+    // Click JSON tab
+    const jsonTab = getByText('JSON');
+    await user.click(jsonTab);
+    
     const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
     // Since content escapes '<' and '>', we need to replace them back
     const content = JSON.parse((preformatted[0].textContent ?? '').replace('&lt;', '<').replace('&gt;', '>'));
@@ -80,7 +119,7 @@ describe('TerraformTab', () => {
       expect(getByText('Import existing checks into Terraform', { selector: 'h3' })).toBeInTheDocument();
       const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
       expect(preformatted[1]).toHaveTextContent(
-        'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 5'
+        'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 6'
       );
     });
 
