@@ -8,6 +8,7 @@ import { CheckFormValues, FeatureName, ProbeWithMetadata } from 'types';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { ProbeStatus } from 'components/ProbeCard/ProbeStatus';
+import { getFormattedK6Versions } from 'components/ProbeStatus/ProbeStatus';
 
 export const ProbesList = ({
   title,
@@ -41,20 +42,32 @@ export const ProbesList = ({
     return { selectedChannel, isScriptedOrBrowser };
   }, [getValues]);
 
-  const getProbeK6Version = (probe: ProbeWithMetadata) => {
-    if (!isVersionManagementEnabled || !isScriptedOrBrowser || !selectedChannel) {
-      return null; // Feature not enabled or not relevant for non-scripted/browser checks
-    }
-
-    return probe.k6Versions?.[selectedChannel] || null;
-  };
-
   const isProbeCompatible = (probe: ProbeWithMetadata): boolean => {
     if (!isVersionManagementEnabled || !isScriptedOrBrowser || !selectedChannel) {
       return true;
     }
     // Probe is compatible if it has a k6 version for the selected channel (not null)
     return probe.k6Versions?.[selectedChannel] !== null && probe.k6Versions?.[selectedChannel] !== undefined;
+  };
+
+  const getProbeK6Version = (probe: ProbeWithMetadata) => {
+    if (!isVersionManagementEnabled || !isScriptedOrBrowser) {
+      return null; // Feature not enabled or not relevant for non-scripted/browser checks
+    }
+
+    if (!selectedChannel) {
+      return null;
+    }
+
+    const isCompatible = isProbeCompatible(probe);
+    
+    if (isCompatible) {
+      // For compatible probes, show the version for the selected channel
+      return probe.k6Versions?.[selectedChannel] || null;
+    } else {
+      // For incompatible probes, show all supported versions
+      return getFormattedK6Versions(probe) || null;
+    }
   };
 
   const handleToggleAll = () => {
