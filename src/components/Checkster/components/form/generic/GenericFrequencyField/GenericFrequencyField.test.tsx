@@ -16,7 +16,7 @@ jest.mock('../../../../contexts/ChecksterContext', () => ({
 }));
 
 // Mock the Frequency component since it has complex dependencies
-jest.mock('./Frequency', () => ({
+jest.mock('components/CheckEditor/FormComponents/Frequency', () => ({
   Frequency: jest.fn(({ checkType, disabled }) => (
     <div data-testid="frequency-component">
       <h3>Frequency Configuration</h3>

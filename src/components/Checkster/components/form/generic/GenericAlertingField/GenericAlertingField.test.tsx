@@ -5,7 +5,7 @@ import { formTestRenderer } from '../../__test__/formTestRenderer';
 import { GenericAlertingField } from './index';
 
 // Mock the AlertsPerCheck component since it has complex dependencies
-jest.mock('./AlertsPerCheck/AlertsPerCheck', () => ({
+jest.mock('components/CheckForm/AlertsPerCheck/AlertsPerCheck', () => ({
   AlertsPerCheck: jest.fn(() => (
     <div data-testid="alerts-per-check">
       <h3>Alerts Configuration</h3>
