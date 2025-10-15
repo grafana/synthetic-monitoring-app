@@ -73,6 +73,8 @@ const REQUEST_OPTIONS_TAB_FIELDS = [
   [/\.entries\.\d+\.request\.queryFields/], // Query parameters
 ];
 
+const REQUEST_VARIABLES_FIELDS = [[/\.entries\.\d+\.variables/]];
+
 interface MultiHttpEntryProps extends FormMultiHttpEntriesFieldProps {
   index: number;
   onDelete(index: number): void;
@@ -91,6 +93,7 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
   const hasError = useEntryHasError(field, index);
   const tabIndexErrors = useGetIndexFieldError(REQUEST_OPTIONS_TAB_FIELDS);
   const hasRequestOptionError = tabIndexErrors.some((item) => item);
+  const [hasVariablesError] = useGetIndexFieldError(REQUEST_VARIABLES_FIELDS);
 
   const method = getValues(createPath(field, index, 'request.method'));
   const target = getValues(createPath(field, index, 'request.url'));
@@ -157,7 +160,7 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
               description={`The query parameters sent with the request. These parameters reduce cardinality when displaying URLs in dashboards. If you need higher cardinality, add your query parameters to the "Request target" field instead. `}
               allowEmpty
               field={createPath(field, index, 'request.queryFields')}
-              addButtonText="Header"
+              addButtonText="Query parameter"
               interpolationVariables={{ type: 'Query parameter' }}
             />
           </FormTabContent>
@@ -183,7 +186,7 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
           </FormTabContent>
         </FormTabs>
       </AdditionalSettings>
-      <AdditionalSettings buttonLabel="Variables" indent>
+      <AdditionalSettings buttonLabel="Variables" isOpen={hasVariablesError} indent>
         <FormMultiHttpVariablesField field={createPath(field, index, 'variables')} />
       </AdditionalSettings>
     </CollapsibleRequestEntry>
