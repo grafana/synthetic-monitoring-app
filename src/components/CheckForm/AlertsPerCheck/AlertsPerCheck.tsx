@@ -63,11 +63,11 @@ export const AlertsPerCheck = () => {
             <TextLink href="alerting/new/alerting" external={true}>
               create a custom alert rule
             </TextLink>{' '}
-            and view{' '}
+            and configure{' '}
             <TextLink href="alerting/routes" external={true}>
               notification policies
             </TextLink>{' '}
-            to see where your alerts will be routed.
+            to define where your alerts will be routed.
           </p>
         </div>
 
