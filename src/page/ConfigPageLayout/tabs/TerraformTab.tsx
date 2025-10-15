@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { Alert, Tab, TabContent,TabsBar, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FaroEvent, reportEvent } from 'faro';
@@ -12,11 +12,16 @@ import { Clipboard } from 'components/Clipboard';
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../ConfigContent';
+import { TerraformConfigDisplay } from './TerraformConfigDisplay';
+
+type ConfigFormat = 'hcl' | 'json';
 
 export function TerraformTab() {
-  const { config, checkCommands, probeCommands, error, isLoading, checkAlertsCommands } = useTerraformConfig();
+  const { config, hclConfig, checkCommands, probeCommands, error, isLoading, checkAlertsCommands } = useTerraformConfig();
   const styles = useStyles2(getStyles);
   const { canReadChecks, canReadProbes } = getUserPermissions();
+  const [activeFormat, setActiveFormat] = useState<ConfigFormat>('hcl');
+  
   useEffect(() => {
     reportEvent(FaroEvent.SHOW_TERRAFORM_CONFIG);
   }, []);
@@ -60,34 +65,38 @@ export function TerraformTab() {
       </ConfigContent.Section>
 
       <ConfigContent.Section title="Exported config">
-        <Alert title="Terraform and JSON" severity="info">
-          The exported config is using{' '}
-          <TextLink href="https://www.terraform.io/docs/language/syntax/json.html" external>
-            Terraform JSON syntax
-          </TextLink>
-          . You can place this config in a file with a <code>tf.json</code> extension and import as a module. See the{' '}
-          <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs" external>
-            Terraform provider docs
-          </TextLink>{' '}
-          for more details.
-        </Alert>
-        <Text element="span" color="secondary">
-          Replace{' '}
-          <TextLink href="https://grafana.com/docs/grafana/latest/administration/service-accounts/" external>
-            <strong className={styles.codeLink}>{'<GRAFANA_SERVICE_TOKEN>'}</strong>
-          </TextLink>{' '}
-          and{' '}
-          <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
-            <strong className={styles.codeLink}>{'<SM_ACCESS_TOKEN>'}</strong>
-          </TextLink>
-          , with their respective value.
-        </Text>
-        <Clipboard
-          highlight={['<GRAFANA_SERVICE_TOKEN>', '<SM_ACCESS_TOKEN>']}
-          content={JSON.stringify(config, null, 2)}
-          className={styles.clipboard}
-          isCode
-        />
+        <TabsBar>
+          <Tab
+            label="HCL"
+            active={activeFormat === 'hcl'}
+            onChangeTab={() => setActiveFormat('hcl')}
+          />
+          <Tab
+            label="JSON"
+            active={activeFormat === 'json'}
+            onChangeTab={() => setActiveFormat('json')}
+          />
+        </TabsBar>
+        
+        <TabContent>
+          {activeFormat === 'hcl' ? (
+            <TerraformConfigDisplay
+              title="Terraform HCL"
+              syntaxName="Terraform HCL syntax"
+              docsUrl="https://www.terraform.io/docs/language/syntax/configuration.html"
+              fileExtension=".tf"
+              content={hclConfig}
+            />
+          ) : (
+            <TerraformConfigDisplay
+              title="Terraform JSON"
+              syntaxName="Terraform JSON syntax"
+              docsUrl="https://www.terraform.io/docs/language/syntax/json.html"
+              fileExtension="tf.json"
+              content={JSON.stringify(config, null, 2)}
+            />
+          )}
+        </TabContent>
       </ConfigContent.Section>
 
       {checkCommands && (

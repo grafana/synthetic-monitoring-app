@@ -2,6 +2,7 @@ import { db } from 'test/db';
 
 import {
   AlertSensitivity,
+  BrowserCheck,
   Check,
   CheckType,
   DNSCheck,
@@ -106,6 +107,20 @@ export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.check.build(
   },
   { transient: { type: CheckType.Scripted } }
 ) as ScriptedCheck;
+
+export const COMPLEX_BROWSER_CHECK: BrowserCheck = db.check.build(
+  {
+    job: 'complex_browser_check',
+    target: 'complex_browser_check',
+    settings: {
+      browser: {
+        script:
+          "import { browser } from 'k6/browser';\nimport { check, group, sleep, fail } from 'k6';\n\nexport const options = {\n  scenarios: {\n    ui: {\n      executor: 'shared-iterations',\n      options: {\n        browser: {\n          type: 'chromium', \n        },\n      },\n    },\n  },\n  thresholds: {\n    checks: ['rate==1.0'],\n  },\n};\n\nconst BASE_URL = 'https://otel-demo.field-eng.grafana.net/';\n\nexport default async function () {\n  const context = await browser.newContext();\n  const page = await context.newPage({\n    viewport: {\n      width: 1920,\n      height: 1080,\n    },\n  });\n\n  await browserNavigateToHomepage(page)\n\n  await browserClickGoShopping(page);\n\n  await browserSelectProduct(page);\n\n  await browserAddToCart(page);\n\n  await browserPlaceOrder(page);\n\n  await page.close();\n\n}\n\n\nasync function browserNavigateToHomepage(page) {\n  const navPromise = page.waitForNavigation();\n  await page.goto(`${BASE_URL}`);1\n  await navPromise;\n  sleep(2);\n  console.log(\"navigated to homepage\");\n}\n\nasync function browserClickGoShopping(page) {\n  const navPromise = page.waitForNavigation();\n  await page.locator('//button[text()=\"Go Shopping\"]').click();\n  await navPromise;\n  // additionally wait for a specific element (not async)\n  page.locator('//h1[text()=\"Hot Products\"]').waitFor();\n  sleep(2); \n  console.log(\"clicked go shopping\");\n}\n\nasync function browserSelectProduct(page) {\n\n  await page.waitForSelector('//div[@data-cy=\"product-list\"]');\n  const productCards = await page.$$('//div[@data-cy=\"product-card\"]');\n  console.log(`Found ${productCards.length} product cards`);\n\n  //const randomProductCard = productCards[Math.floor(Math.random() * productCards.length)];\nconst randomProductCard = productCards[productCards.length - 1];\n  const navPromise = page.waitForNavigation();\n  await randomProductCard.click();\n  await navPromise;\n\n  sleep(2);\n\n  console.log(\"selected product\");\n}\n\nasync function browserAddToCart(page) {\n\n  const navPromise = page.waitForNavigation();\n  await page.locator('//button[@data-cy=\"product-add-to-cart\"]').click();\n  await navPromise;\n\n  sleep(2);\n  console.log(\"added to cart\");\n}\n\nasync function browserPlaceOrder(page) {\n  const navPromise = page.waitForNavigation();\n  await page.locator('//button[@data-cy=\"checkout-place-order\"]').click();\n  await navPromise;\n\n  // wait for confirmation header\n  const response = await page.waitForSelector('//h1[text()=\"Your order is complete!\"]');\n  const responseText = response.textContent();\n\n   check(responseText, {\n      responseText: (h) => h == \"Your order is complete!\",\n    });\n  sleep(2);\n}",
+      },
+    },
+  },
+  { transient: { type: CheckType.Browser } }
+) as BrowserCheck;
 
 export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
   {
@@ -270,8 +285,6 @@ export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = db.check.build(
   },
   { transient: { type: CheckType.DNS } }
 ) as DNSCheck;
-
-
 
 export const BASIC_CHECK_LIST: Check[] = [
   BASIC_DNS_CHECK,

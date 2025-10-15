@@ -27,11 +27,11 @@ jobs:
           yarn build:generate-terraform-test-config
           echo "✅ Test configuration generation completed"
       
-      - name: Validate generated Terraform
+      - name: Validate generated Terraform (JSON and HCL)
         id: terraform-validate
         continue-on-error: true
         run: |
-          echo "🔍 Validating generated Terraform configuration..."
+          echo "🔍 Validating generated Terraform configuration (JSON and HCL)..."
           echo "📦 Checking Grafana provider version..."
           
           # Extract provider version constraint from generated config
@@ -185,6 +185,12 @@ jobs:
 
             let message = commentIdentifier + '\n\n';
             message += 'All generated terraform configurations are valid and compatible with the Grafana provider schema. 🎉\n\n';
+            
+            message += '## ✅ Validation Results\n\n';
+            message += '- **JSON Syntax**: Valid Terraform JSON configuration\n';
+            message += '- **HCL Syntax**: Valid Terraform HCL configuration\n';
+            message += '- **Schema Compatibility**: Compatible with Grafana provider\n\n';
+            
             message += '**Validated Resources:**\n';
             message += '- `grafana_synthetic_monitoring_check` (HTTP, DNS, TCP, Ping, MultiHTTP, Scripted, Traceroute)\n';
             message += '- `grafana_synthetic_monitoring_probe` (Public, Private, Online, Offline)\n';
