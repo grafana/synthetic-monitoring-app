@@ -211,7 +211,7 @@ export function ChecksterProvider({
     }
   }, [check, checkType, defaultFormValues, formMethodRef, formMethods, isNew, values]);
 
-  const formNavigation = useFormNavigationState(checkType, formMethods.formState.errors, initialSection);
+  const formNavigation = useFormNavigationState(checkType, formMethods, initialSection);
 
   useEffect(() => {
     if (!isNew && !formNavigation.isStepsComplete) {

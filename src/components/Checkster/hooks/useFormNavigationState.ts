@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FieldErrors } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 
 import { CheckFormFieldPath, FormNavigationState, FormSectionName } from '../types';
 import { CheckFormValues, CheckType } from 'types';
@@ -12,7 +12,7 @@ type SectionFieldsState = Partial<Record<FormSectionName, CheckFormFieldPath[]>>
 
 export function useFormNavigationState(
   checkType: CheckType,
-  formErrors: FieldErrors<CheckFormValues>,
+  formMethods: UseFormReturn<CheckFormValues>,
   initialSection?: FormSectionName
 ): FormNavigationState {
   const sectionOrder = getFormSectionOrder(checkType);
@@ -21,15 +21,21 @@ export function useFormNavigationState(
   const [sectionFields, setSectionFields] = useState<SectionFieldsState>({});
   const [errors, setErrors] = useState<string[] | undefined>(undefined);
   const [labelMap, setLabelMap] = useState<Record<FormSectionName, string>>(FORM_NAVIGATION_SECTION_LABEL_MAP);
+  const { submitCount, errors: formErrors } = formMethods.formState;
 
   useEffect(() => {
     const newErrors = getFlattenErrors(formErrors);
     const hasErrors = newErrors.length > 0;
-    setErrors(hasErrors ? newErrors : undefined);
-    // Means that form has been submitted or trigger has run on the whole form
-    // TODO: this is not totally true (trigger on a field will also cause this, need to fix)
-    hasErrors && setRemainingSteps([]);
-  }, [formErrors]);
+    if (hasErrors) {
+      setErrors(hasErrors ? newErrors : undefined);
+    }
+
+    if (submitCount <= 0) {
+      return;
+    }
+
+    setRemainingSteps([]);
+  }, [submitCount, formErrors]);
 
   // Section progression.
   const [remainingSteps, setRemainingSteps] = useState<FormSectionName[]>(sectionOrder);
