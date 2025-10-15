@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
@@ -35,5 +36,59 @@ describe(`ScriptedCheck - 1 (Script) UI`, () => {
 
     const scriptTextAreaPostSubmit = screen.getByTestId(`code-editor`);
     await waitFor(() => expect(scriptTextAreaPostSubmit).toHaveFocus());
+  });
+
+  it(`will display an error when script contains a k6 version pragma`, async () => {
+    const { user } = await renderNewForm(checkType);
+    const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+    await user.clear(scriptTextAreaPreSubmit);
+
+    const scriptWithPragma = `'use k6 > 0.52'
+import http from 'k6/http';
+export default function() {
+  http.get('https://example.com');
+}`;
+    await user.type(scriptTextAreaPreSubmit, scriptWithPragma);
+    await fillMandatoryFields({ user, fieldsToOmit: [`probes`], checkType });
+
+    await submitForm(user);
+    const err = await screen.findByText(K6_PRAGMA_MESSAGE);
+    expect(err).toBeInTheDocument();
+  });
+
+  it(`will display an error when script imports k6 extensions`, async () => {
+    const { user } = await renderNewForm(checkType);
+    const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+    await user.clear(scriptTextAreaPreSubmit);
+
+    const scriptWithExtension = `import { Faker } from "k6/x/faker";
+import http from 'k6/http';
+export default function() {
+  http.get('https://example.com');
+}`;
+    await user.type(scriptTextAreaPreSubmit, scriptWithExtension);
+    await fillMandatoryFields({ user, fieldsToOmit: [`probes`], checkType });
+
+    await submitForm(user);
+    const err = await screen.findByText('Script imports k6 extensions which are not allowed. Please remove imports from k6/x/ paths.');
+    expect(err).toBeInTheDocument();
+  });
+
+  it(`will display an error when script contains browser import (not allowed for scripted checks)`, async () => {
+    const { user } = await renderNewForm(checkType);
+    const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+    await user.clear(scriptTextAreaPreSubmit);
+
+    const scriptWithBrowser = `import { browser } from 'k6/browser';
+import http from 'k6/http';
+export default function() {
+  http.get('https://example.com');
+}`;
+    await user.type(scriptTextAreaPreSubmit, scriptWithBrowser);
+    await fillMandatoryFields({ user, fieldsToOmit: [`probes`], checkType });
+
+    await submitForm(user);
+    const err = await screen.findByText("Script must not import { browser } from 'k6/browser'");
+    expect(err).toBeInTheDocument();
   });
 });

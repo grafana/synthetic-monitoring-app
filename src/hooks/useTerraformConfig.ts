@@ -4,7 +4,14 @@ import { Check, Probe } from 'types';
 import { useChecks } from 'data/useChecks';
 import { useProbes } from 'data/useProbes';
 import { checkToTF, probeToTF, sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
-import { TFCheckAlertsConfig,TFCheckConfig, TFConfig, TFOutput, TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
+import { jsonToHcl } from 'components/TerraformConfig/terraformJsonToHcl';
+import {
+  TFCheckAlertsConfig,
+  TFCheckConfig,
+  TFConfig,
+  TFOutput,
+  TFProbeConfig,
+} from 'components/TerraformConfig/terraformTypes';
 
 import { useSMDS } from './useSMDS';
 
@@ -70,11 +77,11 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
       const resourceName = sanitizeName(`${check.job}_${check.target}`);
       acc[resourceName] = {
         check_id: String(check.id),
-        alerts: (check.alerts!).map((alert) => ({
+        alerts: check.alerts!.map((alert) => ({
           name: alert.name,
           threshold: alert.threshold,
           period: alert.period,
-          runbook_url: alert.runbookUrl || "",
+          runbook_url: alert.runbookUrl || '',
         })),
       };
       return acc;
@@ -103,7 +110,15 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
     return `terraform import grafana_synthetic_monitoring_probe.${probeName} ${probeId}:<PROBE_ACCESS_TOKEN>`;
   });
 
-  return { config, checkCommands, checkAlertsCommands, probeCommands };
+  const hclConfig = jsonToHcl(config);
+
+  return {
+    config,
+    hclConfig,
+    checkCommands,
+    checkAlertsCommands,
+    probeCommands,
+  };
 }
 
 export function useTerraformConfig() {
