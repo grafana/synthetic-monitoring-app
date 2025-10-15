@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.36.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.3...v1.36.0) (2025-10-14)
+
+
+### Features
+
+* add legacy alerts restriction for new users ([#1242](https://github.com/grafana/synthetic-monitoring-app/issues/1242)) ([69c485d](https://github.com/grafana/synthetic-monitoring-app/commit/69c485dcb995e1884efe1bea20d5ca6df832cb94))
+* add Terraform HCL format ([#1278](https://github.com/grafana/synthetic-monitoring-app/issues/1278)) ([bc0a436](https://github.com/grafana/synthetic-monitoring-app/commit/bc0a4360d690f70f482d13c6f14bf8216ccecdf8))
+* add validation for k6 extensions and version pragmas ([#1253](https://github.com/grafana/synthetic-monitoring-app/issues/1253)) ([ae72443](https://github.com/grafana/synthetic-monitoring-app/commit/ae72443dea56eb92e68d9b534eb9260e7f74f63d))
+
+
+### Miscellaneous Chores
+
+* update default script examples ([#1279](https://github.com/grafana/synthetic-monitoring-app/issues/1279)) ([eb39e8f](https://github.com/grafana/synthetic-monitoring-app/commit/eb39e8fbe9e67621e42b4a4d1821f09cdd9035e3))
+* upgrade to faro 1.19.0 ([#1284](https://github.com/grafana/synthetic-monitoring-app/issues/1284)) ([275cc97](https://github.com/grafana/synthetic-monitoring-app/commit/275cc97f7ce659562bfc301f4e54ee878e494de4))
+
 ## [1.35.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.2...v1.35.3) (2025-09-26)
 
 
