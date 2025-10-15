@@ -1,8 +1,8 @@
 import { CheckFormValuesTcp, CheckType, TCPCheck, TCPQueryResponse, TcpSettingsFormValues } from 'types';
 import { fromBase64 } from 'utils';
+import { TCP_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { FALLBACK_CHECK_TCP } from 'components/constants';
 
-import { TCP_PREDEFINED_ALERTS } from '../components/form/generic/GenericAlertingField/AlertsPerCheck/AlertsPerCheck.constants';
 import { getBaseFormValuesFromCheck, getTlsConfigFormValues, predefinedAlertsToFormValues } from './toFormValues.utils';
 
 export function getTCPCheckFormValues(check: TCPCheck): CheckFormValuesTcp {

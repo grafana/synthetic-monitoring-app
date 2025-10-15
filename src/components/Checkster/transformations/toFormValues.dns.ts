@@ -7,9 +7,9 @@ import {
   DnsValidationFormValue,
   ResponseMatchType,
 } from 'types';
+import { DNS_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { FALLBACK_CHECK_DNS } from 'components/constants';
 
-import { DNS_PREDEFINED_ALERTS } from '../components/form/generic/GenericAlertingField/AlertsPerCheck/AlertsPerCheck.constants';
 import { getBaseFormValuesFromCheck, predefinedAlertsToFormValues } from './toFormValues.utils';
 
 export function getDNSCheckFormValues(check: DNSCheck): CheckFormValuesDns {

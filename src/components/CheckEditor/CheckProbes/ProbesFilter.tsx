@@ -41,6 +41,7 @@ export const ProbesFilter = ({
         showEmptyState={showEmptyState}
         emptyText="There are no probes matching your criteria."
         placeholder="Find a probe by city, country, region or provider"
+        data-form-name="probes"
       />
     </>
   );

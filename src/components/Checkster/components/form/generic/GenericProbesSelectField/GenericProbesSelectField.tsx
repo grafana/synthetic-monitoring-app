@@ -1,7 +1,8 @@
 import React from 'react';
 
+import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+
 import { useChecksterContext } from '../../../../contexts/ChecksterContext';
-import { ProbeOptions } from './ProbeOptions';
 
 export function GenericProbesSelectField() {
   const { checkType } = useChecksterContext();

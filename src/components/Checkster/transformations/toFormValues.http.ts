@@ -10,9 +10,9 @@ import {
   HttpSslOption,
   Label,
 } from 'types';
+import { HTTP_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { FALLBACK_CHECK_HTTP, HTTP_COMPRESSION_ALGO_OPTIONS } from 'components/constants';
 
-import { HTTP_PREDEFINED_ALERTS } from '../components/form/generic/GenericAlertingField/AlertsPerCheck/AlertsPerCheck.constants';
 import { getBaseFormValuesFromCheck, getTlsConfigFormValues, predefinedAlertsToFormValues } from './toFormValues.utils';
 
 export function getHTTPCheckFormValues(check: HTTPCheck): CheckFormValuesHttp {

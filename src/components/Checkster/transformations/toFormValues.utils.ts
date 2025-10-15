@@ -1,10 +1,10 @@
 import { Check, CheckAlertPublished, CheckFormValues, TLSConfig } from 'types';
 import { fromBase64 } from 'utils';
-
 import {
   GLOBAL_PREDEFINED_ALERTS,
   PredefinedAlertInterface,
-} from '../components/form/generic/GenericAlertingField/AlertsPerCheck/AlertsPerCheck.constants';
+} from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
+
 import { getCheckAlertsFormValues } from './toFormValues.alerts';
 
 export const getTlsConfigFormValues = (tlsConfig?: TLSConfig) => {
