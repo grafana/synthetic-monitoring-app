@@ -69,7 +69,7 @@
     "region": "Saudi Arabia",
     "provider": "GCP",
     "apiServerURL": "synthetic-monitoring-grpc-me-central-0.grafana.net:443",
-    "backendAddress": "synthetic-monitoring-grpc-me-central-0.grafana.net"
+    "backendAddress": "synthetic-monitoring-api-me-central-0.grafana.net"
   },
   {
     "region": "Singapore",
@@ -105,7 +105,7 @@
     "region": "UAE",
     "provider": "AWS",
     "apiServerURL": "synthetic-monitoring-grpc-me-central-1.grafana.net:443",
-    "backendAddress": "synthetic-monitoring-grpc-me-central-1.grafana.net"
+    "backendAddress": "synthetic-monitoring-api-me-central-1.grafana.net"
   },
   {
     "region": "UK",
