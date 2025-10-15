@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.36.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.36.0...v1.36.1) (2025-10-15)
+
+
+### Miscellaneous Chores
+
+* remove release-it from devDependencies ([#1286](https://github.com/grafana/synthetic-monitoring-app/issues/1286)) ([a58ab8b](https://github.com/grafana/synthetic-monitoring-app/commit/a58ab8bed262044aa65d4841987cb5c308e40e19))
+* updated mappings ([#1287](https://github.com/grafana/synthetic-monitoring-app/issues/1287)) ([766c6b5](https://github.com/grafana/synthetic-monitoring-app/commit/766c6b5ae1a3575149585ed50eb45ce019b093c4))
+
 ## [1.36.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.35.3...v1.36.0) (2025-10-14)
 
 
