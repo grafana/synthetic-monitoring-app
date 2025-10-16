@@ -8,17 +8,42 @@ import { CodeEditorProps, ConstrainedEditorProps } from './CodeEditor.types';
 // import { Overlay } from 'components/Overlay';
 import k6Types from './k6.types';
 
+import { useK6TypesForChannel } from './k6TypesLoader/useK6TypesForChannel';
 import { initializeConstrainedInstance, updateConstrainedEditorRanges } from './CodeEditor.utils';
 import { wireCustomValidation } from './monacoValidation';
 
-const addK6Types = (monaco: typeof monacoType) => {
-  Object.entries(k6Types).map(([name, type]) => {
-    // Import types as modules for code completions
-    monaco.languages.typescript.javascriptDefaults.addExtraLib(`declare module '${name}' { ${type} }`);
+const BUNDLED_K6_VERSION = '0.57.1';
+
+let currentK6LibUris: string[] = [];
+
+const clearK6Types = (monaco: typeof monacoType) => {
+  // Clear previously added k6 libraries
+  currentK6LibUris.forEach(uri => {
+    try {
+      // Override with empty content to effectively remove
+      monaco.languages.typescript.javascriptDefaults.addExtraLib('', uri);
+    } catch (error) {
+      // Ignore errors
+    }
+  });
+  currentK6LibUris = [];
+};
+
+const addK6Types = (monaco: typeof monacoType, types: Record<string, string> = k6Types) => {
+  // Clear existing k6 types first
+  clearK6Types(monaco);
+  
+  // Add new k6 types
+  Object.entries(types).forEach(([name, type]) => {
+    const uri = `file:///k6-types/${name.replace(/\//g, '-')}.d.ts`;
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(`declare module '${name}' { ${type} }`, uri);
+    currentK6LibUris.push(uri);
   });
 
-  // Remove TS errors for remote libs imports
-  monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'");
+  // Add remote imports support
+  const httpsUri = 'file:///k6-types/https-imports.d.ts';
+  monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'", httpsUri);
+  currentK6LibUris.push(httpsUri);
 };
 const containerStyles = css`
   height: 100%;
@@ -47,6 +72,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
     checkJs = true,
     constrainedRanges,
     id,
+    k6Channel,
     language = 'javascript',
     onBeforeEditorMount,
     onChange,
@@ -63,6 +89,21 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
   const [constrainedInstance, setConstrainedInstance] = useState<null | ConstrainedEditorInstance>(null);
   const [prevValue, setPrevValue] = useState(value);
+
+  const { types: dynamicK6Types, loading: k6TypesLoading, error: k6TypesError } = useK6TypesForChannel(k6Channel, language === 'javascript');
+
+  const shouldWaitForTypes = k6Channel && language === 'javascript' && k6TypesLoading && !k6TypesError;
+
+  // Update Monaco types when dynamic types change
+  useEffect(() => {
+    if (editorRef && dynamicK6Types) {
+      const monaco = (window as any).monaco;
+      if (monaco) {
+        addK6Types(monaco, dynamicK6Types);
+        console.log(`[K6-Types] 🔄 Updated Monaco with dynamic types`);
+      }
+    }
+  }, [dynamicK6Types, editorRef]);
 
   // GC
   useEffect(() => {
@@ -91,7 +132,19 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
   const handleBeforeEditorMount = async (monaco: typeof monacoType) => {
     await onBeforeEditorMount?.(monaco);
-    addK6Types(monaco);
+    
+    // Debug logging for type loading
+    if (k6Channel) {
+      if (dynamicK6Types) {
+        console.log(`[K6-Types] 🚀 Monaco initialized with dynamic k6 types for channel "${k6Channel}"`);
+      } else {
+        console.log(`[K6-Types] 📦 Monaco initialized with bundled k6 types v${BUNDLED_K6_VERSION} (fallback) for channel "${k6Channel}"`);
+      }
+    } else {
+      console.log(`[K6-Types] 📦 Monaco initialized with bundled k6 types v${BUNDLED_K6_VERSION} (no channel specified)`);
+    }
+    
+    addK6Types(monaco, dynamicK6Types || k6Types);
 
     const compilerOptions = monaco.languages.typescript.javascriptDefaults.getCompilerOptions();
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
@@ -160,6 +213,23 @@ export const CodeEditor = forwardRef(function CodeEditor(
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, constrainedRanges]);
+
+  if (shouldWaitForTypes) {
+    return (
+      <div data-fs-element="Code editor" id={id}>
+        {renderHeader && renderHeader({ scriptValue: value })}
+        <div style={{ 
+          height: '600px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: '#888'
+        }}>
+          Loading k6 types for {k6Channel}...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div data-fs-element="Code editor" id={id} {...rest}>

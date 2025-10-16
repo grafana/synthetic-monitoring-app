@@ -15,10 +15,12 @@ enum ScriptEditorTabs {
 export const BrowserCheckScript = () => {
   const {
     control,
+    getValues,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValuesBrowser>();
   const [selectedTab, setSelectedTab] = React.useState(ScriptEditorTabs.Script);
   const fieldError = errors.settings?.browser?.script;
+  const selectedChannel = getValues('settings.browser.channel');
 
   return (
     <>
@@ -40,7 +42,7 @@ export const BrowserCheckScript = () => {
             name="settings.browser.script"
             control={control}
             render={({ field }) => {
-              return <CodeEditor readOnly={disabled} {...field} />;
+              return <CodeEditor readOnly={disabled} {...field} k6Channel={selectedChannel || undefined} />;
             }}
           />
         )}

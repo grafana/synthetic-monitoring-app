@@ -28,25 +28,34 @@ const CDN_BASE_URL = 'https://unpkg.com/@types/k6';
 
 export async function fetchK6TypesFromCDN(version: string): Promise<Record<string, string>> {
   const types: Record<string, string> = {};
+  const failedModules: string[] = [];
+
   const fetchPromises = K6_MODULES.map(async (module) => {
     try {
       const url = `${CDN_BASE_URL}@${version}/${module.path}`;
       const response = await fetch(url);
       
       if (!response.ok) {
-        console.warn(`Failed to fetch k6 types for ${module.name} from ${url}: ${response.status}`);
+        failedModules.push(module.name);
         return;
       }
       
       const content = await response.text();
       types[module.name] = content;
     } catch (error) {
-      console.warn(`Error fetching k6 types for ${module.name}:`, error);
+      failedModules.push(module.name);
     }
   });
 
   await Promise.all(fetchPromises);
-  if (Object.keys(types).length === 0) {
+  
+  const successCount = Object.keys(types).length;
+  
+  if (failedModules.length > 0) {
+    console.warn(`[K6-Types] ⚠️ Failed to load ${failedModules.length} modules:`, failedModules);
+  }
+  
+  if (successCount === 0) {
     throw new Error(`Failed to fetch any k6 types for version ${version}`);
   }
   
