@@ -10,9 +10,10 @@ import { CheckProbes } from './CheckProbes/CheckProbes';
 
 interface ProbeOptionsProps {
   checkType: CheckType;
+  onlyProbes?: boolean;
 }
 
-export const ProbeOptions = ({ checkType }: ProbeOptionsProps) => {
+export const ProbeOptions = ({ checkType, onlyProbes }: ProbeOptionsProps) => {
   const { data: probes = [] } = useProbesWithMetadata();
   const {
     control,
@@ -41,7 +42,7 @@ export const ProbeOptions = ({ checkType }: ProbeOptionsProps) => {
         error={errors.probes?.message}
         onChange={handleChange}
       />
-      <Frequency checkType={checkType} disabled={disabled} />
+      {!onlyProbes && <Frequency checkType={checkType} disabled={disabled} />}
     </>
   );
 };

@@ -19,6 +19,7 @@ export const SearchFilter = ({
   showEmptyState,
   emptyText = '',
   placeholder = '',
+  ...rest // allow for passing data-attributes
 }: SearchFilterProps) => {
   const styles = useStyles2(getStyles);
 
@@ -54,6 +55,7 @@ export const SearchFilter = ({
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => onSearch(event.target.value.toLowerCase())}
           id={id}
           onKeyDown={handleKeyDown}
+          {...rest}
         />
       </div>
       {showEmptyState && (

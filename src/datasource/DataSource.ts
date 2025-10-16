@@ -39,6 +39,7 @@ import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
 import { SecretsResponse } from 'data/useSecrets';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
+import { LokiQueryResults } from '../components/Checkster/feature/adhoc-check/useAdHocLogs';
 import { SecretWithMetadata } from '../page/ConfigPageLayout/tabs/SecretsManagementTab';
 import { parseTracerouteLogs } from './traceroute-utils';
 
@@ -235,6 +236,32 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         to: String(range.to.unix() * 1000),
       },
     }).then((data) => data.results.A.frames);
+  }
+
+  async queryLogsV2<RefId extends keyof any = 'A'>(
+    expr: string,
+    from: number | string = 'now-15m',
+    to: number | string = 'now',
+    refId?: RefId
+  ) {
+    return this.fetchAPI<LokiQueryResults<RefId>>(`/api/ds/query`, {
+      method: 'POST',
+      data: {
+        queries: [
+          {
+            refId, // undefined === 'A'
+            expr,
+            queryType: 'range',
+            // direction: 'backwards',
+            datasource: this.instanceSettings.jsonData.logs,
+            intervalMs: 2000,
+            maxDataPoints: 1779,
+          },
+        ],
+        from,
+        to,
+      },
+    });
   }
 
   //--------------------------------------------------------------------------------

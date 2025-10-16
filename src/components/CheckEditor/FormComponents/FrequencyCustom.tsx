@@ -76,6 +76,7 @@ export const FrequencyCustom = ({ value, onChange, min, max, disabled }: Frequen
             onKeyDown={handleKeyDown}
             id={FREQUENCY_MINUTES_INPUT_ID}
             disabled={disabled}
+            data-form-name="frequency" // used for form error focusing (new check editor)
           />
         </Field>
         <Field label="Seconds" className={styles.field}>
