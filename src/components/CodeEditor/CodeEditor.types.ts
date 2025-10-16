@@ -5,6 +5,7 @@ import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
 export interface CodeEditorProps {
   checkJs?: boolean;
   id?: string;
+  k6Channel?: string;
   language?: 'javascript' | 'json' | 'text';
   onBeforeEditorMount?: (monaco: typeof monacoType) => void;
   onChange?: (value: string) => void;
