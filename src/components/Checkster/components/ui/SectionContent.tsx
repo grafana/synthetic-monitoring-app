@@ -9,9 +9,10 @@ import { Column } from './Column';
 interface SectionContentProps extends PropsWithChildren {
   label?: ReactNode;
   vanilla?: boolean; // No content styling
+  showHeading?: boolean;
 }
 
-export function SectionContent({ label, vanilla, children }: SectionContentProps) {
+export function SectionContent({ label, vanilla, children, showHeading = false }: SectionContentProps) {
   const theme = useTheme2();
 
   const {
@@ -27,13 +28,17 @@ export function SectionContent({ label, vanilla, children }: SectionContentProps
         flex-direction: column;
         flex: 1 0 0;
         gap: ${theme.spacing(FIELD_SPACING)};
+        ${!showHeading &&
+        css`
+          padding-top: ${theme.spacing(FIELD_SPACING)};
+        `};
         & > h2 {
           padding: ${theme.spacing(2)};
           margin: 0;
         }
       `}
     >
-      <h2>{label || activeLabel}</h2>
+      {showHeading && <h2>{label || activeLabel}</h2>}
       <Wrapper overflow="auto" fill gap={FIELD_SPACING} padding={theme.spacing(0, 2, 2, 2)}>
         {children}
       </Wrapper>
