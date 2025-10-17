@@ -12,7 +12,6 @@ import { useK6TypesForChannel } from './k6TypesLoader/useK6TypesForChannel';
 import { initializeConstrainedInstance, updateConstrainedEditorRanges } from './CodeEditor.utils';
 import { wireCustomValidation } from './monacoValidation';
 
-const BUNDLED_K6_VERSION = '0.57.1';
 
 let currentK6LibUris: string[] = [];
 
