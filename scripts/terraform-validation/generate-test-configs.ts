@@ -50,12 +50,18 @@ async function generateConfigs() {
         check: fixtures.BASIC_MULTIHTTP_CHECK,
         probe: probeFixtures.ONLINE_PROBE,
       },
-      // Scripted Check
-      {
-        name: 'basic-scripted',
-        check: fixtures.BASIC_SCRIPTED_CHECK,
-        probe: probeFixtures.SCRIPTED_DISABLED_PROBE,
-      },
+    // Scripted Check
+    {
+      name: 'basic-scripted',
+      check: fixtures.BASIC_SCRIPTED_CHECK,
+      probe: probeFixtures.SCRIPTED_DISABLED_PROBE,
+    },
+    // Browser Check with template literals
+    {
+      name: 'complex-browser',
+      check: fixtures.COMPLEX_BROWSER_CHECK,
+      probe: probeFixtures.PRIVATE_PROBE,
+    },
       // Traceroute Check
       {
         name: 'basic-traceroute',
@@ -127,6 +133,15 @@ async function generateConfigs() {
     const configPath = path.join(outputDir, 'testTerraformConfig.tf.json');
     fs.writeFileSync(configPath, JSON.stringify(comprehensiveConfig, null, 2));
     console.log(`Generated terraform config: ${configPath}`);
+
+    // Generate HCL configuration
+    console.log('🔧 Generating HCL configuration from JSON...');
+    const { jsonToHcl } = await import('../../src/components/TerraformConfig/terraformJsonToHcl');
+    const hclContent = jsonToHcl(comprehensiveConfig as TFConfig);
+    const hclPath = path.join(outputDir, 'testTerraformConfig.tf');
+    fs.writeFileSync(hclPath, hclContent);
+    console.log(`✅ HCL configuration generated successfully!`);
+    console.log(`📄 Generated: ${hclPath}`);
 
     console.log('\n✅ SUCCESS! Generated comprehensive configuration using REAL production code!');
     console.log('✅ Covers: HTTP, DNS, TCP, Ping, MultiHTTP, Scripted, Traceroute checks');
