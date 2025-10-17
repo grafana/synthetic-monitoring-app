@@ -32,23 +32,6 @@ export function useK6TypesForChannel(channelId?: string, enabled = true): UseK6T
     throwOnError: false,
   });
 
-  // Simple logging when types are ready
-  useEffect(() => {
-    if (isSuccess && types && version && channelId) {
-      const moduleCount = Object.keys(types).length;
-      console.log(`[K6-Types] ✅ Channel "${channelId}" → k6 v${version} (${moduleCount} modules loaded)`);
-    }
-  }, [isSuccess, types, version, channelId]);
-
-  useEffect(() => {
-    if (isError && typesError && version && channelId) {
-      console.error(`[K6-Types] ❌ Channel "${channelId}" → k6 v${version} failed:`, typesError);
-    }
-  }, [isError, typesError, version, channelId]);
-
-  if (hasVersionError) {
-    console.warn(`[K6-Types] ⚠️ Failed to resolve version for channel "${channelId}" - will use bundled types as fallback`);
-  }
 
   return {
     types: types || null,
