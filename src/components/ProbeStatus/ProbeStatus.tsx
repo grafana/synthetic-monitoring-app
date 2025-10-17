@@ -13,15 +13,27 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe } from 'types';
+import { type ExtendedProbe, FeatureName } from 'types';
 import { formatDate } from 'utils';
 import { useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
+
+export function getFormattedK6Versions(probe: { k6Versions?: Record<string, string | null> }): string {
+  if (!probe.k6Versions) {
+    return '';
+  }
+
+  return Object.entries(probe.k6Versions)
+    .filter(([, version]) => version !== null)
+    .map(([, version]) => version)
+    .join(', ');
+}
 
 interface ProbeStatusProps {
   probe: ExtendedProbe;
@@ -55,6 +67,8 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
   const badgeStatus = getBadgeStatus(probe.online);
   const neverModified = probe.created === probe.modified;
   const neverOnline = probe.onlineChange === probe.created && !probe.online;
+
+  const supportedVersions = getFormattedK6Versions(probe);
 
   return (
     <div>
@@ -95,9 +109,22 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
           </Container>
         )}
       </div>
-      <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} description={PROBE_REACHABILITY_DESCRIPTION} />
+      <SuccessRateGaugeProbe
+        probeName={probe.name}
+        height={200}
+        width={300}
+        description={PROBE_REACHABILITY_DESCRIPTION}
+      />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
+        <FeatureFlag name={FeatureName.VersionManagement}>
+          {({ isEnabled }) => {
+            if (!isEnabled || !supportedVersions) {
+              return null;
+            }
+            return <Meta title="k6 versions:" value={supportedVersions} />;
+          }}
+        </FeatureFlag>
         <Meta
           title={`Last ${probe.online ? `offline` : `online`}:`}
           value={neverOnline ? `Never` : formatDate(probe.onlineChange * 1000)}

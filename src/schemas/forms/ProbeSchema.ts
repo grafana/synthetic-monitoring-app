@@ -48,6 +48,7 @@ export const probeSchema: ZodType<Probe> = z.object({
   labels: labelsSchema,
   version: z.string(),
   deprecated: z.boolean(),
+  k6Versions: z.record(z.string().nullable()).optional(),
   capabilities: z.object({
     disableScriptedChecks: z.boolean(),
     disableBrowserChecks: z.boolean(),

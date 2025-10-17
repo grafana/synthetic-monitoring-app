@@ -13,16 +13,16 @@ export const K6_CHANNELS: K6Channel[] = [
     id: 'v1',
     name: 'v1',
     default: true,
-    deprecatedAfter: '2024-01-01T00:00:00Z', // Already deprecated
-    disabledAfter: '2026-12-31T00:00:00Z',
+    deprecatedAfter: '2026-01-01T00:00:00Z',
+    disabledAfter: '2029-12-31T00:00:00Z',
     manifest: 'k6>=1,k6<2',
   },
   {
     id: 'v2',
     name: 'v2',
     default: false,
-    deprecatedAfter: '2026-12-31T00:00:00Z',
-    disabledAfter: '2027-12-31T00:00:00Z',
+    deprecatedAfter: '2100-12-31T00:00:00Z',
+    disabledAfter: '2500-12-31T00:00:00Z',
     manifest: 'k6>=2',
   },
 ];

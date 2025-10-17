@@ -1,11 +1,14 @@
 import React, { useMemo } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, Label, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { ProbeWithMetadata } from 'types';
+import { CheckFormValues, FeatureName, ProbeWithMetadata } from 'types';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { ProbeStatus } from 'components/ProbeCard/ProbeStatus';
+import { getFormattedK6Versions } from 'components/ProbeStatus/ProbeStatus';
 
 export const ProbesList = ({
   title,
@@ -21,6 +24,51 @@ export const ProbesList = ({
   disabled?: boolean;
 }) => {
   const styles = useStyles2(getStyles);
+  const { getValues } = useFormContext<CheckFormValues>();
+  const { isEnabled: isVersionManagementEnabled } = useFeatureFlag(FeatureName.VersionManagement);
+
+  const { selectedChannel, isScriptedOrBrowser } = useMemo(() => {
+    const values = getValues();
+    const checkType = values.checkType;
+    const isScriptedOrBrowser = checkType === 'scripted' || checkType === 'browser';
+
+    let selectedChannel = '';
+    if (checkType === 'scripted' && values.settings?.scripted?.channel) {
+      selectedChannel = values.settings.scripted.channel;
+    } else if (checkType === 'browser' && values.settings?.browser?.channel) {
+      selectedChannel = values.settings.browser.channel;
+    }
+
+    return { selectedChannel, isScriptedOrBrowser };
+  }, [getValues]);
+
+  const isProbeCompatible = (probe: ProbeWithMetadata): boolean => {
+    if (!isVersionManagementEnabled || !isScriptedOrBrowser || !selectedChannel) {
+      return true;
+    }
+    // Probe is compatible if it has a k6 version for the selected channel (not null)
+    return probe.k6Versions?.[selectedChannel] !== null && probe.k6Versions?.[selectedChannel] !== undefined;
+  };
+
+  const getProbeK6Version = (probe: ProbeWithMetadata) => {
+    if (!isVersionManagementEnabled || !isScriptedOrBrowser) {
+      return null; // Feature not enabled or not relevant for non-scripted/browser checks
+    }
+
+    if (!selectedChannel) {
+      return null;
+    }
+
+    const isCompatible = isProbeCompatible(probe);
+    
+    if (isCompatible) {
+      // For compatible probes, show the version for the selected channel
+      return probe.k6Versions?.[selectedChannel] || null;
+    } else {
+      // For incompatible probes, show all supported versions
+      return getFormattedK6Versions(probe) || null;
+    }
+  };
 
   const handleToggleAll = () => {
     if (allProbesSelected) {
@@ -76,40 +124,56 @@ export const ProbesList = ({
         </Label>
       </div>
       <div className={styles.probesList}>
-        {probes.map((probe: ProbeWithMetadata) => (
-          <div key={probe.id} className={styles.item}>
-            <Checkbox
-              id={`probe-${probe.id}`}
-              onClick={() => handleToggleProbe(probe)}
-              checked={selectedProbes.includes(probe.id!)}
-              disabled={disabled}
-            />
-            <Label htmlFor={`probe-${probe.id}`}>
-              <div className={styles.columnLabel}>
-                <ProbeStatus probe={probe} />{' '}
-                {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
-                  probe.provider ? `(${probe.provider})` : ''
-                }`}
-                {probe.deprecated && (
-                  <DeprecationNotice
-                    tooltipContent={
-                      <div>
-                        This probe is deprecated and will be removed soon. For more information{' '}
-                        <TextLink
-                          variant={'bodySmall'}
-                          href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
-                          external
-                        >
-                          click here.
-                        </TextLink>
-                      </div>
-                    }
-                  />
+        {probes.map((probe: ProbeWithMetadata) => {
+          const isCompatible = isProbeCompatible(probe);
+          const isProbeDisabled = disabled || !isCompatible;
+          const k6Version = getProbeK6Version(probe);
+
+          return (
+            <div key={probe.id} className={`${styles.item} ${!isCompatible ? styles.incompatibleItem : ''}`}>
+              <Checkbox
+                id={`probe-${probe.id}`}
+                onClick={() => handleToggleProbe(probe)}
+                checked={selectedProbes.includes(probe.id!)}
+                disabled={isProbeDisabled}
+              />
+              <div className={styles.probeContent}>
+                <Label htmlFor={`probe-${probe.id}`}>
+                  <div className={`${styles.columnLabel} ${!isCompatible ? styles.incompatibleLabel : ''}`}>
+                    <ProbeStatus probe={probe} />{' '}
+                    {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
+                      probe.provider ? `(${probe.provider})` : ''
+                    }`}
+                    {!isCompatible && selectedChannel && (
+                      <span className={styles.incompatibleText}> (incompatible with {selectedChannel})</span>
+                    )}
+                    {probe.deprecated && (
+                      <DeprecationNotice
+                        tooltipContent={
+                          <div>
+                            This probe is deprecated and will be removed soon. For more information{' '}
+                            <TextLink
+                              variant={'bodySmall'}
+                              href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
+                              external
+                            >
+                              click here.
+                            </TextLink>
+                          </div>
+                        }
+                      />
+                    )}
+                  </div>
+                </Label>
+                {k6Version && (
+                  <div className={styles.k6Version}>
+                    (k6: {k6Version})
+                  </div>
                 )}
               </div>
-            </Label>
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -168,5 +232,32 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.h6.fontSize,
     lineHeight: theme.typography.body.lineHeight,
     marginBottom: '0',
+  }),
+
+  probeContent: css({
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: theme.spacing(1),
+  }),
+
+  k6Version: css({
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+  }),
+
+  incompatibleItem: css({
+    opacity: 0.5,
+  }),
+
+  incompatibleLabel: css({
+    color: theme.colors.text.disabled,
+  }),
+
+  incompatibleText: css({
+    color: theme.colors.warning.text,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
   }),
 });

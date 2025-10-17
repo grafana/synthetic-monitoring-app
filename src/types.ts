@@ -121,8 +121,7 @@ export interface Probe extends ExistingObject {
   labels: Label[];
   version: string;
   deprecated: boolean;
-  k6Version?: string; // For legacy probes: static version like "v0.54.1". For modern probes: may be empty
-  supportsBinaryProvisioning?: boolean; // whether probe supports version management
+  k6Versions?: Record<string, string | null>;
   capabilities: ProbeCapabilities;
 }
 

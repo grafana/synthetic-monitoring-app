@@ -83,7 +83,7 @@ describe('K6ChannelSelect', () => {
     });
   });
 
-  it('should auto-select the first available channel when default is deprecated', async () => {
+  it('should select the default channel when available', async () => {
     mockFeatureToggles({
       [FeatureName.VersionManagement]: true,
     });
@@ -96,15 +96,16 @@ describe('K6ChannelSelect', () => {
 
     await waitFor(() => {
       const combobox = screen.getByLabelText(/k6 version/i);
-      // v1 is the default but deprecated, so v2 should be selected as the first available
-      expect(combobox).toHaveValue('v2');
+      // v1 is the default and available, so it should be selected
+      expect(combobox).toHaveValue('v1');
     });
     
-    // v1 should not be in the options since it's deprecated for new checks
+    // v1 should be in the options since it's not deprecated for new checks
     const combobox = screen.getByLabelText(/k6 version/i);
     const selectElement = combobox as HTMLSelectElement;
     const v1Option = Array.from(selectElement.options).find(opt => opt.value === 'v1');
-    expect(v1Option).toBeUndefined();
+    expect(v1Option).toBeDefined();
+    expect(v1Option?.textContent).toContain('v1.x (default)');
   });
 
   it('should display error message when channels fail to load', async () => {

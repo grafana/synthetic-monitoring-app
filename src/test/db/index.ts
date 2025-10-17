@@ -33,25 +33,49 @@ const baseCheckModel = ({ sequence }: { sequence: number }) => ({
   created: Math.floor(faker.date.past().getTime() / 1000),
 });
 
-const baseProbeModel = ({ sequence }: { sequence: number }) => ({
-  id: sequence,
-  name: `${faker.lorem.word()}_${sequence}`,
-  public: faker.datatype.boolean(),
-  latitude: faker.location.latitude(),
-  longitude: faker.location.longitude(),
-  region: faker.helpers.arrayElement(['EMEA', 'AMER', 'APAC']),
-  labels: [{ name: faker.animal.petName(), value: faker.color.human() }],
-  online: true,
-  onlineChange: Math.floor(faker.date.past().getTime() / 1000),
-  version: faker.system.semver(),
-  deprecated: false,
-  modified: Math.floor(faker.date.recent().getTime() / 1000),
-  created: Math.floor(faker.date.past().getTime() / 1000),
-  capabilities: {
-    disableScriptedChecks: false,
-    disableBrowserChecks: false,
-  },
-});
+const baseProbeModel = ({ sequence }: { sequence: number }) => {
+  const availableChannels = ['v0', 'v1', 'v2'];
+
+  const k6VersionsByChannel = {
+    v0: ['v0.54.1', 'v0.48.0', 'v0.52.3'],
+    v1: ['v1.0.0', 'v1.2.3', 'v1.5.1'],
+    v2: ['v2.0.0', 'v2.1.2', 'v2.3.4'],
+  };
+
+  const k6Versions: Record<string, string | null> = {};
+  availableChannels.forEach((channel) => {
+    const supportsChannel = faker.datatype.boolean(0.7); // 70% chance of supporting each channel
+
+    if (supportsChannel) {
+      k6Versions[channel] = faker.helpers.arrayElement(
+        k6VersionsByChannel[channel as keyof typeof k6VersionsByChannel]
+      );
+    } else {
+      k6Versions[channel] = null;
+    }
+  });
+
+  return {
+    id: sequence,
+    name: `${faker.lorem.word()}_${sequence}`,
+    public: faker.datatype.boolean(),
+    latitude: faker.location.latitude(),
+    longitude: faker.location.longitude(),
+    region: faker.helpers.arrayElement(['EMEA', 'AMER', 'APAC']),
+    labels: [{ name: faker.animal.petName(), value: faker.color.human() }],
+    online: true,
+    onlineChange: Math.floor(faker.date.past().getTime() / 1000),
+    version: faker.system.semver(),
+    deprecated: false,
+    modified: Math.floor(faker.date.recent().getTime() / 1000),
+    created: Math.floor(faker.date.past().getTime() / 1000),
+    k6Versions,
+    capabilities: {
+      disableScriptedChecks: false,
+      disableBrowserChecks: false,
+    },
+  };
+};
 
 const tlsConfig = () => ({
   caCert: faker.helpers.maybe(() => faker.string.uuid()),
@@ -260,7 +284,7 @@ export const db = {
     period: faker.helpers.arrayElement(['5m', '10m', '15m', '30m', '1h']),
     created: Math.floor(faker.date.past().getTime() / 1000),
     modified: Math.floor(faker.date.recent().getTime() / 1000),
-    status: "OK",
+    status: 'OK',
     runbookUrl: faker.helpers.maybe(() => faker.internet.url()),
   })),
 };
