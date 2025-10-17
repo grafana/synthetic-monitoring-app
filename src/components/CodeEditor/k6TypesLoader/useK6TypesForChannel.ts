@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { useCurrentK6Version } from 'data/useK6Channels';
@@ -22,9 +21,7 @@ export function useK6TypesForChannel(channelId?: string, enabled = true): UseK6T
   const { 
     data: types, 
     isLoading: isTypesLoading, 
-    error: typesError,
-    isSuccess,
-    isError
+    error: typesError
   } = useQuery({
     queryKey: ['k6-types', version, channelId],
     queryFn: () => fetchK6TypesFromCDN(version!),
