@@ -100,7 +100,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
       const monaco = (window as any).monaco;
       if (monaco) {
         addK6Types(monaco, dynamicK6Types);
-        console.log(`[K6-Types] 🔄 Updated Monaco with dynamic types`);
       }
     }
   }, [dynamicK6Types, editorRef]);
@@ -133,16 +132,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const handleBeforeEditorMount = async (monaco: typeof monacoType) => {
     await onBeforeEditorMount?.(monaco);
     
-    // Debug logging for type loading
-    if (k6Channel) {
-      if (dynamicK6Types) {
-        console.log(`[K6-Types] 🚀 Monaco initialized with dynamic k6 types for channel "${k6Channel}"`);
-      } else {
-        console.log(`[K6-Types] 📦 Monaco initialized with bundled k6 types v${BUNDLED_K6_VERSION} (fallback) for channel "${k6Channel}"`);
-      }
-    } else {
-      console.log(`[K6-Types] 📦 Monaco initialized with bundled k6 types v${BUNDLED_K6_VERSION} (no channel specified)`);
-    }
     
     addK6Types(monaco, dynamicK6Types || k6Types);
 

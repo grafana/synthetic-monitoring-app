@@ -51,9 +51,6 @@ export async function fetchK6TypesFromCDN(version: string): Promise<Record<strin
   
   const successCount = Object.keys(types).length;
   
-  if (failedModules.length > 0) {
-    console.warn(`[K6-Types] ⚠️ Failed to load ${failedModules.length} modules:`, failedModules);
-  }
   
   if (successCount === 0) {
     throw new Error(`Failed to fetch any k6 types for version ${version}`);
