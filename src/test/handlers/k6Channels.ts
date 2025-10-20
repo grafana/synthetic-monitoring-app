@@ -24,12 +24,19 @@ export const getCurrentK6Version: ApiEntry<{ version: string }> = {
     
     // Mock version resolution based on channel
     const versionMap: Record<string, string> = {
-      v0: 'v0.54.1',
-      v1: 'v1.9.2', 
-      v2: 'v2.0.1',
+      v0: '0.25.1',  // Much older version, before execution module
+      v1: '1.2.0',
     };
     
-    const version = versionMap[channelId] || 'v1.9.2'; // Default fallback
+    const version = versionMap[channelId];
+    
+    if (!version) {
+      // Return 404 for unknown channels (more realistic)
+      return {
+        status: 404,
+        json: { error: `Channel ${channelId} not found` },
+      };
+    }
     
     return {
       json: { version },
