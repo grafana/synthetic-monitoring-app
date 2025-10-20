@@ -10,6 +10,7 @@ import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActio
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
+import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemRow = ({
   check,
@@ -39,6 +40,7 @@ export const CheckListItemRow = ({
             {check.job}
           </span>
           <AlertStatus check={check} compact />
+          {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
         </div>
         <div className={styles.checkTarget}>
           <span className={styles.truncatedText}>{check.target}</span>

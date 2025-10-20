@@ -410,6 +410,7 @@ export interface CheckBase {
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   probes: number[];
   alerts?: CheckAlertPublished[];
+  disableReason?: string;
 }
 
 export type Check =
