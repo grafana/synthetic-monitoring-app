@@ -2,7 +2,7 @@ import React from 'react';
 import { type InstanceMatchResult, type Route } from '@grafana/alerting/unstable';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 import { encodeReceiverForUrl, getPolicyIdentifier } from './alertRoutingUtils';
 
@@ -17,7 +17,6 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
     return <Text variant="body">No routing information available.</Text>;
   }
   const processAllMatchedRoutes = () => {
-
     const routesToRender: Array<{
       route: Route;
       level: number;
@@ -28,6 +27,7 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
 
     routeMatch.matchedRoutes.forEach((matchedRoute) => {
       const matchingJourney = matchedRoute.matchDetails?.matchingJourney || [];
+      // @ts-ignore
       // Find the effective index (the last route with a receiver, where it will get delivered)
       const effectiveIndex = matchingJourney.findLastIndex((item) => (item.route as Route).receiver);
 
@@ -58,7 +58,7 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
       {routesToRender.map((routeInfo, index) => {
         const { route, level, isEffective } = routeInfo;
         return (
-          <div key={route.id || `route-${level}-${index}`} style={{ marginLeft: level * 16 }}>
+          <div key={route.id} style={{ marginLeft: level * 16 }}>
             <RouteNode
               route={route}
               level={level}
@@ -83,13 +83,14 @@ const RouteNode: React.FC<{
   const isDefaultPolicy = level === 0 && !hasMatchers;
   const policyInfo = getPolicyIdentifier(route, isDefaultPolicy);
 
-  const badgeClass = policyInfo.type === 'matchesAll' ? styles.matchesAllBadge : styles.matchersBadge;
-
   return (
-    <div key={route.id || `route-${level}`} className={styles.routeNode} style={{ marginLeft: level * 16 }}>
+    <div className={styles.routeNode} style={{ marginLeft: level * 16 }}>
       <div className={styles.routeHeader}>
         <div className={styles.routeInfo}>
-          <div className={badgeClass}>
+          <div className={cx(styles.badge, {
+            [styles.matchers]: policyInfo.type === 'matchers',
+            [styles.matchesAll]: policyInfo.type === 'matchesAll',
+          })}>
             <Text variant="bodySmall">
               <strong>{policyInfo.text}</strong>
             </Text>
@@ -123,7 +124,6 @@ const RouteNode: React.FC<{
   );
 };
 
-
 const getStyles = (theme: GrafanaTheme2) => ({
   routeTree: css({
     marginTop: theme.spacing(1),
@@ -149,23 +149,22 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1,
   }),
 
-  matchersBadge: css({
+  badge: css({
     padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
-    backgroundColor: theme.colors.primary.main,
-    color: theme.colors.primary.contrastText,
     borderRadius: theme.shape.radius.default,
     fontSize: theme.typography.bodySmall.fontSize,
     fontFamily: theme.typography.fontFamilyMonospace,
   }),
 
-  matchesAllBadge: css({
-    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
+  matchers: css({
+    backgroundColor: theme.colors.primary.main,
+    color: theme.colors.primary.contrastText,
+  }),
+
+  matchesAll: css({
     backgroundColor: theme.colors.background.canvas,
     color: theme.colors.text.secondary,
     border: `1px solid ${theme.colors.border.medium}`,
-    borderRadius: theme.shape.radius.default,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontFamily: theme.typography.fontFamilyMonospace,
     fontStyle: 'italic',
   }),
 
