@@ -3,8 +3,6 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { getBodySmallStyles } from '../../styles';
-
 interface ValidationErrorProps extends PropsWithChildren {
   className?: string;
   severity?: 'error' | 'warning';
@@ -38,7 +36,9 @@ function getStyles(theme: GrafanaTheme2) {
       display: inline-block;
       position: relative;
       padding: ${theme.spacing(0.5)} ${theme.spacing(1)};
-      ${getBodySmallStyles(theme)};
+      font-size: ${theme.typography.bodySmall
+        .fontSize}; // Can't use Text since it will nullify the font-weight and requires additional code to handle null as child
+      line-height: ${theme.typography.bodySmall.lineHeight};
       font-weight: ${theme.typography.fontWeightBold};
       border-radius: ${theme.shape.radius.default};
 

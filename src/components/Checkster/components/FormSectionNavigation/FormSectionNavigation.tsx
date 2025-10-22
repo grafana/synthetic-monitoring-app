@@ -7,7 +7,7 @@ import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 
 import { CSS_PRIMARY_CONTAINER_NAME } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
-import { useSilentErrors } from '../../hooks/useSilentErrors';
+import { useLiveErrors } from '../../hooks/useLiveErrors';
 import { getHasSectionError } from '../../utils/navigation';
 
 export function FormSectionNavigation() {
@@ -17,7 +17,7 @@ export function FormSectionNavigation() {
     formNavigation: { sectionOrder, setSectionActive, isSectionActive, getSectionFields, isSeenStep, getSectionLabel },
   } = useChecksterContext();
   const styles = useStyles2(getStyles);
-  const allErrors = useSilentErrors();
+  const allErrors = useLiveErrors();
 
   return (
     <ol aria-label="Check form navigation" role="tablist" className={styles.container}>

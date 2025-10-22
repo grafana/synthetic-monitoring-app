@@ -120,7 +120,7 @@ describe('GenericInputSelectField', () => {
     });
 
     const select = screen.getByRole('combobox');
-    expect(select).toHaveClass('custom-class');
+    expect(select.parentElement).toHaveClass('custom-class');
   });
 
   it('handles empty options array', () => {

@@ -7,7 +7,6 @@ import { css, cx } from '@emotion/css';
 import { CheckFormFieldPath } from '../../types';
 import { CheckFormValuesHttp, HttpRegexValidationFormValue, HttpRegexValidationType } from 'types';
 
-import { getBodySmallStyles } from '../../styles';
 import { createPath, getFieldErrorProps } from '../../utils/form';
 import { InputSelect } from '../InputSelect';
 import { StyledField } from '../ui/StyledField';
@@ -246,7 +245,10 @@ function getStyles(theme: GrafanaTheme2) {
       place-self: center;
     `,
     header: css`
-      ${getBodySmallStyles(theme)};
+      font-size: ${theme.typography.bodySmall
+        .fontSize}; // Can't use Text since it will nullify the font-weight and requires additional code to handle null as child
+      line-height: ${theme.typography.bodySmall.lineHeight};
+      font-weight: ${theme.typography.fontWeightBold};
     `,
     expressionWithHeaderErrorColumn: css`
       grid-column: 3;

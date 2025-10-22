@@ -3,13 +3,13 @@ import { useFormContext } from 'react-hook-form';
 import { isEqual } from 'lodash';
 
 import { getFlattenErrors } from '../utils/form';
-import { useSilentErrors } from './useSilentErrors';
+import { useLiveErrors } from './useLiveErrors';
 
 export function useRelevantErrors() {
   const {
     formState: { errors },
   } = useFormContext();
-  const liveErrors = useSilentErrors();
+  const liveErrors = useLiveErrors();
 
   const [relevantErrors, setRelevantErrors] = useState<string[]>([]);
 

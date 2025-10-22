@@ -67,14 +67,6 @@ export enum HTTPAuthType {
   BearerToken = 'bearer-token',
 }
 
-// End of `CheckEditor.types.ts`
-
-export enum RightAsideFeatures {
-  Test = 'test',
-  Secrets = 'secrets',
-  Docs = 'docs',
-}
-
 export type FeatureTabLabel = ComponentProps<typeof Tab>['label'];
 export type FeatureTabConfig = [FeatureTabLabel, ComponentType, CheckType[]];
 

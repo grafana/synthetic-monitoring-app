@@ -8,7 +8,6 @@ import { CheckFormFieldPath } from '../../types';
 import { CheckFormValues, ResponseMatchType } from 'types';
 
 import { DNS_RESPONSE_MATCH_OPTIONS } from '../../constants';
-import { getBodySmallStyles } from '../../styles';
 import { createPath } from '../../utils/form';
 import { StyledField } from '../ui/StyledField';
 import { GenericCheckboxField } from './generic/GenericCheckboxField';
@@ -114,7 +113,10 @@ function getStyles(theme: GrafanaTheme2) {
       place-self: center;
     `,
     header: css`
-      ${getBodySmallStyles(theme)};
+      font-size: ${theme.typography.bodySmall
+        .fontSize}; // Can't use Text since it will nullify the font-weight and requires additional code to handle null as child
+      line-height: ${theme.typography.bodySmall.lineHeight};
+      font-weight: ${theme.typography.fontWeightBold};
     `,
     expressionWithHeaderErrorColumn: css`
       grid-column: 3;

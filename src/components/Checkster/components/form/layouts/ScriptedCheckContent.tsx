@@ -1,12 +1,13 @@
 import React from 'react';
-import { useTheme2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2, useTheme2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { CheckType } from '../../../../../types';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
 import { FIELD_SPACING } from '../../../constants';
-import { codeSnippetWrapper } from '../../../styles';
 import { ScriptExamples } from '../../ScriptExamples';
 import { Column } from '../../ui/Column';
 import { SectionContent } from '../../ui/SectionContent';
@@ -29,6 +30,7 @@ export function ScriptedCheckContent({
 }: ScriptedCheckSectionProps) {
   const theme = useTheme2();
   const hasExamples = examples && examples?.length > 0;
+  const styles = useStyles2(getStyles);
 
   return (
     <SectionContent noWrapper>
@@ -42,7 +44,7 @@ export function ScriptedCheckContent({
             <GenericScriptField field={scriptField} />
           </FormTabContent>
           {hasExamples && (
-            <FormTabContent label="Examples" fillVertical vanilla className={codeSnippetWrapper(theme)}>
+            <FormTabContent label="Examples" fillVertical vanilla className={styles.codeSnippetWrapper}>
               <ScriptExamples examples={examples} />
             </FormTabContent>
           )}
@@ -50,4 +52,21 @@ export function ScriptedCheckContent({
       </Column>
     </SectionContent>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    codeSnippetWrapper: css`
+      // Handle code snippet border
+      & > div,
+      & > div > div {
+        border: none;
+      }
+
+      // Change code snippet menu background
+      & section > div > div {
+        background-color: ${theme.colors.background.primary};
+      }
+    `,
+  };
 }

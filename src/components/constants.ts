@@ -148,7 +148,7 @@ export const TIME_UNIT_OPTIONS = [
 export const TEN_MINUTES_IN_MS = 1000 * 60 * 10;
 export const FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
 
-const EXAMPLE_SCRIPT_SCRIPTED = btoa(`import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
+export const EXAMPLE_SCRIPT_SCRIPTED = btoa(`import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 import { check } from 'k6'
 import http from 'k6/http'
 // import secrets from 'k6/secrets';
@@ -181,7 +181,7 @@ export default async function main() {
 
 }`);
 
-const EXAMPLE_SCRIPT_BROWSER = btoa(`import { browser } from "k6/browser";
+export const EXAMPLE_SCRIPT_BROWSER = btoa(`import { browser } from "k6/browser";
 import { expect } from "https://jslib.k6.io/k6-testing/0.5.0/index.js";
 import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 // import secrets from 'k6/secrets';

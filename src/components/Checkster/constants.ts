@@ -45,6 +45,8 @@ import {
 } from 'types';
 
 import { MAX_BASE_TIMEOUT, MIN_BASE_TIMEOUT } from '../../schemas/general/Timeout';
+import { ONE_MINUTE_IN_MS, THREE_SECONDS_IN_MS } from '../../utils.constants';
+import { EXAMPLE_SCRIPT_BROWSER, EXAMPLE_SCRIPT_SCRIPTED } from '../constants';
 
 /*
  * When adding a new check type or group, make sure to update:
@@ -179,79 +181,13 @@ export const CHECK_TYPE_OPTION_MAP: Record<CheckType, CheckTypeOption> = {
   },
 };
 
-const DEFAULT_K6_SCRIPT = btoa(`import { check, fail } from 'k6'
-import http from 'k6/http'
-
-export default function main() {
-  const result = http.get('http://test.k6.io/');
-
-  // console.log will be represented as logs in Loki
-  console.log('got a response');
-  
-  // Use check() to test conditions. These show as 'assertions' in the dashboard
-  // Note: failed check() calls do not impact uptime and reachability
-  const pass = check(result, {
-    'is status 200': (r) => r.status === 200,
-  });
-
-  // Use fail() to abort and fail a test, impacting uptime and reachability
-  if(!pass){
-    fail(\`non 200 result \${result.status}\`);
-  }
-}`);
-
-const DEFAULT_K6_BROWSER_SCRIPT = btoa(`import { browser } from 'k6/browser';
-import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
-
-export const options = {
-  scenarios: {
-    ui: {
-      executor: 'shared-iterations',
-      options: {
-        browser: {
-          type: 'chromium',
-        },
-      },
-    },
-  },
-  thresholds: {
-    checks: ['rate==1.0'],
-  },
-};
-
-export default async function () {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-
-  try {
-    await page.goto("https://test.k6.io/my_messages.php");
-
-    await page.locator('input[name="login"]').type("admin");
-    await page.locator('input[name="password"]').type("123");
-
-    await Promise.all([
-      page.waitForNavigation(),
-      page.locator('input[type="submit"]').click(),
-    ]);
-
-    await check(page.locator("h2"), {
-      header: async (locator) => (await locator.textContent()) == "Welcome, admin!",
-    });
-  } catch (e) {
-    console.log('Error during execution:', e);
-    throw e;
-  } finally {
-    await page.close();
-  }
-}`);
-
 export const DEFAULT_CHECK_TYPE: CheckType = CheckType.HTTP;
 
 const CHECK_BASE_CONFIG: Omit<Check, 'settings'> = {
   job: '',
   target: '',
-  frequency: 60 * 1000,
-  timeout: 3 * 1000,
+  frequency: ONE_MINUTE_IN_MS,
+  timeout: THREE_SECONDS_IN_MS,
   enabled: true,
   labels: [],
   probes: [],
@@ -362,7 +298,7 @@ export const DEFAULT_CHECK_CONFIG_MAP: Record<CheckType, Check> = {
   [CheckType.Scripted]: mergeBaseConfig<ScriptedCheck>(
     CheckType.Scripted,
     {
-      script: DEFAULT_K6_SCRIPT,
+      script: EXAMPLE_SCRIPT_SCRIPTED,
     },
     {
       frequency: 5 * 60 * 1000,
@@ -372,7 +308,7 @@ export const DEFAULT_CHECK_CONFIG_MAP: Record<CheckType, Check> = {
   [CheckType.Browser]: mergeBaseConfig<BrowserCheck>(
     CheckType.Browser,
     {
-      script: DEFAULT_K6_BROWSER_SCRIPT,
+      script: EXAMPLE_SCRIPT_BROWSER,
     },
     {
       frequency: 5 * 60 * 1000,

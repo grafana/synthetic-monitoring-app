@@ -5,16 +5,18 @@ import { FeatureTabConfig, FeatureTabLabel } from '../types';
 import { FEATURE_TABS } from '../feature/config';
 import { useChecksterContext } from './ChecksterContext';
 
+type EmptyFeatureTabConfig = ['', null, []];
+
 interface FeatureTabsContextValue {
   setActive: (label: FeatureTabLabel) => void;
   tabs: FeatureTabConfig[];
-  activeTab: FeatureTabConfig;
+  activeTab: FeatureTabConfig | EmptyFeatureTabConfig;
 }
 
 export const FeatureTabsContext = createContext<FeatureTabsContextValue | undefined>(undefined);
 
 // In case nothing adds up
-const panicTab = ['', null, []];
+const panicTab: EmptyFeatureTabConfig = ['', null, []];
 
 export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const [activeLabel, setActiveLabel] = useState<string>('');
@@ -27,7 +29,7 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
     );
   }, [checkType]);
 
-  const activeTab = useMemo(() => {
+  const activeTab = useMemo<FeatureTabConfig | typeof panicTab>(() => {
     const tab = tabs.find(([label]) => label === activeLabel);
     if (!tab) {
       const fallback = tabs[0] ?? panicTab;

@@ -1,4 +1,4 @@
 export * from './isCheck';
-export * from './createCheck';
+export * from './getDefaultCheckConfig';
 export * from './getCheckType';
 export * from './getCheckTypeOption';

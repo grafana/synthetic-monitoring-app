@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { dateTime, dateTimeFormat } from '@grafana/data';
-import { Button, EmptyState } from '@grafana/ui';
+import { dateTime, dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
+import { Button, EmptyState, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AdHocCheckState, ProbeStateStatus } from './types.adhoc-check';
@@ -26,6 +26,7 @@ function createProbeState(id: number, name: string, isPublic: boolean, state = P
 }
 
 export function AdhocCheckPanel() {
+  const styles = useStyles2(getStyles);
   const [logState, setLogState] = useState<AdHocCheckStateMap>({});
   const { data: probes, isLoading: isLoadingProbes } = useProbes(); // This will also make the execution step work, fix so that it always works
   const { doAdhocCheck, data: newHocCheckRequest } = useOnBeforeAdhocCheck();
@@ -158,11 +159,7 @@ export function AdhocCheckPanel() {
 
   if (!items.length) {
     return (
-      <div
-        className={css`
-          padding: 8px 8px 8px 0;
-        `}
-      >
+      <div className={styles.root}>
         <EmptyState
           message={`You can test your check to see how it behaves in the wild`}
           variant={'completed'}
@@ -179,12 +176,7 @@ export function AdhocCheckPanel() {
   }
 
   return (
-    <Column
-      gap={2}
-      className={css`
-        padding: 8px 8px 8px 0;
-      `}
-    >
+    <Column gap={2} className={styles.root}>
       <div>
         <Button
           disabled={hasPendingChecks}
@@ -222,4 +214,12 @@ export function AdhocCheckPanel() {
       </Column>
     </Column>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    root: css`
+      padding: ${theme.spacing(1, 1, 1, 0)};
+    `,
+  };
 }

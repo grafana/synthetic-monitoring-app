@@ -7,7 +7,7 @@ import { CheckFormValues } from '../../../types';
 import { useChecksterContext } from '../contexts/ChecksterContext';
 import { getAllErrorFields } from '../utils/form';
 
-export function useSilentErrors() {
+export function useLiveErrors() {
   const { schema } = useChecksterContext();
   const { watch, getValues } = useFormContext<CheckFormValues>();
   const values = watch();

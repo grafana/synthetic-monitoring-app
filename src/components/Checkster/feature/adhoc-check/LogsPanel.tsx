@@ -61,7 +61,7 @@ export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
 function getStyles(theme: GrafanaTheme2) {
   const breathAnimation = keyframes`
     0% {
-      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3)
+      box-shadow: 0 0 0 4px ${theme.colors.border.medium};
     }
   `;
 

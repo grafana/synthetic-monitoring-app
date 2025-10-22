@@ -4,14 +4,14 @@ import { FormFieldMatch } from '../types';
 
 import { useChecksterContext } from '../contexts/ChecksterContext';
 import { getHasSectionError } from '../utils/navigation';
-import { useSilentErrors } from './useSilentErrors';
+import { useLiveErrors } from './useLiveErrors';
 
 export function useGetIndexFieldError(indexFields: Array<FormFieldMatch[] | undefined>): boolean[] {
   const {
     formNavigation: { errors: formErrors },
   } = useChecksterContext();
 
-  const liveErrors = useSilentErrors();
+  const liveErrors = useLiveErrors();
 
   const errors = useMemo(() => {
     return formErrors?.filter((field) => liveErrors.some((liveError) => liveError.startsWith(field)));
