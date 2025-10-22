@@ -17,7 +17,7 @@ jobs:
         uses: ./.github/actions/setup-env
       
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
+        uses: hashicorp/setup-terraform@982f6f017c89db9dccac8593265de0c382e4c050
         with:
           terraform_version: "~1.0"
       
