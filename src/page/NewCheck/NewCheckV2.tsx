@@ -1,5 +1,5 @@
-import React from 'react';
-import { useParams, useSearchParams } from 'react-router-dom-v5-compat';
+import React, { useCallback } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom-v5-compat';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { TextLink, useStyles2 } from '@grafana/ui';
@@ -18,9 +18,11 @@ import { PluginPageNotFound } from 'page/NotFound';
 
 import { CHECK_TYPE_GROUP_DEFAULT_CHECK } from '../../components/Checkster/constants';
 
+const CHECK_TYPE_PARAM_NAME = 'checkType';
+
 export function NewCheckV2() {
   const [params] = useSearchParams({});
-  const checkType = (params.get('checkType') as CheckType) ?? undefined;
+  const checkType = (params.get(CHECK_TYPE_PARAM_NAME) as CheckType) ?? undefined;
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
   const { isLoading: isLoadingProbes, isFetched: isProbesFetched } = useProbes();
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
@@ -30,9 +32,15 @@ export function NewCheckV2() {
     { text: `${checkTypeGroupOption?.label ?? 'Check not found'}` },
   ]);
 
+  const navigate = useNavigate();
   const isLoading = isLoadingProbes && !isProbesFetched;
-
   const handleSubmit = useHandleSubmitCheckster();
+  const handleCheckTypeChange = useCallback(
+    (newCheckType: CheckType) => {
+      navigate({ search: `?${CHECK_TYPE_PARAM_NAME}=${newCheckType}` }, { replace: true });
+    },
+    [navigate]
+  );
 
   if (!group) {
     return (
@@ -50,7 +58,11 @@ export function NewCheckV2() {
   return (
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <Checkster checkOrCheckType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]} onSave={handleSubmit} />
+        <Checkster
+          checkOrCheckType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
+          onSave={handleSubmit}
+          onCheckTypeChange={handleCheckTypeChange}
+        />
       </div>
     </PluginPage>
   );

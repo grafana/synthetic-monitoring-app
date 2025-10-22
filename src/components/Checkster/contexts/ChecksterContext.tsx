@@ -64,6 +64,7 @@ export function useChecksterContext() {
 interface ChecksterProviderProps extends PropsWithChildren {
   checkOrCheckType?: Check | CheckType;
   initialSection?: FormSectionName;
+  onCheckTypeChange?(checkType: CheckType): void;
 }
 
 interface StashedValues {
@@ -85,6 +86,7 @@ export function ChecksterProvider({
   children,
   checkOrCheckType,
   initialSection,
+  onCheckTypeChange,
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(checkOrCheckType) ? checkOrCheckType : undefined;
   const [checkType, setCheckType] = useState<CheckType>(
@@ -181,25 +183,24 @@ export function ChecksterProvider({
     }
 
     if ([CheckFormMergeMethod.Form, CheckFormMergeMethod.AssistedForm].includes(DEFAULT_CHECK_FORM_MERGE_METHOD)) {
-      // This works as long as the user doesnt change type two times in a row
+      // This works as long as the user doesn't change type two times in a row
       formMethods.reset(defaultFormValues, {
+        keepIsValid: true,
         keepDirty: true,
         keepDirtyValues: true,
+        keepTouched: true,
         keepSubmitCount: true,
+        keepErrors: true,
       });
 
       if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.AssistedForm) {
         ASSISTED_FORM_MERGE_FIELDS.forEach((field) => {
-          values &&
-            formMethodRef.current.setValue(field, values[field], {
-              shouldDirty: true,
-              shouldTouch: true,
-            });
+          values && formMethodRef.current.setValue(field, values[field]);
         });
 
-        const touchedFields = flattenObjectKeys(formMethodRef.current.formState.touchedFields as any);
-        if (touchedFields.length > 0) {
-          formMethods.trigger(touchedFields as any);
+        const dirtyFields = flattenObjectKeys(formMethodRef.current.formState.dirtyFields as any);
+        if (dirtyFields.length > 0) {
+          formMethods.trigger(dirtyFields as any);
         }
       }
     }
@@ -246,8 +247,9 @@ export function ChecksterProvider({
       }
       stashCurrentValues(formMethods.getValues());
       setCheckType(checkType);
+      onCheckTypeChange?.(checkType);
     },
-    [formMethods, isNew, stashCurrentValues]
+    [formMethods, isNew, onCheckTypeChange, stashCurrentValues]
   );
 
   const value = useMemo(() => {

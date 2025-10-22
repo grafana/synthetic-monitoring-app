@@ -21,6 +21,7 @@ interface ChecksterProps {
   // that the check is saved (and the form knows everything when OK)
   // Example: when we want to navigate from the form after a successful save
   onSave(check: Check, formValues: CheckFormValues): Promise<Function | void>;
+  onCheckTypeChange?(checkType: CheckType): void;
 }
 
 export function Checkster({ onSave, ...props }: ChecksterProps) {

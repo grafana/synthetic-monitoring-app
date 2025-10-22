@@ -43,6 +43,7 @@ function getClassName(_theme: GrafanaTheme2) {
   return css`
     container-name: ${CSS_PRIMARY_CONTAINER_NAME};
     container-type: inline-size;
+    contain: layout; // Workaround for https://github.com/floating-ui/floating-ui/issues/3067
     display: flex;
     flex-direction: column;
     height: 100%;
