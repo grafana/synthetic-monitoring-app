@@ -235,7 +235,7 @@ export function QueryParamsEditor({
             </div>
           );
         })}
-        <div>
+        <div className={styles.buttonContainer}>
           <Button disabled={isDisabled} icon="plus" onClick={addEmpty} variant="secondary" size="sm" type="button">
             {addButtonText}
           </Button>
@@ -255,7 +255,10 @@ function getStyles(theme: GrafanaTheme2) {
     rowContainer: css`
       display: flex;
       flex-direction: column;
-      gap: ${theme.spacing(0.5)};
+      gap: ${theme.spacing(0.75)};
+    `,
+    buttonContainer: css`
+      padding-top: ${theme.spacing(0.75)};
     `,
   };
 }

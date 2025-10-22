@@ -84,7 +84,8 @@ export function GenericNameValueField({
       required={required}
       emulate
     >
-      <Stack direction="column" gap={0.5}>
+      {/* @ts-expect-error Totally valid spacing value */}
+      <Stack direction="column" gap={0.75}>
         {fields.map((field, index) => (
           <Stack key={field.id} alignItems="start">
             <StyledField
@@ -150,7 +151,7 @@ export function GenericNameValueField({
           </Stack>
         )}
 
-        <div>
+        <div className={styles.buttonContainer}>
           <Button
             icon="plus"
             onClick={() => append({ name: '', value: '' })}
@@ -167,13 +168,16 @@ export function GenericNameValueField({
   );
 }
 
-function getStyles(_theme: GrafanaTheme2) {
+function getStyles(theme: GrafanaTheme2) {
   return {
     row: css`
       display: flex;
     `,
     field: css`
       flex-grow: 1;
+    `,
+    buttonContainer: css`
+      padding-top: ${theme.spacing(0.75)};
     `,
   };
 }
