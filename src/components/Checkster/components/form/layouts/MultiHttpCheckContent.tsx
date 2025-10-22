@@ -9,7 +9,7 @@ export const MULTI_HTTP_CHECK_REG_EXP_LIST = ['job', /\.entries\.\d+\.request/, 
 
 export function MultiHttpCheckContent() {
   return (
-    <SectionContent label="Requests">
+    <SectionContent>
       <FormJobField field="job" />
       <FormMultiHttpEntriesField field="settings.multihttp.entries" />
     </SectionContent>

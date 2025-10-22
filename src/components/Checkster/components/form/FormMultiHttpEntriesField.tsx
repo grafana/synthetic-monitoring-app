@@ -111,7 +111,7 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
       method={method}
       target={target}
       placeholder={`Request ${index + 1}`}
-      open={isOpen}
+      isOpen={isOpen}
       onToggle={handleToggle}
       actions={
         <>

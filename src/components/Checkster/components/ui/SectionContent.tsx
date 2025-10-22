@@ -1,4 +1,4 @@
-import React, { Fragment, PropsWithChildren, ReactNode } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -7,41 +7,36 @@ import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { Column } from './Column';
 
 interface SectionContentProps extends PropsWithChildren {
-  label?: ReactNode;
-  vanilla?: boolean; // No content styling
-  showHeading?: boolean;
+  noWrapper?: boolean; // Enable to render without wrapper component
 }
 
-export function SectionContent({ label, vanilla, children, showHeading = false }: SectionContentProps) {
+export function SectionContent({ children, noWrapper }: SectionContentProps) {
   const theme = useTheme2();
 
   const {
-    formNavigation: { activeLabel },
+    formNavigation: { active },
   } = useChecksterContext();
-
-  const Wrapper = vanilla ? Fragment : Column;
 
   return (
     <div
+      tabIndex={0}
+      role="tabpanel"
+      aria-labelledby={`form-section-${active}`}
       className={css`
         display: flex;
         flex-direction: column;
         flex: 1 0 0;
         gap: ${theme.spacing(FIELD_SPACING)};
-        ${!showHeading &&
-        css`
-          padding-top: ${theme.spacing(FIELD_SPACING)};
-        `};
-        & > h2 {
-          padding: ${theme.spacing(2)};
-          margin: 0;
-        }
+        padding-top: ${theme.spacing(FIELD_SPACING)};
       `}
     >
-      {showHeading && <h2>{label || activeLabel}</h2>}
-      <Wrapper overflow="auto" fill gap={FIELD_SPACING} padding={theme.spacing(0, 2, 2, 2)}>
-        {children}
-      </Wrapper>
+      {noWrapper ? (
+        children
+      ) : (
+        <Column overflow="auto" fill gap={FIELD_SPACING} padding={theme.spacing(0, 2, 2, 2)}>
+          {children}
+        </Column>
+      )}
     </div>
   );
 }

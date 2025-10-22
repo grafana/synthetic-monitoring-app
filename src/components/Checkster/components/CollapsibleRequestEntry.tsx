@@ -12,14 +12,14 @@ interface CollapsibleRequestEntryProps extends PropsWithChildren {
   method: HttpMethod;
   target?: string;
   placeholder?: string;
-  open: boolean;
+  isOpen: boolean;
   actions?: ReactNode;
   onToggle(): void;
   hasError?: boolean;
 }
 export function CollapsibleRequestEntry({
   children,
-  open: isOpen,
+  isOpen,
   onToggle,
   placeholder = 'Request',
   method,

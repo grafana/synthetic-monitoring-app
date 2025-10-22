@@ -59,7 +59,7 @@ export function NewCheckV2() {
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
         <Checkster
-          checkOrCheckType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
+          checkType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
           onSave={handleSubmit}
           onCheckTypeChange={handleCheckTypeChange}
         />

@@ -16,7 +16,6 @@ import { FormTabContent, FormTabs } from '../FormTabs';
 import { GenericScriptField } from '../generic/GenericScriptField';
 
 interface ScriptedCheckSectionProps {
-  label?: string;
   scriptField?: `settings.${CheckType.Scripted | CheckType.Browser}.script`;
   examples?: ExampleScript[];
 }
@@ -25,7 +24,6 @@ export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'settings.scripted.script
 
 // Don't set label here, set it explicitly, where the component is used (for readability)
 export function ScriptedCheckContent({
-  label = 'Script',
   examples = SCRIPT_EXAMPLES,
   scriptField = 'settings.scripted.script',
 }: ScriptedCheckSectionProps) {
@@ -33,7 +31,7 @@ export function ScriptedCheckContent({
   const hasExamples = examples && examples?.length > 0;
 
   return (
-    <SectionContent label={label} vanilla>
+    <SectionContent noWrapper>
       <Column gap={FIELD_SPACING} padding={theme.spacing(0, 2)}>
         <FormJobField field="job" />
         <FormInstanceField field="target" />

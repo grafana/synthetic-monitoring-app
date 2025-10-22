@@ -10,7 +10,7 @@ import { CheckProbes } from './CheckProbes/CheckProbes';
 
 interface ProbeOptionsProps {
   checkType: CheckType;
-  onlyProbes?: boolean;
+  onlyProbes?: boolean; // TODO: Remove when CheckEditor v1 is removed
 }
 
 export const ProbeOptions = ({ checkType, onlyProbes }: ProbeOptionsProps) => {

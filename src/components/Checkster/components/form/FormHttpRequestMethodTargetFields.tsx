@@ -54,7 +54,7 @@ function Methods({ field }: MethodsProps) {
   return (
     <>
       <Dropdown overlay={<RequestMethodMenu onChange={_setValue} />}>
-        <div role="button" aria-label={`Request method *`} className={styles.container}>
+        <div tabIndex={0} role="button" aria-label={`Request method *`} className={styles.container}>
           <span className={styles.methodValue}>{formValue}</span>
           <Icon name="angle-down" />
         </div>
@@ -91,8 +91,8 @@ interface FormHttpRequestMethodTargetFieldsProps {
 }
 
 export function FormHttpRequestMethodTargetFields({
-  field = 'target', // TODO: fix this
-  methodField, // TODO: and this
+  field = 'target',
+  methodField,
   withQueryParams,
   placeholder = `https://${DEFAULT_EXAMPLE_HOSTNAME}/`,
 }: FormHttpRequestMethodTargetFieldsProps) {

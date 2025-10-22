@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Icon, Stack, useTheme2 } from '@grafana/ui';
+import { Button, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { DataTestIds } from '../../../../test/dataTestIds';
@@ -46,12 +46,10 @@ export function FormFooter() {
             type="button"
             variant={isStepsComplete ? 'secondary' : 'primary'}
             onClick={() => setSectionActive(next.name)}
+            iconPlacement="right"
+            icon="arrow-right"
           >
-            {/* since Button.iconPosition=right does nothing */}
-            <Stack alignItems="center">
-              <span>{next.label}</span>
-              <Icon size="lg" name="arrow-right" />
-            </Stack>
+            {next.label}
           </Button>
         )}
         <Button

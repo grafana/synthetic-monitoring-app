@@ -8,7 +8,8 @@ import React, {
   useState,
 } from 'react';
 import { FieldPath } from 'react-hook-form';
-import { Tab, TabContent, TabsBar, useTheme2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Tab, TabContent, TabsBar, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
@@ -44,6 +45,7 @@ function isValidTabChild(child: ReactNode): child is FormTabContentChild {
 
 export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }: FormTabProps) {
   const [active, setActive] = useState(activeIndex);
+  const styles = useStyles2(getStyles);
 
   useEffect(() => {
     const firstErrorIndex = tabErrorIndexes?.findIndex((item) => item) ?? undefined;
@@ -54,15 +56,9 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const theme = useTheme2();
-
   return (
     <>
-      <TabsBar
-        className={css`
-          flex-shrink: 0;
-        `}
-      >
+      <TabsBar className={styles.tabsBar}>
         {Children.map(children, (child, index) => {
           if (!isValidTabChild(child)) {
             console.warn('FormTabs only accepts FormTabs.Tab as children');
@@ -80,14 +76,7 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
             </Tab>
           );
         })}
-        <div
-          className={css`
-            display: flex;
-            margin-left: auto;
-            align-items: center;
-            gap: ${theme.spacing(1)};
-          `}
-        >
+        <div className={styles.tabsBarActions}>
           {Children.map(children, (child, index) => {
             if (!isValidTabChild(child)) {
               return null;
@@ -106,26 +95,9 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
         return active === index ? (
           <TabContent
             className={cx(
-              css`
-                background-color: transparent;
-                display: flex;
-                flex-direction: column;
-              `,
-              !child.props.vanilla &&
-                css`
-                  gap: ${theme.spacing(FIELD_SPACING)};
-                  padding: ${theme.spacing(1)};
-                `,
-              child.props.fillVertical &&
-                css`
-                  flex: 1 1 0;
-                  overflow: auto;
-                  & > div {
-                    flex-grow: 1;
-                    margin-bottom: unset;
-                    overflow: unset;
-                  }
-                `,
+              styles.tabContent,
+              !child.props.vanilla && styles.tabContentSpacing,
+              child.props.fillVertical && styles.tabContentFillVertical,
               child.props.className
             )}
             key={index}
@@ -136,6 +108,39 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
       })}
     </>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    tabsBar: css`
+      flex-shrink: 0;
+    `,
+    tabsBarActions: css`
+      display: flex;
+      margin-left: auto;
+      align-items: center;
+      gap: ${theme.spacing(1)};
+    `,
+    tabContent: css`
+      background-color: transparent;
+      display: flex;
+      flex-direction: column;
+    `,
+    tabContentSpacing: css`
+      gap: ${theme.spacing(FIELD_SPACING)};
+      padding: ${theme.spacing(1)};
+    `,
+
+    tabContentFillVertical: css`
+      flex: 1 1 0;
+      overflow: auto;
+      & > div {
+        flex-grow: 1;
+        margin-bottom: unset;
+        overflow: unset;
+      }
+    `,
+  };
 }
 
 interface FormTabContentProps extends PropsWithChildren {

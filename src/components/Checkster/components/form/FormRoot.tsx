@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FieldErrors, useFormContext } from 'react-hook-form';
 import { css } from '@emotion/css';
 
 import { Check, CheckFormValues } from 'types';
@@ -13,6 +13,14 @@ import { ExecutionSection } from './sections/ExecutionSection';
 import { LabelSection } from './sections/LabelSection';
 import { UptimeSection } from './sections/UptimeSection';
 import { FormFooter } from './FormFooter';
+
+const styles = {
+  form: css`
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+  `,
+};
 
 export function FormRoot({
   onSave,
@@ -53,42 +61,41 @@ export function FormRoot({
     }
   }, [onSaveCallback, isDirty]);
 
-  return (
-    <form
-      onSubmit={handleSubmit(
-        async (data) => {
-          const check = toPayload(data);
-          try {
-            const callback = await onSave(check, data);
-            reset(data);
-            if (callback) {
-              // To avoid potential race condition with requestAnimationFrame and state updates caused by `reset`
-              // Faster than taking last position in event loop (useTimeout(cb, 0))
-              setOnSaveCallback(() => callback);
-            }
-          } catch (_error) {
-            // TODO: handle this
-          }
-        },
-        (errors) => {
-          sectionByErrors(errors);
-
-          // Check that we have a focus on an error, if not, try to focus with use of `data-form-name`
-          setTimeout(() => {
-            const errorList = getFlattenErrors(errors);
-            if (!isFocusingError(errorList)) {
-              onErrorFocusFallback(errorList);
-            }
-          }, 0);
+  const onValid = useCallback(
+    async (data: CheckFormValues) => {
+      const check = toPayload(data);
+      try {
+        const callback = await onSave(check, data);
+        reset(data);
+        if (callback) {
+          // To avoid potential race condition with requestAnimationFrame and state updates caused by `reset`
+          // Faster than taking last position in event loop (useTimeout(cb, 0))
+          setOnSaveCallback(() => callback);
         }
-      )}
-      className={css`
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 0;
-      `}
-      id={formId}
-    >
+      } catch (_error) {
+        // TODO: handle this
+      }
+    },
+    [onSave, reset]
+  );
+
+  const onInvalid = useCallback(
+    (errors: FieldErrors<CheckFormValues>) => {
+      sectionByErrors(errors);
+
+      // Check that we have a focus on an error, if not, try to focus with use of `data-form-name`
+      setTimeout(() => {
+        const errorList = getFlattenErrors(errors);
+        if (!isFocusingError(errorList)) {
+          onErrorFocusFallback(errorList);
+        }
+      }, 0);
+    },
+    [sectionByErrors]
+  );
+
+  return (
+    <form onSubmit={handleSubmit(onValid, onInvalid)} className={styles.form} id={formId}>
       <CheckSection />
       <UptimeSection />
       <LabelSection />

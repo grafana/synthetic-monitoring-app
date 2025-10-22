@@ -30,11 +30,6 @@ jest.mock('./feature/FeatureContent', () => ({
   FeatureContent: () => <div data-testid="feature-content">FeatureContent</div>,
 }));
 
-jest.mock('./components/modals/ChooseCheckTypeModal', () => ({
-  ChooseCheckTypeModal: ({ isOpen }: { isOpen: boolean }) =>
-    isOpen ? <div data-testid="choose-check-type-modal">Modal</div> : null,
-}));
-
 jest.mock('../ConfirmLeavingPage', () => ({
   ConfirmLeavingPage: ({ enabled }: { enabled: boolean }) =>
     enabled ? <div data-testid="confirm-leaving-page">Confirm Leaving</div> : null,
@@ -173,7 +168,7 @@ describe('Checkster.tsx', () => {
         target: 'https://example.com',
       };
 
-      render(<Checkster {...defaultProps} checkOrCheckType={customCheck} />);
+      render(<Checkster {...defaultProps} check={customCheck} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('form-root')).toBeInTheDocument();
@@ -181,7 +176,7 @@ describe('Checkster.tsx', () => {
     });
 
     it('should handle check type via props', async () => {
-      render(<Checkster {...defaultProps} checkOrCheckType={CheckType.HTTP} />);
+      render(<Checkster {...defaultProps} checkType={CheckType.HTTP} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('form-root')).toBeInTheDocument();

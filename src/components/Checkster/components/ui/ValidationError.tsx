@@ -7,18 +7,23 @@ import { getBodySmallStyles } from '../../styles';
 
 interface ValidationErrorProps extends PropsWithChildren {
   className?: string;
+  severity?: 'error' | 'warning';
 }
 
-/*
-                      <div className={cx(styles.errorRow, isHeaderMatchType && styles.expressionWithHeaderErrorColumn)}>
-                        <Icon name="exclamation-triangle" />{errorMap.expression.error}
-                      </div>
- */
-
-export function ValidationError({ className, children }: ValidationErrorProps) {
-  const defaultClassName = useStyles2(getClassName);
+export function ValidationError({ className, children, severity = 'error' }: ValidationErrorProps) {
+  const styles = useStyles2(getStyles);
   return (
-    <div className={cx(defaultClassName, className)} role="alert">
+    <div
+      className={cx(
+        styles.root,
+        {
+          [styles.severityError]: severity !== 'warning', // defensive coding
+          [styles.severityWarning]: severity === 'warning',
+        },
+        className
+      )}
+      role="alert"
+    >
       <Stack gap={1} direction="row" alignItems="center">
         <Icon name="exclamation-triangle" />
         <div>{children}</div>
@@ -27,27 +32,40 @@ export function ValidationError({ className, children }: ValidationErrorProps) {
   );
 }
 
-function getClassName(theme: GrafanaTheme2) {
-  return css`
-    display: inline-block;
-    background-color: ${theme.colors.error.main};
-    position: relative;
-    color: ${theme.colors.error.contrastText};
-    padding: ${theme.spacing(0.5)} ${theme.spacing(1)};
-    ${getBodySmallStyles(theme)};
-    font-weight: ${theme.typography.fontWeightBold};
-    border-radius: ${theme.shape.radius.default};
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    root: css`
+      display: inline-block;
+      position: relative;
+      padding: ${theme.spacing(0.5)} ${theme.spacing(1)};
+      ${getBodySmallStyles(theme)};
+      font-weight: ${theme.typography.fontWeightBold};
+      border-radius: ${theme.shape.radius.default};
 
-    &:before {
-      content: '';
-      position: absolute;
-      left: 9px;
-      top: -5px;
-      width: 0;
-      height: 0;
-      border-width: 0 4px 5px;
-      border-color: transparent transparent ${theme.colors.error.main};
-      border-style: solid;
-    }
-  `;
+      &:before {
+        content: '';
+        position: absolute;
+        left: 9px;
+        top: -5px;
+        width: 0;
+        height: 0;
+        border-width: 0 4px 5px;
+        border-style: solid;
+      }
+    `,
+    severityError: css`
+      background-color: ${theme.colors.error.main};
+      color: ${theme.colors.error.contrastText};
+      &:before {
+        border-color: transparent transparent ${theme.colors.error.main};
+      }
+    `,
+    severityWarning: css`
+      background-color: ${theme.colors.warning.main};
+      color: ${theme.colors.warning.contrastText};
+      &:before {
+        border-color: transparent transparent ${theme.colors.warning.main};
+      }
+    `,
+  };
 }

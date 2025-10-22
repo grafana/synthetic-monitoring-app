@@ -1,11 +1,10 @@
 import React, { ComponentProps, useEffect, useMemo } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { ThemeComponents } from '@grafana/data/dist/types/themes/createComponents';
-import { Dropdown, Icon, Menu, useTheme2 } from '@grafana/ui';
+import { Dropdown, Icon, Menu, styleMixins, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { useDOMId } from '../../../hooks/useDOMId';
-import { getInputFocusStyles } from '../styles';
 
 interface TargetValueHandler<T> {
   (event: { target: { value: T } }): void;
@@ -47,6 +46,7 @@ export function InputSelect({
   const [internalValue, setInternalValue] = React.useState<SelectableValue['value'] | undefined>(value);
   const theme = useTheme2();
   const styles = getStyles(theme, size);
+  const [isOpen, setIsOpen] = React.useState(false);
   const widthStyles = width
     ? css`
         width: ${theme.spacing(width)};
@@ -68,8 +68,10 @@ export function InputSelect({
               aria-label={`Select ${optionLabel}`}
               key={`${value}-${index}`}
               label={option.label ?? option.value}
+              description={option.description ?? undefined}
               disabled={option.disabled}
               ariaChecked={isSelected}
+              active={isSelected}
               onClick={() => {
                 setInternalValue(option.value);
               }}
@@ -86,13 +88,18 @@ export function InputSelect({
 
   useEffect(() => {
     if (value !== internalValue) {
+      console.log('the value', value, internalValue);
       onChange({ target: { value: internalValue } });
     }
   }, [internalValue, onChange, value]);
 
+  const handleVisibleChange = (visible: boolean) => {
+    setIsOpen(visible);
+  };
+
   return (
-    <div>
-      <Dropdown placement={placement} overlay={overlay}>
+    <div className={className}>
+      <Dropdown onVisibleChange={handleVisibleChange} placement={placement} overlay={overlay}>
         <button
           disabled={disabled}
           id={idWithFallback}
@@ -101,7 +108,8 @@ export function InputSelect({
           aria-controls={dropdownId}
           value={internalValue}
           aria-haspopup="listbox"
-          className={cx(styles.button, widthStyles, invalid && styles.invalid, className)}
+          tabIndex={0}
+          className={cx(styles.button, widthStyles, invalid && styles.invalid, isOpen && styles.focusStyles)}
           aria-valuetext={label}
         >
           <span className={styles.value} title={label}>
@@ -116,8 +124,12 @@ export function InputSelect({
 
 function getStyles(theme: GrafanaTheme2, size: InputSize = 'md') {
   const inputSize = theme.components.height[size] ?? theme.components.height.md;
+  const focusStyles = css({
+    ...styleMixins.getFocusStyles(theme),
+  });
 
   return {
+    focusStyles,
     button: css`
       /* The idea is for the button to look like an Input/Select */
       display: flex;
@@ -138,9 +150,8 @@ function getStyles(theme: GrafanaTheme2, size: InputSize = 'md') {
         border-color: ${theme.colors.action.disabledBackground};
       }
       &:focus {
-        ${getInputFocusStyles(theme)};
+        ${focusStyles};
       }
-      ,
       &:hover {
         border-color: ${theme.components.input.borderHover};
       }

@@ -52,7 +52,7 @@ export function FormMultiHttpAssertionsField({ field }: FormMultiHttpAssertionsF
         return (
           <CollapsibleRequestEntry
             hasError={hasError}
-            open={isOpen}
+            isOpen={isOpen}
             key={`${entry.request.url}entry-${index}`}
             method={entry.request.method}
             target={entry.request.url}

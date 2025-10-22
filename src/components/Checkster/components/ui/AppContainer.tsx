@@ -63,7 +63,6 @@ function getStyles(theme: GrafanaTheme2) {
       height: 100%;
       position: relative;
     `,
-    // Thoughts?
     fadeIn: css`
       opacity: 0;
       animation: ${fadeId};

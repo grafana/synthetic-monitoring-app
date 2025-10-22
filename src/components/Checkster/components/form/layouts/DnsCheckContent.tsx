@@ -32,7 +32,7 @@ export function DnsCheckContent() {
       <ChooseCheckType />
       <GenericInputField
         field="target"
-        label="Reuqest target"
+        label="Request target"
         description="Name of record to query"
         placeholder={DEFAULT_EXAMPLE_HOSTNAME}
         required

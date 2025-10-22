@@ -61,11 +61,22 @@ export function useChecksterContext() {
   return context;
 }
 
-interface ChecksterProviderProps extends PropsWithChildren {
-  checkOrCheckType?: Check | CheckType;
+interface ChecksterBaseProviderProps extends PropsWithChildren {
   initialSection?: FormSectionName;
   onCheckTypeChange?(checkType: CheckType): void;
 }
+
+interface ChecksterBaseProviderPropsWithCheck extends ChecksterBaseProviderProps {
+  check?: Check;
+  checkType?: never;
+}
+
+interface ChecksterBaseProviderPropWithCheckType extends ChecksterBaseProviderProps {
+  check?: never;
+  checkType?: CheckType;
+}
+
+export type ChecksterProviderProps = ChecksterBaseProviderPropsWithCheck | ChecksterBaseProviderPropWithCheckType;
 
 interface StashedValues {
   root: Omit<CheckFormValues, 'settings'>;
@@ -84,14 +95,16 @@ function useFormValuesMeta(checkType: CheckType, check?: Check) {
 
 export function ChecksterProvider({
   children,
-  checkOrCheckType,
+  check: externalCheck,
+  checkType: externalCheckType,
   initialSection,
   onCheckTypeChange,
 }: PropsWithChildren<ChecksterProviderProps>) {
-  const check = isCheck(checkOrCheckType) ? checkOrCheckType : undefined;
+  const check = isCheck(externalCheck) ? externalCheck : undefined;
   const [checkType, setCheckType] = useState<CheckType>(
-    isCheck(checkOrCheckType) ? getCheckType(checkOrCheckType.settings) : checkOrCheckType ?? DEFAULT_CHECK_TYPE
+    isCheck(externalCheck) ? getCheckType(externalCheck.settings) : externalCheckType ?? DEFAULT_CHECK_TYPE
   );
+
   const formId = useDOMId();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>();

@@ -1,60 +1,17 @@
 import React, { Fragment, useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import {
-  Button,
-  Checkbox,
-  Dropdown,
-  Icon,
-  IconButton,
-  Input,
-  Menu,
-  Stack,
-  TextLink,
-  useStyles2,
-  useTheme2,
-} from '@grafana/ui';
+import { Button, Checkbox, IconButton, Input, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckFormFieldPath } from '../../types';
 import { CheckFormValuesHttp, HttpRegexValidationFormValue, HttpRegexValidationType } from 'types';
 
-import { getBodySmallStyles, getInputFocusStyles } from '../../styles';
+import { getBodySmallStyles } from '../../styles';
 import { createPath, getFieldErrorProps } from '../../utils/form';
+import { InputSelect } from '../InputSelect';
 import { StyledField } from '../ui/StyledField';
 import { ValidationError } from '../ui/ValidationError';
-import { ValidationWarning } from '../ui/ValidationWarning';
-
-interface SourceMenuProps {
-  value: SelectableValue<string>['value'];
-  options: SelectableValue[];
-  disallowBodyMatching?: boolean; // E.g. for HEAD, which has no response body
-}
-
-function SourceMenu({
-  options,
-  value,
-  onChange,
-  disallowBodyMatching,
-}: SourceMenuProps & { onChange: (value: string) => void }) {
-  return (
-    <Menu>
-      {options.map((option, index) => (
-        <Menu.Item
-          key={index}
-          label={option.value}
-          disabled={option.isDisabled || (disallowBodyMatching && option.value === HttpRegexValidationType.Body)}
-          ariaChecked={value === option.value}
-          active={value === option.value}
-          onClick={() => {
-            onChange(option.value);
-          }}
-          description={option.description}
-        />
-      ))}
-    </Menu>
-  );
-}
 
 const regexpSourceOptions: SelectableValue[] = [
   {
@@ -68,88 +25,6 @@ const regexpSourceOptions: SelectableValue[] = [
     value: HttpRegexValidationType.Header,
   },
 ];
-
-interface SourceMenuDropdownProps {
-  onChange: (value: SelectableValue<string>['value']) => void;
-  value: string;
-  disallowBodyMatching?: boolean; // E.g. for HEAD, which has no response body
-  className?: string;
-  disabled?: boolean;
-  invalid?: boolean;
-}
-
-function SourceMenuDropdown({
-  disabled,
-  className,
-  onChange,
-  value,
-  disallowBodyMatching,
-  invalid,
-}: SourceMenuDropdownProps) {
-  const theme = useTheme2();
-  return (
-    <>
-      <Dropdown
-        placement="auto-start"
-        overlay={
-          <SourceMenu
-            options={regexpSourceOptions}
-            onChange={onChange}
-            value={value}
-            disallowBodyMatching={disallowBodyMatching}
-          />
-        }
-      >
-        <button
-          type="button"
-          role="menu"
-          aria-valuetext={value}
-          className={cx(
-            css`
-              /* The idea is for the button to look like an Input/Select */
-              display: flex;
-              background-color: ${theme.components.input.background};
-              border: 1px ${theme.components.input.borderColor} solid;
-              padding: ${theme.spacing(0, 1)};
-              border-radius: ${theme.shape.radius.default};
-              color: ${theme.components.input.text};
-              align-items: center;
-              justify-content: space-between;
-              &[disabled] {
-                cursor: not-allowed;
-                background-color: ${theme.colors.action.disabledBackground};
-                color: ${theme.colors.action.disabledText};
-                border-color: ${theme.colors.action.disabledBackground};
-              }
-              &:focus {
-                ${getInputFocusStyles(theme)};
-              }
-              ,
-              &:hover {
-                border-color: ${theme.components.input.borderHover};
-              }
-            `,
-            invalid &&
-              css`
-                border-color: ${theme.colors.warning.border};
-                color: ${theme.colors.warning.text};
-                &:hover {
-                  border-color: ${theme.colors.warning.shade};
-                }
-              `,
-            className
-          )}
-          aria-label={`Regexp source menu`}
-          aria-disabled={disabled}
-          disabled={disabled}
-        >
-          <span>{value}</span>
-          <Icon name="angle-down" />
-        </button>
-      </Dropdown>
-    </>
-  );
-}
 
 function getFirstError(fieldErrorMap: Record<string, { error?: string; invalid: boolean }>) {
   return [...Object.values(fieldErrorMap)].find((item) => item.invalid)?.error;
@@ -175,6 +50,22 @@ export function FormHttpRegExpValidationField({
     watch,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValuesHttp>();
+
+  const options = useMemo(() => {
+    if (disallowBodyMatching) {
+      return regexpSourceOptions.map((option) => {
+        if (option.value === HttpRegexValidationType.Body) {
+          return {
+            ...option,
+            disabled: true,
+          };
+        }
+        return option;
+      });
+    }
+
+    return regexpSourceOptions;
+  }, [disallowBodyMatching]);
 
   const requestMethod = watch('settings.http.method');
 
@@ -232,13 +123,12 @@ export function FormHttpRegExpValidationField({
 
             return (
               <Fragment key={fieldArray.id}>
-                <SourceMenuDropdown
+                <InputSelect
                   className={styles.firstColumn}
+                  options={options}
                   value={watch(createPath(field, index, 'matchType'))}
-                  onChange={(value) => setValue(createPath(field, index, 'matchType'), value)}
-                  disallowBodyMatching={disallowBodyMatching}
+                  onChange={({ target }) => setValue(createPath(field, index, 'matchType'), target.value)}
                   disabled={disabled}
-                  invalid={hasDisallowedType}
                 />
 
                 {isHeaderMatchType && (
@@ -317,9 +207,9 @@ export function FormHttpRegExpValidationField({
                 )}
                 {hasDisallowedType && (
                   <div className={styles.typeWarning}>
-                    <ValidationWarning>
+                    <ValidationError severity="warning">
                       Body matching is not available for the current request method ({requestMethod}).
-                    </ValidationWarning>
+                    </ValidationError>
                   </div>
                 )}
               </Fragment>

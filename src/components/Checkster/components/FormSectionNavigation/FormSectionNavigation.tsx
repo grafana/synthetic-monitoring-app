@@ -20,7 +20,7 @@ export function FormSectionNavigation() {
   const allErrors = useSilentErrors();
 
   return (
-    <ol aria-label="Check form navigation" role="navigation" className={styles.container}>
+    <ol aria-label="Check form navigation" role="tablist" className={styles.container}>
       {sectionOrder.map((sectionName, index) => {
         const sectionFields = getSectionFields(sectionName);
         // Only show errors in nav for seen (or skipped) steps
@@ -34,6 +34,9 @@ export function FormSectionNavigation() {
           <Fragment key={sectionName}>
             <li className={cx(styles.listItem, { ['label__active']: isActive, isActive: isActive })}>
               <button
+                id={`form-section-${sectionName}`}
+                role="tab"
+                aria-selected={isActive}
                 className={styles.button}
                 type="button"
                 onClick={() => {
@@ -47,7 +50,7 @@ export function FormSectionNavigation() {
                 }}
               >
                 <Prefix index={index + 1} visited={hasBeenVisited} hasErrors={hasErrors} />
-                <div className={cx(styles.label, { [styles.isActive]: isActive })}>{`${label}`}</div>
+                <div className={styles.label}>{`${label}`}</div>
               </button>
             </li>
             {!isLast && <div className={styles.divider} />}
@@ -105,8 +108,6 @@ function getStyles(theme: GrafanaTheme2) {
   const query = `(max-width: ${breakpoint}px)`;
   const containerQuery = `@container ${CSS_PRIMARY_CONTAINER_NAME} ${query}`;
 
-  const isActive = css``;
-
   const label = css`
     .label__active & {
       //font-weight: ${theme.typography.fontWeightBold}; // causes layout shift
@@ -121,7 +122,6 @@ function getStyles(theme: GrafanaTheme2) {
   `;
 
   return {
-    isActive,
     container: css({
       listStyleType: 'none',
       display: `flex`,

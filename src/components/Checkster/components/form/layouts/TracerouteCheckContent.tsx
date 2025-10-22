@@ -12,11 +12,7 @@ import { GenericCheckboxField } from '../generic/GenericCheckboxField';
 import { GenericInputField } from '../generic/GenericInputField';
 
 const REQUEST_OPTIONS_TAB_FIELDS = [
-  [/\.headers/], // Options
-  undefined, // Body
-  [/\.basicAuth\./], // Authentication
-  [/\.tlsConfig\./], // TSL
-  [/\.proxyConnectHeaders\.\d+\./], // Proxy
+  [/\.maxHops/, /\.maxUnknownHops/], // Options
 ];
 
 const REQUEST_OPTIONS_FIELDS = REQUEST_OPTIONS_TAB_FIELDS.filter((field) => {
@@ -49,11 +45,13 @@ export function TracerouteCheckContent() {
               field="settings.traceroute.maxHops"
               label="Max hops"
               description="Maximum TTL for the trace."
+              type="number"
             />
             <GenericInputField
               field="settings.traceroute.maxUnknownHops"
               label="Max unknown hops"
               description="Maximimum number of hosts to traverse that give no response."
+              type="number"
             />
             <GenericCheckboxField
               field="settings.traceroute.ptrLookup"
