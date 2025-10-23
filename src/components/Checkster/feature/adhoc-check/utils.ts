@@ -1,7 +1,7 @@
 import { GrafanaTheme2 } from '@grafana/data';
 import { IconName } from '@grafana/ui';
 
-import { AdHocResult, ProbeStateStatus } from './types.adhoc-check';
+import { AdHocResult, LogEntry, ProbeStateStatus } from './types.adhoc-check';
 
 import { UPGRADED_LOG_MESSAGE } from './constants';
 
@@ -67,7 +67,7 @@ export function getMsgFromLogMsg(msg: string) {
   return msg;
 }
 
-export function getMsgIconFromLog(log: AdHocResult['line']['logs'][number]): IconName | undefined {
+export function getMsgIconFromLog(log: LogEntry): IconName | undefined {
   if ('source' in log && log.source === 'console') {
     return 'user';
   }

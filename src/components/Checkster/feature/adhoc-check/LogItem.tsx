@@ -3,14 +3,14 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { AdHocResult } from './types.adhoc-check';
+import { LogEntry } from './types.adhoc-check';
 
 import { REDUNDANT_FIRST_LINES } from './constants';
 import { LogDetails } from './LogDetails';
 import { LogMessage } from './LogMessage';
 import { getLogLevelFromMessage, isExpectLogLine, isMultiLineString, parseExpectLogLine, stringToLines } from './utils';
 
-export function LogItem({ log }: { log: AdHocResult['line']['logs'][number] }) {
+export function LogItem({ log }: { log: LogEntry }) {
   const { msg, ...props } = log;
   const logLevel = getLogLevelFromMessage(log.msg, log.level);
   const [isOpen, setIsOpen] = useState(logLevel === 'error');

@@ -2,11 +2,11 @@ import React from 'react';
 import { Icon, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { AdHocResult } from './types.adhoc-check';
+import { LogEntry } from './types.adhoc-check';
 
 import { getLogColor, getMsgFromLogMsg, getMsgIconFromLog } from './utils';
 
-export function LogMessage({ log, logLevel }: { log: AdHocResult['line']['logs'][number]; logLevel: string }) {
+export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string }) {
   const theme = useTheme2();
 
   if ('check' in log) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Button, IconButton, Stack } from '@grafana/ui';
 
@@ -14,6 +14,7 @@ import { GenericInputField } from './generic/GenericInputField';
 import { GenericNameValueField } from './generic/GenericNameValueField';
 import { GenericTextareaField } from './generic/GenericTextareaField';
 import { FormHttpRequestMethodTargetFields } from './FormHttpRequestMethodTargetFields';
+import { createFieldListRegExps } from './FormMultiHttpEntriesField.utils';
 import { FormMultiHttpVariablesField } from './FormMultiHttpVariablesField';
 import { FormTabContent, FormTabs } from './FormTabs';
 import { MultiHttpAvailableVariables } from './MultiHttpAvailableVariables';
@@ -68,12 +69,13 @@ export function FormMultiHttpEntriesField({ field }: FormMultiHttpEntriesFieldPr
   );
 }
 
-const REQUEST_OPTIONS_TAB_FIELDS = [
-  [/\.entries\.\d+\.request\.headers/], // Options
-  [/\.entries\.\d+\.request\.queryFields/], // Query parameters
+// This is used to create index specific regexp
+const REQUEST_OPTIONS_TAB_FIELDS_TEMPLATE = [
+  ['.entries.{index}.request.headers'],
+  ['.entries.{index}.request.queryFields'],
 ];
 
-const REQUEST_VARIABLES_FIELDS = [[/\.entries\.\d+\.variables/]];
+const REQUEST_VARIABLES_FIELDS_TEMPLATE = [['.entries.{index}.variables']];
 
 interface MultiHttpEntryProps extends FormMultiHttpEntriesFieldProps {
   index: number;
@@ -90,10 +92,18 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
 
+  // Create index specific regexp to check for errors within options and variables buttons
+  const [requestOptionsTabFields, requestVariablesFields] = useMemo(() => {
+    return [
+      createFieldListRegExps(REQUEST_OPTIONS_TAB_FIELDS_TEMPLATE, index),
+      createFieldListRegExps(REQUEST_VARIABLES_FIELDS_TEMPLATE, index),
+    ];
+  }, [index]);
+
   const hasError = useEntryHasError(field, index);
-  const tabIndexErrors = useGetIndexFieldError(REQUEST_OPTIONS_TAB_FIELDS);
+  const tabIndexErrors = useGetIndexFieldError(requestOptionsTabFields);
   const hasRequestOptionError = tabIndexErrors.some((item) => item);
-  const [hasVariablesError] = useGetIndexFieldError(REQUEST_VARIABLES_FIELDS);
+  const [hasVariablesError] = useGetIndexFieldError(requestVariablesFields);
 
   const method = getValues(createPath(field, index, 'request.method'));
   const target = getValues(createPath(field, index, 'request.url'));

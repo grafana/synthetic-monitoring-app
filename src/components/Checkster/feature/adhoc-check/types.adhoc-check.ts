@@ -71,7 +71,7 @@ interface Timeseries {
   metric: GaugeMetric[];
 }
 
-type LogEntry = AdHocLogEntry | ScriptedLogEntry;
+export type LogEntry = AdHocLogEntry | ScriptedLogEntry;
 
 interface AdHocResultLine {
   level: string;

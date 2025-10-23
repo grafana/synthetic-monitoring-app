@@ -14,8 +14,8 @@ export function getFormSectionOrder(checkType?: CheckType): FormSectionOrder {
   return DEFAULT_FORM_SECTION_ORDER;
 }
 
-function interpolate(template: string, variables: Record<string, string>): string {
-  return template.replace(/\{(\w+)}/g, (_, key) => variables[key] ?? `{${key}}`);
+export function interpolate(template: string, variables: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)}/g, (_, key) => String(variables[key] ?? `{${key}}`));
 }
 
 // TODO: Probably a better way to use typings here
