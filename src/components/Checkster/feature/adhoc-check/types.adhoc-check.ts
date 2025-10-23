@@ -10,7 +10,7 @@ export enum ProbeStateStatus {
 interface ProbeState {
   id: number;
   name: string;
-  logs: AdHocLogEntry[];
+  logs: AdHocLogEntry[] | null;
   timeseries: Timeseries[];
   state: ProbeStateStatus;
   public: boolean;
@@ -79,7 +79,7 @@ interface AdHocResultLine {
   target: string;
   probe: string;
   check_name: string;
-  logs: LogEntry[];
+  logs: LogEntry[] | null;
   timeseries: Timeseries[];
   message: string;
 }

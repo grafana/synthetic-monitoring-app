@@ -31,7 +31,7 @@ export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
           {state === 'pending' && <Icon name="fa fa-spinner" />}
           {state === 'success' && (
             <Text variant="bodySmall">
-              Logs: {logs.length}, Metrics: {timeseries?.length ?? 0}
+              Logs: {logs?.length ?? 0}, Metrics: {timeseries?.length ?? 0}
             </Text>
           )}
           {state === ProbeStateStatus.Timeout && <Badge color="orange" text="Timed out" />}
@@ -39,19 +39,24 @@ export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
       </div>
       {isOpen && (
         <div className={styles.steps}>
-          {!logs.length && state === ProbeStateStatus.Pending && (
+          {!logs?.length && state === ProbeStateStatus.Pending && (
             <Text variant="bodySmall" element="span" color="secondary">
               Waiting for logs to arrive...
             </Text>
           )}
-          {!logs.length && state === ProbeStateStatus.Timeout && (
+          {!logs?.length && state === ProbeStateStatus.Timeout && (
             <Text variant="bodySmall" element="span" color="warning">
               Timed out while waiting for logs.
             </Text>
           )}
-          {logs.map((log, index) => (
+          {logs?.map((log, index) => (
             <LogItem key={`${log.time}-${index}`} log={log} />
           ))}
+          {!logs?.length && state === ProbeStateStatus.Success && (
+            <Text variant="bodySmall" element="span" color="secondary">
+              No logs were created for this check
+            </Text>
+          )}
         </div>
       )}
     </div>
