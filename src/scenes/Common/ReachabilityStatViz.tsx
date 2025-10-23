@@ -2,36 +2,30 @@ import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
+import { getReachabilityQuery } from 'queries/reachability';
 
 import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { REACHABILITY_DESCRIPTION } from 'components/constants';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
-import { getMinStepFromFrequency } from 'scenes/utils';
 
 export const ReachabilityStat = ({ check }: { check: Check }) => {
   const metricsDS = useMetricsDS();
-  const minStep = getMinStepFromFrequency(check.frequency);
+
+  const query = getReachabilityQuery({
+    job: `$job`,
+    instance: `$instance`,
+    probe: `$probe`,
+    frequency: check.frequency,
+  });
 
   const queries = [
     {
-      expr: `sum(rate(probe_all_success_sum{instance="$instance", job="$job", probe=~".*"}[$__rate_interval]))`,
-      hide: false,
-      instant: false,
-      legendFormat: 'sum',
-      interval: minStep,
+      expr: query.expr,
+      interval: query.interval,
       range: true,
-      refId: 'A',
-    },
-    {
-      exemplar: true,
-      expr: `sum(rate(probe_all_success_count{instance="$instance", job="$job", probe=~".*"}[$__rate_interval]))`,
-      hide: false,
-      instant: false,
-      interval: minStep,
-      legendFormat: 'count',
-      range: true,
-      refId: 'B',
+      refId: 'reachability',
+      legendFormat: 'reachability',
     },
   ];
 
@@ -46,44 +40,7 @@ export const ReachabilityStat = ({ check }: { check: Check }) => {
         id: 'reduce',
         options: {
           labelsToFields: false,
-          reducers: ['sum'],
-        },
-      },
-      {
-        id: 'rowsToFields',
-        options: {
-          mappings: [
-            {
-              fieldName: 'Total',
-              handlerKey: 'field.value',
-            },
-          ],
-        },
-      },
-      {
-        id: 'calculateField',
-        options: {
-          binary: {
-            left: 'sum',
-            operator: '/',
-            right: 'count',
-          },
-          mode: 'binary',
-          reduce: {
-            reducer: 'sum',
-          },
-        },
-      },
-      {
-        id: 'organize',
-        options: {
-          excludeByName: {
-            count: true,
-            sum: true,
-          },
-          includeByName: {},
-          indexByName: {},
-          renameByName: {},
+          reducers: ['mean'],
         },
       },
     ],
