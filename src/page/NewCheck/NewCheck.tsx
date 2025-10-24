@@ -47,6 +47,9 @@ export const NewCheckContent = () => {
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
   const group = CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup);
   const styles = useStyles2(getStyles);
+  const urlSearchParams = useURLSearchParams();
+  const isDuplicate = !!urlSearchParams.get('duplicateId');
+  
   const navModel = createNavModel({ text: `Choose a check type`, url: generateRoutePath(AppRoutes.ChooseCheckGroup) }, [
     { text: `${checkTypeGroupOption?.label ?? 'Check not found'}` },
   ]);
@@ -67,7 +70,7 @@ export const NewCheckContent = () => {
   return (
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <CheckForm key={isLoading ? `loading` : `ready`} />
+        <CheckForm key={isLoading ? `loading` : `ready`} isDuplicate={isDuplicate} />
       </div>
     </PluginPage>
   );
