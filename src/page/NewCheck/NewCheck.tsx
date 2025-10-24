@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom-v5-compat';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
@@ -10,14 +10,32 @@ import { CheckFormPageParams } from 'types';
 import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
+import { useChecks } from 'data/useChecks';
 import { CHECK_TYPE_GROUP_OPTIONS, useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { CheckForm } from 'components/CheckForm/CheckForm';
 import { CheckFormContextProvider, useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
 import { PluginPageNotFound } from 'page/NotFound';
 
 export function NewCheck() {
+  const urlSearchParams = useURLSearchParams();
+  const { data: checks } = useChecks();
+
+  const duplicateData = useMemo(() => {
+    const duplicateId = urlSearchParams.get('duplicateId');
+    const originalCheck = checks?.find((check) => check.id === Number(duplicateId));
+    if (!duplicateId || !originalCheck) {
+      return undefined;
+    }
+    return {
+      ...originalCheck,
+      id: undefined,
+      job: `${originalCheck.job} (Copy)`,
+    };
+  }, [urlSearchParams, checks]);
+
   return (
-    <CheckFormContextProvider>
+    <CheckFormContextProvider check={duplicateData}>
       <NewCheckContent />
     </CheckFormContextProvider>
   );
