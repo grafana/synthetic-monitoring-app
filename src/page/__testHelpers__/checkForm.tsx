@@ -13,6 +13,8 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
 
+import { NewCheckV2 } from '../NewCheck/NewCheckV2';
+
 export const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',
   [CheckType.GRPC]: 'grafana.com:50051',
@@ -24,6 +26,10 @@ export const TARGET_MAP = {
   [CheckType.TCP]: 'grafana.com:80',
   [CheckType.Traceroute]: 'grafana.com',
 };
+
+export function renderNewFormV2(checkType: CheckType) {
+  return renderNewForm(checkType, NewCheckV2);
+}
 
 export async function renderNewForm(checkType: CheckType, CheckComponent = NewCheck) {
   const { record, read } = getServerRequests();
@@ -40,7 +46,7 @@ export async function renderNewForm(checkType: CheckType, CheckComponent = NewCh
 
   const typeButReallyPaste = async (target: Element, value: string, args?: any) => {
     if (target instanceof HTMLElement) {
-      await act(() => {
+      act(() => {
         target.focus();
       });
       await res.user.paste(value);
@@ -81,16 +87,10 @@ export async function renderEditForm(id: Check['id']) {
 }
 
 export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 | 5) {
-  // const formSidebar = await screen.findByTestId('form-sidebar');
-  const formSidebar = await Promise.race([screen.findByTestId('form-sidebar'), screen.findByRole('navigation')]);
-  let indexMap = [0, 1, 2, 3, 4];
-  if (formSidebar.getAttribute('role') === 'navigation') {
-    indexMap = [0, 1, 2, 4, 3]; // Alerting has moved position
-  }
-
+  const formSidebar = await screen.findByTestId('form-sidebar');
   const buttons = formSidebar.querySelectorAll('button');
 
-  const targetButton = buttons[indexMap[sectionIndex - 1]];
+  const targetButton = buttons[sectionIndex - 1];
 
   await user.click(targetButton);
 }

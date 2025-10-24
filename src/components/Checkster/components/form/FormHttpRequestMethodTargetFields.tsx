@@ -39,15 +39,21 @@ interface MethodsProps {
   field: FieldPath<CheckFormValues>;
 }
 function Methods({ field }: MethodsProps) {
-  const { register, setValue, watch, getValues } = useFormContext<CheckFormValues>();
+  const {
+    register,
+    setValue,
+    watch,
+    getValues,
+    formState: { disabled },
+  } = useFormContext<CheckFormValues>();
   const formValue = watch(field) as HttpMethod;
   const [value, _setValue] = useState<HttpMethod>(formValue as HttpMethod);
 
   useEffect(() => {
-    if (field && value && getValues(field) !== value) {
+    if (!disabled && field && value && getValues(field) !== value) {
       setValue(field, value);
     }
-  }, [field, getValues, setValue, value]);
+  }, [disabled, field, getValues, setValue, value]);
 
   const styles = useStyles2(getMethodsStyles, formValue);
 
@@ -59,7 +65,7 @@ function Methods({ field }: MethodsProps) {
           <Icon name="angle-down" />
         </div>
       </Dropdown>
-      <input type="hidden" {...register(field)} />
+      <input disabled={disabled} type="hidden" {...register(field)} />
     </>
   );
 }
@@ -101,7 +107,7 @@ export function FormHttpRequestMethodTargetFields({
   const {
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, disabled },
     register,
   } = useFormContext<CheckFormValues>();
 
@@ -127,6 +133,7 @@ export function FormHttpRequestMethodTargetFields({
           prefix={!!methodField && <Methods field={methodField} />}
           {...register(field)}
           type="text"
+          disabled={disabled}
           suffix={
             withQueryParams && (
               <Button

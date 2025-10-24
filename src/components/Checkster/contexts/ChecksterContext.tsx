@@ -42,7 +42,6 @@ interface ChecksterContextValue {
   setError: Dispatch<SetStateAction<Error | undefined>>;
   check: Check | undefined;
   formNavigation: FormNavigationState;
-  setIsSubmitting: Dispatch<SetStateAction<boolean>>;
   changeCheckType: (checkType: CheckType) => void;
   schema: ZodSchema;
   checkType: CheckType;
@@ -64,6 +63,7 @@ export function useChecksterContext() {
 interface ChecksterBaseProviderProps extends PropsWithChildren {
   initialSection?: FormSectionName;
   onCheckTypeChange?(checkType: CheckType): void;
+  disabled?: boolean;
 }
 
 interface ChecksterBaseProviderPropsWithCheck extends ChecksterBaseProviderProps {
@@ -99,6 +99,7 @@ export function ChecksterProvider({
   checkType: externalCheckType,
   initialSection,
   onCheckTypeChange,
+  disabled = false,
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const [checkType, setCheckType] = useState<CheckType>(
@@ -109,7 +110,6 @@ export function ChecksterProvider({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { schema, defaultFormValues } = useFormValuesMeta(checkType, check);
 
@@ -170,7 +170,8 @@ export function ChecksterProvider({
     resolver: zodResolver(schema),
     mode: 'onChange', // onBlur is a bit fiddly
     reValidateMode: 'onChange',
-    disabled: isLoading || isSubmitting,
+    disabled: disabled || isLoading, // || isSubmitting,
+    shouldFocusError: true,
   });
 
   useEffect(() => {
@@ -274,7 +275,6 @@ export function ChecksterProvider({
       setError,
       check,
       formNavigation,
-      setIsSubmitting,
       changeCheckType,
       checkType,
       schema,

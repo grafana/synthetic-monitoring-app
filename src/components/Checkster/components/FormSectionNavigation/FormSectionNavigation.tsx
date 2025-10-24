@@ -5,7 +5,7 @@ import { Icon, IconName, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 
-import { CSS_PRIMARY_CONTAINER_NAME } from '../../constants';
+import { CHECKSTER_TEST_ID, CSS_PRIMARY_CONTAINER_NAME } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { useLiveErrors } from '../../hooks/useLiveErrors';
 import { getHasSectionError } from '../../utils/navigation';
@@ -20,7 +20,12 @@ export function FormSectionNavigation() {
   const allErrors = useLiveErrors();
 
   return (
-    <ol aria-label="Check form navigation" role="tablist" className={styles.container}>
+    <ol
+      data-testid={CHECKSTER_TEST_ID.navigation.root}
+      aria-label="Check form navigation"
+      role="tablist"
+      className={styles.container}
+    >
       {sectionOrder.map((sectionName, index) => {
         const sectionFields = getSectionFields(sectionName);
         // Only show errors in nav for seen (or skipped) steps
@@ -32,7 +37,10 @@ export function FormSectionNavigation() {
         const isActive = isSectionActive(sectionName);
         return (
           <Fragment key={sectionName}>
-            <li className={cx(styles.listItem, { ['label__active']: isActive, isActive: isActive })}>
+            <li
+              data-testid={CHECKSTER_TEST_ID.navigation.navItem}
+              className={cx(styles.listItem, { ['label__active']: isActive, isActive: isActive })}
+            >
               <button
                 id={`form-section-${sectionName}`}
                 role="tab"

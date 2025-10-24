@@ -1,8 +1,9 @@
 import React from 'react';
+import { useFormContext } from 'react-hook-form';
 import { Button, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { DataTestIds } from '../../../../test/dataTestIds';
+import { CHECKSTER_TEST_ID } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 
 export function FormFooter() {
@@ -14,6 +15,12 @@ export function FormFooter() {
       isStepsComplete,
     },
   } = useChecksterContext();
+
+  const {
+    formState: { disabled, isDirty, isSubmitting },
+  } = useFormContext();
+
+  const disableSubmit = disabled || !isDirty || isSubmitting;
 
   return (
     <div
@@ -54,8 +61,9 @@ export function FormFooter() {
         )}
         <Button
           type="submit"
-          data-testid={DataTestIds.CHECK_FORM_SUBMIT_BUTTON}
+          data-testid={CHECKSTER_TEST_ID.form.submitButton}
           variant={isStepsComplete || !next ? 'primary' : 'secondary'}
+          disabled={disableSubmit}
         >
           Save
         </Button>

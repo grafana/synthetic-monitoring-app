@@ -246,6 +246,7 @@ export function useFormPermissions() {
   }, [canReadLogs, canWriteChecks]);
 }
 
+/** @deprecated use `hooks/useIsOverlimit` instead */
 export function useIsOverlimit(isExistingCheck: boolean, checkType: CheckType) {
   const { isOverBrowserLimit, isOverHgExecutionLimit, isOverCheckLimit, isOverScriptedLimit, isReady } = useLimits();
   // It should always be possible to edit existing checks

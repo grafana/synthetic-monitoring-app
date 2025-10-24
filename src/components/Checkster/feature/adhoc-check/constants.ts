@@ -23,3 +23,6 @@ export const REDUNDANT_FIRST_LINES = [
 
 // Empty means All
 export const ADHOC_CHECK_COMPATABILITY: CheckType[] = [];
+
+export const INSUFFICIENT_LOG_ACCESS_MESSAGE =
+  'To test checks, you need permission to read logs. You don’t currently have this permission';

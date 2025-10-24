@@ -5,9 +5,15 @@ import { css } from '@emotion/css';
 
 import { AdHocCheckState, ProbeStateStatus } from './types.adhoc-check';
 import { useProbes } from 'data/useProbes';
+import { useCanReadLogs } from 'hooks/useDSPermission';
 
+import { CenteredSpinner } from '../../../CenteredSpinner';
 import { Column } from '../../components/ui/Column';
-import { DEFAULT_GC_INTERVAL_IN_MILLISECONDS, DEFAULT_TIMEOUT_IN_SECONDS } from './constants';
+import {
+  DEFAULT_GC_INTERVAL_IN_MILLISECONDS,
+  DEFAULT_TIMEOUT_IN_SECONDS,
+  INSUFFICIENT_LOG_ACCESS_MESSAGE,
+} from './constants';
 import { LogsPanel } from './LogsPanel';
 import { useAdHocLogs } from './useAdHocLogs';
 import { useOnBeforeAdhocCheck } from './useOnBeforeAdhocCheck';
@@ -26,6 +32,7 @@ function createProbeState(id: number, name: string, isPublic: boolean, state = P
 }
 
 export function AdhocCheckPanel() {
+  const canReadLogs = useCanReadLogs();
   const styles = useStyles2(getStyles);
   const [logState, setLogState] = useState<AdHocCheckStateMap>({});
   const { data: probes, isLoading: isLoadingProbes } = useProbes(); // This will also make the execution step work, fix so that it always works
@@ -41,7 +48,7 @@ export function AdhocCheckPanel() {
 
     return acc;
   }, []);
-  const expr = pendingIds.length ? `{type="adhoc"} |~"${pendingIds.join('|')}" | json` : undefined;
+  const expr = pendingIds.length && canReadLogs ? `{type="adhoc"} |~"${pendingIds.join('|')}" | json` : undefined;
 
   useEffect(() => {
     if (pendingIds.length) {
@@ -154,22 +161,30 @@ export function AdhocCheckPanel() {
   const hasPendingChecks = pendingIds.length > 0;
 
   if (isLoadingProbes) {
-    return <div>Loading probes...</div>;
+    return <CenteredSpinner />;
   }
 
   if (!items.length) {
     return (
       <div className={styles.root}>
         <EmptyState
-          message={`You can test your check to see how it behaves in the wild`}
-          variant={'completed'}
+          message="You can test your check to see how it behaves in the wild"
+          variant="completed"
           button={
-            <Button variant="secondary" type="button" onClick={handleAdHocCheck}>
+            <Button
+              disabled={!canReadLogs}
+              aria-disabled={!canReadLogs}
+              data-disabled={!canReadLogs}
+              tooltip={!canReadLogs ? INSUFFICIENT_LOG_ACCESS_MESSAGE : undefined}
+              variant="secondary"
+              type="button"
+              onClick={handleAdHocCheck}
+            >
               Test
             </Button>
           }
         >
-          Before you save your check, test how it will behave.
+          {canReadLogs ? 'Before you save your check, test how it will behave.' : `${INSUFFICIENT_LOG_ACCESS_MESSAGE}.`}
         </EmptyState>
       </div>
     );
@@ -179,7 +194,7 @@ export function AdhocCheckPanel() {
     <Column gap={2} className={styles.root}>
       <div>
         <Button
-          disabled={hasPendingChecks}
+          disabled={!canReadLogs || hasPendingChecks}
           tooltip={
             hasPendingChecks
               ? `You'll have to wait for pending checks to complete/timeout before you can trigger a new test`

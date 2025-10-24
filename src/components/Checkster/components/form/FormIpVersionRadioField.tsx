@@ -15,7 +15,11 @@ interface FormIpVersionRadioFieldProps {
 
 // TODO: Could be generic RadioField component
 export function FormIpVersionRadioField({ field, label = 'IP Version', description }: FormIpVersionRadioFieldProps) {
-  const { setValue, getValues } = useFormContext();
+  const {
+    setValue,
+    getValues,
+    formState: { disabled },
+  } = useFormContext();
 
   const value = getValues(field);
 
@@ -25,7 +29,7 @@ export function FormIpVersionRadioField({ field, label = 'IP Version', descripti
 
   return (
     <StyledField label={label} description={description}>
-      <RadioButtonGroup options={IP_VERSION_OPTIONS} onChange={handleOnChange} value={value} />
+      <RadioButtonGroup disabled={disabled} options={IP_VERSION_OPTIONS} onChange={handleOnChange} value={value} />
     </StyledField>
   );
 }

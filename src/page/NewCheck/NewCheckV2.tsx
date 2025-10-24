@@ -13,9 +13,11 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { useProbes } from 'data/useProbes';
 import { CHECK_TYPE_GROUP_OPTIONS, useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useHandleSubmitCheckster } from 'hooks/useHandleSubmitCheckster';
+import { useIsOverlimit } from 'hooks/useIsOverlimit';
 import { Checkster } from 'components/Checkster';
 import { PluginPageNotFound } from 'page/NotFound';
 
+import { CenteredSpinner } from '../../components/CenteredSpinner';
 import { CHECK_TYPE_GROUP_DEFAULT_CHECK } from '../../components/Checkster/constants';
 
 const CHECK_TYPE_PARAM_NAME = 'checkType';
@@ -33,7 +35,7 @@ export function NewCheckV2() {
   ]);
 
   const navigate = useNavigate();
-  const isLoading = isLoadingProbes && !isProbesFetched;
+
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
     (newCheckType: CheckType) => {
@@ -41,6 +43,10 @@ export function NewCheckV2() {
     },
     [navigate]
   );
+
+  const isOverlimit = useIsOverlimit(false, checkType);
+
+  const isLoading = (isLoadingProbes && !isProbesFetched) || isOverlimit === null;
 
   if (!group) {
     return (
@@ -55,10 +61,15 @@ export function NewCheckV2() {
     );
   }
 
+  if (isLoading) {
+    return <CenteredSpinner />;
+  }
+
   return (
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
         <Checkster
+          disabled={isOverlimit}
           checkType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
           onSave={handleSubmit}
           onCheckTypeChange={handleCheckTypeChange}
