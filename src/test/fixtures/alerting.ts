@@ -1,4 +1,4 @@
-import { type InstanceMatchResult } from '@grafana/alerting/unstable';
+import { type InstanceMatchResult } from '@grafana/alerting';
 
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
 
