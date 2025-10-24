@@ -1,17 +1,17 @@
 import React, { ComponentProps, ReactElement, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Toggletip as GrafanaToggletip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, 'content'> {
   content: ReactNode;
+  contentClassName?: string;
   children: ReactElement;
-  style?: React.CSSProperties;
 }
 
-export const Toggletip = ({ children, content, style, ...props }: ToggletipProps) => {
+export const Toggletip = ({ children, content, contentClassName, ...props }: ToggletipProps) => {
   return (
-    <GrafanaToggletip content={<ContentWrapper style={style}>{content}</ContentWrapper>} {...props}>
+    <GrafanaToggletip content={<ContentWrapper className={contentClassName}>{content}</ContentWrapper>} {...props}>
       {children}
     </GrafanaToggletip>
   );
@@ -19,17 +19,13 @@ export const Toggletip = ({ children, content, style, ...props }: ToggletipProps
 
 type ContentWrapperProps = {
   children: ReactNode;
-  style?: React.CSSProperties;
+  className?: string;
 };
 
-const ContentWrapper = ({ children, style }: ContentWrapperProps) => {
+const ContentWrapper = ({ children, className }: ContentWrapperProps) => {
   const styles = useStyles2(getStyles);
 
-  return (
-    <div className={styles.toggletipCard} style={style}>
-      {children}
-    </div>
-  );
+  return <div className={cx(styles.toggletipCard, className)}>{children}</div>;
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({

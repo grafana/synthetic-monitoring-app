@@ -102,12 +102,10 @@ const FeedbackButton = ({ feature, isActive, onClick, onClose, reaction, tooltip
           handleSaveFeedback={setSavedFeedback}
         />
       }
+      contentClassName={styles.content}
       onClose={onClose}
       placement="bottom"
       show={isActive}
-      style={{
-        width: `384px`,
-      }}
     >
       {/* Need to wrap in a div to prevent the toggletip from cloning the button and removing the onClick handler */}
       <div>
@@ -191,6 +189,9 @@ const FeedbackForm = ({ feature, reaction, savedFeedback, handleSaveFeedback }: 
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
+    content: css`
+      width: calc(400px - ${theme.spacing(2)});
+    `,
     container: css`
       contain: layout;
       z-index: 2;
