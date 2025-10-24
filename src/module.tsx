@@ -1,5 +1,7 @@
-import React, { lazy } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { AppPlugin, AppRootProps } from '@grafana/data';
+import { Spinner } from '@grafana/ui';
+import { type SMPluginConfigPageProps } from 'configPage/PluginConfigPage';
 
 import { ProvisioningJsonData } from './types';
 
@@ -12,11 +14,22 @@ const LazyPluginConfigPage = lazy(() =>
   import('configPage/PluginConfigPage').then((module) => ({ default: module.PluginConfigPage }))
 );
 
-const App = (props: AppRootProps<ProvisioningJsonData>) => <LazyApp {...props} />;
+const SuspendedLazyApp = (props: AppRootProps<ProvisioningJsonData>) => (
+  <Suspense fallback={<Spinner />}>
+    <LazyApp {...props} />
+  </Suspense>
+);
+const SuspendedLazyPluginConfigPage = (props: SMPluginConfigPageProps) => (
+  <Suspense fallback={<Spinner />}>
+    <LazyPluginConfigPage {...props} />
+  </Suspense>
+);
+
+const App = (props: AppRootProps<ProvisioningJsonData>) => <SuspendedLazyApp {...props} />;
 
 export const plugin = new AppPlugin<ProvisioningJsonData>().setRootPage(App).addConfigPage({
   title: 'Config',
   icon: 'cog',
-  body: LazyPluginConfigPage,
+  body: SuspendedLazyPluginConfigPage,
   id: 'config',
 });
