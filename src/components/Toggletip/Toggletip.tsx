@@ -6,11 +6,12 @@ import { css } from '@emotion/css';
 interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, 'content'> {
   content: ReactNode;
   children: ReactElement;
+  style?: React.CSSProperties;
 }
 
-export const Toggletip = ({ children, content, ...props }: ToggletipProps) => {
+export const Toggletip = ({ children, content, style, ...props }: ToggletipProps) => {
   return (
-    <GrafanaToggletip content={<ContentWrapper>{content}</ContentWrapper>} {...props}>
+    <GrafanaToggletip content={<ContentWrapper style={style}>{content}</ContentWrapper>} {...props}>
       {children}
     </GrafanaToggletip>
   );
@@ -18,12 +19,17 @@ export const Toggletip = ({ children, content, ...props }: ToggletipProps) => {
 
 type ContentWrapperProps = {
   children: ReactNode;
+  style?: React.CSSProperties;
 };
 
-const ContentWrapper = ({ children }: ContentWrapperProps) => {
+const ContentWrapper = ({ children, style }: ContentWrapperProps) => {
   const styles = useStyles2(getStyles);
 
-  return <div className={styles.toggletipCard}>{children}</div>;
+  return (
+    <div className={styles.toggletipCard} style={style}>
+      {children}
+    </div>
+  );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
