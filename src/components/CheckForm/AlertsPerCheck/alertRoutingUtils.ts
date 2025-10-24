@@ -1,11 +1,11 @@
-import { RouteMatchInfo } from '@grafana/alerting/dist/types/grafana/notificationPolicies/utils';
 import {
   type InstanceMatchResult,
   type Label as AlertingLabel,
   type LabelMatcher,
   type Route,
   RouteWithID,
-} from '@grafana/alerting/unstable';
+} from '@grafana/alerting';
+import { RouteMatchInfo } from '@grafana/alerting/dist/types/grafana/notificationPolicies/utils';
 
 import { CheckAlertType, CheckType, Label } from 'types';
 

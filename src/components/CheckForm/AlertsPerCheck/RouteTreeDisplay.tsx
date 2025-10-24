@@ -1,5 +1,5 @@
 import React from 'react';
-import { type InstanceMatchResult, type Route } from '@grafana/alerting/unstable';
+import { type InstanceMatchResult, type Route } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
