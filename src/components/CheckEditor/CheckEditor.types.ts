@@ -83,11 +83,13 @@ export type TracerouteRequestFields = {
 export type ScriptedFields = {
   target: FieldProps<CheckFormValuesScripted>;
   script: FieldProps<CheckFormValuesScripted>;
+  channel: FieldProps<CheckFormValuesScripted>;
 };
 
 export type BrowserFields = {
   target: FieldProps<CheckFormValuesBrowser>;
   script: FieldProps<CheckFormValuesBrowser>;
+  channel: FieldProps<CheckFormValuesBrowser>;
 };
 
 export type RequestFields =

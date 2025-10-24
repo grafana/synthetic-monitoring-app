@@ -15,6 +15,7 @@ import {
   CheckType,
   CheckTypeGroup,
   FeatureName,
+  K6Channel,
 } from '../../types';
 import { LayoutSection } from './FormLayouts/Layout.types';
 import { formatDuration } from 'utils';
@@ -64,17 +65,21 @@ type CheckFormMetaReturn = {
   initialSection?: SectionName;
 };
 
-export function useCheckFormMeta(check?: Check, forceDisabled = false): CheckFormMetaReturn {
+export function useCheckFormMeta(
+  check?: Check,
+  forceDisabled = false,
+  k6Channels: K6Channel[] = []
+): CheckFormMetaReturn {
   const isNew = !getIsExistingCheck(check);
 
   // Hook usage
   const checkType = useFormCheckType(check);
   const checkTypeGroup = useFormCheckTypeGroup(check);
-  const schema = useCheckFormSchema(check);
+  const schema = useCheckFormSchema(check, k6Channels);
   const options = useCheckTypeOptions();
   const isOverLimit = useIsOverlimit(!isNew, checkType);
   const permission = useFormPermissions();
-  const defaultFormValues = useCheckFormDefaultValues(check);
+  const defaultFormValues = useCheckFormDefaultValues(check, k6Channels);
   const isExistingCheck = getIsExistingCheck(check);
 
   return useMemo(() => {
@@ -109,13 +114,18 @@ export function useCheckFormMeta(check?: Check, forceDisabled = false): CheckFor
   ]);
 }
 
-export function useCheckFormSchema(check?: Check) {
+export function useCheckFormSchema(check?: Check, k6Channels: K6Channel[] = []) {
   const checkType = useFormCheckType(check);
-  const schema = SCHEMA_MAP[checkType];
 
   return useMemo(() => {
+    let schema;
+    if (checkType === CheckType.Scripted || checkType === CheckType.Browser) {
+      schema = SCHEMA_MAP[checkType](k6Channels);
+    } else {
+      schema = SCHEMA_MAP[checkType];
+    }
     return addRefinements(schema);
-  }, [schema]);
+  }, [checkType, k6Channels]);
 }
 
 interface UseCheckFormProps {
@@ -266,13 +276,16 @@ export function useIsOverlimit(isExistingCheck: boolean, checkType: CheckType) {
   );
 }
 
-export function useCheckFormDefaultValues(check?: Check) {
+export function useCheckFormDefaultValues(check?: Check, k6Channels: K6Channel[] = []) {
   const checkType = useFormCheckType(check);
   const checkWithFallback = check || fallbackCheckMap[checkType];
 
   return useMemo(() => {
-    return toFormValues(checkWithFallback, checkType);
-  }, [checkType, checkWithFallback]);
+    const defaultChannel = k6Channels.find((channel) => channel.default) || k6Channels[0];
+    const defaultChannelId = defaultChannel?.id || '';
+    
+    return toFormValues(checkWithFallback, defaultChannelId);
+  }, [checkWithFallback, k6Channels]);
 }
 
 export function useCheckTypeFormLayout(checkType: CheckType) {
