@@ -37,24 +37,25 @@ const checkTypeStep1Label = {
 interface CheckFormProps extends PropsWithChildren {
   check?: Check;
   disabled?: boolean;
+  isDuplicate?: boolean;
 }
 
-export function CheckForm({ check, disabled }: CheckFormProps) {
+export function CheckForm({ check, disabled, isDuplicate }: CheckFormProps) {
   // If the context is not available, we create a new one.
   // This allows the CheckForm to be used both as a standalone component and within the CheckFormContextProvider.
   const context = useContext(CheckFormContext);
   if (!context) {
     return (
       <CheckFormContextProvider check={check} disabled={disabled}>
-        <CheckFormInternal />
+        <CheckFormInternal isDuplicate={isDuplicate} />
       </CheckFormContextProvider>
     );
   }
 
-  return <CheckFormInternal />;
+  return <CheckFormInternal isDuplicate={isDuplicate} />;
 }
 
-function CheckFormInternal() {
+function CheckFormInternal({ isDuplicate }: { isDuplicate?: boolean }) {
   const {
     check,
     checkState,
@@ -132,7 +133,7 @@ function CheckFormInternal() {
     return checkHasChanges(defaultFormValues, formValues);
   }, [defaultFormValues, formValues]);
 
-  const hasUnsavedChanges = error ? true : isFormModified && !submittingToApi;
+  const hasUnsavedChanges = error ? true : (isFormModified || !!isDuplicate) && !submittingToApi;
 
   const isAlertsPerCheckOn = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
