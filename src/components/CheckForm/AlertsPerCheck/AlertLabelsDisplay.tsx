@@ -1,5 +1,5 @@
 import React from 'react';
-import { type LabelMatcher } from '@grafana/alerting/unstable';
+import { type LabelMatcher } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';

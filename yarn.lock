@@ -923,14 +923,14 @@
     qs "^6.10.1"
     xcase "^2.0.1"
 
-"@grafana/alerting@12.3.0-18685446948":
-  version "12.3.0-18685446948"
-  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18685446948.tgz#73c19c61ec31ce9106125204d019994194c8fdf1"
-  integrity sha512-0wiXZg6QbsOEMJGod4P5E9hoeu0cc1mQzscfpoTj9KdrlaxOm8FW4trSykbR3OnXNXfSkyw19eEZt4EghRVxIg==
+"@grafana/alerting@12.3.0-18779941398":
+  version "12.3.0-18779941398"
+  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18779941398.tgz#fb128b96bb4f9a279b27f528b83b9d81d9b4cbc0"
+  integrity sha512-RSLwMkiM/v0We6Lze/TfeGdHP78X02AzKzEeyj9KFZ2lXEiZWpuXItSextu+x/2FbY5mHREfwOJAAQ2LaZcqBQ==
   dependencies:
     "@emotion/css" "11.13.5"
     "@faker-js/faker" "^9.8.0"
-    "@grafana/i18n" "12.3.0-18685446948"
+    "@grafana/i18n" "12.3.0-18779941398"
     "@reduxjs/toolkit" "^2.9.0"
     fishery "^2.3.1"
     lodash "^4.17.21"
@@ -1014,10 +1014,10 @@
     micro-memoize "^4.1.2"
     react-i18next "^15.0.0"
 
-"@grafana/i18n@12.3.0-18685446948":
-  version "12.3.0-18685446948"
-  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18685446948.tgz#312dc7da91ac1f86edfa9bd1d43648aea8a39504"
-  integrity sha512-bnJzIM5rrX7rt59KeGrIJSfGv9GHwvyPMuFOrALiF4OberHzORcN1tZ2bTgSmu4j3etCYd2MPTrVmq0oPlbgRQ==
+"@grafana/i18n@12.3.0-18779941398":
+  version "12.3.0-18779941398"
+  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18779941398.tgz#b38f632e0bfa77d5243b6045f6bc4f92d45ef0eb"
+  integrity sha512-TuBM8cmKHxDgUQM3niILAH9kLQ4/qoNsijFhP2Bo4In6Vj9VbIl2wlxINRouj7vAJGXtKQkJsJ12mKFJtzZpZg==
   dependencies:
     "@formatjs/intl-durationformat" "^0.7.0"
     "@typescript-eslint/utils" "^8.33.1"
@@ -2751,10 +2751,10 @@
   dependencies:
     undici-types "~7.14.0"
 
-"@types/node@^20.8.7":
-  version "20.19.21"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.19.21.tgz#6e5378e04993c40395473b13baf94a09875157b8"
-  integrity sha512-CsGG2P3I5y48RPMfprQGfy4JPRZ6csfC3ltBZSRItG3ngggmNY/qs2uZKp4p9VbrpqNNSMzUZNFZKzgOGnd/VA==
+"@types/node@^20.19.21":
+  version "20.19.23"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.19.23.tgz#7de99389c814071cca78656a3243f224fed7453d"
+  integrity sha512-yIdlVVVHXpmqRhtyovZAcSy0MiPcYWGkoO4CGe/+jpP0hmNuihm4XhHbADpK++MsiLHP5MVlv+bcgdF99kSiFQ==
   dependencies:
     undici-types "~6.21.0"
 
@@ -2868,10 +2868,10 @@
   resolved "https://registry.yarnpkg.com/@types/systemjs/-/systemjs-6.15.3.tgz#d758dceafee62d2ed4aad7d07342b145d623e260"
   integrity sha512-STyj2LUevlyVqEQ1wjOORLQTJbNnM2V1DNzmemxVHlOovdKBKqccALDbR9aCcTRThhcXzew88SMbN4SMm6JOcw==
 
-"@types/testing-library__jest-dom@5.14.8":
-  version "5.14.8"
-  resolved "https://registry.yarnpkg.com/@types/testing-library__jest-dom/-/testing-library__jest-dom-5.14.8.tgz#b32090a01c29040461fb7fa10a82400f216a4b93"
-  integrity sha512-NRfJE9Cgpmu4fx716q9SYmU4jxxhYRU1BQo239Txt/9N3EC745XZX1Yl7h/SBIDlo1ANVOCRB4YDXjaQdoKCHQ==
+"@types/testing-library__jest-dom@5.14.9":
+  version "5.14.9"
+  resolved "https://registry.yarnpkg.com/@types/testing-library__jest-dom/-/testing-library__jest-dom-5.14.9.tgz#0fb1e6a0278d87b6737db55af5967570b67cb466"
+  integrity sha512-FSYhIjFlfOpGSRyVoMBMuS3ws5ehFQODymf3vlI7U1K8c7PHwWwFY7VREfmsuzHSOnoKs/9/Y983ayOs7eRzqw==
   dependencies:
     "@types/jest" "*"
 
@@ -4555,10 +4555,10 @@ d3@7.9.0:
     d3-transition "3"
     d3-zoom "3"
 
-danger@11.3.0:
-  version "11.3.0"
-  resolved "https://registry.yarnpkg.com/danger/-/danger-11.3.0.tgz#5a2cbe3e45f367ed0899156c480c7d7e40d90b3d"
-  integrity sha512-h4zkvmEfRVZp2EIKlQSky0IotxrDbJZtXgMTvyN1nwPCfg0JgvQVmVbvOZXrOgNVlgL+42ZDjNL2qAwVmJypNw==
+danger@11.3.1:
+  version "11.3.1"
+  resolved "https://registry.yarnpkg.com/danger/-/danger-11.3.1.tgz#9df659fb58c15a82d9880231ba3f676c934e565d"
+  integrity sha512-+slkGnbf0czY7g4LSuYpYkKJgFrb9YIXFJvV5JAuLLF39CXLlUw0iebgeL3ASK1t6RDb8xe+Rk2F5ilh2Hdv2w==
   dependencies:
     "@gitbeaker/core" "^35.8.1"
     "@gitbeaker/node" "^35.8.1"
