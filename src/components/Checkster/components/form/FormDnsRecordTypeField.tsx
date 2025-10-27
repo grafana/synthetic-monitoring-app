@@ -17,20 +17,22 @@ export function FormDnsRecordTypeField({ field }: FormDnsRecordTypeFieldProps) {
   const {
     watch,
     register,
+    setValue,
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
-  const { onChange, onBlur: _onBlur, ...fieldProps } = register(field);
+  const { onChange: _onChange, onBlur: _onBlur, ref, ...fieldProps } = register(field);
 
   const inputValue = watch(field) as DnsRecordType;
 
   const handleOnChange = ({ value }: SelectableValue<DnsRecordType>) => {
-    onChange({ target: { value } });
+    setValue(field, value);
   };
 
   return (
-    <StyledField label="Record type">
+    <StyledField label="Record type" htmlFor={fieldProps.name}>
       <Combobox
         value={inputValue}
+        id={fieldProps.name}
         {...fieldProps}
         onChange={handleOnChange}
         disabled={disabled}

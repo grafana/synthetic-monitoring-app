@@ -1,11 +1,14 @@
-import React, { ComponentPropsWithoutRef, ElementType, isValidElement, PropsWithChildren, ReactNode } from 'react';
+import React, {
+  ComponentPropsWithoutRef,
+  ElementType,
+  Fragment,
+  isValidElement,
+  PropsWithChildren,
+  ReactNode,
+} from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-
-import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
-import { getQueryClient } from 'data/queryClient';
 
 export enum TestFormTestId {
   Form = 'TestForm',
@@ -52,22 +55,13 @@ function TestFormValueInfo({ field }: { field: string }) {
   );
 }
 
-// Minimal required setup for tests to run (`Combobox`)
-export function MinimalContextsWrapper({ children }: PropsWithChildren) {
-  return (
-    <QueryClientProvider client={getQueryClient()}>
-      <SMDatasourceProvider>{children}</SMDatasourceProvider>
-    </QueryClientProvider>
-  );
-}
-
 export function formTestRenderer<T extends ElementType = ElementType>(
   FieldComponent: T,
   props?: ComponentPropsWithoutRef<T>,
   defaultValues: any = {}, // `disabled` is reserved for disabling the form @see `TestForm`
   Wrapper?: ElementType
 ) {
-  const WrapperComponent = Wrapper ? Wrapper : MinimalContextsWrapper;
+  const WrapperComponent = Wrapper ? Wrapper : Fragment;
 
   render(
     <WrapperComponent>
