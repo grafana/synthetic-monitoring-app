@@ -92,14 +92,7 @@ const config = async (env): Promise<Configuration> => {
       uniqueName: pluginJson.id,
     },
     optimization: {
-      chunkIds: 'named',
-      splitChunks: {
-        cacheGroups: {
-          // bundle vendors with lazy module when possible
-          // Grafana's cache busting strategy means splitting out vendor chunks does nothing
-          defaultVendors: false,
-        },
-      },
+      chunkIds: 'deterministic',
     },
   });
 

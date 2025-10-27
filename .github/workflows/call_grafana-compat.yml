@@ -16,4 +16,4 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Latest Grafana API compatibility check
-        run: npx @grafana/levitate@latest is-compatible --path src/module.ts --target @grafana/data,@grafana/runtime,@grafana/scenes,@grafana/schema,@grafana/ui
+        run: npx @grafana/levitate@latest is-compatible --path src/module.tsx --target @grafana/data,@grafana/runtime,@grafana/scenes,@grafana/schema,@grafana/ui
