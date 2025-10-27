@@ -554,6 +554,11 @@ export const CHECKSTER_TEST_ID = {
   form: {
     root: 'checkEditor form',
     submitButton: 'checkEditor form submit',
+    components: {
+      GenericNameValueField: {
+        addButton: 'checkEditor nameValue addButton',
+      },
+    },
   },
 } as const;
 

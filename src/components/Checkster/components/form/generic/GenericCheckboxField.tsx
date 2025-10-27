@@ -9,9 +9,10 @@ interface GenericCheckboxFieldProps {
   label?: string;
   field: CheckFormFieldPath;
   description?: string;
+  'aria-label'?: string;
 }
 
-export function GenericCheckboxField({ field, label, description }: GenericCheckboxFieldProps) {
+export function GenericCheckboxField({ field, label, description, ...rest }: GenericCheckboxFieldProps) {
   const {
     register,
     formState: { disabled },
@@ -19,7 +20,7 @@ export function GenericCheckboxField({ field, label, description }: GenericCheck
 
   return (
     <Stack>
-      <Checkbox label={label} description={description} {...register(field)} disabled={disabled} />
+      <Checkbox label={label} description={description} {...register(field)} disabled={disabled} {...rest} />
     </Stack>
   );
 }

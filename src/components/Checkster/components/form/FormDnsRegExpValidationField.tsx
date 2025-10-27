@@ -67,19 +67,23 @@ export function FormDnsRegExpValidationField({
                   <GenericInputSelectField
                     width={selectInputWidth}
                     field={createPath(field, index, 'responseMatch')}
+                    aria-label={`Match subject for validation ${index + 1}`}
                     options={DNS_RESPONSE_MATCH_OPTIONS}
                   />
-                  <GenericInputField field={createPath(field, index, 'expression')} />
-                  <div className={styles.centeredCell}>
-                    <GenericCheckboxField field={createPath(field, index, 'inverted')} />
-                  </div>
-                  <IconButton
-                    data-fs-element="Delete DNS response match button"
-                    disabled={disabled}
-                    name="minus"
-                    onClick={() => remove(index)}
-                    tooltip="Delete"
+
+                  <GenericInputField
+                    aria-label={`Expression for validation ${index + 1}`}
+                    field={createPath(field, index, 'expression')}
                   />
+
+                  <div className={styles.centeredCell}>
+                    <GenericCheckboxField
+                      field={createPath(field, index, 'inverted')}
+                      aria-label={`Invert match for validation ${index + 1}`}
+                    />
+                  </div>
+
+                  <IconButton disabled={disabled} name="minus" onClick={() => remove(index)} tooltip="Delete" />
                 </Fragment>
               );
             })}

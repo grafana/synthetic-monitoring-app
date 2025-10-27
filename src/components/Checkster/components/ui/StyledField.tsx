@@ -2,7 +2,7 @@ import React, { ComponentProps, JSX, ReactNode, useMemo } from 'react';
 import { Field, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-type LabelProps = Pick<ComponentProps<typeof Field>, 'label' | 'description' | 'required'>;
+type LabelProps = Pick<ComponentProps<typeof Field>, 'label' | 'description' | 'required'> & { 'aria-label'?: string };
 
 function DivLabel({ label, description, required }: LabelProps) {
   const theme = useTheme2();

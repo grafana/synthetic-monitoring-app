@@ -7,6 +7,7 @@ import { css } from '@emotion/css';
 import { CheckFormValues } from 'types';
 
 import { useDOMId } from '../../../../../hooks/useDOMId';
+import { CHECKSTER_TEST_ID } from '../../../constants';
 import { useRelevantErrors } from '../../../hooks/useRelevantErrors';
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
@@ -112,6 +113,7 @@ export function GenericNameValueField({
               />
             </StyledField>
             <IconButton
+              data-testid={CHECKSTER_TEST_ID.form.components.GenericNameValueField.addButton}
               style={{ marginTop: '8px' }}
               aria-label="Remove row"
               name="minus"

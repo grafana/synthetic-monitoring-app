@@ -4,7 +4,6 @@ import { RadioButtonGroup } from '@grafana/ui';
 
 import { GenericFieldProps } from '../../../types';
 import { CheckFormValues } from 'types';
-import { useDOMId } from 'hooks/useDOMId';
 
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
@@ -19,20 +18,26 @@ export function GenericRadioButtonGroupField({
   description,
   options,
 }: GenericRadioButtonGroupFieldProps) {
-  const id = useDOMId();
-
   const {
     control,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
 
   return (
-    <StyledField label={label} description={description} htmlFor={id} {...getFieldErrorProps(errors, field)}>
+    <StyledField label={label} description={description} {...getFieldErrorProps(errors, field)} emulate>
       <Controller
         name={field}
         control={control}
-        render={({ field: fieldProps }) => {
-          return <RadioButtonGroup id={id} {...fieldProps} options={options} disabled={disabled} />;
+        render={({ field: { ref, ...fieldProps } }) => {
+          return (
+            <RadioButtonGroup
+              aria-label={typeof label === 'string' ? label : undefined}
+              id={field}
+              {...fieldProps}
+              options={options}
+              disabled={disabled}
+            />
+          );
         }}
       />
     </StyledField>

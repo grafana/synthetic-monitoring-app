@@ -10,6 +10,7 @@ import { useCanReadLogs } from 'hooks/useDSPermission';
 import { CenteredSpinner } from '../../../CenteredSpinner';
 import { Column } from '../../components/ui/Column';
 import {
+  ADHOC_CHECK_TEST_IDS,
   DEFAULT_GC_INTERVAL_IN_MILLISECONDS,
   DEFAULT_TIMEOUT_IN_SECONDS,
   INSUFFICIENT_LOG_ACCESS_MESSAGE,
@@ -172,6 +173,7 @@ export function AdhocCheckPanel() {
           variant="completed"
           button={
             <Button
+              data-testid={ADHOC_CHECK_TEST_IDS.emptyStateTestButton}
               disabled={!canReadLogs}
               aria-disabled={!canReadLogs}
               data-disabled={!canReadLogs}
@@ -194,6 +196,7 @@ export function AdhocCheckPanel() {
     <Column gap={2} className={styles.root}>
       <div>
         <Button
+          data-testid={ADHOC_CHECK_TEST_IDS.testButton}
           disabled={!canReadLogs || hasPendingChecks}
           tooltip={
             hasPendingChecks

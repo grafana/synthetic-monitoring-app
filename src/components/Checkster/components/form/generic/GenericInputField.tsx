@@ -27,6 +27,7 @@ export function GenericInputField({
   required,
   type = 'text',
   interpolationVariables,
+  ...rest // ideally, only used for aria attributes
 }: GenericInputFieldFormInputFieldProps) {
   const {
     register,
@@ -49,6 +50,7 @@ export function GenericInputField({
         placeholder={placeholder}
         type={type}
         {...register(field as any, { valueAsNumber: type === 'number' })}
+        {...rest}
       />
     </StyledField>
   );
