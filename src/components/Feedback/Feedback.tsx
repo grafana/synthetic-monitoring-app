@@ -20,32 +20,36 @@ interface FeedbackProps {
 
 export const Feedback = ({ about, feature }: FeedbackProps) => {
   const [active, setActive] = useState<'good' | 'bad' | null>(null);
-
+  const styles = useStyles2(getStyles);
   return (
     <Stack direction="row" gap={0.5} alignItems="center">
       {about && <FeedbackAbout {...about} />}
-      <FeedbackButton
-        feature={feature}
-        isActive={active === 'good'}
-        onClick={() => {
-          setActive('good');
-          trackFeatureFeedback({ feature, reaction: 'good' });
-        }}
-        onClose={() => setActive(null)}
-        reaction="good"
-        tooltip="I love this feature"
-      />
-      <FeedbackButton
-        feature={feature}
-        isActive={active === 'bad'}
-        onClick={() => {
-          setActive('bad');
-          trackFeatureFeedback({ feature, reaction: 'bad' });
-        }}
-        onClose={() => setActive(null)}
-        reaction="bad"
-        tooltip="I don't like this feature"
-      />
+      <div className={styles.container}>
+        <FeedbackButton
+          feature={feature}
+          isActive={active === 'good'}
+          onClick={() => {
+            setActive('good');
+            trackFeatureFeedback({ feature, reaction: 'good' });
+          }}
+          onClose={() => setActive(null)}
+          reaction="good"
+          tooltip="I love this feature"
+        />
+      </div>
+      <div className={styles.container}>
+        <FeedbackButton
+          feature={feature}
+          isActive={active === 'bad'}
+          onClick={() => {
+            setActive('bad');
+            trackFeatureFeedback({ feature, reaction: 'bad' });
+          }}
+          onClose={() => setActive(null)}
+          reaction="bad"
+          tooltip="I don't like this feature"
+        />
+      </div>
     </Stack>
   );
 };
@@ -98,7 +102,9 @@ const FeedbackButton = ({ feature, isActive, onClick, onClose, reaction, tooltip
           handleSaveFeedback={setSavedFeedback}
         />
       }
+      contentClassName={styles.content}
       onClose={onClose}
+      placement="bottom"
       show={isActive}
     >
       {/* Need to wrap in a div to prevent the toggletip from cloning the button and removing the onClick handler */}
@@ -106,6 +112,7 @@ const FeedbackButton = ({ feature, isActive, onClick, onClose, reaction, tooltip
         <Button
           aria-label={tooltip}
           className={cx({ [styles.upsideDown]: reaction === 'bad' }, { [styles.active]: isActive })}
+          data-fs-element={`Feedback button ${reaction} (${feature})`}
           fill="text"
           onClick={onClick}
           size="sm"
@@ -182,6 +189,13 @@ const FeedbackForm = ({ feature, reaction, savedFeedback, handleSaveFeedback }: 
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
+    content: css`
+      width: calc(400px - ${theme.spacing(2)});
+    `,
+    container: css`
+      contain: layout;
+      z-index: 2;
+    `,
     active: css`
       color: ${theme.colors.text.primary};
     `,
