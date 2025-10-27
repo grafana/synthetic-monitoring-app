@@ -39,7 +39,7 @@
     "@stylistic/eslint-plugin-ts": "3.0.0",
     "@swc/core": "1.13.5",
     "@swc/helpers": "0.5.17",
-    "@swc/jest": "0.2.29",
+    "@swc/jest": "0.2.39",
     "@tanstack/eslint-plugin-query": "5.73.3",
     "@testing-library/jest-dom": "6.4.5",
     "@testing-library/react": "15.0.7",
