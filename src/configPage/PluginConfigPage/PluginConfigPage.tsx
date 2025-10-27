@@ -21,6 +21,8 @@ function getMissingDataSourceTypes(list: DataSourceInfo[]): string[] {
   return ['loki', 'prometheus'].filter((type) => !list.find((ds) => ds.type === type));
 }
 
+export type SMPluginConfigPageProps = Omit<PluginConfigPageProps<AppPluginMeta<ProvisioningJsonData>>, 'query'>;
+
 /**
  * Plugin config page for Synthetic Monitoring
  * This page is shown when the user navigates to the plugin config page (not the app config page).
@@ -30,9 +32,7 @@ function getMissingDataSourceTypes(list: DataSourceInfo[]): string[] {
  * @param {PluginConfigPageProps<AppPluginMeta<ProvisioningJsonData>>} plugin - The plugin metadata
  * @constructor
  */
-export function PluginConfigPage({
-  plugin,
-}: Omit<PluginConfigPageProps<AppPluginMeta<ProvisioningJsonData>>, 'query'>) {
+export function PluginConfigPage({ plugin }: SMPluginConfigPageProps) {
   const isEnabled = plugin.meta.enabled;
   const appConfigUrl = getRoute(AppRoutes.Config);
   const appHomeUrl = getRoute(AppRoutes.Home);
