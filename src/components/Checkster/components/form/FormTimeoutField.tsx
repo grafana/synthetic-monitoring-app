@@ -55,9 +55,10 @@ export function FormTimeoutField({ field, min, max }: FormTimeoutFieldProps) {
       label="Timeout"
       description="Maximum execution time for the check"
       {...getFieldErrorProps(errors, field)}
+      htmlFor={field}
     >
       {isReadonly ? (
-        <Input width={20} disabled {...fieldProps} value={valueInSeconds} suffix="Seconds" />
+        <Input id={field} width={20} disabled {...fieldProps} value={valueInSeconds} suffix="Seconds" />
       ) : (
         <TimeSlider
           {...fieldProps}
