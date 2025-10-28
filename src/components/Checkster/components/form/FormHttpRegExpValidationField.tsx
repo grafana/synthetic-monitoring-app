@@ -128,6 +128,7 @@ export function FormHttpRegExpValidationField({
                   value={watch(createPath(field, index, 'matchType'))}
                   onChange={({ target }) => setValue(createPath(field, index, 'matchType'), target.value)}
                   disabled={disabled}
+                  aria-label={`Source for validation ${index + 1}`}
                 />
 
                 {isHeaderMatchType && (
@@ -137,6 +138,7 @@ export function FormHttpRegExpValidationField({
                       placeholder="Header name"
                       {...register(createPath(field, index, 'header'))}
                       disabled={disabled}
+                      aria-label={`Header name for validation ${index + 1}`}
                     />
                   </StyledField>
                 )}
@@ -150,6 +152,7 @@ export function FormHttpRegExpValidationField({
                     placeholder="Regular expression"
                     {...register(createPath(field, index, 'expression'))}
                     disabled={disabled}
+                    aria-label={`Regular expression for validation ${index + 1}`}
                   />
                 </StyledField>
 
@@ -162,6 +165,7 @@ export function FormHttpRegExpValidationField({
                     id={`${fieldArray.id}-inverted`}
                     {...register(createPath(field, index, 'inverted'))}
                     disabled={disabled}
+                    aria-label={`Invert match for validation ${index + 1}`}
                   />
                 </StyledField>
 
@@ -179,6 +183,7 @@ export function FormHttpRegExpValidationField({
                     key={isHeaderMatchType ? createPath(field, index, 'allowMissing') : undefined}
                     disabled={disabled}
                     {...(isHeaderMatchType ? register(createPath(field, index, 'allowMissing')) : { disabled: true })}
+                    aria-label={`Allow missing header for validation ${index + 1}`}
                   />
                 </StyledField>
 

@@ -25,6 +25,7 @@ interface InputSelectProps {
   disabled?: boolean;
   invalid?: boolean;
   width?: number;
+  'aria-label'?: string;
 }
 
 export function InputSelect({
@@ -39,6 +40,7 @@ export function InputSelect({
   width,
   placeholder = 'Select',
   size = 'md',
+  ...rest
 }: InputSelectProps) {
   const fallbackId = useDOMId();
   const idWithFallback = id || fallbackId;
@@ -88,7 +90,6 @@ export function InputSelect({
 
   useEffect(() => {
     if (value !== internalValue) {
-      console.log('the value', value, internalValue);
       onChange({ target: { value: internalValue } });
     }
   }, [internalValue, onChange, value]);
@@ -111,6 +112,7 @@ export function InputSelect({
           tabIndex={0}
           className={cx(styles.button, widthStyles, invalid && styles.invalid, isOpen && styles.focusStyles)}
           aria-valuetext={label}
+          {...rest}
         >
           <span className={styles.value} title={label}>
             {label || <span className={styles.placeholder}>{placeholder}</span>}

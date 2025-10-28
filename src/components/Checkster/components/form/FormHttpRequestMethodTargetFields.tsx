@@ -17,7 +17,7 @@ import { StyledField } from '../ui/StyledField';
 function RequestMethodMenu({ onChange }: { onChange: (value: HttpMethod) => void }) {
   const theme = useTheme2();
   return (
-    <Menu>
+    <Menu ariaLabel="Select request method">
       {ALLOWED_HTTP_REQUEST_METHODS.map((method) => (
         <Menu.Item
           className={css`
@@ -166,8 +166,8 @@ export function FormHttpRequestMethodTargetFields({
                 />
               </StyledField>
               <Text variant="bodySmall" color="secondary">
-                Looking for <Text color="primary">&#34;Cache busting query parameter&#34;</Text>? It can be found under
-                <Text color="primary">&#34;Request options&#34;</Text>;
+                Looking for <Text color="primary">&#34;Cache busting query parameter&#34;</Text>? It can be found under{' '}
+                <Text color="primary">&#34;Request options&#34;</Text>.
               </Text>
             </Stack>
           </SecondaryContainer>

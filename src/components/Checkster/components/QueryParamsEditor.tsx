@@ -3,6 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, IconButton, Input, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+import { useDOMId } from '../../../hooks/useDOMId';
 import { getHashFromUrl, getUrlWithoutSearchAndHash, toSearchParamEntries } from './QueryParamsEditor.utils';
 import { SimpleCard } from './SimpleCard';
 import { SimpleDiff } from './SimpleDiff';
@@ -20,6 +21,7 @@ export function QueryParamsEditor({
   onDismissWarning,
   addButtonText = 'Query parameter', // there is a + in front of the text
 }: QueryParamsEditorProps) {
+  const baseId = useDOMId();
   const styles = useStyles2(getStyles);
 
   // Example URL for demonstration
@@ -160,18 +162,22 @@ export function QueryParamsEditor({
           return (
             <div key={`entry-${index}`} className={styles.row}>
               <Input
+                id={`${baseId}-${index}-name`}
                 disabled={isDisabled}
                 placeholder="Key"
                 type="text"
                 value={name}
                 onChange={(event) => handleChange(event, 'name', index)}
+                aria-label={`Query parameter ${index + 1} name`}
               />
               <Input
+                id={`${baseId}-${index}-value`}
                 disabled={isDisabled}
                 placeholder="Value"
                 type="text"
                 value={value}
                 onChange={(event) => handleChange(event, 'value', index)}
+                aria-label={`Query parameter ${index + 1} value`}
               />
               <IconButton
                 disabled={isLast || isDisabled}

@@ -49,7 +49,7 @@ export function HttpUptimeContent() {
 
       <FormHttpRegExpValidationField
         field="settings.http.regexValidations"
-        addButtonText="Regepx validation"
+        addButtonText="Regexp validation"
         disallowBodyMatching={disallowBodyMatching}
       />
 

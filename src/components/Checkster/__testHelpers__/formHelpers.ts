@@ -44,3 +44,15 @@ export async function selectRadioGroupOption(user: UserEvent, label: string | Re
   const radioGroup = screen.getByRole('radiogroup', { name: label });
   await user.click(within(radioGroup).getByLabelText(valueLabel));
 }
+
+// Grafana UI checkbox doesn't play nice with getByLabelText
+export function getCheckbox(label: string | RegExp) {
+  const labelElement = screen.getByText(label);
+  expect(labelElement).toBeInTheDocument();
+
+  if (!labelElement || !labelElement.parentElement) {
+    throw new Error('label element does not exist');
+  }
+
+  return labelElement.parentElement;
+}
