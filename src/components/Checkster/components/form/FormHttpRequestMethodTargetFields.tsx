@@ -128,7 +128,7 @@ export function FormHttpRequestMethodTargetFields({
         required
       >
         <Input
-          id="check-editor-target-input"
+          id={field}
           placeholder={placeholder}
           prefix={!!methodField && <Methods field={methodField} />}
           {...register(field)}

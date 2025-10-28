@@ -6,6 +6,7 @@ import { css, cx } from '@emotion/css';
 import { HttpMethod } from 'types';
 import { getMethodColor } from 'utils';
 
+import { Column } from './ui/Column';
 import { ErrorIcon } from './ErrorIcon';
 
 interface CollapsibleRequestEntryProps extends PropsWithChildren {
@@ -16,6 +17,7 @@ interface CollapsibleRequestEntryProps extends PropsWithChildren {
   actions?: ReactNode;
   onToggle(): void;
   hasError?: boolean;
+  'aria-label'?: string;
 }
 export function CollapsibleRequestEntry({
   children,
@@ -26,12 +28,13 @@ export function CollapsibleRequestEntry({
   target,
   actions,
   hasError,
+  ...rest
 }: CollapsibleRequestEntryProps) {
   const theme = useTheme2();
   const styles = getStyles(theme, method);
 
   return (
-    <Stack direction="column">
+    <Column {...rest}>
       <div className={styles.header}>
         <Text element="h4" variant="h5" onClick={onToggle}>
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
@@ -42,7 +45,7 @@ export function CollapsibleRequestEntry({
         {actions && <Stack gap={1}>{actions}</Stack>}
       </div>
       {isOpen && <div className={styles.content}>{children}</div>}
-    </Stack>
+    </Column>
   );
 }
 

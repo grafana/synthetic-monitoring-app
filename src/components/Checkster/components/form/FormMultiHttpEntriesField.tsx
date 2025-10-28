@@ -117,6 +117,7 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
 
   return (
     <CollapsibleRequestEntry
+      aria-label={`Request entry ${index + 1}`}
       hasError={hasError}
       method={method}
       target={target}
@@ -151,6 +152,7 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
       <FormHttpRequestMethodTargetFields
         field={createPath(field, index, 'request.url')}
         methodField={createPath(field, index, 'request.method')}
+        aria-label={`Request target for request ${index + 1}`}
       />
       <AdditionalSettings isOpen={hasRequestOptionError} buttonLabel="Request options" indent>
         <FormTabs tabErrorIndexes={tabIndexErrors}>
@@ -178,18 +180,18 @@ function MultiHttpEntry({ field, index, onDelete, onMove, entryCount }: MultiHtt
           <FormTabContent label="Body">
             <GenericInputField
               field={createPath(field, index, 'request.body.contentType')}
-              label="Content Type"
+              label="Content type"
               description="Indicates the media type of the body."
             />
             <GenericInputField
               field={createPath(field, index, 'request.body.contentEncoding')}
-              label="Content Encoding"
+              label="Content encoding"
               description="Indicates the content encoding of the body."
             />
 
             <GenericTextareaField
               field={createPath(field, index, 'request.body.payload')}
-              label="Content Encoding"
+              label="Request body"
               description="The body of the HTTP request used in request."
               rows={10}
             />

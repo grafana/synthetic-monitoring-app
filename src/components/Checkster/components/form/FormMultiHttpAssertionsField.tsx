@@ -57,6 +57,7 @@ export function FormMultiHttpAssertionsField({ field }: FormMultiHttpAssertionsF
             method={entry.request.method}
             target={entry.request.url}
             onToggle={handleToggle}
+            aria-label={`Request assertion ${index + 1}`}
           >
             <MultiHttpUptimeAssertions field={createPath(field, index, 'checks')} />
           </CollapsibleRequestEntry>
@@ -111,7 +112,7 @@ function MultiHttpUptimeAssertions({ field }: MultiHttpUptimeAssertionsProps) {
                 description="Method for finding assertion value."
                 width={0}
               />
-              <AssertionFields field={createPath(field, index)} />
+              <AssertionFields field={createPath(field, index)} assertionIndex={index} />
               <div
                 className={css`
                   height: ${theme.spacing(theme.components.height.md)}; // height of a normal input
@@ -150,7 +151,13 @@ function MultiHttpUptimeAssertions({ field }: MultiHttpUptimeAssertionsProps) {
   );
 }
 
-function AssertionFields({ field }: { field: `settings.multihttp.entries.${number}.checks.${number}` }) {
+function AssertionFields({
+  field,
+  assertionIndex,
+}: {
+  field: `settings.multihttp.entries.${number}.checks.${number}`;
+  assertionIndex: number;
+}) {
   const { watch } = useFormContext<CheckFormValues>();
 
   const type = watch(createPath(field, 'type'));
@@ -165,6 +172,7 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
             label="Subject"
             description="Target value to assert against."
             width={0}
+            aria-label={`Assertion subject ${assertionIndex + 1}`}
           />
           <GenericInputSelectField
             field={createPath(field, 'condition')}
@@ -172,12 +180,14 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
             label="Condition"
             description="Comparator"
             width={0}
+            aria-label={`Assertion condition ${assertionIndex + 1}`}
           />
           <GenericInputField
             field={createPath(field, 'value')}
             label="Value"
             description="Value to compare with Subject"
             placeholder="Value"
+            aria-label={`Assertion value ${assertionIndex + 1}`}
           />
         </>
       );
@@ -187,6 +197,7 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
           <GenericInputField
             field={createPath(field, 'expression')}
             label="Expression"
+            aria-label={`Assertion expression ${assertionIndex + 1}`}
             placeholder="Path lookup using GJSON syntax"
             description={
               <a
@@ -203,12 +214,14 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
             field={createPath(field, 'condition')}
             options={ASSERTION_CONDITION_OPTIONS as Array<ComboboxOption<AssertionConditionVariant>>}
             label="Condition"
+            aria-label={`Assertion condition ${assertionIndex + 1}`}
             description="Comparator"
             width={0}
           />
           <GenericInputField
             field={createPath(field, 'value')}
             label="Value"
+            aria-label={`Assertion value ${assertionIndex + 1}`}
             description="Value to compare with result of expression."
             placeholder="Value"
           />
@@ -224,6 +237,7 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
           <GenericInputField
             field={createPath(field, 'expression')}
             label="Expression"
+            aria-label={`Assertion expression ${assertionIndex + 1}`}
             placeholder="Path lookup using GJSON syntax"
             description={
               <a
@@ -245,6 +259,7 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
             field={createPath(field, 'subject')}
             options={ASSERTION_SUBJECT_OPTIONS as Array<ComboboxOption<AssertionSubjectVariant>>}
             label="Subject"
+            aria-label={`Assertion subject ${assertionIndex + 1}`}
             description="Target value to assert against."
             width={0}
           />
@@ -256,6 +271,7 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
             <GenericInputField
               field={createPath(field, 'expression')}
               label="Expression"
+              aria-label={`Assertion expression ${assertionIndex + 1}`}
               placeholder=".*"
               description="Regex string without leading or trailing slashes"
             />

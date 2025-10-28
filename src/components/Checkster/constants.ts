@@ -551,6 +551,11 @@ export const CHECKSTER_TEST_ID = {
     root: 'checkEditor navigation',
     navItem: 'checkEditor navigation navItem',
   },
+  ui: {
+    formTabs: {
+      content: 'checkEditor formTabs content',
+    },
+  },
   form: {
     root: 'checkEditor form',
     submitButton: 'checkEditor form submit',

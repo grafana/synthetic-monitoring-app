@@ -54,7 +54,7 @@ export function GenericInputSelectField({
       description={description}
       htmlFor={fieldProps.name}
       {...getFieldErrorProps(errors, field)}
-      aria-label={!label && 'aria-label' in rest ? rest['aria-label'] : undefined}
+      aria-label={'aria-label' in rest ? rest['aria-label'] : undefined}
     >
       <Combobox
         value={inputValue}

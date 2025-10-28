@@ -37,7 +37,7 @@ const expressionFieldPropsMap: Record<
     placeholder: 'div p',
   },
   [MultiHttpVariableType.JSON_PATH]: {
-    label: 'JSONPath expression',
+    label: 'JSON Path expression',
     description: 'A JSONPath expression specifies a path to an element (or a set of elements) in a JSON structure.',
     placeholder: '$.',
   },

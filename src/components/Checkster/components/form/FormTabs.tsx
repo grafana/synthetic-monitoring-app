@@ -14,7 +14,7 @@ import { css, cx } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
 
-import { FIELD_SPACING } from '../../constants';
+import { CHECKSTER_TEST_ID, FIELD_SPACING } from '../../constants';
 import { ErrorIcon } from '../ErrorIcon';
 type FormTabContentChild = ReactElement<FormTabContentProps>;
 type FormTabChild = undefined | false | FormTabContentChild;
@@ -97,6 +97,7 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
 
         return active === index ? (
           <TabContent
+            data-testid={CHECKSTER_TEST_ID.ui.formTabs.content}
             className={cx(
               styles.tabContent,
               !child.props.vanilla && styles.tabContentSpacing,
