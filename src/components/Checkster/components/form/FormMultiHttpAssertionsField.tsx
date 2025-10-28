@@ -1,6 +1,6 @@
 import React, { Fragment, useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, IconButton, Stack, Text, useTheme2 } from '@grafana/ui';
+import { Button, ComboboxOption, IconButton, Stack, Text, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues, MultiHttpAssertionType } from 'types';
@@ -161,14 +161,14 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
         <>
           <GenericInputSelectField
             field={createPath(field, 'subject')}
-            options={ASSERTION_SUBJECT_OPTIONS}
+            options={ASSERTION_SUBJECT_OPTIONS as Array<ComboboxOption<AssertionSubjectVariant>>}
             label="Subject"
             description="Target value to assert against."
             width={0}
           />
           <GenericInputSelectField
             field={createPath(field, 'condition')}
-            options={ASSERTION_CONDITION_OPTIONS}
+            options={ASSERTION_CONDITION_OPTIONS as Array<ComboboxOption<AssertionConditionVariant>>}
             label="Condition"
             description="Comparator"
             width={0}
@@ -201,7 +201,7 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
           />
           <GenericInputSelectField
             field={createPath(field, 'condition')}
-            options={ASSERTION_CONDITION_OPTIONS}
+            options={ASSERTION_CONDITION_OPTIONS as Array<ComboboxOption<AssertionConditionVariant>>}
             label="Condition"
             description="Comparator"
             width={0}
@@ -243,7 +243,7 @@ function AssertionFields({ field }: { field: `settings.multihttp.entries.${numbe
         <>
           <GenericInputSelectField
             field={createPath(field, 'subject')}
-            options={ASSERTION_SUBJECT_OPTIONS}
+            options={ASSERTION_SUBJECT_OPTIONS as Array<ComboboxOption<AssertionSubjectVariant>>}
             label="Subject"
             description="Target value to assert against."
             width={0}
