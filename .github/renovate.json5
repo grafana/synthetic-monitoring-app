@@ -3,5 +3,42 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   // https://github.com/grafana/deployment_tools/blob/master/docs/platform/renovate/FAQ.md#can-i-opt-inopt-out-of-the-global-configuration
   "extends": ["github>grafana/grafana-renovate-config//presets/base"],
-  "ignorePaths": [".config/Dockerfile"]
+  "ignorePaths": [".config/Dockerfile"],
+  "packageRules": [
+    // we can never update the React packages until grafana does
+    {
+      "matchPackageNames": ["react", "react-dom", "eslint-plugin-react-hooks"],
+      "enabled": false
+    },
+    // packages which we consider feature complete but if they ever do receive updates we should review them
+    {
+      "matchPackageNames": [
+        "dorny/paths-filter",
+        "acorn-walk",
+        "css-loader",
+        "eslint-plugin-simple-import-sort",
+        "identity-obj-proxy",
+        "imports-loader",
+        "ip-address",
+        "is-base64",
+        "pluralize",
+        "punycode",
+        "raw-loader",
+        "react-async-hook",
+        "react-popper",
+        "replace-in-file-webpack-plugin",
+        "style-loader",
+        "swc-loader",
+        "use-konami",
+        "valid-url",
+        "webpack-bundle-analyzer",
+        "webpack-livereload-plugin",
+        "webpack-merge",
+        "webpack-subresource-integrity",
+        "webpack-virtual-modules"
+      ],
+      "enabled": true,
+      "abandonmentThreshold": "15 years"
+    }
+  ]
 }
