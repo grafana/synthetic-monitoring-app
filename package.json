@@ -139,7 +139,6 @@
     "react-router-dom": "^5.2.0",
     "react-router-dom-v5-compat": "^6.27.0",
     "rxjs": "7.8.2",
-    "tslib": "2.8.1",
     "use-konami": "^1.0.1",
     "usehooks-ts": "3.1.1",
     "valid-url": "^1.0.9",
