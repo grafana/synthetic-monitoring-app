@@ -61,7 +61,10 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
       <TabsBar className={styles.tabsBar}>
         {Children.map(children, (child, index) => {
           if (!isValidTabChild(child)) {
-            console.warn('FormTabs only accepts FormTabs.Tab as children');
+            if (typeof child !== 'boolean' && child !== null) {
+              console.warn('FormTabs only accepts FormTabs.Tab as children', typeof child, String(child));
+            }
+
             return null;
           }
           return (
