@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.37.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.36.1...v1.37.0) (2025-10-27)
+
+
+### Features
+
+* add data-fs-element to feedback button and fix toggletip floating ([#1303](https://github.com/grafana/synthetic-monitoring-app/issues/1303)) ([e7250bd](https://github.com/grafana/synthetic-monitoring-app/commit/e7250bd1a02ecc007b0036ca41f6edb573dd415f))
+* add indicator of disabled check ([#1290](https://github.com/grafana/synthetic-monitoring-app/issues/1290)) ([1dc7f9c](https://github.com/grafana/synthetic-monitoring-app/commit/1dc7f9c129426f9745e35b9081e0dd616cdd1b87))
+* add renovate config to ignore local dev dockerfile ([#1307](https://github.com/grafana/synthetic-monitoring-app/issues/1307)) ([6cb988f](https://github.com/grafana/synthetic-monitoring-app/commit/6cb988f72e94647cb38be95df5b8f8c999a4b076))
+* Per check alerts/notification policies ([#1282](https://github.com/grafana/synthetic-monitoring-app/issues/1282)) ([b8447b8](https://github.com/grafana/synthetic-monitoring-app/commit/b8447b8ee2f66a91956fbe18b3866774c8aacdf5))
+* preload app and add chunking ([#1298](https://github.com/grafana/synthetic-monitoring-app/issues/1298)) ([ed56d85](https://github.com/grafana/synthetic-monitoring-app/commit/ed56d8553449df86dda4e08aab6fafd02afeb3b0))
+
+
+### Fixes
+
+* promote alerting package imports to stable ([#1304](https://github.com/grafana/synthetic-monitoring-app/issues/1304)) ([a9e9092](https://github.com/grafana/synthetic-monitoring-app/commit/a9e90929f8d9ee77a72ce972ecb8d639e0e59028))
+* update reachability calc for dashboards ([#1285](https://github.com/grafana/synthetic-monitoring-app/issues/1285)) ([1743e75](https://github.com/grafana/synthetic-monitoring-app/commit/1743e75029d3d2c94030a7050a0e9686818c2f06))
+
+
+### Miscellaneous Chores
+
+* export pluginconfigpage type ([#1306](https://github.com/grafana/synthetic-monitoring-app/issues/1306)) ([7eb2ceb](https://github.com/grafana/synthetic-monitoring-app/commit/7eb2ceb3c48e1cb7ff7f725cabf5c2ee90de3a9c))
+* pin dependencies ([#1291](https://github.com/grafana/synthetic-monitoring-app/issues/1291)) ([e9c84fb](https://github.com/grafana/synthetic-monitoring-app/commit/e9c84fbcd751166fcbb64497f2145a141e832f0d))
+* update dependency @babel/core to v7.28.5 ([#1309](https://github.com/grafana/synthetic-monitoring-app/issues/1309)) ([7d2a3cf](https://github.com/grafana/synthetic-monitoring-app/commit/7d2a3cf5c842fac336d61bf1283f4888bfecf86b))
+* update dependency @grafana/tsconfig to v2.0.1 ([#1313](https://github.com/grafana/synthetic-monitoring-app/issues/1313)) ([ae3d2f9](https://github.com/grafana/synthetic-monitoring-app/commit/ae3d2f98161ba828d3c56a296efa7ebdf468c645))
+* update dependency @swc/jest to v0.2.39 ([#1310](https://github.com/grafana/synthetic-monitoring-app/issues/1310)) ([9e7cc4d](https://github.com/grafana/synthetic-monitoring-app/commit/9e7cc4d35ca3b5df106f1cb28ed0cf5bcfc90cfe))
+* update dependency @types/node to ^20.19.21 ([#1299](https://github.com/grafana/synthetic-monitoring-app/issues/1299)) ([68283dc](https://github.com/grafana/synthetic-monitoring-app/commit/68283dc89683b95ccecb80f1ced3130457266fe5))
+* update dependency @types/prismjs to v1.26.5 ([#1300](https://github.com/grafana/synthetic-monitoring-app/issues/1300)) ([3873df4](https://github.com/grafana/synthetic-monitoring-app/commit/3873df464ccce1b916b85c564e5c2d5a5d7ba54e))
+* update dependency @types/testing-library__jest-dom to v5.14.9 ([#1301](https://github.com/grafana/synthetic-monitoring-app/issues/1301)) ([c59e597](https://github.com/grafana/synthetic-monitoring-app/commit/c59e597addc742bf06b907cbe7960e7463040ccd))
+* update dependency danger to v11.3.1 ([#1302](https://github.com/grafana/synthetic-monitoring-app/issues/1302)) ([fa45d40](https://github.com/grafana/synthetic-monitoring-app/commit/fa45d40e37fa0f3e5529a8fc15606a3dc250be95))
+* update dependency eslint-config-prettier to v10.1.8 ([#1311](https://github.com/grafana/synthetic-monitoring-app/issues/1311)) ([cbbb731](https://github.com/grafana/synthetic-monitoring-app/commit/cbbb731f48db64d49e6d1c5843e6f9b78acdfb60))
+* update dependency eslint-webpack-plugin to v5.0.2 ([#1314](https://github.com/grafana/synthetic-monitoring-app/issues/1314)) ([20dd42a](https://github.com/grafana/synthetic-monitoring-app/commit/20dd42a684f0adf6db68ea81f4fc03db7fb7eb15))
+* update google-github-actions/auth digest to fc21748 ([#1292](https://github.com/grafana/synthetic-monitoring-app/issues/1292)) ([b8f85be](https://github.com/grafana/synthetic-monitoring-app/commit/b8f85bef034b867c51a540395558c5643541a9dc))
+* update grafana/plugin-ci-workflows digest to 80ead8d ([#1293](https://github.com/grafana/synthetic-monitoring-app/issues/1293)) ([ec31415](https://github.com/grafana/synthetic-monitoring-app/commit/ec314151e5ec1a740e25171db539179a46eb921d))
+* update grafana/shared-workflows/ action to ([#1294](https://github.com/grafana/synthetic-monitoring-app/issues/1294)) ([b642134](https://github.com/grafana/synthetic-monitoring-app/commit/b642134fa5c34bb7b3f918d99784563caf7aedf8))
+* update grafana/shared-workflows/ action to ([#1308](https://github.com/grafana/synthetic-monitoring-app/issues/1308)) ([c2a7ece](https://github.com/grafana/synthetic-monitoring-app/commit/c2a7eceae73b67ec66db8043d837b9aa66929d67))
+* update grafana/shared-workflows/ action to ([#1312](https://github.com/grafana/synthetic-monitoring-app/issues/1312)) ([7bf1c2b](https://github.com/grafana/synthetic-monitoring-app/commit/7bf1c2b229b0297b394456bb5bc02a3e57db729b))
+* update hashicorp/setup-terraform digest to 982f6f0 ([#1295](https://github.com/grafana/synthetic-monitoring-app/issues/1295)) ([d742131](https://github.com/grafana/synthetic-monitoring-app/commit/d7421311d4a3b27d751b35c31db86e9cc65c6de2))
+
 ## [1.36.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.36.0...v1.36.1) (2025-10-15)
 
 
