@@ -103,7 +103,7 @@
   },
   "dependencies": {
     "@emotion/css": "11.13.5",
-    "@grafana/alerting": "12.3.0-18779941398",
+    "@grafana/alerting": "12.3.0-18795568264",
     "@grafana/data": "^12.1.0",
     "@grafana/faro-web-sdk": "1.19.0",
     "@grafana/runtime": "^12.1.0",
