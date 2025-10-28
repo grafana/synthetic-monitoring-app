@@ -4,7 +4,7 @@ import { CheckType, IpVersion } from 'types';
 import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
 
 import { submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
-import { fillMandatoryFields } from '../../utils';
+import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
 const checkType = CheckType.PING;
 

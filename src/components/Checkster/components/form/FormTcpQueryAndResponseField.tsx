@@ -47,7 +47,7 @@ export function FormTcpQueryAndResponseField({
         <div className={styles.inputGrid}>
           <div className={styles.header}>Send query</div>
           <div className={styles.header}>Expect response</div>
-          <div className={cx(styles.header, styles.centeredCell)}>StartTLS</div>
+          <div className={cx(styles.header, styles.centeredCell)}>Start TLS</div>
           <div />
           {fields.map((fieldArray, index) => {
             return (
@@ -61,10 +61,18 @@ export function FormTcpQueryAndResponseField({
                   field={createPath(field, index, 'send')}
                   rows={1}
                   placeholder="Query"
+                  aria-label={`Query to send ${index + 1}`}
                 />
-                <GenericInputField field={createPath(field, index, 'expect')} placeholder="Response" />
+                <GenericInputField
+                  field={createPath(field, index, 'expect')}
+                  placeholder="Response"
+                  aria-label={`Response to expect ${index + 1}`}
+                />
                 <div className={styles.centeredCell}>
-                  <GenericCheckboxField field={createPath(field, index, 'startTLS')} />
+                  <GenericCheckboxField
+                    field={createPath(field, index, 'startTLS')}
+                    aria-label={`Start TLS switch ${index + 1}`}
+                  />
                 </div>
                 <IconButton
                   aria-label="Remove row"

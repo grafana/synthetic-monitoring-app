@@ -1,13 +1,12 @@
-import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckType } from 'types';
+import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import { FormSectionName } from 'components/Checkster/types';
 import { renderNewFormV2, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
+import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-import { gotoSection, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
-import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
+const checkType = CheckType.TCP;
 
-const checkType = CheckType.DNS;
-
-describe(`DNSCheck - Section 5 (Execution) payload`, () => {
+describe(`TCPCheck - Section 5 (Execution) payload`, () => {
   it(`has the correct default values submitted`, async () => {
     const ONE_MINUTE_IN_MS = 60 * 1000;
 

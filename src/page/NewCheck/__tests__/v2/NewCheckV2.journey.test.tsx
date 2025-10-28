@@ -19,7 +19,7 @@ import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/fo
 import { renderNewFormV2, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
 import { CHECKSTER_TEST_ID } from '../../../../components/Checkster/constants';
-import { fillMandatoryFields } from './utils';
+import { fillMandatoryFields } from '../../../__testHelpers__/v2.utils';
 
 describe(`<NewCheckV2 /> journey`, () => {
   it(`should show an error message when it fails to save a check`, async () => {

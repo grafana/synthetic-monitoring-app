@@ -1,12 +1,12 @@
 import { screen } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/index';
 
-import { FormSectionName } from '../../../../components/Checkster/types';
-import { CheckType } from '../../../../types';
+import { FormSectionName } from '../../components/Checkster/types';
+import { CheckType } from '../../types';
 
-import { gotoSection } from '../../../../components/Checkster/__testHelpers__/formHelpers';
-import { PRIVATE_PROBE } from '../../../../test/fixtures/probes';
-import { probeToMetadataProbe } from '../../../../test/utils';
+import { gotoSection } from '../../components/Checkster/__testHelpers__/formHelpers';
+import { PRIVATE_PROBE } from '../../test/fixtures/probes';
+import { probeToMetadataProbe } from '../../test/utils';
 
 const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',

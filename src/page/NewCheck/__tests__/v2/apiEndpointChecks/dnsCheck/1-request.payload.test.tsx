@@ -8,7 +8,7 @@ import {
 } from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
 
-import { fillMandatoryFields } from '../../utils';
+import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
 const checkType = CheckType.DNS;
 

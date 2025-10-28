@@ -10,7 +10,7 @@ interface FormIpVersionRadioFieldProps {
   label?: string;
   description?: string;
 }
-export function FormIpVersionRadioField({ field, label = 'IP Version', description }: FormIpVersionRadioFieldProps) {
+export function FormIpVersionRadioField({ field, label = 'IP version', description }: FormIpVersionRadioFieldProps) {
   return (
     <GenericRadioButtonGroupField field={field} label={label} description={description} options={IP_VERSION_OPTIONS} />
   );

@@ -7,7 +7,7 @@ import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/fo
 import { FormSectionName } from 'components/Checkster/types';
 import { renderNewFormV2, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
-import { fillMandatoryFields } from '../../utils';
+import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
 const checkType = CheckType.DNS;
 
