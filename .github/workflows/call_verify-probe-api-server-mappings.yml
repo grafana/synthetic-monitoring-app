@@ -38,7 +38,7 @@ jobs:
 
       - name: Comment on PR if mappings are outdated
         if: steps.verify-mappings.outputs.verification_result == 'failed' && github.event_name == 'pull_request'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const commentIdentifier = '🔄 **Probe API Server Mappings Verification Failed**';
@@ -118,7 +118,7 @@ jobs:
 
       - name: Comment on PR if mappings are up to date
         if: steps.verify-mappings.outputs.verification_result == 'success' && github.event_name == 'pull_request'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const commentIdentifier = '✅ **Probe API Server Mappings Verification Passed**';
