@@ -4,11 +4,11 @@ import { UserEvent } from '@testing-library/user-event';
 import { ADHOC_CHECK_TEST_IDS } from '../constants';
 
 export function getAdhocCheckTestButton() {
-  return screen.getByTestId(new RegExp(`^${ADHOC_CHECK_TEST_IDS.testButton}`));
+  return screen.queryByTestId(new RegExp(`^${ADHOC_CHECK_TEST_IDS.testButton}`));
 }
 
 export async function doAdhocCheck(user: UserEvent) {
   const button = getAdhocCheckTestButton();
   expect(button).toBeInTheDocument();
-  await user.click(button);
+  await user.click(button!);
 }
