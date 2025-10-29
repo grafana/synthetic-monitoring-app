@@ -107,6 +107,7 @@ const FeedbackButton = ({ feature, isActive, onClick, onClose, reaction, tooltip
         <Button
           aria-label={tooltip}
           className={cx({ [styles.upsideDown]: reaction === 'bad' }, { [styles.active]: isActive })}
+          data-fs-element={`Feedback button ${reaction} (${feature})`}
           fill="text"
           onClick={onClick}
           size="sm"

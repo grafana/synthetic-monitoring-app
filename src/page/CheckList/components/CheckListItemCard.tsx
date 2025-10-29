@@ -13,6 +13,7 @@ import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActio
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
+import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemCard = ({
   check,
@@ -45,6 +46,7 @@ export const CheckListItemCard = ({
               <div className={styles.stackCenter}>
                 <h3 className={styles.heading}>{check.job}</h3>
                 <AlertStatus check={check} />
+                {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
               </div>
               <div className={styles.checkTarget}>{check.target}</div>
               <div className={styles.stackCenter}>

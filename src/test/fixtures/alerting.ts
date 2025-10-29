@@ -1,3 +1,5 @@
+import { type InstanceMatchResult } from '@grafana/alerting';
+
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
 
 import {
@@ -141,3 +143,186 @@ export const GRAFANA_ALERTING_RULES: ListPrometheusAlertsResponse = {
   },
   status: `success`,
 };
+
+export const MOCK_PROBE_FAILED_ROUTE_MATCH: InstanceMatchResult = {
+  labels: [
+    ['job', 'test_http'],
+    ['instance', 'http://example.com'],
+    ['check_name', 'http'],
+    ['frequency', '10000'],
+    ['namespace', 'synthetic_monitoring'],
+    ['grafana_folder', 'Grafana Synthetic Monitoring'],
+    ['label_per_check_alerts', 'true'],
+    ['alertname', 'ProbeFailedExecutionsTooHigh'],
+    ['label_notification', 'email'],
+  ],
+  matchedRoutes: [
+    {
+      route: {
+        id: 'route-6',
+        matchers: [{ type: '=', label: 'label_per_check_alerts', value: 'true' }],
+        continue: true,
+        routes: [],
+        receiver: 'Email contact point',
+      },
+      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-3' } },
+      matchDetails: {
+        route: { id: 'route-6' },
+        labels: [
+          ['job', 'test_http'],
+          ['instance', 'http://example.com'],
+          ['check_name', 'http'],
+          ['frequency', '10000'],
+          ['namespace', 'synthetic_monitoring'],
+          ['grafana_folder', 'Grafana Synthetic Monitoring'],
+          ['label_per_check_alerts', 'true'],
+          ['alertname', 'ProbeFailedExecutionsTooHigh'],
+          ['label_notification', 'email'],
+        ],
+        matchingJourney: [
+          {
+            route: {
+              id: 'route-3',
+              receiver: 'grafana-default-email',
+              continue: false,
+              matchers: [],
+              routes: [
+                {
+                  id: 'route-4',
+                  receiver: 'Email contact point',
+                  matchers: [{ type: '=', label: 'alertname', value: 'ProbeFailedExecutionsTooHigh' }],
+                  continue: false,
+                  routes: [
+                    {
+                      id: 'route-5',
+                      receiver: 'Email contact point',
+                      matchers: [{ type: '=', label: 'label_notification', value: 'email' }],
+                      continue: false,
+                      routes: [
+                        {
+                          id: 'route-6',
+                          matchers: [{ type: '=', label: 'label_per_check_alerts', value: 'true' }],
+                          continue: true,
+                          receiver: 'Email contact point',
+                        },
+                        {
+                          id: 'route-7',
+                          matchers: [{ type: '=', label: 'check_name', value: 'http' }],
+                          continue: true,
+                          receiver: 'Email contact point',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            matchDetails: [],
+            matched: true,
+          },
+          {
+            route: {
+              id: 'route-4',
+              receiver: 'Email contact point',
+              matchers: [{ type: '=', label: 'alertname', value: 'ProbeFailedExecutionsTooHigh' }],
+              continue: false,
+            },
+            matchDetails: [],
+            matched: true,
+          },
+          {
+            route: {
+              id: 'route-5',
+              receiver: 'Email contact point',
+              matchers: [{ type: '=', label: 'label_notification', value: 'email' }],
+              continue: false,
+            },
+            matchDetails: [],
+            matched: true,
+          },
+          {
+            route: {
+              id: 'route-6',
+              matchers: [{ type: '=', label: 'label_per_check_alerts', value: 'true' }],
+              continue: true,
+              receiver: 'Email contact point',
+            },
+            matchDetails: [],
+            matched: true,
+          },
+          {
+            route: {
+              id: 'route-7',
+              matchers: [{ type: '=', label: 'check_name', value: 'http' }],
+              continue: true,
+              receiver: 'Email contact point',
+            },
+            matchDetails: [],
+            matched: true,
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as InstanceMatchResult;
+
+export const MOCK_HTTP_DURATION_ROUTE_MATCH: InstanceMatchResult = {
+  "labels": [
+    ["job", "test_http"], ["instance", "http://example.com"], ["check_name", "http"], ["frequency", "10000"],
+    ["namespace", "synthetic_monitoring"], ["grafana_folder", "Grafana Synthetic Monitoring"],
+    ["label_per_check_alerts", "true"], ["alertname", "HTTPRequestDurationTooHighAvg"], ["label_notification", "email"]
+  ],
+  "matchedRoutes": [
+    {
+      "route": {"id": "route-8", "receiver": "Grafana Alerting ❤️", "continue": true},
+      "routeTree": {"metadata": {"name": "user-defined"}, "expandedSpec": {"id": "route-3"}},
+      "matchDetails": {
+        "route": {"id": "route-8", "receiver": "Grafana Alerting ❤️", "continue": true},
+        "labels": [
+          ["job", "test_http"], ["instance", "http://example.com"], ["check_name", "http"], ["frequency", "10000"],
+          ["namespace", "synthetic_monitoring"], ["grafana_folder", "Grafana Synthetic Monitoring"],
+          ["label_per_check_alerts", "true"], ["alertname", "HTTPRequestDurationTooHighAvg"], ["label_notification", "email"]
+        ],
+        "matchingJourney": [
+          {"route": {"id": "route-3", "receiver": "grafana-default-email", "continue": false, "matchers": [], "routes": [
+            {"id": "route-8", "receiver": "Grafana Alerting ❤️", "continue": true},
+            {"id": "route-9", "receiver": "Grafana Alerting 👻", "continue": true},
+            {"id": "route-10", "receiver": "Grafana Alerting Name change 2 😊", "continue": true},
+            {"id": "route-12", "matchers": [{"type": "=", "label": "label_notification", "value": "email"}], "continue": true, "receiver": "grafana-default-email"}
+          ]}, "matchDetails": [], "matched": true},
+          {"route": {"id": "route-8", "receiver": "Grafana Alerting ❤️", "continue": true}, "matchDetails": [], "matched": true}
+        ]
+      }
+    },
+    {
+      "route": {"id": "route-9", "receiver": "Grafana Alerting 👻", "continue": true},
+      "routeTree": {"metadata": {"name": "user-defined"}, "expandedSpec": {"id": "route-3"}},
+      "matchDetails": {
+        "matchingJourney": [
+          {"route": {"id": "route-3", "receiver": "grafana-default-email", "continue": false, "matchers": []}, "matchDetails": [], "matched": true},
+          {"route": {"id": "route-9", "receiver": "Grafana Alerting 👻", "continue": true}, "matchDetails": [], "matched": true}
+        ]
+      }
+    },
+    {
+      "route": {"id": "route-10", "receiver": "Grafana Alerting Name change 2 😊", "continue": true},
+      "routeTree": {"metadata": {"name": "user-defined"}, "expandedSpec": {"id": "route-3"}},
+      "matchDetails": {
+        "matchingJourney": [
+          {"route": {"id": "route-3", "receiver": "grafana-default-email", "continue": false, "matchers": []}, "matchDetails": [], "matched": true},
+          {"route": {"id": "route-10", "receiver": "Grafana Alerting Name change 2 😊", "continue": true}, "matchDetails": [], "matched": true}
+        ]
+      }
+    },
+    {
+      "route": {"id": "route-12", "matchers": [{"type": "=", "label": "label_notification", "value": "email"}], "continue": true, "receiver": "grafana-default-email"},
+      "routeTree": {"metadata": {"name": "user-defined"}, "expandedSpec": {"id": "route-3"}},
+      "matchDetails": {
+        "matchingJourney": [
+          {"route": {"id": "route-3", "receiver": "grafana-default-email", "continue": false, "matchers": []}, "matchDetails": [], "matched": true},
+          {"route": {"id": "route-12", "matchers": [{"type": "=", "label": "label_notification", "value": "email"}], "continue": true, "receiver": "grafana-default-email"}, "matchDetails": [], "matched": true}
+        ]
+      }
+    }
+  ]
+} as unknown as InstanceMatchResult;
