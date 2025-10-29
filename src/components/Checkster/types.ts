@@ -68,7 +68,9 @@ export enum HTTPAuthType {
 }
 
 export type FeatureTabLabel = ComponentProps<typeof Tab>['label'];
-export type FeatureTabConfig = [FeatureTabLabel, ComponentType, CheckType[]];
+export type FeatureTabConfigAll = [FeatureTabLabel, ComponentType, CheckType[]];
+export type FeatureTabConfigFeatureToggle = [FeatureTabLabel, ComponentType, CheckType[], FeatureName];
+export type FeatureTabConfig = FeatureTabConfigAll | FeatureTabConfigFeatureToggle;
 
 export type CheckFormFieldPath = FieldPath<CheckFormValues>;
 

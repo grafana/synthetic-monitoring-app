@@ -1,6 +1,7 @@
 import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 
 import { FeatureTabConfig, FeatureTabLabel } from '../types';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 
 import { FEATURE_TABS } from '../feature/config';
 import { useChecksterContext } from './ChecksterContext';
@@ -24,9 +25,13 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const { checkType } = useChecksterContext();
 
   const tabs = useMemo(() => {
-    return FEATURE_TABS.filter(
-      ([, , checkCompatibility]) => checkCompatibility.length === 0 || checkCompatibility.includes(checkType)
-    );
+    return FEATURE_TABS.filter(([, , checkCompatibility, featureName]) => {
+      if (featureName && !isFeatureEnabled(featureName)) {
+        return false;
+      }
+
+      return checkCompatibility.length === 0 || checkCompatibility.includes(checkType);
+    });
   }, [checkType]);
 
   const activeTab = useMemo<FeatureTabConfig | typeof panicTab>(() => {
