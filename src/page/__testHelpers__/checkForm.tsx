@@ -13,6 +13,7 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
 
+import { EditCheckV2 } from '../EditCheck/EditCheckV2';
 import { NewCheckV2 } from '../NewCheck/NewCheckV2';
 
 export const TARGET_MAP = {
@@ -65,7 +66,11 @@ export async function renderNewForm(checkType: CheckType, CheckComponent = NewCh
   };
 }
 
-export async function renderEditForm(id: Check['id']) {
+export async function renderEditFormV2(id: Check['id']) {
+  return renderEditForm(id, EditCheckV2);
+}
+
+export async function renderEditForm(id: Check['id'], CheckComponent = EditCheck) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`updateCheck`, {}, record));
 
@@ -73,7 +78,7 @@ export async function renderEditForm(id: Check['id']) {
     throw new Error('id must be an integer');
   }
 
-  const res = render(<EditCheck />, {
+  const res = render(<CheckComponent />, {
     route: AppRoutes.EditCheck,
     path: generateRoutePath(AppRoutes.EditCheck, { id: id! }),
   });

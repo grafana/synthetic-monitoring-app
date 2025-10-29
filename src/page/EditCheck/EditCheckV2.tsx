@@ -19,6 +19,8 @@ import { Checkster } from 'components/Checkster';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { FormSectionName } from 'components/Checkster/types';
 
+import { getUserPermissions } from '../../data/permissions';
+
 export const EditCheckV2 = () => {
   const { id } = useParams<CheckPageParams>();
   const { data: checks, isLoading, error, refetch, isFetched } = useChecks();
@@ -49,6 +51,8 @@ export const EditCheckV2 = () => {
     return <CenteredSpinner />;
   }
 
+  const { canWriteChecks } = getUserPermissions();
+
   return (
     <PluginPage
       key={check?.id}
@@ -56,7 +60,7 @@ export const EditCheckV2 = () => {
       renderTitle={() => <Text element="h1">{`Editing ${check?.job ?? 'unknown'}`}</Text>}
     >
       <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <ChecksterProvider check={check} initialSection={initialSection}>
+        <ChecksterProvider check={check} initialSection={initialSection} disabled={!canWriteChecks}>
           <Checkster onSave={handleSubmit} />
         </ChecksterProvider>
         {checks && !check && <NotFoundModal />}
