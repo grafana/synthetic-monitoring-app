@@ -81,7 +81,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     container: css`
       padding-top: ${theme.spacing(2)};
       container-name: ${CONTAINER_NAME};
-      container-type: inline-size;
+      container-type: layout;
     `,
     header: css`
       display: flex;
