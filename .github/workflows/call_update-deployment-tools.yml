@@ -47,7 +47,7 @@ jobs:
       # Configure the GCloud SDK using authentication from the previous step,
       # enabling the next step to execute authenticated GCloud commands.
       - name: Setup GCloud SDK
-        uses: google-github-actions/setup-gcloud@77e7a554d41e2ee56fc945c52dfd3f33d12def9a # v2.1.4
+        uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2.2.1
         with:
           version: '>= 390.0.0'
 
