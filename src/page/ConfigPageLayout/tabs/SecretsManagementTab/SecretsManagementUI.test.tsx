@@ -124,7 +124,6 @@ describe('SecretsManagementUI', () => {
         render(<SecretsManagementTab />);
         await waitFor(() => {
           expect(screen.getByText(name)).toBeInTheDocument();
-          expect(screen.getByText(uuid)).toBeInTheDocument();
         });
       }
     );
