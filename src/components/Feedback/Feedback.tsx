@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { ComponentProps, useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, Button, Icon, Label, Link, Stack, Text, TextArea, Tooltip, useStyles2 } from '@grafana/ui';
@@ -16,9 +16,10 @@ interface FeedbackAboutProps {
 interface FeedbackProps {
   about?: FeedbackAboutProps;
   feature: string;
+  placement?: ComponentProps<typeof Toggletip>['placement'];
 }
 
-export const Feedback = ({ about, feature }: FeedbackProps) => {
+export const Feedback = ({ about, feature, placement }: FeedbackProps) => {
   const [active, setActive] = useState<'good' | 'bad' | null>(null);
 
   return (
@@ -34,6 +35,7 @@ export const Feedback = ({ about, feature }: FeedbackProps) => {
         onClose={() => setActive(null)}
         reaction="good"
         tooltip="I love this feature"
+        placement={placement}
       />
       <FeedbackButton
         feature={feature}
@@ -45,6 +47,7 @@ export const Feedback = ({ about, feature }: FeedbackProps) => {
         onClose={() => setActive(null)}
         reaction="bad"
         tooltip="I don't like this feature"
+        placement={placement}
       />
     </Stack>
   );
@@ -80,9 +83,18 @@ interface ToggletipAndButtonProps {
   onClose: () => void;
   reaction: 'good' | 'bad';
   tooltip: string;
+  placement?: ComponentProps<typeof Toggletip>['placement'];
 }
 
-const FeedbackButton = ({ feature, isActive, onClick, onClose, reaction, tooltip }: ToggletipAndButtonProps) => {
+const FeedbackButton = ({
+  feature,
+  isActive,
+  onClick,
+  onClose,
+  reaction,
+  tooltip,
+  placement,
+}: ToggletipAndButtonProps) => {
   // because the form is in a toggletip, we want to save the feedback if they
   // haven't submitted it in case they accidentally close the toggletip
   const [savedFeedback, setSavedFeedback] = useState<string>(``);
@@ -98,7 +110,7 @@ const FeedbackButton = ({ feature, isActive, onClick, onClose, reaction, tooltip
           handleSaveFeedback={setSavedFeedback}
         />
       }
-      placement="top-end"
+      placement={placement}
       onClose={onClose}
       show={isActive}
     >

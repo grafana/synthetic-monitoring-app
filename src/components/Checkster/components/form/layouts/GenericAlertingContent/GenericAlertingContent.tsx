@@ -35,6 +35,7 @@ export function GenericAlertingContent() {
                   tooltipText: 'Read more about per-check alerts',
                 }}
                 feature="alerts_per_check"
+                placement="top-end"
               />
             }
           >
