@@ -28,12 +28,13 @@ export function SectionContent({ children, noWrapper }: SectionContentProps) {
         flex: 1 0 0;
         gap: ${theme.spacing(FIELD_SPACING)};
         padding-top: ${theme.spacing(FIELD_SPACING)};
+        overflow: auto;
       `}
     >
       {noWrapper ? (
         children
       ) : (
-        <Column overflow="auto" fill gap={FIELD_SPACING} padding={theme.spacing(0, 2, 2, 2)}>
+        <Column fill gap={FIELD_SPACING} padding={theme.spacing(0, 2, 2, 2)}>
           {children}
         </Column>
       )}
