@@ -1,5 +1,6 @@
 import React, { PropsWithChildren } from 'react';
-import { useTheme2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FIELD_SPACING } from '../../constants';
@@ -12,25 +13,14 @@ interface SectionContentProps extends PropsWithChildren {
 
 export function SectionContent({ children, noWrapper }: SectionContentProps) {
   const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   const {
     formNavigation: { active },
   } = useChecksterContext();
 
   return (
-    <div
-      tabIndex={0}
-      role="tabpanel"
-      aria-labelledby={`form-section-${active}`}
-      className={css`
-        display: flex;
-        flex-direction: column;
-        flex: 1 0 0;
-        gap: ${theme.spacing(FIELD_SPACING)};
-        padding-top: ${theme.spacing(FIELD_SPACING)};
-        overflow: auto;
-      `}
-    >
+    <div tabIndex={0} role="tabpanel" aria-labelledby={`form-section-${active}`} className={styles.root}>
       {noWrapper ? (
         children
       ) : (
@@ -40,4 +30,17 @@ export function SectionContent({ children, noWrapper }: SectionContentProps) {
       )}
     </div>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    root: css`
+      display: flex;
+      flex-direction: column;
+      flex: 1 0 0;
+      gap: ${theme.spacing(FIELD_SPACING)};
+      padding-top: ${theme.spacing(FIELD_SPACING)};
+      overflow: auto;
+    `,
+  };
 }

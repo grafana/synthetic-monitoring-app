@@ -98,6 +98,7 @@ const FeedbackButton = ({ feature, isActive, onClick, onClose, reaction, tooltip
           handleSaveFeedback={setSavedFeedback}
         />
       }
+      placement="top-end"
       onClose={onClose}
       show={isActive}
     >
