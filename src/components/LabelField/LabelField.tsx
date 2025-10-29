@@ -88,7 +88,7 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination, disable
   );
 };
 
-function LimitsFetchWarning({
+export function LimitsFetchWarning({
   refetch,
   isRefetching,
   error,

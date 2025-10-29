@@ -13,6 +13,9 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
 
+import { EditCheckV2 } from '../EditCheck/EditCheckV2';
+import { NewCheckV2 } from '../NewCheck/NewCheckV2';
+
 export const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',
   [CheckType.GRPC]: 'grafana.com:50051',
@@ -25,13 +28,17 @@ export const TARGET_MAP = {
   [CheckType.Traceroute]: 'grafana.com',
 };
 
-export async function renderNewForm(checkType: CheckType) {
+export function renderNewFormV2(checkType: CheckType) {
+  return renderNewForm(checkType, NewCheckV2);
+}
+
+export async function renderNewForm(checkType: CheckType, CheckComponent = NewCheck) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`addCheck`, {}, record));
   server.use(apiRoute(`updateAlertsForCheck`, { method: 'put' }, record));
   const checkTypeGroup = getCheckTypeGroup(checkType);
 
-  const res = render(<NewCheck />, {
+  const res = render(<CheckComponent />, {
     path: `${generateRoutePath(AppRoutes.NewCheck)}/${checkTypeGroup}?checkType=${checkType}`,
     route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
   });
@@ -40,7 +47,7 @@ export async function renderNewForm(checkType: CheckType) {
 
   const typeButReallyPaste = async (target: Element, value: string, args?: any) => {
     if (target instanceof HTMLElement) {
-      await act(() => {
+      act(() => {
         target.focus();
       });
       await res.user.paste(value);
@@ -59,7 +66,11 @@ export async function renderNewForm(checkType: CheckType) {
   };
 }
 
-export async function renderEditForm(id: Check['id']) {
+export async function renderEditFormV2(id: Check['id']) {
+  return renderEditForm(id, EditCheckV2);
+}
+
+export async function renderEditForm(id: Check['id'], CheckComponent = EditCheck) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`updateCheck`, {}, record));
 
@@ -67,7 +78,7 @@ export async function renderEditForm(id: Check['id']) {
     throw new Error('id must be an integer');
   }
 
-  const res = render(<EditCheck />, {
+  const res = render(<CheckComponent />, {
     route: AppRoutes.EditCheck,
     path: generateRoutePath(AppRoutes.EditCheck, { id: id! }),
   });

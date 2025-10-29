@@ -28,7 +28,7 @@ import { queryKeys, useCUDChecks, useTestCheck } from 'data/useChecks';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs } from 'hooks/useDSPermission';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { useLimits } from 'hooks/useLimits';
+import { useIsOverlimit } from 'hooks/useIsOverlimit';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
 import { getAlertsPayload } from '../CheckEditor/transformations/toPayload.alerts';
@@ -244,26 +244,6 @@ export function useFormPermissions() {
       canWriteChecks,
     };
   }, [canReadLogs, canWriteChecks]);
-}
-
-export function useIsOverlimit(isExistingCheck: boolean, checkType: CheckType) {
-  const { isOverBrowserLimit, isOverHgExecutionLimit, isOverCheckLimit, isOverScriptedLimit, isReady } = useLimits();
-  // It should always be possible to edit existing checks
-  if (isExistingCheck) {
-    return false;
-  }
-
-  if (!isReady) {
-    // null indicates loading/pending state
-    return null;
-  }
-
-  return (
-    isOverHgExecutionLimit ||
-    isOverCheckLimit ||
-    (checkType === CheckType.Browser && isOverBrowserLimit) ||
-    ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit)
-  );
 }
 
 export function useCheckFormDefaultValues(check?: Check) {

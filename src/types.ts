@@ -724,6 +724,7 @@ export enum FeatureName {
   AlertingRouting = 'synthetic-monitoring-alerting-routing',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
+  CheckEditor = 'synthetic-monitoring-check-editor',
   __TURNOFF = 'test-only-do-not-use',
 }
 
