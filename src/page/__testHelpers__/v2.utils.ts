@@ -36,7 +36,8 @@ export async function fillMandatoryFields({
   }
 
   if (!fieldsToOmit.includes('target')) {
-    const targetField = screen.getByLabelText(/Request target/);
+    const targetSelector = [CheckType.Scripted, CheckType.Browser].includes(checkType) ? /Instance/ : /Request target/;
+    const targetField = screen.getByLabelText(targetSelector);
     await user.type(targetField, TARGET_MAP[checkType]);
   }
   if (!fieldsToOmit.includes('probes')) {
