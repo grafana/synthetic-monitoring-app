@@ -4,6 +4,7 @@ import { css } from '@emotion/css';
 
 import { LogEntry } from './types.adhoc-check';
 
+import { CHECKSTER_TEST_ID } from '../../constants';
 import { getLogColor, getMsgFromLogMsg, getMsgIconFromLog } from './utils';
 
 export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string }) {
@@ -15,10 +16,11 @@ export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string 
       <span>
         Check:{' '}
         <Icon
+          data-testid={CHECKSTER_TEST_ID.feature.adhocCheck.LogMessage.checkIcon}
           className={css`
             color: ${value ? theme.colors.success.text : theme.colors.error.text};
           `}
-          name={value ? 'times' : 'check'}
+          name={value ? 'check' : 'times'}
         />{' '}
         {log.check}
       </span>

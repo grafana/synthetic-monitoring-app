@@ -565,6 +565,13 @@ export const CHECKSTER_TEST_ID = {
       },
     },
   },
+  feature: {
+    adhocCheck: {
+      LogMessage: {
+        checkIcon: 'checkEditor feat adhoc-check LogMessage checkIcon',
+      },
+    },
+  },
 } as const;
 
 // Css
