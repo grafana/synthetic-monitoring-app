@@ -49,7 +49,7 @@
     "@types/jest": "29.5.14",
     "@types/k6": "0.57.1",
     "@types/lodash": "4.17.20",
-    "@types/node": "20.19.23",
+    "@types/node": "24.9.1",
     "@types/prismjs": "1.26.5",
     "@types/react-router-dom": "5.3.3",
     "@types/valid-url": "1.0.7",
