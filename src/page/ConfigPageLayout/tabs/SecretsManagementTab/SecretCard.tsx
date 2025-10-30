@@ -118,7 +118,4 @@ const getStyles = (theme: GrafanaTheme2) => ({
     right: 0;
     top: 0;
   `,
-  copyButton: css`
-    padding: 2px;
-  `,
 });
