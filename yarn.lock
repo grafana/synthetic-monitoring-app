@@ -914,14 +914,14 @@
     "@gitbeaker/core" "^38.12.1"
     "@gitbeaker/requester-utils" "^38.12.1"
 
-"@grafana/alerting@12.3.0-18845633693":
-  version "12.3.0-18845633693"
-  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18845633693.tgz#7066dfef4beeba6c492c82ddbf54ac29083686e5"
-  integrity sha512-6hdAwhVOQH2vO3ZSuUBCPl95KKs/6mkeWnT90nilgq/2nxrIHL1ZLzyDdrhlxm8XTI2kv5QhC619x/qgznArtw==
+"@grafana/alerting@12.3.0-18850340049":
+  version "12.3.0-18850340049"
+  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18850340049.tgz#5cdf7c5ab71b47251fadc5b6ca0f3cb5c6c8ad46"
+  integrity sha512-rqkn0BXSJnNKqmkjGU7BHB9IWCc5P6SchDfx4O4ud6Mh8Xc4T8bM+VfOLnSbPzTFpNVPNocy2s24cAbt/p2weg==
   dependencies:
     "@emotion/css" "11.13.5"
     "@faker-js/faker" "^9.8.0"
-    "@grafana/i18n" "12.3.0-18845633693"
+    "@grafana/i18n" "12.3.0-18850340049"
     "@reduxjs/toolkit" "^2.9.0"
     fishery "^2.3.1"
     lodash "^4.17.21"
@@ -1005,10 +1005,10 @@
     micro-memoize "^4.1.2"
     react-i18next "^15.0.0"
 
-"@grafana/i18n@12.3.0-18845633693":
-  version "12.3.0-18845633693"
-  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18845633693.tgz#db83591666314833c5fde46bf5cccb706e6c1ccb"
-  integrity sha512-o9uH/kP54Yyja5QCFE5PrU6O6tvqkrKlBnRT32x+7g0hggTwkSnCgdJ2YbMqX/rjTKDZseeaiSkEmoImHnIPnQ==
+"@grafana/i18n@12.3.0-18850340049":
+  version "12.3.0-18850340049"
+  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18850340049.tgz#7465d162856d5a5eea0530b03e5424801837535a"
+  integrity sha512-CD5t3TuoH9iJNuaR0nS7pH/rfq26Hp5B17x6p/cyAvbZh1Qzfnzk5zGMsS9PPMn6f3knxMoXA08WlWLGhf9QdQ==
   dependencies:
     "@formatjs/intl-durationformat" "^0.7.0"
     "@typescript-eslint/utils" "^8.33.1"
