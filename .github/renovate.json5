@@ -7,7 +7,13 @@
   "packageRules": [
     // we can never update the React packages until grafana does
     {
-      "matchPackageNames": ["react", "react-dom", "eslint-plugin-react-hooks"],
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "eslint-plugin-react-hooks",
+        "react-router-dom",
+        "@types/react-router-dom"
+      ],
       "enabled": false
     },
     // packages which we consider feature complete but if they ever do receive updates we should review them
