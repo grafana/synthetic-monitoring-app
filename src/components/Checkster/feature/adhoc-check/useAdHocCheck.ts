@@ -21,7 +21,6 @@ export function useAdHocCheck() {
     meta: {
       eventType: FaroEvent.TEST_CHECK,
     },
-    // @ts-expect-error Supported property
     scope: {
       id: 'run-ad-hoc-check',
     },
