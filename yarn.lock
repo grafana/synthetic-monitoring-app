@@ -909,14 +909,14 @@
     qs "^6.10.1"
     xcase "^2.0.1"
 
-"@grafana/alerting@12.3.0-18839373754":
-  version "12.3.0-18839373754"
-  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18839373754.tgz#ba104683efb7f00cb998d21a1718026d69c972fe"
-  integrity sha512-2qVXUlxYI5bOMTNkkrsofX+yX3IcwBE45saawT16cD1NSUg8YYX7jyPh1dMLP2xMgiLE8m7OQd0w/8yLY3YOFQ==
+"@grafana/alerting@12.3.0-18845633693":
+  version "12.3.0-18845633693"
+  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18845633693.tgz#7066dfef4beeba6c492c82ddbf54ac29083686e5"
+  integrity sha512-6hdAwhVOQH2vO3ZSuUBCPl95KKs/6mkeWnT90nilgq/2nxrIHL1ZLzyDdrhlxm8XTI2kv5QhC619x/qgznArtw==
   dependencies:
     "@emotion/css" "11.13.5"
     "@faker-js/faker" "^9.8.0"
-    "@grafana/i18n" "12.3.0-18839373754"
+    "@grafana/i18n" "12.3.0-18845633693"
     "@reduxjs/toolkit" "^2.9.0"
     fishery "^2.3.1"
     lodash "^4.17.21"
@@ -1000,10 +1000,10 @@
     micro-memoize "^4.1.2"
     react-i18next "^15.0.0"
 
-"@grafana/i18n@12.3.0-18839373754":
-  version "12.3.0-18839373754"
-  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18839373754.tgz#2c5b84a0f77028eba98c3d60b239466af734b458"
-  integrity sha512-JgbbaRLBFYqbrwU6OrSXKj0biasDQ4w36BCRANCNDU0QDxeiEmIiQTjMKVK5wFXQ9pWsC2RMMd+k7/j5Bs/wvg==
+"@grafana/i18n@12.3.0-18845633693":
+  version "12.3.0-18845633693"
+  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18845633693.tgz#db83591666314833c5fde46bf5cccb706e6c1ccb"
+  integrity sha512-o9uH/kP54Yyja5QCFE5PrU6O6tvqkrKlBnRT32x+7g0hggTwkSnCgdJ2YbMqX/rjTKDZseeaiSkEmoImHnIPnQ==
   dependencies:
     "@formatjs/intl-durationformat" "^0.7.0"
     "@typescript-eslint/utils" "^8.33.1"
