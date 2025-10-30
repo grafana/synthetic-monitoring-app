@@ -31,8 +31,8 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@babel/core": "7.28.5",
-    "@commitlint/cli": "19.8.1",
-    "@commitlint/config-conventional": "19.8.1",
+    "@commitlint/cli": "20.1.0",
+    "@commitlint/config-conventional": "20.0.0",
     "@faker-js/faker": "9.9.0",
     "@grafana/eslint-config": "8.2.0",
     "@grafana/tsconfig": "2.0.1",
