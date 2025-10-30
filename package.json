@@ -34,7 +34,7 @@
     "@commitlint/cli": "20.1.0",
     "@commitlint/config-conventional": "20.0.0",
     "@faker-js/faker": "9.9.0",
-    "@grafana/eslint-config": "8.2.0",
+    "@grafana/eslint-config": "9.0.0",
     "@grafana/tsconfig": "2.0.1",
     "@stylistic/eslint-plugin-ts": "4.4.1",
     "@swc/core": "1.14.0",

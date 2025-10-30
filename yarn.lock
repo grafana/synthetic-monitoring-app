@@ -964,10 +964,10 @@
     tslib "2.8.1"
     typescript "5.9.2"
 
-"@grafana/eslint-config@8.2.0":
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/@grafana/eslint-config/-/eslint-config-8.2.0.tgz#3334f4c763597297223f3ae8a258434a62860111"
-  integrity sha512-siCxTY3uuCg2ekztQwS8i7DBPHH8xDGiWlZAf+d/TVZVB0TluIsM2jHEhNyC2XzTZdgDLbmDJwUt5SCnHC7iAg==
+"@grafana/eslint-config@9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@grafana/eslint-config/-/eslint-config-9.0.0.tgz#b39da1b6f923da1f922796765a352e2202707c83"
+  integrity sha512-Jw7/kyO29iNKiHrDwsVwP3/YSNdYCt8ofCgSFNfcYQeK7+Z3zn1RrMBXWohVQ47OuwjXr6AUqo5ReQBCPq6Fzw==
 
 "@grafana/faro-core@^1.19.0":
   version "1.19.0"
