@@ -909,14 +909,14 @@
     qs "^6.10.1"
     xcase "^2.0.1"
 
-"@grafana/alerting@12.3.0-18804964027":
-  version "12.3.0-18804964027"
-  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18804964027.tgz#fe1e60d13e03fb39378fdbaccc8f4a230fc67839"
-  integrity sha512-LTaC0EcJglus18588z46Gm92Xz2LVlhqKLkh8Q7ri74674qQd45FcREw7VOzxz3OCid7yV7e+iQ1fYPA4b1Nqg==
+"@grafana/alerting@12.3.0-18830193653":
+  version "12.3.0-18830193653"
+  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18830193653.tgz#2c34ab3d275ebaba92aa4fb3cd4530d765238bd0"
+  integrity sha512-y0LIWS7fWVbvdJvXqEge4FyA6vpnzKk7vUa+7k2qrWyXrfHi5YwVlY8OuNm6NrgXgr0V+qDn+ZSiaIVi05HzqA==
   dependencies:
     "@emotion/css" "11.13.5"
     "@faker-js/faker" "^9.8.0"
-    "@grafana/i18n" "12.3.0-18804964027"
+    "@grafana/i18n" "12.3.0-18830193653"
     "@reduxjs/toolkit" "^2.9.0"
     fishery "^2.3.1"
     lodash "^4.17.21"
@@ -1000,10 +1000,10 @@
     micro-memoize "^4.1.2"
     react-i18next "^15.0.0"
 
-"@grafana/i18n@12.3.0-18804964027":
-  version "12.3.0-18804964027"
-  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18804964027.tgz#ddb3e0009fdc0b520a54977b21b3fe5db124e1d5"
-  integrity sha512-hYM2Xvdf/d0bal2kjGLxtd9I1txjt+I8FdcIkRleSAdIbllD89IL9Q3imLFhlf3m237be38IgDm9pzTxn/4slQ==
+"@grafana/i18n@12.3.0-18830193653":
+  version "12.3.0-18830193653"
+  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18830193653.tgz#1dc4ecd4b76d306c4fe76fae812826e8dd6ad23b"
+  integrity sha512-e7klo9CxC4IYI6x55ythB41Ki4lI6Q9p1OWfAN7jefHFF7jHx8arY1o0co6a00QadoWxEI0WRYpO/SdgpDAK3A==
   dependencies:
     "@formatjs/intl-durationformat" "^0.7.0"
     "@typescript-eslint/utils" "^8.33.1"
@@ -6548,7 +6548,7 @@ jackspeak@^4.1.1:
   dependencies:
     "@isaacs/cliui" "^8.0.2"
 
-jest-canvas-mock@^2.5.2:
+jest-canvas-mock@2.5.2:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/jest-canvas-mock/-/jest-canvas-mock-2.5.2.tgz#7e21ebd75e05ab41c890497f6ba8a77f915d2ad6"
   integrity sha512-vgnpPupjOL6+L5oJXzxTxFrlGEIbHdZqFU+LFNdtLxZ3lRDCl17FlTMM7IatoRQkrcyOTMlDinjUguqmQ6bR2A==
