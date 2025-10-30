@@ -17,7 +17,7 @@ import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import pluralize from 'pluralize';
 
-import { CheckAlertType, CheckFormValues } from 'types';
+import { CheckAlertType, CheckFormValuesWithAlert } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
 import { AlertEvaluationInfo } from './AlertEvaluationInfo';
@@ -37,10 +37,7 @@ export const FailedExecutionsAlert = ({
   onSelectionChange: (type: CheckAlertType) => void;
   tooltipContent: PopoverContent;
 }) => {
-  const {
-    formState: { disabled: isFormDisabled },
-  } = useFormContext();
-  const { getValues, control, formState } = useFormContext<CheckFormValues>();
+  const { formState, getValues, control } = useFormContext<CheckFormValuesWithAlert<typeof alert.type>>();
   const revalidateForm = useRevalidateForm();
   const styles = useStyles2(getAlertItemStyles);
 
@@ -126,7 +123,7 @@ export const FailedExecutionsAlert = ({
               return (
                 <Select // eslint-disable-line @typescript-eslint/no-deprecated
                   {...fieldProps}
-                  disabled={!selected || isFormDisabled}
+                  disabled={!selected || formState.disabled}
                   data-testid="alertPendingPeriod"
                   id={`alert-period-${alert.type}`}
                   options={validPeriods}
@@ -135,7 +132,7 @@ export const FailedExecutionsAlert = ({
                     field.onChange(value);
                     trackChangePeriod({ name: alert.type, period: value ?? '' });
                     // clear threshold error if new period is valid
-                    revalidateForm<CheckFormValues>(`alerts.${alert.type}`);
+                    revalidateForm<CheckFormValuesWithAlert<typeof alert.type>>(`alerts.${alert.type}`);
                   }}
                 />
               );
@@ -148,7 +145,7 @@ export const FailedExecutionsAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
-      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
+      <RunbookUrl alertType={alert.type} selected={selected} disabled={formState.disabled} />
 
       {selected && !!testExecutionsPerPeriod && (
         <AlertEvaluationInfo
