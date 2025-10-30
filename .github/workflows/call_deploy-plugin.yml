@@ -67,7 +67,7 @@ jobs:
           persist-credentials: false
 
       - name: Get prod catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@fdb6afaadd82c078cd2b29a3476b4c1365244cea
+        uses: grafana/shared-workflows/actions/get-vault-secrets@828a377eed7ee1bc58ab4c0242440368812bdc02
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_PROD=plugins/gcom-publish-token:prod
@@ -115,7 +115,7 @@ jobs:
           persist-credentials: false
 
       - name: Get dev catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@fdb6afaadd82c078cd2b29a3476b4c1365244cea
+        uses: grafana/shared-workflows/actions/get-vault-secrets@828a377eed7ee1bc58ab4c0242440368812bdc02
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_DEV=plugins/gcom-publish-token:dev
@@ -163,7 +163,7 @@ jobs:
           persist-credentials: false
 
       - name: Get ops catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@fdb6afaadd82c078cd2b29a3476b4c1365244cea
+        uses: grafana/shared-workflows/actions/get-vault-secrets@828a377eed7ee1bc58ab4c0242440368812bdc02
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_OPS=plugins/gcom-publish-token:ops
