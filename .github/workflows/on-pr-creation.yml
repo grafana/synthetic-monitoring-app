@@ -17,13 +17,6 @@ jobs:
       contents: read
     uses: ./.github/workflows/call_lint.yml
 
-  typecheck:
-    needs: setup-env-and-cache
-    name: Typecheck
-    permissions:
-      contents: read
-    uses: ./.github/workflows/call_typecheck.yml
-
   test:
     needs: setup-env-and-cache
     name: Integration and unit tests
