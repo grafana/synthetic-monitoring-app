@@ -50,6 +50,7 @@ const TimepointExplorerInternal = () => {
               feature="timepoint-explorer"
               about={{
                 text: `New feature!`,
+                link: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/analyze-results/visualize-check-execution/`,
               }}
             />
             <div>
