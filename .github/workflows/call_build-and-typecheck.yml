@@ -15,7 +15,10 @@ jobs:
       - name: Setup Plugin Environment
         uses: ./.github/actions/setup-env
 
-      - name: Build plugin and typecheck
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Build plugin
         run: mkdir -p artifacts && yarn build --json=artifacts/currentBundleSize.json --no-devtool
 
       - name: Upload this build's bundle size artifact
