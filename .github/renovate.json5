@@ -42,7 +42,8 @@
         "webpack-livereload-plugin",
         "webpack-merge",
         "webpack-subresource-integrity",
-        "webpack-virtual-modules"
+        "webpack-virtual-modules",
+        "whatwg-fetch"
       ],
       "enabled": true,
       "abandonmentThreshold": "15 years"
