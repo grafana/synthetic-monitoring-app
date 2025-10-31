@@ -37,6 +37,7 @@ module.exports = {
       'prettier/esm',
       'constrained-editor-plugin',
       '@faker-js/faker',
+      'react-error-boundary',
     ]),
   ],
 };
