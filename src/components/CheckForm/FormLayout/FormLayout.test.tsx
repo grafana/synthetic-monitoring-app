@@ -1,7 +1,7 @@
 import React from 'react';
 import { FieldValues, FormProvider, useForm, useFormContext } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { screen, within } from '@testing-library/react';
+import { customZodResolver } from 'features/formValidation/utils';
 import { z } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
 import { render } from 'test/render';
@@ -382,7 +382,7 @@ const TestForm = <T extends FieldValues>({
       job: ``,
       target: ``,
     },
-    resolver: zodResolver(schema),
+    resolver: customZodResolver<TestValues>(schema),
     disabled,
   });
 

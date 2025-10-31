@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { customZodResolver } from 'features/formValidation/utils';
 
 import { Check, CheckFormValues } from 'types';
 
@@ -26,7 +26,7 @@ export function CheckFormContextProvider({
     disabled: disabled || checkFormMeta.isDisabled,
     defaultValues: checkFormMeta.defaultFormValues,
     shouldFocusError: false, // we manage focus manually
-    resolver: zodResolver(checkFormMeta.schema),
+    resolver: customZodResolver<CheckFormValues>(checkFormMeta.schema),
   });
 
   useEffect(() => {

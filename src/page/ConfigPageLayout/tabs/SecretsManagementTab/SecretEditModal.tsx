@@ -3,7 +3,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { customZodResolver } from 'features/formValidation/utils';
 
 import { Secret } from './types';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
@@ -72,6 +72,10 @@ function getErrorMessage(error: unknown): string {
   return 'An unknown error occurred';
 }
 
+interface SecretFormValuesWithPlaintext extends SecretFormValues {
+  plaintext?: string;
+}
+
 export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: SecretEditModalProps) {
   const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(name);
   const saveSecret = useSaveSecret();
@@ -93,10 +97,10 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
     getValues,
     setValue,
     trigger,
-  } = useForm<SecretFormValues & { plaintext?: string }>({
+  } = useForm<SecretFormValuesWithPlaintext>({
     defaultValues,
     disabled: isLoading || saveSecret.isPending,
-    resolver: zodResolver(secretSchemaFactory(isNewSecret, existingNames)),
+    resolver: customZodResolver<SecretFormValuesWithPlaintext>(secretSchemaFactory(isNewSecret, existingNames)),
   });
 
   // Set the default value for plaintext to empty string when secret is reset (for validation to work)

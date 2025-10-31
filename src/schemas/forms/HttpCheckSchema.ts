@@ -39,17 +39,17 @@ const httpRegexValidationSchema: ZodType<HttpRegexValidationFormValue> = httpReg
 );
 
 const httpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
-  sslOptions: z.nativeEnum(HttpSslOption),
+  sslOptions: z.enum(HttpSslOption),
   headers: headersSchema,
   proxyConnectHeaders: headersSchema,
   regexValidations: z.array(httpRegexValidationSchema),
   followRedirects: z.boolean(),
-  compression: z.nativeEnum(HTTPCompressionAlgo),
+  compression: z.enum(HTTPCompressionAlgo),
   proxyURL: z.string().optional(),
-  ipVersion: z.nativeEnum(IpVersion),
-  method: z.nativeEnum(HttpMethod),
+  ipVersion: z.enum(IpVersion),
+  method: z.enum(HttpMethod),
   body: z.string().optional(),
-  validHTTPVersions: z.array(z.nativeEnum(HttpVersion)),
+  validHTTPVersions: z.array(z.enum(HttpVersion)),
   validStatusCodes: z.array(z.number()),
   bearerToken: z.string().optional(),
   basicAuth: z

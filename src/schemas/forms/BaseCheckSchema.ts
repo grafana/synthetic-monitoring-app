@@ -17,7 +17,7 @@ export const baseCheckSchema = z.object({
   timeout: createTimeoutSchema(),
   enabled: z.boolean(),
   probes: checkProbesSchema,
-  alertSensitivity: z.nativeEnum(AlertSensitivity),
+  alertSensitivity: z.enum(AlertSensitivity),
   labels: labelsSchema,
   publishAdvancedMetrics: z.boolean(),
   alerts: checkAlertsSchema.optional(),

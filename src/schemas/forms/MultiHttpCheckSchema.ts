@@ -33,7 +33,7 @@ export const MIN_TIMEOUT_MULTI_HTTP = ONE_SECOND_IN_MS * 5;
 export const MAX_TIMEOUT_MULTI_HTTP = ONE_MINUTE_IN_MS * 3;
 
 const multiHttpRequestSchema: ZodType<RequestProps> = z.object({
-  method: z.nativeEnum(HttpMethod),
+  method: z.enum(HttpMethod),
   url: httpTargetSchema,
   body: z
     .object({
@@ -54,25 +54,25 @@ const multiHttpRequestSchema: ZodType<RequestProps> = z.object({
 
 const assertionValueSchema = z
   .string({
-    required_error: 'Value is required',
+    error: 'Value is required',
   })
   .min(1, { message: 'Value is required' });
 
 const assertionExpressionSchema = z
   .string({
-    required_error: 'Expression is required',
+    error: 'Expression is required',
   })
   .min(1, { message: 'Expression is required' });
 
 const multiHttpAssertionTextSchema: ZodType<AssertionText> = z.object({
-  condition: z.nativeEnum(AssertionConditionVariant),
-  subject: z.nativeEnum(AssertionSubjectVariant),
+  condition: z.enum(AssertionConditionVariant),
+  subject: z.enum(AssertionSubjectVariant),
   type: z.literal(MultiHttpAssertionType.Text),
   value: assertionValueSchema,
 });
 
 const multiHttpAssertionJsonPathValueSchema: ZodType<AssertionJsonPathValue> = z.object({
-  condition: z.nativeEnum(AssertionConditionVariant),
+  condition: z.enum(AssertionConditionVariant),
   expression: assertionExpressionSchema,
   type: z.literal(MultiHttpAssertionType.JSONPathValue),
   value: assertionValueSchema,
@@ -85,7 +85,7 @@ const multiHttpAssertionJsonPathSchema: ZodType<AssertionJsonPath> = z.object({
 
 const multiHttpAssertionRegexSchema: ZodType<AssertionRegex> = z.object({
   expression: assertionExpressionSchema,
-  subject: z.nativeEnum(AssertionSubjectVariant),
+  subject: z.enum(AssertionSubjectVariant),
   type: z.literal(MultiHttpAssertionType.Regex),
 });
 

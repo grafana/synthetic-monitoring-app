@@ -34,5 +34,9 @@ export function useLiveErrors() {
     };
   }, [getValues, schema, values]);
 
+  console.log({
+    allErrors,
+  });
+
   return allErrors;
 }

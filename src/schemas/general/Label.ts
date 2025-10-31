@@ -9,14 +9,14 @@ const LABEL_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 const labelSchema = z.object({
   name: z
     .string({
-      required_error: NAME_REQUIRED_ERROR,
+      error: NAME_REQUIRED_ERROR,
     })
     .min(1, { message: NAME_REQUIRED_ERROR })
     .max(MAX_LENGTH, { message: `{type} names must be ${MAX_LENGTH} characters or less` })
     .regex(LABEL_REGEX, { message: 'Invalid {type} name' }),
   value: z
     .string({
-      required_error: VALUE_REQUIRED_ERROR,
+      error: VALUE_REQUIRED_ERROR,
     })
     .min(1, { message: VALUE_REQUIRED_ERROR })
     .max(MAX_LENGTH, { message: `{type} values must be ${MAX_LENGTH} characters or less` }),

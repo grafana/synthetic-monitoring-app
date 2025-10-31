@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const jobSchema = z
   .string({
-    required_error: 'Job name is required',
+    error: 'Job name is required',
   })
   .trim()
   .min(1, { message: 'Job name is required' })

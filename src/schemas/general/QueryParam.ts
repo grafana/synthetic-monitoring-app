@@ -5,7 +5,7 @@ const NAME_REQUIRED_ERROR = '{type} name is required';
 const queryParamSchema = z.object({
   name: z
     .string({
-      required_error: NAME_REQUIRED_ERROR,
+      error: NAME_REQUIRED_ERROR,
     })
     .min(1, { message: NAME_REQUIRED_ERROR }),
   value: z.string(),
