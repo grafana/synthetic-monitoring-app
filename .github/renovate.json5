@@ -19,14 +19,15 @@
     // packages which we consider feature complete but if they ever do receive updates we should review them
     {
       "matchPackageNames": [
-        "dorny/paths-filter",
         "acorn-walk",
         "css-loader",
+        "dorny/paths-filter",
         "eslint-plugin-simple-import-sort",
         "identity-obj-proxy",
         "imports-loader",
         "ip-address",
         "is-base64",
+        "jest-canvas-mock",
         "pluralize",
         "punycode",
         "raw-loader",
