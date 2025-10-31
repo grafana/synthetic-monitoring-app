@@ -134,7 +134,7 @@
     "react-async-hook": "4.0.0",
     "react-data-table-component": "^7.5.4",
     "react-dom": "18.2.0",
-    "react-error-boundary": "4.1.2",
+    "react-error-boundary": "6.0.0",
     "react-hook-form": "7.65.0",
     "react-popper": "^2.2.5",
     "react-router-dom": "^5.2.0",
