@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, ClipboardButton, Icon, Tag, Text, useStyles2 } from '@grafana/ui';
+import { Button, Tag, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { SecretWithMetadata } from './types';
@@ -65,19 +65,6 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
         )}
       </div>
       <div className={styles.keyValue}>
-        <strong>ID:</strong> {secret.uuid}{' '}
-        <ClipboardButton
-          className={styles.copyButton}
-          variant="secondary"
-          size="sm"
-          fill="text"
-          getText={() => secret.uuid}
-          aria-label={`Copy ${secret.name} ID`}
-        >
-          <Icon name="copy" />
-        </ClipboardButton>
-      </div>
-      <div className={styles.keyValue}>
         <strong>Description:</strong> {secret.description}
       </div>
       <div className={styles.keyValue}>
@@ -130,8 +117,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
     position: absolute;
     right: 0;
     top: 0;
-  `,
-  copyButton: css`
-    padding: 2px;
   `,
 });
