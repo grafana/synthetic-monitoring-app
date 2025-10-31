@@ -8,6 +8,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useDeleteCheck } from 'data/useChecks';
+import { useDuplicateCheck } from 'hooks/useDuplicateCheck';
 
 interface CheckItemActionButtonsProps {
   check: Check;
@@ -20,6 +21,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { mutate: deleteCheck } = useDeleteCheck();
+  const { duplicateCheck } = useDuplicateCheck();
 
   return (
     <div className={styles.actionButtonGroup}>
@@ -48,6 +50,13 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         disabled={!canWriteChecks}
         variant="secondary"
         fill={`text`}
+      />
+      <IconButton
+        data-testid="duplicate-check-button"
+        tooltip="Duplicate check"
+        name="copy"
+        onClick={() => duplicateCheck(check)}
+        disabled={!canWriteChecks}
       />
       <IconButton
         tooltip="Delete check"
