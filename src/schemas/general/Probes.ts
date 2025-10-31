@@ -10,7 +10,7 @@ export const probesSchema = z
   .superRefine((probes, ctx) => {
     if (probes.length > MAX_PROBES) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: `custom`,
         message: `The maximum probe quantity is ${MAX_PROBES}, you have selected ${probes.length}`,
       });
     }

@@ -24,7 +24,7 @@ export const headersSchema = z
 
     if (headerNames.length !== uniqueNames.size) {
       return ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: `custom`,
         message: '{type} names cannot be duplicated',
       });
     }

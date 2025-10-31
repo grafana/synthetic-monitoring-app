@@ -64,14 +64,14 @@ const httpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
       }
       if (!data.username && data.password) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: `custom`,
           message: 'Username is required',
           path: ['username'],
         });
       }
       if (data.username && !data.password) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: `custom`,
           message: 'Password is required',
           path: ['password'],
         });

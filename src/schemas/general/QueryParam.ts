@@ -17,7 +17,7 @@ export const queryParamsSchema = z.array(queryParamSchema).superRefine((queryPar
 
   if (queryParamNames.length !== uniqueNames.size) {
     return ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: `custom`,
       message: '{type} names cannot be duplicated',
     });
   }

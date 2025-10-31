@@ -28,7 +28,7 @@ export const labelsSchema = z.array(labelSchema).superRefine((labels, ctx) => {
 
   if (labelNames.length !== uniqueNames.size) {
     return ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: `custom`,
       message: '{type} names cannot be duplicated',
     });
   }
