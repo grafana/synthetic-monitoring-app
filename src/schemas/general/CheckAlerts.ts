@@ -23,7 +23,7 @@ const checkAlertSchema = z
       .refine((value) => !value || (value >= 1 && !isScientificNotation(value)), {
         message: invalidThreshold,
       }),
-    runbookUrl: z.string().url({ message: 'Runbook URL must be a valid URL' }).optional().or(z.literal('')),
+    runbookUrl: z.url({ message: 'Runbook URL must be a valid URL' }).optional().or(z.literal('')),
   })
   .refine(
     (data) => {
@@ -105,7 +105,7 @@ function tcpTLSTargetCertificateCloseToExpiringRefinement(data: CheckFormValuesT
     ctx.addIssue({
       path: ['alerts.TLSTargetCertificateCloseToExpiring.isSelected'],
       message: 'TLS must be enabled in Request options in order to collect the required TLS metrics for this alert',
-      code: z.ZodIssueCode.custom,
+      code: `custom`,
     });
   }
 }
@@ -121,7 +121,7 @@ function checkThresholdIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) 
     ctx.addIssue({
       path: ['alerts.ProbeFailedExecutionsTooHigh.threshold'],
       message: `Threshold (${failedExecutionsAlertThreshold}) must be lower than or equal to the total number of checks per period (${totalChecksPerPeriod})`,
-      code: z.ZodIssueCode.custom,
+      code: `custom`,
     });
   }
 }
@@ -135,7 +135,7 @@ function checkAlertPeriodIsValid(data: CheckFormValuesBase, alertType: CheckAler
     ctx.addIssue({
       path: [`alerts.${alertType}.period`],
       message: `Period (${alertPeriod}) must be equal or higher to the frequency (${formatDuration(frequency)})`,
-      code: z.ZodIssueCode.custom,
+      code: `custom`,
     });
   }
 }

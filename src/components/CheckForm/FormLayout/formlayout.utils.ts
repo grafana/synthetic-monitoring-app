@@ -52,8 +52,8 @@ export function checkForErrors<T extends FieldValues>({
   const result = schema.safeParse(values);
 
   if (!result.success) {
-    const errors = result.error.errors.reduce<string[]>((acc, err) => {
-      const path = err.path.map((e) => (typeof e === 'number' ? ENTRY_INDEX_CHAR : e)).join('.');
+    const errors = result.error.issues.reduce<string[]>((acc, issue) => {
+      const path = issue.path.map((e) => (typeof e === 'number' ? ENTRY_INDEX_CHAR : e)).join('.');
       const isRelevant = fields.some((f) => path.startsWith(f));
 
       if (isRelevant) {

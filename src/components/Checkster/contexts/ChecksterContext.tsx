@@ -10,11 +10,11 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { FieldValues, FormProvider, useForm } from 'react-hook-form';
+import { customZodResolver } from 'features/formValidation/utils';
 import { isEqual } from 'lodash';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
-import { ZodSchema } from 'zod';
+import { ZodType } from 'zod';
 
 import { FormNavigationState, FormSectionName } from '../types';
 import { Check, CheckFormValues, CheckType } from 'types';
@@ -43,7 +43,7 @@ interface ChecksterContextValue {
   check: Check | undefined;
   formNavigation: FormNavigationState;
   changeCheckType: (checkType: CheckType) => void;
-  schema: ZodSchema;
+  schema: ZodType<FieldValues>;
   checkType: CheckType;
   isNew: boolean;
   isK6Check: boolean;
@@ -103,7 +103,7 @@ export function ChecksterProvider({
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const [checkType, setCheckType] = useState<CheckType>(
-    isCheck(externalCheck) ? getCheckType(externalCheck.settings) : externalCheckType ?? DEFAULT_CHECK_TYPE
+    isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
   );
 
   const formId = useDOMId();
@@ -167,7 +167,7 @@ export function ChecksterProvider({
   // Form stuff
   const formMethods = useForm<CheckFormValues>({
     defaultValues: defaultFormValues,
-    resolver: zodResolver(schema),
+    resolver: customZodResolver<CheckFormValues>(schema),
     mode: 'onChange', // onBlur is a bit fiddly
     reValidateMode: 'onChange',
     disabled: disabled || isLoading, // || isSubmitting,

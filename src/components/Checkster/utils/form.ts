@@ -100,7 +100,7 @@ export function getAllErrorFields<T extends FieldValues>(schema: ZodType<T>, val
     return [];
   }
 
-  return result.error.errors.reduce<string[]>((acc, issue) => {
+  return result.error.issues.reduce<string[]>((acc, issue) => {
     acc.push(issue.path.join('.'));
 
     return acc;

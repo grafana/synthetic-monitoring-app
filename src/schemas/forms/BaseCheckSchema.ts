@@ -17,7 +17,7 @@ export const baseCheckSchema = z.object({
   timeout: createTimeoutSchema(),
   enabled: z.boolean(),
   probes: checkProbesSchema,
-  alertSensitivity: z.nativeEnum(AlertSensitivity),
+  alertSensitivity: z.enum(AlertSensitivity),
   labels: labelsSchema,
   publishAdvancedMetrics: z.boolean(),
   alerts: checkAlertsSchema.optional(),
@@ -31,7 +31,7 @@ export function addRefinements(schema: ZodType<CheckFormValuesBase>) {
         ctx.addIssue({
           path: ['frequency'],
           message: `Frequency must be greater than or equal to timeout (${formatDuration(timeout)})`,
-          code: z.ZodIssueCode.custom,
+          code: `custom`,
         });
       }
     })

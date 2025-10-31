@@ -1,5 +1,5 @@
 import { BaseSyntheticEvent, useCallback, useMemo, useRef, useState } from 'react';
-import { FieldErrors } from 'react-hook-form';
+import { FieldErrors, FieldValues } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { dateTimeFormat } from '@grafana/data';
 import { trackAdhocCreated } from 'features/tracking/checkFormEvents';
@@ -49,7 +49,7 @@ type CheckFormMetaReturn = {
   isNew: boolean;
   isExistingCheck: boolean;
   getIsExistingCheck: typeof getIsExistingCheck;
-  schema: ZodType;
+  schema: ZodType<FieldValues>;
   checkType: CheckType;
   checkTypeGroup: CheckTypeGroup | undefined;
   checkState: 'new' | 'existing';
