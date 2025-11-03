@@ -115,7 +115,7 @@
     "@grafana/scenes-react": "5.42.0",
     "@grafana/schema": "^12.1.0",
     "@grafana/ui": "^12.1.0",
-    "@hookform/resolvers": "3.10.0",
+    "@hookform/resolvers": "5.2.2",
     "@tanstack/react-query": "5.90.5",
     "@tanstack/react-query-devtools": "5.90.2",
     "@types/pluralize": "^0.0.33",
@@ -145,7 +145,7 @@
     "usehooks-ts": "3.1.1",
     "valid-url": "^1.0.9",
     "yaml": "^2.2.2",
-    "zod": "3.25.76"
+    "zod": "4.1.12"
   },
   "resolutions": {
     "rxjs": "7.8.2"
