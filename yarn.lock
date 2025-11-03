@@ -985,14 +985,14 @@
     "@gitbeaker/core" "^38.12.1"
     "@gitbeaker/requester-utils" "^38.12.1"
 
-"@grafana/alerting@12.3.0-18878644950":
-  version "12.3.0-18878644950"
-  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18878644950.tgz#a33b31b731c6355dd9a4bf85d0db7e9dfa3d06c2"
-  integrity sha512-y/sRUjB/733oYWurTXhdaSkGB16ZM1+LRrTvB9CMwy6YSyzMWZRxbSlwIdSeZyPAS1+8rVuHmK2xppoY87Ap2A==
+"@grafana/alerting@12.3.0-18971876900":
+  version "12.3.0-18971876900"
+  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0-18971876900.tgz#186d46fdaa2cb854a4aa4338b28b0620b3e2052f"
+  integrity sha512-IJqKHKbQLw3nP8SdvLiAPy7MuQwF6VC9D7tVASZWyUQM9xlAiKkCqY3X/hL+dTz3JOxOECI2xgTXO4rptbaueg==
   dependencies:
     "@emotion/css" "11.13.5"
     "@faker-js/faker" "^9.8.0"
-    "@grafana/i18n" "12.3.0-18878644950"
+    "@grafana/i18n" "12.3.0-18971876900"
     "@reduxjs/toolkit" "^2.9.0"
     fishery "^2.3.1"
     lodash "^4.17.21"
@@ -1076,10 +1076,10 @@
     micro-memoize "^4.1.2"
     react-i18next "^15.0.0"
 
-"@grafana/i18n@12.3.0-18878644950":
-  version "12.3.0-18878644950"
-  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18878644950.tgz#f91c251d2ce730d4eaed4dadd0ef50a62ac2784a"
-  integrity sha512-/KYsSvWsssIWpGyyWKzzQxaArjUUE3l3D1dqb0iQOY96D9rrd6oKWeZAoc6sHSbOK3K517WJK7E1CdfiE1jeYA==
+"@grafana/i18n@12.3.0-18971876900":
+  version "12.3.0-18971876900"
+  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0-18971876900.tgz#d6f2a29aca9382ec3ee0dd942aabe893e87e4e97"
+  integrity sha512-kuU1Y+pkF/omFkzjit8D88Fqc4uL/tcd8IV+bz5fnIg5crjHpjcv403ji6rSSrODjVNJqyVfRAD7sz4qK3Mpjw==
   dependencies:
     "@formatjs/intl-durationformat" "^0.7.0"
     "@typescript-eslint/utils" "^8.33.1"
@@ -8447,8 +8447,9 @@ react-custom-scrollbars-2@4.5.0:
     prop-types "^15.5.10"
     raf "^3.1.0"
 
-"react-data-grid@github:grafana/react-data-grid#a922856b5ede21d55db3fdffb6d38dc76bdc7c58":
+react-data-grid@grafana/react-data-grid#a922856b5ede21d55db3fdffb6d38dc76bdc7c58:
   version "7.0.0-beta.56"
+  uid a922856b5ede21d55db3fdffb6d38dc76bdc7c58
   resolved "https://codeload.github.com/grafana/react-data-grid/tar.gz/a922856b5ede21d55db3fdffb6d38dc76bdc7c58"
   dependencies:
     clsx "^2.0.0"
