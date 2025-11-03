@@ -93,7 +93,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_PROD: ${{ env.GCOM_PUBLISH_TOKEN_PROD }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@80ead8db77d00a331e225e0ae1d55ffccbb8a08b
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@bd860d061a8aa763b8e01a5898c4583ca0d4d08e
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-prod/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: prod
@@ -141,7 +141,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_DEV: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@80ead8db77d00a331e225e0ae1d55ffccbb8a08b
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@bd860d061a8aa763b8e01a5898c4583ca0d4d08e
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: dev
@@ -189,7 +189,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_OPS: ${{ env.GCOM_PUBLISH_TOKEN_OPS }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@80ead8db77d00a331e225e0ae1d55ffccbb8a08b
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@bd860d061a8aa763b8e01a5898c4583ca0d4d08e
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-prod/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: ops
