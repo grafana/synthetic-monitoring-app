@@ -546,34 +546,6 @@ export const DEFAULT_CHECK_FORM_MERGE_METHOD: CheckFormMergeMethod = CheckFormMe
 
 export const ASSISTED_FORM_MERGE_FIELDS = ['job', 'target', 'probes', 'frequency', 'labels', 'timeout'] as const;
 
-export const CHECKSTER_TEST_ID = {
-  navigation: {
-    root: 'checkEditor navigation',
-    navItem: 'checkEditor navigation navItem',
-  },
-  ui: {
-    formTabs: {
-      content: 'checkEditor formTabs content',
-    },
-  },
-  form: {
-    root: 'checkEditor form',
-    submitButton: 'checkEditor form submit',
-    components: {
-      GenericNameValueField: {
-        addButton: 'checkEditor nameValue addButton',
-      },
-    },
-  },
-  feature: {
-    adhocCheck: {
-      LogMessage: {
-        checkIcon: 'checkEditor feat adhoc-check LogMessage checkIcon',
-      },
-    },
-  },
-} as const;
-
 // Css
 export const CSS_PRIMARY_CONTAINER_NAME = 'checkEditor-primary-container';
 export const FIELD_SPACING = 2;

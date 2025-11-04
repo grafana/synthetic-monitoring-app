@@ -3,11 +3,11 @@ import { useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, IconButton, Input, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues } from 'types';
 
 import { useDOMId } from '../../../../../hooks/useDOMId';
-import { CHECKSTER_TEST_ID } from '../../../constants';
 import { useRelevantErrors } from '../../../hooks/useRelevantErrors';
 import { getFieldErrorProps } from '../../../utils/form';
 import { StyledField } from '../../ui/StyledField';
