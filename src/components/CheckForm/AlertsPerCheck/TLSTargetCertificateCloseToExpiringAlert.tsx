@@ -14,6 +14,7 @@ import {
 } from '@grafana/ui';
 import { trackChangeThreshold, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import { useDebounceCallback } from 'usehooks-ts';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
@@ -62,7 +63,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
           <Checkbox
             className={styles.alertCheckbox}
             id={`alert-${alert.type}`}
-            data-testid={`checkbox-alert-${alert.type}`}
+            data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].selectedCheckbox}
             onClick={() => handleToggleAlert(alert.type)}
             checked={selected}
             disabled={isFormDisabled}

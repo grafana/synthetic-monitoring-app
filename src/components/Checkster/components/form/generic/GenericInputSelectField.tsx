@@ -27,7 +27,6 @@ export function GenericInputSelectField({
   description,
   options = [],
   className,
-  width = 20, // 0 means undefined
   ...rest // ideally, only used for aria attributes
 }: GenericInputSelectFieldProps) {
   const {

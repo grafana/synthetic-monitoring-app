@@ -1,3 +1,4 @@
+import { CheckAlertType } from 'types';
 import { FormSectionName } from 'components/Checkster/types';
 
 export const ACTIONS_TEST_ID = {
@@ -14,11 +15,11 @@ export const APP_INITIALIZER_TEST_ID = {
 export const CHECKSTER_TEST_ID = {
   navigation: {
     root: 'checkEditor navigation root',
-    [FormSectionName.Check]: 'checkEditor navigation check',
-    [FormSectionName.Uptime]: 'checkEditor navigation uptime',
-    [FormSectionName.Labels]: 'checkEditor navigation labels',
-    [FormSectionName.Execution]: 'checkEditor navigation execution',
-    [FormSectionName.Alerting]: 'checkEditor navigation alerting',
+    [FormSectionName.Check]: `checkEditor navigation ${FormSectionName.Check}`,
+    [FormSectionName.Uptime]: `checkEditor navigation ${FormSectionName.Uptime}`,
+    [FormSectionName.Labels]: `checkEditor navigation ${FormSectionName.Labels}`,
+    [FormSectionName.Execution]: `checkEditor navigation ${FormSectionName.Execution}`,
+    [FormSectionName.Alerting]: `checkEditor navigation ${FormSectionName.Alerting}`,
   },
   ui: {
     formTabs: {
@@ -32,6 +33,8 @@ export const CHECKSTER_TEST_ID = {
       job: 'checkEditor form job',
       instance: 'checkEditor form instance',
       chooseAPICheckType: 'checkEditor form chooseAPICheckType',
+      httpRequestMethod: 'checkEditor form httpRequestMethod',
+      probeCheckbox: 'checkEditor form probeCheckbox',
     },
     components: {
       GenericNameValueField: {
@@ -43,6 +46,32 @@ export const CHECKSTER_TEST_ID = {
     adhocCheck: {
       LogMessage: {
         checkIcon: 'checkEditor feat adhoc-check LogMessage checkIcon',
+      },
+    },
+    perCheckAlerts: {
+      [CheckAlertType.ProbeFailedExecutionsTooHigh]: {
+        selectedCheckbox: `checkEditor  alerts ${CheckAlertType.ProbeFailedExecutionsTooHigh} selectedCheckbox`,
+        periodCombobox: `checkEditor alerts ${CheckAlertType.ProbeFailedExecutionsTooHigh} periodCombobox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.ProbeFailedExecutionsTooHigh} thresholdInput`,
+      },
+      [CheckAlertType.TLSTargetCertificateCloseToExpiring]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.TLSTargetCertificateCloseToExpiring} selectedCheckbox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.TLSTargetCertificateCloseToExpiring} thresholdInput`,
+      },
+      [CheckAlertType.HTTPRequestDurationTooHighAvg]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.HTTPRequestDurationTooHighAvg} selectedCheckbox`,
+        periodCombobox: `checkEditor alerts ${CheckAlertType.HTTPRequestDurationTooHighAvg} periodCombobox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.HTTPRequestDurationTooHighAvg} thresholdInput`,
+      },
+      [CheckAlertType.PingRequestDurationTooHighAvg]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.PingRequestDurationTooHighAvg} selectedCheckbox`,
+        periodCombobox: `checkEditor alerts ${CheckAlertType.PingRequestDurationTooHighAvg} periodCombobox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.PingRequestDurationTooHighAvg} thresholdInput`,
+      },
+      [CheckAlertType.DNSRequestDurationTooHighAvg]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.DNSRequestDurationTooHighAvg} selectedCheckbox`,
+        periodCombobox: `checkEditor alerts ${CheckAlertType.DNSRequestDurationTooHighAvg} periodCombobox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.DNSRequestDurationTooHighAvg} thresholdInput`,
       },
     },
   },

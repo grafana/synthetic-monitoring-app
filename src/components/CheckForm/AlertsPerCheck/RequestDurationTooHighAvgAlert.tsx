@@ -13,11 +13,8 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
-import {
-  trackChangePeriod,
-  trackSelectAlert,
-  trackUnSelectAlert,
-} from 'features/tracking/perCheckAlertsEvents';
+import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
@@ -79,7 +76,7 @@ export const RequestDurationTooHighAvgAlert = ({
           aria-label={`Enable ${alert.name} alert`}
           className={styles.alertCheckbox}
           id={`alert-${alert.type}`}
-          data-testid={`checkbox-alert-${alert.type}`}
+          data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].selectedCheckbox}
           onClick={() => handleToggleAlert(alert.type)}
           checked={selected}
         />
