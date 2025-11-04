@@ -22,7 +22,7 @@ const description = z
   .min(1, 'Description is required')
   .max(253, 'Description cannot be more than 253 characters');
 
-const labels: ZodType<Secret['labels']> = z
+const labels: ZodType<Secret['labels'], any, any> = z
   .array(
     z.object({
       name: labelName,
@@ -35,7 +35,7 @@ const labels: ZodType<Secret['labels']> = z
         if (labelNames.some((subject) => subject === label.name)) {
           error = true;
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: 'custom',
             message: 'Label name must be unique',
             path: [currentIndex, 'name'],
             fatal: true,
@@ -58,13 +58,13 @@ const labels: ZodType<Secret['labels']> = z
       // Ideally, this will never happen since the UI should prevent it
       labels.slice(10).forEach((_label, index) => {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'You can add up to 10 labels',
           path: [index + 10, 'name'],
           fatal: true,
         });
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: [index + 10, 'value'],
           message: '',
           fatal: true,
@@ -95,7 +95,7 @@ function createCreateSecretSchema(existingNames: string[] = []) {
       .superRefine((name, ctx) => {
         if (existingNames.includes(name)) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: 'custom',
             message: 'A secret with this name already exists',
             fatal: true,
           });
@@ -103,17 +103,16 @@ function createCreateSecretSchema(existingNames: string[] = []) {
         }
       }),
     plaintext: z.string().min(1, 'Value is required'),
-  }) as ZodType<SecretWithValue>;
+  }) as ZodType<SecretWithValue, any, any>;
 }
 
-export const updateSecretSchema: ZodType<Omit<SecretWithValue, 'plaintext'> | SecretWithValue> =
-  z.object({
-    uuid: z.string().min(1, 'UUID is required'),
-    name: z.string().min(1, 'Name is required'), // Include name for API URL construction
-    labels,
-    description,
-    plaintext: z.string().min(1, 'Value is required').optional(),
-  });
+export const updateSecretSchema: ZodType<Omit<SecretWithValue, 'plaintext'> | SecretWithValue, any, any> = z.object({
+  uuid: z.string().min(1, 'UUID is required'),
+  name: z.string().min(1, 'Name is required'), // Include name for API URL construction
+  labels,
+  description,
+  plaintext: z.string().min(1, 'Value is required').optional(),
+});
 
 /**
  * Creates a schema for creating or updating a secret.

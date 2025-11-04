@@ -3,7 +3,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
 import { Secret } from './types';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
@@ -84,6 +84,8 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
     return secretToFormValues(secret) ?? getDefaultValues(isNewSecret);
   }, [secret, isNewSecret]);
 
+  const schema = secretSchemaFactory(isNewSecret, existingNames);
+
   const {
     register,
     handleSubmit,
@@ -96,7 +98,7 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
   } = useForm<SecretFormValues & { plaintext?: string }>({
     defaultValues,
     disabled: isLoading || saveSecret.isPending,
-    resolver: zodResolver(secretSchemaFactory(isNewSecret, existingNames)),
+    resolver: standardSchemaResolver(schema),
   });
 
   // Set the default value for plaintext to empty string when secret is reset (for validation to work)

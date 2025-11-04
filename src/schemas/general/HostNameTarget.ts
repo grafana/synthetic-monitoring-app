@@ -11,7 +11,7 @@ function validate(target: string, ctx: z.RefinementCtx) {
 
   if (message) {
     return ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: `custom`,
       message,
     });
   }
