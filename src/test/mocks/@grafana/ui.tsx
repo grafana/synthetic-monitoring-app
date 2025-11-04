@@ -42,7 +42,6 @@ jest.mock('@grafana/ui', () => {
           <svg data-testid={`emptyState ${variant}`} />
           <div>
             <span>{message}</span>
-            <span>{}</span>
           </div>
           {!!button && button}
           <div>{children}</div>
