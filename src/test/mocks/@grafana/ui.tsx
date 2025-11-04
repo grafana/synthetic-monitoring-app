@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, PropsWithChildren } from 'react';
 
 jest.mock('@grafana/ui', () => {
   const actual = jest.requireActual('@grafana/ui');
@@ -27,5 +27,26 @@ jest.mock('@grafana/ui', () => {
     ),
     CodeEditor,
     measureText: jest.fn(() => ({ width: 100, height: 14 })),
+    EmptyState: function EmptyState({
+      variant,
+      message,
+      button,
+      children,
+    }: PropsWithChildren<{
+      variant: string;
+      message: string;
+      button?: React.ReactElement;
+    }>) {
+      return (
+        <div>
+          <svg data-testid={`emptyState ${variant}`} />
+          <div>
+            <span>{message}</span>
+          </div>
+          {!!button && button}
+          <div>{children}</div>
+        </div>
+      );
+    },
   };
 });
