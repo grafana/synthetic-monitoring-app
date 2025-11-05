@@ -39,7 +39,8 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     // Check that latency alerts section exists
     expect(screen.getByText('Latency')).toBeInTheDocument();
 
-    const thresholdInputSelector = 'alert-threshold-DNSRequestDurationTooHighAvg';
+    const thresholdInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput;
 
     await user.click(
       screen.getByTestId(

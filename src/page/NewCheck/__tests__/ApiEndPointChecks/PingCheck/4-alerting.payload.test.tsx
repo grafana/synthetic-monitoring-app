@@ -39,7 +39,8 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
     // Check that latency alerts section exists
     expect(screen.getByText('Latency')).toBeInTheDocument();
 
-    const thresholdInputSelector = 'alert-threshold-PingRequestDurationTooHighAvg';
+    const thresholdInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].thresholdInput;
 
     await user.click(
       screen.getByTestId(

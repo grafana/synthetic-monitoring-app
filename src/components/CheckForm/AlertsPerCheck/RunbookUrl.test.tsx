@@ -63,7 +63,7 @@ describe('RunbookUrl', () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await goToSection(user, 5); // Go to alerts section
     const failedExecRunbookInput = screen.getByTestId(
-      `alert-runbook-url-${CheckAlertType.ProbeFailedExecutionsTooHigh}`
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].runbookUrlInput
     );
 
     await user.clear(failedExecRunbookInput);

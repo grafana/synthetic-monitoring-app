@@ -40,7 +40,9 @@ describe('AlertItem', () => {
     );
     expect(httpLatencyAlert).toBeInTheDocument();
 
-    const thresholdInput = await screen.findByTestId(`alert-threshold-${CheckAlertType.HTTPRequestDurationTooHighAvg}`);
+    const thresholdInput = await screen.findByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput
+    );
     expect(thresholdInput).toBeInTheDocument();
   });
 
@@ -51,7 +53,9 @@ describe('AlertItem', () => {
     const alertCheckbox = await screen.findByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox
     );
-    const thresholdInput = await screen.findByTestId(`alert-threshold-${CheckAlertType.HTTPRequestDurationTooHighAvg}`);
+    const thresholdInput = await screen.findByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput
+    );
 
     expect(alertCheckbox).toBeChecked();
     expect(thresholdInput).toBeEnabled();
