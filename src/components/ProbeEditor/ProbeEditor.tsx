@@ -3,7 +3,7 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, Input, Label, Legend, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { probeSchema } from 'schemas/forms/ProbeSchema';
 
 import { ExtendedProbe, Probe } from 'types';
@@ -37,7 +37,8 @@ export const ProbeEditor = ({
   const styles = useStyles2(getStyles);
   const { canWriteProbes } = useCanEditProbe(probe);
   const writeMode = canWriteProbes && !forceViewMode;
-  const form = useForm<Probe>({ defaultValues: probe, resolver: zodResolver(probeSchema) });
+  const schema = probeSchema;
+  const form = useForm<Probe>({ defaultValues: probe, resolver: standardSchemaResolver(schema) });
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
   const { errors, isSubmitting } = form.formState;

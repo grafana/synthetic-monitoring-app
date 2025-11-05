@@ -6,7 +6,7 @@ import { CheckFormValuesPing, CheckType, IpVersion, PingSettingsFormValues } fro
 import { baseCheckSchema } from './BaseCheckSchema';
 
 const pingSettingsSchema: ZodType<PingSettingsFormValues> = z.object({
-  ipVersion: z.nativeEnum(IpVersion),
+  ipVersion: z.enum(IpVersion),
   dontFragment: z.boolean(),
 });
 
