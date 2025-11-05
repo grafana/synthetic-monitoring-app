@@ -40,7 +40,7 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const { canWriteProbes } = useCanEditProbe(probe);
   const writeMode = canWriteProbes && !readOnly;
-  const { refetch } = useProbes();
+  const { isFetching, refetch } = useProbes();
 
   const styles = useStyles2(getStyles);
   const { mutate: onResetToken } = useResetProbeToken({
@@ -82,9 +82,13 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
           )}
           <IconButton
             tooltip="Get the probe's latest status"
-            name="sync"
+            name={isFetching ? 'fa fa-spinner' : 'sync'}
             variant="secondary"
-            onClick={() => refetch()}
+            onClick={() => {
+              if (!isFetching) {
+                refetch();
+              }
+            }}
           />
         </div>
         {canWriteProbes && (
