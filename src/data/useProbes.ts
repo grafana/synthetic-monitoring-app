@@ -24,13 +24,13 @@ export const queryKeys: Record<'list', QueryKey> = {
   list: ['probes'],
 };
 
-const TEN_SECONDS = 10 * ONE_SECOND_IN_MS;
+export const PROBE_REFETCH_INTERVAL = 10 * ONE_SECOND_IN_MS;
 
 function probesQuery(smDS: SMDataSource) {
   return {
     queryKey: queryKeys.list,
     queryFn: () => smDS.listProbes(),
-    refetchInterval: TEN_SECONDS,
+    refetchInterval: PROBE_REFETCH_INTERVAL,
   };
 }
 

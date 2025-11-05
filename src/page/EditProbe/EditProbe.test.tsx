@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
+import { OFFLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -10,6 +10,7 @@ import { Probe } from 'types';
 import { formatDate } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
+import { PROBE_REFETCH_INTERVAL } from 'data/useProbes';
 
 import { DataTestIds } from '../../test/dataTestIds';
 import { EditProbe } from './EditProbe';
@@ -78,6 +79,44 @@ describe(`Private probes`, () => {
 
     const tokenValue = await screen.findByText(UPDATED_PROBE_TOKEN_RESPONSE);
     expect(tokenValue).toBeInTheDocument();
+  });
+
+  it('probe status updates automatically', async () => {
+    jest.useFakeTimers();
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [OFFLINE_PROBE],
+          };
+        },
+      })
+    );
+
+    renderEditProbe(OFFLINE_PROBE);
+
+    // Initial render - should call once
+    await screen.findByText(/Offline/);
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [
+              {
+                ...OFFLINE_PROBE,
+                online: true,
+              },
+            ],
+          };
+        },
+      })
+    );
+
+    jest.advanceTimersByTime(PROBE_REFETCH_INTERVAL);
+
+    await screen.findByText(/Online/);
+
+    jest.useRealTimers();
   });
 });
 
