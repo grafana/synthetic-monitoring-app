@@ -118,6 +118,40 @@ describe(`Private probes`, () => {
 
     jest.useRealTimers();
   });
+
+  it(`triggers a refetch when the sync icon is clicked`, async () => {
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [OFFLINE_PROBE],
+          };
+        },
+      })
+    );
+
+    const { user } = renderEditProbe(OFFLINE_PROBE);
+    expect(await screen.findByText('Offline')).toBeInTheDocument();
+    const syncIcon = await screen.findByRole('button', { name: "Get the probe's latest status" });
+
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [
+              {
+                ...OFFLINE_PROBE,
+                online: true,
+              },
+            ],
+          };
+        },
+      })
+    );
+
+    await user.click(syncIcon);
+    expect(await screen.findByText('Online')).toBeInTheDocument();
+  });
 });
 
 // extract these so we can be sure the assertion for them NOT existing is accurate
