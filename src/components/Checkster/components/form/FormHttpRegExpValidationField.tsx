@@ -126,7 +126,9 @@ export function FormHttpRegExpValidationField({
                   className={styles.firstColumn}
                   options={options}
                   value={watch(createPath(field, index, 'matchType'))}
-                  onChange={({ target }) => setValue(createPath(field, index, 'matchType'), target.value)}
+                  onChange={({ target }) =>
+                    setValue(createPath(field, index, 'matchType'), target.value, { shouldDirty: true })
+                  }
                   disabled={disabled}
                   aria-label={`Source for validation ${index + 1}`}
                 />

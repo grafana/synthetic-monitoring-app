@@ -51,7 +51,7 @@ function Methods({ field }: MethodsProps) {
 
   useEffect(() => {
     if (!disabled && field && value && getValues(field) !== value) {
-      setValue(field, value);
+      setValue(field, value, { shouldDirty: true });
     }
   }, [disabled, field, getValues, setValue, value]);
 
@@ -116,7 +116,7 @@ export function FormHttpRequestMethodTargetFields({
   const targetValue = watch(field) as string;
 
   const handleQueryParamsOnChange = (newUrl: string) => {
-    setValue(field, newUrl);
+    setValue(field, newUrl, { shouldDirty: true });
   };
 
   return (
