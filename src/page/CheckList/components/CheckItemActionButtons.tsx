@@ -7,7 +7,7 @@ import { Check } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
-import { useDeleteCheck } from 'data/useChecks';
+import { useDeleteCheck, useUpdateCheck } from 'data/useChecks';
 
 interface CheckItemActionButtonsProps {
   check: Check;
@@ -20,6 +20,11 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { mutate: deleteCheck } = useDeleteCheck();
+  const { mutate: updateCheck } = useUpdateCheck();
+
+  const handleToggleEnabled = () => {
+    updateCheck({ ...check, enabled: !check.enabled });
+  };
 
   return (
     <div className={styles.actionButtonGroup}>
@@ -40,6 +45,13 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
           )}
         </>
       )}
+      <IconButton
+        data-testid={check.enabled ? 'disable-check-button' : 'enable-check-button'}
+        tooltip={check.enabled ? 'Disable check' : 'Enable check'}
+        name={check.enabled ? 'pause' : 'play'}
+        onClick={handleToggleEnabled}
+        disabled={!canWriteChecks}
+      />
       <LinkButton
         data-testid="edit-check-button"
         href={`${generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}`}

@@ -7,7 +7,7 @@ import { Label } from 'types';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
-import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
+import { Gauge, LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
@@ -65,11 +65,17 @@ export const CheckListItemCard = ({
               </div>
             </div>
             <div className={styles.stats}>
-              {check.enabled && (
+              {check.enabled ? (
                 <>
                   <SuccessRateGaugeCheckUptime check={check} height={75} width={150} />
                   <SuccessRateGaugeCheckReachability check={check} height={75} width={150} />
                   <LatencyGauge check={check} height={75} width={175} />
+                </>
+              ) : (
+                <>
+                  <Gauge type="uptime" value={null} height={75} width={150} unit="%" />
+                  <Gauge type="reachability" value={null} height={75} width={150} unit="%" />
+                  <Gauge type="latency" value={null} height={75} width={175} unit="ms" />
                 </>
               )}
             </div>

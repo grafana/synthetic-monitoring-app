@@ -107,6 +107,7 @@ export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
 
       if (eventInfo?.checkType) {
