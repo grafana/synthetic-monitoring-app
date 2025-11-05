@@ -1,10 +1,10 @@
 import React from 'react';
 import { Icon, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { LogEntry } from './types.adhoc-check';
 
-import { CHECKSTER_TEST_ID } from '../../constants';
 import { getLogColor, getMsgFromLogMsg, getMsgIconFromLog } from './utils';
 
 export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string }) {

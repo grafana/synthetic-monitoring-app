@@ -1,5 +1,6 @@
 import React from 'react';
 import { RadioButtonGroup, Stack, Text } from '@grafana/ui';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
 
@@ -25,6 +26,7 @@ export function ChooseCheckType() {
       <Stack direction="column">
         <div>
           <RadioButtonGroup
+            data-testid={CHECKSTER_TEST_ID.form.inputs.chooseAPICheckType}
             disabled={!isNew}
             value={checkType}
             aria-label={`Request type`}

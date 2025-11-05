@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Alert, InlineField, Input, Stack, Text } from '@grafana/ui';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
@@ -52,7 +53,7 @@ export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrl
               <Input
                 {...field}
                 id={`alert-runbook-url-${alertType}`}
-                data-testid={`alert-runbook-url-${alertType}`}
+                data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alertType].runbookUrlInput}
                 placeholder="https://example.com/runbook"
                 disabled={!selected || disabled}
                 width={35}

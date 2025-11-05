@@ -1,17 +1,102 @@
+import { CheckAlertType } from 'types';
+import { FormSectionName } from 'components/Checkster/types';
+
+export const ACTIONS_TEST_ID = {
+  create: {
+    check: 'action create check',
+  },
+} as const;
+
+export const APP_INITIALIZER_TEST_ID = {
+  root: 'app-init container',
+  initButton: 'app-init init-button',
+} as const;
+
+export const CHECKSTER_TEST_ID = {
+  navigation: {
+    root: 'checkEditor navigation root',
+    [FormSectionName.Check]: `checkEditor navigation ${FormSectionName.Check}`,
+    [FormSectionName.Uptime]: `checkEditor navigation ${FormSectionName.Uptime}`,
+    [FormSectionName.Labels]: `checkEditor navigation ${FormSectionName.Labels}`,
+    [FormSectionName.Execution]: `checkEditor navigation ${FormSectionName.Execution}`,
+    [FormSectionName.Alerting]: `checkEditor navigation ${FormSectionName.Alerting}`,
+  },
+  ui: {
+    formTabs: {
+      content: 'checkEditor formTabs content',
+    },
+  },
+  form: {
+    root: 'checkEditor form',
+    submitButton: 'checkEditor form submit',
+    inputs: {
+      job: 'checkEditor form job',
+      instance: 'checkEditor form instance',
+      chooseAPICheckType: 'checkEditor form chooseAPICheckType',
+      httpRequestMethod: 'checkEditor form httpRequestMethod',
+      probeCheckbox: 'checkEditor form probeCheckbox',
+    },
+    components: {
+      GenericNameValueField: {
+        addButton: 'checkEditor nameValue addButton',
+      },
+    },
+  },
+  feature: {
+    adhocCheck: {
+      LogMessage: {
+        checkIcon: 'checkEditor feat adhoc-check LogMessage checkIcon',
+      },
+    },
+    perCheckAlerts: {
+      [CheckAlertType.ProbeFailedExecutionsTooHigh]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.ProbeFailedExecutionsTooHigh} selectedCheckbox`,
+        periodCombobox: `checkEditor alerts ${CheckAlertType.ProbeFailedExecutionsTooHigh} periodCombobox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.ProbeFailedExecutionsTooHigh} thresholdInput`,
+        runbookUrlInput: `checkEditor alerts ${CheckAlertType.ProbeFailedExecutionsTooHigh} runbookUrlInput`,
+      },
+      [CheckAlertType.TLSTargetCertificateCloseToExpiring]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.TLSTargetCertificateCloseToExpiring} selectedCheckbox`,
+        periodCombobox: `not used for this alert`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.TLSTargetCertificateCloseToExpiring} thresholdInput`,
+        runbookUrlInput: `checkEditor alerts ${CheckAlertType.TLSTargetCertificateCloseToExpiring} runbookUrlInput`,
+      },
+      [CheckAlertType.HTTPRequestDurationTooHighAvg]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.HTTPRequestDurationTooHighAvg} selectedCheckbox`,
+        periodCombobox: `checkEditor alerts ${CheckAlertType.HTTPRequestDurationTooHighAvg} periodCombobox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.HTTPRequestDurationTooHighAvg} thresholdInput`,
+        runbookUrlInput: `checkEditor alerts ${CheckAlertType.HTTPRequestDurationTooHighAvg} runbookUrlInput`,
+      },
+      [CheckAlertType.PingRequestDurationTooHighAvg]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.PingRequestDurationTooHighAvg} selectedCheckbox`,
+        periodCombobox: `checkEditor alerts ${CheckAlertType.PingRequestDurationTooHighAvg} periodCombobox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.PingRequestDurationTooHighAvg} thresholdInput`,
+        runbookUrlInput: `checkEditor alerts ${CheckAlertType.PingRequestDurationTooHighAvg} runbookUrlInput`,
+      },
+      [CheckAlertType.DNSRequestDurationTooHighAvg]: {
+        selectedCheckbox: `checkEditor alerts ${CheckAlertType.DNSRequestDurationTooHighAvg} selectedCheckbox`,
+        periodCombobox: `checkEditor alerts ${CheckAlertType.DNSRequestDurationTooHighAvg} periodCombobox`,
+        thresholdInput: `checkEditor alerts ${CheckAlertType.DNSRequestDurationTooHighAvg} thresholdInput`,
+        runbookUrlInput: `checkEditor alerts ${CheckAlertType.DNSRequestDurationTooHighAvg} runbookUrlInput`,
+      },
+    },
+  },
+} as const;
+
+// deprecated -- look to migrate these to follow the same patterns as above
 export enum DataTestIds {
   ACTIONS_BAR = 'actions-bar',
-  APP_INITIALIZER = 'app-initializer',
   CENTERED_SPINNER = 'centered-spinner',
-  CHECKS_EMPTY_STATE = 'checks-empty-state',
-  CHECK_FORM_HTTP_VALIDATION_REGEX = 'check-form-http-validation-regex',
   CHECK_FORM_SUBMIT_BUTTON = 'check-form-submit-button',
   CHECK_GROUP_CARD = 'check-group-card',
   CHECK_USAGE = 'check-usage',
+  CHECKS_EMPTY_STATE = 'checks-empty-state',
   CHOOSE_CHECK_TYPE = 'choose-check-type',
   CONFIG_CONTENT = 'config-content',
   CONFIG_CONTENT_LOADING = 'config-content-loading',
   CONFIG_PAGE_LAYOUT_ACTIVE_TAB = 'config-page-layout-active-tab',
   CONFIRM_UNSAVED_MODAL_HEADING = 'confirm-unsaved-modal-heading',
+  FREQUENCY_COMPONENT = 'frequency-component',
   INDIVIDUAL_ASSERTION = 'individual-assertion',
   MULTI_HTTP_REQUEST = 'multihttp-request',
   PAGE_NOT_READY = 'page-not-ready',
@@ -28,5 +113,4 @@ export enum DataTestIds {
   TEST_ROUTER_INFO_PATHNAME = 'test-router-info-pathname',
   TEST_ROUTER_INFO_SEARCH = 'test-router-info-search',
   TIMEPOINT_LIST = 'timepoint-list',
-  FREQUENCY_COMPONENT = 'frequency-component',
 }

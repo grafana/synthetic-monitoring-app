@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icon, Stack, Tooltip, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { GenericInputField } from './generic/GenericInputField';
 
@@ -8,6 +9,7 @@ export function FormInstanceField({ field }: { field: 'target' }) {
   const theme = useTheme2();
   return (
     <GenericInputField
+      data-testid={CHECKSTER_TEST_ID.form.inputs.instance}
       field={field}
       label="Instance"
       description={

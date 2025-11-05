@@ -1,9 +1,10 @@
 import { screen } from '@testing-library/react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
 
 import { FormSectionName } from '../../../../../../components/Checkster/types';
-import { CheckType, FeatureName } from 'types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
 
 import { gotoSection, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
@@ -31,8 +32,15 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
     expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
 
-    const thresholdsInputSelector = 'alert-threshold-TLSTargetCertificateCloseToExpiring';
-    await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
+      )
+    );
+
+    const thresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
+
     await user.clear(screen.getByTestId(thresholdsInputSelector));
     await user.type(screen.getByTestId(thresholdsInputSelector), '1');
 
@@ -63,7 +71,11 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     await gotoSection(user, FormSectionName.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
-    await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
+      )
+    );
     await submitForm(user);
 
     expect(

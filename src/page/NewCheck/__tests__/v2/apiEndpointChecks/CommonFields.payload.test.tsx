@@ -1,9 +1,10 @@
 import { screen } from '@testing-library/react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { mockFeatureToggles, probeToMetadataProbe, selectOption } from 'test/utils';
 
 import { FormSectionName } from '../../../../../components/Checkster/types';
-import { AlertSensitivity, Check, CheckType, FeatureName } from 'types';
+import { AlertSensitivity, Check, CheckAlertType, CheckType, FeatureName } from 'types';
 import {
   FALLBACK_CHECK_DNS,
   FALLBACK_CHECK_GRPC,
@@ -113,10 +114,23 @@ describe('Api endpoint checks - common fields payload', () => {
 
           expect(screen.getByText('Failed Checks')).toBeInTheDocument();
 
-          await user.click(screen.getByTestId('checkbox-alert-ProbeFailedExecutionsTooHigh'));
-          await user.clear(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'));
+          await user.click(
+            screen.getByTestId(
+              CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
+            )
+          );
+          await user.clear(
+            screen.getByTestId(
+              CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+            )
+          );
 
-          await user.type(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'), '1');
+          await user.type(
+            screen.getByTestId(
+              CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+            ),
+            '1'
+          );
 
           await submitForm(user);
 

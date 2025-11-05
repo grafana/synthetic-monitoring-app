@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -12,13 +12,12 @@ import {
 } from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
-import { CheckType, FeatureName } from 'types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewFormV2, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
-import { CHECKSTER_TEST_ID } from '../../../../components/Checkster/constants';
 import { fillMandatoryFields } from '../../../__testHelpers__/v2.utils';
 
 describe(`<NewCheckV2 /> journey`, () => {
@@ -267,7 +266,8 @@ describe(`<NewCheckV2 /> journey`, () => {
 
     await gotoSection(user, FormSectionName.Alerting);
     await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
-    const thresholdsInput = 'alert-threshold-ProbeFailedExecutionsTooHigh';
+    const thresholdsInput =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput;
     await user.clear(screen.getByTestId(thresholdsInput));
     await user.type(screen.getByTestId(thresholdsInput), '6');
     await submitForm(user);

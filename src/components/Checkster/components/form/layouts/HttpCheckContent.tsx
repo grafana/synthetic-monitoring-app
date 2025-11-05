@@ -1,4 +1,5 @@
 import React from 'react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { useGetIndexFieldError } from '../../../hooks/useGetIndexFieldError';
 import { useHasFieldsError } from '../../../hooks/useHasFieldsError';
@@ -41,7 +42,13 @@ export function HttpCheckContent() {
       <ChooseCheckType />
 
       {/* TODO: Would be nice to write root fields like `.target` (instead of `target`) */}
-      <FormHttpRequestMethodTargetFields field="target" methodField="settings.http.method" withQueryParams />
+      <FormHttpRequestMethodTargetFields
+        data-testid={CHECKSTER_TEST_ID.form.inputs.instance}
+        method-data-testid={CHECKSTER_TEST_ID.form.inputs.httpRequestMethod}
+        field="target"
+        methodField="settings.http.method"
+        withQueryParams
+      />
 
       <AdditionalSettings indent buttonLabel="Request options" isOpen={hasRequestOptionError}>
         <FormTabs tabErrorIndexes={tabIndexErrors}>

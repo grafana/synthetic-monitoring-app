@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { mockFeatureToggles } from 'test/utils';
 
@@ -34,10 +35,14 @@ describe('AlertItem', () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await goToSection(user, 5);
 
-    const httpLatencyAlert = await screen.findByTestId(`checkbox-alert-${CheckAlertType.HTTPRequestDurationTooHighAvg}`);
+    const httpLatencyAlert = await screen.findByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox
+    );
     expect(httpLatencyAlert).toBeInTheDocument();
 
-    const thresholdInput = await screen.findByTestId(`alert-threshold-${CheckAlertType.HTTPRequestDurationTooHighAvg}`);
+    const thresholdInput = await screen.findByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput
+    );
     expect(thresholdInput).toBeInTheDocument();
   });
 
@@ -45,9 +50,13 @@ describe('AlertItem', () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await goToSection(user, 5);
 
-    const alertCheckbox = await screen.findByTestId(`checkbox-alert-${CheckAlertType.HTTPRequestDurationTooHighAvg}`);
-    const thresholdInput = await screen.findByTestId(`alert-threshold-${CheckAlertType.HTTPRequestDurationTooHighAvg}`);
-    
+    const alertCheckbox = await screen.findByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox
+    );
+    const thresholdInput = await screen.findByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput
+    );
+
     expect(alertCheckbox).toBeChecked();
     expect(thresholdInput).toBeEnabled();
 

@@ -11,11 +11,13 @@ import { FieldPath } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Tab, TabContent, TabsBar, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues } from 'types';
 
-import { CHECKSTER_TEST_ID, FIELD_SPACING } from '../../constants';
+import { FIELD_SPACING } from '../../constants';
 import { ErrorIcon } from '../ErrorIcon';
+
 type FormTabContentChild = ReactElement<FormTabContentProps>;
 type FormTabChild = undefined | false | FormTabContentChild;
 
@@ -85,7 +87,7 @@ export function FormTabs({ children, actions, activeIndex = 0, tabErrorIndexes }
               return null;
             }
 
-            return active === index ? child.props.actions ?? null : null;
+            return active === index ? (child.props.actions ?? null) : null;
           })}
           {actions}
         </div>

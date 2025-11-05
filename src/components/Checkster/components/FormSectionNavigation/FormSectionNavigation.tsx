@@ -4,8 +4,9 @@ import { config } from '@grafana/runtime';
 import { Icon, IconName, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { CHECKSTER_TEST_ID, CSS_PRIMARY_CONTAINER_NAME } from '../../constants';
+import { CSS_PRIMARY_CONTAINER_NAME } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { useLiveErrors } from '../../hooks/useLiveErrors';
 import { getHasSectionError } from '../../utils/navigation';
@@ -37,15 +38,13 @@ export function FormSectionNavigation() {
         const isActive = isSectionActive(sectionName);
         return (
           <Fragment key={sectionName}>
-            <li
-              data-testid={CHECKSTER_TEST_ID.navigation.navItem}
-              className={cx(styles.listItem, { ['label__active']: isActive, isActive: isActive })}
-            >
+            <li className={cx(styles.listItem, { ['label__active']: isActive, isActive: isActive })}>
               <button
-                id={`form-section-${sectionName}`}
-                role="tab"
                 aria-selected={isActive}
                 className={styles.button}
+                data-testid={CHECKSTER_TEST_ID.navigation[sectionName]}
+                id={`form-section-${sectionName}`}
+                role="tab"
                 type="button"
                 onClick={() => {
                   trackNavigateWizardForm({

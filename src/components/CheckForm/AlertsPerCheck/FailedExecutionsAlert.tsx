@@ -16,6 +16,7 @@ import {
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import pluralize from 'pluralize';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertType, CheckFormValuesWithAlert } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
@@ -89,7 +90,7 @@ export const FailedExecutionsAlert = ({
           aria-label={`Enable ${alert.name} alert`}
           className={styles.alertCheckbox}
           id={`alert-${alert.type}`}
-          data-testid={`checkbox-alert-${alert.type}`}
+          data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].selectedCheckbox}
           onClick={() => handleToggleAlert(alert.type)}
           checked={selected}
         />
@@ -124,7 +125,7 @@ export const FailedExecutionsAlert = ({
                 <Select // eslint-disable-line @typescript-eslint/no-deprecated
                   {...fieldProps}
                   disabled={!selected || formState.disabled}
-                  data-testid="alertPendingPeriod"
+                  data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
                   id={`alert-period-${alert.type}`}
                   options={validPeriods}
                   value={field.value}

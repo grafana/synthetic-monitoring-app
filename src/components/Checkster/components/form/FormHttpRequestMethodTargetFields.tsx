@@ -14,82 +14,9 @@ import { Indent } from '../ui/Indent';
 import { SecondaryContainer } from '../ui/SecondaryContainer';
 import { StyledField } from '../ui/StyledField';
 
-function RequestMethodMenu({ onChange }: { onChange: (value: HttpMethod) => void }) {
-  const theme = useTheme2();
-  return (
-    <Menu ariaLabel="Select request method">
-      {ALLOWED_HTTP_REQUEST_METHODS.map((method) => (
-        <Menu.Item
-          className={css`
-            color: ${getMethodColor(theme, method)};
-            &:hover {
-              color: ${getMethodColor(theme, method)};
-            }
-          `}
-          key={method}
-          label={method}
-          onClick={() => onChange(method)}
-        />
-      ))}
-    </Menu>
-  );
-}
-
-interface MethodsProps {
-  field: FieldPath<CheckFormValues>;
-}
-function Methods({ field }: MethodsProps) {
-  const {
-    register,
-    setValue,
-    watch,
-    getValues,
-    formState: { disabled },
-  } = useFormContext<CheckFormValues>();
-  const formValue = watch(field) as HttpMethod;
-  const [value, _setValue] = useState<HttpMethod>(formValue as HttpMethod);
-
-  useEffect(() => {
-    if (!disabled && field && value && getValues(field) !== value) {
-      setValue(field, value, { shouldDirty: true });
-    }
-  }, [disabled, field, getValues, setValue, value]);
-
-  const styles = useStyles2(getMethodsStyles, formValue);
-
-  return (
-    <>
-      <Dropdown overlay={<RequestMethodMenu onChange={_setValue} />}>
-        <div tabIndex={0} role="button" aria-label={`Request method *`} className={styles.container}>
-          <span className={styles.methodValue}>{formValue}</span>
-          <Icon name="angle-down" />
-        </div>
-      </Dropdown>
-      <input disabled={disabled} type="hidden" {...register(field)} />
-    </>
-  );
-}
-
-function getMethodsStyles(theme: GrafanaTheme2, method: HttpMethod) {
-  return {
-    container: css`
-      display: inline-flex;
-      border-right: 1px solid ${theme.colors.border.medium};
-      padding-right: ${theme.spacing(1)};
-      margin-right: ${theme.spacing(1)};
-      cursor: pointer;
-      min-width: 100px;
-      align-items: center;
-      justify-content: space-between;
-    `,
-    methodValue: css`
-      font-weight: 600;
-      color: ${getMethodColor(theme, method)};
-    `,
-  };
-}
-
 interface FormHttpRequestMethodTargetFieldsProps {
+  'data-testid'?: string;
+  'method-data-testid'?: string;
   field: 'target' | `settings.multihttp.entries.${number}.request.url`;
   methodField?: FieldPath<CheckFormValues>;
   withQueryParams?: true;
@@ -97,6 +24,8 @@ interface FormHttpRequestMethodTargetFieldsProps {
 }
 
 export function FormHttpRequestMethodTargetFields({
+  'data-testid': dataTestId,
+  'method-data-testid': methodDataTestId,
   field = 'target',
   methodField,
   withQueryParams,
@@ -128,9 +57,10 @@ export function FormHttpRequestMethodTargetFields({
         required
       >
         <Input
+          data-testid={dataTestId}
           id={field}
           placeholder={placeholder}
-          prefix={!!methodField && <Methods field={methodField} />}
+          prefix={!!methodField && <Methods data-testid={methodDataTestId} field={methodField} />}
           {...register(field)}
           type="text"
           disabled={disabled}
@@ -175,6 +105,87 @@ export function FormHttpRequestMethodTargetFields({
       )}
     </Stack>
   );
+}
+
+interface MethodsProps {
+  ['data-testid']?: string;
+  field: FieldPath<CheckFormValues>;
+}
+
+function Methods({ 'data-testid': dataTestId, field }: MethodsProps) {
+  const {
+    register,
+    setValue,
+    watch,
+    getValues,
+    formState: { disabled },
+  } = useFormContext<CheckFormValues>();
+  const formValue = watch(field) as HttpMethod;
+  const [value, _setValue] = useState<HttpMethod>(formValue as HttpMethod);
+
+  useEffect(() => {
+    if (!disabled && field && value && getValues(field) !== value) {
+      setValue(field, value, { shouldDirty: true });
+    }
+  }, [disabled, field, getValues, setValue, value]);
+
+  const styles = useStyles2(getMethodsStyles, formValue);
+
+  return (
+    <>
+      <Dropdown overlay={<RequestMethodMenu onChange={_setValue} />}>
+        <div
+          data-testid={dataTestId}
+          tabIndex={0}
+          role="button"
+          aria-label={`Request method *`}
+          className={styles.container}
+        >
+          <span className={styles.methodValue}>{formValue}</span>
+          <Icon name="angle-down" />
+        </div>
+      </Dropdown>
+      <input disabled={disabled} type="hidden" {...register(field)} />
+    </>
+  );
+}
+
+function RequestMethodMenu({ onChange }: { onChange: (value: HttpMethod) => void }) {
+  const theme = useTheme2();
+
+  return (
+    <Menu ariaLabel="Select request method">
+      {ALLOWED_HTTP_REQUEST_METHODS.map((method) => (
+        <Menu.Item
+          className={css`
+            color: ${getMethodColor(theme, method)};
+          `}
+          key={method}
+          label={method}
+          onClick={() => onChange(method)}
+        />
+      ))}
+    </Menu>
+  );
+}
+
+function getMethodsStyles(theme: GrafanaTheme2, method: HttpMethod) {
+  return {
+    container: css`
+      display: inline-flex;
+      border-right: 1px solid ${theme.colors.border.medium};
+      padding-right: ${theme.spacing(1)};
+      margin-right: ${theme.spacing(1)};
+      cursor: pointer;
+      min-width: 100px;
+      align-items: center;
+      justify-content: space-between;
+    `,
+    methodValue: css`
+      font-weight: 600;
+      color: ${getMethodColor(theme, method)};
+    `,
+  };
 }
 
 function getStyles(theme: GrafanaTheme2) {
