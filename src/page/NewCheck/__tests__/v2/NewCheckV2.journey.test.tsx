@@ -293,7 +293,16 @@ describe(`<NewCheckV2 /> journey`, () => {
     expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_HTTP_CHECK.id! }));
   });
 
-  // jsdom doesn't give us back the submitter of the form, so we can't test this
-  // https://github.com/jsdom/jsdom/issues/3117
-  it.skip(`should show an error message when it fails to test a check`, async () => {});
+  it(`should enable the save button when an alert is enabled`, async () => {
+    mockFeatureToggles({
+      [FeatureName.AlertsPerCheck]: true,
+    });
+
+    const { user } = await renderNewFormV2(CheckType.HTTP);
+
+    await gotoSection(user, FormSectionName.Alerting);
+    expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeDisabled();
+    await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
+    expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).not.toBeDisabled();
+  });
 });
