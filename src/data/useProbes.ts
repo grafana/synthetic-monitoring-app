@@ -5,6 +5,7 @@ import { isFetchError } from '@grafana/runtime';
 import { type MutationProps } from 'data/types';
 import { ExtendedProbe, type Probe, ProbeWithMetadata } from 'types';
 import { FaroEvent } from 'faro';
+import { ONE_SECOND_IN_MS } from 'utils.constants';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
   AddProbeResult,
@@ -23,10 +24,13 @@ export const queryKeys: Record<'list', QueryKey> = {
   list: ['probes'],
 };
 
+const TEN_SECONDS = 10 * ONE_SECOND_IN_MS;
+
 function probesQuery(smDS: SMDataSource) {
   return {
     queryKey: queryKeys.list,
     queryFn: () => smDS.listProbes(),
+    refetchInterval: TEN_SECONDS,
   };
 }
 

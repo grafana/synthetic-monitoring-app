@@ -55,5 +55,6 @@ function getAvailableProbes(probes: ProbeWithMetadata[], checkType: CheckType) {
   if (checkType === CheckType.Browser) {
     return probes.filter((probe) => !probe.capabilities.disableBrowserChecks);
   }
+
   return probes;
 }
