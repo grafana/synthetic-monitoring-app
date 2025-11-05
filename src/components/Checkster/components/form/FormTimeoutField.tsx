@@ -16,7 +16,6 @@ interface FormTimeoutFieldProps {
 
 export function FormTimeoutField({ field, min, max }: FormTimeoutFieldProps) {
   const {
-    trigger,
     setValue,
     getValues,
     formState: { errors, disabled },
@@ -45,10 +44,9 @@ export function FormTimeoutField({ field, min, max }: FormTimeoutFieldProps) {
     if (readOnlyValue !== undefined && (readOnlyValue > max || readOnlyValue < min)) {
       // At this moment, readOnly means that min and max are identical
       // Let's still make sure this effect works if that assumption no longer holds true
-      setValue(field, Math.max(min, Math.min(readOnlyValue, max)));
-      trigger(field);
+      setValue(field, Math.max(min, Math.min(readOnlyValue, max)), { shouldDirty: true });
     }
-  }, [field, max, min, readOnlyValue, setValue, trigger]);
+  }, [field, max, min, readOnlyValue, setValue]);
 
   return (
     <StyledField

@@ -41,7 +41,7 @@ export function GenericInputSelectField({
   const inputValue = watch(field) as any;
 
   const handleOnChange = ({ value }: SelectableValue) => {
-    setValue(field, value);
+    setValue(field, value, { shouldDirty: true });
   };
 
   // Using aria-label when there is no visible label
