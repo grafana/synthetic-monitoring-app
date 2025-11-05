@@ -20,10 +20,20 @@ describe('RunbookUrl', () => {
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
     expect(
-      screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
+      )
     ).toBeInTheDocument();
-    expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.ProbeFailedExecutionsTooHigh}`)).toBeInTheDocument();
-    expect(screen.getByTestId(`alert-runbook-url-${CheckAlertType.HTTPRequestDurationTooHighAvg}`)).toBeInTheDocument();
+    expect(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].runbookUrlInput
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].runbookUrlInput
+      )
+    ).toBeInTheDocument();
 
     expect(screen.getAllByText('Runbook URL (optional):')).toHaveLength(3);
     expect(screen.getAllByPlaceholderText('https://example.com/runbook')).toHaveLength(3);
@@ -40,7 +50,7 @@ describe('RunbookUrl', () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await goToSection(user, 5); // Go to alerts section
     const tlsRunbookInput = screen.getByTestId(
-      `alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
     );
 
     await user.clear(tlsRunbookInput);
@@ -66,7 +76,7 @@ describe('RunbookUrl', () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await goToSection(user, 5); // Go to alerts section
     const httpDurationRunbookInput = screen.getByTestId(
-      `alert-runbook-url-${CheckAlertType.HTTPRequestDurationTooHighAvg}`
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].runbookUrlInput
     );
 
     await user.clear(httpDurationRunbookInput);
@@ -79,7 +89,7 @@ describe('RunbookUrl', () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await goToSection(user, 5); // Go to alerts section
     const tlsRunbookInput = screen.getByTestId(
-      `alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
     );
 
     await user.clear(tlsRunbookInput);
@@ -92,7 +102,9 @@ describe('RunbookUrl', () => {
     await goToSection(user, 5); // Go to alerts section
 
     expect(
-      screen.getByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
+      )
     ).toBeInTheDocument();
     const tlsCheckbox = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
@@ -100,7 +112,9 @@ describe('RunbookUrl', () => {
     await user.click(tlsCheckbox);
 
     expect(
-      screen.queryByTestId(`alert-runbook-url-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`)
+      screen.queryByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
+      )
     ).toHaveAttribute('disabled');
   });
 });

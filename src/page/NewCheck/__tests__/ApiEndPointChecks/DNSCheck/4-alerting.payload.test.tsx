@@ -90,12 +90,23 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].selectedCheckbox
       )
     );
-    await user.clear(screen.getByTestId('alert-threshold-DNSRequestDurationTooHighAvg'));
-    await user.type(screen.getByTestId('alert-threshold-DNSRequestDurationTooHighAvg'), '100');
+    await user.clear(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput
+      )
+    );
+    await user.type(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput
+      ),
+      '100'
+    );
 
     // Select 5m period (which is less than 10m frequency) - target the specific period selector by ID
     const periodContainer = document.getElementById('alert-period-DNSRequestDurationTooHighAvg');
-    const periodSelector = within(periodContainer as HTMLElement).getByTestId('alertPendingPeriod');
+    const periodSelector = within(periodContainer as HTMLElement).getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].periodCombobox
+    );
     await user.click(periodSelector);
 
     // Wait for dropdown to open and click "5 min" within the opened dropdown

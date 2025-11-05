@@ -99,7 +99,7 @@ export const RequestDurationTooHighAvgAlert = ({
                 <Select // eslint-disable-line @typescript-eslint/no-deprecated
                   {...fieldProps}
                   disabled={!selected || isFormDisabled}
-                  data-testid="alertPendingPeriod"
+                  data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
                   id={`alert-period-${alert.type}`}
                   options={validPeriods}
                   value={field.value}

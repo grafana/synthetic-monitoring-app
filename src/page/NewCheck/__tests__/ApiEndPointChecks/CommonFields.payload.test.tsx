@@ -116,9 +116,18 @@ describe('Api endpoint checks - common fields payload', () => {
               CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
             )
           );
-          await user.clear(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'));
+          await user.clear(
+            screen.getByTestId(
+              CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+            )
+          );
 
-          await user.type(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'), '1');
+          await user.type(
+            screen.getByTestId(
+              CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+            ),
+            '1'
+          );
 
           await submitForm(user);
 

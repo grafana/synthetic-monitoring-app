@@ -88,7 +88,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
                   type="number"
                   step="any"
                   id={`alert-threshold-${alert.type}`}
-                  data-testid={`alert-threshold-${alert.type}`}
+                  data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].thresholdInput}
                   onChange={(e) => {
                     const value = e.currentTarget.value;
                     debouncedTrackChangeThreshold({ name: alert.type, threshold: value });

@@ -38,13 +38,14 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
 
-    const thresholdsInputSelector = 'alert-threshold-TLSTargetCertificateCloseToExpiring';
-
     await user.click(
       screen.getByTestId(
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
       )
     );
+
+    const thresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
     await user.clear(screen.getByTestId(thresholdsInputSelector));
     await user.type(screen.getByTestId(thresholdsInputSelector), '1');
 
@@ -126,9 +127,18 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
       )
     );
-    await user.clear(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'));
+    await user.clear(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+      )
+    );
 
-    await user.type(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'), '50');
+    await user.type(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+      ),
+      '50'
+    );
 
     await submitForm(user);
 
@@ -160,11 +170,16 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
       )
     );
-    await user.clear(screen.getByTestId('alert-threshold-TLSTargetCertificateCloseToExpiring'));
-    await user.type(screen.getByTestId('alert-threshold-TLSTargetCertificateCloseToExpiring'), '7');
+
+    const tlsThresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
+    await user.clear(screen.getByTestId(tlsThresholdsInputSelector));
+    await user.type(screen.getByTestId(tlsThresholdsInputSelector), '7');
 
     // Fill in runbook URL
-    const runbookUrlInput = screen.getByTestId('alert-runbook-url-TLSTargetCertificateCloseToExpiring');
+    const runbookUrlInput = screen.getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
+    );
     await user.type(runbookUrlInput, 'https://example.com/runbooks/tls-cert-expiry');
 
     // Enable Failed Executions alert and set threshold and period
@@ -173,11 +188,16 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
       )
     );
-    await user.clear(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'));
-    await user.type(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'), '3');
+
+    const failedExecutionsThresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput;
+    await user.clear(screen.getByTestId(failedExecutionsThresholdsInputSelector));
+    await user.type(screen.getByTestId(failedExecutionsThresholdsInputSelector), '3');
 
     // Fill in runbook URL for Failed Executions alert
-    const failedExecRunbookUrlInput = screen.getByTestId('alert-runbook-url-ProbeFailedExecutionsTooHigh');
+    const failedExecRunbookUrlInput = screen.getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].runbookUrlInput
+    );
     await user.type(failedExecRunbookUrlInput, 'https://example.com/runbooks/failed-executions');
 
     await submitForm(user);
@@ -227,12 +247,17 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox
       )
     );
-    await user.clear(screen.getByTestId('alert-threshold-HTTPRequestDurationTooHighAvg'));
-    await user.type(screen.getByTestId('alert-threshold-HTTPRequestDurationTooHighAvg'), '100');
+
+    const httpRequestDurationThresholdsInput =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput;
+    await user.clear(screen.getByTestId(httpRequestDurationThresholdsInput));
+    await user.type(screen.getByTestId(httpRequestDurationThresholdsInput), '100');
 
     // Select 5m period (which is less than 10m frequency) - target the specific period selector by ID
     const periodContainer = document.getElementById('alert-period-HTTPRequestDurationTooHighAvg');
-    const periodSelector = within(periodContainer as HTMLElement).getByTestId('alertPendingPeriod');
+    const periodSelector = within(periodContainer as HTMLElement).getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].periodCombobox
+    );
     await user.click(periodSelector);
 
     // Wait for dropdown to open and click "5 min" within the opened dropdown

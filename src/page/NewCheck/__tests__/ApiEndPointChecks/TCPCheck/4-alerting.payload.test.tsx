@@ -1,8 +1,9 @@
 import { screen } from '@testing-library/react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
 
-import { CheckType, FeatureName } from 'types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
@@ -29,8 +30,13 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
     expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
 
-    const thresholdsInputSelector = 'alert-threshold-TLSTargetCertificateCloseToExpiring';
-    await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
+    const thresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
+      )
+    );
     await user.clear(screen.getByTestId(thresholdsInputSelector));
     await user.type(screen.getByTestId(thresholdsInputSelector), '1');
 
@@ -61,7 +67,11 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
-    await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
+      )
+    );
     await submitForm(user);
 
     expect(
