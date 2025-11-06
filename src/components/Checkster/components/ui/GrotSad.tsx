@@ -1,6 +1,12 @@
 import React from 'react';
+import { GROT_SAD_TEST_ID } from 'test/dataTestIds';
 
 export function GrotSad({ width = 'auto' }: { width?: number | string }) {
+  if (process.env.NODE_ENV === 'test') {
+    // allowing the component to fully render will eat up any memory the test runner has
+    return <svg data-testid={GROT_SAD_TEST_ID} />;
+  }
+
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 370.52 380.48" width={width}>
       <g>
