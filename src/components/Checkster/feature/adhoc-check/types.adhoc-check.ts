@@ -25,7 +25,9 @@ export interface AdHocCheckState {
 
 interface LogBase {
   level: string;
-  msg: string;
+  msg?: string;
+  error?: string;
+  errorCode?: string;
   time: string;
 }
 
