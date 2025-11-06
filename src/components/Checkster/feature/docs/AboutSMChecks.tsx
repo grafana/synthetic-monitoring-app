@@ -1,33 +1,20 @@
 import React from 'react';
-import { TextLink, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Stack, Text, TextLink } from '@grafana/ui';
 
-import { CheckType } from 'types';
+import { Ul } from 'components/Ul';
 
-export const DOCS_CHECK_COMPATABILITY: CheckType[] = [];
-
-export function DocsPanel() {
-  const theme = useTheme2();
+export function AboutSMChecks() {
   return (
-    <div
-      className={css`
-        padding: ${theme.spacing(2)};
-      `}
-    >
-      <h3>Docs</h3>
-      <p>
+    <Stack direction="column" gap={2}>
+      <Text element="p">
         Synthetic Monitoring checks are tests that run on selected public or private probes at frequent intervals to
         continuously verify your systems.
-      </p>
-      <p>
+      </Text>
+      <Text element="p">
         Checks save results as Prometheus metrics and Loki logs, enabling the configuration of Grafana alerts for custom
         notifications and incident management.
-      </p>
-      <ul
-        className={css`
-          padding-left: ${theme.spacing(2)};
-        `}
-      >
+      </Text>
+      <Ul>
         <li>
           <TextLink
             external
@@ -52,7 +39,7 @@ export function DocsPanel() {
             Create and manage secrets
           </TextLink>
         </li>
-      </ul>
-    </div>
+      </Ul>
+    </Stack>
   );
 }

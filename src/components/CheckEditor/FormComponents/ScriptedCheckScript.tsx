@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Alert, Tab, TabContent, TabsBar, TextLink } from '@grafana/ui';
+import { FieldValidationMessage, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { CheckFormValuesScripted } from 'types';
-import { FieldValidationMessage } from '@grafana/ui';
 import { CodeEditor } from 'components/CodeEditor';
 import { CodeSnippet } from 'components/CodeSnippet';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
@@ -22,7 +21,6 @@ export const ScriptedCheckScript = () => {
     formState: { errors, disabled: isFormDisabled },
   } = useFormContext<CheckFormValuesScripted>();
   const [selectedTab, setSelectedTab] = useState(ScriptEditorTabs.Script);
-  const [showK6Info, setShowK6Info] = useState(true);
   const fieldError = errors.settings?.scripted?.script;
 
   useEffect(() => {
@@ -41,19 +39,6 @@ export const ScriptedCheckScript = () => {
 
   return (
     <>
-      {showK6Info && (
-        <Alert severity="info" title="Grafana k6 Script" onRemove={() => setShowK6Info(false)}>
-          Scripted checks are built on top of Grafana k6. Read{' '}
-          <TextLink href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/k6/" external>
-            here
-          </TextLink>{' '}
-          for more information on getting started. <br />You can also save time by using{' '}
-          <TextLink href="https://grafana.com/docs/k6-studio/record-your-first-script/" external>
-            k6 Studio
-          </TextLink>{' '}
-          to record a user flow to create a test script.
-        </Alert>
-      )}
       <TabsBar>
         <Tab
           label="Script"

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, TextLink, useStyles2, useTheme2 } from '@grafana/ui';
+import { Badge, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckType } from '../../../../../types';
+import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
+import { PlainButton } from 'components/PlainButton';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
@@ -31,13 +33,6 @@ export function ScriptedCheckContent({
   const theme = useTheme2();
   const hasExamples = examples && examples?.length > 0;
   const styles = useStyles2(getStyles);
-  const [showK6Info, setShowK6Info] = useState(true);
-
-  // Determine if this is a browser check or scripted check based on the scriptField
-  const isBrowserCheck = scriptField === 'settings.browser.script';
-  const docsLink = isBrowserCheck
-    ? 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/k6-browser/'
-    : 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/k6/';
 
   return (
     <SectionContent noWrapper>
@@ -46,22 +41,7 @@ export function ScriptedCheckContent({
         <FormInstanceField field="target" />
       </Column>
       <Column fill>
-        {showK6Info && (
-          <div style={{ marginBottom: theme.spacing(2) }}>
-            <Alert severity="info" title="Grafana k6 Script" onRemove={() => setShowK6Info(false)}>
-              Scripted checks are built on top of Grafana k6. Read{' '}
-              <TextLink href={docsLink} external>
-                here
-              </TextLink>{' '}
-              for more information on getting started. <br />You can also save time by using{' '}
-              <TextLink href="https://grafana.com/docs/k6-studio/record-your-first-script/" external>
-                k6 Studio
-              </TextLink>{' '}
-              to record a user flow to create a test script.
-            </Alert>
-          </div>
-        )}
-        <FormTabs>
+        <FormTabs actions={<HelpBadge />}>
           <FormTabContent label="Script" fillVertical vanilla>
             <GenericScriptField field={scriptField} />
           </FormTabContent>
@@ -75,6 +55,26 @@ export function ScriptedCheckContent({
     </SectionContent>
   );
 }
+
+const HelpBadge = () => {
+  const { setActive } = useFeatureTabsContext();
+
+  return (
+    <Tooltip content="Syntehtic Monitoring scripts are built on top of Grafana k6. Learn more about authoring scripts">
+      <PlainButton type="button" onClick={() => setActive('Docs')}>
+        <Badge
+          color="blue"
+          icon="k6"
+          text={
+            <Stack direction="row" gap={0.5} alignItems="center">
+              Help with scripts
+            </Stack>
+          }
+        />
+      </PlainButton>
+    </Tooltip>
+  );
+};
 
 function getStyles(theme: GrafanaTheme2) {
   return {

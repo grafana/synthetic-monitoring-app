@@ -1,7 +1,6 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Alert, Tab, TabContent, TabsBar, TextLink } from '@grafana/ui';
-import { FieldValidationMessage } from '@grafana/ui';
+import { FieldValidationMessage, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { CheckFormValuesBrowser } from 'types';
 import { CodeEditor } from 'components/CodeEditor';
@@ -19,24 +18,10 @@ export const BrowserCheckScript = () => {
     formState: { errors, disabled },
   } = useFormContext<CheckFormValuesBrowser>();
   const [selectedTab, setSelectedTab] = React.useState(ScriptEditorTabs.Script);
-  const [showK6Info, setShowK6Info] = React.useState(true);
   const fieldError = errors.settings?.browser?.script;
 
   return (
     <>
-      {showK6Info && (
-        <Alert severity="info" title="Grafana k6 Script" onRemove={() => setShowK6Info(false)}>
-          Scripted checks are built on top of Grafana k6. Read{' '}
-          <TextLink href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/k6-browser/" external>
-            here
-          </TextLink>{' '}
-          for more information on getting started. <br />You can also save time by using{' '}
-          <TextLink href="https://grafana.com/docs/k6-studio/record-your-first-script/" external>
-            k6 Studio
-          </TextLink>{' '}
-          to record a user flow to create a test script.
-        </Alert>
-      )}
       <TabsBar>
         <Tab
           label="Script"

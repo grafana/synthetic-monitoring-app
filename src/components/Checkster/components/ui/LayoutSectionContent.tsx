@@ -3,16 +3,23 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 export function LayoutSectionContent({ children }: PropsWithChildren) {
-  const className = useStyles2(getClassName);
-  return <div className={className}>{children}</div>;
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.container} tabIndex={0}>
+      {children}
+    </div>
+  );
 }
 
-function getClassName() {
-  return css`
-    display: flex;
-    flex-direction: column;
-    flex-basis: 0;
-    flex-grow: 1;
-    overflow: auto;
-  `;
+function getStyles() {
+  return {
+    container: css`
+      display: flex;
+      flex-direction: column;
+      flex-basis: 0;
+      flex-grow: 1;
+      overflow: auto;
+    `,
+  };
 }
