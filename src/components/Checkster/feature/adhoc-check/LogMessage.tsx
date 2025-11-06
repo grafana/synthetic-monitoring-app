@@ -29,6 +29,11 @@ export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string 
 
   const iconName = getMsgIconFromLog(log);
   const upgrade = iconName === 'user' && log.level !== 'info'; // since there is no differentiating between console.log and console.info
+  const logLine = log.msg ? getMsgFromLogMsg(log.msg) : log.error ? log.error : undefined;
+
+  if (!logLine) {
+    return null;
+  }
 
   return (
     <span
@@ -40,7 +45,7 @@ export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string 
       `}
     >
       {iconName !== undefined && <Icon name={iconName} />}
-      {log.msg ? getMsgFromLogMsg(log.msg) : log.error ? log.error : undefined}
+      {logLine}
     </span>
   );
 }
