@@ -8,7 +8,6 @@ import { LogEntry } from './types.adhoc-check';
 import { getLogColor, getMsgFromLogMsg, getMsgIconFromLog } from './utils';
 
 export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string }) {
-  console.log(log);
   const theme = useTheme2();
 
   if ('check' in log) {
