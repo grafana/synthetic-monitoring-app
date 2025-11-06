@@ -1,3 +1,3 @@
-export * from './APIEndpointDocsPanel';
-export * from './ScriptedCheckDocsPanel';
-export * from './BrowserCheckDocsPanel';
+export * from './DocsPanelAPIEndpoint';
+export * from './DocsPanelScripted';
+export * from './DocsPanelBrowser';

@@ -1,7 +1,5 @@
 import React from 'react';
-import { Stack, Text, TextLink } from '@grafana/ui';
-
-import { Ul } from 'components/Ul';
+import { Stack, Text } from '@grafana/ui';
 
 export function AboutSMChecks() {
   return (
@@ -14,32 +12,6 @@ export function AboutSMChecks() {
         Checks save results as Prometheus metrics and Loki logs, enabling the configuration of Grafana alerts for custom
         notifications and incident management.
       </Text>
-      <Ul>
-        <li>
-          <TextLink
-            external
-            href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/"
-          >
-            Check types and what they do
-          </TextLink>
-        </li>
-        <li>
-          <TextLink
-            external
-            href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/public-probes/"
-          >
-            Public probes
-          </TextLink>
-        </li>
-        <li>
-          <TextLink
-            external
-            href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/"
-          >
-            Create and manage secrets
-          </TextLink>
-        </li>
-      </Ul>
     </Stack>
   );
 }

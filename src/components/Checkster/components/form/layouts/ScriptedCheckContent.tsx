@@ -60,14 +60,17 @@ const HelpBadge = () => {
   const { setActive } = useFeatureTabsContext();
 
   return (
-    <Tooltip content="Syntehtic Monitoring scripts are built on top of Grafana k6. Learn more about authoring scripts">
+    <Tooltip
+      content="Synthetic Monitoring scripts are built on top of Grafana k6. Click to learn more about authoring scripts."
+      interactive
+    >
       <PlainButton type="button" onClick={() => setActive('Docs')}>
         <Badge
           color="blue"
           icon="k6"
           text={
             <Stack direction="row" gap={0.5} alignItems="center">
-              Help with scripts
+              About k6 scripts
             </Stack>
           }
         />
