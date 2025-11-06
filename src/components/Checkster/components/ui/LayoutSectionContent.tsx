@@ -1,18 +1,23 @@
 import React, { PropsWithChildren } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
-export function LayoutSectionContent({ children }: PropsWithChildren) {
+interface LayoutSectionContentProps extends PropsWithChildren<React.HTMLAttributes<HTMLDivElement>> {
+  className?: string;
+}
+
+export function LayoutSectionContent({ children, className, ...rest }: LayoutSectionContentProps) {
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={styles.container} tabIndex={0}>
+    <div className={cx(styles.container, className)} {...rest}>
       {children}
     </div>
   );
 }
 
-function getStyles() {
+function getStyles(theme: GrafanaTheme2) {
   return {
     container: css`
       display: flex;

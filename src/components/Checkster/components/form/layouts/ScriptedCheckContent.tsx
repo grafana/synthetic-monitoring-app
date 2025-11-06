@@ -9,7 +9,7 @@ import { PlainButton } from 'components/PlainButton';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
-import { FIELD_SPACING } from '../../../constants';
+import { FIELD_SPACING, SECONDARY_CONTAINER_ID } from '../../../constants';
 import { ScriptExamples } from '../../ScriptExamples';
 import { Column } from '../../ui/Column';
 import { SectionContent } from '../../ui/SectionContent';
@@ -64,7 +64,13 @@ const HelpBadge = () => {
       content="Synthetic Monitoring scripts are built on top of Grafana k6. Click to learn more about authoring scripts."
       interactive
     >
-      <PlainButton type="button" onClick={() => setActive('Docs')}>
+      <PlainButton
+        type="button"
+        onClick={() => {
+          setActive('Docs');
+          document.getElementById(SECONDARY_CONTAINER_ID)?.focus();
+        }}
+      >
         <Badge
           color="blue"
           icon="k6"

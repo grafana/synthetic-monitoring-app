@@ -3,6 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+import { SECONDARY_CONTAINER_ID } from 'components/Checkster/constants';
+
 import { useAppContainerContext } from '../../contexts/AppContainerContext';
 import { LayoutSectionContent } from './LayoutSectionContent';
 import { LayoutSectionHeader } from './LayoutSectionHeader';
@@ -23,7 +25,9 @@ export function SecondaryLayoutSection({ children, headerContent }: SecondaryLay
       <div className={cx(splitterClassname, styles.splitter)} {...splitterProps} />
       <div className={cx(secondaryClassname, styles.secondary)} {...secondaryProps}>
         <LayoutSectionHeader>{headerContent}</LayoutSectionHeader>
-        <LayoutSectionContent>{children}</LayoutSectionContent>
+        <LayoutSectionContent className={styles.sectionContent} id={SECONDARY_CONTAINER_ID} tabIndex={0}>
+          {children}
+        </LayoutSectionContent>
       </div>
     </>
   );
@@ -38,6 +42,12 @@ function getStyles(theme: GrafanaTheme2) {
     splitter: css`
       &::before {
         border-right: 1px solid ${theme.colors.border.medium};
+      }
+    `,
+    sectionContent: css`
+      &:focus {
+        outline: 2px solid ${theme.colors.primary.border};
+        outline-offset: -2px;
       }
     `,
   };
