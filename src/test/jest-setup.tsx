@@ -9,6 +9,9 @@ import 'whatwg-fetch';
 // so the types also get imported
 import '@testing-library/jest-dom';
 
+process.env.SM_PLUGIN_ID = 'TEST.ENV.ID';
+process.env.SM_PLUGIN_VERSION = 'TEST.ENV.VERSION';
+
 beforeAll(() => {
   server.listen({
     onUnhandledRequest: 'warn',

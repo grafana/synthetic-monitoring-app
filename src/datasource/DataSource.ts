@@ -35,6 +35,7 @@ import {
 } from './responses.types';
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+import { SM_CLIENT_HEADERS } from 'datasource/constants';
 import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
 import { SecretsResponse } from 'data/useSecrets';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
@@ -276,6 +277,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<AddProbeResult>(`${this.instanceSettings.url}/sm/probe/add`, {
       method: 'POST',
       data: probe,
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
@@ -283,6 +287,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<UpdateProbeResult>(`${this.instanceSettings.url}/sm/probe/update`, {
       method: 'POST',
       data: probe,
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
@@ -290,11 +297,19 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<ResetProbeTokenResult>(`${this.instanceSettings.url}/sm/probe/update?reset-token=true`, {
       method: 'POST',
       data: probe,
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
   async deleteProbe(id: number) {
-    return this.fetchAPI<DeleteProbeResult>(`${this.instanceSettings.url}/sm/probe/delete/${id}`, { method: 'DELETE' });
+    return this.fetchAPI<DeleteProbeResult>(`${this.instanceSettings.url}/sm/probe/delete/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
+    });
   }
 
   //--------------------------------------------------------------------------------
@@ -314,6 +329,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<AdHocCheckResponse>(`${this.instanceSettings.url}/sm/check/adhoc`, {
       method: 'POST',
       data: payload,
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
@@ -321,17 +339,28 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<AddCheckResult>(`${this.instanceSettings.url}/sm/check/add`, {
       method: 'POST',
       data: check,
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
   async deleteCheck(id: number) {
-    return this.fetchAPI<DeleteCheckResult>(`${this.instanceSettings.url}/sm/check/delete/${id}`, { method: 'DELETE' });
+    return this.fetchAPI<DeleteCheckResult>(`${this.instanceSettings.url}/sm/check/delete/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
+    });
   }
 
   async updateCheck(check: Check) {
     return this.fetchAPI<UpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update`, {
       method: 'POST',
       data: check,
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
@@ -339,6 +368,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<ExtendedBulkUpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update/bulk`, {
       method: 'POST',
       data: checks,
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
@@ -360,16 +392,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       data: {
         ...settings,
       },
-    });
-  }
-
-  async disableTenant(): Promise<any> {
-    const tenant = await this.getTenant();
-    return this.fetchAPI(`${this.instanceSettings.url}/sm/tenant/update`, {
-      method: 'POST',
-      data: {
-        ...tenant,
-        status: 1,
+      headers: {
+        ...SM_CLIENT_HEADERS,
       },
     });
   }
@@ -377,7 +401,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
   // ALERTS PER CHECK
   //--------------------------------------------------------------------------------
-  // Note: this endpoints are not yet released. The prototype can be seen here https://github.com/grafana/synthetic-monitoring-api/pull/992
 
   async listAlertsForCheck(checkId: number) {
     return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`);
@@ -387,6 +410,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<null>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
       method: 'PUT',
       data: { alerts },
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
@@ -445,6 +471,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<AccessTokenResponse>(`${this.instanceSettings.url}/sm/token/create`, {
       method: 'POST',
       data: {},
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     }).then((data) => data.token);
   }
 
@@ -471,18 +500,27 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
         method: 'PUT',
         data: secretWithoutName,
+        headers: {
+          ...SM_CLIENT_HEADERS,
+        },
       });
     }
     // For creates: include name in payload
     return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
       method: 'POST',
       data: secret,
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 
   async deleteSecret(name: string): Promise<unknown> {
     return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
       method: 'DELETE',
+      headers: {
+        ...SM_CLIENT_HEADERS,
+      },
     });
   }
 

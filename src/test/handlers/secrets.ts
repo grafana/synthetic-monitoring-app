@@ -84,8 +84,18 @@ export const createSecret: ApiEntry<SecretFormValues> = {
  * - `result`: A function that returns the expected result of the API call, which is a JSON response with a value of `null`.
  */
 export const updateSecret: ApiEntry<SecretFormValues> = {
-  route: `/api/v1alpha1/secrets/${MOCKED_SECRETS_API_RESPONSE.secrets[0].name}`,
+  route: `/api/v1alpha1/secrets/([^/]+)`,
   method: `put`,
+  result: () => {
+    return {
+      json: null,
+    };
+  },
+};
+
+export const deleteSecret: ApiEntry<unknown> = {
+  route: `/api/v1alpha1/secrets/([^/]+)`,
+  method: `delete`,
   result: () => {
     return {
       json: null,

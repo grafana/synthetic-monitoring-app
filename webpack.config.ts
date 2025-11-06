@@ -4,7 +4,7 @@ import { type Configuration, DefinePlugin } from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { CustomizeRule, mergeWithRules } from 'webpack-merge';
 
-import { getPluginJson } from './.config/webpack/utils';
+import { getPluginJson, getPackageJson } from './.config/webpack/utils';
 import grafanaConfig from './.config/webpack/webpack.config';
 
 const config = async (env): Promise<Configuration> => {
@@ -65,6 +65,8 @@ const config = async (env): Promise<Configuration> => {
     plugins: [
       new DefinePlugin({
         'process.env.REACT_APP_MSW': JSON.stringify(process.env.REACT_APP_MSW),
+        'process.env.SM_PLUGIN_VERSION': JSON.stringify(getPackageJson().version),
+        'process.env.SM_PLUGIN_ID': JSON.stringify(getPluginJson().id),
       }),
       ...analyzerPlugin,
     ],
