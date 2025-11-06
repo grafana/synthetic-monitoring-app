@@ -8,6 +8,7 @@ import { LogEntry } from './types.adhoc-check';
 import { getLogColor, getMsgFromLogMsg, getMsgIconFromLog } from './utils';
 
 export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string }) {
+  console.log(log);
   const theme = useTheme2();
 
   if ('check' in log) {
@@ -40,7 +41,7 @@ export function LogMessage({ log, logLevel }: { log: LogEntry; logLevel: string 
       `}
     >
       {iconName !== undefined && <Icon name={iconName} />}
-      {getMsgFromLogMsg(log.msg)}
+      {log.msg ? getMsgFromLogMsg(log.msg) : log.error ? log.error : undefined}
     </span>
   );
 }
