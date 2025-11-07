@@ -2,6 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackNeedHelpScriptsButtonClicked } from 'features/tracking/checkFormEvents';
 
 import { CheckType } from '../../../../../types';
 import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
@@ -32,6 +33,7 @@ export function ScriptedCheckContent({
   const theme = useTheme2();
   const hasExamples = examples && examples?.length > 0;
   const styles = useStyles2(getStyles);
+  const source = scriptField === 'settings.scripted.script' ? 'scripted_check' : 'browser_check';
 
   return (
     <SectionContent noWrapper>
@@ -40,7 +42,7 @@ export function ScriptedCheckContent({
         <FormInstanceField field="target" />
       </Column>
       <Column fill>
-        <FormTabs actions={<HelpBadge />}>
+        <FormTabs actions={<HelpButton source={source} />}>
           <FormTabContent label="Script" fillVertical vanilla>
             <GenericScriptField field={scriptField} />
           </FormTabContent>
@@ -55,7 +57,7 @@ export function ScriptedCheckContent({
   );
 }
 
-const HelpBadge = () => {
+const HelpButton = ({ source }: { source: string }) => {
   const { setActive } = useFeatureTabsContext();
 
   return (
@@ -64,6 +66,7 @@ const HelpBadge = () => {
       onClick={() => {
         setActive('Docs');
         document.getElementById(SECONDARY_CONTAINER_ID)?.focus();
+        trackNeedHelpScriptsButtonClicked({ source });
       }}
       // variant=""
       fill="text"

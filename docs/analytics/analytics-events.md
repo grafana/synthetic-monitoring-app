@@ -84,6 +84,16 @@ Tracks when a check is successfully updated.
 | --------- | -------------------------------------------------------------------------------------------------------- | ------------------ |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check. |
 
+#### synthetic-monitoring_check_form_need_help_scripts_button_clicked
+
+Tracks when the 'need help writing scripts' button is clicked.
+
+##### Properties
+
+| name   | type     | description                      |
+| ------ | -------- | -------------------------------- |
+| source | `string` | The source of the clicked button |
+
 ### feature_feedback
 
 #### synthetic-monitoring_feature_feedback_feature_feedback_submitted
