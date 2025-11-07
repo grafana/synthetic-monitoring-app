@@ -15,6 +15,11 @@ type Entry = {
 
 const entries: Entry[] = [
   {
+    method: `listProbes`,
+    payload: undefined,
+    handler: 'listProbes',
+  },
+  {
     method: 'addProbe',
     payload: PRIVATE_PROBE,
     handler: 'addProbe',
@@ -33,6 +38,16 @@ const entries: Entry[] = [
     method: 'deleteProbe',
     payload: 1,
     handler: 'deleteProbe',
+  },
+  {
+    method: 'getCheckInfo',
+    payload: undefined,
+    handler: 'checkInfo',
+  },
+  {
+    method: 'listChecks',
+    payload: undefined,
+    handler: 'listChecks',
   },
   {
     method: 'testCheck',
@@ -60,9 +75,24 @@ const entries: Entry[] = [
     handler: 'bulkUpdateChecks',
   },
   {
+    method: 'getTenant',
+    payload: undefined,
+    handler: 'getTenant',
+  },
+  {
+    method: 'getTenantLimits',
+    payload: undefined,
+    handler: 'getTenantLimits',
+  },
+  {
     method: 'updateTenantSettings',
     payload: { settings: { thresholds: { alert: 1, warning: 2 } } },
     handler: 'updateTenantSettings',
+  },
+  {
+    method: 'listAlertsForCheck',
+    payload: 1,
+    handler: 'listAlertsForCheck',
   },
   {
     method: 'updateAlertsForCheck',
@@ -73,6 +103,16 @@ const entries: Entry[] = [
     method: 'createApiToken',
     payload: undefined,
     handler: 'createAccessToken',
+  },
+  {
+    method: 'getSecrets',
+    payload: undefined,
+    handler: 'listSecrets',
+  },
+  {
+    method: 'getSecret',
+    payload: 'new-secret',
+    handler: 'getSecret',
   },
   {
     method: 'saveSecret',
@@ -92,7 +132,7 @@ const entries: Entry[] = [
 ];
 
 describe('SMDataSource', () => {
-  it.each(entries)('sets the client headers for $method', async ({ method, payload, handler }) => {
+  it.each(entries)('$method - sets the X-Client- headers', async ({ method, payload, handler }) => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(handler, undefined, record));
 

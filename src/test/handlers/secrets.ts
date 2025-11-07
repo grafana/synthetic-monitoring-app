@@ -44,7 +44,7 @@ export const listSecrets: ApiEntry<SecretsResponse> = {
  * - `result`: A function representing the response handler, returning a mock JSON payload containing the secret data.
  */
 export const getSecret: ApiEntry<SecretWithMetadata> = {
-  route: `/api/v1alpha1/secrets/${MOCKED_SECRETS_API_RESPONSE.secrets[0].name}`,
+  route: `/api/v1alpha1/secrets/([^/]+)`,
   method: `get`,
   result: () => {
     return {

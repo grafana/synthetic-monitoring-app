@@ -35,7 +35,6 @@ import {
 } from './responses.types';
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
-import { SM_CLIENT_HEADERS } from 'datasource/constants';
 import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
 import { SecretsResponse } from 'data/useSecrets';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
@@ -54,6 +53,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       getBackendSrv().fetch<T>({
         method: options?.method ?? 'GET',
         url,
+        headers: {
+          'X-Client-ID': process.env.SM_PLUGIN_ID,
+          'X-Client-Version': process.env.SM_PLUGIN_VERSION,
+          ...options?.headers,
+        },
         ...options,
       })
     ).catch((error: unknown) => {
@@ -215,10 +219,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return allProbes;
   }
 
-  async getCheckInfo() {
-    return this.fetchAPI<CheckInfoResult>(`${this.instanceSettings.url}/sm/checks/info`);
-  }
-
   async queryLogs(expr: string, range: TimeRange) {
     return this.fetchAPI<LogsQueryResponse>(`/api/ds/query`, {
       method: 'POST',
@@ -277,9 +277,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<AddProbeResult>(`${this.instanceSettings.url}/sm/probe/add`, {
       method: 'POST',
       data: probe,
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
     });
   }
 
@@ -287,9 +284,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<UpdateProbeResult>(`${this.instanceSettings.url}/sm/probe/update`, {
       method: 'POST',
       data: probe,
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
     });
   }
 
@@ -297,31 +291,23 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<ResetProbeTokenResult>(`${this.instanceSettings.url}/sm/probe/update?reset-token=true`, {
       method: 'POST',
       data: probe,
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
     });
   }
 
   async deleteProbe(id: number) {
-    return this.fetchAPI<DeleteProbeResult>(`${this.instanceSettings.url}/sm/probe/delete/${id}`, {
-      method: 'DELETE',
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
-    });
+    return this.fetchAPI<DeleteProbeResult>(`${this.instanceSettings.url}/sm/probe/delete/${id}`, { method: 'DELETE' });
   }
 
   //--------------------------------------------------------------------------------
   // CHECKS
   //--------------------------------------------------------------------------------
 
-  async listChecks(includeAlerts = false) {
-    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`);
+  async getCheckInfo() {
+    return this.fetchAPI<CheckInfoResult>(`${this.instanceSettings.url}/sm/checks/info`);
   }
 
-  async getCheck(checkId: number) {
-    return this.fetchAPI<Check>(`${this.instanceSettings.url}/sm/check/${checkId}`);
+  async listChecks(includeAlerts = false) {
+    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`);
   }
 
   async testCheck(check: Check) {
@@ -329,9 +315,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<AdHocCheckResponse>(`${this.instanceSettings.url}/sm/check/adhoc`, {
       method: 'POST',
       data: payload,
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
     });
   }
 
@@ -339,28 +322,17 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<AddCheckResult>(`${this.instanceSettings.url}/sm/check/add`, {
       method: 'POST',
       data: check,
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
     });
   }
 
   async deleteCheck(id: number) {
-    return this.fetchAPI<DeleteCheckResult>(`${this.instanceSettings.url}/sm/check/delete/${id}`, {
-      method: 'DELETE',
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
-    });
+    return this.fetchAPI<DeleteCheckResult>(`${this.instanceSettings.url}/sm/check/delete/${id}`, { method: 'DELETE' });
   }
 
   async updateCheck(check: Check) {
     return this.fetchAPI<UpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update`, {
       method: 'POST',
       data: check,
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
     });
   }
 
@@ -368,9 +340,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<ExtendedBulkUpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update/bulk`, {
       method: 'POST',
       data: checks,
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
     });
   }
 
@@ -392,9 +361,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       data: {
         ...settings,
       },
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
     });
   }
 
@@ -410,9 +376,55 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<null>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
       method: 'PUT',
       data: { alerts },
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
+    });
+  }
+
+  //--------------------------------------------------------------------------------
+  // TOKENS
+  //--------------------------------------------------------------------------------
+
+  async createApiToken(): Promise<string> {
+    return this.fetchAPI<AccessTokenResponse>(`${this.instanceSettings.url}/sm/token/create`, {
+      method: 'POST',
+      data: {},
+    }).then((data) => data.token);
+  }
+
+  //--------------------------------------------------------------------------------
+  // SECRETS MANAGEMENT
+  //--------------------------------------------------------------------------------
+
+  async getSecrets(): Promise<SecretsResponse> {
+    return this.fetchAPI<SecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+      method: 'GET',
+    });
+  }
+
+  async getSecret(name: string): Promise<SecretWithMetadata> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
+      method: 'GET',
+    });
+  }
+
+  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
+    if (secret.uuid) {
+      // For updates: use name for URL but exclude it from payload
+      const { name, ...secretWithoutName } = secret;
+      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
+        method: 'PUT',
+        data: secretWithoutName,
+      });
+    }
+    // For creates: include name in payload
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+      method: 'POST',
+      data: secret,
+    });
+  }
+
+  async deleteSecret(name: string): Promise<unknown> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
+      method: 'DELETE',
     });
   }
 
@@ -463,63 +475,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         apiToken,
         metricsInstanceId: options.metrics.hostedId,
         logsInstanceId: options.logs.hostedId,
-      },
-    });
-  }
-
-  async createApiToken(): Promise<string> {
-    return this.fetchAPI<AccessTokenResponse>(`${this.instanceSettings.url}/sm/token/create`, {
-      method: 'POST',
-      data: {},
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
-    }).then((data) => data.token);
-  }
-
-  //--------------------------------------------------------------------------------
-  // SECRETS MANAGEMENT - DEV ONLY
-  //--------------------------------------------------------------------------------
-
-  async getSecrets(): Promise<SecretsResponse> {
-    return this.fetchAPI<SecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
-      method: 'GET',
-    });
-  }
-
-  async getSecret(name: string): Promise<SecretWithMetadata> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-      method: 'GET',
-    });
-  }
-
-  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
-    if (secret.uuid) {
-      // For updates: use name for URL but exclude it from payload
-      const { name, ...secretWithoutName } = secret;
-      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-        method: 'PUT',
-        data: secretWithoutName,
-        headers: {
-          ...SM_CLIENT_HEADERS,
-        },
-      });
-    }
-    // For creates: include name in payload
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
-      method: 'POST',
-      data: secret,
-      headers: {
-        ...SM_CLIENT_HEADERS,
-      },
-    });
-  }
-
-  async deleteSecret(name: string): Promise<unknown> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-      method: 'DELETE',
-      headers: {
-        ...SM_CLIENT_HEADERS,
       },
     });
   }
