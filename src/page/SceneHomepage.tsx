@@ -30,9 +30,10 @@ function SceneHomepageComponent() {
     return new SceneApp({
       pages: [
         new SceneAppPage({
-          title: 'Home',
+          title: 'Synthetics',
+          renderTitle: () => <h1>Home</h1>,
           url: `${PLUGIN_URL_PATH}${AppRoutes.Home}`,
-          hideFromBreadcrumbs: true,
+          hideFromBreadcrumbs: false,
           getScene: getSummaryScene(config, checks, true),
         }),
       ],
