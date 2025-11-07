@@ -10,6 +10,10 @@ export const createEventFactory = (product: string, featureName: string) => {
     (props: P extends undefined ? void : P) => {
       const eventNameToReport = `${product}_${featureName}_${eventName}`;
       reportInteraction(eventNameToReport, props ?? undefined);
+      console.log({
+        eventNameToReport,
+        props,
+      });
     };
 };
 

@@ -1,11 +1,10 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
+import { Button, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckType } from '../../../../../types';
 import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
-import { PlainButton } from 'components/PlainButton';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
@@ -60,28 +59,19 @@ const HelpBadge = () => {
   const { setActive } = useFeatureTabsContext();
 
   return (
-    <Tooltip
-      content="Synthetic Monitoring scripts are built on top of Grafana k6. Click to learn more about authoring scripts."
-      interactive
+    <Button
+      type="button"
+      onClick={() => {
+        setActive('Docs');
+        document.getElementById(SECONDARY_CONTAINER_ID)?.focus();
+      }}
+      // variant=""
+      fill="text"
+      icon="k6"
+      tooltip="Synthetic Monitoring scripts are built on top of Grafana k6. Click to learn more about authoring scripts."
     >
-      <PlainButton
-        type="button"
-        onClick={() => {
-          setActive('Docs');
-          document.getElementById(SECONDARY_CONTAINER_ID)?.focus();
-        }}
-      >
-        <Badge
-          color="blue"
-          icon="k6"
-          text={
-            <Stack direction="row" gap={0.5} alignItems="center">
-              About k6 scripts
-            </Stack>
-          }
-        />
-      </PlainButton>
-    </Tooltip>
+      Need help writing scripts?
+    </Button>
   );
 };
 

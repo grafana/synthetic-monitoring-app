@@ -16,11 +16,13 @@ import { DocumentationLinks } from 'components/Checkster/feature/docs/Documentat
 export const BROWSER_CHECK_DOCS_CHECK_COMPATABILITY: CheckType[] = [CheckType.Browser];
 
 export function DocsPanelBrowserCheck() {
+  const source = 'check_editor_sidepanel_browser_docs';
+
   return (
     <Box padding={2}>
       <Stack direction="column" gap={2}>
         <AboutBrowserChecks />
-        <Aboutk6Stuido />
+        <Aboutk6Stuido source={source} />
         <DocumentationLinks
           links={[
             DOC_LINK_K6_STUDIO_RECORD_FIRST_SCRIPT,
@@ -29,6 +31,7 @@ export function DocsPanelBrowserCheck() {
             DOC_LINK_K6_JAVASCRIPT_API,
             DOC_LINK_SECRETS,
           ]}
+          source={source}
         />
       </Stack>
     </Box>

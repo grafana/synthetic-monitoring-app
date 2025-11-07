@@ -15,11 +15,13 @@ import { DocumentationLinks } from 'components/Checkster/feature/docs/Documentat
 export const SCRIPTED_DOCS_CHECK_COMPATABILITY: CheckType[] = [CheckType.Scripted];
 
 export function DocsPanelScriptedCheck() {
+  const source = 'check_editor_sidepanel_scripted_docs';
+
   return (
     <Box padding={2}>
       <Stack direction="column" gap={2}>
         <AboutScriptedChecks />
-        <Aboutk6Stuido />
+        <Aboutk6Stuido source={source} />
         <DocumentationLinks
           links={[
             DOC_LINK_K6_STUDIO_RECORD_FIRST_SCRIPT,
@@ -27,6 +29,7 @@ export function DocsPanelScriptedCheck() {
             DOC_LINK_K6_JAVASCRIPT_API,
             DOC_LINK_SECRETS,
           ]}
+          source={source}
         />
       </Stack>
     </Box>

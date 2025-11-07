@@ -1,20 +1,21 @@
 import React from 'react';
-import { TextLink } from '@grafana/ui';
 
+import { DocsLink } from 'components/DocsLink';
 import { Ul } from 'components/Ul';
 
 interface DocumentationLinksProps {
   links: Array<{ title: string; href: string }>;
+  source: string;
 }
 
-export function DocumentationLinks({ links }: DocumentationLinksProps) {
+export function DocumentationLinks({ links, source }: DocumentationLinksProps) {
   return (
     <Ul>
       {links.map((link) => (
         <li key={link.href}>
-          <TextLink href={link.href} external>
+          <DocsLink href={link.href} source={source}>
             {link.title}
-          </TextLink>
+          </DocsLink>
         </li>
       ))}
     </Ul>

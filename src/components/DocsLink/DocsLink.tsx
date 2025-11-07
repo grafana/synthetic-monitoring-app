@@ -1,46 +1,24 @@
-import React, { type ReactNode } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import React, { type ReactNode, useCallback } from 'react';
+import { TextLink } from '@grafana/ui';
 
-const docs = {
-  probes: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/public-probes/`,
-  publicProbes: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/public-probes/`,
-  privateProbes: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/`,
-  addPrivateProbe: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#add-a-new-probe-in-your-grafana-instance`,
-};
+import { onDocsLinkClick } from 'components/DocsLink/DocsLink.utils';
 
 type DocsLinkProps = {
-  article: keyof typeof docs;
   children: ReactNode;
-  iconPosition?: 'prefix' | 'suffix';
-  className?: string;
+  href: string;
+  inline?: boolean;
+  source: string;
 };
 
-export const DocsLink = ({ article, children, iconPosition = 'suffix', className }: DocsLinkProps) => {
-  const styles = useStyles2(getStyles);
+export const DocsLink = ({ children, href, source }: DocsLinkProps) => {
+  const handleClick = useCallback(() => {
+    onDocsLinkClick(href, source);
+  }, [href, source]);
 
   return (
-    <a className={cx(styles.link, className)} href={docs[article]} target="_blank" rel="noreferrer">
-      {iconPosition === 'prefix' && <ExternalLinkIcon />}
+    // todo: replace this with something more customisable
+    <TextLink href={href} external onClick={handleClick}>
       {children}
-      {iconPosition === 'suffix' && <ExternalLinkIcon />}
-    </a>
+    </TextLink>
   );
 };
-
-const ExternalLinkIcon = () => <Icon name="external-link-alt" size="sm" />;
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  link: css({
-    alignItems: 'baseline',
-    color: theme.colors.text.link,
-    display: 'inline-flex',
-    gap: theme.spacing(0.5),
-    textDecoration: 'underline',
-
-    '&:hover': {
-      textDecoration: 'none',
-    },
-  }),
-});

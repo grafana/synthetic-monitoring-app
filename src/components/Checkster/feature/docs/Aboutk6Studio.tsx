@@ -1,11 +1,13 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Stack, Text, useStyles2, useTheme2 } from '@grafana/ui';
+import { LinkButton, Stack, Text, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { onDocsLinkClick } from 'components/DocsLink/DocsLink.utils';
 
 import { k6StudioLogoDarkTheme, k6StudioLogoLightTheme } from 'img';
 
-export function Aboutk6Stuido() {
+export function Aboutk6Stuido({ source }: { source: string }) {
   const theme = useTheme2();
   const src = theme.isDark ? k6StudioLogoDarkTheme : k6StudioLogoLightTheme;
   const styles = useStyles2(getStyles);
@@ -22,6 +24,15 @@ export function Aboutk6Stuido() {
         k6 Studio is a free, open source desktop application designed to help you create k6 test scripts using a visual
         interface. Download it for free and get started with your first script in minutes.
       </Text>
+      <div>
+        <LinkButton
+          href="https://grafana.com/docs/k6-studio/set-up/install/"
+          target="_blank"
+          onClick={() => onDocsLinkClick('https://grafana.com/docs/k6-studio/set-up/install/', source)}
+        >
+          Install k6 Studio
+        </LinkButton>
+      </div>
     </Stack>
   );
 }

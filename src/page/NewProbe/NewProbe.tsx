@@ -86,7 +86,7 @@ export const NewProbe = () => {
 const SupportingContent = () => {
   return (
     <Stack direction="column" gap={2}>
-      <ProbeAPIServer />
+      <ProbeAPIServer source="new_probe" />
       <Alert severity="info" title="Note">
         You must reconfigure any existing checks to use your new probe even if you selected all probes when initially
         creating the check.

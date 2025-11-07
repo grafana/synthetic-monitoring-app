@@ -13,7 +13,10 @@ export function DocsPanelMultiStep() {
     <Box padding={2}>
       <Stack direction="column" gap={2}>
         <AboutSMChecks />
-        <DocumentationLinks links={[DOC_LINK_CHECK_TYPES, DOC_LINK_PUBLIC_PROBES]} />
+        <DocumentationLinks
+          links={[DOC_LINK_CHECK_TYPES, DOC_LINK_PUBLIC_PROBES]}
+          source="check_editor_sidepanel_multi_step_docs"
+        />
       </Stack>
     </Box>
   );

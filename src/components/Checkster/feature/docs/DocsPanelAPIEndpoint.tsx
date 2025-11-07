@@ -19,7 +19,10 @@ export function DocsPanelAPIEndpoint() {
     <Box padding={2}>
       <Stack direction="column" gap={2}>
         <AboutSMChecks />
-        <DocumentationLinks links={[DOC_LINK_CHECK_TYPES, DOC_LINK_PUBLIC_PROBES]} />
+        <DocumentationLinks
+          links={[DOC_LINK_CHECK_TYPES, DOC_LINK_PUBLIC_PROBES]}
+          source="check_editor_sidepanel_api_endpoint_docs"
+        />
       </Stack>
     </Box>
   );
