@@ -17,11 +17,11 @@ export function LogItem({ log }: { log: LogEntry }) {
   const styles = useStyles2(getStyles);
 
   const multiLineMessage = useMemo(() => {
-    if (isExpectLogLine(msg)) {
+    if (msg && isExpectLogLine(msg)) {
       return parseExpectLogLine(msg);
     }
 
-    if (isMultiLineString(msg)) {
+    if (msg && isMultiLineString(msg)) {
       // Remove empty lines
       const [first, ...rest] = stringToLines(msg);
 

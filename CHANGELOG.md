@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.38.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.38.0...v1.38.1) (2025-11-07)
+
+
+### Fixes
+
+* account for logs that have no msg ([#1423](https://github.com/grafana/synthetic-monitoring-app/issues/1423)) ([0117843](https://github.com/grafana/synthetic-monitoring-app/commit/01178439cce1f6c24b55690062fc9d8ce9025b09))
+* add check timeout to adhoc check timeout ([#1420](https://github.com/grafana/synthetic-monitoring-app/issues/1420)) ([607931d](https://github.com/grafana/synthetic-monitoring-app/commit/607931dc57662e2644b7485350fff67bc022b687))
+* add error boundary for check features ([#1424](https://github.com/grafana/synthetic-monitoring-app/issues/1424)) ([10e5446](https://github.com/grafana/synthetic-monitoring-app/commit/10e54461dc00dccbf97fbf999ff8ae5bd7fa3c40))
+* add isDirty to setValue in checkster (check Editor v2) ([#1414](https://github.com/grafana/synthetic-monitoring-app/issues/1414)) ([2460926](https://github.com/grafana/synthetic-monitoring-app/commit/24609262c9b154a4933bf7e36c5b17abc8ce2cbc))
+* pathfinder guides testids ([#1411](https://github.com/grafana/synthetic-monitoring-app/issues/1411)) ([3ffea75](https://github.com/grafana/synthetic-monitoring-app/commit/3ffea75db5bfe4caac42518092dc5499231a19bd))
+* update dependency @grafana/alerting to v12.3.0-18971876900 ([#1402](https://github.com/grafana/synthetic-monitoring-app/issues/1402)) ([460db60](https://github.com/grafana/synthetic-monitoring-app/commit/460db606eca2223d9667c6f0e7967f22b1c314a3))
+* update dependency @grafana/alerting to v12.3.0-19031551041 ([#1418](https://github.com/grafana/synthetic-monitoring-app/issues/1418)) ([c030e39](https://github.com/grafana/synthetic-monitoring-app/commit/c030e398256c4930e9fe60d17d6f8bf58be5c640))
+
+
+### Miscellaneous Chores
+
+* decrease time for running all tests ([#1410](https://github.com/grafana/synthetic-monitoring-app/issues/1410)) ([b67001c](https://github.com/grafana/synthetic-monitoring-app/commit/b67001c09c485f0884174c0192fe73d3fbfc63d6))
+* update dependency @types/node to v24.9.2 ([#1401](https://github.com/grafana/synthetic-monitoring-app/issues/1401)) ([19fcb2c](https://github.com/grafana/synthetic-monitoring-app/commit/19fcb2c301ff367247dcb461dd80a719f9ae3f4e))
+* update dependency eslint-plugin-jsdoc to v61.1.12 ([#1422](https://github.com/grafana/synthetic-monitoring-app/issues/1422)) ([491b87c](https://github.com/grafana/synthetic-monitoring-app/commit/491b87c71e32f646f71c42bba488ca082413a8a2))
+* update dependency sass to v1.93.3 ([#1409](https://github.com/grafana/synthetic-monitoring-app/issues/1409)) ([c7a033f](https://github.com/grafana/synthetic-monitoring-app/commit/c7a033f100362b2351e1d1b08973688a84401322))
+* update grafana/plugin-ci-workflows digest to 8d12510 ([#1412](https://github.com/grafana/synthetic-monitoring-app/issues/1412)) ([6b0b297](https://github.com/grafana/synthetic-monitoring-app/commit/6b0b297b9c545837bafe609fde3c48775efa1cb8))
+* update grafana/plugin-ci-workflows digest to bd860d0 ([#1405](https://github.com/grafana/synthetic-monitoring-app/issues/1405)) ([51da0e4](https://github.com/grafana/synthetic-monitoring-app/commit/51da0e420e524fd1ecb1657682b5683b9a3d99ac))
+* update grafana/shared-workflows/ action to ([#1406](https://github.com/grafana/synthetic-monitoring-app/issues/1406)) ([580489c](https://github.com/grafana/synthetic-monitoring-app/commit/580489cb393dce03b6cf14a5cb6e8a96ab0a71db))
+* update grafana/shared-workflows/ action to ([#1408](https://github.com/grafana/synthetic-monitoring-app/issues/1408)) ([32c421c](https://github.com/grafana/synthetic-monitoring-app/commit/32c421c600307b6c0a7436ead94a99e2c80c6b0f))
+* update grafana/shared-workflows/ action to ([#1417](https://github.com/grafana/synthetic-monitoring-app/issues/1417)) ([4324c00](https://github.com/grafana/synthetic-monitoring-app/commit/4324c006b1e80f6959bea1d3b2ef7760d10078cb))
+* update grafana/shared-workflows/ action to ([#1421](https://github.com/grafana/synthetic-monitoring-app/issues/1421)) ([fdc79c0](https://github.com/grafana/synthetic-monitoring-app/commit/fdc79c0c1087aa354876e80f632b26fc592ab2e8))
+* update hashicorp/setup-terraform digest to 4c5fdab ([#1413](https://github.com/grafana/synthetic-monitoring-app/issues/1413)) ([9af2b5b](https://github.com/grafana/synthetic-monitoring-app/commit/9af2b5b3e3bed8909dd75cc9228db3084c3524ea))
+* update to zod v4 ([#1407](https://github.com/grafana/synthetic-monitoring-app/issues/1407)) ([fa31007](https://github.com/grafana/synthetic-monitoring-app/commit/fa310072bd26448632aaf23f8f0c8dd518c9babc))
+
 ## [1.38.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.37.0...v1.38.0) (2025-11-03)
 
 

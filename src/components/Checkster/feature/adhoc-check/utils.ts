@@ -24,16 +24,16 @@ export function getProbeSuccess(state: ProbeStateStatus, timeseries?: AdHocResul
   return gauge.gauge.value === 1 ? ProbeStateStatus.Success : ProbeStateStatus.Error;
 }
 
-export function getLogLevelFromMessage(message: string, defaultLevel = 'log') {
+export function getLogLevelFromMessage(message: string | undefined, defaultLevel = 'log') {
   for (const subject of UPGRADED_LOG_MESSAGE) {
     if (Array.isArray(subject)) {
       const [subjectMessage, level] = subject;
-      if (subjectMessage instanceof RegExp && subjectMessage.test(message)) {
+      if (subjectMessage instanceof RegExp && message && subjectMessage.test(message)) {
         return level;
-      } else if (typeof subjectMessage === 'string' && message.startsWith(subjectMessage)) {
+      } else if (typeof subjectMessage === 'string' && message?.startsWith(subjectMessage)) {
         return level;
       }
-    } else if (message.startsWith(subject)) {
+    } else if (message?.startsWith(subject)) {
       return 'error';
     }
   }

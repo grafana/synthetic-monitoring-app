@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.38.0",
+  "version": "1.38.1",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
@@ -55,8 +55,8 @@
     "@types/react-dom": "19.2.2",
     "@types/react-router-dom": "5.3.3",
     "@types/valid-url": "1.0.7",
-    "@typescript-eslint/eslint-plugin": "8.46.2",
-    "@typescript-eslint/parser": "8.46.2",
+    "@typescript-eslint/eslint-plugin": "8.46.3",
+    "@typescript-eslint/parser": "8.46.3",
     "axios": "1.13.1",
     "copy-webpack-plugin": "13.0.1",
     "css-loader": "7.1.2",
@@ -64,7 +64,7 @@
     "eslint": "9.38.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jest-dom": "5.5.0",
-    "eslint-plugin-jsdoc": "61.1.11",
+    "eslint-plugin-jsdoc": "61.1.12",
     "eslint-plugin-prettier": "5.5.4",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
@@ -107,7 +107,7 @@
   },
   "dependencies": {
     "@emotion/css": "11.13.5",
-    "@grafana/alerting": "12.3.0-18971876900",
+    "@grafana/alerting": "12.3.0-19061782459",
     "@grafana/data": "^12.1.0",
     "@grafana/faro-web-sdk": "1.19.0",
     "@grafana/runtime": "^12.1.0",
