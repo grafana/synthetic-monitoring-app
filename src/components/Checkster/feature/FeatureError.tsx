@@ -16,7 +16,7 @@ export function FeatureError({ onReset, error, feature }: { error: Error; onRese
       </div>
       <div className={styles.messageContainer}>
         <Text variant="body" weight="bold">
-          An error occurred while trying display this content.
+          An error occurred while trying to display this content.
         </Text>
         <Text element="p" color="secondary">
           You can try to reset the error and try again. If the problem persists{' '}
