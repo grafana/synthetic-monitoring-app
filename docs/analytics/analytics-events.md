@@ -109,6 +109,22 @@ Tracks when a feature feedback comment is submitted.
 | reaction | `"good" \| "bad"` | The reaction to the feature. |
 | comment  | `string`          | The comment text.            |
 
+### link
+
+#### synthetic-monitoring_link_clicked
+
+Tracks when a link is clicked.
+
+##### Properties
+
+| name     | type     | description                      |
+| -------- | -------- | -------------------------------- |
+| href     | `string` | The href of the clicked link     |
+| hostname | `string` | The hostname of the clicked link |
+| path     | `string` | The path of the clicked link     |
+| search   | `string` | The search of the clicked link   |
+| source   | `string` | Where the link was clicked from  |
+
 ### per_check_alerts
 
 #### synthetic-monitoring_per_check_alerts_select_alert

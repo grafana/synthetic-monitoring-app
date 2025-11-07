@@ -8,7 +8,7 @@ interface LinkEvent extends TrackingEventProps {
   /** The hostname of the clicked link */
   hostname: string;
   /** The path of the clicked link */
-  pathname: string;
+  path: string;
   /** The search of the clicked link */
   search: string;
   /** Where the link was clicked from */

@@ -10,7 +10,7 @@ export function onDocsLinkClick(href: string, source: string) {
   trackLinkClick({
     href,
     hostname: parsedUrl.hostname,
-    pathname: parsedUrl.pathname,
+    path: parsedUrl.pathname,
     search: parsedUrl.search,
     source,
   });
