@@ -15,13 +15,14 @@ jobs:
         with:
           script: |
             const title = context.payload.pull_request && context.payload.pull_request.title || '';
-            // Mapping: regex -> label name
+            // Mapping: regex -> label name (aligned with conventional commits & release-please)
             const mappings = [
-              { regex: /\b(doc|docs|documentation)\b/i, label: 'documentation' },
-              { regex: /\b(bug|fix|bugfix|regression)\b/i, label: 'bug' },
-              { regex: /\b(feat|feature|enhancement|improvement)\b/i, label: 'enhancement' },
-              { regex: /\b(ci|pipeline|workflow)\b/i, label: 'ci' },
-              { regex: /\b(perf|performance)\b/i, label: 'performance' }
+              { regex: /\b(feat|feature|enhancement|improvement)\b/i, label: 'feature' },
+              { regex: /\b(fix|bug|bugfix|regression)\b/i, label: 'fix' },
+              { regex: /\b(doc|docs|documentation)\b/i, label: 'docs' },
+              { regex: /\b(chore|ci|pipeline|workflow|deps|dependencies)\b/i, label: 'chore' },
+              { regex: /\b(refactor|refactoring|restructure)\b/i, label: 'refactor' },
+              { regex: /\b(release)\b/i, label: 'release' }
             ];
 
             const labelsToAdd = [];
