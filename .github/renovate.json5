@@ -2,8 +2,11 @@
   // https://docs.renovatebot.com/config-overview/
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   // https://github.com/grafana/deployment_tools/blob/master/docs/platform/renovate/FAQ.md#can-i-opt-inopt-out-of-the-global-configuration
+  // https://github.com/grafana/grafana-renovate-config
   "extends": ["github>grafana/grafana-renovate-config//presets/base"],
   "ignorePaths": [".config/Dockerfile"],
+  //
+  "semanticCommitScope": null,
   "packageRules": [
     // we can never update the React packages until grafana does
     {
