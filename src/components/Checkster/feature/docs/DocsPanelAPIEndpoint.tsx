@@ -8,8 +8,9 @@ import { DocumentationLinks } from 'components/Checkster/feature/docs/Documentat
 
 export const API_ENDPOINT_DOCS_CHECK_COMPATABILITY: CheckType[] = [
   CheckType.DNS,
-  CheckType.HTTP,
   CheckType.GRPC,
+  CheckType.HTTP,
+  CheckType.PING,
   CheckType.TCP,
   CheckType.Traceroute,
 ];

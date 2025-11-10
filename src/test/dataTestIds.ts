@@ -23,7 +23,6 @@ export const CHECKSTER_TEST_ID = {
   },
   ui: {
     formTabs: {
-      header: 'checkEditor formTabs header',
       content: 'checkEditor formTabs content',
     },
   },

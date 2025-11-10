@@ -7,7 +7,9 @@ import { onDocsLinkClick } from 'components/DocsLink/DocsLink.utils';
 
 import { k6StudioLogoDarkTheme, k6StudioLogoLightTheme } from 'img';
 
-export function Aboutk6Stuido({ source }: { source: string }) {
+export const K6_STUDIO_DOCS_TEXT = `k6 Studio is a free, open source desktop application designed to help you create k6 test scripts using a visual interface. Download it for free and get started with your first script in minutes.`;
+
+export const Aboutk6Stuido = ({ source }: { source: string }) => {
   const theme = useTheme2();
   const src = theme.isDark ? k6StudioLogoDarkTheme : k6StudioLogoLightTheme;
   const styles = useStyles2(getStyles);
@@ -35,7 +37,7 @@ export function Aboutk6Stuido({ source }: { source: string }) {
       </div>
     </Stack>
   );
-}
+};
 
 const getStyles = (theme: GrafanaTheme2) => ({
   logo: css`
