@@ -40,7 +40,7 @@
   "includes": [
     {
       "type": "page",
-      "name": "Synthetics",
+      "name": "Home",
       "path": "/a/grafana-synthetic-monitoring-app",
       "action": "grafana-synthetic-monitoring-app:read",
       "addToNav": true,
