@@ -5,6 +5,7 @@ import { css } from '@emotion/css';
 import { trackNeedHelpScriptsButtonClicked } from 'features/tracking/checkFormEvents';
 
 import { CheckType } from '../../../../../types';
+import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
 import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
@@ -33,7 +34,6 @@ export function ScriptedCheckContent({
   const theme = useTheme2();
   const hasExamples = examples && examples?.length > 0;
   const styles = useStyles2(getStyles);
-  const source = scriptField === 'settings.scripted.script' ? 'scripted_check' : 'browser_check';
 
   return (
     <SectionContent noWrapper>
@@ -42,7 +42,7 @@ export function ScriptedCheckContent({
         <FormInstanceField field="target" />
       </Column>
       <Column fill>
-        <FormTabs actions={<HelpButton source={source} />}>
+        <FormTabs actions={<HelpButton />}>
           <FormTabContent label="Script" fillVertical vanilla>
             <GenericScriptField field={scriptField} />
           </FormTabContent>
@@ -57,8 +57,10 @@ export function ScriptedCheckContent({
   );
 }
 
-const HelpButton = ({ source }: { source: string }) => {
+const HelpButton = () => {
   const { setActive } = useFeatureTabsContext();
+  const { checkType } = useChecksterContext();
+  const source = `${checkType}_check`;
 
   return (
     <Button
