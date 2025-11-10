@@ -53,14 +53,23 @@
     },
     // automatically merge patch and minor updates
     {
-      "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true,
-      "automergeType": "pr",
-      "automergeStrategy": "merge"
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
     },
     {
-      "matchUpdateTypes": ["major"],
-      "automerge": false
+      "description": "Label patch updates",
+      "matchUpdateTypes": ["patch"],
+      "labels": ["automerge-patch"]
+    },
+    {
+      "description": "Label minor updates",
+      "matchUpdateTypes": ["minor"],
+      "labels": ["automerge-minor"]
+    },
+    {
+      "description": "Label digest updates",
+      "matchUpdateTypes": ["digest"],
+      "labels": ["automerge-digest"]
     }
   ]
 }
