@@ -46,6 +46,7 @@ interface ChecksterContextValue {
   schema: ZodType<CheckFormValues>;
   checkType: CheckType;
   isNew: boolean;
+  isDuplicate: boolean;
   isK6Check: boolean;
 }
 
@@ -60,23 +61,13 @@ export function useChecksterContext() {
   return context;
 }
 
-interface ChecksterBaseProviderProps extends PropsWithChildren {
+export interface ChecksterProviderProps extends PropsWithChildren {
   initialSection?: FormSectionName;
   onCheckTypeChange?(checkType: CheckType): void;
   disabled?: boolean;
-}
-
-interface ChecksterBaseProviderPropsWithCheck extends ChecksterBaseProviderProps {
   check?: Check;
-  checkType?: never;
-}
-
-interface ChecksterBaseProviderPropWithCheckType extends ChecksterBaseProviderProps {
-  check?: never;
   checkType?: CheckType;
 }
-
-export type ChecksterProviderProps = ChecksterBaseProviderPropsWithCheck | ChecksterBaseProviderPropWithCheckType;
 
 interface StashedValues {
   root: Omit<CheckFormValues, 'settings'>;
@@ -102,14 +93,21 @@ export function ChecksterProvider({
   disabled = false,
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
-  const [checkType, setCheckType] = useState<CheckType>(
-    isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
-  );
+  const isNew = !check || !check.id;
+  const isDuplicate = isNew && !!check && 'settings' in check;
+  const [checkType, setCheckType] = useState<CheckType>(() => {
+    if (isCheck(externalCheck)) {
+      if (!isDuplicate) {
+        return getCheckType(externalCheck.settings);
+      }
+    }
+
+    return externalCheckType ?? DEFAULT_CHECK_TYPE;
+  });
 
   const formId = useDOMId();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>();
-  const isNew = !check || !check.id;
 
   const { schema, defaultFormValues } = useFormValuesMeta(checkType, check);
 
@@ -179,14 +177,26 @@ export function ChecksterProvider({
       // Trigger form validation on existing checks
       formMethods.trigger();
     }
-  }, [check, formMethods, isNew]);
+
+    if (isDuplicate) {
+      // When a check exists without an id, it means that it's a duplicate and the form needs to be dirty
+      formMethods.setValue('_duplicate', true, { shouldDirty: true });
+      formMethods.trigger();
+    }
+  }, [check, checkType, formMethods, isDuplicate, isNew]);
 
   useEffect(() => {
-    if (isCheck(check)) {
+    if (!isCheck(check)) {
+      return;
+    }
+
+    if (isDuplicate && externalCheckType) {
+      setCheckType(externalCheckType);
+    } else {
       const type = getCheckType(check.settings);
       setCheckType(type);
     }
-  }, [check, formMethods, isNew]);
+  }, [check, formMethods, isDuplicate, externalCheckType]);
 
   const formMethodRef = useRef(formMethods);
 
@@ -279,10 +289,23 @@ export function ChecksterProvider({
       checkType,
       schema,
       isNew,
+      isDuplicate,
       isK6Check: K6_CHECK_TYPES.includes(checkType),
       stashCheckTypeFormValues: stashCurrentValues,
     };
-  }, [formId, isLoading, error, check, formNavigation, changeCheckType, checkType, schema, isNew, stashCurrentValues]);
+  }, [
+    formId,
+    isLoading,
+    error,
+    check,
+    formNavigation,
+    changeCheckType,
+    checkType,
+    schema,
+    isNew,
+    stashCurrentValues,
+    isDuplicate,
+  ]);
 
   return (
     <ChecksterContext.Provider value={value}>

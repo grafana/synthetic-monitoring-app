@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom-v5-compat';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
@@ -20,6 +20,8 @@ import { PluginPageNotFound } from 'page/NotFound';
 import { CenteredSpinner } from '../../components/CenteredSpinner';
 import { CHECK_TYPE_GROUP_DEFAULT_CHECK } from '../../components/Checkster/constants';
 import { getUserPermissions } from '../../data/permissions';
+import { useChecks } from '../../data/useChecks';
+import { useURLSearchParams } from '../../hooks/useURLSearchParams';
 
 const CHECK_TYPE_PARAM_NAME = 'checkType';
 
@@ -27,6 +29,7 @@ export function NewCheckV2() {
   const [params] = useSearchParams({});
   const checkType = (params.get(CHECK_TYPE_PARAM_NAME) as CheckType) ?? undefined;
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
+  const { data: checks, isLoading: isLoadingChecks } = useChecks();
   const { isLoading: isLoadingProbes, isFetched: isProbesFetched } = useProbes();
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
   const group = CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup);
@@ -36,19 +39,44 @@ export function NewCheckV2() {
   ]);
 
   const navigate = useNavigate();
+  const urlSearchParams = useURLSearchParams();
+  const duplicateId = urlSearchParams.get('duplicateId');
+
+  const checkSetupProps = useMemo(() => {
+    if (!group) {
+      return undefined;
+    }
+
+    const originalCheck = checks?.find((check) => check.id === Number(duplicateId));
+    if (!duplicateId || !originalCheck) {
+      return {
+        checkType: checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value],
+      };
+    }
+
+    return {
+      check: {
+        ...originalCheck,
+        id: undefined,
+        job: `${originalCheck.job} (Copy)`,
+      },
+      checkType,
+    };
+  }, [checks, duplicateId, checkType, group]);
 
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
     (newCheckType: CheckType) => {
-      navigate({ search: `?${CHECK_TYPE_PARAM_NAME}=${newCheckType}` }, { replace: true });
+      urlSearchParams.set(CHECK_TYPE_PARAM_NAME, newCheckType);
+      navigate({ search: `?${urlSearchParams.toString()}` }, { replace: true });
     },
-    [navigate]
+    [navigate, urlSearchParams]
   );
 
   const isOverlimit = useIsOverlimit(false, checkType);
   const { canWriteChecks } = getUserPermissions();
 
-  const isLoading = (isLoadingProbes && !isProbesFetched) || isOverlimit === null;
+  const isLoading = (isLoadingProbes && !isProbesFetched) || isLoadingChecks || isOverlimit === null;
 
   if (!group) {
     return (
@@ -71,8 +99,8 @@ export function NewCheckV2() {
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
         <Checkster
+          {...checkSetupProps}
           disabled={isOverlimit || !canWriteChecks}
-          checkType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
           onSave={handleSubmit}
           onCheckTypeChange={handleCheckTypeChange}
         />
