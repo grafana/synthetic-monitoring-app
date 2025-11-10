@@ -75,3 +75,10 @@ jobs:
       issues: read
       statuses: write
     uses: ./.github/workflows/call_dangerJS.yml
+
+  renovate-reviewer:
+    name: Renovate Reviewer
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/call_renovate_reviewer.yml

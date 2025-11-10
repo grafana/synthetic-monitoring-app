@@ -47,6 +47,17 @@
       ],
       "enabled": true,
       "abandonmentThreshold": "15 years"
+    },
+    // automatically merge patch and minor updates
+    {
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "merge"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     }
   ]
 }
