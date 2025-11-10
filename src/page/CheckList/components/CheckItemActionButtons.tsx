@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -22,9 +22,9 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
   const { mutate: deleteCheck } = useDeleteCheck();
   const { mutate: updateCheck } = useUpdateCheck();
 
-  const handleToggleEnabled = () => {
+  const handleToggleEnabled = useCallback(() => {
     updateCheck({ ...check, enabled: !check.enabled });
-  };
+  }, [check, updateCheck]);
 
   return (
     <div className={styles.actionButtonGroup}>
@@ -46,7 +46,6 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         </>
       )}
       <IconButton
-        data-testid={check.enabled ? 'disable-check-button' : 'enable-check-button'}
         tooltip={check.enabled ? 'Disable check' : 'Enable check'}
         name={check.enabled ? 'pause' : 'play'}
         onClick={handleToggleEnabled}
