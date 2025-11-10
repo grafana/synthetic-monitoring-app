@@ -7,10 +7,11 @@ export enum AppRoutes {
   EditCheck = 'checks/:id/edit',
   ViewProbe = 'probes/:id',
   EditProbe = 'probes/:id/edit',
-  Home = 'home',
+  Home = '', // the root URL
   NewCheck = 'checks/new',
   NewProbe = 'probes/new',
   Probes = 'probes',
   Redirect = 'redirect',
   Scene = 'scene',
+  LegacyHome = 'home',
 }

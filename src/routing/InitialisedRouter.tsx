@@ -58,10 +58,8 @@ export const InitialisedRouter = () => {
 
   return (
     <Routes>
-      <Route index element={<Navigate to={AppRoutes.Home} />} />
-
       <Route
-        path={AppRoutes.Home}
+        index
         element={
           canReadChecks ? (
             <SceneHomepage />
@@ -70,6 +68,8 @@ export const InitialisedRouter = () => {
           )
         }
       />
+
+      <Route path={AppRoutes.LegacyHome} element={<Navigate to="../" />} />
 
       <Route path={AppRoutes.Checks}>
         <Route index element={<CheckList />} />
