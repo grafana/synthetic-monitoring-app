@@ -20,11 +20,14 @@ export interface AdHocCheckState {
   id: string;
   probeState: Record<string, ProbeState>;
   created: DateTime;
+  checkTimeoutInSeconds: number;
 }
 
 interface LogBase {
   level: string;
-  msg: string;
+  msg?: string;
+  error?: string;
+  errorCode?: string;
   time: string;
 }
 

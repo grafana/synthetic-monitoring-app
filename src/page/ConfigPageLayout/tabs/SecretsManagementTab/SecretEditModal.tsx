@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
 import { Secret } from './types';
+import { getErrorMessage } from 'utils';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
 
 import { SECRETS_EDIT_MODE_ADD, SECRETS_MAX_LABELS } from './constants';
@@ -59,17 +60,6 @@ function createGetFieldError(errors: FormErrorMap) {
   return (field: FormField, index?: number, property?: 'name' | 'value') => {
     return getFieldErrors(field, errors, index, property);
   };
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message);
-  }
-  if (typeof error === 'string') {
-    return error;
-  }
-
-  return 'An unknown error occurred';
 }
 
 export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: SecretEditModalProps) {
