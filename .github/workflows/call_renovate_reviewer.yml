@@ -23,8 +23,8 @@ jobs:
           common_secrets: |
             GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
           repo_secrets: |
-            GITHUB_APP_ID=github:app-id
-            GITHUB_APP_PRIVATE_KEY=github:private-key
+            GITHUB_APP_ID=github-app:app-id
+            GITHUB_APP_PRIVATE_KEY=github-app:private-key
 
       - name: Create GitHub app token
         id: app-token
