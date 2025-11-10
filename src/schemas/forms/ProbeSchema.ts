@@ -11,7 +11,7 @@ const LATITUDE_MAX = 90;
 const LONGITUDE_MIN = -180;
 const LONGITUDE_MAX = 180;
 
-export const probeSchema: ZodType<Probe> = z.object({
+export const probeSchema: ZodType<Probe, any, any> = z.object({
   created: z.number().optional(),
   id: z.number().optional(),
   modified: z.number().optional(),
@@ -19,29 +19,25 @@ export const probeSchema: ZodType<Probe> = z.object({
   updated: z.number().optional(),
   name: z
     .string({
-      required_error: `Name is required`,
-      invalid_type_error: `Latitude must be a number`,
+      error: `Name is required`,
     })
     .min(1, `Name is required`)
     .max(MAX_NAME_LENGTH, `Name must be less than ${MAX_NAME_LENGTH} characters`),
   public: z.boolean(),
   latitude: z
     .number({
-      required_error: `Latitude is required`,
-      invalid_type_error: `Latitude must be a number`,
+      error: `Latitude is required`,
     })
     .min(LATITUDE_MIN, `Latitude must be greater than ${LATITUDE_MIN}`)
     .max(LATITUDE_MAX, `Latitude must be less than ${LATITUDE_MAX}`),
   longitude: z
     .number({
-      required_error: `Longitude is required`,
-      invalid_type_error: `Latitude must be a number`,
+      error: `Longitude is required`,
     })
     .min(LONGITUDE_MIN, `Longitude must be greater than ${LONGITUDE_MIN}`)
     .max(LONGITUDE_MAX, `Longitude must be less than ${LONGITUDE_MAX}`),
   region: z.string({
-    required_error: `Region is required`,
-    invalid_type_error: `Region is required`,
+    error: `Region is required`,
   }),
   online: z.boolean(),
   onlineChange: z.number(),

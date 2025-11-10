@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const jobSchema = z
   .string({
-    required_error: 'Job name is required',
+    error: 'Job name is required',
   })
   .trim()
   .min(1, { message: 'Job name is required' })
@@ -10,7 +10,7 @@ export const jobSchema = z
   .superRefine((value, ctx) => {
     if (value.includes("'") || value.includes(',') || value.includes('"')) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `Job names can't contain commas or quotes`,
       });
     }

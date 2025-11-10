@@ -365,3 +365,19 @@ export function constructGoTimestamp(unixTimestamp: number, nanoseconds = 0) {
   const nanoStr = String(nanoseconds).padStart(8, '0').slice(0, 8);
   return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}.${nanoStr}Z +0000 UTC`;
 }
+
+export function testUsesCombobox() {
+  jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
+    () =>
+      ({
+        width: 120,
+        height: 120,
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+      } as DOMRect)
+  );
+  jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(500);
+  jest.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(500);
+}

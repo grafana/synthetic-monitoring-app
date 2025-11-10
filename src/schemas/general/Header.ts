@@ -6,12 +6,12 @@ const VALUE_REQUIRED_ERROR = '{type} value is required';
 const headerSchema = z.object({
   name: z
     .string({
-      required_error: NAME_REQUIRED_ERROR,
+      error: NAME_REQUIRED_ERROR,
     })
     .min(1, { message: NAME_REQUIRED_ERROR }),
   value: z
     .string({
-      required_error: VALUE_REQUIRED_ERROR,
+      error: VALUE_REQUIRED_ERROR,
     })
     .min(1, { message: VALUE_REQUIRED_ERROR }),
 });
@@ -24,7 +24,7 @@ export const headersSchema = z
 
     if (headerNames.length !== uniqueNames.size) {
       return ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: '{type} names cannot be duplicated',
       });
     }

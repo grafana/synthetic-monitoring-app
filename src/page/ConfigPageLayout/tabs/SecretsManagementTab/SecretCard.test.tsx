@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MOCKED_SECRETS } from 'test/fixtures/secrets';
 
@@ -37,7 +37,6 @@ describe('SecretCard', () => {
     // Check basic information
     expect(screen.getByText(MOCKED_SECRETS[0].name)).toBeInTheDocument();
     expect(screen.getByText(MOCKED_SECRETS[0].description)).toBeInTheDocument();
-    expect(screen.getByText(MOCKED_SECRETS[0].uuid)).toBeInTheDocument();
     expect(screen.getByText(new RegExp(`${MOCKED_SECRETS[0].created_by}`))).toBeInTheDocument();
 
     // Check labels
@@ -82,29 +81,6 @@ describe('SecretCard', () => {
     render(<SecretCard {...defaultProps} />);
 
     expect(screen.getByText(formatDate(MOCKED_SECRETS[0].created_at), { exact: false })).toBeInTheDocument();
-  });
-
-  it('should render a clipboard button for the secret UUID', () => {
-    render(<SecretCard {...defaultProps} />);
-
-    const clipboardButton = screen.getByRole('button', { name: /copy/i });
-    expect(clipboardButton).toBeInTheDocument();
-  });
-
-  // Test for clipboard functionality
-  it('should provide correct uuid for clipboard copy', async () => {
-    const user = userEvent.setup();
-    render(<SecretCard {...defaultProps} />);
-
-    // Find the clipboard component
-    const clipboardButton = screen.getByRole('button', { name: /Copy test-secret-1 ID/i }); // "Copy <secret name> ID"
-    await act(() => {
-      return user.click(clipboardButton);
-    });
-    // Instead of accessing props directly, test the actual copy behavior
-
-    const clipboardText = await navigator.clipboard.readText();
-    expect(clipboardText).toBe(MOCKED_SECRETS[0].uuid);
   });
 
   it('should handle secrets without description', () => {

@@ -2,9 +2,12 @@ import React, { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
+import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
+import { config } from '@grafana/runtime';
 import { css, Global } from '@emotion/react';
 
 import { ProvisioningJsonData } from 'types';
+import { getFaroConfig } from 'faro';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
@@ -15,7 +18,26 @@ import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
 import { DevTools } from './DevTools';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 
-export const App = (props: AppRootProps<ProvisioningJsonData>) => {
+const { env, url, name } = getFaroConfig();
+
+// faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
+if (window.location.hostname !== 'localhost') {
+  initializeFaro({
+    url,
+    app: {
+      name,
+      version: config.apps['grafana-synthetic-monitoring-app'].version,
+      environment: env,
+    },
+    isolate: true,
+    user: {
+      id: config.bootData.user.orgName,
+    },
+    instrumentations: getWebInstrumentations(),
+  });
+}
+
+const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta } = props;
 
   useEffect(() => {
@@ -68,3 +90,6 @@ const GlobalStyles = () => {
     />
   );
 };
+
+// eslint-disable-next-line no-restricted-syntax
+export default App;

@@ -10,16 +10,19 @@ jobs:
       contents: read
       attestations: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
       - name: Setup Plugin Environment
         uses: ./.github/actions/setup-env
 
-      - name: Build plugin and typecheck
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Build plugin
         run: mkdir -p artifacts && yarn build --json=artifacts/currentBundleSize.json --no-devtool
 
       - name: Upload this build's bundle size artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: currentBundleSize
           path: ./artifacts/currentBundleSize.json

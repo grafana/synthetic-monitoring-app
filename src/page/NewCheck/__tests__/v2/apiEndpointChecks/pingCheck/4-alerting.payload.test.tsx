@@ -1,0 +1,125 @@
+import { screen, within } from '@testing-library/react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
+import { PRIVATE_PROBE } from 'test/fixtures/probes';
+import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
+
+import { FormSectionName } from '../../../../../../components/Checkster/types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
+import { renderNewFormV2, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
+
+import { gotoSection, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
+import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
+
+const checkType = CheckType.PING;
+
+describe(`PingCheck - Section 4 (Alerting) payload`, () => {
+  it(`has the correct default values`, async () => {
+    const { read, user } = await renderNewFormV2(checkType);
+    await fillMandatoryFields({ user, checkType });
+    await gotoSection(user, FormSectionName.Execution);
+    await submitForm(user);
+    const { body } = await read();
+
+    expect(body.alerts).toEqual(undefined);
+  });
+
+  it(`can add ping request duration latency alert`, async () => {
+    mockFeatureToggles({
+      [FeatureName.AlertsPerCheck]: true,
+    });
+
+    const { user, read } = await renderNewFormV2(checkType);
+    await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
+    await gotoSection(user, FormSectionName.Execution);
+    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+    await user.click(probeCheckbox);
+
+    await gotoSection(user, FormSectionName.Alerting);
+
+    expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
+
+    // Check that latency alerts section exists
+    expect(screen.getByText('Latency')).toBeInTheDocument();
+
+    const thresholdInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].thresholdInput;
+
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].selectedCheckbox
+      )
+    );
+    await user.clear(screen.getByTestId(thresholdInputSelector));
+    await user.type(screen.getByTestId(thresholdInputSelector), '200');
+
+    await submitForm(user);
+
+    const { body: alertsBody } = await read(1);
+
+    expect(alertsBody).toEqual({
+      alerts: [
+        {
+          name: 'PingRequestDurationTooHighAvg',
+          threshold: 200,
+          period: '5m',
+        },
+      ],
+    });
+  });
+
+  it(`should display an error message when latency alert period is less than check frequency`, async () => {
+    mockFeatureToggles({
+      [FeatureName.AlertsPerCheck]: true,
+    });
+    const { user } = await renderNewFormV2(checkType);
+
+    await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
+
+    // Set frequency to 10 minutes using the proper helper - go to section 4 (Execution)
+    await gotoSection(user, FormSectionName.Execution);
+    await selectBasicFrequency(user, '10m');
+
+    // Still in section 4 for probes selection
+    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+    await user.click(probeCheckbox);
+
+    // Now go to section 5 for alerts
+    await gotoSection(user, FormSectionName.Alerting);
+
+    expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
+
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].selectedCheckbox
+      )
+    );
+    await user.clear(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].thresholdInput
+      )
+    );
+    await user.type(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].thresholdInput
+      ),
+      '100'
+    );
+
+    // Select 5m period (which is less than 10m frequency) - target the specific period selector by ID
+    const periodContainer = document.getElementById('alert-period-PingRequestDurationTooHighAvg');
+    const periodSelector = within(periodContainer as HTMLElement).getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].periodCombobox
+    );
+    await user.click(periodSelector);
+
+    // Wait for dropdown to open and click "5 min" within the opened dropdown
+    const dropdown = await screen.findByRole('listbox');
+    await user.click(within(dropdown).getByText('5 min'));
+
+    await submitForm(user);
+
+    const errorMsg = await screen.findByRole('alert');
+    expect(errorMsg).toBeInTheDocument();
+    expect(errorMsg).toHaveTextContent('Period (5m) must be equal or higher to the frequency (10 minutes)');
+  });
+});

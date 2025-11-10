@@ -14,6 +14,11 @@ jest.mock('hooks/useURLSearchParams');
 jest.mock('routing/utils', () => ({
   generateRoutePath: jest.fn(() => '/mocked/path'),
 }));
+
+jest.mock('components/RunbookRedirectAlert.utils', () => ({
+  doRunbookRedirect: jest.fn(),
+}));
+
 jest.mock('react-router-dom-v5-compat', () => ({
   Navigate: ({ to, replace }: { to: string; replace: boolean }) => (
     <div data-testid="navigate" data-to={to} data-replace={replace}>
@@ -22,21 +27,9 @@ jest.mock('react-router-dom-v5-compat', () => ({
   ),
 }));
 
+const mockDoRunbookRedirect = jest.requireMock('components/RunbookRedirectAlert.utils').doRunbookRedirect;
 const mockUseChecks = useChecks as jest.MockedFunction<typeof useChecks>;
 const mockUseURLSearchParams = useURLSearchParams as jest.MockedFunction<typeof useURLSearchParams>;
-
-const mockLocationHref = jest.fn();
-Object.defineProperty(window, 'location', {
-  value: {
-    get href() {
-      return '';
-    },
-    set href(value: string) {
-      mockLocationHref(value);
-    },
-  },
-  writable: true,
-});
 
 function createMockSearchParams(params: Record<string, string>): URLSearchParams {
   const searchParams = new URLSearchParams();
@@ -50,7 +43,7 @@ describe('SceneRedirecter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    mockLocationHref.mockClear();
+    mockDoRunbookRedirect.mockClear();
 
     mockUseChecks.mockReturnValue({
       data: [BASIC_HTTP_CHECK],
@@ -80,7 +73,7 @@ describe('SceneRedirecter', () => {
       const takeNowButton = screen.getByText('Take me there now');
       await user.click(takeNowButton);
 
-      expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
+      expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
     });
 
     test('redirects to runbook URL for TLSTargetCertificateCloseToExpiring alert', async () => {
@@ -98,7 +91,7 @@ describe('SceneRedirecter', () => {
       const takeNowButton = screen.getByText('Take me there now');
       await user.click(takeNowButton);
 
-      expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/tls-certificate');
+      expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/tls-certificate');
     });
 
     test('parses alert names with brackets correctly', async () => {
@@ -116,7 +109,7 @@ describe('SceneRedirecter', () => {
       const takeNowButton = screen.getByText('Take me there now');
       await user.click(takeNowButton);
 
-      expect(mockLocationHref).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
+      expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
     });
 
     test('navigates to fallback when runbook URL is not configured', () => {
@@ -154,7 +147,7 @@ describe('SceneRedirecter', () => {
 
       const navigate = screen.getByTestId('navigate');
       expect(navigate).toHaveAttribute('data-to', '/mocked/path?runbookMissing=ProbeFailedExecutionsTooHigh');
-      expect(mockLocationHref).not.toHaveBeenCalled();
+      expect(mockDoRunbookRedirect).not.toHaveBeenCalled();
     });
 
     test('navigates to fallback when alert type is unknown', () => {
@@ -170,7 +163,7 @@ describe('SceneRedirecter', () => {
 
       const navigate = screen.getByTestId('navigate');
       expect(navigate).toHaveAttribute('data-to', '/mocked/path');
-      expect(mockLocationHref).not.toHaveBeenCalled();
+      expect(mockDoRunbookRedirect).not.toHaveBeenCalled();
     });
 
     test('ignores alert parameter when runbook flag is not set', () => {
@@ -186,7 +179,7 @@ describe('SceneRedirecter', () => {
 
       const navigate = screen.getByTestId('navigate');
       expect(navigate).toHaveAttribute('data-to', '/mocked/path');
-      expect(mockLocationHref).not.toHaveBeenCalled();
+      expect(mockDoRunbookRedirect).not.toHaveBeenCalled();
     });
   });
 

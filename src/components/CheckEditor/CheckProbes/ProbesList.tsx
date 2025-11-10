@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, Label, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { ProbeWithMetadata } from 'types';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
@@ -79,6 +80,7 @@ export const ProbesList = ({
         {probes.map((probe: ProbeWithMetadata) => (
           <div key={probe.id} className={styles.item}>
             <Checkbox
+              data-testid={CHECKSTER_TEST_ID.form.inputs.probeCheckbox}
               id={`probe-${probe.id}`}
               onClick={() => handleToggleProbe(probe)}
               checked={selectedProbes.includes(probe.id!)}

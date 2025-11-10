@@ -20,7 +20,7 @@ type FormSidebarProps = {
   onSectionClick: (index: number) => void;
   sections: Array<ReactElement<FormSectionProps>>;
   visitedSections: number[];
-  schema: ZodType<FieldValues>;
+  schema: ZodType<FieldValues, any, any>;
 };
 
 export const FormSidebar = ({

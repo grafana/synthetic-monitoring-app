@@ -20,7 +20,6 @@ export const MultiHttpVariables = ({ index }: { index: number }) => {
         const variableTypeName = `${variableFieldName}.${variableIndex}.type` as const;
         const variableTypeValue = watch(variableTypeName);
         const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex];
-        // @ts-expect-error -- I think type is a reserved keyword in react-hook-form so it can't read this properly
         const errMessage = errorPath?.type?.message;
         const variableNameId = `multihttp-variable-name-${index}-${variableIndex}`;
         const variableAttributeId = `multihttp-variable-attribute-${index}-${variableIndex}`;
@@ -58,7 +57,7 @@ export const MultiHttpVariables = ({ index }: { index: number }) => {
                     invalid={Boolean(errorPath?.type)}
                     label="Variable type"
                   >
-                      <Select  // eslint-disable-line @typescript-eslint/no-deprecated
+                    <Select // eslint-disable-line @typescript-eslint/no-deprecated
                       {...rest}
                       aria-label="Variable type"
                       disabled={isFormDisabled}

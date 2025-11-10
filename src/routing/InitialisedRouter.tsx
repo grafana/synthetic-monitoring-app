@@ -31,6 +31,10 @@ import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
+// Alpha (requires `synthetic-monitoring-check-editor=true`)
+import { EditCheckV2 } from '../page/EditCheck/EditCheckV2';
+import { NewCheckV2 } from '../page/NewCheck/NewCheckV2';
+
 export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
@@ -80,7 +84,12 @@ export const InitialisedRouter = () => {
               )
             }
           />
-          <Route path="edit" element={canWriteChecks ? <EditCheck /> : <Navigate to=".." replace />} />
+          {isFeatureEnabled(FeatureName.CheckEditor) ? (
+            <Route path="edit" element={canWriteChecks ? <EditCheckV2 /> : <Navigate to=".." replace />} />
+          ) : (
+            <Route path="edit" element={canWriteChecks ? <EditCheck /> : <Navigate to=".." replace />} />
+          )}
+
           <Route path="dashboard" element={<Navigate to=".." replace />} />
           <Route path="*" element={<CheckNotFound />} />
         </Route>
@@ -90,7 +99,10 @@ export const InitialisedRouter = () => {
           {getNewCheckTypeRedirects().map(({ checkType, checkTypeGroupUrl }) => (
             <Route key={checkType} path={checkType} element={<Navigate to={`../${checkTypeGroupUrl}`} replace />} />
           ))}
-          <Route path=":checkTypeGroup" element={<NewCheck />} />
+          <Route
+            path=":checkTypeGroup"
+            element={isFeatureEnabled(FeatureName.CheckEditor) ? <NewCheckV2 /> : <NewCheck />}
+          />
           <Route path="*" element={<CheckNotFound />} />
         </Route>
 

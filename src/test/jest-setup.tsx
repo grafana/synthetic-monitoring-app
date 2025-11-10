@@ -3,7 +3,8 @@
 import '../../.config/jest-setup';
 import { server } from './server';
 import 'test/silenceErrors';
-
+import 'jest-canvas-mock';
+import 'whatwg-fetch';
 // have to reimport this despite it is included in the ./config/jest-setup.JSfile
 // so the types also get imported
 import '@testing-library/jest-dom';

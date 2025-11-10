@@ -435,6 +435,12 @@ export type CheckFormValues =
   | CheckFormValuesTraceroute
   | CheckFormValuesBrowser;
 
+export type CheckFormValuesWithAlert<T extends CheckAlertType> = CheckFormValues & {
+  alerts: {
+    [K in T]: Required<CheckAlertFormValues>;
+  };
+};
+
 export interface FilteredCheck extends Omit<Check, 'id'> {
   id: number;
 }
@@ -724,6 +730,7 @@ export enum FeatureName {
   AlertingRouting = 'synthetic-monitoring-alerting-routing',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
+  CheckEditor = 'synthetic-monitoring-check-editor',
   __TURNOFF = 'test-only-do-not-use',
 }
 

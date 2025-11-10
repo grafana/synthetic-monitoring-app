@@ -3,6 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { InlineField, Input } from '@grafana/ui';
 import { trackChangeThreshold } from 'features/tracking/perCheckAlertsEvents';
 import { useDebounceCallback } from 'usehooks-ts';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues } from 'types';
 
@@ -36,7 +37,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
           <Input
             {...field}
             aria-disabled={!selected}
-            data-testid={`alert-threshold-${alert.type}`}
+            data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].thresholdInput}
             suffix={suffix}
             type="number"
             step="any"

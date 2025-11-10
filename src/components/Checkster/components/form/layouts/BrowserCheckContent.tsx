@@ -1,0 +1,11 @@
+import React from 'react';
+
+import { BROWSER_EXAMPLES } from 'components/WelcomeTabs/constants';
+
+import { ScriptedCheckContent } from './ScriptedCheckContent';
+
+export const BROWSER_CHECK_FIELDS = ['job', 'instance', 'settings.browser.script'];
+
+export function BrowserCheckContent() {
+  return <ScriptedCheckContent scriptField="settings.browser.script" examples={BROWSER_EXAMPLES} />;
+}

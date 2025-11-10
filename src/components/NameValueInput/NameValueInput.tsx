@@ -20,7 +20,10 @@ interface Props {
 
 type NameValueArrayError = Merge<FieldError, Array<Merge<FieldError, FieldErrorsImpl<Label>> | undefined>>;
 
-function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameValueName): NameValueArrayError | undefined {
+function getErrors(
+  errors: FieldErrorsImpl<CheckFormValues | Probe>,
+  name: NameValueName
+): NameValueArrayError | undefined {
   return get(errors, name);
 }
 
@@ -53,7 +56,7 @@ export const NameValueInput = ({ name, disabled, limit, label, ...rest }: Props)
         return (
           <div key={field.id} className={styles.stack}>
             <Field
-              invalid={Boolean(fieldError?.[index]?.name?.type)}
+              invalid={Boolean(fieldError?.[index]?.name)}
               error={interpolateErrorMessage(fieldError?.[index]?.name?.message, label)}
               className={styles.field}
               required

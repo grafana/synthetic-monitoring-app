@@ -10,10 +10,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
       - name: Setup Plugin Environment
         uses: ./.github/actions/setup-env
 
       - name: Latest Grafana API compatibility check
-        run: npx @grafana/levitate@latest is-compatible --path src/module.ts --target @grafana/data,@grafana/runtime,@grafana/scenes,@grafana/schema,@grafana/ui
+        run: npx @grafana/levitate@latest is-compatible --path src/module.tsx --target @grafana/data,@grafana/runtime,@grafana/scenes,@grafana/schema,@grafana/ui

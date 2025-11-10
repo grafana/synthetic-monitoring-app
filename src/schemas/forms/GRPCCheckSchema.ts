@@ -7,7 +7,7 @@ import { CheckFormValuesGRPC, CheckType, GRPCSettingsFormValues, IpVersion } fro
 import { baseCheckSchema } from './BaseCheckSchema';
 
 const grpcSettingsSchema: ZodType<GRPCSettingsFormValues> = z.object({
-  ipVersion: z.nativeEnum(IpVersion),
+  ipVersion: z.enum(IpVersion),
   service: z.string().optional(),
   tls: z.boolean().optional(),
   tlsConfig: tlsConfigSchema,

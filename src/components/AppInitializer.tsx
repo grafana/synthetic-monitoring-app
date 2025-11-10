@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { APP_INITIALIZER_TEST_ID } from 'test/dataTestIds';
 
 import { hasGlobalPermission } from 'utils';
 import { AppRoutes } from 'routing/types';
@@ -51,8 +51,8 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
   }
 
   return (
-    <div data-testid={DataTestIds.APP_INITIALIZER}>
-      <Button onClick={handleClick} disabled={loading} size="lg">
+    <div data-testid={APP_INITIALIZER_TEST_ID.root}>
+      <Button data-testid={APP_INITIALIZER_TEST_ID.initButton} onClick={handleClick} disabled={loading} size="lg">
         {loading ? <Spinner /> : buttonText}
       </Button>
 

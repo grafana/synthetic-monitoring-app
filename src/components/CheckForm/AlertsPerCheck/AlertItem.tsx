@@ -4,7 +4,7 @@ import { GrafanaTheme2, urlUtil } from '@grafana/data';
 import { Button, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckAlertType, CheckFormValues, FeatureName } from 'types';
+import { CheckAlertType, CheckFormValuesWithAlert, FeatureName } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { NotOkStatusInfo } from 'components/AlertStatus/NotOkStatusInfo';
 import { FeatureFlag } from 'components/FeatureFlag';
@@ -14,6 +14,8 @@ import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
 import { FailedExecutionsAlert } from './FailedExecutionsAlert';
 import { RequestDurationTooHighAvgAlert } from './RequestDurationTooHighAvgAlert';
 import { TLSTargetCertificateCloseToExpiringAlert } from './TLSTargetCertificateCloseToExpiringAlert';
+
+// Type helper to assert that the alert exists for a specific alert type
 
 function createExploreLink(dataSourceName: string, query: string) {
   return urlUtil.renderUrl(`/explore`, {
@@ -33,7 +35,7 @@ export const AlertItem = ({
   const styles = useStyles2(getAlertItemStyles);
   const [showRouting, setShowRouting] = useState(false);
 
-  const { getValues } = useFormContext<CheckFormValues>();
+  const { getValues } = useFormContext<CheckFormValuesWithAlert<typeof alert.type>>();
 
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);

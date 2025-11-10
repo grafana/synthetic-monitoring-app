@@ -1,5 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -11,7 +11,7 @@ import {
   runTestWithoutLogsAccess,
 } from 'test/utils';
 
-import { CheckType, FeatureName } from 'types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
@@ -265,7 +265,8 @@ describe(`<NewCheck /> journey`, () => {
 
     await goToSection(user, 5);
     await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
-    const thresholdsInput = 'alert-threshold-ProbeFailedExecutionsTooHigh';
+    const thresholdsInput =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput;
     await user.clear(screen.getByTestId(thresholdsInput));
     await user.type(screen.getByTestId(thresholdsInput), '6');
     await submitForm(user);
@@ -291,7 +292,15 @@ describe(`<NewCheck /> journey`, () => {
     expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_HTTP_CHECK.id! }));
   });
 
-  // jsdom doesn't give us back the submitter of the form, so we can't test this
-  // https://github.com/jsdom/jsdom/issues/3117
-  it.skip(`should show an error message when it fails to test a check`, async () => {});
+  it(`should enable the save button when an alert is enabled`, async () => {
+    mockFeatureToggles({
+      [FeatureName.AlertsPerCheck]: true,
+    });
+
+    const { user } = await renderNewForm(CheckType.HTTP);
+    await goToSection(user, 5);
+    expect(screen.getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeDisabled();
+    await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
+    expect(screen.getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).not.toBeDisabled();
+  });
 });

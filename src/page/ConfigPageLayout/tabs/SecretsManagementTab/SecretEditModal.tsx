@@ -3,9 +3,10 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
 import { Secret } from './types';
+import { getErrorMessage } from 'utils';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
 
 import { SECRETS_EDIT_MODE_ADD, SECRETS_MAX_LABELS } from './constants';
@@ -61,17 +62,6 @@ function createGetFieldError(errors: FormErrorMap) {
   };
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message);
-  }
-  if (typeof error === 'string') {
-    return error;
-  }
-
-  return 'An unknown error occurred';
-}
-
 export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: SecretEditModalProps) {
   const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(name);
   const saveSecret = useSaveSecret();
@@ -83,6 +73,8 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
   const defaultValues = useMemo(() => {
     return secretToFormValues(secret) ?? getDefaultValues(isNewSecret);
   }, [secret, isNewSecret]);
+
+  const schema = secretSchemaFactory(isNewSecret, existingNames);
 
   const {
     register,
@@ -96,7 +88,7 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
   } = useForm<SecretFormValues & { plaintext?: string }>({
     defaultValues,
     disabled: isLoading || saveSecret.isPending,
-    resolver: zodResolver(secretSchemaFactory(isNewSecret, existingNames)),
+    resolver: standardSchemaResolver(schema),
   });
 
   // Set the default value for plaintext to empty string when secret is reset (for validation to work)

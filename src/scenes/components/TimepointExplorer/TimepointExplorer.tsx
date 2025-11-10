@@ -50,6 +50,7 @@ const TimepointExplorerInternal = () => {
               feature="timepoint-explorer"
               about={{
                 text: `New feature!`,
+                link: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/analyze-results/visualize-check-execution/`,
               }}
             />
             <div>
@@ -81,7 +82,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     container: css`
       padding-top: ${theme.spacing(2)};
       container-name: ${CONTAINER_NAME};
-      container-type: inline-size;
+      container-type: layout;
     `,
     header: css`
       display: flex;

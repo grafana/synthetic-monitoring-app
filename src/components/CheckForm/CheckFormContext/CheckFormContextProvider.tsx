@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useEffect, useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 
 import { Check, CheckFormValues } from 'types';
 
@@ -21,12 +21,13 @@ export function CheckFormContextProvider({
   initialSection = FORM_SECTION_STEPS[0],
 }: CheckFormContextProviderProps) {
   const checkFormMeta = useCheckFormMeta(check);
+  const schema = checkFormMeta.schema;
 
   const methods = useForm<CheckFormValues>({
     disabled: disabled || checkFormMeta.isDisabled,
     defaultValues: checkFormMeta.defaultFormValues,
     shouldFocusError: false, // we manage focus manually
-    resolver: zodResolver(checkFormMeta.schema),
+    resolver: standardSchemaResolver(schema),
   });
 
   useEffect(() => {
