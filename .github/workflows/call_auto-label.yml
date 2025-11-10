@@ -3,8 +3,7 @@ on:
   workflow_call:
 
 permissions:
-  issues: write # needed to add labels
-  pull-requests: read
+  pull-requests: write # needed to add labels to PRs
 
 jobs:
   label-by-title:

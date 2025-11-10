@@ -14,8 +14,7 @@ jobs:
     name: Auto Label
     needs: setup-env-and-cache
     permissions:
-      issues: write
-      pull-requests: read
+      pull-requests: write
     uses: ./.github/workflows/call_auto-label.yml
 
   lint:
