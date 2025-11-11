@@ -66,11 +66,10 @@ const HelpButton = () => {
     <Button
       type="button"
       onClick={() => {
-        setActive('Docs');
+        setActive('Docs', true);
         document.getElementById(SECONDARY_CONTAINER_ID)?.focus();
         trackNeedHelpScriptsButtonClicked({ source });
       }}
-      // variant=""
       fill="text"
       icon="k6"
       tooltip="Synthetic Monitoring scripts are built on top of Grafana k6. Click to learn more about authoring scripts."
