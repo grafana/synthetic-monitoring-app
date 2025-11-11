@@ -67,8 +67,9 @@ export function NewCheckV2() {
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
     (newCheckType: CheckType) => {
-      urlSearchParams.set(CHECK_TYPE_PARAM_NAME, newCheckType);
-      navigate({ search: `?${urlSearchParams.toString()}` }, { replace: true });
+      const search = new URLSearchParams(urlSearchParams);
+      search.set(CHECK_TYPE_PARAM_NAME, newCheckType);
+      navigate({ search: `?${search.toString()}` }, { replace: true });
     },
     [navigate, urlSearchParams]
   );
