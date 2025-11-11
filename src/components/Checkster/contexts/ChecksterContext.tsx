@@ -77,8 +77,23 @@ interface StashedValues {
 function useFormValuesMeta(checkType: CheckType, check?: Check) {
   return useMemo(() => {
     const schema = FORM_CHECK_TYPE_SCHEMA_MAP[checkType];
+    let formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+    // Handle conflicting checkType and Check (e.g. when duplicating check and changing checkType)
+    if (checkType && formValues.checkType !== checkType) {
+      const defaultValues = getDefaultFormValues(checkType);
+      formValues = {
+        ...defaultValues,
+        ...formValues,
+        checkType,
+        settings: {
+          [checkType]: defaultValues.settings[defaultValues.checkType as keyof CheckFormValues['settings']],
+          ...formValues.settings,
+        },
+      } as CheckFormValues;
+    }
+
     return {
-      defaultFormValues: check ? toFormValues(check) : getDefaultFormValues(checkType),
+      defaultFormValues: formValues,
       schema: addRefinements<CheckFormValues>(schema),
     };
   }, [checkType, check]);
@@ -180,7 +195,8 @@ export function ChecksterProvider({
 
     if (isDuplicate) {
       // When a check exists without an id, it means that it's a duplicate and the form needs to be dirty
-      formMethods.setValue('_duplicate', true, { shouldDirty: true });
+      // IMPORTANT: This value also needs to be manually added to reset data on submission
+      formMethods.setValue('duplicate_check', true, { shouldDirty: true });
       formMethods.trigger();
     }
   }, [check, checkType, formMethods, isDuplicate, isNew]);

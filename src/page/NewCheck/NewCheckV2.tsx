@@ -57,6 +57,7 @@ export function NewCheckV2() {
     return {
       check: {
         ...originalCheck,
+        checkType: checkType,
         id: undefined,
         job: `${originalCheck.job} (Copy)`,
       },
