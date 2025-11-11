@@ -1,18 +1,26 @@
 import { rest } from 'msw';
 import { getAlertRules, getGrafanaAlertRules, getPromAlertRules } from 'test/handlers/alerting';
-import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
+import {
+  addCheck,
+  bulkUpdateChecks,
+  checkInfo,
+  deleteCheck,
+  listChecks,
+  testCheck,
+  updateCheck,
+} from 'test/handlers/checks';
 import { getDashboard } from 'test/handlers/dashboards';
 import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
 import { getHttpDashboard } from 'test/handlers/httpDashboard';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
-import { addProbe, listProbes, updateProbe } from 'test/handlers/probes';
+import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
 import { createAccessToken } from 'test/handlers/tokens';
 
 import { ApiEntry, RequestRes } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
-import { createSecret, getSecret, listSecrets, updateSecret } from './secrets';
+import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const apiRoutes = {
   addCheck,
@@ -20,30 +28,34 @@ const apiRoutes = {
   bulkUpdateChecks,
   checkInfo,
   createAccessToken,
+  createSecret,
+  deleteCheck,
+  deleteProbe,
+  deleteSecret,
   getAlertRules,
-  getPromAlertRules,
-  getGrafanaAlertRules,
   getDashboard,
-  getInstantMetrics,
-  getRangeMetrics,
-  getSMDS,
+  getGrafanaAlertRules,
   getHttpDashboard,
+  getInstantMetrics,
   getLogsDS,
   getMetricsDS,
+  getPromAlertRules,
+  getRangeMetrics,
+  getSecret,
+  getSMDS,
   getTenant,
-  getTenantSettings,
   getTenantLimits,
+  getTenantSettings,
+  listAlertsForCheck,
   listChecks,
   listProbes,
+  listSecrets,
+  testCheck,
+  updateAlertsForCheck,
   updateCheck,
   updateProbe,
-  updateTenantSettings,
-  updateAlertsForCheck,
-  listAlertsForCheck,
-  listSecrets,
-  getSecret,
-  createSecret,
   updateSecret,
+  updateTenantSettings,
 };
 
 export type ApiRoutes = typeof apiRoutes;
@@ -89,15 +101,16 @@ export function getServerRequests() {
   let requests: RequestRes[] = [];
 
   const record = (request: RequestRes) => requests.push(request);
-  const read = async (index = 0) => {
+  const read = async (index = 0, readBody = true) => {
     let body;
     const request = requests[index];
 
-    try {
-      body = await request?.json();
-    } catch (e) {
-
-      console.error(e);
+    if (readBody) {
+      try {
+        body = await request?.json();
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     return {
