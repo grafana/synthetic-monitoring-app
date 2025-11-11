@@ -86,8 +86,21 @@ function useFormValuesMeta(checkType: CheckType, check?: Check) {
         ...formValues,
         checkType,
         settings: {
-          [checkType]: defaultValues.settings[defaultValues.checkType as keyof CheckFormValues['settings']],
-          ...formValues.settings,
+          [checkType]: {
+            ...(defaultValues.settings[
+              defaultValues.checkType as keyof CheckFormValues['settings']
+            ] as CheckFormValues['settings'] as any),
+            ...Object.entries(formValues.settings[formValues.checkType as keyof CheckFormValues['settings']]).reduce(
+              (acc, [key, value]) => {
+                if (key in defaultValues.settings[defaultValues.checkType as keyof CheckFormValues['settings']]) {
+                  // @ts-expect-error Not dealing with this today
+                  acc[key] = value;
+                }
+                return acc;
+              },
+              {}
+            ),
+          },
         },
       } as CheckFormValues;
     }
