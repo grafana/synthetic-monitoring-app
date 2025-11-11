@@ -1,7 +1,7 @@
 import React from 'react';
 import { type InstanceMatchResult, type Route } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { encodeReceiverForUrl, getPolicyIdentifier } from './alertRoutingUtils';
@@ -96,7 +96,7 @@ const RouteNode: React.FC<{
             </Text>
           </div>
           {routingStops && (
-            <Tooltip content="The policy is configured with continue=false">
+            <Tooltip content="This policy is configured to stop after this match">
               <span>
                 <Text variant="bodySmall" color="secondary">
                   ⏹️
@@ -107,16 +107,20 @@ const RouteNode: React.FC<{
         </div>
         <div className={styles.routeDetails}>
           {route.receiver && isEffective && (
-            <Text variant="bodySmall">
-              Delivered to{' '}
+            <div className={styles.contactPointDisplay}>
+              <Icon name="arrow-right" size="sm" />
+              <Text variant="bodySmall">
+                <strong>Sent to</strong>
+              </Text>
               <TextLink
                 href={`/alerting/notifications/receivers/${encodeReceiverForUrl(route.receiver)}/edit`}
                 external={true}
                 variant="bodySmall"
+                className={styles.contactPointLink}
               >
                 {route.receiver}
               </TextLink>
-            </Text>
+            </div>
           )}
         </div>
       </div>
@@ -172,5 +176,20 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
+  }),
+
+  contactPointDisplay: css({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
+    border: `1px solid ${theme.colors.border.strong}`,
+    borderRadius: theme.shape.radius.default,
+    backgroundColor: theme.colors.emphasize(theme.colors.background.primary, 0.03),
+  }),
+
+  contactPointLink: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightBold,
   }),
 });

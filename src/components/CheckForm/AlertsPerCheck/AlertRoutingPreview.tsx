@@ -116,13 +116,28 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
       <AlertLabelsDisplay alertLabels={alertLabels} highlightMatchers={highlightMatchers} />
 
       <div className={styles.section}>
-        <div className={styles.successRow}>
-          <Text variant="body">Matching notification policies:</Text>
+        <div className={styles.sectionHeader}>
+          <Text variant="body">
+            <strong>Matching notification policies</strong>
+          </Text>
+
+          <div className={styles.infoSection}>
+            <Text variant="body" color="secondary">
+              Notification policies determine which contact point receives this alert based on the labels shown above.
+              To change where alerts are sent,{' '}
+              <TextLink href="/alerting/routes" external={true} variant="body">
+                configure notification policies
+              </TextLink>{' '}
+              in the Alerting section.
+            </Text>
+          </div>
         </div>
 
         <div className={styles.routeTreeSection}>
           {routeMatches.length > 0 && routeMatches[0] ? (
-            <RouteTreeDisplay routeMatch={routeMatches[0]} />
+            <>
+              <RouteTreeDisplay routeMatch={routeMatches[0]} />
+            </>
           ) : (
             <div className={styles.contactPointsSection}>
               <Alert severity="info" title="Default notification policy will be used">
@@ -132,21 +147,26 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
                     notification policy, which handles all alerts that don&apos;t match any specific routing rules.
                   </Text>
                   {defaultPolicyInfo && (
-                    <div className={styles.defaultPolicyDetails}>
-                      <Text variant="bodySmall">
-                        <strong>Default contact point:</strong>{' '}
-                        <TextLink
-                          href={`/alerting/notifications/receivers/${encodeReceiverForUrl(
-                            defaultPolicyInfo.receiverName
-                          )}/edit`}
-                          external={true}
-                          variant="bodySmall"
-                        >
-                          {defaultPolicyInfo.receiverName}
-                        </TextLink>
+                    <div className={styles.defaultContactPoint}>
+                      <Text variant="body">
+                        <strong>Sent to</strong>
                       </Text>
+                      <TextLink
+                        href={`/alerting/notifications/receivers/${encodeReceiverForUrl(
+                          defaultPolicyInfo.receiverName
+                        )}/edit`}
+                        external={true}
+                        className={styles.contactPointLink}
+                      >
+                        {defaultPolicyInfo.receiverName}
+                      </TextLink>
                     </div>
                   )}
+                  <div className={styles.configureLink}>
+                    <TextLink href="/alerting/routes" external={true} variant="body">
+                      Configure notification policies to route to a different contact point
+                    </TextLink>
+                  </div>
                 </div>
               </Alert>
             </div>
@@ -188,12 +208,30 @@ const getStyles = (theme: GrafanaTheme2) => ({
     },
   }),
 
+  sectionHeader: css({
+    marginBottom: theme.spacing(1.5),
+  }),
+
+  infoSection: css({
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+  }),
+
   successRow: css({
     marginBottom: theme.spacing(1),
   }),
 
   routeTreeSection: css({
     marginTop: theme.spacing(1),
+  }),
+
+  configureLinkSection: css({
+    marginTop: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
   }),
 
   contactPointsSection: css({
@@ -245,5 +283,26 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(0.5),
+  }),
+
+  defaultContactPoint: css({
+    marginTop: theme.spacing(2),
+    padding: theme.spacing(1.5, 2),
+    backgroundColor: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
+    borderRadius: theme.shape.radius.default,
+    border: `1px solid ${theme.colors.border.medium}`,
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  }),
+
+  contactPointLink: css({
+    fontWeight: theme.typography.fontWeightMedium,
+  }),
+
+  configureLink: css({
+    marginTop: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
   }),
 });
