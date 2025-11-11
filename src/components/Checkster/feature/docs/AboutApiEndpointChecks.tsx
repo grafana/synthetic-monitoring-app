@@ -3,7 +3,7 @@ import { Stack, Text } from '@grafana/ui';
 
 export const SM_CHECKS_DOCS_TEXT = `Synthetic Monitoring checks are tests that run on selected public or private probes at frequent intervals to continuously verify your systems.`;
 
-export function AboutSMChecks() {
+export const AboutApiEndpointChecks = () => {
   return (
     <Stack direction="column" gap={2}>
       <Text variant="h4" element="h3">
@@ -16,4 +16,4 @@ export function AboutSMChecks() {
       </Text>
     </Stack>
   );
-}
+};
