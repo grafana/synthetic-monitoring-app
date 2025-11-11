@@ -50,7 +50,7 @@
     "@types/jest": "30.0.0",
     "@types/k6": "0.57.1",
     "@types/lodash": "4.17.20",
-    "@types/node": "24.9.2",
+    "@types/node": "24.10.0",
     "@types/prismjs": "1.26.5",
     "@types/react-dom": "19.2.2",
     "@types/react-router-dom": "5.3.3",
