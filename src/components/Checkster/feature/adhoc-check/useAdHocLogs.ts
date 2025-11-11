@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { DataFrameJSON } from '@grafana/data';
 
 import { AdHocResponseResults } from './types.adhoc-check';
+import { useLogsDS } from 'hooks/useLogsDS';
 import { useSMDS } from 'hooks/useSMDS';
 
 export interface LokiQueryResults<RefId extends keyof any = 'A'> {
@@ -85,11 +86,12 @@ export function useAdHocLogs(
   poll = true
 ) {
   const dataSource = useSMDS();
+  const logsDS = useLogsDS();
 
   return useQuery<AdHocResponseResults>({
-    queryKey: ['logs', 'ad-hoc', { expr, from, to }],
+    queryKey: ['logs', 'ad-hoc', { expr, from, to, logsDS }],
     queryFn: async () => {
-      return loggify(await dataSource.queryLogsV2(expr!, from, to));
+      return loggify(await dataSource.queryLogsV2(expr!, from, to, `adhoc-logs`, logsDS));
     },
     enabled: !!expr,
     refetchInterval: poll ? 3000 : 0,
