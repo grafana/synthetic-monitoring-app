@@ -1,0 +1,59 @@
+# https://github.com/grafana/mimir-limits-operator/blob/main/.github/workflows/renovate-reviewer.yaml
+# slack context: https://raintank-corp.slack.com/archives/C07QXFPF1B2/p1761690200989699
+name: Renovate reviewer
+on:
+  workflow_call:
+
+jobs:
+  review-renovate-pr:
+    permissions:
+      pull-requests: write
+      contents: write
+      id-token: write
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.user.login == 'renovate-sh-app[bot]' }}
+    env:
+      PR_URL: ${{github.event.pull_request.html_url}}
+      COMMITS_URL: ${{ github.event.pull_request.commits_url }}
+    steps:
+      - name: Get secrets
+        id: get-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@2d5a0678eb32b0fd6655b4f7a3a7ec72eaf530ca
+        with:
+          common_secrets: |
+            GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
+          repo_secrets: |
+            GITHUB_APP_ID=github-app:app-id
+            GITHUB_APP_PRIVATE_KEY=github-app:private-key
+
+      - name: Create GitHub app token
+        id: app-token
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2
+        with:
+          app-id: ${{ env.GITHUB_APP_ID }}
+          private-key: ${{ env.GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Approve security updates
+        if: contains(github.event.pull_request.labels.*.name, 'automerge-security-update')
+        env:
+          GH_TOKEN: "${{ steps.app-token.outputs.token }}"
+        run: gh pr review "$PR_URL" --approve -b "**Approving** SECURITY update 🎉. Will now merge..."
+
+      - name: Approve patch updates
+        if: (contains(github.event.pull_request.labels.*.name, 'automerge-patch'))
+        env:
+          GH_TOKEN: "${{ steps.app-token.outputs.token }}"
+        run: gh pr review "$PR_URL" --approve -b "**Approving** PATCH update 🎉. Will now merge..."
+
+      - name: Approve minor updates
+        if: (contains(github.event.pull_request.labels.*.name, 'automerge-minor'))
+        env:
+          GH_TOKEN: "${{ steps.app-token.outputs.token }}"
+        run: gh pr review "$PR_URL" --approve -b "**Approving** MINOR update 🎉. Will now merge..."
+
+      - name: Approve digest updates
+        if: (contains(github.event.pull_request.labels.*.name, 'automerge-digest'))
+        env:
+          GH_TOKEN: "${{ steps.app-token.outputs.token }}"
+        run: gh pr review "$PR_URL" --approve -b "**Approving** DIGEST update 🎉. Will now merge..."

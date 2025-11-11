@@ -53,6 +53,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       getBackendSrv().fetch<T>({
         method: options?.method ?? 'GET',
         url,
+        headers: {
+          'X-Client-ID': process.env.SM_PLUGIN_ID,
+          'X-Client-Version': process.env.SM_PLUGIN_VERSION,
+          ...options?.headers,
+        },
         ...options,
       })
     ).catch((error: unknown) => {
@@ -214,10 +219,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return allProbes;
   }
 
-  async getCheckInfo() {
-    return this.fetchAPI<CheckInfoResult>(`${this.instanceSettings.url}/sm/checks/info`);
-  }
-
   async queryLogs(expr: string, range: TimeRange) {
     return this.fetchAPI<LogsQueryResponse>(`/api/ds/query`, {
       method: 'POST',
@@ -301,12 +302,12 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // CHECKS
   //--------------------------------------------------------------------------------
 
-  async listChecks(includeAlerts = false) {
-    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`);
+  async getCheckInfo() {
+    return this.fetchAPI<CheckInfoResult>(`${this.instanceSettings.url}/sm/checks/info`);
   }
 
-  async getCheck(checkId: number) {
-    return this.fetchAPI<Check>(`${this.instanceSettings.url}/sm/check/${checkId}`);
+  async listChecks(includeAlerts = false) {
+    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`);
   }
 
   async testCheck(check: Check) {
@@ -363,21 +364,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async disableTenant(): Promise<any> {
-    const tenant = await this.getTenant();
-    return this.fetchAPI(`${this.instanceSettings.url}/sm/tenant/update`, {
-      method: 'POST',
-      data: {
-        ...tenant,
-        status: 1,
-      },
-    });
-  }
-
   //--------------------------------------------------------------------------------
   // ALERTS PER CHECK
   //--------------------------------------------------------------------------------
-  // Note: this endpoints are not yet released. The prototype can be seen here https://github.com/grafana/synthetic-monitoring-api/pull/992
 
   async listAlertsForCheck(checkId: number) {
     return this.fetchAPI<CheckAlertsResponse>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`);
@@ -387,6 +376,55 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<null>(`${this.instanceSettings.url}/sm/check/${checkId}/alerts`, {
       method: 'PUT',
       data: { alerts },
+    });
+  }
+
+  //--------------------------------------------------------------------------------
+  // TOKENS
+  //--------------------------------------------------------------------------------
+
+  async createApiToken(): Promise<string> {
+    return this.fetchAPI<AccessTokenResponse>(`${this.instanceSettings.url}/sm/token/create`, {
+      method: 'POST',
+      data: {},
+    }).then((data) => data.token);
+  }
+
+  //--------------------------------------------------------------------------------
+  // SECRETS MANAGEMENT
+  //--------------------------------------------------------------------------------
+
+  async getSecrets(): Promise<SecretsResponse> {
+    return this.fetchAPI<SecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+      method: 'GET',
+    });
+  }
+
+  async getSecret(name: string): Promise<SecretWithMetadata> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
+      method: 'GET',
+    });
+  }
+
+  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
+    if (secret.uuid) {
+      // For updates: use name for URL but exclude it from payload
+      const { name, ...secretWithoutName } = secret;
+      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
+        method: 'PUT',
+        data: secretWithoutName,
+      });
+    }
+    // For creates: include name in payload
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
+      method: 'POST',
+      data: secret,
+    });
+  }
+
+  async deleteSecret(name: string): Promise<unknown> {
+    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
+      method: 'DELETE',
     });
   }
 
@@ -438,51 +476,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         metricsInstanceId: options.metrics.hostedId,
         logsInstanceId: options.logs.hostedId,
       },
-    });
-  }
-
-  async createApiToken(): Promise<string> {
-    return this.fetchAPI<AccessTokenResponse>(`${this.instanceSettings.url}/sm/token/create`, {
-      method: 'POST',
-      data: {},
-    }).then((data) => data.token);
-  }
-
-  //--------------------------------------------------------------------------------
-  // SECRETS MANAGEMENT - DEV ONLY
-  //--------------------------------------------------------------------------------
-
-  async getSecrets(): Promise<SecretsResponse> {
-    return this.fetchAPI<SecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
-      method: 'GET',
-    });
-  }
-
-  async getSecret(name: string): Promise<SecretWithMetadata> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-      method: 'GET',
-    });
-  }
-
-  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
-    if (secret.uuid) {
-      // For updates: use name for URL but exclude it from payload
-      const { name, ...secretWithoutName } = secret;
-      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-        method: 'PUT',
-        data: secretWithoutName,
-      });
-    }
-    // For creates: include name in payload
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
-      method: 'POST',
-      data: secret,
-    });
-  }
-
-  async deleteSecret(name: string): Promise<unknown> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-      method: 'DELETE',
     });
   }
 

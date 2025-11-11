@@ -6,7 +6,7 @@ import {
 } from 'test/fixtures/probes';
 
 import { ApiEntry } from 'test/handlers/types';
-import { AddProbeResult, ListProbeResult, UpdateProbeResult } from 'datasource/responses.types';
+import { AddProbeResult, DeleteProbeResult, ListProbeResult, UpdateProbeResult } from 'datasource/responses.types';
 
 export const listProbes: ApiEntry<ListProbeResult> = {
   route: `/sm/probe/list`,
@@ -42,6 +42,16 @@ export const updateProbe: ApiEntry<UpdateProbeResult> = {
 
     return {
       json: { probe: PRIVATE_PROBE },
+    };
+  },
+};
+
+export const deleteProbe: ApiEntry<DeleteProbeResult> = {
+  route: `/sm/probe/delete/([^/]+)`,
+  method: `delete`,
+  result: () => {
+    return {
+      json: { msg: `probe deleted` },
     };
   },
 };

@@ -10,6 +10,13 @@ jobs:
       contents: read
     uses: ./.github/workflows/call_env-setup.yml
 
+  auto-label:
+    name: Auto Label
+    needs: setup-env-and-cache
+    permissions:
+      pull-requests: write
+    uses: ./.github/workflows/call_auto-label.yml
+
   lint:
     needs: setup-env-and-cache
     name: Lint
@@ -75,3 +82,11 @@ jobs:
       issues: read
       statuses: write
     uses: ./.github/workflows/call_dangerJS.yml
+
+  renovate-reviewer:
+    name: Renovate Reviewer
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    uses: ./.github/workflows/call_renovate_reviewer.yml
