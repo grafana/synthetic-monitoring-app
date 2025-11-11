@@ -96,7 +96,6 @@ export function getServerRequests() {
     try {
       body = await request?.json();
     } catch (e) {
-
       console.error(e);
     }
 
@@ -106,7 +105,7 @@ export function getServerRequests() {
     };
   };
 
-  return { record, read };
+  return { record, read, requests };
 }
 
 export const handlers = Object.keys(apiRoutes).map((key) => apiRoute(key as keyof ApiRoutes));

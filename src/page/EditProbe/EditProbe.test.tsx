@@ -83,20 +83,25 @@ describe(`Private probes`, () => {
 
   it('probe status updates automatically', async () => {
     jest.useFakeTimers();
+    const { record, requests } = getServerRequests();
     server.use(
-      apiRoute('listProbes', {
-        result: () => {
-          return {
-            json: [OFFLINE_PROBE],
-          };
+      apiRoute(
+        'listProbes',
+        {
+          result: () => {
+            return {
+              json: [OFFLINE_PROBE],
+            };
+          },
         },
-      })
+        record
+      )
     );
 
     renderEditProbe(OFFLINE_PROBE);
 
-    // Initial render - should call once
     await screen.findByText(/Offline/);
+    expect(await requests.length).toBe(1);
     server.use(
       apiRoute('listProbes', {
         result: () => {
@@ -114,7 +119,7 @@ describe(`Private probes`, () => {
 
     jest.advanceTimersByTime(PROBE_REFETCH_INTERVAL);
 
-    await screen.findByText(/Online/);
+    expect(await screen.findByText(/Online/)).toBeInTheDocument();
 
     jest.useRealTimers();
   });
