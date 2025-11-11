@@ -6,6 +6,9 @@ export const BROWSER_CHECKS_DOCS_TEXT = `k6 browser checks run a k6 script using
 export const AboutBrowserChecks = () => {
   return (
     <Stack direction="column" gap={2}>
+      <Text variant="h4" element="h3">
+        How k6 browser checks work
+      </Text>
       <Text element="p">{BROWSER_CHECKS_DOCS_TEXT}</Text>
     </Stack>
   );

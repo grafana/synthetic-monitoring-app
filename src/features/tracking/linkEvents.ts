@@ -4,13 +4,13 @@ const linkClicked = createSMEventFactory('link');
 
 interface LinkEvent extends TrackingEventProps {
   /** The href of the clicked link */
-  href: string;
+  href: URL['href'];
   /** The hostname of the clicked link */
-  hostname: string;
+  hostname: URL['hostname'];
   /** The path of the clicked link */
-  path: string;
+  path: URL['pathname'];
   /** The search of the clicked link */
-  search: string;
+  search: URL['search'];
   /** Where the link was clicked from */
   source: string;
 }

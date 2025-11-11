@@ -25,7 +25,7 @@ export function SecondaryLayoutSection({ children, headerContent }: SecondaryLay
       <div className={cx(splitterClassname, styles.splitter)} {...splitterProps} />
       <div className={cx(secondaryClassname, styles.secondary)} {...secondaryProps}>
         <LayoutSectionHeader>{headerContent}</LayoutSectionHeader>
-        <LayoutSectionContent className={styles.sectionContent} id={SECONDARY_CONTAINER_ID} tabIndex={0}>
+        <LayoutSectionContent id={SECONDARY_CONTAINER_ID} tabIndex={0}>
           {children}
         </LayoutSectionContent>
       </div>
@@ -42,12 +42,6 @@ function getStyles(theme: GrafanaTheme2) {
     splitter: css`
       &::before {
         border-right: 1px solid ${theme.colors.border.medium};
-      }
-    `,
-    sectionContent: css`
-      &:focus {
-        outline: 2px solid ${theme.colors.primary.border};
-        outline-offset: -2px;
       }
     `,
   };

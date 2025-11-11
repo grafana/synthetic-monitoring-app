@@ -3,16 +3,18 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { LinkButton, Stack, Text, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { onDocsLinkClick } from 'components/DocsLink/DocsLink.utils';
+import { appendTrackingParams, onDocsLinkClick } from 'components/DocsLink/DocsLink.utils';
 
 import { k6StudioLogoDarkTheme, k6StudioLogoLightTheme } from 'img';
 
 export const K6_STUDIO_DOCS_TEXT = `k6 Studio is a free, open source desktop application designed to help you create k6 test scripts using a visual interface. Download it for free and get started with your first script in minutes.`;
+const K6_STUDIO_DOCS_LINK = 'https://grafana.com/docs/k6-studio/set-up/install/';
 
-export const Aboutk6Stuido = ({ source }: { source: string }) => {
+export const Aboutk6Studio = ({ source }: { source: string }) => {
   const theme = useTheme2();
   const src = theme.isDark ? k6StudioLogoDarkTheme : k6StudioLogoLightTheme;
   const styles = useStyles2(getStyles);
+  const href = appendTrackingParams(K6_STUDIO_DOCS_LINK);
 
   return (
     <Stack direction="column" gap={2}>
@@ -27,11 +29,7 @@ export const Aboutk6Stuido = ({ source }: { source: string }) => {
         interface. Download it for free and get started with your first script in minutes.
       </Text>
       <div>
-        <LinkButton
-          href="https://grafana.com/docs/k6-studio/set-up/install/"
-          target="_blank"
-          onClick={() => onDocsLinkClick('https://grafana.com/docs/k6-studio/set-up/install/', source)}
-        >
+        <LinkButton icon="external-link-alt" href={href} target="_blank" onClick={() => onDocsLinkClick(href, source)}>
           Install k6 Studio
         </LinkButton>
       </div>

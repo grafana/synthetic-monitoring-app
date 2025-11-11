@@ -6,6 +6,9 @@ export const SCRIPTED_CHECKS_DOCS_TEXT = `k6 scripted checks utilise Grafana k6,
 export function AboutScriptedChecks() {
   return (
     <Stack direction="column" gap={2}>
+      <Text variant="h4" element="h3">
+        How k6 scripted checks work
+      </Text>
       <Text element="p">{SCRIPTED_CHECKS_DOCS_TEXT}</Text>
     </Stack>
   );

@@ -6,6 +6,9 @@ export const SM_CHECKS_DOCS_TEXT = `Synthetic Monitoring checks are tests that r
 export function AboutSMChecks() {
   return (
     <Stack direction="column" gap={2}>
+      <Text variant="h4" element="h3">
+        How Synthetic Monitoring checks work
+      </Text>
       <Text element="p">{SM_CHECKS_DOCS_TEXT}</Text>
       <Text element="p">
         Checks save results as Prometheus metrics and Loki logs, enabling the configuration of Grafana alerts for custom

@@ -23,11 +23,6 @@ export const DOC_LINK_K6_SCRIPTED_CHECKS = {
   href: 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/k6/',
 };
 
-export const DOC_LINK_K6_SM = {
-  title: 'Check types and what they do',
-  href: 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/',
-};
-
 export const DOC_LINK_K6_JAVASCRIPT_API = {
   title: 'The k6 JavaScript API',
   href: 'https://grafana.com/docs/k6/next/javascript-api/',
