@@ -482,3 +482,19 @@ export function getExploreUrl(datasourceUid: string, queries: Query[], { from, t
 
   return `/explore?left=${left}`;
 }
+
+/**
+ * Save way of getting an error message from `unknown`
+ * @param error
+ * @param fallbackMessage
+ */
+export function getErrorMessage(error: unknown, fallbackMessage = 'An unknown error occurred'): string {
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  return fallbackMessage;
+}

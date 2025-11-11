@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
+import { OFFLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -10,6 +10,7 @@ import { Probe } from 'types';
 import { formatDate } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
+import { PROBE_REFETCH_INTERVAL } from 'data/useProbes';
 
 import { DataTestIds } from '../../test/dataTestIds';
 import { EditProbe } from './EditProbe';
@@ -78,6 +79,83 @@ describe(`Private probes`, () => {
 
     const tokenValue = await screen.findByText(UPDATED_PROBE_TOKEN_RESPONSE);
     expect(tokenValue).toBeInTheDocument();
+  });
+
+  it('probe status updates automatically', async () => {
+    jest.useFakeTimers();
+    const { record, requests } = getServerRequests();
+    server.use(
+      apiRoute(
+        'listProbes',
+        {
+          result: () => {
+            return {
+              json: [OFFLINE_PROBE],
+            };
+          },
+        },
+        record
+      )
+    );
+
+    renderEditProbe(OFFLINE_PROBE);
+
+    await screen.findByText(/Offline/);
+    expect(await requests.length).toBe(1);
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [
+              {
+                ...OFFLINE_PROBE,
+                online: true,
+              },
+            ],
+          };
+        },
+      })
+    );
+
+    jest.advanceTimersByTime(PROBE_REFETCH_INTERVAL);
+
+    expect(await screen.findByText(/Online/)).toBeInTheDocument();
+
+    jest.useRealTimers();
+  });
+
+  it(`triggers a refetch when the sync icon is clicked`, async () => {
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [OFFLINE_PROBE],
+          };
+        },
+      })
+    );
+
+    const { user } = renderEditProbe(OFFLINE_PROBE);
+    expect(await screen.findByText('Offline')).toBeInTheDocument();
+    const syncIcon = await screen.findByRole('button', { name: "Get the probe's latest status" });
+
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [
+              {
+                ...OFFLINE_PROBE,
+                online: true,
+              },
+            ],
+          };
+        },
+      })
+    );
+
+    await user.click(syncIcon);
+    expect(await screen.findByText('Online')).toBeInTheDocument();
   });
 });
 

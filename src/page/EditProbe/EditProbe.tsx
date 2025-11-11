@@ -30,6 +30,7 @@ export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
       navigate(generateRoutePath(AppRoutes.ViewProbe, { id: probe.id! }), { replace: true });
     }
   }, [canWriteProbes, navigate, probe, forceViewMode]);
+
   if (errorMessage) {
     return (
       <PluginPageNotFound breadcrumb="Probe not found">

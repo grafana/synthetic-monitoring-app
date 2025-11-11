@@ -57,7 +57,10 @@ export function AdhocCheckPanel() {
         const now = dateTime();
         setLogState((prevState) => {
           return pendingIds.reduce<AdHocCheckStateMap>((acc, id) => {
-            if (acc[id] && now.diff(acc[id].created, 'seconds') > DEFAULT_TIMEOUT_IN_SECONDS) {
+            if (
+              acc[id] &&
+              now.diff(acc[id].created, 'seconds') > DEFAULT_TIMEOUT_IN_SECONDS + acc[id].checkTimeoutInSeconds
+            ) {
               return {
                 ...acc,
                 [id]: {
@@ -111,6 +114,7 @@ export function AdhocCheckPanel() {
         return acc;
       }, {}),
       created: dateTime(),
+      checkTimeoutInSeconds: newHocCheckRequest.timeout / 1000,
     };
     setLogState((prevState) => {
       return {

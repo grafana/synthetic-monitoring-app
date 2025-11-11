@@ -1,0 +1,64 @@
+import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useTheme2 } from '@grafana/ui';
+import { renderHook, screen, waitFor } from '@testing-library/react';
+import { PROBES_TEST_ID } from 'test/dataTestIds';
+import { OFFLINE_PROBE } from 'test/fixtures/probes';
+import { apiRoute } from 'test/handlers';
+import { render } from 'test/render';
+import { server } from 'test/server';
+
+import { CheckType } from 'types';
+import { PROBE_REFETCH_INTERVAL } from 'data/useProbes';
+
+import { ProbeOptions } from './ProbeOptions';
+
+describe('ProbeOptions', () => {
+  it('updates the probe status after the refresh interval', async () => {
+    jest.useFakeTimers();
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [OFFLINE_PROBE],
+          };
+        },
+      })
+    );
+
+    const { result } = renderHook<GrafanaTheme2, undefined>(useTheme2);
+    const offlineColor = result.current.colors.error.text;
+    const onlineColor = result.current.colors.success.text;
+
+    render(<ProbeOptions onlyProbes checkType={CheckType.HTTP} onChange={() => {}} selectedProbes={[]} />);
+    const offlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
+    expect(offlineStatus).toHaveStyle(`background-color: ${offlineColor}`);
+
+    server.use(
+      apiRoute('listProbes', {
+        result: () => {
+          return {
+            json: [
+              {
+                ...OFFLINE_PROBE,
+                online: true,
+              },
+            ],
+          };
+        },
+      })
+    );
+
+    jest.advanceTimersByTime(PROBE_REFETCH_INTERVAL);
+
+    await waitFor(
+      async () => {
+        const onlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
+        expect(onlineStatus).toHaveStyle(`background-color: ${onlineColor}`);
+      },
+      { timeout: 5000 }
+    );
+
+    jest.useRealTimers();
+  });
+});

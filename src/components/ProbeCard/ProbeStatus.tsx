@@ -2,6 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { PROBES_TEST_ID } from 'test/dataTestIds';
 
 import { ProbeWithMetadata } from 'types';
 
@@ -11,12 +12,12 @@ export function ProbeStatus({ probe }: { probe: ProbeWithMetadata }) {
   return (
     <Tooltip
       content={
-        <div data-testid="probe-online-status-tooltip">
+        <div data-testid={PROBES_TEST_ID.cards.statusTooltip}>
           Probe {probe.displayName} is <span className={styles.statusText}>{probe.online ? 'online' : 'offline'}</span>
         </div>
       }
     >
-      <div data-testid="probe-online-status" className={styles.container} />
+      <div data-testid={PROBES_TEST_ID.cards.status} className={styles.container} />
     </Tooltip>
   );
 }
