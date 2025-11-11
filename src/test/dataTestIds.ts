@@ -83,6 +83,13 @@ export const CHECKSTER_TEST_ID = {
   },
 } as const;
 
+export const PROBES_TEST_ID = {
+  cards: {
+    status: 'probes cards status',
+    statusTooltip: 'probes cards statusTooltip',
+  },
+} as const;
+
 export const GROT_SAD_TEST_ID = 'grotSad';
 
 // deprecated -- look to migrate these to follow the same patterns as above

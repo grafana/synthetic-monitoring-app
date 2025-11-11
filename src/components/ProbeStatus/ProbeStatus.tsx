@@ -6,6 +6,7 @@ import {
   Button,
   ConfirmModal,
   Container,
+  IconButton,
   IconName,
   Legend,
   TextLink,
@@ -15,7 +16,7 @@ import { css } from '@emotion/css';
 
 import { type ExtendedProbe } from 'types';
 import { formatDate } from 'utils';
-import { useResetProbeToken } from 'data/useProbes';
+import { useProbes, useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
@@ -39,6 +40,7 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const { canWriteProbes } = useCanEditProbe(probe);
   const writeMode = canWriteProbes && !readOnly;
+  const { isFetching, refetch } = useProbes();
 
   const styles = useStyles2(getStyles);
   const { mutate: onResetToken } = useResetProbeToken({
@@ -78,6 +80,16 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
               }
             />
           )}
+          <IconButton
+            tooltip="Get the probe's latest status"
+            name={isFetching ? 'fa fa-spinner' : 'sync'}
+            variant="secondary"
+            onClick={() => {
+              if (!isFetching) {
+                refetch();
+              }
+            }}
+          />
         </div>
         {canWriteProbes && (
           <Container>
@@ -95,7 +107,12 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
           </Container>
         )}
       </div>
-      <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} description={PROBE_REACHABILITY_DESCRIPTION} />
+      <SuccessRateGaugeProbe
+        probeName={probe.name}
+        height={200}
+        width={300}
+        description={PROBE_REACHABILITY_DESCRIPTION}
+      />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
         <Meta
@@ -139,7 +156,7 @@ const getBadgeStatus = (online: boolean): BadgeStatus => {
 
 const getStyles = (theme: GrafanaTheme2) => ({
   legend: css({
-    margin: theme.spacing(0, 1, 0, 0),
+    margin: 0,
     width: `auto`,
   }),
   container: css({
@@ -150,6 +167,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginBottom: theme.spacing(1),
     display: `flex`,
     alignItems: `center`,
+    gap: theme.spacing(1),
   }),
   metaWrapper: css({
     display: `flex`,
