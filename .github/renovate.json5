@@ -2,8 +2,11 @@
   // https://docs.renovatebot.com/config-overview/
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   // https://github.com/grafana/deployment_tools/blob/master/docs/platform/renovate/FAQ.md#can-i-opt-inopt-out-of-the-global-configuration
+  // https://github.com/grafana/grafana-renovate-config
   "extends": ["github>grafana/grafana-renovate-config//presets/base"],
   "ignorePaths": [".config/Dockerfile"],
+  //
+  "semanticCommitScope": null,
   "packageRules": [
     // we can never update the React packages until grafana does
     {
@@ -47,6 +50,26 @@
       ],
       "enabled": true,
       "abandonmentThreshold": "15 years"
+    },
+    // automatically merge patch and minor updates
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "description": "Label patch updates",
+      "matchUpdateTypes": ["patch"],
+      "labels": ["automerge-patch"]
+    },
+    {
+      "description": "Label minor updates",
+      "matchUpdateTypes": ["minor"],
+      "labels": ["automerge-minor"]
+    },
+    {
+      "description": "Label digest updates",
+      "matchUpdateTypes": ["digest"],
+      "labels": ["automerge-digest"]
     }
   ]
 }
