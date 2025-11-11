@@ -135,9 +135,7 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
 
         <div className={styles.routeTreeSection}>
           {routeMatches.length > 0 && routeMatches[0] ? (
-            <>
-              <RouteTreeDisplay routeMatch={routeMatches[0]} />
-            </>
+            <RouteTreeDisplay routeMatch={routeMatches[0]} />
           ) : (
             <div className={styles.contactPointsSection}>
               <Alert severity="info" title="Default notification policy will be used">
