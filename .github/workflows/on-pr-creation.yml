@@ -10,6 +10,13 @@ jobs:
       contents: read
     uses: ./.github/workflows/call_env-setup.yml
 
+  auto-label:
+    name: Auto Label
+    needs: setup-env-and-cache
+    permissions:
+      pull-requests: write
+    uses: ./.github/workflows/call_auto-label.yml
+
   lint:
     needs: setup-env-and-cache
     name: Lint
