@@ -1,1 +1,1 @@
-export { EditCheck } from './EditCheck';
+export { EditCheckV2 } from './EditCheckV2';

@@ -3,8 +3,11 @@ import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { mockFeatureToggles } from 'test/utils';
 
+import { FormSectionName } from '../../Checkster/types';
 import { CheckAlertType, FeatureName } from 'types';
-import { goToSection, renderEditForm } from 'page/__testHelpers__/checkForm';
+import { renderEditFormV2 } from 'page/__testHelpers__/checkForm';
+
+import { gotoSection } from '../../Checkster/__testHelpers__/formHelpers';
 
 describe('RunbookUrl', () => {
   beforeEach(() => {
@@ -14,8 +17,8 @@ describe('RunbookUrl', () => {
   });
 
   it('renders the runbook URL inputs for pre-selected alerts', async () => {
-    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    const { user } = await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await gotoSection(user, FormSectionName.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -40,15 +43,15 @@ describe('RunbookUrl', () => {
   });
 
   it('displays existing runbook URL values from test data', async () => {
-    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    const { user } = await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await gotoSection(user, FormSectionName.Alerting); // Go to alerts section
     expect(screen.getByDisplayValue('https://example.com/runbooks/tls-certificate')).toBeInTheDocument();
     expect(screen.getByDisplayValue('https://example.com/runbooks/probe-failures')).toBeInTheDocument();
   });
 
   it('allows user to modify an existing runbook URL', async () => {
-    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    const { user } = await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await gotoSection(user, FormSectionName.Alerting); // Go to alerts section
     const tlsRunbookInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
     );
@@ -60,8 +63,8 @@ describe('RunbookUrl', () => {
   });
 
   it('allows user to modify the failed executions runbook URL', async () => {
-    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    const { user } = await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await gotoSection(user, FormSectionName.Alerting); // Go to alerts section
     const failedExecRunbookInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].runbookUrlInput
     );
@@ -73,8 +76,8 @@ describe('RunbookUrl', () => {
   });
 
   it('allows user to modify the HTTP request duration runbook URL', async () => {
-    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    const { user } = await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await gotoSection(user, FormSectionName.Alerting); // Go to alerts section
     const httpDurationRunbookInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].runbookUrlInput
     );
@@ -86,8 +89,8 @@ describe('RunbookUrl', () => {
   });
 
   it('allows user to clear a runbook URL', async () => {
-    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    const { user } = await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await gotoSection(user, FormSectionName.Alerting); // Go to alerts section
     const tlsRunbookInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
     );
@@ -98,8 +101,8 @@ describe('RunbookUrl', () => {
   });
 
   it('shows runbook URL input as disabled when alert is deselected', async () => {
-    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5); // Go to alerts section
+    const { user } = await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await gotoSection(user, FormSectionName.Alerting); // Go to alerts section
 
     expect(
       screen.getByTestId(
