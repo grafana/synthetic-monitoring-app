@@ -148,7 +148,8 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
                   </Text>
                   {defaultPolicyInfo && (
                     <div className={styles.defaultContactPoint}>
-                      <Text variant="body">
+                      <Icon name="arrow-right" size="sm" />
+                      <Text variant="bodySmall">
                         <strong>Sent to</strong>
                       </Text>
                       <TextLink
@@ -156,6 +157,7 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
                           defaultPolicyInfo.receiverName
                         )}/edit`}
                         external={true}
+                        variant="bodySmall"
                         className={styles.contactPointLink}
                       >
                         {defaultPolicyInfo.receiverName}
@@ -217,87 +219,27 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginBottom: theme.spacing(2),
   }),
 
-  successRow: css({
-    marginBottom: theme.spacing(1),
-  }),
-
   routeTreeSection: css({
     marginTop: theme.spacing(1),
-  }),
-
-  configureLinkSection: css({
-    marginTop: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-    borderTop: `1px solid ${theme.colors.border.weak}`,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
   }),
 
   contactPointsSection: css({
     marginTop: theme.spacing(1),
   }),
 
-  contactPointsList: css({
-    marginTop: theme.spacing(1),
-    marginLeft: theme.spacing(2),
-  }),
-
-  contactPointItem: css({
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing(1),
-    marginBottom: theme.spacing(0.5),
-    backgroundColor: theme.colors.background.primary,
-    border: `1px solid ${theme.colors.border.weak}`,
-    borderRadius: theme.shape.radius.default,
-    '&:last-child': {
-      marginBottom: 0,
-    },
-  }),
-
-  contactPointInfo: css({
-    flex: 1,
-  }),
-
-  actionsSection: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-    marginTop: theme.spacing(1.5),
-  }),
-
-  receiversSummary: css({
-    marginTop: theme.spacing(2),
-    padding: theme.spacing(1.5),
-    backgroundColor: theme.colors.background.secondary,
-    border: `1px solid ${theme.colors.border.weak}`,
-    borderRadius: theme.shape.radius.default,
-  }),
-
-  defaultPolicyDetails: css({
-    marginTop: theme.spacing(1.5),
-    paddingTop: theme.spacing(1.5),
-    borderTop: `1px solid ${theme.colors.border.weak}`,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-  }),
-
   defaultContactPoint: css({
     marginTop: theme.spacing(2),
-    padding: theme.spacing(1.5, 2),
-    backgroundColor: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
-    borderRadius: theme.shape.radius.default,
-    border: `1px solid ${theme.colors.border.medium}`,
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
-    gap: theme.spacing(1),
+    gap: theme.spacing(0.5),
+    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
+    border: `1px solid ${theme.colors.border.strong}`,
+    borderRadius: theme.shape.radius.default,
+    backgroundColor: theme.colors.emphasize(theme.colors.background.primary, 0.03),
   }),
 
   contactPointLink: css({
-    fontWeight: theme.typography.fontWeightMedium,
+    fontWeight: theme.typography.fontWeightBold,
   }),
 
   configureLink: css({
