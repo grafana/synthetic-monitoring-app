@@ -228,7 +228,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
             refId: 'A',
             expr,
             queryType: 'range',
-            datasource: this.instanceSettings.jsonData.logs,
+            datasource: this.getLogsDS(),
             intervalMs: 2000,
             maxDataPoints: 1779,
           },
@@ -243,8 +243,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     expr: string,
     from: number | string = 'now-15m',
     to: number | string = 'now',
-    refId?: RefId,
-    datasource?: DataSourceInstanceSettings
+    refId?: RefId
   ) {
     return this.fetchAPI<LokiQueryResults<RefId>>(`/api/ds/query`, {
       method: 'POST',
@@ -255,7 +254,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
             expr,
             queryType: 'range',
             // direction: 'backwards',
-            datasource,
+            datasource: this.getLogsDS(),
             intervalMs: 2000,
             maxDataPoints: 1779,
           },
