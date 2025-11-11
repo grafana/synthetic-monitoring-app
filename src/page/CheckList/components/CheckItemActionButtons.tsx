@@ -18,12 +18,21 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
   const { canReadChecks, canWriteChecks, canDeleteChecks } = getUserPermissions();
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const { mutate: deleteCheck } = useDeleteCheck();
   const { mutate: updateCheck } = useUpdateCheck();
 
-  const handleToggleEnabled = useCallback(() => {
-    updateCheck({ ...check, enabled: !check.enabled });
+  const handleToggleEnabled = useCallback(async () => {
+    setIsPending(true);
+    await updateCheck(
+      { ...check, enabled: !check.enabled },
+      {
+        onSuccess: () => {
+          setIsPending(false);
+        },
+      }
+    );
   }, [check, updateCheck]);
 
   return (
@@ -47,9 +56,9 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
       )}
       <IconButton
         tooltip={check.enabled ? 'Disable check' : 'Enable check'}
-        name={check.enabled ? 'pause' : 'play'}
+        name={isPending ? `fa fa-spinner` : check.enabled ? 'pause' : 'play'}
         onClick={handleToggleEnabled}
-        disabled={!canWriteChecks}
+        disabled={!canWriteChecks || isPending}
       />
       <LinkButton
         data-testid="edit-check-button"
