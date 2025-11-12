@@ -1,5 +1,6 @@
 import http from 'k6/http'
-import { check, sleep } from 'k6'
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js'
+import { sleep } from 'k6'
 
 const soapReqBody = `
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:hs="http://www.holidaywebservice.com/HolidayService_v2/">
@@ -23,10 +24,8 @@ export default function () {
   )
 
   // Make sure the response is correct
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'black friday is present': (r) => r.body.indexOf('BLACK-FRIDAY') !== -1,
-  })
+  expect(res.status).toBe(200)
+  expect(res.body).toContain('BLACK-FRIDAY')
 
   sleep(1)
 }

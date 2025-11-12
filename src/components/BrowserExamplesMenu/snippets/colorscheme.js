@@ -1,4 +1,4 @@
-import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -36,9 +36,7 @@ export default async function() {
         isDarkColorScheme: window.matchMedia('(prefers-color-scheme: dark)').matches
       };
     });
-    await check(colorScheme, {
-      'isDarkColorScheme': cs => cs.isDarkColorScheme
-    });
+    expect(colorScheme.isDarkColorScheme).toBeTruthy();
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

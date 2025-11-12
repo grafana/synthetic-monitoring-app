@@ -1,5 +1,5 @@
 import { browser } from 'k6/experimental/browser';
-import { check } from 'k6';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 
 export const options = {
   scenarios: {
@@ -32,9 +32,7 @@ export default async function () {
 
     await Promise.all([page.waitForNavigation(), submitButton.click()]);
 
-    check(page, {
-      header: (p) => p.locator('h2').textContent() === 'Welcome, admin!',
-    });
+    await expect(page.locator('h2')).toHaveText('Welcome, admin!');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

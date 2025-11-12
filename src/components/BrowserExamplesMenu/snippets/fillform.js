@@ -1,5 +1,5 @@
 import { browser } from 'k6/browser';
-import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 
 export const options = {
   scenarios: {
@@ -35,19 +35,11 @@ export default async function () {
     // to resolve.
     await Promise.all([page.waitForNavigation(), page.locator('input[type="submit"]').click()]);
 
-    await check(page.locator('h2'), {
-      header: async (element) => {
-        return (await element.textContent()) == 'Welcome, admin!';
-      },
-    });
+    await expect(page.locator('h2')).toHaveText('Welcome, admin!');
 
     // Check whether we receive cookies from the logged site.
-    await check(context, {
-      'session cookie is set': async (ctx) => {
-        const cookies = await ctx.cookies();
-        return cookies.find((c) => c.name == 'sid') !== undefined;
-      },
-    });
+    const cookies = await context.cookies();
+    expect(cookies.find((c) => c.name == 'sid')).toBeTruthy();
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

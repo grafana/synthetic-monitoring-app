@@ -1,4 +1,4 @@
-import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -27,9 +27,7 @@ export default async function () {
     const contacts = page.locator('a[href="/contacts.php"]');
     await contacts.dispatchEvent('click');
 
-    await check(page.locator('h3'), {
-      header: async (locator) => (await locator.textContent()) === 'Contact us',
-    });
+    await expect(page.locator('h3')).toHaveText('Contact us');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

@@ -3,7 +3,8 @@ import {
   randomIntBetween,
 } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js'
 import ws from 'k6/ws'
-import { check, sleep } from 'k6'
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js'
+import { sleep } from 'k6'
 
 const sessionDuration = randomIntBetween(10000, 60000) // user session between 10s and 1m
 
@@ -64,6 +65,6 @@ export default function () {
     }, sessionDuration + 3000)
   })
 
-  check(res, { 'Connected successfully': (r) => r && r.status === 101 })
+  expect(res.status).toBe(101)
   sleep(1)
 }

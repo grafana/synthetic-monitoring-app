@@ -1,5 +1,5 @@
 import http from 'k6/http'
-import { check } from 'k6'
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js'
 
 export const options = {}
 
@@ -19,10 +19,7 @@ export default function () {
   // path, HTTPS (secure) and will happen within the specified "age" limit, the
   // cookie will be attached to this request.
   const res = http.get('https://quickpizza.grafana.com/api/cookies')
-  check(res, {
-    'has status 200': (r) => r.status === 200,
-    "has cookie 'my_cookie'": (r) => r.json().cookies.my_cookie !== null,
-    'cookie has correct value': (r) =>
-      r.json().cookies.my_cookie === 'hello world',
-  })
+  expect(res.status).toBe(200)
+  expect(res.json().cookies.my_cookie).not.toBeNull()
+  expect(res.json().cookies.my_cookie).toBe('hello world')
 }
