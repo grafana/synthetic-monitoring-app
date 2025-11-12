@@ -2,8 +2,10 @@ import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackDuplicateCheckButtonClicked } from 'features/tracking/checkListEvents';
 
 import { Check } from 'types';
+import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
@@ -75,7 +77,11 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         data-testid="duplicate-check-button"
         tooltip="Duplicate check"
         name="copy"
-        onClick={() => duplicateCheck(check)}
+        onClick={() => {
+          const checkType = getCheckType(check.settings);
+          trackDuplicateCheckButtonClicked({ checkType });
+          duplicateCheck(check);
+        }}
         disabled={!canWriteChecks}
       />
       <IconButton
