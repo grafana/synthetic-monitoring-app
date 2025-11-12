@@ -8,6 +8,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useDeleteCheck, useUpdateCheck } from 'data/useChecks';
+import { useDuplicateCheck } from 'hooks/useDuplicateCheck';
 
 interface CheckItemActionButtonsProps {
   check: Check;
@@ -21,6 +22,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
   const [isPending, setIsPending] = useState(false);
 
   const { mutate: deleteCheck } = useDeleteCheck();
+  const { duplicateCheck } = useDuplicateCheck();
   const { mutate: updateCheck } = useUpdateCheck();
 
   const handleToggleEnabled = useCallback(async () => {
@@ -68,6 +70,13 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         disabled={!canWriteChecks}
         variant="secondary"
         fill={`text`}
+      />
+      <IconButton
+        data-testid="duplicate-check-button"
+        tooltip="Duplicate check"
+        name="copy"
+        onClick={() => duplicateCheck(check)}
+        disabled={!canWriteChecks}
       />
       <IconButton
         tooltip="Delete check"

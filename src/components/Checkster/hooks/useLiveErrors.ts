@@ -15,7 +15,7 @@ export function useLiveErrors() {
   const [allErrors, setAllErrors] = useState<string[]>([]);
 
   useEffect(() => {
-    // Wait for event loop, so that form state has time to update when switching check type
+    // Wait for event loop, so that the form state has time to update when switching check type
     const timeout = setTimeout(() => {
       const currentFieldErrors = getAllErrorFields(schema, getValues());
       setAllErrors((prevState) => {
