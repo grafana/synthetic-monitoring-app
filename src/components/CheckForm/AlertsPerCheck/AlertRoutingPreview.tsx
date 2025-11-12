@@ -116,8 +116,21 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
       <AlertLabelsDisplay alertLabels={alertLabels} highlightMatchers={highlightMatchers} />
 
       <div className={styles.section}>
-        <div className={styles.successRow}>
-          <Text variant="body">Matching notification policies:</Text>
+        <div className={styles.sectionHeader}>
+          <Text variant="body">
+            <strong>Matching notification policies</strong>
+          </Text>
+
+          <div className={styles.infoSection}>
+            <Text variant="body" color="secondary">
+              Notification policies determine which contact point receives this alert based on the labels shown above.
+              To change where alerts are sent,{' '}
+              <TextLink href="/alerting/routes" external={true} variant="body">
+                configure notification policies
+              </TextLink>{' '}
+              in the Alerting section.
+            </Text>
+          </div>
         </div>
 
         <div className={styles.routeTreeSection}>
@@ -132,21 +145,28 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
                     notification policy, which handles all alerts that don&apos;t match any specific routing rules.
                   </Text>
                   {defaultPolicyInfo && (
-                    <div className={styles.defaultPolicyDetails}>
+                    <div className={styles.defaultContactPoint}>
+                      <Icon name="arrow-right" size="sm" />
                       <Text variant="bodySmall">
-                        <strong>Default contact point:</strong>{' '}
-                        <TextLink
-                          href={`/alerting/notifications/receivers/${encodeReceiverForUrl(
-                            defaultPolicyInfo.receiverName
-                          )}/edit`}
-                          external={true}
-                          variant="bodySmall"
-                        >
-                          {defaultPolicyInfo.receiverName}
-                        </TextLink>
+                        <strong>Sent to</strong>
                       </Text>
+                      <TextLink
+                        href={`/alerting/notifications/receivers/${encodeReceiverForUrl(
+                          defaultPolicyInfo.receiverName
+                        )}/edit`}
+                        external={true}
+                        variant="bodySmall"
+                        className={styles.contactPointLink}
+                      >
+                        {defaultPolicyInfo.receiverName}
+                      </TextLink>
                     </div>
                   )}
+                  <div className={styles.configureLink}>
+                    <TextLink href="/alerting/routes" external={true} variant="body">
+                      Configure notification policies to route to a different contact point
+                    </TextLink>
+                  </div>
                 </div>
               </Alert>
             </div>
@@ -188,8 +208,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
     },
   }),
 
-  successRow: css({
-    marginBottom: theme.spacing(1),
+  sectionHeader: css({
+    marginBottom: theme.spacing(1.5),
+  }),
+
+  infoSection: css({
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(2),
   }),
 
   routeTreeSection: css({
@@ -200,50 +225,24 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginTop: theme.spacing(1),
   }),
 
-  contactPointsList: css({
-    marginTop: theme.spacing(1),
-    marginLeft: theme.spacing(2),
-  }),
-
-  contactPointItem: css({
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing(1),
-    marginBottom: theme.spacing(0.5),
-    backgroundColor: theme.colors.background.primary,
-    border: `1px solid ${theme.colors.border.weak}`,
-    borderRadius: theme.shape.radius.default,
-    '&:last-child': {
-      marginBottom: 0,
-    },
-  }),
-
-  contactPointInfo: css({
-    flex: 1,
-  }),
-
-  actionsSection: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-    marginTop: theme.spacing(1.5),
-  }),
-
-  receiversSummary: css({
+  defaultContactPoint: css({
     marginTop: theme.spacing(2),
-    padding: theme.spacing(1.5),
-    backgroundColor: theme.colors.background.secondary,
-    border: `1px solid ${theme.colors.border.weak}`,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
+    border: `1px solid ${theme.colors.border.strong}`,
     borderRadius: theme.shape.radius.default,
+    backgroundColor: theme.colors.emphasize(theme.colors.background.primary, 0.03),
   }),
 
-  defaultPolicyDetails: css({
-    marginTop: theme.spacing(1.5),
-    paddingTop: theme.spacing(1.5),
+  contactPointLink: css({
+    fontWeight: theme.typography.fontWeightBold,
+  }),
+
+  configureLink: css({
+    marginTop: theme.spacing(2),
+    paddingTop: theme.spacing(2),
     borderTop: `1px solid ${theme.colors.border.weak}`,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
   }),
 });
