@@ -136,7 +136,7 @@
     "react-data-table-component": "^7.5.4",
     "react-dom": "18.2.0",
     "react-error-boundary": "6.0.0",
-    "react-hook-form": "7.65.0",
+    "react-hook-form": "7.66.0",
     "react-popper": "^2.2.5",
     "react-router-dom": "^5.2.0",
     "react-router-dom-v5-compat": "^6.27.0",
