@@ -549,3 +549,5 @@ export const ASSISTED_FORM_MERGE_FIELDS = ['job', 'target', 'probes', 'frequency
 // Css
 export const CSS_PRIMARY_CONTAINER_NAME = 'checkEditor-primary-container';
 export const FIELD_SPACING = 2;
+
+export const SECONDARY_CONTAINER_ID = 'checkEditor-secondary-container';

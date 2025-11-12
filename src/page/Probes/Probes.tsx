@@ -24,7 +24,12 @@ export const Probes = () => {
           Probes are the agents responsible for emulating user interactions and collecting data from your specified
           targets across different global locations.
         </p>
-        <DocsLink article="probes">Learn more about probes</DocsLink>
+        <DocsLink
+          href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/public-probes/"
+          source="probes_page_intro"
+        >
+          Learn more about probes
+        </DocsLink>
       </div>
       <QueryErrorBoundary>
         <ProbesContent />
@@ -94,7 +99,13 @@ const PrivateProbesEmptyText = () => {
   return (
     <>
       <div>No private probes have been added yet.</div>
-      Read more about <DocsLink article="privateProbes">private probes in our documentation.</DocsLink>
+      Read more about{' '}
+      <DocsLink
+        href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/"
+        source="private_probes_empty_text"
+      >
+        private probes in our documentation.
+      </DocsLink>
     </>
   );
 };

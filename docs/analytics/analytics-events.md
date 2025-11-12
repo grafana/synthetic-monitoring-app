@@ -84,6 +84,16 @@ Tracks when a check is successfully updated.
 | --------- | -------------------------------------------------------------------------------------------------------- | ------------------ |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check. |
 
+#### synthetic-monitoring_check_form_need_help_scripts_button_clicked
+
+Tracks when the 'need help writing scripts' button is clicked.
+
+##### Properties
+
+| name   | type     | description                      |
+| ------ | -------- | -------------------------------- |
+| source | `string` | The source of the clicked button |
+
 ### feature_feedback
 
 #### synthetic-monitoring_feature_feedback_feature_feedback_submitted
@@ -108,6 +118,22 @@ Tracks when a feature feedback comment is submitted.
 | feature  | `string`          | The type of feature.         |
 | reaction | `"good" \| "bad"` | The reaction to the feature. |
 | comment  | `string`          | The comment text.            |
+
+### link
+
+#### synthetic-monitoring_link_clicked
+
+Tracks when a link is clicked.
+
+##### Properties
+
+| name     | type     | description                      |
+| -------- | -------- | -------------------------------- |
+| href     | `string` | The href of the clicked link     |
+| hostname | `string` | The hostname of the clicked link |
+| path     | `string` | The path of the clicked link     |
+| search   | `string` | The search of the clicked link   |
+| source   | `string` | Where the link was clicked from  |
 
 ### per_check_alerts
 
