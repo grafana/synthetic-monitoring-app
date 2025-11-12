@@ -1,1 +1,1 @@
-export { NewCheck } from './NewCheck';
+export { NewCheckV2 } from './NewCheckV2';
