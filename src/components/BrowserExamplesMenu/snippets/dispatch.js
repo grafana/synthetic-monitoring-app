@@ -22,12 +22,12 @@ export default async function () {
   const page = await context.newPage();
 
   try {
-    await page.goto('https://test.k6.io/', { waitUntil: 'networkidle' });
+    await page.goto('https://quickpizza.grafana.com/');
 
-    const contacts = page.locator('a[href="/contacts.php"]');
+    const contacts = page.locator('a[href="/login"]');
     await contacts.dispatchEvent('click');
 
-    await expect(page.locator('h3')).toHaveText('Contact us');
+    await expect(page.locator('h1')).toHaveText('QuickPizza User Login');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

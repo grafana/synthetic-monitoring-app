@@ -22,7 +22,7 @@ export default async function () {
   const page = await context.newPage();
 
   try {
-    await page.goto('https://test.k6.io/', { waitUntil: 'load' });
+    await page.goto('https://quickpizza.grafana.com/');
 
     // calling evaluate without arguments
     let result = await page.evaluate(() => {

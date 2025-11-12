@@ -22,13 +22,13 @@ export default async function () {
   const page = await context.newPage();
 
   try {
-    await page.goto('https://test.k6.io/');
+    await page.goto('https://quickpizza.grafana.com/');
 
-    const title = 'test.k6.io';
+    const title = 'Looking to break out of your pizza routine?';
 
-    await expect(page.locator('header h1.title')).toHaveText(title);
+    await expect(page.locator('h1')).toContainText(title);
 
-    await expect(page.locator(`//header//h1[@class="title"]`)).toHaveText(title);
+    await expect(page.locator(`//h1`)).toContainText(title);
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

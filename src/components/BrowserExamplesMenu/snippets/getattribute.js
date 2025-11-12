@@ -22,9 +22,7 @@ export default async function () {
   const page = await context.newPage();
 
   try {
-    await page.goto('https://googlechromelabs.github.io/dark-mode-toggle/demo/', {
-      waitUntil: 'load',
-    });
+    await page.goto('https://googlechromelabs.github.io/dark-mode-toggle/demo/');
 
     await expect(page.locator('#dark-mode-toggle-3')).toHaveAttribute('mode', 'light');
   } catch (e) {
