@@ -5,9 +5,9 @@ import { css } from '@emotion/css';
 import { trackNeedHelpScriptsButtonClicked } from 'features/tracking/checkFormEvents';
 
 import { CheckType } from '../../../../../types';
+import { K6ChannelSelect } from 'components/CheckEditor/FormComponents/K6ChannelSelect';
 import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
 import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
-import { K6ChannelSelect } from 'components/CheckEditor/FormComponents/K6ChannelSelect';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';

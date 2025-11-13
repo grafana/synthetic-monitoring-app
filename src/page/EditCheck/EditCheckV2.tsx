@@ -7,6 +7,7 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckPageParams } from 'types';
+import { isBrowserCheck, isScriptedCheck } from 'utils.types';
 import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
@@ -19,7 +20,6 @@ import { CenteredSpinner } from 'components/CenteredSpinner';
 import { Checkster } from 'components/Checkster';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { FormSectionName } from 'components/Checkster/types';
-import { isBrowserCheck, isScriptedCheck } from 'utils.types';
 
 import { getUserPermissions } from '../../data/permissions';
 
