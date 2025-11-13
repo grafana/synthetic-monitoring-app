@@ -4,7 +4,6 @@ import { Stack, TextLink } from '@grafana/ui';
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesScripted, CheckType } from 'types';
 import { ScriptedFields } from 'components/CheckEditor/CheckEditor.types';
-import { K6ChannelSelect } from 'components/CheckEditor/FormComponents/K6ChannelSelect';
 import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
 import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
@@ -16,9 +15,6 @@ export const SCRIPTED_CHECK_FIELDS: ScriptedFields = {
   target: {
     name: `target`,
   },
-  channel: {
-    name: `settings.scripted.channel`,
-  },
 };
 
 export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesScripted>>> = {
@@ -27,7 +23,6 @@ export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFor
     Component: (
       <>
         <ScriptedCheckInstance />
-        <K6ChannelSelect />
         <ScriptedCheckScript />
       </>
     ),

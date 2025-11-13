@@ -7,6 +7,7 @@ import { trackNeedHelpScriptsButtonClicked } from 'features/tracking/checkFormEv
 import { CheckType } from '../../../../../types';
 import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
 import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
+import { K6ChannelSelect } from 'components/CheckEditor/FormComponents/K6ChannelSelect';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
@@ -24,7 +25,7 @@ interface ScriptedCheckSectionProps {
   examples?: ExampleScript[];
 }
 
-export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'settings.scripted.script'];
+export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'settings.scripted.channel', 'settings.scripted.script'];
 
 // Don't set label here, set it explicitly, where the component is used (for readability)
 export function ScriptedCheckContent({
@@ -40,6 +41,7 @@ export function ScriptedCheckContent({
       <Column gap={FIELD_SPACING} padding={theme.spacing(0, 2)}>
         <FormJobField field="job" />
         <FormInstanceField field="target" />
+        <K6ChannelSelect />
       </Column>
       <Column fill>
         <FormTabs actions={<HelpButton />}>

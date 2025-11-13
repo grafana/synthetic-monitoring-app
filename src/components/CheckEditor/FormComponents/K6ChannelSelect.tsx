@@ -4,7 +4,7 @@ import { Combobox, Field, Stack } from '@grafana/ui';
 
 import { CheckFormValues, FeatureName } from 'types';
 import { useFilteredK6Channels } from 'data/useK6Channels';
-import { useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
+import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
@@ -33,7 +33,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 
 function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   const { control, getValues } = useFormContext<CheckFormValues>();
-  const { check } = useCheckFormMetaContext();
+  const { check } = useChecksterContext();
   const id = 'k6-channel-select';
 
   const checkType = getValues('checkType');
