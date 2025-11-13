@@ -21,14 +21,18 @@ export default async function () {
     await page.goto('https://quickpizza.grafana.com/');
 
     // Wait for the login link to be available
-    await page.locator('a[href="/login"]').waitFor();
-    
+    const loginLink = page.locator('a[href="/login"]');
+    await loginLink.waitFor();
+
     // Obtain ElementHandle for login link and navigate to it
     // by clicking in the 'a' element's bounding box
-    const loginLink = await page.$('a[href="/login"]');
-    const loginLinkBox = await loginLink.boundingBox();
+    const loginLinkElement = await page.$('a[href="/login"]');
+    const loginLinkBox = await loginLinkElement.boundingBox();
 
-    await Promise.all([page.waitForNavigation(), page.mouse.click(loginLinkBox.x + loginLinkBox.width / 2, loginLinkBox.y)]);
+    await Promise.all([
+      page.waitForNavigation(),
+      page.mouse.click(loginLinkBox.x + loginLinkBox.width / 2, loginLinkBox.y),
+    ]);
 
     await expect(page.locator('h1')).toContainText('QuickPizza User Login');
   } catch (e) {

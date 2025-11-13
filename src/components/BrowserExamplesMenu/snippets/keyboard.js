@@ -15,26 +15,27 @@ export const options = {
 };
 
 export default async function () {
-  const page = await browser.newPage();
+  const context = await browser.newContext();
+  const page = await context.newPage();
 
   try {
     await page.goto('https://quickpizza.grafana.com/admin');
 
-   
     const userInput = page.locator('#username');
+    await userInput.fill('');
     await userInput.click();
     await page.keyboard.type('admin');
 
     const pwdInput = page.locator('#password');
+    await pwdInput.fill('');
     await pwdInput.click();
     await page.keyboard.type('admin');
 
     await page.locator('button').click();
 
     const heading = page.locator('//h2');
-    await heading.waitFor({ state: "visible", timeout: 5000 });
-    await expect(heading).toContainText("Latest pizza recommendations");
-    
+    await heading.waitFor({ state: 'visible', timeout: 5000 });
+    await expect(heading).toContainText('Latest pizza recommendations');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

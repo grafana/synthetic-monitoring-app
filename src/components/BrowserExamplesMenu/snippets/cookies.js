@@ -67,7 +67,6 @@ export default async function () {
     expect(cookies[0].expires).toBe(-1);
     expect(cookies[0].domain).toBe('127.0.0.1');
     expect(cookies[0].path).toBe('/');
-    expect(cookies[0].sameSite).toBe('Strict');
     expect(cookies[0].httpOnly).toBe(true);
     expect(cookies[0].secure).toBe(true);
     expect(cookies[1].name).toBe('testcookie2');

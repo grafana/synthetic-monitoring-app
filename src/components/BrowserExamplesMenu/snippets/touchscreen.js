@@ -21,12 +21,13 @@ export default async function () {
     await page.goto('https://quickpizza.grafana.com/');
 
     // Wait for the login link to be available
-    await page.locator('a[href="/login"]').waitFor();
-    
+    const loginLink = page.locator('a[href="/login"]');
+    await loginLink.waitFor();
+
     // Obtain ElementHandle for login link and navigate to it
     // by tapping in the 'a' element's bounding box
-    const loginLink = await page.$('a[href="/login"]');
-    const loginLinkBox = await loginLink.boundingBox();
+    const loginLinkElement = await page.$('a[href="/login"]');
+    const loginLinkBox = await loginLinkElement.boundingBox();
 
     // Wait until the navigation is done before closing the page.
     // Otherwise, there will be a race condition between the page closing
