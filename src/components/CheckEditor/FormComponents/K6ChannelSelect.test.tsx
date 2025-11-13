@@ -140,7 +140,6 @@ describe('K6ChannelSelect', () => {
           name: 'v1',
           default: true,
           deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
-          disabledAfter: '2026-12-31T00:00:00Z',
           manifest: 'k6>=1,k6<2',
         },
         {
@@ -148,7 +147,6 @@ describe('K6ChannelSelect', () => {
           name: 'deprecated',
           default: false,
           deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
-          disabledAfter: '2027-12-31T00:00:00Z',
           manifest: 'k6>=0.5,k6<1',
         },
       ],
@@ -188,7 +186,6 @@ describe('K6ChannelSelect', () => {
           name: 'v1',
           default: true,
           deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
-          disabledAfter: '2026-12-31T00:00:00Z',
           manifest: 'k6>=1,k6<2',
         },
         {
@@ -196,7 +193,6 @@ describe('K6ChannelSelect', () => {
           name: 'deprecated',
           default: false,
           deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
-          disabledAfter: '2027-12-31T00:00:00Z',
           manifest: 'k6>=0.5,k6<1',
         },
       ],
@@ -234,163 +230,4 @@ describe('K6ChannelSelect', () => {
     });
   });
 
-  it('should hide disabled channels for new checks', async () => {
-    mockFeatureToggles({
-      [FeatureName.VersionManagement]: true,
-    });
-    
-    const channelsWithDisabled = {
-      channels: [
-        {
-          id: 'v1',
-          name: 'v1',
-          default: true,
-          deprecatedAfter: '2025-12-31T00:00:00Z',
-          disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
-          manifest: 'k6>=1,k6<2',
-        },
-        {
-          id: 'disabled',
-          name: 'disabled',
-          default: false,
-          deprecatedAfter: '2025-12-31T00:00:00Z',
-          disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
-          manifest: 'k6>=0.5,k6<1',
-        },
-      ],
-    };
-
-    server.use(
-      apiRoute('listK6Channels', { 
-        result: () => ({ json: channelsWithDisabled }) 
-      })
-    );
-
-    render(
-      <FormWrapper>
-        <K6ChannelSelect />
-      </FormWrapper>
-    );
-
-    await waitFor(() => {
-      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
-      const options = Array.from(combobox.options);
-      
-      expect(options.some(opt => opt.value === 'v1')).toBe(true);
-      expect(options.some(opt => opt.value === 'disabled')).toBe(false);
-    });
-  });
-
-  it('should show disabled channel for existing checks if it was previously assigned', async () => {
-    mockFeatureToggles({
-      [FeatureName.VersionManagement]: true,
-    });
-    
-    const channelsWithDisabled = {
-      channels: [
-        {
-          id: 'v1',
-          name: 'v1',
-          default: true,
-          deprecatedAfter: '2025-12-31T00:00:00Z',
-          disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
-          manifest: 'k6>=1,k6<2',
-        },
-        {
-          id: 'disabled',
-          name: 'disabled',
-          default: false,
-          deprecatedAfter: '2025-12-31T00:00:00Z',
-          disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
-          manifest: 'k6>=0.5,k6<1',
-        },
-      ],
-    };
-
-    const existingCheck = { 
-      id: 1,
-      settings: { 
-        browser: { 
-          script: 'test script',
-          channel: 'disabled' 
-        } 
-      } 
-    };
-
-    server.use(
-      apiRoute('listK6Channels', { 
-        result: () => ({ json: channelsWithDisabled }) 
-      })
-    );
-
-    render(
-      <FormWrapper check={existingCheck} checkType={CheckType.Browser}>
-        <K6ChannelSelect />
-      </FormWrapper>
-    );
-
-    await waitFor(() => {
-      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
-      const options = Array.from(combobox.options);
-      
-      expect(options.some(opt => opt.value === 'v1')).toBe(true);
-      expect(options.some(opt => opt.value === 'disabled')).toBe(true);
-    });
-  });
-
-  it('should hide both deprecated and disabled channels for new checks', async () => {
-    mockFeatureToggles({
-      [FeatureName.VersionManagement]: true,
-    });
-    
-    const channelsWithBoth = {
-      channels: [
-        {
-          id: 'v1',
-          name: 'v1',
-          default: true,
-          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
-          disabledAfter: '2026-12-31T00:00:00Z', // Not disabled
-          manifest: 'k6>=1,k6<2',
-        },
-        {
-          id: 'deprecated',
-          name: 'deprecated',
-          default: false,
-          deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
-          disabledAfter: '2027-12-31T00:00:00Z', // Not disabled
-          manifest: 'k6>=0.5,k6<1',
-        },
-        {
-          id: 'disabled',
-          name: 'disabled',
-          default: false,
-          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
-          disabledAfter: '2020-01-01T00:00:00Z', // Already disabled
-          manifest: 'k6>=0.3,k6<1',
-        },
-      ],
-    };
-
-    server.use(
-      apiRoute('listK6Channels', { 
-        result: () => ({ json: channelsWithBoth }) 
-      })
-    );
-
-    render(
-      <FormWrapper>
-        <K6ChannelSelect />
-      </FormWrapper>
-    );
-
-    await waitFor(() => {
-      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
-      const options = Array.from(combobox.options);
-      
-      expect(options.some(opt => opt.value === 'v1')).toBe(true);
-      expect(options.some(opt => opt.value === 'deprecated')).toBe(false);
-      expect(options.some(opt => opt.value === 'disabled')).toBe(false);
-    });
-  });
 });

@@ -899,7 +899,6 @@ export interface K6Channel {
   name: string;
   default: boolean;
   deprecatedAfter: string;
-  disabledAfter: string;
   manifest: string; // "k6>=1", "k6>1,k6>=0.53"
 }
 

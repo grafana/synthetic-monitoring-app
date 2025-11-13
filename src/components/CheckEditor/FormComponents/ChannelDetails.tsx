@@ -19,7 +19,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
 
   // Show default message when no specific channel is selected
   // This happens when no channels are available or when all channels are filtered out
-  // (e.g., all are deprecated/disabled for new checks)
+  // (e.g., all are deprecated for new checks)
   if (!validChannelId) {
     return (
       <Text variant="bodySmall" color="secondary">
@@ -34,7 +34,6 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
   }
 
   const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
-  const isDisabled = new Date(channel.disabledAfter) < new Date();
 
   return (
     <Stack direction="column" gap={1}>
@@ -60,7 +59,7 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
         </Text>
       )}
 
-      {isDeprecated && !isDisabled && (
+      {isDeprecated && (
         <Alert severity="warning" title="Deprecated Channel">
           This channel is deprecated since {dateTimeFormat(new Date(channel.deprecatedAfter))}. Consider migrating to a
           newer channel.

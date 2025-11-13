@@ -51,7 +51,7 @@ export function useCurrentK6Version(enabled: boolean, channelId?: string) {
   return useQuery(currentVersionQuery(smDS, channelId || '', enabled));
 }
 
-// Filter channels based on deprecation/disabled status
+// Filter channels based on deprecation status
 export function getFilteredChannels(
   channels: K6Channel[],
   isExistingCheck: boolean,
@@ -63,7 +63,6 @@ export function getFilteredChannels(
 
   return channels.filter((channel) => {
     const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
-    const isDisabled = new Date(channel.disabledAfter) < new Date();
 
     // Skip deprecated channels for new checks
     if (isDeprecated && !isExistingCheck) {
@@ -72,16 +71,6 @@ export function getFilteredChannels(
 
     // Skip deprecated channels for existing checks unless it was previously assigned
     if (isDeprecated && isExistingCheck && channel.id !== previousChannelId) {
-      return false;
-    }
-
-    // Skip disabled channels for new checks
-    if (isDisabled && !isExistingCheck) {
-      return false;
-    }
-
-    // Skip disabled channels for existing checks unless it was previously assigned
-    if (isDisabled && isExistingCheck && channel.id !== previousChannelId) {
       return false;
     }
 

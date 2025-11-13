@@ -10,15 +10,6 @@ describe('K6 Channel Validation', () => {
       name: 'enabled',
       default: false,
       deprecatedAfter: '2025-12-31T00:00:00Z',
-      disabledAfter: '2025-12-31T00:00:00Z',
-      manifest: 'k6>=1,k6<2',
-    },
-    {
-      id: 'disabled-channel',
-      name: 'disabled',
-      default: false,
-      deprecatedAfter: '2025-12-31T00:00:00Z',
-      disabledAfter: '2020-01-01T00:00:00Z', // Disabled in the past
       manifest: 'k6>=1,k6<2',
     },
   ];
@@ -46,23 +37,6 @@ describe('K6 Channel Validation', () => {
     it('should pass validation when channel is enabled', () => {
       const schema = createScriptedCheckSchema(mockK6Channels);
       expect(() => schema.parse(validScriptedCheck)).not.toThrow();
-    });
-
-    it('should fail validation when channel is disabled', () => {
-      const schema = createScriptedCheckSchema(mockK6Channels);
-      const invalidCheck = {
-        ...validScriptedCheck,
-        settings: {
-          scripted: {
-            ...validScriptedCheck.settings.scripted,
-            channel: 'disabled-channel',
-          },
-        },
-      };
-
-      expect(() => schema.parse(invalidCheck)).toThrow(
-        /The selected k6 channel is disabled. Please select a different one./
-      );
     });
 
     it('should pass validation when channel is null', () => {
@@ -124,23 +98,6 @@ describe('K6 Channel Validation', () => {
     it('should pass validation when channel is enabled', () => {
       const schema = createBrowserCheckSchema(mockK6Channels);
       expect(() => schema.parse(validBrowserCheck)).not.toThrow();
-    });
-
-    it('should fail validation when channel is disabled', () => {
-      const schema = createBrowserCheckSchema(mockK6Channels);
-      const invalidCheck = {
-        ...validBrowserCheck,
-        settings: {
-          browser: {
-            ...validBrowserCheck.settings.browser,
-            channel: 'disabled-channel',
-          },
-        },
-      };
-
-      expect(() => schema.parse(invalidCheck)).toThrow(
-        /The selected k6 channel is disabled. Please select a different one./
-      );
     });
 
     it('should pass validation when channel is null', () => {

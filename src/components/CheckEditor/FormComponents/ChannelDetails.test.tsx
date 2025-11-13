@@ -23,7 +23,6 @@ describe('ChannelDetails', () => {
       name: 'v1',
       default: false,
       deprecatedAfter: '2025-12-31T00:00:00Z',
-      disabledAfter: '2026-12-31T00:00:00Z',
       manifest: 'k6>=1',
     },
     {
@@ -31,7 +30,6 @@ describe('ChannelDetails', () => {
       name: 'v2',
       default: true,
       deprecatedAfter: '2026-12-31T00:00:00Z',
-      disabledAfter: '2027-12-31T00:00:00Z',
       manifest: 'k6>=2',
     },
     {
@@ -39,7 +37,6 @@ describe('ChannelDetails', () => {
       name: 'deprecated',
       default: false,
       deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
-      disabledAfter: '2030-01-01T00:00:00Z', // Not yet disabled
       manifest: 'k6>=0.5',
     },
   ];
@@ -54,8 +51,8 @@ describe('ChannelDetails', () => {
     });
   });
 
-  it('should show probe default message when all channels are deprecated/disabled', async () => {
-    // This occurs when the backend returns channels but they are all deprecated/disabled,
+  it('should show probe default message when all channels are deprecated', async () => {
+    // This occurs when the backend returns channels but they are all deprecated,
     // so after filtering, no channels are available for new checks
     const allDeprecatedChannels: K6Channel[] = [
       {
@@ -63,7 +60,6 @@ describe('ChannelDetails', () => {
         name: 'old-v1',
         default: true,
         deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
-        disabledAfter: '2026-12-31T00:00:00Z',
         manifest: 'k6>=1,k6<2',
       },
       {
@@ -71,7 +67,6 @@ describe('ChannelDetails', () => {
         name: 'old-v2',
         default: false,
         deprecatedAfter: '2021-01-01T00:00:00Z', // Already deprecated
-        disabledAfter: '2027-12-31T00:00:00Z',
         manifest: 'k6>=2,k6<3',
       },
     ];

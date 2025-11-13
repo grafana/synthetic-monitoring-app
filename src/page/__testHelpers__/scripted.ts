@@ -44,7 +44,6 @@ export const mockChannelsResponse = {
       name: 'v1',
       default: true,
       deprecatedAfter: '2025-12-31T00:00:00Z',
-      disabledAfter: '2026-12-31T00:00:00Z',
       manifest: 'k6>=1,k6<2',
     },
     {
@@ -52,7 +51,6 @@ export const mockChannelsResponse = {
       name: 'v2',
       default: false,
       deprecatedAfter: '2026-12-31T00:00:00Z',
-      disabledAfter: '2027-12-31T00:00:00Z',
       manifest: 'k6>=2',
     },
   ],
