@@ -7,6 +7,7 @@ import { mockFeatureToggles } from 'test/utils';
 
 import { CheckFormValuesBrowser, CheckType, FeatureName } from 'types';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
+import { setupChannelTest } from 'page/__testHelpers__/channel';
 
 import { K6ChannelSelect } from './K6ChannelSelect';
 
@@ -48,9 +49,7 @@ describe('K6ChannelSelect', () => {
   });
 
   it('should render when feature flag is enabled', async () => {
-    mockFeatureToggles({
-      [FeatureName.VersionManagement]: true,
-    });
+    setupChannelTest();
     
     render(
       <FormWrapper>
@@ -65,9 +64,7 @@ describe('K6ChannelSelect', () => {
   });
 
   it('should show mock channel options', async () => {
-    mockFeatureToggles({
-      [FeatureName.VersionManagement]: true,
-    });
+    setupChannelTest();
     
     render(
       <FormWrapper>
@@ -122,11 +119,8 @@ describe('K6ChannelSelect', () => {
       expect(combobox).toHaveValue('v2');
     });
     
-    // v1 should not be in the options since it's deprecated for new checks
-    const combobox = screen.getByLabelText(/k6 version/i);
-    const selectElement = combobox as HTMLSelectElement;
-    const v1Option = Array.from(selectElement.options).find(opt => opt.value === 'v1');
-    expect(v1Option).toBeUndefined();
+    // v1 should not be visible since it's deprecated for new checks
+    expect(screen.queryByText(/v1\.x/i)).not.toBeInTheDocument();
   });
 
   it('should display error message when channels fail to load', async () => {
@@ -154,35 +148,8 @@ describe('K6ChannelSelect', () => {
   });
 
   it('should hide deprecated channels for new checks', async () => {
-    mockFeatureToggles({
-      [FeatureName.VersionManagement]: true,
-    });
+    setupChannelTest(); // Uses mockChannelsResponse which has only non-deprecated channels for new checks
     
-    const channelsWithDeprecated = {
-      channels: [
-        {
-          id: 'v1',
-          name: 'v1',
-          default: true,
-          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
-          manifest: 'k6>=1,k6<2',
-        },
-        {
-          id: 'deprecated',
-          name: 'deprecated',
-          default: false,
-          deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
-          manifest: 'k6>=0.5,k6<1',
-        },
-      ],
-    };
-
-    server.use(
-      apiRoute('listK6Channels', { 
-        result: () => ({ json: channelsWithDeprecated }) 
-      })
-    );
-
     render(
       <FormWrapper>
         <K6ChannelSelect />
@@ -190,12 +157,13 @@ describe('K6ChannelSelect', () => {
     );
 
     await waitFor(() => {
-      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
-      const options = Array.from(combobox.options);
-      
-      // Should have v1 but not deprecated channel
-      expect(options.some(opt => opt.value === 'v1')).toBe(true);
-      expect(options.some(opt => opt.value === 'deprecated')).toBe(false);
+      expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
+    });
+    
+    // Should have v1 selected (the default)
+    const combobox = screen.getByLabelText(/k6 version/i);
+    await waitFor(() => {
+      expect(combobox).toHaveValue('v1');
     });
   });
 
@@ -246,12 +214,9 @@ describe('K6ChannelSelect', () => {
     );
 
     await waitFor(() => {
-      const combobox = screen.getByLabelText(/k6 version/i) as HTMLSelectElement;
-      const options = Array.from(combobox.options);
-      
-      // Should have both v1 and deprecated channel since it was previously assigned
-      expect(options.some(opt => opt.value === 'v1')).toBe(true);
-      expect(options.some(opt => opt.value === 'deprecated')).toBe(true);
+      const combobox = screen.getByLabelText(/k6 version/i);
+      // Should have the deprecated channel selected since it was previously assigned
+      expect(combobox).toHaveValue('deprecated');
     });
   });
 

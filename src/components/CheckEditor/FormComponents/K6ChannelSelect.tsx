@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { Combobox, Field, Stack } from '@grafana/ui';
 
@@ -50,6 +50,13 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     isError: hasChannelError, 
     error: channelError 
   } = useFilteredK6Channels(true, check); // Always true since this component only renders for scripted/browser
+
+  // Initialize with default channel when no channel is set (new checks or existing checks without channel)
+  useEffect(() => {
+    if (!field.value && defaultChannelId && !isLoadingChannels) {
+      field.onChange(defaultChannelId);
+    }
+  }, [field, defaultChannelId, isLoadingChannels]);
 
   // Throw error to be caught by QueryErrorBoundary if there's an error
   if (hasChannelError && channelError) {

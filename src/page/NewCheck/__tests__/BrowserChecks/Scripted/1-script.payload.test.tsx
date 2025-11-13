@@ -1,8 +1,8 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
-import { fillMandatoryFields, setupChannelTest, setupFormWithChannelSelector } from 'page/__testHelpers__/scripted';
+import { fillMandatoryFields } from 'page/__testHelpers__/scripted';
 
 const checkType = CheckType.Browser;
 
@@ -39,31 +39,6 @@ describe(`BrowserCheck - 1 (Script) payload`, () => {
     // it uses MonacoEditor, which is not supported by the current testing setup
   });
 
-  it(`can add a channel to the payload`, async () => {
-    setupChannelTest();
-    const { read, user } = await setupFormWithChannelSelector(checkType);
-    await submitForm(user);
-    const { body } = await read();
-    expect(body.settings.browser.channel).toBe('v1');
-  });
-
-  it(`can select and submit a non-default channel`, async () => {
-    setupChannelTest();
-    const { read, user, channelSelector } = await setupFormWithChannelSelector(checkType);
-    await user.selectOptions(channelSelector, 'v2');
-    await waitFor(() => {
-      expect(channelSelector).toHaveValue('v2');
-    });
-    await submitForm(user);
-    const { body } = await read();
-    expect(body.settings.browser.channel).toBe('v2');
-  });
-
-  it(`omits channel from payload when no channel is selected`, async () => {
-    const { read, user } = await renderNewForm(checkType);
-    await fillMandatoryFields({ user, fieldsToOmit: [], checkType });
-    await submitForm(user);
-    const { body } = await read();
-    expect(body.settings.browser).not.toHaveProperty('channel');
-  });
+  // Note: Channel tests have been moved to v2 test files (v2/browserChecks/browser/1-browser.payload.test.tsx)
+  // as the channel selector is only integrated with the new Checkster editor
 });
