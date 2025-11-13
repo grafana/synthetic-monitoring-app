@@ -1,39 +1,36 @@
 import React from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
 import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 import { mockFeatureToggles } from 'test/utils';
 
-import { CheckFormValues, CheckFormValuesBrowser, CheckType, FeatureName } from 'types';
-import { useCheckFormMetaContext } from 'components/CheckForm/CheckFormContext';
+import { CheckFormValuesBrowser, CheckType, FeatureName } from 'types';
+import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 
 import { K6ChannelSelect } from './K6ChannelSelect';
 
-jest.mock('components/CheckForm/CheckFormContext');
-
-const mockUseCheckFormMetaContext = useCheckFormMetaContext as jest.Mock;
-
-const FormWrapper = ({ children, defaultValues }: { children: React.ReactNode; defaultValues?: Partial<CheckFormValuesBrowser> }) => {
-  const form = useForm<CheckFormValues>({ 
-    defaultValues: {
-      ...defaultValues,
-      checkType: CheckType.Browser,
-    }
-  });
-  return <FormProvider {...form}>{children}</FormProvider>;
+const FormWrapper = ({ 
+  children, 
+  defaultValues,
+  check,
+  checkType = CheckType.Browser 
+}: { 
+  children: React.ReactNode; 
+  defaultValues?: Partial<CheckFormValuesBrowser>;
+  check?: any;
+  checkType?: CheckType;
+}) => {
+  return (
+    <ChecksterProvider checkType={checkType} check={check} k6Channels={[]}>
+      {children}
+    </ChecksterProvider>
+  );
 };
 
 describe('K6ChannelSelect', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    mockUseCheckFormMetaContext.mockReturnValue({
-      check: undefined,
-      isExistingCheck: false,
-      getIsExistingCheck: () => false,
-    });
   });
 
   it('should not render when feature flag is disabled', () => {
@@ -205,18 +202,15 @@ describe('K6ChannelSelect', () => {
       ],
     };
 
-    mockUseCheckFormMetaContext.mockReturnValue({
-      check: { 
-        settings: { 
-          browser: { 
-            script: 'test script',
-            channel: 'deprecated' 
-          } 
+    const existingCheck = { 
+      id: 1,
+      settings: { 
+        browser: { 
+          script: 'test script',
+          channel: 'deprecated' 
         } 
-      },
-      isExistingCheck: true,
-      getIsExistingCheck: () => true,
-    });
+      } 
+    };
 
     server.use(
       apiRoute('listK6Channels', { 
@@ -225,7 +219,7 @@ describe('K6ChannelSelect', () => {
     );
 
     render(
-      <FormWrapper>
+      <FormWrapper check={existingCheck} checkType={CheckType.Browser}>
         <K6ChannelSelect />
       </FormWrapper>
     );
@@ -313,18 +307,15 @@ describe('K6ChannelSelect', () => {
       ],
     };
 
-    mockUseCheckFormMetaContext.mockReturnValue({
-      check: { 
-        settings: { 
-          browser: { 
-            script: 'test script',
-            channel: 'disabled' 
-          } 
+    const existingCheck = { 
+      id: 1,
+      settings: { 
+        browser: { 
+          script: 'test script',
+          channel: 'disabled' 
         } 
-      },
-      isExistingCheck: true,
-      getIsExistingCheck: () => true,
-    });
+      } 
+    };
 
     server.use(
       apiRoute('listK6Channels', { 
@@ -333,7 +324,7 @@ describe('K6ChannelSelect', () => {
     );
 
     render(
-      <FormWrapper>
+      <FormWrapper check={existingCheck} checkType={CheckType.Browser}>
         <K6ChannelSelect />
       </FormWrapper>
     );
