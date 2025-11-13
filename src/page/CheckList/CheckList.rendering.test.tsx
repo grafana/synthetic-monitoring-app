@@ -38,7 +38,7 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
     path,
   });
 
-  expect(await screen.findByText('Add new check')).toBeInTheDocument();
+  expect(await screen.findByText('Create new check')).toBeInTheDocument();
   return res;
 };
 
@@ -77,7 +77,7 @@ describe('CheckList - Rendering', () => {
     const navigate = jest.fn();
     useNavigationHook.useNavigation = jest.fn(() => navigate); // TODO: COME BACK TO
     const { user } = await renderCheckList();
-    const addNewButton = await screen.findByText('Add new check');
+    const addNewButton = await screen.findByText('Create new check');
     await user.click(addNewButton);
     expect(navigate).toHaveBeenCalledWith(AppRoutes.ChooseCheckGroup);
   });

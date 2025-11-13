@@ -9,7 +9,7 @@ interface AddNewCheckButtonClicked extends TrackingEventProps {
   source: 'check-list' | 'homepage';
 }
 
-/** Tracks when the "Add New Check" button is clicked. */
+/** Tracks when the "Create New Check" button is clicked. */
 export const trackAddNewCheckButtonClicked =
   checkCreationEvents<AddNewCheckButtonClicked>('add_new_check_button_clicked');
 

@@ -20,8 +20,8 @@ export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
   }, [navigate, source]);
 
   return (
-    <Button variant="primary" onClick={handleClick} type="button" disabled={!canWriteChecks}>
-      Add new check
+    <Button variant="primary" onClick={handleClick} type="button" disabled={!canWriteChecks} icon="plus">
+      Create new check
     </Button>
   );
 }

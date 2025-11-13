@@ -54,7 +54,7 @@ const renderChecksPage = async () => {
     route: AppRoutes.Checks,
   });
 
-  await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument(), { timeout: 10000 });
+  await waitFor(() => expect(screen.getByText('Create new check')).toBeInTheDocument(), { timeout: 10000 });
   return res;
 };
 
@@ -66,7 +66,7 @@ describe('Checks page', () => {
 
   test('renders check selection page with correct check types', async () => {
     const { user } = await renderChecksPage();
-    await user.click(screen.getByText('Add new check'));
+    await user.click(screen.getByText('Create new check'));
     await waitFor(() => expect(screen.getByTestId(DataTestIds.CHOOSE_CHECK_TYPE)).toBeInTheDocument());
     const apiEndPointCard = screen.getByTestId(`${DataTestIds.CHECK_GROUP_CARD}-${CheckTypeGroup.ApiTest}`);
 
