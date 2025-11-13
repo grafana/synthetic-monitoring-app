@@ -95,7 +95,7 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
           />
         </Stack>
       </Field>
-      <ChannelDetails channelId={field.value || defaultChannelId || null} channels={channels} enabled={true} />
+      <ChannelDetails channelId={field.value || defaultChannelId || null} channels={channels} />
     </div>
   );
 }

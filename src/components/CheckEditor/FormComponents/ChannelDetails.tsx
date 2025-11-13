@@ -4,18 +4,16 @@ import { Alert, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { K6Channel } from 'types';
-import { useCurrentK6Version } from 'data/useK6Channels';
+
 interface ChannelDetailsProps {
   channelId: string | null;
   channels: K6Channel[];
-  enabled?: boolean;
 }
 
-export function ChannelDetails({ channelId, channels, enabled = true }: ChannelDetailsProps) {
+export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
   const styles = useStyles2(getStyles);
 
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
-  const { data: currentVersion, isLoading: isLoadingVersion, isError: hasVersionError } = useCurrentK6Version(enabled, validChannelId);
 
   // Show default message when no specific channel is selected
   // This happens when no channels are available or when all channels are filtered out
@@ -40,24 +38,6 @@ export function ChannelDetails({ channelId, channels, enabled = true }: ChannelD
       <Text variant="bodySmall" color="secondary">
         k6 version constraint: <code className={styles.manifest}>{channel.manifest}</code>
       </Text>
-
-      {currentVersion && (
-        <Text variant="bodySmall">
-          Current resolved version: <strong>{currentVersion}</strong>
-        </Text>
-      )}
-
-      {isLoadingVersion && (
-        <Text variant="bodySmall" color="secondary">
-          Loading current version...
-        </Text>
-      )}
-
-      {hasVersionError && !isLoadingVersion && (
-        <Text variant="bodySmall" color="warning">
-          Unable to resolve current version
-        </Text>
-      )}
 
       {isDeprecated && (
         <Alert severity="warning" title="Deprecated Channel">

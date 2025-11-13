@@ -85,6 +85,31 @@ describe('K6ChannelSelect', () => {
       [FeatureName.VersionManagement]: true,
     });
     
+    const channelsWithDeprecatedDefault = {
+      channels: [
+        {
+          id: 'v1',
+          name: 'v1',
+          default: true,
+          deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
+          manifest: 'k6>=1,k6<2',
+        },
+        {
+          id: 'v2',
+          name: 'v2',
+          default: false,
+          deprecatedAfter: '2028-12-31T00:00:00Z', // Not deprecated
+          manifest: 'k6>=2',
+        },
+      ],
+    };
+
+    server.use(
+      apiRoute('listK6Channels', { 
+        result: () => ({ json: channelsWithDeprecatedDefault }) 
+      })
+    );
+    
     render(
       <FormWrapper>
         <K6ChannelSelect />

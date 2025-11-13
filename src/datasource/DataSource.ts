@@ -489,10 +489,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async getCurrentK6Version(channelId: string): Promise<string> {
-    const response = await this.fetchAPI<{ version: string }>(`sm/channel/k6/${channelId}/current`);
-    return response.version;
-  }
 
   //--------------------------------------------------------------------------------
   // TEST
