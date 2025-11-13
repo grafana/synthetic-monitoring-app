@@ -116,7 +116,7 @@ describe('K6ChannelSelect', () => {
     await waitFor(() => {
       const combobox = screen.getByLabelText(/k6 version/i);
       // v1 is the default but deprecated, so v2 should be selected as the first available
-      expect(combobox).toHaveValue('v2');
+      expect(combobox).toHaveValue('v2.x');
     });
     
     // v1 should not be visible since it's deprecated for new checks
@@ -163,7 +163,7 @@ describe('K6ChannelSelect', () => {
     // Should have v1 selected (the default)
     const combobox = screen.getByLabelText(/k6 version/i);
     await waitFor(() => {
-      expect(combobox).toHaveValue('v1');
+      expect(combobox).toHaveValue('v1.x (default)');
     });
   });
 

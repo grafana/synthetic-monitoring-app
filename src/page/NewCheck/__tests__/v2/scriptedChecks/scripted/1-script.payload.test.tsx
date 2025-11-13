@@ -1,7 +1,7 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
-import { submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import { selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { setupFormWithChannelSelector } from 'page/__testHelpers__/channel';
 import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
@@ -51,13 +51,7 @@ describe(`ScriptedCheck - 1 (Script) payload`, () => {
   it(`can select and submit a non-default channel`, async () => {
     const { read, user, channelCombobox } = await setupFormWithChannelSelector(checkType);
     
-    await user.click(channelCombobox);
-    const v2Option = await screen.findByText(/v2\.x/i);
-    await user.click(v2Option);
-    
-    await waitFor(() => {
-      expect(channelCombobox).toHaveValue('v2');
-    });
+    await selectComboboxOption(user, channelCombobox, /v2\.x/i);
     
     await submitForm(user);
     const { body } = await read();
