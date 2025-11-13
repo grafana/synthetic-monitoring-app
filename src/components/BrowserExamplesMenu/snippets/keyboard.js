@@ -33,9 +33,7 @@ export default async function () {
 
     await page.locator('button').click();
 
-    const heading = page.locator('//h2');
-    await heading.waitFor({ state: 'visible', timeout: 5000 });
-    await expect(heading).toContainText('Latest pizza recommendations');
+    await expect(page.locator('//h2')).toContainText('Latest pizza recommendations');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

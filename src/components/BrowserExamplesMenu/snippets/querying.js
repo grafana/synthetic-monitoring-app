@@ -26,8 +26,10 @@ export default async function () {
 
     const title = 'Looking to break out of your pizza routine?';
 
+    // locating the title with CSS selector
     await expect(page.locator('h1')).toContainText(title);
 
+    // locating the title with XPath selector
     await expect(page.locator(`//h1`)).toContainText(title);
   } catch (e) {
     console.log('Error during execution:', e);
