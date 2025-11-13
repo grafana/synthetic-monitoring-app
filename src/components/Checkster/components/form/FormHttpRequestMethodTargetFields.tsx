@@ -57,6 +57,7 @@ export function FormHttpRequestMethodTargetFields({
         required
       >
         <Input
+          className={styles.input}
           data-testid={dataTestId}
           id={field}
           placeholder={placeholder}
@@ -201,6 +202,12 @@ function getStyles(theme: GrafanaTheme2) {
     `,
     queryParamsButtonActive: css`
       color: ${theme.colors.primary.border};
+    `,
+    input: css`
+      > div > div {
+        // specifically so that pathfinder highlights don't hide the prefix
+        z-index: 2;
+      }
     `,
   };
 }

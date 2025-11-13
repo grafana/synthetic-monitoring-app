@@ -34,18 +34,25 @@ export const CHECKSTER_TEST_ID = {
       instance: 'checkEditor form instance',
       chooseAPICheckType: 'checkEditor form chooseAPICheckType',
       httpRequestMethod: 'checkEditor form httpRequestMethod',
+      validStatusCodes: 'checkEditor form validStatusCodes',
       probeCheckbox: 'checkEditor form probeCheckbox',
     },
     components: {
       GenericNameValueField: {
         addButton: 'checkEditor nameValue addButton',
       },
+      GenericLabelContent: {
+        root: 'checkEditor genericLabelContent root',
+      },
     },
   },
   feature: {
     adhocCheck: {
       LogMessage: {
-        checkIcon: 'checkEditor feat adhoc-check LogMessage checkIcon',
+        checkIcon: 'checkEditor feat-adhoc-check LogMessage checkIcon',
+      },
+      TestButton: {
+        root: 'checkEditor feat-adhoc-check testButton',
       },
     },
     perCheckAlerts: {
