@@ -1,4 +1,4 @@
-import { createBrowserCheckSchema, MAX_TIMEOUT_BROWSER, MIN_TIMEOUT_BROWSER } from 'schemas/forms/BrowserCheckSchema';
+import { browserCheckSchema, MAX_TIMEOUT_BROWSER, MIN_TIMEOUT_BROWSER } from 'schemas/forms/BrowserCheckSchema';
 import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { grpcCheckSchema } from 'schemas/forms/GRPCCheckSchema';
 import { httpCheckSchema } from 'schemas/forms/HttpCheckSchema';
@@ -8,7 +8,7 @@ import {
   multiHttpCheckSchema,
 } from 'schemas/forms/MultiHttpCheckSchema';
 import { pingCheckSchema } from 'schemas/forms/PingCheckSchema';
-import { createScriptedCheckSchema, MAX_TIMEOUT_SCRIPTED, MIN_TIMEOUT_SCRIPTED } from 'schemas/forms/ScriptedCheckSchema';
+import { MAX_TIMEOUT_SCRIPTED, MIN_TIMEOUT_SCRIPTED, scriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
 import { tcpCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import {
   MAX_TIMEOUT_TRACEROUTE,
@@ -321,13 +321,13 @@ export const DEFAULT_CHECK_CONFIG_MAP: Record<CheckType, Check> = {
 export const DEFAULT_CHECK_CONFIG = DEFAULT_CHECK_CONFIG_MAP[DEFAULT_CHECK_TYPE];
 
 export const FORM_CHECK_TYPE_SCHEMA_MAP = {
-  [CheckType.Browser]: createBrowserCheckSchema,
+  [CheckType.Browser]: browserCheckSchema,
   [CheckType.DNS]: dnsCheckSchema,
   [CheckType.GRPC]: grpcCheckSchema,
   [CheckType.HTTP]: httpCheckSchema,
   [CheckType.MULTI_HTTP]: multiHttpCheckSchema,
   [CheckType.PING]: pingCheckSchema,
-  [CheckType.Scripted]: createScriptedCheckSchema,
+  [CheckType.Scripted]: scriptedCheckSchema,
   [CheckType.TCP]: tcpCheckSchema,
   [CheckType.Traceroute]: tracerouteCheckSchema,
 };

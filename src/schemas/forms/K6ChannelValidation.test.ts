@@ -1,19 +1,7 @@
-import { K6Channel } from 'types';
-
 import { createBrowserCheckSchema } from './BrowserCheckSchema';
 import { createScriptedCheckSchema } from './ScriptedCheckSchema';
 
 describe('K6 Channel Validation', () => {
-  const mockK6Channels: K6Channel[] = [
-    {
-      id: 'enabled-channel',
-      name: 'enabled',
-      default: false,
-      deprecatedAfter: '2025-12-31T00:00:00Z',
-      manifest: 'k6>=1,k6<2',
-    },
-  ];
-
   describe('ScriptedCheckSchema', () => {
     const validScriptedCheck = {
       job: 'test',
@@ -35,12 +23,12 @@ describe('K6 Channel Validation', () => {
     };
 
     it('should pass validation when channel is enabled', () => {
-      const schema = createScriptedCheckSchema(mockK6Channels);
+      const schema = createScriptedCheckSchema();
       expect(() => schema.parse(validScriptedCheck)).not.toThrow();
     });
 
     it('should pass validation when channel is null', () => {
-      const schema = createScriptedCheckSchema(mockK6Channels);
+      const schema = createScriptedCheckSchema();
       const checkWithoutChannel = {
         ...validScriptedCheck,
         settings: {
@@ -96,12 +84,12 @@ describe('K6 Channel Validation', () => {
     };
 
     it('should pass validation when channel is enabled', () => {
-      const schema = createBrowserCheckSchema(mockK6Channels);
+      const schema = createBrowserCheckSchema();
       expect(() => schema.parse(validBrowserCheck)).not.toThrow();
     });
 
     it('should pass validation when channel is null', () => {
-      const schema = createBrowserCheckSchema(mockK6Channels);
+      const schema = createBrowserCheckSchema();
       const checkWithoutChannel = {
         ...validBrowserCheck,
         settings: {

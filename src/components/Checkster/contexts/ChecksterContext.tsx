@@ -17,7 +17,7 @@ import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { ZodType } from 'zod';
 
 import { FormNavigationState, FormSectionName } from '../types';
-import { Check, CheckFormValues, CheckType, K6Channel } from 'types';
+import { Check, CheckFormValues, CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { useDOMId } from 'hooks/useDOMId';
 
@@ -64,7 +64,6 @@ interface ChecksterBaseProviderProps extends PropsWithChildren {
   initialSection?: FormSectionName;
   onCheckTypeChange?(checkType: CheckType): void;
   disabled?: boolean;
-  k6Channels?: K6Channel[];
 }
 
 interface ChecksterBaseProviderPropsWithCheck extends ChecksterBaseProviderProps {
@@ -84,19 +83,14 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
-function useFormValuesMeta(checkType: CheckType, check?: Check, k6Channels: K6Channel[] = []) {
+function useFormValuesMeta(checkType: CheckType, check?: Check) {
   return useMemo(() => {
-    let schema;
-    if (checkType === CheckType.Scripted || checkType === CheckType.Browser) {
-      schema = FORM_CHECK_TYPE_SCHEMA_MAP[checkType](k6Channels);
-    } else {
-      schema = FORM_CHECK_TYPE_SCHEMA_MAP[checkType];
-    }
+    const schema = FORM_CHECK_TYPE_SCHEMA_MAP[checkType];
     return {
       defaultFormValues: check ? toFormValues(check) : getDefaultFormValues(checkType),
       schema: addRefinements<CheckFormValues>(schema),
     };
-  }, [checkType, check, k6Channels]);
+  }, [checkType, check]);
 }
 
 export function ChecksterProvider({
@@ -106,7 +100,6 @@ export function ChecksterProvider({
   initialSection,
   onCheckTypeChange,
   disabled = false,
-  k6Channels = [],
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const [checkType, setCheckType] = useState<CheckType>(
@@ -118,7 +111,7 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, k6Channels);
+  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check);
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 

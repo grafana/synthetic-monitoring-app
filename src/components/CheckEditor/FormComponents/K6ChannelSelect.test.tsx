@@ -21,13 +21,13 @@ const FormWrapper = ({
   defaultValues?: Partial<CheckFormValuesBrowser>;
   check?: any;
   checkType?: CheckType;
-}) => {
-  return (
-    <ChecksterProvider checkType={checkType} check={check} k6Channels={[]}>
-      {children}
-    </ChecksterProvider>
-  );
-};
+  }) => {
+    return (
+      <ChecksterProvider checkType={checkType} check={check}>
+        {children}
+      </ChecksterProvider>
+    );
+  };
 
 describe('K6ChannelSelect', () => {
   beforeEach(() => {

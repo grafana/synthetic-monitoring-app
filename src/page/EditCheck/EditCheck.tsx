@@ -29,7 +29,7 @@ export const EditCheck = () => {
   const initialSection = !!urlSearchParams.get('runbookMissing') ? 'alerting' : undefined;
 
   const isScriptedOrBrowser = !!(check && (isScriptedCheck(check) || isBrowserCheck(check)));
-  const { channels: k6Channels } = useFilteredK6Channels(isScriptedOrBrowser, check);
+  useFilteredK6Channels(isScriptedOrBrowser, check);
 
   // Only show spinner for the initial fetch.
   if (isLoading && !isFetched) {
@@ -41,7 +41,6 @@ export const EditCheck = () => {
       check={check}
       disabled={isLoading || isError}
       initialSection={initialSection}
-      k6Channels={k6Channels}
     >
       <EditCheckContent isLoading={isLoading} />
       {checks && !check && <NotFoundModal />}

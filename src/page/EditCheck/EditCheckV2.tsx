@@ -7,12 +7,10 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckPageParams } from 'types';
-import { isBrowserCheck, isScriptedCheck } from 'utils.types';
 import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
-import { useFilteredK6Channels } from 'data/useK6Channels';
 import { useHandleSubmitCheckster } from 'hooks/useHandleSubmitCheckster';
 import { useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
@@ -35,10 +33,6 @@ export const EditCheckV2 = () => {
 
   // Check for runbook missing notification to determine initial section
   const initialSection = !!urlSearchParams.get('runbookMissing') ? FormSectionName.Alerting : undefined;
-
-  // Fetch k6 channels for browser/scripted checks
-  const isScriptedOrBrowser = !!(check && (isScriptedCheck(check) || isBrowserCheck(check)));
-  const { channels: k6Channels } = useFilteredK6Channels(isScriptedOrBrowser, check);
 
   const navModel = useMemo(() => {
     return createNavModel(
@@ -66,7 +60,7 @@ export const EditCheckV2 = () => {
       renderTitle={() => <Text element="h1">{`Editing ${check?.job ?? 'unknown'}`}</Text>}
     >
       <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <ChecksterProvider check={check} initialSection={initialSection} disabled={!canWriteChecks} k6Channels={k6Channels}>
+        <ChecksterProvider check={check} initialSection={initialSection} disabled={!canWriteChecks}>
           <Checkster onSave={handleSubmit} />
         </ChecksterProvider>
         {checks && !check && <NotFoundModal />}
