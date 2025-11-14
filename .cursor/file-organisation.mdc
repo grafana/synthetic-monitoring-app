@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Separation of concerns is important when writing components. These files are not always necessary but are usful when a component grows in length and complexity. 
+- {ComponentName}.tsx which includes all the JSX and view concerns, including CSS
+- {ComponentName.hooks.ts} for any custom hooks which the component needs to utilise
+- {ComponentName.utils.ts} for any supporting functions which are used in the view component or hooks file
+- {ComponentName.test.tsx} for our tests. We favour integration tests over most other forms of testing
+- {ComponentName.constants.ts} for any constants the are used in the component and associated files
+- {ComponentName.types.ts} for any types that are used in the component and associated files. This file often isn't needed and the types can be included in the associated files. Make your best judgement when the file has grown in complexity and should separate the types to its own file.
