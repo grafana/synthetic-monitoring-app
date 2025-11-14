@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useState } from 'react';
-import { CodeEditor as GrafanaCodeEditor } from '@grafana/ui';
+import { CodeEditor as GrafanaCodeEditor, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
 import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
@@ -65,6 +65,27 @@ const containerStyles = css`
   }
 `;
 
+const editorWrapperStyles = css`
+  position: relative;
+`;
+
+const loadingOverlayStyles = css`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  z-index: 1000;
+  pointer-events: none;
+`;
+
 export const CodeEditor = forwardRef(function CodeEditor(
   {
     checkJs = true,
@@ -91,8 +112,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const [prevValue, setPrevValue] = useState(value);
 
   const { types: dynamicK6Types, loading: k6TypesLoading, error: k6TypesError } = useK6TypesForChannel(k6Channel, isJs);
-
-  console.log('hola',k6Channel, isJs, k6TypesLoading, k6TypesError);
 
   const shouldWaitForTypes = k6Channel && isJs && k6TypesLoading && !k6TypesError;
 
@@ -204,30 +223,16 @@ export const CodeEditor = forwardRef(function CodeEditor(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, constrainedRanges]);
 
-  if (shouldWaitForTypes) {
-    return (
-      <div data-fs-element="Code editor" id={id}>
-        {renderHeader && renderHeader({ scriptValue: value })}
-        <div
-          style={{
-            height: '600px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#888',
-          }}
-        >
-          Loading k6 types for {k6Channel}...
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div data-fs-element="Code editor" id={id} {...rest}>
+    <div data-fs-element="Code editor" id={id} {...rest} className={editorWrapperStyles}>
       {renderHeader && renderHeader({ scriptValue: value })}
-      {/* {overlayMessage && <Overlay>{overlayMessage}</Overlay>} */}
+      {shouldWaitForTypes && (
+        <div className={loadingOverlayStyles}>
+          <Spinner />
+        </div>
+      )}
       <GrafanaCodeEditor
+        key={dynamicK6Types ? 'types-loaded' : 'types-loading'}
         value={value}
         language={language}
         showLineNumbers={true}
