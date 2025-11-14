@@ -127,6 +127,12 @@
   },
   {
     "region": "United States East",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-us-east-3.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-us-east-3.grafana.net"
+  },
+  {
+    "region": "United States East",
     "provider": "GCP",
     "apiServerURL": "synthetic-monitoring-grpc-us-east-1.grafana.net:443",
     "backendAddress": "synthetic-monitoring-api-us-east-1.grafana.net"
