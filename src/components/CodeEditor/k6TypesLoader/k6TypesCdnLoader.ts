@@ -19,7 +19,6 @@ const K6_MODULES: K6ModuleDefinition[] = [
   { name: 'k6/experimental/csv', path: 'experimental/csv/index.d.ts' },
   { name: 'k6/experimental/fs', path: 'experimental/fs/index.d.ts' },
   { name: 'k6/experimental/redis', path: 'experimental/redis/index.d.ts' },
-  { name: 'k6/experimental/webcrypto', path: 'experimental/webcrypto/index.d.ts' },
   { name: 'k6/experimental/streams', path: 'experimental/streams/index.d.ts' },
   { name: 'k6/experimental/websockets', path: 'experimental/websockets/index.d.ts' },
 ];
