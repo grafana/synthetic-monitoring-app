@@ -12,12 +12,12 @@ import { tracerouteCheckSchema } from '../../schemas/forms/TracerouteCheckSchema
 
 export const SCHEMA_MAP = {
   [CheckType.Browser]: browserCheckSchema,
+  [CheckType.Scripted]: scriptedCheckSchema,
   [CheckType.DNS]: dnsCheckSchema,
   [CheckType.GRPC]: grpcCheckSchema,
   [CheckType.HTTP]: httpCheckSchema,
   [CheckType.MULTI_HTTP]: multiHttpCheckSchema,
-  [CheckType.PING]: pingCheckSchema,
-  [CheckType.Scripted]: scriptedCheckSchema,
+  [CheckType.PING]:  pingCheckSchema,
   [CheckType.TCP]: tcpCheckSchema,
   [CheckType.Traceroute]: tracerouteCheckSchema,
 };

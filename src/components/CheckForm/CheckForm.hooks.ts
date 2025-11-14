@@ -251,8 +251,8 @@ export function useCheckFormDefaultValues(check?: Check) {
   const checkWithFallback = check || fallbackCheckMap[checkType];
 
   return useMemo(() => {
-    return toFormValues(checkWithFallback, checkType);
-  }, [checkType, checkWithFallback]);
+    return toFormValues(checkWithFallback);
+  }, [checkWithFallback]);
 }
 
 export function useCheckTypeFormLayout(checkType: CheckType) {
