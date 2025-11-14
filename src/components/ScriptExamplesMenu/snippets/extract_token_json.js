@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { check } from 'k6';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 
 export default function () {
   // Make a request that returns some JSON data
@@ -14,10 +14,8 @@ export default function () {
   // using a call to "json()" and then accessing properties by
   // navigating the JSON data as a JS object with dot notation.
   const dough1 = res.json().doughs[0];
-  check(dough1, {
-    'dough1 1 has correct name': (s) => s.name === 'Thin',
-    'dough1 1 has correct ID': (s) => s.ID === 1,
-  });
+  expect(dough1.name).toBe('Thin');
+  expect(dough1.ID).toBe(1);
 
   // Now we could use the "dough1" variable in subsequent requests...
 }
