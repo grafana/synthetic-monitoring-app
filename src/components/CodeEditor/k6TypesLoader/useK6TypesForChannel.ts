@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { useCurrentK6Version } from 'data/useK6Channels';
-
 import { fetchK6TypesFromCDN } from './k6TypesCdnLoader';
 
 interface UseK6TypesForChannelResult {
@@ -12,29 +10,21 @@ interface UseK6TypesForChannelResult {
 }
 
 export function useK6TypesForChannel(channelId?: string, enabled = true): UseK6TypesForChannelResult {
-  const { 
-    data: version, 
-    isLoading: isVersionLoading, 
-    isError: hasVersionError 
-  } = useCurrentK6Version(enabled && Boolean(channelId), channelId);
-
-  const { 
-    data: types, 
-    isLoading: isTypesLoading, 
-    error: typesError
+  const {
+    data: types,
+    isLoading: isTypesLoading,
+    error,
   } = useQuery({
-    queryKey: ['k6-types', version, channelId],
-    queryFn: () => fetchK6TypesFromCDN(version!),
-    enabled: enabled && Boolean(version) && !hasVersionError,
+    queryKey: ['k6-types', channelId],
+    queryFn: () => fetchK6TypesFromCDN(channelId!),
+    enabled: enabled && Boolean(channelId),
     throwOnError: false,
   });
 
-
   return {
     types: types || null,
-    loading: isVersionLoading || isTypesLoading,
-    error: hasVersionError ? 'Failed to get version for channel' : 
-           typesError ? (typesError as Error).message : null,
-    version: version || null,
+    loading: isTypesLoading,
+    error: error ? (error as Error).message : null,
+    version: channelId ?? null,
   };
 }

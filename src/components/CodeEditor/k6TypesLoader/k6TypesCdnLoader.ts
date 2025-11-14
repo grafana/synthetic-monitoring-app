@@ -26,13 +26,13 @@ const K6_MODULES: K6ModuleDefinition[] = [
 
 const CDN_BASE_URL = 'https://unpkg.com/@types/k6';
 
-export async function fetchK6TypesFromCDN(version: string): Promise<Record<string, string>> {
+export async function fetchK6TypesFromCDN(channelId: string): Promise<Record<string, string>> {
   const types: Record<string, string> = {};
   const failedModules: string[] = [];
 
   const fetchPromises = K6_MODULES.map(async (module) => {
     try {
-      const url = `${CDN_BASE_URL}@${version}/${module.path}`;
+      const url = `${CDN_BASE_URL}@${channelId}/${module.path}`;
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -42,6 +42,8 @@ export async function fetchK6TypesFromCDN(version: string): Promise<Record<strin
       
       const content = await response.text();
       types[module.name] = content;
+
+      console.log(url, content);
     } catch (error) {
       failedModules.push(module.name);
     }
@@ -53,7 +55,7 @@ export async function fetchK6TypesFromCDN(version: string): Promise<Record<strin
   
   
   if (successCount === 0) {
-    throw new Error(`Failed to fetch any k6 types for version ${version}`);
+    throw new Error(`Failed to fetch any k6 types for channel ${channelId}`);
   }
   
   return types;
