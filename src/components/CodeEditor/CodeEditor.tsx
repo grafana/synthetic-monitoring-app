@@ -12,12 +12,11 @@ import { useK6TypesForChannel } from './k6TypesLoader/useK6TypesForChannel';
 import { initializeConstrainedInstance, updateConstrainedEditorRanges } from './CodeEditor.utils';
 import { wireCustomValidation } from './monacoValidation';
 
-
 let currentK6LibUris: string[] = [];
 
 const clearK6Types = (monaco: typeof monacoType) => {
   // Clear previously added k6 libraries
-  currentK6LibUris.forEach(uri => {
+  currentK6LibUris.forEach((uri) => {
     try {
       // Override with empty content to effectively remove
       monaco.languages.typescript.javascriptDefaults.addExtraLib('', uri);
@@ -31,7 +30,7 @@ const clearK6Types = (monaco: typeof monacoType) => {
 const addK6Types = (monaco: typeof monacoType, types: Record<string, string> = k6Types) => {
   // Clear existing k6 types first
   clearK6Types(monaco);
-  
+
   // Add new k6 types
   Object.entries(types).forEach(([name, type]) => {
     const uri = `file:///k6-types/${name.replace(/\//g, '-')}.d.ts`;
@@ -87,11 +86,15 @@ export const CodeEditor = forwardRef(function CodeEditor(
 ) {
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
   const [constrainedInstance, setConstrainedInstance] = useState<null | ConstrainedEditorInstance>(null);
+
+  const isJs = language === 'javascript';
   const [prevValue, setPrevValue] = useState(value);
 
-  const { types: dynamicK6Types, loading: k6TypesLoading, error: k6TypesError } = useK6TypesForChannel(k6Channel, language === 'javascript');
+  const { types: dynamicK6Types, loading: k6TypesLoading, error: k6TypesError } = useK6TypesForChannel(k6Channel, isJs);
 
-  const shouldWaitForTypes = k6Channel && language === 'javascript' && k6TypesLoading && !k6TypesError;
+  console.log('hola',k6Channel, isJs, k6TypesLoading, k6TypesError);
+
+  const shouldWaitForTypes = k6Channel && isJs && k6TypesLoading && !k6TypesError;
 
   // Update Monaco types when dynamic types change
   useEffect(() => {
@@ -130,8 +133,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
   const handleBeforeEditorMount = async (monaco: typeof monacoType) => {
     await onBeforeEditorMount?.(monaco);
-    
-    
+
     addK6Types(monaco, dynamicK6Types || k6Types);
 
     const compilerOptions = monaco.languages.typescript.javascriptDefaults.getCompilerOptions();
@@ -206,13 +208,15 @@ export const CodeEditor = forwardRef(function CodeEditor(
     return (
       <div data-fs-element="Code editor" id={id}>
         {renderHeader && renderHeader({ scriptValue: value })}
-        <div style={{ 
-          height: '600px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          color: '#888'
-        }}>
+        <div
+          style={{
+            height: '600px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#888',
+          }}
+        >
           Loading k6 types for {k6Channel}...
         </div>
       </div>
