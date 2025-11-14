@@ -7,7 +7,7 @@ Before creating PRs you must:
 - ensures the diff to main is concise and only adds a single feature (see the engineering-best-practices rule). If the diff contains multiple features, propose that we only submit the changes for one feature and create separate branch(es) and PR(s) for the other feature(s). This may be difficult to manage so read the reference-directory rule to help with this.
 - ensure the code meets the correct standards (see the file-organisation rule)
 - ensures the test has the correct integration tests (see when-writing-tests rule) OR has the correct unit tests and appropriate documentation
-- ensures the commit follows our commitlintrc and release-please conventions.
+- ensure the commit follows our `.commitlintrc.js` (uses conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, etc.) and release-please conventions.
 
 If all of the above criteria are met then for the PR title and description follow the following conventions:
 - Write the PR in markdown format

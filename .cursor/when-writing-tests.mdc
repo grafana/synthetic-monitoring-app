@@ -3,8 +3,9 @@ description: when writing tests
 alwaysApply: false
 ---
 
-Refer to who I am (the ./you-and-me.mdc and ./personal/about-me.mdc rule) when thinking about writing tests. If I am not a frontend engineer on the team I am not expected to write in-depth complicated tests but will rely on your help. It is okay not to write tests and make a note in the PR to ask a frontend engineer to write them if the feature has complex testing needs.
+Refer to who I am (the you-and-me.mdc and .cursor/rules/personal/about-me.mdc rule) when thinking about writing tests. If I am not a frontend engineer on the team I am not expected to write in-depth complicated tests but will rely on your help. It is okay not to write tests and make a note in the PR to ask a frontend engineer to write them if the feature has complex testing needs.
 
+- Tests are executed with `yarn test <filename>` (e.g., `yarn test validation.test.ts`).
 - We favour integration tests that focus on the user journey over unit tests.
 - We prefer unit tests over no tests.
 - We prefer tests as documentation for most features rather than having lengthy documentation files to read. If a feature is difficult to write tests for, we would like to see documentation in its place so we can cross check it manually if all the requirements have been met. It is very rare to need integration tests and documentation. Unit tests and documentatation is a likely scenario.

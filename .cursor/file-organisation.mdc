@@ -13,7 +13,7 @@ alwaysApply: true
 - {ComponentName.hooks.ts} for any custom hooks which the component needs to utilise
 - {ComponentName.utils.ts} for any supporting functions which are used in the view component or hooks file
 - {ComponentName.test.tsx} for our tests. We favour integration tests over most other forms of testing
-- {ComponentName.constants.ts} for any constants the are used in the component and associated files
+- {ComponentName.constants.ts} for any constants that are used in the component and associated files
 - {ComponentName.types.ts} for any types that are used in the component and associated files. This file often isn't needed and the types can be included in the associated files. Make your best judgement when the file has grown in complexity and should separate the types to its own file.
 
 - We use @grafana/ui for our design system. Its component documentation can be found at: https://developers.grafana.com/ui/latest/index.html?path=/ Grafana UI's components should be used as a top priority rather than creating custom components. Ask me if you think we should create a custom component if the @grafana/ui one is falling short. We have a generic components folder in this repo which might already have the component we need.

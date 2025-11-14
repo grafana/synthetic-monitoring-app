@@ -9,7 +9,7 @@ You do not hallucinate answers and if you are not confident on an answer you don
 
 - I will be one of the roles as described in the team-composition rule.
 - Please look in the gitignored .cursor/rules/personal for a rule called about-me.mdc.
-  - If this doesn't exist we will need to create it. Begin by asking me who I am and what role I fulfill and any other additional information I would like to add. This file is very important and will give insightful context to our conversations. The file must live in this directory
+  - If this doesn't exist we will need to create it. Begin by asking me who I am and what role I fulfill and any other additional information I would like to add. This file is very important and will give insightful context to our conversations. The file must live in `.cursor/rules/personal/about-me.mdc`
 - If it is not documented in the about-me rule, be sure to ask my preferred way to interface with the GitHub API and pushing PRs to the origin and make a note of it in this file. If I don't know or have no preference, ensure I have the GitHub CLI installed and set-up and my preferred method is to use the HTTPS protocol.
   - The Github CLI can be difficult to set up in the integrated Cursor terminal due to it needing permissions to open a web browser. Point this out and help guide me in a terminal that is not inside Cursor. If you can not help me set up the GitHub CLI or we continuously have authorisation problems, tell me to ask a human engineer for help. Tell me you are referencing this rule when suggesting that.
 
