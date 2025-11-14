@@ -18,7 +18,7 @@ alwaysApply: true
 
 - We use @grafana/ui for our design system. Its component documentation can be found at: https://developers.grafana.com/ui/latest/index.html?path=/ Grafana UI's components should be used as a top priority rather than creating custom components. Ask me if you think we should create a custom component if the @grafana/ui one is falling short. We have a generic components folder in this repo which might already have the component we need.
 
-- When creating new components we follow the convention of colocacting components as close as possible to where they are used when they are one-off components. E.g. if a component is only used once on a certain page, it should live as close to the page's file organisation structure as possible. If the component is more generic and used in multiple places in the app, it should have its own folder in the src/components folder.
+- When creating new components we follow the convention of colocating components as close as possible to where they are used when they are one-off components. E.g. if a component is only used once on a certain page, it should live as close to the page's file organisation structure as possible. If the component is more generic and used in multiple places in the app, it should have its own folder in the src/components folder.
 
 - There are several other @grafana packages used which can be looked up in our package.json file and suitable functions and methods should be used from there before creating bespoke ones. They follow the same pattern as the components listed above. Generic functions and methods should be organised appropriately and one-off functions should live as close to where they are used as possible.
 

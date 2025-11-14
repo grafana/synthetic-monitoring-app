@@ -39,4 +39,4 @@ it(`shows the text 'Offline' for an offline probe`, async () => {
 ```
 
 - Propose to me a test-driven development strategy if appropriate where we will write the tests BEFORE working on the feature I want help with. I will let you know if I think this is a good idea or not.
-- If I have rejected the TDD strategy it is likely a good idea to not write tests until we have finished working on the feature and are ready to create a PR as I may not have the feature fully formed and want to vibe code it. If we write tests during implementation we may end up confused what the requirements for the feature are and become unfocussed on the problem at hand.
+- If I have rejected the TDD strategy it is likely a good idea to not write tests until we have finished working on the feature and are ready to create a PR as I may not have the feature fully formed and want to vibe code it. If we write tests during implementation we may end up confused what the requirements for the feature are and become unfocused on the problem at hand.
