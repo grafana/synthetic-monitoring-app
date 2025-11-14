@@ -1,5 +1,3 @@
-import { db } from 'test/db';
-
 import {
   AlertSensitivity,
   BrowserCheck,
@@ -20,6 +18,7 @@ import {
 } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 
+import { db } from '../db';
 import { BASIC_CHECK_ALERTS } from './checkAlerts';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 

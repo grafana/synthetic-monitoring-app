@@ -1,4 +1,3 @@
-import { db } from 'test/db';
 import { succeededLogFactory } from 'test/factories/executionLogs';
 
 import {
@@ -22,6 +21,8 @@ import {
   getRoundedYAxisMax,
   removeProbableDuplicates,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+
+import { db } from '../../../test/db';
 
 describe(`buildConfigTimeRanges`, () => {
   it(`should build the correct time range for a single config`, () => {

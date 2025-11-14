@@ -35,7 +35,7 @@ import { getTraceroutePayload } from 'components/CheckEditor/transformations/toP
 // export function getFormValuesFromCheck(check: PingCheck): CheckFormValuesPing;
 // export function getFormValuesFromCheck(check: TCPCheck): CheckFormValuesTcp;
 // export function getFormValuesFromCheck(check: TracerouteCheck): CheckFormValuesTraceroute;
-export function toFormValues(check: Check, checkType: CheckType): CheckFormValues {
+export function toFormValues(check: Check): CheckFormValues {
   if (isDNSCheck(check)) {
     return getDNSCheckFormValues(check);
   }
