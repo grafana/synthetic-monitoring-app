@@ -12,10 +12,11 @@ import { Column } from '../../ui/Column';
 
 interface GenericScriptFieldProps {
   field: CheckFormFieldPath;
+  renderHeaderAction?: () => React.ReactNode;
 }
 
 // FIXME: Not actually a Field (no label, no description), but it has errors!
-export function GenericScriptField({ field }: GenericScriptFieldProps) {
+export function GenericScriptField({ field, renderHeaderAction }: GenericScriptFieldProps) {
   const {
     control,
     formState: { errors, disabled },
@@ -50,6 +51,7 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
               readOnly={disabled}
               data-form-name={field}
               data-form-element-selector="textarea"
+              renderHeaderAction={renderHeaderAction}
             />
           );
         }}

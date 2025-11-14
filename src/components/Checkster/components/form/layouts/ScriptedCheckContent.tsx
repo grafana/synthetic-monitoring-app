@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, useStyles2, useTheme2 } from '@grafana/ui';
+import { Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackNeedHelpScriptsButtonClicked } from 'features/tracking/checkFormEvents';
 
 import { CheckType } from '../../../../../types';
+import { CheckFormValues } from 'types';
 import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
 import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
-import { FIELD_SPACING, SECONDARY_CONTAINER_ID } from '../../../constants';
+import { SECONDARY_CONTAINER_ID } from '../../../constants';
 import { ScriptExamples } from '../../ScriptExamples';
 import { Column } from '../../ui/Column';
 import { SectionContent } from '../../ui/SectionContent';
@@ -31,20 +33,43 @@ export function ScriptedCheckContent({
   examples = SCRIPT_EXAMPLES,
   scriptField = 'settings.scripted.script',
 }: ScriptedCheckSectionProps) {
-  const theme = useTheme2();
   const hasExamples = examples && examples?.length > 0;
   const styles = useStyles2(getStyles);
+  const [isFullSection, setIsFullSection] = useState(false);
+  const {
+    formState: { errors, submitCount },
+  } = useFormContext<CheckFormValues>();
+  const prevSubmitCountRef = useRef(submitCount);
+
+  // Auto-collapse editor when form is submitted with field errors
+  useEffect(() => {
+    const hasFieldErrors = !!(errors.job || errors.target);
+    const submitCountChanged = submitCount !== prevSubmitCountRef.current;
+
+    if (isFullSection && submitCountChanged && hasFieldErrors) {
+      setIsFullSection(false);
+    }
+
+    prevSubmitCountRef.current = submitCount;
+  }, [submitCount, errors.job, errors.target, isFullSection]);
 
   return (
     <SectionContent noWrapper>
-      <Column gap={FIELD_SPACING} padding={theme.spacing(0, 2)}>
-        <FormJobField field="job" />
-        <FormInstanceField field="target" />
-      </Column>
+      {!isFullSection && (
+        <div className={styles.fieldsContainer}>
+          <FormJobField field="job" />
+          <FormInstanceField field="target" />
+        </div>
+      )}
       <Column fill>
         <FormTabs actions={<HelpButton />}>
           <FormTabContent label="Script" fillVertical vanilla>
-            <GenericScriptField field={scriptField} />
+            <GenericScriptField
+              field={scriptField}
+              renderHeaderAction={() => (
+                <ExpandButton isExpanded={isFullSection} onToggle={() => setIsFullSection(!isFullSection)} />
+              )}
+            />
           </FormTabContent>
           {hasExamples && (
             <FormTabContent label="Examples" fillVertical vanilla className={styles.codeSnippetWrapper}>
@@ -56,6 +81,27 @@ export function ScriptedCheckContent({
     </SectionContent>
   );
 }
+
+interface ExpandButtonProps {
+  isExpanded: boolean;
+  onToggle: () => void;
+}
+
+const ExpandButton = ({ isExpanded, onToggle }: ExpandButtonProps) => {
+  return (
+    <Button
+      type="button"
+      onClick={onToggle}
+      variant="secondary"
+      size="sm"
+      icon={isExpanded ? 'angle-down' : 'angle-up'}
+      tooltip={isExpanded ? 'Show all fields' : 'Expand editor to full section'}
+      aria-label={isExpanded ? 'Collapse editor' : 'Expand editor'}
+    >
+      {isExpanded ? 'Show fields' : 'Expand editor'}
+    </Button>
+  );
+};
 
 const HelpButton = () => {
   const { setActive } = useFeatureTabsContext();
@@ -82,6 +128,12 @@ const HelpButton = () => {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
+    fieldsContainer: css`
+      display: flex;
+      gap: ${theme.spacing(2)};
+      padding: ${theme.spacing(0, 2)};
+      flex-shrink: 0;
+    `,
     codeSnippetWrapper: css`
       // Handle code snippet border
       & > div,
