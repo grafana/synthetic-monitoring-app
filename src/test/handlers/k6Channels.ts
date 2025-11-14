@@ -12,4 +12,3 @@ export const listK6Channels: ApiEntry<ListChannelsResponse> = {
     };
   },
 };
-
