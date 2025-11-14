@@ -889,3 +889,15 @@ export type PluginPermissions =
 export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | 'write' | 'delete'}`;
 
 export type AlertingType = 'alerting' | 'sensitivity';
+
+export interface K6Channel {
+  id: string;
+  name: string;
+  default: boolean;
+  deprecatedAfter: string;
+  manifest: string; // "k6>=1", "k6>1,k6>=0.53"
+}
+
+export interface ListChannelsResponse {
+  channels: K6Channel[];
+}
