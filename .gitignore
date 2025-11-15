@@ -35,7 +35,8 @@ temp/
 
 .vscode
 .cursorrules
-.cursor
+.cursor/rules/personal
+.cursor/references
 .DS_Store
 
 dev/license.jwt
