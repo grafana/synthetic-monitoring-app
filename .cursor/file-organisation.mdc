@@ -1,0 +1,27 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+- We have strict linting (.eslintrc), typing (.tsconfig.json) and code formatting (.prettierrc) rules and PRs won't pass our CI/CD checks unless they meet the standard set. These should be abided at all times and usually can be fixed by using Cursor's format on save feature or running `yarn lint:fix`
+
+- When changing files ensure you clean up any lint, type and prettier errors that are left afterwards.
+
+- Separation of concerns is important when writing components. These files are not always necessary but are useful when a component grows in length and complexity. 
+- {ComponentName}.tsx which includes all the JSX and view concerns, including CSS.
+- {ComponentName.hooks.ts} for any custom hooks which the component needs to utilise
+- {ComponentName.utils.ts} for any supporting functions which are used in the view component or hooks file
+- {ComponentName.test.tsx} for our tests. We favour integration tests over most other forms of testing
+- {ComponentName.constants.ts} for any constants that are used in the component and associated files
+- {ComponentName.types.ts} for any types that are used in the component and associated files. This file often isn't needed and the types can be included in the associated files. Make your best judgement when the file has grown in complexity and should separate the types to its own file.
+
+- We use @grafana/ui for our design system. Its component documentation can be found at: https://developers.grafana.com/ui/latest/index.html?path=/ Grafana UI's components should be used as a top priority rather than creating custom components. Ask me if you think we should create a custom component if the @grafana/ui one is falling short. We have a generic components folder in this repo which might already have the component we need.
+
+- When creating new components we follow the convention of colocating components as close as possible to where they are used when they are one-off components. E.g. if a component is only used once on a certain page, it should live as close to the page's file organisation structure as possible. If the component is more generic and used in multiple places in the app, it should have its own folder in the src/components folder.
+
+- There are several other @grafana packages used which can be looked up in our package.json file and suitable functions and methods should be used from there before creating bespoke ones. They follow the same pattern as the components listed above. Generic functions and methods should be organised appropriately and one-off functions should live as close to where they are used as possible.
+
+- For our dashboards we use @grafana/scenes and @grafana/react-scenes. The Scenes documentation is found at: https://grafana.com/developers/scenes/core-concepts
+
+- Some files are generated automatically and should not be edited directly. These files will mention at the top of them if they should be edited directly or if there is a build script to run instead. They are usually markdown or json files.

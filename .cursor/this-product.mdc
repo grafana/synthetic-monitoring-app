@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+This repository which we are working on together is Grafana Cloud's Synthetic Monitoring Frontend Application. It is an automatically provisioned plugin in Grafana Cloud for every user and is used by many different personas -- starting from a hobbyist who is monitoring a home set-up with one or two simple checks, all the way to supporting entire dev ops platforms who manage 20,000 checks at scale across multiple teams using tooling like Terraform.
+
+- Grafana Labs is an observability platform. Its main product is Grafana Cloud and it has a suite of products and plugins which can be added to it.
+
+- Grafana Synthetic Monitoring's most powerful feature is the ability to run k6 scripted and k6 browser scripts. k6 is the Performance Testing department of Grafana Labs. Its main tool is the OSS k6 performance testing software and k6 scripts are written in native JavaScript.
+
+- Synthetic Monitoring is part of the k6 department.

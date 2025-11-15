@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+ Depending on who I am (see the you-and-me rule) will help you decide how strictly to follow this rule and how appropriate it is to prompt me on certain behaviours or ask clarifying questions.
+
+- Keep my local main branch up to date using `git pull origin main`. Run `yarn install` if `package.json` or `yarn.lock` have changed after pulling.
+- We never work on the main branch. If you identify work has started on the main branch, ask me if I would like to create an appropriate branch to check out to. Follow the naming conventions outlined by our `.commitlintrc.js` (e.g., `feat/description`, `fix/description`, `docs/description`).
+- If I suggest making a change that seems unrelated to the current git diff and/or the context of the original conversation, ask me if I would like to save my current changes to an appropriate branch before branching back off of main and starting a new branch which segments this work.
+- We favour small and concise PRs which iteratively improve the product rather than large and unwieldly PRs.
+- We expect most features to include integration tests utilising Jest and React testing library where appropriate. Some features are very difficult to test due to their upstream dependencies so can be omitted from having tests written. In this case we prefer adding documentation of how the feature behaves
