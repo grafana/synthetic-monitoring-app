@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.40.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.39.0...v1.40.0) (2025-11-15)
+
+
+### Features
+
+* modernize scripted and browser examples ([#1458](https://github.com/grafana/synthetic-monitoring-app/issues/1458)) ([9856678](https://github.com/grafana/synthetic-monitoring-app/commit/98566784fc2ead3e78938ffdb6e88a6611148d2f))
+
+
+### Documentation
+
+* add comprehensive cursor rules for AI-assisted development ([#1462](https://github.com/grafana/synthetic-monitoring-app/issues/1462)) ([ef5c4a7](https://github.com/grafana/synthetic-monitoring-app/commit/ef5c4a77242e5430b60424295cb72a9d51958084))
+
+
+### Miscellaneous Chores
+
+* update api mappings file ([#1464](https://github.com/grafana/synthetic-monitoring-app/issues/1464)) ([74f78b0](https://github.com/grafana/synthetic-monitoring-app/commit/74f78b076c779f45a8d310cd3ace8d21e96807e2))
+
 ## [1.39.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.38.1...v1.39.0) (2025-11-12)
 
 
