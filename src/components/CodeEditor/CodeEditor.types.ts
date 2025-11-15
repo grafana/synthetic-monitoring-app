@@ -12,6 +12,7 @@ export interface CodeEditorProps {
   overlayMessage?: ReactNode;
   readOnly?: boolean;
   renderHeader?: ({ scriptValue }: { scriptValue: string }) => ReactNode;
+  renderHeaderAction?: () => ReactNode;
   value: string;
 }
 

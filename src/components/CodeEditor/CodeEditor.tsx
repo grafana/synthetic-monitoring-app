@@ -20,27 +20,38 @@ const addK6Types = (monaco: typeof monacoType) => {
   // Remove TS errors for remote libs imports
   monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'");
 };
-const containerStyles = css`
-  height: 100%;
-  min-height: 600px;
+const getEditorStyles = () => ({
+  container: css`
+    height: 100%;
+    min-height: calc(100vh - 400px);
 
-  & > div {
-    height: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    & > div {
+      height: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-  // Background styling for editable ranges (multi)
-  .editableArea--multi-line {
-    opacity: 1;
-    background-color: rgba(255, 255, 255, 0.1);
-  }
+    // Background styling for editable ranges (multi)
+    .editableArea--multi-line {
+      opacity: 1;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
 
-  > section {
-    min-height: inherit;
-  }
-`;
+    > section {
+      min-height: inherit;
+    }
+  `,
+  wrapper: css`
+    position: relative;
+  `,
+  floatingButton: css`
+    position: absolute;
+    top: 38px;
+    right: 24px;
+    z-index: 100;
+  `,
+});
 
 export const CodeEditor = forwardRef(function CodeEditor(
   {
@@ -55,6 +66,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
     overlayMessage,
     readOnly,
     renderHeader,
+    renderHeaderAction,
     value,
     ...rest // Allow for custom data-attributes
   }: CodeEditorProps & ConstrainedEditorProps,
@@ -63,6 +75,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
   const [constrainedInstance, setConstrainedInstance] = useState<null | ConstrainedEditorInstance>(null);
   const [prevValue, setPrevValue] = useState(value);
+  const styles = getEditorStyles();
 
   // GC
   useEffect(() => {
@@ -162,8 +175,9 @@ export const CodeEditor = forwardRef(function CodeEditor(
   }, [value, constrainedRanges]);
 
   return (
-    <div data-fs-element="Code editor" id={id} {...rest}>
+    <div data-fs-element="Code editor" id={id} {...rest} className={styles.wrapper}>
       {renderHeader && renderHeader({ scriptValue: value })}
+      {renderHeaderAction && <div className={styles.floatingButton}>{renderHeaderAction()}</div>}
       {/* {overlayMessage && <Overlay>{overlayMessage}</Overlay>} */}
       <GrafanaCodeEditor
         value={value}
@@ -181,7 +195,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
         onBeforeEditorMount={handleBeforeEditorMount}
         onEditorDidMount={handleEditorDidMount}
         readOnly={readOnly}
-        containerStyles={containerStyles}
+        containerStyles={styles.container}
       />
     </div>
   );
