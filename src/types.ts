@@ -123,6 +123,7 @@ export interface Probe extends ExistingObject {
   deprecated: boolean;
   k6Version?: string; // For legacy probes: static version like "v0.54.1". For modern probes: may be empty
   capabilities: ProbeCapabilities;
+  k6Versions?: Record<string, string | null>;
 }
 
 export type ProbeMetadata = {
