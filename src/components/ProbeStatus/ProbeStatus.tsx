@@ -14,12 +14,13 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe } from 'types';
+import { type ExtendedProbe, FeatureName } from 'types';
 import { formatDate } from 'utils';
 import { useProbes, useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
@@ -115,6 +116,21 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
       />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
+        <FeatureFlag name={FeatureName.VersionManagement}>
+          {({ isEnabled }) =>
+            isEnabled && probe.k6Versions ? (
+              <Meta
+                title="k6 versions supported:"
+                value={
+                  probe.k6Versions &&
+                  Object.entries(probe.k6Versions)
+                    .map(([channel, version]) => `${channel}: ${version}`)
+                    .join(', ')
+                }
+              />
+            ) : null
+          }
+        </FeatureFlag>
         <Meta
           title={`Last ${probe.online ? `offline` : `online`}:`}
           value={neverOnline ? `Never` : formatDate(probe.onlineChange * 1000)}
