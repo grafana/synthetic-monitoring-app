@@ -66,9 +66,8 @@ export function ScriptedCheckContent({
           <FormTabContent label="Script" fillVertical vanilla>
             <GenericScriptField
               field={scriptField}
-              renderHeaderAction={() => (
-                <ExpandButton isExpanded={isFullSection} onToggle={() => setIsFullSection(!isFullSection)} />
-              )}
+              isExpanded={isFullSection}
+              onToggleExpand={() => setIsFullSection(!isFullSection)}
             />
           </FormTabContent>
           {hasExamples && (
@@ -81,27 +80,6 @@ export function ScriptedCheckContent({
     </SectionContent>
   );
 }
-
-interface ExpandButtonProps {
-  isExpanded: boolean;
-  onToggle: () => void;
-}
-
-const ExpandButton = ({ isExpanded, onToggle }: ExpandButtonProps) => {
-  return (
-    <Button
-      type="button"
-      onClick={onToggle}
-      variant="secondary"
-      size="sm"
-      icon={isExpanded ? 'angle-down' : 'angle-up'}
-      tooltip={isExpanded ? 'Show all fields' : 'Expand editor to full section'}
-      aria-label={isExpanded ? 'Collapse editor' : 'Expand editor'}
-    >
-      {isExpanded ? 'Show fields' : 'Expand editor'}
-    </Button>
-  );
-};
 
 const HelpButton = () => {
   const { setActive } = useFeatureTabsContext();

@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useState } from 'react';
-import { CodeEditor as GrafanaCodeEditor } from '@grafana/ui';
+import { Button, CodeEditor as GrafanaCodeEditor } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
 import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
@@ -20,6 +20,28 @@ const addK6Types = (monaco: typeof monacoType) => {
   // Remove TS errors for remote libs imports
   monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'");
 };
+
+interface ExpandButtonProps {
+  isExpanded?: boolean;
+  onToggleExpand: () => void;
+}
+
+function ExpandButton({ isExpanded, onToggleExpand }: ExpandButtonProps) {
+  return (
+    <Button
+      type="button"
+      onClick={onToggleExpand}
+      variant="secondary"
+      size="sm"
+      icon={isExpanded ? 'angle-down' : 'angle-up'}
+      tooltip={isExpanded ? 'Show all fields' : 'Expand editor to full section'}
+      aria-label={isExpanded ? 'Collapse editor' : 'Expand editor'}
+    >
+      {isExpanded ? 'Show fields' : 'Expand editor'}
+    </Button>
+  );
+}
+
 const getEditorStyles = () => ({
   container: css`
     height: 100%;
@@ -66,7 +88,8 @@ export const CodeEditor = forwardRef(function CodeEditor(
     overlayMessage,
     readOnly,
     renderHeader,
-    renderHeaderAction,
+    isExpanded,
+    onToggleExpand,
     value,
     ...rest // Allow for custom data-attributes
   }: CodeEditorProps & ConstrainedEditorProps,
@@ -177,7 +200,11 @@ export const CodeEditor = forwardRef(function CodeEditor(
   return (
     <div data-fs-element="Code editor" id={id} {...rest} className={styles.wrapper}>
       {renderHeader && renderHeader({ scriptValue: value })}
-      {renderHeaderAction && <div className={styles.floatingButton}>{renderHeaderAction()}</div>}
+      {onToggleExpand && (
+        <div className={styles.floatingButton}>
+          <ExpandButton isExpanded={isExpanded} onToggleExpand={onToggleExpand} />
+        </div>
+      )}
       {/* {overlayMessage && <Overlay>{overlayMessage}</Overlay>} */}
       <GrafanaCodeEditor
         value={value}
