@@ -7,6 +7,7 @@ import { type ExtendedProbe, FeatureName, type Label } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { formatK6Versions } from 'components/CheckEditor/CheckProbes/ProbesList';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
@@ -56,19 +57,14 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
       <Card.Meta>
         <div>Version: {probe.version}</div>
         <FeatureFlag name={FeatureName.VersionManagement}>
-          {({ isEnabled }) =>
-            isEnabled && probe.k6Versions ? (
-              <>
-                <div>k6 versions supported:</div>
-                {probe.k6Versions &&
-                  Object.entries(probe.k6Versions).map(([channel, version]) => (
-                    <div key={channel}>
-                      {channel}: {version}
-                    </div>
-                  ))}
-              </>
-            ) : null
-          }
+          {({ isEnabled }) => {
+            return isEnabled && probe.k6Versions ? (
+              <div>
+                <div>k6 versions:</div>
+                {formatK6Versions(probe)}
+              </div>
+            ) : null;
+          }}
         </FeatureFlag>
       </Card.Meta>
 
