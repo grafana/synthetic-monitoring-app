@@ -18,6 +18,7 @@ import { type ExtendedProbe, FeatureName } from 'types';
 import { formatDate } from 'utils';
 import { useProbes, useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { formatK6Versions } from 'components/CheckEditor/CheckProbes/ProbesList';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
@@ -117,19 +118,14 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
         <FeatureFlag name={FeatureName.VersionManagement}>
-          {({ isEnabled }) =>
-            isEnabled && probe.k6Versions ? (
-              <Meta
-                title="k6 versions supported:"
-                value={
-                  probe.k6Versions &&
-                  Object.entries(probe.k6Versions)
-                    .map(([channel, version]) => `${channel}: ${version}`)
-                    .join(', ')
-                }
-              />
-            ) : null
-          }
+          {({ isEnabled }) => {
+            return isEnabled && probe.k6Versions ? (
+              <div className={styles.k6Versions}>
+                <div className={styles.metaTitle}>k6 versions:</div>
+                <div className={styles.metaValue}>{formatK6Versions(probe)}</div>
+              </div>
+            ) : null;
+          }}
         </FeatureFlag>
         <Meta
           title={`Last ${probe.online ? `offline` : `online`}:`}
@@ -193,4 +189,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     paddingLeft: theme.spacing(1),
   }),
   metaItem: css({ display: `flex`, gap: theme.spacing(0.5) }),
+  k6Versions: css({
+    display: 'flex',
+    gap: theme.spacing(0.5),
+  }),
+  metaTitle: css({
+    fontWeight: 700,
+  }),
+  metaValue: css({
+    whiteSpace: 'pre-line',
+  }),
 });
