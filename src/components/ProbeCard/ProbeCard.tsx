@@ -3,11 +3,10 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Card, Link, LinkButton, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe, FeatureName, type Label } from 'types';
+import { type ExtendedProbe, FeatureName, type Label, Probe, ProbeWithMetadata } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
-import { formatK6Versions } from 'components/CheckEditor/CheckProbes/ProbesList';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
@@ -58,12 +57,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
         <div>Version: {probe.version}</div>
         <FeatureFlag name={FeatureName.VersionManagement}>
           {({ isEnabled }) => {
-            return isEnabled && probe.k6Versions ? (
-              <div>
-                <div>k6 versions:</div>
-                {formatK6Versions(probe)}
-              </div>
-            ) : null;
+            return isEnabled ? <div>k6 versions: {formatK6VersionsInline(probe)}</div> : null;
           }}
         </FeatureFlag>
       </Card.Meta>
@@ -123,6 +117,15 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
     </Card>
   );
 };
+
+export function formatK6VersionsInline(probe: ProbeWithMetadata | Probe) {
+  if (!probe.k6Versions || Object.keys(probe.k6Versions).length === 0) {
+    return 'none reported';
+  }
+  return Object.values(probe.k6Versions)
+    .filter((v) => v !== null)
+    .join(', ');
+}
 
 const getStyles2 = (theme: GrafanaTheme2) => {
   const containerName = `probeCard`;

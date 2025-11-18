@@ -249,9 +249,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 });
 
-export function formatK6Versions(probe: ProbeWithMetadata | Probe): React.ReactNode {
+function formatK6Versions(probe: ProbeWithMetadata | Probe): React.ReactNode {
   if (!probe.k6Versions || Object.keys(probe.k6Versions).length === 0) {
-    return 'No k6 versions available';
+    return 'none reported';
   }
 
   return Object.entries(probe.k6Versions).map(([channel, version]) => (

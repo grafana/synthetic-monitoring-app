@@ -18,11 +18,11 @@ import { type ExtendedProbe, FeatureName } from 'types';
 import { formatDate } from 'utils';
 import { useProbes, useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
-import { formatK6Versions } from 'components/CheckEditor/CheckProbes/ProbesList';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
+import { formatK6VersionsInline } from 'components/ProbeCard/ProbeCard';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
 
@@ -119,12 +119,7 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
         <Meta title="Version:" value={probe.version} />
         <FeatureFlag name={FeatureName.VersionManagement}>
           {({ isEnabled }) => {
-            return isEnabled && probe.k6Versions ? (
-              <div className={styles.k6Versions}>
-                <div className={styles.metaTitle}>k6 versions:</div>
-                <div className={styles.metaValue}>{formatK6Versions(probe)}</div>
-              </div>
-            ) : null;
+            return isEnabled ? <Meta title="k6 versions:" value={formatK6VersionsInline(probe)} /> : null;
           }}
         </FeatureFlag>
         <Meta
