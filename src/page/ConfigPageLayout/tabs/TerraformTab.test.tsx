@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 
 import { DataTestIds } from '../../../test/dataTestIds';
 import { BASIC_PING_CHECK } from '../../../test/fixtures/checks';
-import { PRIVATE_PROBE } from '../../../test/fixtures/probes';
+import { PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE } from '../../../test/fixtures/probes';
 import { TERRAFORM_BASIC_PING_CHECK } from '../../../test/fixtures/terraform';
 import { apiRoute } from '../../../test/handlers';
 import { render } from '../../../test/render';
@@ -17,6 +17,13 @@ async function renderTerraformTab() {
       result: () => {
         return {
           json: [BASIC_PING_CHECK],
+        };
+      },
+    }),
+    apiRoute('listProbes', {
+      result: () => {
+        return {
+          json: [PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE],
         };
       },
     })
