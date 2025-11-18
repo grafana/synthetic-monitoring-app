@@ -2,10 +2,11 @@ import { createFrequencySchema } from 'schemas/general/Frequency';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
-import { BrowserSettings, CheckFormValuesBrowser, CheckType } from 'types';
+import { BrowserSettings, CheckFormValuesBrowser, CheckType, ProbeWithMetadata } from 'types';
 import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
 import { maxSizeValidation, validateBrowserScript } from './script/validation';
+import { createProbeCompatibilityRefinement } from './utils/probeCompatibilityRefinement';
 import { baseCheckSchema } from './BaseCheckSchema';
 
 export const MIN_FREQUENCY_BROWSER = ONE_MINUTE_IN_MS;
@@ -20,8 +21,8 @@ function createBrowserSettingsSchema(): ZodType<BrowserSettings> {
 }
 
 
-export function createBrowserCheckSchema(): ZodType<CheckFormValuesBrowser> {
-  return baseCheckSchema
+export function createBrowserCheckSchema(availableProbes?: ProbeWithMetadata[]): ZodType<CheckFormValuesBrowser> {
+  const schema = baseCheckSchema
     .omit({
       timeout: true,
       frequency: true,
@@ -38,6 +39,14 @@ export function createBrowserCheckSchema(): ZodType<CheckFormValuesBrowser> {
         timeout: createTimeoutSchema(MIN_TIMEOUT_BROWSER, MAX_TIMEOUT_BROWSER),
       })
     );
+
+  // Add probe compatibility refinement if probes are provided
+  if (availableProbes && availableProbes.length > 0) {
+    const getChannel = (data: CheckFormValuesBrowser) => data.settings.browser?.channel;
+    return schema.superRefine(createProbeCompatibilityRefinement<CheckFormValuesBrowser>(availableProbes, getChannel));
+  }
+
+  return schema;
 }
 
 export const browserCheckSchema: ZodType<CheckFormValuesBrowser> = createBrowserCheckSchema();

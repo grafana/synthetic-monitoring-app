@@ -1,10 +1,30 @@
 import { screen } from '@testing-library/react';
+import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
 import { CheckType } from 'types';
+import { EMPTY_METADATA } from 'components/CheckEditor/ProbesMetadata';
 import { selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { setupFormWithChannelSelector } from 'page/__testHelpers__/channel';
 import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
+
+jest.mock('data/useProbes', () => ({
+  ...jest.requireActual('data/useProbes'),
+  useProbesWithMetadata: jest.fn(() => ({
+    data: [
+      {
+        ...EMPTY_METADATA,
+        ...PRIVATE_PROBE,
+        displayName: PRIVATE_PROBE.name,
+        k6Versions: {
+          v1: 'v1.2.3',
+          v2: 'v2.0.0',
+        },
+      },
+    ],
+    isLoading: false,
+  })),
+}));
 
 const checkType = CheckType.Browser;
 
@@ -50,9 +70,9 @@ describe(`BrowserCheck - 1 (Script) payload`, () => {
 
   it(`can select and submit a non-default channel`, async () => {
     const { read, user, channelCombobox } = await setupFormWithChannelSelector(checkType);
-    
+
     await selectComboboxOption(user, channelCombobox, /v2\.x/i);
-    
+
     await submitForm(user);
     const { body } = await read();
     expect(body.settings.browser.channel).toBe('v2');
