@@ -26,7 +26,7 @@ export const ProbesList = ({
   const styles = useStyles2(getStyles);
   const { isEnabled: isVersionManagementEnabled } = useFeatureFlag(FeatureName.VersionManagement);
   const { getValues } = useFormContext<CheckFormValues>();
-  
+
   const checkType = getValues('checkType');
   const selectedChannel = useMemo(() => {
     if (checkType === 'scripted') {
@@ -102,7 +102,7 @@ export const ProbesList = ({
       <div className={styles.probesList}>
         {probes.map((probe: ProbeWithMetadata) => {
           const isCompatible = isProbeCompatible(probe);
-          
+
           return (
             <div key={probe.id} className={`${styles.item} ${!isCompatible ? styles.incompatibleItem : ''}`}>
               <Checkbox
@@ -124,9 +124,7 @@ export const ProbesList = ({
                         content={
                           <div>
                             <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>k6 versions:</div>
-                            <div>
-                              {formatK6Versions(probe)}
-                            </div>
+                            <div>{formatK6Versions(probe)}</div>
                             {!isCompatible && selectedChannel && (
                               <div className={styles.tooltipWarning}>
                                 ⚠️ Selected channel {selectedChannel} is not supported
@@ -251,9 +249,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 });
 
-export function formatK6Versions(probe: ProbeWithMetadata | Probe): React.ReactNode {
+function formatK6Versions(probe: ProbeWithMetadata | Probe): React.ReactNode {
   if (!probe.k6Versions || Object.keys(probe.k6Versions).length === 0) {
-    return 'No k6 versions available';
+    return 'none reported';
   }
 
   return Object.entries(probe.k6Versions).map(([channel, version]) => (
