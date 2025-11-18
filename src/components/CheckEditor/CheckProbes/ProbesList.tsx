@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Checkbox, Icon, Label, Stack, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Badge, Checkbox, Icon, Label, Stack, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -102,41 +102,46 @@ export const ProbesList = ({
       <div className={styles.probesList}>
         {probes.map((probe: ProbeWithMetadata) => {
           const isCompatible = isProbeCompatible(probe);
+          const isSelected = selectedProbes.includes(probe.id!);
+          const shouldDisable = disabled || (!isCompatible && !isSelected);
+          const showIncompatibleStyling = !isCompatible && !isSelected;
 
           return (
-            <div key={probe.id} className={`${styles.item} ${!isCompatible ? styles.incompatibleItem : ''}`}>
+            <div key={probe.id} className={`${styles.item} ${showIncompatibleStyling ? styles.incompatibleItem : ''}`}>
               <Checkbox
                 data-testid={CHECKSTER_TEST_ID.form.inputs.probeCheckbox}
                 id={`probe-${probe.id}`}
                 onClick={() => handleToggleProbe(probe)}
-                checked={selectedProbes.includes(probe.id!)}
-                disabled={disabled || !isCompatible}
+                checked={isSelected}
+                disabled={shouldDisable}
               />
               <Label htmlFor={`probe-${probe.id}`} data-testid={CHECKSTER_TEST_ID.form.inputs.probeLabel}>
                 <div className={styles.columnLabel}>
-                  <div className={!isCompatible ? styles.incompatibleLabel : undefined}>
+                  <div className={showIncompatibleStyling ? styles.incompatibleLabel : undefined}>
                     <ProbeStatus probe={probe} />{' '}
                     {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
                       probe.provider ? `(${probe.provider})` : ''
                     }`}
-                    {isVersionManagementEnabled && probe.k6Versions && (
-                      <Tooltip
-                        content={
-                          <div>
-                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>k6 versions:</div>
-                            <div>{formatK6Versions(probe)}</div>
-                            {!isCompatible && selectedChannel && (
-                              <div className={styles.tooltipWarning}>
-                                ⚠️ Selected channel {selectedChannel} is not supported
-                              </div>
-                            )}
-                          </div>
-                        }
-                      >
-                        <span className={styles.k6IconWrapper}>
-                          <Icon name="k6-rounded" className={styles.k6Icon} />
-                        </span>
-                      </Tooltip>
+                    {isVersionManagementEnabled && probe.k6Versions && selectedChannel && (
+                      <>
+                        <Badge
+                          text={probe.k6Versions[selectedChannel] || 'not supported'}
+                          color={!isCompatible ? 'orange' : 'blue'}
+                          className={styles.versionBadge}
+                        />
+                        <Tooltip
+                          content={
+                            <div>
+                              <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>All k6 versions:</div>
+                              <div>{formatK6Versions(probe)}</div>
+                            </div>
+                          }
+                        >
+                          <span className={styles.k6IconWrapper}>
+                            <Icon name="info-circle" className={styles.infoIcon} />
+                          </span>
+                        </Tooltip>
+                      </>
                     )}
                     {probe.deprecated && (
                       <DeprecationNotice
@@ -221,23 +226,27 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(0.5),
+    width: '100%',
+  }),
+
+  versionBadge: css({
+    marginLeft: theme.spacing(0.5),
+    verticalAlign: 'middle',
   }),
 
   k6IconWrapper: css({
     display: 'inline-flex',
     alignItems: 'center',
+    justifyContent: 'center',
     cursor: 'pointer',
-    marginLeft: theme.spacing(0.5),
+    marginLeft: theme.spacing(0.25),
+    verticalAlign: 'middle',
   }),
 
-  k6Icon: css({
-    fontSize: '16px',
-  }),
-
-  tooltipWarning: css({
-    color: theme.colors.warning.text,
-    marginTop: theme.spacing(0.5),
-    fontWeight: theme.typography.fontWeightMedium,
+  infoIcon: css({
+    fontSize: '14px',
+    color: theme.colors.text.secondary,
+    verticalAlign: 'middle',
   }),
 
   incompatibleItem: css({
