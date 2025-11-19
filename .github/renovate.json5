@@ -8,6 +8,12 @@
   //
   "semanticCommitScope": null,
   "packageRules": [
+    // Remove semantic commit scopes for all package types to comply with commitlint
+    // This overrides the base preset's rules that add (deps) and (deps-dev) scopes
+    {
+      "matchManagers": ["npm", "github-actions", "dockerfile"],
+      "semanticCommitScope": null
+    },
     // we can never update the React packages until grafana does
     {
       "matchPackageNames": [
@@ -70,11 +76,6 @@
       "description": "Label digest updates",
       "matchUpdateTypes": ["digest"],
       "labels": ["automerge-digest"]
-    },
-    // Override base preset for GitHub Actions to remove (deps) scope
-    {
-      "matchManagers": ["github-actions"],
-      "semanticCommitScope": null
     }
   ]
 }
