@@ -14,19 +14,21 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { isEqual } from 'lodash';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
+import { createCheckSchema } from 'schemas/forms/utils/createCheckSchema';
 import { ZodType } from 'zod';
 
 import { FormNavigationState, FormSectionName } from '../types';
-import { Check, CheckFormValues, CheckType } from 'types';
+import { Check, CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
 import { getCheckType } from 'utils';
+import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
+import { useProbeCompatibilityKey } from 'components/CheckForm/CheckForm.hooks';
 
 import {
   ASSISTED_FORM_MERGE_FIELDS,
   CheckFormMergeMethod,
   DEFAULT_CHECK_FORM_MERGE_METHOD,
   DEFAULT_CHECK_TYPE,
-  FORM_CHECK_TYPE_SCHEMA_MAP,
   K6_CHECK_TYPES,
 } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
@@ -83,14 +85,21 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
-function useFormValuesMeta(checkType: CheckType, check?: Check) {
+function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[]) {
+  const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
+
   return useMemo(() => {
-    const schema = FORM_CHECK_TYPE_SCHEMA_MAP[checkType];
+    const schema = createCheckSchema(checkType, probesWithMetadata);
+    const refinedSchema = addRefinements<CheckFormValues>(schema);
+
     return {
       defaultFormValues: check ? toFormValues(check) : getDefaultFormValues(checkType),
-      schema: addRefinements<CheckFormValues>(schema),
+      schema: refinedSchema,
     };
-  }, [checkType, check]);
+    // Use probeCompatibilityKey instead of probesWithMetadata array reference
+    // This ensures schema only recreates when probe compatibility actually changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkType, check, probeCompatibilityKey]);
 }
 
 export function ChecksterProvider({
@@ -102,6 +111,8 @@ export function ChecksterProvider({
   disabled = false,
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
+  const { data: probesWithMetadata = [] } = useProbesWithMetadata();
+
   const [checkType, setCheckType] = useState<CheckType>(
     isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
   );
@@ -111,7 +122,7 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check);
+  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata);
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
