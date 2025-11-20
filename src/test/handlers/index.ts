@@ -88,7 +88,7 @@ export function apiRoute<K extends keyof ApiRoutes>(
 }
 
 function toRestMethod({ route, method, result }: ApiEntry) {
-  const urlPattern = new RegExp(`^http://localhost.*${route}$`);
+  const urlPattern = new RegExp(`^http://localhost.*${route}(?:\\?.*)?$`);
 
   return http[method](urlPattern, async ({ request }) => {
     const { status = 200, json } = await result(request);
