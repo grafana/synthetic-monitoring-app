@@ -12,7 +12,7 @@ import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runti
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, CheckAlertDraft, Probe, ThresholdSettings } from '../types';
+import { Check, CheckAlertDraft, ListChannelsResponse, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
   AddCheckResult,
@@ -478,6 +478,17 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       },
     });
   }
+
+  //--------------------------------------------------------------------------------
+  // VERSION MANAGEMENT
+  //--------------------------------------------------------------------------------
+
+  async listK6Channels(): Promise<ListChannelsResponse> {
+    return this.fetchAPI<ListChannelsResponse>(`sm/channels/k6`, {
+      showErrorAlert: false,
+    });
+  }
+
 
   //--------------------------------------------------------------------------------
   // TEST
