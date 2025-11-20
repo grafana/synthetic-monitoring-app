@@ -7,6 +7,8 @@ const config = require('./.config/jest.config');
 module.exports = {
   // Jest configuration provided by Grafana scaffolding
   ...config,
+  // MSW v2 requires Response, Request, Headers globals - must be set up before test files
+  setupFiles: ['<rootDir>/src/test/setup-msw-polyfill.js'],
   setupFilesAfterEnv: ['<rootDir>/src/test/jest-setup.tsx'],
   moduleNameMapper: {
     ...config.moduleNameMapper,
@@ -38,6 +40,7 @@ module.exports = {
       'constrained-editor-plugin',
       '@faker-js/faker',
       'react-error-boundary',
+      'until-async', // Transitive dependency of MSW v2
     ]),
   ],
 };

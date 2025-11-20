@@ -28,7 +28,8 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
     path,
   });
 
-  expect(await screen.findByText('Add new check')).toBeInTheDocument();
+  // Wait with longer timeout for data to load (probes + checks)
+  expect(await screen.findByText('Add new check', {}, { timeout: 5000 })).toBeInTheDocument();
   return res;
 };
 
