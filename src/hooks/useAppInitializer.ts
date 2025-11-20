@@ -35,19 +35,28 @@ function getLogsName(provisionedName?: string) {
 
 function findDatasourceByNameAndUid(
   provisionedName: string,
+  configuredUid: string | undefined,
   type: 'loki' | 'prometheus'
 ): {
   byName: DataSourceInstanceSettings<DataSourceJsonData> | undefined;
   byUid: DataSourceInstanceSettings<DataSourceJsonData> | undefined;
 } {
   const byName = config.datasources[provisionedName];
-  const byUid = Object.values(config.datasources).find((ds) => {
-    if (type === 'loki') {
-      return ds.uid === 'grafanacloud-logs';
-    } else {
-      return ds.uid === 'grafanacloud-metrics';
-    }
-  });
+  
+  // First try to find by the configured UID (respects custom datasources)
+  let byUid = configuredUid ? Object.values(config.datasources).find((ds) => ds.uid === configuredUid) : undefined;
+  
+  // Fall back to default Grafana Cloud UIDs if configured UID doesn't exist
+  if (!byUid) {
+    byUid = Object.values(config.datasources).find((ds) => {
+      if (type === 'loki') {
+        return ds.uid === 'grafanacloud-logs';
+      } else {
+        return ds.uid === 'grafanacloud-metrics';
+      }
+    });
+  }
+  
   return {
     byName,
     byUid,
@@ -92,9 +101,13 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
   const { jsonData, id } = useMeta();
 
   const metricsName = getMetricsName(jsonData.metrics.grafanaName);
-  const { byName: metricsByName, byUid: metricsByUid } = findDatasourceByNameAndUid(metricsName, 'prometheus');
+  const { byName: metricsByName, byUid: metricsByUid } = findDatasourceByNameAndUid(
+    metricsName,
+    jsonData.metrics.uid,
+    'prometheus'
+  );
   const logsName = getLogsName(jsonData.logs.grafanaName);
-  const { byName: logsByName, byUid: logsByUid } = findDatasourceByNameAndUid(logsName, 'loki');
+  const { byName: logsByName, byUid: logsByUid } = findDatasourceByNameAndUid(logsName, jsonData.logs.uid, 'loki');
   const stackId = jsonData.stackId;
 
   const handleClick = async () => {

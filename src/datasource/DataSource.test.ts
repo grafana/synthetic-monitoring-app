@@ -1,6 +1,7 @@
+import { config } from '@grafana/runtime';
 import { BASIC_CHECK_ALERTS } from 'test/fixtures/checkAlerts';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
-import { SM_DATASOURCE } from 'test/fixtures/datasources';
+import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, ApiRoutes, getServerRequests } from 'test/handlers';
 import { server } from 'test/server';
@@ -143,5 +144,116 @@ describe('SMDataSource', () => {
 
     expect(request.headers.get('X-Client-ID')).toEqual(process.env.SM_PLUGIN_ID);
     expect(request.headers.get('X-Client-Version')).toEqual(process.env.SM_PLUGIN_VERSION);
+  });
+
+  describe('getLogsDS', () => {
+    beforeEach(() => {
+      config.datasources = {};
+    });
+
+    it('should return the configured datasource when it exists', () => {
+      config.datasources = {
+        [LOGS_DATASOURCE.name]: LOGS_DATASOURCE,
+      };
+
+      const smDataSource = new SMDataSource(SM_DATASOURCE);
+      const result = smDataSource.getLogsDS();
+
+      expect(result).toEqual(LOGS_DATASOURCE);
+      expect(result?.uid).toEqual('P4DC6B4C9A7FFCC6C');
+    });
+
+    it('should fall back to default grafanacloud-logs UID when configured datasource does not exist', () => {
+      const defaultLogsDS = { ...LOGS_DATASOURCE, uid: 'grafanacloud-logs' };
+      config.datasources = {
+        [defaultLogsDS.name]: defaultLogsDS,
+      };
+
+      const smDataSourceWithMissingConfig = new SMDataSource({
+        ...SM_DATASOURCE,
+        jsonData: {
+          ...SM_DATASOURCE.jsonData,
+          logs: {
+            ...SM_DATASOURCE.jsonData.logs,
+            uid: 'non-existent-uid',
+          },
+        },
+      });
+
+      const result = smDataSourceWithMissingConfig.getLogsDS();
+
+      expect(result).toEqual(defaultLogsDS);
+      expect(result?.uid).toEqual('grafanacloud-logs');
+    });
+
+    it('should respect custom datasource configuration', () => {
+      const lbacLogsDS = {
+        ...LOGS_DATASOURCE,
+        uid: 'grafanacloud-logs-lbac',
+        name: 'grafanacloud-ckbedwellksix-logs-lbac',
+      };
+
+      config.datasources = {
+        [lbacLogsDS.name]: lbacLogsDS,
+      };
+
+      const smDataSourceWithLBAC = new SMDataSource({
+        ...SM_DATASOURCE,
+        jsonData: {
+          ...SM_DATASOURCE.jsonData,
+          logs: {
+            ...SM_DATASOURCE.jsonData.logs,
+            uid: 'grafanacloud-logs-lbac',
+            grafanaName: 'grafanacloud-ckbedwellksix-logs-lbac',
+          },
+        },
+      });
+
+      const result = smDataSourceWithLBAC.getLogsDS();
+
+      expect(result).toEqual(lbacLogsDS);
+      expect(result?.uid).toEqual('grafanacloud-logs-lbac');
+    });
+  });
+
+  describe('getMetricsDS', () => {
+    beforeEach(() => {
+      config.datasources = {};
+    });
+
+    it('should return the configured datasource when it exists', () => {
+      config.datasources = {
+        [METRICS_DATASOURCE.name]: METRICS_DATASOURCE,
+      };
+
+      const smDataSource = new SMDataSource(SM_DATASOURCE);
+      const result = smDataSource.getMetricsDS();
+
+      expect(result).toEqual(METRICS_DATASOURCE);
+      expect(result?.uid).toEqual('P4DCEA413A673ADCC');
+    });
+
+    it('should fall back to default grafanacloud-metrics UID when configured datasource does not exist', () => {
+      const defaultMetricsDS = { ...METRICS_DATASOURCE, uid: 'grafanacloud-metrics' };
+      config.datasources = {
+        [defaultMetricsDS.name]: defaultMetricsDS,
+      };
+
+      const smDataSourceWithMissingConfig = new SMDataSource({
+        ...SM_DATASOURCE,
+        jsonData: {
+          ...SM_DATASOURCE.jsonData,
+          metrics: {
+            ...SM_DATASOURCE.jsonData.metrics,
+            uid: 'non-existent-uid',
+          },
+        },
+      });
+
+      const result = smDataSourceWithMissingConfig.getMetricsDS();
+
+      expect(result).toEqual(defaultMetricsDS);
+      expect(result?.uid).toEqual('grafanacloud-metrics');
+    });
   });
 });
