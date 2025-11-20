@@ -1,4 +1,4 @@
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { getAlertRules, getGrafanaAlertRules, getPromAlertRules } from 'test/handlers/alerting';
 import {
   addCheck,
@@ -17,7 +17,7 @@ import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/pr
 import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
 import { createAccessToken } from 'test/handlers/tokens';
 
-import { ApiEntry, RequestRes } from 'test/handlers/types';
+import { ApiEntry } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
@@ -67,7 +67,7 @@ type ApiRoutesReturnTypes = {
 export function apiRoute<K extends keyof ApiRoutes>(
   routeKey: K,
   res?: Partial<ApiRoutesReturnTypes[K]>,
-  callback?: (req: RequestRes) => void
+  callback?: (req: Request) => void
 ) {
   const defaultRes = apiRoutes[routeKey];
   let { route, method, result }: ApiEntry = {
@@ -78,7 +78,7 @@ export function apiRoute<K extends keyof ApiRoutes>(
   let resultFunc = result;
 
   if (callback) {
-    resultFunc = (req: RequestRes) => {
+    resultFunc = (req: Request) => {
       callback(req);
       return result(req);
     };
@@ -90,17 +90,17 @@ export function apiRoute<K extends keyof ApiRoutes>(
 function toRestMethod({ route, method, result }: ApiEntry) {
   const urlPattern = new RegExp(`^http://localhost.*${route}$`);
 
-  return rest[method](urlPattern, async (req, res, ctx) => {
-    const { status = 200, json } = await result(req);
+  return http[method](urlPattern, async ({ request }) => {
+    const { status = 200, json } = await result(request);
 
-    return res(ctx.status(status), ctx.json(json));
+    return HttpResponse.json(json, { status });
   });
 }
 
 export function getServerRequests() {
-  let requests: RequestRes[] = [];
+  let requests: Request[] = [];
 
-  const record = (request: RequestRes) => requests.push(request);
+  const record = (request: Request) => requests.push(request);
   const read = async (index = 0, readBody = true) => {
     let body;
     const request = requests[index];
