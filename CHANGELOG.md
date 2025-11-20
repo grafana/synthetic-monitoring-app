@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.40.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.39.0...v1.40.0) (2025-11-19)
+
+
+### Features
+
+* modernize scripted and browser examples ([#1458](https://github.com/grafana/synthetic-monitoring-app/issues/1458)) ([9856678](https://github.com/grafana/synthetic-monitoring-app/commit/98566784fc2ead3e78938ffdb6e88a6611148d2f))
+
+
+### Fixes
+
+* remove semantic commit scopes from Renovate to comply with commi… ([#1469](https://github.com/grafana/synthetic-monitoring-app/issues/1469)) ([bbaed0f](https://github.com/grafana/synthetic-monitoring-app/commit/bbaed0fe57a626ce1935874ababd38e1630b2c22))
+
+
+### Documentation
+
+* add comprehensive cursor rules for AI-assisted development ([#1462](https://github.com/grafana/synthetic-monitoring-app/issues/1462)) ([ef5c4a7](https://github.com/grafana/synthetic-monitoring-app/commit/ef5c4a77242e5430b60424295cb72a9d51958084))
+
+
+### Miscellaneous Chores
+
+* update api mappings file ([#1464](https://github.com/grafana/synthetic-monitoring-app/issues/1464)) ([74f78b0](https://github.com/grafana/synthetic-monitoring-app/commit/74f78b076c779f45a8d310cd3ace8d21e96807e2))
+* update dependency glob to v11.1.0 [security] ([#1468](https://github.com/grafana/synthetic-monitoring-app/issues/1468)) ([53d1ef7](https://github.com/grafana/synthetic-monitoring-app/commit/53d1ef79b8902b0deaed652782527cfaf6f19fe1))
+
 ## [1.39.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.38.1...v1.39.0) (2025-11-12)
 
 
