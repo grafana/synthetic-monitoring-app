@@ -63,6 +63,7 @@ export function GenericInputSelectField({
         disabled={disabled}
         options={options}
         aria-labelledby={labelId}
+        data-pathfinder={`CHRIS WAS HERE`}
         {...rest}
       />
     </StyledField>

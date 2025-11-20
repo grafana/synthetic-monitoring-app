@@ -1,10 +1,9 @@
 import { screen } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
-
-import { ADHOC_CHECK_TEST_IDS } from '../constants';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 export function getAdhocCheckTestButton() {
-  return screen.queryByTestId(new RegExp(`^${ADHOC_CHECK_TEST_IDS.testButton}`));
+  return screen.queryByTestId(CHECKSTER_TEST_ID.feature.adhocCheck.TestButton.root);
 }
 
 export async function doAdhocCheck(user: UserEvent) {
