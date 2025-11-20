@@ -32,7 +32,8 @@ export const updateProbe: ApiEntry<UpdateProbeResult> = {
   route: `/sm/probe/update`,
   method: `post`,
   result: (req) => {
-    const updateVal = req.url.searchParams.get('reset-token') || {};
+    const url = new URL(req.url);
+    const updateVal = url.searchParams.get('reset-token') || {};
 
     if (updateVal === `true`) {
       return {
