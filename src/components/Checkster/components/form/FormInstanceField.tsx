@@ -37,6 +37,7 @@ export function FormInstanceField({ field }: { field: 'target' }) {
         </Stack>
       }
       required
+      grow
     />
   );
 }

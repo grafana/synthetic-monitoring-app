@@ -12,6 +12,8 @@ export interface CodeEditorProps {
   overlayMessage?: ReactNode;
   readOnly?: boolean;
   renderHeader?: ({ scriptValue }: { scriptValue: string }) => ReactNode;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
   value: string;
 }
 

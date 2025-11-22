@@ -26,6 +26,7 @@ export function FormJobField({ field = 'job' }: FormJobFieldProps) {
       invalid={Boolean(errors.job)}
       error={errors.job?.message}
       required
+      grow
     >
       <Input
         id="check-editor-job-input"

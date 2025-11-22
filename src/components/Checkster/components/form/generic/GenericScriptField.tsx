@@ -12,10 +12,12 @@ import { Column } from '../../ui/Column';
 
 interface GenericScriptFieldProps {
   field: CheckFormFieldPath;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 // FIXME: Not actually a Field (no label, no description), but it has errors!
-export function GenericScriptField({ field }: GenericScriptFieldProps) {
+export function GenericScriptField({ field, isExpanded, onToggleExpand }: GenericScriptFieldProps) {
   const {
     control,
     formState: { errors, disabled },
@@ -50,6 +52,8 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
               readOnly={disabled}
               data-form-name={field}
               data-form-element-selector="textarea"
+              isExpanded={isExpanded}
+              onToggleExpand={onToggleExpand}
             />
           );
         }}

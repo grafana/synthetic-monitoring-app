@@ -17,6 +17,7 @@ interface GenericInputFieldFormInputFieldProps {
   placeholder?: ComponentProps<typeof Input>['placeholder'];
   type?: ComponentProps<typeof Input>['type'];
   interpolationVariables?: Record<string, string>;
+  grow?: boolean;
 }
 
 export function GenericInputField({
@@ -27,6 +28,7 @@ export function GenericInputField({
   required,
   type = 'text',
   interpolationVariables,
+  grow,
   ...rest // ideally, only used for aria attributes
 }: GenericInputFieldFormInputFieldProps) {
   const {
@@ -42,6 +44,7 @@ export function GenericInputField({
       description={description}
       required={required}
       htmlFor={id}
+      grow={grow}
       {...getFieldErrorProps(errors, field, interpolationVariables)}
     >
       <Input
