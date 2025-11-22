@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.40.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.40.0...v1.40.1) (2025-11-22)
+
+
+### Miscellaneous Chores
+
+* bump glob from 11.0.3 to 11.1.0 ([#1467](https://github.com/grafana/synthetic-monitoring-app/issues/1467)) ([ff2551a](https://github.com/grafana/synthetic-monitoring-app/commit/ff2551ad352e35b01b555fe880ef91ac3ad9e9b6))
+* update actions/checkout digest to 93cb6ef ([#1472](https://github.com/grafana/synthetic-monitoring-app/issues/1472)) ([099c7b0](https://github.com/grafana/synthetic-monitoring-app/commit/099c7b0e3de8247c85a4ba1612a58cec5559aee5))
+* update actions/create-github-app-token digest to 7e473ef ([#1474](https://github.com/grafana/synthetic-monitoring-app/issues/1474)) ([6d79a9e](https://github.com/grafana/synthetic-monitoring-app/commit/6d79a9ec4070c9acc22a6a100d010281daa35e5e))
+* update grafana/plugin-ci-workflows digest to 45b9f89 ([#1473](https://github.com/grafana/synthetic-monitoring-app/issues/1473)) ([584f2e2](https://github.com/grafana/synthetic-monitoring-app/commit/584f2e2fc8ffadb5e7644b54bb9974b88b124fcc))
+* update grafana/shared-workflows/ action to ([#1456](https://github.com/grafana/synthetic-monitoring-app/issues/1456)) ([8f187d7](https://github.com/grafana/synthetic-monitoring-app/commit/8f187d720ef8e0bdea447eedc371396dd56d447f))
+
 ## [1.40.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.39.0...v1.40.0) (2025-11-19)
 
 
