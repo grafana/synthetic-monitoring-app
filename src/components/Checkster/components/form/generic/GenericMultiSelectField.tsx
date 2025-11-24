@@ -34,7 +34,7 @@ export function GenericMultiSelectField({
   } = useFormContext<CheckFormValues>();
 
   const {
-    field: { onChange, ...rest },
+    field: { onChange, ref, ...rest },
   } = useController({ control, name: field as any });
 
   const handleOnChange = (selected: SelectableValue[]) => {
