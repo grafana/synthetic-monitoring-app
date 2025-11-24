@@ -41,7 +41,7 @@ jobs:
           echo "environment: $ENVIRONMENT"
 
       - name: Get signing token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@776d57f0c1cf5bab2fff564229d23efa4a9b7649
+        uses: grafana/shared-workflows/actions/get-vault-secrets@9fe4bf92f218b4fd2b5d17d1a5e59088cf22c22a
         with:
           common_secrets: |
             GRAFANA_ACCESS_POLICY_TOKEN=plugins/sign-plugin-access-policy-token:token
