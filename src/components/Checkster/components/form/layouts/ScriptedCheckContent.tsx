@@ -1,13 +1,16 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, useTheme2 } from '@grafana/ui';
+import { Button, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackNeedHelpScriptsButtonClicked } from 'features/tracking/checkFormEvents';
 
 import { CheckType } from '../../../../../types';
+import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
+import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
-import { FIELD_SPACING } from '../../../constants';
+import { FIELD_SPACING, SECONDARY_CONTAINER_ID } from '../../../constants';
 import { ScriptExamples } from '../../ScriptExamples';
 import { Column } from '../../ui/Column';
 import { SectionContent } from '../../ui/SectionContent';
@@ -39,7 +42,7 @@ export function ScriptedCheckContent({
         <FormInstanceField field="target" />
       </Column>
       <Column fill>
-        <FormTabs>
+        <FormTabs actions={<HelpButton />}>
           <FormTabContent label="Script" fillVertical vanilla>
             <GenericScriptField field={scriptField} />
           </FormTabContent>
@@ -53,6 +56,29 @@ export function ScriptedCheckContent({
     </SectionContent>
   );
 }
+
+const HelpButton = () => {
+  const { setActive } = useFeatureTabsContext();
+  const { checkType } = useChecksterContext();
+  const source = `${checkType}_check`;
+
+  return (
+    <Button
+      type="button"
+      onClick={() => {
+        setActive('Docs');
+        document.getElementById(SECONDARY_CONTAINER_ID)?.focus();
+        trackNeedHelpScriptsButtonClicked({ source });
+      }}
+      // variant=""
+      fill="text"
+      icon="k6"
+      tooltip="Synthetic Monitoring scripts are built on top of Grafana k6. Click to learn more about authoring scripts."
+    >
+      Need help writing scripts?
+    </Button>
+  );
+};
 
 function getStyles(theme: GrafanaTheme2) {
   return {

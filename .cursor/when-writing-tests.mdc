@@ -1,0 +1,42 @@
+---
+description: when writing tests
+alwaysApply: false
+---
+
+Refer to who I am (the you-and-me.mdc and .cursor/rules/personal/about-me.mdc rule) when thinking about writing tests. If I am not a frontend engineer on the team I am not expected to write in-depth complicated tests but will rely on your help. It is okay not to write tests and make a note in the PR to ask a frontend engineer to write them if the feature has complex testing needs.
+
+- Tests are executed with `yarn test <filename>` (e.g., `yarn test validation.test.ts`).
+- We favour integration tests that focus on the user journey over unit tests.
+- We prefer unit tests over no tests.
+- We prefer tests as documentation for most features rather than having lengthy documentation files to read. If a feature is difficult to write tests for, we would like to see documentation in its place so we can cross check it manually if all the requirements have been met. It is very rare to need integration tests and documentation. Unit tests and documentatation is a likely scenario.
+- We have a sophisticated testing suite in this repository located in the src/test folder. It often acts as a reliable e2e testing strategy as much of the backend APIs are mocked.
+- We have a custom render function that sets up all the boilerplate for an integration test. Because this function relies on waiting for mocked network responses to resolve the testing function has to be async and have an await statement after the render to ensure the child component renders correctly. e.g:
+
+```javascript
+it(`Toggles visibility of the probe cards`, async () => {
+  const { user } = render(
+    <ProbeList probes={DEFAULT_PROBES.map((probe) => probeToExtendedProbe(probe))} title={TITLE} />
+  );
+
+  const cards = await screen.findAllByText(`Reachability`);
+  // rest of the test
+});
+```
+
+- We utilise msw to mock a significant amount of our API and even have layers of abstraction over msw to help write tests. These include:
+  - the src/test/server import
+  - the apiRoute function found in the src/test/handlers file
+  - the db factory to help create fixtures found in src/test/db.
+  - Some fixtures are generated globally so they are stable and can be imported to clarify intent, e.g.
+
+```javascript
+import { OFFLINE_PROBE } from 'test/fixtures/probes';
+
+it(`shows the text 'Offline' for an offline probe`, async () => {
+  render(<Probe probe={OFFLINE_PROBE} />);
+  expect(await screen.findByText(`Offline`)).toBeInTheDocument()
+})
+```
+
+- Propose to me a test-driven development strategy if appropriate where we will write the tests BEFORE working on the feature I want help with. I will let you know if I think this is a good idea or not.
+- If I have rejected the TDD strategy it is likely a good idea to not write tests until we have finished working on the feature and are ready to create a PR as I may not have the feature fully formed and want to vibe code it. If we write tests during implementation we may end up confused what the requirements for the feature are and become unfocused on the problem at hand.

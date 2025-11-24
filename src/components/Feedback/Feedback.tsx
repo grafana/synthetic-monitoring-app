@@ -5,6 +5,7 @@ import { Badge, Button, Icon, Label, Link, Stack, Text, TextArea, Tooltip, useSt
 import { css, cx } from '@emotion/css';
 import { trackFeatureFeedback, trackFeatureFeedbackComment } from 'features/tracking/feedbackEvents';
 
+import { onDocsLinkClick } from 'components/DocsLink/DocsLink.utils';
 import { Toggletip } from 'components/Toggletip';
 
 interface FeedbackAboutProps {
@@ -24,7 +25,7 @@ export const Feedback = ({ about, feature, placement }: FeedbackProps) => {
 
   return (
     <Stack direction="row" gap={0.5} alignItems="center">
-      {about && <FeedbackAbout {...about} />}
+      {about && <FeedbackAbout {...about} feature={feature} />}
       <FeedbackButton
         feature={feature}
         isActive={active === 'good'}
@@ -53,14 +54,19 @@ export const Feedback = ({ about, feature, placement }: FeedbackProps) => {
   );
 };
 
-const FeedbackAbout = ({ text, link, tooltipText = `Learn more` }: FeedbackAboutProps) => {
+const FeedbackAbout = ({
+  text,
+  link,
+  tooltipText = `Learn more`,
+  feature,
+}: FeedbackAboutProps & { feature: string }) => {
   if (!link) {
     return <Badge color="blue" icon="rocket" text={text} />;
   }
 
   return (
     <Tooltip content={tooltipText}>
-      <Link href={link} target="_blank">
+      <Link href={link} target="_blank" onClick={() => onDocsLinkClick(link, `feedback_${feature}`)}>
         <Badge
           color="blue"
           icon="rocket"

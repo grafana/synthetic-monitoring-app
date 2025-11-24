@@ -1,32 +1,31 @@
-import http from 'k6/http'
-import { check, sleep } from 'k6'
+import http from 'k6/http';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
+import { sleep } from 'k6';
 
-const soapReqBody = `
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:hs="http://www.holidaywebservice.com/HolidayService_v2/">
-    <soapenv:Body>
-        <hs:GetHolidaysAvailable>
-            <hs:countryCode>UnitedStates</hs:countryCode>
-        </hs:GetHolidaysAvailable>
-    </soapenv:Body>
-</soapenv:Envelope>`
+// Example SOAP request to convert numbers to words
+const soapReqBody = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <NumberToWords xmlns="http://www.dataaccess.com/webservicesserver/">
+      <ubiNum>42</ubiNum>
+    </NumberToWords>
+  </soap:Body>
+</soap:Envelope>`;
 
-export const options = {}
+export const options = {};
 
 export default function () {
   // When making a SOAP POST request we must not forget to set the content type to text/xml
-  let res = http.post(
-    'http://www.holidaywebservice.com/HolidayService_v2/HolidayService2.asmx?wsdl',
-    soapReqBody,
-    {
-      headers: { 'Content-Type': 'text/xml' },
-    }
-  )
+  let res = http.post('https://www.dataaccess.com/webservicesserver/NumberConversion.wso', soapReqBody, {
+    headers: {
+      'Content-Type': 'text/xml; charset=utf-8',
+      SOAPAction: '',
+    },
+  });
 
   // Make sure the response is correct
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'black friday is present': (r) => r.body.indexOf('BLACK-FRIDAY') !== -1,
-  })
+  expect(res.status).toBe(200);
+  expect(res.body).toContain('forty two');
 
-  sleep(1)
+  sleep(1);
 }

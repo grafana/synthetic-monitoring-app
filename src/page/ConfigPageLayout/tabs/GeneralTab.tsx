@@ -48,7 +48,7 @@ export function GeneralTab() {
           </TextLink>
           .
           <Space v={2} />
-          <ProbeAPIServer />
+          <ProbeAPIServer source="general_tab" />
         </ConfigContent.Section>
 
         <ConfigContent.Section title="Data sources">

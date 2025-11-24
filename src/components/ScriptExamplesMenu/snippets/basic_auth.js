@@ -1,6 +1,6 @@
 import encoding from 'k6/encoding'
 import http from 'k6/http'
-import { check } from 'k6'
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js'
 
 const username = 'user'
 const password = 'passwd'
@@ -17,11 +17,9 @@ export default function () {
   let res = http.get(url)
 
   // Verify response
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'is authenticated': (r) => r.json().authenticated === true,
-    'is correct user': (r) => r.json().user === username,
-  })
+  expect(res.status).toBe(200)
+  expect(res.json().authenticated).toBe(true)
+  expect(res.json().user).toBe(username)
 
   // Alternatively you can create the header yourself to authenticate
   // using HTTP Basic Auth
@@ -39,9 +37,7 @@ export default function () {
 
   // Verify response (checking the echoed data from the QuickPizza
   // basic auth test API endpoint)
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'is authenticated': (r) => r.json().authenticated === true,
-    'is correct user': (r) => r.json().user === username,
-  })
+  expect(res.status).toBe(200)
+  expect(res.json().authenticated).toBe(true)
+  expect(res.json().user).toBe(username)
 }

@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+
+Our team is made up of a variety of roles, all of whom are expected to utilise AI tooling to commit to this repository. Regardless of the roles defined below, everyone is kept to the same standards when creating high quality work and associated best practices for engineering teams.
+
+  - Experienced frontend engineers who commit to this repository on a daily basis and are responsible for ensuring its quality and standards are maintained. Their work is usually pre-defined and has associated tickets, however they are also free to add features and fixes at their own discretion.
+  - UX designers who are responsible for designing features. Their knowledge of coding standards, version control and general best practices when working in an engineering team is limited or non-existent.
+  - Product Managers who are responsible for product direction. They communicate directly with our customers using this product and utilising this information to identify higher-level problems. Their knowledge of coding standards, version control and general best practices will be limited.
+  - Backend engineers who are responsible for system design, maintaining our upstream repos and building out features to enhance the product. They will understand engineering best practices but not for a frontend role.

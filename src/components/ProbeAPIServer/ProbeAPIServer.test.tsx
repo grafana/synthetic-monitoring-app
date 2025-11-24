@@ -28,12 +28,12 @@ describe('ProbeAPIServer', () => {
   });
 
   it('should show the correct probe API server URL', async () => {
-    render(<ProbeAPIServer />);
+    render(<ProbeAPIServer source="test" />);
     expect(await screen.findByText(GRAFANA_DEV_ENTRY.apiServerURL)).toBeInTheDocument();
   });
 
   it(`should show the correct backend address`, async () => {
-    render(<ProbeAPIServer />);
+    render(<ProbeAPIServer source="test" />);
     expect(await screen.findByText(GRAFANA_DEV_ENTRY.backendAddress)).toBeInTheDocument();
   });
 
@@ -41,7 +41,7 @@ describe('ProbeAPIServer', () => {
     // Override the mock for this test only
     mockUseBackendAddress.mockReturnValue('non-matching-backend.example.com');
 
-    render(<ProbeAPIServer />);
+    render(<ProbeAPIServer source="test" />);
     expect(await screen.findByRole('alert', { name: /No probe API server found/ })).toBeInTheDocument();
   });
 });

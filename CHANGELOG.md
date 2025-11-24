@@ -1,5 +1,70 @@
 # Changelog
 
+## [1.40.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.39.0...v1.40.0) (2025-11-19)
+
+
+### Features
+
+* modernize scripted and browser examples ([#1458](https://github.com/grafana/synthetic-monitoring-app/issues/1458)) ([9856678](https://github.com/grafana/synthetic-monitoring-app/commit/98566784fc2ead3e78938ffdb6e88a6611148d2f))
+
+
+### Fixes
+
+* remove semantic commit scopes from Renovate to comply with commi… ([#1469](https://github.com/grafana/synthetic-monitoring-app/issues/1469)) ([bbaed0f](https://github.com/grafana/synthetic-monitoring-app/commit/bbaed0fe57a626ce1935874ababd38e1630b2c22))
+
+
+### Documentation
+
+* add comprehensive cursor rules for AI-assisted development ([#1462](https://github.com/grafana/synthetic-monitoring-app/issues/1462)) ([ef5c4a7](https://github.com/grafana/synthetic-monitoring-app/commit/ef5c4a77242e5430b60424295cb72a9d51958084))
+
+
+### Miscellaneous Chores
+
+* update api mappings file ([#1464](https://github.com/grafana/synthetic-monitoring-app/issues/1464)) ([74f78b0](https://github.com/grafana/synthetic-monitoring-app/commit/74f78b076c779f45a8d310cd3ace8d21e96807e2))
+* update dependency glob to v11.1.0 [security] ([#1468](https://github.com/grafana/synthetic-monitoring-app/issues/1468)) ([53d1ef7](https://github.com/grafana/synthetic-monitoring-app/commit/53d1ef79b8902b0deaed652782527cfaf6f19fe1))
+
+## [1.39.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.38.1...v1.39.0) (2025-11-12)
+
+
+### Features
+
+* add auto-labelling via github script ([#1433](https://github.com/grafana/synthetic-monitoring-app/issues/1433)) ([53ae279](https://github.com/grafana/synthetic-monitoring-app/commit/53ae279e49fcfa433cfae277c94625278f2940f3))
+* add bespoke documentation and tracking per check type ([#1316](https://github.com/grafana/synthetic-monitoring-app/issues/1316)) ([02a328e](https://github.com/grafana/synthetic-monitoring-app/commit/02a328e6d3369cdb713471eb85015bd14fc6522f))
+* add enable/disable check button with live updates ([#1416](https://github.com/grafana/synthetic-monitoring-app/issues/1416)) ([0de3800](https://github.com/grafana/synthetic-monitoring-app/commit/0de38006c9b9f36f48fd8d43e64e0b4708d388b5))
+* add X-Client headers to datasource methods ([#1419](https://github.com/grafana/synthetic-monitoring-app/issues/1419)) ([7212d24](https://github.com/grafana/synthetic-monitoring-app/commit/7212d2477e8df1c5fe64016dc363ecef1db3a7df))
+* added components to automerge minor and patch renovate PRs ([#1432](https://github.com/grafana/synthetic-monitoring-app/issues/1432)) ([d0d6764](https://github.com/grafana/synthetic-monitoring-app/commit/d0d6764e6745032e4cd512104de369f89f39107f))
+* probe polling across application ([#1415](https://github.com/grafana/synthetic-monitoring-app/issues/1415)) ([11a1217](https://github.com/grafana/synthetic-monitoring-app/commit/11a121736703a43938bbd6d74c5aa7650a38a14e))
+
+
+### Fixes
+
+* changes to notification policies routing view ([#1441](https://github.com/grafana/synthetic-monitoring-app/issues/1441)) ([e00a6f7](https://github.com/grafana/synthetic-monitoring-app/commit/e00a6f708ed5a7d17ff7df9346e6670d2f513c30))
+* pass in logs datasource ([#1440](https://github.com/grafana/synthetic-monitoring-app/issues/1440)) ([5aa764b](https://github.com/grafana/synthetic-monitoring-app/commit/5aa764bdfa39d9c472097ae51720a0313c9b7dc4))
+* show breadcrumbs for `Home` ([#1428](https://github.com/grafana/synthetic-monitoring-app/issues/1428)) ([bcfefdd](https://github.com/grafana/synthetic-monitoring-app/commit/bcfefdd6d257fe261dc9333b09cd1c76d2c0b1d6))
+* update dependency @grafana/alerting to v12.3.0-19061782459 ([#1426](https://github.com/grafana/synthetic-monitoring-app/issues/1426)) ([a113773](https://github.com/grafana/synthetic-monitoring-app/commit/a113773104c77b91664696d52ed937961910f863))
+* update dependency @grafana/alerting to v12.3.0-19117376164 ([#1431](https://github.com/grafana/synthetic-monitoring-app/issues/1431)) ([0789a1b](https://github.com/grafana/synthetic-monitoring-app/commit/0789a1b1a63f9b949741d801fb204ee663a18dbe))
+* update dependency @tanstack/react-query to v5.90.7 ([#1443](https://github.com/grafana/synthetic-monitoring-app/issues/1443)) ([f32ae97](https://github.com/grafana/synthetic-monitoring-app/commit/f32ae971fd9d5c8bd00b000aa58e26dc51702798))
+* update dependency ip-address to v10.1.0 ([#1450](https://github.com/grafana/synthetic-monitoring-app/issues/1450)) ([50f3f83](https://github.com/grafana/synthetic-monitoring-app/commit/50f3f835388fbc9ea1c41f736a9859c71273da92))
+* update dependency ol to v10.7.0 ([#1451](https://github.com/grafana/synthetic-monitoring-app/issues/1451)) ([ecdd35e](https://github.com/grafana/synthetic-monitoring-app/commit/ecdd35e1a9d96a0620174d385a94905522826360))
+* update dependency react-hook-form to v7.66.0 ([#1452](https://github.com/grafana/synthetic-monitoring-app/issues/1452)) ([2dd347d](https://github.com/grafana/synthetic-monitoring-app/commit/2dd347d3004f002bdec540dc03326a2059238d86))
+
+
+### Miscellaneous Chores
+
+* add packagerule for github action semantic scope suffix ([#1454](https://github.com/grafana/synthetic-monitoring-app/issues/1454)) ([621fcbe](https://github.com/grafana/synthetic-monitoring-app/commit/621fcbe2f70635956192caf3315be618377e8f29))
+* pin actions/github-script action to d7906e4 ([#1442](https://github.com/grafana/synthetic-monitoring-app/issues/1442)) ([247c81b](https://github.com/grafana/synthetic-monitoring-app/commit/247c81b1c615658b9b5647e293a4940486989eaa))
+* update actions/github-script action to v8 ([#1453](https://github.com/grafana/synthetic-monitoring-app/issues/1453)) ([b0d0aec](https://github.com/grafana/synthetic-monitoring-app/commit/b0d0aec9e62986478ce1a1d302017f9bc9bfd218))
+* update dependency @swc/core to v1.15.1 ([#1446](https://github.com/grafana/synthetic-monitoring-app/issues/1446)) ([a1ae63a](https://github.com/grafana/synthetic-monitoring-app/commit/a1ae63af237fc7df8ef6b5aad5fdee222239522c))
+* update dependency @types/node to v24.10.0 ([#1447](https://github.com/grafana/synthetic-monitoring-app/issues/1447)) ([6107bb1](https://github.com/grafana/synthetic-monitoring-app/commit/6107bb1b8c2f27f3a7428d29fc7a003b6f254a47))
+* update dependency axios to v1.13.2 ([#1439](https://github.com/grafana/synthetic-monitoring-app/issues/1439)) ([1e141e4](https://github.com/grafana/synthetic-monitoring-app/commit/1e141e4da44520bbe4d3109750b31855f014458c))
+* update dependency eslint to v9.39.1 ([#1449](https://github.com/grafana/synthetic-monitoring-app/issues/1449)) ([0107aa4](https://github.com/grafana/synthetic-monitoring-app/commit/0107aa495ea9158eab9462b18c9ff7ce5248d389))
+* update grafana/plugin-ci-workflows digest to 0662937 ([#1435](https://github.com/grafana/synthetic-monitoring-app/issues/1435)) ([c073342](https://github.com/grafana/synthetic-monitoring-app/commit/c073342a38ecf0487b23e659852d165ccbc03fc5))
+* update grafana/shared-workflows/ action to ([#1430](https://github.com/grafana/synthetic-monitoring-app/issues/1430)) ([779b9bd](https://github.com/grafana/synthetic-monitoring-app/commit/779b9bde2fc2811e208ddd406ae5a9479ad23c30))
+* update grafana/shared-workflows/ action to ([#1436](https://github.com/grafana/synthetic-monitoring-app/issues/1436)) ([150d348](https://github.com/grafana/synthetic-monitoring-app/commit/150d34851d6fa678b5f5e0610b9db959888f03a7))
+* update grafana/shared-workflows/ action to ([#1438](https://github.com/grafana/synthetic-monitoring-app/issues/1438)) ([d6a9cff](https://github.com/grafana/synthetic-monitoring-app/commit/d6a9cffa1abbb83bbe70ad203cdbbde4aac6d44c))
+* update grafana/shared-workflows/ action to ([#1448](https://github.com/grafana/synthetic-monitoring-app/issues/1448)) ([3f0cc51](https://github.com/grafana/synthetic-monitoring-app/commit/3f0cc5172c6eaa5f51c65b70f14002d9034c8aba))
+* update typescript-eslint monorepo to v8.46.3 ([#1425](https://github.com/grafana/synthetic-monitoring-app/issues/1425)) ([b73f290](https://github.com/grafana/synthetic-monitoring-app/commit/b73f290c7302f6a3f7138234e3b54bd3ea9d9a1a))
+
 ## [1.38.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.38.0...v1.38.1) (2025-11-07)
 
 

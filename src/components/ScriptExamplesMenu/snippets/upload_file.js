@@ -1,4 +1,4 @@
-import { check } from 'k6'
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js'
 import http from 'k6/http'
 
 export const options = {}
@@ -15,7 +15,5 @@ export default function () {
   }
 
   const res = http.post('https://quickpizza.grafana.com/api/post', data)
-  check(res, {
-    'is status 200': (r) => r.status === 200,
-  })
+  expect(res.status).toBe(200)
 }
