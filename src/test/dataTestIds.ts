@@ -36,13 +36,14 @@ export const CHECKSTER_TEST_ID = {
       httpRequestMethod: 'checkEditor form httpRequestMethod',
       validStatusCodes: 'checkEditor form validStatusCodes',
       probeCheckbox: 'checkEditor form probeCheckbox',
+      probeLabel: 'checkEditor form probeLabel',
     },
     components: {
       GenericNameValueField: {
         addButton: 'checkEditor nameValue addButton',
       },
       GenericLabelContent: {
-        root: 'checkEditor genericLabelContent root',
+        root: 'checkEditor genericLabelContent',
       },
     },
   },

@@ -1,9 +1,13 @@
-import { screen, within } from '@testing-library/react';
-import { getSelect, selectOption } from 'test/utils';
+import { screen } from '@testing-library/react';
 
 import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckType, DnsResponseCodes } from 'types';
-import { gotoSection, selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import {
+  gotoSection,
+  removeComboboxOption,
+  selectComboboxOption,
+  submitForm,
+} from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
@@ -28,12 +32,14 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     const { user, read } = await renderNewFormV2(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Uptime);
-
-    const [select] = await getSelect({ label: `Valid response codes` });
-    await user.click(within(select).getByLabelText(`Remove`));
+    await removeComboboxOption(user, DnsResponseCodes.NOERROR);
+    const el = screen.getByPlaceholderText(/Select valid response codes/);
+    if (el) {
+      await user.click(el);
+    }
 
     for (const option of RESPONSE_CODES) {
-      await selectOption(user, { label: `Valid response codes`, option });
+      await user.click(screen.getByRole('option', { name: option }));
     }
 
     await submitForm(user);
