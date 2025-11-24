@@ -33,15 +33,11 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Uptime);
     await removeComboboxOption(user, DnsResponseCodes.NOERROR);
-    const el = screen.getByPlaceholderText(/Select valid response codes/);
-    if (el) {
-      await user.click(el);
-    }
+    await user.click(screen.getByPlaceholderText(/Select valid response codes/));
 
     for (const option of RESPONSE_CODES) {
       await user.click(screen.getByRole('option', { name: option }));
     }
-
     await submitForm(user);
 
     const { body } = await read();
