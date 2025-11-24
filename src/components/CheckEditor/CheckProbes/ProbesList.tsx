@@ -86,7 +86,7 @@ export const ProbesList = ({
               checked={selectedProbes.includes(probe.id!)}
               disabled={disabled}
             />
-            <Label htmlFor={`probe-${probe.id}`}>
+            <Label htmlFor={`probe-${probe.id}`} data-testid={CHECKSTER_TEST_ID.form.inputs.probeLabel}>
               <div className={styles.columnLabel}>
                 <ProbeStatus probe={probe} />{' '}
                 {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${

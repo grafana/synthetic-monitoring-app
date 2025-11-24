@@ -6,7 +6,7 @@ import { gotoSection, selectRadioGroupOption, submitForm } from 'components/Chec
 import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-import { selectOption } from '../../../../../../test/utils';
+import { testUsesCombobox } from '../../../../../../test/utils';
 
 const checkType = CheckType.HTTP;
 
@@ -24,29 +24,33 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can add valid status codes`, async () => {
+    testUsesCombobox();
     const ALL_GOOD_STATUS_CODE = 200;
-    const I_AM_A_TEAPOT_STATUS_CODE = 418;
+    const NOT_MODIFIED_STATUS_CODE = 304;
 
     const { read, user } = await renderNewFormV2(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Uptime);
-    await selectOption(user, { label: 'Valid status codes', option: String(ALL_GOOD_STATUS_CODE) });
-    await selectOption(user, { label: 'Valid status codes', option: String(I_AM_A_TEAPOT_STATUS_CODE) });
+    await user.click(screen.getByPlaceholderText('2xx'));
+    await user.click(screen.getByText(String(ALL_GOOD_STATUS_CODE)));
+    await user.click(screen.getByText(String(NOT_MODIFIED_STATUS_CODE)));
 
     await submitForm(user);
 
     const { body } = await read();
-    expect(body.settings.http.validStatusCodes).toEqual([ALL_GOOD_STATUS_CODE, I_AM_A_TEAPOT_STATUS_CODE]);
+    expect(body.settings.http.validStatusCodes).toEqual([ALL_GOOD_STATUS_CODE, NOT_MODIFIED_STATUS_CODE]);
   });
 
   it(`can add valid HTTP versions`, async () => {
+    testUsesCombobox();
     const { read, user } = await renderNewFormV2(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Uptime);
-    await selectOption(user, { label: 'Valid HTTP versions', option: `HTTP/1.0` });
-    await selectOption(user, { label: 'Valid HTTP versions', option: `HTTP/2` });
+    await user.click(screen.getByPlaceholderText('Select version(s)'));
+    await user.click(screen.getByText('HTTP/1.0'));
+    await user.click(screen.getByText('HTTP/2'));
 
     await submitForm(user);
 

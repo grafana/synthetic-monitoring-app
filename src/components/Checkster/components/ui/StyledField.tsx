@@ -1,5 +1,6 @@
 import React, { ComponentProps, JSX, ReactNode, useMemo } from 'react';
-import { Field, useTheme2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Field, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 type LabelProps = Pick<ComponentProps<typeof Field>, 'label' | 'description' | 'required'> & { 'aria-label'?: string };
@@ -51,6 +52,7 @@ export function StyledField({
   required,
   ...props
 }: ComponentProps<typeof Field> & { emulate?: true; grow?: boolean }): JSX.Element {
+  const styles = useStyles2(getStyles);
   const label = useMemo((): ReactNode => {
     return emulate ? <DivLabel label={labelProp} description={description} required={required} /> : labelProp;
   }, [description, emulate, labelProp, required]);
@@ -64,20 +66,24 @@ export function StyledField({
       label={label}
       description={description}
       required={required}
-      className={cx(
-        css`
-          margin: 0;
-          & > div:first-child {
-            max-width: unset; // is 480 by default
-          }
-        `,
-        grow &&
-          css`
-            flex-grow: 1;
-          `,
-        className
-      )}
+      className={cx(styles.field, className, {
+        [styles.grow]: grow,
+      })}
       {...props}
     />
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => {
+  return {
+    field: css`
+      margin: 0;
+      & > div:first-child {
+        max-width: unset; // is 480 by default
+      }
+    `,
+    grow: css`
+      flex-grow: 1;
+    `,
+  };
+};
