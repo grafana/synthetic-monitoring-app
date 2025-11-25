@@ -11,7 +11,7 @@ on:
         description: Whether to automatically merge the deployment PR
         required: false
         type: string
-        default: 'false'
+        default: "false"
 
 permissions:
   contents: read
