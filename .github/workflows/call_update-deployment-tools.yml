@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Get Vault secrets
-        uses: grafana/shared-workflows/actions/get-vault-secrets@9fe4bf92f218b4fd2b5d17d1a5e59088cf22c22a
+        uses: grafana/shared-workflows/actions/get-vault-secrets@c988ac9e58a85221c27e9466b58bc97598095fcc
         with:
           common_secrets: |
             GITHUB_APP_ID=updater-app:app-id
@@ -42,7 +42,7 @@ jobs:
           persist-credentials: false
 
       - name: Authenticate with GCS
-        uses: grafana/shared-workflows/actions/login-to-gcs@9fe4bf92f218b4fd2b5d17d1a5e59088cf22c22a
+        uses: grafana/shared-workflows/actions/login-to-gcs@c988ac9e58a85221c27e9466b58bc97598095fcc
 
       # Configure the GCloud SDK using authentication from the previous step,
       # enabling the next step to execute authenticated GCloud commands.
