@@ -8,7 +8,7 @@ import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 
 interface AddNewCheckButtonProps {
-  source: 'check-list' | 'homepage';
+  source: 'check-list-empty-state' | 'check-list' | 'homepage';
 }
 
 export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
