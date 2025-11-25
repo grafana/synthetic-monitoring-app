@@ -1,6 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 // Jest setup provided by Grafana scaffolding
 import '../../.config/jest-setup';
+import './setup-msw-polyfill';
 
 import { server } from './server';
 import 'test/silenceErrors';

@@ -1,17 +1,6 @@
 // Polyfills for MSW v2 in Jest/Node.js environment
 // This file runs before MSW is imported, ensuring all required globals are available
 
-const { TextDecoder, TextEncoder } = require('util');
-
-// Text encoding/decoding
-if (typeof globalThis.TextEncoder === 'undefined') {
-  globalThis.TextEncoder = TextEncoder;
-}
-
-if (typeof globalThis.TextDecoder === 'undefined') {
-  globalThis.TextDecoder = TextDecoder;
-}
-
 // MessageChannel/MessagePort (required by undici)
 // Use lightweight polyfill to avoid leaving open handles in tests
 if (typeof globalThis.MessageChannel === 'undefined' || typeof globalThis.MessagePort === 'undefined') {
