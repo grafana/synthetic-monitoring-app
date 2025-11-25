@@ -12,7 +12,8 @@
     // This overrides the base preset's rules that add (deps) and (deps-dev) scopes
     {
       "matchManagers": ["npm", "github-actions", "dockerfile"],
-      "semanticCommitScope": null
+      "semanticCommitScope": null,
+      "semanticCommitType": "chore"
     },
     // we can never update the React packages until grafana does
     {
