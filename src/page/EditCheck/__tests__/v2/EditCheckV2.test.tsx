@@ -1,15 +1,25 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { trackCheckUpdated } from 'features/tracking/checkFormEvents';
 import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
+import { CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { renderEditFormV2 } from 'page/__testHelpers__/checkForm';
 
 import { submitForm } from '../../../../components/Checkster/__testHelpers__/formHelpers';
+
+jest.mock('features/tracking/checkFormEvents', () => ({
+  trackCheckCreated: jest.fn(),
+  trackCheckUpdated: jest.fn(),
+  trackNavigateWizardForm: jest.fn(),
+  trackAdhocCreated: jest.fn(),
+  trackNeedHelpScriptsButtonClicked: jest.fn(),
+}));
 
 describe(`<EditCheckV2 />`, () => {
   it(`renders the can't find check modal when given a bad check id`, async () => {
@@ -82,5 +92,21 @@ describe(`<EditCheckV2 />`, () => {
 
     const pathInfo = await screen.findByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME);
     expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
+  });
+
+  it(`should track check update with check type`, async () => {
+    const { user } = await renderEditFormV2(BASIC_DNS_CHECK.id);
+
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+    await user.type(jobNameInput, `updated job name`);
+
+    await submitForm(user);
+
+    await waitFor(() => {
+      const pathInfo = screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME);
+      expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
+    });
+
+    expect(trackCheckUpdated).toHaveBeenCalledWith({ checkType: CheckType.DNS });
   });
 });

@@ -37,7 +37,7 @@ export function NewCheckV2() {
 
   const navigate = useNavigate();
 
-  const handleSubmit = useHandleSubmitCheckster();
+  const handleSubmit = useHandleSubmitCheckster(undefined, checkType ? { checkType } : undefined);
   const handleCheckTypeChange = useCallback(
     (newCheckType: CheckType) => {
       navigate({ search: `?${CHECK_TYPE_PARAM_NAME}=${newCheckType}` }, { replace: true });
