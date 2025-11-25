@@ -14,9 +14,9 @@ Tracks when the "Add New Check" button is clicked.
 
 ##### Properties
 
-| name   | type                         | description                                |
-| ------ | ---------------------------- | ------------------------------------------ |
-| source | `"check-list" \| "homepage"` | What location the button was clicked from. |
+| name   | type                                                     | description                                |
+| ------ | -------------------------------------------------------- | ------------------------------------------ |
+| source | `"check-list-empty-state" \| "check-list" \| "homepage"` | What location the button was clicked from. |
 
 #### synthetic-monitoring_check_creation_add_check_type_group_button_clicked
 
