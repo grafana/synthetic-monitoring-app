@@ -28,7 +28,7 @@ export function PrimaryLayoutSection({ children, headerContent }: PrimaryLayoutS
             flex-direction: column;
             min-width: 50px; // Just to avoid splitter to get stuck
             flex-grow: 1;
-            height: 100%;
+            min-height: 100%;
           `
         )}
       >

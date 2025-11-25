@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useMemo, useState } from 'react';
 import { CodeEditor as GrafanaCodeEditor } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
@@ -21,26 +21,14 @@ const addK6Types = (monaco: typeof monacoType) => {
   monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'");
 };
 const containerStyles = css`
-  height: 100%;
-  min-height: 600px;
-
-  & > div {
-    height: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   // Background styling for editable ranges (multi)
   .editableArea--multi-line {
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.1);
   }
-
-  > section {
-    min-height: inherit;
-  }
 `;
+
+const MIN_EDITOR_HEIGHT = 400;
 
 export const CodeEditor = forwardRef(function CodeEditor(
   {
@@ -63,6 +51,14 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
   const [constrainedInstance, setConstrainedInstance] = useState<null | ConstrainedEditorInstance>(null);
   const [prevValue, setPrevValue] = useState(value);
+  const [editorHeight, setEditorHeight] = useState(600); // Initial height
+
+  // Layout editor when height changes
+  useEffect(() => {
+    if (editorRef) {
+      editorRef.layout();
+    }
+  }, [editorHeight, editorRef]);
 
   // GC
   useEffect(() => {
@@ -121,6 +117,18 @@ export const CodeEditor = forwardRef(function CodeEditor(
     // Wire custom red-squiggle markers for forbidden syntax
     const disposeCustomValidation = wireCustomValidation(monaco, editor);
 
+    // Auto-resize editor based on content for native scroll
+    const updateEditorHeight = () => {
+      const contentHeight = editor.getContentHeight();
+      setEditorHeight(Math.max(contentHeight, MIN_EDITOR_HEIGHT));
+    };
+
+    // Update height on content changes
+    const disposeSizeChange = editor.onDidContentSizeChange(updateEditorHeight);
+    
+    // Set initial height
+    updateEditorHeight();
+
     if (constrainedRanges) {
       const instance = initializeConstrainedInstance(monaco, editor);
       const model = editor.getModel();
@@ -137,6 +145,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
       if (typeof disposeCustomValidation === 'function') {
         disposeCustomValidation();
       }
+      disposeSizeChange.dispose();
     });
   };
 
@@ -161,6 +170,15 @@ export const CodeEditor = forwardRef(function CodeEditor(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, constrainedRanges]);
 
+  const editorContainerStyles = useMemo(
+    () => css`
+      ${containerStyles}
+      height: ${editorHeight}px;
+      min-height: ${MIN_EDITOR_HEIGHT}px;
+    `,
+    [editorHeight]
+  );
+
   return (
     <div data-fs-element="Code editor" id={id} {...rest}>
       {renderHeader && renderHeader({ scriptValue: value })}
@@ -171,9 +189,12 @@ export const CodeEditor = forwardRef(function CodeEditor(
         showLineNumbers={true}
         showMiniMap={false}
         monacoOptions={{
+          automaticLayout: false,
           fixedOverflowWidgets: false,
           scrollBeyondLastLine: false,
           scrollbar: {
+            vertical: 'hidden',
+            horizontal: 'hidden',
             alwaysConsumeMouseWheel: false,
           },
         }}
@@ -181,7 +202,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
         onBeforeEditorMount={handleBeforeEditorMount}
         onEditorDidMount={handleEditorDidMount}
         readOnly={readOnly}
-        containerStyles={containerStyles}
+        containerStyles={editorContainerStyles}
       />
     </div>
   );
