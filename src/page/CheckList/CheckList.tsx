@@ -21,7 +21,6 @@ import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
 import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
-import { CheckListScene } from 'page/CheckList/components/CheckListScene';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -178,62 +177,47 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     return <ChecksEmptyState />;
   }
 
-  const showHeaders = viewType !== CheckListViewType.Viz;
-
   return (
     <>
-      {showHeaders && (
-        <CheckListHeader
-          checks={filteredChecks}
-          checkFilters={checkFilters}
-          currentPageChecks={currentPageChecks}
-          onChangeView={handleChangeViewType}
-          onFilterChange={handleFilterChange}
-          onSelectAll={handleSelectAll}
-          onSort={updateSortMethod}
-          onResetFilters={handleResetFilters}
-          onDelete={handleUnselectAll}
-          selectedCheckIds={selectedCheckIds}
-          sortType={sortType}
-          viewType={viewType}
-        />
-      )}
-      {viewType === CheckListViewType.Viz ? (
-        <div className={styles.vizContainer}>
-          <CheckListScene
-            onChangeViewType={handleChangeViewType}
-            checkFilters={checkFilters}
-            onFilterChange={handleFilterChange}
-            onReset={handleResetFilters}
+      <CheckListHeader
+        checks={filteredChecks}
+        checkFilters={checkFilters}
+        currentPageChecks={currentPageChecks}
+        onChangeView={handleChangeViewType}
+        onFilterChange={handleFilterChange}
+        onSelectAll={handleSelectAll}
+        onSort={updateSortMethod}
+        onResetFilters={handleResetFilters}
+        onDelete={handleUnselectAll}
+        selectedCheckIds={selectedCheckIds}
+        sortType={sortType}
+        viewType={viewType}
+      />
+      <div>
+        <section className="card-section card-list-layout-list">
+          <div className={styles.list}>
+            {currentPageChecks.map((check, index) => (
+              <CheckListItem
+                check={check}
+                key={check.id}
+                onLabelSelect={handleLabelSelect}
+                onStatusSelect={handleStatusSelect}
+                onTypeSelect={handleTypeSelect}
+                onToggleCheckbox={handleCheckSelect}
+                selected={selectedCheckIds.has(check.id!)}
+                viewType={viewType}
+              />
+            ))}
+          </div>
+        </section>
+        {totalPages > 1 && (
+          <Pagination
+            numberOfPages={totalPages}
+            currentPage={currentPage}
+            onNavigate={(toPage: number) => setCurrentPage(toPage)}
           />
-        </div>
-      ) : (
-        <div>
-          <section className="card-section card-list-layout-list">
-            <div className={styles.list}>
-              {currentPageChecks.map((check, index) => (
-                <CheckListItem
-                  check={check}
-                  key={check.id}
-                  onLabelSelect={handleLabelSelect}
-                  onStatusSelect={handleStatusSelect}
-                  onTypeSelect={handleTypeSelect}
-                  onToggleCheckbox={handleCheckSelect}
-                  selected={selectedCheckIds.has(check.id!)}
-                  viewType={viewType}
-                />
-              ))}
-            </div>
-          </section>
-          {totalPages > 1 && (
-            <Pagination
-              numberOfPages={totalPages}
-              currentPage={currentPage}
-              onNavigate={(toPage: number) => setCurrentPage(toPage)}
-            />
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 };
