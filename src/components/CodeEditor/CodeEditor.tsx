@@ -131,11 +131,13 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
     // Observe the container for resizing changes
     const parentContainer = editor.getDomNode()?.parentElement;
+    const resizeObserver = parentContainer
+      ? new ResizeObserver(() => {
+          editor.layout();
+        })
+      : null;
 
-    if (parentContainer) {
-      const resizeObserver = new ResizeObserver(() => {
-        editor.layout();
-      });
+    if (resizeObserver && parentContainer) {
       resizeObserver.observe(parentContainer);
     }
 
