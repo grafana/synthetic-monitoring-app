@@ -125,9 +125,19 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
     // Update height on content changes
     const disposeSizeChange = editor.onDidContentSizeChange(updateEditorHeight);
-    
+
     // Set initial height
     updateEditorHeight();
+
+    // Observe the container for resizing changes
+    const parentContainer = editor.getDomNode()?.parentElement;
+
+    if (parentContainer) {
+      const resizeObserver = new ResizeObserver(() => {
+        editor.layout();
+      });
+      resizeObserver.observe(parentContainer);
+    }
 
     if (constrainedRanges) {
       const instance = initializeConstrainedInstance(monaco, editor);
@@ -146,6 +156,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
         disposeCustomValidation();
       }
       disposeSizeChange.dispose();
+      resizeObserver?.disconnect();
     });
   };
 
