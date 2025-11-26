@@ -21,7 +21,7 @@
     "server": "docker compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "test:changed": "jest --watch --onlyChanged",
-    "test:ci": "jest --passWithNoTests --maxWorkers 4 --bail=20",
+    "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "test": "jest --all",
     "verify:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/verify-probe-api-mappings.ts",
     "verify:terraform-test-config": "./scripts/terraform-validation/verify-terraform-test-config.sh",
