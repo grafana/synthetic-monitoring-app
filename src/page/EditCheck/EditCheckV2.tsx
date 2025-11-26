@@ -18,7 +18,6 @@ import { CenteredSpinner } from 'components/CenteredSpinner';
 import { Checkster } from 'components/Checkster';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { FormSectionName } from 'components/Checkster/types';
-import { getCheckType } from 'components/Checkster/utils/check';
 
 import { getUserPermissions } from '../../data/permissions';
 
@@ -28,7 +27,7 @@ export const EditCheckV2 = () => {
   const check = checks?.find((c) => c.id === Number(id));
   const urlSearchParams = useURLSearchParams();
 
-  const handleSubmit = useHandleSubmitCheckster(check, check ? { checkType: getCheckType(check) } : undefined);
+  const handleSubmit = useHandleSubmitCheckster(check);
 
   const styles = useStyles2(getStyles);
 

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, CheckType, FeatureName } from '../types';
+import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, FeatureName } from '../types';
 
 import { getAlertsPayload } from '../components/Checkster/transformations/toPayload.alerts';
 import { queryClient } from '../data/queryClient';
@@ -9,7 +9,7 @@ import { queryKeys, useCUDChecks } from '../data/useChecks';
 import { useFeatureFlag } from './useFeatureFlag';
 import { useNavigateToCheckDashboard } from './useNavigateToCheckDashboard';
 
-export function useHandleSubmitCheckster(initialCheck?: Check, eventInfo?: { checkType: CheckType }) {
+export function useHandleSubmitCheckster(initialCheck?: Check) {
   const navigateToCheckDashboard = useNavigateToCheckDashboard();
 
   const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
@@ -27,7 +27,7 @@ export function useHandleSubmitCheckster(initialCheck?: Check, eventInfo?: { che
   );
 
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
-  const { updateCheck, createCheck } = useCUDChecks({ eventInfo });
+  const { updateCheck, createCheck } = useCUDChecks();
 
   return useCallback(
     async (payload: Check, formValues: CheckFormValues) => {
