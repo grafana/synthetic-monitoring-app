@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Box, InlineSwitch, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
@@ -17,33 +17,55 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
   mainKey: string;
 }) => {
   const styles = useStyles2(getStyles);
+  const [errorOnly, setErrorOnly] = useState(false);
+
+  const filteredLogs = useMemo(() => {
+    if (!errorOnly) {
+      return logs;
+    }
+    return logs.filter((log) => {
+      const level = log.labels?.level || log.labels?.detected_level;
+      return level?.toLowerCase() === 'error';
+    });
+  }, [logs, errorOnly]);
 
   return (
-    <div className={styles.timelineContainer}>
-      {logs.map((log, index) => {
-        const level = log.labels.detected_level;
+    <div>
+      <Box paddingBottom={1} display="flex" justifyContent="flex-end">
+        <InlineSwitch
+          label="Error logs only"
+          transparent
+          showLabel
+          value={errorOnly}
+          onChange={() => setErrorOnly(!errorOnly)}
+        />
+      </Box>
+      <div className={styles.timelineContainer}>
+        {filteredLogs.map((log, index) => {
+          const level = log.labels.detected_level;
 
-        return (
-          <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>
-            <div className={styles.time}>
-              {dateTimeFormat(log[LokiFieldNames.Time], {
-                defaultWithMS: true,
-              })}
+          return (
+            <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>
+              <div className={styles.time}>
+                {dateTimeFormat(log[LokiFieldNames.Time], {
+                  defaultWithMS: true,
+                })}
+              </div>
+              <div
+                className={cx(styles.level, {
+                  [styles.error]: level === 'error',
+                  [styles.info]: level === 'info',
+                  [styles.warning]: level === 'warn',
+                })}
+              >
+                {level.toUpperCase()}
+              </div>
+              <div className={styles.mainKey}>{log.labels[mainKey]}</div>
+              <LabelRenderer log={filteredLogs[index]} mainKey={mainKey} />
             </div>
-            <div
-              className={cx(styles.level, {
-                [styles.error]: level === 'error',
-                [styles.info]: level === 'info',
-                [styles.warning]: level === 'warn',
-              })}
-            >
-              {level.toUpperCase()}
-            </div>
-            <div className={styles.mainKey}>{log.labels[mainKey]}</div>
-            <LabelRenderer log={logs[index]} mainKey={mainKey} />
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };
