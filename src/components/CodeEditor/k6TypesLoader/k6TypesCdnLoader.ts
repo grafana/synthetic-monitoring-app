@@ -41,8 +41,6 @@ export async function fetchK6TypesFromCDN(channelId: string): Promise<Record<str
       
       const content = await response.text();
       types[module.name] = content;
-
-      console.log(url, content);
     } catch (error) {
       failedModules.push(module.name);
     }
