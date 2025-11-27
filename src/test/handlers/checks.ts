@@ -34,9 +34,11 @@ export const addCheck: ApiEntry<AddCheckResult> = {
 export const updateCheck: ApiEntry<UpdateCheckResult> = {
   route: `/sm/check/update`,
   method: `post`,
-  result: (req) => {
+  result: async (req) => {
     return {
-      json: BASIC_HTTP_CHECK,
+      json: {
+        ...(await req.json()),
+      },
     };
   },
 };

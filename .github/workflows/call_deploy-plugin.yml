@@ -11,7 +11,7 @@ on:
         description: Whether to automatically merge the deployment PR
         required: false
         type: string
-        default: 'false'
+        default: "false"
 
 permissions:
   contents: read
@@ -62,12 +62,12 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
 
       - name: Get prod catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@f24f3b13b6eb4a2bef9933f31b8a9f1799e13b8b
+        uses: grafana/shared-workflows/actions/get-vault-secrets@c988ac9e58a85221c27e9466b58bc97598095fcc
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_PROD=plugins/gcom-publish-token:prod
@@ -93,7 +93,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_PROD: ${{ env.GCOM_PUBLISH_TOKEN_PROD }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@0662937faaa02b98a54172eaee702533b502514f
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@52d30891b7f8956e8fdf132f543f73ebe641b156
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-prod/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: prod
@@ -110,12 +110,12 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
 
       - name: Get dev catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@f24f3b13b6eb4a2bef9933f31b8a9f1799e13b8b
+        uses: grafana/shared-workflows/actions/get-vault-secrets@c988ac9e58a85221c27e9466b58bc97598095fcc
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_DEV=plugins/gcom-publish-token:dev
@@ -141,7 +141,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_DEV: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@0662937faaa02b98a54172eaee702533b502514f
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@52d30891b7f8956e8fdf132f543f73ebe641b156
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: dev
@@ -158,12 +158,12 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
 
       - name: Get ops catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@f24f3b13b6eb4a2bef9933f31b8a9f1799e13b8b
+        uses: grafana/shared-workflows/actions/get-vault-secrets@c988ac9e58a85221c27e9466b58bc97598095fcc
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_OPS=plugins/gcom-publish-token:ops
@@ -189,7 +189,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_OPS: ${{ env.GCOM_PUBLISH_TOKEN_OPS }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@0662937faaa02b98a54172eaee702533b502514f
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@52d30891b7f8956e8fdf132f543f73ebe641b156
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-prod/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: ops

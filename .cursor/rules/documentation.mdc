@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Do not write documentation until prompted to or when we are unable to add the appropriate tests (see when-writing-tests). We are very likely to iterate until the solution is correct so any documentation you write will be made redundant almost immediately and create an unneeded and unfocused overhead. Documentation can be useful but only once the feature is finished and not while it is being developed. You may want to write your own documentation to help with the conversation and future context -- if that is the case please refer to the reference-directory rule. You may write documentation files there which then can be referenced afterwards to write user-facing documentation.

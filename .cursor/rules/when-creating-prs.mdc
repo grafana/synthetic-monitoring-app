@@ -1,0 +1,22 @@
+---
+description: When creating GitHub PRs READ THIS RULE
+globs: 
+alwaysApply: false
+---
+Before creating PRs you must:
+- ensure the diff to main is concise and only adds a single feature (see the engineering-best-practices rule). If the diff contains multiple features, propose that we only submit the changes for one feature and create separate branch(es) and PR(s) for the other feature(s). This may be difficult to manage so read the reference-directory rule to help with this.
+- ensure the code meets the correct standards (see the file-organisation rule)
+- ensure the test has the correct integration tests (see when-writing-tests rule) OR has the correct unit tests and appropriate documentation
+- ensure the commit follows our `.commitlintrc.js` (uses conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, etc.) and release-please conventions.
+
+If all of the above criteria are met then for the PR title and description follow the following conventions:
+- Write the PR in markdown format
+- If the PR solves an open issue, start the PR description with: 'Addresses: {LINK_TO_ISSUE}'. Read the issue to gather as much context as possible when writing the PR description. Cross-reference this issue to ensure the problem is solved.
+- The PR title must follow our release-please config conventions
+- Add a h2 heading titled 'Problem'
+- Under the problem heading, create a user-focussed statement that consists of one or more short paragraphs explaining what the current problem is prior to the changes in this PR. Keep it concise and on point.
+- Add a h2 heading titled 'Solution'
+- Under the solution heading create a user-focussed statement that consists of one or more paragraphs explaining how the PR adds a solution to the problem in the previous paragraph. You do not have to list the files that have been changed as that will be clear in the files changed tab in the GitHub UI.
+- If appropriate add any additional headings and paragraphs with additional context.
+
+After creating the PR check whether there are any conflicts with the main branch.

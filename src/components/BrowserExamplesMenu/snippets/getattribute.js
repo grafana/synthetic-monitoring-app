@@ -1,4 +1,4 @@
-import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -22,13 +22,9 @@ export default async function () {
   const page = await context.newPage();
 
   try {
-    await page.goto('https://googlechromelabs.github.io/dark-mode-toggle/demo/', {
-      waitUntil: 'load',
-    });
+    await page.goto('https://googlechromelabs.github.io/dark-mode-toggle/demo/');
 
-    await check(page.locator('#dark-mode-toggle-3'), {
-      "GetAttribute('mode')": async (locator) => (await locator.getAttribute('mode')) === 'light',
-    });
+    await expect(page.locator('#dark-mode-toggle-3')).toHaveAttribute('mode', 'light');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

@@ -1,5 +1,5 @@
 import http from 'k6/http'
-import { check } from 'k6'
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js'
 import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js'
 
 // For demo purpose, we'll generate in-memory files,
@@ -29,7 +29,5 @@ export default function () {
   const res = http.post('https://quickpizza.grafana.com/api/post', fd.body(), {
     headers: { 'Content-Type': 'multipart/form-data; boundary=' + fd.boundary },
   })
-  check(res, {
-    'is status 200': (r) => r.status === 200,
-  })
+  expect(res.status).toBe(200)
 }

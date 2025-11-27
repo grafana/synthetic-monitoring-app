@@ -17,21 +17,29 @@ import {
   Probe,
 } from 'types';
 
-const baseCheckModel = ({ sequence }: { sequence: number }) => ({
-  id: sequence,
-  job: faker.lorem.word(),
-  target: faker.internet.domainName(),
-  frequency: faker.number.int({ min: 1000, max: 60 * 1000 }),
-  timeout: faker.number.int({ min: 30, max: 60 * 1000 }),
-  enabled: true,
-  alertSensitivity: faker.helpers.arrayElement(Object.values(AlertSensitivity)),
-  alerts: [],
-  basicMetricsOnly: faker.datatype.boolean(),
-  labels: [{ name: faker.animal.petName(), value: faker.color.human() }],
-  probes: [],
-  modified: Math.floor(faker.date.recent().getTime() / 1000),
-  created: Math.floor(faker.date.past().getTime() / 1000),
-});
+const baseCheckModel = ({ sequence }: { sequence: number }) => {
+  const timeout = faker.number.int({ min: 1000, max: 60 * 1000 });
+  const frequency = faker.number.int({ 
+    min: Math.max(timeout, 10 * 1000), 
+    max: 60 * 60 * 1000
+  });
+
+  return {
+    id: sequence,
+    job: faker.lorem.word(),
+    target: faker.internet.domainName(),
+    frequency,
+    timeout,
+    enabled: true,
+    alertSensitivity: faker.helpers.arrayElement(Object.values(AlertSensitivity)),
+    alerts: [],
+    basicMetricsOnly: faker.datatype.boolean(),
+    labels: [{ name: faker.animal.petName(), value: faker.color.human() }],
+    probes: [],
+    modified: Math.floor(faker.date.recent().getTime() / 1000),
+    created: Math.floor(faker.date.past().getTime() / 1000),
+  };
+};
 
 const baseProbeModel = ({ sequence }: { sequence: number }) => ({
   id: sequence,
@@ -260,7 +268,7 @@ export const db = {
     period: faker.helpers.arrayElement(['5m', '10m', '15m', '30m', '1h']),
     created: Math.floor(faker.date.past().getTime() / 1000),
     modified: Math.floor(faker.date.recent().getTime() / 1000),
-    status: "OK",
+    status: 'OK',
     runbookUrl: faker.helpers.maybe(() => faker.internet.url()),
   })),
 };

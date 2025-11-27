@@ -1,9 +1,9 @@
 import { screen } from '@testing-library/dom';
 
 import { CheckType } from 'types';
+import { SM_CHECKS_DOCS_TEXT } from 'components/Checkster/feature/docs/AboutApiEndpointChecks';
 import { K6_STUDIO_DOCS_TEXT } from 'components/Checkster/feature/docs/Aboutk6Studio';
 import { SCRIPTED_CHECKS_DOCS_TEXT } from 'components/Checkster/feature/docs/AboutScriptedChecks';
-import { SM_CHECKS_DOCS_TEXT } from 'components/Checkster/feature/docs/AboutSMChecks';
 import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
 
 const EXPECTED_BROWSER_DOCS_TEXT = `k6 browser checks run a k6 script using the browser module to control a headless browser. Write native JavaScript to control the browser and perform actions like clicking buttons, filling out forms, and more.`;

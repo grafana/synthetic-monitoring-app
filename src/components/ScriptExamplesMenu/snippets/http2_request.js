@@ -1,12 +1,10 @@
 import http from 'k6/http'
-import { check } from 'k6'
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js'
 
 export const options = {}
 
 export default function () {
   let res = http.get('https://quickpizza.grafana.com')
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'protocol is HTTP/2': (r) => r.proto === 'HTTP/2.0',
-  })
+  expect(res.status).toBe(200)
+  expect(res.proto).toBe('HTTP/2.0')
 }
