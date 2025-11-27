@@ -3,8 +3,9 @@ import { isFetchError } from '@grafana/runtime';
 import { trackCheckCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
 
 import { type MutationProps } from 'data/types';
-import { type Check, CheckType, FeatureName } from 'types';
+import { type Check, FeatureName } from 'types';
 import { FaroEvent, FaroEventMeta } from 'faro';
+import { getCheckType } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
   AddCheckResult,
@@ -69,11 +70,7 @@ export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<
     },
     onSuccess: (data) => {
       onSuccess?.(data);
-
-      if (eventInfo?.checkType) {
-        const checkType = eventInfo.checkType as CheckType;
-        trackCheckCreated({ checkType });
-      }
+      trackCheckCreated({ checkType: getCheckType(data.settings) });
     },
     meta: {
       event: {
@@ -109,11 +106,7 @@ export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
-
-      if (eventInfo?.checkType) {
-        const checkType = eventInfo.checkType as CheckType;
-        trackCheckUpdated({ checkType });
-      }
+      trackCheckUpdated({ checkType: getCheckType(data.settings) });
     },
     meta: {
       event: {

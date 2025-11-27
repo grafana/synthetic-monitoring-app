@@ -10,7 +10,7 @@ This document contains all the analytics events that are defined in the project.
 
 #### synthetic-monitoring_check_creation_add_new_check_button_clicked
 
-Tracks when the "Add New Check" button is clicked.
+Tracks when the "Create New Check" button is clicked.
 
 ##### Properties
 
@@ -105,6 +105,16 @@ Tracks when the duplicate check button is clicked.
 | name      | type                                                                                                     | description                         |
 | --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being duplicated. |
+
+#### synthetic-monitoring_check_form_feature_tab_changed
+
+Tracks when a feature tab is changed.
+
+##### Properties
+
+| name  | type     | description                   |
+| ----- | -------- | ----------------------------- |
+| label | `string` | The label of the feature tab. |
 
 ### feature_feedback
 

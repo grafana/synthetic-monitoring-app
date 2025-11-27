@@ -15,7 +15,7 @@ import { ProbeOptions } from './ProbeOptions';
 
 describe('ProbeOptions', () => {
   it('updates the probe status after the refresh interval', async () => {
-    jest.useFakeTimers();
+    jest.useFakeTimers({ legacyFakeTimers: true });
     server.use(
       apiRoute('listProbes', {
         result: () => {
@@ -51,13 +51,11 @@ describe('ProbeOptions', () => {
 
     jest.advanceTimersByTime(PROBE_REFETCH_INTERVAL);
 
-    await waitFor(
-      async () => {
-        const onlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
-        expect(onlineStatus).toHaveStyle(`background-color: ${onlineColor}`);
-      },
-      { timeout: 5000 }
-    );
+    await waitFor(async () => {
+      jest.advanceTimersByTime(0);
+      const onlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
+      expect(onlineStatus).toHaveStyle(`background-color: ${onlineColor}`);
+    });
 
     jest.useRealTimers();
   });
