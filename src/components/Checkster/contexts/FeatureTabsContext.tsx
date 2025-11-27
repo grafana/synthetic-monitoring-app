@@ -10,28 +10,23 @@ import { useChecksterContext } from './ChecksterContext';
 type EmptyFeatureTabConfig = ['', null, []];
 
 interface FeatureTabsContextValue {
-  setActive: (label: FeatureTabLabel) => void;
+  setActive: (label: FeatureTabLabel, highlight?: boolean) => void;
   tabs: FeatureTabConfig[];
   activeTab: FeatureTabConfig | EmptyFeatureTabConfig;
+  highlightedTab: FeatureTabLabel | null;
 }
 
 export const FeatureTabsContext = createContext<FeatureTabsContextValue | undefined>(undefined);
+export const HIGHLIGHTED_TAB_TIMEOUT = 5000;
 
 // In case nothing adds up
 const panicTab: EmptyFeatureTabConfig = ['', null, []];
 
 export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const [activeLabel, setActiveLabel] = useState<string>('');
+  const [highlightedTab, setHighlightedTab] = useState<FeatureTabLabel | null>(null);
 
   const { checkType } = useChecksterContext();
-
-  const handleSetActive = useCallback(
-    (label: FeatureTabLabel) => {
-      setActiveLabel(label);
-      trackFeatureTabChanged({ source: 'check_editor_sidepanel_feature_tabs', label });
-    },
-    [setActiveLabel]
-  );
 
   const tabs = useMemo(() => {
     return FEATURE_TABS.filter(([, , checkCompatibility, featureName]) => {
@@ -60,13 +55,27 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
     }
   }, [tabs, activeLabel]);
 
+  const handleSetActive = useCallback((label: FeatureTabLabel, highlight = false) => {
+    setActiveLabel(label);
+    trackFeatureTabChanged({ source: 'check_editor_sidepanel_feature_tabs', label });
+
+    if (highlight) {
+      setHighlightedTab(label);
+
+      requestAnimationFrame(() => {
+        setHighlightedTab(null);
+      });
+    }
+  }, []);
+
   const value = useMemo(() => {
     return {
       tabs,
       setActive: handleSetActive,
       activeTab,
+      highlightedTab,
     };
-  }, [activeTab, handleSetActive, tabs]);
+  }, [activeTab, handleSetActive, highlightedTab, tabs]);
 
   return <FeatureTabsContext.Provider value={value}>{children}</FeatureTabsContext.Provider>;
 }
