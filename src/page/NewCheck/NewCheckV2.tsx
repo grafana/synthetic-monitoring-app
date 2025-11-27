@@ -7,7 +7,7 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormPageParams, CheckType } from 'types';
-import { createNavModel } from 'utils';
+import { createNavModel, getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useProbes } from 'data/useProbes';
@@ -57,11 +57,10 @@ export function NewCheckV2() {
     return {
       check: {
         ...originalCheck,
-        checkType: checkType,
+        checkType: checkType || getCheckType(originalCheck.settings),
         id: undefined,
-        job: `${originalCheck.job} (Copy)`,
       },
-      checkType,
+      checkType: checkType || getCheckType(originalCheck.settings),
     };
   }, [checks, duplicateId, checkType, group]);
 

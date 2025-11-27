@@ -201,19 +201,6 @@ export function ChecksterProvider({
   });
 
   useEffect(() => {
-    if (!isNew && check) {
-      // Trigger form validation on existing checks
-      formMethods.trigger();
-    }
-
-    if (isDuplicate) {
-      // When a check exists without an id, it means that it's a duplicate and the form needs to be dirty
-      // IMPORTANT: This value also needs to be manually added to reset data on submission
-      formMethods.setValue('duplicate_check', true, { shouldDirty: true });
-    }
-  }, [check, checkType, formMethods, isDuplicate, isNew]);
-
-  useEffect(() => {
     if (!isCheck(check)) {
       return;
     }
@@ -227,8 +214,14 @@ export function ChecksterProvider({
   }, [check, formMethods, isDuplicate, externalCheckType]);
 
   const formMethodRef = useRef(formMethods);
+  const hasCopyBeenAdded = useRef(false);
 
   useEffect(() => {
+    // Trigger form validation on existing checks
+    if (!isNew && check) {
+      formMethods.trigger();
+    }
+
     if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.None) {
       formMethods.reset(defaultFormValues);
       return;
@@ -255,6 +248,15 @@ export function ChecksterProvider({
           formMethods.trigger(dirtyFields as any);
         }
       }
+
+      // For duplicates, add " (Copy)" after form initialization to make it dirty
+      if (isDuplicate && !hasCopyBeenAdded.current) {
+        const currentJob = formMethods.getValues('job');
+        if (!currentJob.endsWith(' (Copy)')) {
+          formMethods.setValue('job', `${currentJob} (Copy)`, { shouldDirty: true });
+          hasCopyBeenAdded.current = true;
+        }
+      }
     }
 
     if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.Legacy) {
@@ -262,7 +264,7 @@ export function ChecksterProvider({
         formMethodRef.current.reset(values);
       }
     }
-  }, [check, checkType, defaultFormValues, formMethodRef, formMethods, isNew, values]);
+  }, [check, checkType, defaultFormValues, formMethodRef, formMethods, isNew, values, isDuplicate]);
 
   const formNavigation = useFormNavigationState(checkType, formMethods, initialSection);
 

@@ -31,7 +31,6 @@ export function FormRoot({
     formNavigation: { sectionByErrors, completeAllSteps },
     isNew,
     checkType,
-    isDuplicate,
   } = useChecksterContext();
 
   const {
@@ -63,8 +62,9 @@ export function FormRoot({
       const check = toPayload(data);
       try {
         const callback = await onSave(check, data);
-        // Super important to reset `duplicate_check` as it will otherwise make the form still be dirty (when duplicating)
-        reset(isDuplicate ? { ...data, duplicate_check: true } : data);
+        // Reset with current values as new defaults so form becomes clean
+        // This allows the navigation callback to fire (which waits for !isDirty)
+        reset(data, { keepDefaultValues: false });
         if (callback) {
           // To avoid potential race condition with requestAnimationFrame and state updates caused by `reset`
           // Faster than taking the last position in event loop (useTimeout(cb, 0))
@@ -75,7 +75,7 @@ export function FormRoot({
         setSaveError(error);
       }
     },
-    [onSave, reset, isDuplicate]
+    [onSave, reset]
   );
 
   const onInvalid = useCallback(

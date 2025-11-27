@@ -334,7 +334,6 @@ export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertForm
 export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 'alerts'> & {
   publishAdvancedMetrics: boolean;
   alerts?: CheckAlertFormRecord;
-  duplicate_check?: boolean; // Only used to make the check form "dirty" when duplicating a check
 };
 
 export type CheckFormValuesHttp = CheckFormValuesBase & {
