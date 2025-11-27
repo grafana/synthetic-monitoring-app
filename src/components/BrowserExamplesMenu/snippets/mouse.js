@@ -1,4 +1,5 @@
 import { browser } from 'k6/browser';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 
 export const options = {
   scenarios: {
@@ -16,13 +17,28 @@ export const options = {
 export default async function () {
   const page = await browser.newPage();
 
-  await page.goto('https://test.k6.io/', { waitUntil: 'networkidle' });
+  try {
+    await page.goto('https://quickpizza.grafana.com/');
 
-  // Obtain ElementHandle for news link and navigate to it
-  // by clicking in the 'a' element's bounding box
-  const newsLinkBox = await page.$('a[href="/news.php"]').then((e) => e.boundingBox());
+    // Wait for the login link to be available
+    const loginLink = page.locator('a[href="/login"]');
+    await loginLink.waitFor();
 
-  await Promise.all([page.waitForNavigation(), page.mouse.click(newsLinkBox.x + newsLinkBox.width / 2, newsLinkBox.y)]);
+    // Obtain ElementHandle for login link and navigate to it
+    // by clicking in the 'a' element's bounding box
+    const loginLinkElement = await page.$('a[href="/login"]');
+    const loginLinkBox = await loginLinkElement.boundingBox();
 
-  await page.close();
+    await Promise.all([
+      page.waitForNavigation(),
+      page.mouse.click(loginLinkBox.x + loginLinkBox.width / 2, loginLinkBox.y),
+    ]);
+
+    await expect(page.locator('h1')).toContainText('QuickPizza User Login');
+  } catch (e) {
+    console.log('Error during execution:', e);
+    throw e;
+  } finally {
+    await page.close();
+  }
 }

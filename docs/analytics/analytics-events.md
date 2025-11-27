@@ -14,9 +14,9 @@ Tracks when the "Add New Check" button is clicked.
 
 ##### Properties
 
-| name   | type                         | description                                |
-| ------ | ---------------------------- | ------------------------------------------ |
-| source | `"check-list" \| "homepage"` | What location the button was clicked from. |
+| name   | type                                                     | description                                |
+| ------ | -------------------------------------------------------- | ------------------------------------------ |
+| source | `"check-list-empty-state" \| "check-list" \| "homepage"` | What location the button was clicked from. |
 
 #### synthetic-monitoring_check_creation_add_check_type_group_button_clicked
 
@@ -84,6 +84,16 @@ Tracks when a check is successfully updated.
 | --------- | -------------------------------------------------------------------------------------------------------- | ------------------ |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check. |
 
+#### synthetic-monitoring_check_form_need_help_scripts_button_clicked
+
+Tracks when the 'need help writing scripts' button is clicked.
+
+##### Properties
+
+| name   | type     | description                      |
+| ------ | -------- | -------------------------------- |
+| source | `string` | The source of the clicked button |
+
 ### check_list
 
 #### synthetic-monitoring_check_list_duplicate_check_button_clicked
@@ -120,6 +130,22 @@ Tracks when a feature feedback comment is submitted.
 | feature  | `string`          | The type of feature.         |
 | reaction | `"good" \| "bad"` | The reaction to the feature. |
 | comment  | `string`          | The comment text.            |
+
+### link
+
+#### synthetic-monitoring_link_clicked
+
+Tracks when a link is clicked.
+
+##### Properties
+
+| name     | type     | description                      |
+| -------- | -------- | -------------------------------- |
+| href     | `string` | The href of the clicked link     |
+| hostname | `string` | The hostname of the clicked link |
+| path     | `string` | The path of the clicked link     |
+| search   | `string` | The search of the clicked link   |
+| source   | `string` | Where the link was clicked from  |
 
 ### per_check_alerts
 
