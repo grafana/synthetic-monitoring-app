@@ -15,44 +15,24 @@ interface CreateSecretButtonClicked extends TrackingEventProps {
 export const trackCreateSecretButtonClicked =
   secretsManagementEvents<CreateSecretButtonClicked>('create_secret_button_clicked');
 
-interface EditSecretButtonClicked extends TrackingEventProps {
+interface SecretsManagementEvent extends TrackingEventProps {
   /** The source context where the secrets management UI is being used. */
   source: SecretsManagementSource;
 }
 
 /** Tracks when the edit secret button is clicked. */
 export const trackEditSecretButtonClicked =
-  secretsManagementEvents<EditSecretButtonClicked>('edit_secret_button_clicked');
-
-interface DeleteSecretButtonClicked extends TrackingEventProps {
-  /** The source context where the secrets management UI is being used. */
-  source: SecretsManagementSource;
-}
+  secretsManagementEvents<SecretsManagementEvent>('edit_secret_button_clicked');
 
 /** Tracks when the delete secret button is clicked. */
 export const trackDeleteSecretButtonClicked =
-  secretsManagementEvents<DeleteSecretButtonClicked>('delete_secret_button_clicked');
-
-interface SecretCreated extends TrackingEventProps {
-  /** The source context where the secrets management UI is being used. */
-  source: SecretsManagementSource;
-}
+  secretsManagementEvents<SecretsManagementEvent>('delete_secret_button_clicked');
 
 /** Tracks when a secret is successfully created. */
-export const trackSecretCreated = secretsManagementEvents<SecretCreated>('secret_created');
-
-interface SecretUpdated extends TrackingEventProps {
-  /** The source context where the secrets management UI is being used. */
-  source: SecretsManagementSource;
-}
+export const trackSecretCreated = secretsManagementEvents<SecretsManagementEvent>('secret_created');
 
 /** Tracks when a secret is successfully updated. */
-export const trackSecretUpdated = secretsManagementEvents<SecretUpdated>('secret_updated');
-
-interface SecretDeleted extends TrackingEventProps {
-  /** The source context where the secrets management UI is being used. */
-  source: SecretsManagementSource;
-}
+export const trackSecretUpdated = secretsManagementEvents<SecretsManagementEvent>('secret_updated');
 
 /** Tracks when a secret is successfully deleted. */
-export const trackSecretDeleted = secretsManagementEvents<SecretDeleted>('secret_deleted');
+export const trackSecretDeleted = secretsManagementEvents<SecretsManagementEvent>('secret_deleted');
