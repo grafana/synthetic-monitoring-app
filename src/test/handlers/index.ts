@@ -20,6 +20,7 @@ import { createAccessToken } from 'test/handlers/tokens';
 import { ApiEntry } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
+import { listK6Channels } from './k6Channels';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const apiRoutes = {
@@ -56,6 +57,7 @@ const apiRoutes = {
   updateProbe,
   updateSecret,
   updateTenantSettings,
+  listK6Channels,
 };
 
 export type ApiRoutes = typeof apiRoutes;
