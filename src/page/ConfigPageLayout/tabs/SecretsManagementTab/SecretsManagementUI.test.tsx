@@ -8,6 +8,7 @@ import {
   runTestAsSecretsReadOnly,
 } from 'test/utils';
 
+import { SecretsManagementSource } from './types';
 import { useDeleteSecret, useSecrets } from 'data/useSecrets';
 
 import { MOCKED_SECRETS } from '../../../../test/fixtures/secrets';
@@ -25,7 +26,7 @@ jest.mock('./SecretEditModal', () => ({
     onDismiss?: () => void;
     name: string;
     open?: boolean;
-    source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
+    source: SecretsManagementSource;
   }) => {
     if (!open) {
       return null;

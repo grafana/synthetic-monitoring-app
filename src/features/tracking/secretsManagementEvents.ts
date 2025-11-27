@@ -1,10 +1,12 @@
 import { createSMEventFactory, TrackingEventProps } from 'features/tracking/utils';
 
+import { SecretsManagementSource } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/types';
+
 const secretsManagementEvents = createSMEventFactory('secrets_management');
 
 interface CreateSecretButtonClicked extends TrackingEventProps {
   /** The source context where the secrets management UI is being used. */
-  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
+  source: SecretsManagementSource;
   /** The location where the create button was clicked. */
   location: 'empty_state' | 'header_action';
 }
@@ -15,9 +17,7 @@ export const trackCreateSecretButtonClicked =
 
 interface EditSecretButtonClicked extends TrackingEventProps {
   /** The source context where the secrets management UI is being used. */
-  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
-  /** The name of the secret being edited. */
-  secretName: string;
+  source: SecretsManagementSource;
 }
 
 /** Tracks when the edit secret button is clicked. */
@@ -26,9 +26,7 @@ export const trackEditSecretButtonClicked =
 
 interface DeleteSecretButtonClicked extends TrackingEventProps {
   /** The source context where the secrets management UI is being used. */
-  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
-  /** The name of the secret being deleted. */
-  secretName: string;
+  source: SecretsManagementSource;
 }
 
 /** Tracks when the delete secret button is clicked. */
@@ -37,9 +35,7 @@ export const trackDeleteSecretButtonClicked =
 
 interface SecretCreated extends TrackingEventProps {
   /** The source context where the secrets management UI is being used. */
-  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
-  /** The name of the secret that was created. */
-  secretName: string;
+  source: SecretsManagementSource;
 }
 
 /** Tracks when a secret is successfully created. */
@@ -47,9 +43,7 @@ export const trackSecretCreated = secretsManagementEvents<SecretCreated>('secret
 
 interface SecretUpdated extends TrackingEventProps {
   /** The source context where the secrets management UI is being used. */
-  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
-  /** The name of the secret that was updated. */
-  secretName: string;
+  source: SecretsManagementSource;
 }
 
 /** Tracks when a secret is successfully updated. */
@@ -57,9 +51,7 @@ export const trackSecretUpdated = secretsManagementEvents<SecretUpdated>('secret
 
 interface SecretDeleted extends TrackingEventProps {
   /** The source context where the secrets management UI is being used. */
-  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
-  /** The name of the secret that was deleted. */
-  secretName: string;
+  source: SecretsManagementSource;
 }
 
 /** Tracks when a secret is successfully deleted. */

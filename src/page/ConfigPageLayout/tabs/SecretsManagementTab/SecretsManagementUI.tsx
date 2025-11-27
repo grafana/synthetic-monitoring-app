@@ -8,7 +8,7 @@ import {
   trackSecretDeleted,
 } from 'features/tracking/secretsManagementEvents';
 
-import { SecretWithUuid } from './types';
+import { SecretsManagementSource, SecretWithUuid } from './types';
 import { getUserPermissions } from 'data/permissions';
 import { useDeleteSecret, useSecrets } from 'data/useSecrets';
 import { CenteredSpinner } from 'components/CenteredSpinner';
@@ -20,7 +20,7 @@ import { SecretEditModal } from './SecretEditModal';
 
 interface SecretsManagementUIProps {
   /** The source context where the secrets management UI is being used. */
-  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
+  source: SecretsManagementSource;
 }
 
 export function SecretsManagementUI({ source }: SecretsManagementUIProps) {
@@ -40,13 +40,13 @@ export function SecretsManagementUI({ source }: SecretsManagementUIProps) {
 
   const handleEditSecret = (name?: string) => {
     if (name) {
-      trackEditSecretButtonClicked({ source, secretName: name });
+      trackEditSecretButtonClicked({ source });
     }
     setEditMode(name ?? false);
   };
 
   const handleDeleteSecret = (name: string) => {
-    trackDeleteSecretButtonClicked({ source, secretName: name });
+    trackDeleteSecretButtonClicked({ source });
     const secret = secrets?.find((s) => s.name === name);
     if (secret) {
       setDeleteMode(secret);
@@ -139,7 +139,7 @@ export function SecretsManagementUI({ source }: SecretsManagementUIProps) {
           if (deleteMode) {
             deleteSecret.mutate(deleteMode.name, {
               onSuccess: () => {
-                trackSecretDeleted({ source, secretName: deleteMode.name });
+                trackSecretDeleted({ source });
               },
             });
           }

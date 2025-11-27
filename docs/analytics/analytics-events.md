@@ -218,10 +218,9 @@ Tracks when the edit secret button is clicked.
 
 ##### Properties
 
-| name       | type                                                                 | description                                                       |
-| ---------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source     | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-| secretName | `string`                                                             | The name of the secret being edited.                              |
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
 
 #### synthetic-monitoring_secrets_management_delete_secret_button_clicked
 
@@ -229,10 +228,9 @@ Tracks when the delete secret button is clicked.
 
 ##### Properties
 
-| name       | type                                                                 | description                                                       |
-| ---------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source     | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-| secretName | `string`                                                             | The name of the secret being deleted.                             |
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
 
 #### synthetic-monitoring_secrets_management_secret_created
 
@@ -240,10 +238,9 @@ Tracks when a secret is successfully created.
 
 ##### Properties
 
-| name       | type                                                                 | description                                                       |
-| ---------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source     | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-| secretName | `string`                                                             | The name of the secret that was created.                          |
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
 
 #### synthetic-monitoring_secrets_management_secret_updated
 
@@ -251,10 +248,9 @@ Tracks when a secret is successfully updated.
 
 ##### Properties
 
-| name       | type                                                                 | description                                                       |
-| ---------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source     | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-| secretName | `string`                                                             | The name of the secret that was updated.                          |
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
 
 #### synthetic-monitoring_secrets_management_secret_deleted
 
@@ -262,10 +258,9 @@ Tracks when a secret is successfully deleted.
 
 ##### Properties
 
-| name       | type                                                                 | description                                                       |
-| ---------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source     | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-| secretName | `string`                                                             | The name of the secret that was deleted.                          |
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
 
 ### timepoint_explorer
 

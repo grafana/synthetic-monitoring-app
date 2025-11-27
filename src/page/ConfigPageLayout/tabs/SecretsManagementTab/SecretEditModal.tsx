@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { trackSecretCreated, trackSecretUpdated } from 'features/tracking/secretsManagementEvents';
 
-import { Secret } from './types';
+import { Secret, SecretsManagementSource } from './types';
 import { getErrorMessage } from 'utils';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
 
@@ -21,7 +21,7 @@ interface SecretEditModalProps {
   open?: boolean;
   existingNames?: string[];
   /** The source context where the secrets management UI is being used. */
-  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
+  source: SecretsManagementSource;
 }
 
 function getDefaultValues(isNew = true): SecretFormValues & { plaintext?: string } {
@@ -126,11 +126,10 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
       },
       onSuccess() {
         setSaveError(null);
-        const secretName = data.name;
         if (isNewSecret) {
-          trackSecretCreated({ source, secretName });
+          trackSecretCreated({ source });
         } else {
-          trackSecretUpdated({ source, secretName });
+          trackSecretUpdated({ source });
         }
         onDismiss();
       },

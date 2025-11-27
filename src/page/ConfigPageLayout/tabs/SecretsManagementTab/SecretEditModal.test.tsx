@@ -7,6 +7,8 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render as testRender } from 'test/render';
 import { server } from 'test/server';
 
+import { SecretsManagementSource } from './types';
+
 import { SECRETS_EDIT_MODE_ADD } from './constants';
 import { SecretEditModal } from './SecretEditModal';
 
@@ -24,6 +26,7 @@ describe('SecretEditModal', () => {
     name: SECRETS_EDIT_MODE_ADD,
     onDismiss: jest.fn(),
     open: true,
+    source: 'config_page_secrets_tab' as SecretsManagementSource,
   };
 
   it('should not render when open is false', async () => {
