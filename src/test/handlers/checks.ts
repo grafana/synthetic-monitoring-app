@@ -59,7 +59,8 @@ export const deleteCheck: ApiEntry<DeleteCheckResult> = {
   route: `/sm/check/delete/([^/]+)`,
   method: `delete`,
   result: (req) => {
-    const id = req.url.pathname.split('/').pop();
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
 
     return {
       status: 200,
