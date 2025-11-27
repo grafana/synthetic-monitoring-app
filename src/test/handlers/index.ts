@@ -107,7 +107,8 @@ export function getServerRequests() {
 
     if (readBody) {
       try {
-        body = await request?.json();
+        // clone the request to read the body without consuming it
+        body = await request?.clone()?.json();
       } catch (e) {
         console.error(e);
       }

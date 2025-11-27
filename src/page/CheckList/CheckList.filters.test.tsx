@@ -32,7 +32,7 @@ const renderCheckList = async (checks = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK], sea
     path,
   });
 
-  expect(await screen.findByText('Add new check')).toBeInTheDocument();
+  expect(await screen.findByText('Create new check')).toBeInTheDocument();
   return res;
 };
 
