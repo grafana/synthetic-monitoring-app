@@ -23,7 +23,7 @@ describe('ChecksEmptyState', () => {
     expect(await screen.findByText("You haven't created any checks yet")).toBeInTheDocument();
 
     // Verify correct button
-    expect(await screen.findByText('Add new check')).toBeInTheDocument();
+    expect(await screen.findByText('Create new check')).toBeInTheDocument();
 
     // Verify correct link text
     const docsLink = await screen.findByText('Synthetic Monitoring docs');
