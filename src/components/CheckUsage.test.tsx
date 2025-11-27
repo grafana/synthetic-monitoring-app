@@ -5,20 +5,20 @@ import { render } from 'test/render';
 
 import { Check, CheckType } from 'types';
 
-import { CheckFormContextProvider } from './CheckForm/CheckFormContext';
+import { ChecksterProvider } from './Checkster/contexts/ChecksterContext';
 import { CheckUsage } from './CheckUsage';
 import { fallbackCheckMap } from './constants';
 
 function RenderWrapper({ check }: { check?: Check }) {
   return (
-    <CheckFormContextProvider check={check}>
+    <ChecksterProvider check={check}>
       <CheckUsage checkType={CheckType.HTTP} />
-    </CheckFormContextProvider>
+    </ChecksterProvider>
   );
 }
 
 async function renderComponent(check?: Check) {
-  const result = render(<RenderWrapper />);
+  const result = render(<RenderWrapper check={check} />);
   await waitFor(() => screen.findByTestId(DataTestIds.CHECK_USAGE), { timeout: 3000 });
 
   return result;
