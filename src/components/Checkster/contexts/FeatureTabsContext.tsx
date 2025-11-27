@@ -1,4 +1,5 @@
-import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { trackFeatureTabChanged } from 'features/tracking/checkFormEvents';
 
 import { FeatureTabConfig, FeatureTabLabel } from '../types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
@@ -23,6 +24,14 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const [activeLabel, setActiveLabel] = useState<string>('');
 
   const { checkType } = useChecksterContext();
+
+  const handleSetActive = useCallback(
+    (label: FeatureTabLabel) => {
+      setActiveLabel(label);
+      trackFeatureTabChanged({ source: 'check_editor_sidepanel_feature_tabs', label });
+    },
+    [setActiveLabel]
+  );
 
   const tabs = useMemo(() => {
     return FEATURE_TABS.filter(([, , checkCompatibility, featureName]) => {
@@ -54,10 +63,10 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const value = useMemo(() => {
     return {
       tabs,
-      setActive: setActiveLabel,
+      setActive: handleSetActive,
       activeTab,
     };
-  }, [activeTab, tabs]);
+  }, [activeTab, handleSetActive, tabs]);
 
   return <FeatureTabsContext.Provider value={value}>{children}</FeatureTabsContext.Provider>;
 }

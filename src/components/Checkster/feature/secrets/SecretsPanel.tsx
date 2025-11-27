@@ -9,6 +9,7 @@ export const SECRETS_CHECK_COMPATIBILITY: CheckType[] = [CheckType.Browser, Chec
 
 export function SecretsPanel() {
   const theme = useTheme2();
+
   return (
     <div
       className={css`
