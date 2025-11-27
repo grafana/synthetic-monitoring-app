@@ -94,6 +94,7 @@ describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {
     expect(request1Err).toBeInTheDocument();
 
     const request2postSubmit = screen.getByLabelText(`Request entry 2`);
-    expect(within(request2postSubmit).getByText(`Name is required`)).toBeInTheDocument();
+    const request2Err = await within(request2postSubmit).findByText(`Name is required`);
+    expect(request2Err).toBeInTheDocument();
   });
 });

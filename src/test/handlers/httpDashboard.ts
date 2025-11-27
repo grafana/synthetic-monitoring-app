@@ -11,7 +11,8 @@ export const getHttpDashboard: ApiEntry<unknown> = {
   route: `/api/ds/query`,
   method: `post`,
   result: async (req) => {
-    const refId = req.url.searchParams.get(`refId`);
+    const url = new URL(req.url);
+    const refId = url.searchParams.get(`refId`);
 
     if (refId === REF_ID_UNIQUE_CHECK_CONFIGS) {
       return {

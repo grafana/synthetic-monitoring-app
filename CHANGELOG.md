@@ -1,5 +1,56 @@
 # Changelog
 
+## [1.41.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.40.0...v1.41.0) (2025-11-25)
+
+
+### Features
+
+* added datatestids (wip) ([#1459](https://github.com/grafana/synthetic-monitoring-app/issues/1459)) ([642a32b](https://github.com/grafana/synthetic-monitoring-app/commit/642a32b1f393780bdc8deed91cf71255b96419ba))
+
+
+### Fixes
+
+* remove check list scens vis view ([#1482](https://github.com/grafana/synthetic-monitoring-app/issues/1482)) ([6f90a89](https://github.com/grafana/synthetic-monitoring-app/commit/6f90a89b77e3618d2d74979e47e38aafded0e6e1))
+* use AddNewCheckButton for check list empty state ([#1485](https://github.com/grafana/synthetic-monitoring-app/issues/1485)) ([00c3201](https://github.com/grafana/synthetic-monitoring-app/commit/00c3201dd336519612ef4319315e29c76c858433))
+
+
+### Miscellaneous Chores
+
+* bump glob from 11.0.3 to 11.1.0 ([#1467](https://github.com/grafana/synthetic-monitoring-app/issues/1467)) ([ff2551a](https://github.com/grafana/synthetic-monitoring-app/commit/ff2551ad352e35b01b555fe880ef91ac3ad9e9b6))
+* force renovate chore titles ([#1483](https://github.com/grafana/synthetic-monitoring-app/issues/1483)) ([383de76](https://github.com/grafana/synthetic-monitoring-app/commit/383de761723d2e57fadbdd16905b555bfba9f793))
+* move cursor rules into correct directory ([#1484](https://github.com/grafana/synthetic-monitoring-app/issues/1484)) ([9760a5e](https://github.com/grafana/synthetic-monitoring-app/commit/9760a5ee8e6bcf1980e280642622b13c140ad748))
+* update actions/checkout digest to 93cb6ef ([#1472](https://github.com/grafana/synthetic-monitoring-app/issues/1472)) ([099c7b0](https://github.com/grafana/synthetic-monitoring-app/commit/099c7b0e3de8247c85a4ba1612a58cec5559aee5))
+* update actions/create-github-app-token digest to 7e473ef ([#1474](https://github.com/grafana/synthetic-monitoring-app/issues/1474)) ([6d79a9e](https://github.com/grafana/synthetic-monitoring-app/commit/6d79a9ec4070c9acc22a6a100d010281daa35e5e))
+* update grafana/plugin-ci-workflows digest to 45b9f89 ([#1473](https://github.com/grafana/synthetic-monitoring-app/issues/1473)) ([584f2e2](https://github.com/grafana/synthetic-monitoring-app/commit/584f2e2fc8ffadb5e7644b54bb9974b88b124fcc))
+* update grafana/plugin-ci-workflows/ action to ([#1476](https://github.com/grafana/synthetic-monitoring-app/issues/1476)) ([6462cac](https://github.com/grafana/synthetic-monitoring-app/commit/6462cac1053c8754c86590e4cf7c19cf1fcb0d76))
+* update grafana/shared-workflows/ action to ([#1456](https://github.com/grafana/synthetic-monitoring-app/issues/1456)) ([8f187d7](https://github.com/grafana/synthetic-monitoring-app/commit/8f187d720ef8e0bdea447eedc371396dd56d447f))
+* update grafana/shared-workflows/ action to ([#1475](https://github.com/grafana/synthetic-monitoring-app/issues/1475)) ([15b7340](https://github.com/grafana/synthetic-monitoring-app/commit/15b7340f19ce894e84250a3879cc4f5906157fd4))
+* update grafana/shared-workflows/ action to ([#1478](https://github.com/grafana/synthetic-monitoring-app/issues/1478)) ([39cbf85](https://github.com/grafana/synthetic-monitoring-app/commit/39cbf850dc40f42aa71c4f67ab515a730d56dc67))
+* update hashicorp/setup-terraform digest to 712b439 ([#1477](https://github.com/grafana/synthetic-monitoring-app/issues/1477)) ([a197c7a](https://github.com/grafana/synthetic-monitoring-app/commit/a197c7a5805b9382c773197d51ea2026b7940544))
+
+## [1.40.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.39.0...v1.40.0) (2025-11-19)
+
+
+### Features
+
+* modernize scripted and browser examples ([#1458](https://github.com/grafana/synthetic-monitoring-app/issues/1458)) ([9856678](https://github.com/grafana/synthetic-monitoring-app/commit/98566784fc2ead3e78938ffdb6e88a6611148d2f))
+
+
+### Fixes
+
+* remove semantic commit scopes from Renovate to comply with commi… ([#1469](https://github.com/grafana/synthetic-monitoring-app/issues/1469)) ([bbaed0f](https://github.com/grafana/synthetic-monitoring-app/commit/bbaed0fe57a626ce1935874ababd38e1630b2c22))
+
+
+### Documentation
+
+* add comprehensive cursor rules for AI-assisted development ([#1462](https://github.com/grafana/synthetic-monitoring-app/issues/1462)) ([ef5c4a7](https://github.com/grafana/synthetic-monitoring-app/commit/ef5c4a77242e5430b60424295cb72a9d51958084))
+
+
+### Miscellaneous Chores
+
+* update api mappings file ([#1464](https://github.com/grafana/synthetic-monitoring-app/issues/1464)) ([74f78b0](https://github.com/grafana/synthetic-monitoring-app/commit/74f78b076c779f45a8d310cd3ace8d21e96807e2))
+* update dependency glob to v11.1.0 [security] ([#1468](https://github.com/grafana/synthetic-monitoring-app/issues/1468)) ([53d1ef7](https://github.com/grafana/synthetic-monitoring-app/commit/53d1ef79b8902b0deaed652782527cfaf6f19fe1))
+
 ## [1.39.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.38.1...v1.39.0) (2025-11-12)
 
 

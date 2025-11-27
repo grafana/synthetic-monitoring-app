@@ -5,7 +5,6 @@ import { Check, CheckEnabledStatus, CheckType, DashboardSceneAppConfig } from 't
 export enum CheckListViewType {
   Card = 'card',
   List = 'list',
-  Viz = 'viz',
 }
 
 export type ProbeFilter = {
