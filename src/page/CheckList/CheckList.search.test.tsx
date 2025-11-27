@@ -18,6 +18,13 @@ const renderCheckList = async (checks = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK], sea
           json: checks,
         };
       },
+    }),
+    apiRoute(`listProbes`, {
+      result: () => {
+        return {
+          json: [],
+        };
+      },
     })
   );
 

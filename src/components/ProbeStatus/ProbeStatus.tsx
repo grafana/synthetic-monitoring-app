@@ -14,13 +14,15 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe } from 'types';
+import { type ExtendedProbe, FeatureName } from 'types';
 import { formatDate } from 'utils';
 import { useProbes, useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
+import { formatK6VersionsInline } from 'components/ProbeCard/ProbeCard';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
 
@@ -115,6 +117,11 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
       />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
+        <FeatureFlag name={FeatureName.VersionManagement}>
+          {({ isEnabled }) => {
+            return isEnabled ? <Meta title="k6 versions:" value={formatK6VersionsInline(probe)} /> : null;
+          }}
+        </FeatureFlag>
         <Meta
           title={`Last ${probe.online ? `offline` : `online`}:`}
           value={neverOnline ? `Never` : formatDate(probe.onlineChange * 1000)}
@@ -177,4 +184,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     paddingLeft: theme.spacing(1),
   }),
   metaItem: css({ display: `flex`, gap: theme.spacing(0.5) }),
+  k6Versions: css({
+    display: 'flex',
+    gap: theme.spacing(0.5),
+  }),
+  metaTitle: css({
+    fontWeight: 700,
+  }),
+  metaValue: css({
+    whiteSpace: 'pre-line',
+  }),
 });
