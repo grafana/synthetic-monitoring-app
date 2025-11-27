@@ -94,16 +94,6 @@ Tracks when the 'need help writing scripts' button is clicked.
 | ------ | -------- | -------------------------------- |
 | source | `string` | The source of the clicked button |
 
-#### synthetic-monitoring_check_form_feature_tab_changed
-
-Tracks when a feature tab is changed.
-
-##### Properties
-
-| name  | type     | description                   |
-| ----- | -------- | ----------------------------- |
-| label | `string` | The label of the feature tab. |
-
 ### feature_feedback
 
 #### synthetic-monitoring_feature_feedback_feature_feedback_submitted
