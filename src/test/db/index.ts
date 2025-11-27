@@ -18,8 +18,11 @@ import {
 } from 'types';
 
 const baseCheckModel = ({ sequence }: { sequence: number }) => {
-  const timeout = faker.number.int({ min: 30, max: 60 * 1000 });
-  const frequency = faker.number.int({ min: timeout, max: 60 * 1000 });
+  const timeout = faker.number.int({ min: 1000, max: 60 * 1000 });
+  const frequency = faker.number.int({ 
+    min: Math.max(timeout, 10 * 1000), 
+    max: 60 * 60 * 1000
+  });
 
   return {
     id: sequence,
