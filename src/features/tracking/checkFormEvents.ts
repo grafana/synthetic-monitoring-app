@@ -2,6 +2,7 @@ import { createSMEventFactory, TrackingEventProps } from 'features/tracking/util
 
 import { CheckType } from 'types';
 import { SectionName } from 'components/CheckForm/FormLayout/FormLayout.constants';
+import { FeatureTabLabel } from 'components/Checkster/types';
 
 const checkFormEvents = createSMEventFactory('check_form');
 
@@ -47,3 +48,11 @@ interface NeedHelpScriptsButtonClicked extends TrackingEventProps {
 export const trackNeedHelpScriptsButtonClicked = checkFormEvents<NeedHelpScriptsButtonClicked>(
   'need_help_scripts_button_clicked'
 );
+
+interface FeatureTabChanged extends TrackingEventProps {
+  /** The label of the feature tab. */
+  label: FeatureTabLabel;
+}
+
+/** Tracks when a feature tab is changed. */
+export const trackFeatureTabChanged = checkFormEvents<FeatureTabChanged>('feature_tab_changed');

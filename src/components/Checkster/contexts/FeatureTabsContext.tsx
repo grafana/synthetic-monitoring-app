@@ -1,4 +1,5 @@
 import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { trackFeatureTabChanged } from 'features/tracking/checkFormEvents';
 
 import { FeatureTabConfig, FeatureTabLabel } from '../types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
@@ -56,6 +57,7 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
 
   const handleSetActive = useCallback((label: FeatureTabLabel, highlight = false) => {
     setActiveLabel(label);
+    trackFeatureTabChanged({ source: 'check_editor_sidepanel_feature_tabs', label });
 
     if (highlight) {
       setHighlightedTab(label);
