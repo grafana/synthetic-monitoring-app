@@ -16,7 +16,17 @@ import { SecretsManagementTab } from './SecretsManagementTab';
 import { SecretsManagementUI } from './SecretsManagementUI';
 
 jest.mock('./SecretEditModal', () => ({
-  SecretEditModal: ({ onDismiss, open, name }: { onDismiss?: () => void; name: string; open?: boolean }) => {
+  SecretEditModal: ({
+    onDismiss,
+    open,
+    name,
+    source,
+  }: {
+    onDismiss?: () => void;
+    name: string;
+    open?: boolean;
+    source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
+  }) => {
     if (!open) {
       return null;
     }
@@ -70,14 +80,14 @@ describe('SecretsManagementUI', () => {
 
     it('should render empty state when no secrets exist', async () => {
       runTestAsSecretsFullAccess();
-      render(<SecretsManagementUI />);
+      render(<SecretsManagementUI source="config_page_secrets_tab" />);
 
       expect(screen.getByText(/you don't have any secrets yet/i)).toBeInTheDocument();
     });
 
     it('should have create button for users with create permissions', async () => {
       runTestAsSecretsFullAccess();
-      render(<SecretsManagementUI />);
+      render(<SecretsManagementUI source="config_page_secrets_tab" />);
 
       const addButton = screen.getByRole('button', { name: /create secret/i });
       await userEvent.click(addButton);
@@ -88,14 +98,14 @@ describe('SecretsManagementUI', () => {
 
     it('should have create button for users with creator permissions', async () => {
       runTestAsSecretsCreator();
-      render(<SecretsManagementUI />);
+      render(<SecretsManagementUI source="config_page_secrets_tab" />);
 
       expect(screen.getByRole('button', { name: /create secret/i })).toBeInTheDocument();
     });
 
     it('should not have create button for read-only users', async () => {
       runTestAsSecretsReadOnly();
-      render(<SecretsManagementUI />);
+      render(<SecretsManagementUI source="config_page_secrets_tab" />);
 
       expect(screen.queryByRole('button', { name: /create secret/i })).not.toBeInTheDocument();
       expect(screen.getByText(/Contact an admin to create secrets/)).toBeInTheDocument();
@@ -103,7 +113,7 @@ describe('SecretsManagementUI', () => {
 
     it('should not have create button for editor-only users', async () => {
       runTestAsSecretsEditor();
-      render(<SecretsManagementUI />);
+      render(<SecretsManagementUI source="config_page_secrets_tab" />);
 
       expect(screen.queryByRole('button', { name: /create secret/i })).not.toBeInTheDocument();
       expect(screen.getByText(/Contact an admin to create secrets/)).toBeInTheDocument();

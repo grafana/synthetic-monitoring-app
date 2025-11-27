@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Button, ConfirmModal, EmptyState } from '@grafana/ui';
 import { css } from '@emotion/css';
+import {
+  trackCreateSecretButtonClicked,
+  trackDeleteSecretButtonClicked,
+  trackEditSecretButtonClicked,
+  trackSecretDeleted,
+} from 'features/tracking/secretsManagementEvents';
 
 import { SecretWithUuid } from './types';
 import { getUserPermissions } from 'data/permissions';
@@ -12,7 +18,12 @@ import { SECRETS_EDIT_MODE_ADD } from './constants';
 import { SecretCard } from './SecretCard';
 import { SecretEditModal } from './SecretEditModal';
 
-export function SecretsManagementUI() {
+interface SecretsManagementUIProps {
+  /** The source context where the secrets management UI is being used. */
+  source: 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';
+}
+
+export function SecretsManagementUI({ source }: SecretsManagementUIProps) {
   const [editMode, setEditMode] = useState<string | false>(false);
   const [deleteMode, setDeleteMode] = useState<SecretWithUuid | undefined>();
   const { canCreateSecrets, canReadSecrets } = getUserPermissions();
@@ -22,15 +33,20 @@ export function SecretsManagementUI() {
 
   const existingNames = secrets?.map((secret) => secret.name) ?? [];
 
-  const handleAddSecret = () => {
+  const handleAddSecret = (location: 'empty_state' | 'header_action') => {
+    trackCreateSecretButtonClicked({ source, location });
     setEditMode(SECRETS_EDIT_MODE_ADD);
   };
 
   const handleEditSecret = (name?: string) => {
+    if (name) {
+      trackEditSecretButtonClicked({ source, secretName: name });
+    }
     setEditMode(name ?? false);
   };
 
   const handleDeleteSecret = (name: string) => {
+    trackDeleteSecretButtonClicked({ source, secretName: name });
     const secret = secrets?.find((s) => s.name === name);
     if (secret) {
       setDeleteMode(secret);
@@ -50,7 +66,7 @@ export function SecretsManagementUI() {
             message="You don't have any secrets yet."
             button={
               canCreateSecrets ? (
-                <Button onClick={handleAddSecret} icon="plus">
+                <Button onClick={() => handleAddSecret('empty_state')} icon="plus">
                   Create secret
                 </Button>
               ) : undefined
@@ -70,7 +86,7 @@ export function SecretsManagementUI() {
           actions={
             canCreateSecrets ? (
               <div>
-                <Button size="sm" icon="plus" onClick={handleAddSecret}>
+                <Button size="sm" icon="plus" onClick={() => handleAddSecret('header_action')}>
                   Create secret
                 </Button>
               </div>
@@ -94,7 +110,13 @@ export function SecretsManagementUI() {
       )}
 
       {editMode && (
-        <SecretEditModal name={editMode} existingNames={existingNames} open onDismiss={() => handleEditSecret()} />
+        <SecretEditModal
+          name={editMode}
+          existingNames={existingNames}
+          open
+          source={source}
+          onDismiss={() => handleEditSecret()}
+        />
       )}
 
       <ConfirmModal
@@ -114,7 +136,13 @@ export function SecretsManagementUI() {
           </div>
         }
         onConfirm={() => {
-          deleteMode && deleteSecret.mutate(deleteMode.name);
+          if (deleteMode) {
+            deleteSecret.mutate(deleteMode.name, {
+              onSuccess: () => {
+                trackSecretDeleted({ source, secretName: deleteMode.name });
+              },
+            });
+          }
           setDeleteMode(undefined);
         }}
         onDismiss={() => setDeleteMode(undefined)}
