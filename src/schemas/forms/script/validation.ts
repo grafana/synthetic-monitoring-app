@@ -1,4 +1,4 @@
-import { RefinementCtx, ZodIssueCode } from 'zod';
+import { RefinementCtx } from 'zod';
 
 import { extractImportStatement, extractOptionsExport, getProperty, parseScript } from './parser';
 import { K6_EXTENSION_MESSAGE, K6_PRAGMA_MESSAGE, validateK6Restrictions } from './rules';
@@ -7,17 +7,17 @@ const MAX_SCRIPT_IN_KB = 128;
 
 function validateScriptPragmasAndExtensions(script: string, context: RefinementCtx): void {
   const validation = validateK6Restrictions(script, parseScript);
-  
+
   if (validation.hasPragmas) {
     context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: K6_PRAGMA_MESSAGE,
     });
   }
 
   if (validation.hasExtensions) {
     context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: K6_EXTENSION_MESSAGE,
     });
   }
@@ -30,7 +30,7 @@ export const maxSizeValidation = (val: string, context: RefinementCtx) => {
 
   if (sizeInKb > MAX_SCRIPT_IN_KB) {
     return context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: `Script is too big (${sizeInKb.toFixed(2)}kb). Maximum size is ${MAX_SCRIPT_IN_KB}kb.`,
     });
   }
@@ -52,7 +52,7 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
 
   if (options === null) {
     return context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: 'Script does not export any options.',
     });
   }
@@ -60,7 +60,7 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
   const hasChromium = getProperty(options, ['options', 'browser', 'type']) === 'chromium';
   if (!hasChromium) {
     return context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: 'Script must set the type to chromium in the browser options.',
     });
   }
@@ -68,7 +68,7 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
   const hasInvalidDuration = getProperty(options, ['duration']) !== undefined;
   if (hasInvalidDuration) {
     return context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: "Script can't define a duration value for this check",
     });
   }
@@ -77,7 +77,7 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
   const hasInvaludVus = vus !== undefined && vus !== 1;
   if (hasInvaludVus) {
     return context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: "Script can't define vus > 1 for this check",
     });
   }
@@ -86,7 +86,7 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
   const hasInvalidIterations = iterations !== undefined && iterations !== 1;
   if (hasInvalidIterations) {
     return context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: "Script can't define iterations > 1 for this check",
     });
   }
@@ -95,7 +95,7 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
 
   if (browserImport === null) {
     return context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: "Script must import { browser } from 'k6/browser'",
     });
   }
@@ -116,7 +116,7 @@ export function validateNonBrowserScript(script: string, context: RefinementCtx)
 
   if (browserImport !== null) {
     return context.addIssue({
-      code: ZodIssueCode.custom,
+      code: 'custom',
       message: "Script must not import { browser } from 'k6/browser'",
     });
   }

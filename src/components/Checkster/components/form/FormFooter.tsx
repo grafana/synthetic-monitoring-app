@@ -2,8 +2,8 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { CHECKSTER_TEST_ID } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 
 export function FormFooter() {

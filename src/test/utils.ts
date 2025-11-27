@@ -376,7 +376,7 @@ export function testUsesCombobox() {
         left: 0,
         bottom: 0,
         right: 0,
-      } as DOMRect)
+      }) as DOMRect
   );
   jest.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(500);
   jest.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(500);

@@ -1,5 +1,6 @@
-import React, { ComponentProps } from 'react';
+import { ComponentProps } from 'react';
 import { screen } from '@testing-library/react';
+import { testUsesCombobox } from 'test/utils';
 
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericMultiSelectField } from './GenericMultiSelectField';
@@ -9,42 +10,6 @@ jest.mock('../../../utils/form', () => ({
     error: errors?.[field]?.message,
     invalid: !!errors?.[field],
   })),
-}));
-
-// Mock MultiSelect component from @grafana/ui
-jest.mock('@grafana/ui', () => ({
-  ...jest.requireActual('@grafana/ui'),
-  MultiSelect: jest.fn(({ options, placeholder, value, onChange, disabled, inputId }) => {
-    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const selectedOptions = Array.from(e.target.selectedOptions).map((option) => ({
-        value: option.value,
-        label: option.text,
-      }));
-      onChange?.(selectedOptions);
-    };
-
-    return (
-      <select
-        data-testid="multi-select"
-        id={inputId}
-        multiple
-        value={value || []}
-        onChange={handleChange}
-        disabled={disabled}
-      >
-        {placeholder && (
-          <option value="" disabled>
-            {placeholder}
-          </option>
-        )}
-        {options?.map((option: any) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    );
-  }),
 }));
 
 const mockOptions = [
@@ -66,154 +31,76 @@ function renderGenericMultiSelectField(
   return formTestRenderer(GenericMultiSelectField, { ...defaultProps, ...props }, formValues);
 }
 
-describe('GenericMultiSelectField', () => {
-  it('renders a multi-select field with label', () => {
-    renderGenericMultiSelectField({
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: mockOptions,
-      placeholder: 'Choose status codes',
-    });
+const props = {
+  field: 'settings.http.validStatusCodes' as any,
+  label: 'Valid Status Codes',
+  description: 'Select valid HTTP status codes',
+  options: mockOptions,
+  placeholder: 'Choose status codes',
+};
 
-    expect(screen.getByText('Valid Status Codes')).toBeInTheDocument();
-    const select = screen.getByTestId('multi-select');
+describe('GenericMultiSelectField', () => {
+  beforeEach(() => {
+    testUsesCombobox();
+  });
+
+  it('renders a multi-select field with label', () => {
+    renderGenericMultiSelectField(props);
+
+    expect(screen.getByText(props.label)).toBeInTheDocument();
+    const select = screen.getByPlaceholderText(props.placeholder);
     expect(select).toBeInTheDocument();
   });
 
   it('renders multi-select with description', () => {
-    renderGenericMultiSelectField({
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: mockOptions,
-      placeholder: 'Choose status codes',
-    });
-
-    expect(screen.getByText('Select valid HTTP status codes')).toBeInTheDocument();
+    renderGenericMultiSelectField(props);
+    expect(screen.getByText(props.description)).toBeInTheDocument();
   });
 
   it('renders multi-select with placeholder', () => {
-    renderGenericMultiSelectField({
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: mockOptions,
-      placeholder: 'Choose status codes',
-    });
+    renderGenericMultiSelectField(props);
 
-    expect(screen.getByText('Choose status codes')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(props.placeholder)).toBeInTheDocument();
   });
 
-  it('renders options correctly', () => {
-    renderGenericMultiSelectField({
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: mockOptions,
-      placeholder: 'Choose status codes',
-    });
+  it('renders options correctly', async () => {
+    const user = renderGenericMultiSelectField(props);
+    await user.click(screen.getByPlaceholderText(props.placeholder));
 
-    expect(screen.getByText('Tag 1')).toBeInTheDocument();
-    expect(screen.getByText('Tag 2')).toBeInTheDocument();
-    expect(screen.getByText('Tag 3')).toBeInTheDocument();
-  });
-
-  it('reflects default values from form', () => {
-    renderGenericMultiSelectField(
-      {
-        field: 'settings.http.validStatusCodes' as any,
-        label: 'Valid Status Codes',
-        description: 'Select valid HTTP status codes',
-        options: mockOptions,
-        placeholder: 'Choose status codes',
-      },
-      { 'settings.http.validStatusCodes': ['tag1', 'tag2'] } as any
-    );
-
-    const select = screen.getByTestId('multi-select');
-    expect(select).toBeInTheDocument();
+    expect(screen.getByText(mockOptions[0].label)).toBeInTheDocument();
+    expect(screen.getByText(mockOptions[1].label)).toBeInTheDocument();
+    expect(screen.getByText(mockOptions[2].label)).toBeInTheDocument();
   });
 
   it('handles user selection correctly', async () => {
-    const user = renderGenericMultiSelectField({
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: mockOptions,
-      placeholder: 'Choose status codes',
-    });
+    const user = renderGenericMultiSelectField(props);
+    await user.click(screen.getByPlaceholderText(props.placeholder));
 
-    const select = screen.getByTestId('multi-select');
+    await user.click(screen.getByRole('option', { name: mockOptions[0].label }));
+    await user.click(screen.getByRole('option', { name: mockOptions[1].label }));
 
-    // Simulate selecting multiple options
-    await user.selectOptions(select, ['tag1', 'tag2']);
-
-    expect(select).toBeInTheDocument();
+    expect(screen.getByLabelText(`Remove ${mockOptions[0].label}`)).toBeInTheDocument();
+    expect(screen.getByLabelText(`Remove ${mockOptions[1].label}`)).toBeInTheDocument();
+    expect(screen.queryByLabelText(`Remove ${mockOptions[2].label}`)).not.toBeInTheDocument();
   });
 
   it('is disabled when form is disabled', () => {
-    renderGenericMultiSelectField(undefined, { disabled: true });
-    const select = screen.getByTestId('multi-select');
+    renderGenericMultiSelectField(props, { disabled: true });
+    const select = screen.getByPlaceholderText(props.placeholder);
     expect(select).toBeDisabled();
   });
 
   it('sets correct id from useDOMId hook', () => {
-    renderGenericMultiSelectField({
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: mockOptions,
-      placeholder: 'Choose status codes',
-    });
+    renderGenericMultiSelectField(props);
 
-    const select = screen.getByTestId('multi-select');
+    const select = screen.getByPlaceholderText(props.placeholder);
     expect(select).toHaveAttribute('id');
   });
 
   it('handles empty options array', () => {
-    renderGenericMultiSelectField({
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: [],
-      placeholder: 'Choose status codes',
-    });
+    renderGenericMultiSelectField({ ...props, options: [] });
 
-    const select = screen.getByTestId('multi-select');
+    const select = screen.getByPlaceholderText(props.placeholder);
     expect(select).toBeInTheDocument();
-  });
-
-  it('transforms selected values correctly', async () => {
-    // This test verifies that the onChange handler properly maps SelectableValue[] to value array
-    const user = renderGenericMultiSelectField({
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: mockOptions,
-      placeholder: 'Choose status codes',
-    });
-
-    const select = screen.getByTestId('multi-select');
-
-    // The component should handle the transformation from SelectableValue[] to string[]
-    await user.selectOptions(select, 'tag1');
-
-    expect(select).toBeInTheDocument();
-  });
-
-  it('handles field prop requirements', () => {
-    // Ensure all required props are accepted
-    const props = {
-      field: 'settings.http.validStatusCodes' as any,
-      label: 'Valid Status Codes',
-      description: 'Select valid HTTP status codes',
-      options: mockOptions,
-      placeholder: 'Choose status codes',
-    };
-
-    expect(() => {
-      renderGenericMultiSelectField(props);
-    }).not.toThrow();
   });
 });

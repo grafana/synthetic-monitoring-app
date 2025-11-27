@@ -11,10 +11,10 @@ import React, {
   useState,
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { isEqual } from 'lodash';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
-import { ZodSchema } from 'zod';
+import { ZodType } from 'zod';
 
 import { FormNavigationState, FormSectionName } from '../types';
 import { Check, CheckFormValues, CheckType } from 'types';
@@ -43,7 +43,7 @@ interface ChecksterContextValue {
   check: Check | undefined;
   formNavigation: FormNavigationState;
   changeCheckType: (checkType: CheckType) => void;
-  schema: ZodSchema;
+  schema: ZodType<CheckFormValues>;
   checkType: CheckType;
   isNew: boolean;
   isK6Check: boolean;
@@ -84,13 +84,13 @@ interface StashedValues {
 }
 
 function useFormValuesMeta(checkType: CheckType, check?: Check) {
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const schema = FORM_CHECK_TYPE_SCHEMA_MAP[checkType];
+    return {
       defaultFormValues: check ? toFormValues(check) : getDefaultFormValues(checkType),
-      schema: addRefinements(FORM_CHECK_TYPE_SCHEMA_MAP[checkType]),
-    }),
-    [checkType, check]
-  );
+      schema: addRefinements<CheckFormValues>(schema),
+    };
+  }, [checkType, check]);
 }
 
 export function ChecksterProvider({
@@ -103,7 +103,7 @@ export function ChecksterProvider({
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const [checkType, setCheckType] = useState<CheckType>(
-    isCheck(externalCheck) ? getCheckType(externalCheck.settings) : externalCheckType ?? DEFAULT_CHECK_TYPE
+    isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
   );
 
   const formId = useDOMId();
@@ -167,7 +167,7 @@ export function ChecksterProvider({
   // Form stuff
   const formMethods = useForm<CheckFormValues>({
     defaultValues: defaultFormValues,
-    resolver: zodResolver(schema),
+    resolver: standardSchemaResolver(schema),
     mode: 'onChange', // onBlur is a bit fiddly
     reValidateMode: 'onChange',
     disabled: disabled || isLoading, // || isSubmitting,

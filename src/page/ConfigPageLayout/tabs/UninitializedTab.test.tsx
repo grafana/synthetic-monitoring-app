@@ -1,10 +1,10 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { APP_INITIALIZER_TEST_ID } from 'test/dataTestIds';
 
 import { AppRoutes } from 'routing/types';
 
 import { AppInitializer } from '../../../components/AppInitializer';
-import { DataTestIds } from '../../../test/dataTestIds';
 import { render } from '../../../test/render';
 import { UninitializedTab } from './UninitializedTab';
 
@@ -13,7 +13,7 @@ jest.mock('../../../components/AppInitializer', () => {
     AppInitializer: jest
       .fn()
       .mockImplementation(({ buttonText, redirectTo }: { buttonText: string; redirectTo?: AppRoutes }) => (
-        <div data-testid={DataTestIds.APP_INITIALIZER}>
+        <div data-testid={APP_INITIALIZER_TEST_ID.root}>
           <button>{buttonText}</button>
         </div>
       )),

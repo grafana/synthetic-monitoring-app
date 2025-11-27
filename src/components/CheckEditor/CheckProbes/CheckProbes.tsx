@@ -2,9 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { Field, Stack } from '@grafana/ui';
 
 import { ProbeWithMetadata } from 'types';
+import { filterProbes } from 'components/CheckEditor/CheckProbes/CheckProbes.utils';
+import { SearchFilter } from 'components/SearchFilter';
 
 import { PrivateProbesAlert } from './PrivateProbesAlert';
-import { PROBES_FILTER_ID, ProbesFilter } from './ProbesFilter';
 import { ProbesList } from './ProbesList';
 
 interface CheckProbesProps {
@@ -16,9 +17,13 @@ interface CheckProbesProps {
   invalid?: boolean;
   error?: string;
 }
-export function CheckProbes({ probes, availableProbes, onChange, error, disabled }: CheckProbesProps) {
-  const [filteredProbes, setFilteredProbes] = useState<ProbeWithMetadata[]>(availableProbes);
 
+export const PROBES_FILTER_ID = 'check-probes-filter';
+
+export function CheckProbes({ probes, availableProbes, onChange, error, disabled }: CheckProbesProps) {
+  const [filterText, setFilterText] = useState('');
+
+  const filteredProbes = useMemo(() => filterProbes(availableProbes, filterText), [availableProbes, filterText]);
   const publicProbes = useMemo(() => filteredProbes.filter((probe) => probe.public), [filteredProbes]);
   const privateProbes = useMemo(() => filteredProbes.filter((probe) => !probe.public), [filteredProbes]);
 
@@ -36,6 +41,7 @@ export function CheckProbes({ probes, availableProbes, onChange, error, disabled
   );
 
   const showPrivateProbesDiscovery = privateProbes.length === 0 && filteredProbes.length === availableProbes.length;
+  const showEmptyState = filteredProbes.length === 0;
 
   return (
     <div>
@@ -48,7 +54,15 @@ export function CheckProbes({ probes, availableProbes, onChange, error, disabled
         disabled={disabled}
       >
         <div>
-          <ProbesFilter probes={availableProbes} onSearch={setFilteredProbes} />
+          <SearchFilter
+            onSearch={setFilterText}
+            id={PROBES_FILTER_ID}
+            value={filterText}
+            showEmptyState={showEmptyState}
+            emptyText="There are no probes matching your criteria."
+            placeholder="Find a probe by city, country, region or provider"
+            data-form-name="probes"
+          />
           <Stack wrap="wrap">
             <Stack wrap="nowrap">
               {Object.entries(groupedByRegion)

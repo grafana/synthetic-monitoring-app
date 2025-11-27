@@ -2,25 +2,42 @@
   // https://docs.renovatebot.com/config-overview/
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   // https://github.com/grafana/deployment_tools/blob/master/docs/platform/renovate/FAQ.md#can-i-opt-inopt-out-of-the-global-configuration
+  // https://github.com/grafana/grafana-renovate-config
   "extends": ["github>grafana/grafana-renovate-config//presets/base"],
   "ignorePaths": [".config/Dockerfile"],
+  //
+  "semanticCommitScope": null,
   "packageRules": [
+    // Remove semantic commit scopes for all package types to comply with commitlint
+    // This overrides the base preset's rules that add (deps) and (deps-dev) scopes
+    {
+      "matchManagers": ["npm", "github-actions", "dockerfile"],
+      "semanticCommitScope": null,
+      "semanticCommitType": "chore"
+    },
     // we can never update the React packages until grafana does
     {
-      "matchPackageNames": ["react", "react-dom", "eslint-plugin-react-hooks"],
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "eslint-plugin-react-hooks",
+        "react-router-dom",
+        "@types/react-router-dom"
+      ],
       "enabled": false
     },
     // packages which we consider feature complete but if they ever do receive updates we should review them
     {
       "matchPackageNames": [
-        "dorny/paths-filter",
         "acorn-walk",
         "css-loader",
+        "dorny/paths-filter",
         "eslint-plugin-simple-import-sort",
         "identity-obj-proxy",
         "imports-loader",
         "ip-address",
         "is-base64",
+        "jest-canvas-mock",
         "pluralize",
         "punycode",
         "raw-loader",
@@ -35,10 +52,31 @@
         "webpack-livereload-plugin",
         "webpack-merge",
         "webpack-subresource-integrity",
-        "webpack-virtual-modules"
+        "webpack-virtual-modules",
+        "whatwg-fetch"
       ],
       "enabled": true,
       "abandonmentThreshold": "15 years"
+    },
+    // automatically merge patch and minor updates
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "description": "Label patch updates",
+      "matchUpdateTypes": ["patch"],
+      "labels": ["automerge-patch"]
+    },
+    {
+      "description": "Label minor updates",
+      "matchUpdateTypes": ["minor"],
+      "labels": ["automerge-minor"]
+    },
+    {
+      "description": "Label digest updates",
+      "matchUpdateTypes": ["digest"],
+      "labels": ["automerge-digest"]
     }
   ]
 }

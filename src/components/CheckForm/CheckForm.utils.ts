@@ -3,7 +3,7 @@ import { MAX_FREQUENCY_ERROR_MESSAGE_START, MIN_FREQUENCY_ERROR_MESSAGE_START } 
 
 import { Check, CheckFormValues } from 'types';
 
-import { PROBES_FILTER_ID } from '../CheckEditor/CheckProbes/ProbesFilter';
+import { PROBES_FILTER_ID } from '../CheckEditor/CheckProbes/CheckProbes';
 import {
   FREQUENCY_INPUT_ID,
   FREQUENCY_MINUTES_INPUT_ID,

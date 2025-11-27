@@ -31,13 +31,15 @@ describe('AppContainer', () => {
   });
 
   it('renders children when provided', () => {
+    const testText = 'child';
+
     render(
       <AppContainer>
-        <div data-testid="child">Test Child</div>
+        <div>{testText}</div>
       </AppContainer>
     );
 
-    expect(screen.getByTestId('child')).toBeInTheDocument();
+    expect(screen.getByText(testText)).toBeInTheDocument();
   });
 
   it('shows loading state when isLoading is true', () => {

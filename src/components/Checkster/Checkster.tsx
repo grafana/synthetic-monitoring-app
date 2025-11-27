@@ -38,10 +38,10 @@ function ChecksterInternal({ onSave }: ChecksterProps) {
   return (
     <>
       <AppContainer isLoading={isLoading} error={error}>
-        <PrimaryLayoutSection headerContent={<FormSectionNavigation />}>
-          <FormRoot onSave={onSave} />
-        </PrimaryLayoutSection>
         <FeatureTabsContextProvider>
+          <PrimaryLayoutSection headerContent={<FormSectionNavigation />}>
+            <FormRoot onSave={onSave} />
+          </PrimaryLayoutSection>
           <SecondaryLayoutSection headerContent={<FeatureTabs />}>
             <FeatureContent />
           </SecondaryLayoutSection>

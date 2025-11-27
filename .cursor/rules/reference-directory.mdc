@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Often I will ask you to perform tasks or audits. This information is only useful for you and me and should not be committed to the codebase. If appropriate suggest saving it to an appropriate file in `.cursor/references` as this folder is gitignored.
+- When we are using the reference files in the `.cursor/references` directory it may be appropriate to update or delete them. If you are unsure check with me if you think something should be updated or deleted.
+- If appropriate suggest saving or creating things to our reference folder. It is especially useful to do this for features that may need several different PRs or be worked on over a longer period of time.

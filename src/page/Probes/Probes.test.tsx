@@ -1,9 +1,15 @@
 import React from 'react';
-import { screen, within } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
-import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useTheme2 } from '@grafana/ui';
+import { renderHook, screen, waitFor, within } from '@testing-library/react';
+import { DataTestIds, PROBES_TEST_ID } from 'test/dataTestIds';
+import { OFFLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 import { probeToMetadataProbe } from 'test/utils';
+
+import { PROBE_REFETCH_INTERVAL } from 'data/useProbes';
 
 import { Probes } from './Probes';
 
@@ -29,4 +35,52 @@ it('renders add new button', async () => {
   renderProbeList();
   const addNewButton = await screen.findByText('Add Private Probe');
   expect(addNewButton).toBeInTheDocument();
+});
+
+it(`probe statuses update automatically`, async () => {
+  jest.useFakeTimers();
+  server.use(
+    apiRoute('listProbes', {
+      result: () => {
+        return {
+          json: [OFFLINE_PROBE],
+        };
+      },
+    })
+  );
+
+  const { result } = renderHook<GrafanaTheme2, undefined>(useTheme2);
+  const offlineColor = result.current.colors.error.text;
+  const onlineColor = result.current.colors.success.text;
+
+  renderProbeList();
+  const offlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
+  expect(offlineStatus).toHaveStyle(`background-color: ${offlineColor}`);
+
+  server.use(
+    apiRoute('listProbes', {
+      result: () => {
+        return {
+          json: [
+            {
+              ...OFFLINE_PROBE,
+              online: true,
+            },
+          ],
+        };
+      },
+    })
+  );
+
+  jest.advanceTimersByTime(PROBE_REFETCH_INTERVAL);
+
+  await waitFor(
+    async () => {
+      const onlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
+      expect(onlineStatus).toHaveStyle(`background-color: ${onlineColor}`);
+    },
+    { timeout: 5000 }
+  );
+
+  jest.useRealTimers();
 });

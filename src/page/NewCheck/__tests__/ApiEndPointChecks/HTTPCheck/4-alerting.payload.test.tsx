@@ -1,8 +1,9 @@
 import { screen, within } from '@testing-library/react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
 
-import { CheckType, FeatureName } from 'types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
@@ -37,9 +38,14 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
 
-    const thresholdsInputSelector = 'alert-threshold-TLSTargetCertificateCloseToExpiring';
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
+      )
+    );
 
-    await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
+    const thresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
     await user.clear(screen.getByTestId(thresholdsInputSelector));
     await user.type(screen.getByTestId(thresholdsInputSelector), '1');
 
@@ -75,9 +81,14 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     // Check that latency alerts section exists
     expect(screen.getByText('Latency')).toBeInTheDocument();
 
-    const thresholdInputSelector = 'alert-threshold-HTTPRequestDurationTooHighAvg';
+    const thresholdInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput;
 
-    await user.click(screen.getByTestId('checkbox-alert-HTTPRequestDurationTooHighAvg'));
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox
+      )
+    );
     await user.clear(screen.getByTestId(thresholdInputSelector));
     await user.type(screen.getByTestId(thresholdInputSelector), '500');
 
@@ -112,10 +123,23 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
     expect(screen.getByText(`Failed Checks`)).toBeInTheDocument();
 
-    await user.click(screen.getByTestId('checkbox-alert-ProbeFailedExecutionsTooHigh'));
-    await user.clear(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'));
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
+      )
+    );
+    await user.clear(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+      )
+    );
 
-    await user.type(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'), '50');
+    await user.type(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+      ),
+      '50'
+    );
 
     await submitForm(user);
 
@@ -142,21 +166,39 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
     // Enable TLS Certificate alert and set threshold
-    await user.click(screen.getByTestId('checkbox-alert-TLSTargetCertificateCloseToExpiring'));
-    await user.clear(screen.getByTestId('alert-threshold-TLSTargetCertificateCloseToExpiring'));
-    await user.type(screen.getByTestId('alert-threshold-TLSTargetCertificateCloseToExpiring'), '7');
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
+      )
+    );
+
+    const tlsThresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
+    await user.clear(screen.getByTestId(tlsThresholdsInputSelector));
+    await user.type(screen.getByTestId(tlsThresholdsInputSelector), '7');
 
     // Fill in runbook URL
-    const runbookUrlInput = screen.getByTestId('alert-runbook-url-TLSTargetCertificateCloseToExpiring');
+    const runbookUrlInput = screen.getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
+    );
     await user.type(runbookUrlInput, 'https://example.com/runbooks/tls-cert-expiry');
 
     // Enable Failed Executions alert and set threshold and period
-    await user.click(screen.getByTestId('checkbox-alert-ProbeFailedExecutionsTooHigh'));
-    await user.clear(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'));
-    await user.type(screen.getByTestId('alert-threshold-ProbeFailedExecutionsTooHigh'), '3');
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
+      )
+    );
+
+    const failedExecutionsThresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput;
+    await user.clear(screen.getByTestId(failedExecutionsThresholdsInputSelector));
+    await user.type(screen.getByTestId(failedExecutionsThresholdsInputSelector), '3');
 
     // Fill in runbook URL for Failed Executions alert
-    const failedExecRunbookUrlInput = screen.getByTestId('alert-runbook-url-ProbeFailedExecutionsTooHigh');
+    const failedExecRunbookUrlInput = screen.getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].runbookUrlInput
+    );
     await user.type(failedExecRunbookUrlInput, 'https://example.com/runbooks/failed-executions');
 
     await submitForm(user);
@@ -187,7 +229,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    
+
     // Set frequency to 10 minutes using the proper helper - go to section 4 (Execution)
     await goToSection(user, 4);
     await selectBasicFrequency(user, '10m');
@@ -201,15 +243,24 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
-    await user.click(screen.getByTestId('checkbox-alert-HTTPRequestDurationTooHighAvg'));
-    await user.clear(screen.getByTestId('alert-threshold-HTTPRequestDurationTooHighAvg'));
-    await user.type(screen.getByTestId('alert-threshold-HTTPRequestDurationTooHighAvg'), '100');
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox
+      )
+    );
+
+    const httpRequestDurationThresholdsInput =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput;
+    await user.clear(screen.getByTestId(httpRequestDurationThresholdsInput));
+    await user.type(screen.getByTestId(httpRequestDurationThresholdsInput), '100');
 
     // Select 5m period (which is less than 10m frequency) - target the specific period selector by ID
     const periodContainer = document.getElementById('alert-period-HTTPRequestDurationTooHighAvg');
-    const periodSelector = within(periodContainer as HTMLElement).getByTestId('alertPendingPeriod');
+    const periodSelector = within(periodContainer as HTMLElement).getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].periodCombobox
+    );
     await user.click(periodSelector);
-    
+
     // Wait for dropdown to open and click "5 min" within the opened dropdown
     const dropdown = await screen.findByRole('listbox');
     await user.click(within(dropdown).getByText('5 min'));
@@ -218,8 +269,6 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     const errorMsg = await screen.findByRole('alert');
     expect(errorMsg).toBeInTheDocument();
-    expect(errorMsg).toHaveTextContent(
-      'Period (5m) must be equal or higher to the frequency (10 minutes)'
-    );
+    expect(errorMsg).toHaveTextContent('Period (5m) must be equal or higher to the frequency (10 minutes)');
   });
 });

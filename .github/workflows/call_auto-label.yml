@@ -1,0 +1,43 @@
+# Apply labels to PRs based on keywords in the PR title
+on:
+  workflow_call:
+
+permissions:
+  pull-requests: write # needed to add labels to PRs
+
+jobs:
+  label-by-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label PR based on title
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const title = context.payload.pull_request && context.payload.pull_request.title || '';
+            // Mapping: regex -> label name (aligned with conventional commits & release-please)
+            const mappings = [
+              { regex: /\b(feat|feature|enhancement|improvement)\b/i, label: 'feature' },
+              { regex: /\b(fix|bug|bugfix|regression)\b/i, label: 'fix' },
+              { regex: /\b(doc|docs|documentation)\b/i, label: 'docs' },
+              { regex: /\b(chore|ci|pipeline|workflow|deps|dependencies)\b/i, label: 'chore' },
+              { regex: /\b(refactor|refactoring|restructure)\b/i, label: 'refactor' },
+              { regex: /\b(release)\b/i, label: 'release' }
+            ];
+
+            const labelsToAdd = [];
+            for (const m of mappings) {
+              if (m.regex.test(title)) labelsToAdd.push(m.label);
+            }
+
+            if (labelsToAdd.length === 0) {
+              console.log('No labels matched PR title:', title);
+              return;
+            }
+
+            console.log('Adding labels to PR:', labelsToAdd);
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: labelsToAdd
+            });

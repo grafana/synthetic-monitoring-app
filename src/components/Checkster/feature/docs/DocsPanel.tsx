@@ -1,58 +1,29 @@
-import React from 'react';
-import { TextLink, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import React, { ComponentType } from 'react';
 
 import { CheckType } from 'types';
+import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
+import { DocsPanelAPIEndpoint } from 'components/Checkster/feature/docs/DocsPanelAPIEndpoint';
+import { DocsPanelBrowserCheck } from 'components/Checkster/feature/docs/DocsPanelBrowser';
+import { DocsPanelMultiStep } from 'components/Checkster/feature/docs/DocsPanelMultiStep';
+import { DocsPanelScriptedCheck } from 'components/Checkster/feature/docs/DocsPanelScripted';
 
+// empty array means all check types are supported
 export const DOCS_CHECK_COMPATABILITY: CheckType[] = [];
 
-export function DocsPanel() {
-  const theme = useTheme2();
-  return (
-    <div
-      className={css`
-        padding: ${theme.spacing(2)};
-      `}
-    >
-      <h3>Docs</h3>
-      <p>
-        Synthetic Monitoring checks are tests that run on selected public or private probes at frequent intervals to
-        continuously verify your systems.
-      </p>
-      <p>
-        Checks save results as Prometheus metrics and Loki logs, enabling the configuration of Grafana alerts for custom
-        notifications and incident management.
-      </p>
-      <ul
-        className={css`
-          padding-left: ${theme.spacing(2)};
-        `}
-      >
-        <li>
-          <TextLink
-            external
-            href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/"
-          >
-            Check types and what they do
-          </TextLink>
-        </li>
-        <li>
-          <TextLink
-            external
-            href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/public-probes/"
-          >
-            Public probes
-          </TextLink>
-        </li>
-        <li>
-          <TextLink
-            external
-            href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/"
-          >
-            Create and manage secrets
-          </TextLink>
-        </li>
-      </ul>
-    </div>
-  );
-}
+const CHECK_TYPE_DOCS_MAP: Array<[ComponentType, CheckType[]]> = [
+  [
+    DocsPanelAPIEndpoint,
+    [CheckType.DNS, CheckType.GRPC, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute],
+  ],
+  [DocsPanelMultiStep, [CheckType.MULTI_HTTP]],
+  [DocsPanelScriptedCheck, [CheckType.Scripted]],
+  [DocsPanelBrowserCheck, [CheckType.Browser]],
+] as const;
+
+export const DocsPanel = () => {
+  const { checkType } = useChecksterContext();
+
+  const DocsPanelComponent = CHECK_TYPE_DOCS_MAP.find(([_, checkTypes]) => checkTypes.includes(checkType))?.[0];
+
+  return DocsPanelComponent ? <DocsPanelComponent /> : null;
+};

@@ -49,7 +49,7 @@ type CheckFormMetaReturn = {
   isNew: boolean;
   isExistingCheck: boolean;
   getIsExistingCheck: typeof getIsExistingCheck;
-  schema: ZodType;
+  schema: ZodType<CheckFormValues, any, any>;
   checkType: CheckType;
   checkTypeGroup: CheckTypeGroup | undefined;
   checkState: 'new' | 'existing';
@@ -114,7 +114,7 @@ export function useCheckFormSchema(check?: Check) {
   const schema = SCHEMA_MAP[checkType];
 
   return useMemo(() => {
-    return addRefinements(schema);
+    return addRefinements<CheckFormValues>(schema);
   }, [schema]);
 }
 

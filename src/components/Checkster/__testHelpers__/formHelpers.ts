@@ -1,10 +1,11 @@
 import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { FormSectionName } from '../types';
+import { DEFAULT_FORM_SECTION_ORDER } from 'components/Checkster/constants';
 
 import { testUsesCombobox } from '../../../test/utils';
-import { CHECKSTER_TEST_ID, DEFAULT_FORM_SECTION_ORDER } from '../constants';
 
 export async function gotoSection(user: UserEvent, section: FormSectionName | number) {
   const tabList = screen.getByTestId(CHECKSTER_TEST_ID.navigation.root);
@@ -23,6 +24,12 @@ export async function submitForm(user: UserEvent) {
   const submitButton = screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton);
   // expect(submitButton).toBeInTheDocument();
   await user.click(submitButton);
+}
+
+export async function removeComboboxOption(user: UserEvent, label: string | RegExp) {
+  testUsesCombobox();
+
+  await user.click(screen.getByRole('button', { name: `Remove ${label}` }));
 }
 
 export async function selectComboboxOption(user: UserEvent, combobox: HTMLElement, value: RegExp | string) {

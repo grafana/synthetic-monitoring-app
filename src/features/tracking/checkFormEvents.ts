@@ -37,3 +37,13 @@ export const trackCheckCreated = checkFormEvents<CheckFormEvent>('check_created'
 
 /** Tracks when a check is successfully updated. */
 export const trackCheckUpdated = checkFormEvents<CheckFormEvent>('check_updated');
+
+interface NeedHelpScriptsButtonClicked extends TrackingEventProps {
+  /** The source of the clicked button */
+  source: string;
+}
+
+/** Tracks when the 'need help writing scripts' button is clicked. */
+export const trackNeedHelpScriptsButtonClicked = checkFormEvents<NeedHelpScriptsButtonClicked>(
+  'need_help_scripts_button_clicked'
+);

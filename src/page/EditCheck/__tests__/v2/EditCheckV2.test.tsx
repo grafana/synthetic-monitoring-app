@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
@@ -10,7 +10,6 @@ import { generateRoutePath } from 'routing/utils';
 import { renderEditFormV2 } from 'page/__testHelpers__/checkForm';
 
 import { submitForm } from '../../../../components/Checkster/__testHelpers__/formHelpers';
-import { CHECKSTER_TEST_ID } from '../../../../components/Checkster/constants';
 
 describe(`<EditCheckV2 />`, () => {
   it(`renders the can't find check modal when given a bad check id`, async () => {

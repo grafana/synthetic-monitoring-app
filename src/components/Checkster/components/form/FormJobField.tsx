@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@grafana/ui';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormFieldPath } from '../../types';
 import { CheckFormValues } from 'types';
@@ -28,6 +29,7 @@ export function FormJobField({ field = 'job' }: FormJobFieldProps) {
     >
       <Input
         id="check-editor-job-input"
+        data-testid={CHECKSTER_TEST_ID.form.inputs.job}
         {...register(field)}
         disabled={disabled}
         type="text"

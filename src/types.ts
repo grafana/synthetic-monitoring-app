@@ -435,6 +435,12 @@ export type CheckFormValues =
   | CheckFormValuesTraceroute
   | CheckFormValuesBrowser;
 
+export type CheckFormValuesWithAlert<T extends CheckAlertType> = CheckFormValues & {
+  alerts: {
+    [K in T]: Required<CheckAlertFormValues>;
+  };
+};
+
 export interface FilteredCheck extends Omit<Check, 'id'> {
   id: number;
 }

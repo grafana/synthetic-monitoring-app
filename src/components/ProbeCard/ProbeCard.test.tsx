@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useTheme2 } from '@grafana/ui';
 import { renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { DataTestIds } from 'test/dataTestIds';
+import { DataTestIds, PROBES_TEST_ID } from 'test/dataTestIds';
 import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 import { probeToExtendedProbe, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
@@ -39,13 +39,13 @@ it(`Displays the correct information for an online probe`, async () => {
   await screen.findByText(probe.displayName);
 
   // Check status circle
-  const status = screen.getByTestId('probe-online-status');
+  const status = screen.getByTestId(PROBES_TEST_ID.cards.status);
   expect(status).toBeInTheDocument();
   expect(status).toHaveStyle(`background-color: ${result.current.colors.success.text}`);
 
   // Check status tooltip
   await userEvent.hover(status);
-  const tooltip = await screen.findByTestId('probe-online-status-tooltip');
+  const tooltip = await screen.findByTestId(PROBES_TEST_ID.cards.statusTooltip);
   expect(tooltip).toBeInTheDocument();
   expect(tooltip).toHaveTextContent(`Probe ${probe.displayName} is online`);
 });
@@ -58,13 +58,13 @@ it(`Displays the correct information for an offline probe`, async () => {
   await screen.findByText(probe.displayName);
 
   // Check status circle
-  const status = screen.getByTestId('probe-online-status');
+  const status = screen.getByTestId(PROBES_TEST_ID.cards.status);
   expect(status).toBeInTheDocument();
   expect(status).toHaveStyle(`background-color: ${result.current.colors.error.text}`);
 
   // Check status tooltip
   await userEvent.hover(status);
-  const tooltip = await screen.findByTestId('probe-online-status-tooltip');
+  const tooltip = await screen.findByTestId(PROBES_TEST_ID.cards.statusTooltip);
   expect(tooltip).toBeInTheDocument();
   expect(tooltip).toHaveTextContent(`Probe ${probe.displayName} is offline`);
 });
@@ -75,7 +75,7 @@ it(`Displays the correct information for a private probe`, async () => {
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId('probe-card-action-button');
+  const button = screen.getByTestId(`probe-card-action-button`);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('Edit');
 });

@@ -3,11 +3,11 @@ import { FieldErrors, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { Check, CheckFormValues } from 'types';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
-import { CHECKSTER_TEST_ID } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { toPayload } from '../../utils/adaptors';
 import { getFlattenErrors, isFocusingError, onErrorFocusFallback } from '../../utils/form';

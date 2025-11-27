@@ -1,8 +1,9 @@
 import { screen, within } from '@testing-library/react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { mockFeatureToggles, probeToMetadataProbe } from 'test/utils';
 
-import { CheckType, FeatureName } from 'types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
@@ -38,9 +39,14 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     // Check that latency alerts section exists
     expect(screen.getByText('Latency')).toBeInTheDocument();
 
-    const thresholdInputSelector = 'alert-threshold-DNSRequestDurationTooHighAvg';
+    const thresholdInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput;
 
-    await user.click(screen.getByTestId('checkbox-alert-DNSRequestDurationTooHighAvg'));
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].selectedCheckbox
+      )
+    );
     await user.clear(screen.getByTestId(thresholdInputSelector));
     await user.type(screen.getByTestId(thresholdInputSelector), '150');
 
@@ -66,7 +72,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    
+
     // Set frequency to 10 minutes using the proper helper - go to section 4 (Execution)
     await goToSection(user, 4);
     await selectBasicFrequency(user, '10m');
@@ -80,15 +86,30 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
-    await user.click(screen.getByTestId('checkbox-alert-DNSRequestDurationTooHighAvg'));
-    await user.clear(screen.getByTestId('alert-threshold-DNSRequestDurationTooHighAvg'));
-    await user.type(screen.getByTestId('alert-threshold-DNSRequestDurationTooHighAvg'), '100');
+    await user.click(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].selectedCheckbox
+      )
+    );
+    await user.clear(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput
+      )
+    );
+    await user.type(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput
+      ),
+      '100'
+    );
 
     // Select 5m period (which is less than 10m frequency) - target the specific period selector by ID
     const periodContainer = document.getElementById('alert-period-DNSRequestDurationTooHighAvg');
-    const periodSelector = within(periodContainer as HTMLElement).getByTestId('alertPendingPeriod');
+    const periodSelector = within(periodContainer as HTMLElement).getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].periodCombobox
+    );
     await user.click(periodSelector);
-    
+
     // Wait for dropdown to open and click "5 min" within the opened dropdown
     const dropdown = await screen.findByRole('listbox');
     await user.click(within(dropdown).getByText('5 min'));
@@ -97,8 +118,6 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
 
     const errorMsg = await screen.findByRole('alert');
     expect(errorMsg).toBeInTheDocument();
-    expect(errorMsg).toHaveTextContent(
-      'Period (5m) must be equal or higher to the frequency (10 minutes)'
-    );
+    expect(errorMsg).toHaveTextContent('Period (5m) must be equal or higher to the frequency (10 minutes)');
   });
 });

@@ -1,10 +1,11 @@
 import React, { PropsWithChildren, useCallback, useContext, useMemo, useState } from 'react';
-import { SubmitErrorHandler, SubmitHandler, useFormContext } from 'react-hook-form';
+import { SubmitErrorHandler, SubmitHandler, useController, useFormContext } from 'react-hook-form';
 import { Alert, Stack } from '@grafana/ui';
 
 import { Check, CheckFormValues, CheckType, FeatureName } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useRevalidateForm } from 'hooks/useRevalidateForm';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
@@ -133,8 +134,18 @@ function CheckFormInternal() {
   }, [defaultFormValues, formValues]);
 
   const hasUnsavedChanges = error ? true : isFormModified && !submittingToApi;
-
   const isAlertsPerCheckOn = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
+
+  const revalidateForm = useRevalidateForm();
+  const { field: probesField } = useController({ control: formMethods.control, name: 'probes' });
+
+  const handleProbesChange = useCallback(
+    (probes: number[]) => {
+      probesField.onChange(probes);
+      revalidateForm();
+    },
+    [probesField, revalidateForm]
+  );
 
   return (
     <>
@@ -185,7 +196,13 @@ function CheckFormInternal() {
           status={checkTypeStatus}
         >
           <Stack direction={`column`} gap={4}>
-            <ProbeOptions checkType={checkType} />
+            <ProbeOptions
+              checkType={checkType}
+              disabled={isDisabled}
+              errors={formMethods.formState.errors.probes}
+              onChange={handleProbesChange}
+              selectedProbes={probesField.value}
+            />
             {ProbesComponent}
             <CheckUsage checkType={checkType} />
           </Stack>

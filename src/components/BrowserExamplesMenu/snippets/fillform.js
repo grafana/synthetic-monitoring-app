@@ -1,5 +1,5 @@
 import { browser } from 'k6/browser';
-import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
+import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
 
 export const options = {
   scenarios: {
@@ -22,32 +22,18 @@ export default async function () {
   const page = await context.newPage();
 
   try {
-    // Goto front page, find login link and click it
-    await page.goto('https://test.k6.io/', { waitUntil: 'networkidle' });
-    await Promise.all([page.waitForNavigation(), page.locator('a[href="/my_messages.php"]').click()]);
+    await page.goto('https://quickpizza.grafana.com/admin');
 
     // Enter login credentials and login
-    await page.locator('input[name="login"]').type('admin');
-    await page.locator('input[name="password"]').type('123');
+    const username = 'admin'; // username = await secrets.get('quickpizza-username');
+    const password = 'admin'; // password = await secrets.get('quickpizza-password');
 
-    // We expect the form submission to trigger a navigation, so to prevent a
-    // race condition, setup a waiter concurrently while waiting for the click
-    // to resolve.
-    await Promise.all([page.waitForNavigation(), page.locator('input[type="submit"]').click()]);
-
-    await check(page.locator('h2'), {
-      header: async (element) => {
-        return (await element.textContent()) == 'Welcome, admin!';
-      },
-    });
-
-    // Check whether we receive cookies from the logged site.
-    await check(context, {
-      'session cookie is set': async (ctx) => {
-        const cookies = await ctx.cookies();
-        return cookies.find((c) => c.name == 'sid') !== undefined;
-      },
-    });
+    await page.locator('#username').fill(username);
+    await page.locator('#password').fill(password);
+    await page.locator('button').click();
+    
+    await expect(page.locator('//h2')).toContainText("Latest pizza recommendations");
+  
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;

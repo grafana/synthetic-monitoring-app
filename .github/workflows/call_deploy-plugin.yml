@@ -11,7 +11,7 @@ on:
         description: Whether to automatically merge the deployment PR
         required: false
         type: string
-        default: 'false'
+        default: "false"
 
 permissions:
   contents: read
@@ -62,12 +62,12 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
 
       - name: Get prod catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@fdb6afaadd82c078cd2b29a3476b4c1365244cea
+        uses: grafana/shared-workflows/actions/get-vault-secrets@c988ac9e58a85221c27e9466b58bc97598095fcc
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_PROD=plugins/gcom-publish-token:prod
@@ -79,7 +79,7 @@ jobs:
 
       - name: authenticate to gcp
         id: gcloud
-        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           workload_identity_provider: "projects/304398677251/locations/global/workloadIdentityPools/github/providers/github-provider"
           service_account: github-plugin-ci-workflows@grafanalabs-workload-identity.iam.gserviceaccount.com
@@ -93,7 +93,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_PROD: ${{ env.GCOM_PUBLISH_TOKEN_PROD }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@80ead8db77d00a331e225e0ae1d55ffccbb8a08b
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@52d30891b7f8956e8fdf132f543f73ebe641b156
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-prod/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: prod
@@ -110,12 +110,12 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
 
       - name: Get dev catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@fdb6afaadd82c078cd2b29a3476b4c1365244cea
+        uses: grafana/shared-workflows/actions/get-vault-secrets@c988ac9e58a85221c27e9466b58bc97598095fcc
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_DEV=plugins/gcom-publish-token:dev
@@ -127,7 +127,7 @@ jobs:
 
       - name: authenticate to gcp
         id: gcloud
-        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           workload_identity_provider: "projects/304398677251/locations/global/workloadIdentityPools/github/providers/github-provider"
           service_account: github-plugin-ci-workflows@grafanalabs-workload-identity.iam.gserviceaccount.com
@@ -141,7 +141,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_DEV: ${{ env.GCOM_PUBLISH_TOKEN_DEV }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@80ead8db77d00a331e225e0ae1d55ffccbb8a08b
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@52d30891b7f8956e8fdf132f543f73ebe641b156
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-dev/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: dev
@@ -158,12 +158,12 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
 
       - name: Get ops catalog token from Vault
-        uses: grafana/shared-workflows/actions/get-vault-secrets@fdb6afaadd82c078cd2b29a3476b4c1365244cea
+        uses: grafana/shared-workflows/actions/get-vault-secrets@c988ac9e58a85221c27e9466b58bc97598095fcc
         with:
           common_secrets: |
             GCOM_PUBLISH_TOKEN_OPS=plugins/gcom-publish-token:ops
@@ -175,7 +175,7 @@ jobs:
 
       - name: authenticate to gcp
         id: gcloud
-        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           workload_identity_provider: "projects/304398677251/locations/global/workloadIdentityPools/github/providers/github-provider"
           service_account: github-plugin-ci-workflows@grafanalabs-workload-identity.iam.gserviceaccount.com
@@ -189,7 +189,7 @@ jobs:
         env:
           GCOM_PUBLISH_TOKEN_OPS: ${{ env.GCOM_PUBLISH_TOKEN_OPS }}
           GCLOUD_AUTH_TOKEN: ${{ steps.gcloud.outputs.id_token }}
-        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@80ead8db77d00a331e225e0ae1d55ffccbb8a08b
+        uses: grafana/plugin-ci-workflows/actions/plugins/publish/publish@52d30891b7f8956e8fdf132f543f73ebe641b156
         with:
           zips: '["https://storage.googleapis.com/grafanalabs-synthetic-monitoring-app-prod/builds/${{ needs.build-sign-zip-upload.outputs.plugin_version }}/grafana-synthetic-monitoring-app-${{ needs.build-sign-zip-upload.outputs.plugin_version }}.zip"]'
           environment: ops

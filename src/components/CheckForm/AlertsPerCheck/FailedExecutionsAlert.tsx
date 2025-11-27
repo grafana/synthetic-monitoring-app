@@ -16,8 +16,9 @@ import {
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import pluralize from 'pluralize';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { CheckAlertType, CheckFormValues } from 'types';
+import { CheckAlertType, CheckFormValuesWithAlert } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
 import { AlertEvaluationInfo } from './AlertEvaluationInfo';
@@ -37,10 +38,7 @@ export const FailedExecutionsAlert = ({
   onSelectionChange: (type: CheckAlertType) => void;
   tooltipContent: PopoverContent;
 }) => {
-  const {
-    formState: { disabled: isFormDisabled },
-  } = useFormContext();
-  const { getValues, control, formState } = useFormContext<CheckFormValues>();
+  const { formState, getValues, control } = useFormContext<CheckFormValuesWithAlert<typeof alert.type>>();
   const revalidateForm = useRevalidateForm();
   const styles = useStyles2(getAlertItemStyles);
 
@@ -92,7 +90,7 @@ export const FailedExecutionsAlert = ({
           aria-label={`Enable ${alert.name} alert`}
           className={styles.alertCheckbox}
           id={`alert-${alert.type}`}
-          data-testid={`checkbox-alert-${alert.type}`}
+          data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].selectedCheckbox}
           onClick={() => handleToggleAlert(alert.type)}
           checked={selected}
         />
@@ -126,8 +124,8 @@ export const FailedExecutionsAlert = ({
               return (
                 <Select // eslint-disable-line @typescript-eslint/no-deprecated
                   {...fieldProps}
-                  disabled={!selected || isFormDisabled}
-                  data-testid="alertPendingPeriod"
+                  disabled={!selected || formState.disabled}
+                  data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
                   id={`alert-period-${alert.type}`}
                   options={validPeriods}
                   value={field.value}
@@ -135,7 +133,7 @@ export const FailedExecutionsAlert = ({
                     field.onChange(value);
                     trackChangePeriod({ name: alert.type, period: value ?? '' });
                     // clear threshold error if new period is valid
-                    revalidateForm<CheckFormValues>(`alerts.${alert.type}`);
+                    revalidateForm<CheckFormValuesWithAlert<typeof alert.type>>(`alerts.${alert.type}`);
                   }}
                 />
               );
@@ -148,7 +146,7 @@ export const FailedExecutionsAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
-      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
+      <RunbookUrl alertType={alert.type} selected={selected} disabled={formState.disabled} />
 
       {selected && !!testExecutionsPerPeriod && (
         <AlertEvaluationInfo

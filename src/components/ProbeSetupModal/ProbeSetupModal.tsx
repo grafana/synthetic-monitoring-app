@@ -26,7 +26,12 @@ export const ProbeSetupModal = ({ actionText, isOpen, onDismiss, token }: TokenM
         </Alert>
         <EnvsTable token={token} />
         <Stack justifyContent="space-between">
-          <DocsLink article="addPrivateProbe">Learn how to run a private probe</DocsLink>
+          <DocsLink
+            href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#add-a-new-probe-in-your-grafana-instance"
+            source="probe_setup"
+          >
+            Learn how to run a private probe
+          </DocsLink>
           <Button onClick={onDismiss}>{actionText}</Button>
         </Stack>
       </Stack>

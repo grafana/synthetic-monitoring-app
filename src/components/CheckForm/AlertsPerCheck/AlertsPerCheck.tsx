@@ -48,7 +48,7 @@ export const AlertsPerCheck = () => {
       },
     };
 
-    setValue(`alerts`, newAlerts);
+    setValue(`alerts`, newAlerts, { shouldDirty: true });
     revalidateForm<CheckFormValues>(`alerts.${type}`);
   };
 

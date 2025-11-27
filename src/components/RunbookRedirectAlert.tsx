@@ -7,6 +7,7 @@ import pluralize from 'pluralize';
 import { Check, CheckAlertWithRunbookUrl } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
+import { doRunbookRedirect } from 'components/RunbookRedirectAlert.utils';
 
 interface RunbookRedirectAlertProps {
   check: Check;
@@ -42,7 +43,7 @@ export const RunbookRedirectAlert = ({ check, alertConfig }: RunbookRedirectAler
     }
 
     if (timeUntilRedirect === 0) {
-      window.location.href = runbookUrl;
+      doRunbookRedirect(runbookUrl);
 
       clearIntervalRef();
     }

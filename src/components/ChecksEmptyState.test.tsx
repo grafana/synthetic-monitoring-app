@@ -15,26 +15,23 @@ async function renderComponent() {
 describe('ChecksEmptyState', () => {
   it('should render all components correctly', async () => {
     const { container } = await renderComponent();
-    
+
     // Verify container renders
     expect(container).toBeInTheDocument();
-    
+
     // Verify correct message
     expect(await screen.findByText("You haven't created any checks yet")).toBeInTheDocument();
-    
+
     // Verify correct button
-    expect(await screen.findByText('Create check')).toBeInTheDocument();
-    
+    expect(await screen.findByText('Add new check')).toBeInTheDocument();
+
     // Verify correct link text
     const docsLink = await screen.findByText('Synthetic Monitoring docs');
     expect(docsLink).toBeInTheDocument();
-    
+
     // Verify link href
-    expect(docsLink).toHaveAttribute(
-      'href',
-      'https://grafana.com/docs/grafana-cloud/synthetic-monitoring/'
-    );
-    
+    expect(docsLink).toHaveAttribute('href', 'https://grafana.com/docs/grafana-cloud/synthetic-monitoring/');
+
     // Verify link target
     expect(docsLink).toHaveAttribute('target', '_blank');
   });

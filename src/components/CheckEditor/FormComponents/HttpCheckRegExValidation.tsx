@@ -3,7 +3,6 @@ import { Controller, FieldErrors, useFieldArray, useFormContext } from 'react-ho
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Button, Checkbox, Field, IconButton, Input, Label, Select, Stack, Switch, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
 
 import {
   CheckFormValuesHttp,
@@ -39,7 +38,7 @@ export const HttpCheckRegExValidation = () => {
 
   return (
     <Box marginBottom={2}>
-      <Stack direction={`column`} gap={2} data-testid={DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX}>
+      <Stack direction={`column`} gap={2}>
         <Label>Regex Validation</Label>
         {Boolean(fields.length) && (
           <Stack direction={`column`}>
@@ -64,7 +63,7 @@ export const HttpCheckRegExValidation = () => {
                         const { ref, onChange, ...rest } = field;
                         return (
                           // eslint-disable-next-line @typescript-eslint/no-deprecated
-                        <Select
+                          <Select
                             {...rest}
                             aria-label={`Validation Field Name ${userIndex}`}
                             disabled={isFormDisabled}

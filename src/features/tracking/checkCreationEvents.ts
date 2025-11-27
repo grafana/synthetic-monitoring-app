@@ -6,7 +6,7 @@ const checkCreationEvents = createSMEventFactory('check_creation');
 
 interface AddNewCheckButtonClicked extends TrackingEventProps {
   /** What location the button was clicked from. */
-  source: 'check-list' | 'homepage';
+  source: 'check-list-empty-state' | 'check-list' | 'homepage';
 }
 
 /** Tracks when the "Create New Check" button is clicked. */
