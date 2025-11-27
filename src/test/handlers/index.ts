@@ -98,26 +98,40 @@ function toRestMethod({ route, method, result }: ApiEntry) {
 }
 
 export function getServerRequests() {
-  let requests: Request[] = [];
+  const requests: Request[] = [];
+  const bodies = new Map<Request, Promise<any>>();
 
-  const record = (request: Request) => requests.push(request);
-  const read = async (index = 0, readBody = true) => {
-    let body;
-    const request = requests[index];
-
-    if (readBody) {
+  const record = (request: Request) => {
+    requests.push(request);
+    
+    // In MSW 2.x, request bodies can only be read once
+    // Clone and cache the body promise immediately, before the handler consumes it
+    const method = request.method.toUpperCase();
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
       try {
-        // clone the request to read the body without consuming it
-        body = await request?.clone()?.json();
+        // Clone and parse JSON, catching both sync and async errors
+        const bodyPromise = request.clone().json().catch(() => null);
+        bodies.set(request, bodyPromise);
+      } catch (e) {
+        // If cloning fails, store a resolved null promise
+        bodies.set(request, Promise.resolve(null));
+      }
+    }
+  };
+  
+  const read = async (index = 0, readBody = true) => {
+    const request = requests[index];
+    let body;
+
+    if (readBody && request && bodies.has(request)) {
+      try {
+        body = await bodies.get(request);
       } catch (e) {
         console.error(e);
       }
     }
 
-    return {
-      request,
-      body,
-    };
+    return { request, body };
   };
 
   return { record, read, requests };
