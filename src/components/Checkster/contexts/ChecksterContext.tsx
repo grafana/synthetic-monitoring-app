@@ -210,7 +210,6 @@ export function ChecksterProvider({
       // When a check exists without an id, it means that it's a duplicate and the form needs to be dirty
       // IMPORTANT: This value also needs to be manually added to reset data on submission
       formMethods.setValue('duplicate_check', true, { shouldDirty: true });
-      formMethods.trigger();
     }
   }, [check, checkType, formMethods, isDuplicate, isNew]);
 
