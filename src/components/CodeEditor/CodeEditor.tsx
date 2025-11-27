@@ -207,7 +207,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
           scrollBeyondLastLine: false,
           scrollbar: {
             vertical: 'hidden',
-            horizontal: 'hidden',
             alwaysConsumeMouseWheel: false,
           },
         }}
