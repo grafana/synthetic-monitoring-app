@@ -21,12 +21,13 @@ export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
   return (
     <LinkButton
       data-testid={ACTIONS_TEST_ID.create.check}
-      variant="primary"
-      onClick={handleClick}
-      href={generateRoutePath(AppRoutes.ChooseCheckGroup)}
       disabled={!canWriteChecks}
+      href={generateRoutePath(AppRoutes.ChooseCheckGroup)}
+      icon="plus"
+      onClick={handleClick}
+      variant="primary"
     >
-      Add new check
+      Create new check
     </LinkButton>
   );
 }
