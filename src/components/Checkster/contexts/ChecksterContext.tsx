@@ -170,7 +170,7 @@ export function ChecksterProvider({
     if (dirtyFields.length > 0) {
       formMethods.trigger(dirtyFields as any);
     }
-  }, [check, checkType, defaultFormValues, formMethodRef, formMethods, isNew, values]);
+  }, [defaultFormValues, formMethodRef, formMethods, values]);
 
   const formNavigation = useFormNavigationState(checkType, formMethods, initialSection);
 
