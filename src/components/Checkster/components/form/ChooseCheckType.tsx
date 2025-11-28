@@ -11,7 +11,7 @@ import { getCheckTypeOption } from '../../utils/check';
 import { StyledField } from '../ui/StyledField';
 
 export function ChooseCheckType() {
-  const { changeCheckType, checkType, isNew } = useChecksterContext();
+  const { changeCheckType, checkType, canChangeCheckType } = useChecksterContext();
 
   const options = useCheckTypeOptions(CHECK_TYPE_OPTION_MAP[checkType].group);
 
@@ -27,7 +27,7 @@ export function ChooseCheckType() {
         <div>
           <RadioButtonGroup
             data-testid={CHECKSTER_TEST_ID.form.inputs.chooseAPICheckType}
-            disabled={!isNew}
+            disabled={!canChangeCheckType}
             value={checkType}
             aria-label={`Request type`}
             options={options}

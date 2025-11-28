@@ -14,7 +14,10 @@ import { useProbes } from 'data/useProbes';
 import { CHECK_TYPE_GROUP_OPTIONS, useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useHandleSubmitCheckster } from 'hooks/useHandleSubmitCheckster';
 import { useIsOverlimit } from 'hooks/useIsOverlimit';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { Checkster } from 'components/Checkster';
+import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
+import { useDuplicateCheck } from 'page/NewCheck/NewCheckV2.hooks';
 import { PluginPageNotFound } from 'page/NotFound';
 
 import { CenteredSpinner } from '../../components/CenteredSpinner';
@@ -31,8 +34,14 @@ export function NewCheckV2() {
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
   const group = CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup);
   const styles = useStyles2(getStyles);
+  const urlSearchParams = useURLSearchParams();
+  const duplicateId = urlSearchParams.get('duplicateId');
+  const { check: duplicateCheck, isLoading: isLoadingDuplicateCheck } = useDuplicateCheck(duplicateId);
+
   const navModel = createNavModel({ text: `Choose a check type`, url: generateRoutePath(AppRoutes.ChooseCheckGroup) }, [
-    { text: `${checkTypeGroupOption?.label ?? 'Check not found'}` },
+    {
+      text: `${duplicateCheck ? `Duplicate check ${duplicateCheck?.job}` : (checkTypeGroupOption?.label ?? 'Check not found')}`,
+    },
   ]);
 
   const navigate = useNavigate();
@@ -40,15 +49,17 @@ export function NewCheckV2() {
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
     (newCheckType: CheckType) => {
-      navigate({ search: `?${CHECK_TYPE_PARAM_NAME}=${newCheckType}` }, { replace: true });
+      const search = new URLSearchParams(urlSearchParams);
+      search.set(CHECK_TYPE_PARAM_NAME, newCheckType);
+      navigate({ search: search.toString() }, { replace: true });
     },
-    [navigate]
+    [navigate, urlSearchParams]
   );
 
   const isOverlimit = useIsOverlimit(false, checkType);
   const { canWriteChecks } = getUserPermissions();
 
-  const isLoading = (isLoadingProbes && !isProbesFetched) || isOverlimit === null;
+  const isLoading = (isLoadingProbes && !isProbesFetched) || isOverlimit === null || isLoadingDuplicateCheck;
 
   if (!group) {
     return (
@@ -70,12 +81,15 @@ export function NewCheckV2() {
   return (
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
-        <Checkster
-          disabled={isOverlimit || !canWriteChecks}
+        <ChecksterProvider
           checkType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
-          onSave={handleSubmit}
+          disabled={isOverlimit || !canWriteChecks}
           onCheckTypeChange={handleCheckTypeChange}
-        />
+          check={duplicateCheck}
+          isDuplicate={!!duplicateCheck}
+        >
+          <Checkster onSave={handleSubmit} />
+        </ChecksterProvider>
       </div>
     </PluginPage>
   );

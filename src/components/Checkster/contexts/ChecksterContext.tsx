@@ -43,6 +43,7 @@ interface ChecksterContextValue {
   checkType: CheckType;
   isNew: boolean;
   isK6Check: boolean;
+  canChangeCheckType: boolean;
 }
 
 export const ChecksterContext = createContext<ChecksterContextValue | null>(null);
@@ -56,23 +57,14 @@ export function useChecksterContext() {
   return context;
 }
 
-interface ChecksterBaseProviderProps extends PropsWithChildren {
+export interface ChecksterProviderProps extends PropsWithChildren {
   initialSection?: FormSectionName;
   onCheckTypeChange?(checkType: CheckType): void;
   disabled?: boolean;
-}
-
-interface ChecksterBaseProviderPropsWithCheck extends ChecksterBaseProviderProps {
   check?: Check;
-  checkType?: never;
-}
-
-interface ChecksterBaseProviderPropWithCheckType extends ChecksterBaseProviderProps {
-  check?: never;
   checkType?: CheckType;
+  isDuplicate?: boolean;
 }
-
-export type ChecksterProviderProps = ChecksterBaseProviderPropsWithCheck | ChecksterBaseProviderPropWithCheckType;
 
 interface StashedValues {
   root: Omit<CheckFormValues, 'settings'>;
@@ -103,6 +95,7 @@ export function ChecksterProvider({
   initialSection,
   onCheckTypeChange,
   disabled = false,
+  isDuplicate = false,
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
@@ -153,13 +146,6 @@ export function ChecksterProvider({
     if (!isNew && check) {
       // Trigger form validation on existing checks
       formMethods.trigger();
-    }
-  }, [check, formMethods, isNew]);
-
-  useEffect(() => {
-    if (isCheck(check)) {
-      const type = getCheckType(check.settings);
-      setCheckType(type);
     }
   }, [check, formMethods, isNew]);
 
@@ -225,7 +211,16 @@ export function ChecksterProvider({
     [formMethods, isNew, onCheckTypeChange, stashCurrentValues]
   );
 
-  const value = useMemo(() => {
+  const canChangeCheckType = isNew || isDuplicate;
+
+  useEffect(() => {
+    if (isDuplicate) {
+      formMethods.setValue('job', `${check?.job} (Copy)`, { shouldDirty: true });
+      formNavigation.completeAllSteps();
+    }
+  }, [formMethods, check, isDuplicate, formNavigation]);
+
+  const value: ChecksterContextValue = useMemo(() => {
     return {
       formId,
       isLoading,
@@ -238,10 +233,23 @@ export function ChecksterProvider({
       checkType,
       schema,
       isNew,
+      canChangeCheckType,
       isK6Check: K6_CHECK_TYPES.includes(checkType),
       stashCheckTypeFormValues: stashCurrentValues,
     };
-  }, [formId, isLoading, error, check, formNavigation, changeCheckType, checkType, schema, isNew, stashCurrentValues]);
+  }, [
+    formId,
+    isLoading,
+    error,
+    check,
+    formNavigation,
+    changeCheckType,
+    checkType,
+    schema,
+    isNew,
+    stashCurrentValues,
+    canChangeCheckType,
+  ]);
 
   return (
     <ChecksterContext.Provider value={value}>
