@@ -24,13 +24,7 @@ import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
 import { useProbeCompatibilityKey } from 'components/CheckForm/CheckForm.hooks';
 
-import {
-  ASSISTED_FORM_MERGE_FIELDS,
-  CheckFormMergeMethod,
-  DEFAULT_CHECK_FORM_MERGE_METHOD,
-  DEFAULT_CHECK_TYPE,
-  K6_CHECK_TYPES,
-} from '../constants';
+import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
@@ -127,52 +121,22 @@ export function ChecksterProvider({
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
   const values = useMemo(() => {
-    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.None) {
-      return undefined; // Will persist dirty values
-    }
-    const checkType = defaultFormValues.checkType;
-    const { root, settings, ...dumpedFormValues } = stashedValues;
-    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.AssistedForm) {
-      return ASSISTED_FORM_MERGE_FIELDS.reduce((acc, assistedKey) => {
-        if (
-          root &&
-          assistedKey in root &&
-          assistedKey in defaultFormValues &&
-          !isEqual(root[assistedKey], defaultFormValues[assistedKey])
-        ) {
-          return {
-            ...acc,
-            [assistedKey]: root[assistedKey],
-          };
-        }
-
-        return acc;
-      }, defaultFormValues);
-    }
-
-    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.Legacy) {
-      const job = root?.job;
-      // @ts-expect-error We know what we're doing, right? // TODO: revisit typings
-      const settings = checkType in dumpedFormValues ? dumpedFormValues[checkType] : undefined;
-
-      if (settings) {
+    const { root } = stashedValues;
+    return ASSISTED_FORM_MERGE_FIELDS.reduce((acc, assistedKey) => {
+      if (
+        root &&
+        assistedKey in root &&
+        assistedKey in defaultFormValues &&
+        !isEqual(root[assistedKey], defaultFormValues[assistedKey])
+      ) {
         return {
-          ...settings,
-          job,
+          ...acc,
+          [assistedKey]: root[assistedKey],
         };
       }
 
-      if (job) {
-        return {
-          ...defaultFormValues,
-          job,
-        };
-      }
-
-      return defaultFormValues;
-    }
-
-    return undefined;
+      return acc;
+    }, defaultFormValues);
   }, [defaultFormValues, stashedValues]);
 
   // Form stuff
@@ -202,40 +166,24 @@ export function ChecksterProvider({
   const formMethodRef = useRef(formMethods);
 
   useEffect(() => {
-    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.None) {
-      formMethods.reset(defaultFormValues);
-      return;
+    formMethods.reset(defaultFormValues, {
+      keepIsValid: true,
+      keepDirty: true,
+      keepDirtyValues: true,
+      keepTouched: true,
+      keepSubmitCount: true,
+      keepErrors: true,
+    });
+
+    ASSISTED_FORM_MERGE_FIELDS.forEach((field) => {
+      values && formMethodRef.current.setValue(field, values[field]);
+    });
+
+    const dirtyFields = flattenObjectKeys(formMethodRef.current.formState.dirtyFields as any);
+    if (dirtyFields.length > 0) {
+      formMethods.trigger(dirtyFields as any);
     }
-
-    if ([CheckFormMergeMethod.Form, CheckFormMergeMethod.AssistedForm].includes(DEFAULT_CHECK_FORM_MERGE_METHOD)) {
-      // This works as long as the user doesn't change type two times in a row
-      formMethods.reset(defaultFormValues, {
-        keepIsValid: true,
-        keepDirty: true,
-        keepDirtyValues: true,
-        keepTouched: true,
-        keepSubmitCount: true,
-        keepErrors: true,
-      });
-
-      if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.AssistedForm) {
-        ASSISTED_FORM_MERGE_FIELDS.forEach((field) => {
-          values && formMethodRef.current.setValue(field, values[field]);
-        });
-
-        const dirtyFields = flattenObjectKeys(formMethodRef.current.formState.dirtyFields as any);
-        if (dirtyFields.length > 0) {
-          formMethods.trigger(dirtyFields as any);
-        }
-      }
-    }
-
-    if (DEFAULT_CHECK_FORM_MERGE_METHOD === CheckFormMergeMethod.Legacy) {
-      if (values !== defaultFormValues) {
-        formMethodRef.current.reset(values);
-      }
-    }
-  }, [check, checkType, defaultFormValues, formMethodRef, formMethods, isNew, values]);
+  }, [defaultFormValues, formMethodRef, formMethods, values]);
 
   const formNavigation = useFormNavigationState(checkType, formMethods, initialSection);
 

@@ -527,22 +527,12 @@ export const DEFAULT_MAX_ALLOWED_LOG_LABELS = 5;
 // Checks that are executed with k6 rather than blackbox exporter
 export const K6_CHECK_TYPES = [CheckType.MULTI_HTTP, CheckType.Browser, CheckType.Scripted];
 
-export enum CheckFormMergeMethod {
-  None = 'none',
-  Form = 'form', // Let form keep track of "valid" changes
-  AssistedForm = 'assisted-form', // Help the form to keep track of particular fields
-  Legacy = 'legacy',
-  Combined = 'combined', // Legacy + AssistedForm would probably be the best user experience
-}
-
 export const CHECK_TYPE_GROUP_DEFAULT_CHECK: Record<CheckTypeGroup, CheckType> = {
   [CheckTypeGroup.ApiTest]: CheckType.HTTP,
   [CheckTypeGroup.MultiStep]: CheckType.MULTI_HTTP,
   [CheckTypeGroup.Browser]: CheckType.Browser,
   [CheckTypeGroup.Scripted]: CheckType.Scripted,
 };
-
-export const DEFAULT_CHECK_FORM_MERGE_METHOD: CheckFormMergeMethod = CheckFormMergeMethod.AssistedForm;
 
 export const ASSISTED_FORM_MERGE_FIELDS = ['job', 'target', 'probes', 'frequency', 'labels', 'timeout'] as const;
 
