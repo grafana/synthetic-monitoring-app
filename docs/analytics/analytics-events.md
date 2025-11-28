@@ -221,6 +221,69 @@ Tracks when an alert is deleted successfully
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
 | name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
 
+### secrets_management
+
+#### synthetic-monitoring_secrets_management_create_secret_button_clicked
+
+Tracks when the create secret button is clicked.
+
+##### Properties
+
+| name     | type                                                                 | description                                                       |
+| -------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source   | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+| location | `"empty_state" \| "header_action"`                                   | The location where the create button was clicked.                 |
+
+#### synthetic-monitoring_secrets_management_edit_secret_button_clicked
+
+Tracks when the edit secret button is clicked.
+
+##### Properties
+
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+
+#### synthetic-monitoring_secrets_management_delete_secret_button_clicked
+
+Tracks when the delete secret button is clicked.
+
+##### Properties
+
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+
+#### synthetic-monitoring_secrets_management_secret_created
+
+Tracks when a secret is successfully created.
+
+##### Properties
+
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+
+#### synthetic-monitoring_secrets_management_secret_updated
+
+Tracks when a secret is successfully updated.
+
+##### Properties
+
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+
+#### synthetic-monitoring_secrets_management_secret_deleted
+
+Tracks when a secret is successfully deleted.
+
+##### Properties
+
+| name   | type                                                                 | description                                                       |
+| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+
 ### timepoint_explorer
 
 #### synthetic-monitoring_timepoint_explorer_view_toggle

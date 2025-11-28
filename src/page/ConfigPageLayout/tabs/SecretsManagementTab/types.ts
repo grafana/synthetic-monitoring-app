@@ -29,3 +29,6 @@ export interface SecretWithUuid extends Omit<Secret, 'uuid'> {
 }
 
 export interface SecretWithMetadata extends SecretWithUuid, SecretMetadata {}
+
+/** The source context where the secrets management UI is being used. */
+export type SecretsManagementSource = 'check_editor_sidepanel_feature_tabs' | 'config_page_secrets_tab';

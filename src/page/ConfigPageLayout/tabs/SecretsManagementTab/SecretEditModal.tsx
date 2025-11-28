@@ -4,8 +4,9 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { trackSecretCreated, trackSecretUpdated } from 'features/tracking/secretsManagementEvents';
 
-import { Secret } from './types';
+import { Secret, SecretsManagementSource } from './types';
 import { getErrorMessage } from 'utils';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
 
@@ -19,6 +20,8 @@ interface SecretEditModalProps {
   onDismiss: () => void;
   open?: boolean;
   existingNames?: string[];
+  /** The source context where the secrets management UI is being used. */
+  source: SecretsManagementSource;
 }
 
 function getDefaultValues(isNew = true): SecretFormValues & { plaintext?: string } {
@@ -62,7 +65,7 @@ function createGetFieldError(errors: FormErrorMap) {
   };
 }
 
-export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: SecretEditModalProps) {
+export function SecretEditModal({ open, name, onDismiss, existingNames = [], source }: SecretEditModalProps) {
   const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(name);
   const saveSecret = useSaveSecret();
   const isNewSecret = name === SECRETS_EDIT_MODE_ADD;
@@ -123,6 +126,11 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [] }: S
       },
       onSuccess() {
         setSaveError(null);
+        if (isNewSecret) {
+          trackSecretCreated({ source });
+        } else {
+          trackSecretUpdated({ source });
+        }
         onDismiss();
       },
     });
