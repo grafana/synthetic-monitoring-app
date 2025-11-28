@@ -36,8 +36,6 @@ import k6ExperimentalFS from '!raw-loader!@types/k6/experimental/fs';
 // @ts-expect-error
 import k6ExperimentalRedis from '!raw-loader!@types/k6/experimental/redis';
 // @ts-expect-error
-import k6ExperimentalWebcrypto from '!raw-loader!@types/k6/experimental/webcrypto';
-// @ts-expect-error
 import k6ExperimentalStreams from '!raw-loader!@types/k6/experimental/streams';
 // @ts-expect-error
 import k6ExperimentalWebsockets from '!raw-loader!@types/k6/experimental/websockets';
@@ -66,7 +64,6 @@ export default {
   'k6/experimental/csv': k6ExperimentalCSV,
   'k6/experimental/fs': k6ExperimentalFS,
   'k6/experimental/redis': k6ExperimentalRedis,
-  'k6/experimental/webcrypto': k6ExperimentalWebcrypto,
   'k6/experimental/streams': k6ExperimentalStreams,
   'k6/experimental/websockets': k6ExperimentalWebsockets,
   ...(secretsEnabled ? { 'k6/secrets': k6Secrets } : undefined),

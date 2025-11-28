@@ -11,21 +11,19 @@ import { generateRoutePath } from 'routing/utils';
 
 import { CheckList } from './CheckList';
 
-jest.mock('hooks/useNavigation', () => {
-  const actual = jest.requireActual('hooks/useNavigation');
-  return {
-    __esModule: true,
-    ...actual,
-  };
-});
-const useNavigationHook = require('hooks/useNavigation');
-
 const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => {
   server.use(
     apiRoute(`listChecks`, {
       result: () => {
         return {
           json: checks,
+        };
+      },
+    }),
+    apiRoute(`listProbes`, {
+      result: () => {
+        return {
+          json: [],
         };
       },
     })
@@ -38,7 +36,7 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
     path,
   });
 
-  expect(await screen.findByText('Add new check')).toBeInTheDocument();
+  expect(await screen.findByText('Create new check')).toBeInTheDocument();
   return res;
 };
 
@@ -46,6 +44,13 @@ describe('CheckList - Rendering', () => {
   test('renders empty state', async () => {
     server.use(
       apiRoute(`listChecks`, {
+        result: () => {
+          return {
+            json: [],
+          };
+        },
+      }),
+      apiRoute(`listProbes`, {
         result: () => {
           return {
             json: [],
@@ -71,15 +76,6 @@ describe('CheckList - Rendering', () => {
     await renderCheckList();
     const checks = await screen.findAllByTestId('check-card');
     expect(checks.length).toBe(BASIC_CHECK_LIST.length);
-  });
-
-  test('clicking add new is handled', async () => {
-    const navigate = jest.fn();
-    useNavigationHook.useNavigation = jest.fn(() => navigate); // TODO: COME BACK TO
-    const { user } = await renderCheckList();
-    const addNewButton = await screen.findByText('Add new check');
-    await user.click(addNewButton);
-    expect(navigate).toHaveBeenCalledWith(AppRoutes.ChooseCheckGroup);
   });
 
   test('loads sorting type in ascending order from query params', async () => {

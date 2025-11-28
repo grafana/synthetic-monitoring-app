@@ -26,6 +26,12 @@ export async function submitForm(user: UserEvent) {
   await user.click(submitButton);
 }
 
+export async function removeComboboxOption(user: UserEvent, label: string | RegExp) {
+  testUsesCombobox();
+
+  await user.click(screen.getByRole('button', { name: `Remove ${label}` }));
+}
+
 export async function selectComboboxOption(user: UserEvent, combobox: HTMLElement, value: RegExp | string) {
   testUsesCombobox();
   expect(combobox).toBeInTheDocument();

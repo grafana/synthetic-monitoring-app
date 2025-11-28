@@ -12,19 +12,22 @@ import { Column } from '../../ui/Column';
 
 interface GenericScriptFieldProps {
   field: CheckFormFieldPath;
+  channelField?: CheckFormFieldPath;
 }
 
 // FIXME: Not actually a Field (no label, no description), but it has errors!
-export function GenericScriptField({ field }: GenericScriptFieldProps) {
+export function GenericScriptField({ field, channelField }: GenericScriptFieldProps) {
   const {
     control,
+    getValues,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
 
   const fieldErrorProps = getFieldErrorProps(errors, field);
-
+  
   const theme = useTheme2();
 
+  const selectedChannel = channelField ? getValues(channelField) : undefined;
   return (
     <Column
       grow
@@ -50,6 +53,7 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
               readOnly={disabled}
               data-form-name={field}
               data-form-element-selector="textarea"
+              k6Channel={selectedChannel}
             />
           );
         }}

@@ -27,7 +27,8 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
   );
 
   const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
-  const { updateCheck, createCheck } = useCUDChecks(); // Omitting eventInfo - TODO: Follow-up on that, use error from `useCUDChecks`
+  const { updateCheck, createCheck } = useCUDChecks();
+
   return useCallback(
     async (payload: Check, formValues: CheckFormValues) => {
       // todo: add try-catch

@@ -58,7 +58,7 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
       {routesToRender.map((routeInfo, index) => {
         const { route, level, isEffective } = routeInfo;
         return (
-          <div key={route.id} style={{ marginLeft: level * 16 }}>
+          <div key={index} style={{ marginLeft: level * 16 }}>
             <RouteNode
               route={route}
               level={level}

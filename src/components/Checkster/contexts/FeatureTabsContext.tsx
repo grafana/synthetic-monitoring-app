@@ -1,4 +1,5 @@
-import React, { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { trackFeatureTabChanged } from 'features/tracking/checkFormEvents';
 
 import { FeatureTabConfig, FeatureTabLabel } from '../types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
@@ -9,18 +10,21 @@ import { useChecksterContext } from './ChecksterContext';
 type EmptyFeatureTabConfig = ['', null, []];
 
 interface FeatureTabsContextValue {
-  setActive: (label: FeatureTabLabel) => void;
+  setActive: (label: FeatureTabLabel, highlight?: boolean) => void;
   tabs: FeatureTabConfig[];
   activeTab: FeatureTabConfig | EmptyFeatureTabConfig;
+  highlightedTab: FeatureTabLabel | null;
 }
 
 export const FeatureTabsContext = createContext<FeatureTabsContextValue | undefined>(undefined);
+export const HIGHLIGHTED_TAB_TIMEOUT = 5000;
 
 // In case nothing adds up
 const panicTab: EmptyFeatureTabConfig = ['', null, []];
 
 export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const [activeLabel, setActiveLabel] = useState<string>('');
+  const [highlightedTab, setHighlightedTab] = useState<FeatureTabLabel | null>(null);
 
   const { checkType } = useChecksterContext();
 
@@ -51,13 +55,27 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
     }
   }, [tabs, activeLabel]);
 
+  const handleSetActive = useCallback((label: FeatureTabLabel, highlight = false) => {
+    setActiveLabel(label);
+    trackFeatureTabChanged({ source: 'check_editor_sidepanel_feature_tabs', label });
+
+    if (highlight) {
+      setHighlightedTab(label);
+
+      requestAnimationFrame(() => {
+        setHighlightedTab(null);
+      });
+    }
+  }, []);
+
   const value = useMemo(() => {
     return {
       tabs,
-      setActive: setActiveLabel,
+      setActive: handleSetActive,
       activeTab,
+      highlightedTab,
     };
-  }, [activeTab, tabs]);
+  }, [activeTab, handleSetActive, highlightedTab, tabs]);
 
   return <FeatureTabsContext.Provider value={value}>{children}</FeatureTabsContext.Provider>;
 }

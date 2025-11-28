@@ -38,6 +38,7 @@ module.exports = {
       'constrained-editor-plugin',
       '@faker-js/faker',
       'react-error-boundary',
+      'until-async', // Transitive dependency of MSW v2
     ]),
   ],
 };

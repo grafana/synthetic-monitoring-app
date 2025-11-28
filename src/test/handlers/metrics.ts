@@ -28,7 +28,8 @@ export const getInstantMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
   route: `${METRICS_DATASOURCE.url}/api/v1/query`,
   method: 'get',
   result: (req) => {
-    const query = req.url.searchParams.get('query') || ``;
+    const url = new URL(req.url);
+    const query = url.searchParams.get('query') || ``;
 
     if ([checkReachabilityQuery, checkUptimeQuery].includes(query)) {
       return {
@@ -60,7 +61,8 @@ export const getRangeMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
   route: `${METRICS_DATASOURCE.url}/api/v1/query_range`,
   method: 'get',
   result: (req) => {
-    const query = req.url.searchParams.get('query') || ``;
+    const url = new URL(req.url);
+    const query = url.searchParams.get('query') || ``;
 
     if ([checkReachabilityQuery, checkUptimeQuery].includes(query)) {
       return {

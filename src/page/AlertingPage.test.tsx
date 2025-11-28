@@ -19,6 +19,13 @@ jest.mock('hooks/useAlerts', () => {
   };
 });
 
+jest.mock('hooks/useLegacyAlertsRestriction', () => ({
+  useLegacyAlertsRestriction: jest.fn(() => ({
+    isRestricted: false,
+    isLoading: false,
+  })),
+}));
+
 const useAlertsHook = require('hooks/useAlerts');
 
 const { defaultRules } = jest.requireActual('hooks/useAlerts');

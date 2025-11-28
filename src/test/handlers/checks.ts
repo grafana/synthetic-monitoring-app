@@ -34,9 +34,11 @@ export const addCheck: ApiEntry<AddCheckResult> = {
 export const updateCheck: ApiEntry<UpdateCheckResult> = {
   route: `/sm/check/update`,
   method: `post`,
-  result: (req) => {
+  result: async (req) => {
     return {
-      json: BASIC_HTTP_CHECK,
+      json: {
+        ...(await req.json()),
+      },
     };
   },
 };
@@ -57,7 +59,8 @@ export const deleteCheck: ApiEntry<DeleteCheckResult> = {
   route: `/sm/check/delete/([^/]+)`,
   method: `delete`,
   result: (req) => {
-    const id = req.url.pathname.split('/').pop();
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
 
     return {
       status: 200,

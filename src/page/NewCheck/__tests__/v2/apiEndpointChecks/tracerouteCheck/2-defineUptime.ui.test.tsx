@@ -14,6 +14,5 @@ describe(`TracerouteCheck - Section 2 (Define uptime) UI`, () => {
 
     const timeout = await screen.findByLabelText(/Timeout/);
     expect(timeout).toHaveValue(`30`);
-    screen.debug(timeout);
   });
 });

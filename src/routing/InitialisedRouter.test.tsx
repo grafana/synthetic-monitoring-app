@@ -33,7 +33,7 @@ describe('Routes to pages correctly', () => {
   });
   test('Checks page renders', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Checks) });
-    const checksButton = await screen.findByText('Add new check');
+    const checksButton = await screen.findByText('Create new check');
     expect(checksButton).toBeInTheDocument();
   });
   test('Probes page renders', async () => {

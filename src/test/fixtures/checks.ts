@@ -1,5 +1,3 @@
-import { db } from 'test/db';
-
 import {
   AlertSensitivity,
   BrowserCheck,
@@ -20,6 +18,7 @@ import {
 } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 
+import { db } from '../db';
 import { BASIC_CHECK_ALERTS } from './checkAlerts';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 
@@ -74,7 +73,7 @@ const transformedValidCert = btoa(VALID_CERT);
 const transformedValidKey = btoa(VALID_KEY);
 
 export const BASIC_DNS_CHECK: DNSCheck = db.check.build(
-  { job: 'Job name for dns', target: 'dns.com' },
+  { job: 'Job name for dns', target: 'dns.com', probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[] },
   { transient: { type: CheckType.DNS } }
 ) as DNSCheck;
 

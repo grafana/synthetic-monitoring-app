@@ -15,23 +15,26 @@ import { PROBE_REFETCH_INTERVAL } from 'data/useProbes';
 import { DataTestIds } from '../../test/dataTestIds';
 import { EditProbe } from './EditProbe';
 
-const renderEditProbe = (probe: Probe) => {
-  return render(<EditProbe />, {
-    route: `${getRoute(AppRoutes.EditProbe)}/:id`,
-    path: `${getRoute(AppRoutes.EditProbe)}/${probe.id}`,
+const renderEditProbe = (probe: Probe, forceViewMode = false) => {
+  const route = forceViewMode ? AppRoutes.ViewProbe : AppRoutes.EditProbe;
+  return render(<EditProbe forceViewMode={forceViewMode} />, {
+    route: `${getRoute(route)}/:id`,
+    path: `${getRoute(route)}/${probe.id}`,
   });
 };
 
 describe(`Public probes`, () => {
   it(`displays the correct information`, async () => {
-    renderEditProbe(PUBLIC_PROBE);
-    const text = await screen.findByText(/They cannot be edited/);
-    expect(text).toBeInTheDocument();
+    renderEditProbe(PUBLIC_PROBE, true);
+    await screen.findByText(/They cannot be edited/);
+    
+    // Wait for the probe data to load and form to be populated
+    await screen.findByDisplayValue(probeToMetadataProbe(PUBLIC_PROBE).displayName);
     checkInformation(PUBLIC_PROBE);
   });
 
   it(`does not allow editing public probes`, async () => {
-    renderEditProbe(PUBLIC_PROBE);
+    renderEditProbe(PUBLIC_PROBE, true);
 
     await screen.findByText('Back');
     expect(getSaveButton()).not.toBeInTheDocument();
@@ -44,6 +47,9 @@ describe(`Private probes`, () => {
     renderEditProbe(PRIVATE_PROBE);
     const text = await screen.findByText(/This probe is private/);
     expect(text).toBeInTheDocument();
+    
+    // Wait for the form to be populated with data
+    await screen.findByDisplayValue(PRIVATE_PROBE.labels[0].name);
     expect(screen.getByDisplayValue(PRIVATE_PROBE.labels[0].name)).toBeInTheDocument();
     expect(screen.getByDisplayValue(PRIVATE_PROBE.labels[0].value)).toBeInTheDocument();
 
@@ -82,7 +88,7 @@ describe(`Private probes`, () => {
   });
 
   it('probe status updates automatically', async () => {
-    jest.useFakeTimers();
+    jest.useFakeTimers({ legacyFakeTimers: true });
     const { record, requests } = getServerRequests();
     server.use(
       apiRoute(

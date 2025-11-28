@@ -38,7 +38,7 @@ it('renders add new button', async () => {
 });
 
 it(`probe statuses update automatically`, async () => {
-  jest.useFakeTimers();
+  jest.useFakeTimers({ legacyFakeTimers: true });
   server.use(
     apiRoute('listProbes', {
       result: () => {

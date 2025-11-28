@@ -1,5 +1,6 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues, HttpMethod } from 'types';
 
@@ -25,6 +26,7 @@ export function HttpUptimeContent() {
   return (
     <SectionContent>
       <GenericMultiSelectField
+        data-testid={CHECKSTER_TEST_ID.form.inputs.validStatusCodes}
         options={VALID_HTTP_STATUS_CODE_OPTIONS}
         field="settings.http.validStatusCodes"
         label="Valid status codes"

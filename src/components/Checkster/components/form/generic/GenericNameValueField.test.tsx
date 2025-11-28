@@ -22,6 +22,13 @@ jest.mock('@grafana/ui', () => ({
   })),
 }));
 
+jest.mock('data/useProbes', () => ({
+  useProbesWithMetadata: jest.fn(() => ({
+    data: [],
+    isLoading: false,
+  })),
+}));
+
 const defaultProps = {
   field: 'labels',
   label: 'Labels',

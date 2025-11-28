@@ -1,7 +1,7 @@
 import React, { ComponentProps } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import { SelectableValue } from '@grafana/data';
-import { MultiSelect } from '@grafana/ui';
+import { MultiCombobox } from '@grafana/ui';
 
 import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues } from 'types';
@@ -14,14 +14,16 @@ interface GenericMultiSelectFieldProps {
   field: CheckFormFieldPath;
   label: ComponentProps<typeof StyledField>['label'];
   description: ComponentProps<typeof StyledField>['description'];
-  options: ComponentProps<typeof MultiSelect>['options'];
-  placeholder: ComponentProps<typeof MultiSelect>['placeholder'];
+  options: ComponentProps<typeof MultiCombobox>['options'];
+  placeholder: ComponentProps<typeof MultiCombobox>['placeholder'];
+  'data-testid'?: string;
 }
 
 export function GenericMultiSelectField({
+  'data-testid': dataTestId,
+  description,
   field,
   label,
-  description,
   options,
   placeholder,
 }: GenericMultiSelectFieldProps) {
@@ -31,29 +33,25 @@ export function GenericMultiSelectField({
     formState: { disabled, errors },
   } = useFormContext<CheckFormValues>();
 
+  const {
+    field: { onChange, ref, ...rest },
+  } = useController({ control, name: field as any });
+
+  const handleOnChange = (selected: SelectableValue[]) => {
+    onChange(selected.map((item) => item.value));
+  };
+
   return (
     <StyledField label={label} description={description} htmlFor={id} {...getFieldErrorProps(errors, field)}>
-      <Controller
-        control={control}
-        name={field as any}
-        render={({ field }) => {
-          const { ref, onChange, ...rest } = field;
-          const handleOnChange = (selected: SelectableValue[]) => {
-            onChange(selected.map((item) => item.value));
-          };
-
-          return (
-            <MultiSelect
-              {...rest}
-              placeholder={placeholder}
-              options={options}
-              disabled={disabled}
-              inputId={id}
-              onChange={handleOnChange}
-            />
-          );
-        }}
-      ></Controller>
+      <MultiCombobox
+        {...rest}
+        data-testid={dataTestId}
+        disabled={disabled}
+        id={id}
+        onChange={handleOnChange}
+        options={options}
+        placeholder={placeholder}
+      />
     </StyledField>
   );
 }

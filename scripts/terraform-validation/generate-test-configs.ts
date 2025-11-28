@@ -2,16 +2,23 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { TFCheckConfig, TFProbeConfig, TFCheckAlertsConfig, TFConfig } from '../../src/components/TerraformConfig/terraformTypes';
+import type {
+  TFCheckConfig,
+  TFProbeConfig,
+  TFCheckAlertsConfig,
+  TFConfig,
+} from '../../src/components/TerraformConfig/terraformTypes';
 
 async function generateConfigs() {
   try {
     console.log('Loading test fixtures...');
     const fixtures = await import('../../src/test/fixtures/checks');
     const probeFixtures = await import('../../src/test/fixtures/probes');
-    
+
     console.log('Loading REAL production terraform utilities...');
-    const { checkToTF, probeToTF, sanitizeName } = await import('../../src/components/TerraformConfig/terraformConfigUtils');
+    const { checkToTF, probeToTF, sanitizeName } = await import(
+      '../../src/components/TerraformConfig/terraformConfigUtils'
+    );
 
     // Comprehensive test cases covering all check types and probe types
     const testCases = [
@@ -50,18 +57,18 @@ async function generateConfigs() {
         check: fixtures.BASIC_MULTIHTTP_CHECK,
         probe: probeFixtures.ONLINE_PROBE,
       },
-    // Scripted Check
-    {
-      name: 'basic-scripted',
-      check: fixtures.BASIC_SCRIPTED_CHECK,
-      probe: probeFixtures.SCRIPTED_DISABLED_PROBE,
-    },
-    // Browser Check with template literals
-    {
-      name: 'complex-browser',
-      check: fixtures.COMPLEX_BROWSER_CHECK,
-      probe: probeFixtures.PRIVATE_PROBE,
-    },
+      // Scripted Check
+      {
+        name: 'basic-scripted',
+        check: fixtures.BASIC_SCRIPTED_CHECK,
+        probe: probeFixtures.SCRIPTED_DISABLED_PROBE,
+      },
+      // Browser Check with template literals
+      {
+        name: 'complex-browser',
+        check: fixtures.COMPLEX_BROWSER_CHECK,
+        probe: probeFixtures.PRIVATE_PROBE,
+      },
       // Traceroute Check
       {
         name: 'basic-traceroute',
@@ -71,7 +78,7 @@ async function generateConfigs() {
     ];
 
     const outputDir = 'artifacts/terraform-validation';
-    
+
     // Ensure output directory exists
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
@@ -81,13 +88,13 @@ async function generateConfigs() {
     const allChecks: TFCheckConfig = {};
     const allProbes: TFProbeConfig = {};
     const allCheckAlerts: TFCheckAlertsConfig = {};
-    
+
     for (const testCase of testCases) {
       console.log(`Transforming ${testCase.name} using REAL production checkToTF and probeToTF...`);
-      
+
       const checkTF = checkToTF(testCase.check);
       const probeTF = probeToTF(testCase.probe);
-      
+
       // Add to comprehensive config
       allChecks[testCase.name.replace('-', '_')] = checkTF;
       allProbes[`${testCase.name.replace('-', '_')}_probe`] = probeTF;
@@ -101,7 +108,7 @@ async function generateConfigs() {
             name: alert.name,
             threshold: alert.threshold,
             period: alert.period,
-            runbook_url: alert.runbookUrl || "",
+            runbook_url: alert.runbookUrl || '',
           })),
         };
         console.log(`  → Added alerts for ${testCase.name}: ${testCase.check.alerts.length} alert(s)`);
@@ -113,15 +120,15 @@ async function generateConfigs() {
       terraform: {
         required_providers: {
           grafana: {
-            source: "grafana/grafana",
-            version: ">= 4.3.0"
-          }
-        }
+            source: 'grafana/grafana',
+            version: '>= 4.3.0',
+          },
+        },
       },
       resource: {
         grafana_synthetic_monitoring_check: allChecks,
-        grafana_synthetic_monitoring_probe: allProbes
-      }
+        grafana_synthetic_monitoring_probe: allProbes,
+      },
     };
 
     // Add alerts resource if any checks have alerts
@@ -152,11 +159,10 @@ async function generateConfigs() {
     console.log('\n🧪 To validate:');
     console.log('   cd artifacts/terraform-validation');
     console.log('   terraform validate');
-    
   } catch (error) {
     console.error('❌ Error generating configurations:', error);
     process.exit(1);
   }
 }
 
-generateConfigs(); 
+generateConfigs();
