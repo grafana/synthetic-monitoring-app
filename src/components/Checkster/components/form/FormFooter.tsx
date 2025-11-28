@@ -25,7 +25,9 @@ export function FormFooter() {
   return (
     <div
       className={css`
-        position: relative;
+        position: sticky;
+        bottom: 0;
+        background-color: ${theme.colors.background.primary};
         padding: ${theme.spacing(2)};
         display: flex;
         align-items: center;

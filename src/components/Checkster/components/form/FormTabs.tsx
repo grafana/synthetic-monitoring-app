@@ -139,7 +139,7 @@ function getStyles(theme: GrafanaTheme2) {
 
     tabContentFillVertical: css`
       flex: 1 1 0;
-      overflow: auto;
+      overflow: visible;
       & > div {
         flex-grow: 1;
         margin-bottom: unset;

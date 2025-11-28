@@ -35,7 +35,7 @@ export function GenericScriptField({ field, channelField }: GenericScriptFieldPr
         css`
           & > div:first-child {
             flex: 1 1 0;
-            overflow: auto;
+            overflow: visible;
           }
           & > div > div {
             min-height: unset; // code editor

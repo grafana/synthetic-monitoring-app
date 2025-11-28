@@ -60,7 +60,7 @@ function getStyles(theme: GrafanaTheme2) {
     wrapper: css`
       display: flex;
       flex-direction: column;
-      height: 100%;
+      min-height: 100%;
       position: relative;
     `,
     fadeIn: css`
@@ -73,7 +73,7 @@ function getStyles(theme: GrafanaTheme2) {
       animation-timing-function: ease-in;
     `,
     container: css`
-      height: 100%;
+      min-height: 100%;
       border: 1px solid ${theme.colors.border.medium};
     `,
   };

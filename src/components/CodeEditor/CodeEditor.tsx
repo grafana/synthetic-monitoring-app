@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useMemo, useState } from 'react';
 import { CodeEditor as GrafanaCodeEditor, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
@@ -44,27 +44,14 @@ const addK6Types = (monaco: typeof monacoType, types: Record<string, string> = k
   currentK6LibUris.push(httpsUri);
 };
 const containerStyles = css`
-  height: 100%;
-  min-height: 600px;
-
-  & > div {
-    height: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   // Background styling for editable ranges (multi)
   .editableArea--multi-line {
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.1);
   }
-
-  > section {
-    min-height: inherit;
-  }
 `;
 
+const MIN_EDITOR_HEIGHT = 400;
 const editorWrapperStyles = css`
   position: relative;
 `;
@@ -110,6 +97,14 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
   const isJs = language === 'javascript';
   const [prevValue, setPrevValue] = useState(value);
+  const [editorHeight, setEditorHeight] = useState(600); // Initial height
+
+  // Layout editor when height changes
+  useEffect(() => {
+    if (editorRef) {
+      editorRef.layout();
+    }
+  }, [editorHeight, editorRef]);
 
   const { types: dynamicK6Types, loading: k6TypesLoading, error: k6TypesError } = useK6TypesForChannel(k6Channel, isJs);
 
@@ -183,6 +178,30 @@ export const CodeEditor = forwardRef(function CodeEditor(
     // Wire custom red-squiggle markers for forbidden syntax
     const disposeCustomValidation = wireCustomValidation(monaco, editor);
 
+    // Auto-resize editor based on content for native scroll
+    const updateEditorHeight = () => {
+      const contentHeight = editor.getContentHeight();
+      setEditorHeight(Math.max(contentHeight, MIN_EDITOR_HEIGHT));
+    };
+
+    // Update height on content changes
+    const disposeSizeChange = editor.onDidContentSizeChange(updateEditorHeight);
+
+    // Set initial height
+    updateEditorHeight();
+
+    // Observe the container for resizing changes
+    const parentContainer = editor.getDomNode()?.parentElement;
+    const resizeObserver = parentContainer
+      ? new ResizeObserver(() => {
+          editor.layout();
+        })
+      : null;
+
+    if (resizeObserver && parentContainer) {
+      resizeObserver.observe(parentContainer);
+    }
+
     if (constrainedRanges) {
       const instance = initializeConstrainedInstance(monaco, editor);
       const model = editor.getModel();
@@ -199,6 +218,8 @@ export const CodeEditor = forwardRef(function CodeEditor(
       if (typeof disposeCustomValidation === 'function') {
         disposeCustomValidation();
       }
+      disposeSizeChange.dispose();
+      resizeObserver?.disconnect();
     });
   };
 
@@ -223,6 +244,15 @@ export const CodeEditor = forwardRef(function CodeEditor(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, constrainedRanges]);
 
+  const editorContainerStyles = useMemo(
+    () => css`
+      ${containerStyles}
+      height: ${editorHeight}px;
+      min-height: ${MIN_EDITOR_HEIGHT}px;
+    `,
+    [editorHeight]
+  );
+
   return (
     <div data-fs-element="Code editor" id={id} {...rest} className={editorWrapperStyles}>
       {renderHeader && renderHeader({ scriptValue: value })}
@@ -238,9 +268,11 @@ export const CodeEditor = forwardRef(function CodeEditor(
         showLineNumbers={true}
         showMiniMap={false}
         monacoOptions={{
+          automaticLayout: false,
           fixedOverflowWidgets: false,
           scrollBeyondLastLine: false,
           scrollbar: {
+            vertical: 'hidden',
             alwaysConsumeMouseWheel: false,
           },
         }}
@@ -248,7 +280,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
         onBeforeEditorMount={handleBeforeEditorMount}
         onEditorDidMount={handleEditorDidMount}
         readOnly={readOnly}
-        containerStyles={containerStyles}
+        containerStyles={editorContainerStyles}
       />
     </div>
   );
