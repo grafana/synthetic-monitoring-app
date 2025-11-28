@@ -81,7 +81,7 @@ export const getPolicyIdentifier = (route: Route, isDefaultPolicy: boolean): Pol
   const hasMatchers = route.matchers && route.matchers.length > 0;
   if (hasMatchers) {
     return {
-      text: route.matchers.map((m: LabelMatcher) => `${m.label}${m.type}${m.value}`).join(', '),
+      text: route.matchers?.map((m: LabelMatcher) => `${m.label}${m.type}${m.value}`).join(', ') || '',
       type: 'matchers',
     };
   }

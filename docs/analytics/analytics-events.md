@@ -10,7 +10,7 @@ This document contains all the analytics events that are defined in the project.
 
 #### synthetic-monitoring_check_creation_add_new_check_button_clicked
 
-Tracks when the "Add New Check" button is clicked.
+Tracks when the "Create New Check" button is clicked.
 
 ##### Properties
 
@@ -93,6 +93,16 @@ Tracks when the 'need help writing scripts' button is clicked.
 | name   | type     | description                      |
 | ------ | -------- | -------------------------------- |
 | source | `string` | The source of the clicked button |
+
+#### synthetic-monitoring_check_form_feature_tab_changed
+
+Tracks when a feature tab is changed.
+
+##### Properties
+
+| name  | type     | description                   |
+| ----- | -------- | ----------------------------- |
+| label | `string` | The label of the feature tab. |
 
 ### feature_feedback
 

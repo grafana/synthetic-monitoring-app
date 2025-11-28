@@ -53,7 +53,7 @@ const renderChecksPage = async () => {
     route: AppRoutes.Checks,
   });
 
-  await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument(), { timeout: 10000 });
+  await waitFor(() => expect(screen.getByText('Create new check')).toBeInTheDocument(), { timeout: 10000 });
   return res;
 };
 

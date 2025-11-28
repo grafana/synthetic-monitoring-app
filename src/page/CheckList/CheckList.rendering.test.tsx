@@ -19,6 +19,13 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
           json: checks,
         };
       },
+    }),
+    apiRoute(`listProbes`, {
+      result: () => {
+        return {
+          json: [],
+        };
+      },
     })
   );
 
@@ -29,7 +36,7 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
     path,
   });
 
-  expect(await screen.findByText('Add new check')).toBeInTheDocument();
+  expect(await screen.findByText('Create new check')).toBeInTheDocument();
   return res;
 };
 
@@ -37,6 +44,13 @@ describe('CheckList - Rendering', () => {
   test('renders empty state', async () => {
     server.use(
       apiRoute(`listChecks`, {
+        result: () => {
+          return {
+            json: [],
+          };
+        },
+      }),
+      apiRoute(`listProbes`, {
         result: () => {
           return {
             json: [],

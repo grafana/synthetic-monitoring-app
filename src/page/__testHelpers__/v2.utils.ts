@@ -1,12 +1,10 @@
 import { screen } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/index';
+import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
-import { FormSectionName } from '../../components/Checkster/types';
-import { CheckType } from '../../types';
-
-import { gotoSection } from '../../components/Checkster/__testHelpers__/formHelpers';
-import { PRIVATE_PROBE } from '../../test/fixtures/probes';
-import { probeToMetadataProbe } from '../../test/utils';
+import { CheckType } from 'types';
+import { gotoSection } from 'components/Checkster/__testHelpers__/formHelpers';
+import { FormSectionName } from 'components/Checkster/types';
 
 const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',
@@ -42,7 +40,7 @@ export async function fillMandatoryFields({
   }
   if (!fieldsToOmit.includes('probes')) {
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+    const probeCheckbox = await screen.findByLabelText(PRIVATE_PROBE.name, { exact: false });
     await user.click(probeCheckbox);
   }
 }

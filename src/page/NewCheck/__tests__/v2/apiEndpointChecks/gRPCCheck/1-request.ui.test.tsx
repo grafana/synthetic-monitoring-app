@@ -20,7 +20,17 @@ describe(`gRPCCheck - Section 1 (Request) UI`, () => {
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
 
-    const err = await screen.findByText(`Certificate must be in the PEM format.`);
+    const requestOptions = screen.getByText('Request options');
+    if (requestOptions.getAttribute('aria-expanded') === 'false') {
+      await user.click(requestOptions);
+    }
+
+    const tlsTab = screen.getByRole('tab', { name: 'TLS' });
+    if (tlsTab.getAttribute('aria-selected') === 'false') {
+      await user.click(tlsTab);
+    }
+
+    const err = await screen.findByText(/Certificate must be in the PEM format\./i);
     expect(err).toBeInTheDocument();
   });
 });

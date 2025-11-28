@@ -15,6 +15,7 @@ import {
   CheckType,
   CheckTypeGroup,
   FeatureName,
+  ProbeWithMetadata,
 } from '../../types';
 import { LayoutSection } from './FormLayouts/Layout.types';
 import { formatDuration } from 'utils';
@@ -251,8 +252,8 @@ export function useCheckFormDefaultValues(check?: Check) {
   const checkWithFallback = check || fallbackCheckMap[checkType];
 
   return useMemo(() => {
-    return toFormValues(checkWithFallback, checkType);
-  }, [checkType, checkWithFallback]);
+    return toFormValues(checkWithFallback);
+  }, [checkWithFallback]);
 }
 
 export function useCheckTypeFormLayout(checkType: CheckType) {
@@ -295,4 +296,15 @@ export function useCheckTypeFormLayout(checkType: CheckType) {
     probesFields,
     uptimeFields,
   ]);
+}
+
+export function useProbeCompatibilityKey(probes: ProbeWithMetadata[]): string {
+  return useMemo(() => {
+    return probes
+      .map((probe) => {
+        const versions = probe.k6Versions ? JSON.stringify(probe.k6Versions) : '';
+        return `${probe.id}:${versions}`;
+      })
+      .join('|');
+  }, [probes]);
 }
