@@ -152,7 +152,6 @@ export function ChecksterProvider({
   const formMethodRef = useRef(formMethods);
 
   useEffect(() => {
-    // This works as long as the user doesn't change type two times in a row
     formMethods.reset(defaultFormValues, {
       keepIsValid: true,
       keepDirty: true,

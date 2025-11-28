@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { BASIC_HTTP_CHECK, BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 
-import { CheckTypeGroup } from 'types';
+import { CheckType, CheckTypeGroup } from 'types';
 
 import { useDuplicateCheckUrl } from './useDuplicateCheck';
 
@@ -15,7 +15,9 @@ describe('useDuplicateCheckUrl', () => {
 
     const url = result.current.duplicateCheckUrl(BASIC_HTTP_CHECK);
 
-    expect(url).toBe(`/mocked/checks/new/${CheckTypeGroup.ApiTest}?duplicateId=${BASIC_HTTP_CHECK.id}`);
+    expect(url).toBe(
+      `/mocked/checks/new/${CheckTypeGroup.ApiTest}?duplicateId=${BASIC_HTTP_CHECK.id}&checkType=${CheckType.HTTP}`
+    );
   });
 
   it('should return correct URL for Scripted check duplication', () => {
@@ -23,7 +25,9 @@ describe('useDuplicateCheckUrl', () => {
 
     const url = result.current.duplicateCheckUrl(BASIC_SCRIPTED_CHECK);
 
-    expect(url).toBe(`/mocked/checks/new/${CheckTypeGroup.Scripted}?duplicateId=${BASIC_SCRIPTED_CHECK.id}`);
+    expect(url).toBe(
+      `/mocked/checks/new/${CheckTypeGroup.Scripted}?duplicateId=${BASIC_SCRIPTED_CHECK.id}&checkType=${CheckType.Scripted}`
+    );
   });
 
   it('should return undefined when check has no ID', () => {
