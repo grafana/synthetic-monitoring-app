@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useState } from 'react';
-import { CodeEditor as GrafanaCodeEditor } from '@grafana/ui';
+import { CodeEditor as GrafanaCodeEditor, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
 import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
@@ -8,17 +8,40 @@ import { CodeEditorProps, ConstrainedEditorProps } from './CodeEditor.types';
 // import { Overlay } from 'components/Overlay';
 import k6Types from './k6.types';
 
+import { useK6TypesForChannel } from './k6TypesLoader/useK6TypesForChannel';
 import { initializeConstrainedInstance, updateConstrainedEditorRanges } from './CodeEditor.utils';
 import { wireCustomValidation } from './monacoValidation';
 
-const addK6Types = (monaco: typeof monacoType) => {
-  Object.entries(k6Types).map(([name, type]) => {
-    // Import types as modules for code completions
-    monaco.languages.typescript.javascriptDefaults.addExtraLib(`declare module '${name}' { ${type} }`);
+let currentK6LibUris: string[] = [];
+
+const clearK6Types = (monaco: typeof monacoType) => {
+  // Clear previously added k6 libraries
+  currentK6LibUris.forEach((uri) => {
+    try {
+      // Override with empty content to effectively remove
+      monaco.languages.typescript.javascriptDefaults.addExtraLib('', uri);
+    } catch (error) {
+      // Ignore errors
+    }
+  });
+  currentK6LibUris = [];
+};
+
+const addK6Types = (monaco: typeof monacoType, types: Record<string, string> = k6Types) => {
+  // Clear existing k6 types first
+  clearK6Types(monaco);
+
+  // Add new k6 types
+  Object.entries(types).forEach(([name, type]) => {
+    const uri = `file:///k6-types/${name.replace(/\//g, '-')}.d.ts`;
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(`declare module '${name}' { ${type} }`, uri);
+    currentK6LibUris.push(uri);
   });
 
-  // Remove TS errors for remote libs imports
-  monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'");
+  // Add remote imports support
+  const httpsUri = 'file:///k6-types/https-imports.d.ts';
+  monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'", httpsUri);
+  currentK6LibUris.push(httpsUri);
 };
 const containerStyles = css`
   height: 100%;
@@ -42,11 +65,33 @@ const containerStyles = css`
   }
 `;
 
+const editorWrapperStyles = css`
+  position: relative;
+`;
+
+const loadingOverlayStyles = css`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  z-index: 1000;
+  pointer-events: none;
+`;
+
 export const CodeEditor = forwardRef(function CodeEditor(
   {
     checkJs = true,
     constrainedRanges,
     id,
+    k6Channel,
     language = 'javascript',
     onBeforeEditorMount,
     onChange,
@@ -62,7 +107,23 @@ export const CodeEditor = forwardRef(function CodeEditor(
 ) {
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
   const [constrainedInstance, setConstrainedInstance] = useState<null | ConstrainedEditorInstance>(null);
+
+  const isJs = language === 'javascript';
   const [prevValue, setPrevValue] = useState(value);
+
+  const { types: dynamicK6Types, loading: k6TypesLoading, error: k6TypesError } = useK6TypesForChannel(k6Channel, isJs);
+
+  const shouldWaitForTypes = k6Channel && isJs && k6TypesLoading && !k6TypesError;
+
+  // Update Monaco types when dynamic types change
+  useEffect(() => {
+    if (editorRef && dynamicK6Types) {
+      const monaco = (window as any).monaco;
+      if (monaco) {
+        addK6Types(monaco, dynamicK6Types);
+      }
+    }
+  }, [dynamicK6Types, editorRef]);
 
   // GC
   useEffect(() => {
@@ -91,7 +152,8 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
   const handleBeforeEditorMount = async (monaco: typeof monacoType) => {
     await onBeforeEditorMount?.(monaco);
-    addK6Types(monaco);
+
+    addK6Types(monaco, dynamicK6Types || k6Types);
 
     const compilerOptions = monaco.languages.typescript.javascriptDefaults.getCompilerOptions();
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
@@ -162,10 +224,15 @@ export const CodeEditor = forwardRef(function CodeEditor(
   }, [value, constrainedRanges]);
 
   return (
-    <div data-fs-element="Code editor" id={id} {...rest}>
+    <div data-fs-element="Code editor" id={id} {...rest} className={editorWrapperStyles}>
       {renderHeader && renderHeader({ scriptValue: value })}
-      {/* {overlayMessage && <Overlay>{overlayMessage}</Overlay>} */}
+      {shouldWaitForTypes && (
+        <div className={loadingOverlayStyles}>
+          <Spinner />
+        </div>
+      )}
       <GrafanaCodeEditor
+        key={dynamicK6Types ? 'types-loaded' : 'types-loading'}
         value={value}
         language={language}
         showLineNumbers={true}

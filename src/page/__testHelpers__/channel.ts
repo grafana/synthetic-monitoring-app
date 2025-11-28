@@ -1,3 +1,9 @@
+// Mock k6 types CDN loader to avoid real external fetch calls to unpkg.com
+// Channel tests enable VersionManagement which renders CodeEditor that fetches k6 types
+jest.mock('components/CodeEditor/k6TypesLoader/k6TypesCdnLoader', () => ({
+  fetchK6TypesFromCDN: jest.fn().mockResolvedValue({}),
+}));
+
 import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';

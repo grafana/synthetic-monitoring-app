@@ -18,10 +18,12 @@ export const SCRIPT_TEXTAREA_ID = 'check-script-textarea';
 export const ScriptedCheckScript = () => {
   const {
     control,
+    getValues,
     formState: { errors, disabled: isFormDisabled },
   } = useFormContext<CheckFormValuesScripted>();
   const [selectedTab, setSelectedTab] = useState(ScriptEditorTabs.Script);
   const fieldError = errors.settings?.scripted?.script;
+  const selectedChannel = getValues('settings.scripted.channel');
 
   useEffect(() => {
     const goToScriptTab = () => {
@@ -57,7 +59,7 @@ export const ScriptedCheckScript = () => {
             name="settings.scripted.script"
             control={control}
             render={({ field }) => {
-              return <CodeEditor {...field} id={SCRIPT_TEXTAREA_ID} readOnly={isFormDisabled} />;
+              return <CodeEditor {...field} id={SCRIPT_TEXTAREA_ID} readOnly={isFormDisabled} k6Channel={selectedChannel || undefined} />;
             }}
           />
         )}
