@@ -6,6 +6,7 @@
   "extends": ["github>grafana/grafana-renovate-config//presets/base"],
   "ignorePaths": [".config/Dockerfile"],
   "prCreation": "not-pending", // don't create PRs until stability days is met
+  "internalChecksFilter": "strict", // https://docs.renovatebot.com/configuration-options/#await-x-time-duration-before-automerging
   "semanticCommitScope": null,
   "packageRules": [
     // we can never update the React packages until grafana does
