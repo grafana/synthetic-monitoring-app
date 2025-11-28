@@ -211,9 +211,7 @@ export function ChecksterProvider({
     [formMethods, isNew, onCheckTypeChange, stashCurrentValues]
   );
 
-  const canChangeCheckType = useMemo(() => {
-    return isNew || isDuplicate;
-  }, [isNew, isDuplicate]);
+  const canChangeCheckType = isNew || isDuplicate;
 
   useEffect(() => {
     if (isDuplicate) {
