@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.42.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.41.0...v1.42.0) (2025-11-28)
+
+
+### Features
+
+* add k6 version information to probes ([#1269](https://github.com/grafana/synthetic-monitoring-app/issues/1269)) ([652e09c](https://github.com/grafana/synthetic-monitoring-app/commit/652e09c76b74381809d2c5a039b43f140d74b4d1))
+* add k6 version selection to check form (Checkster version) ([#1461](https://github.com/grafana/synthetic-monitoring-app/issues/1461)) ([910dd45](https://github.com/grafana/synthetic-monitoring-app/commit/910dd4590e69a690c3e16709a6c725450bf237f3))
+* add tracking for feature tab changes ([#1490](https://github.com/grafana/synthetic-monitoring-app/issues/1490)) ([271340f](https://github.com/grafana/synthetic-monitoring-app/commit/271340fa2595fb187cbc5a240d2b0ecdf4373ef5))
+* change 'Add new check' button to 'Create new check' with plus icon ([#1460](https://github.com/grafana/synthetic-monitoring-app/issues/1460)) ([084ec81](https://github.com/grafana/synthetic-monitoring-app/commit/084ec813004058dc144a4bd482438dffcdc83d4a))
+* highlight docs panel ([#1444](https://github.com/grafana/synthetic-monitoring-app/issues/1444)) ([f7fe8b7](https://github.com/grafana/synthetic-monitoring-app/commit/f7fe8b7d232954b89da281546738e7aac1d45558))
+* Implement native scroll for Monaco script editor ([#1488](https://github.com/grafana/synthetic-monitoring-app/issues/1488)) ([6a75fe2](https://github.com/grafana/synthetic-monitoring-app/commit/6a75fe21fb17deb6e407f887230b5a68287f7a5c))
+* make monaco load types dynamically ([#1289](https://github.com/grafana/synthetic-monitoring-app/issues/1289)) ([69bacf9](https://github.com/grafana/synthetic-monitoring-app/commit/69bacf97e04c8aea4fbc8e72de18ae658537bcad))
+* pass eventInfo to useCUDChecks in useHandleSubmitCheckster ([#1487](https://github.com/grafana/synthetic-monitoring-app/issues/1487)) ([161b495](https://github.com/grafana/synthetic-monitoring-app/commit/161b495a7f1c44dc9e7f35ce08b5a071db5e5093))
+* suggestion for duplicate functionality ([#1496](https://github.com/grafana/synthetic-monitoring-app/issues/1496)) ([f9c18cd](https://github.com/grafana/synthetic-monitoring-app/commit/f9c18cd31ed8ba1c06f5273bd1575526b2f9a774))
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/ action to ([#1493](https://github.com/grafana/synthetic-monitoring-app/issues/1493)) ([eb8f4b5](https://github.com/grafana/synthetic-monitoring-app/commit/eb8f4b51fa0b1daf49b5cbe1608fdcdf43de8c40))
+* remove unused merge logic for checkster ([#1495](https://github.com/grafana/synthetic-monitoring-app/issues/1495)) ([5084b02](https://github.com/grafana/synthetic-monitoring-app/commit/5084b0204fd587066ab75d0a1995df6d1afccda4))
+* update actions/checkout action to v5.0.1 ([#1498](https://github.com/grafana/synthetic-monitoring-app/issues/1498)) ([787c038](https://github.com/grafana/synthetic-monitoring-app/commit/787c038b4c4718a4e9d0f8357cc6bd74d1939911))
+* update dependency msw to v2 ([#1394](https://github.com/grafana/synthetic-monitoring-app/issues/1394)) ([93d464a](https://github.com/grafana/synthetic-monitoring-app/commit/93d464a9a90ba64f6675250fcf577c6232fff9e6))
+
 ## [1.41.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.40.0...v1.41.0) (2025-11-25)
 
 
