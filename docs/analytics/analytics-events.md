@@ -104,6 +104,18 @@ Tracks when a feature tab is changed.
 | ----- | -------- | ----------------------------- |
 | label | `string` | The label of the feature tab. |
 
+### check_list
+
+#### synthetic-monitoring_check_list_duplicate_check_button_clicked
+
+Tracks when the duplicate check button is clicked.
+
+##### Properties
+
+| name      | type                                                                                                     | description                         |
+| --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being duplicated. |
+
 ### feature_feedback
 
 #### synthetic-monitoring_feature_feedback_feature_feedback_submitted

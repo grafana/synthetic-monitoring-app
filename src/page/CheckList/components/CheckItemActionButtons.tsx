@@ -2,12 +2,15 @@ import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackDuplicateCheckButtonClicked } from 'features/tracking/checkListEvents';
 
 import { Check } from 'types';
+import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useDeleteCheck, useUpdateCheck } from 'data/useChecks';
+import { useDuplicateCheckUrl } from 'hooks/useDuplicateCheck';
 
 interface CheckItemActionButtonsProps {
   check: Check;
@@ -22,6 +25,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
 
   const { mutate: deleteCheck } = useDeleteCheck();
   const { mutate: updateCheck } = useUpdateCheck();
+  const { duplicateCheckUrl } = useDuplicateCheckUrl();
 
   const handleToggleEnabled = useCallback(async () => {
     setIsPending(true);
@@ -68,6 +72,17 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         disabled={!canWriteChecks}
         variant="secondary"
         fill={`text`}
+      />
+      <LinkButton
+        href={duplicateCheckUrl(check)}
+        icon="copy"
+        tooltip="Duplicate check"
+        disabled={!canWriteChecks}
+        onClick={() => {
+          trackDuplicateCheckButtonClicked({ checkType: getCheckType(check.settings) });
+        }}
+        variant="secondary"
+        fill="text"
       />
       <IconButton
         tooltip="Delete check"
