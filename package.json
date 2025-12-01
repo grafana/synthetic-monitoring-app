@@ -37,7 +37,7 @@
     "@grafana/eslint-config": "9.0.0",
     "@grafana/tsconfig": "2.0.1",
     "@stylistic/eslint-plugin-ts": "4.4.1",
-    "@swc/core": "1.15.1",
+    "@swc/core": "1.15.3",
     "@swc/helpers": "0.5.17",
     "@swc/jest": "0.2.39",
     "@tanstack/eslint-plugin-query": "5.91.2",
