@@ -32,14 +32,32 @@ export function renderNewFormV2(checkType: CheckType) {
   return renderNewForm(checkType, NewCheckV2);
 }
 
-export async function renderNewForm(checkType: CheckType, CheckComponent = NewCheck) {
+export function renderDuplicateFormV2(duplicateCheck: Check, checkType: CheckType) {
+  server.use(
+    apiRoute(`listChecks`, {
+      result: () => {
+        return {
+          json: [duplicateCheck],
+        };
+      },
+    })
+  );
+
+  return renderNewForm(checkType, NewCheckV2, duplicateCheck.id);
+}
+
+export async function renderNewForm(
+  checkType: CheckType,
+  CheckComponent = NewCheck,
+  duplicateId: number | null = null
+) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`addCheck`, {}, record));
   server.use(apiRoute(`updateAlertsForCheck`, { method: 'put' }, record));
   const checkTypeGroup = getCheckTypeGroup(checkType);
 
   const res = render(<CheckComponent />, {
-    path: `${generateRoutePath(AppRoutes.NewCheck)}/${checkTypeGroup}?checkType=${checkType}`,
+    path: `${generateRoutePath(AppRoutes.NewCheck)}/${checkTypeGroup}?checkType=${checkType}${duplicateId ? `&duplicateId=${duplicateId}` : ''}`,
     route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
   });
 
