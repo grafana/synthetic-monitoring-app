@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   createDataFrame,
   DataFrame,
@@ -11,6 +11,7 @@ import {
 } from '@grafana/data';
 import { PanelRenderer } from '@grafana/runtime';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
+import { Box, InlineSwitch } from '@grafana/ui';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
@@ -29,9 +30,29 @@ const LOGS_HEIGHT = 400;
 
 export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T[] }) => {
   const [width, setWidth] = useState(0);
+  const [errorOnly, setErrorOnly] = useState(false);
+
+  const filteredLogs = useMemo(() => {
+    if (!errorOnly) {
+      return logs;
+    }
+    return logs.filter((log) => {
+      const level = log.labels?.level || log.labels?.detected_level;
+      return level?.toLowerCase() === 'error';
+    });
+  }, [logs, errorOnly]);
 
   return (
     <div>
+      <Box paddingBottom={1} display="flex" justifyContent="flex-end">
+        <InlineSwitch
+          label="Error logs only"
+          transparent
+          showLabel
+          value={errorOnly}
+          onChange={() => setErrorOnly(!errorOnly)}
+        />
+      </Box>
       <div
         ref={(el) => {
           if (el) {
@@ -47,7 +68,7 @@ export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T[]
           pluginId="logs"
           width={width}
           height={LOGS_HEIGHT}
-          data={getPanelData(logs)}
+          data={getPanelData(filteredLogs)}
           options={{
             ...logPanelOptions,
             wrapLogMessage: true,
