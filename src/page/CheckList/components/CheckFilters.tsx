@@ -133,6 +133,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
           labelFilters={checkFilters.labels}
           className={styles.verticalSpace}
         />
+        {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
         <MultiSelect
           aria-label="Filter by probe"
           prefix="Probes"

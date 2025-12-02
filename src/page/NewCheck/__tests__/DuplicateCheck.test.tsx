@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/dom';
+import { screen, waitFor } from '@testing-library/dom';
 import { BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 
 import { CheckType } from 'types';
@@ -20,8 +20,12 @@ describe('DuplicateCheck', () => {
     await user.type(jobField, JOB_NAME);
     await submitForm(user);
 
-    const { body } = await read();
+    // Wait for form to be removed after successful submission
+    await waitFor(() => {
+      expect(screen.queryByLabelText(/Job name/)).not.toBeInTheDocument();
+    });
 
+    const { body } = await read();
     const { alerts, id, created, modified, ...rest } = BASIC_SCRIPTED_CHECK;
 
     expect(body).toEqual({ ...rest, job: JOB_NAME });

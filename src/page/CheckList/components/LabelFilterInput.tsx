@@ -61,6 +61,7 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
   };
 
   return (
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     <MultiSelect
       prefix={
         <div className={styles.prefix} onMouseDown={(e) => e.stopPropagation()}>

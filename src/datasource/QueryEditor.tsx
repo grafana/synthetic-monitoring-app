@@ -222,6 +222,7 @@ export class QueryEditor extends PureComponent<Props, State> {
               />
             </div>
             <div className={styles.tracerouteFieldWrapper}>
+              {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
               <MultiSelect
                 options={probeOptions}
                 prefix="Probe"
