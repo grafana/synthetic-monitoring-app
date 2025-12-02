@@ -218,7 +218,9 @@ export function ChecksterProvider({
       formMethods.setValue('job', `${check?.job} (Copy)`, { shouldDirty: true });
       formNavigation.completeAllSteps();
     }
-  }, [formMethods, check, isDuplicate, formNavigation]);
+    // only do this on mount so it doesn't trigger when the check is updated
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const value: ChecksterContextValue = useMemo(() => {
     return {
