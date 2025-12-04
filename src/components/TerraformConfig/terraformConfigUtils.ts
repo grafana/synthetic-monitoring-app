@@ -1,6 +1,6 @@
 import { fromBase64 } from 'js-base64';
 
-import { Check, HTTPCompressionAlgo, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
+import { Check, CheckAlertDraft, HTTPCompressionAlgo, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
 import {
   isBrowserCheck,
   isDNSCheck,
@@ -14,7 +14,7 @@ import {
 } from 'utils.types';
 
 import { mapAssertionsToTF, mapRequestBodyToTF, mapVariablesToTF } from './terraformMultiHTTPConfigUtils';
-import { TFCheck, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
+import { TFCheck, TFCheckAlerts, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
 
 const labelsToTFLabels = (labels: Label[]): TFLabels =>
   labels.reduce<TFLabels>((acc, label) => {
@@ -229,3 +229,16 @@ export const probeToTF = (probe: Probe): TFProbe => ({
   disable_browser_checks: probe.capabilities.disableBrowserChecks,
   disable_scripted_checks: probe.capabilities.disableScriptedChecks,
 });
+
+export function generateCheckResourceName(check: { job: string; target: string }): string {
+  return sanitizeName(`${check.job}_${check.target}`);
+}
+
+export function alertsToTF(alerts: CheckAlertDraft[]): TFCheckAlerts['alerts'] {
+  return alerts.map((alert) => ({
+    name: alert.name,
+    threshold: alert.threshold,
+    period: alert.period,
+    runbook_url: alert.runbookUrl || '',
+  }));
+}

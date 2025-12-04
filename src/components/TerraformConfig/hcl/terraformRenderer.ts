@@ -1,4 +1,4 @@
-import { TFCheckAlerts, TFCheckSettings, TFConfig, TFLabels } from '../terraformTypes';
+import { TFCheck, TFCheckAlerts, TFCheckSettings, TFConfig, TFLabels } from '../terraformTypes';
 import { HclValue, HclWriterInterface } from './core/hclTypes';
 
 export function renderTerraformBlock(config: TFConfig, writer: HclWriterInterface): string[] {
@@ -101,7 +101,7 @@ export function renderResourceAlerts(alerts: TFCheckAlerts['alerts'], writer: Hc
 export function renderSingleResource(
   resourceType: string,
   resourceName: string,
-  resourceConfig: Record<string, any>,
+  resourceConfig: TFCheck,
   writer: HclWriterInterface,
   formatCheckSettings: (settingsType: string, settings: Record<string, HclValue>, writer: HclWriterInterface) => string[]
 ): string[] {
