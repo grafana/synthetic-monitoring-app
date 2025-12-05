@@ -32,6 +32,20 @@ export function TerraformPanel() {
   const formValues = getValues();
   const { hclConfig, jsonConfig } = useCheckTerraformConfig(formValues);
 
+  const handleFormatChange = (format: TerraformFormat) => {
+    setActiveFormat(format);
+    trackTerraformFormatChanged({ format });
+  };
+
+  const handleCopy = () => {
+    trackTerraformConfigCopied({ format: activeFormat });
+    return content;
+  };
+
+  const handleFullConfigClick = () => {
+    trackTerraformFullConfigClicked();
+  };
+
   const content = activeFormat === 'hcl' ? hclConfig : jsonConfig;
   const langSyntax = activeFormat === 'hcl' ? 'hcl' : 'json';
 
@@ -57,7 +71,11 @@ export function TerraformPanel() {
       <Column gap={2} className={styles.column}>
         <Text color="secondary">
           Preview the Terraform resource configuration for this check.{' '}
-          <TextLink href="/a/grafana-synthetic-monitoring-app/config/terraform" external={false}>
+          <TextLink
+            href="/a/grafana-synthetic-monitoring-app/config/terraform"
+            external={false}
+            onClick={handleFullConfigClick}
+          >
             View full configuration and instructions
           </TextLink>
           .
@@ -71,7 +89,7 @@ export function TerraformPanel() {
                   key={format}
                   label={FORMAT_LABELS[format]}
                   active={activeFormat === format}
-                  onChangeTab={() => setActiveFormat(format)}
+                  onChangeTab={() => handleFormatChange(format)}
                   data-testid={CHECKSTER_TEST_ID.feature.terraform.tab(format)}
                 />
               ))}
@@ -81,7 +99,7 @@ export function TerraformPanel() {
               icon="clipboard-alt"
               variant="secondary"
               size="sm"
-              getText={() => content}
+              getText={handleCopy}
               data-testid={CHECKSTER_TEST_ID.feature.terraform.copyButton}
             >
               Copy

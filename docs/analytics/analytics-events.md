@@ -104,6 +104,30 @@ Tracks when a feature tab is changed.
 | ----- | -------- | ----------------------------- |
 | label | `string` | The label of the feature tab. |
 
+#### synthetic-monitoring_check_form_terraform_format_changed
+
+Tracks when the Terraform format is changed.
+
+##### Properties
+
+| name   | type              | description                                    |
+| ------ | ----------------- | ---------------------------------------------- |
+| format | `"hcl" \| "json"` | The format that was switched to (hcl or json). |
+
+#### synthetic-monitoring_check_form_terraform_config_copied
+
+Tracks when Terraform configuration is copied.
+
+##### Properties
+
+| name   | type              | description                                    |
+| ------ | ----------------- | ---------------------------------------------- |
+| format | `"hcl" \| "json"` | The format that was switched to (hcl or json). |
+
+#### synthetic-monitoring_check_form_terraform_full_config_clicked
+
+Tracks when the full configuration link is clicked.
+
 ### check_list
 
 #### synthetic-monitoring_check_list_duplicate_check_button_clicked
