@@ -3,7 +3,13 @@ import { config as runtimeConfig } from '@grafana/runtime';
 import { Check, Probe } from 'types';
 import { useChecks } from 'data/useChecks';
 import { useProbes } from 'data/useProbes';
-import { checkToTF, probeToTF, sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
+import {
+  alertsToTF,
+  checkToTF,
+  generateCheckResourceName,
+  probeToTF,
+  sanitizeName,
+} from 'components/TerraformConfig/terraformConfigUtils';
 import { jsonToHcl } from 'components/TerraformConfig/terraformJsonToHcl';
 import {
   TFCheckAlertsConfig,
@@ -19,7 +25,7 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
   const checksConfig = checks.reduce<TFCheckConfig>((acc, check) => {
     if (check) {
       const checkConfig = checkToTF(check);
-      const resourceName = sanitizeName(`${check.job}_${check.target}`);
+      const resourceName = generateCheckResourceName(check);
       if (!acc[resourceName]) {
         acc[resourceName] = checkConfig;
       } else {
@@ -74,15 +80,10 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
   const checkAlertsConfig = checks
     .filter((check) => check.alerts && check.alerts.length > 0)
     .reduce((acc: TFCheckAlertsConfig, check) => {
-      const resourceName = sanitizeName(`${check.job}_${check.target}`);
+      const resourceName = generateCheckResourceName(check);
       acc[resourceName] = {
         check_id: String(check.id),
-        alerts: check.alerts!.map((alert) => ({
-          name: alert.name,
-          threshold: alert.threshold,
-          period: alert.period,
-          runbook_url: alert.runbookUrl || '',
-        })),
+        alerts: alertsToTF(check.alerts!),
       };
       return acc;
     }, {});
@@ -92,17 +93,13 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
   }
 
   const checkCommands = checks.map((check) => {
-    return `terraform import grafana_synthetic_monitoring_check.${sanitizeName(`${check.job}_${check.target}`)} ${
-      check.id
-    }`;
+    return `terraform import grafana_synthetic_monitoring_check.${generateCheckResourceName(check)} ${check.id}`;
   });
 
   const checkAlertsCommands = checks
     .filter((check) => check.alerts && check.alerts.length > 0)
     .map((check) => {
-      return `terraform import grafana_synthetic_monitoring_check_alerts.${sanitizeName(
-        `${check.job}_${check.target}`
-      )} ${check.id}`;
+      return `terraform import grafana_synthetic_monitoring_check_alerts.${generateCheckResourceName(check)} ${check.id}`;
     });
 
   const probeCommands = Object.keys(probesConfig).map((probeName) => {
