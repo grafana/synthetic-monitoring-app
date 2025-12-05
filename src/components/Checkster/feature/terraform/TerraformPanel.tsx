@@ -3,13 +3,13 @@ import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ClipboardButton, Tab, TabContent, TabsBar, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { highlight, languages } from 'prismjs';
-import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import {
   trackTerraformConfigCopied,
   trackTerraformFormatChanged,
   trackTerraformFullConfigClicked,
 } from 'features/tracking/checkFormEvents';
+import { highlight, languages } from 'prismjs';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues } from 'types';
 
