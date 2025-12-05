@@ -238,7 +238,7 @@ export function alertsToTF(alerts: CheckAlertDraft[]): TFCheckAlerts['alerts'] {
   return alerts.map((alert) => ({
     name: alert.name,
     threshold: alert.threshold,
-    period: alert.period,
+    period: alert.period || '',
     runbook_url: alert.runbookUrl || '',
   }));
 }

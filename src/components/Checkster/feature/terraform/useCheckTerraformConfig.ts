@@ -39,7 +39,7 @@ export function useCheckTerraformConfig(formValues: CheckFormValues): CheckTerra
     }
 
     const hclConfig = jsonToHcl(config as TFConfig);
-    const jsonConfig = JSON.stringify(config.resource, null, 2);
+    const jsonConfig = JSON.stringify(config, null, 2);
 
     return {
       jsonConfig,
