@@ -1,10 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { ClipboardButton, Tab, TabContent, TabsBar, Text, useStyles2 } from '@grafana/ui';
+import { ClipboardButton, Tab, TabContent, TabsBar, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { highlight, languages } from 'prismjs';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
+import {
+  trackTerraformConfigCopied,
+  trackTerraformFormatChanged,
+  trackTerraformFullConfigClicked,
+} from 'features/tracking/checkFormEvents';
 
 import { CheckFormValues } from 'types';
 
@@ -51,7 +56,11 @@ export function TerraformPanel() {
     <div className={styles.root} data-testid={CHECKSTER_TEST_ID.feature.terraform.root}>
       <Column gap={2} className={styles.column}>
         <Text color="secondary">
-          Preview the Terraform resource configuration for this check.
+          Preview the Terraform resource configuration for this check.{' '}
+          <TextLink href="/a/grafana-synthetic-monitoring-app/config/terraform" external={false}>
+            View full configuration and instructions
+          </TextLink>
+          .
         </Text>
 
         <div className={styles.configContainer}>
