@@ -63,7 +63,7 @@ export function TerraformConfigDisplay({
         , with their respective value.
       </Text>
       <div className={styles.codeContainer}>
-        <pre className={styles.pre}>
+        <pre className={styles.pre} data-testid="preformatted">
           <code
             className={styles.code}
             dangerouslySetInnerHTML={{ __html: highlightedCode }}
