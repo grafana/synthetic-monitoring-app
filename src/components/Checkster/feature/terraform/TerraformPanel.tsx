@@ -12,6 +12,7 @@ import { highlight, languages } from 'prismjs';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues } from 'types';
+import { getPrismCodeStyles } from 'components/TerraformConfig/prismStyles';
 
 import { Column } from '../../components/ui/Column';
 import { useCheckTerraformConfig } from './useCheckTerraformConfig';
@@ -122,6 +123,8 @@ export function TerraformPanel() {
 }
 
 function getStyles(theme: GrafanaTheme2) {
+  const prismStyles = getPrismCodeStyles(theme);
+
   return {
     root: css({
       padding: theme.spacing(1, 1, 1, 0),
@@ -167,48 +170,7 @@ function getStyles(theme: GrafanaTheme2) {
       width: 0,
       minWidth: '100%',
     }),
-    pre: css({
-      margin: 0,
-      padding: 0,
-      backgroundColor: 'transparent',
-    }),
-    code: css({
-      display: 'block',
-      fontFamily: "Menlo, Monaco, 'Courier New', monospace",
-      fontSize: 12,
-      lineHeight: 1.5,
-      padding: theme.spacing(2),
-      whiteSpace: 'pre',
-      color: theme.colors.text.primary,
-      '.token.boolean, .token.string': {
-        color: theme.colors.success.text,
-      },
-      '.token.constant': {
-        color: theme.colors.info.text,
-      },
-      '.token.function': {
-        color: theme.colors.text.primary,
-      },
-      '.token.punctuation': {
-        color: theme.colors.text.secondary,
-      },
-      '.token.keyword': {
-        color: theme.colors.info.text,
-      },
-      '.token.number': {
-        color: theme.colors.success.text,
-      },
-      '.token.operator': {
-        color: theme.colors.text.secondary,
-        backgroundColor: 'transparent',
-      },
-      '.token.comment': {
-        color: theme.colors.text.disabled,
-      },
-      '.token.property': {
-        color: theme.colors.info.text,
-      },
-    }),
+    ...prismStyles,
   };
 }
 
