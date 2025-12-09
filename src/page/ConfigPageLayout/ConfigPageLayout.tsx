@@ -7,6 +7,7 @@ import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
+import { PageNavigation } from 'components/PageNavigation/PageNavigation';
 
 function getConfigTabUrl(tab = '/') {
   return `${getRoute(AppRoutes.Config)}/${tab}`.replace(/\/+/g, '/');
@@ -73,6 +74,7 @@ export function ConfigPageLayout() {
 
   return (
     <PluginPage pageNav={pageNav}>
+      <PageNavigation />
       <Outlet />
     </PluginPage>
   );

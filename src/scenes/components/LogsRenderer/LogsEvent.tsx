@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Box, InlineSwitch, useStyles2 } from '@grafana/ui';
+import { Box, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
@@ -12,60 +12,72 @@ import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels'
 export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Record<string, string>>>({
   logs,
   mainKey,
+  errorLogsOnly,
+  onErrorLogsOnlyChange,
 }: {
   logs: T[];
   mainKey: string;
+  errorLogsOnly: boolean;
+  onErrorLogsOnlyChange: (value: boolean) => void;
 }) => {
   const styles = useStyles2(getStyles);
-  const [errorOnly, setErrorOnly] = useState(false);
 
   const filteredLogs = useMemo(() => {
-    if (!errorOnly) {
+    if (!errorLogsOnly) {
       return logs;
     }
     return logs.filter((log) => {
       const level = log.labels?.level || log.labels?.detected_level;
       return level?.toLowerCase() === 'error';
     });
-  }, [logs, errorOnly]);
+  }, [logs, errorLogsOnly]);
+
+  const hasNoErrorLogs = errorLogsOnly && filteredLogs.length === 0 && logs.length > 0;
 
   return (
     <div>
-      <Box paddingBottom={1} display="flex" justifyContent="flex-end">
-        <InlineSwitch
-          label="Error logs only"
-          transparent
-          showLabel
-          value={errorOnly}
-          onChange={() => setErrorOnly(!errorOnly)}
-        />
-      </Box>
-      <div className={styles.timelineContainer}>
-        {filteredLogs.map((log, index) => {
-          const level = log.labels.detected_level;
+      {hasNoErrorLogs ? (
+        <Box padding={4} display="flex" alignItems="center" justifyContent="center" minHeight="200px">
+          <Text variant="body" color="secondary">
+            No error logs found. Disable the filter to see all logs.
+          </Text>
+        </Box>
+      ) : (
+        <div className={styles.timelineContainer}>
+          {filteredLogs.length > 0 ? (
+            filteredLogs.map((log, index) => {
+              const level = log.labels.detected_level;
 
-          return (
-            <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>
-              <div className={styles.time}>
-                {dateTimeFormat(log[LokiFieldNames.Time], {
-                  defaultWithMS: true,
-                })}
-              </div>
-              <div
-                className={cx(styles.level, {
-                  [styles.error]: level === 'error',
-                  [styles.info]: level === 'info',
-                  [styles.warning]: level === 'warn',
-                })}
-              >
-                {level.toUpperCase()}
-              </div>
-              <div className={styles.mainKey}>{log.labels[mainKey]}</div>
-              <LabelRenderer log={filteredLogs[index]} mainKey={mainKey} />
-            </div>
-          );
-        })}
-      </div>
+              return (
+                <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>
+                  <div className={styles.time}>
+                    {dateTimeFormat(log[LokiFieldNames.Time], {
+                      defaultWithMS: true,
+                    })}
+                  </div>
+                  <div
+                    className={cx(styles.level, {
+                      [styles.error]: level === 'error',
+                      [styles.info]: level === 'info',
+                      [styles.warning]: level === 'warn',
+                    })}
+                  >
+                    {level.toUpperCase()}
+                  </div>
+                  <div className={styles.mainKey}>{log.labels[mainKey]}</div>
+                  <LabelRenderer log={filteredLogs[index]} mainKey={mainKey} />
+                </div>
+              );
+            })
+          ) : (
+            <Box padding={4} display="flex" alignItems="center" justifyContent="center" minHeight="200px">
+              <Text variant="body" color="secondary">
+                No logs available
+              </Text>
+            </Box>
+          )}
+        </div>
+      )}
     </div>
   );
 };

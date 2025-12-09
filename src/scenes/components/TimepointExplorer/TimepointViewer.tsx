@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Box, InlineField, LoadingBar, Stack, Switch, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackTimepointViewerLogsViewToggled } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
@@ -21,6 +21,7 @@ import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/T
 export const TimepointViewer = () => {
   const { isInitialised, viewerState } = useTimepointExplorerContext();
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
+  const [errorLogsOnly, setErrorLogsOnly] = useState(false);
   const [viewerTimepoint, viewerProbeName] = viewerState;
   const styles = useStyles2(getStyles);
 
@@ -36,10 +37,17 @@ export const TimepointViewer = () => {
       {viewerTimepoint ? (
         <div>
           <Box padding={2} gap={1} direction="column" position="relative">
-            <TimepointHeader timepoint={viewerTimepoint} onChangeLogsView={handleChangeLogsView} />
+            <TimepointHeader
+              timepoint={viewerTimepoint}
+              onChangeLogsView={handleChangeLogsView}
+              errorLogsOnly={errorLogsOnly}
+              onErrorLogsOnlyChange={setErrorLogsOnly}
+            />
             <QueryErrorBoundary key={viewerTimepoint.adjustedTime}>
               <TimepointViewerContent
                 logsView={logsView}
+                errorLogsOnly={errorLogsOnly}
+                onErrorLogsOnlyChange={setErrorLogsOnly}
                 probeNameToView={viewerProbeName}
                 timepoint={viewerTimepoint}
               />
@@ -58,11 +66,19 @@ export const TimepointViewer = () => {
 
 interface TimepointViewerContentProps {
   logsView: LogsView;
+  errorLogsOnly: boolean;
+  onErrorLogsOnlyChange: (value: boolean) => void;
   probeNameToView?: string;
   timepoint: StatelessTimepoint;
 }
 
-const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: TimepointViewerContentProps) => {
+const TimepointViewerContent = ({
+  logsView,
+  errorLogsOnly,
+  onErrorLogsOnlyChange,
+  probeNameToView,
+  timepoint,
+}: TimepointViewerContentProps) => {
   const elRef = useRef<HTMLDivElement>(null);
   const [viewerWidth, setViewerWidth] = useState<number>(0);
   const { check, currentAdjustedTime } = useTimepointExplorerContext();
@@ -107,6 +123,8 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
       <TimepointViewerExecutions
         isLoading={isLoading}
         logsView={logsView}
+        errorLogsOnly={errorLogsOnly}
+        onErrorLogsOnlyChange={onErrorLogsOnlyChange}
         probeExecutions={data}
         pendingProbeNames={pendingProbeNames}
         probeNameToView={probeNameToView}
@@ -119,9 +137,13 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
 const TimepointHeader = ({
   timepoint,
   onChangeLogsView,
+  errorLogsOnly,
+  onErrorLogsOnlyChange,
 }: {
   timepoint: StatelessTimepoint;
   onChangeLogsView: (view: LogsView) => void;
+  errorLogsOnly: boolean;
+  onErrorLogsOnlyChange: (value: boolean) => void;
 }) => {
   const styles = useStyles2(getHeaderStyles);
 
@@ -137,7 +159,12 @@ const TimepointHeader = ({
       </Stack>
       <div className={styles.actions}>
         <TimepointViewerActions timepoint={timepoint} />
-        <LogsViewSelect onChange={onChangeLogsView} />
+        <Stack direction="row" gap={1} alignItems="center">
+          <InlineField label="Error logs only" className={styles.inlineField}>
+            <Switch value={errorLogsOnly} onChange={(e) => onErrorLogsOnlyChange(e.currentTarget.checked)} />
+          </InlineField>
+          <LogsViewSelect onChange={onChangeLogsView} />
+        </Stack>
       </div>
     </div>
   );
@@ -191,6 +218,9 @@ const getHeaderStyles = (theme: GrafanaTheme2) => {
         justify-content: space-between;
         width: 100%;
       }
+    `,
+    inlineField: css`
+      margin-bottom: 0;
     `,
   };
 };

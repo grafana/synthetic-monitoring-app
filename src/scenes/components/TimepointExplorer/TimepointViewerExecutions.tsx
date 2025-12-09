@@ -23,6 +23,8 @@ import { useTimepointViewerExecutions } from 'scenes/components/TimepointExplore
 interface TimepointViewerExecutionsProps {
   isLoading: boolean;
   logsView: LogsView;
+  errorLogsOnly: boolean;
+  onErrorLogsOnlyChange: (value: boolean) => void;
   pendingProbeNames: string[];
   probeExecutions: ProbeExecutionLogs[];
   probeNameToView?: string;
@@ -32,6 +34,8 @@ interface TimepointViewerExecutionsProps {
 export const TimepointViewerExecutions = ({
   isLoading,
   logsView,
+  errorLogsOnly,
+  onErrorLogsOnlyChange,
   pendingProbeNames,
   probeExecutions = [],
   probeNameToView,
@@ -103,7 +107,15 @@ export const TimepointViewerExecutions = ({
             }
 
             if (executions.length > 1) {
-              return <MultipleExecutions key={probeName} executions={executions} logsView={logsView} />;
+              return (
+                <MultipleExecutions
+                  key={probeName}
+                  executions={executions}
+                  logsView={logsView}
+                  errorLogsOnly={errorLogsOnly}
+                  onErrorLogsOnlyChange={onErrorLogsOnlyChange}
+                />
+              );
             }
 
             return (
@@ -115,6 +127,8 @@ export const TimepointViewerExecutions = ({
                       logs={execution}
                       logsView={logsView}
                       mainKey="msg"
+                      errorLogsOnly={errorLogsOnly}
+                      onErrorLogsOnlyChange={onErrorLogsOnlyChange}
                     />
                   );
                 })}
@@ -176,7 +190,17 @@ const ProbeNameIcon = ({ status }: { status: TimepointStatus }) => {
   return <Icon name={ICON_MAP[status]} color={vizOption.statusColor} />;
 };
 
-const MultipleExecutions = ({ executions, logsView }: { executions: ExecutionLogs[]; logsView: LogsView }) => {
+const MultipleExecutions = ({
+  executions,
+  logsView,
+  errorLogsOnly,
+  onErrorLogsOnlyChange,
+}: {
+  executions: ExecutionLogs[];
+  logsView: LogsView;
+  errorLogsOnly: boolean;
+  onErrorLogsOnlyChange: (value: boolean) => void;
+}) => {
   const styles = useStyles2(getStyles);
   const success = useTimepointVizOptions('success');
   const failure = useTimepointVizOptions('failure');
@@ -202,7 +226,13 @@ const MultipleExecutions = ({ executions, logsView }: { executions: ExecutionLog
                     color={`${probe_success === '1' ? success.statusColor : failure.statusColor}`}
                   />
                 </Stack>
-                <LogsRenderer<UnknownExecutionLog> logs={execution} logsView={logsView} mainKey="msg" />
+                <LogsRenderer<UnknownExecutionLog>
+                  logs={execution}
+                  logsView={logsView}
+                  mainKey="msg"
+                  errorLogsOnly={errorLogsOnly}
+                  onErrorLogsOnlyChange={onErrorLogsOnlyChange}
+                />
               </div>
               {index !== executions.length - 1 && <div className={styles.divider} />}
             </>

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { LoadingPlaceholder } from '@grafana/ui';
+import { PluginPage } from '@grafana/runtime';
 
 import { DashboardSceneAppConfig } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
@@ -10,6 +11,7 @@ import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
+import { PageNavigation } from 'components/PageNavigation/PageNavigation';
 import { getSummaryScene } from 'scenes/Summary';
 
 function SceneHomepageComponent() {
@@ -31,7 +33,7 @@ function SceneHomepageComponent() {
       pages: [
         new SceneAppPage({
           title: 'Synthetics',
-          renderTitle: () => <h1>Home</h1>,
+          renderTitle: () => null, // Title is rendered by PluginPage instead
           url: `${PLUGIN_URL_PATH}${AppRoutes.Home}`,
           hideFromBreadcrumbs: false,
           getScene: getSummaryScene(config, checks, true),
@@ -44,7 +46,12 @@ function SceneHomepageComponent() {
     return <LoadingPlaceholder text="Loading..." />;
   }
 
-  return <scene.Component model={scene} />;
+  return (
+    <PluginPage renderTitle={() => <h1>Home</h1>}>
+      <PageNavigation />
+      <scene.Component model={scene} />
+    </PluginPage>
+  );
 }
 
 export function SceneHomepage() {
