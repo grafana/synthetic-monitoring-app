@@ -4,10 +4,9 @@ import { GrafanaTheme2, urlUtil } from '@grafana/data';
 import { Button, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckAlertType, CheckFormValuesWithAlert, FeatureName } from 'types';
+import { CheckAlertType, CheckFormValuesWithAlert } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { NotOkStatusInfo } from 'components/AlertStatus/NotOkStatusInfo';
-import { FeatureFlag } from 'components/FeatureFlag';
 
 import { AlertRoutingPreview } from './AlertRoutingPreview';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
@@ -102,22 +101,16 @@ export const AlertItem = ({
         )}
 
         {selected && (
-          <FeatureFlag name={FeatureName.AlertingRouting}>
-            {({ isEnabled }) =>
-              isEnabled ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  fill="text"
-                  icon={showRouting ? 'angle-up' : 'angle-down'}
-                  onClick={() => setShowRouting(!showRouting)}
-                  className={styles.routingToggle}
-                >
-                  {showRouting ? 'Hide' : 'Show'} routing
-                </Button>
-              ) : null
-            }
-          </FeatureFlag>
+          <Button
+            variant="secondary"
+            size="sm"
+            fill="text"
+            icon={showRouting ? 'angle-up' : 'angle-down'}
+            onClick={() => setShowRouting(!showRouting)}
+            className={styles.routingToggle}
+          >
+            {showRouting ? 'Hide' : 'Show'} routing
+          </Button>
         )}
 
         {status && status !== 'OK' && (
