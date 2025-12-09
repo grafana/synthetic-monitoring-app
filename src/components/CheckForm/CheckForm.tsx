@@ -2,9 +2,8 @@ import React, { PropsWithChildren, useCallback, useContext, useMemo, useState } 
 import { SubmitErrorHandler, SubmitHandler, useController, useFormContext } from 'react-hook-form';
 import { Alert, Stack } from '@grafana/ui';
 
-import { Check, CheckFormValues, CheckType, FeatureName } from 'types';
+import { Check, CheckFormValues, CheckType } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
@@ -134,7 +133,6 @@ function CheckFormInternal() {
   }, [defaultFormValues, formValues]);
 
   const hasUnsavedChanges = error ? true : isFormModified && !submittingToApi;
-  const isAlertsPerCheckOn = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
   const revalidateForm = useRevalidateForm();
   const { field: probesField } = useController({ control: formMethods.control, name: 'probes' });
@@ -184,12 +182,6 @@ function CheckFormInternal() {
           <LabelField labelDestination="check" />
         </FormLayout.Section>
 
-        {!isAlertsPerCheckOn && (
-          <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={checkTypeStatus}>
-            <CheckFormAlert />
-          </FormLayout.Section>
-        )}
-
         <FormLayout.Section
           label="Execution"
           fields={[`probes`, `frequency`, ...probesFields]}
@@ -208,11 +200,9 @@ function CheckFormInternal() {
           </Stack>
         </FormLayout.Section>
 
-        {isAlertsPerCheckOn && (
-          <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={checkTypeStatus}>
-            <AlertsPerCheckSection />
-          </FormLayout.Section>
-        )}
+        <FormLayout.Section label="Alerting" fields={[`alerts`, `alertSensitivity`]} status={checkTypeStatus}>
+          <AlertsPerCheckSection />
+        </FormLayout.Section>
       </FormLayout>
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmLeavingPage enabled={hasUnsavedChanges} />

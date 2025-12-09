@@ -1,17 +1,11 @@
 import { screen } from '@testing-library/react';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
-import { mockFeatureToggles } from 'test/utils';
 
-import { CheckAlertType, FeatureName } from 'types';
+import { CheckAlertType } from 'types';
 import { goToSection, renderEditForm } from 'page/__testHelpers__/checkForm';
 
 describe('RunbookUrl', () => {
-  beforeEach(() => {
-    mockFeatureToggles({
-      [FeatureName.AlertsPerCheck]: true,
-    });
-  });
 
   it('renders the runbook URL inputs for pre-selected alerts', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);

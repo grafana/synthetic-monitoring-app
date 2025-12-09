@@ -22,7 +22,7 @@ describe(`TracerouteCheck - Section 5 (Execution) payload`, () => {
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 5);
+    await goToSection(user, 4);
 
     await selectBasicFrequency(user, '5m');
 

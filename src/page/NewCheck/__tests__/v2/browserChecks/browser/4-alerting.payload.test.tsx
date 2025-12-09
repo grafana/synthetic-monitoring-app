@@ -1,3 +1,4 @@
+import { screen } from '@testing-library/react';
 import { selectOption } from 'test/utils';
 
 import { AlertSensitivity, CheckType } from 'types';
@@ -8,12 +9,15 @@ import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 const checkType = CheckType.Browser;
 
-describe(`BrowserCheck - Section 4 (alerting)`, () => {
+describe(`BrowserCheck - Section 5 (Alerting)`, () => {
   it(`can submit the form with alerting filled in`, async () => {
     const { user, read } = await renderNewFormV2(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Alerting);
+    
+    await user.click(screen.getByText('Legacy alerts'));
+    
     await selectOption(user, { label: `Select alert sensitivity`, option: `Medium` });
 
     await submitForm(user);

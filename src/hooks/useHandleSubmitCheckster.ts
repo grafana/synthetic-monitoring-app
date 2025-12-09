@@ -1,12 +1,11 @@
 import { useCallback } from 'react';
 
-import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues, FeatureName } from '../types';
+import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues } from '../types';
 
 import { getAlertsPayload } from '../components/Checkster/transformations/toPayload.alerts';
 import { queryClient } from '../data/queryClient';
 import { useUpdateAlertsForCheck } from '../data/useCheckAlerts';
 import { queryKeys, useCUDChecks } from '../data/useChecks';
-import { useFeatureFlag } from './useFeatureFlag';
 import { useNavigateToCheckDashboard } from './useNavigateToCheckDashboard';
 
 export function useHandleSubmitCheckster(initialCheck?: Check) {
@@ -26,7 +25,6 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
     [updateAlertsForCheck]
   );
 
-  const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
   const { updateCheck, createCheck } = useCUDChecks();
 
   return useCallback(
@@ -43,11 +41,11 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
       } else {
         result = await createCheck(payload);
       }
-      await handleAlerts(result, alertsEnabled ? formValues.alerts : undefined);
+      await handleAlerts(result, formValues.alerts);
       await queryClient.invalidateQueries({ queryKey: queryKeys.list });
 
       return () => navigateToCheckDashboard(result, payload?.id === undefined);
     },
-    [alertsEnabled, initialCheck, createCheck, handleAlerts, navigateToCheckDashboard, updateCheck]
+    [initialCheck, createCheck, handleAlerts, navigateToCheckDashboard, updateCheck]
   );
 }

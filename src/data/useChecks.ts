@@ -3,7 +3,7 @@ import { isFetchError } from '@grafana/runtime';
 import { trackCheckCreated, trackCheckUpdated } from 'features/tracking/checkFormEvents';
 
 import { type MutationProps } from 'data/types';
-import { type Check, FeatureName } from 'types';
+import { type Check } from 'types';
 import { FaroEvent, FaroEventMeta } from 'faro';
 import { getCheckType } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
@@ -15,7 +15,6 @@ import type {
   UpdateCheckResult,
 } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const queryKeys: Record<'list', QueryKey> = {
@@ -31,14 +30,12 @@ const checksQuery = (api: SMDataSource, includeAlerts = false) => {
 
 export function useChecks() {
   const smDS = useSMDS();
-  const perCheckAlertsFF = useFeatureFlag(FeatureName.AlertsPerCheck);
-  return useQuery(checksQuery(smDS, perCheckAlertsFF.isEnabled));
+  return useQuery(checksQuery(smDS, true));
 }
 
 export function useSuspenseChecks() {
   const smDS = useSMDS();
-  const perCheckAlertsFF = useFeatureFlag(FeatureName.AlertsPerCheck);
-  return useSuspenseQuery(checksQuery(smDS, perCheckAlertsFF.isEnabled));
+  return useSuspenseQuery(checksQuery(smDS, true));
 }
 
 export function useCheck(id: number) {
