@@ -56,3 +56,17 @@ interface FeatureTabChanged extends TrackingEventProps {
 
 /** Tracks when a feature tab is changed. */
 export const trackFeatureTabChanged = checkFormEvents<FeatureTabChanged>('feature_tab_changed');
+
+interface TerraformFormatChanged extends TrackingEventProps {
+  /** The format that was switched to (hcl or json). */
+  format: 'hcl' | 'json';
+}
+
+/** Tracks when the Terraform format is changed. */
+export const trackTerraformFormatChanged = checkFormEvents<TerraformFormatChanged>('terraform_format_changed');
+
+/** Tracks when Terraform configuration is copied. */
+export const trackTerraformConfigCopied = checkFormEvents<TerraformFormatChanged>('terraform_config_copied');
+
+/** Tracks when the full configuration link is clicked. */
+export const trackTerraformFullConfigClicked = checkFormEvents('terraform_full_config_clicked');

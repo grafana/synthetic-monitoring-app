@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { highlight, languages } from 'prismjs';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { Clipboard } from 'components/Clipboard';
+import { CopyToClipboard } from 'components/Clipboard/CopyToClipboard';
+import { getPrismCodeStyle } from 'components/TerraformConfig/prismStyles';
+
+import 'prismjs/components/prism-hcl';
+import 'prismjs/components/prism-json';
 
 interface TerraformConfigDisplayProps {
   title: string;
@@ -23,6 +28,15 @@ export function TerraformConfigDisplay({
   content 
 }: TerraformConfigDisplayProps) {
   const styles = useStyles2(getStyles);
+  
+  const langSyntax = fileExtension === '.tf' ? 'hcl' : 'json';
+  
+  const highlightedCode = useMemo(() => {
+    if (!content) {
+      return '';
+    }
+    return highlight(content, languages[langSyntax], langSyntax);
+  }, [content, langSyntax]);
 
   return (
     <>
@@ -48,26 +62,50 @@ export function TerraformConfigDisplay({
         </TextLink>
         , with their respective value.
       </Text>
-      <Clipboard
-        highlight={['<GRAFANA_SERVICE_TOKEN>', '<SM_ACCESS_TOKEN>']}
-        content={content}
-        className={styles.clipboard}
-        isCode
-      />
+      <div className={styles.codeContainer}>
+        <pre className={styles.pre} data-testid="preformatted">
+          <code
+            className={styles.code}
+            dangerouslySetInnerHTML={{ __html: highlightedCode }}
+          />
+        </pre>
+        <CopyToClipboard
+          className={styles.copyButton}
+          variant="primary"
+          fill="text"
+          buttonText="Copy to clipboard"
+          buttonTextCopied="Copied to clipboard"
+          content={content}
+        />
+      </div>
     </>
   );
 }
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    clipboard: css({
-      maxHeight: 500,
-      marginTop: 10,
-      marginBottom: 10,
-    }),
     codeLink: css({
       fontFamily: theme.typography.code.fontFamily,
       fontSize: '0.8571428571em',
+    }),
+    codeContainer: css({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(2),
+      marginTop: theme.spacing(2),
+    }),
+    pre: css({
+      margin: 0,
+      padding: 0,
+      backgroundColor: theme.colors.background.canvas,
+      borderRadius: theme.shape.radius.default,
+      border: `1px solid ${theme.colors.border.medium}`,
+      overflowY: 'auto',
+      maxHeight: '600px',
+    }),
+    code: getPrismCodeStyle(theme),
+    copyButton: css({
+      marginLeft: 'auto',
     }),
   };
 }

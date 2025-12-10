@@ -3,7 +3,10 @@ import { HclValue, HclWriterInterface } from './hclTypes';
 import { isHclArray, isHclObject } from './hclUtils';
 
 export class HclWriter implements HclWriterInterface {
-  constructor(public readonly indentLevel = 0, public readonly indentSize = HCL_CONFIG.INDENT_SIZE) {}
+  constructor(
+    public readonly indentLevel = 0,
+    public readonly indentSize = HCL_CONFIG.INDENT_SIZE
+  ) {}
 
   indent(): string {
     return ' '.repeat(this.indentLevel * this.indentSize);
@@ -21,6 +24,43 @@ export class HclWriter implements HclWriterInterface {
       .replace(/\r/g, HCL_CONFIG.ESCAPE_CHARS['\r'])
       .replace(/\t/g, HCL_CONFIG.ESCAPE_CHARS['\t'])
       .replace(/\$\{/g, HCL_CONFIG.ESCAPE_CHARS['${']);
+  }
+
+  // Formats a value into HCL object syntax.
+  private formatObject(value: HclValue, multiline: boolean): string {
+    if (!isHclObject(value)) {
+      return String(value);
+    }
+
+    const entries = Object.entries(value)
+      .filter(([, val]) => val != null)
+      .map(([key, val]) => `${key} = ${this.writeValue(val)}`);
+
+    if (!multiline) {
+      return `{ ${entries.join(', ')} }`;
+    }
+
+    // Multi-line format with proper indentation
+    const child = this.child();
+    const innerIndent = child.child().indent(); // Indent for object fields
+    const outerIndent = child.indent(); // Indent for closing brace
+
+    const formatted = entries.map((e) => `\n${innerIndent}${e}`).join('');
+
+    return `{${formatted}\n${outerIndent}}`;
+  }
+
+  // Formats an array of objects as multi-line HCL array. (e.g. [{ key = value }, { key2 = value2 }])
+  private writeObjectArray(value: Array<Record<string, any>>): string {
+    const child = this.child();
+    const items = value.map((item) => `\n${child.indent()}${this.formatObject(item, true)}`);
+    return `[${items.join(',')}\n${this.indent()}]`;
+  }
+
+  // Formats an array of primitives as inline HCL array. (e.g. [1, "a", true])
+  private writePrimitiveArray(value: HclValue[]): string {
+    const items = value.map((item) => this.writeValue(item));
+    return `[${items.join(', ')}]`;
   }
 
   writeValue(value: HclValue): string {
@@ -45,15 +85,14 @@ export class HclWriter implements HclWriterInterface {
     }
 
     if (isHclArray(value)) {
-      const items = value.map((item) => this.writeValue(item));
-      return `[${items.join(', ')}]`;
+      const isObjectArray = value.length > 0 && isHclObject(value[0]);
+      return isObjectArray
+        ? this.writeObjectArray(value as Array<Record<string, any>>)
+        : this.writePrimitiveArray(value);
     }
 
     if (isHclObject(value)) {
-      const entries = Object.entries(value)
-        .filter(([_, v]) => v !== null && v !== undefined)
-        .map(([k, v]) => `${k} = ${this.writeValue(v)}`);
-      return `{ ${entries.join(', ')} }`;
+      return this.formatObject(value, false);
     }
 
     return String(value);

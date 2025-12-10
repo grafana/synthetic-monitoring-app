@@ -323,7 +323,7 @@ describe('terraformJsonToHcl', () => {
       expectHclToContain(hcl, [
         'resource "grafana_synthetic_monitoring_check_alerts" "test_alerts" {',
         'check_id = "123"',
-        'alerts {',
+        'alerts = [',
         'name = "Test Alert"',
         'threshold = 0.9',
         'period = "5m"',
@@ -331,6 +331,48 @@ describe('terraformJsonToHcl', () => {
         'name = "Another Alert"',
         'threshold = 0.8',
       ]);
+    });
+
+    it('should format alerts as multi-line objects without commas', () => {
+      const config = createConfig({
+        grafana_synthetic_monitoring_check_alerts: {
+          test_alerts: {
+            check_id: '123',
+            alerts: [
+              {
+                name: 'Alert1',
+                threshold: 1,
+                period: '',
+                runbook_url: '',
+              },
+              {
+                name: 'Alert2',
+                threshold: 2,
+                period: '5m',
+                runbook_url: 'https://example.com',
+              }
+            ],
+          },
+        },
+      });
+
+      const hcl = jsonToHcl(config);
+
+      // Check multi-line format with proper structure
+      expect(hcl).toContain('alerts = [');
+      expect(hcl).toContain('{\n      name = "Alert1"');
+      expect(hcl).toContain('{\n      name = "Alert2"');
+      
+      // Verify empty strings are preserved (required by Terraform provider)
+      expect(hcl).toContain('period = ""');
+      expect(hcl).toContain('runbook_url = ""');
+      
+      // Verify no commas inside objects (HCL style)
+      const alertBlock = hcl.match(/\{\s*\n\s*name = "Alert1"[\s\S]*?\n\s*\}/)?.[0];
+      expect(alertBlock).toBeDefined();
+      // Count commas - should only be between objects, not inside them
+      const commasInsideObject = (alertBlock?.match(/,/g) || []).length;
+      expect(commasInsideObject).toBe(0);
     });
 
     it('should handle block fields correctly and skip empty objects', () => {

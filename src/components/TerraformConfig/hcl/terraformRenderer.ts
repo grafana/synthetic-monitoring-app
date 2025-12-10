@@ -1,4 +1,4 @@
-import { TFCheckAlerts, TFCheckSettings, TFConfig, TFLabels } from '../terraformTypes';
+import { TFCheck, TFCheckAlerts, TFCheckSettings, TFConfig, TFLabels } from '../terraformTypes';
 import { HclValue, HclWriterInterface } from './core/hclTypes';
 
 export function renderTerraformBlock(config: TFConfig, writer: HclWriterInterface): string[] {
@@ -78,32 +78,19 @@ export function renderResourceLabels(labels: TFLabels, writer: HclWriterInterfac
 }
 
 export function renderResourceAlerts(alerts: TFCheckAlerts['alerts'], writer: HclWriterInterface): string[] {
-  const lines: string[] = [];
-
-  alerts.forEach((alert) => {
-    const alertLines: string[] = [];
-    const alertWriter = writer.child();
-
-    Object.entries(alert).forEach(([alertKey, alertValue]) => {
-      if (alertValue !== null && alertValue !== undefined) {
-        alertLines.push(alertWriter.writeArgument(alertKey, alertValue as HclValue));
-      }
-    });
-
-    if (alertLines.length > 0) {
-      lines.push(...writer.writeBlock('alerts', alertLines));
-    }
-  });
-
-  return lines;
+  return [writer.writeArgument('alerts', alerts)];
 }
 
 export function renderSingleResource(
   resourceType: string,
   resourceName: string,
-  resourceConfig: Record<string, any>,
+  resourceConfig: TFCheck,
   writer: HclWriterInterface,
-  formatCheckSettings: (settingsType: string, settings: Record<string, HclValue>, writer: HclWriterInterface) => string[]
+  formatCheckSettings: (
+    settingsType: string,
+    settings: Record<string, HclValue>,
+    writer: HclWriterInterface
+  ) => string[]
 ): string[] {
   const resourceLines: string[] = [];
   const resourceWriter = writer.child();
@@ -112,17 +99,21 @@ export function renderSingleResource(
     settings: (value: TFCheckSettings) => {
       const settingsLines: string[] = [];
       const settingsWriter = resourceWriter.child();
-      
+
       Object.entries(value).forEach(([settingsType, settingsValue]) => {
         if (!settingsValue || typeof settingsValue !== 'object') {
           return;
         }
-        const typeLines = formatCheckSettings(settingsType, settingsValue as Record<string, HclValue>, settingsWriter.child());
+        const typeLines = formatCheckSettings(
+          settingsType,
+          settingsValue as Record<string, HclValue>,
+          settingsWriter.child()
+        );
         if (typeLines.length > 0) {
           settingsLines.push(...settingsWriter.writeBlock(settingsType, typeLines));
         }
       });
-      
+
       return settingsLines.length > 0 ? resourceWriter.writeBlock('settings', settingsLines) : [];
     },
     labels: (value: TFLabels) => renderResourceLabels(value, resourceWriter),
@@ -149,9 +140,13 @@ export function renderSingleResource(
 }
 
 export function renderResourceBlocks(
-  config: TFConfig, 
+  config: TFConfig,
   writer: HclWriterInterface,
-  formatCheckSettings: (settingsType: string, settings: Record<string, HclValue>, writer: HclWriterInterface) => string[]
+  formatCheckSettings: (
+    settingsType: string,
+    settings: Record<string, HclValue>,
+    writer: HclWriterInterface
+  ) => string[]
 ): string[] {
   if (!config.resource) {
     return [];
@@ -163,7 +158,13 @@ export function renderResourceBlocks(
     if (resources && typeof resources === 'object') {
       Object.entries(resources).forEach(([resourceName, resourceConfig]) => {
         if (resourceConfig && typeof resourceConfig === 'object') {
-          const resourceLines = renderSingleResource(resourceType, resourceName, resourceConfig, writer, formatCheckSettings);
+          const resourceLines = renderSingleResource(
+            resourceType,
+            resourceName,
+            resourceConfig,
+            writer,
+            formatCheckSettings
+          );
           if (resourceLines.length > 0) {
             // Add the resource lines
             lines.push(...resourceLines);

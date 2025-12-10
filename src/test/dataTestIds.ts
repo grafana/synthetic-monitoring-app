@@ -56,6 +56,12 @@ export const CHECKSTER_TEST_ID = {
         root: 'checkEditor feat-adhoc-check testButton',
       },
     },
+    terraform: {
+      root: 'checkEditor feat-terraform root',
+      tab: (format: 'hcl' | 'json') => `checkEditor feat-terraform tab-${format}`,
+      copyButton: 'checkEditor feat-terraform copyButton',
+      codeContent: 'checkEditor feat-terraform codeContent',
+    },
     perCheckAlerts: {
       [CheckAlertType.ProbeFailedExecutionsTooHigh]: {
         selectedCheckbox: `checkEditor alerts ${CheckAlertType.ProbeFailedExecutionsTooHigh} selectedCheckbox`,
