@@ -4,14 +4,9 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import {
-  mockFeatureToggles,
-  probeToMetadataProbe,
-  runTestAsHGFreeUserOverLimit,
-  runTestWithoutLogsAccess,
-} from 'test/utils';
+import { probeToMetadataProbe, runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
 
-import { CheckAlertType, CheckType, FeatureName } from 'types';
+import { CheckAlertType, CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
@@ -238,7 +233,7 @@ describe(`<NewCheck /> journey`, () => {
     await user.type(timeoutMinutesInput, '2');
     await user.type(timeoutSecondsInput, '30');
 
-    await goToSection(user, 5);
+    await goToSection(user, 4);
 
     await selectBasicFrequency(user, '2m');
 
@@ -253,10 +248,6 @@ describe(`<NewCheck /> journey`, () => {
   });
 
   it(`should revalidate the form when the frequency is changed`, async () => {
-    mockFeatureToggles({
-      [FeatureName.AlertsPerCheck]: true,
-    });
-
     const { user } = await renderNewForm(CheckType.HTTP);
     await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
     await goToSection(user, 4);
@@ -293,10 +284,6 @@ describe(`<NewCheck /> journey`, () => {
   });
 
   it(`should enable the save button when an alert is enabled`, async () => {
-    mockFeatureToggles({
-      [FeatureName.AlertsPerCheck]: true,
-    });
-
     const { user } = await renderNewForm(CheckType.HTTP);
     await goToSection(user, 5);
     expect(screen.getByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON)).toBeDisabled();

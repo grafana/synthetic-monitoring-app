@@ -26,7 +26,7 @@ export async function fillMandatoryFields({ user, fieldsToOmit = [], checkType }
     await user.type(targetInput, TARGET_MAP[checkType]);
   }
 
-  await goToSection(user, 5);
+  await goToSection(user, 4);
 
   if (!fieldsToOmit.includes('probes')) {
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);

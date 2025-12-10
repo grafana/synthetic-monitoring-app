@@ -1,9 +1,9 @@
 import { screen } from '@testing-library/react';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
-import { mockFeatureToggles, probeToMetadataProbe, selectOption } from 'test/utils';
+import { probeToMetadataProbe, selectOption } from 'test/utils';
 
-import { AlertSensitivity, Check, CheckAlertType, CheckType, FeatureName } from 'types';
+import { AlertSensitivity, Check, CheckAlertType, CheckType } from 'types';
 import {
   FALLBACK_CHECK_DNS,
   FALLBACK_CHECK_GRPC,
@@ -78,12 +78,13 @@ describe('Api endpoint checks - common fields payload', () => {
         });
       });
 
-      describe(`Section 4 (alerting)`, () => {
+      describe(`Section 5 (Alerting)`, () => {
         it(`can submit the form with alerting filled in`, async () => {
           const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
 
-          await goToSection(user, 4);
+          await goToSection(user, 5);
+          await user.click(screen.getByText('Legacy alerts'));
           await selectOption(user, { label: `Select alert sensitivity`, option: `Medium` });
 
           await submitForm(user);
@@ -94,10 +95,6 @@ describe('Api endpoint checks - common fields payload', () => {
         });
 
         it(`can submit the form with alerts per check`, async () => {
-          mockFeatureToggles({
-            [FeatureName.AlertsPerCheck]: true,
-          });
-
           const { user, read } = await renderNewForm(checkType);
 
           await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
@@ -137,32 +134,13 @@ describe('Api endpoint checks - common fields payload', () => {
             alerts: [{ name: 'ProbeFailedExecutionsTooHigh', period: '5m', threshold: 1 }],
           });
         });
-
-        it(`does not submit alerts per check when the feature flag is disabled`, async () => {
-          mockFeatureToggles({
-            [FeatureName.AlertsPerCheck]: false,
-          });
-
-          const { user, read } = await renderNewForm(checkType);
-
-          await fillMandatoryFields({ user, checkType });
-          await goToSection(user, 4);
-
-          expect(screen.queryByText('Predefined alerts')).not.toBeInTheDocument();
-
-          await submitForm(user);
-
-          const { body: alertsBody } = await read(1);
-
-          expect(alertsBody).toEqual(undefined);
-        });
       });
 
-      describe(`Section 5 (Execution)`, () => {
+      describe(`Section 4 (Execution)`, () => {
         it(`can publish a full set of metrics`, async () => {
           const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
-          await goToSection(user, 5);
+          await goToSection(user, 4);
 
           await user.click(screen.getByLabelText('Publish full set of metrics', { exact: false }));
           await submitForm(user);

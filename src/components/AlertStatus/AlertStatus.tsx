@@ -3,10 +3,9 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, IconButton, Stack, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { AlertSensitivity, Check, FeatureName, PrometheusAlertsGroup } from 'types';
+import { AlertSensitivity, Check, PrometheusAlertsGroup } from 'types';
 import { useAlertRules, useGMAlertRules } from 'hooks/useAlertRules';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { FeatureFlag } from 'components/FeatureFlag';
 import { Toggletip } from 'components/Toggletip';
 
 import { LegacyAlertGroups } from './LegacyAlertGroups';
@@ -134,19 +133,13 @@ const TooltipContent = ({
 }) => {
   return (
     <Stack direction="column" gap={2}>
-      <FeatureFlag name={FeatureName.AlertsPerCheck}>
-        {({ isEnabled }) =>
-          isEnabled ? (
-            <PerCheckAlertGroups
-              alerts={check.alerts}
-              groups={perCheckGroups}
-              loading={perCheckGroupsLoading}
-              isError={perCheckGroupsError}
-              refetch={perCheckGroupsRefetch}
-            />
-          ) : null
-        }
-      </FeatureFlag>
+      <PerCheckAlertGroups
+        alerts={check.alerts}
+        groups={perCheckGroups}
+        loading={perCheckGroupsLoading}
+        isError={perCheckGroupsError}
+        refetch={perCheckGroupsRefetch}
+      />
       {hasAlertSensitivity && (
         <LegacyAlertGroups
           check={check}

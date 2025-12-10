@@ -20,7 +20,7 @@ describe(`DNSCheck - Section 5 (Execution) payload`, () => {
   it(`can add probe frequency`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 5);
+    await goToSection(user, 4);
 
     await selectBasicFrequency(user, '30s');
 

@@ -1,10 +1,10 @@
 import { screen } from '@testing-library/react';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
-import { mockFeatureToggles, probeToMetadataProbe, selectOption } from 'test/utils';
+import { probeToMetadataProbe, selectOption } from 'test/utils';
 
 import { FormSectionName } from '../../../../../components/Checkster/types';
-import { AlertSensitivity, Check, CheckAlertType, CheckType, FeatureName } from 'types';
+import { AlertSensitivity, Check, CheckAlertType, CheckType } from 'types';
 import {
   FALLBACK_CHECK_DNS,
   FALLBACK_CHECK_GRPC,
@@ -86,7 +86,7 @@ describe('Api endpoint checks - common fields payload', () => {
           await fillMandatoryFields({ user, checkType });
 
           await gotoSection(user, FormSectionName.Alerting);
-
+          await user.click(screen.getByText('Legacy alerts'));
           await selectOption(user, { label: `Select alert sensitivity`, option: `Medium` });
 
           await submitForm(user);
@@ -97,10 +97,6 @@ describe('Api endpoint checks - common fields payload', () => {
         });
 
         it(`can submit the form with alerts per check`, async () => {
-          mockFeatureToggles({
-            [FeatureName.AlertsPerCheck]: true,
-          });
-
           const { user, read } = await renderNewFormV2(checkType);
 
           await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
@@ -141,24 +137,6 @@ describe('Api endpoint checks - common fields payload', () => {
           });
         });
 
-        it(`does not submit alerts per check when the feature flag is disabled`, async () => {
-          mockFeatureToggles({
-            [FeatureName.AlertsPerCheck]: false,
-          });
-
-          const { user, read } = await renderNewFormV2(checkType);
-
-          await fillMandatoryFields({ user, checkType });
-          await gotoSection(user, FormSectionName.Alerting);
-
-          expect(screen.queryByText('Predefined alerts')).not.toBeInTheDocument();
-
-          await submitForm(user);
-
-          const { body: alertsBody } = await read(1);
-
-          expect(alertsBody).toEqual(undefined);
-        });
       });
 
       describe(`Section Execution`, () => {

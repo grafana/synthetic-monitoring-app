@@ -14,7 +14,6 @@ import {
   CheckStatus,
   CheckType,
   CheckTypeGroup,
-  FeatureName,
   ProbeWithMetadata,
 } from '../../types';
 import { LayoutSection } from './FormLayouts/Layout.types';
@@ -28,7 +27,6 @@ import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { queryKeys, useCUDChecks, useTestCheck } from 'data/useChecks';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs } from 'hooks/useDSPermission';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useIsOverlimit } from 'hooks/useIsOverlimit';
 
 import { toFormValues, toPayload } from '../CheckEditor/checkFormTransformations';
@@ -150,7 +148,6 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
     },
     [checkState, navigate]
   );
-  const alertsEnabled = useFeatureFlag(FeatureName.AlertsPerCheck).isEnabled;
 
   const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
     prevAlerts: check?.alerts,
@@ -210,9 +207,9 @@ export function useCheckForm({ check, checkType, checkState, onTestSuccess }: Us
         });
       }
 
-      mutateCheck(toSubmit, alertsEnabled ? checkValues?.alerts : undefined);
+      mutateCheck(toSubmit, checkValues?.alerts);
     },
-    [mutateCheck, onTestSuccess, testCheck, alertsEnabled, checkType, checkState]
+    [mutateCheck, onTestSuccess, testCheck, checkType, checkState]
   );
 
   const handleInvalid = useCallback((errs: FieldErrors) => {

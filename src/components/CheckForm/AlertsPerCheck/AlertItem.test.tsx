@@ -1,17 +1,11 @@
 import { screen } from '@testing-library/react';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
-import { mockFeatureToggles } from 'test/utils';
 
-import { CheckAlertType, FeatureName } from 'types';
+import { CheckAlertType } from 'types';
 import { goToSection, renderEditForm } from 'page/__testHelpers__/checkForm';
 
 describe('AlertItem', () => {
-  beforeEach(() => {
-    mockFeatureToggles({
-      [FeatureName.AlertsPerCheck]: true,
-    });
-  });
 
   it('shows NotOkStatusInfo when status is not OK and error is present for an existing alert', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);

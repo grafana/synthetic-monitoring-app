@@ -5,15 +5,10 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import {
-  mockFeatureToggles,
-  probeToMetadataProbe,
-  runTestAsHGFreeUserOverLimit,
-  runTestWithoutLogsAccess,
-} from 'test/utils';
+import { probeToMetadataProbe, runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
-import { CheckAlertType, CheckType, FeatureName } from 'types';
+import { CheckAlertType, CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
@@ -263,10 +258,6 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should revalidate the form when the frequency is changed`, async () => {
-    mockFeatureToggles({
-      [FeatureName.AlertsPerCheck]: true,
-    });
-
     const { user } = await renderNewFormV2(CheckType.HTTP);
     await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
@@ -303,10 +294,6 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should enable the save button when an alert is enabled`, async () => {
-    mockFeatureToggles({
-      [FeatureName.AlertsPerCheck]: true,
-    });
-
     const { user } = await renderNewFormV2(CheckType.HTTP);
 
     await gotoSection(user, FormSectionName.Alerting);

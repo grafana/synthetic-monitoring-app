@@ -730,8 +730,6 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   GRPCChecks = 'grpc-checks',
-  AlertsPerCheck = 'sm-alerts-per-check',
-  AlertingRouting = 'synthetic-monitoring-alerting-routing',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
   CheckEditor = 'synthetic-monitoring-check-editor',
