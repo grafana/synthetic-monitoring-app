@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { config as runtimeConfig } from '@grafana/runtime';
 
 import { Check, Probe } from 'types';
@@ -123,8 +124,17 @@ export function useTerraformConfig() {
   const { data: probes = [], error: probesError, isLoading: isFetchingProbes } = useProbes();
   const { data: checks = [], error: checksError, isLoading: isFetchingChecks } = useChecks();
   const apiHost = smDS.instanceSettings.jsonData?.apiHost;
-  const generated = generateTerraformConfig(probes, checks, apiHost);
+  
+  const generated = useMemo(() => {
+    return generateTerraformConfig(probes, checks, apiHost);
+  }, [probes, checks, apiHost]);
+  
   const error = probesError || checksError;
   const isLoading = isFetchingProbes || isFetchingChecks;
-  return { ...(generated ?? {}), error, isLoading };
+  
+  return {
+    ...generated,
+    error,
+    isLoading,
+  };
 }
