@@ -24,7 +24,8 @@ describe('SecretEditModal', () => {
     name: SECRETS_EDIT_MODE_ADD,
     onDismiss: jest.fn(),
     open: true,
-  };
+    source: 'config_page_secrets_tab',
+  } as const;
 
   it('should not render when open is false', async () => {
     await render(<SecretEditModal {...defaultProps} open={false} />);

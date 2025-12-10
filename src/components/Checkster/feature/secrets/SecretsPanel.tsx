@@ -16,7 +16,7 @@ export function SecretsPanel() {
         padding: ${theme.spacing(2)};
       `}
     >
-      <SecretsManagementUI />
+      <SecretsManagementUI source="check_editor_sidepanel_feature_tabs" />
     </div>
   );
 }

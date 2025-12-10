@@ -20,7 +20,7 @@ export function SecretsManagementTab() {
 
   return (
     <QueryErrorBoundary>
-      <SecretsManagementUI />
+      <SecretsManagementUI source="config_page_secrets_tab" />
     </QueryErrorBoundary>
   );
 }
