@@ -5,16 +5,10 @@
   // https://github.com/grafana/grafana-renovate-config
   "extends": ["github>grafana/grafana-renovate-config//presets/base"],
   "ignorePaths": [".config/Dockerfile"],
-  //
+  "prCreation": "not-pending", // don't create PRs until stability days is met
+  "internalChecksFilter": "strict", // https://docs.renovatebot.com/configuration-options/#await-x-time-duration-before-automerging
   "semanticCommitScope": null,
   "packageRules": [
-    // Remove semantic commit scopes for all package types to comply with commitlint
-    // This overrides the base preset's rules that add (deps) and (deps-dev) scopes
-    {
-      "matchManagers": ["npm", "github-actions", "dockerfile"],
-      "semanticCommitScope": null,
-      "semanticCommitType": "chore"
-    },
     // we can never update the React packages until grafana does
     {
       "matchPackageNames": [
