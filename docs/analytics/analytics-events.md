@@ -104,6 +104,21 @@ Tracks when a feature tab is changed.
 | ----- | -------- | ----------------------------- |
 | label | `string` | The label of the feature tab. |
 
+#### synthetic-monitoring_check_form_k6_channel_selected
+
+Tracks when a k6 version channel is selected.
+
+##### Properties
+
+| name        | type                                                                                                     | description                       |
+| ----------- | -------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| checkType   | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check.                |
+| channelName | `string`                                                                                                 | The name of the selected channel. |
+
+#### synthetic-monitoring_check_form_k6_channel_retry_clicked
+
+Tracks when the retry button is clicked after k6 channels fail to load.
+
 ### check_list
 
 #### synthetic-monitoring_check_list_duplicate_check_button_clicked

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { Combobox, Field, Stack } from '@grafana/ui';
+import { trackK6ChannelRetryClicked, trackK6ChannelSelected } from 'features/tracking/checkFormEvents';
 
 import { CheckFormValues, FeatureName } from 'types';
 import { useFilteredK6Channels } from 'data/useK6Channels';
@@ -22,6 +23,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
           <QueryErrorBoundary
             title="Error loading K6 version channels"
             content="Failed to load version channels. Please check your connection and try again."
+            onRetry={trackK6ChannelRetryClicked}
           >
             <K6ChannelSelectContent disabled={disabled} />
           </QueryErrorBoundary>
@@ -43,12 +45,12 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     name: `settings.${checkType === 'scripted' ? 'scripted' : 'browser'}.channel`,
   });
 
-  const { 
-    channels, 
-    defaultChannelId, 
-    isLoading: isLoadingChannels, 
-    isError: hasChannelError, 
-    error: channelError 
+  const {
+    channels,
+    defaultChannelId,
+    isLoading: isLoadingChannels,
+    isError: hasChannelError,
+    error: channelError,
   } = useFilteredK6Channels(true, check); // Always true since this component only renders for scripted/browser
 
   // Initialize with default channel when no channel is set (new checks or existing checks without channel)
@@ -96,6 +98,14 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
             onChange={(value) => {
               const channelValue = typeof value === 'string' ? value : value?.value || '';
               field.onChange(channelValue);
+
+              const selectedChannel = channels.find((channel) => channel.id === channelValue);
+              if (selectedChannel) {
+                trackK6ChannelSelected({
+                  checkType,
+                  channelName: selectedChannel.name,
+                });
+              }
             }}
             placeholder={isLoadingChannels ? 'Loading channels...' : 'Select k6 version channel'}
             invalid={!!fieldState.error}
