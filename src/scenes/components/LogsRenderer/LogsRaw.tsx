@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   createDataFrame,
   DataFrame,
@@ -11,6 +11,7 @@ import {
 } from '@grafana/data';
 import { PanelRenderer } from '@grafana/runtime';
 import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
+import { Box, Text } from '@grafana/ui';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
@@ -27,38 +28,83 @@ const logPanelOptions = {
 
 const LOGS_HEIGHT = 400;
 
-export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T[] }) => {
+export const LogsRaw = <T extends UnknownParsedLokiRecord>({
+  logs,
+  errorLogsOnly,
+  onErrorLogsOnlyChange,
+}: {
+  logs: T[];
+  errorLogsOnly: boolean;
+  onErrorLogsOnlyChange: (value: boolean) => void;
+}) => {
   const [width, setWidth] = useState(0);
+
+  const filteredLogs = useMemo(() => {
+    if (!errorLogsOnly) {
+      return logs;
+    }
+    return logs.filter((log) => {
+      const level = log.labels?.level || log.labels?.detected_level;
+      return level?.toLowerCase() === 'error';
+    });
+  }, [logs, errorLogsOnly]);
+
+  const hasNoErrorLogs = errorLogsOnly && filteredLogs.length === 0 && logs.length > 0;
 
   return (
     <div>
-      <div
-        ref={(el) => {
-          if (el) {
-            setWidth(el.clientWidth);
-          }
-        }}
-        style={{
-          height: `${LOGS_HEIGHT}px`,
-        }}
-      >
-        <PanelRenderer
-          title="Logs"
-          pluginId="logs"
-          width={width}
-          height={LOGS_HEIGHT}
-          data={getPanelData(logs)}
-          options={{
-            ...logPanelOptions,
-            wrapLogMessage: true,
+      {hasNoErrorLogs ? (
+        <Box padding={4} display="flex" alignItems="center" justifyContent="center" minHeight={`${LOGS_HEIGHT}px`}>
+          <Text variant="body" color="secondary">
+            No error logs found. Disable the filter to see all logs.
+          </Text>
+        </Box>
+      ) : (
+        <div
+          ref={(el) => {
+            if (el) {
+              setWidth(el.clientWidth);
+            }
           }}
-        />
-      </div>
+          style={{
+            height: `${LOGS_HEIGHT}px`,
+          }}
+        >
+          {filteredLogs.length > 0 ? (
+            <PanelRenderer
+              title="Logs"
+              pluginId="logs"
+              width={width}
+              height={LOGS_HEIGHT}
+              data={getPanelData(filteredLogs)}
+              options={{
+                ...logPanelOptions,
+                wrapLogMessage: true,
+              }}
+            />
+          ) : (
+            <Box padding={4} display="flex" alignItems="center" justifyContent="center" height={`${LOGS_HEIGHT}px`}>
+              <Text variant="body" color="secondary">
+                No logs available
+              </Text>
+            </Box>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
 const getPanelData = (logs: UnknownParsedLokiRecord[]): PanelData => {
+  if (logs.length === 0) {
+    const now = dateTime();
+    return {
+      state: LoadingState.Done,
+      series: [createLogsDataFrame(logs)],
+      timeRange: createTimeRange(now, now),
+    };
+  }
+
   const firstLog = logs[0];
   const lastLog = logs[logs.length - 1];
 
