@@ -44,7 +44,7 @@ export function AccessTokensTab() {
           Synthetic Monitoring API Go client
         </TextLink>{' '}
         or the{' '}
-        <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs" external>
+        <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs/resources/synthetic_monitoring_check" external>
           Grafana Terraform Provider
         </TextLink>{' '}
         documentation to learn more about how to interact with the synthetic monitoring API.
