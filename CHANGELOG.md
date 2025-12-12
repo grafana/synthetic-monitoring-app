@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.43.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.42.0...v1.43.0) (2025-12-12)
+
+
+### Features
+
+* add tracking for secrets management events ([#1491](https://github.com/grafana/synthetic-monitoring-app/issues/1491)) ([2ca5ccd](https://github.com/grafana/synthetic-monitoring-app/commit/2ca5ccdd0aba37d8fd8b381e7df3748b4160ea5b))
+* preview Terraform configuration when creating/editing a check ([#1514](https://github.com/grafana/synthetic-monitoring-app/issues/1514)) ([127953b](https://github.com/grafana/synthetic-monitoring-app/commit/127953bf4d62bb5665395438c2512be39a5d33b6))
+
+
+### Documentation
+
+* update Terraform docs link to SM page ([#1519](https://github.com/grafana/synthetic-monitoring-app/issues/1519)) ([cbea3d1](https://github.com/grafana/synthetic-monitoring-app/commit/cbea3d108a305b408e78151bc6887cacb051dcc2))
+
+
+### Miscellaneous Chores
+
+* add channel selection instrumentation ([#1518](https://github.com/grafana/synthetic-monitoring-app/issues/1518)) ([36dd855](https://github.com/grafana/synthetic-monitoring-app/commit/36dd855a010eb93ba83ec5007b638f5992ac53d3))
+* bump jws from 3.2.2 to 3.2.3 ([#1513](https://github.com/grafana/synthetic-monitoring-app/issues/1513)) ([9bb479b](https://github.com/grafana/synthetic-monitoring-app/commit/9bb479b0dfd8bb757c953c79011761226d9a47b3))
+* **deps:** update grafana/shared-workflows/ action to ([#1500](https://github.com/grafana/synthetic-monitoring-app/issues/1500)) ([3e6aea3](https://github.com/grafana/synthetic-monitoring-app/commit/3e6aea34c2afaad9dcce341052be6f1545a78909))
+* remove per-check alerts and alert routing FFs ([#1515](https://github.com/grafana/synthetic-monitoring-app/issues/1515)) ([a1d4a10](https://github.com/grafana/synthetic-monitoring-app/commit/a1d4a1083ee2309977834c46de2698423e6c1e7a))
+* update grafana/plugin-ci-workflows/ action to ([#1511](https://github.com/grafana/synthetic-monitoring-app/issues/1511)) ([19ad0cc](https://github.com/grafana/synthetic-monitoring-app/commit/19ad0ccf663b172b065dc9305664279023edb1ce))
+
 ## [1.42.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.41.0...v1.42.0) (2025-12-02)
 
 
