@@ -10,6 +10,7 @@ interface QueryErrorBoundaryProps {
   fallback?: ReactNode;
   title?: string;
   content?: ReactNode;
+  onRetry?: () => void;
 }
 
 export function QueryErrorBoundary({
@@ -17,6 +18,7 @@ export function QueryErrorBoundary({
   fallback = <CenteredSpinner />,
   title,
   content,
+  onRetry,
 }: QueryErrorBoundaryProps) {
   return (
     <QueryErrorResetBoundary>
@@ -24,7 +26,15 @@ export function QueryErrorBoundary({
         <ErrorBoundary
           onReset={reset}
           fallbackRender={({ resetErrorBoundary }) => (
-            <ErrorAlert buttonText="Retry Request" content={content} onClick={resetErrorBoundary} title={title} />
+            <ErrorAlert
+              buttonText="Retry Request"
+              content={content}
+              onClick={() => {
+                onRetry?.();
+                resetErrorBoundary();
+              }}
+              title={title}
+            />
           )}
         >
           <Suspense fallback={fallback}>{children}</Suspense>

@@ -57,6 +57,18 @@ interface FeatureTabChanged extends TrackingEventProps {
 /** Tracks when a feature tab is changed. */
 export const trackFeatureTabChanged = checkFormEvents<FeatureTabChanged>('feature_tab_changed');
 
+interface K6ChannelSelected extends TrackingEventProps {
+  /** The type of check. */
+  checkType: CheckType;
+  /** The name of the selected channel. */
+  channelName: string;
+}
+
+/** Tracks when a k6 version channel is selected. */
+export const trackK6ChannelSelected = checkFormEvents<K6ChannelSelected>('k6_channel_selected');
+
+/** Tracks when the retry button is clicked after k6 channels fail to load. */
+export const trackK6ChannelRetryClicked = checkFormEvents('k6_channel_retry_clicked');
 interface TerraformFormatChanged extends TrackingEventProps {
   /** The format that was switched to (hcl or json). */
   format: 'hcl' | 'json';
