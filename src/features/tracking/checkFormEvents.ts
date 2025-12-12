@@ -69,3 +69,16 @@ export const trackK6ChannelSelected = checkFormEvents<K6ChannelSelected>('k6_cha
 
 /** Tracks when the retry button is clicked after k6 channels fail to load. */
 export const trackK6ChannelRetryClicked = checkFormEvents('k6_channel_retry_clicked');
+interface TerraformFormatChanged extends TrackingEventProps {
+  /** The format that was switched to (hcl or json). */
+  format: 'hcl' | 'json';
+}
+
+/** Tracks when the Terraform format is changed. */
+export const trackTerraformFormatChanged = checkFormEvents<TerraformFormatChanged>('terraform_format_changed');
+
+/** Tracks when Terraform configuration is copied. */
+export const trackTerraformConfigCopied = checkFormEvents<TerraformFormatChanged>('terraform_config_copied');
+
+/** Tracks when the full configuration link is clicked. */
+export const trackTerraformFullConfigClicked = checkFormEvents('terraform_full_config_clicked');

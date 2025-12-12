@@ -3,7 +3,7 @@ import { HclWriter } from './hcl/core/HclWriter';
 import { formatGrpcSettingsToHcl } from './hcl/formatters/grpcFormatter';
 import { formatMultiHttpSettingsToHcl } from './hcl/formatters/multiHttpFormatter';
 import { formatSimpleSettingsToHcl } from './hcl/formatters/simpleFormatter';
-import { renderProviderBlocks, renderResourceBlocks,renderTerraformBlock } from './hcl/terraformRenderer';
+import { renderProviderBlocks, renderResourceBlocks, renderTerraformBlock } from './hcl/terraformRenderer';
 import { TFConfig } from './terraformTypes';
 
 const SETTINGS_FORMATTERS: Record<string, FormatterFunction> = {
@@ -15,10 +15,14 @@ const SETTINGS_FORMATTERS: Record<string, FormatterFunction> = {
   default: formatSimpleSettingsToHcl,
 };
 
-const formatCheckSettings = (settingsType: string, settings: Record<string, HclValue>, writer: HclWriterInterface): string[] => {
+export function formatCheckSettings(
+  settingsType: string,
+  settings: Record<string, HclValue>,
+  writer: HclWriterInterface
+): string[] {
   const formatter = SETTINGS_FORMATTERS[settingsType] || SETTINGS_FORMATTERS.default;
   return formatter(settings, writer);
-};
+}
 
 export function jsonToHcl(config: TFConfig): string {
   const writer = new HclWriter();
