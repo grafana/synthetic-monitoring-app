@@ -109,7 +109,7 @@ const getHttpRegexValidationFormValues = (
           matchType: HttpRegexValidationType.Header,
           expression: headerMatch.regexp,
           header: headerMatch.header,
-          allowMissing: headerMatch.allowMissing,
+          allowMissing: headerMatch.allowMissing ?? false,
           inverted: invertedTypes.has(regexType),
         });
       }
