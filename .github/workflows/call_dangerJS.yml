@@ -33,10 +33,20 @@ jobs:
           name: currentBundleSize
           path: artifacts
 
-      - name: Download mainBundleSize
+      - name: Download mainBundleSize (try new workflow)
+        id: download-new
         uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
+        continue-on-error: true
         with:
           workflow: push.yml
+          name: mainBundleSize
+          path: artifacts
+
+      - name: Download mainBundleSize (fallback to old workflow)
+        if: steps.download-new.outcome == 'failure'
+        uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
+        with:
+          workflow: on-push-to-main.yml
           name: mainBundleSize
           path: artifacts
 
