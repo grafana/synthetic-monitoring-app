@@ -6,6 +6,10 @@ name: Manual Deployment
 run-name: Deploy ${{ inputs.branch }} to ${{ inputs.environment }} by @${{ github.actor }}
 
 on:
+  # TEMPORARY: Testing deployment from PR branch - REMOVE BEFORE MERGING
+  push:
+    branches:
+      - feat/migrate-ci-workflow
   workflow_dispatch:
     inputs:
       branch:
@@ -35,9 +39,11 @@ jobs:
       id-token: write
       attestations: write
     with:
-      branch: ${{ github.event.inputs.branch }}
-      environment: ${{ github.event.inputs.environment }}
-      docs-only: ${{ fromJSON(github.event.inputs.docs-only) }}
+      # When triggered by push (testing), use branch name and deploy to dev
+      # When triggered by workflow_dispatch, use inputs
+      branch: ${{ github.event_name == 'push' && github.ref_name || github.event.inputs.branch }}
+      environment: ${{ github.event_name == 'push' && 'dev' || github.event.inputs.environment }}
+      docs-only: ${{ github.event_name == 'push' && false || fromJSON(github.event.inputs.docs-only) }}
       scopes: universal
       
       # Argo CD inputs
