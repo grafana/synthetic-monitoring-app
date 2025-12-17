@@ -36,7 +36,7 @@ jobs:
       - name: Download mainBundleSize
         uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
         with:
-          workflow: on-push-to-main.yml
+          workflow: push.yml
           name: mainBundleSize
           path: artifacts
 

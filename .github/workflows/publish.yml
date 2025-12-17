@@ -1,0 +1,49 @@
+# Manual deployment workflow for Synthetic Monitoring App
+# Uses shared workflows from plugin-ci-workflows for provisioned plugins
+# Documentation: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions
+
+name: Manual Deployment
+run-name: Deploy ${{ inputs.branch }} to ${{ inputs.environment }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to publish from (can be used to deploy PRs to dev)
+        default: main
+      environment:
+        description: Environment to publish to
+        required: true
+        type: choice
+        options:
+          - "dev"
+          - "ops"
+          - "prod"
+      docs-only:
+        description: Only publish docs, do not publish the plugin
+        default: false
+        type: boolean
+
+permissions: {}
+
+jobs:
+  cd:
+    name: CD
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v4.3.0
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    with:
+      branch: ${{ github.event.inputs.branch }}
+      environment: ${{ github.event.inputs.environment }}
+      docs-only: ${{ fromJSON(github.event.inputs.docs-only) }}
+      scopes: universal
+      
+      # Argo CD inputs
+      grafana-cloud-deployment-type: provisioned
+      argo-workflow-slack-channel: "#synthetic-monitoring-app-ci"
+
+      # Other CI inputs
+      node-version: 22
+

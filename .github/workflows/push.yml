@@ -1,0 +1,138 @@
+# CI/CD workflow for Synthetic Monitoring App
+# Uses shared workflows from plugin-ci-workflows for provisioned plugins with auto-CD
+# Documentation: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions
+
+name: CI / CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions: {}
+
+jobs:
+  # Release Please - manages releases and changelog
+  release-please:
+    name: Release Please
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    uses: ./.github/workflows/call_release-please.yml
+
+  # Publish TechDocs to Backstage
+  publish-techdocs:
+    name: Publish TechDocs
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/call_publish-techdocs.yml
+
+  # Generate and store main branch bundle size
+  main-bundle-size:
+    name: Main Branch Bundle Size
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      attestations: write
+    uses: ./.github/workflows/call_main-bundle-size.yml
+
+  # Main CI/CD workflow (shared workflow handles: lint, test, build, typecheck)
+  cd:
+    name: CI / CD
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v4.3.0
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    with:
+      # Checkout/build PR or main branch, depending on event
+      branch: ${{ github.event_name == 'push' && github.ref_name || github.ref }}
+
+      # When pushing to "main", publish and deploy to Grafana Cloud dev (CD).
+      # For PRs, skip publishing and deploying (run CI only).
+      environment: ${{ (github.event_name == 'push' && github.ref_name == 'main') && 'dev' || 'none' }}
+      
+      # Scope: universal for both on-prem and cloud
+      scopes: universal
+
+      # Argo CD inputs
+      grafana-cloud-deployment-type: provisioned
+      argo-workflow-slack-channel: "#synthetic-monitoring-app-ci"
+      auto-merge-environments: dev
+
+      # Add git SHA to plugin version as suffix for CD builds
+      plugin-version-suffix: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
+
+      # Other CI inputs
+      node-version: 22
+
+  # SM-specific custom validations (run on both PRs and main)
+  
+  # Auto-label PRs
+  auto-label:
+    name: Auto Label
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    uses: ./.github/workflows/call_auto-label.yml
+
+  # Terraform configuration validation
+  terraform-validation:
+    name: Terraform Validation
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    uses: ./.github/workflows/call_validate-terraform.yml
+
+  # Probe API server mappings verification
+  probe-mappings-validation:
+    name: Probe API Mappings Verification
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    uses: ./.github/workflows/call_verify-probe-api-server-mappings.yml
+
+  # Grafana API compatibility check
+  grafana-compat:
+    name: Grafana API Compatibility
+    permissions:
+      contents: read
+    uses: ./.github/workflows/call_grafana-compat.yml
+
+  # Policy bot validation
+  policy-bot:
+    name: Policy Bot Validation
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/call_validate-policy-bot.yml
+
+  # DangerJS (only on PRs)
+  danger-js:
+    name: DangerJS
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+      attestations: read
+      contents: read
+      issues: read
+      statuses: write
+    uses: ./.github/workflows/call_dangerJS.yml
+
+  # Renovate reviewer (only for renovate PRs)
+  renovate-reviewer:
+    name: Renovate Reviewer
+    if: github.event_name == 'pull_request' && github.actor == 'renovate[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    uses: ./.github/workflows/call_renovate_reviewer.yml
+
