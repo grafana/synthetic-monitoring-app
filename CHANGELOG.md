@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.43.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.43.0...v1.43.1) (2025-12-17)
+
+
+### Fixes
+
+* handle undefined allowMissing in HTTP regex header validations ([#1520](https://github.com/grafana/synthetic-monitoring-app/issues/1520)) ([b667f08](https://github.com/grafana/synthetic-monitoring-app/commit/b667f08fbfaf0dcbd62c3144e0b5b848a101d6e7))
+
 ## [1.43.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.42.0...v1.43.0) (2025-12-12)
 
 
