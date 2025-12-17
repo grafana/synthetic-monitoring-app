@@ -2,7 +2,7 @@
 # Uses shared workflows from plugin-ci-workflows for provisioned plugins with auto-CD
 # Documentation: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions
 
-name: CI / CD
+name: Build & Test
 
 on:
   push:
@@ -43,7 +43,7 @@ jobs:
 
   # Main CI/CD workflow (shared workflow handles: lint, test, build, typecheck)
   cd:
-    name: CI / CD
+    name: Build and Deploy
     uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v4.3.0
     permissions:
       contents: write
@@ -70,6 +70,7 @@ jobs:
 
       # Other CI inputs
       node-version: 22
+      run-playwright: false
 
   # SM-specific custom validations (run on both PRs and main)
   
@@ -114,10 +115,20 @@ jobs:
       id-token: write
     uses: ./.github/workflows/call_validate-policy-bot.yml
 
+  # Generate bundle size for PR (needed by DangerJS)
+  pr-bundle-size:
+    name: PR Bundle Size
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      attestations: write
+    uses: ./.github/workflows/call_pr-bundle-size.yml
+
   # DangerJS (only on PRs)
   danger-js:
     name: DangerJS
     if: github.event_name == 'pull_request'
+    needs: pr-bundle-size
     permissions:
       pull-requests: write
       attestations: read

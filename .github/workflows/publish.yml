@@ -46,4 +46,5 @@ jobs:
 
       # Other CI inputs
       node-version: 22
+      run-playwright: false
 
