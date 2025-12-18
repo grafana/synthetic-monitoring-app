@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Tab, TabContent,TabsBar, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { Alert, Tab, TabContent, TabsBar, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FaroEvent, reportEvent } from 'faro';
@@ -8,20 +8,33 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
-import { Clipboard } from 'components/Clipboard';
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../ConfigContent';
+import { CodeBlockDisplay } from './CodeBlockDisplay';
 import { TerraformConfigDisplay } from './TerraformConfigDisplay';
 
 type ConfigFormat = 'hcl' | 'json';
+type ImportFormat = 'cli' | 'blocks';
 
 export function TerraformTab() {
-  const { config, hclConfig, checkCommands, probeCommands, error, isLoading, checkAlertsCommands } = useTerraformConfig();
+  const {
+    config,
+    hclConfig,
+    checkCommands,
+    probeCommands,
+    error,
+    isLoading,
+    checkAlertsCommands,
+    checkImportBlocks,
+    checkAlertsImportBlocks,
+    probeImportBlocks,
+  } = useTerraformConfig();
   const styles = useStyles2(getStyles);
   const { canReadChecks, canReadProbes } = getUserPermissions();
   const [activeFormat, setActiveFormat] = useState<ConfigFormat>('hcl');
-  
+  const [importFormat, setImportFormat] = useState<ImportFormat>('cli');
+
   useEffect(() => {
     reportEvent(FaroEvent.SHOW_TERRAFORM_CONFIG);
   }, []);
@@ -99,34 +112,86 @@ export function TerraformTab() {
         </TabContent>
       </ConfigContent.Section>
 
-      {checkCommands && (
-        <ConfigContent.Section title="Import existing checks into Terraform">
-          <Clipboard content={checkCommands.join(' && \\\n')} className={styles.clipboard} isCode />
-        </ConfigContent.Section>
-      )}
+      {(checkCommands.length > 0 || checkAlertsCommands.length > 0 || probeCommands.length > 0) && (
+        <ConfigContent.Section title="Import existing resources into Terraform">
+          <TabsBar>
+            <Tab
+              label="CLI commands"
+              active={importFormat === 'cli'}
+              onChangeTab={() => setImportFormat('cli')}
+            />
+            <Tab
+              label="Import blocks"
+              active={importFormat === 'blocks'}
+              onChangeTab={() => setImportFormat('blocks')}
+            />
+          </TabsBar>
 
-      {checkAlertsCommands && checkAlertsCommands.length > 0 && (
-        <ConfigContent.Section title="Import check alerts into Terraform">
-          <Clipboard content={checkAlertsCommands.join(' && \\\n')} className={styles.clipboard} isCode />
-        </ConfigContent.Section>
-      )}
+          <TabContent>
+            {importFormat === 'cli' ? (
+              <>
+                {checkCommands.length > 0 && (
+                  <div className={styles.cliSection}>
+                    <CodeBlockDisplay
+                      content={checkCommands.join(' && \\\n')}
+                      title="Import checks"
+                      language="bash"
+                    />
+                  </div>
+                )}
 
-      {probeCommands && (
-        <ConfigContent.Section title="Import custom probes into Terraform">
-          <Text element="span" color="secondary">
-            Replace{' '}
-            <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
-              <strong className={styles.codeLink}>{'<PROBE_ACCESS_TOKEN>'}</strong>
-            </TextLink>{' '}
-            with each probe&apos;s access token.
-          </Text>
+                {checkAlertsCommands.length > 0 && (
+                  <div className={styles.cliSection}>
+                    <CodeBlockDisplay
+                      content={checkAlertsCommands.join(' && \\\n')}
+                      title="Import check alerts"
+                      language="bash"
+                    />
+                  </div>
+                )}
 
-          <Clipboard
-            highlight="<PROBE_ACCESS_TOKEN>"
-            content={probeCommands.join(' && \\\n')}
-            className={styles.clipboard}
-            isCode
-          />
+                {probeCommands.length > 0 && (
+                  <div className={styles.cliSection}>
+                    <CodeBlockDisplay
+                      content={probeCommands.join(' && \\\n')}
+                      title="Import custom probes"
+                      language="bash"
+                      showProbeTokenWarning
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {checkCommands.length > 0 && (
+                  <div className={styles.cliSection}>
+                    <CodeBlockDisplay content={checkImportBlocks} title="Import checks" language="hcl" />
+                  </div>
+                )}
+
+                {checkAlertsCommands.length > 0 && (
+                  <div className={styles.cliSection}>
+                    <CodeBlockDisplay
+                      content={checkAlertsImportBlocks}
+                      title="Import check alerts"
+                      language="hcl"
+                    />
+                  </div>
+                )}
+
+                {probeCommands.length > 0 && (
+                  <div className={styles.cliSection}>
+                    <CodeBlockDisplay
+                      content={probeImportBlocks}
+                      title="Import custom probes"
+                      language="hcl"
+                      showProbeTokenWarning
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </TabContent>
         </ConfigContent.Section>
       )}
     </ConfigContent>
@@ -135,14 +200,8 @@ export function TerraformTab() {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    clipboard: css({
-      maxHeight: 500,
-      marginTop: 10,
-      marginBottom: 10,
-    }),
-    codeLink: css({
-      fontFamily: theme.typography.code.fontFamily,
-      fontSize: '0.8571428571em',
+    cliSection: css({
+      marginTop: theme.spacing(3),
     }),
   };
 }
