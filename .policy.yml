@@ -8,12 +8,12 @@ policy:
   approval:
     - or:
         - and:
-            - CI / CD workflow succeeded or skipped
+            - Build & Test workflow succeeded or skipped
             - default to approval
         - override policies
     - policy bot config is valid when modified
 approval_rules:
-  - name: CI / CD workflow succeeded or skipped
+  - name: Build & Test workflow succeeded or skipped
     requires:
       conditions:
         has_workflow_result:

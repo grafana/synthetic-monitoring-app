@@ -3,13 +3,9 @@
 # Documentation: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions
 
 name: Manual Deployment
-run-name: Testing deploy to dev by @${{ github.actor }}
+run-name: Deploy ${{ inputs.branch }} to ${{ inputs.environment }} by @${{ github.actor }}
 
 on:
-  # TEMPORARY: Testing deployment from PR branch - REMOVE BEFORE MERGING
-  push:
-    branches:
-      - feat/migrate-ci-workflow
   workflow_dispatch:
     inputs:
       branch:
@@ -39,10 +35,9 @@ jobs:
       id-token: write
       attestations: write
     with:
-      # TEMPORARY TESTING: On push, hardcode to dev. On workflow_dispatch, use inputs.
-      branch: ${{ github.event_name == 'push' && 'feat/migrate-ci-workflow' || inputs.branch }}
-      environment: ${{ github.event_name == 'push' && 'dev' || inputs.environment }}
-      docs-only: ${{ github.event_name == 'push' && false || inputs.docs-only == 'true' }}
+      branch: ${{ inputs.branch }}
+      environment: ${{ inputs.environment }}
+      docs-only: ${{ fromJSON(inputs.docs-only) }}
       scopes: universal
       
       # Argo CD inputs
