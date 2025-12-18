@@ -62,7 +62,7 @@ jobs:
 
       # Argo CD inputs
       grafana-cloud-deployment-type: provisioned
-      argo-workflow-slack-channel: "#synthetic-monitoring-app-ci"
+      argo-workflow-slack-channel: "#sm-ops-deploys"
       auto-merge-environments: dev
 
       # Add git SHA to plugin version as suffix for CD builds
