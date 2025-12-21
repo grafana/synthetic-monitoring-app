@@ -11,6 +11,7 @@ import { getUserPermissions } from 'data/permissions';
 import { useExtendedProbes } from 'data/useProbes';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
+import { PageNavigation } from 'components/PageNavigation/PageNavigation';
 import { ProbeList } from 'components/ProbeList';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
@@ -19,6 +20,7 @@ export const Probes = () => {
 
   return (
     <PluginPage actions={<Actions />}>
+      <PageNavigation />
       <div className={css({ maxWidth: `560px`, marginBottom: theme.spacing(4) })}>
         <p>
           Probes are the agents responsible for emulating user interactions and collecting data from your specified
