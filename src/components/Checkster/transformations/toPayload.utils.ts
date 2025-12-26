@@ -15,6 +15,7 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
     probes: formValues.probes,
     target: formValues.target,
     timeout: formValues.timeout,
+    folderUid: formValues.folderUid,
   };
 }
 
