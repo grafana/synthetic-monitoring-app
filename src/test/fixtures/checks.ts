@@ -73,7 +73,12 @@ const transformedValidCert = btoa(VALID_CERT);
 const transformedValidKey = btoa(VALID_KEY);
 
 export const BASIC_DNS_CHECK: DNSCheck = db.check.build(
-  { job: 'Job name for dns', target: 'dns.com', probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[] },
+  { 
+    job: 'Job name for dns', 
+    target: 'dns.com', 
+    probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    folderUid: 'platform-team',
+  },
   { transient: { type: CheckType.DNS } }
 ) as DNSCheck;
 
@@ -89,6 +94,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
     ],
     alerts: [...BASIC_CHECK_ALERTS.alerts],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    folderUid: 'frontend-team',
   },
   { transient: { type: CheckType.HTTP } }
 ) as HTTPCheck;
@@ -98,6 +104,7 @@ export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.check.build(
     job: 'Job name for k6',
     labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    folderUid: 'sre-team',
     settings: {
       scripted: {
         script: btoa('console.log("hello world")'),
@@ -126,17 +133,18 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
     job: 'Job name for multihttp',
     labels: [{ name: 'labelName', value: 'labelValue' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    folderUid: 'frontend-team',
     settings: {
-      multihttp: {
-        entries: [
-          {
-            request: {
-              url: 'https://www.multi1.com',
-              method: HttpMethod.GET,
-              headers: [
-                {
-                  name: 'aheader',
-                  value: 'yarp',
+        multihttp: {
+          entries: [
+            {
+              request: {
+                url: 'https://www.multi1.com',
+                method: HttpMethod.GET,
+                headers: [
+                  {
+                    name: 'aheader',
+                    value: 'yarp',
                 },
                 {
                   name: 'carne',
@@ -201,6 +209,7 @@ export const BASIC_PING_CHECK: PingCheck = db.check.build(
     target: 'grafana.com',
     labels: [{ name: 'labelName', value: 'labelValue' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    folderUid: 'sre-team',
     settings: {
       ping: {
         ipVersion: IpVersion.V4,
@@ -219,6 +228,7 @@ export const BASIC_TCP_CHECK: TCPCheck = db.check.build(
     labels: [{ name: 'labelName', value: 'labelValue' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
     target: 'grafana.com:43',
+    folderUid: 'platform-team',
   },
   { transient: { type: CheckType.TCP } }
 ) as TCPCheck;
@@ -241,6 +251,7 @@ export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
     labels: [{ name: 'agreatlabel', value: 'totally awesome label' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
     basicMetricsOnly: true,
+    folderUid: 'platform-team',
     settings: {
       http: {
         method: HttpMethod.GET,
