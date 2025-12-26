@@ -7,8 +7,9 @@ import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
-import { Check, CheckEnabledStatus, CheckSort, CheckType, Label } from 'types';
+import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
@@ -71,10 +72,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [type, setType] = filters.type;
   const [status, setStatus] = filters.status;
   const [probes, setProbes] = filters.probes;
+  const [folder, setFolder] = filters.folder;
+
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
 
   const checkFilters = useMemo(
-    () => ({ labels, search, type, status, probes }),
-    [labels, search, type, status, probes]
+    () => ({ labels, search, type, status, probes, folder: isFoldersEnabled ? folder : undefined }),
+    [labels, search, type, status, probes, folder, isFoldersEnabled]
   );
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -107,6 +111,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         break;
       case 'probes':
         setProbes(filters.probes);
+        break;
+      case 'folder':
+        setFolder(filters.folder);
         break;
       default:
         break;

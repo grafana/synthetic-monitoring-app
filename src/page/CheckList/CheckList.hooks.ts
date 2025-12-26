@@ -19,6 +19,7 @@ interface CheckFiltersProps {
     state: Array<SelectableValue<ProbeFilter>>,
     update: (value: Array<SelectableValue<ProbeFilter>> | null) => void
   ];
+  folder: [state: string | undefined, update: (value: string | null | undefined) => void];
 }
 
 export function useCheckFilters() {
@@ -71,6 +72,12 @@ export function useCheckFilters() {
           .filter((probe) => labels.includes(probe.displayName))
           .map((probe) => ({ label: probe.displayName, value: probe.id } as SelectableValue<ProbeFilter>));
       },
+    }),
+    folder: useQueryParametersState<string | undefined>({
+      key: 'folder',
+      initialValue: undefined,
+      encode: (value) => value || '',
+      decode: (value) => (value || undefined),
     }),
   };
 
