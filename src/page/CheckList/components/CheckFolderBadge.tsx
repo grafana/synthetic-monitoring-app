@@ -1,5 +1,8 @@
 import React from 'react';
-import { Badge } from '@grafana/ui';
+import { useNavigate } from 'react-router-dom-v5-compat';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Tag, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { Check, FeatureName } from 'types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
@@ -12,6 +15,8 @@ interface CheckFolderBadgeProps {
 export function CheckFolderBadge({ check }: CheckFolderBadgeProps) {
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const { data: folder, isError } = useFolder(check.folderUid, isFoldersEnabled);
+  const navigate = useNavigate();
+  const styles = useStyles2(getStyles);
 
   if (!isFoldersEnabled || !check.folderUid) {
     return null;
@@ -19,22 +24,50 @@ export function CheckFolderBadge({ check }: CheckFolderBadgeProps) {
 
   if (isError || !folder) {
     return (
-      <Badge
-        text={check.folderUid}
-        color="orange"
+      <Tag
+        name={check.folderUid}
         icon="folder"
-        tooltip={`Folder not found (${check.folderUid})`}
+        colorIndex={15}
+        className={styles.errorTag}
       />
     );
   }
 
+  const handleClick = () => {
+    navigate(`/dashboards?query=${encodeURIComponent(folder.title)}`);
+  };
+
   return (
-    <Badge
-      text={folder.title}
-      color="blue"
+    <Tag
+      name={folder.title}
       icon="folder"
-      tooltip={`This check is in the "${folder.title}" folder`}
+      onClick={handleClick}
+      className={styles.folderTag}
     />
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => {
+  return {
+    folderTag: css({
+      cursor: 'pointer',
+      backgroundColor: theme.colors.primary.main,
+      color: theme.colors.primary.contrastText,
+      borderColor: theme.colors.primary.border,
+      '& svg': {
+        marginRight: theme.spacing(0.5),
+        verticalAlign: 'middle',
+      },
+    }),
+    errorTag: css({
+      backgroundColor: theme.colors.warning.main,
+      color: theme.colors.warning.contrastText,
+      borderColor: theme.colors.warning.border,
+      '& svg': {
+        marginRight: theme.spacing(0.5),
+        verticalAlign: 'middle',
+      },
+    }),
+  };
+};
 
