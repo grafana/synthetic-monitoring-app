@@ -14,6 +14,7 @@ import { useSuspenseChecks } from 'data/useChecks';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
+import { useAccessibleChecks } from 'hooks/useAccessibleChecks';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -56,9 +57,11 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: checks } = useSuspenseChecks();
+  const { data: allChecks } = useSuspenseChecks();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const filters = useCheckFilters();
+  
+  const checks = useAccessibleChecks(allChecks);
 
   const [sortType, setSortType] = useQueryParametersState<CheckSort>({
     key: 'sort',

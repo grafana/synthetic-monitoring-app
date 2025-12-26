@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom-v5-compat';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Tag, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -15,7 +14,6 @@ interface CheckFolderBadgeProps {
 export function CheckFolderBadge({ check }: CheckFolderBadgeProps) {
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const { data: folder, isError } = useFolder(check.folderUid, isFoldersEnabled);
-  const navigate = useNavigate();
   const styles = useStyles2(getStyles);
 
   if (!isFoldersEnabled || !check.folderUid) {
@@ -34,7 +32,9 @@ export function CheckFolderBadge({ check }: CheckFolderBadgeProps) {
   }
 
   const handleClick = () => {
-    navigate(`/dashboards?query=${encodeURIComponent(folder.title)}`);
+    if (folder.url) {
+      window.open(folder.url, '_blank');
+    }
   };
 
   return (
