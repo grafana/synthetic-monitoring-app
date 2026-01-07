@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
 import { CheckType } from 'types';
-import { EMPTY_METADATA } from 'components/CheckEditor/ProbesMetadata';
+import { EMPTY_METADATA } from 'data/data.constants';
 import { selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { setupFormWithChannelSelector } from 'page/__testHelpers__/channel';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
