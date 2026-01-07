@@ -15,7 +15,7 @@ import {
 } from 'components/constants';
 
 import { gotoSection, submitForm } from '../../../../../components/Checkster/__testHelpers__/formHelpers';
-import { renderNewFormV2, TARGET_MAP } from '../../../../__testHelpers__/checkForm';
+import { renderNewForm, TARGET_MAP } from '../../../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../../../__testHelpers__/v2.utils';
 
 export const FALLBACK_CHECK_MAP: Record<string, Check> = {
@@ -33,7 +33,7 @@ describe('Api endpoint checks - common fields payload', () => {
       const checkType = cType as CheckType;
 
       it(`can submit the form with the minimum required fields`, async () => {
-        const { user, read } = await renderNewFormV2(checkType);
+        const { user, read } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await submitForm(user);
@@ -55,7 +55,7 @@ describe('Api endpoint checks - common fields payload', () => {
           const LABEL_KEY_2 = 'label2';
           const LABEL_VALUE_2 = 'value2';
 
-          const { user, read } = await renderNewFormV2(checkType);
+          const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
           await gotoSection(user, FormSectionName.Labels);
 
@@ -82,7 +82,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
       describe(`Section Alerting`, () => {
         it(`can submit the form with alerting filled in`, async () => {
-          const { user, read } = await renderNewFormV2(checkType);
+          const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
 
           await gotoSection(user, FormSectionName.Alerting);
@@ -97,7 +97,7 @@ describe('Api endpoint checks - common fields payload', () => {
         });
 
         it(`can submit the form with alerts per check`, async () => {
-          const { user, read } = await renderNewFormV2(checkType);
+          const { user, read } = await renderNewForm(checkType);
 
           await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
           await gotoSection(user, FormSectionName.Execution);
@@ -141,7 +141,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
       describe(`Section Execution`, () => {
         it(`can publish a full set of metrics`, async () => {
-          const { user, read } = await renderNewFormV2(checkType);
+          const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
           await gotoSection(user, FormSectionName.Execution);
 

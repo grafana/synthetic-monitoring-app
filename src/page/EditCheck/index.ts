@@ -1,1 +1,0 @@
-export { EditCheck } from './EditCheck';
