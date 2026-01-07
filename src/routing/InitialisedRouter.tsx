@@ -21,9 +21,7 @@ import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
 import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManagementTab';
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
 import { DashboardPage } from 'page/DashboardPage';
-import { EditCheck } from 'page/EditCheck';
 import { EditProbe } from 'page/EditProbe';
-import { NewCheck } from 'page/NewCheck';
 import { NewProbe } from 'page/NewProbe';
 import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
@@ -84,12 +82,7 @@ export const InitialisedRouter = () => {
               )
             }
           />
-          {isFeatureEnabled(FeatureName.CheckEditor) ? (
-            <Route path="edit" element={canWriteChecks ? <EditCheckV2 /> : <Navigate to=".." replace />} />
-          ) : (
-            <Route path="edit" element={canWriteChecks ? <EditCheck /> : <Navigate to=".." replace />} />
-          )}
-
+          <Route path="edit" element={canWriteChecks ? <EditCheckV2 /> : <Navigate to=".." replace />} />
           <Route path="dashboard" element={<Navigate to=".." replace />} />
           <Route path="*" element={<CheckNotFound />} />
         </Route>
@@ -99,10 +92,7 @@ export const InitialisedRouter = () => {
           {getNewCheckTypeRedirects().map(({ checkType, checkTypeGroupUrl }) => (
             <Route key={checkType} path={checkType} element={<Navigate to={`../${checkTypeGroupUrl}`} replace />} />
           ))}
-          <Route
-            path=":checkTypeGroup"
-            element={isFeatureEnabled(FeatureName.CheckEditor) ? <NewCheckV2 /> : <NewCheck />}
-          />
+          <Route path=":checkTypeGroup" element={<NewCheckV2 />} />
           <Route path="*" element={<CheckNotFound />} />
         </Route>
 
