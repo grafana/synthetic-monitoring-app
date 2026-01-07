@@ -178,7 +178,7 @@ describe('K6ChannelSelect', () => {
           id: 'v1',
           name: 'v1',
           default: true,
-          deprecatedAfter: '2025-12-31T00:00:00Z', // Not deprecated
+          deprecatedAfter: '2125-12-31T00:00:00Z', // Not deprecated
           manifest: 'k6>=1,k6<2',
         },
         {
