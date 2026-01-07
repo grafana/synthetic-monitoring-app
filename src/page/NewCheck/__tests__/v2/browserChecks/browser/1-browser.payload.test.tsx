@@ -61,7 +61,7 @@ describe(`BrowserCheck - 1 (Script) payload`, () => {
     // it uses MonacoEditor, which is not supported by the current testing setup
   });
 
-  it.skip(`includes default channel in the payload`, async () => {
+  it(`includes default channel in the payload`, async () => {
     const { read, user } = await setupFormWithChannelSelector(checkType);
     await submitForm(user);
     const { body } = await read();
