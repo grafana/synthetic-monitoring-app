@@ -901,6 +901,4 @@ export interface K6Channel {
   manifest: string; // "k6>=1", "k6>1,k6>=0.53"
 }
 
-export interface ListChannelsResponse {
-  channels: K6Channel[];
-}
+export type ListChannelsResponse = K6Channel[];

@@ -17,24 +17,22 @@ import { renderNewFormV2 } from './checkForm';
 import { fillMandatoryFields } from './v2.utils';
 
 // Mock channel data for tests - simpler than the full fixture, focused on testing channel selection
-export const mockChannelsResponse = {
-  channels: [
-    {
-      id: 'v1',
-      name: 'v1',
-      default: true,
-      deprecatedAfter: '2125-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
-      manifest: 'k6>=1,k6<2',
-    },
-    {
-      id: 'v2',
-      name: 'v2',
-      default: false,
-      deprecatedAfter: '2126-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
-      manifest: 'k6>=2',
-    },
-  ],
-};
+export const mockChannelsResponse = [
+  {
+    id: 'v1',
+    name: 'v1',
+    default: true,
+    deprecatedAfter: '2125-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
+    manifest: 'k6>=1,k6<2',
+  },
+  {
+    id: 'v2',
+    name: 'v2',
+    default: false,
+    deprecatedAfter: '2126-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
+    manifest: 'k6>=2',
+  },
+];
 
 // Channel testing helpers for scripted and browser checks in v2 editor
 export const setupChannelTest = () => {

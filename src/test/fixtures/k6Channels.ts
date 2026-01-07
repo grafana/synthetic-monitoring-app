@@ -24,6 +24,4 @@ export const K6_CHANNELS: K6Channel[] = [
   },
 ];
 
-export const K6_CHANNELS_MOCK_DATA: ListChannelsResponse = {
-  channels: K6_CHANNELS,
-};
+export const K6_CHANNELS_MOCK_DATA: ListChannelsResponse = K6_CHANNELS;
