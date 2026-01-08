@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useFormContext } from 'react-hook-form';
+import { useMatchInstancesToRouteTrees } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Icon, LoadingPlaceholder, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -16,7 +17,6 @@ import {
   generateAlertLabels,
 } from './alertRoutingUtils';
 import { RouteTreeDisplay } from './RouteTreeDisplay';
-import { useMatchInstancesToRouteTrees } from './useMatchInstancesToRouteTrees';
 
 interface AlertRoutingPreviewProps {
   alertType: CheckAlertType;
