@@ -64,7 +64,7 @@ export function useFilteredK6Channels(isScriptedOrBrowser: boolean, check?: Chec
   const { data: channelsResponse, ...queryResult } = useK6Channels(isScriptedOrBrowser);
   
   const { filteredChannels, defaultChannelId } = useMemo(() => {
-    const originalChannels = channelsResponse?.channels || [];
+    const originalChannels = channelsResponse || [];
     const isExistingCheck = !!check;
     
     // Get the previous channel ID for existing checks
@@ -87,11 +87,11 @@ export function useFilteredK6Channels(isScriptedOrBrowser: boolean, check?: Chec
     const defaultChannelId = defaultChannel?.id || '';
     
     return { filteredChannels, defaultChannelId };
-  }, [channelsResponse?.channels, check]);
+  }, [channelsResponse, check]);
 
   return {
     ...queryResult,
-    data: channelsResponse ? { ...channelsResponse, channels: filteredChannels } : undefined,
+    data: filteredChannels,
     channels: filteredChannels,
     defaultChannelId,
   };
