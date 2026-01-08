@@ -14,7 +14,7 @@ export type ProbeFilter = {
 
 export type CheckTypeFilter = CheckType | 'all';
 
-export type FilterType = 'search' | 'labels' | 'type' | 'status' | 'probes';
+export type FilterType = 'search' | 'labels' | 'type' | 'status' | 'probes' | 'folder';
 
 export interface CheckFiltersType {
   [key: string]: any;
@@ -24,6 +24,7 @@ export interface CheckFiltersType {
   type: CheckTypeFilter;
   status: SelectableValue<CheckEnabledStatus>;
   probes: Array<SelectableValue<ProbeFilter>>;
+  folder?: string;
 }
 
 export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
