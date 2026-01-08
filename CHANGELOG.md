@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.43.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.43.1...v1.43.2) (2026-01-08)
+
+
+### Fixes
+
+* replace hook that breaks with custom implementation for routing preview ([#1531](https://github.com/grafana/synthetic-monitoring-app/issues/1531)) ([50b7825](https://github.com/grafana/synthetic-monitoring-app/commit/50b782500ff9339038f2dc648c063ca9e3a3593b))
+
 ## [1.43.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.43.0...v1.43.1) (2025-12-17)
 
 
