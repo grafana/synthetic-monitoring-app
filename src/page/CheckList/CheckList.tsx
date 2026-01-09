@@ -69,12 +69,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [labels, setLabels] = filters.labels;
   const [search, setSearch] = filters.search;
   const [type, setType] = filters.type;
+  const [alerts, setAlerts] = filters.alerts;
   const [status, setStatus] = filters.status;
   const [probes, setProbes] = filters.probes;
 
   const checkFilters = useMemo(
-    () => ({ labels, search, type, status, probes }),
-    [labels, search, type, status, probes]
+    () => ({ labels, search, type, alerts, status, probes }),
+    [labels, search, type, alerts, status, probes]
   );
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -101,6 +102,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         break;
       case 'type':
         setType(filters.type);
+        break;
+      case 'alerts':
+        setAlerts(filters.alerts);
         break;
       case 'status':
         setStatus(filters.status);

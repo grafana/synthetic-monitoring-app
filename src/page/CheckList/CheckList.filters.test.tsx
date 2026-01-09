@@ -8,7 +8,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 import { getSelect, probeToMetadataProbe, selectOption } from 'test/utils';
 
-import { Check, FeatureName } from 'types';
+import { AlertSensitivity, Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
@@ -48,6 +48,12 @@ function getModalContainer() {
 }
 
 describe('CheckList - Filtering', () => {
+  const DNS_CHECK_WITHOUT_ALERTS: Check = {
+    ...BASIC_DNS_CHECK,
+    alerts: [],
+    alertSensitivity: AlertSensitivity.None,
+  };
+
   test('clicking label value adds to label filter', async () => {
     const { user } = await renderCheckList();
     const label = BASIC_DNS_CHECK.labels[0];
@@ -90,6 +96,26 @@ describe('CheckList - Filtering', () => {
     expect(checks.length).toBe(1);
   });
 
+  test('filters by alerts (with alerts)', async () => {
+    const { user } = await renderCheckList([DNS_CHECK_WITHOUT_ALERTS, BASIC_HTTP_CHECK]);
+    const additionalFilters = await screen.findByText(/Additional filters/i);
+    await user.click(additionalFilters);
+
+    await selectOption(user, { label: 'Filter by alerts', option: 'With alerts' });
+    const checks = await screen.findAllByTestId('check-card');
+    expect(checks.length).toBe(1);
+  });
+
+  test('filters by alerts (without alerts)', async () => {
+    const { user } = await renderCheckList([DNS_CHECK_WITHOUT_ALERTS, BASIC_HTTP_CHECK]);
+    const additionalFilters = await screen.findByText(/Additional filters/i);
+    await user.click(additionalFilters);
+
+    await selectOption(user, { label: 'Filter by alerts', option: 'Without alerts' });
+    const checks = await screen.findAllByTestId('check-card');
+    expect(checks.length).toBe(1);
+  });
+
   test('loads status filter from query params', async () => {
     const DNS_CHECK_DISABLED = {
       ...BASIC_DNS_CHECK,
@@ -103,6 +129,19 @@ describe('CheckList - Filtering', () => {
     const dialog = getModalContainer();
     const statusFilter = await within(dialog).findByText('Disabled');
     expect(statusFilter).toBeInTheDocument();
+    const checks = await screen.findAllByTestId('check-card');
+    expect(checks.length).toBe(1);
+  });
+
+  test('loads alerts filter from query params', async () => {
+    const { user } = await renderCheckList([DNS_CHECK_WITHOUT_ALERTS, BASIC_HTTP_CHECK], 'alerts=without');
+    const additionalFilters = await screen.findByText(/Additional filters \(1 active\)/i);
+    await user.click(additionalFilters);
+
+    const dialog = getModalContainer();
+    const alertsFilter = await within(dialog).findByText('Without alerts', { exact: false });
+    expect(alertsFilter).toBeInTheDocument();
+
     const checks = await screen.findAllByTestId('check-card');
     expect(checks.length).toBe(1);
   });

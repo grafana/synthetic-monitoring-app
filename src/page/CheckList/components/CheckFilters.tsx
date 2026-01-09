@@ -3,7 +3,7 @@ import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafan
 import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
+import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { Check } from 'types';
 import { useExtendedProbes } from 'data/useProbes';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
@@ -34,6 +34,12 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
       value: 'all',
     },
     ...filterDesc,
+  ];
+
+  const alertOptions: Array<SelectableValue<CheckAlertsFilter>> = [
+    { label: 'All', value: 'all' },
+    { label: 'With alerts', value: 'with' },
+    { label: 'Without alerts', value: 'without' },
   ];
 
   const styles = useStyles2(getStyles);
@@ -117,6 +123,25 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
               );
             }}
             value={checkFilters.type}
+          />
+          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
+          <Select
+            aria-label="Filter by alerts"
+            prefix="Alerts"
+            data-testid="check-alerts-filter"
+            options={alertOptions}
+            className={styles.verticalSpace}
+            width={20}
+            onChange={(selected: SelectableValue<CheckAlertsFilter>) => {
+              onChange(
+                {
+                  ...checkFilters,
+                  alerts: selected?.value ?? checkFilters.alerts,
+                },
+                'alerts'
+              );
+            }}
+            value={checkFilters.alerts}
           />
         </div>
         <LabelFilterInput

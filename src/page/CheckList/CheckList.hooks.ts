@@ -1,7 +1,7 @@
 import { SelectableValue } from '@grafana/data';
 import { capitalize } from 'lodash';
 
-import { CheckTypeFilter, ProbeFilter } from 'page/CheckList/CheckList.types';
+import { CheckAlertsFilter, CheckTypeFilter, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { CheckEnabledStatus, CheckType } from 'types';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
@@ -11,6 +11,7 @@ interface CheckFiltersProps {
   search: [state: string, update: (value: string | null) => void];
   labels: [state: string[], update: (value: string[] | null) => void];
   type: [state: CheckTypeFilter, update: (value: CheckTypeFilter | null) => void];
+  alerts: [state: CheckAlertsFilter, update: (value: CheckAlertsFilter | null) => void];
   status: [
     state: SelectableValue<CheckEnabledStatus>,
     update: (value: SelectableValue<CheckEnabledStatus> | null) => void
@@ -45,6 +46,18 @@ export function useCheckFilters() {
         const availableTypes = Object.values(CheckType).map((type) => type.toLowerCase());
         if (availableTypes.includes(value.toLowerCase())) {
           return value as CheckTypeFilter;
+        }
+        return 'all';
+      },
+    }),
+    alerts: useQueryParametersState<CheckAlertsFilter>({
+      key: 'alerts',
+      initialValue: defaultFilters.alerts,
+      encode: (value) => value,
+      decode: (value) => {
+        const allowed: CheckAlertsFilter[] = ['all', 'with', 'without'];
+        if (allowed.includes(value as CheckAlertsFilter)) {
+          return value as CheckAlertsFilter;
         }
         return 'all';
       },
