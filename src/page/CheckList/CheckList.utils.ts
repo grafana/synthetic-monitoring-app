@@ -1,7 +1,7 @@
 import { SelectableValue } from '@grafana/data';
 
-import { CheckFiltersType, CheckTypeFilter } from 'page/CheckList/CheckList.types';
-import { Check, CheckEnabledStatus } from 'types';
+import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter } from 'page/CheckList/CheckList.types';
+import { AlertSensitivity, Check, CheckEnabledStatus } from 'types';
 import { getCheckType, matchStrings } from 'utils';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
 
@@ -61,8 +61,26 @@ const matchesSelectedProbes = (check: Check, selectedProbes: SelectableValue[]) 
   return check.probes.some((id) => probeIds.includes(id));
 };
 
+const matchesAlertsFilter = (check: Check, alertsFilter: CheckAlertsFilter) => {
+  if (alertsFilter === 'all') {
+    return true;
+  }
+
+  // Mirror `AlertStatus` behavior: any per-check alerts OR any legacy alert sensitivity (including custom strings),
+  // treating `AlertSensitivity.None` as "no alerts configured".
+  const hasPerCheckAlerts = (check.alerts?.length ?? 0) > 0;
+  const hasAlertSensitivity = check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
+  const hasAlerts = hasPerCheckAlerts || hasAlertSensitivity;
+
+  if (alertsFilter === 'with') {
+    return hasAlerts;
+  }
+
+  return !hasAlerts;
+};
+
 export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType) => {
-  const { type, search, labels, status, probes } = checkFilters;
+  const { type, search, labels, status, probes, alerts } = checkFilters;
 
   return (
     Boolean(check.id) &&
@@ -70,7 +88,8 @@ export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType) 
     matchesSearchFilter(check, search) &&
     matchesLabelFilter(check, labels) &&
     matchesStatusFilter(check, status) &&
-    matchesSelectedProbes(check, probes)
+    matchesSelectedProbes(check, probes) &&
+    matchesAlertsFilter(check, alerts)
   );
 };
 
@@ -80,6 +99,7 @@ export const defaultFilters: CheckFiltersType = {
   type: 'all',
   status: CHECK_LIST_STATUS_OPTIONS[0],
   probes: [],
+  alerts: 'all',
 };
 
 export const getDefaultFilters = (): CheckFiltersType => {

@@ -48,6 +48,11 @@ export const CheckFilterGroup = ({ children, onReset, filters }: PropsWithChildr
             active += 1;
           }
           break;
+        case 'alerts':
+          if (filters.alerts !== 'all') {
+            active += 1;
+          }
+          break;
       }
     });
     setActiveFilters(active);
