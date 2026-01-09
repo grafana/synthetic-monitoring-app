@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { parseCheckLogs } from 'features/parseCheckLogs/parseCheckLogs';
 
 import { ExecutionLabelType, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
@@ -27,8 +28,11 @@ export function useTimepointLogs({ timepoint, job, instance, probe, staleTime }:
   });
 
   const { data } = props;
-  const parsedCheckLogs = data ? parseCheckLogs(data) : [];
-  const filteredCheckLogs = filterProbeExecutions(parsedCheckLogs, timepoint);
+
+  const filteredCheckLogs = useMemo(() => {
+    const parsedCheckLogs = data ? parseCheckLogs(data) : [];
+    return filterProbeExecutions(parsedCheckLogs, timepoint);
+  }, [data, timepoint]);
 
   return {
     ...props,

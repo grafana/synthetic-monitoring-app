@@ -27,7 +27,7 @@ const logPanelOptions = {
 
 const LOGS_HEIGHT = 400;
 
-export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T[] }) => {
+const LogsRawComponent = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T[] }) => {
   const [width, setWidth] = useState(0);
 
   return (
@@ -57,6 +57,8 @@ export const LogsRaw = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T[]
     </div>
   );
 };
+
+export const LogsRaw = React.memo(LogsRawComponent) as typeof LogsRawComponent;
 
 const getPanelData = (logs: UnknownParsedLokiRecord[]): PanelData => {
   const firstLog = logs[0];
