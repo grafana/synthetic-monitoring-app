@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { highlight, languages } from 'prismjs';
 
@@ -9,65 +9,43 @@ import { generateRoutePath } from 'routing/utils';
 import { CopyToClipboard } from 'components/Clipboard/CopyToClipboard';
 import { getPrismCodeStyle } from 'components/TerraformConfig/prismStyles';
 
+import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-hcl';
-import 'prismjs/components/prism-json';
 
-interface TerraformConfigDisplayProps {
-  title: string;
-  syntaxName: string;
-  docsUrl: string;
-  fileExtension: string;
+interface CodeBlockDisplayProps {
   content: string;
+  title: string;
+  language: 'bash' | 'hcl';
+  showProbeTokenWarning?: boolean;
 }
 
-export function TerraformConfigDisplay({ 
-  title, 
-  syntaxName, 
-  docsUrl, 
-  fileExtension, 
-  content 
-}: TerraformConfigDisplayProps) {
+export function CodeBlockDisplay({ content, title, language, showProbeTokenWarning }: CodeBlockDisplayProps) {
   const styles = useStyles2(getStyles);
-  
-  const langSyntax = fileExtension === '.tf' ? 'hcl' : 'json';
-  
+
   const highlightedCode = useMemo(() => {
     if (!content) {
       return '';
     }
-    return highlight(content, languages[langSyntax], langSyntax);
-  }, [content, langSyntax]);
+    return highlight(content, languages[language], language);
+  }, [content, language]);
 
   return (
     <>
-      <Alert title={title} severity="info">
-        The exported config is using{' '}
-        <TextLink href={docsUrl} external>
-          {syntaxName}
-        </TextLink>
-        . You can place this config in a file with a <code>{fileExtension}</code> extension and import as a module. See the{' '}
-        <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs" external>
-          Terraform provider docs
-        </TextLink>{' '}
-        for more details.
-      </Alert>
-      <Text element="span" color="secondary">
-        Replace{' '}
-        <TextLink href="https://grafana.com/docs/grafana/latest/administration/service-accounts/" external>
-          <strong className={styles.codeLink}>{'<GRAFANA_SERVICE_TOKEN>'}</strong>
-        </TextLink>{' '}
-        and{' '}
-        <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
-          <strong className={styles.codeLink}>{'<SM_ACCESS_TOKEN>'}</strong>
-        </TextLink>
-        , with their respective value.
+      <Text element="h4" weight="medium">
+        {title}
       </Text>
+      {showProbeTokenWarning && (
+        <Text element="span" color="secondary">
+          Replace{' '}
+          <TextLink href={`${generateRoutePath(AppRoutes.Config)}/access-tokens`}>
+            <strong className={styles.codeLink}>{'<PROBE_ACCESS_TOKEN>'}</strong>
+          </TextLink>{' '}
+          with each probe&apos;s access token.
+        </Text>
+      )}
       <div className={styles.codeContainer}>
         <pre className={styles.pre} data-testid="preformatted">
-          <code
-            className={styles.code}
-            dangerouslySetInnerHTML={{ __html: highlightedCode }}
-          />
+          <code className={styles.code} dangerouslySetInnerHTML={{ __html: highlightedCode }} />
         </pre>
         <CopyToClipboard
           className={styles.copyButton}
@@ -109,3 +87,4 @@ function getStyles(theme: GrafanaTheme2) {
     }),
   };
 }
+
