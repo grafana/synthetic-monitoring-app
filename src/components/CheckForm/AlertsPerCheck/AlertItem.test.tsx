@@ -2,14 +2,16 @@ import { screen } from '@testing-library/react';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
+import { FormSectionName } from '../../Checkster/types';
 import { CheckAlertType } from 'types';
-import { goToSection, renderEditForm } from 'page/__testHelpers__/checkForm';
+import { renderEditForm } from 'page/__testHelpers__/checkForm';
+
+import { gotoSection } from '../../Checkster/__testHelpers__/formHelpers';
 
 describe('AlertItem', () => {
-
   it('shows NotOkStatusInfo when status is not OK and error is present for an existing alert', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5);
+    await gotoSection(user, FormSectionName.Alerting);
 
     const alertStatus = await screen.findByTestId(
       `alert-error-status-${CheckAlertType.TLSTargetCertificateCloseToExpiring}`
@@ -19,7 +21,7 @@ describe('AlertItem', () => {
 
   it('Does not show NotOkStatusInfo when status is OK', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5);
+    await gotoSection(user, FormSectionName.Alerting);
 
     const alertStatus = await screen.queryByTestId(`alert-error-status-${CheckAlertType.ProbeFailedExecutionsTooHigh}`);
     expect(alertStatus).not.toBeInTheDocument();
@@ -27,7 +29,7 @@ describe('AlertItem', () => {
 
   it('shows latency alerts for HTTP checks', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5);
+    await gotoSection(user, FormSectionName.Alerting);
 
     const httpLatencyAlert = await screen.findByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox
@@ -42,7 +44,7 @@ describe('AlertItem', () => {
 
   it('enables threshold and period inputs when latency alert is selected', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
-    await goToSection(user, 5);
+    await gotoSection(user, FormSectionName.Alerting);
 
     const alertCheckbox = await screen.findByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox

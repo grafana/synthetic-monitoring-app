@@ -3,14 +3,14 @@ import { screen, within } from '@testing-library/react';
 import { CheckType } from 'types';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 const checkType = CheckType.MULTI_HTTP;
 
 // Exactly the same as "MultiHTTPCheck - Section 2 (Define uptime) UI"
 describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {
   it(`can delete requests`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     await user.click(screen.getByRole('button', { name: 'Request' }));
 
     const request = screen.getByLabelText('Request entry 2');
@@ -20,7 +20,7 @@ describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {
   });
 
   it(`will navigate to section 1 and open all requests with an error`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     await user.click(screen.getByRole('button', { name: 'Request' }));
     await user.click(screen.getByRole('button', { name: 'Request' }));
     await user.click(screen.getByRole('button', { name: 'Request' }));
@@ -35,7 +35,7 @@ describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {
   });
 
   it(`will open all requests with errors, open the requests accordion and navigate to the first tab with an error`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
 
     // add empty header object to first request
     const entry1 = screen.getByLabelText(`Request entry 1`);
@@ -74,7 +74,7 @@ describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {
   });
 
   it(`will open all requests and open the variables accordion when it has errors`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     const request1preSubmit = screen.getByLabelText(`Request entry 1`);
     await user.click(within(request1preSubmit).getByText(`Variables`));
     await user.click(within(request1preSubmit).getByRole('button', { name: 'Variable' }));

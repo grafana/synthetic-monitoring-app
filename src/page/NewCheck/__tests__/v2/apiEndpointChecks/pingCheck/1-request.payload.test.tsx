@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 
 import { CheckType, IpVersion } from 'types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
@@ -10,7 +10,7 @@ const checkType = CheckType.PING;
 
 describe(`PingCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
@@ -22,7 +22,7 @@ describe(`PingCheck - Section 1 (Request) payload`, () => {
   it(`can add request target`, async () => {
     const REQUEST_TARGET = `example.com`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
 
@@ -37,7 +37,7 @@ describe(`PingCheck - Section 1 (Request) payload`, () => {
     it(`can submit the IP version`, async () => {
       const IP_VERSION = IpVersion.V6;
 
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByLabelText('IPv6'));
       await fillMandatoryFields({ user, checkType });
@@ -48,7 +48,7 @@ describe(`PingCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can submit the don't fragment option`, async () => {
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
 
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByLabelText('Do not fragment', { exact: false }));

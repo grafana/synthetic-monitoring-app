@@ -4,14 +4,14 @@ import { selectOption } from 'test/utils';
 import { AlertSensitivity, CheckType } from 'types';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 const checkType = CheckType.MULTI_HTTP;
 
 describe(`Section 5 (Alerting)`, () => {
   it(`can submit the form with alerting filled in`, async () => {
-    const { user, read } = await renderNewFormV2(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Alerting);

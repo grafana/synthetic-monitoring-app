@@ -5,7 +5,7 @@ import { probeToMetadataProbe } from 'test/utils';
 
 import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckAlertType, CheckType } from 'types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { gotoSection, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
@@ -14,7 +14,7 @@ const checkType = CheckType.TCP;
 
 describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
   it(`can add TLS certificate expiry alert when TLS is enabled`, async () => {
-    const { user, read } = await renderNewFormV2(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Check); // Redundant?
     await user.click(screen.getByText('Request options'));
@@ -53,7 +53,7 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`disables TLS expiry alert and shows warning if TLS is not enabled`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Uptime);
     // Do NOT enable TLS

@@ -13,7 +13,7 @@ import { CheckType, FeatureName } from 'types';
 import { gotoSection } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
 
-import { renderNewFormV2 } from './checkForm';
+import { renderNewForm } from './checkForm';
 import { fillMandatoryFields } from './v2.utils';
 
 // Mock channel data for tests - simpler than the full fixture, focused on testing channel selection
@@ -51,7 +51,7 @@ export const setupChannelTest = () => {
 
 export const setupFormWithChannelSelector = async (checkType: CheckType) => {
   setupChannelTest(); // Ensure feature flag and API are mocked
-  const { read, user } = await renderNewFormV2(checkType);
+  const { read, user } = await renderNewForm(checkType);
   await fillMandatoryFields({ user, fieldsToOmit: [], checkType });
   await gotoSection(user, FormSectionName.Check);
 

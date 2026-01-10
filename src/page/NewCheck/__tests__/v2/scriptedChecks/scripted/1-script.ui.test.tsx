@@ -3,7 +3,7 @@ import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 import { CheckType } from 'types';
 import { submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 const checkType = CheckType.Scripted;
@@ -11,7 +11,7 @@ const checkType = CheckType.Scripted;
 describe(`ScriptedCheck - 1 (Script) UI`, () => {
   // todo: this is proving to be flaky in the CI/CD. Will look into it at a later date and reenable
   it.skip(`will change to the script tab when there is a script error on submission`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
 
     await user.type(screen.getByLabelText('Job name', { exact: false }), `Job`);
     await user.type(screen.getByLabelText(`Instance`, { exact: false }), `Instance`);
@@ -27,7 +27,7 @@ describe(`ScriptedCheck - 1 (Script) UI`, () => {
 
   // TODO: Figure out why this test just stopped working (I've verified that it still works in the UI - w1kman)
   it.skip(`will display an error and focus the script field when it is missing`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
     await user.clear(scriptTextAreaPreSubmit);
     await fillMandatoryFields({ user, fieldsToOmit: [`probes`], checkType });
@@ -41,7 +41,7 @@ describe(`ScriptedCheck - 1 (Script) UI`, () => {
   });
 
   it(`will display an error when script contains a k6 version pragma`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
     await user.clear(scriptTextAreaPreSubmit);
 
@@ -59,7 +59,7 @@ export default function() {
   });
 
   it(`will display an error when script imports k6 extensions`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
     await user.clear(scriptTextAreaPreSubmit);
 
@@ -79,7 +79,7 @@ export default function() {
   });
 
   it(`will display an error when script contains browser import (not allowed for scripted checks)`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
     await user.clear(scriptTextAreaPreSubmit);
 

@@ -3,7 +3,7 @@ import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
 
 import { CheckType } from 'types';
 import { submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 const checkType = CheckType.Browser;
 
@@ -24,7 +24,7 @@ const exportCorrectOptions = `export const options = {
 describe(`BrowserCheck - 1 (Script) UI`, () => {
   describe('will validate the script', () => {
     it(`will display an error when the script is missing`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
 
@@ -34,7 +34,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
     });
 
     it(`will display an error when it does not import the browser module`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
       await user.type(scriptTextAreaPreSubmit, exportCorrectOptions);
@@ -45,7 +45,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
     });
 
     it(`will display an error when it does not export options`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
       await user.type(scriptTextAreaPreSubmit, browserImport);
@@ -56,7 +56,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
     });
 
     it(`will display an error when it does set the browser type to 'chromium'`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
       await user.type(scriptTextAreaPreSubmit, browserImport + exportOptions);
@@ -67,7 +67,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
     });
 
     it(`will display an error when it defines a duration prop`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
 
@@ -91,7 +91,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
     });
 
     it(`will display an error when it defines vus > 1`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
 
@@ -115,7 +115,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
     });
 
     it(`will display an error when it defines iterations > 1`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
 
@@ -139,7 +139,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
     });
 
     it(`will display an error when it contains a k6 version pragma`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
 
@@ -154,7 +154,7 @@ ${exportCorrectOptions}`;
     });
 
     it(`will display an error when it imports k6 extensions`, async () => {
-      const { user } = await renderNewFormV2(checkType);
+      const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
 

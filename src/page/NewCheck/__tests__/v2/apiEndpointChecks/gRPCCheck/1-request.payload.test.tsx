@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { VALID_CERT, VALID_KEY } from 'test/fixtures/checks';
 
 import { CheckType, IpVersion } from 'types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
@@ -11,7 +11,7 @@ const checkType = CheckType.GRPC;
 
 describe(`gRPCCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
@@ -22,7 +22,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
   it(`can add request target`, async () => {
     const REQUEST_TARGET = `example.com:50051`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
 
@@ -37,7 +37,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
     it(`can submit the IP version`, async () => {
       const IP_VERSION = IpVersion.V6;
 
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByLabelText('IPv6'));
       await fillMandatoryFields({ user, checkType });
@@ -52,7 +52,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
     it(`can add a service`, async () => {
       const SERVICE = `service`;
 
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('Service'));
 
@@ -69,7 +69,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
 
   describe(`TLS Config`, () => {
     it(`can turn off if TLS is used`, async () => {
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByRole('tab', { name: 'TLS' }));
 
@@ -82,7 +82,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can disable target certificate validation`, async () => {
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByRole('tab', { name: 'TLS' }));
 
@@ -97,7 +97,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
     it(`can add server name`, async () => {
       const SERVER_NAME = `server.com`;
 
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByRole('tab', { name: 'TLS' }));
 
@@ -110,7 +110,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add CA certificate`, async () => {
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByRole('tab', { name: 'TLS' }));
       await user.type(screen.getByLabelText('CA certificate', { exact: false }), VALID_CERT);
@@ -122,7 +122,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add Client certificate`, async () => {
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByRole('tab', { name: 'TLS' }));
       await user.type(screen.getByLabelText('Client certificate', { exact: false }), VALID_CERT);
@@ -134,7 +134,7 @@ describe(`gRPCCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add Client key`, async () => {
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByRole('tab', { name: 'TLS' }));
       await user.type(screen.getByLabelText('Client key', { exact: false }), VALID_KEY);

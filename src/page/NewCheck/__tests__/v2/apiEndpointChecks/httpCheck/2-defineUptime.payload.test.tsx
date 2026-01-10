@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckType, HTTPCompressionAlgo, HttpVersion } from 'types';
 import { gotoSection, selectRadioGroupOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 import { testUsesCombobox } from '../../../../../../test/utils';
@@ -13,7 +13,7 @@ const checkType = CheckType.HTTP;
 describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
     const THREE_SECONDS_IN_MS = 3 * 1000;
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
@@ -28,7 +28,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
     const ALL_GOOD_STATUS_CODE = 200;
     const NOT_MODIFIED_STATUS_CODE = 304;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Uptime);
@@ -44,7 +44,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
 
   it(`can add valid HTTP versions`, async () => {
     testUsesCombobox();
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Uptime);
@@ -59,7 +59,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`ignores SSL`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Uptime);
@@ -73,7 +73,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`fails if SSL is present`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Uptime);
@@ -87,7 +87,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`fails if SSL is not present`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Uptime);
@@ -106,7 +106,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const HEADER_NAME = `X-Header-Name`;
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await gotoSection(user, FormSectionName.Uptime);
@@ -134,7 +134,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const HEADER_NAME = `X-Header-Name`;
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await gotoSection(user, FormSectionName.Uptime);
@@ -163,7 +163,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const HEADER_NAME = `X-Header-Name`;
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await gotoSection(user, FormSectionName.Uptime);
@@ -191,7 +191,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const HEADER_NAME = `X-Header-Name`;
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await gotoSection(user, FormSectionName.Uptime);
@@ -221,7 +221,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
       it(`can add a failing check if it matches a regex`, async () => {
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await gotoSection(user, FormSectionName.Uptime);
@@ -239,7 +239,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
       it(`can add a failing check if it does not match a regex`, async () => {
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await gotoSection(user, FormSectionName.Uptime);
@@ -258,7 +258,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can add a compression option`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Uptime);
 
@@ -270,7 +270,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can set the timeout`, async () => {
-    const { user, read } = await renderNewFormV2(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Uptime);
 

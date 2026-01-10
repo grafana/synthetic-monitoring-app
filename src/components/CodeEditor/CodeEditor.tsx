@@ -246,7 +246,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
   const editorContainerStyles = useMemo(
     () => css`
-      ${containerStyles}
+      ${containerStyles};
       height: ${editorHeight}px;
       min-height: ${MIN_EDITOR_HEIGHT}px;
     `,
