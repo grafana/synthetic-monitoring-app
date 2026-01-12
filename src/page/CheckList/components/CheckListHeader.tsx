@@ -7,6 +7,7 @@ import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/
 import { Check, CheckSort } from 'types';
 import { getUserPermissions } from 'data/permissions';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
+import { PageNavigation } from 'components/PageNavigation/PageNavigation';
 import { BulkActions } from 'page/CheckList/components/BulkActions';
 import { CheckFilters } from 'page/CheckList/components/CheckFilters';
 import { CheckListViewSwitcher } from 'page/CheckList/components/CheckListViewSwitcher';
@@ -81,6 +82,7 @@ export const CheckListHeader = ({
 
   return (
     <>
+      <PageNavigation />
       <div className={styles.row}>
         <div>
           Currently showing {currentPageChecks.length} of {checks.length} total checks
