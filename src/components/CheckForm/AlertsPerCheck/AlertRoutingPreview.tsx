@@ -3,6 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Icon, LoadingPlaceholder, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackLinkClick } from 'features/tracking/linkEvents';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 
@@ -125,7 +126,21 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
             <Text variant="body" color="secondary">
               Notification policies determine which contact point receives this alert based on the labels shown above.
               To change where alerts are sent,{' '}
-              <TextLink href="/alerting/routes" external={true} variant="body">
+              <TextLink
+                href="/alerting/routes"
+                external={true}
+                variant="body"
+                onClick={() => {
+                  const url = new URL('/alerting/routes', window.location.origin);
+                  trackLinkClick({
+                    href: url.href,
+                    hostname: url.hostname,
+                    path: url.pathname,
+                    search: url.search,
+                    source: 'alert-routing-preview-info-section',
+                  });
+                }}
+              >
                 configure notification policies
               </TextLink>{' '}
               in the Alerting section.
@@ -157,13 +172,40 @@ export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertT
                         external={true}
                         variant="bodySmall"
                         className={styles.contactPointLink}
+                        onClick={() => {
+                          const path = `/alerting/notifications/receivers/${encodeReceiverForUrl(
+                            defaultPolicyInfo.receiverName
+                          )}/edit`;
+                          const url = new URL(path, window.location.origin);
+                          trackLinkClick({
+                            href: url.href,
+                            hostname: url.hostname,
+                            path: url.pathname,
+                            search: url.search,
+                            source: 'alert-routing-preview-receiver',
+                          });
+                        }}
                       >
                         {defaultPolicyInfo.receiverName}
                       </TextLink>
                     </div>
                   )}
                   <div className={styles.configureLink}>
-                    <TextLink href="/alerting/routes" external={true} variant="body">
+                    <TextLink
+                      href="/alerting/routes"
+                      external={true}
+                      variant="body"
+                      onClick={() => {
+                        const url = new URL('/alerting/routes', window.location.origin);
+                        trackLinkClick({
+                          href: url.href,
+                          hostname: url.hostname,
+                          path: url.pathname,
+                          search: url.search,
+                          source: 'alert-routing-preview-default-policy-configure',
+                        });
+                      }}
+                    >
                       Configure notification policies to route to a different contact point
                     </TextLink>
                   </div>

@@ -3,6 +3,7 @@ import { type InstanceMatchResult, type Route } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { trackLinkClick } from 'features/tracking/linkEvents';
 
 import { encodeReceiverForUrl, getPolicyIdentifier } from './alertRoutingUtils';
 
@@ -87,10 +88,12 @@ const RouteNode: React.FC<{
     <div className={styles.routeNode} style={{ marginLeft: level * 16 }}>
       <div className={styles.routeHeader}>
         <div className={styles.routeInfo}>
-          <div className={cx(styles.badge, {
-            [styles.matchers]: policyInfo.type === 'matchers',
-            [styles.matchesAll]: policyInfo.type === 'matchesAll',
-          })}>
+          <div
+            className={cx(styles.badge, {
+              [styles.matchers]: policyInfo.type === 'matchers',
+              [styles.matchesAll]: policyInfo.type === 'matchesAll',
+            })}
+          >
             <Text variant="bodySmall">
               <strong>{policyInfo.text}</strong>
             </Text>
@@ -117,6 +120,17 @@ const RouteNode: React.FC<{
                 external={true}
                 variant="bodySmall"
                 className={styles.contactPointLink}
+                onClick={() => {
+                  const path = `/alerting/notifications/receivers/${encodeReceiverForUrl(route.receiver!)}/edit`;
+                  const url = new URL(path, window.location.origin);
+                  trackLinkClick({
+                    href: url.href,
+                    hostname: url.hostname,
+                    path: url.pathname,
+                    search: url.search,
+                    source: 'alert-routing-preview-route-receiver',
+                  });
+                }}
               >
                 {route.receiver}
               </TextLink>
