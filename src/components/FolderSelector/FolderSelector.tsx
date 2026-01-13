@@ -3,7 +3,7 @@ import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { Button, Field, Icon, Input, Modal, Select, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { useCreateFolder, useFolderPermissions, useFolders } from 'data/useFolders';
+import { useCreateFolder, useFolder, useFolders } from 'data/useFolders';
 
 interface FolderSelectorProps {
   value?: string;
@@ -20,16 +20,13 @@ export const FolderSelector = ({
   disabled = false,
   includeRoot = true,
 }: FolderSelectorProps) => {
-  
   const styles = useStyles2(getStyles);
   const { data: folders = [], isLoading } = useFolders();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const folderInfo = useFolder(value, Boolean(value));
 
   const options: Array<SelectableValue<string>> = [
-    ...(includeRoot
-      ? [{ label: 'Root (No folder)', value: '', description: 'Check will not be in a folder' }]
-      : []
-    ),
+    ...(includeRoot ? [{ label: 'Root (No folder)', value: '', description: 'Check will not be in a folder' }] : []),
     ...folders.map((folder) => {
       return {
         label: folder.title,
@@ -40,15 +37,21 @@ export const FolderSelector = ({
     }),
   ];
 
+  // If current value is an orphaned folder, add it to options so it displays
+  if (value && folderInfo.isOrphaned && !options.find((opt) => opt.value === value)) {
+    options.push({
+      label: `${value} (Folder deleted)`,
+      value: value,
+      description: 'This folder no longer exists',
+      icon: 'folder' as const,
+    });
+  }
+
   const selectedOption = options.find((opt) => opt.value === value);
 
   return (
     <div>
-      <Field
-        label="Folder"
-        description="Organize checks into folders with RBAC permissions"
-        required={required}
-      >
+      <Field label="Folder" description="Organize checks into folders with RBAC permissions" required={required}>
         <Stack direction="row" gap={1}>
           <div className={styles.selectContainer}>
             <Select //eslint-disable-line @typescript-eslint/no-deprecated
@@ -96,22 +99,48 @@ export const FolderSelector = ({
 
 const FolderPermissionHint = ({ folderUid }: { folderUid: string }) => {
   const styles = useStyles2(getStyles);
-  const { folder, canWrite, canDelete, canAdmin } = useFolderPermissions(folderUid);
+  const folderInfo = useFolder(folderUid);
 
-  if (!folder) {
+  // Still loading
+  if (folderInfo.isLoading) {
     return null;
   }
 
-  return (
-    <div className={styles.permissionHint}>
-      <Stack direction="row" gap={1}>
-        <Icon name="shield" />
-        <span>
-          You can: {[canWrite && 'edit', canDelete && 'delete', canAdmin && 'manage permissions'].filter(Boolean).join(', ')}
-        </span>
-      </Stack>
-    </div>
-  );
+  // Show warning for orphaned/deleted folders
+  if (folderInfo.isOrphaned) {
+    return (
+      <div className={styles.warningHint}>
+        <Stack direction="row" gap={1} alignItems="center">
+          <Icon name="exclamation-triangle" />
+          <span>
+            The folder {folderUid} no longer exists. Please select a different folder or leave it at the root level.
+          </span>
+        </Stack>
+      </div>
+    );
+  }
+
+  // Show permissions for accessible folders
+  if (folderInfo.hasAccess && folderInfo.folder) {
+    const permissions = [
+      folderInfo.canEdit && 'edit',
+      folderInfo.canDelete && 'delete',
+      folderInfo.canAdmin && 'manage permissions',
+    ]
+      .filter(Boolean)
+      .join(', ');
+
+    return (
+      <div className={styles.permissionHint}>
+        <Stack direction="row" gap={1}>
+          <Icon name="shield" />
+          <span>You can: {permissions}</span>
+        </Stack>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 interface CreateFolderModalProps {
@@ -214,6 +243,14 @@ const getStyles = (theme: GrafanaTheme2) => {
       fontSize: theme.typography.bodySmall.fontSize,
       color: theme.colors.text.secondary,
     }),
+    warningHint: css({
+      marginTop: theme.spacing(1),
+      padding: theme.spacing(1),
+      backgroundColor: theme.colors.warning.transparent,
+      border: `1px solid ${theme.colors.warning.border}`,
+      borderRadius: theme.shape.radius.default,
+      fontSize: theme.typography.bodySmall.fontSize,
+      color: theme.colors.warning.text,
+    }),
   };
 };
-

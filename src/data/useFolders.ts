@@ -1,5 +1,6 @@
 import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
 import { getBackendSrv } from '@grafana/runtime';
+import { firstValueFrom } from 'rxjs';
 
 import { GrafanaFolder } from 'types';
 import { queryClient } from 'data/queryClient';
@@ -20,98 +21,110 @@ export const folderQueryKeys = {
   detail: (uid: string) => [...folderQueryKeys.all, 'detail', uid] as const,
 };
 
+const STALE_TIME = 5 * 60 * 1000; // 5 minutes
+
 export function useFolders(): UseQueryResult<GrafanaFolder[], Error> {
   return useQuery({
     queryKey: folderQueryKeys.list(),
-    queryFn: async () => {
-      const response = await getBackendSrv().get<GrafanaFolder[]>('/api/folders');
-      return response;
-    },
-    staleTime: 5 * 60 * 1000,
+    queryFn: () => getBackendSrv().get<GrafanaFolder[]>('/api/folders'),
+    staleTime: STALE_TIME,
   });
 }
 
-export function useFolder(
-  uid: string | undefined,
-  enabled = true
-): UseQueryResult<GrafanaFolder, Error> {
-  return useQuery({
+/**
+ * Get folder data with permissions and access status (200, 404, 403)
+ */
+export function useFolder(uid: string | undefined, enabled = true) {
+  const { data: folder, isLoading, isError, error } = useQuery({
     queryKey: folderQueryKeys.detail(uid!),
-    queryFn: async () => {
-      const response = await getBackendSrv().get<GrafanaFolder>(`/api/folders/${uid}`);
-      return response;
-    },
+    queryFn: () =>
+      firstValueFrom(
+        getBackendSrv().fetch<GrafanaFolder>({
+          url: `/api/folders/${uid}`,
+          method: 'GET',
+          showErrorAlert: false,
+        })
+      ).then((response) => response.data),
     enabled: enabled && Boolean(uid),
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE_TIME,
+    retry: false, // Don't retry on 403/404 - we need to detect these states
   });
+
+  const status = isError ? (error as any)?.status || 500 : folder ? 200 : 0;
+
+  return {
+    folder,
+    isLoading,
+    ...parseStatus(status),
+    canEdit: folder?.canEdit ?? false,
+    canDelete: folder?.canDelete ?? false,
+    canAdmin: folder?.canAdmin ?? false,
+  };
 }
+
+const invalidateAllFolders = () => queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
 
 export function useCreateFolder() {
   return useMutation({
-    mutationFn: async (payload: CreateFolderPayload): Promise<GrafanaFolder> => {
-      const response = await getBackendSrv().post<GrafanaFolder>('/api/folders', payload);
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
-    },
+    mutationFn: (payload: CreateFolderPayload) => getBackendSrv().post<GrafanaFolder>('/api/folders', payload),
+    onSuccess: invalidateAllFolders,
   });
 }
 
 export function useUpdateFolder() {
   return useMutation({
-    mutationFn: async ({
-      uid,
-      payload,
-    }: {
-      uid: string;
-      payload: UpdateFolderPayload;
-    }): Promise<GrafanaFolder> => {
-      const response = await getBackendSrv().put<GrafanaFolder>(`/api/folders/${uid}`, payload);
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
-    },
+    mutationFn: ({ uid, payload }: { uid: string; payload: UpdateFolderPayload }) =>
+      getBackendSrv().put<GrafanaFolder>(`/api/folders/${uid}`, payload),
+    onSuccess: invalidateAllFolders,
   });
 }
 
 export function useDeleteFolder() {
   return useMutation({
-    mutationFn: async (uid: string): Promise<{ message: string; id: number }> => {
-      const response = await getBackendSrv().delete<{ message: string; id: number }>(`/api/folders/${uid}`);
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
-    },
+    mutationFn: (uid: string) => getBackendSrv().delete<{ message: string; id: number }>(`/api/folders/${uid}`),
+    onSuccess: invalidateAllFolders,
   });
 }
 
-
-export function useWritableFolders(): UseQueryResult<GrafanaFolder[], Error> {
-  const foldersQuery = useFolders();
-
-  return {
-    ...foldersQuery,
-    // Only include folders with explicit canSave permission
-    data: foldersQuery.data?.filter((folder) => folder.canSave === true),
-  } as UseQueryResult<GrafanaFolder[], Error>;
-}
+// Helper to parse HTTP status into access flags
+const parseStatus = (status: number) => ({
+  exists: status === 200,
+  hasAccess: status === 200,
+  isOrphaned: status === 404,
+  isForbidden: status === 403,
+});
 
 /**
- * Helper hook to get folder permissions for a specific folder
+ * Batch check multiple folder UIDs - returns map of { uid: isForbidden }
+ * Used to distinguish 404 (show) vs 403 (hide) for folders not in accessible list
  */
-export function useFolderPermissions(folderUid: string | undefined) {
-  const { data: folder, isLoading } = useFolder(folderUid);
-
-  return {
-    canRead: folder?.canSave ?? false,
-    canWrite: folder?.canEdit ?? false,
-    canDelete: folder?.canDelete ?? false,
-    canAdmin: folder?.canAdmin ?? false,
-    folder,
-    isLoading,
-  };
+export function useCheckForbiddenFolders(folderUids: string[], enabled = true) {
+  return useQuery({
+    queryKey: [...folderQueryKeys.all, 'forbidden', folderUids.sort().join(',')],
+    queryFn: async () => {
+      const results = await Promise.all(
+        folderUids.map(async (uid) => {
+          try {
+            await firstValueFrom(
+              getBackendSrv().fetch({
+                url: `/api/folders/${uid}`,
+                method: 'GET',
+                showErrorAlert: false,
+              })
+            );
+            return { uid, forbidden: false };
+          } catch (error: any) {
+            return { uid, forbidden: error?.status === 403 };
+          }
+        })
+      );
+      return results.reduce((acc, { uid, forbidden }) => {
+        acc[uid] = forbidden;
+        return acc;
+      }, {} as Record<string, boolean>);
+    },
+    enabled: enabled && folderUids.length > 0,
+    staleTime: STALE_TIME,
+  });
 }
 
