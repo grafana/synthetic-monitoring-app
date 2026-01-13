@@ -6,23 +6,24 @@ import { Pagination, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
 
-import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
-import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
-import { MetricCheckSuccess, Time } from 'datasource/responses.types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
-import { useSuspenseChecks } from 'data/useChecks';
-import { useSuspenseProbes } from 'data/useProbes';
-import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
-import { findCheckinMetrics } from 'data/utils';
-import { useAccessibleChecks } from 'hooks/useAccessibleChecks';
-import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
+import { useSuspenseChecks } from 'data/useChecks';
+import { useSuspenseProbes } from 'data/useProbes';
+import { findCheckinMetrics } from 'data/utils';
+import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import { useAccessibleChecks } from 'hooks/useAccessibleChecks';
+import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
 import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
+import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
+import { CheckListFolderView } from 'page/CheckList/components/CheckListFolderView';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
+import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -204,22 +205,33 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         viewType={viewType}
       />
       <div>
-        <section className="card-section card-list-layout-list">
-          <div className={styles.list}>
-            {currentPageChecks.map((check, index) => (
-              <CheckListItem
-                check={check}
-                key={check.id}
-                onLabelSelect={handleLabelSelect}
-                onStatusSelect={handleStatusSelect}
-                onTypeSelect={handleTypeSelect}
-                onToggleCheckbox={handleCheckSelect}
-                selected={selectedCheckIds.has(check.id!)}
-                viewType={viewType}
-              />
-            ))}
-          </div>
-        </section>
+        {viewType === CheckListViewType.Folder ? (
+          <CheckListFolderView
+            checks={currentPageChecks}
+            onLabelSelect={handleLabelSelect}
+            onStatusSelect={handleStatusSelect}
+            onTypeSelect={handleTypeSelect}
+            onToggleCheckbox={handleCheckSelect}
+            selectedCheckIds={selectedCheckIds}
+          />
+        ) : (
+          <section className="card-section card-list-layout-list">
+            <div className={styles.list}>
+              {currentPageChecks.map((check, index) => (
+                <CheckListItem
+                  check={check}
+                  key={check.id}
+                  onLabelSelect={handleLabelSelect}
+                  onStatusSelect={handleStatusSelect}
+                  onTypeSelect={handleTypeSelect}
+                  onToggleCheckbox={handleCheckSelect}
+                  selected={selectedCheckIds.has(check.id!)}
+                  viewType={viewType}
+                />
+              ))}
+            </div>
+          </section>
+        )}
         {totalPages > 1 && (
           <Pagination
             numberOfPages={totalPages}
