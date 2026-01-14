@@ -311,7 +311,29 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async listChecks(includeAlerts = false) {
-    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`);
+    const result = await this.fetchAPI<ListCheckResult>(
+      `${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`
+    );
+
+    // TODO: Remove this after backend implements folderUid support
+    // Temporarily add folderUid to specific check for testing
+    const modifiedChecks = result.map((check) => {
+      if (check.id === 1629348 || check.id === 1669440) {
+        return { ...check, folderUid: 'afa2p3og6h9fkd' }; // pizza checks
+      }
+
+      if (check.id === 1669439 || check.id === 1669437) {
+        return { ...check, folderUid: 'dfa2s1lbvah34b' }; // restricted checks
+      }
+
+      if (check.id === 2260) {
+        return { ...check, folderUid: 'dfa2kemr3ajggd' }; //Access test folder
+        //return { ...check, folderUid: '123' };
+      }
+      return check;
+    });
+
+    return modifiedChecks;
   }
 
   async testCheck(check: Check) {
@@ -492,7 +514,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       showErrorAlert: false,
     });
   }
-
 
   //--------------------------------------------------------------------------------
   // TEST
