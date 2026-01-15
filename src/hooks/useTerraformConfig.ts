@@ -27,9 +27,9 @@ function generateImportBlocks(
   probesConfig: TFProbeConfig,
   probes: Probe[]
 ): {
-  checkImportBlocks: string;
-  checkAlertsImportBlocks: string;
-  probeImportBlocks: string;
+  checkImportBlocks: string[];
+  checkAlertsImportBlocks: string[];
+  probeImportBlocks: string[];
 } {
   const checkBlocks = checks.map((check) => {
     const resourceName = generateCheckResourceName(check);
@@ -58,9 +58,9 @@ function generateImportBlocks(
   });
 
   return {
-    checkImportBlocks: checkBlocks.join('\n\n'),
-    checkAlertsImportBlocks: checkAlertsBlocks.join('\n\n'),
-    probeImportBlocks: probeBlocks.join('\n\n'),
+    checkImportBlocks: checkBlocks,
+    checkAlertsImportBlocks: checkAlertsBlocks,
+    probeImportBlocks: probeBlocks,
   };
 }
 

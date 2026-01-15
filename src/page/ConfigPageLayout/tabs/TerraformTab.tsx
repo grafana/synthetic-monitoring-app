@@ -165,14 +165,14 @@ export function TerraformTab() {
               <>
                 {checkCommands.length > 0 && (
                   <div className={styles.cliSection}>
-                    <CodeBlockDisplay content={checkImportBlocks} title="Import checks" language="hcl" />
+                    <CodeBlockDisplay content={checkImportBlocks.join('\n\n')} title="Import checks" language="hcl" />
                   </div>
                 )}
 
                 {checkAlertsCommands.length > 0 && (
                   <div className={styles.cliSection}>
                     <CodeBlockDisplay
-                      content={checkAlertsImportBlocks}
+                      content={checkAlertsImportBlocks.join('\n\n')}
                       title="Import check alerts"
                       language="hcl"
                     />
@@ -182,7 +182,7 @@ export function TerraformTab() {
                 {probeCommands.length > 0 && (
                   <div className={styles.cliSection}>
                     <CodeBlockDisplay
-                      content={probeImportBlocks}
+                      content={probeImportBlocks.join('\n\n')}
                       title="Import custom probes"
                       language="hcl"
                       showProbeTokenWarning

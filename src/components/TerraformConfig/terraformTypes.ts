@@ -22,9 +22,9 @@ export interface TFOutput {
   checkCommands: string[];
   checkAlertsCommands: string[];
   probeCommands: string[];
-  checkImportBlocks: string;
-  checkAlertsImportBlocks: string;
-  probeImportBlocks: string;
+  checkImportBlocks: string[];
+  checkAlertsImportBlocks: string[];
+  probeImportBlocks: string[];
 }
 
 export interface TFConfig {
