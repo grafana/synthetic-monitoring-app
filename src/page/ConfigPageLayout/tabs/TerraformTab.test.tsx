@@ -115,25 +115,58 @@ describe('TerraformTab', () => {
     expect(content).toEqual(TERRAFORM_BASIC_PING_CHECK);
   });
 
-  describe('import existing checks', () => {
-    it('should show "Import existing checks"', async () => {
+  describe('import existing resources', () => {
+    it('should show "Import existing resources into Terraform"', async () => {
       const { getByText } = await renderTerraformTab();
-      expect(getByText('Import existing checks into Terraform', { selector: 'h3' })).toBeInTheDocument();
+      expect(getByText('Import existing resources into Terraform', { selector: 'h3' })).toBeInTheDocument();
     });
 
-    it('should show correct check import commands', async () => {
+    it('should show CLI commands tab as default', async () => {
+      const { getByText } = await renderTerraformTab();
+      const cliTab = getByText('CLI commands').closest('button');
+      expect(cliTab).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('should show import blocks tab', async () => {
+      const { getByText } = await renderTerraformTab();
+      expect(getByText('Import blocks')).toBeInTheDocument();
+    });
+
+    it('should show correct check import commands in CLI tab', async () => {
       const { getByText, getAllByTestId } = await renderTerraformTab();
-      expect(getByText('Import existing checks into Terraform', { selector: 'h3' })).toBeInTheDocument();
+      expect(getByText('Import existing resources into Terraform', { selector: 'h3' })).toBeInTheDocument();
+      
+      // Should show "Import checks" subtitle
+      expect(getByText('Import checks', { selector: 'h4' })).toBeInTheDocument();
+      
       const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
       expect(preformatted[1]).toHaveTextContent(
         'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 6'
       );
     });
 
+    it('should show correct check import blocks when Import blocks tab is selected', async () => {
+      const user = userEvent.setup();
+      const { getByText, getAllByTestId } = await renderTerraformTab();
+      
+      // Click Import blocks tab
+      const importBlocksTab = getByText('Import blocks');
+      await user.click(importBlocksTab);
+      
+      // Should show "Import checks" subtitle
+      expect(getByText('Import checks', { selector: 'h4' })).toBeInTheDocument();
+      
+      const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+      const content = preformatted[1].textContent ?? '';
+      expect(content).toContain('import {');
+      expect(content).toContain('to = grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com');
+      expect(content).toContain('id = "6"');
+    });
+
     describe('import custom probes', () => {
-      it('should show "Import custom probes"', async () => {
+      it('should show "Import custom probes" subtitle', async () => {
         const { getByText } = await renderTerraformTab();
-        expect(getByText('Import custom probes into Terraform', { selector: 'h3' })).toBeInTheDocument();
+        expect(getByText('Import custom probes', { selector: 'h4' })).toBeInTheDocument();
       });
 
       it('should show replace vars for custom probes', async () => {
@@ -141,7 +174,7 @@ describe('TerraformTab', () => {
         expect(getByText('PROBE_ACCESS_TOKEN', { selector: 'a > strong', exact: false })).toBeInTheDocument();
       });
 
-      it('should show correct probe import commands', async () => {
+      it('should show correct probe import commands in CLI tab', async () => {
         server.use(
           apiRoute(`listProbes`, {
             result: () => {
@@ -156,6 +189,30 @@ describe('TerraformTab', () => {
         expect(preformatted[2]).toHaveTextContent(
           `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} 1:<PROBE_ACCESS_TOKEN>`
         );
+      });
+
+      it('should show correct probe import blocks when Import blocks tab is selected', async () => {
+        const user = userEvent.setup();
+        server.use(
+          apiRoute(`listProbes`, {
+            result: () => {
+              return {
+                json: [PRIVATE_PROBE],
+              };
+            },
+          })
+        );
+        const { getByText, getAllByTestId } = await renderTerraformTab();
+        
+        // Click Import blocks tab
+        const importBlocksTab = getByText('Import blocks');
+        await user.click(importBlocksTab);
+        
+        const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+        const content = preformatted[2].textContent ?? '';
+        expect(content).toContain('import {');
+        expect(content).toContain(`to = grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name}`);
+        expect(content).toContain('id = "1:<PROBE_ACCESS_TOKEN>"');
       });
     });
   });
