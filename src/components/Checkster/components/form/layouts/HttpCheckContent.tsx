@@ -6,6 +6,7 @@ import { useHasFieldsError } from '../../../hooks/useHasFieldsError';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
+import { FormFolderField } from '../FormFolderField';
 import { FormHttpAuthenticationField } from '../FormHttpAuthenticationField';
 import { FormHttpRequestMethodTargetFields } from '../FormHttpRequestMethodTargetFields';
 import { FormIpVersionRadioField } from '../FormIpVersionRadioField';
@@ -38,7 +39,7 @@ export function HttpCheckContent() {
   return (
     <SectionContent>
       <FormJobField field="job" />
-
+      <FormFolderField />
       <ChooseCheckType />
 
       {/* TODO: Would be nice to write root fields like `.target` (instead of `target`) */}

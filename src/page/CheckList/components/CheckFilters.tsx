@@ -4,7 +4,9 @@ import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
-import { Check } from 'types';
+import { Check, FeatureName } from 'types';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { useFolders } from 'data/useFolders';
 import { useExtendedProbes } from 'data/useProbes';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
@@ -63,6 +65,23 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
       return probeOption;
     });
   }, [probes]);
+
+  const { data: folders = [] } = useFolders();
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+
+  const folderOptions: Array<SelectableValue<string>> = useMemo(() => {
+    return [
+      { label: 'All folders', value: undefined },
+      { label: 'Root (No folder)', value: '' },
+      ...folders.map((folder) => {
+        return {
+          label: folder.title,
+          value: folder.uid,
+          icon: 'folder' as const,
+        };
+      }),
+    ];
+  }, [folders]);
 
   return (
     <>
@@ -155,6 +174,27 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
           closeMenuOnSelect={false}
           className={styles.verticalSpace}
         />
+        {isFoldersEnabled && (
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          <Select
+            aria-label="Filter by folder"
+            prefix="Folder"
+            options={folderOptions}
+            onChange={(selected: SelectableValue<string>) => {
+              onChange(
+                {
+                  ...checkFilters,
+                  folder: selected?.value,
+                },
+                'folder'
+              );
+            }}
+            value={folderOptions.find((opt) => opt.value === checkFilters.folder)}
+            placeholder="All folders"
+            isClearable={false}
+            className={styles.verticalSpace}
+          />
+        )}
       </CheckFilterGroup>
     </>
   );

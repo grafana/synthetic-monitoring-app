@@ -415,6 +415,7 @@ export interface CheckBase {
   probes: number[];
   alerts?: CheckAlertPublished[];
   disableReason?: string;
+  folderUid?: string; // Optional reference to Grafana folder
 }
 
 export type Check =
@@ -734,6 +735,7 @@ export enum FeatureName {
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
   CheckEditor = 'synthetic-monitoring-check-editor',
   VersionManagement = 'synthetic-monitoring-version-management',
+  Folders = 'synthetic-monitoring-folders',
   __TURNOFF = 'test-only-do-not-use',
 }
 
@@ -903,4 +905,30 @@ export interface K6Channel {
 
 export interface ListChannelsResponse {
   channels: K6Channel[];
+}
+
+/**
+ * Grafana Folder type from the Grafana Folders API
+ * https://grafana.com/docs/grafana-cloud/developer-resources/api-reference/http-api/folder/
+ * 
+ * Note: Some fields may be missing depending on the API response.
+ * Basic list responses may only include id, uid, title.
+ */
+export interface GrafanaFolder {
+  id: number;
+  uid: string;
+  title: string;
+  url?: string;
+  hasAcl?: boolean;
+  canSave?: boolean;
+  canEdit?: boolean;
+  canAdmin?: boolean;
+  canDelete?: boolean;
+  created?: string;
+  updated?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  version?: number;
+  parentUid?: string;
+  parents?: GrafanaFolder[];
 }
