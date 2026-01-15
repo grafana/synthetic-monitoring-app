@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.44.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.43.2...v1.44.0) (2026-01-15)
+
+
+### Features
+
+* add option to show terraform imports as blocks ([#1523](https://github.com/grafana/synthetic-monitoring-app/issues/1523)) ([b3490d7](https://github.com/grafana/synthetic-monitoring-app/commit/b3490d7f87134e1358d445cc5385efa8baf4db5d))
+* track alerts per-check routing preview and external link clicks ([#1536](https://github.com/grafana/synthetic-monitoring-app/issues/1536)) ([53c6280](https://github.com/grafana/synthetic-monitoring-app/commit/53c628095aa33867eefa02489fa7cb2559a4913d))
+
+
+### Fixes
+
+* prevent logs panel from auto scrolling to top ([#1526](https://github.com/grafana/synthetic-monitoring-app/issues/1526)) ([a989736](https://github.com/grafana/synthetic-monitoring-app/commit/a989736b61379c8c01eb6509ae51f56eb32bc8bd))
+
+
+### Miscellaneous Chores
+
+* update dependency undici to v7.18.2 [security] ([#1538](https://github.com/grafana/synthetic-monitoring-app/issues/1538)) ([9abda04](https://github.com/grafana/synthetic-monitoring-app/commit/9abda04e9a202835cb34639dc3f1f28a83964bd9))
+
 ## [1.43.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.43.1...v1.43.2) (2026-01-08)
 
 
