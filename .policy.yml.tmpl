@@ -6,11 +6,23 @@
 policy:
   approval:
     - or:
-        - MERGE_WITH_GENERATED
+        - and:
+            - Build & Test workflow succeeded or skipped
+            - MERGE_WITH_GENERATED
         - override policies
     - policy bot config is valid when modified
 
 approval_rules:
+  - name: Build & Test workflow succeeded or skipped
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/push.yml
+
   - name: policy bot config is valid when modified
     if:
       changed_files:
