@@ -9,10 +9,23 @@ export enum LokiFieldNames {
   ID = 'id',
 }
 
+export enum LokiFieldNamesNew {
+  Labels = LokiFieldNames.Labels,
+  Time = 'timestamp',
+  Line = 'body',
+  TsNs = LokiFieldNames.TsNs,
+  LabelTypes = LokiFieldNames.LabelTypes,
+  ID = LokiFieldNames.ID,
+}
+
 export type LokiFields<T, R> = [Labels<T>, Time, Line, TsNs, LabelTypes<R>, ID];
 
+export type LokiFieldsOld<T, R> = [Labels<T>, Time, Line, TsNs, LabelTypes<R>, ID];
+
+export type LokiFieldsNew<T, R> = [Labels<T>, TimeNew, LineNew, TsNsNew, LabelTypes<R>, ID];
+
 export interface LokiDataFrame<T, R> extends DataFrame {
-  fields: LokiFields<T, R>;
+  fields: LokiFieldsOld<T, R> | LokiFieldsNew<T, R>;
 }
 
 export type Labels<T> = Field<T> & {
@@ -43,6 +56,32 @@ export type Line = Field<string> & {
 // timestamp in nanoseconds
 export type TsNs = Field<string> & {
   name: LokiFieldNames.TsNs;
+  type: FieldType.string;
+  typeInfo: {
+    frame: `string`;
+  };
+};
+
+// New schema field types
+export type TimeNew = Field<number> & {
+  name: LokiFieldNamesNew.Time;
+  type: FieldType.time;
+  typeInfo: {
+    frame: `time.Time`;
+  };
+  nanos: number[];
+};
+
+export type LineNew = Field<string> & {
+  name: LokiFieldNamesNew.Line;
+  type: FieldType.string;
+  typeInfo: {
+    frame: `string`;
+  };
+};
+
+export type TsNsNew = Field<string> & {
+  name: LokiFieldNamesNew.TsNs;
   type: FieldType.string;
   typeInfo: {
     frame: `string`;
