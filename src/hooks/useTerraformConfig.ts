@@ -22,6 +22,48 @@ import {
 
 import { useSMDS } from './useSMDS';
 
+function generateImportBlocks(
+  checks: Check[],
+  probesConfig: TFProbeConfig,
+  probes: Probe[]
+): {
+  checkImportBlocks: string[];
+  checkAlertsImportBlocks: string[];
+  probeImportBlocks: string[];
+} {
+  const checkBlocks = checks.map((check) => {
+    const resourceName = generateCheckResourceName(check);
+    return `import {
+  to = grafana_synthetic_monitoring_check.${resourceName}
+  id = "${check.id}"
+}`;
+  });
+
+  const checkAlertsBlocks = checks
+    .filter((check) => check.alerts && check.alerts.length > 0)
+    .map((check) => {
+      const resourceName = generateCheckResourceName(check);
+      return `import {
+  to = grafana_synthetic_monitoring_check_alerts.${resourceName}
+  id = "${check.id}"
+}`;
+    });
+
+  const probeBlocks = Object.keys(probesConfig).map((probeName) => {
+    const probeId = probes.find((probe) => sanitizeName(probe.name) === probeName)?.id;
+    return `import {
+  to = grafana_synthetic_monitoring_probe.${probeName}
+  id = "${probeId}:<PROBE_ACCESS_TOKEN>"
+}`;
+  });
+
+  return {
+    checkImportBlocks: checkBlocks,
+    checkAlertsImportBlocks: checkAlertsBlocks,
+    probeImportBlocks: probeBlocks,
+  };
+}
+
 function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: string): TFOutput {
   const checksConfig = checks.reduce<TFCheckConfig>((acc, check) => {
     if (check) {
@@ -110,12 +152,21 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
 
   const hclConfig = jsonToHcl(config);
 
+  const { checkImportBlocks, checkAlertsImportBlocks, probeImportBlocks } = generateImportBlocks(
+    checks,
+    probesConfig,
+    probes
+  );
+
   return {
     config,
     hclConfig,
     checkCommands,
     checkAlertsCommands,
     probeCommands,
+    checkImportBlocks,
+    checkAlertsImportBlocks,
+    probeImportBlocks,
   };
 }
 

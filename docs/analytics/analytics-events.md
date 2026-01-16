@@ -240,6 +240,17 @@ Tracks when the threshold of an alert is changed
 | name      | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert      |
 | threshold | `string`                                                                                                                                                                          | The threshold of the alert |
 
+#### synthetic-monitoring_per_check_alerts_routing_preview_toggled
+
+Tracks when the routing preview is toggled for an alert
+
+##### Properties
+
+| name   | type                                                                                                                                                                              | description                                          |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| name   | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert                                |
+| action | `"show" \| "hide"`                                                                                                                                                                | Whether the routing preview is being shown or hidden |
+
 #### synthetic-monitoring_per_check_alerts_creation_success
 
 Tracks when an alert is created successfully

@@ -13,14 +13,14 @@ describe('ChannelDetails', () => {
       id: 'v1',
       name: 'v1',
       default: false,
-      deprecatedAfter: '2025-12-31T00:00:00Z',
+      deprecatedAfter: '2125-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
       manifest: 'k6>=1',
     },
     {
       id: 'v2',
       name: 'v2',
       default: true,
-      deprecatedAfter: '2026-12-31T00:00:00Z',
+      deprecatedAfter: '2126-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
       manifest: 'k6>=2',
     },
     {

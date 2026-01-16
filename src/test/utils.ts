@@ -356,7 +356,7 @@ export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
 export function constructGoTimestamp(unixTimestamp: number, nanoseconds = 0) {
   const date = new Date(unixTimestamp);
   const yyyy = date.getUTCFullYear();
-  const mm = String(date.getUTCMonth()).padStart(2, '0');
+  const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
   const dd = String(date.getUTCDate()).padStart(2, '0');
   const HH = String(date.getUTCHours()).padStart(2, '0');
   const MM = String(date.getUTCMinutes()).padStart(2, '0');

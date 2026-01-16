@@ -3,6 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackLinkClick } from 'features/tracking/linkEvents';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
@@ -60,11 +61,37 @@ export const AlertsPerCheck = () => {
         <div>
           <p>
             Enable and configure thresholds for common alerting scenarios. Use Grafana Alerting to{' '}
-            <TextLink href="alerting/new/alerting" external={true}>
+            <TextLink
+              href="alerting/new/alerting"
+              external={true}
+              onClick={() => {
+                const url = new URL('/alerting/new/alerting', window.location.origin);
+                trackLinkClick({
+                  href: url.href,
+                  hostname: url.hostname,
+                  path: url.pathname,
+                  search: url.search,
+                  source: 'alerts-per-check-info-create-rule',
+                });
+              }}
+            >
               create a custom alert rule
             </TextLink>{' '}
             and configure{' '}
-            <TextLink href="alerting/routes" external={true}>
+            <TextLink
+              href="alerting/routes"
+              external={true}
+              onClick={() => {
+                const url = new URL('/alerting/routes', window.location.origin);
+                trackLinkClick({
+                  href: url.href,
+                  hostname: url.hostname,
+                  path: url.pathname,
+                  search: url.search,
+                  source: 'alerts-per-check-info-notification-policies',
+                });
+              }}
+            >
               notification policies
             </TextLink>{' '}
             to define where your alerts will be routed.
