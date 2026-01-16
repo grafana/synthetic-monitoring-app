@@ -5,10 +5,9 @@ import { dateTimeFormat } from '@grafana/data';
 import { AppRoutes } from '../routing/types';
 import { Check } from '../types';
 
-import { getAdditionalDuration } from '../components/CheckForm/CheckForm.utils';
 import { DEFAULT_QUERY_FROM_TIME } from '../components/constants';
 import { generateRoutePath } from '../routing/utils';
-import { formatDuration } from '../utils';
+import { formatDuration, getAdditionalDuration } from '../utils';
 
 export function useNavigateToCheckDashboard() {
   const navigate = useNavigate();

@@ -9,7 +9,7 @@ import { runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 import { CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { renderEditFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderEditForm } from 'page/__testHelpers__/checkForm';
 
 import { submitForm } from '../../../../components/Checkster/__testHelpers__/formHelpers';
 
@@ -23,7 +23,7 @@ jest.mock('features/tracking/checkFormEvents', () => ({
 
 describe(`<EditCheckV2 />`, () => {
   it(`renders the can't find check modal when given a bad check id`, async () => {
-    await renderEditFormV2(-1);
+    await renderEditForm(-1);
     expect(screen.getByText(/We were unable to find your check/)).toBeInTheDocument();
   });
 
@@ -38,7 +38,7 @@ describe(`<EditCheckV2 />`, () => {
       })
     );
 
-    await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.getByText(/An error has occurred/)).toBeInTheDocument();
   });
 
@@ -60,30 +60,30 @@ describe(`<EditCheckV2 />`, () => {
       })
     );
 
-    await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.queryByText(/Check limit reached/)).not.toBeInTheDocument();
   });
 
   it(`disables the form when the user is a viewer`, async () => {
     runTestAsViewer();
-    await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.getByLabelText(/Job name \*/)).toBeDisabled();
   });
 
   it(`disables the form when the user is a RBAC viewer`, async () => {
     runTestAsRBACReader();
-    await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     const submitButton = await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton);
     expect(submitButton).toBeDisabled();
   });
 
   it(`disables the save button when no edits have been made`, async () => {
-    await renderEditFormV2(BASIC_HTTP_CHECK.id);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton)).not.toBeEnabled();
   });
 
   it(`should redirect to the check dashboard when the check is updated`, async () => {
-    const { user } = await renderEditFormV2(BASIC_DNS_CHECK.id);
+    const { user } = await renderEditForm(BASIC_DNS_CHECK.id);
 
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     await user.type(jobNameInput, `updated job name`);
@@ -97,7 +97,7 @@ describe(`<EditCheckV2 />`, () => {
   });
 
   it(`should track check update with check type`, async () => {
-    const { user } = await renderEditFormV2(BASIC_DNS_CHECK.id);
+    const { user } = await renderEditForm(BASIC_DNS_CHECK.id);
 
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     await user.type(jobNameInput, `updated job name`);

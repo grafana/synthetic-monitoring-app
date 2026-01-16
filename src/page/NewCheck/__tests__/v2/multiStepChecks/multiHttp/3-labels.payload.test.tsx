@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import { CheckType } from 'types';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 const checkType = CheckType.MULTI_HTTP;
@@ -15,7 +15,7 @@ describe(`MultiHTTPCheck - Section 3 (Labels) payload`, () => {
     const LABEL_KEY_2 = 'label2';
     const LABEL_VALUE_2 = 'value2';
 
-    const { user, read } = await renderNewFormV2(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Labels);
 

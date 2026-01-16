@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import { CheckType, HttpMethod, MultiHttpVariableType } from 'types';
 import { toBase64 } from 'utils';
 import { selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 const checkType = CheckType.MULTI_HTTP;
@@ -11,7 +11,7 @@ const checkType = CheckType.MULTI_HTTP;
 describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
   describe(`Single request`, () => {
     it(`has the correct default values submitted`, async () => {
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
       await submitForm(user);
       const { body } = await read();
@@ -22,7 +22,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
     it(`can add entry request target`, async () => {
       const REQUEST_TARGET = `https://example.com`;
 
-      const { read, user } = await renderNewFormV2(checkType);
+      const { read, user } = await renderNewForm(checkType);
       const targetInput = screen.getAllByLabelText(/Request target \*/);
       await user.type(targetInput[0], REQUEST_TARGET);
 
@@ -40,7 +40,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
         const HEADER_KEY_2 = `header-key-2`;
         const HEADER_VALUE_2 = `header-value-2`;
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
 
         await user.click(screen.getByText('Request options'));
         const addRequestHeaderButton = screen.getByRole('button', { name: 'Header' });
@@ -76,7 +76,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
         const QUERYPARAM_KEY_2 = `query-key-2`;
         const QUERYPARAM_VALUE_2 = `query-value-2`;
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
 
         await user.click(screen.getByText('Request options'));
         await user.click(screen.getByText('Query parameters'));
@@ -112,7 +112,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
       it(`can submit the content type`, async () => {
         const CONTENT_TYPE = 'application/json';
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await user.click(screen.getByText('Request options'));
         await user.click(screen.getByText('Body'));
         await user.type(screen.getByLabelText(/Content type/), CONTENT_TYPE);
@@ -128,7 +128,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
       it(`can submit the content encoding`, async () => {
         const CONTENT_ENCODING = 'gzip';
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await user.click(screen.getByText('Request options'));
         await user.click(screen.getByText('Body'));
         await user.type(screen.getByLabelText(/Content encoding/), CONTENT_ENCODING);
@@ -144,7 +144,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
       it(`can submit the request body`, async () => {
         const REQUEST_BODY = 'some request body';
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await user.click(screen.getByText('Request options'));
         await user.click(screen.getByText('Body'));
         await user.type(screen.getByLabelText('Request Body', { selector: `textarea`, exact: false }), REQUEST_BODY);
@@ -163,7 +163,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
         const VAR_NAME = 'a lovely variable';
         const VAR_EXPRESSION = '$.json.path';
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
 
         await user.click(screen.getByText(/Variables/));
         await user.click(screen.getByRole('button', { name: 'Variable' }));
@@ -194,7 +194,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
         const VAR_NAME = 'a lovely variable';
         const VAR_EXPRESSION = 'some regex';
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
 
         await user.click(screen.getByText(/Variables/));
         await user.click(screen.getByRole('button', { name: 'Variable' }));
@@ -226,7 +226,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
         const VAR_ATTRIBUTE = 'some attribute';
         const VAR_EXPRESSION = 'some regex';
 
-        const { read, user } = await renderNewFormV2(checkType);
+        const { read, user } = await renderNewForm(checkType);
 
         await user.click(screen.getByText(/Variables/));
         await user.click(screen.getByRole('button', { name: 'Variable' }));
