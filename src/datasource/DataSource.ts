@@ -452,7 +452,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       jsonData: options,
       access: 'proxy',
     };
-    await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
+    await getBackendSrv().put(`api/datasources/uid/${this.instanceSettings.uid}`, data);
   };
 
   async registerSave(apiToken: string, options: SMOptions, accessToken: string): Promise<any> {
@@ -464,7 +464,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       },
       access: 'proxy',
     };
-    await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
+    await getBackendSrv().put(`api/datasources/uid/${this.instanceSettings.uid}`, data);
 
     // Note the accessToken above must be saved first!
     return await getBackendSrv().fetch({
@@ -492,7 +492,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       showErrorAlert: false,
     });
   }
-
 
   //--------------------------------------------------------------------------------
   // TEST
