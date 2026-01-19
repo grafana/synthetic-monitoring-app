@@ -1,5 +1,6 @@
 import { succeededLogFactory } from 'test/factories/executionLogs';
 
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import {
   CheckConfig,
   CheckConfigRaw,
@@ -256,7 +257,7 @@ describe(`buildlistLogsMap`, () => {
     const firstEntry = timepoints[0];
 
     const log = succeededLogFactory.build({
-      Time,
+      [LokiFieldNames.TimeStamp]: Time,
       labels: {
         duration_seconds: (frequency / 1000).toString(),
       },

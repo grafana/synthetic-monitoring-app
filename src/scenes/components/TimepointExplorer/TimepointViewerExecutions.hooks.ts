@@ -29,8 +29,8 @@ export function useTimepointViewerExecutions({
     .map<TabToRender>((probeName) => {
       const probeExecutionLogs = probeExecutions.find((d) => d.probeName === probeName);
       const executions = (probeExecutionLogs?.executions || []).sort((a, b) => {
-        const aTime = a?.[0][LokiFieldNames.Time];
-        const bTime = b?.[0][LokiFieldNames.Time];
+        const aTime = a?.[0][LokiFieldNames.TimeStamp];
+        const bTime = b?.[0][LokiFieldNames.TimeStamp];
 
         return aTime - bTime;
       });

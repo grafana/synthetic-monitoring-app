@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 import { trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { ExecutionLogs, ProbeExecutionLogs, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { LokiFieldNamesOld } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { CheckResultMissing } from 'scenes/components/TimepointExplorer/CheckResultMissing';
@@ -111,7 +111,7 @@ export const TimepointViewerExecutions = ({
                 {executions.map((execution) => {
                   return (
                     <LogsRenderer<UnknownExecutionLog>
-                      key={execution[0][LokiFieldNames.ID]}
+                      key={execution[0][LokiFieldNamesOld.ID]}
                       logs={execution}
                       logsView={logsView}
                       mainKey="msg"
@@ -190,7 +190,7 @@ const MultipleExecutions = ({ executions, logsView }: { executions: ExecutionLog
       <Stack direction="column" gap={4}>
         {executions.map((execution, index) => {
           const { probe_success } = execution[0].labels;
-          const id = execution[0][LokiFieldNames.ID];
+          const id = execution[0][LokiFieldNamesOld.ID];
 
           return (
             <>

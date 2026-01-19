@@ -1,5 +1,5 @@
 import { UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
-import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { LokiFieldNamesOld } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { TimepointStatus } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 interface GetProbeExecutionsStatusProps {
@@ -27,7 +27,7 @@ export function getProbeExecutionsStatus({
     return 'missing';
   }
 
-  const probeStatus = executionLog[LokiFieldNames.Labels]?.probe_success;
+  const probeStatus = executionLog[LokiFieldNamesOld.Labels]?.probe_success;
   const isSuccess = probeStatus === '1';
 
   return isSuccess ? 'success' : 'failure';

@@ -13,6 +13,7 @@ import {
   SucceededLogLabels,
   UnknownExecutionLog,
 } from 'features/parseCheckLogs/checkLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { CheckType } from 'types';
 
 const labelTypes = {
@@ -48,14 +49,14 @@ export function buildExecutionLogFactory<L extends Record<string, string>>(label
 
 export const unknownExecutionLogFactory = Factory.define<UnknownExecutionLog, ExecutionLogTransientParams>(
   ({ params, transientParams }) => {
-    const { Time = faker.date.recent().getTime() } = params;
+    const Time = params[LokiFieldNames.TimeStamp] ?? faker.date.recent().getTime();
     const { isSuccess = Math.random() > 0.5 } = transientParams;
     const job = faker.company.name();
     const instance = faker.internet.ip();
 
     return {
-      Time,
-      tsNs: Time * 1000000,
+      [LokiFieldNames.TimeStamp]: Time,
+      nanos: Time * 1000000,
       labels: {
         probe: ``,
         msg: ``,
@@ -69,7 +70,7 @@ export const unknownExecutionLogFactory = Factory.define<UnknownExecutionLog, Ex
         service_name: job,
         source: 'synthetic-monitoring-agent' as const,
       },
-      Line: faker.lorem.sentence(),
+      [LokiFieldNames.Body]: faker.lorem.sentence(),
       labelTypes,
       id: faker.string.uuid(),
     };

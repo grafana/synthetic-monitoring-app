@@ -303,7 +303,7 @@ interface BuildlistLogsMapProps {
 export function buildlistLogsMap({ logs, timepoints }: BuildlistLogsMapProps) {
   return logs.reduce<Record<UnixTimestamp, StatefulTimepoint>>((acc, log) => {
     const duration = Number(log.labels.duration_seconds) * 1000;
-    const logTime = log[LokiFieldNames.Time];
+    const logTime = log[LokiFieldNames.TimeStamp];
     const startingTime = logTime - duration;
     const executionProbeName = log.labels.probe;
 
