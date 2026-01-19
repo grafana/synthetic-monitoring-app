@@ -17,12 +17,15 @@ export const BASIC_CHECK_ALERTS: CheckAlertsResponse = {
     }),
     db.alert.build({
       name: CheckAlertType.HTTPRequestDurationTooHighAvg,
+      runbookUrl: 'https://example.com/runbooks/http-latency',
     }),
     db.alert.build({
       name: CheckAlertType.PingRequestDurationTooHighAvg,
+      runbookUrl: 'https://example.com/runbooks/ping-latency',
     }),
     db.alert.build({
       name: CheckAlertType.DNSRequestDurationTooHighAvg,
+      runbookUrl: 'https://example.com/runbooks/dns-latency',
     }),
   ],
 };

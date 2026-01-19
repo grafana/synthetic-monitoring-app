@@ -13,6 +13,9 @@ import { RunbookRedirectAlert } from 'components/RunbookRedirectAlert';
 const ALERT_NAME_TO_TYPE: Record<string, CheckAlertType> = {
   ProbeFailedExecutionsTooHigh: CheckAlertType.ProbeFailedExecutionsTooHigh,
   TLSTargetCertificateCloseToExpiring: CheckAlertType.TLSTargetCertificateCloseToExpiring,
+  HTTPRequestDurationTooHighAvg: CheckAlertType.HTTPRequestDurationTooHighAvg,
+  PingRequestDurationTooHighAvg: CheckAlertType.PingRequestDurationTooHighAvg,
+  DNSRequestDurationTooHighAvg: CheckAlertType.DNSRequestDurationTooHighAvg,
 };
 
 function parseAlertName(alertName: string): string {

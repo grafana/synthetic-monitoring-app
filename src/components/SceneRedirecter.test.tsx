@@ -94,6 +94,60 @@ describe('SceneRedirecter', () => {
       expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/tls-certificate');
     });
 
+    test('redirects to runbook URL for HTTPRequestDurationTooHighAvg alert', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const searchParams = createMockSearchParams({
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'HTTPRequestDurationTooHighAvg',
+        'var-runbook': 'true',
+      });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      const takeNowButton = screen.getByText('Take me there now');
+      await user.click(takeNowButton);
+
+      expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/http-latency');
+    });
+
+    test('redirects to runbook URL for PingRequestDurationTooHighAvg alert', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const searchParams = createMockSearchParams({
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'PingRequestDurationTooHighAvg',
+        'var-runbook': 'true',
+      });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      const takeNowButton = screen.getByText('Take me there now');
+      await user.click(takeNowButton);
+
+      expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/ping-latency');
+    });
+
+    test('redirects to runbook URL for DNSRequestDurationTooHighAvg alert', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const searchParams = createMockSearchParams({
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'DNSRequestDurationTooHighAvg',
+        'var-runbook': 'true',
+      });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      const takeNowButton = screen.getByText('Take me there now');
+      await user.click(takeNowButton);
+
+      expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/dns-latency');
+    });
+
     test('parses alert names with brackets correctly', async () => {
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
       const searchParams = createMockSearchParams({
@@ -110,6 +164,24 @@ describe('SceneRedirecter', () => {
       await user.click(takeNowButton);
 
       expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/probe-failures');
+    });
+
+    test('parses latency alert names with brackets correctly', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      const searchParams = createMockSearchParams({
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        'var-alert': 'HTTPRequestDurationTooHighAvg [5m]',
+        'var-runbook': 'true',
+      });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      const takeNowButton = screen.getByText('Take me there now');
+      await user.click(takeNowButton);
+
+      expect(mockDoRunbookRedirect).toHaveBeenCalledWith('https://example.com/runbooks/http-latency');
     });
 
     test('navigates to fallback when runbook URL is not configured', () => {
