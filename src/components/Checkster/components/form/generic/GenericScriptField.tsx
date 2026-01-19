@@ -4,7 +4,7 @@ import { FieldValidationMessage, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckFormFieldPath } from '../../../types';
-import { CheckFormValues } from 'types';
+import { CheckFormValues, K6Channel } from 'types';
 import { CodeEditor } from 'components/CodeEditor';
 
 import { getFieldErrorProps } from '../../../utils/form';
@@ -12,11 +12,10 @@ import { Column } from '../../ui/Column';
 
 interface GenericScriptFieldProps {
   field: CheckFormFieldPath;
-  channelField?: CheckFormFieldPath;
 }
 
 // FIXME: Not actually a Field (no label, no description), but it has errors!
-export function GenericScriptField({ field, channelField }: GenericScriptFieldProps) {
+export function GenericScriptField({ field }: GenericScriptFieldProps) {
   const {
     control,
     getValues,
@@ -27,7 +26,7 @@ export function GenericScriptField({ field, channelField }: GenericScriptFieldPr
   
   const theme = useTheme2();
 
-  const selectedChannel = channelField ? getValues(channelField) : undefined;
+  const k6ChannelId = (getValues('channels.k6') as K6Channel | undefined)?.id;
   return (
     <Column
       grow
@@ -53,7 +52,7 @@ export function GenericScriptField({ field, channelField }: GenericScriptFieldPr
               readOnly={disabled}
               data-form-name={field}
               data-form-element-selector="textarea"
-              k6Channel={selectedChannel}
+              k6Channel={k6ChannelId}
             />
           );
         }}

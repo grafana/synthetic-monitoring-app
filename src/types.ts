@@ -182,12 +182,10 @@ export interface DnsSettingsFormValues
 
 export interface ScriptedSettings {
   script: string;
-  channel?: string | null;
 }
 
 export interface BrowserSettings {
   script: string;
-  channel?: string | null;
 }
 
 export interface TcpSettings {
@@ -338,6 +336,9 @@ export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertForm
 export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 'alerts'> & {
   publishAdvancedMetrics: boolean;
   alerts?: CheckAlertFormRecord;
+  channels?: {
+    k6?: K6Channel;
+  };
 };
 
 export type CheckFormValuesHttp = CheckFormValuesBase & {
@@ -415,6 +416,9 @@ export interface CheckBase {
   probes: number[];
   alerts?: CheckAlertPublished[];
   disableReason?: string;
+  channels?: {
+    k6?: K6Channel;
+  };
 }
 
 export type Check =

@@ -6,7 +6,7 @@ import { labelsSchema } from 'schemas/general/Label';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
-import { AlertSensitivity, CheckFormValuesBase } from 'types';
+import { AlertSensitivity, CheckFormValuesBase, K6Channel } from 'types';
 import { formatDuration } from 'utils';
 
 export const baseCheckSchema = z.object({
@@ -21,6 +21,9 @@ export const baseCheckSchema = z.object({
   labels: labelsSchema,
   publishAdvancedMetrics: z.boolean(),
   alerts: checkAlertsSchema.optional(),
+  channels: z.object({
+    k6: z.custom<K6Channel>().optional(),
+  }).optional(),
 });
 
 export function addRefinements<T extends CheckFormValuesBase>(schema: ZodType<T, any, any>) {

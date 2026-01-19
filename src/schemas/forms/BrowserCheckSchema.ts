@@ -16,7 +16,6 @@ export const MAX_TIMEOUT_BROWSER = ONE_MINUTE_IN_MS * 3;
 function createBrowserSettingsSchema(): ZodType<BrowserSettings> {
   return z.object({
     script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation).superRefine(validateBrowserScript),
-    channel: z.string().nullable().optional(),
   });
 }
 
@@ -42,8 +41,7 @@ export function createBrowserCheckSchema(availableProbes?: ProbeWithMetadata[]):
 
   // Add probe compatibility refinement if probes are provided
   if (availableProbes && availableProbes.length > 0) {
-    const getChannel = (data: CheckFormValuesBrowser) => data.settings.browser?.channel;
-    return schema.superRefine(createProbeCompatibilityRefinement<CheckFormValuesBrowser>(availableProbes, getChannel));
+    return schema.superRefine(createProbeCompatibilityRefinement<CheckFormValuesBrowser>(availableProbes));
   }
 
   return schema;

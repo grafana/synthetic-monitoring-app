@@ -42,7 +42,7 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
 
   const { field, fieldState } = useController({
     control,
-    name: `settings.${checkType === 'scripted' ? 'scripted' : 'browser'}.channel`,
+    name: 'channels.k6',
   });
 
   const {
@@ -56,9 +56,12 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   // Initialize with default channel when no channel is set (new checks or existing checks without channel)
   useEffect(() => {
     if (!field.value && defaultChannelId && !isLoadingChannels) {
-      field.onChange(defaultChannelId);
+      const defaultChannel = channels.find((channel) => channel.id === defaultChannelId);
+      if (defaultChannel) {
+        field.onChange(defaultChannel);
+      }
     }
-  }, [field, defaultChannelId, isLoadingChannels]);
+  }, [field, defaultChannelId, isLoadingChannels, channels]);
 
   // Throw error to be caught by QueryErrorBoundary if there's an error
   if (hasChannelError && channelError) {
@@ -90,17 +93,17 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
         <Stack direction="column" gap={2}>
           <Combobox
             {...field}
-            value={field.value || defaultChannelId}
+            value={field.value?.id || defaultChannelId}
             disabled={disabled || isLoadingChannels}
             options={channelOptions}
             id={id}
             createCustomValue={false}
             onChange={(value) => {
-              const channelValue = typeof value === 'string' ? value : value?.value || '';
-              field.onChange(channelValue);
-
-              const selectedChannel = channels.find((channel) => channel.id === channelValue);
+              const channelId = typeof value === 'string' ? value : value?.value || '';
+              const selectedChannel = channels.find((channel) => channel.id === channelId);
+              
               if (selectedChannel) {
+                field.onChange(selectedChannel);
                 trackK6ChannelSelected({
                   checkType,
                   channelName: selectedChannel.name,
@@ -112,7 +115,7 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
           />
         </Stack>
       </Field>
-      <ChannelDetails channelId={field.value || defaultChannelId || null} channels={channels} />
+      <ChannelDetails channelId={field.value?.id || defaultChannelId || null} channels={channels} />
     </div>
   );
 }

@@ -3,11 +3,10 @@ import { RefinementCtx } from 'zod';
 import { CheckFormValuesBase, ProbeWithMetadata } from 'types';
 
 export function createProbeCompatibilityRefinement<T extends CheckFormValuesBase>(
-  availableProbes: ProbeWithMetadata[],
-  getChannel: (data: T) => string | null | undefined
+  availableProbes: ProbeWithMetadata[]
 ) {
   return (data: T, ctx: RefinementCtx) => {
-    const selectedChannel = getChannel(data);
+    const selectedChannel = data.channels?.k6?.id;
 
     if (!selectedChannel) {
       return;

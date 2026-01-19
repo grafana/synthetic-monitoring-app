@@ -23,7 +23,7 @@ export const ScriptedCheckScript = () => {
   } = useFormContext<CheckFormValuesScripted>();
   const [selectedTab, setSelectedTab] = useState(ScriptEditorTabs.Script);
   const fieldError = errors.settings?.scripted?.script;
-  const selectedChannel = getValues('settings.scripted.channel');
+  const selectedChannel = getValues('channels.k6.id');
 
   useEffect(() => {
     const goToScriptTab = () => {

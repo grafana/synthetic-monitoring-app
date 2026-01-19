@@ -16,7 +16,6 @@ export const MAX_TIMEOUT_SCRIPTED = ONE_MINUTE_IN_MS * 3;
 function createScriptedSettingsSchema(): ZodType<ScriptedSettings> {
   return z.object({
     script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation).superRefine(validateNonBrowserScript),
-    channel: z.string().nullable().optional(),
   });
 }
 
@@ -41,8 +40,7 @@ export function createScriptedCheckSchema(availableProbes?: ProbeWithMetadata[])
 
   // Add probe compatibility refinement if probes are provided
   if (availableProbes && availableProbes.length > 0) {
-    const getChannel = (data: CheckFormValuesScripted) => data.settings.scripted?.channel;
-    return schema.superRefine(createProbeCompatibilityRefinement<CheckFormValuesScripted>(availableProbes, getChannel));
+    return schema.superRefine(createProbeCompatibilityRefinement<CheckFormValuesScripted>(availableProbes));
   }
 
   return schema;

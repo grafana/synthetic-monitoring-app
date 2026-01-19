@@ -20,7 +20,7 @@ export const BrowserCheckScript = () => {
   } = useFormContext<CheckFormValuesBrowser>();
   const [selectedTab, setSelectedTab] = React.useState(ScriptEditorTabs.Script);
   const fieldError = errors.settings?.browser?.script;
-  const selectedChannel = getValues('settings.browser.channel');
+  const selectedChannel = getValues('channels.k6.id');
 
   return (
     <>
