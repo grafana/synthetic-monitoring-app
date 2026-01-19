@@ -22,7 +22,9 @@ export function parseLokiLogs<T, R>(dataFrame: LokiDataFrame<T, R>, parser?: Fie
   const normalizedDataFrame = normalizeLokiDataFrame(dataFrame);
   // After normalization, fields are guaranteed to be LokiFields<T, R>
   if (!isLokiFields(normalizedDataFrame.fields)) {
-    throw new Error('Failed to normalize LokiDataFrame fields');
+    // Log error but return empty array to prevent UI crashes
+    console.error('Failed to normalize LokiDataFrame fields', normalizedDataFrame);
+    return [];
   }
   const flattenedLogs = flattenLogs(normalizedDataFrame.fields, parser);
   const sortedLogs = sortLogs(flattenedLogs);
@@ -32,7 +34,6 @@ export function parseLokiLogs<T, R>(dataFrame: LokiDataFrame<T, R>, parser?: Fie
 
 function isLokiFields<T, R>(fields: Field[]): fields is LokiFields<T, R> {
   return (
-    fields.length === 5 &&
     fields.some(isLabels) &&
     fields.some(isTimeStamp) &&
     fields.some(isBody) &&

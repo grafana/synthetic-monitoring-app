@@ -1,9 +1,9 @@
 import { LOG_LABELS_COMMON, LOG_LABELS_SM } from 'features/parseCheckLogs/checkLogs.constants.labels';
 
-import { LokiFieldNamesOld, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 export function uniqueLabels(log: ParsedLokiRecord<Record<string, string>, Record<string, string>>) {
-  return Object.keys(log[LokiFieldNamesOld.Labels]).filter(
+  return Object.keys(log[LokiFieldNames.Labels]).filter(
     (key) =>
       !LOG_LABELS_COMMON.includes(key) &&
       !LOG_LABELS_SM.includes(key) &&

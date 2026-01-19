@@ -4,7 +4,7 @@ import { Icon, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
 
-import { LokiFieldNamesOld } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import {
   TIMEPOINT_GAP_PX,
@@ -47,7 +47,7 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
   const executionsToRender = Object.values(statefulTimepoint.probeResults)
     .flat()
     .filter((execution) => {
-      const probeSuccess = execution[LokiFieldNamesOld.Labels].probe_success;
+      const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
       const state = probeSuccess === '1' ? 'success' : probeSuccess === '0' ? 'failure' : 'missing';
 
       return vizDisplay.includes(state);
@@ -73,10 +73,10 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
       <div className={styles.reachabilityEntry} style={{ height }}>
         {executionsToRender.map((execution) => {
           const index = 0;
-          const duration = Number(execution[LokiFieldNamesOld.Labels].duration_seconds) * 1000;
+          const duration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
           const height = getEntryHeight(duration, yAxisMax);
           const pixelHeight = TIMEPOINT_THEME_HEIGHT_PX * (height / 100);
-          const { probe: probeName, probe_success } = execution[LokiFieldNamesOld.Labels];
+          const { probe: probeName, probe_success } = execution[LokiFieldNames.Labels];
           const isBeingViewed = getIsProbeBeingViewed(timepoint, probeName, viewerState);
           const status = probe_success === '1' ? 'success' : probe_success === '0' ? 'failure' : 'missing';
 

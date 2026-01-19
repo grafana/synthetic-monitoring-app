@@ -1,4 +1,4 @@
-import { LokiFieldNamesOld } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import {
   StatefulTimepoint,
   TimepointStatus,
@@ -65,7 +65,7 @@ export function drawReachabilityTimepoint({
   const offset = containerWidth / 4;
 
   executions.forEach((execution) => {
-    const probeSuccess = execution[LokiFieldNamesOld.Labels].probe_success;
+    const probeSuccess = execution[LokiFieldNames.Labels].probe_success;
     const status = probeSuccess === '1' ? 'success' : 'failure';
     const vizOption = vizOptionColors[status];
 
@@ -73,7 +73,7 @@ export function drawReachabilityTimepoint({
       return;
     }
 
-    const probeDuration = Number(execution[LokiFieldNamesOld.Labels].duration_seconds) * 1000;
+    const probeDuration = Number(execution[LokiFieldNames.Labels].duration_seconds) * 1000;
     const bottom = getEntryHeight(probeDuration, yAxisMax) / 100;
     const bottomInPx = canvasHeight * bottom - offset;
     const actualPosition = bottomInPx + offset > canvasHeight ? canvasHeight - offset : bottomInPx;
