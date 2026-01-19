@@ -3,6 +3,8 @@ import { dateTimeFormat } from '@grafana/data';
 import { render, screen, within } from '@testing-library/react';
 import { executionLogsFactory } from 'test/factories/executionLogs';
 
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
+
 import { LogsEvent } from './LogsEvent';
 
 describe('LogsEvent', () => {
@@ -22,7 +24,7 @@ describe('LogsEvent', () => {
     logLineElements.forEach((el, index) => {
       const renderedMainKey = within(el).getByText(logs[index].labels[MAIN_KEY]);
       const renderedLevel = within(el).getByText(logs[index].labels.level.toUpperCase());
-      const expectedTime = dateTimeFormat(logs[index].Time, {
+      const expectedTime = dateTimeFormat(logs[index][LokiFieldNames.TimeStamp], {
         defaultWithMS: true,
       });
       const logTime = within(el).getByText(expectedTime);

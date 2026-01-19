@@ -303,7 +303,8 @@ interface BuildlistLogsMapProps {
 export function buildlistLogsMap({ logs, timepoints }: BuildlistLogsMapProps) {
   return logs.reduce<Record<UnixTimestamp, StatefulTimepoint>>((acc, log) => {
     const duration = Number(log.labels.duration_seconds) * 1000;
-    const startingTime = log.Time - duration;
+    const logTime = log[LokiFieldNames.TimeStamp];
+    const startingTime = logTime - duration;
     const executionProbeName = log.labels.probe;
 
     // not efficient, but mitigated by just passing in visible timepoints to limit the calculation

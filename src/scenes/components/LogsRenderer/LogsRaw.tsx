@@ -64,8 +64,8 @@ const getPanelData = (logs: UnknownParsedLokiRecord[]): PanelData => {
   const firstLog = logs[0];
   const lastLog = logs[logs.length - 1];
 
-  const from = firstLog[LokiFieldNames.Time];
-  const to = lastLog[LokiFieldNames.Time];
+  const from = firstLog[LokiFieldNames.TimeStamp];
+  const to = lastLog[LokiFieldNames.TimeStamp];
 
   return {
     state: LoadingState.Done,
@@ -80,10 +80,10 @@ const createLogsDataFrame = (logs: UnknownParsedLokiRecord[]): DataFrame => {
       {
         name: 'time',
         type: FieldType.time,
-        values: logs.map((log) => log[LokiFieldNames.Time]),
-        nanos: logs.map((log) => log[LokiFieldNames.TsNs]),
+        values: logs.map((log) => log[LokiFieldNames.TimeStamp]),
+        nanos: logs.map((log) => log.nanos),
       },
-      { name: 'log', type: FieldType.string, values: logs.map((log) => log[LokiFieldNames.Line]) },
+      { name: 'log', type: FieldType.string, values: logs.map((log) => log[LokiFieldNames.Body]) },
       { name: 'labels', type: FieldType.other, values: logs.map((log) => log[LokiFieldNames.Labels]) },
     ],
   });

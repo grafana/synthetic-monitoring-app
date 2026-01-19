@@ -26,7 +26,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
         return (
           <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>
             <div className={styles.time}>
-              {dateTimeFormat(log[LokiFieldNames.Time], {
+              {dateTimeFormat(log[LokiFieldNames.TimeStamp], {
                 defaultWithMS: true,
               })}
             </div>

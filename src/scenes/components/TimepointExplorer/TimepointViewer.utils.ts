@@ -1,4 +1,5 @@
 import { ExecutionLogs, ProbeExecutionLogs } from 'features/parseCheckLogs/checkLogs.types';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 export function filterProbeExecutions(data: ProbeExecutionLogs[], timepoint: StatelessTimepoint): ProbeExecutionLogs[] {
@@ -23,6 +24,8 @@ export function filterExecutions(executions: ExecutionLogs[], timepoint: Statele
     const timepointStart = timepoint.adjustedTime;
     const timepointEnd = timepoint.adjustedTime + timepoint.timepointDuration;
 
-    return startingLog.Time >= timepointStart && startingLog.Time <= timepointEnd;
+    return (
+      startingLog[LokiFieldNames.TimeStamp] >= timepointStart && startingLog[LokiFieldNames.TimeStamp] <= timepointEnd
+    );
   });
 }

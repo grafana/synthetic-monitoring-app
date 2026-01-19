@@ -2,7 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { parseLokiLogs } from 'features/parseLokiLogs/parseLokiLogs';
 import { queryLoki } from 'features/queryDatasources/queryLoki';
 
-import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 
 export type InfiniteLogsParams<T, R> = {
@@ -51,7 +51,7 @@ export function useInfiniteLogs<T, R>({
         return undefined;
       }
 
-      return lastPage[0].Time;
+      return lastPage[0][LokiFieldNames.TimeStamp];
     },
     refetchInterval,
     staleTime,
