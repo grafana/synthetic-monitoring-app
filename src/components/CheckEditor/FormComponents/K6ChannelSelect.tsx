@@ -70,7 +70,7 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
       const labelSuffix = channel.default ? ' (default)' : '';
 
       return {
-        label: `${channel.name}.x${labelSuffix}`,
+        label: `${channel.name}${labelSuffix}`,
         value: channel.id,
         description: `k6 version range: ${channel.manifest}`,
       };

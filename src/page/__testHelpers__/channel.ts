@@ -21,14 +21,14 @@ export const mockChannelsResponse = {
   channels: [
     {
       id: 'v1',
-      name: 'v1',
+      name: 'v1.x',
       default: true,
       deprecatedAfter: '2125-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
       manifest: 'k6>=1,k6<2',
     },
     {
       id: 'v2',
-      name: 'v2',
+      name: 'v2.x',
       default: false,
       deprecatedAfter: '2126-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
       manifest: 'k6>=2',

@@ -86,14 +86,14 @@ describe('K6ChannelSelect', () => {
       channels: [
         {
           id: 'v1',
-          name: 'v1',
+          name: 'v1.x',
           default: true,
           deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
           manifest: 'k6>=1,k6<2',
         },
         {
           id: 'v2',
-          name: 'v2',
+          name: 'v2.x',
           default: false,
           deprecatedAfter: '2028-12-31T00:00:00Z', // Not deprecated
           manifest: 'k6>=2',
@@ -176,14 +176,14 @@ describe('K6ChannelSelect', () => {
       channels: [
         {
           id: 'v1',
-          name: 'v1',
+          name: 'v1.x',
           default: true,
           deprecatedAfter: '2125-12-31T00:00:00Z', // Not deprecated
           manifest: 'k6>=1,k6<2',
         },
         {
           id: 'deprecated',
-          name: 'deprecated',
+          name: 'deprecated.x',
           default: false,
           deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
           manifest: 'k6>=0.5,k6<1',

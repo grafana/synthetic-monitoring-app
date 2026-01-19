@@ -11,21 +11,21 @@ describe('ChannelDetails', () => {
   const mockChannels: K6Channel[] = [
     {
       id: 'v1',
-      name: 'v1',
+      name: 'v1.x',
       default: false,
       deprecatedAfter: '2125-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
       manifest: 'k6>=1',
     },
     {
       id: 'v2',
-      name: 'v2',
+      name: 'v2.x',
       default: true,
       deprecatedAfter: '2126-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
       manifest: 'k6>=2',
     },
     {
       id: 'deprecated',
-      name: 'deprecated',
+      name: 'deprecated.x',
       default: false,
       deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
       manifest: 'k6>=0.5',
@@ -48,14 +48,14 @@ describe('ChannelDetails', () => {
     const allDeprecatedChannels: K6Channel[] = [
       {
         id: 'old-v1',
-        name: 'old-v1',
+        name: 'old-v1.x',
         default: true,
         deprecatedAfter: '2020-01-01T00:00:00Z', // Already deprecated
         manifest: 'k6>=1,k6<2',
       },
       {
         id: 'old-v2',
-        name: 'old-v2',
+        name: 'old-v2.x',
         default: false,
         deprecatedAfter: '2021-01-01T00:00:00Z', // Already deprecated
         manifest: 'k6>=2,k6<3',
