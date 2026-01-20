@@ -41,14 +41,13 @@ apps:
 
 Configuration details:
 
-- `apiHost` expects Synthetic Monitoring API URL, [see more details here](https://github.com/grafana/synthetic-monitoring-api-go-client/blob/main/docs/API.md#api-url)
-
+- `apiHost` expects a Synthetic Monitoring backend address URL. Please see the [online documentation](https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#probe-api-server-url) for the URL of the backend address corresponding to the region of your Grafana Cloud stack, and include the `https://` prefix in the URL.
 - `stackId` expects an integer and can be found using `gcom /instances/<orgSlug>`, or by visiting `https://grafana.com/orgs/<orgSlug>/stacks` and clicking the `details` button on stack you are connecting to. The id will be in the URL.
 - The `logs` and `metrics` section are instructing the plugin which datasources it needs to use.
   - The `grafanaName` needs to exactly match the names specified in your datasource provisioning
   - The `hostedId` expects an integer and is the same value as the `basicAuthUser` in your datasource provisioning. The value can also be found from the `details` page of loki or prometheus at `https://grafana.com/orgs/<orgSlug>/stacks`.
 - `publisherToken` is an access policy token used to communicate with your Cloud stack and publish telemetry data from the probes. The access policy needs to have the following scopes:
-  - Read stacks
+  - Read stacks (Add scope -> stacks:read)
   - Write metrics
   - Write logs
   - Write traces
