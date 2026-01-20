@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.45.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.44.0...v1.45.0) (2026-01-20)
+
+
+### Features
+
+* migrate to plugin-ci-workflows ([#1522](https://github.com/grafana/synthetic-monitoring-app/issues/1522)) ([b92db08](https://github.com/grafana/synthetic-monitoring-app/commit/b92db08f980b62d426a3216e3757cd5c5fc19b41))
+
 ## [1.44.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.43.2...v1.44.0) (2026-01-19)
 
 
