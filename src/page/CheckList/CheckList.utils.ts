@@ -61,8 +61,23 @@ const matchesSelectedProbes = (check: Check, selectedProbes: SelectableValue[]) 
   return check.probes.some((id) => probeIds.includes(id));
 };
 
+const matchesFolderFilter = (check: Check, folderFilter?: string) => {
+  // If no folder filter is set, show all checks
+  if (folderFilter === undefined) {
+    return true;
+  }
+
+  // If folder filter is empty string, show only checks without a folder (root level)
+  if (folderFilter === '') {
+    return !check.folderUid;
+  }
+
+  // Otherwise, match the specific folder
+  return check.folderUid === folderFilter;
+};
+
 export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType) => {
-  const { type, search, labels, status, probes } = checkFilters;
+  const { type, search, labels, status, probes, folder } = checkFilters;
 
   return (
     Boolean(check.id) &&
@@ -70,7 +85,8 @@ export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType) 
     matchesSearchFilter(check, search) &&
     matchesLabelFilter(check, labels) &&
     matchesStatusFilter(check, status) &&
-    matchesSelectedProbes(check, probes)
+    matchesSelectedProbes(check, probes) &&
+    matchesFolderFilter(check, folder)
   );
 };
 

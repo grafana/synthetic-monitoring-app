@@ -5,6 +5,7 @@ import { Spinner } from '@grafana/ui';
 import { CheckPageParams, CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { useChecks } from 'data/useChecks';
+import { useCheckAccess } from 'hooks/useCheckAccess';
 import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
 import { DNSDashboard } from 'scenes/DNS/DnsDashboard';
 import { GrpcDashboard } from 'scenes/GRPC/GrpcDashboard';
@@ -20,43 +21,54 @@ function DashboardPageContent() {
   const { data: checks = [], isLoading } = useChecks();
   const { id } = useParams<CheckPageParams>();
   const check = checks.find((check) => String(check.id) === id);
+  const hasAccess = useCheckAccess(check);
 
-  if (!isLoading && !check) {
+  // Loading state
+  if (isLoading || hasAccess === null) {
+    return <Spinner />;
+  }
+
+  // No access to check (folder permission denied)
+  if (hasAccess === false) {
     return <CheckNotFound />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.GRPC) {
+  // Check doesn't exist
+  if (!check) {
+    return <CheckNotFound />;
+  }
+
+  const checkType = getCheckType(check.settings);
+
+  if (checkType === CheckType.GRPC) {
     return <GrpcDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.TCP) {
+  if (checkType === CheckType.TCP) {
     return <TcpDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.DNS) {
+  if (checkType === CheckType.DNS) {
     return <DNSDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.PING) {
+  if (checkType === CheckType.PING) {
     return <PingDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.HTTP) {
+  if (checkType === CheckType.HTTP) {
     return <HttpDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.Traceroute) {
+  if (checkType === CheckType.Traceroute) {
     return <TracerouteDashboard check={check} />;
   }
 
-  if (
-    check &&
-    (getCheckType(check.settings) === CheckType.Scripted || getCheckType(check.settings) === CheckType.MULTI_HTTP)
-  ) {
+  if (checkType === CheckType.Scripted || checkType === CheckType.MULTI_HTTP) {
     return <ScriptedDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.Browser) {
+  if (checkType === CheckType.Browser) {
     return <BrowserDashboard check={check} />;
   }
 

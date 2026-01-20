@@ -21,6 +21,7 @@ export const baseCheckSchema = z.object({
   labels: labelsSchema,
   publishAdvancedMetrics: z.boolean(),
   alerts: checkAlertsSchema.optional(),
+  folderUid: z.string().optional(),
 });
 
 export function addRefinements<T extends CheckFormValuesBase>(schema: ZodType<T, any, any>) {

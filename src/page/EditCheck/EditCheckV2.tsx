@@ -11,6 +11,7 @@ import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
+import { useCheckAccess } from 'hooks/useCheckAccess';
 import { useHandleSubmitCheckster } from 'hooks/useHandleSubmitCheckster';
 import { useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
@@ -26,6 +27,7 @@ export const EditCheckV2 = () => {
   const { data: checks, isLoading, error, refetch, isFetched } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
   const urlSearchParams = useURLSearchParams();
+  const hasAccess = useCheckAccess(check);
 
   const handleSubmit = useHandleSubmitCheckster(check);
 
@@ -49,6 +51,10 @@ export const EditCheckV2 = () => {
   // Only show spinner for the initial fetch.
   if (isLoading && !isFetched) {
     return <CenteredSpinner />;
+  }
+
+  if (hasAccess === false) {
+    return <AccessDeniedModal checkId={Number(id)} />;
   }
 
   const { canWriteChecks } = getUserPermissions();
@@ -95,6 +101,26 @@ const NotFoundModal = () => {
       <Alert title={``} severity="error">
         We were unable to find your check. It may have been deleted or you may not have access to it. If you think you
         are seeing this message in error, please contact your administrator.
+      </Alert>
+      <Modal.ButtonRow>
+        <LinkButton href={getRoute(AppRoutes.Checks)}>Go to check list</LinkButton>
+      </Modal.ButtonRow>
+    </Modal>
+  );
+};
+
+const AccessDeniedModal = ({ checkId }: { checkId: number }) => {
+  const navigate = useNavigation();
+
+  const handleOnDismiss = useCallback(() => {
+    navigate(AppRoutes.Checks);
+  }, [navigate]);
+
+  return (
+    <Modal title="Access Denied" isOpen onDismiss={handleOnDismiss} closeOnBackdropClick={false} closeOnEscape={false}>
+      <Alert title="" severity="error">
+        You do not have permission to access this check. It is in a folder you don&apos;t have access to. If you believe
+        this is an error, please contact your administrator.
       </Alert>
       <Modal.ButtonRow>
         <LinkButton href={getRoute(AppRoutes.Checks)}>Go to check list</LinkButton>

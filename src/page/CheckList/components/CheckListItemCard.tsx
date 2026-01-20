@@ -9,6 +9,7 @@ import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
+import { CheckFolderBadge } from 'page/CheckList/components/CheckFolderBadge';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
@@ -76,6 +77,7 @@ export const CheckListItemCard = ({
           </div>
           <Stack wrap="wrap" justifyContent="flex-start">
             <div className={styles.labelsContainer}>
+              <CheckFolderBadge check={check} />
               {check.labels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
