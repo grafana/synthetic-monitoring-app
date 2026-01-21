@@ -337,7 +337,7 @@ export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 
   publishAdvancedMetrics: boolean;
   alerts?: CheckAlertFormRecord;
   channels?: {
-    k6?: K6Channel;
+    k6?: K6Channel | K6ChannelRef;
   };
 };
 
@@ -417,7 +417,7 @@ export interface CheckBase {
   alerts?: CheckAlertPublished[];
   disableReason?: string;
   channels?: {
-    k6?: K6Channel;
+    k6?: K6Channel | K6ChannelRef;
   };
 }
 
@@ -904,6 +904,8 @@ export interface K6Channel {
   deprecatedAfter: string;
   manifest: string; // "k6>=1", "k6>1,k6>=0.53"
 }
+
+export type K6ChannelRef = Pick<K6Channel, 'id'>;
 
 export interface ListChannelsResponse {
   channels: K6Channel[];

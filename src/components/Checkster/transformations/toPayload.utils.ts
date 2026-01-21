@@ -16,11 +16,11 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
     target: formValues.target,
     timeout: formValues.timeout,
     channels: formValues.channels?.k6
-      ? ({
+      ? {
           k6: {
             id: formValues.channels.k6.id,
           },
-        } as any)
+        }
       : undefined,
   };
 }
