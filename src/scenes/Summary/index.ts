@@ -1,1 +1,1 @@
-export { getSummaryScene } from './summaryScene';
+export { SummaryDashboard } from './SummaryDashboard';
