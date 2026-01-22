@@ -44,7 +44,7 @@ jobs:
   # Main CI/CD workflow (shared workflow handles: lint, test, build, typecheck)
   cd:
     name: Build and Deploy
-    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v4.3.0
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v6.0.0
     permissions:
       contents: write
       id-token: write
@@ -70,7 +70,7 @@ jobs:
 
       # Other CI inputs
       node-version: 22
-      run-playwright: false
+      run-playwright: true
 
   # SM-specific custom validations (run on both PRs and main)
   
