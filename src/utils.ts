@@ -86,7 +86,7 @@ export function initializeDatasource(datasourcePayload: DatasourcePayload) {
     return firstValueFrom(
       getBackendSrv().fetch<SMOptions>({
         method: 'PUT',
-        url: `api/datasources/${existingDatasource.id}`,
+        url: `api/datasources/uid/${existingDatasource.uid}`,
         data: {
           ...existingDatasource,
           access: 'proxy',
