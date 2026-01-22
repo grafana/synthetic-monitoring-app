@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.46.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.45.0...v1.46.0) (2026-01-22)
+
+
+### Features
+
+* **checks:** add alerts filter to check list ([#1535](https://github.com/grafana/synthetic-monitoring-app/issues/1535)) ([0d1acd5](https://github.com/grafana/synthetic-monitoring-app/commit/0d1acd5aee541bfdff8725b8273e602c1563fc5c))
+
+
+### Fixes
+
+* align channel data structure with backend API specification ([#1543](https://github.com/grafana/synthetic-monitoring-app/issues/1543)) ([55a6d48](https://github.com/grafana/synthetic-monitoring-app/commit/55a6d4856036dc97ba9a2e754cbe49955f1152cd))
+* avoid internal id routes ([#1541](https://github.com/grafana/synthetic-monitoring-app/issues/1541)) ([5acc82f](https://github.com/grafana/synthetic-monitoring-app/commit/5acc82fd6362277f12c11d34c511d4df94460105))
+* update dependency lodash to v4.17.23 [security] ([#1550](https://github.com/grafana/synthetic-monitoring-app/issues/1550)) ([43e0c7e](https://github.com/grafana/synthetic-monitoring-app/commit/43e0c7edbe845048fa43a5c12e11f13ded07b621))
+
+
+### Documentation
+
+* update README configuration details ([#1547](https://github.com/grafana/synthetic-monitoring-app/issues/1547)) ([660d356](https://github.com/grafana/synthetic-monitoring-app/commit/660d35619c0a31f347c50cccb2e35b10203f6bf5))
+
+
+### Miscellaneous Chores
+
+* auto approve ops and prod-canary argo workflows ([#1546](https://github.com/grafana/synthetic-monitoring-app/issues/1546)) ([3c106a6](https://github.com/grafana/synthetic-monitoring-app/commit/3c106a6effa049bdfa3713a86a4e2a560bd33f0b))
+* remove old check editor ([#1445](https://github.com/grafana/synthetic-monitoring-app/issues/1445)) ([2bdfac4](https://github.com/grafana/synthetic-monitoring-app/commit/2bdfac4219e02bd688f7ef80cdedd3d0c9527a52))
+* update dependency @types/k6 to v1 ([#1372](https://github.com/grafana/synthetic-monitoring-app/issues/1372)) ([61b2876](https://github.com/grafana/synthetic-monitoring-app/commit/61b2876c11c32293c27280dae3dbd7311edaf9e1))
+
 ## [1.45.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.44.0...v1.45.0) (2026-01-20)
 
 
