@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { Button, Checkbox, Icon, Select, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, Checkbox, Combobox, Field, Icon, Select, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
@@ -69,6 +69,7 @@ export const CheckListHeader = ({
   viewType,
 }: CheckListHeaderProps) => {
   const { canWriteChecks, canWriteThresholds } = getUserPermissions();
+  const sortId = "sort-by-select";
 
   const styles = useStyles2(getStyles);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
@@ -119,20 +120,17 @@ export const CheckListHeader = ({
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
           )}
         </div>
-        {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-        <Select
-          aria-label="Sort checks by"
-          prefix={
-            <div>
-              <Icon name="sort-amount-down" /> Sort
-            </div>
-          }
-          options={CHECK_LIST_SORT_OPTIONS}
-          defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
-          width={25}
-          onChange={onSort}
-          value={sortType}
-        />
+        <Field label="Sort" htmlFor={sortId} data-fs-element="Sort by select">
+          <Combobox
+            id={sortId}
+            aria-label="Sort checks by"
+            prefixIcon='sort-amount-down'
+            options={CHECK_LIST_SORT_OPTIONS}
+            width={25}
+            onChange={onSort}
+            value={sortType}
+          />
+        </Field>
       </div>
       <ThresholdGlobalSettings onDismiss={() => setShowThresholdModal(false)} isOpen={showThresholdModal} />
     </>

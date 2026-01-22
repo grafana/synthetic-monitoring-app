@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
-import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
+import { Combobox, ComboboxOption, Field, Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
@@ -20,6 +20,9 @@ interface CheckFiltersProps {
 }
 
 export function CheckFilters({ onReset, onChange, checks, checkFilters, includeStatus = true }: CheckFiltersProps) {
+  const statusId = "check-status-filter";
+  const typeId = "check-type-filter";
+  const alertsId = "check-alerts-filter";
   const checkTypeOptions = useCheckTypeOptions();
   const filterDesc = checkTypeOptions.map((option) => {
     return {
@@ -36,7 +39,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
     ...filterDesc,
   ];
 
-  const alertOptions: Array<SelectableValue<CheckAlertsFilter>> = [
+  const alertOptions: Array<ComboboxOption<CheckAlertsFilter>> = [
     { label: 'All', value: 'all' },
     { label: 'With alerts', value: 'with' },
     { label: 'Without alerts', value: 'without' },
@@ -86,32 +89,35 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
       <CheckFilterGroup onReset={onReset} filters={checkFilters}>
         <div className={styles.flexRow}>
           {includeStatus && (
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            <Select
-              prefix="Status"
-              aria-label="Filter by status"
-              data-testid="check-status-filter"
-              options={CHECK_LIST_STATUS_OPTIONS}
-              width={20}
-              className={styles.verticalSpace}
-              onChange={(option) => {
-                onChange(
-                  {
-                    ...checkFilters,
-                    status: option,
-                  },
-                  'status'
-                );
-              }}
-              value={checkFilters.status}
-            />
+            <Field label="Status" htmlFor={statusId} data-fs-element="Status select" className={css({
+              marginBottom: 0,
+            })}>
+                <Combobox
+                  id={statusId}
+                  aria-label="Filter by status"
+                  data-testid="check-status-filter"
+                  options={CHECK_LIST_STATUS_OPTIONS}
+                  width={20}
+                  onChange={(option) => {
+                    onChange(
+                      {
+                        ...checkFilters,
+                        status: option,
+                      },
+                      'status'
+                    );
+                  }}
+                  value={checkFilters.status}
+                />
+            </Field>
           )}
-          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-          <Select
+          <Field label="Type" htmlFor={typeId} data-fs-element="Type select" className={css({
+            marginBottom: 0,
+          })}>
+            <Combobox
             aria-label="Filter by type"
-            prefix="Types"
+            id={typeId}
             options={options}
-            className={styles.verticalSpace}
             width={20}
             onChange={(selected: SelectableValue) => {
               onChange(
@@ -124,25 +130,28 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
             }}
             value={checkFilters.type}
           />
-          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-          <Select
+                    </Field>
+          <Field label="Alerts" htmlFor={alertsId} data-fs-element="Alerts select" className={css({
+            marginBottom: 0,
+          })}>
+          <Combobox
             aria-label="Filter by alerts"
-            prefix="Alerts"
+            id={alertsId}
             data-testid="check-alerts-filter"
             options={alertOptions}
-            className={styles.verticalSpace}
             width={20}
-            onChange={(selected: SelectableValue<CheckAlertsFilter>) => {
+            onChange={(option) => {
               onChange(
                 {
                   ...checkFilters,
-                  alerts: selected?.value ?? checkFilters.alerts,
+                  alerts: option?.value ?? checkFilters.alerts,
                 },
                 'alerts'
               );
             }}
             value={checkFilters.alerts}
           />
+          </Field>
         </div>
         <LabelFilterInput
           checks={checks}

@@ -1,4 +1,4 @@
-import { SelectableValue } from '@grafana/data';
+import { ComboboxOption } from '@grafana/ui';
 
 import {
   AlertFamily,
@@ -36,7 +36,7 @@ export const DNS_RESPONSE_CODES = Object.values(DnsResponseCodesEnum).map((respo
   value: responseCode,
 }));
 
-export const DNS_RESPONSE_MATCH_OPTIONS = [
+export const DNS_RESPONSE_MATCH_OPTIONS: Array<ComboboxOption<ResponseMatchType>> = [
   { label: `Fail if ${ResponseMatchType.Authority} matches`, value: ResponseMatchType.Authority },
   { label: `Fail if ${ResponseMatchType.Answer} matches`, value: ResponseMatchType.Answer },
   { label: `Fail if ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
@@ -92,7 +92,7 @@ export const DNS_PROTOCOLS = [
   },
 ];
 
-export const IP_OPTIONS = [
+export const IP_OPTIONS: Array<ComboboxOption<IpVersion>> = [
   {
     label: 'Any',
     value: IpVersion.Any,
@@ -107,7 +107,7 @@ export const IP_OPTIONS = [
   },
 ];
 
-export const HTTP_SSL_OPTIONS = [
+export const HTTP_SSL_OPTIONS: Array<ComboboxOption<HttpSslOption>> = [
   {
     label: 'Ignore SSL',
     value: HttpSslOption.Ignore,
@@ -122,12 +122,12 @@ export const HTTP_SSL_OPTIONS = [
   },
 ];
 
-export const HTTP_REGEX_VALIDATION_OPTIONS = [
+export const HTTP_REGEX_VALIDATION_OPTIONS: Array<ComboboxOption<HttpRegexValidationType>> = [
   { label: 'Check fails if response header matches', value: HttpRegexValidationType.Header },
   { label: 'Check fails if response body matches', value: HttpRegexValidationType.Body },
 ];
 
-export const TIME_UNIT_OPTIONS = [
+export const TIME_UNIT_OPTIONS: Array<ComboboxOption<TimeUnits>> = [
   {
     label: 'seconds',
     value: TimeUnits.Seconds,
@@ -411,7 +411,7 @@ export const colors = {
 export const LEGACY_METRICS_DS_NAME = 'Synthetic Monitoring Metrics';
 export const LEGACY_LOGS_DS_NAME = 'Synthetic Monitoring Logs';
 export const SM_ALERTING_NAMESPACE = 'synthetic_monitoring';
-export const ALERTING_SEVERITY_OPTIONS = [
+export const ALERTING_SEVERITY_OPTIONS: Array<ComboboxOption<AlertSeverity>> = [
   {
     label: 'Critical',
     value: AlertSeverity.Critical,
@@ -430,7 +430,7 @@ export const ALERTING_SEVERITY_OPTIONS = [
   },
 ];
 
-export const ALERT_SENSITIVITY_OPTIONS = [
+export const ALERT_SENSITIVITY_OPTIONS: Array<ComboboxOption<AlertSensitivity>> = [
   { label: 'None', value: AlertSensitivity.None },
   { label: 'Low', value: AlertSensitivity.Low },
   { label: 'Medium', value: AlertSensitivity.Medium },
@@ -466,7 +466,7 @@ export const getDefaultAlertAnnotations = (percentage: number) => ({
   summary: `check success below ${percentage}%`,
 });
 
-export const HTTP_COMPRESSION_ALGO_OPTIONS = [
+export const HTTP_COMPRESSION_ALGO_OPTIONS: Array<ComboboxOption<HTTPCompressionAlgo>> = [
   { label: 'none', value: HTTPCompressionAlgo.None },
   { label: 'identity', value: HTTPCompressionAlgo.Identity },
   { label: 'br', value: HTTPCompressionAlgo.Br },
@@ -474,7 +474,7 @@ export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   { label: 'deflate', value: HTTPCompressionAlgo.Deflate },
 ];
 
-export const METHOD_OPTIONS = [
+export const METHOD_OPTIONS: Array<ComboboxOption<HttpMethod>> = [
   {
     label: 'GET',
     value: HttpMethod.Get,
@@ -509,20 +509,20 @@ export const headerNameOptions = [
   { label: 'Content-Type', value: 'Content-Type' },
 ];
 
-export const MULTI_HTTP_VARIABLE_TYPE_OPTIONS = [
+export const MULTI_HTTP_VARIABLE_TYPE_OPTIONS: Array<ComboboxOption<MultiHttpVariableType>> = [
   { label: 'JSON Path', value: MultiHttpVariableType.JsonPath },
   { label: 'Regular Expression', value: MultiHttpVariableType.Regex },
   { label: 'CSS Selector', value: MultiHttpVariableType.CssSelector },
 ];
 
-export const MULTI_HTTP_ASSERTION_TYPE_OPTIONS = [
+export const MULTI_HTTP_ASSERTION_TYPE_OPTIONS: Array<ComboboxOption<MultiHttpAssertionType>> = [
   { label: 'Text', value: MultiHttpAssertionType.Text },
   { label: 'JSON path value', value: MultiHttpAssertionType.JSONPathValue },
   { label: 'JSON path', value: MultiHttpAssertionType.JSONPath },
   { label: 'Regex', value: MultiHttpAssertionType.Regex },
 ];
 
-export const ASSERTION_CONDITION_OPTIONS: Array<SelectableValue<AssertionConditionVariant>> = [
+export const ASSERTION_CONDITION_OPTIONS: Array<ComboboxOption<AssertionConditionVariant>> = [
   { label: 'Contains', value: AssertionConditionVariant.Contains },
   { label: 'Does not contain', value: AssertionConditionVariant.NotContains },
   { label: 'Equals', value: AssertionConditionVariant.Equals },
@@ -530,7 +530,7 @@ export const ASSERTION_CONDITION_OPTIONS: Array<SelectableValue<AssertionConditi
   { label: 'Ends with', value: AssertionConditionVariant.EndsWith },
 ];
 
-export const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<AssertionSubjectVariant>> = [
+export const ASSERTION_SUBJECT_OPTIONS: Array<ComboboxOption<AssertionSubjectVariant>> = [
   { label: 'Body', value: AssertionSubjectVariant.ResponseBody },
   { label: 'Headers', value: AssertionSubjectVariant.ResponseHeaders },
   { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },

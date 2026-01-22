@@ -3,7 +3,7 @@ import { useAsyncCallback } from 'react-async-hook';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { FetchResponse } from '@grafana/runtime';
-import { Alert, Button, Field, Icon, Input, Label, Select, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Combobox, Field, Icon, Input, Label, Stack, useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
@@ -227,8 +227,7 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
                   <Controller
                     render={({ field }) => {
                       const { ref, ...rest } = field;
-                      // eslint-disable-next-line @typescript-eslint/no-deprecated
-                      return <Select {...rest} options={ALERT_SENSITIVITY_OPTIONS} disabled={!canEdit} />;
+                      return <Combobox {...rest} options={ALERT_SENSITIVITY_OPTIONS} disabled={!canEdit} value={field.value.value} />;
                     }}
                     control={control}
                     name="sensitivity"
@@ -269,8 +268,7 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
                     render={({ field }) => {
                       const { ref, ...rest } = field;
                       return (
-                        // eslint-disable-next-line @typescript-eslint/no-deprecated
-                        <Select {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" disabled={!canEdit} />
+                        <Combobox {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" disabled={!canEdit} value={field.value.value} />
                       );
                     }}
                     control={control}

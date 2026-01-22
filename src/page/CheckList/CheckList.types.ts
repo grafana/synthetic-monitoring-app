@@ -1,4 +1,5 @@
 import { SelectableValue } from '@grafana/data';
+import { ComboboxOption } from '@grafana/ui';
 
 import { Check, CheckEnabledStatus, CheckType, DashboardSceneAppConfig } from 'types';
 
@@ -24,7 +25,7 @@ export interface CheckFiltersType {
   search: string;
   labels: string[];
   type: CheckTypeFilter;
-  status: SelectableValue<CheckEnabledStatus>;
+  status: ComboboxOption<CheckEnabledStatus>;
   probes: Array<SelectableValue<ProbeFilter>>;
   alerts: CheckAlertsFilter;
 }
