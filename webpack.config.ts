@@ -83,6 +83,11 @@ const config = async (env): Promise<Configuration> => {
       },
     },
   })(customConfig, baseConfig, {
+    // Externalize react/jsx-runtime for React 19 compatibility
+    // Required to prevent __SECRET_INTERNALS crashes with @tanstack/react-query
+    // See: https://grafana.com/blog/2025/01/22/react-19-is-coming-to-grafana-what-plugin-developers-need-to-know/
+    // Requires Grafana >= 12.3.0
+    externals: ['react/jsx-runtime', 'react/jsx-dev-runtime'],
     output: {
       asyncChunks: true,
       publicPath: `public/plugins/${pluginJson.id}/`,
