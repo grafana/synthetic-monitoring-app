@@ -1,15 +1,17 @@
 # https://github.com/grafana/mimir-limits-operator/blob/main/.github/workflows/renovate-reviewer.yaml
 # slack context: https://raintank-corp.slack.com/archives/C07QXFPF1B2/p1761690200989699
 name: Renovate reviewer
+
+permissions:
+  pull-requests: write
+  contents: write
+  id-token: write
+
 on:
   workflow_call:
 
 jobs:
   review-renovate-pr:
-    permissions:
-      pull-requests: write
-      contents: write
-      id-token: write
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.user.login == 'renovate-sh-app[bot]' }}
     env:
