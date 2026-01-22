@@ -196,9 +196,17 @@ describe('K6ChannelSelect', () => {
       settings: { 
         browser: { 
           script: 'test script',
-          channel: 'deprecated' 
         } 
-      } 
+      },
+      channels: {
+        k6: {
+          id: 'deprecated',
+          name: 'deprecated.x',
+          default: false,
+          deprecatedAfter: '2020-01-01T00:00:00Z',
+          manifest: 'k6>=0.5,k6<1',
+        }
+      }
     };
 
     server.use(

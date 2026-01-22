@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { Check, FeatureName, K6Channel } from 'types';
-import { isBrowserCheck, isScriptedCheck } from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useSMDS } from 'hooks/useSMDS';
@@ -67,17 +66,8 @@ export function useFilteredK6Channels(isScriptedOrBrowser: boolean, check?: Chec
     const originalChannels = channelsResponse?.channels || [];
     const isExistingCheck = !!check;
     
-    // Get the previous channel ID for existing checks
-    const previousChannelId = isExistingCheck && check
-      ? (() => {
-          if (isScriptedCheck(check) && check.settings && 'scripted' in check.settings) {
-            return check.settings.scripted.channel || null;
-          }
-          if (isBrowserCheck(check) && check.settings && 'browser' in check.settings) {
-            return check.settings.browser.channel || null;
-          }
-          return null;
-        })()
+    const previousChannelId = isExistingCheck && check?.channels?.k6?.id
+      ? check.channels.k6.id
       : null;
     
     const filteredChannels = getFilteredChannels(originalChannels, isExistingCheck, previousChannelId);

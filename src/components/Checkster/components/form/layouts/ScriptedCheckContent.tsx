@@ -22,17 +22,15 @@ import { GenericScriptField } from '../generic/GenericScriptField';
 
 interface ScriptedCheckSectionProps {
   scriptField?: `settings.${CheckType.Scripted | CheckType.Browser}.script`;
-  channelField?: `settings.${CheckType.Scripted | CheckType.Browser}.channel`;
   examples?: ExampleScript[];
 }
 
-export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'settings.scripted.channel', 'settings.scripted.script'];
+export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'channels.k6', 'settings.scripted.script'];
 
 // Don't set label here, set it explicitly, where the component is used (for readability)
 export function ScriptedCheckContent({
   examples = SCRIPT_EXAMPLES,
   scriptField = 'settings.scripted.script',
-  channelField = 'settings.scripted.channel',
 }: ScriptedCheckSectionProps) {
   const theme = useTheme2();
   const hasExamples = examples && examples?.length > 0;
@@ -48,7 +46,7 @@ export function ScriptedCheckContent({
       <Column fill>
         <FormTabs actions={<HelpButton />}>
           <FormTabContent label="Script" fillVertical vanilla>
-            <GenericScriptField field={scriptField} channelField={channelField} />
+            <GenericScriptField field={scriptField} />
           </FormTabContent>
           {hasExamples && (
             <FormTabContent label="Examples" fillVertical vanilla className={styles.codeSnippetWrapper}>

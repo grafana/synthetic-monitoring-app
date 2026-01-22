@@ -46,6 +46,9 @@ export function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 
     target: check.target,
     timeout: check.timeout,
     alerts: predefinedAlertsToFormValues(GLOBAL_PREDEFINED_ALERTS, check.alerts || []),
+    channels: {
+      k6: check.channels?.k6,
+    },
   };
 }
 

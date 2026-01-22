@@ -27,16 +27,9 @@ export const ProbesList = ({
   const { isEnabled: isVersionManagementEnabled } = useFeatureFlag(FeatureName.VersionManagement);
   const { getValues } = useFormContext<CheckFormValues>();
 
-  const checkType = getValues('checkType');
   const selectedChannel = useMemo(() => {
-    if (checkType === 'scripted') {
-      return getValues('settings.scripted.channel');
-    }
-    if (checkType === 'browser') {
-      return getValues('settings.browser.channel');
-    }
-    return undefined;
-  }, [checkType, getValues]);
+    return getValues('channels.k6.id');
+  }, [getValues]);
 
   const isProbeCompatible = (probe: ProbeWithMetadata): boolean => {
     if (!isVersionManagementEnabled || !selectedChannel || !probe.k6Versions) {

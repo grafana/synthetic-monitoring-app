@@ -1,12 +1,20 @@
 import { z } from 'zod';
 import { PRIVATE_PROBE, PUBLIC_PROBE, UNSELECTED_PRIVATE_PROBE } from 'test/fixtures/probes';
 
-import { type CheckFormValuesBrowser, type CheckFormValuesScripted, CheckType, type ProbeWithMetadata } from 'types';
+import { type CheckFormValuesBrowser, type CheckFormValuesScripted, CheckType, type K6Channel, type ProbeWithMetadata } from 'types';
 
 import { EMPTY_METADATA } from '../../data/data.constants';
 import { addRefinements } from './BaseCheckSchema';
 import { createBrowserCheckSchema } from './BrowserCheckSchema';
 import { createScriptedCheckSchema } from './ScriptedCheckSchema';
+
+const mockK6Channel = (id: string): K6Channel => ({
+  id,
+  name: `${id}.x`,
+  default: id === 'v1',
+  deprecatedAfter: '3000-01-01T00:00:00Z',
+  manifest: `k6>=${id.substring(1)}`,
+});
 
 const mockProbes: ProbeWithMetadata[] = [
   {
@@ -56,8 +64,10 @@ describe('K6 Channel Validation', () => {
       settings: {
         scripted: {
           script: 'console.log("test");',
-          channel: 'v1',
         },
+      },
+      channels: {
+        k6: mockK6Channel('v1'),
       },
     };
 
@@ -66,16 +76,11 @@ describe('K6 Channel Validation', () => {
       expect(() => schema.parse(validScriptedCheck)).not.toThrow();
     });
 
-    it('should pass validation when channel is null', () => {
+    it('should pass validation when channel is undefined', () => {
       const schema = createScriptedCheckSchema();
       const checkWithoutChannel = {
         ...validScriptedCheck,
-        settings: {
-          scripted: {
-            ...validScriptedCheck.settings.scripted,
-            channel: null,
-          },
-        },
+        channels: undefined,
       };
 
       expect(() => schema.parse(checkWithoutChannel)).not.toThrow();
@@ -97,8 +102,10 @@ describe('K6 Channel Validation', () => {
       settings: {
         scripted: {
           script: 'console.log("test");',
-          channel: 'v1',
         },
+      },
+      channels: {
+        k6: mockK6Channel('v1'),
       },
     };
 
@@ -113,11 +120,8 @@ describe('K6 Channel Validation', () => {
       const checkWithIncompatibleProbe: CheckFormValuesScripted = {
         ...baseCheck,
         probes: [PRIVATE_PROBE.id!], // PRIVATE_PROBE doesn't have v2
-        settings: {
-          scripted: {
-            script: 'console.log("test");',
-            channel: 'v2',
-          },
+        channels: {
+          k6: mockK6Channel('v2'),
         },
       };
 
@@ -131,11 +135,8 @@ describe('K6 Channel Validation', () => {
       const checkWithIncompatibleProbe: CheckFormValuesScripted = {
         ...baseCheck,
         probes: [PRIVATE_PROBE.id!],
-        settings: {
-          scripted: {
-            script: 'console.log("test");',
-            channel: 'v2',
-          },
+        channels: {
+          k6: mockK6Channel('v2'),
         },
       };
 
@@ -158,15 +159,10 @@ describe('K6 Channel Validation', () => {
       }
     });
 
-    it('should pass validation when channel is null (no validation needed)', () => {
+    it('should pass validation when channel is undefined (no validation needed)', () => {
       const checkWithoutChannel: CheckFormValuesScripted = {
         ...baseCheck,
-        settings: {
-          scripted: {
-            script: 'console.log("test");',
-            channel: null,
-          },
-        },
+        channels: undefined,
       };
 
       const schema = createScriptedCheckSchema(mockProbes);
@@ -179,11 +175,8 @@ describe('K6 Channel Validation', () => {
       const checkWithMultipleIncompatibleProbes: CheckFormValuesScripted = {
         ...baseCheck,
         probes: [PRIVATE_PROBE.id!, UNSELECTED_PRIVATE_PROBE.id!], // Neither has v2
-        settings: {
-          scripted: {
-            script: 'console.log("test");',
-            channel: 'v2',
-          },
+        channels: {
+          k6: mockK6Channel('v2'),
         },
       };
 
@@ -212,11 +205,8 @@ describe('K6 Channel Validation', () => {
       const checkWithAnyChannel: CheckFormValuesScripted = {
         ...baseCheck,
         probes: [PRIVATE_PROBE.id!],
-        settings: {
-          scripted: {
-            script: 'console.log("test");',
-            channel: 'non-existent-channel',
-          },
+        channels: {
+          k6: mockK6Channel('non-existent-channel'),
         },
       };
 
@@ -259,8 +249,10 @@ describe('K6 Channel Validation', () => {
               await page.close();
             }
           `,
-          channel: 'v1',
         },
+      },
+      channels: {
+        k6: mockK6Channel('v1'),
       },
     };
 
@@ -269,16 +261,11 @@ describe('K6 Channel Validation', () => {
       expect(() => schema.parse(validBrowserCheck)).not.toThrow();
     });
 
-    it('should pass validation when channel is null', () => {
+    it('should pass validation when channel is undefined', () => {
       const schema = createBrowserCheckSchema();
       const checkWithoutChannel = {
         ...validBrowserCheck,
-        settings: {
-          browser: {
-            ...validBrowserCheck.settings.browser,
-            channel: null,
-          },
-        },
+        channels: undefined,
       };
 
       expect(() => schema.parse(checkWithoutChannel)).not.toThrow();
@@ -318,8 +305,10 @@ describe('K6 Channel Validation', () => {
               await page.goto('https://example.com');
             }
           `,
-          channel: 'v2',
         },
+      },
+      channels: {
+        k6: mockK6Channel('v2'),
       },
     };
 
@@ -367,15 +356,10 @@ describe('K6 Channel Validation', () => {
       }
     });
 
-    it('should pass validation when channel is null (no validation needed)', () => {
+    it('should pass validation when channel is undefined (no validation needed)', () => {
       const checkWithoutChannel: CheckFormValuesBrowser = {
         ...baseCheck,
-        settings: {
-          browser: {
-            script: baseCheck.settings.browser.script,
-            channel: null,
-          },
-        },
+        channels: undefined,
       };
 
       const schema = createBrowserCheckSchema(mockProbes);
@@ -391,11 +375,8 @@ describe('K6 Channel Validation', () => {
       const checkWithAnyChannel: CheckFormValuesBrowser = {
         ...baseCheck,
         probes: [PRIVATE_PROBE.id!],
-        settings: {
-          browser: {
-            script: baseCheck.settings.browser.script,
-            channel: 'non-existent-channel',
-          },
+        channels: {
+          k6: mockK6Channel('non-existent-channel'),
         },
       };
 
