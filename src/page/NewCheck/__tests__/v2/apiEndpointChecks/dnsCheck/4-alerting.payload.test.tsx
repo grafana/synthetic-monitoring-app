@@ -6,7 +6,7 @@ import { probeToMetadataProbe } from 'test/utils';
 import { CheckAlertType, CheckType } from 'types';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
-import { renderNewFormV2, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
+import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
@@ -14,7 +14,7 @@ const checkType = CheckType.DNS;
 
 describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Execution);
     await submitForm(user);
@@ -24,7 +24,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`can add DNS request duration latency alert`, async () => {
-    const { user, read } = await renderNewFormV2(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
@@ -64,7 +64,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`should display an error message when latency alert period is less than check frequency`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
 

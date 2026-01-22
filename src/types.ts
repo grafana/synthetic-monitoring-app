@@ -736,7 +736,6 @@ export enum FeatureName {
   GRPCChecks = 'grpc-checks',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
-  CheckEditor = 'synthetic-monitoring-check-editor',
   VersionManagement = 'synthetic-monitoring-version-management',
   __TURNOFF = 'test-only-do-not-use',
 }

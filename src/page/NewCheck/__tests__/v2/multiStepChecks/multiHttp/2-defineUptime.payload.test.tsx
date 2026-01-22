@@ -4,7 +4,7 @@ import { CheckType, MultiHttpAssertionType } from 'types';
 import { gotoSection, selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
 import { AssertionConditionVariant, AssertionSubjectVariant } from 'components/MultiHttp/MultiHttpTypes';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 const checkType = CheckType.MULTI_HTTP;
@@ -12,7 +12,7 @@ const checkType = CheckType.MULTI_HTTP;
 describe(`MultiHTTPCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
     const FIFTEEN_SECONDS_IN_MS = 15 * 1000;
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
@@ -25,7 +25,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) payload`, () => {
     it(`can add a text assertion`, async () => {
       const ASSERTION_VALUE = `some lovely value`;
 
-      const { user, read } = await renderNewFormV2(checkType);
+      const { user, read } = await renderNewForm(checkType);
 
       await fillMandatoryFields({ user, checkType });
       await gotoSection(user, FormSectionName.Uptime);
@@ -55,7 +55,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) payload`, () => {
       const ASSERTION_VALUE = `some lovely value`;
       const EXPRESSION_VALUE = `some lovely expression`;
 
-      const { user, read } = await renderNewFormV2(checkType);
+      const { user, read } = await renderNewForm(checkType);
 
       await fillMandatoryFields({ user, checkType });
       await gotoSection(user, FormSectionName.Uptime);
@@ -84,7 +84,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) payload`, () => {
     it(`can add a json path assertion`, async () => {
       const EXPRESSION_VALUE = `some lovely expression`;
 
-      const { user, read } = await renderNewFormV2(checkType);
+      const { user, read } = await renderNewForm(checkType);
 
       await fillMandatoryFields({ user, checkType });
       await gotoSection(user, FormSectionName.Uptime);
@@ -109,7 +109,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) payload`, () => {
     it(`can add a regex assertion`, async () => {
       const EXPRESSION_VALUE = `some lovely value`;
 
-      const { user, read } = await renderNewFormV2(checkType);
+      const { user, read } = await renderNewForm(checkType);
 
       await fillMandatoryFields({ user, checkType });
       await gotoSection(user, FormSectionName.Uptime);
@@ -137,7 +137,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) payload`, () => {
       const EXPRESSION_VALUE_1 = `some lovely value`;
       const EXPRESSION_VALUE_2 = `some other lovely value`;
 
-      const { user, read } = await renderNewFormV2(checkType);
+      const { user, read } = await renderNewForm(checkType);
 
       await fillMandatoryFields({ user, checkType });
       await gotoSection(user, FormSectionName.Uptime);
@@ -173,7 +173,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can set the timeout`, async () => {
-    const { user, read } = await renderNewFormV2(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Uptime);
 

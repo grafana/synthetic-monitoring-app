@@ -5,15 +5,15 @@ import { render } from 'test/render';
 
 import { Check, CheckType } from 'types';
 
-import { CheckFormContextProvider } from './CheckForm/CheckFormContext';
+import { ChecksterProvider } from './Checkster/contexts/ChecksterContext';
 import { CheckUsage } from './CheckUsage';
 import { fallbackCheckMap } from './constants';
 
-function RenderWrapper({ check }: { check?: Check }) {
+function RenderWrapper() {
   return (
-    <CheckFormContextProvider check={check}>
+    <ChecksterProvider>
       <CheckUsage checkType={CheckType.HTTP} />
-    </CheckFormContextProvider>
+    </ChecksterProvider>
   );
 }
 

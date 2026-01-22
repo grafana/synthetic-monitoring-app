@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
@@ -12,7 +12,7 @@ describe(`HttpCheck - Section 1 (Request) Request Options payload`, () => {
   it(`can add proxy URL`, async () => {
     const PROXY_URL = `https://proxy.com`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.click(screen.getByText('Request options'));
     await user.click(screen.getByText('Proxy'));
     await user.type(screen.getByLabelText('Proxy URL', { exact: false }), PROXY_URL);
@@ -29,7 +29,7 @@ describe(`HttpCheck - Section 1 (Request) Request Options payload`, () => {
     const PROXY_HEADER_KEY_2 = `proxy-header-key-2`;
     const PROXY_HEADER_VALUE_2 = `proxy-header-value-2`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.click(screen.getByText('Request options'));
     await user.click(screen.getByText('Proxy'));
     const addRequestHeaderButton = screen.getByRole('button', { name: /Proxy connect header/ });

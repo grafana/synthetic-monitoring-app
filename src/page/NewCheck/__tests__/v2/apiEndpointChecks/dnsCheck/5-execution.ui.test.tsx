@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 
 import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckType } from 'types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { gotoSection, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import {
@@ -14,7 +14,7 @@ const checkType = CheckType.DNS;
 
 describe(`DNSCheck - Section 5 (Execution) UI`, () => {
   it(`validates the form and goes to the first error when clicking submit`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
 
     await gotoSection(user, FormSectionName.Labels);
     const addLabelButton = screen.getByRole('button', { name: /Label/ });
@@ -24,13 +24,13 @@ describe(`DNSCheck - Section 5 (Execution) UI`, () => {
   });
 
   it(`displays the test button`, async () => {
-    await renderNewFormV2(checkType);
+    await renderNewForm(checkType);
     const adhocCheckButton = getAdhocCheckTestButton();
     expect(adhocCheckButton).toBeInTheDocument();
   });
 
   it(`validates the form and goes to the first error when clicking test`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
 
     await gotoSection(user, FormSectionName.Alerting);
     await doAdhocCheck(user);

@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/react';
 import { CheckType } from 'types';
 import { gotoSection } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 const checkType = CheckType.MULTI_HTTP;
 
@@ -12,7 +12,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) UI`, () => {
     const VAR_1 = 'a lovely variable';
     const VAR_2 = 'another lovely variable';
 
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     const entry1 = screen.getByLabelText(`Request entry 1`);
     await user.click(within(entry1).getByText(`Variables`));
     await user.click(within(entry1).getByRole('button', { name: 'Variable' }));
@@ -38,7 +38,7 @@ describe(`MultiHTTPCheck - Section 2 (Define uptime) UI`, () => {
   });
 
   it(`displays the correct amount of assertion fields corresponding to the amount of requests`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     const addRequestButton = screen.getByRole('button', { name: 'Request' });
     await user.click(addRequestButton);
     await user.click(addRequestButton);

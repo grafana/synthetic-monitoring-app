@@ -16,8 +16,8 @@ import type {
 } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
-import { EMPTY_METADATA, PROBES_METADATA } from 'components/CheckEditor/ProbesMetadata';
 
+import { EMPTY_METADATA, PROBES_METADATA } from './data.constants';
 import { useChecks } from './useChecks';
 
 export const queryKeys: Record<'list', QueryKey> = {
