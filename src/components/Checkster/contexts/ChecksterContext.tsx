@@ -22,10 +22,10 @@ import { Check, CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
 import { getCheckType } from 'utils';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
-import { useProbeCompatibilityKey } from 'components/CheckForm/CheckForm.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
+import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
 import { flattenObjectKeys } from '../utils/form';

@@ -12,7 +12,7 @@ import { CheckAlertType, CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { renderNewFormV2, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
+import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../__testHelpers__/v2.utils';
 
@@ -26,7 +26,7 @@ jest.mock('features/tracking/checkFormEvents', () => ({
 
 describe(`<NewCheckV2 /> journey`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
 
     server.use(
       apiRoute(`addCheck`, {
@@ -63,7 +63,7 @@ describe(`<NewCheckV2 /> journey`, () => {
       })
     );
 
-    await renderNewFormV2(CheckType.HTTP);
+    await renderNewForm(CheckType.HTTP);
     expect(await screen.findByText(/You have reached your check limit of /)).toBeInTheDocument();
   });
 
@@ -85,7 +85,7 @@ describe(`<NewCheckV2 /> journey`, () => {
       })
     );
 
-    await renderNewFormV2(CheckType.HTTP);
+    await renderNewForm(CheckType.HTTP);
     const jobInput = screen.getByLabelText(/Job name/);
     expect(jobInput).toBeInTheDocument();
     expect(jobInput).toBeDisabled();
@@ -102,26 +102,26 @@ describe(`<NewCheckV2 /> journey`, () => {
       })
     );
 
-    const { container } = await renderNewFormV2(CheckType.HTTP);
+    const { container } = await renderNewForm(CheckType.HTTP);
     expect(container.querySelector('#check-editor-job-input')).not.toBeDisabled();
   });
 
   it(`should show the mothly execution limit warning when the limit is reached for HG free tier customers`, async () => {
     runTestAsHGFreeUserOverLimit();
 
-    await renderNewFormV2(CheckType.HTTP);
+    await renderNewForm(CheckType.HTTP);
     expect(await screen.findByText(/You have reached your monthly execution limit of/)).toBeInTheDocument();
   });
 
   it(`should disable the form when the mothly execution limit is reached for HG free tier customers`, async () => {
     runTestAsHGFreeUserOverLimit();
 
-    await renderNewFormV2(CheckType.HTTP);
+    await renderNewForm(CheckType.HTTP);
     expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeDisabled();
   });
 
   it(`should focus the probes filter component when appropriate`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
 
     await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
     await submitForm(user);
@@ -131,7 +131,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should display an error message when the job name contains commas`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
     const jobField = screen.getByLabelText(/job name/i);
     await user.type(jobField, 'job name with, comma');
     await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['job'] });
@@ -141,7 +141,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should display an error message when the job name contains single quotes`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
     const jobField = screen.getByLabelText(/job name/i);
     await user.type(jobField, `job name with ' single quote`);
     await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['job'] });
@@ -152,7 +152,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should display an error message when the job name contains double quotes`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
     const jobField = screen.getByLabelText(/job name/i);
     await user.type(jobField, 'job name with " double quote');
 
@@ -170,7 +170,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`trims white spaces from job name`, async () => {
-    const { read, user } = await renderNewFormV2(CheckType.HTTP);
+    const { read, user } = await renderNewForm(CheckType.HTTP);
 
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     await user.type(jobNameInput, `   my job name   `);
@@ -184,7 +184,7 @@ describe(`<NewCheckV2 /> journey`, () => {
 
   it(`should disable the test button when the user doesn't have logs access`, async () => {
     runTestWithoutLogsAccess();
-    await renderNewFormV2(CheckType.HTTP);
+    await renderNewForm(CheckType.HTTP);
 
     const testButton = screen.getByRole(`button`, { name: /Test/ });
     expect(testButton).toBeInTheDocument();
@@ -192,12 +192,12 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`disables the submit button by default`, async () => {
-    await renderNewFormV2(CheckType.HTTP);
+    await renderNewForm(CheckType.HTTP);
     expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).not.toBeEnabled();
   });
 
   it(`enables the submit button when a field is edited`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     await user.type(jobNameInput, 'My Job Name');
     const submitButton = await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton);
@@ -205,7 +205,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`has the save button enabled after a failed submission`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
 
     server.use(
       apiRoute(`addCheck`, {
@@ -228,7 +228,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should display an error message when the frequency is less than the timeout`, async () => {
-    const { user } = await renderNewFormV2(CheckType.Scripted);
+    const { user } = await renderNewForm(CheckType.Scripted);
 
     await user.type(screen.getByLabelText('Job name', { exact: false }), `Job`);
     await user.type(screen.getByLabelText(`Instance`, { exact: false }), `Instance`);
@@ -258,7 +258,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should revalidate the form when the frequency is changed`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
     await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
@@ -281,7 +281,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should redirect to check the dashboard when the check is created`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
 
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     await user.type(jobNameInput, `   my job name   `);
@@ -294,7 +294,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should enable the save button when an alert is enabled`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
 
     await gotoSection(user, FormSectionName.Alerting);
     expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeDisabled();
@@ -303,7 +303,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should track check creation with check type`, async () => {
-    const { user } = await renderNewFormV2(CheckType.HTTP);
+    const { user } = await renderNewForm(CheckType.HTTP);
 
     await fillMandatoryFields({ user, checkType: CheckType.HTTP });
     await submitForm(user);

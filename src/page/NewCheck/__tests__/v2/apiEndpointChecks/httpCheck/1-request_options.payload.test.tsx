@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 
 import { CheckType, IpVersion } from 'types';
 import { getCheckbox, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 const checkType = CheckType.HTTP;
@@ -14,7 +14,7 @@ describe(`HttpCheck - Section 1 (Request) Request Options payload`, () => {
     const HEADER_KEY_2 = `header-key-2`;
     const HEADER_VALUE_2 = `header-value-2`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
 
     await user.click(screen.getByText('Request options'));
     const addRequestHeaderButton = screen.getByRole('button', { name: /Header/ });
@@ -46,7 +46,7 @@ describe(`HttpCheck - Section 1 (Request) Request Options payload`, () => {
   it(`can submit the IP version`, async () => {
     const IP_VERSION = IpVersion.V6;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.click(screen.getByText('Request options'));
     await user.click(screen.getByLabelText('IPv6'));
 
@@ -58,7 +58,7 @@ describe(`HttpCheck - Section 1 (Request) Request Options payload`, () => {
   });
 
   it(`can submit follow redirects`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.click(screen.getByText('Request options'));
     await user.click(getCheckbox('Follow redirects'));
     await fillMandatoryFields({ user, checkType });

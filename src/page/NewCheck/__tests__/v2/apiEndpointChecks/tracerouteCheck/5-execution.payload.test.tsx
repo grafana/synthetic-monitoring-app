@@ -1,7 +1,7 @@
 import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckType } from 'types';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { renderNewFormV2, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
+import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
@@ -11,7 +11,7 @@ describe(`TracerouteCheck - Section 5 (Execution) payload`, () => {
   it(`has the correct default values submitted`, async () => {
     const TWO_MINUTES_IN_MS = 2 * 60 * 1000;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
@@ -22,7 +22,7 @@ describe(`TracerouteCheck - Section 5 (Execution) payload`, () => {
   it(`can add probe frequency`, async () => {
     const FIVE_MINUTES_IN_MS = 5 * 60 * 1000;
 
-    const { user, read } = await renderNewFormV2(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Execution);
 

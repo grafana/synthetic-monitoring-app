@@ -2,10 +2,10 @@ import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
 import { CheckType } from 'types';
-import { EMPTY_METADATA } from 'components/CheckEditor/ProbesMetadata';
+import { EMPTY_METADATA } from 'data/data.constants';
 import { selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { setupFormWithChannelSelector } from 'page/__testHelpers__/channel';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 jest.mock('data/useProbes', () => ({
@@ -32,7 +32,7 @@ describe(`BrowserCheck - 1 (Script) payload`, () => {
   it(`can add a job name`, async () => {
     const JOB_NAME = `scripted job name`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.type(screen.getByLabelText(`Job name`, { exact: false }), JOB_NAME);
     await fillMandatoryFields({ user, fieldsToOmit: [`job`], checkType });
 
@@ -46,7 +46,7 @@ describe(`BrowserCheck - 1 (Script) payload`, () => {
   it(`can add an instance`, async () => {
     const INSTANCE = `a lovely instance`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.type(screen.getByLabelText(`Instance`, { exact: false }), INSTANCE);
     await fillMandatoryFields({ user, fieldsToOmit: [`target`], checkType });
 
@@ -79,7 +79,7 @@ describe(`BrowserCheck - 1 (Script) payload`, () => {
   });
 
   it(`omits channel from payload when feature is disabled`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, fieldsToOmit: [], checkType });
     await submitForm(user);
     const { body } = await read();

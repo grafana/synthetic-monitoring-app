@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { PRIVATE_PROBE, PUBLIC_PROBE, UNSELECTED_PRIVATE_PROBE } from 'test/fixtures/probes';
 
 import { type CheckFormValuesBrowser, type CheckFormValuesScripted, CheckType, type ProbeWithMetadata } from 'types';
-import { EMPTY_METADATA } from 'components/CheckEditor/ProbesMetadata';
 
+import { EMPTY_METADATA } from '../../data/data.constants';
 import { addRefinements } from './BaseCheckSchema';
 import { createBrowserCheckSchema } from './BrowserCheckSchema';
 import { createScriptedCheckSchema } from './ScriptedCheckSchema';

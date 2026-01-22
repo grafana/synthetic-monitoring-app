@@ -3,14 +3,14 @@ import { screen } from '@testing-library/react';
 import { CheckType, HttpMethod, IpVersion } from 'types';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
-import { renderNewFormV2 } from 'page/__testHelpers__/checkForm';
+import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 const checkType = CheckType.HTTP;
 
 describe(`HttpCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
@@ -21,7 +21,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
 
   it(`can change method to POST`, async () => {
     const METHOD_OPTION = HttpMethod.POST;
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.click(screen.getByLabelText(/Request method \*/));
     await user.click(screen.getByRole('menuitem', { name: METHOD_OPTION }));
 
@@ -35,7 +35,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
   it(`can add request target`, async () => {
     const REQUEST_TARGET = `https://example.com`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
 
@@ -53,7 +53,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     const QUERY_PARAM_KEY_2 = `key2`;
     const QUERY_PARAM_VALUE_2 = `value2`;
 
-    const { read, user } = await renderNewFormV2(checkType);
+    const { read, user } = await renderNewForm(checkType);
 
     const targetInput = screen.getByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
@@ -87,7 +87,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
 
   // This tests exists to test that we have a placeholder for the moved cache-bust input
   it(`can add a cache busting query parameter (legacy)`, async () => {
-    const { user } = await renderNewFormV2(checkType);
+    const { user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Check); // Redundant?
 
