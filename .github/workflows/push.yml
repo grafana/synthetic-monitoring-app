@@ -47,6 +47,7 @@ jobs:
     uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v6.0.0
     permissions:
       contents: write
+      pull-requests: read  # Required for v6.0.0
       id-token: write
       attestations: write
     with:
