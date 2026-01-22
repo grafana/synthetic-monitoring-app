@@ -71,7 +71,7 @@ jobs:
 
       # Other CI inputs
       node-version: 22
-      run-playwright: true
+      run-playwright: false  # Disabled - no Playwright tests configured
 
   # SM-specific custom validations (run on both PRs and main)
   
