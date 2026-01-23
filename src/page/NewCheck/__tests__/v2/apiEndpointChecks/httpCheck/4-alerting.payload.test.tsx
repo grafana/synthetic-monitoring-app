@@ -221,6 +221,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`should display an error message when latency alert period is less than check frequency`, async () => {
+    testUsesCombobox();
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });

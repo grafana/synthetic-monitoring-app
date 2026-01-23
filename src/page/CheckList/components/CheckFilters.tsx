@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
-import { Combobox, ComboboxOption, Field, Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
+import { Combobox, ComboboxOption, Field, Icon, Input, MultiSelect, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';

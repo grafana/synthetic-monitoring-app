@@ -73,8 +73,18 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [status, setStatus] = filters.status;
   const [probes, setProbes] = filters.probes;
 
-  const checkFilters = useMemo(
-    () => ({ labels, search, type, alerts, status, probes }),
+  const checkFiltersWithStatus: CheckFiltersType = useMemo(
+    () => ({
+      labels,
+      search,
+      type,
+      alerts,
+      status:
+        status.value !== undefined
+          ? ({ label: status.label, value: status.value } as CheckFiltersType['status'])
+          : CHECK_LIST_STATUS_OPTIONS[0],
+      probes,
+    }),
     [labels, search, type, alerts, status, probes]
   );
 
@@ -83,7 +93,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const styles = useStyles2(getStyles);
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
-  const filteredChecks = filterChecks(checks, checkFilters);
+  const filteredChecks = filterChecks(checks, checkFiltersWithStatus);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates);
   const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
@@ -185,7 +195,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     <>
       <CheckListHeader
         checks={filteredChecks}
-        checkFilters={checkFilters}
+        checkFilters={checkFiltersWithStatus}
         currentPageChecks={currentPageChecks}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}

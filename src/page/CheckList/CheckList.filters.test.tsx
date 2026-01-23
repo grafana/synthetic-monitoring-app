@@ -100,7 +100,7 @@ describe('CheckList - Filtering', () => {
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
 
-    await selectOption(user, { label: 'Filter by alerts', option: 'With alerts' });
+    await selectOption(user, { label: 'Alerts', option: 'With alerts' });
     const checks = await screen.findAllByTestId('check-card');
     expect(checks.length).toBe(1);
   });
@@ -110,7 +110,7 @@ describe('CheckList - Filtering', () => {
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
 
-    await selectOption(user, { label: 'Filter by alerts', option: 'Without alerts' });
+    await selectOption(user, { label: 'Alerts', option: 'Without alerts' });
     const checks = await screen.findAllByTestId('check-card');
     expect(checks.length).toBe(1);
   });
@@ -138,8 +138,8 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     const dialog = getModalContainer();
-    const alertsFilter = await within(dialog).findByText('Without alerts', { exact: false });
-    expect(alertsFilter).toBeInTheDocument();
+    const alertsFilter = await within(dialog).findByLabelText('Alerts');
+    expect(alertsFilter).toHaveValue('Without alerts');
 
     const checks = await screen.findAllByTestId('check-card');
     expect(checks.length).toBe(1);
