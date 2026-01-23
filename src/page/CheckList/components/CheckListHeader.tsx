@@ -123,7 +123,7 @@ export const CheckListHeader = ({
         <Field label="Sort" htmlFor={sortId} data-fs-element="Sort by select">
           <Combobox
             id={sortId}
-            aria-label="Sort checks by"
+            data-testid="sort-checks-by-combobox"
             prefixIcon='sort-amount-down'
             options={CHECK_LIST_SORT_OPTIONS}
             width={25}

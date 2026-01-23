@@ -35,7 +35,7 @@ export const DNSCheckResponseMatches = () => {
                       return (
                         <Combobox
                           {...rest}
-                          aria-label={`DNS Response Match ${userIndex}`}
+                          data-testid={`dns-response-match-select-${userIndex}`}
                           disabled={formState.disabled}
                           invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
                           onChange={({ value }) => onChange(value)}

@@ -65,6 +65,7 @@ export const HttpRequest = forwardRef<
                 })}>
                   <Combobox
                     {...rest}
+                    data-testid={`request-method-select`}
                     aria-label={fields.method['aria-label'] ?? `Request method *`}
                     disabled={disabled}
                     onChange={({ value }) => onChange(value)}

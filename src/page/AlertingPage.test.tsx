@@ -89,7 +89,7 @@ it('adds default alerts and edits alerts', async () => {
   await user.clear(timeCount);
   await user.type(timeCount, '2');
 
-  await selectOption(user, { label: 'Time unit', option: 'seconds' });
+  await selectOption(user, { dataTestId: 'alert-rule-form-time-unit-combobox', option: 'seconds' });
 
   const labels = await toggleSection('Labels', user);
   const addLabelButton = await within(labels).findByText('Add label');

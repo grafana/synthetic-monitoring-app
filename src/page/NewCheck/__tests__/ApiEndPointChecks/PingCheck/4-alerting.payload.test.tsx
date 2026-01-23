@@ -4,33 +4,31 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { probeToMetadataProbe, testUsesCombobox } from 'test/utils';
 
 import { CheckAlertType, CheckType } from 'types';
-import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { FormSectionName } from 'components/Checkster/types';
-import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
+import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
-import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
+import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
-const checkType = CheckType.Dns;
+const checkType = CheckType.PING;
 
-describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
+describe(`PingCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 5);
     await submitForm(user);
     const { body } = await read();
 
     expect(body.alerts).toEqual(undefined);
   });
 
-  it(`can add DNS request duration latency alert`, async () => {
+  it(`can add ping request duration latency alert`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -38,15 +36,15 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     expect(screen.getByText('Latency')).toBeInTheDocument();
 
     const thresholdInputSelector =
-      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput;
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].thresholdInput;
 
     await user.click(
       screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].selectedCheckbox
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].selectedCheckbox
       )
     );
     await user.clear(screen.getByTestId(thresholdInputSelector));
-    await user.type(screen.getByTestId(thresholdInputSelector), '150');
+    await user.type(screen.getByTestId(thresholdInputSelector), '200');
 
     await submitForm(user);
 
@@ -55,8 +53,8 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     expect(alertsBody).toEqual({
       alerts: [
         {
-          name: 'DNSRequestDurationTooHighAvg',
-          threshold: 150,
+          name: 'PingRequestDurationTooHighAvg',
+          threshold: 200,
           period: '5m',
         },
       ],
@@ -64,43 +62,44 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`should display an error message when latency alert period is less than check frequency`, async () => {
+    testUsesCombobox();
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
 
     // Set frequency to 10 minutes using the proper helper - go to section 4 (Execution)
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     await selectBasicFrequency(user, '10m');
 
-    // Then go to section 4 for probes selection (this is the Execution section)
+    // Still in section 4 for probes selection
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
     // Now go to section 5 for alerts
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
     await user.click(
       screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].selectedCheckbox
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].selectedCheckbox
       )
     );
     await user.clear(
       screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].thresholdInput
       )
     );
     await user.type(
       screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].thresholdInput
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].thresholdInput
       ),
       '100'
     );
 
     // Select 5m period (which is less than 10m frequency) - get the combobox by its testid
     const periodSelector = screen.getByTestId(
-      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].periodCombobox
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].periodCombobox
     );
     await user.click(periodSelector);
 

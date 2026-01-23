@@ -5,6 +5,7 @@ import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtur
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { selectOption } from 'test/utils';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -82,8 +83,8 @@ describe('CheckList - Rendering', () => {
     const searchParams = `sort=atoz`;
     await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
     await screen.findByText('Sort');
-    const sortValue = await screen.findByText('A-Z');
-    expect(sortValue).toBeInTheDocument();
+    const sortCombobox = await screen.findByTestId('sort-checks-by-combobox');
+    expect(sortCombobox).toHaveValue('A-Z');
 
     const checks = await screen.findAllByTestId('check-card');
     expect(checks.length).toBe(2);
@@ -95,8 +96,8 @@ describe('CheckList - Rendering', () => {
     const searchParams = `sort=ztoa`;
     await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
     await screen.findByText('Sort');
-    const sortInput = await screen.findByText(/Z-A/i);
-    expect(sortInput).toBeInTheDocument();
+    const sortCombobox = await screen.findByTestId('sort-checks-by-combobox');
+    expect(sortCombobox).toHaveValue('Z-A');
 
     const checks = await screen.findAllByTestId('check-card');
     expect(checks.length).toBe(2);
@@ -106,9 +107,7 @@ describe('CheckList - Rendering', () => {
 
   test('Sorting by success rate should not crash', async () => {
     const { user } = await renderCheckList();
-    const sortPicker = screen.getByLabelText('Sort checks by');
-    await user.click(sortPicker);
-    await user.click(screen.getByText(`Asc. Reachability`, { selector: 'span' }));
+    await selectOption(user, { dataTestId: 'sort-checks-by-combobox', option: 'Asc. Reachability' });
 
     const checks = await waitFor(() => screen.findAllByTestId('check-card'), { timeout: 5000 });
     expect(checks.length).toBe(BASIC_CHECK_LIST.length);

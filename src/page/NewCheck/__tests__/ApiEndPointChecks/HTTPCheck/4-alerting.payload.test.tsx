@@ -4,18 +4,17 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { probeToMetadataProbe, testUsesCombobox } from 'test/utils';
 
 import { CheckAlertType, CheckType } from 'types';
-import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { FormSectionName } from 'components/Checkster/types';
-import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
-import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
+import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
-const checkType = CheckType.Http;
+import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
+
+const checkType = CheckType.HTTP;
 
 describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 5);
     await submitForm(user);
     const { body } = await read();
 
@@ -25,24 +24,24 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   it(`can add specific http alerts`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
     expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
-
-    const thresholdsInputSelector =
-      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
 
     await user.click(
       screen.getByTestId(
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
       )
     );
+
+    const thresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
     await user.clear(screen.getByTestId(thresholdsInputSelector));
     await user.type(screen.getByTestId(thresholdsInputSelector), '1');
 
@@ -63,11 +62,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   it(`can add HTTP request duration latency alert`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -104,11 +103,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
     expect(screen.getByText(`Failed Checks`)).toBeInTheDocument();
@@ -143,11 +142,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   it(`can submit runbook URL values to the alerts API endpoint`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -157,17 +156,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].selectedCheckbox
       )
     );
-    await user.clear(
-      screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput
-      )
-    );
-    await user.type(
-      screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput
-      ),
-      '7'
-    );
+
+    const tlsThresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
+    await user.clear(screen.getByTestId(tlsThresholdsInputSelector));
+    await user.type(screen.getByTestId(tlsThresholdsInputSelector), '7');
 
     // Fill in runbook URL
     const runbookUrlInput = screen.getByTestId(
@@ -181,17 +174,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
       )
     );
-    await user.clear(
-      screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
-      )
-    );
-    await user.type(
-      screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
-      ),
-      '3'
-    );
+
+    const failedExecutionsThresholdsInputSelector =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput;
+    await user.clear(screen.getByTestId(failedExecutionsThresholdsInputSelector));
+    await user.type(screen.getByTestId(failedExecutionsThresholdsInputSelector), '3');
 
     // Fill in runbook URL for Failed Executions alert
     const failedExecRunbookUrlInput = screen.getByTestId(
@@ -221,12 +208,13 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`should display an error message when latency alert period is less than check frequency`, async () => {
+    testUsesCombobox();
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
 
     // Set frequency to 10 minutes using the proper helper - go to section 4 (Execution)
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     await selectBasicFrequency(user, '10m');
 
     // Still in section 4 for probes selection
@@ -234,7 +222,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     await user.click(probeCheckbox);
 
     // Now go to section 5 for alerts
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -243,17 +231,11 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].selectedCheckbox
       )
     );
-    await user.clear(
-      screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput
-      )
-    );
-    await user.type(
-      screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput
-      ),
-      '100'
-    );
+
+    const httpRequestDurationThresholdsInput =
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput;
+    await user.clear(screen.getByTestId(httpRequestDurationThresholdsInput));
+    await user.type(screen.getByTestId(httpRequestDurationThresholdsInput), '100');
 
     // Select 5m period (which is less than 10m frequency) - get the combobox by its testid
     const periodSelector = screen.getByTestId(

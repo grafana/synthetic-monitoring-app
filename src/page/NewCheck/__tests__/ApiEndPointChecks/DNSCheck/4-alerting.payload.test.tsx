@@ -1,22 +1,20 @@
 import { screen, within } from '@testing-library/react';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
-import { probeToMetadataProbe, testUsesCombobox } from 'test/utils';
+import { probeToMetadataProbe, selectOption, testUsesCombobox } from 'test/utils';
 
 import { CheckAlertType, CheckType } from 'types';
-import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
-import { FormSectionName } from 'components/Checkster/types';
-import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
+import { goToSection, renderNewForm, selectBasicFrequency, submitForm } from 'page/__testHelpers__/checkForm';
 
-import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
+import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
-const checkType = CheckType.Dns;
+const checkType = CheckType.DNS;
 
 describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 5);
     await submitForm(user);
     const { body } = await read();
 
@@ -26,11 +24,11 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   it(`can add DNS request duration latency alert`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
     await user.click(probeCheckbox);
 
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -69,7 +67,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
 
     // Set frequency to 10 minutes using the proper helper - go to section 4 (Execution)
-    await gotoSection(user, FormSectionName.Execution);
+    await goToSection(user, 4);
     await selectBasicFrequency(user, '10m');
 
     // Then go to section 4 for probes selection (this is the Execution section)
@@ -77,7 +75,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     await user.click(probeCheckbox);
 
     // Now go to section 5 for alerts
-    await gotoSection(user, FormSectionName.Alerting);
+    await goToSection(user, 5);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -98,15 +96,9 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
       '100'
     );
 
-    // Select 5m period (which is less than 10m frequency) - get the combobox by its testid
-    const periodSelector = screen.getByTestId(
-      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].periodCombobox
-    );
-    await user.click(periodSelector);
-
-    // Wait for dropdown to open and click "5 min" within the opened dropdown
-    const dropdown = await screen.findByRole('listbox');
-    await user.click(within(dropdown).getByText('5 min'));
+    // Select 5m period (which is less than 10m frequency) - target the specific period selector by ID
+    // The period is invalid so the description 'Invalid' is added to the name
+    await selectOption(user, { dataTestId: CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.DNSRequestDurationTooHighAvg].periodCombobox, option: '5 min Invalid' });
 
     await submitForm(user);
 

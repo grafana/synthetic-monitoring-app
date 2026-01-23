@@ -1,6 +1,6 @@
 import { OrgRole } from '@grafana/data';
 import runTime, { config } from '@grafana/runtime';
-import { act, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import {
   LOGS_DATASOURCE,
@@ -49,11 +49,7 @@ export async function fillProbeForm(user: UserEvent) {
   await user.clear(longitudeInput);
   await user.type(longitudeInput, UPDATED_VALUES.longitude.toString());
 
-  const regionInput = await screen.findByLabelText('Region', { exact: false });
-  await act(() => regionInput.focus());
-  await user.clear(regionInput);
-  await user.paste(UPDATED_VALUES.region);
-  await user.type(regionInput, '{enter}');
+  await selectCustomOption(user, { label: 'region', option: UPDATED_VALUES.region });
 
   const addLabelButton = await screen.findByText(/Add label/);
   const existingLabels = await screen.queryAllByTestId(/label-name-/);
@@ -313,6 +309,9 @@ export const getSelect = async (options: GetSelectProps, context?: HTMLElement) 
 
 type GetComboboxProps =
   | {
+      dataTestId: string;
+    }
+  | {
       label: string | RegExp;
     }
   | {
@@ -321,7 +320,9 @@ type GetComboboxProps =
 
 export const getCombobox = async (options: GetComboboxProps, context?: HTMLElement) => {
   let selector: HTMLElement;
-  if ('label' in options) {
+  if ('dataTestId' in options) {
+    selector = await screen.findByTestId(options.dataTestId);
+  } else if ('label' in options) {
     if (context) {
       selector = await within(context).findByLabelText(options.label, { exact: false });
     } else {
@@ -361,9 +362,18 @@ export const selectOption = async (
   const combobox = await getCombobox(options, context);
 
   await user.click(combobox);
-  const option = screen.getByRole('option', { name: options.option });
+  const option = await screen.findByRole('option', { name: options.option });
 
   await user.click(option);
+};
+
+export const selectCustomOption = async (user: UserEvent, options: ComboboxOptions, context?: HTMLElement) => {
+  testUsesCombobox();
+  const combobox = await getCombobox(options, context);
+  await user.clear(combobox);
+  await user.click(combobox);
+  await user.type(combobox, options.option as string);
+  await user.click(screen.getByRole('option', { name: options.option }));
 };
 
 export const probeToMetadataProbe = (probe: Probe): ProbeWithMetadata => ({

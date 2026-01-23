@@ -59,6 +59,7 @@ export const MultiHttpVariables = ({ index }: { index: number }) => {
                   >
                     <Combobox
                       {...rest}
+                      data-testid="variable-type-combobox"
                       aria-label="Variable type"
                       disabled={isFormDisabled}
                       onChange={({ value }) => {

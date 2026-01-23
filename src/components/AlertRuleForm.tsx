@@ -268,7 +268,13 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
                     render={({ field }) => {
                       const { ref, ...rest } = field;
                       return (
-                        <Combobox {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" disabled={!canEdit} value={field.value.value} />
+                        <Combobox
+                          {...rest}
+                          options={TIME_UNIT_OPTIONS}
+                          disabled={!canEdit}
+                          value={field.value.value}
+                          data-testid="alert-rule-form-time-unit-combobox"
+                        />
                       );
                     }}
                     control={control}

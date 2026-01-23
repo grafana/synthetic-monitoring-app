@@ -4,6 +4,7 @@ import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_TCP_CHECK, B
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { selectOption, testUsesCombobox } from 'test/utils';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -167,6 +168,7 @@ describe('CheckList - Bulk Actions', () => {
   });
 
   test(`Sorts by check execution frequency`, async () => {
+    testUsesCombobox();
     const { user } = await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
     const checksA = await screen.findAllByTestId('check-card');
 
@@ -174,9 +176,7 @@ describe('CheckList - Bulk Actions', () => {
     expect(checksA[0]).toHaveTextContent(`89280 executions / month`);
     expect(checksA[1]).toHaveTextContent(`44640 executions / month`);
 
-    const sortPicker = await screen.getByLabelText('Sort checks by');
-    await user.click(sortPicker);
-    await user.click(screen.getByText(`Asc. Executions`, { selector: 'span' }));
+    await selectOption(user, { dataTestId: 'sort-checks-by-combobox', option: 'Asc. Executions' });
 
     const checksB = await screen.findAllByTestId('check-card');
     expect(checksB.length).toBe(2);
@@ -184,8 +184,8 @@ describe('CheckList - Bulk Actions', () => {
     expect(checksB[0]).toHaveTextContent(`44640 executions / month`);
     expect(checksB[1]).toHaveTextContent(`89280 executions / month`);
 
-    await user.click(sortPicker);
-    await user.click(screen.getByText(`Desc. Executions`, { selector: 'span' }));
+    await selectOption(user, { dataTestId: 'sort-checks-by-combobox', option: 'Desc. Executions' });
+
 
     const checksC = await screen.findAllByTestId('check-card');
     expect(checksC.length).toBe(2);
