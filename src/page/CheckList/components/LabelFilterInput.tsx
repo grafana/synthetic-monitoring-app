@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { ButtonCascader, CascaderOption, MultiSelect, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { ButtonCascader, CascaderOption, ComboboxOption, MultiCombobox, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
@@ -17,6 +17,7 @@ interface AggregateLabels {
 }
 
 export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: LabelFilterInputProps) => {
+  const labelId = "check-label-filter";
   const styles = useStyles2(getStyles);
   const aggregatedLabels = useMemo(
     () =>
@@ -48,8 +49,8 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
     });
   }, [aggregatedLabels]);
 
-  const labelFilterOptions: Array<SelectableValue<string>> = useMemo(() => {
-    return Object.entries(aggregatedLabels).reduce<Array<SelectableValue<string>>>((acc, [name, value]) => {
+  const labelFilterOptions: Array<ComboboxOption<string>> = useMemo(() => {
+    return Object.entries(aggregatedLabels).reduce<Array<ComboboxOption<string>>>((acc, [name, value]) => {
       return acc.concat(
         value.map((labelValue) => ({ label: `${name}: ${labelValue}`, value: `${name}: ${labelValue}` }))
       );
@@ -61,33 +62,31 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
   };
 
   return (
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    <MultiSelect
-      prefix={
-        <div className={styles.prefix} onMouseDown={(e) => e.stopPropagation()}>
-          <ButtonCascader options={labelCascadeOptions} onChange={handleCascadeLabelSelect} className={styles.cascader}>
-            Labels
-          </ButtonCascader>
-        </div>
-      }
-      aria-label="Filter by label"
-      className={className}
-      options={labelFilterOptions}
-      onChange={(filters) => onChange(filters.map(({ value }) => value ?? ''))}
-      value={labelFilters}
-      isClearable
-    />
+    <div className={styles.filterInput}>
+      <ButtonCascader options={labelCascadeOptions} onChange={handleCascadeLabelSelect}>
+        Labels
+      </ButtonCascader>
+      <MultiCombobox
+        id={labelId}
+        options={labelFilterOptions}
+        onChange={(filters) => onChange(filters.map(({ value }) => value ?? ''))}
+        value={labelFilters}
+        isClearable
+      />
+    </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  prefix: css`
-    margin-left: -${theme.spacing(1)};
-    z-index: 1000;
-    height: 100%;
-  `,
-  cascader: css`
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-  `,
+  filterInput: css({
+    display: `flex`,
+    flexDirection: `row`,
+    marginTop: `10px`,
+    marginBottom: 0,
+    justifyContent: 'flex-start',
+    width: `100%`,
+    '& button': {
+      height: 'auto',
+    },
+  }),
 });
