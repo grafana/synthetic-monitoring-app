@@ -373,7 +373,11 @@ export const selectCustomOption = async (user: UserEvent, options: ComboboxOptio
   await user.clear(combobox);
   await user.click(combobox);
   await user.type(combobox, options.option as string);
-  await user.click(screen.getByRole('option', { name: options.option }));
+  const optionName = String(options.option);
+  // The combobox may show the option as just the value or with "  Use custom value" suffix
+  // Create a regex that matches both patterns
+  const optionPattern = new RegExp(`^${optionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( Use custom value)?$`);
+  await user.click(screen.getByRole('option', { name: optionPattern }));
 };
 
 export const probeToMetadataProbe = (probe: Probe): ProbeWithMetadata => ({
