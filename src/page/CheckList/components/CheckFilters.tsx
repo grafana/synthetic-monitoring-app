@@ -20,9 +20,6 @@ interface CheckFiltersProps {
 }
 
 export function CheckFilters({ onReset, onChange, checks, checkFilters, includeStatus = true }: CheckFiltersProps) {
-  const statusId = "check-status-filter";
-  const typeId = "check-type-filter";
-  const alertsId = "check-alerts-filter";
   const checkTypeOptions = useCheckTypeOptions();
   const filterDesc = checkTypeOptions.map((option) => {
     return {
@@ -89,68 +86,68 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
       <CheckFilterGroup onReset={onReset} filters={checkFilters}>
         <div className={styles.flexRow}>
           {includeStatus && (
-            <Field label="Status" htmlFor={statusId} data-fs-element="Status select" className={css({
+            <Field label="Status" htmlFor="check-status-filter" data-fs-element="Status select" className={css({
               marginBottom: 0,
             })}>
-                <Combobox
-                  id={statusId}
-                  aria-label="Filter by status"
-                  data-testid="check-status-filter"
-                  options={CHECK_LIST_STATUS_OPTIONS}
-                  width={20}
-                  onChange={(option) => {
-                    onChange(
-                      {
-                        ...checkFilters,
-                        status: option,
-                      },
-                      'status'
-                    );
-                  }}
-                  value={checkFilters.status}
-                />
+              <Combobox
+                id="check-status-filter"
+                aria-label="Filter by status"
+                data-testid="check-status-filter"
+                options={CHECK_LIST_STATUS_OPTIONS}
+                width={20}
+                onChange={(option) => {
+                  onChange(
+                    {
+                      ...checkFilters,
+                      status: option,
+                    },
+                    'status'
+                  );
+                }}
+                value={checkFilters.status}
+              />
             </Field>
           )}
-          <Field label="Type" htmlFor={typeId} data-fs-element="Type select" className={css({
+          <Field label="Type" htmlFor="check-type-filter" data-fs-element="Type select" className={css({
             marginBottom: 0,
           })}>
             <Combobox
-            aria-label="Filter by type"
-            id={typeId}
-            options={options}
-            width={20}
-            onChange={(selected: SelectableValue) => {
-              onChange(
-                {
-                  ...checkFilters,
-                  type: selected?.value ?? checkFilters.type,
-                },
-                'type'
-              );
-            }}
-            value={checkFilters.type}
-          />
-                    </Field>
-          <Field label="Alerts" htmlFor={alertsId} data-fs-element="Alerts select" className={css({
+              aria-label="Filter by type"
+              id="check-type-filter"
+              options={options}
+              width={20}
+              onChange={(selected: SelectableValue) => {
+                onChange(
+                  {
+                    ...checkFilters,
+                    type: selected?.value ?? checkFilters.type,
+                  },
+                  'type'
+                );
+              }}
+              value={checkFilters.type}
+            />
+          </Field>
+          <Field label="Alerts" htmlFor="check-alerts-filter" data-fs-element="Alerts select" className={css({
             marginBottom: 0,
           })}>
-          <Combobox
-            aria-label="Filter by alerts"
-            id={alertsId}
-            data-testid="check-alerts-filter"
-            options={alertOptions}
-            width={20}
-            onChange={(option) => {
-              onChange(
-                {
-                  ...checkFilters,
-                  alerts: option?.value ?? checkFilters.alerts,
-                },
-                'alerts'
-              );
-            }}
-            value={checkFilters.alerts}
-          />
+            <Combobox
+              aria-label="Filter by alerts"
+              id="check-alerts-filter"
+              data-testid="check-alerts-filter"
+              options={alertOptions}
+              width={20}
+              onChange={(option) => {
+                onChange(
+                  {
+                    ...checkFilters,
+                    alerts: option?.value ?? checkFilters.alerts,
+                  },
+                  'alerts'
+                );
+              }}
+              value={checkFilters.alerts}
+            />
           </Field>
         </div>
         <LabelFilterInput

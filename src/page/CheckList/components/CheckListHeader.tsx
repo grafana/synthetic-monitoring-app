@@ -69,7 +69,6 @@ export const CheckListHeader = ({
   viewType,
 }: CheckListHeaderProps) => {
   const { canWriteChecks, canWriteThresholds } = getUserPermissions();
-  const sortId = "sort-by-select";
 
   const styles = useStyles2(getStyles);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
@@ -120,9 +119,9 @@ export const CheckListHeader = ({
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
           )}
         </div>
-        <Field label="Sort" htmlFor={sortId} data-fs-element="Sort by select">
+        <Field label="Sort" htmlFor="sort-by-select" data-fs-element="Sort by select">
           <Combobox
-            id={sortId}
+            id="sort-by-select"
             data-testid="sort-checks-by-combobox"
             prefixIcon='sort-amount-down'
             options={CHECK_LIST_SORT_OPTIONS}

@@ -362,15 +362,7 @@ export const selectOption = async (
   const combobox = await getCombobox(options, context);
 
   await user.click(combobox);
-  const roles = getRoles(document.body);
 
-  console.log(
-    Object.entries(roles).filter(([role]) => role === 'option').map(([role, elements]) => ({
-      role,
-      count: elements.length,
-      names: elements.map(el => el.getAttribute('aria-label') || el.textContent),
-    }))
-  );
   const option = await screen.findByRole('option', { name: options.option });
 
   await user.click(option);

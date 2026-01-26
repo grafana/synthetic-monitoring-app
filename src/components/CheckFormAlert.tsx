@@ -16,7 +16,6 @@ export const CheckFormAlert = () => {
     formState: { disabled: isFormDisabled },
   } = useFormContext<CheckFormValues>();
   const alertSensitivity = watch('alertSensitivity');
-  const alertSensitivityId = "alert-sensitivity-select";
   const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
 
   return (
@@ -37,16 +36,16 @@ export const CheckFormAlert = () => {
         </p>
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
-      <Field label="Select alert sensitivity" htmlFor={alertSensitivityId} data-fs-element="Alert sensitivity select">
+      <Field label="Select alert sensitivity" htmlFor="alert-sensitivity-select" data-fs-element="Alert sensitivity select">
         <Controller
           control={control}
           name="alertSensitivity"
           render={({ field }) => {
             const { ref, ...rest } = field;
             return (
-                <Combobox
+              <Combobox
                 {...rest}
-                id={alertSensitivityId}
+                id="alert-sensitivity-select"
                 aria-label="Select alert sensitivity"
                 width={40}
                 disabled={isFormDisabled || isCustomSensitivity}

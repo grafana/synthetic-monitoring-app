@@ -4,7 +4,7 @@ import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_TCP_CHECK, B
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { selectOption, testUsesCombobox } from 'test/utils';
+import { selectOption } from 'test/utils';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -168,7 +168,6 @@ describe('CheckList - Bulk Actions', () => {
   });
 
   test(`Sorts by check execution frequency`, async () => {
-    testUsesCombobox();
     const { user } = await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
     const checksA = await screen.findAllByTestId('check-card');
 
