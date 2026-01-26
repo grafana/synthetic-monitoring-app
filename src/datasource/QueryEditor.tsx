@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { getTemplateSrv } from '@grafana/runtime';
-import { Combobox, ComboboxOption, Field, MultiCombobox, Spinner } from '@grafana/ui';
+import { Combobox, ComboboxOption, MultiCombobox, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { defaults } from 'lodash';
 
