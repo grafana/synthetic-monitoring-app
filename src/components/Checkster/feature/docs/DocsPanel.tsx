@@ -13,9 +13,9 @@ export const DOCS_CHECK_COMPATABILITY: CheckType[] = [];
 const CHECK_TYPE_DOCS_MAP: Array<[ComponentType, CheckType[]]> = [
   [
     DocsPanelAPIEndpoint,
-    [CheckType.DNS, CheckType.GRPC, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute],
+    [CheckType.Dns, CheckType.Grpc, CheckType.Http, CheckType.Ping, CheckType.Tcp, CheckType.Traceroute],
   ],
-  [DocsPanelMultiStep, [CheckType.MULTI_HTTP]],
+  [DocsPanelMultiStep, [CheckType.MultiHttp]],
   [DocsPanelScriptedCheck, [CheckType.Scripted]],
   [DocsPanelBrowserCheck, [CheckType.Browser]],
 ] as const;

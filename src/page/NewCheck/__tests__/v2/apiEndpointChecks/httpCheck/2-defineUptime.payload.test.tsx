@@ -8,7 +8,7 @@ import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 import { testUsesCombobox } from '../../../../../../test/utils';
 
-const checkType = CheckType.HTTP;
+const checkType = CheckType.Http;
 
 describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
@@ -55,7 +55,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
     await submitForm(user);
 
     const { body } = await read();
-    expect(body.settings.http.validHTTPVersions).toEqual([HttpVersion.HTTP1_0, HttpVersion.HTTP2_0]);
+    expect(body.settings.http.validHTTPVersions).toEqual([HttpVersion.Http1_0, HttpVersion.Http2_0]);
   });
 
   it(`ignores SSL`, async () => {
@@ -266,7 +266,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
 
     await submitForm(user);
     const { body } = await read();
-    expect(body.settings.http.compression).toBe(HTTPCompressionAlgo.gzip);
+    expect(body.settings.http.compression).toBe(HTTPCompressionAlgo.Gzip);
   });
 
   it(`can set the timeout`, async () => {

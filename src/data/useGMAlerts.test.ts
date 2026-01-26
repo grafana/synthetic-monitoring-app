@@ -1,11 +1,11 @@
 import { CheckAlertCategory,CheckAlertPublished,CheckAlertType,PrometheusAlertingRule, PrometheusAlertsGroup } from 'types';
-import { ALL_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
+import { AllPREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
 import { findRelevantAlertGroups } from './useGMAlerts';
 
 describe('findRelevantAlertGroups', () => {
   const ALERT_NAME = CheckAlertType.ProbeFailedExecutionsTooHigh;
-  const CATEGORY = ALL_PREDEFINED_ALERTS.find(a => a.type === ALERT_NAME)?.category || CheckAlertCategory.FailedChecks;
+  const CATEGORY = AllPREDEFINED_ALERTS.find(a => a.type === ALERT_NAME)?.category || CheckAlertCategory.FailedChecks;
 
   const MATCHING_RULE: PrometheusAlertingRule = {
     query: 'some_query',
@@ -85,7 +85,7 @@ describe('findRelevantAlertGroups', () => {
     ['PING', CheckAlertType.PingRequestDurationTooHighAvg],
     ['DNS', CheckAlertType.DNSRequestDurationTooHighAvg],
   ])('handles %s latency alerts correctly', (checkTypeName, alertType) => {
-    const latencyCategory = ALL_PREDEFINED_ALERTS.find(a => a.type === alertType)?.category || CheckAlertCategory.Latency;
+    const latencyCategory = AllPREDEFINED_ALERTS.find(a => a.type === alertType)?.category || CheckAlertCategory.Latency;
     
     const alerts = [{ name: alertType, ...baseAlert }];
     const result = findRelevantAlertGroups([], alerts);

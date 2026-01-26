@@ -54,7 +54,7 @@ describe('terraformJsonToHcl', () => {
             },
             settings: {
               http: {
-                method: HttpMethod.GET,
+                method: HttpMethod.Get,
                 ip_version: 'V4',
               },
             },
@@ -144,7 +144,7 @@ describe('terraformJsonToHcl', () => {
                 entries: [
                   {
                     request: {
-                      method: HttpMethod.POST,
+                      method: HttpMethod.Post,
                       url: 'https://example.com/api',
                       headers: [
                         {
@@ -230,7 +230,7 @@ describe('terraformJsonToHcl', () => {
             labels: {},
             settings: {
               http: {
-                method: HttpMethod.GET,
+                method: HttpMethod.Get,
                 headers: [
                   'Content-Type: application/json',
                   'User-Agent: synthetic-monitoring'
@@ -386,7 +386,7 @@ describe('terraformJsonToHcl', () => {
             labels: {},
             settings: {
               http: {
-                method: HttpMethod.GET,
+                method: HttpMethod.Get,
                 ip_version: 'V4',
                 tls_config: {}, // Empty object - should not be rendered
                 basic_auth: {
@@ -429,7 +429,7 @@ describe('terraformJsonToHcl', () => {
             },
             settings: {
               http: {
-                method: HttpMethod.GET,
+                method: HttpMethod.Get,
                 ip_version: 'V4',
                 body: 'JSON with "quotes" and \\ backslashes\nand\ttabs'
               },
@@ -475,7 +475,7 @@ describe('terraformJsonToHcl', () => {
             labels: {},
             settings: {
               http: {
-                method: HttpMethod.GET,
+                method: HttpMethod.Get,
                 ip_version: 'V4',
               },
             },
@@ -490,7 +490,7 @@ describe('terraformJsonToHcl', () => {
             labels: {},
             settings: {
               http: {
-                method: HttpMethod.POST,
+                method: HttpMethod.Post,
                 ip_version: 'V4',
               },
             },

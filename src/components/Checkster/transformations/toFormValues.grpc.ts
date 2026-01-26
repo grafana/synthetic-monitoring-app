@@ -7,7 +7,7 @@ export function getGRPCCheckFormValues(check: GRPCCheck): CheckFormValuesGRPC {
 
   return {
     ...base,
-    checkType: CheckType.GRPC,
+    checkType: CheckType.Grpc,
     settings: {
       grpc: getGRPCSettingsFormValues(check.settings),
     },

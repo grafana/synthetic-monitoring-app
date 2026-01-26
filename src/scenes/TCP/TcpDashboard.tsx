@@ -22,7 +22,7 @@ export const TcpDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.TCP}>
+    <DashboardContainer check={check} checkType={CheckType.Tcp}>
       <Stack height={`90px`}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />

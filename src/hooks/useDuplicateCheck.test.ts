@@ -16,7 +16,7 @@ describe('useDuplicateCheckUrl', () => {
     const url = result.current.duplicateCheckUrl(BASIC_HTTP_CHECK);
 
     expect(url).toBe(
-      `/mocked/checks/new/${CheckTypeGroup.ApiTest}?duplicateId=${BASIC_HTTP_CHECK.id}&checkType=${CheckType.HTTP}`
+      `/mocked/checks/new/${CheckTypeGroup.ApiTest}?duplicateId=${BASIC_HTTP_CHECK.id}&checkType=${CheckType.Http}`
     );
   });
 

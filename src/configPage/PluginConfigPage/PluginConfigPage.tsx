@@ -63,7 +63,7 @@ export function PluginConfigPage({ plugin }: SMPluginConfigPageProps) {
   }
 
   return (
-    <div data-testid={DataTestIds.TEST_PLUGIN_CONFIG_PAGE}>
+    <div data-testid={DataTestIds.TestPluginConfigPage}>
       {isEnabled && initialized && (
         <Alert title="Synthetic Monitoring config" severity="info">
           Are you looking to configure Synthetic Monitoring? You can do that in the{' '}
@@ -86,7 +86,7 @@ export function PluginConfigPage({ plugin }: SMPluginConfigPageProps) {
       )}
 
       {initialized && (
-        <div data-testid={DataTestIds.TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES}>
+        <div data-testid={DataTestIds.TestPluginConfigPageLinkedDatasources}>
           <div className={styles.section}>
             <h3>Data source</h3>
             <Card key={api.name} href={api.url}>
@@ -113,7 +113,7 @@ export function PluginConfigPage({ plugin }: SMPluginConfigPageProps) {
                   .
                 </div>
                 <br />
-                <div data-testid={DataTestIds.TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES_ERROR}>
+                <div data-testid={DataTestIds.TestPluginConfigPageLinkedDatasourcesError}>
                   <strong>Missing the following data source(s):</strong>&nbsp;
                   <div className={styles.badgeContainer}>
                     {getMissingDataSourceTypes(linked).map((type) => (

@@ -59,7 +59,7 @@ export const TimepointList = () => {
   const padStart = renderingStrategy === 'start' && isCheckCreationWithinTimeRange;
 
   return (
-    <div data-testid={DataTestIds.TIMEPOINT_LIST}>
+    <div data-testid={DataTestIds.TimepointList}>
       {isFetching ? <LoadingBar width={listWidth} /> : <div style={{ height: 1 }} />}
       <div className={styles.container}>
         {isError && (

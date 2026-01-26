@@ -9,7 +9,7 @@ export function getMultiHTTPCheckFormValues(check: MultiHTTPCheck): CheckFormVal
 
   return {
     ...base,
-    checkType: CheckType.MULTI_HTTP,
+    checkType: CheckType.MultiHttp,
     settings: {
       multihttp: getMultiHttpFormValues(check.settings),
     },

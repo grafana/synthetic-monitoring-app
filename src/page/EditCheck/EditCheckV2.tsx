@@ -59,7 +59,7 @@ export const EditCheckV2 = () => {
       pageNav={navModel}
       renderTitle={() => <Text element="h1">{`Editing ${check?.job ?? 'unknown'}`}</Text>}
     >
-      <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
+      <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PageReady : DataTestIds.PageNotReady}>
         <ChecksterProvider check={check} initialSection={initialSection} disabled={!canWriteChecks}>
           <Checkster onSave={handleSubmit} />
         </ChecksterProvider>

@@ -111,7 +111,7 @@ export const TimepointViewerExecutions = ({
                 {executions.map((execution) => {
                   return (
                     <LogsRenderer<UnknownExecutionLog>
-                      key={execution[0][LokiFieldNames.ID]}
+                      key={execution[0][LokiFieldNames.Id]}
                       logs={execution}
                       logsView={logsView}
                       mainKey="msg"
@@ -190,7 +190,7 @@ const MultipleExecutions = ({ executions, logsView }: { executions: ExecutionLog
       <Stack direction="column" gap={4}>
         {executions.map((execution, index) => {
           const { probe_success } = execution[0].labels;
-          const id = execution[0][LokiFieldNames.ID];
+          const id = execution[0][LokiFieldNames.Id];
 
           return (
             <>

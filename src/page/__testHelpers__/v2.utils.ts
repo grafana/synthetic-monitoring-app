@@ -7,14 +7,14 @@ import { gotoSection } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
 
 const TARGET_MAP = {
-  [CheckType.DNS]: 'grafana.com',
-  [CheckType.GRPC]: 'grafana.com:50051',
-  [CheckType.HTTP]: 'https://grafana.com/',
-  [CheckType.MULTI_HTTP]: 'https://grafana.com/',
-  [CheckType.PING]: 'grafana.com',
+  [CheckType.Dns]: 'grafana.com',
+  [CheckType.Grpc]: 'grafana.com:50051',
+  [CheckType.Http]: 'https://grafana.com/',
+  [CheckType.MultiHttp]: 'https://grafana.com/',
+  [CheckType.Ping]: 'grafana.com',
   [CheckType.Scripted]: 'Whatever string we would like',
   [CheckType.Browser]: 'Whatever string we would like',
-  [CheckType.TCP]: 'grafana.com:80',
+  [CheckType.Tcp]: 'grafana.com:80',
   [CheckType.Traceroute]: 'grafana.com',
 };
 

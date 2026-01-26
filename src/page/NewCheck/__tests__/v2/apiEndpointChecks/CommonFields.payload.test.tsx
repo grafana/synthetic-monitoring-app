@@ -19,11 +19,11 @@ import { renderNewForm, TARGET_MAP } from '../../../../__testHelpers__/checkForm
 import { fillMandatoryFields } from '../../../../__testHelpers__/v2.utils';
 
 export const FALLBACK_CHECK_MAP: Record<string, Check> = {
-  [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
-  [CheckType.PING]: FALLBACK_CHECK_PING,
-  [CheckType.GRPC]: FALLBACK_CHECK_GRPC,
-  [CheckType.DNS]: FALLBACK_CHECK_DNS,
-  [CheckType.TCP]: FALLBACK_CHECK_TCP,
+  [CheckType.Http]: FALLBACK_CHECK_HTTP,
+  [CheckType.Ping]: FALLBACK_CHECK_PING,
+  [CheckType.Grpc]: FALLBACK_CHECK_GRPC,
+  [CheckType.Dns]: FALLBACK_CHECK_DNS,
+  [CheckType.Tcp]: FALLBACK_CHECK_TCP,
   [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
 };
 

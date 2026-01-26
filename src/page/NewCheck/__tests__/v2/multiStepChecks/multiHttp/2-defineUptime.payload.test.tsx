@@ -7,7 +7,7 @@ import { AssertionConditionVariant, AssertionSubjectVariant } from 'components/M
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-const checkType = CheckType.MULTI_HTTP;
+const checkType = CheckType.MultiHttp;
 
 describe(`MultiHTTPCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {

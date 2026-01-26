@@ -4,7 +4,7 @@ import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-const checkType = CheckType.TCP;
+const checkType = CheckType.Tcp;
 
 describe(`TCPCheck - Section 5 (Execution) payload`, () => {
   it(`has the correct default values submitted`, async () => {

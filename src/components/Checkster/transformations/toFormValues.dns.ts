@@ -17,7 +17,7 @@ export function getDNSCheckFormValues(check: DNSCheck): CheckFormValuesDns {
 
   return {
     ...base,
-    checkType: CheckType.DNS,
+    checkType: CheckType.Dns,
     settings: {
       dns: getDnsSettingsFormValues(check.settings),
     },

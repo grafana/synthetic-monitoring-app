@@ -21,7 +21,7 @@ export const HTTP_UPTIME_FIELDS = ['settings.http.regexValidations'];
 
 export function HttpUptimeContent() {
   const { watch } = useFormContext<CheckFormValues>();
-  const disallowBodyMatching = watch('settings.http.method') === HttpMethod.HEAD;
+  const disallowBodyMatching = watch('settings.http.method') === HttpMethod.Head;
 
   return (
     <SectionContent>

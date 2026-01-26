@@ -50,7 +50,7 @@ export function useCheck(id: number) {
 
 export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<AddCheckResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.CREATE_CHECK;
+  const eventType = FaroEvent.CreateCheck;
 
   return useMutation<AddCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
@@ -82,7 +82,7 @@ export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<
 
 export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<UpdateCheckResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.UPDATE_CHECK;
+  const eventType = FaroEvent.UpdateCheck;
 
   return useMutation<UpdateCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
@@ -122,7 +122,7 @@ type ExtendedDeleteCheckResult = DeleteCheckResult & {
 
 export function useDeleteCheck({ eventInfo, onError, onSuccess }: MutationProps<DeleteCheckResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.DELETE_CHECK;
+  const eventType = FaroEvent.DeleteCheck;
 
   return useMutation<ExtendedDeleteCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
@@ -164,7 +164,7 @@ export function useBulkUpdateChecks({
   onSuccess,
 }: MutationProps<ExtendedBulkUpdateCheckResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.BULK_UPDATE_CHECK;
+  const eventType = FaroEvent.BulkUpdateCheck;
 
   return useMutation<ExtendedBulkUpdateCheckResult, Error, Check[], UseMutationResult>({
     mutationFn: async (checks: Check[]) => {
@@ -198,7 +198,7 @@ export function useBulkUpdateChecks({
 
 export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationProps<number[]> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.BULK_DELETE_CHECK;
+  const eventType = FaroEvent.BulkDeleteCheck;
 
   return useMutation<number[], Error, number[], UseMutationResult>({
     mutationFn: async (checkIds: number[]) => {
@@ -233,7 +233,7 @@ export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationP
 
 export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<AdHocCheckResponse> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.TEST_CHECK;
+  const eventType = FaroEvent.TestCheck;
 
   return useMutation<AdHocCheckResponse, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {

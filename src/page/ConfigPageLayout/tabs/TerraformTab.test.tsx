@@ -30,7 +30,7 @@ async function renderTerraformTab() {
   );
 
   const result = render(<TerraformTab />);
-  await result.findByTestId(DataTestIds.CONFIG_CONTENT);
+  await result.findByTestId(DataTestIds.ConfigContent);
 
   return result;
 }
@@ -92,7 +92,7 @@ describe('TerraformTab', () => {
 
   it('should show correct terraform HCL config by default', async () => {
     const { getAllByTestId } = await renderTerraformTab();
-    const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+    const preformatted = getAllByTestId(DataTestIds.Preformatted);
     const content = preformatted[0].textContent ?? '';
     
     // Should contain HCL syntax elements
@@ -109,7 +109,7 @@ describe('TerraformTab', () => {
     const jsonTab = getByText('JSON');
     await user.click(jsonTab);
     
-    const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+    const preformatted = getAllByTestId(DataTestIds.Preformatted);
     // Since content escapes '<' and '>', we need to replace them back
     const content = JSON.parse((preformatted[0].textContent ?? '').replace('&lt;', '<').replace('&gt;', '>'));
     expect(content).toEqual(TERRAFORM_BASIC_PING_CHECK);
@@ -139,7 +139,7 @@ describe('TerraformTab', () => {
       // Should show "Import checks" subtitle
       expect(getByText('Import checks', { selector: 'h4' })).toBeInTheDocument();
       
-      const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+      const preformatted = getAllByTestId(DataTestIds.Preformatted);
       expect(preformatted[1]).toHaveTextContent(
         'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 6'
       );
@@ -156,7 +156,7 @@ describe('TerraformTab', () => {
       // Should show "Import checks" subtitle
       expect(getByText('Import checks', { selector: 'h4' })).toBeInTheDocument();
       
-      const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+      const preformatted = getAllByTestId(DataTestIds.Preformatted);
       const content = preformatted[1].textContent ?? '';
       expect(content).toContain('import {');
       expect(content).toContain('to = grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com');
@@ -185,7 +185,7 @@ describe('TerraformTab', () => {
           })
         );
         const { getAllByTestId } = await renderTerraformTab();
-        const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+        const preformatted = getAllByTestId(DataTestIds.Preformatted);
         expect(preformatted[2]).toHaveTextContent(
           `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} 1:<PROBE_ACCESS_TOKEN>`
         );
@@ -208,7 +208,7 @@ describe('TerraformTab', () => {
         const importBlocksTab = getByText('Import blocks');
         await user.click(importBlocksTab);
         
-        const preformatted = getAllByTestId(DataTestIds.PREFORMATTED);
+        const preformatted = getAllByTestId(DataTestIds.Preformatted);
         const content = preformatted[2].textContent ?? '';
         expect(content).toContain('import {');
         expect(content).toContain(`to = grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name}`);

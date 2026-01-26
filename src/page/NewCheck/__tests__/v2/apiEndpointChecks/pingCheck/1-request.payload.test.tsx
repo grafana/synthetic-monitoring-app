@@ -6,7 +6,7 @@ import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.PING;
+const checkType = CheckType.Ping;
 
 describe(`PingCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {

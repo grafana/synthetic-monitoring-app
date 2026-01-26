@@ -25,23 +25,23 @@ function DashboardPageContent() {
     return <CheckNotFound />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.GRPC) {
+  if (check && getCheckType(check.settings) === CheckType.Grpc) {
     return <GrpcDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.TCP) {
+  if (check && getCheckType(check.settings) === CheckType.Tcp) {
     return <TcpDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.DNS) {
+  if (check && getCheckType(check.settings) === CheckType.Dns) {
     return <DNSDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.PING) {
+  if (check && getCheckType(check.settings) === CheckType.Ping) {
     return <PingDashboard check={check} />;
   }
 
-  if (check && getCheckType(check.settings) === CheckType.HTTP) {
+  if (check && getCheckType(check.settings) === CheckType.Http) {
     return <HttpDashboard check={check} />;
   }
 
@@ -51,7 +51,7 @@ function DashboardPageContent() {
 
   if (
     check &&
-    (getCheckType(check.settings) === CheckType.Scripted || getCheckType(check.settings) === CheckType.MULTI_HTTP)
+    (getCheckType(check.settings) === CheckType.Scripted || getCheckType(check.settings) === CheckType.MultiHttp)
   ) {
     return <ScriptedDashboard check={check} />;
   }

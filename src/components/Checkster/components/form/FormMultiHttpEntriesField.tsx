@@ -55,7 +55,7 @@ export function FormMultiHttpEntriesField({ field }: FormMultiHttpEntriesFieldPr
           icon="plus"
           onClick={() => {
             append({
-              request: { url: ``, method: HttpMethod.GET },
+              request: { url: ``, method: HttpMethod.Get },
             });
           }}
           disabled={disabled || limitReached}

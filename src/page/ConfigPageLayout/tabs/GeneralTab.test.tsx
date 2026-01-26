@@ -15,7 +15,7 @@ jest.mock('../../../components/LinkedDatasourceView', () => {
 
 async function renderGeneralTab(metaOverrides?: any) {
   const result = render(<GeneralTab />, { meta: metaOverrides });
-  await result.findByTestId(DataTestIds.CONFIG_CONTENT);
+  await result.findByTestId(DataTestIds.ConfigContent);
 
   return result;
 }
@@ -37,7 +37,7 @@ describe('GeneralTab', () => {
     expect(getByText('Probe API Server URL')).toBeInTheDocument();
     expect(getByText('Your backend address is:')).toBeInTheDocument();
 
-    expect(getByTestId(DataTestIds.PREFORMATTED)).toHaveTextContent(GRAFANA_DEV_ENTRY.apiServerURL);
+    expect(getByTestId(DataTestIds.Preformatted)).toHaveTextContent(GRAFANA_DEV_ENTRY.apiServerURL);
     expect(getByText(GRAFANA_DEV_ENTRY.backendAddress)).toBeInTheDocument();
   });
 

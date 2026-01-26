@@ -74,7 +74,7 @@ const transformedValidKey = btoa(VALID_KEY);
 
 export const BASIC_DNS_CHECK: DNSCheck = db.check.build(
   { job: 'Job name for dns', target: 'dns.com', probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[] },
-  { transient: { type: CheckType.DNS } }
+  { transient: { type: CheckType.Dns } }
 ) as DNSCheck;
 
 export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
@@ -90,7 +90,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
     alerts: [...BASIC_CHECK_ALERTS.alerts],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   },
-  { transient: { type: CheckType.HTTP } }
+  { transient: { type: CheckType.Http } }
 ) as HTTPCheck;
 
 export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.check.build(
@@ -132,7 +132,7 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
           {
             request: {
               url: 'https://www.multi1.com',
-              method: HttpMethod.GET,
+              method: HttpMethod.Get,
               headers: [
                 {
                   name: 'aheader',
@@ -165,7 +165,7 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
           {
             request: {
               url: 'https://www.multi2.com',
-              method: HttpMethod.POST,
+              method: HttpMethod.Post,
               headers: [
                 {
                   name: 'examples',
@@ -192,7 +192,7 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
       },
     },
   },
-  { transient: { type: CheckType.MULTI_HTTP } }
+  { transient: { type: CheckType.MultiHttp } }
 ) as MultiHTTPCheck;
 
 export const BASIC_PING_CHECK: PingCheck = db.check.build(
@@ -208,7 +208,7 @@ export const BASIC_PING_CHECK: PingCheck = db.check.build(
       },
     },
   },
-  { transient: { type: CheckType.PING } }
+  { transient: { type: CheckType.Ping } }
 ) as PingCheck;
 
 export const BASIC_TCP_CHECK: TCPCheck = db.check.build(
@@ -220,7 +220,7 @@ export const BASIC_TCP_CHECK: TCPCheck = db.check.build(
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
     target: 'grafana.com:43',
   },
-  { transient: { type: CheckType.TCP } }
+  { transient: { type: CheckType.Tcp } }
 ) as TCPCheck;
 
 export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = db.check.build(
@@ -243,8 +243,8 @@ export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
     basicMetricsOnly: true,
     settings: {
       http: {
-        method: HttpMethod.GET,
-        compression: HTTPCompressionAlgo.gzip,
+        method: HttpMethod.Get,
+        compression: HTTPCompressionAlgo.Gzip,
         headers: ['headerName:headerValue'],
         body: 'requestbody',
         ipVersion: IpVersion.V6,
@@ -257,7 +257,7 @@ export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
           serverName: 'the serverName',
         },
         validStatusCodes: [100],
-        validHTTPVersions: [HttpVersion.HTTP1_0],
+        validHTTPVersions: [HttpVersion.Http1_0],
         failIfNotSSL: true,
         failIfSSL: false,
         basicAuth: { username: 'steve', password: 'stevessecurepassword' },
@@ -271,7 +271,7 @@ export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
       },
     },
   },
-  { transient: { type: CheckType.HTTP } }
+  { transient: { type: CheckType.Http } }
 ) as HTTPCheck;
 
 export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = db.check.build(
@@ -282,7 +282,7 @@ export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = db.check.build(
     alertSensitivity: 'slightly sensitive',
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   },
-  { transient: { type: CheckType.DNS } }
+  { transient: { type: CheckType.Dns } }
 ) as DNSCheck;
 
 export const BASIC_CHECK_LIST: Check[] = [
@@ -419,7 +419,7 @@ export const ADHOC_CHECK_RESULT: AdHocCheckResponse = {
   settings: {
     http: {
       ipVersion: IpVersion.V4,
-      method: HttpMethod.GET,
+      method: HttpMethod.Get,
       noFollowRedirects: true,
       tlsConfig: {},
       failIfSSL: false,

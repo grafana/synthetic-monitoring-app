@@ -5,7 +5,7 @@ import { gotoSection } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
-const checkType = CheckType.MULTI_HTTP;
+const checkType = CheckType.MultiHttp;
 
 describe(`MultiHTTPCheck - Section 2 (Define uptime) UI`, () => {
   it(`displays variables which are available in subsequent requests`, async () => {

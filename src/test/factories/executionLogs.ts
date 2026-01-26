@@ -60,7 +60,7 @@ export const unknownExecutionLogFactory = Factory.define<UnknownExecutionLog, Ex
       labels: {
         probe: ``,
         msg: ``,
-        check_name: CheckType.HTTP,
+        check_name: CheckType.Http,
         detected_level: 'info' as const,
         instance,
         job,
@@ -80,7 +80,7 @@ export const unknownExecutionLogFactory = Factory.define<UnknownExecutionLog, Ex
 const startingLogLabels = {
   msg: MSG_STRINGS_COMMON.BeginningCheck,
   timeout_seconds: '10',
-  type: CheckType.HTTP,
+  type: CheckType.Http,
 } as const;
 
 export const startingLogFactory: Factory<StartingLog> = buildExecutionLogFactory<StartingLogLabels>(startingLogLabels);

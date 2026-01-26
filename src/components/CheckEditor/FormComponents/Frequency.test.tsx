@@ -25,14 +25,14 @@ function RenderWrapper(props: RenderWrapperProps) {
 
   return (
     <FormProvider {...form}>
-      <Frequency checkType={props.checkType || CheckType.HTTP} disabled={props.disabled} />
+      <Frequency checkType={props.checkType || CheckType.Http} disabled={props.disabled} />
     </FormProvider>
   );
 }
 
 async function renderFrequency(props?: any) {
   const result = render(<RenderWrapper {...props} />);
-  await waitFor(() => screen.findByTestId(DataTestIds.FREQUENCY_COMPONENT), { timeout: 3000 });
+  await waitFor(() => screen.findByTestId(DataTestIds.FrequencyComponent), { timeout: 3000 });
 
   return result;
 }
@@ -57,7 +57,7 @@ describe('Frequency', () => {
   });
 
   describe('Checktype rendering is correct', () => {
-    it.each([CheckType.DNS, CheckType.GRPC, CheckType.HTTP, CheckType.TCP, CheckType.PING])(
+    it.each([CheckType.Dns, CheckType.Grpc, CheckType.Http, CheckType.Tcp, CheckType.Ping])(
       'renders the correct options for %s',
       async (checkType) => {
         await renderFrequency({ checkType });
@@ -67,7 +67,7 @@ describe('Frequency', () => {
       }
     );
 
-    it.each([CheckType.DNS, CheckType.GRPC, CheckType.HTTP, CheckType.TCP, CheckType.PING])(
+    it.each([CheckType.Dns, CheckType.Grpc, CheckType.Http, CheckType.Tcp, CheckType.Ping])(
       'renders the correct min and max frequency for %s',
       async (checkType) => {
         await renderFrequency({ checkType, frequency: ONE_SECOND_IN_MS });
@@ -76,7 +76,7 @@ describe('Frequency', () => {
       }
     );
 
-    it.each([CheckType.Browser, CheckType.MULTI_HTTP, CheckType.Scripted])(
+    it.each([CheckType.Browser, CheckType.MultiHttp, CheckType.Scripted])(
       'renders the correct options for %s',
       async (checkType) => {
         await renderFrequency({ checkType });
@@ -90,7 +90,7 @@ describe('Frequency', () => {
       }
     );
 
-    it.each([CheckType.Browser, CheckType.MULTI_HTTP, CheckType.Scripted])(
+    it.each([CheckType.Browser, CheckType.MultiHttp, CheckType.Scripted])(
       'renders the correct min and max frequency for %s',
       async (checkType) => {
         await renderFrequency({ checkType, frequency: ONE_SECOND_IN_MS });

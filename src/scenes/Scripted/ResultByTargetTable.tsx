@@ -35,7 +35,7 @@ export const ResultsByTargetTable = ({ checkType }: { checkType: CheckType }) =>
     queries: [
       {
         expr: avgRequestSuccessRateQuery.expr,
-        refId: ResultsByTargetTableRefId.SUCCESS_RATE,
+        refId: ResultsByTargetTableRefId.SuccessRate,
         instant: avgRequestSuccessRateQuery.queryType === `instant`,
         legendFormat: '__auto',
         format: 'table',
@@ -43,7 +43,7 @@ export const ResultsByTargetTable = ({ checkType }: { checkType: CheckType }) =>
       },
       {
         expr: expectedResponseQuery.expr,
-        refId: ResultsByTargetTableRefId.EXPECTED_RESPONSE,
+        refId: ResultsByTargetTableRefId.ExpectedResponse,
         instant: expectedResponseQuery.queryType === `instant`,
         legendFormat: '__auto',
         format: 'table',
@@ -51,7 +51,7 @@ export const ResultsByTargetTable = ({ checkType }: { checkType: CheckType }) =>
       },
       {
         expr: latencyQuery.expr,
-        refId: ResultsByTargetTableRefId.LATENCY,
+        refId: ResultsByTargetTableRefId.Latency,
         instant: latencyQuery.queryType === `instant`,
         format: 'table',
         editorMode: 'code',
@@ -144,10 +144,10 @@ const ResultsByTargetTableView = ({ data, checkType }: { data?: PanelData; check
     }
 
     const expectedResponseSeries = data.series.find(
-      (series) => series.refId === ResultsByTargetTableRefId.EXPECTED_RESPONSE
+      (series) => series.refId === ResultsByTargetTableRefId.ExpectedResponse
     );
-    const latencySeries = data.series.find((series) => series.refId === ResultsByTargetTableRefId.LATENCY);
-    const successRateSeries = data.series.find((series) => series.refId === ResultsByTargetTableRefId.SUCCESS_RATE);
+    const latencySeries = data.series.find((series) => series.refId === ResultsByTargetTableRefId.Latency);
+    const successRateSeries = data.series.find((series) => series.refId === ResultsByTargetTableRefId.SuccessRate);
     if (!successRateSeries || !expectedResponseSeries || !latencySeries) {
       return [];
     }
@@ -168,7 +168,7 @@ const ResultsByTargetTableView = ({ data, checkType }: { data?: PanelData; check
             findValueByName(
               name,
               method,
-              getValueFieldName(ResultsByTargetTableRefId.SUCCESS_RATE),
+              getValueFieldName(ResultsByTargetTableRefId.SuccessRate),
               successRateSeries?.fields ?? []
             )) *
           100;
@@ -176,13 +176,13 @@ const ResultsByTargetTableView = ({ data, checkType }: { data?: PanelData; check
           findValueByName(
             name,
             method,
-            getValueFieldName(ResultsByTargetTableRefId.EXPECTED_RESPONSE),
+            getValueFieldName(ResultsByTargetTableRefId.ExpectedResponse),
             expectedResponseSeries?.fields ?? []
           ) * 100;
         const latency = findValueByName(
           name,
           method,
-          getValueFieldName(ResultsByTargetTableRefId.LATENCY),
+          getValueFieldName(ResultsByTargetTableRefId.Latency),
           latencySeries?.fields ?? []
         );
 

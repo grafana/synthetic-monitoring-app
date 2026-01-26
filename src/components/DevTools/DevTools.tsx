@@ -17,7 +17,7 @@ interface DevToolsProps {
 
 const FEATURE_MAP = Object.entries(FeatureName).reduce<{ [k: string]: keyof typeof FeatureName }>(
   (acc, [key, value]) => {
-    if (value === FeatureName.__TURNOFF) {
+    if (value === FeatureName.__Turnoff) {
       return acc;
     }
 

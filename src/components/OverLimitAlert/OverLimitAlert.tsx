@@ -19,7 +19,7 @@ export const OverLimitAlert = ({ checkType }: { checkType?: CheckType }) => {
     return <CheckLimitAlert />;
   }
 
-  if (isOverScriptedLimit && getIsRelevant(checkType, [CheckType.Scripted, CheckType.MULTI_HTTP])) {
+  if (isOverScriptedLimit && getIsRelevant(checkType, [CheckType.Scripted, CheckType.MultiHttp])) {
     return <ScriptedCheckLimitAlert />;
   }
 

@@ -6,7 +6,7 @@ import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-const checkType = CheckType.HTTP;
+const checkType = CheckType.Http;
 
 describe(`HttpCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
@@ -20,7 +20,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
   });
 
   it(`can change method to POST`, async () => {
-    const METHOD_OPTION = HttpMethod.POST;
+    const METHOD_OPTION = HttpMethod.Post;
     const { read, user } = await renderNewForm(checkType);
     await user.click(screen.getByLabelText(/Request method \*/));
     await user.click(screen.getByRole('menuitem', { name: METHOD_OPTION }));

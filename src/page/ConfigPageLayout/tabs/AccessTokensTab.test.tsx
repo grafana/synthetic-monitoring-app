@@ -7,7 +7,7 @@ import { AccessTokensTab } from './AccessTokensTab';
 
 async function renderAccessTokensTab() {
   const result = render(<AccessTokensTab />);
-  await result.findByTestId(DataTestIds.CONFIG_CONTENT);
+  await result.findByTestId(DataTestIds.ConfigContent);
 
   return result;
 }

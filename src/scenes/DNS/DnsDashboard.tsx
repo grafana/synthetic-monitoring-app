@@ -24,7 +24,7 @@ export const DNSDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.DNS}>
+    <DashboardContainer check={check} checkType={CheckType.Dns}>
       <Stack height={`90px`}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />

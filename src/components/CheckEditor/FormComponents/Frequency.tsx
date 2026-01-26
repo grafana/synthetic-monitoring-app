@@ -65,7 +65,7 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
       error={frequencyError}
       className={styles.field}
       id={FREQUENCY_INPUT_ID}
-      data-testid={DataTestIds.FREQUENCY_COMPONENT}
+      data-testid={DataTestIds.FrequencyComponent}
       data-form-name="frequency" // this is used to assist form when trying to scroll/focus error field (new check editor)
     >
       <Stack direction="column" gap={1.5}>

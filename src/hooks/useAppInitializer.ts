@@ -158,9 +158,9 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
   };
 
   const initialize = async ({ metricsSettings, metricsHostedId, logsSettings, logsHostedId }: InitializeProps) => {
-    reportEvent(FaroEvent.INIT);
+    reportEvent(FaroEvent.Init);
     if (!jsonData) {
-      reportError('Invalid plugin configuration', FaroEvent.INIT);
+      reportError('Invalid plugin configuration', FaroEvent.Init);
       setError('Invalid plugin configuration');
       return;
     }
@@ -200,7 +200,7 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
       const err = e as SubmissionErrorWrapper;
       setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
       setLoading(false);
-      reportError(err.data?.msg ?? err.data?.err ?? err, FaroEvent.INIT);
+      reportError(err.data?.msg ?? err.data?.err ?? err, FaroEvent.Init);
     }
   };
 

@@ -5,7 +5,7 @@ import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkF
 import { gotoSection, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.GRPC;
+const checkType = CheckType.Grpc;
 
 describe(`gRPCCheck - Section 5 (Execution) payload`, () => {
   it(`has the correct default values submitted`, async () => {

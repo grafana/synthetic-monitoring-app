@@ -24,7 +24,7 @@ describe('SecretsManagementTab', () => {
       server.use(apiRoute('listSecrets', { result: () => ({ status: 500, body: 'Error message' }) }));
       render(<SecretsManagementTab />);
 
-      await waitFor(() => expect(screen.queryByTestId(DataTestIds.CENTERED_SPINNER)).not.toBeInTheDocument(), {
+      await waitFor(() => expect(screen.queryByTestId(DataTestIds.CenteredSpinner)).not.toBeInTheDocument(), {
         timeout: 3000,
       });
 
@@ -46,7 +46,7 @@ describe('SecretsManagementTab', () => {
       });
       expect(screen.getByText('secret.securevalues:read')).toBeInTheDocument();
       expect(screen.getByText('secret.securevalues:create')).toBeInTheDocument();
-      expect(screen.queryByTestId(DataTestIds.CENTERED_SPINNER)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(DataTestIds.CenteredSpinner)).not.toBeInTheDocument();
     });
 
     it('shows secrets management UI for admin users', async () => {

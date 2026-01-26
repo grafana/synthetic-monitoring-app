@@ -8,7 +8,7 @@ export const getAccountingClass = (calcUsageValue: CalculateUsageValues): Accoun
   const { basicMetricsOnly, checkType, isSSL } = calcUsageValue;
   let accountClass: keyof typeof AccountingClassNames = checkType;
 
-  if ((checkType === CheckType.HTTP || checkType === CheckType.TCP || checkType === CheckType.GRPC) && isSSL) {
+  if ((checkType === CheckType.Http || checkType === CheckType.Tcp || checkType === CheckType.Grpc) && isSSL) {
     accountClass = `${checkType}_ssl`;
   }
 
@@ -35,7 +35,7 @@ export function useUsageCalc(calcUsageValues: CalculateUsageValues[]) {
     (total, calcUsageValue) => {
       const accountingClass = getAccountingClass(calcUsageValue);
       const { assertionCount, probeCount, frequency } = calcUsageValue;
-      const calculateFunc = calcFunctionMap[calcUsageValue.checkType === CheckType.MULTI_HTTP ? `multi` : `other`];
+      const calculateFunc = calcFunctionMap[calcUsageValue.checkType === CheckType.MultiHttp ? `multi` : `other`];
 
       const usage = calculateFunc({
         assertionCount,

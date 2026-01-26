@@ -13,12 +13,12 @@ import { tcpCheckSchema } from '../TCPCheckSchema';
 import { tracerouteCheckSchema } from '../TracerouteCheckSchema';
 
 const STATIC_SCHEMA_MAP = {
-  [CheckType.DNS]: dnsCheckSchema,
-  [CheckType.GRPC]: grpcCheckSchema,
-  [CheckType.HTTP]: httpCheckSchema,
-  [CheckType.MULTI_HTTP]: multiHttpCheckSchema,
-  [CheckType.PING]: pingCheckSchema,
-  [CheckType.TCP]: tcpCheckSchema,
+  [CheckType.Dns]: dnsCheckSchema,
+  [CheckType.Grpc]: grpcCheckSchema,
+  [CheckType.Http]: httpCheckSchema,
+  [CheckType.MultiHttp]: multiHttpCheckSchema,
+  [CheckType.Ping]: pingCheckSchema,
+  [CheckType.Tcp]: tcpCheckSchema,
   [CheckType.Traceroute]: tracerouteCheckSchema,
 };
 

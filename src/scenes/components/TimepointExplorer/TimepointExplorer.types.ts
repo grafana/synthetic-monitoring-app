@@ -40,14 +40,14 @@ export type MiniMapPage = [number, number];
 export type MiniMapPages = [MiniMapPage, ...MiniMapPage[]];
 
 export enum CheckEventType {
-  CHECK_CREATED = 'Check created',
-  CHECK_UPDATED = 'Check updated',
-  BEFORE_CREATION = 'Before check was created',
-  OUT_OF_TIMERANGE = 'Out of selected timerange',
-  OUT_OF_RETENTION_PERIOD = 'Out of retention period',
-  ALERTS_FIRING = 'Alerts firing',
-  ALERTS_PENDING = 'Alerts pending',
-  NO_DATA = 'No data',
+  CheckCreated = 'Check created',
+  CheckUpdated = 'Check updated',
+  BeforeCreation = 'Before check was created',
+  OutOfTimerange = 'Out of selected timerange',
+  OutOfRetentionPeriod = 'Out of retention period',
+  AlertsFiring = 'Alerts firing',
+  AlertsPending = 'Alerts pending',
+  NoData = 'No data',
 }
 
 export type CheckEvent = {

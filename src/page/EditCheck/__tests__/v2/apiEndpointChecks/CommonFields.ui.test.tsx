@@ -12,11 +12,11 @@ import { Check, CheckType } from 'types';
 import { renderEditForm } from '../../../../__testHelpers__/checkForm';
 
 export const CHECK_LIST_MAP: Record<string, Check> = {
-  [CheckType.HTTP]: BASIC_HTTP_CHECK,
-  [CheckType.PING]: BASIC_PING_CHECK,
-  // [CheckType.GRPC]: BASIC_GRPC_CHECK,
-  [CheckType.DNS]: BASIC_DNS_CHECK,
-  [CheckType.TCP]: BASIC_TCP_CHECK,
+  [CheckType.Http]: BASIC_HTTP_CHECK,
+  [CheckType.Ping]: BASIC_PING_CHECK,
+  // [CheckType.Grpc]: BASIC_GRPC_CHECK,
+  [CheckType.Dns]: BASIC_DNS_CHECK,
+  [CheckType.Tcp]: BASIC_TCP_CHECK,
   [CheckType.Traceroute]: BASIC_TRACEROUTE_CHECK,
 };
 

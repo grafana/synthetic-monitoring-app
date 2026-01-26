@@ -85,12 +85,12 @@ const ProbesContent = () => {
   return (
     <>
       <ProbeList
-        data-testid={DataTestIds.PRIVATE_PROBES_LIST}
+        data-testid={DataTestIds.PrivateProbesList}
         probes={privateProbes}
         title="Private Probes"
         emptyText={<PrivateProbesEmptyText />}
       />
-      <ProbeList data-testid={DataTestIds.PUBLIC_PROBES_LIST} probes={publicProbes} title="Public Probes" />
+      <ProbeList data-testid={DataTestIds.PublicProbesList} probes={publicProbes} title="Public Probes" />
     </>
   );
 };

@@ -10,7 +10,7 @@ import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.DNS;
+const checkType = CheckType.Dns;
 
 describe(`DNSCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
@@ -22,7 +22,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
     expect(body.settings.dns.ipVersion).toBe(IpVersion.V4);
     expect(body.settings.dns.recordType).toBe(DnsRecordType.A);
     expect(body.settings.dns.server).toBe(`dns.google`);
-    expect(body.settings.dns.protocol).toBe(DnsProtocol.UDP);
+    expect(body.settings.dns.protocol).toBe(DnsProtocol.Udp);
     expect(body.settings.dns.port).toBe(53);
   });
 
@@ -58,7 +58,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
 
   describe(`DNS Settings`, () => {
     it(`can change the record type`, async () => {
-      const RECORD = DnsRecordType.AAAA;
+      const RECORD = DnsRecordType.Aaaa;
 
       const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
@@ -90,7 +90,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can change the protocol type`, async () => {
-      const PROTOCOL = DnsProtocol.TCP;
+      const PROTOCOL = DnsProtocol.Tcp;
 
       const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));

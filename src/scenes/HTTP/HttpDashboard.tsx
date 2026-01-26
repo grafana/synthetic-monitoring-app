@@ -23,7 +23,7 @@ export const HttpDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.HTTP}>
+    <DashboardContainer check={check} checkType={CheckType.Http}>
       <Stack height={`90px`}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />

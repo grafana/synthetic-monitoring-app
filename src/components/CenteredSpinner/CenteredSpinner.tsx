@@ -15,7 +15,7 @@ export const CenteredSpinner = (props: { 'aria-label'?: string }) => {
       })}
       aria-hidden="false"
       aria-label={props['aria-label'] ?? 'Loading'}
-      data-testid={DataTestIds.CENTERED_SPINNER}
+      data-testid={DataTestIds.CenteredSpinner}
     >
       <Spinner />
     </div>

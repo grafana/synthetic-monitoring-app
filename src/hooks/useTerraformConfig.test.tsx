@@ -174,7 +174,7 @@ describe('terraform config generation', () => {
               entries: [
                 {
                   request: {
-                    method: HttpMethod.GET,
+                    method: HttpMethod.Get,
                     url: 'https://www.grafana-dev.com',
                     headers: [],
                     queryFields: [{ name: 'param', value: 'test' }],
@@ -198,13 +198,13 @@ describe('terraform config generation', () => {
                   request: {
                     url: 'https://secondrequest.com',
                     body: undefined,
-                    method: HttpMethod.POST,
+                    method: HttpMethod.Post,
                     headers: [],
                     queryFields: [],
                   },
                   variables: [
                     {
-                      type: MultiHttpVariableType.JSON_PATH, //0
+                      type: MultiHttpVariableType.JsonPath, //0
                       name: 'avariable',
                       expression: 'great.variable.path',
                     },
@@ -214,7 +214,7 @@ describe('terraform config generation', () => {
                 {
                   request: {
                     url: 'avariable',
-                    method: HttpMethod.GET,
+                    method: HttpMethod.Get,
                     headers: [],
                     queryFields: [],
                   },
@@ -252,7 +252,7 @@ describe('terraform config generation', () => {
                 entries: [
                   {
                     request: {
-                      method: HttpMethod.GET,
+                      method: HttpMethod.Get,
                       url: 'https://www.grafana-dev.com',
                       headers: [],
                       query_fields: [{ name: 'param', value: 'test' }],
@@ -276,7 +276,7 @@ describe('terraform config generation', () => {
                     request: {
                       url: 'https://secondrequest.com',
                       body: undefined,
-                      method: HttpMethod.POST,
+                      method: HttpMethod.Post,
                       headers: [],
                       query_fields: [],
                     },
@@ -293,7 +293,7 @@ describe('terraform config generation', () => {
                     request: {
                       body: undefined,
                       url: 'avariable',
-                      method: HttpMethod.GET,
+                      method: HttpMethod.Get,
                       headers: [],
                       query_fields: [],
                     },

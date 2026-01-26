@@ -6,7 +6,7 @@ import { selectComboboxOption, submitForm } from 'components/Checkster/__testHel
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-const checkType = CheckType.MULTI_HTTP;
+const checkType = CheckType.MultiHttp;
 
 describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
   describe(`Single request`, () => {
@@ -16,7 +16,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
       await submitForm(user);
       const { body } = await read();
 
-      expect(body.settings.multihttp.entries[0].request.method).toBe(HttpMethod.GET);
+      expect(body.settings.multihttp.entries[0].request.method).toBe(HttpMethod.Get);
     });
 
     it(`can add entry request target`, async () => {
@@ -184,7 +184,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
         expect(body.settings.multihttp.entries[0].variables).toEqual([
           {
             name: VAR_NAME,
-            type: MultiHttpVariableType.JSON_PATH,
+            type: MultiHttpVariableType.JsonPath,
             expression: VAR_EXPRESSION,
           },
         ]);
@@ -215,7 +215,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
         expect(body.settings.multihttp.entries[0].variables).toEqual([
           {
             name: VAR_NAME,
-            type: MultiHttpVariableType.REGEX,
+            type: MultiHttpVariableType.Regex,
             expression: VAR_EXPRESSION,
           },
         ]);
@@ -250,7 +250,7 @@ describe(`MultiHTTPCheck - Section 1 (Request) payload`, () => {
         expect(body.settings.multihttp.entries[0].variables).toEqual([
           {
             name: VAR_NAME,
-            type: MultiHttpVariableType.CSS_SELECTOR,
+            type: MultiHttpVariableType.CssSelector,
             expression: VAR_EXPRESSION,
             attribute: VAR_ATTRIBUTE,
           },

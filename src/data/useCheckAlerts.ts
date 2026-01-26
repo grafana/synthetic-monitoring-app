@@ -57,7 +57,7 @@ export function useUpdateAlertsForCheck({
     meta: {
       event: {
         info: eventInfo,
-        type: FaroEvent.UPDATE_CHECK_ALERTS,
+        type: FaroEvent.UpdateCheckAlerts,
       },
       errorAlert: () => `Failed to save alerts for check`,
     },

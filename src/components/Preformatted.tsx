@@ -40,7 +40,7 @@ export function Preformatted({
   const Wrapper = isCode ? 'code' : Fragment;
 
   return (
-    <pre data-testid={DataTestIds.PREFORMATTED} className={cx(styles.container, className)}>
+    <pre data-testid={DataTestIds.Preformatted} className={cx(styles.container, className)}>
       <Wrapper>{doHighlights(children, highlight)}</Wrapper>
     </pre>
   );

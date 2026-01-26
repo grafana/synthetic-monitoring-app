@@ -36,7 +36,7 @@ export function TerraformTab() {
   const [importFormat, setImportFormat] = useState<ImportFormat>('cli');
 
   useEffect(() => {
-    reportEvent(FaroEvent.SHOW_TERRAFORM_CONFIG);
+    reportEvent(FaroEvent.ShowTerraformConfig);
   }, []);
 
   if (isLoading) {

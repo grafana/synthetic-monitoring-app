@@ -10,7 +10,7 @@ import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkF
 
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.DNS;
+const checkType = CheckType.Dns;
 
 describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {

@@ -2,31 +2,31 @@ import { faro, isError, isObject } from '@grafana/faro-web-sdk';
 import { config } from '@grafana/runtime';
 
 export enum FaroEvent {
-  INIT = 'initialize',
-  UPDATE_CHECK = 'update_check',
-  BULK_UPDATE_CHECK = 'bulk_update_check',
-  BULK_DELETE_CHECK = 'bulk_delete_check',
-  DELETE_CHECK = 'delete_check',
-  TEST_CHECK = 'test_check',
-  CREATE_CHECK = 'create_check',
-  CREATE_PROBE = 'create_probe',
-  UPDATE_PROBE = 'update_probe',
-  DELETE_PROBE = 'delete_probe',
-  RESET_PROBE_TOKEN = 'reset_probe_token',
-  DISABLE_PLUGIN = 'disable_plugin',
-  CREATE_ACCESS_TOKEN = 'create_access_token',
-  SAVE_THRESHOLDS = 'save_thresholds',
-  SHOW_TERRAFORM_CONFIG = 'show_terraform_config',
-  REFETCH_TENANT_LIMITS = 'refetch_tenant_limits',
-  INITIALIZE_ACCESS_TOKEN = 'initialize_access_token',
-  UPDATE_CHECK_ALERTS = 'update_check_alerts',
-  NO_PROBE_MAPPING_FOUND = 'no_probe_mapping_found',
+  Init = 'initialize',
+  UpdateCheck = 'update_check',
+  BulkUpdateCheck = 'bulk_update_check',
+  BulkDeleteCheck = 'bulk_delete_check',
+  DeleteCheck = 'delete_check',
+  TestCheck = 'test_check',
+  CreateCheck = 'create_check',
+  CreateProbe = 'create_probe',
+  UpdateProbe = 'update_probe',
+  DeleteProbe = 'delete_probe',
+  ResetProbeToken = 'reset_probe_token',
+  DisablePlugin = 'disable_plugin',
+  CreateAccessToken = 'create_access_token',
+  SaveThresholds = 'save_thresholds',
+  ShowTerraformConfig = 'show_terraform_config',
+  RefetchTenantLimits = 'refetch_tenant_limits',
+  InitializeAccessToken = 'initialize_access_token',
+  UpdateCheckAlerts = 'update_check_alerts',
+  NoProbeMappingFound = 'no_probe_mapping_found',
 }
 
 export enum FaroEnv {
-  DEV = 'development',
-  STAGING = 'staging',
-  PROD = 'production',
+  Dev = 'development',
+  Staging = 'staging',
+  Prod = 'production',
 }
 
 export type FaroEventMeta = {
@@ -82,37 +82,37 @@ function getFaroEnv(): FaroEnv {
   const appUrl = new URL(config.appUrl).hostname;
   switch (true) {
     case appUrl.endsWith('grafana-ops.net'):
-      return FaroEnv.STAGING;
+      return FaroEnv.Staging;
     case appUrl.endsWith('grafana.net'):
-      return FaroEnv.PROD;
+      return FaroEnv.Prod;
     case appUrl.endsWith('grafana-dev.net'):
     case appUrl.endsWith('localhost'):
     default:
-      return FaroEnv.DEV;
+      return FaroEnv.Dev;
   }
 }
 
 export function getFaroConfig() {
   const env = getFaroEnv();
   switch (env) {
-    case FaroEnv.DEV:
+    case FaroEnv.Dev:
       return {
         url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/769f675a8e1e8b05f05b478b7002259b',
         name: 'synthetic-monitoring-app-dev',
-        env: FaroEnv.DEV,
+        env: FaroEnv.Dev,
       };
-    case FaroEnv.STAGING:
+    case FaroEnv.Staging:
       return {
         url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/73212b0adc2a3d002ee3befa3b48c4d9',
         name: 'synthetic-monitoring-app-staging',
-        env: FaroEnv.STAGING,
+        env: FaroEnv.Staging,
       };
-    case FaroEnv.PROD:
+    case FaroEnv.Prod:
     default:
       return {
         url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/837791054a26c6aba5d32ece9030be32',
         name: 'synthetic-monitoring-app-prod',
-        env: FaroEnv.PROD,
+        env: FaroEnv.Prod,
       };
   }
 }

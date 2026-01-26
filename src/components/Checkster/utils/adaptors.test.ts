@@ -97,7 +97,7 @@ describe('toFormValues', () => {
   } as any;
 
   const mockFormValues = {
-    checkType: CheckType.HTTP,
+    checkType: CheckType.Http,
     job: 'test-job',
     target: 'https://example.com',
     frequency: 60000,
@@ -115,7 +115,7 @@ describe('toFormValues', () => {
 
   describe('DNS check', () => {
     it('should call getDNSCheckFormValues for DNS check type', () => {
-      mockGetCheckType.mockReturnValue(CheckType.DNS);
+      mockGetCheckType.mockReturnValue(CheckType.Dns);
       mockGetDNSCheckFormValues.mockReturnValue(mockFormValues);
 
       const result = toFormValues(mockCheck);
@@ -128,7 +128,7 @@ describe('toFormValues', () => {
 
   describe('GRPC check', () => {
     it('should call getGRPCCheckFormValues for GRPC check type', () => {
-      mockGetCheckType.mockReturnValue(CheckType.GRPC);
+      mockGetCheckType.mockReturnValue(CheckType.Grpc);
       mockGetGRPCCheckFormValues.mockReturnValue(mockFormValues);
 
       const result = toFormValues(mockCheck);
@@ -141,7 +141,7 @@ describe('toFormValues', () => {
 
   describe('HTTP check', () => {
     it('should call getHTTPCheckFormValues for HTTP check type', () => {
-      mockGetCheckType.mockReturnValue(CheckType.HTTP);
+      mockGetCheckType.mockReturnValue(CheckType.Http);
       mockGetHTTPCheckFormValues.mockReturnValue(mockFormValues);
 
       const result = toFormValues(mockCheck);
@@ -154,7 +154,7 @@ describe('toFormValues', () => {
 
   describe('MultiHTTP check', () => {
     it('should call getMultiHTTPCheckFormValues for MULTI_HTTP check type', () => {
-      mockGetCheckType.mockReturnValue(CheckType.MULTI_HTTP);
+      mockGetCheckType.mockReturnValue(CheckType.MultiHttp);
       mockGetMultiHTTPCheckFormValues.mockReturnValue(mockFormValues);
 
       const result = toFormValues(mockCheck);
@@ -167,7 +167,7 @@ describe('toFormValues', () => {
 
   describe('Ping check', () => {
     it('should call getPingCheckFormValues for PING check type', () => {
-      mockGetCheckType.mockReturnValue(CheckType.PING);
+      mockGetCheckType.mockReturnValue(CheckType.Ping);
       mockGetPingCheckFormValues.mockReturnValue(mockFormValues);
 
       const result = toFormValues(mockCheck);
@@ -193,7 +193,7 @@ describe('toFormValues', () => {
 
   describe('TCP check', () => {
     it('should call getTCPCheckFormValues for TCP check type', () => {
-      mockGetCheckType.mockReturnValue(CheckType.TCP);
+      mockGetCheckType.mockReturnValue(CheckType.Tcp);
       mockGetTCPCheckFormValues.mockReturnValue(mockFormValues);
 
       const result = toFormValues(mockCheck);
@@ -246,7 +246,7 @@ describe('toFormValues', () => {
     it('should handle null or undefined settings gracefully through getCheckType', () => {
       const checkWithoutSettings = { ...mockCheck, settings: undefined };
       // getCheckType should handle undefined settings and return a default
-      mockGetCheckType.mockReturnValue(CheckType.HTTP);
+      mockGetCheckType.mockReturnValue(CheckType.Http);
       mockGetHTTPCheckFormValues.mockReturnValue(mockFormValues);
 
       const result = toFormValues(checkWithoutSettings);
@@ -259,7 +259,7 @@ describe('toFormValues', () => {
     it('should handle empty settings object through getCheckType', () => {
       const checkWithEmptySettings = { ...mockCheck, settings: {} };
       // getCheckType should handle empty settings and return a default (HTTP)
-      mockGetCheckType.mockReturnValue(CheckType.HTTP);
+      mockGetCheckType.mockReturnValue(CheckType.Http);
       mockGetHTTPCheckFormValues.mockReturnValue(mockFormValues);
 
       const result = toFormValues(checkWithEmptySettings);
@@ -273,7 +273,7 @@ describe('toFormValues', () => {
 
 describe('toPayload', () => {
   const mockFormValues = {
-    checkType: CheckType.HTTP,
+    checkType: CheckType.Http,
     job: 'test-job',
     target: 'https://example.com',
     frequency: 60000,
@@ -309,7 +309,7 @@ describe('toPayload', () => {
 
   describe('DNS check', () => {
     it('should call getDNSPayload for DNS check type', () => {
-      const dnsFormValues = { ...mockFormValues, checkType: CheckType.DNS };
+      const dnsFormValues = { ...mockFormValues, checkType: CheckType.Dns };
       mockGetDNSPayload.mockReturnValue(mockCheck);
 
       const result = toPayload(dnsFormValues);
@@ -321,7 +321,7 @@ describe('toPayload', () => {
 
   describe('GRPC check', () => {
     it('should call getGRPCPayload for GRPC check type', () => {
-      const grpcFormValues = { ...mockFormValues, checkType: CheckType.GRPC };
+      const grpcFormValues = { ...mockFormValues, checkType: CheckType.Grpc };
       mockGetGRPCPayload.mockReturnValue(mockCheck);
 
       const result = toPayload(grpcFormValues);
@@ -333,7 +333,7 @@ describe('toPayload', () => {
 
   describe('HTTP check', () => {
     it('should call getHTTPPayload for HTTP check type', () => {
-      const httpFormValues = { ...mockFormValues, checkType: CheckType.HTTP };
+      const httpFormValues = { ...mockFormValues, checkType: CheckType.Http };
       mockGetHTTPPayload.mockReturnValue(mockCheck);
 
       const result = toPayload(httpFormValues);
@@ -345,7 +345,7 @@ describe('toPayload', () => {
 
   describe('MultiHTTP check', () => {
     it('should call getMultiHTTPPayload for MULTI_HTTP check type', () => {
-      const multiHttpFormValues = { ...mockFormValues, checkType: CheckType.MULTI_HTTP };
+      const multiHttpFormValues = { ...mockFormValues, checkType: CheckType.MultiHttp };
       mockGetMultiHTTPPayload.mockReturnValue(mockCheck);
 
       const result = toPayload(multiHttpFormValues);
@@ -357,7 +357,7 @@ describe('toPayload', () => {
 
   describe('Ping check', () => {
     it('should call getPingPayload for PING check type', () => {
-      const pingFormValues = { ...mockFormValues, checkType: CheckType.PING };
+      const pingFormValues = { ...mockFormValues, checkType: CheckType.Ping };
       mockGetPingPayload.mockReturnValue(mockCheck);
 
       const result = toPayload(pingFormValues);
@@ -381,7 +381,7 @@ describe('toPayload', () => {
 
   describe('TCP check', () => {
     it('should call getTCPPayload for TCP check type', () => {
-      const tcpFormValues = { ...mockFormValues, checkType: CheckType.TCP };
+      const tcpFormValues = { ...mockFormValues, checkType: CheckType.Tcp };
       mockGetTCPPayload.mockReturnValue(mockCheck);
 
       const result = toPayload(tcpFormValues);

@@ -18,13 +18,13 @@ export function AccessTokensTab() {
 
   const showTokenModal = async () => {
     try {
-      reportEvent(FaroEvent.CREATE_ACCESS_TOKEN);
+      reportEvent(FaroEvent.CreateAccessToken);
       const token = await smDS.createApiToken();
       setToken(token);
       setShowModal(true);
     } catch (e) {
       const cast = e as Error;
-      reportError(cast, FaroEvent.CREATE_ACCESS_TOKEN);
+      reportError(cast, FaroEvent.CreateAccessToken);
       setError(cast.message ?? 'There was an error creating a new access token');
     }
   };

@@ -20,7 +20,7 @@ export function getHTTPCheckFormValues(check: HTTPCheck): CheckFormValuesHttp {
 
   return {
     ...base,
-    checkType: CheckType.HTTP,
+    checkType: CheckType.Http,
     settings: {
       http: getHttpSettingsForm(check.settings),
     },

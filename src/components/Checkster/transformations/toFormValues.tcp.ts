@@ -10,7 +10,7 @@ export function getTCPCheckFormValues(check: TCPCheck): CheckFormValuesTcp {
 
   return {
     ...base,
-    checkType: CheckType.TCP,
+    checkType: CheckType.Tcp,
     settings: {
       tcp: getTcpSettingsFormValues(check.settings),
     },

@@ -13,7 +13,7 @@ const pingSettingsSchema: ZodType<PingSettingsFormValues> = z.object({
 export const pingCheckSchema: ZodType<CheckFormValuesPing> = baseCheckSchema.and(
   z.object({
     target: hostNameTargetSchema,
-    checkType: z.literal(CheckType.PING),
+    checkType: z.literal(CheckType.Ping),
     settings: z.object({
       ping: pingSettingsSchema,
     }),

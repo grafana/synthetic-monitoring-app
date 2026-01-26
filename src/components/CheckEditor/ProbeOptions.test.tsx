@@ -52,7 +52,7 @@ describe('ProbeOptions', () => {
     const offlineColor = result.current.colors.error.text;
     const onlineColor = result.current.colors.success.text;
 
-    render(<RenderWrapper onlyProbes checkType={CheckType.HTTP} onChange={() => {}} selectedProbes={[]} />);
+    render(<RenderWrapper onlyProbes checkType={CheckType.Http} onChange={() => {}} selectedProbes={[]} />);
     const offlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
     expect(offlineStatus).toHaveStyle(`background-color: ${offlineColor}`);
 

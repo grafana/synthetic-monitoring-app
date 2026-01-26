@@ -91,7 +91,7 @@ describe(`<EditCheckV2 />`, () => {
     await submitForm(user);
 
     await waitFor(() => {
-      const pathInfo = screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME);
+      const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
       expect(pathInfo.textContent).toBe(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
     });
   });
@@ -105,10 +105,10 @@ describe(`<EditCheckV2 />`, () => {
     await submitForm(user);
 
     await waitFor(() => {
-      const pathInfo = screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME);
+      const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
       expect(pathInfo.textContent).toBe(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
     });
 
-    expect(trackCheckUpdated).toHaveBeenCalledWith({ checkType: CheckType.DNS });
+    expect(trackCheckUpdated).toHaveBeenCalledWith({ checkType: CheckType.Dns });
   });
 });

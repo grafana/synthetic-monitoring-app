@@ -26,12 +26,12 @@ export const FREQUENCY_OPTIONS = [
 
 export const MIN_FREQUENCY_MAP = {
   [CheckType.Browser]: MIN_FREQUENCY_BROWSER,
-  [CheckType.DNS]: MIN_BASE_FREQUENCY,
-  [CheckType.GRPC]: MIN_BASE_FREQUENCY,
-  [CheckType.HTTP]: MIN_BASE_FREQUENCY,
-  [CheckType.MULTI_HTTP]: MIN_FREQUENCY_MULTI_HTTP,
-  [CheckType.PING]: MIN_BASE_FREQUENCY,
+  [CheckType.Dns]: MIN_BASE_FREQUENCY,
+  [CheckType.Grpc]: MIN_BASE_FREQUENCY,
+  [CheckType.Http]: MIN_BASE_FREQUENCY,
+  [CheckType.MultiHttp]: MIN_FREQUENCY_MULTI_HTTP,
+  [CheckType.Ping]: MIN_BASE_FREQUENCY,
   [CheckType.Scripted]: MIN_FREQUENCY_SCRIPTED,
-  [CheckType.TCP]: MIN_BASE_FREQUENCY,
+  [CheckType.Tcp]: MIN_BASE_FREQUENCY,
   [CheckType.Traceroute]: MIN_FREQUENCY_TRACEROUTE,
 };

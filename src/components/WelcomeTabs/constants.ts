@@ -3,7 +3,7 @@ import { SelectableOptGroup } from '@grafana/ui';
 import { BROWSER_EXAMPLE_CHOICES } from 'components/BrowserExamplesMenu/constants';
 import { ExampleScript, SCRIPT_EXAMPLE_CHOICES } from 'components/ScriptExamplesMenu/constants';
 
-const formatScriptExamples = (input: SelectableOptGroup[]) =>
+const formatSCRIPT_EXAMPLES = (input: SelectableOptGroup[]) =>
   input.reduce<ExampleScript[]>((acc, group) => {
     group.options.forEach((option) => {
       if (option.label) {
@@ -17,8 +17,8 @@ const formatScriptExamples = (input: SelectableOptGroup[]) =>
     return acc;
   }, []);
 
-export const SCRIPT_EXAMPLES = formatScriptExamples(SCRIPT_EXAMPLE_CHOICES);
-export const BROWSER_EXAMPLES = formatScriptExamples(BROWSER_EXAMPLE_CHOICES);
+export const SCRIPT_EXAMPLES = formatSCRIPT_EXAMPLES(SCRIPT_EXAMPLE_CHOICES);
+export const BROWSER_EXAMPLES = formatSCRIPT_EXAMPLES(BROWSER_EXAMPLE_CHOICES);
 
 const DNS_BASIC = `data "grafana_synthetic_monitoring_probes" "main" {}
 resource "grafana_synthetic_monitoring_check" "dns" {

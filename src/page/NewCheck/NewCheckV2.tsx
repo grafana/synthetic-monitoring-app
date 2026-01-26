@@ -80,7 +80,7 @@ export function NewCheckV2() {
 
   return (
     <PluginPage pageNav={navModel}>
-      <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
+      <div className={styles.wrapper} data-testid={!isLoading ? DataTestIds.PageReady : DataTestIds.PageNotReady}>
         <ChecksterProvider
           checkType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
           disabled={isOverlimit || !canWriteChecks}

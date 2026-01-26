@@ -5,7 +5,7 @@ export enum LokiFieldNames {
   TimeStamp = 'timestamp',
   Body = 'body',
   LabelTypes = 'labelTypes',
-  ID = 'id',
+  Id = 'id',
   Nanos = 'nanos',
 }
 
@@ -15,7 +15,7 @@ export enum LokiFieldNamesOld {
   Line = 'Line',
   TsNs = 'tsNs',
   LabelTypes = LokiFieldNames.LabelTypes,
-  ID = LokiFieldNames.ID,
+  Id = LokiFieldNames.Id,
 }
 
 export type LokiFieldsOld<T, R> = [Labels<T>, TimeOld, LineOld, TsNsOld, LabelTypes<R>, ID];
@@ -94,7 +94,7 @@ export type LabelTypes<R> = Field<LabelType<R>> & {
 };
 
 export type ID = Field<string> & {
-  name: LokiFieldNames.ID;
+  name: LokiFieldNames.Id;
   type: FieldType.string;
   typeInfo: {
     frame: `string`;
@@ -107,7 +107,7 @@ export type ParsedLokiRecord<L, LT> = {
   [LokiFieldNames.Body]: string;
   [LokiFieldNames.Nanos]: number;
   [LokiFieldNames.LabelTypes]: LT;
-  [LokiFieldNames.ID]: string;
+  [LokiFieldNames.Id]: string;
 };
 
 export interface UnknownParsedLokiRecord extends ParsedLokiRecord<Record<string, string>, Record<string, string>> {}

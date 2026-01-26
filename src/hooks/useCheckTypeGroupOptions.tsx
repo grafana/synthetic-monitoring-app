@@ -46,7 +46,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     protocols: [
       {
         label: `HTTP`,
-        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MULTI_HTTP}`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MultiHttp}`,
         onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.MultiStep, protocol: `HTTP` }),
       },
     ],

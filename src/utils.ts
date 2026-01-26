@@ -132,7 +132,7 @@ export const matchStrings = (string: string, comparisons: string[]): boolean => 
 export function getCheckType(settings: Settings): CheckType {
   let types = Object.keys(settings);
   if (types.length < 1) {
-    return CheckType.HTTP;
+    return CheckType.Http;
   }
 
   if (types[0] === `k6`) {
@@ -360,13 +360,13 @@ function doesTLSConfigHaveValues(tlsConfig?: TLSConfig) {
 
 export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {
   const colorMap = {
-    [HttpMethod.DELETE]: theme.visualization.getColorByName('red'),
-    [HttpMethod.GET]: theme.visualization.getColorByName('green'),
-    [HttpMethod.HEAD]: theme.visualization.getColorByName('super-light-green'),
-    [HttpMethod.OPTIONS]: theme.visualization.getColorByName('dark-purple'),
-    [HttpMethod.PATCH]: theme.visualization.getColorByName('super-light-purple'),
-    [HttpMethod.POST]: theme.visualization.getColorByName('yellow'),
-    [HttpMethod.PUT]: theme.visualization.getColorByName('blue'),
+    [HttpMethod.Delete]: theme.visualization.getColorByName('red'),
+    [HttpMethod.Get]: theme.visualization.getColorByName('green'),
+    [HttpMethod.Head]: theme.visualization.getColorByName('super-light-green'),
+    [HttpMethod.Options]: theme.visualization.getColorByName('dark-purple'),
+    [HttpMethod.Patch]: theme.visualization.getColorByName('super-light-purple'),
+    [HttpMethod.Post]: theme.visualization.getColorByName('yellow'),
+    [HttpMethod.Put]: theme.visualization.getColorByName('blue'),
   };
 
   return colorMap[value];

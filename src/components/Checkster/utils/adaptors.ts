@@ -34,7 +34,7 @@ import { getScriptedPayload } from '../transformations/toPayload.scripted';
 import { getTCPPayload } from '../transformations/toPayload.tcp';
 import { getTraceroutePayload } from '../transformations/toPayload.traceroute';
 
-export function getDefaultFormValues(checkType: CheckType = CheckType.HTTP) {
+export function getDefaultFormValues(checkType: CheckType = CheckType.Http) {
   const check: Check = DEFAULT_CHECK_CONFIG_MAP[checkType] ?? DEFAULT_CHECK_CONFIG;
   if (process.env.NODE_ENV === 'development') {
     if (!(checkType in DEFAULT_CHECK_CONFIG_MAP)) {
@@ -49,19 +49,19 @@ export function toFormValues(check: Check): CheckFormValues {
   const checkType = getCheckType(check.settings);
 
   switch (checkType) {
-    case CheckType.DNS:
+    case CheckType.Dns:
       return getDNSCheckFormValues(check as DNSCheck);
-    case CheckType.GRPC:
+    case CheckType.Grpc:
       return getGRPCCheckFormValues(check as GRPCCheck);
-    case CheckType.HTTP:
+    case CheckType.Http:
       return getHTTPCheckFormValues(check as HTTPCheck);
-    case CheckType.MULTI_HTTP:
+    case CheckType.MultiHttp:
       return getMultiHTTPCheckFormValues(check as MultiHTTPCheck);
-    case CheckType.PING:
+    case CheckType.Ping:
       return getPingCheckFormValues(check as PingCheck);
     case CheckType.Scripted:
       return getScriptedCheckFormValues(check as ScriptedCheck);
-    case CheckType.TCP:
+    case CheckType.Tcp:
       return getTCPCheckFormValues(check as TCPCheck);
     case CheckType.Traceroute:
       return getTracerouteCheckFormValues(check as TracerouteCheck);
@@ -74,19 +74,19 @@ export function toFormValues(check: Check): CheckFormValues {
 
 export function toPayload(formValues: CheckFormValues): Check {
   switch (formValues.checkType) {
-    case CheckType.DNS:
+    case CheckType.Dns:
       return getDNSPayload(formValues);
-    case CheckType.HTTP:
+    case CheckType.Http:
       return getHTTPPayload(formValues);
-    case CheckType.GRPC:
+    case CheckType.Grpc:
       return getGRPCPayload(formValues);
-    case CheckType.MULTI_HTTP:
+    case CheckType.MultiHttp:
       return getMultiHTTPPayload(formValues);
-    case CheckType.PING:
+    case CheckType.Ping:
       return getPingPayload(formValues);
     case CheckType.Scripted:
       return getScriptedPayload(formValues);
-    case CheckType.TCP:
+    case CheckType.Tcp:
       return getTCPPayload(formValues);
     case CheckType.Traceroute:
       return getTraceroutePayload(formValues);
