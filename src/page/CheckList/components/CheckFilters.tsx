@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
 import { Combobox, ComboboxOption, Field, Icon, Input, MultiCombobox, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
@@ -167,7 +167,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
           labelFilters={checkFilters.labels}
           className={styles.verticalSpace}
         />
-        <Field label="Probes" htmlFor="check-probes-filter" data-fs-element="Probes select" className={styles.verticalSpace}>
+        <Field label="Probes" htmlFor="check-probes-filter" data-fs-element="Probes select" className={cx(styles.verticalSpace, styles.fullWidth)}>
           <MultiCombobox
             id="check-probes-filter"
             data-testid="check-probes-filter"
