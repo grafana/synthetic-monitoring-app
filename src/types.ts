@@ -31,7 +31,7 @@ export enum IpVersion {
 export enum HttpMethod {
   Delete = 'DELETE',
   Get = 'GET',
-  Head = 'Head',
+  Head = 'HEAD',
   Options = 'OPTIONS',
   Patch = 'PATCH',
   Post = 'POST',

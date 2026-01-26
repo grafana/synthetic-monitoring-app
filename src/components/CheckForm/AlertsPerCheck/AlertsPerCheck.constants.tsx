@@ -177,7 +177,7 @@ export const PREDEFINED_ALERTS: Record<CheckType, PredefinedAlertInterface[]> = 
   ])
 ) as Record<CheckType, PredefinedAlertInterface[]>;
 
-export const AllPREDEFINED_ALERTS: PredefinedAlertInterface[] = [
+export const ALL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   ...GLOBAL_PREDEFINED_ALERTS,
   ...HTTP_PREDEFINED_ALERTS,
   ...TCP_PREDEFINED_ALERTS,

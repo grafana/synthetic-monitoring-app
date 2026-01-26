@@ -27,7 +27,7 @@ function getHttpSettingsPayload(settings: Partial<HttpSettingsFormValues> | unde
   const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
   const proxyHeaders = settings.proxyConnectHeaders ?? [];
   const formattedProxyHeaders = proxyHeaders?.map((header) => `${header.name}:${header.value}`) ?? [];
-  const sslConfig = getHTTP_SSL_OPTIONSFromFormValue(settings.sslOptions);
+  const sslConfig = getHttpSslOptionsFromFormValue(settings.sslOptions);
   const compression = settings.compression;
   const validationRegexes = getHttpRegexValidationsFromFormValue(settings.regexValidations ?? []);
 
@@ -51,7 +51,7 @@ function getHttpSettingsPayload(settings: Partial<HttpSettingsFormValues> | unde
   });
 }
 
-const getHTTP_SSL_OPTIONSFromFormValue = (
+const getHttpSslOptionsFromFormValue = (
   sslOption?: HttpSslOption
 ): Pick<HttpSettings, 'failIfSSL' | 'failIfNotSSL'> => {
   if (sslOption === undefined) {

@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { Check, PrometheusAlertsGroup } from 'types';
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
-import { AllPREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
+import { ALL_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
 import { constructError, showAlert } from './utils';
 
@@ -55,7 +55,7 @@ function extractMatchingRules(group: PrometheusAlertsGroup, alert: { name: strin
 }
 
 function constructDummyGroup(alertName: string): PrometheusAlertsGroup {
-  const predefined = AllPREDEFINED_ALERTS.find((a) => a.type === alertName);
+  const predefined = ALL_PREDEFINED_ALERTS.find((a) => a.type === alertName);
   const category = predefined?.category || '';
   return {
     evaulationTime: 0,
