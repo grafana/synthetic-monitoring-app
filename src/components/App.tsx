@@ -3,7 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
-import { config } from '@grafana/runtime';
+import { config, getAppPluginVersion } from '@grafana/runtime';
 import { css, Global } from '@emotion/react';
 
 import { ProvisioningJsonData } from 'types';
@@ -26,7 +26,7 @@ if (window.location.hostname !== 'localhost') {
     url,
     app: {
       name,
-      version: config.apps['grafana-synthetic-monitoring-app'].version,
+      version: getAppPluginVersion('grafana-synthetic-monitoring-app'),
       environment: env,
     },
     isolate: true,
