@@ -177,7 +177,8 @@ function getResetTokenButton() {
 
 function checkInformation(probe: Probe) {
   expect(screen.getByDisplayValue(probeToMetadataProbe(probe).displayName)).toBeInTheDocument();
-  expect(screen.getByText(probe.region)).toBeInTheDocument();
+  const regionCombobox = screen.getByPlaceholderText('Add or select a region');
+  expect(regionCombobox).toHaveValue(probe.region);
   expect(screen.getByDisplayValue(probe.latitude)).toBeInTheDocument();
   expect(screen.getByDisplayValue(probe.longitude)).toBeInTheDocument();
   expect(screen.getByText(probe.version)).toBeInTheDocument();

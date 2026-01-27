@@ -2,6 +2,7 @@ import React, { ChangeEvent } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { Label } from 'types';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
@@ -29,7 +30,7 @@ export const CheckListItemCard = ({
 
   return (
     <div className={cx(styles.container, { [styles.disabledCard]: !check.enabled })}>
-      <div className={styles.cardWrapper} data-testid="check-card">
+      <div className={styles.cardWrapper} data-testid={DataTestIds.CheckCard}>
         <div>
           <Checkbox
             aria-label="Select check"

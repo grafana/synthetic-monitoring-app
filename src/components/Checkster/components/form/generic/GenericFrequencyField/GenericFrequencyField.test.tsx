@@ -1,5 +1,6 @@
 import React, { ComponentProps } from 'react';
 import { screen } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
 
@@ -18,7 +19,7 @@ jest.mock('../../../../contexts/ChecksterContext', () => ({
 // Mock the Frequency component since it has complex dependencies
 jest.mock('components/CheckEditor/FormComponents/Frequency', () => ({
   Frequency: jest.fn(({ checkType, disabled }) => (
-    <div data-testid="frequency-component">
+    <div data-testid={DataTestIds.FrequencyComponent}>
       <h3>Frequency Configuration</h3>
       <div>Check Type: {checkType}</div>
       <div>Disabled: {disabled ? 'true' : 'false'}</div>
@@ -53,7 +54,7 @@ describe('GenericFrequencyField', () => {
   it('renders the Frequency component', () => {
     renderGenericFrequencyField();
 
-    const frequencyComponent = screen.getByTestId('frequency-component');
+    const frequencyComponent = screen.getByTestId(DataTestIds.FrequencyComponent);
     expect(frequencyComponent).toBeInTheDocument();
     expect(screen.getByText('Frequency Configuration')).toBeInTheDocument();
   });

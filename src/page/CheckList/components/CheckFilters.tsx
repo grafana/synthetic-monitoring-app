@@ -1,7 +1,8 @@
 import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
-import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
+import { Combobox, ComboboxOption, Field, Icon, Input, MultiSelect, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { Check } from 'types';
@@ -36,7 +37,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
     ...filterDesc,
   ];
 
-  const alertOptions: Array<SelectableValue<CheckAlertsFilter>> = [
+  const alertOptions: Array<ComboboxOption<CheckAlertsFilter>> = [
     { label: 'All', value: 'all' },
     { label: 'With alerts', value: 'with' },
     { label: 'Without alerts', value: 'without' },
@@ -77,7 +78,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
         aria-label="Search checks"
         prefix={<Icon name="search" />}
         width={40}
-        data-testid="check-search-input"
+        data-testid={DataTestIds.CheckSearchInput}
         type="text"
         value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
         onChange={handleSearchChange}
@@ -86,63 +87,69 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
       <CheckFilterGroup onReset={onReset} filters={checkFilters}>
         <div className={styles.flexRow}>
           {includeStatus && (
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            <Select
-              prefix="Status"
-              aria-label="Filter by status"
-              data-testid="check-status-filter"
-              options={CHECK_LIST_STATUS_OPTIONS}
+            <Field label="Status" htmlFor="check-status-filter" data-fs-element="Status select" className={css({
+              marginBottom: 0,
+            })}>
+              <Combobox
+                id="check-status-filter"
+                aria-label="Filter by status"
+                data-testid={DataTestIds.CheckStatusFilter}
+                options={CHECK_LIST_STATUS_OPTIONS}
+                width={20}
+                onChange={(option) => {
+                  onChange(
+                    {
+                      ...checkFilters,
+                      status: option,
+                    },
+                    'status'
+                  );
+                }}
+                value={checkFilters.status}
+              />
+            </Field>
+          )}
+          <Field label="Type" htmlFor="check-type-filter" data-fs-element="Type select" className={css({
+            marginBottom: 0,
+          })}>
+            <Combobox
+              aria-label="Filter by type"
+              id="check-type-filter"
+              options={options}
               width={20}
-              className={styles.verticalSpace}
+              onChange={(selected: SelectableValue) => {
+                onChange(
+                  {
+                    ...checkFilters,
+                    type: selected?.value ?? checkFilters.type,
+                  },
+                  'type'
+                );
+              }}
+              value={checkFilters.type}
+            />
+          </Field>
+          <Field label="Alerts" htmlFor="check-alerts-filter" data-fs-element="Alerts select" className={css({
+            marginBottom: 0,
+          })}>
+            <Combobox
+              aria-label="Filter by alerts"
+              id="check-alerts-filter"
+              data-testid={DataTestIds.CheckAlertsFilter}
+              options={alertOptions}
+              width={20}
               onChange={(option) => {
                 onChange(
                   {
                     ...checkFilters,
-                    status: option,
+                    alerts: option?.value ?? checkFilters.alerts,
                   },
-                  'status'
+                  'alerts'
                 );
               }}
-              value={checkFilters.status}
+              value={checkFilters.alerts}
             />
-          )}
-          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-          <Select
-            aria-label="Filter by type"
-            prefix="Types"
-            options={options}
-            className={styles.verticalSpace}
-            width={20}
-            onChange={(selected: SelectableValue) => {
-              onChange(
-                {
-                  ...checkFilters,
-                  type: selected?.value ?? checkFilters.type,
-                },
-                'type'
-              );
-            }}
-            value={checkFilters.type}
-          />
-          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-          <Select
-            aria-label="Filter by alerts"
-            prefix="Alerts"
-            data-testid="check-alerts-filter"
-            options={alertOptions}
-            className={styles.verticalSpace}
-            width={20}
-            onChange={(selected: SelectableValue<CheckAlertsFilter>) => {
-              onChange(
-                {
-                  ...checkFilters,
-                  alerts: selected?.value ?? checkFilters.alerts,
-                },
-                'alerts'
-              );
-            }}
-            value={checkFilters.alerts}
-          />
+          </Field>
         </div>
         <LabelFilterInput
           checks={checks}

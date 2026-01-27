@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
-import { probeToMetadataProbe } from 'test/utils';
+import { probeToMetadataProbe, testUsesCombobox } from 'test/utils';
 
 import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckAlertType, CheckType } from 'types';
@@ -64,6 +64,7 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
   });
 
   it(`should display an error message when latency alert period is less than check frequency`, async () => {
+    testUsesCombobox();
     const { user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
@@ -98,9 +99,8 @@ describe(`PingCheck - Section 4 (Alerting) payload`, () => {
       '100'
     );
 
-    // Select 5m period (which is less than 10m frequency) - target the specific period selector by ID
-    const periodContainer = document.getElementById('alert-period-PingRequestDurationTooHighAvg');
-    const periodSelector = within(periodContainer as HTMLElement).getByTestId(
+    // Select 5m period (which is less than 10m frequency) - get the combobox by its testid
+    const periodSelector = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.PingRequestDurationTooHighAvg].periodCombobox
     );
     await user.click(periodSelector);

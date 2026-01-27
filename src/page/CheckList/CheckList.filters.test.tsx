@@ -1,12 +1,12 @@
 import React from 'react';
-import { config } from '@grafana/runtime';
 import { screen, within } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { getSelect, probeToMetadataProbe, selectOption } from 'test/utils';
+import { getCombobox, mockFeatureToggles, probeToMetadataProbe, selectOption, testUsesCombobox } from 'test/utils';
 
 import { AlertSensitivity, Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -65,7 +65,7 @@ describe('CheckList - Filtering', () => {
 
     const dialog = getModalContainer();
     expect(within(dialog).getByText(constructedLabel)).toBeInTheDocument();
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -74,8 +74,8 @@ describe('CheckList - Filtering', () => {
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
 
-    await selectOption(user, { label: 'Filter by type', option: 'HTTP' });
-    const checks = await screen.findAllByTestId('check-card');
+    await selectOption(user, { label: 'Type', option: 'HTTP' });
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -92,7 +92,7 @@ describe('CheckList - Filtering', () => {
     await user.click(probeFilter);
     await user.click(screen.getByText(probeToMetadataProbe(PRIVATE_PROBE).displayName, { selector: 'span' }));
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -101,8 +101,8 @@ describe('CheckList - Filtering', () => {
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
 
-    await selectOption(user, { label: 'Filter by alerts', option: 'With alerts' });
-    const checks = await screen.findAllByTestId('check-card');
+    await selectOption(user, { label: 'Alerts', option: 'With alerts' });
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -111,8 +111,8 @@ describe('CheckList - Filtering', () => {
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
 
-    await selectOption(user, { label: 'Filter by alerts', option: 'Without alerts' });
-    const checks = await screen.findAllByTestId('check-card');
+    await selectOption(user, { label: 'Alerts', option: 'Without alerts' });
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -127,9 +127,9 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     const dialog = getModalContainer();
-    const statusFilter = await within(dialog).findByText('Disabled');
-    expect(statusFilter).toBeInTheDocument();
-    const checks = await screen.findAllByTestId('check-card');
+    const statusFilter = await within(dialog).findByLabelText('Status');
+    expect(statusFilter).toHaveValue('Disabled');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -139,10 +139,10 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     const dialog = getModalContainer();
-    const alertsFilter = await within(dialog).findByText('Without alerts', { exact: false });
-    expect(alertsFilter).toBeInTheDocument();
+    const alertsFilter = await within(dialog).findByLabelText('Alerts');
+    expect(alertsFilter).toHaveValue('Without alerts');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -152,40 +152,43 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     const dialog = getModalContainer();
-    const typeFilter = await within(dialog).findByText('HTTP', { exact: false });
-    expect(typeFilter).toBeInTheDocument();
+    const typeFilter = await within(dialog).findByLabelText('Type');
+    expect(typeFilter).toHaveValue('HTTP');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
   test('scripted checks appear in the filters', async () => {
+    testUsesCombobox();
     const { user } = await renderCheckList();
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
 
-    const select = await getSelect({ label: `Filter by type` });
-    await user.click(select[0]);
-    const listBox = screen.getByLabelText(`Select options menu`);
+    const dialog = getModalContainer();
+    const combobox = await getCombobox({ label: `Type` }, dialog);
+    await user.click(combobox);
 
-    expect(within(listBox).getByText(`Scripted`)).toBeInTheDocument();
+    expect(await screen.findByText('Scripted')).toBeInTheDocument();
   });
 
   test('gRPC checks do not appear in the filters by default', async () => {
+    testUsesCombobox();
     const { user } = await renderCheckList();
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
 
-    const select = await getSelect({ label: `Filter by type` });
-    await user.click(select[0]);
-    const listBox = screen.getByLabelText(`Select options menu`);
+    const dialog = getModalContainer();
+    const combobox = await getCombobox({ label: `Type` }, dialog);
+    await user.click(combobox);
+    await screen.findAllByText('HTTP'); // Wait for the options to render
 
-    expect(within(listBox).queryByText(`gRPC`)).not.toBeInTheDocument();
+    expect(screen.queryByText('gRPC')).not.toBeInTheDocument();
   });
 
   test('gRPC checks appear in the filters when the feature flag is enabled', async () => {
-    jest.replaceProperty(config, 'featureToggles', {
-      // @ts-expect-error
+    testUsesCombobox();
+    mockFeatureToggles({
       [FeatureName.GRPCChecks]: true,
     });
 
@@ -193,14 +196,11 @@ describe('CheckList - Filtering', () => {
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
 
-    const select = await getSelect({ label: `Filter by type` });
-    await user.click(select[0]);
-    const listBox = screen.getByLabelText(`Select options menu`);
-
-    expect(within(listBox).getByText(`gRPC`)).toBeInTheDocument();
-  });
-
-  test('clicking filters reset button works correctly', async () => {
+    const dialog = getModalContainer();
+    const combobox = await getCombobox({ label: `Type` }, dialog);
+    await user.click(combobox);
+    expect(await screen.findByText('gRPC')).toBeInTheDocument();
+  }); test('clicking filters reset button works correctly', async () => {
     const DNS_CHECK_DISABLED = {
       ...BASIC_DNS_CHECK,
       enabled: false,
@@ -213,14 +213,14 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     const dialog = getModalContainer();
-    const statusFilter = await within(dialog).findByText(`Disabled`);
-    expect(statusFilter).toBeInTheDocument();
+    const statusFilter = await within(dialog).findByLabelText('Status');
+    expect(statusFilter).toHaveValue('Disabled');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
 
     await user.click(await within(dialog).findByText(`Reset`));
-    const resetChecks = await screen.findAllByTestId('check-card');
+    const resetChecks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(resetChecks.length).toBe(2);
   });
 
@@ -236,7 +236,7 @@ describe('CheckList - Filtering', () => {
     const typeFilter = await within(dialog).findByText(constructedLabel, { exact: false });
     expect(typeFilter).toBeInTheDocument();
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -263,7 +263,7 @@ describe('CheckList - Filtering', () => {
     const typeFilter = await within(dialog).findByText(constructedLabel, { exact: false });
     expect(typeFilter).toBeInTheDocument();
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -273,11 +273,11 @@ describe('CheckList - Filtering', () => {
     await user.click(httpTypeChiclet[0]);
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
 
     const dialog = getModalContainer();
-    const typeFilter = await within(dialog).findByText(`HTTP`);
-    expect(typeFilter).toBeInTheDocument();
+    const typeFilter = await within(dialog).findByLabelText(`Type`);
+    expect(typeFilter).toHaveValue('HTTP');
 
     expect(checks.length).toBe(1);
   });
@@ -295,10 +295,10 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     const dialog = getModalContainer();
-    const statusFilter = await within(dialog).findByText(`Disabled`);
-    expect(statusFilter).toBeInTheDocument();
+    const statusFilter = await within(dialog).findByLabelText('Status');
+    expect(statusFilter).toHaveValue('Disabled');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 

@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { getTemplateSrv } from '@grafana/runtime';
-import { MultiSelect, Select, Spinner } from '@grafana/ui';
+import { Combobox, MultiSelect, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { defaults } from 'lodash';
 
@@ -61,6 +61,10 @@ function getProbeOptionsForCheck(check: TracerouteCheckOptionValue | undefined, 
   return probeOptions;
 }
 
+function createTracerouteCheckId(job: string, instance: string): string {
+  return `${job}::${instance}`;
+}
+
 export class QueryEditor extends PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -118,16 +122,42 @@ export class QueryEditor extends PureComponent<Props, State> {
     onRunQuery();
   };
 
-  onTracerouteCheckChange = async (check: SelectableValue<TracerouteCheckOptionValue>) => {
+  getTracerouteCheckComboboxOptions() {
+    const { tracerouteCheckOptions } = this.state;
+    return tracerouteCheckOptions.map((option) => ({
+      label: option.label,
+      value: option.value ? createTracerouteCheckId(option.value.job, option.value.instance) : '',
+      description: option.description,
+    }));
+  }
+
+  findTracerouteCheckOptionById(id: string): SelectableValue<TracerouteCheckOptionValue> | undefined {
+    const { tracerouteCheckOptions } = this.state;
+    const [job, instance] = id.split('::');
+    return tracerouteCheckOptions.find(
+      (option) => option.value?.job === job && option.value?.instance === instance
+    );
+  }
+
+  onTracerouteCheckChange = async (option: { label?: string; value: string; description?: string } | null) => {
     const { onChange, onRunQuery, query } = this.props;
-    onChange({
-      ...query,
-      queryType: QueryType.Traceroute,
-      instance: check.value?.instance,
-      job: check.value?.job,
-      probe: undefined,
-    });
-    onRunQuery();
+
+    if (!option || !option.value) {
+      return;
+    }
+
+    const originalOption = this.findTracerouteCheckOptionById(option.value);
+
+    if (originalOption?.value) {
+      onChange({
+        ...query,
+        queryType: QueryType.Traceroute,
+        instance: originalOption.value.instance,
+        job: originalOption.value.job,
+        probe: undefined,
+      });
+      onRunQuery();
+    }
   };
 
   onTracerouteProbeChange = async (probe: Array<SelectableValue<string>>) => {
@@ -190,7 +220,7 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { tracerouteCheckOptions, tracerouteCheckOptionsLoading, probes } = this.state;
+    const { tracerouteCheckOptionsLoading, probes } = this.state;
     const styles = getStyles();
 
     if (tracerouteCheckOptionsLoading) {
@@ -199,11 +229,15 @@ export class QueryEditor extends PureComponent<Props, State> {
     const selectedTracerouteOption = this.getSelectedTracerouteOption();
     const probeOptions = getProbeOptionsForCheck(selectedTracerouteOption, probes);
     const selectedProbeOptions = this.getSelectedTracerouteProbeOptions();
+    const tracerouteCheckOptions = this.getTracerouteCheckComboboxOptions();
+    const selectedValue = selectedTracerouteOption
+      ? createTracerouteCheckId(selectedTracerouteOption.job, selectedTracerouteOption.instance)
+      : null;
+
     return (
       <div>
         <div className="gf-form">
-          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-          <Select
+          <Combobox
             options={types}
             value={types.find((t) => t.value === query.queryType)}
             onChange={this.onQueryTypeChanged}
@@ -212,11 +246,9 @@ export class QueryEditor extends PureComponent<Props, State> {
         {query.queryType === QueryType.Traceroute && (
           <>
             <div className={styles.tracerouteFieldWrapper}>
-              {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-              <Select
+              <Combobox
                 options={tracerouteCheckOptions}
-                prefix="Check"
-                value={tracerouteCheckOptions.find((option) => option.value === selectedTracerouteOption)}
+                value={selectedValue}
                 onChange={this.onTracerouteCheckChange}
                 disabled={this.isOverridenByDashboardVariable()}
               />

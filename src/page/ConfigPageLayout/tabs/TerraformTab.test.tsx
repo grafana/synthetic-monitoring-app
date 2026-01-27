@@ -57,7 +57,7 @@ describe('TerraformTab', () => {
     const { getByText } = await renderTerraformTab();
     expect(getByText('HCL')).toBeInTheDocument();
     expect(getByText('JSON')).toBeInTheDocument();
-    
+
     // HCL should be active by default
     const hclTab = getByText('HCL').closest('button');
     expect(hclTab).toHaveAttribute('aria-selected', 'true');
@@ -73,11 +73,11 @@ describe('TerraformTab', () => {
   it('should switch to JSON tab and show "Terraform JSON" alert', async () => {
     const user = userEvent.setup();
     const { getByText, getByTestId } = await renderTerraformTab();
-    
+
     // Click JSON tab
     const jsonTab = getByText('JSON');
     await user.click(jsonTab);
-    
+
     // Should show JSON alert
     const alert = getByTestId('data-testid Alert info');
     expect(within(alert).getByText('Terraform JSON')).toBeInTheDocument();
@@ -94,7 +94,7 @@ describe('TerraformTab', () => {
     const { getAllByTestId } = await renderTerraformTab();
     const preformatted = getAllByTestId(DataTestIds.Preformatted);
     const content = preformatted[0].textContent ?? '';
-    
+
     // Should contain HCL syntax elements
     expect(content).toContain('terraform {');
     expect(content).toContain('provider "grafana" {');
@@ -104,11 +104,11 @@ describe('TerraformTab', () => {
   it('should show correct terraform JSON config when JSON tab is selected', async () => {
     const user = userEvent.setup();
     const { getByText, getAllByTestId } = await renderTerraformTab();
-    
+
     // Click JSON tab
     const jsonTab = getByText('JSON');
     await user.click(jsonTab);
-    
+
     const preformatted = getAllByTestId(DataTestIds.Preformatted);
     // Since content escapes '<' and '>', we need to replace them back
     const content = JSON.parse((preformatted[0].textContent ?? '').replace('&lt;', '<').replace('&gt;', '>'));
@@ -135,10 +135,10 @@ describe('TerraformTab', () => {
     it('should show correct check import commands in CLI tab', async () => {
       const { getByText, getAllByTestId } = await renderTerraformTab();
       expect(getByText('Import existing resources into Terraform', { selector: 'h3' })).toBeInTheDocument();
-      
+
       // Should show "Import checks" subtitle
       expect(getByText('Import checks', { selector: 'h4' })).toBeInTheDocument();
-      
+
       const preformatted = getAllByTestId(DataTestIds.Preformatted);
       expect(preformatted[1]).toHaveTextContent(
         'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 6'
@@ -148,14 +148,14 @@ describe('TerraformTab', () => {
     it('should show correct check import blocks when Import blocks tab is selected', async () => {
       const user = userEvent.setup();
       const { getByText, getAllByTestId } = await renderTerraformTab();
-      
+
       // Click Import blocks tab
       const importBlocksTab = getByText('Import blocks');
       await user.click(importBlocksTab);
-      
+
       // Should show "Import checks" subtitle
       expect(getByText('Import checks', { selector: 'h4' })).toBeInTheDocument();
-      
+
       const preformatted = getAllByTestId(DataTestIds.Preformatted);
       const content = preformatted[1].textContent ?? '';
       expect(content).toContain('import {');
@@ -203,11 +203,11 @@ describe('TerraformTab', () => {
           })
         );
         const { getByText, getAllByTestId } = await renderTerraformTab();
-        
+
         // Click Import blocks tab
         const importBlocksTab = getByText('Import blocks');
         await user.click(importBlocksTab);
-        
+
         const preformatted = getAllByTestId(DataTestIds.Preformatted);
         const content = preformatted[2].textContent ?? '';
         expect(content).toContain('import {');

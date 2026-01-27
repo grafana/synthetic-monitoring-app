@@ -75,7 +75,7 @@ it(`Displays the correct information for a private probe`, async () => {
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId(`probe-card-action-button`);
+  const button = screen.getByTestId(DataTestIds.ProbeCardActionButton);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('Edit');
 });
@@ -87,7 +87,7 @@ it(`Displays the correct information for a private probe as a viewer`, async () 
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId('probe-card-action-button');
+  const button = screen.getByTestId(DataTestIds.ProbeCardActionButton);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('View');
 });
@@ -99,7 +99,7 @@ it(`Displays the correct information for a private probe as a RBAC viewer`, asyn
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId('probe-card-action-button');
+  const button = screen.getByTestId(DataTestIds.ProbeCardActionButton);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('View');
 });
@@ -110,7 +110,7 @@ it(`Displays the correct information for a public probe`, async () => {
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId('probe-card-action-button');
+  const button = screen.getByTestId(DataTestIds.ProbeCardActionButton);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('View');
 });
