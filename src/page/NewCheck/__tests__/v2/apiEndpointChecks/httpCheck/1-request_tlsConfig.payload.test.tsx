@@ -6,7 +6,7 @@ import { submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-const checkType = CheckType.HTTP;
+const checkType = CheckType.Http;
 
 describe(`HttpCheck - Section 1 (Request) Request Options payload`, () => {
   it(`can disable target certificate validation`, async () => {

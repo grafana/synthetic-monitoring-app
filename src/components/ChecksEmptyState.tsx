@@ -10,7 +10,7 @@ interface ChecksEmptyStatePageProps {
 
 export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
   return (
-    <div className={className} data-testid={DataTestIds.CHECKS_EMPTY_STATE}>
+    <div className={className} data-testid={DataTestIds.ChecksEmptyState}>
       <EmptyState
         variant="call-to-action"
         message="You haven't created any checks yet"

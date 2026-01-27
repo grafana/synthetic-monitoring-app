@@ -29,7 +29,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const disabled = Boolean(tooltip);
 
   return (
-    <Card key={group.label} data-testid={`${DataTestIds.CHECK_GROUP_CARD}-${group.value}`} className={styles.checkCard}>
+    <Card key={group.label} data-testid={`${DataTestIds.CheckGroupCard}-${group.value}`} className={styles.checkCard}>
       <Stack direction={`column`} justifyContent={`center`} gap={2}>
         <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />

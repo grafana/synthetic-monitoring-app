@@ -169,10 +169,10 @@ export const PREDEFINED_ALERTS: Record<CheckType, PredefinedAlertInterface[]> = 
     checkType,
     [
       ...GLOBAL_PREDEFINED_ALERTS,
-      ...(checkType === CheckType.HTTP ? HTTP_PREDEFINED_ALERTS : []),
-      ...(checkType === CheckType.TCP ? TCP_PREDEFINED_ALERTS : []),
-      ...(checkType === CheckType.PING ? PING_PREDEFINED_ALERTS : []),
-      ...(checkType === CheckType.DNS ? DNS_PREDEFINED_ALERTS : []),
+      ...(checkType === CheckType.Http ? HTTP_PREDEFINED_ALERTS : []),
+      ...(checkType === CheckType.Tcp ? TCP_PREDEFINED_ALERTS : []),
+      ...(checkType === CheckType.Ping ? PING_PREDEFINED_ALERTS : []),
+      ...(checkType === CheckType.Dns ? DNS_PREDEFINED_ALERTS : []),
     ],
   ])
 ) as Record<CheckType, PredefinedAlertInterface[]>;

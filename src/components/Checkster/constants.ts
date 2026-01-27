@@ -64,14 +64,14 @@ import { EXAMPLE_SCRIPT_BROWSER, EXAMPLE_SCRIPT_SCRIPTED } from '../constants';
 export const CHECK_TYPE_GROUP_MAP: Record<CheckTypeGroup, CheckType[]> = {
   [CheckTypeGroup.ApiTest]: [
     // Note: THe order of the check types in each group matters, as it determines the order in which they are displayed in the UI.
-    CheckType.HTTP,
-    CheckType.PING,
-    CheckType.GRPC,
-    CheckType.DNS,
-    CheckType.TCP,
+    CheckType.Http,
+    CheckType.Ping,
+    CheckType.Grpc,
+    CheckType.Dns,
+    CheckType.Tcp,
     CheckType.Traceroute,
   ],
-  [CheckTypeGroup.MultiStep]: [CheckType.MULTI_HTTP],
+  [CheckTypeGroup.MultiStep]: [CheckType.MultiHttp],
   [CheckTypeGroup.Scripted]: [CheckType.Scripted],
   [CheckTypeGroup.Browser]: [CheckType.Browser],
 };
@@ -120,40 +120,40 @@ function getCheckTypeGroup(type: CheckType): CheckTypeGroup {
 }
 
 export const CHECK_TYPE_OPTION_MAP: Record<CheckType, CheckTypeOption> = {
-  [CheckType.HTTP]: {
+  [CheckType.Http]: {
     label: 'HTTP',
-    value: CheckType.HTTP,
+    value: CheckType.Http,
     description: 'Measures a web endpoint for availability, response time, SSL certificate expiration and more.',
-    group: getCheckTypeGroup(CheckType.HTTP),
+    group: getCheckTypeGroup(CheckType.Http),
   },
-  [CheckType.PING]: {
+  [CheckType.Ping]: {
     label: 'Ping',
-    value: CheckType.PING,
+    value: CheckType.Ping,
     description: 'Check a host for availability and response time.',
-    group: getCheckTypeGroup(CheckType.PING),
+    group: getCheckTypeGroup(CheckType.Ping),
   },
-  [CheckType.GRPC]: {
+  [CheckType.Grpc]: {
     label: 'gRPC',
-    value: CheckType.GRPC,
+    value: CheckType.Grpc,
     description: 'Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy.',
-    group: getCheckTypeGroup(CheckType.GRPC),
+    group: getCheckTypeGroup(CheckType.Grpc),
     status: {
-      value: CheckStatus.EXPERIMENTAL,
+      value: CheckStatus.Experimental,
       description: `gRPC checks are experimental. We're actively working on improving the experience and adding more features.`,
     },
     featureToggle: FeatureName.GRPCChecks,
   },
-  [CheckType.DNS]: {
+  [CheckType.Dns]: {
     label: 'DNS',
-    value: CheckType.DNS,
+    value: CheckType.Dns,
     description: 'Ensures a domain resolves and measures the average time for the resolution to happen.',
-    group: getCheckTypeGroup(CheckType.DNS),
+    group: getCheckTypeGroup(CheckType.Dns),
   },
-  [CheckType.TCP]: {
+  [CheckType.Tcp]: {
     label: 'TCP',
-    value: CheckType.TCP,
+    value: CheckType.Tcp,
     description: 'Ensures a hostname and port accept a connection and measures performance.',
-    group: getCheckTypeGroup(CheckType.TCP),
+    group: getCheckTypeGroup(CheckType.Tcp),
   },
   [CheckType.Traceroute]: {
     label: 'Traceroute',
@@ -161,11 +161,11 @@ export const CHECK_TYPE_OPTION_MAP: Record<CheckType, CheckTypeOption> = {
     description: 'Trace the path of a request through the internet.',
     group: getCheckTypeGroup(CheckType.Traceroute),
   },
-  [CheckType.MULTI_HTTP]: {
+  [CheckType.MultiHttp]: {
     label: 'MultiHttp',
-    value: CheckType.MULTI_HTTP,
+    value: CheckType.MultiHttp,
     description: 'Check multiple web endpoints in sequence.',
-    group: getCheckTypeGroup(CheckType.MULTI_HTTP),
+    group: getCheckTypeGroup(CheckType.MultiHttp),
   },
   [CheckType.Scripted]: {
     label: 'Scripted',
@@ -181,7 +181,7 @@ export const CHECK_TYPE_OPTION_MAP: Record<CheckType, CheckTypeOption> = {
   },
 };
 
-export const DEFAULT_CHECK_TYPE: CheckType = CheckType.HTTP;
+export const DEFAULT_CHECK_TYPE: CheckType = CheckType.Http;
 
 const CHECK_BASE_CONFIG: Omit<Check, 'settings'> = {
   job: '',
@@ -212,11 +212,11 @@ function mergeBaseConfig<TCheck extends Check>(
 
 // Todo: this does not include ExistingObject
 export const DEFAULT_CHECK_CONFIG_MAP: Record<CheckType, Check> = {
-  [CheckType.HTTP]: mergeBaseConfig<HTTPCheck>(CheckType.HTTP, {
-    method: HttpMethod.GET,
+  [CheckType.Http]: mergeBaseConfig<HTTPCheck>(CheckType.Http, {
+    method: HttpMethod.Get,
     ipVersion: IpVersion.V4,
     noFollowRedirects: false,
-    compression: HTTPCompressionAlgo.none,
+    compression: HTTPCompressionAlgo.None,
     failIfNotSSL: false,
     failIfSSL: false,
     failIfBodyMatchesRegexp: [],
@@ -228,21 +228,21 @@ export const DEFAULT_CHECK_CONFIG_MAP: Record<CheckType, Check> = {
     validHTTPVersions: [],
     validStatusCodes: [],
   }),
-  [CheckType.PING]: mergeBaseConfig<PingCheck>(CheckType.PING, {
+  [CheckType.Ping]: mergeBaseConfig<PingCheck>(CheckType.Ping, {
     ipVersion: IpVersion.V4,
     dontFragment: false,
   }),
-  [CheckType.GRPC]: mergeBaseConfig<GRPCCheck>(CheckType.GRPC, {
+  [CheckType.Grpc]: mergeBaseConfig<GRPCCheck>(CheckType.Grpc, {
     ipVersion: IpVersion.V4,
     tls: false,
   }),
-  [CheckType.DNS]: mergeBaseConfig<DNSCheck>(CheckType.DNS, {
+  [CheckType.Dns]: mergeBaseConfig<DNSCheck>(CheckType.Dns, {
     recordType: DnsRecordType.A,
     server: 'dns.google',
     ipVersion: IpVersion.V4,
-    protocol: DnsProtocol.UDP,
+    protocol: DnsProtocol.Udp,
     port: 53,
-    validRCodes: [DnsResponseCodes.NOERROR],
+    validRCodes: [DnsResponseCodes.Noerror],
     validateAdditionalRRS: {
       failIfMatchesRegexp: [],
       failIfNotMatchesRegexp: [],
@@ -256,7 +256,7 @@ export const DEFAULT_CHECK_CONFIG_MAP: Record<CheckType, Check> = {
       failIfNotMatchesRegexp: [],
     },
   }),
-  [CheckType.TCP]: mergeBaseConfig<TCPCheck>(CheckType.TCP, {
+  [CheckType.Tcp]: mergeBaseConfig<TCPCheck>(CheckType.Tcp, {
     ipVersion: IpVersion.V4,
     tls: false,
     queryResponse: [],
@@ -274,13 +274,13 @@ export const DEFAULT_CHECK_CONFIG_MAP: Record<CheckType, Check> = {
       frequency: 2 * 60 * 1000,
     }
   ),
-  [CheckType.MULTI_HTTP]: mergeBaseConfig<MultiHTTPCheck>(
-    CheckType.MULTI_HTTP,
+  [CheckType.MultiHttp]: mergeBaseConfig<MultiHTTPCheck>(
+    CheckType.MultiHttp,
     {
       entries: [
         {
           request: {
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: '',
             queryFields: [],
             headers: [],
@@ -322,13 +322,13 @@ export const DEFAULT_CHECK_CONFIG = DEFAULT_CHECK_CONFIG_MAP[DEFAULT_CHECK_TYPE]
 
 export const FORM_CHECK_TYPE_SCHEMA_MAP = {
   [CheckType.Browser]: browserCheckSchema,
-  [CheckType.DNS]: dnsCheckSchema,
-  [CheckType.GRPC]: grpcCheckSchema,
-  [CheckType.HTTP]: httpCheckSchema,
-  [CheckType.MULTI_HTTP]: multiHttpCheckSchema,
-  [CheckType.PING]: pingCheckSchema,
+  [CheckType.Dns]: dnsCheckSchema,
+  [CheckType.Grpc]: grpcCheckSchema,
+  [CheckType.Http]: httpCheckSchema,
+  [CheckType.MultiHttp]: multiHttpCheckSchema,
+  [CheckType.Ping]: pingCheckSchema,
   [CheckType.Scripted]: scriptedCheckSchema,
-  [CheckType.TCP]: tcpCheckSchema,
+  [CheckType.Tcp]: tcpCheckSchema,
   [CheckType.Traceroute]: tracerouteCheckSchema,
 };
 
@@ -346,13 +346,13 @@ export const OVERRIDE_DEFAULT_SECTION_ORDER: Partial<Record<CheckType, FormSecti
 // Allowed HTTP methods for HTTP and MultiHTTP checks
 // Note: Order matters, as it determines the order in which they are displayed in the UI.
 export const ALLOWED_HTTP_REQUEST_METHODS: HttpMethod[] = [
-  HttpMethod.GET,
-  HttpMethod.POST,
-  HttpMethod.PUT,
-  HttpMethod.DELETE,
-  HttpMethod.HEAD,
-  HttpMethod.PATCH, // new in synthetic-monitoring-agent@v0.43.0 (2025-09-16)
-  HttpMethod.OPTIONS,
+  HttpMethod.Get,
+  HttpMethod.Post,
+  HttpMethod.Put,
+  HttpMethod.Delete,
+  HttpMethod.Head,
+  HttpMethod.Patch, // new in synthetic-monitoring-agent@v0.43.0 (2025-09-16)
+  HttpMethod.Options,
   // HttpMethod.TRACE, // supported by Agent
   // HttpMethod.CONNECT, // supported by Agent
 ];
@@ -435,15 +435,15 @@ export const VALID_HTTP_STATUS_CODE_OPTIONS = (function generateValidStatusCodes
 export const VALID_HTTP_VERSION_OPTIONS = [
   {
     label: 'HTTP/1.0',
-    value: HttpVersion.HTTP1_0,
+    value: HttpVersion.Http1_0,
   },
   {
     label: 'HTTP/1.1',
-    value: HttpVersion.HTTP1_1,
+    value: HttpVersion.Http1_1,
   },
   {
     label: 'HTTP/2',
-    value: HttpVersion.HTTP2_0,
+    value: HttpVersion.Http2_0,
   },
 ];
 
@@ -465,23 +465,23 @@ export const HTTP_SSL_OPTIONS = [
 export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   {
     label: 'None',
-    value: HTTPCompressionAlgo.none,
+    value: HTTPCompressionAlgo.None,
   },
   {
     label: 'br',
-    value: HTTPCompressionAlgo.br,
+    value: HTTPCompressionAlgo.Br,
   },
   {
     label: 'deflate',
-    value: HTTPCompressionAlgo.deflate,
+    value: HTTPCompressionAlgo.Deflate,
   },
   {
     label: 'gzip',
-    value: HTTPCompressionAlgo.gzip,
+    value: HTTPCompressionAlgo.Gzip,
   },
   {
     label: 'identity',
-    value: HTTPCompressionAlgo.identity,
+    value: HTTPCompressionAlgo.Identity,
   },
 ];
 
@@ -492,13 +492,13 @@ const baseTimeoutMap = {
 
 export const CHECK_TYPE_TIMEOUT_MAP: Record<CheckType, { min: number; max: number }> = {
   [CheckType.Browser]: { min: MIN_TIMEOUT_BROWSER, max: MAX_TIMEOUT_BROWSER },
-  [CheckType.DNS]: baseTimeoutMap,
-  [CheckType.GRPC]: baseTimeoutMap,
-  [CheckType.HTTP]: baseTimeoutMap,
-  [CheckType.MULTI_HTTP]: { min: MIN_TIMEOUT_MULTI_HTTP, max: MAX_TIMEOUT_MULTI_HTTP },
-  [CheckType.PING]: baseTimeoutMap,
+  [CheckType.Dns]: baseTimeoutMap,
+  [CheckType.Grpc]: baseTimeoutMap,
+  [CheckType.Http]: baseTimeoutMap,
+  [CheckType.MultiHttp]: { min: MIN_TIMEOUT_MULTI_HTTP, max: MAX_TIMEOUT_MULTI_HTTP },
+  [CheckType.Ping]: baseTimeoutMap,
   [CheckType.Scripted]: { min: MIN_TIMEOUT_SCRIPTED, max: MAX_TIMEOUT_SCRIPTED },
-  [CheckType.TCP]: baseTimeoutMap,
+  [CheckType.Tcp]: baseTimeoutMap,
   [CheckType.Traceroute]: { min: MIN_TIMEOUT_TRACEROUTE, max: MAX_TIMEOUT_TRACEROUTE }, // fixed value (min === max)
 };
 
@@ -525,11 +525,11 @@ export const DEFAULT_MAX_ALLOWED_METRIC_LABELS = 10;
 export const DEFAULT_MAX_ALLOWED_LOG_LABELS = 5;
 
 // Checks that are executed with k6 rather than blackbox exporter
-export const K6_CHECK_TYPES = [CheckType.MULTI_HTTP, CheckType.Browser, CheckType.Scripted];
+export const K6_CHECK_TYPES = [CheckType.MultiHttp, CheckType.Browser, CheckType.Scripted];
 
 export const CHECK_TYPE_GROUP_DEFAULT_CHECK: Record<CheckTypeGroup, CheckType> = {
-  [CheckTypeGroup.ApiTest]: CheckType.HTTP,
-  [CheckTypeGroup.MultiStep]: CheckType.MULTI_HTTP,
+  [CheckTypeGroup.ApiTest]: CheckType.Http,
+  [CheckTypeGroup.MultiStep]: CheckType.MultiHttp,
   [CheckTypeGroup.Browser]: CheckType.Browser,
   [CheckTypeGroup.Scripted]: CheckType.Scripted,
 };

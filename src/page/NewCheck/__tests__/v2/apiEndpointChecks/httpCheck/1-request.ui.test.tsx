@@ -5,7 +5,7 @@ import { submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-const checkType = CheckType.HTTP;
+const checkType = CheckType.Http;
 
 describe(`HttpCheck - Section 1 (Request) UI`, () => {
   it(`has HTTP selected in the request type`, async () => {
@@ -20,7 +20,7 @@ describe(`HttpCheck - Section 1 (Request) UI`, () => {
 
     await user.click(screen.getByLabelText(/Request method \*/));
     const methodSelect = screen.getByRole('menu', { name: /Select request method/ });
-    expect(within(methodSelect).getByText(HttpMethod.GET)).toBeInTheDocument();
+    expect(within(methodSelect).getByText(HttpMethod.Get)).toBeInTheDocument();
   });
 
   it(`will navigate to the first section and open the request to reveal a nested error`, async () => {

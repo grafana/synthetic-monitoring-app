@@ -532,14 +532,14 @@ export function useSceneAnnotationEvents() {
   const alertsPending = useSceneAnnotation('Show alerts pending');
 
   const alertFiringEvents = alertsFiring.map<CheckEvent>(([timeStart, timeEnd]) => ({
-    label: CheckEventType.ALERTS_FIRING,
+    label: CheckEventType.AlertsFiring,
     to: timeEnd,
     from: timeStart,
     color: 'red',
   }));
 
   const alertPendingEvents = alertsPending.map<CheckEvent>(([timeStart, timeEnd]) => ({
-    label: CheckEventType.ALERTS_PENDING,
+    label: CheckEventType.AlertsPending,
     to: timeEnd,
     from: timeStart,
     color: 'yellow',

@@ -18,13 +18,13 @@ function renderTimepointExplorer() {
 describe('TimepointExplorer', () => {
   it(`should not render if the feature flag is off`, async () => {
     render(renderTimepointExplorer());
-    await waitFor(() => screen.queryByTestId(DataTestIds.TIMEPOINT_LIST));
-    expect(screen.queryByTestId(DataTestIds.TIMEPOINT_LIST)).not.toBeInTheDocument();
+    await waitFor(() => screen.queryByTestId(DataTestIds.TimepointList));
+    expect(screen.queryByTestId(DataTestIds.TimepointList)).not.toBeInTheDocument();
   });
 
   it('should render if the feature flag is on', async () => {
     mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
     render(renderTimepointExplorer());
-    await waitFor(() => screen.findByTestId(DataTestIds.TIMEPOINT_LIST));
+    await waitFor(() => screen.findByTestId(DataTestIds.TimepointList));
   });
 });

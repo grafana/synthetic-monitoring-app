@@ -10,7 +10,7 @@ const EXPECTED_BROWSER_DOCS_TEXT = `k6 browser checks run a k6 script using the 
 
 describe('DocsPanel', () => {
   describe('API Endpoint checks', () => {
-    it.each([CheckType.DNS, CheckType.GRPC, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute])(
+    it.each([CheckType.Dns, CheckType.Grpc, CheckType.Http, CheckType.Ping, CheckType.Tcp, CheckType.Traceroute])(
       'should render a docs tab for %s checks',
       async (checkType) => {
         const { user } = await renderNewForm(checkType);
@@ -23,7 +23,7 @@ describe('DocsPanel', () => {
   });
 
   describe('Multi Step checks', () => {
-    it.each([CheckType.MULTI_HTTP])('should render a docs tab for %s checks', async (checkType) => {
+    it.each([CheckType.MultiHttp])('should render a docs tab for %s checks', async (checkType) => {
       const { user } = await renderNewForm(checkType);
 
       const tab = await screen.findByText('Docs');

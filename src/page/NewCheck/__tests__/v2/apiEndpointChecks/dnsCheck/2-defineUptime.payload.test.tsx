@@ -12,7 +12,7 @@ import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.DNS;
+const checkType = CheckType.Dns;
 
 describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
@@ -22,27 +22,27 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     await submitForm(user);
     const { body } = await read();
 
-    expect(body.settings.dns.validRCodes).toEqual([DnsResponseCodes.NOERROR]);
+    expect(body.settings.dns.validRCodes).toEqual([DnsResponseCodes.Noerror]);
     expect(body.timeout).toBe(THREE_SECONDS_IN_MS);
   });
 
   it(`can add valid response codes`, async () => {
-    const RESPONSE_CODES = [DnsResponseCodes.BADVERS, DnsResponseCodes.BADCOOKIE];
+    const ResponseCodes = [DnsResponseCodes.Badvers, DnsResponseCodes.Badcookie];
 
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await gotoSection(user, FormSectionName.Uptime);
-    await removeComboboxOption(user, DnsResponseCodes.NOERROR);
+    await removeComboboxOption(user, DnsResponseCodes.Noerror);
     await user.click(screen.getByPlaceholderText(/Select valid response codes/));
 
-    for (const option of RESPONSE_CODES) {
+    for (const option of ResponseCodes) {
       await user.click(screen.getByRole('option', { name: option }));
     }
     await submitForm(user);
 
     const { body } = await read();
 
-    expect(body.settings.dns.validRCodes).toEqual(RESPONSE_CODES);
+    expect(body.settings.dns.validRCodes).toEqual(ResponseCodes);
   });
 
   describe(`can add valid response matches`, () => {

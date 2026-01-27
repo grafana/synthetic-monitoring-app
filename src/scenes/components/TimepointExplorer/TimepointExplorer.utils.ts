@@ -194,7 +194,7 @@ export function buildCheckEvents({
   const noDataEvents = checkConfigs
     .filter((config) => config.type === 'no-data')
     .map<CheckEvent>((config) => ({
-      label: CheckEventType.NO_DATA,
+      label: CheckEventType.NoData,
       from: config.from,
       to: config.to,
       color: ANNOTATION_COLOR_NO_DATA,
@@ -203,7 +203,7 @@ export function buildCheckEvents({
   const checkUpdatedEvents = checkConfigs
     .filter((config) => config.from > from)
     .map<CheckEvent>((config) => ({
-      label: CheckEventType.CHECK_UPDATED,
+      label: CheckEventType.CheckUpdated,
       from: config.from,
       to: config.from,
       color: ANNOTATION_COLOR_CHECK_UPDATED,

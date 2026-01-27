@@ -91,7 +91,7 @@ const CheckCreationAnnotation = ({
     <TimepointInstantAnnotation
       annotation={{
         checkEvent: {
-          label: CheckEventType.CHECK_CREATED,
+          label: CheckEventType.CheckCreated,
           from: checkCreation,
           to: checkCreation,
           color: ANNOTATION_COLOR_CHECK_CREATED,
@@ -136,10 +136,10 @@ const OutOfRangeAnnotation = ({
   const isCheckCreationAfterTo = checkCreation > timeRange.to.valueOf();
 
   const label = isCheckCreationAfterTo
-    ? CheckEventType.BEFORE_CREATION
+    ? CheckEventType.BeforeCreation
     : isLogsRetentionPeriodWithinTimerange
-    ? CheckEventType.OUT_OF_RETENTION_PERIOD
-    : CheckEventType.OUT_OF_TIMERANGE;
+    ? CheckEventType.OutOfRetentionPeriod
+    : CheckEventType.OutOfTimerange;
 
   const color = isCheckCreationAfterTo
     ? ANNOTATION_COLOR_BEFORE_CREATION

@@ -82,7 +82,7 @@ export const db = {
     const { type } = transientParams;
 
     switch (type) {
-      case CheckType.HTTP: {
+      case CheckType.Http: {
         return {
           ...baseCheckModel({ sequence }),
           target: faker.internet.url(),
@@ -116,7 +116,7 @@ export const db = {
         };
       }
 
-      case CheckType.PING: {
+      case CheckType.Ping: {
         return {
           ...baseCheckModel({ sequence }),
           settings: {
@@ -128,7 +128,7 @@ export const db = {
         };
       }
 
-      case CheckType.DNS: {
+      case CheckType.Dns: {
         return {
           ...baseCheckModel({ sequence }),
           settings: {
@@ -156,7 +156,7 @@ export const db = {
         };
       }
 
-      case CheckType.TCP: {
+      case CheckType.Tcp: {
         return {
           ...baseCheckModel({ sequence }),
           settings: {
@@ -184,7 +184,7 @@ export const db = {
         };
       }
 
-      case CheckType.MULTI_HTTP: {
+      case CheckType.MultiHttp: {
         return {
           ...baseCheckModel({ sequence }),
           settings: {
@@ -241,7 +241,7 @@ export const db = {
         };
       }
 
-      case CheckType.GRPC: {
+      case CheckType.Grpc: {
         return {
           ...baseCheckModel({ sequence }),
           settings: {

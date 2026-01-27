@@ -19,14 +19,14 @@ const renderProbeList = () => {
 
 it(`renders private probes in the correct list`, async () => {
   renderProbeList();
-  const privateProbesList = await screen.findByTestId(DataTestIds.PRIVATE_PROBES_LIST);
+  const privateProbesList = await screen.findByTestId(DataTestIds.PrivateProbesList);
   const privateProbe = await within(privateProbesList).findByText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
   expect(privateProbe).toBeInTheDocument();
 });
 
 it(`renders public probes in the correct list`, async () => {
   renderProbeList();
-  const publicProbesList = await screen.findByTestId(DataTestIds.PUBLIC_PROBES_LIST);
+  const publicProbesList = await screen.findByTestId(DataTestIds.PublicProbesList);
   const publicProbe = await within(publicProbesList).findByText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
   expect(publicProbe).toBeInTheDocument();
 });

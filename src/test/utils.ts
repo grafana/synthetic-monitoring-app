@@ -324,7 +324,7 @@ export const selectOption = async (user: UserEvent, options: SelectOptions, cont
 
 export const probeToMetadataProbe = (probe: Probe): ProbeWithMetadata => ({
   ...probe,
-  provider: ProbeProvider.AWS,
+  provider: ProbeProvider.Aws,
   country: 'country',
   countryCode: 'cc',
   region: 'region',

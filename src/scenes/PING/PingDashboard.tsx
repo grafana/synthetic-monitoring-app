@@ -22,7 +22,7 @@ export const PingDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.PING}>
+    <DashboardContainer check={check} checkType={CheckType.Ping}>
       <Stack height={`90px`}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />

@@ -1,9 +1,9 @@
 import { Field } from '@grafana/data';
 
 export enum ResultsByTargetTableRefId {
-  SUCCESS_RATE = 'successRate',
-  EXPECTED_RESPONSE = 'expectedResponse',
-  LATENCY = 'latency',
+  SuccessRate = 'successRate',
+  ExpectedResponse = 'expectedResponse',
+  Latency = 'latency',
 }
 
 export function getValueFieldName(refId: ResultsByTargetTableRefId) {

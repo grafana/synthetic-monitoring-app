@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/react';
 import { CheckType } from 'types';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
-const checkType = CheckType.MULTI_HTTP;
+const checkType = CheckType.MultiHttp;
 
 describe(`MultiHTTPCheck - Section 2 (Define uptime) UI`, () => {
   it(`can delete requests`, async () => {

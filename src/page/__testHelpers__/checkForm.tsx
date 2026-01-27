@@ -15,14 +15,14 @@ import { EditCheckV2 } from '../EditCheck/EditCheckV2';
 import { NewCheckV2 } from '../NewCheck/NewCheckV2';
 
 export const TARGET_MAP = {
-  [CheckType.DNS]: 'grafana.com',
-  [CheckType.GRPC]: 'grafana.com:50051',
-  [CheckType.HTTP]: 'https://grafana.com/',
-  [CheckType.MULTI_HTTP]: 'https://grafana.com/',
-  [CheckType.PING]: 'grafana.com',
+  [CheckType.Dns]: 'grafana.com',
+  [CheckType.Grpc]: 'grafana.com:50051',
+  [CheckType.Http]: 'https://grafana.com/',
+  [CheckType.MultiHttp]: 'https://grafana.com/',
+  [CheckType.Ping]: 'grafana.com',
   [CheckType.Scripted]: 'Whatever string we would like',
   [CheckType.Browser]: 'Whatever string we would like',
-  [CheckType.TCP]: 'grafana.com:80',
+  [CheckType.Tcp]: 'grafana.com:80',
   [CheckType.Traceroute]: 'grafana.com',
 };
 
@@ -54,7 +54,7 @@ export async function renderNewForm(
     route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
   });
 
-  await waitFor(async () => await screen.findByTestId(DataTestIds.PAGE_READY), { timeout: 10000 });
+  await waitFor(async () => await screen.findByTestId(DataTestIds.PageReady), { timeout: 10000 });
 
   const typeButReallyPaste = async (target: Element, value: string, args?: any) => {
     if (target instanceof HTMLElement) {
@@ -108,12 +108,12 @@ export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 |
 }
 
 export async function submitForm(user: UserEvent) {
-  const saveButton = await screen.findByTestId(DataTestIds.CHECK_FORM_SUBMIT_BUTTON);
+  const saveButton = await screen.findByTestId(DataTestIds.CheckFormSubmitButton);
   await user.click(saveButton);
 }
 
 export async function testCheck(user: UserEvent) {
-  const actionsBar = screen.getByTestId(DataTestIds.ACTIONS_BAR);
+  const actionsBar = screen.getByTestId(DataTestIds.ActionsBar);
   const testButton = await within(actionsBar).findByText('Test');
   await user.click(testButton);
 }

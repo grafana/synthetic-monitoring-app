@@ -10,12 +10,12 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 enum MetricRefId {
-  FCP = 'FCP',
-  LCP = 'LCP',
-  TTFB = 'TTFB',
-  CLS = 'CLS',
-  FID = 'FID',
-  INP = 'INP',
+  Fcp = 'FCP',
+  Lcp = 'LCP',
+  Ttfb = 'TTFB',
+  Cls = 'CLS',
+  Fid = 'FID',
+  Inp = 'INP',
 }
 
 export const MetricsByURL = () => {
@@ -24,27 +24,27 @@ export const MetricsByURL = () => {
   const dataProvider = useQueryRunner({
     queries: [
       {
-        refId: MetricRefId.FCP,
+        refId: MetricRefId.Fcp,
         ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_fcp', by: ['url'] }),
       },
       {
-        refId: MetricRefId.LCP,
+        refId: MetricRefId.Lcp,
         ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_lcp', by: ['url'] }),
       },
       {
-        refId: MetricRefId.TTFB,
+        refId: MetricRefId.Ttfb,
         ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_ttfb', by: ['url'] }),
       },
       {
-        refId: MetricRefId.CLS,
+        refId: MetricRefId.Cls,
         ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_cls', by: ['url'] }),
       },
       {
-        refId: MetricRefId.FID,
+        refId: MetricRefId.Fid,
         ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_fid', by: ['url'] }),
       },
       {
-        refId: MetricRefId.INP,
+        refId: MetricRefId.Inp,
         ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_inp', by: ['url'] }),
       },
     ],
@@ -57,22 +57,22 @@ export const MetricsByURL = () => {
       {
         id: DataTransformerID.timeSeriesTable,
         options: {
-          [MetricRefId.FCP]: {
+          [MetricRefId.Fcp]: {
             stat: 'mean',
           },
-          [MetricRefId.LCP]: {
+          [MetricRefId.Lcp]: {
             stat: 'mean',
           },
-          [MetricRefId.TTFB]: {
+          [MetricRefId.Ttfb]: {
             stat: 'mean',
           },
-          [MetricRefId.CLS]: {
+          [MetricRefId.Cls]: {
             stat: 'mean',
           },
-          [MetricRefId.FID]: {
+          [MetricRefId.Fid]: {
             stat: 'mean',
           },
-          [MetricRefId.INP]: {
+          [MetricRefId.Inp]: {
             stat: 'mean',
           },
         },
@@ -93,12 +93,12 @@ export const MetricsByURL = () => {
           },
           renameByName: {
             url: 'Page URL',
-            [`Trend #${MetricRefId.FCP}`]: 'FCP',
-            [`Trend #${MetricRefId.LCP}`]: 'LCP',
-            [`Trend #${MetricRefId.TTFB}`]: 'TTFB',
-            [`Trend #${MetricRefId.CLS}`]: 'CLS',
-            [`Trend #${MetricRefId.FID}`]: 'FID',
-            [`Trend #${MetricRefId.INP}`]: 'INP',
+            [`Trend #${MetricRefId.Fcp}`]: 'FCP',
+            [`Trend #${MetricRefId.Lcp}`]: 'LCP',
+            [`Trend #${MetricRefId.Ttfb}`]: 'TTFB',
+            [`Trend #${MetricRefId.Cls}`]: 'CLS',
+            [`Trend #${MetricRefId.Fid}`]: 'FID',
+            [`Trend #${MetricRefId.Inp}`]: 'INP',
           },
         },
       },
@@ -115,7 +115,7 @@ export const MetricsByURL = () => {
     })
     .setOverrides((b) => {
       return b
-        .matchFieldsWithName(`Trend #${MetricRefId.FID}`)
+        .matchFieldsWithName(`Trend #${MetricRefId.Fid}`)
         .overrideCustomFieldConfig(`displayMode`, TableCellDisplayMode.Custom)
         .build();
     })
@@ -128,7 +128,7 @@ export const MetricsByURL = () => {
         .build();
     })
     .setOverrides((b) => {
-      return b.matchFieldsWithName(`Trend #${MetricRefId.CLS}`).overrideUnit(``).build();
+      return b.matchFieldsWithName(`Trend #${MetricRefId.Cls}`).overrideUnit(``).build();
     })
     .setNoValue(`-`)
     .setUnit('ms')

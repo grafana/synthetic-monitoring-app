@@ -10,7 +10,7 @@ import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { gotoSection, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.TCP;
+const checkType = CheckType.Tcp;
 
 describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
   it(`can add TLS certificate expiry alert when TLS is enabled`, async () => {

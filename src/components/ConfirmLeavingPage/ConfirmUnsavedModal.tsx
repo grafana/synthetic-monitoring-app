@@ -10,7 +10,7 @@ interface ConfirmUnsavedModalProps {
 export function ConfirmUnsavedModal({ onLeavePage, onStayOnPage }: ConfirmUnsavedModalProps) {
   return (
     <Modal isOpen title="Unsaved changes" onDismiss={onStayOnPage}>
-      <Text data-testid={DataTestIds.CONFIRM_UNSAVED_MODAL_HEADING} element="span" variant="h5">
+      <Text data-testid={DataTestIds.ConfirmUnsavedModalHeading} element="span" variant="h5">
         You have unsaved changes. Are you sure you want to leave this page?
       </Text>
       <Modal.ButtonRow>

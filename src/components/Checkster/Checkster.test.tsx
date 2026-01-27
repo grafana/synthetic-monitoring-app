@@ -176,7 +176,7 @@ describe('Checkster.tsx', () => {
     });
 
     it('should handle check type via props', async () => {
-      render(<Checkster {...defaultProps} checkType={CheckType.HTTP} />);
+      render(<Checkster {...defaultProps} checkType={CheckType.Http} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('form-root')).toBeInTheDocument();

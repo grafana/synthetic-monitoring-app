@@ -6,7 +6,7 @@ import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.DNS;
+const checkType = CheckType.Dns;
 
 describe(`DNSCheck - Section 1 (Request) UI`, () => {
   it(`will navigate to the first section and open the request to reveal a nested error`, async () => {

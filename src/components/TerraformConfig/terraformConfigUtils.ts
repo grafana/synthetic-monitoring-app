@@ -64,7 +64,7 @@ const settingsToTF = (check: Check): TFCheckSettings => {
         body: check.settings.http.body,
         headers: check.settings.http.headers,
         compression:
-          check.settings.http.compression === HTTPCompressionAlgo.none ? 'none' : check.settings.http.compression,
+          check.settings.http.compression === HTTPCompressionAlgo.None ? 'none' : check.settings.http.compression,
         basic_auth: check.settings.http.basicAuth,
         bearer_token: check.settings.http.bearerToken,
         cache_busting_query_param_name: check.settings.http.cacheBustingQueryParamName,

@@ -121,7 +121,7 @@ it('handles public probe click', async () => {
   await screen.findByText(probe.displayName);
   await user.click(screen.getByText(probe.displayName));
 
-  expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
+  expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
     generateRoutePath(AppRoutes.ViewProbe, { id: probe.id! })
   );
 });
@@ -132,7 +132,7 @@ it('handles private probe click', async () => {
   await screen.findByText(probe.displayName);
   await user.click(screen.getByText(probe.displayName));
 
-  expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
+  expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
     generateRoutePath(AppRoutes.EditProbe, { id: probe.id! })
   );
 });
@@ -148,14 +148,14 @@ it.each<[ExtendedProbe, string]>([
 
     await screen.findByText(probe.displayName);
 
-    const usageLink = screen.getByTestId(DataTestIds.PROBE_USAGE_LINK);
+    const usageLink = screen.getByTestId(DataTestIds.ProbeUsageLink);
     expect(usageLink).toBeInTheDocument();
     expect(usageLink).toHaveTextContent(expectedText);
     await user.click(usageLink);
-    expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
+    expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
       generateRoutePath(AppRoutes.Checks)
     );
-    expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_SEARCH)).toHaveTextContent(`?probes=${probe.name}`);
+    expect(screen.getByTestId(DataTestIds.TestRouterInfoSearch)).toHaveTextContent(`?probes=${probe.name}`);
   }
 );
 
@@ -165,6 +165,6 @@ it('Displays the correct information for a probe that is NOT in use', async () =
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName);
 
-  const usageLink = screen.queryByTestId(DataTestIds.PROBE_USAGE_LINK);
+  const usageLink = screen.queryByTestId(DataTestIds.ProbeUsageLink);
   expect(usageLink).not.toBeInTheDocument();
 });

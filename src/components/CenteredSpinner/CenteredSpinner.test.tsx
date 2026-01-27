@@ -8,7 +8,7 @@ describe('CenteredSpinner', () => {
   it('should render spinner with default styles', () => {
     render(<CenteredSpinner />);
 
-    const spinner = screen.getByTestId(DataTestIds.CENTERED_SPINNER);
+    const spinner = screen.getByTestId(DataTestIds.CenteredSpinner);
     expect(spinner).toBeInTheDocument();
     expect(spinner).toHaveStyle({
       display: 'flex',
@@ -20,7 +20,7 @@ describe('CenteredSpinner', () => {
   it('should have accessible loading indicator (aria-label)', () => {
     render(<CenteredSpinner />);
 
-    const spinner = screen.getByTestId(DataTestIds.CENTERED_SPINNER);
+    const spinner = screen.getByTestId(DataTestIds.CenteredSpinner);
     expect(spinner).toHaveAttribute('aria-label', 'Loading');
   });
 
@@ -28,14 +28,14 @@ describe('CenteredSpinner', () => {
     const customLabel = 'Custom loading label';
     render(<CenteredSpinner aria-label={customLabel} />);
 
-    const spinner = screen.getByTestId(DataTestIds.CENTERED_SPINNER);
+    const spinner = screen.getByTestId(DataTestIds.CenteredSpinner);
     expect(spinner).toHaveAttribute('aria-label', customLabel);
   });
 
   it('should have aria-hidden set to false', () => {
     render(<CenteredSpinner />);
 
-    const spinner = screen.getByTestId(DataTestIds.CENTERED_SPINNER);
+    const spinner = screen.getByTestId(DataTestIds.CenteredSpinner);
     expect(spinner).toHaveAttribute('aria-hidden', 'false'); // important if the parent element uses aria-busy="true"
   });
 });

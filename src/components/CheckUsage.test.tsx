@@ -12,21 +12,21 @@ import { fallbackCheckMap } from './constants';
 function RenderWrapper() {
   return (
     <ChecksterProvider>
-      <CheckUsage checkType={CheckType.HTTP} />
+      <CheckUsage checkType={CheckType.Http} />
     </ChecksterProvider>
   );
 }
 
 async function renderComponent(check?: Check) {
   const result = render(<RenderWrapper />);
-  await waitFor(() => screen.findByTestId(DataTestIds.CHECK_USAGE), { timeout: 3000 });
+  await waitFor(() => screen.findByTestId(DataTestIds.CheckUsage), { timeout: 3000 });
 
   return result;
 }
 
 describe('CheckUsage', () => {
   describe('existing check', () => {
-    const mockedCheck = fallbackCheckMap[CheckType.HTTP];
+    const mockedCheck = fallbackCheckMap[CheckType.Http];
     it('should render', async () => {
       const { container } = await renderComponent(mockedCheck);
       expect(container).toBeInTheDocument();

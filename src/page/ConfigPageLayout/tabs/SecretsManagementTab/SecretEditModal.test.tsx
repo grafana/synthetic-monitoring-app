@@ -11,8 +11,8 @@ import { SECRETS_EDIT_MODE_ADD } from './constants';
 import { SecretEditModal } from './SecretEditModal';
 
 async function render(element: React.ReactElement) {
-  const result = testRender(<div data-testid={DataTestIds.CONFIG_CONTENT}>{element}</div>);
-  await waitFor(() => expect(screen.getByTestId(DataTestIds.CONFIG_CONTENT)).toBeInTheDocument(), {
+  const result = testRender(<div data-testid={DataTestIds.ConfigContent}>{element}</div>);
+  await waitFor(() => expect(screen.getByTestId(DataTestIds.ConfigContent)).toBeInTheDocument(), {
     timeout: 3000,
   });
 

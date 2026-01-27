@@ -106,7 +106,7 @@ export function LimitsFetchWarning({
         </span>
         <Button
           onClick={() => {
-            reportEvent(FaroEvent.REFETCH_TENANT_LIMITS, { error: error.message });
+            reportEvent(FaroEvent.RefetchTenantLimits, { error: error.message });
             refetch();
           }}
           variant="secondary"

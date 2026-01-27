@@ -120,7 +120,7 @@ export const multiHttpCheckSchema: ZodType<CheckFormValuesMultiHttp> = baseCheck
   })
   .and(
     z.object({
-      checkType: z.literal(CheckType.MULTI_HTTP),
+      checkType: z.literal(CheckType.MultiHttp),
       settings: z.object({
         multihttp: multiHttpSettingsSchema,
       }),

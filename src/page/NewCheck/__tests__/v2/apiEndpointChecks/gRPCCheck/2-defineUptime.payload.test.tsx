@@ -7,7 +7,7 @@ import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { gotoSection, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.GRPC;
+const checkType = CheckType.Grpc;
 
 describe(`gRPCCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {

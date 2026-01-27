@@ -26,7 +26,7 @@ export function ProbeUsageLink({ probe, className, variant, showWhenUnused = fal
 
   return (
     <TextLink
-      data-testid={DataTestIds.PROBE_USAGE_LINK}
+      data-testid={DataTestIds.ProbeUsageLink}
       className={className}
       variant={variant}
       color="link"

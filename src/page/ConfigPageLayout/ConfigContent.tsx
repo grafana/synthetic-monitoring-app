@@ -31,7 +31,7 @@ export function ConfigContent({ title, children, loading = false, actions, ariaL
   if (loading) {
     return (
       <div
-        data-testid={cx(DataTestIds.CONFIG_CONTENT_LOADING, props['data-testid'])}
+        data-testid={cx(DataTestIds.ConfigContentLoading, props['data-testid'])}
         className={styles.container}
         aria-busy
       >
@@ -41,7 +41,7 @@ export function ConfigContent({ title, children, loading = false, actions, ariaL
   }
 
   return (
-    <section data-testid={DataTestIds.CONFIG_CONTENT} className={styles.container}>
+    <section data-testid={DataTestIds.ConfigContent} className={styles.container}>
       {title && (
         <div className={styles.heading}>
           <h2>{title}</h2>

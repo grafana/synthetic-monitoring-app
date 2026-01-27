@@ -8,7 +8,7 @@ import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.TCP;
+const checkType = CheckType.Tcp;
 
 describe(`TCPCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {

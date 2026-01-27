@@ -19,7 +19,7 @@ const expressionFieldPropsMap: Record<
   MultiHttpVariableType,
   Pick<ComponentProps<typeof GenericInputField>, 'label' | 'description' | 'placeholder'>
 > = {
-  [MultiHttpVariableType.CSS_SELECTOR]: {
+  [MultiHttpVariableType.CssSelector]: {
     label: 'Selector',
     description: (
       <>
@@ -36,12 +36,12 @@ const expressionFieldPropsMap: Record<
     ),
     placeholder: 'div p',
   },
-  [MultiHttpVariableType.JSON_PATH]: {
+  [MultiHttpVariableType.JsonPath]: {
     label: 'JSON Path expression',
     description: 'A JSONPath expression specifies a path to an element (or a set of elements) in a JSON structure.',
     placeholder: '$.',
   },
-  [MultiHttpVariableType.REGEX]: {
+  [MultiHttpVariableType.Regex]: {
     label: 'Regular expression',
     description: 'Performs regular expression on the response HTML',
     placeholder: 'expression',
@@ -68,7 +68,7 @@ export function FormMultiHttpVariablesField({ field }: FormMultiHttpVariablesFie
         <Stack direction="column" gap={FIELD_SPACING}>
           {fields.map((fieldArray, index) => {
             const variableType = watch(createPath(field, index, 'type'));
-            const isCssSelectorType = variableType === MultiHttpVariableType.CSS_SELECTOR;
+            const isCssSelectorType = variableType === MultiHttpVariableType.CssSelector;
 
             return (
               <div
@@ -161,7 +161,7 @@ export function FormMultiHttpVariablesField({ field }: FormMultiHttpVariablesFie
           disabled={disabled}
           icon={`plus`}
           onClick={() => {
-            append({ type: MultiHttpVariableType.JSON_PATH, name: '', expression: '' });
+            append({ type: MultiHttpVariableType.JsonPath, name: '', expression: '' });
           }}
           size="sm"
           type="button"

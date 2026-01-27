@@ -32,7 +32,7 @@ export function useThreshold(type: keyof ThresholdSettings) {
 
 export function useUpdateThresholds({ onError, onSuccess }: MutationProps<UpdateTenantSettingsResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.SAVE_THRESHOLDS;
+  const eventType = FaroEvent.SaveThresholds;
 
   return useMutation<UpdateTenantSettingsResult, Error, ThresholdSettings, UseMutationResult>({
     mutationFn: (thresholds: ThresholdSettings) => smDS.updateTenantSettings({ thresholds }),

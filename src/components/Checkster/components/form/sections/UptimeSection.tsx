@@ -18,14 +18,14 @@ import { TracerouteUptimeContent } from '../layouts/TracerouteUptimeContent';
 
 const checkTypeLayoutMap: Record<CheckType, ComponentType> = {
   /* Protocol checks (blackbox exporter)*/
-  [CheckType.HTTP]: HttpUptimeContent,
-  [CheckType.PING]: PingUptimeContent,
-  [CheckType.GRPC]: GrpcUptimeContent,
-  [CheckType.DNS]: DnsUptimeContent,
-  [CheckType.TCP]: TcpUptimeContent,
+  [CheckType.Http]: HttpUptimeContent,
+  [CheckType.Ping]: PingUptimeContent,
+  [CheckType.Grpc]: GrpcUptimeContent,
+  [CheckType.Dns]: DnsUptimeContent,
+  [CheckType.Tcp]: TcpUptimeContent,
   [CheckType.Traceroute]: TracerouteUptimeContent,
   /* Scripted checks (k6) */
-  [CheckType.MULTI_HTTP]: MultiHttpUptimeContent,
+  [CheckType.MultiHttp]: MultiHttpUptimeContent,
   [CheckType.Scripted]: ScriptedUptimeContent,
   [CheckType.Browser]: BrowserUptimeContent,
 };
@@ -34,9 +34,9 @@ const defaultUptimeFields = ['timeout'];
 
 function getCheckTypeFields(checkType: CheckType) {
   switch (checkType) {
-    case CheckType.MULTI_HTTP:
+    case CheckType.MultiHttp:
       return MULTI_HTTP_UPTIME_FIELDS;
-    case CheckType.HTTP:
+    case CheckType.Http:
       return HTTP_UPTIME_FIELDS;
     default:
       return defaultUptimeFields;

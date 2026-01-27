@@ -40,7 +40,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 1',
         [LokiFieldNames.Labels]: { msg: 'msg 1' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id1',
+        [LokiFieldNames.Id]: 'id1',
       },
       {
         nanos: 2000000,
@@ -48,7 +48,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 2',
         [LokiFieldNames.Labels]: { msg: 'msg 2' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id2',
+        [LokiFieldNames.Id]: 'id2',
       },
       {
         nanos: 3000000,
@@ -56,7 +56,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 3',
         [LokiFieldNames.Labels]: { msg: 'msg 3' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id3',
+        [LokiFieldNames.Id]: 'id3',
       },
     ]);
   });
@@ -83,7 +83,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 1',
         [LokiFieldNames.Labels]: { msg: 'msg 1' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id1',
+        [LokiFieldNames.Id]: 'id1',
       },
       {
         nanos: 2000000,
@@ -91,7 +91,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 2',
         [LokiFieldNames.Labels]: { msg: 'msg 2' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id2',
+        [LokiFieldNames.Id]: 'id2',
       },
       {
         nanos: 3000000,
@@ -99,7 +99,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 3',
         [LokiFieldNames.Labels]: { msg: 'msg 3' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id3',
+        [LokiFieldNames.Id]: 'id3',
       },
     ]);
   });
@@ -125,7 +125,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 1',
         [LokiFieldNames.Labels]: { msg: 'msg 1' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id1',
+        [LokiFieldNames.Id]: 'id1',
       },
       {
         nanos: 2000000000, // 2000 * 1000000
@@ -133,7 +133,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 2',
         [LokiFieldNames.Labels]: { msg: 'msg 2' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id2',
+        [LokiFieldNames.Id]: 'id2',
       },
       {
         nanos: 3000000000, // 3000 * 1000000
@@ -141,7 +141,7 @@ describe(`parseLokiLogs`, () => {
         [LokiFieldNames.Body]: 'log 3',
         [LokiFieldNames.Labels]: { msg: 'msg 3' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id3',
+        [LokiFieldNames.Id]: 'id3',
       },
     ]);
   });
@@ -167,7 +167,7 @@ describe(`normalizeLokiDataFrame`, () => {
     expect(normalized.fields[1].name).toBe(LokiFieldNames.TimeStamp);
     expect(normalized.fields[2].name).toBe(LokiFieldNames.Body);
     expect(normalized.fields[3].name).toBe(LokiFieldNames.LabelTypes);
-    expect(normalized.fields[4].name).toBe(LokiFieldNames.ID);
+    expect(normalized.fields[4].name).toBe(LokiFieldNames.Id);
 
     // Verify values are preserved
     expect(normalized.fields[1].values).toEqual([1000, 2000]);
@@ -188,7 +188,7 @@ describe(`normalizeLokiDataFrame`, () => {
     expect(normalized.fields[1].name).toBe(LokiFieldNames.TimeStamp);
     expect(normalized.fields[2].name).toBe(LokiFieldNames.Body);
     expect(normalized.fields[3].name).toBe(LokiFieldNames.LabelTypes);
-    expect(normalized.fields[4].name).toBe(LokiFieldNames.ID);
+    expect(normalized.fields[4].name).toBe(LokiFieldNames.Id);
     // Verify nanos is populated on timestamp field from old schema's tsNs
     expect((normalized.fields[1] as TimeStamp).nanos).toEqual([2000000, 1000000, 3000000]);
   });
@@ -211,7 +211,7 @@ describe(`normalizeLokiDataFrame`, () => {
     expect(normalized.fields[1].name).toBe(LokiFieldNames.TimeStamp);
     expect(normalized.fields[2].name).toBe(LokiFieldNames.Body);
     expect(normalized.fields[3].name).toBe(LokiFieldNames.LabelTypes);
-    expect(normalized.fields[4].name).toBe(LokiFieldNames.ID);
+    expect(normalized.fields[4].name).toBe(LokiFieldNames.Id);
     // nanos should be empty array if not provided
     expect((normalized.fields[1] as TimeStamp).nanos).toEqual([]);
   });
@@ -249,7 +249,7 @@ describe(`flattenLogs`, () => {
         [LokiFieldNames.Body]: 'log 2',
         [LokiFieldNames.Labels]: { msg: 'msg 2' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id2',
+        [LokiFieldNames.Id]: 'id2',
       },
       {
         nanos: 1000000,
@@ -257,7 +257,7 @@ describe(`flattenLogs`, () => {
         [LokiFieldNames.Body]: 'log 1',
         [LokiFieldNames.Labels]: { msg: 'msg 1' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id1',
+        [LokiFieldNames.Id]: 'id1',
       },
       {
         nanos: 3000000,
@@ -265,7 +265,7 @@ describe(`flattenLogs`, () => {
         [LokiFieldNames.Body]: 'log 3',
         [LokiFieldNames.Labels]: { msg: 'msg 3' },
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id3',
+        [LokiFieldNames.Id]: 'id3',
       },
     ]);
   });
@@ -294,7 +294,7 @@ describe(`flattenLogs`, () => {
         [LokiFieldNames.Body]: 'log 2',
         [LokiFieldNames.Labels]: HARDCODED_LABELS_VALUE,
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id2',
+        [LokiFieldNames.Id]: 'id2',
       },
       {
         nanos: 1000000,
@@ -302,7 +302,7 @@ describe(`flattenLogs`, () => {
         [LokiFieldNames.Body]: 'log 1',
         [LokiFieldNames.Labels]: HARDCODED_LABELS_VALUE,
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id1',
+        [LokiFieldNames.Id]: 'id1',
       },
       {
         nanos: 3000000,
@@ -310,7 +310,7 @@ describe(`flattenLogs`, () => {
         [LokiFieldNames.Body]: 'log 3',
         [LokiFieldNames.Labels]: HARDCODED_LABELS_VALUE,
         [LokiFieldNames.LabelTypes]: {},
-        [LokiFieldNames.ID]: 'id3',
+        [LokiFieldNames.Id]: 'id3',
       },
     ]);
   });
@@ -373,7 +373,7 @@ function buildLokiFieldsOld({
   };
 
   const id: ID = {
-    name: LokiFieldNames.ID,
+    name: LokiFieldNames.Id,
     type: FieldType.string,
     values: idValues,
     config: {},
@@ -432,7 +432,7 @@ function buildLokiFields({
   };
 
   const id: ID = {
-    name: LokiFieldNames.ID,
+    name: LokiFieldNames.Id,
     type: FieldType.string,
     values: idValues,
     config: {},
@@ -489,7 +489,7 @@ function buildLokiFieldsWithoutTsNs({
   };
 
   const id: ID = {
-    name: LokiFieldNames.ID,
+    name: LokiFieldNames.Id,
     type: FieldType.string,
     values: idValues,
     config: {},

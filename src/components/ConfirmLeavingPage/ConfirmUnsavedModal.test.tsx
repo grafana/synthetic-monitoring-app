@@ -9,7 +9,7 @@ describe('<ConfirmUnsavedModal>', () => {
   it('should show when rendered', async () => {
     render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={jest.fn()} />);
 
-    expect(await screen.findByTestId(DataTestIds.CONFIRM_UNSAVED_MODAL_HEADING)).toBeInTheDocument();
+    expect(await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading)).toBeInTheDocument();
   });
 
   it('should call onLeavePage when leave page button clicked', async () => {

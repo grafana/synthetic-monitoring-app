@@ -43,7 +43,7 @@ interface GetAccessTokenPayload {
 }
 
 export function useSMAccessToken({ eventInfo }: MutationProps<any> = {}) {
-  const eventType = FaroEvent.INITIALIZE_ACCESS_TOKEN;
+  const eventType = FaroEvent.InitializeAccessToken;
 
   return useMutation({
     mutationFn: ({ data, id }: GetAccessTokenPayload) => {
@@ -72,7 +72,7 @@ interface InitSMPayload {
 }
 
 export function useInitSMDatasource({ eventInfo }: MutationProps<any> = {}) {
-  const eventType = FaroEvent.INIT;
+  const eventType = FaroEvent.Init;
 
   return useMutation({
     mutationFn: ({ apiHost, metrics, logs, accessToken }: InitSMPayload) =>

@@ -9,7 +9,7 @@ import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-const checkType = CheckType.HTTP;
+const checkType = CheckType.Http;
 
 describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
   it(`has the correct default values`, async () => {

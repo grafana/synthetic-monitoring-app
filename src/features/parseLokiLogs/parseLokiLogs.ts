@@ -173,7 +173,7 @@ function isLabelTypes<R>(field: Field): field is LabelTypes<R> {
 }
 
 function isID(field: Field): field is ID {
-  return field.name === LokiFieldNames.ID;
+  return field.name === LokiFieldNames.Id;
 }
 
 function isTsNsOld(field: Field): field is TsNsOld {
@@ -215,8 +215,8 @@ function normalizeFieldName(fieldName: string): LokiFieldNames | LokiFieldNamesO
   if (fieldName === LokiFieldNamesOld.LabelTypes || fieldName === LokiFieldNames.LabelTypes) {
     return LokiFieldNames.LabelTypes;
   }
-  if (fieldName === LokiFieldNamesOld.ID || fieldName === LokiFieldNames.ID) {
-    return LokiFieldNames.ID;
+  if (fieldName === LokiFieldNamesOld.Id || fieldName === LokiFieldNames.Id) {
+    return LokiFieldNames.Id;
   }
   // Fallback: try to match by case-insensitive comparison
   const lowerName = fieldName.toLowerCase();
@@ -234,8 +234,8 @@ function normalizeFieldName(fieldName: string): LokiFieldNames | LokiFieldNamesO
   if (fieldName === LokiFieldNames.LabelTypes) {
     return LokiFieldNames.LabelTypes;
   }
-  if (fieldName === LokiFieldNames.ID) {
-    return LokiFieldNames.ID;
+  if (fieldName === LokiFieldNames.Id) {
+    return LokiFieldNames.Id;
   }
   throw new Error(`Unknown field name: ${fieldName}`);
 }

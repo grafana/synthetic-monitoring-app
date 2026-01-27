@@ -6,7 +6,7 @@ import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-const checkType = CheckType.MULTI_HTTP;
+const checkType = CheckType.MultiHttp;
 
 describe(`MultiHTTPCheck - Section 3 (Labels) payload`, () => {
   it(`can submit the form with labels filled in`, async () => {

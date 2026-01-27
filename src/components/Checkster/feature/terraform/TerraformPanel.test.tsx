@@ -8,13 +8,13 @@ import { renderEditForm, renderNewForm } from 'page/__testHelpers__/checkForm';
 describe('TerraformPanel', () => {
   describe('Tab visibility', () => {
     it.each([
-      CheckType.HTTP,
-      CheckType.DNS,
-      CheckType.PING,
-      CheckType.TCP,
-      CheckType.GRPC,
+      CheckType.Http,
+      CheckType.Dns,
+      CheckType.Ping,
+      CheckType.Tcp,
+      CheckType.Grpc,
       CheckType.Traceroute,
-      CheckType.MULTI_HTTP,
+      CheckType.MultiHttp,
       CheckType.Scripted,
       CheckType.Browser,
     ])('should render the Terraform tab for %s checks', async (checkType) => {
@@ -27,7 +27,7 @@ describe('TerraformPanel', () => {
 
   describe('Panel content', () => {
     it('should display the Terraform panel when the tab is clicked', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
 
       const tab = await screen.findByText('Terraform');
       await user.click(tab);
@@ -37,7 +37,7 @@ describe('TerraformPanel', () => {
     });
 
     it('should display HCL format by default', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
 
       const tab = await screen.findByText('Terraform');
       await user.click(tab);
@@ -47,7 +47,7 @@ describe('TerraformPanel', () => {
     });
 
     it('should switch to JSON format when JSON tab is clicked', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
 
       const terraformTab = await screen.findByText('Terraform');
       await user.click(terraformTab);
@@ -59,7 +59,7 @@ describe('TerraformPanel', () => {
     });
 
     it('should display code content', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
 
       const tab = await screen.findByText('Terraform');
       await user.click(tab);
@@ -69,7 +69,7 @@ describe('TerraformPanel', () => {
     });
 
     it('should have a copy button', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
 
       const tab = await screen.findByText('Terraform');
       await user.click(tab);
@@ -81,7 +81,7 @@ describe('TerraformPanel', () => {
 
   describe('Configuration generation', () => {
     it('should include check resource block in HCL output', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
 
       const tab = await screen.findByText('Terraform');
       await user.click(tab);
@@ -95,7 +95,7 @@ describe('TerraformPanel', () => {
     });
 
     it('should include check settings in HCL output', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
 
       const tab = await screen.findByText('Terraform');
       await user.click(tab);
@@ -109,7 +109,7 @@ describe('TerraformPanel', () => {
     });
 
     it('should display valid JSON when JSON format is selected', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
 
       const terraformTab = await screen.findByText('Terraform');
       await user.click(terraformTab);
@@ -129,7 +129,7 @@ describe('TerraformPanel', () => {
     });
 
     it('should not include alerts resource for new checks without ID', async () => {
-      const { user } = await renderNewForm(CheckType.HTTP);
+      const { user } = await renderNewForm(CheckType.Http);
       const terraformTab = await screen.findByText('Terraform');
       await user.click(terraformTab);
 

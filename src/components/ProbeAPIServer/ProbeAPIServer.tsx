@@ -45,7 +45,7 @@ export const ProbeAPIServer = ({ source }: { source: string }) => {
 
 const NoProbeAPIServer = ({ backendAddress, source }: { backendAddress: string; source: string }) => {
   useEffect(() => {
-    reportError(FaroEvent.NO_PROBE_MAPPING_FOUND);
+    reportError(FaroEvent.NoProbeMappingFound);
   }, []);
 
   return (

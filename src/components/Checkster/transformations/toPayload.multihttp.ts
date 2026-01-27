@@ -42,7 +42,7 @@ const getMultiHttpSettings = (settings?: MultiHttpSettingsFormValues): MultiHttp
         request: {
           ...entry.request,
           body,
-          method: entry.request.method ?? HttpMethod.GET,
+          method: entry.request.method ?? HttpMethod.Get,
         },
         variables:
           entry.variables?.map((variable) => {

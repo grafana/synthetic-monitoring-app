@@ -83,7 +83,7 @@ const EnvsTable = ({ token }: { token: string }) => {
 
 const NoMappingFound = () => {
   useEffect(() => {
-    reportEvent(FaroEvent.NO_PROBE_MAPPING_FOUND);
+    reportEvent(FaroEvent.NoProbeMappingFound);
   }, []);
 
   return (

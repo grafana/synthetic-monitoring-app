@@ -11,7 +11,7 @@ import { DataTestIds } from '../dataTestIds';
  * @important This component should only be used in tests.
  *
  * @example
- *   expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
+ *   expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
  *     generateRoutePath(AppRoutes.ViewProbe, { id: probe.id })
  *   );
  *
@@ -27,9 +27,9 @@ export function TestRouteInfo() {
   const location = useLocation();
 
   return (
-    <div data-testid={DataTestIds.TEST_ROUTER_INFO} aria-hidden>
-      <div data-testid={DataTestIds.TEST_ROUTER_INFO_PATHNAME}>{location.pathname}</div>
-      <div data-testid={DataTestIds.TEST_ROUTER_INFO_SEARCH}>{location.search}</div>
+    <div data-testid={DataTestIds.TestRouterInfo} aria-hidden>
+      <div data-testid={DataTestIds.TestRouterInfoPathname}>{location.pathname}</div>
+      <div data-testid={DataTestIds.TestRouterInfoSearch}>{location.search}</div>
     </div>
   );
 }

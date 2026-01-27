@@ -29,43 +29,43 @@ export enum IpVersion {
 }
 
 export enum HttpMethod {
-  DELETE = 'DELETE',
-  GET = 'GET',
-  HEAD = 'HEAD',
-  OPTIONS = 'OPTIONS',
-  PATCH = 'PATCH',
-  POST = 'POST',
-  PUT = 'PUT',
+  Delete = 'DELETE',
+  Get = 'GET',
+  Head = 'HEAD',
+  Options = 'OPTIONS',
+  Patch = 'PATCH',
+  Post = 'POST',
+  Put = 'PUT',
 }
 
 export enum HttpVersion {
-  HTTP1_0 = 'HTTP/1.0',
-  HTTP1_1 = 'HTTP/1.1',
-  HTTP2_0 = 'HTTP/2.0',
+  Http1_0 = 'HTTP/1.0',
+  Http1_1 = 'HTTP/1.1',
+  Http2_0 = 'HTTP/2.0',
 }
 
 export enum DnsRecordType {
   A = 'A',
-  AAAA = 'AAAA',
-  CNAME = 'CNAME',
-  MX = 'MX',
-  NS = 'NS',
-  PTR = 'PTR',
-  SOA = 'SOA',
-  SRV = 'SRV',
-  TXT = 'TXT',
+  Aaaa = 'AAAA',
+  Cname = 'CNAME',
+  Mx = 'MX',
+  Ns = 'NS',
+  Ptr = 'PTR',
+  Soa = 'SOA',
+  Srv = 'SRV',
+  Txt = 'TXT',
 }
 
 export enum DnsProtocol {
-  TCP = 'TCP',
-  UDP = 'UDP',
+  Tcp = 'TCP',
+  Udp = 'UDP',
 }
 
 export enum ProbeProvider {
-  AWS = 'AWS',
-  LINODE = 'Linode',
-  DIGITAL_OCEAN = 'Digital Ocean',
-  PRIVATE = '',
+  Aws = 'AWS',
+  Linode = 'Linode',
+  DigitalOcean = 'Digital Ocean',
+  Private = '',
 }
 
 export interface HeaderMatch {
@@ -342,42 +342,42 @@ export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 
 };
 
 export type CheckFormValuesHttp = CheckFormValuesBase & {
-  checkType: CheckType.HTTP;
+  checkType: CheckType.Http;
   settings: {
     http: HttpSettingsFormValues;
   };
 };
 
 export type CheckFormValuesMultiHttp = CheckFormValuesBase & {
-  checkType: CheckType.MULTI_HTTP;
+  checkType: CheckType.MultiHttp;
   settings: {
     multihttp: MultiHttpSettingsFormValues;
   };
 };
 
 export type CheckFormValuesPing = CheckFormValuesBase & {
-  checkType: CheckType.PING;
+  checkType: CheckType.Ping;
   settings: {
     ping: PingSettingsFormValues;
   };
 };
 
 export type CheckFormValuesDns = CheckFormValuesBase & {
-  checkType: CheckType.DNS;
+  checkType: CheckType.Dns;
   settings: {
     dns: DnsSettingsFormValues;
   };
 };
 
 export type CheckFormValuesGRPC = CheckFormValuesBase & {
-  checkType: CheckType.GRPC;
+  checkType: CheckType.Grpc;
   settings: {
     grpc: GRPCSettingsFormValues;
   };
 };
 
 export type CheckFormValuesTcp = CheckFormValuesBase & {
-  checkType: CheckType.TCP;
+  checkType: CheckType.Tcp;
   settings: {
     tcp: TcpSettingsFormValues;
   };
@@ -529,13 +529,13 @@ export type TracerouteCheck = CheckBase &
 
 export enum CheckType {
   Browser = 'browser',
-  DNS = 'dns',
-  GRPC = 'grpc',
-  HTTP = 'http',
-  MULTI_HTTP = 'multihttp',
-  PING = 'ping',
+  Dns = 'dns',
+  Grpc = 'grpc',
+  Http = 'http',
+  MultiHttp = 'multihttp',
+  Ping = 'ping',
   Scripted = 'scripted',
-  TCP = 'tcp',
+  Tcp = 'tcp',
   Traceroute = 'traceroute',
 }
 
@@ -547,26 +547,26 @@ export enum CheckTypeGroup {
 }
 
 export enum DnsResponseCodes {
-  NOERROR = 'NOERROR',
-  BADALG = 'BADALG',
-  BADCOOKIE = 'BADCOOKIE',
-  BADKEY = 'BADKEY',
-  BADMODE = 'BADMODE',
-  BADNAME = 'BADNAME',
-  BADSIG = 'BADSIG',
-  BADTIME = 'BADTIME',
-  BADTRUNC = 'BADTRUNC',
-  BADVERS = 'BADVERS',
-  FORMERR = 'FORMERR',
-  NOTAUTH = 'NOTAUTH',
-  NOTIMP = 'NOTIMP',
-  NOTZONE = 'NOTZONE',
-  NXDOMAIN = 'NXDOMAIN',
-  NXRRSET = 'NXRRSET',
-  REFUSED = 'REFUSED',
-  SERVFAIL = 'SERVFAIL',
-  YXDOMAIN = 'YXDOMAIN',
-  YXRRSET = 'YXRRSET',
+  Noerror = 'NOERROR',
+  Badalg = 'BADALG',
+  Badcookie = 'BADCOOKIE',
+  Badkey = 'BADKEY',
+  Badmode = 'BADMODE',
+  Badname = 'BADNAME',
+  Badsig = 'BADSIG',
+  Badtime = 'BADTIME',
+  Badtrunc = 'BADTRUNC',
+  Badvers = 'BADVERS',
+  Formerr = 'FORMERR',
+  Notauth = 'NOTAUTH',
+  Notimp = 'NOTIMP',
+  Notzone = 'NOTZONE',
+  Nxdomain = 'NXDOMAIN',
+  Nxrrset = 'NXRRSET',
+  Refused = 'REFUSED',
+  Servfail = 'SERVFAIL',
+  Yxdomain = 'YXDOMAIN',
+  Yxrrset = 'YXRRSET',
 }
 
 export interface APIError {
@@ -591,10 +591,10 @@ export enum HttpRegexValidationType {
 }
 
 export enum AlertPercentiles {
-  p50 = 'P50',
-  p90 = 'P90',
-  p95 = 'P95',
-  p99 = 'P99',
+  P50 = 'P50',
+  P90 = 'P90',
+  P95 = 'P95',
+  P99 = 'P99',
 }
 
 export interface SubmissionError {
@@ -725,11 +725,11 @@ export enum CheckEnabledStatus {
 }
 
 export enum HTTPCompressionAlgo {
-  none = '',
-  identity = 'identity',
-  br = 'br',
-  gzip = 'gzip',
-  deflate = 'deflate',
+  None = '',
+  Identity = 'identity',
+  Br = 'br',
+  Gzip = 'gzip',
+  Deflate = 'deflate',
 }
 
 export enum FeatureName {
@@ -737,7 +737,7 @@ export enum FeatureName {
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
   VersionManagement = 'synthetic-monitoring-version-management',
-  __TURNOFF = 'test-only-do-not-use',
+  __Turnoff = 'test-only-do-not-use',
 }
 
 export interface UsageValues {
@@ -771,9 +771,9 @@ export interface DashboardSceneAppConfig {
 }
 
 export enum MultiHttpVariableType {
-  JSON_PATH = 0,
-  REGEX = 1,
-  CSS_SELECTOR = 2,
+  JsonPath = 0,
+  Regex = 1,
+  CssSelector = 2,
 }
 
 export enum MultiHttpAssertionType {
@@ -851,9 +851,9 @@ export type PrometheusAlertingRule = {
 };
 
 export enum CheckStatus {
-  EXPERIMENTAL = 'experimental',
-  PRIVATE_PREVIEW = 'private-preview',
-  PUBLIC_PREVIEW = 'public-preview',
+  Experimental = 'experimental',
+  PrivatePreview = 'private-preview',
+  PublicPreview = 'public-preview',
 }
 
 export interface CheckFormTypeLayoutProps {
@@ -865,7 +865,7 @@ export interface CheckFormTypeLayoutProps {
   checkType?: CheckType;
 }
 
-export type TLSCheckTypes = CheckType.HTTP | CheckType.TCP | CheckType.GRPC;
+export type TLSCheckTypes = CheckType.Http | CheckType.Tcp | CheckType.Grpc;
 
 export interface TLSFormValues extends CheckFormValuesBase {
   checkType: TLSCheckTypes;

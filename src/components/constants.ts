@@ -10,7 +10,7 @@ import {
   DNSCheck,
   DnsProtocol,
   DnsRecordType,
-  DnsResponseCodes,
+  DnsResponseCodes as DnsResponseCodesEnum,
   GRPCCheck,
   HTTPCheck,
   HTTPCompressionAlgo,
@@ -29,10 +29,9 @@ import {
   TracerouteCheck,
 } from 'types';
 
-import { enumToStringArray } from '../utils';
 import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
 
-export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
+export const DNS_RESPONSE_CODES = Object.values(DnsResponseCodesEnum).map((responseCode) => ({
   label: responseCode,
   value: responseCode,
 }));
@@ -49,47 +48,47 @@ export const DNS_RECORD_TYPES = [
     value: DnsRecordType.A,
   },
   {
-    label: DnsRecordType.AAAA,
-    value: DnsRecordType.AAAA,
+    label: DnsRecordType.Aaaa,
+    value: DnsRecordType.Aaaa,
   },
   {
-    label: DnsRecordType.CNAME,
-    value: DnsRecordType.CNAME,
+    label: DnsRecordType.Cname,
+    value: DnsRecordType.Cname,
   },
   {
-    label: DnsRecordType.MX,
-    value: DnsRecordType.MX,
+    label: DnsRecordType.Mx,
+    value: DnsRecordType.Mx,
   },
   {
-    label: DnsRecordType.NS,
-    value: DnsRecordType.NS,
+    label: DnsRecordType.Ns,
+    value: DnsRecordType.Ns,
   },
   {
-    label: DnsRecordType.SOA,
-    value: DnsRecordType.SOA,
+    label: DnsRecordType.Soa,
+    value: DnsRecordType.Soa,
   },
   {
-    label: DnsRecordType.TXT,
-    value: DnsRecordType.TXT,
+    label: DnsRecordType.Txt,
+    value: DnsRecordType.Txt,
   },
   {
-    label: DnsRecordType.PTR,
-    value: DnsRecordType.PTR,
+    label: DnsRecordType.Ptr,
+    value: DnsRecordType.Ptr,
   },
   {
-    label: DnsRecordType.SRV,
-    value: DnsRecordType.SRV,
+    label: DnsRecordType.Srv,
+    value: DnsRecordType.Srv,
   },
 ];
 
 export const DNS_PROTOCOLS = [
   {
-    label: DnsProtocol.UDP,
-    value: DnsProtocol.UDP,
+    label: DnsProtocol.Udp,
+    value: DnsProtocol.Udp,
   },
   {
-    label: DnsProtocol.TCP,
-    value: DnsProtocol.TCP,
+    label: DnsProtocol.Tcp,
+    value: DnsProtocol.Tcp,
   },
 ];
 
@@ -257,9 +256,9 @@ export const FALLBACK_CHECK_DNS: DNSCheck = {
       recordType: DnsRecordType.A,
       server: 'dns.google',
       ipVersion: IpVersion.V4,
-      protocol: DnsProtocol.UDP,
+      protocol: DnsProtocol.Udp,
       port: 53,
-      validRCodes: [DnsResponseCodes.NOERROR],
+      validRCodes: [DnsResponseCodesEnum.Noerror],
       validateAdditionalRRS: {
         failIfMatchesRegexp: [],
         failIfNotMatchesRegexp: [],
@@ -290,10 +289,10 @@ export const FALLBACK_CHECK_HTTP: HTTPCheck = {
   ...FALLBACK_CHECK_BASE,
   settings: {
     http: {
-      method: HttpMethod.GET,
+      method: HttpMethod.Get,
       ipVersion: IpVersion.V4,
       noFollowRedirects: false,
-      compression: HTTPCompressionAlgo.none,
+      compression: HTTPCompressionAlgo.None,
       failIfNotSSL: false,
       failIfSSL: false,
       failIfBodyMatchesRegexp: [],
@@ -317,7 +316,7 @@ export const FALLBACK_CHECK_MULTIHTTP: MultiHTTPCheck = {
       entries: [
         {
           request: {
-            method: HttpMethod.GET,
+            method: HttpMethod.Get,
             url: '',
             queryFields: [],
             headers: [],
@@ -388,13 +387,13 @@ export const FALLBACK_CHECK_TRACEROUTE: TracerouteCheck = {
 
 export const fallbackCheckMap = {
   [CheckType.Browser]: FALLBACK_CHECK_BROWSER,
-  [CheckType.DNS]: FALLBACK_CHECK_DNS,
-  [CheckType.GRPC]: FALLBACK_CHECK_GRPC,
-  [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
-  [CheckType.MULTI_HTTP]: FALLBACK_CHECK_MULTIHTTP,
-  [CheckType.PING]: FALLBACK_CHECK_PING,
+  [CheckType.Dns]: FALLBACK_CHECK_DNS,
+  [CheckType.Grpc]: FALLBACK_CHECK_GRPC,
+  [CheckType.Http]: FALLBACK_CHECK_HTTP,
+  [CheckType.MultiHttp]: FALLBACK_CHECK_MULTIHTTP,
+  [CheckType.Ping]: FALLBACK_CHECK_PING,
   [CheckType.Scripted]: FALLBACK_CHECK_SCRIPTED,
-  [CheckType.TCP]: FALLBACK_CHECK_TCP,
+  [CheckType.Tcp]: FALLBACK_CHECK_TCP,
   [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
 };
 
@@ -468,37 +467,37 @@ export const getDefaultAlertAnnotations = (percentage: number) => ({
 });
 
 export const HTTP_COMPRESSION_ALGO_OPTIONS = [
-  { label: 'none', value: HTTPCompressionAlgo.none },
-  { label: 'identity', value: HTTPCompressionAlgo.identity },
-  { label: 'br', value: HTTPCompressionAlgo.br },
-  { label: 'gzip', value: HTTPCompressionAlgo.gzip },
-  { label: 'deflate', value: HTTPCompressionAlgo.deflate },
+  { label: 'none', value: HTTPCompressionAlgo.None },
+  { label: 'identity', value: HTTPCompressionAlgo.Identity },
+  { label: 'br', value: HTTPCompressionAlgo.Br },
+  { label: 'gzip', value: HTTPCompressionAlgo.Gzip },
+  { label: 'deflate', value: HTTPCompressionAlgo.Deflate },
 ];
 
 export const METHOD_OPTIONS = [
   {
     label: 'GET',
-    value: HttpMethod.GET,
+    value: HttpMethod.Get,
   },
   {
     label: 'HEAD',
-    value: HttpMethod.HEAD,
+    value: HttpMethod.Head,
   },
   {
     label: 'PUT',
-    value: HttpMethod.PUT,
+    value: HttpMethod.Put,
   },
   {
     label: 'POST',
-    value: HttpMethod.POST,
+    value: HttpMethod.Post,
   },
   {
     label: 'DELETE',
-    value: HttpMethod.DELETE,
+    value: HttpMethod.Delete,
   },
   {
     label: 'OPTIONS',
-    value: HttpMethod.OPTIONS,
+    value: HttpMethod.Options,
   },
 ];
 
@@ -511,9 +510,9 @@ export const headerNameOptions = [
 ];
 
 export const MULTI_HTTP_VARIABLE_TYPE_OPTIONS = [
-  { label: 'JSON Path', value: MultiHttpVariableType.JSON_PATH },
-  { label: 'Regular Expression', value: MultiHttpVariableType.REGEX },
-  { label: 'CSS Selector', value: MultiHttpVariableType.CSS_SELECTOR },
+  { label: 'JSON Path', value: MultiHttpVariableType.JsonPath },
+  { label: 'Regular Expression', value: MultiHttpVariableType.Regex },
+  { label: 'CSS Selector', value: MultiHttpVariableType.CssSelector },
 ];
 
 export const MULTI_HTTP_ASSERTION_TYPE_OPTIONS = [

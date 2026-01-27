@@ -16,7 +16,7 @@ const grpcSettingsSchema: ZodType<GRPCSettingsFormValues> = z.object({
 export const grpcCheckSchema: ZodType<CheckFormValuesGRPC> = baseCheckSchema.and(
   z.object({
     target: hostPortTargetSchema,
-    checkType: z.literal(CheckType.GRPC),
+    checkType: z.literal(CheckType.Grpc),
     settings: z.object({
       grpc: grpcSettingsSchema,
     }),

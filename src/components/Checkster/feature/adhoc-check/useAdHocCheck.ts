@@ -19,7 +19,7 @@ export function useAdHocCheck() {
       return data;
     },
     meta: {
-      eventType: FaroEvent.TEST_CHECK,
+      eventType: FaroEvent.TestCheck,
     },
     scope: {
       id: 'run-ad-hoc-check',

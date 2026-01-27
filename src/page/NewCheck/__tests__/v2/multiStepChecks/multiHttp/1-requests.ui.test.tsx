@@ -5,7 +5,7 @@ import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/fo
 import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
-const checkType = CheckType.MULTI_HTTP;
+const checkType = CheckType.MultiHttp;
 
 // Exactly the same as "MultiHTTPCheck - Section 2 (Define uptime) UI"
 describe(`MultiHTTPCheck - Section 1 (Requests) UI`, () => {

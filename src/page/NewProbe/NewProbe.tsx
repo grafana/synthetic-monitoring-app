@@ -26,7 +26,7 @@ export const TEMPLATE_PROBE: ExtendedProbe = {
     disableScriptedChecks: false,
     disableBrowserChecks: false,
   },
-  provider: ProbeProvider.AWS,
+  provider: ProbeProvider.Aws,
   country: '',
   countryCode: '',
   longRegion: '',

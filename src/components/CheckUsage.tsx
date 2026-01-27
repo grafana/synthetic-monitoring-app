@@ -32,7 +32,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 });
 
-const hideTelemetryForTypes = [CheckType.Scripted, CheckType.MULTI_HTTP, CheckType.Browser];
+const hideTelemetryForTypes = [CheckType.Scripted, CheckType.MultiHttp, CheckType.Browser];
 
 export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
   const styles = useStyles2(getStyles);
@@ -47,7 +47,7 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
   }
 
   return (
-    <div data-testid={DataTestIds.CHECK_USAGE} className={styles.container}>
+    <div data-testid={DataTestIds.CheckUsage} className={styles.container}>
       <Label
         description={
           !hideTelemetry && (

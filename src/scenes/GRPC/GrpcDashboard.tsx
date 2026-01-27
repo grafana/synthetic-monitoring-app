@@ -21,7 +21,7 @@ export const GrpcDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <DashboardContainer check={check} checkType={CheckType.GRPC}>
+    <DashboardContainer check={check} checkType={CheckType.Grpc}>
       <Stack height={`90px`}>
         <UptimeStat check={check} />
         <ReachabilityStat check={check} />

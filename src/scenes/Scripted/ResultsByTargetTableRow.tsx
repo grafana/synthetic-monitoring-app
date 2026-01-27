@@ -23,7 +23,7 @@ interface ResultsByTargetTableRowProps extends ExpanderComponentProps<DataRow> {
 }
 
 export function ResultsByTargetTableRow({ data, checkType }: ResultsByTargetTableRowProps) {
-  const labelName = checkType === CheckType.MULTI_HTTP ? 'url' : 'name';
+  const labelName = checkType === CheckType.MultiHttp ? 'url' : 'name';
   const labelValue = data.name;
   const method = data.method;
 

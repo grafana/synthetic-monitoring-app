@@ -74,7 +74,7 @@ export type FeatureTabConfig = FeatureTabConfigAll | FeatureTabConfigFeatureTogg
 
 export type CheckFormFieldPath = FieldPath<CheckFormValues>;
 
-export type TLSBaseFieldPath = `settings.${CheckType.HTTP | CheckType.TCP | CheckType.GRPC}`;
+export type TLSBaseFieldPath = `settings.${CheckType.Http | CheckType.Tcp | CheckType.Grpc}`;
 
 export interface GenericFieldProps<T extends CheckFormFieldPath = CheckFormFieldPath> {
   label: ComponentProps<typeof StyledField>['label'];

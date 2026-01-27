@@ -58,7 +58,7 @@ export const checkAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.ob
 });
 
 function isCheckFormValuesTCP(data: CheckFormValuesBase | CheckFormValuesTcp): data is CheckFormValuesTcp {
-  return 'checkType' in data && data.checkType === CheckType.TCP;
+  return 'checkType' in data && data.checkType === CheckType.Tcp;
 }
 
 export function checkAlertsRefinement(data: CheckFormValuesBase | CheckFormValuesTcp, ctx: z.RefinementCtx) {
@@ -101,7 +101,7 @@ function tcpTLSTargetCertificateCloseToExpiringRefinement(data: CheckFormValuesT
   const isAlertSelected = data.alerts?.TLSTargetCertificateCloseToExpiring?.isSelected;
   const isTLSEnabled = data.settings?.tcp.tls;
 
-  if (checkType === CheckType.TCP && isAlertSelected && !isTLSEnabled) {
+  if (checkType === CheckType.Tcp && isAlertSelected && !isTLSEnabled) {
     ctx.addIssue({
       path: ['alerts.TLSTargetCertificateCloseToExpiring.isSelected'],
       message: 'TLS must be enabled in Request options in order to collect the required TLS metrics for this alert',

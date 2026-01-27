@@ -24,7 +24,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 
 async function renderPluginConfigPage(plugin: any) {
   render(<PluginConfigPage plugin={plugin} />, { wrapper: Wrapper });
-  await waitFor(() => screen.getByTestId(DataTestIds.TEST_PLUGIN_CONFIG_PAGE), { timeout: 3000 });
+  await waitFor(() => screen.getByTestId(DataTestIds.TestPluginConfigPage), { timeout: 3000 });
 }
 
 beforeEach(() => {
@@ -139,7 +139,7 @@ describe('PluginConfigPage', () => {
         },
       });
 
-      const dataSource = screen.queryByTestId(DataTestIds.TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES);
+      const dataSource = screen.queryByTestId(DataTestIds.TestPluginConfigPageLinkedDatasources);
       const dataSourceName = dataSource && within(dataSource).getByText(SM_DATASOURCE.type);
 
       expect(dataSource).toBeInTheDocument();
@@ -153,7 +153,7 @@ describe('PluginConfigPage', () => {
         },
       });
 
-      const linkedDataSources = screen.queryByTestId(DataTestIds.TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES);
+      const linkedDataSources = screen.queryByTestId(DataTestIds.TestPluginConfigPageLinkedDatasources);
       const linkedDataSourcesCount =
         linkedDataSources &&
         within(linkedDataSources).getByText(/Linked data sources \(\W?2\W?\)/i, { selector: 'h3' });
@@ -183,13 +183,13 @@ describe('PluginConfigPage', () => {
         },
       });
 
-      const linkedDataSources = screen.queryByTestId(DataTestIds.TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES);
+      const linkedDataSources = screen.queryByTestId(DataTestIds.TestPluginConfigPageLinkedDatasources);
       const linkedDataSourcesCount =
         linkedDataSources &&
         within(linkedDataSources).getByText(/Linked data sources \(\W?1\W?\)/i, { selector: 'h3' });
       const missingContainer =
         linkedDataSources &&
-        within(linkedDataSources).getByTestId(DataTestIds.TEST_PLUGIN_CONFIG_PAGE_LINKED_DATASOURCES_ERROR);
+        within(linkedDataSources).getByTestId(DataTestIds.TestPluginConfigPageLinkedDatasourcesError);
 
       expect(linkedDataSources).toBeInTheDocument();
       expect(linkedDataSourcesCount).toBeInTheDocument();

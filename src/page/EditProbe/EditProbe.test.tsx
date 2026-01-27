@@ -27,7 +27,7 @@ describe(`Public probes`, () => {
   it(`displays the correct information`, async () => {
     renderEditProbe(PUBLIC_PROBE, true);
     await screen.findByText(/They cannot be edited/);
-    
+
     // Wait for the probe data to load and form to be populated
     await screen.findByDisplayValue(probeToMetadataProbe(PUBLIC_PROBE).displayName);
     checkInformation(PUBLIC_PROBE);
@@ -47,7 +47,7 @@ describe(`Private probes`, () => {
     renderEditProbe(PRIVATE_PROBE);
     const text = await screen.findByText(/This probe is private/);
     expect(text).toBeInTheDocument();
-    
+
     // Wait for the form to be populated with data
     await screen.findByDisplayValue(PRIVATE_PROBE.labels[0].name);
     expect(screen.getByDisplayValue(PRIVATE_PROBE.labels[0].name)).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe(`Private probes`, () => {
     const saveButton = getSaveButton();
     await user.click(saveButton!);
 
-    expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
+    expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
       generateRoutePath(AppRoutes.Probes)
     );
 

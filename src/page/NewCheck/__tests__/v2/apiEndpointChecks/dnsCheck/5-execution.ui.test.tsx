@@ -10,7 +10,7 @@ import {
   getAdhocCheckTestButton,
 } from '../../../../../../components/Checkster/feature/adhoc-check/__testHelpers__/adhocCheck';
 
-const checkType = CheckType.DNS;
+const checkType = CheckType.Dns;
 
 describe(`DNSCheck - Section 5 (Execution) UI`, () => {
   it(`validates the form and goes to the first error when clicking submit`, async () => {

@@ -63,7 +63,7 @@ describe('CheckList - Rendering', () => {
 
     const emptyWarning = await waitFor(
       () =>
-        screen.findByTestId(DataTestIds.CHECKS_EMPTY_STATE, {
+        screen.findByTestId(DataTestIds.ChecksEmptyState, {
           exact: false,
         }),
       { timeout: 30000 }

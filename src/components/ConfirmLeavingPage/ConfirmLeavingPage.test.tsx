@@ -69,7 +69,7 @@ describe('ConfirmLeavingPage', () => {
       const user = userEventLib.setup();
       const link = screen.getByTestId(TEST_IDS.LEAVE_PAGE_LINK);
       await user.click(link);
-      expect(await screen.findByTestId(DataTestIds.CONFIRM_UNSAVED_MODAL_HEADING)).toBeInTheDocument();
+      expect(await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading)).toBeInTheDocument();
       await user.click(screen.getByText(buttonText, { selector: 'button > span' }));
       expect(await screen.findByTestId(expectedTestId)).toBeInTheDocument();
     });

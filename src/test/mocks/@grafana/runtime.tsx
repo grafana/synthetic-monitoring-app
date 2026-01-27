@@ -65,7 +65,7 @@ jest.mock('@grafana/runtime', () => {
           <h2>{pageNav?.text}</h2>
           <div>{actions}</div>
           {children}
-          <div data-testid={DataTestIds.CONFIG_PAGE_LAYOUT_ACTIVE_TAB}>
+          <div data-testid={DataTestIds.ConfigPageLayoutActiveTab}>
             {pageNav?.children?.find((child) => child.active)?.text ?? 'No active tab'}
           </div>
         </div>

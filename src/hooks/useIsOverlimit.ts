@@ -18,6 +18,6 @@ export function useIsOverlimit(isExistingCheck: boolean, checkType: CheckType) {
     isOverHgExecutionLimit ||
     isOverCheckLimit ||
     (checkType === CheckType.Browser && isOverBrowserLimit) ||
-    ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit)
+    ([CheckType.MultiHttp, CheckType.Scripted].includes(checkType) && isOverScriptedLimit)
   );
 }

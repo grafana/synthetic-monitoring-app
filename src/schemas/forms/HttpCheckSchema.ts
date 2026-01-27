@@ -84,7 +84,7 @@ const httpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
 export const httpCheckSchema: ZodType<CheckFormValuesHttp> = baseCheckSchema.and(
   z.object({
     target: httpTargetSchema,
-    checkType: z.literal(CheckType.HTTP),
+    checkType: z.literal(CheckType.Http),
     settings: z.object({
       http: httpSettingsSchema,
     }),

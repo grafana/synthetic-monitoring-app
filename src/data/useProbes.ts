@@ -119,7 +119,7 @@ export function useSuspenseProbe(id: number) {
 
 export function useCreateProbe({ eventInfo, onError, onSuccess }: MutationProps<AddProbeResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.CREATE_PROBE;
+  const eventType = FaroEvent.CreateProbe;
 
   return useMutation<AddProbeResult, Error, Probe, UseMutationResult>({
     mutationFn: async (probe: Probe) => {
@@ -160,7 +160,7 @@ function handleAddProbeError(error: unknown) {
 
 export function useUpdateProbe({ eventInfo, onError, onSuccess }: MutationProps<UpdateProbeResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.UPDATE_PROBE;
+  const eventType = FaroEvent.UpdateProbe;
 
   return useMutation<UpdateProbeResult, Error, Probe, UseMutationResult>({
     mutationFn: (probe: Probe) => smDS.updateProbe(probe),
@@ -188,7 +188,7 @@ type ExtendedDeleteProbeResult = DeleteProbeResult & {
 
 export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<DeleteProbeResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.DELETE_PROBE;
+  const eventType = FaroEvent.DeleteProbe;
 
   return useMutation<ExtendedDeleteProbeResult, DeleteProbeError, Probe, UseMutationResult>({
     mutationFn: (probe: Probe) =>
@@ -215,7 +215,7 @@ export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<
 
 export function useResetProbeToken({ eventInfo, onError, onSuccess }: MutationProps<ResetProbeTokenResult> = {}) {
   const smDS = useSMDS();
-  const eventType = FaroEvent.RESET_PROBE_TOKEN;
+  const eventType = FaroEvent.ResetProbeToken;
 
   return useMutation<ResetProbeTokenResult, Error, Probe, UseMutationResult>({
     mutationFn: (probe: Probe) => smDS.resetProbeToken(probe),

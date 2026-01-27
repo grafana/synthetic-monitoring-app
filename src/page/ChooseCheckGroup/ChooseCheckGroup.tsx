@@ -23,7 +23,7 @@ export const ChooseCheckGroup = () => {
             fits your needs.
           </div>
           <OverLimitAlert />
-          <div className={styles.container} data-testid={DataTestIds.CHOOSE_CHECK_TYPE}>
+          <div className={styles.container} data-testid={DataTestIds.ChooseCheckType}>
             {options.map((group) => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}

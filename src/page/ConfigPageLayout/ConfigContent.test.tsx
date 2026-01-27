@@ -13,13 +13,13 @@ describe('ConfigContent', () => {
     );
 
     expect(screen.getByText('Test Content')).toBeInTheDocument();
-    expect(screen.queryByTestId(DataTestIds.CONFIG_CONTENT_LOADING)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(DataTestIds.ConfigContentLoading)).not.toBeInTheDocument();
   });
 
   it('should render loading spinner when loading is true', () => {
     render(<ConfigContent loading={true} />);
 
-    const loadingSpinner = screen.getByTestId(DataTestIds.CONFIG_CONTENT_LOADING);
+    const loadingSpinner = screen.getByTestId(DataTestIds.ConfigContentLoading);
     expect(loadingSpinner).toBeInTheDocument();
     expect(screen.getByLabelText('Loading')).toBeInTheDocument();
   });

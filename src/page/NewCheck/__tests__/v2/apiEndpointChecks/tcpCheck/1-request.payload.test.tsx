@@ -7,7 +7,7 @@ import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { selectRadioGroupOption, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
-const checkType = CheckType.TCP;
+const checkType = CheckType.Tcp;
 
 describe(`TCPCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {

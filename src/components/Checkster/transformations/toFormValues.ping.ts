@@ -9,7 +9,7 @@ export function getPingCheckFormValues(check: PingCheck): CheckFormValuesPing {
 
   return {
     ...base,
-    checkType: CheckType.PING,
+    checkType: CheckType.Ping,
     settings: {
       ping: getPingSettingsFormValues(check.settings),
     },

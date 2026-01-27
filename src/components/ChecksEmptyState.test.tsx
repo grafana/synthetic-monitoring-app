@@ -7,7 +7,7 @@ import { ChecksEmptyState } from './ChecksEmptyState';
 
 async function renderComponent() {
   const result = render(<ChecksEmptyState />);
-  await waitFor(() => screen.getByTestId(DataTestIds.CHECKS_EMPTY_STATE), { timeout: 3000 });
+  await waitFor(() => screen.getByTestId(DataTestIds.ChecksEmptyState), { timeout: 3000 });
 
   return result;
 }

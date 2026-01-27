@@ -46,9 +46,9 @@ const SUBJECT_MAP: Record<AssertionSubjectVariant, TFMultiHttpAssertionSubject> 
 };
 
 const VARIABLE_TYPE_MAP: Record<MultiHttpVariableType, TFMultiHTTPVariableType> = {
-  [MultiHttpVariableType.CSS_SELECTOR]: 'CSS_SELECTOR',
-  [MultiHttpVariableType.JSON_PATH]: 'JSON_PATH',
-  [MultiHttpVariableType.REGEX]: 'REGEX',
+  [MultiHttpVariableType.CssSelector]: 'CSS_SELECTOR',
+  [MultiHttpVariableType.JsonPath]: 'JSON_PATH',
+  [MultiHttpVariableType.Regex]: 'REGEX',
 };
 
 function isAssertionText(assertion: Assertion): assertion is AssertionText {
