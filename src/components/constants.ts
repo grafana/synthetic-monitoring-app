@@ -29,10 +29,9 @@ import {
   TracerouteCheck,
 } from 'types';
 
-import { enumToStringArray } from '../utils';
 import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
 
-export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodesEnum).map((responseCode) => ({
+export const DNS_RESPONSE_CODES = Object.values(DnsResponseCodesEnum).map((responseCode) => ({
   label: responseCode,
   value: responseCode,
 }));
