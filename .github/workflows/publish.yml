@@ -16,9 +16,9 @@ on:
         required: true
         type: choice
         options:
-          - "dev"
-          - "ops"
-          - "prod"
+          - 'dev'
+          - 'ops'
+          - 'prod'
       docs-only:
         description: Only publish docs, do not publish the plugin
         default: false
@@ -39,13 +39,12 @@ jobs:
       environment: ${{ inputs.environment }}
       docs-only: ${{ fromJSON(inputs.docs-only) }}
       scopes: universal
-      
+
       # Argo CD inputs
       grafana-cloud-deployment-type: provisioned
-      argo-workflow-slack-channel: "#sm-ops-deploys"
-      auto-merge-environments: dev, ops, prod-canary
+      argo-workflow-slack-channel: '#sm-ops-deploys'
+      auto-merge-environments: dev, ops
 
       # Other CI inputs
       node-version: 22
       run-playwright: false
-
