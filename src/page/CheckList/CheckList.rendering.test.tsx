@@ -75,7 +75,7 @@ describe('CheckList - Rendering', () => {
 
   test('renders list of checks', async () => {
     await renderCheckList();
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(BASIC_CHECK_LIST.length);
   });
 
@@ -83,10 +83,10 @@ describe('CheckList - Rendering', () => {
     const searchParams = `sort=atoz`;
     await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
     await screen.findByText('Sort');
-    const sortCombobox = await screen.findByTestId('sort-checks-by-combobox');
+    const sortCombobox = await screen.findByTestId(DataTestIds.SortChecksByCombobox);
     expect(sortCombobox).toHaveValue('A-Z');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(2);
     expect(checks[0]).toHaveTextContent(BASIC_DNS_CHECK.job);
     expect(checks[1]).toHaveTextContent(BASIC_HTTP_CHECK.job);
@@ -96,10 +96,10 @@ describe('CheckList - Rendering', () => {
     const searchParams = `sort=ztoa`;
     await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
     await screen.findByText('Sort');
-    const sortCombobox = await screen.findByTestId('sort-checks-by-combobox');
+    const sortCombobox = await screen.findByTestId(DataTestIds.SortChecksByCombobox);
     expect(sortCombobox).toHaveValue('Z-A');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(2);
     expect(checks[0]).toHaveTextContent(BASIC_HTTP_CHECK.job);
     expect(checks[1]).toHaveTextContent(BASIC_DNS_CHECK.job);
@@ -107,9 +107,9 @@ describe('CheckList - Rendering', () => {
 
   test('Sorting by success rate should not crash', async () => {
     const { user } = await renderCheckList();
-    await selectOption(user, { dataTestId: 'sort-checks-by-combobox', option: 'Asc. Reachability' });
+    await selectOption(user, { dataTestId: DataTestIds.SortChecksByCombobox, option: 'Asc. Reachability' });
 
-    const checks = await waitFor(() => screen.findAllByTestId('check-card'), { timeout: 5000 });
+    const checks = await waitFor(() => screen.findAllByTestId(DataTestIds.CheckCard), { timeout: 5000 });
     expect(checks.length).toBe(BASIC_CHECK_LIST.length);
   });
 });

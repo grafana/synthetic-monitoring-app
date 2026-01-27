@@ -34,7 +34,7 @@ describe('<ConfirmUnsavedModal>', () => {
     const onStayOnPage = jest.fn();
     const { user } = render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={onStayOnPage} />);
 
-    await screen.findByTestId('confirm-unsaved-modal-heading');
+    await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading);
     const closeButton = screen.getByRole('button', { name: 'Close' });
 
     await user.click(closeButton);
@@ -46,7 +46,7 @@ describe('<ConfirmUnsavedModal>', () => {
     const onStayOnPage = jest.fn();
     const { user } = render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={onStayOnPage} />);
 
-    await screen.findByTestId('confirm-unsaved-modal-heading');
+    await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading);
     await user.keyboard('{Esc}');
 
     expect(onStayOnPage).toHaveBeenCalled();

@@ -90,7 +90,7 @@ export async function renderEditForm(id: Check['id']) {
     path: generateRoutePath(AppRoutes.EditCheck, { id: id! }),
   });
 
-  await waitFor(async () => screen.getByTestId('page-ready'), { timeout: 10000 });
+  await waitFor(async () => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
 
   return {
     ...res,

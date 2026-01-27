@@ -2,6 +2,7 @@ import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
 import { Combobox, ComboboxOption, Field, Icon, Input, MultiSelect, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { Check } from 'types';
@@ -77,7 +78,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
         aria-label="Search checks"
         prefix={<Icon name="search" />}
         width={40}
-        data-testid="check-search-input"
+        data-testid={DataTestIds.CheckSearchInput}
         type="text"
         value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
         onChange={handleSearchChange}
@@ -92,7 +93,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
               <Combobox
                 id="check-status-filter"
                 aria-label="Filter by status"
-                data-testid="check-status-filter"
+                data-testid={DataTestIds.CheckStatusFilter}
                 options={CHECK_LIST_STATUS_OPTIONS}
                 width={20}
                 onChange={(option) => {
@@ -134,7 +135,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
             <Combobox
               aria-label="Filter by alerts"
               id="check-alerts-filter"
-              data-testid="check-alerts-filter"
+              data-testid={DataTestIds.CheckAlertsFilter}
               options={alertOptions}
               width={20}
               onChange={(option) => {

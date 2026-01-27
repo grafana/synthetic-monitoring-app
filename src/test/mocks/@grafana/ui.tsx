@@ -1,4 +1,5 @@
 import React, { forwardRef, PropsWithChildren } from 'react';
+import { DataTestIds } from 'test/dataTestIds';
 
 jest.mock('@grafana/ui', () => {
   const actual = jest.requireActual('@grafana/ui');
@@ -11,7 +12,7 @@ jest.mock('@grafana/ui', () => {
   // mocking it instead. Related github issue:
   // https://github.com/suren-atoyan/monaco-react/issues/88
   const CodeEditor = React.forwardRef((props: any, ref: any) => {
-    return <textarea ref={ref} data-testid="code-editor" onChange={props.onChange} value={props.value} />;
+    return <textarea ref={ref} data-testid={DataTestIds.CodeEditor} onChange={props.onChange} value={props.value} />;
   });
   CodeEditor.displayName = 'CodeEditor';
 

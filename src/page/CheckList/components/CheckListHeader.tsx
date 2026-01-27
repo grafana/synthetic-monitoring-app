@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { Button, Checkbox, Combobox, Field, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Button, Checkbox, Combobox, Field, Icon, Tooltip, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort } from 'types';
@@ -102,7 +103,7 @@ export const CheckListHeader = ({
         </div>
       </div>
       <div className={styles.row}>
-        <div className={styles.stack}>
+        <div className={cx(styles.stack, styles.selectAllGap)}>
           <Tooltip content={tooltip}>
             <Checkbox
               onChange={onSelectAll}
@@ -110,7 +111,7 @@ export const CheckListHeader = ({
               value={isAllSelected}
               disabled={checks.length === 0}
               aria-label="Select all"
-              data-testid="selectAll"
+              data-testid={DataTestIds.SelectAllChecks}
             />
           </Tooltip>
           {selectedCheckIds.size > 0 ? (
@@ -119,17 +120,19 @@ export const CheckListHeader = ({
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
           )}
         </div>
-        <Field label="Sort" htmlFor="sort-by-select" data-fs-element="Sort by select">
-          <Combobox
-            id="sort-by-select"
-            data-testid="sort-checks-by-combobox"
-            prefixIcon='sort-amount-down'
-            options={CHECK_LIST_SORT_OPTIONS}
-            width={25}
-            onChange={onSort}
-            value={sortType}
-          />
-        </Field>
+        <div className={cx(styles.stack, styles.sortChecksGap)}>
+          <Icon name="sort-amount-down" />
+          <Field label="Sort" htmlFor="sort-by-select" horizontal data-fs-element="Sort by select" className={styles.field} noMargin>
+            <Combobox
+              id="sort-by-select"
+              data-testid={DataTestIds.SortChecksByCombobox}
+              options={CHECK_LIST_SORT_OPTIONS}
+              width={25}
+              onChange={onSort}
+              value={sortType}
+            />
+          </Field>
+        </div>
       </div>
       <ThresholdGlobalSettings onDismiss={() => setShowThresholdModal(false)} isOpen={showThresholdModal} />
     </>
@@ -146,6 +149,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
   stack: css({
     alignItems: `center`,
     display: `flex`,
+  }),
+  selectAllGap: css({
     gap: theme.spacing(2),
+  }),
+  sortChecksGap: css({
+    gap: theme.spacing(0.5),
+  }),
+  field: css({
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    '& > div': {
+      marginBottom: 0,
+    }
   }),
 });

@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -64,7 +65,7 @@ describe('CheckList - Filtering', () => {
 
     const dialog = getModalContainer();
     expect(within(dialog).getByText(constructedLabel)).toBeInTheDocument();
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -74,7 +75,7 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     await selectOption(user, { label: 'Type', option: 'HTTP' });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -91,7 +92,7 @@ describe('CheckList - Filtering', () => {
     await user.click(probeFilter);
     await user.click(screen.getByText(probeToMetadataProbe(PRIVATE_PROBE).displayName, { selector: 'span' }));
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -101,7 +102,7 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     await selectOption(user, { label: 'Alerts', option: 'With alerts' });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -111,7 +112,7 @@ describe('CheckList - Filtering', () => {
     await user.click(additionalFilters);
 
     await selectOption(user, { label: 'Alerts', option: 'Without alerts' });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -128,7 +129,7 @@ describe('CheckList - Filtering', () => {
     const dialog = getModalContainer();
     const statusFilter = await within(dialog).findByLabelText('Status');
     expect(statusFilter).toHaveValue('Disabled');
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -141,7 +142,7 @@ describe('CheckList - Filtering', () => {
     const alertsFilter = await within(dialog).findByLabelText('Alerts');
     expect(alertsFilter).toHaveValue('Without alerts');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -154,7 +155,7 @@ describe('CheckList - Filtering', () => {
     const typeFilter = await within(dialog).findByLabelText('Type');
     expect(typeFilter).toHaveValue('HTTP');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -168,7 +169,7 @@ describe('CheckList - Filtering', () => {
     const combobox = await getCombobox({ label: `Type` }, dialog);
     await user.click(combobox);
 
-    expect(await screen.findByText('Scripted', {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(await screen.findByText('Scripted')).toBeInTheDocument();
   });
 
   test('gRPC checks do not appear in the filters by default', async () => {
@@ -199,7 +200,7 @@ describe('CheckList - Filtering', () => {
     const combobox = await getCombobox({ label: `Type` }, dialog);
     await user.click(combobox);
     expect(await screen.findByText('gRPC')).toBeInTheDocument();
-  });  test('clicking filters reset button works correctly', async () => {
+  }); test('clicking filters reset button works correctly', async () => {
     const DNS_CHECK_DISABLED = {
       ...BASIC_DNS_CHECK,
       enabled: false,
@@ -215,11 +216,11 @@ describe('CheckList - Filtering', () => {
     const statusFilter = await within(dialog).findByLabelText('Status');
     expect(statusFilter).toHaveValue('Disabled');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
 
     await user.click(await within(dialog).findByText(`Reset`));
-    const resetChecks = await screen.findAllByTestId('check-card');
+    const resetChecks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(resetChecks.length).toBe(2);
   });
 
@@ -235,7 +236,7 @@ describe('CheckList - Filtering', () => {
     const typeFilter = await within(dialog).findByText(constructedLabel, { exact: false });
     expect(typeFilter).toBeInTheDocument();
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -262,7 +263,7 @@ describe('CheckList - Filtering', () => {
     const typeFilter = await within(dialog).findByText(constructedLabel, { exact: false });
     expect(typeFilter).toBeInTheDocument();
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -272,7 +273,7 @@ describe('CheckList - Filtering', () => {
     await user.click(httpTypeChiclet[0]);
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
 
     const dialog = getModalContainer();
     const typeFilter = await within(dialog).findByLabelText(`Type`);
@@ -297,7 +298,7 @@ describe('CheckList - Filtering', () => {
     const statusFilter = await within(dialog).findByLabelText('Status');
     expect(statusFilter).toHaveValue('Disabled');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 

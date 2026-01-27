@@ -3,6 +3,7 @@ import { AppEvents, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css, cx } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { Preformatted } from '../Preformatted';
 import { CopyToClipboard } from './CopyToClipboard';
@@ -26,7 +27,7 @@ export function Clipboard({ content, className, truncate, highlight, isCode, inl
         [styles.outsideCopy]: !inlineCopy,
       })}
     >
-      <Preformatted isCode={isCode} highlight={highlight} data-testid="clipboard-content">
+      <Preformatted isCode={isCode} highlight={highlight} data-testid={DataTestIds.ClipboardContent}>
         {truncate ? content.slice(0, 150) + '...' : content}
       </Preformatted>
 

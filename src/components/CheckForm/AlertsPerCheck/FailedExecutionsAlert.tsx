@@ -129,6 +129,9 @@ export const FailedExecutionsAlert = ({
                   id={`alert-period-${alert.type}`}
                   options={validPeriods}
                   value={field.value}
+                  width="auto"
+                  minWidth={8}
+                  maxWidth={10}
                   onChange={({ value = null }: { value?: string | null }) => {
                     field.onChange(value);
                     trackChangePeriod({ name: alert.type, period: value ?? '' });

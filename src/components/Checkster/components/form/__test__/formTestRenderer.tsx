@@ -48,7 +48,7 @@ function TestFormValueInfo({ field }: { field: string }) {
   const { watch } = useFormContext();
   const value = watch(field);
   return (
-    <div data-testid="TestForm TestFormValueInfo">
+    <div data-testid={TestFormTestId.InfoContainer}>
       <div data-testid={TestFormTestId.Value}>{outputValue(value)}</div>
       <div data-testid={TestFormTestId.TypeOf}>{typeof value}</div>
     </div>
