@@ -86,7 +86,7 @@ export const CheckListHeader = ({
         <div>
           Currently showing {currentPageChecks.length} of {checks.length} total checks
         </div>
-        <div className={styles.stack}>
+        <div className={cx(styles.stack, styles.defaultGap)}>
           <CheckFilters
             onReset={onResetFilters}
             checks={checks}
@@ -103,7 +103,7 @@ export const CheckListHeader = ({
         </div>
       </div>
       <div className={styles.row}>
-        <div className={cx(styles.stack, styles.selectAllGap)}>
+        <div className={cx(styles.stack, styles.defaultGap)}>
           <Tooltip content={tooltip}>
             <Checkbox
               onChange={onSelectAll}
@@ -150,7 +150,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: `center`,
     display: `flex`,
   }),
-  selectAllGap: css({
+  defaultGap: css({
     gap: theme.spacing(2),
   }),
   sortChecksGap: css({
