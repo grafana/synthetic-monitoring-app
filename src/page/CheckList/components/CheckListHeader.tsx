@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { Button, Checkbox, Combobox, Field, Icon, Stack, Tooltip, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
