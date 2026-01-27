@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { Button, Checkbox, Combobox, Field, Icon, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, Checkbox, Combobox, Field, Icon, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
@@ -86,7 +86,7 @@ export const CheckListHeader = ({
         <div>
           Currently showing {currentPageChecks.length} of {checks.length} total checks
         </div>
-        <div className={cx(styles.stack, styles.defaultGap)}>
+        <Stack alignItems="center" gap={2}>
           <CheckFilters
             onReset={onResetFilters}
             checks={checks}
@@ -100,10 +100,10 @@ export const CheckListHeader = ({
           )}
 
           {canWriteChecks && <AddNewCheckButton source="check-list" />}
-        </div>
+        </Stack>
       </div>
       <div className={styles.row}>
-        <div className={cx(styles.stack, styles.defaultGap)}>
+        <Stack alignItems="center" gap={2}>
           <Tooltip content={tooltip}>
             <Checkbox
               onChange={onSelectAll}
@@ -119,8 +119,8 @@ export const CheckListHeader = ({
           ) : (
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
           )}
-        </div>
-        <div className={cx(styles.stack, styles.sortChecksGap)}>
+        </Stack>
+        <Stack alignItems="center" gap={0.5}>
           <Icon name="sort-amount-down" />
           <Field label="Sort" htmlFor="sort-by-select" horizontal data-fs-element="Sort by select" className={styles.field} noMargin>
             <Combobox
@@ -132,7 +132,7 @@ export const CheckListHeader = ({
               value={sortType}
             />
           </Field>
-        </div>
+        </Stack>
       </div>
       <ThresholdGlobalSettings onDismiss={() => setShowThresholdModal(false)} isOpen={showThresholdModal} />
     </>
@@ -145,16 +145,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     justifyContent: `space-between`,
     alignItems: `center`,
     marginBottom: theme.spacing(2),
-  }),
-  stack: css({
-    alignItems: `center`,
-    display: `flex`,
-  }),
-  defaultGap: css({
-    gap: theme.spacing(2),
-  }),
-  sortChecksGap: css({
-    gap: theme.spacing(0.5),
   }),
   field: css({
     alignItems: 'center',
