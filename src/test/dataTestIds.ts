@@ -119,6 +119,7 @@ export enum DataTestIds {
   CheckGroupCard = 'check-group-card',
   CheckSearchInput = 'check-search-input',
   CheckStatusFilter = 'check-status-filter',
+  CheckProbesFilter = 'check-probes-filter',
   CheckUsage = 'check-usage',
   ChecksEmptyState = 'checks-empty-state',
   ChooseCheckType = 'choose-check-type',

@@ -88,9 +88,7 @@ describe('CheckList - Filtering', () => {
     const { user } = await renderCheckList([DNS_CHECK_WITH_REMOVED_PROBE, BASIC_HTTP_CHECK]);
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
-    const probeFilter = await screen.findByLabelText('Filter by probe');
-    await user.click(probeFilter);
-    await user.click(screen.getByText(probeToMetadataProbe(PRIVATE_PROBE).displayName, { selector: 'span' }));
+    await selectOption(user, { dataTestId: DataTestIds.CheckProbesFilter, option: probeToMetadataProbe(PRIVATE_PROBE).displayName });
 
     const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
@@ -200,7 +198,9 @@ describe('CheckList - Filtering', () => {
     const combobox = await getCombobox({ label: `Type` }, dialog);
     await user.click(combobox);
     expect(await screen.findByText('gRPC')).toBeInTheDocument();
-  }); test('clicking filters reset button works correctly', async () => {
+  });
+
+  test('clicking filters reset button works correctly', async () => {
     const DNS_CHECK_DISABLED = {
       ...BASIC_DNS_CHECK,
       enabled: false,

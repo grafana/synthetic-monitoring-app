@@ -17,8 +17,8 @@ interface CheckFiltersProps {
     update: (value: SelectableValue<CheckEnabledStatus> | null) => void
   ];
   probes: [
-    state: Array<SelectableValue<ProbeFilter>>,
-    update: (value: Array<SelectableValue<ProbeFilter>> | null) => void
+    state: ProbeFilter[],
+    update: (value: ProbeFilter[] | null) => void
   ];
 }
 
@@ -73,7 +73,7 @@ export function useCheckFilters() {
         return { label: capitalize(CheckEnabledStatus.All), value: CheckEnabledStatus.All };
       },
     }),
-    probes: useQueryParametersState<Array<SelectableValue<ProbeFilter>>>({
+    probes: useQueryParametersState<ProbeFilter[]>({
       key: 'probes',
       initialValue: defaultFilters.probes,
       encode: (value) => value.map((probe) => probe.label).join(','),
@@ -82,7 +82,7 @@ export function useCheckFilters() {
 
         return probes
           .filter((probe) => labels.includes(probe.displayName))
-          .map((probe) => ({ label: probe.displayName, value: probe.id } as SelectableValue<ProbeFilter>));
+          .map((probe) => ({ label: probe.displayName, value: probe.id } as ProbeFilter));
       },
     }),
   };

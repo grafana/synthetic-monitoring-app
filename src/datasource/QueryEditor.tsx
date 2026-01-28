@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { getTemplateSrv } from '@grafana/runtime';
-import { Combobox, MultiSelect, Spinner } from '@grafana/ui';
+import { Combobox, ComboboxOption, MultiCombobox, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { defaults } from 'lodash';
 
@@ -43,17 +43,17 @@ const getStyles = () => ({
   `,
 });
 
-function getProbeOptionsForCheck(check: TracerouteCheckOptionValue | undefined, probes: Probe[]) {
+function getProbeOptionsForCheck(check: TracerouteCheckOptionValue | undefined, probes: Probe[]): Array<ComboboxOption<string>> {
   if (check === undefined) {
     return [];
   }
-  const probeOptions = [] as Array<SelectableValue<string>>;
+  const probeOptions: Array<ComboboxOption<string>> = [];
   check.probes.forEach((probeId: number) => {
     const probe = probes.find((probe) => probeId === probe.id);
     if (!probe) {
       return;
     }
-    return probeOptions.push({
+    probeOptions.push({
       value: probe.name,
       label: probe.name,
     });
@@ -160,7 +160,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
   };
 
-  onTracerouteProbeChange = async (probe: Array<SelectableValue<string>>) => {
+  onTracerouteProbeChange = async (probe: Array<ComboboxOption<string>>) => {
     const { onChange, onRunQuery, query } = this.props;
     onChange({
       ...query,
@@ -195,7 +195,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     return undefined;
   }
 
-  getSelectedTracerouteProbeOptions(): Array<SelectableValue<string>> {
+  getSelectedTracerouteProbeOptions(): string[] {
     const { query } = this.props;
     const templateSrv = getTemplateSrv();
     let probe: string | undefined = templateSrv.replace('$probe');
@@ -207,7 +207,7 @@ export class QueryEditor extends PureComponent<Props, State> {
         ?.replace('{', '')
         .replace('}', '')
         .split(/[\|\,]/)
-        .map((probe) => ({ label: probe, value: probe })) ?? []
+        .filter((val) => Boolean(val)) ?? []
     );
   }
 
@@ -254,12 +254,10 @@ export class QueryEditor extends PureComponent<Props, State> {
               />
             </div>
             <div className={styles.tracerouteFieldWrapper}>
-              {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-              <MultiSelect
+              <MultiCombobox
                 options={probeOptions}
-                prefix="Probe"
-                allowCustomValue
                 value={selectedProbeOptions}
+                placeholder="All probes"
                 onChange={this.onTracerouteProbeChange}
                 disabled={getTemplateSrv().replace('$probe') !== '$probe'}
               />

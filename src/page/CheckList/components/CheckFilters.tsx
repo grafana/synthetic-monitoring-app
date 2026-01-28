@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
-import { Combobox, ComboboxOption, Field, Icon, Input, MultiSelect, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Combobox, ComboboxOption, Field, Icon, Input, MultiCombobox, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
@@ -64,11 +64,13 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
     }, 300);
   }
 
-  const probesOptions: Array<SelectableValue<ProbeFilter>> = useMemo(() => {
-    return probes.map((probe) => {
-      const probeOption: SelectableValue = { label: probe.displayName, value: probe.id };
-      return probeOption;
-    });
+  const probesOptions: Array<ComboboxOption<number>> = useMemo(() => {
+    return probes
+      .filter((probe) => probe.id !== undefined)
+      .map((probe) => ({
+        label: probe.displayName,
+        value: probe.id!,
+      }));
   }, [probes]);
 
   return (
@@ -165,29 +167,30 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
           labelFilters={checkFilters.labels}
           className={styles.verticalSpace}
         />
-        {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-        <MultiSelect
-          aria-label="Filter by probe"
-          prefix="Probes"
-          onChange={(v) => {
-            onChange(
-              {
-                ...checkFilters,
-                probes: v,
-              },
-              'probes'
-            );
-          }}
-          options={probesOptions}
-          value={checkFilters.probes}
-          placeholder="All probes"
-          allowCustomValue={false}
-          isSearchable={true}
-          isClearable={true}
-          closeMenuOnSelect={false}
-          className={styles.verticalSpace}
-        />
-      </CheckFilterGroup>
+        <Field label="Probes" htmlFor="check-probes-filter" data-fs-element="Probes select" className={cx(styles.verticalSpace, styles.fullWidth)}>
+          <MultiCombobox
+            id="check-probes-filter"
+            data-testid={DataTestIds.CheckProbesFilter}
+            onChange={(selectedOptions) => {
+              const selectedProbes: ProbeFilter[] = selectedOptions.map((option) => ({
+                label: option.label ?? '',
+                value: option.value,
+              }));
+              onChange(
+                {
+                  ...checkFilters,
+                  probes: selectedProbes,
+                },
+                'probes'
+              );
+            }}
+            options={probesOptions}
+            value={checkFilters.probes.map((probe) => probe.value)}
+            placeholder="All probes"
+            isClearable
+          />
+        </Field>
+      </CheckFilterGroup >
     </>
   );
 }
@@ -200,5 +203,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   verticalSpace: css({
     marginTop: `10px`,
     marginTottom: `10px`,
+  }),
+  fullWidth: css({
+    width: `100%`,
   }),
 });
