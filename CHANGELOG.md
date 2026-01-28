@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.46.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.46.0...v1.46.1) (2026-01-28)
+
+
+### Miscellaneous Chores
+
+* cleanup enum naming convention ([#1557](https://github.com/grafana/synthetic-monitoring-app/issues/1557)) ([c47d523](https://github.com/grafana/synthetic-monitoring-app/commit/c47d523551b3877e920ac848e357c8a2eacbca54))
+* migrate from MultiSelect to MultiCombobox ([#1554](https://github.com/grafana/synthetic-monitoring-app/issues/1554)) ([c5f2c4d](https://github.com/grafana/synthetic-monitoring-app/commit/c5f2c4dc4d1353fbb39cd85e7868f025430e25df))
+* migrate from Select to Combobox ([#1553](https://github.com/grafana/synthetic-monitoring-app/issues/1553)) ([89d55e1](https://github.com/grafana/synthetic-monitoring-app/commit/89d55e15dac4eeddec3d69d92a8aec4c1b4d5b9c))
+* provide React 19 support ([#1551](https://github.com/grafana/synthetic-monitoring-app/issues/1551)) ([468fab9](https://github.com/grafana/synthetic-monitoring-app/commit/468fab9f0b3fc85cd37470a43935bc4bf07dbb94))
+
 ## [1.46.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.45.0...v1.46.0) (2026-01-22)
 
 
