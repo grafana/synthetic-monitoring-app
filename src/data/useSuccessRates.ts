@@ -4,7 +4,7 @@ import { getUptimeQuery } from 'queries/uptime';
 import { Check } from 'types';
 import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses.types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
+import { DEFAULT_QUERY_FROM_TIME, STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
 import { findCheckinMetrics, getStartEnd, queryInstantMetric, queryRangeMetric } from './utils';
 
@@ -18,7 +18,7 @@ export function useChecksReachabilitySuccessRate() {
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
   const query =
-    'sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)';
+    `sum(rate(probe_all_success_sum[${DEFAULT_QUERY_FROM_TIME}])) by (job, instance) / sum(rate(probe_all_success_count[${DEFAULT_QUERY_FROM_TIME}])) by (job, instance)`;
 
   return useQuery({
     // we add 'now' as an option so can't add it to the query key
@@ -88,7 +88,7 @@ export function useCheckUptimeSuccessRate(check: Check) {
 export function useProbesReachabilitySuccessRate() {
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || ``;
-  const query = 'sum(rate(probe_all_success_sum[3h])) by (probe) / sum(rate(probe_all_success_count[3h])) by (probe)';
+  const query = `sum(rate(probe_all_success_sum[${DEFAULT_QUERY_FROM_TIME}])) by (probe) / sum(rate(probe_all_success_count[${DEFAULT_QUERY_FROM_TIME}])) by (probe)`;
 
   return useQuery({
     // we add 'now' as an option so can't add it to the query key
