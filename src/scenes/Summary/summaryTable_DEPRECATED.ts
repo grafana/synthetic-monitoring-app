@@ -339,7 +339,7 @@ export function getSummaryTable(metrics: DataSourceRef) {
     $data: getSummaryTableQueryRunner(metrics),
     title: `$check_type checks`,
     description:
-      `* instance: the instance that corresponds to this check.\n* **job**: the job that corresponds to this check.\n* **reachability**: the percentage of all the checks that have succeeded during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.\n* **latency**: the average time to receive an answer across all the checks during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.\n* **state**: whether the target was up or down the last time it was checked.\n* **uptime**: the fraction of time the target was up  during the whole period.`,
+      `* instance: the instance that corresponds to this check.\n* **job**: the job that corresponds to this check.\n* **reachability**: the percentage of all the checks that have succeeded during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.\n* **latency**: the average time to receive an answer across all the checks during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.\n* **state**: whether the target was up or down the last time it was checked.\n* **uptime**: the fraction of time the target was up  during last ${DEFAULT_QUERY_FROM_TIME_TEXT}.`,
     fieldConfig: {
       defaults: {
         color: {
