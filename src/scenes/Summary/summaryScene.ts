@@ -27,7 +27,7 @@ import { getSummaryTable } from './summaryTable';
 import { getSummaryTable as getSummaryTable_DEPRECATED } from './summaryTable_DEPRECATED';
 
 export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks: Check[], singleCheckNav: boolean) {
-  const summaryTable = false ? getSummaryTable(metrics, sm) : getSummaryTable_DEPRECATED(metrics);
+  const summaryTable = singleCheckNav ? getSummaryTable(metrics, sm) : getSummaryTable_DEPRECATED(metrics);
   return () => {
     if (checks.length === 0) {
       return getEmptyScene();
