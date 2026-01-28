@@ -88,7 +88,7 @@ describe('CheckList - Filtering', () => {
     const { user } = await renderCheckList([DNS_CHECK_WITH_REMOVED_PROBE, BASIC_HTTP_CHECK]);
     const additionalFilters = await screen.findByText(/Additional filters/i);
     await user.click(additionalFilters);
-    await selectOption(user, { dataTestId: 'check-probes-filter', option: probeToMetadataProbe(PRIVATE_PROBE).displayName });
+    await selectOption(user, { dataTestId: DataTestIds.CheckProbesFilter, option: probeToMetadataProbe(PRIVATE_PROBE).displayName });
 
     const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);

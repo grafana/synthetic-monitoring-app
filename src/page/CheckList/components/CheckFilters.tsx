@@ -152,7 +152,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
               value={checkFilters.alerts}
             />
           </Field>
-        </div >
+        </div>
         <LabelFilterInput
           checks={checks}
           onChange={(labels) => {
@@ -170,7 +170,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
         <Field label="Probes" htmlFor="check-probes-filter" data-fs-element="Probes select" className={cx(styles.verticalSpace, styles.fullWidth)}>
           <MultiCombobox
             id="check-probes-filter"
-            data-testid="check-probes-filter"
+            data-testid={DataTestIds.CheckProbesFilter}
             onChange={(selectedOptions) => {
               const selectedProbes: ProbeFilter[] = selectedOptions.map((option) => ({
                 label: option.label ?? '',
@@ -187,7 +187,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
             options={probesOptions}
             value={checkFilters.probes.map((probe) => probe.value)}
             placeholder="All probes"
-            isClearable={true}
+            isClearable
           />
         </Field>
       </CheckFilterGroup >

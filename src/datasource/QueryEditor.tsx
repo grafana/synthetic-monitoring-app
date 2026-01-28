@@ -219,7 +219,6 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   render() {
-    const probeId = "probe-select";
     const query = defaults(this.props.query, defaultQuery);
     const { tracerouteCheckOptionsLoading, probes } = this.state;
     const styles = getStyles();
@@ -256,7 +255,6 @@ export class QueryEditor extends PureComponent<Props, State> {
             </div>
             <div className={styles.tracerouteFieldWrapper}>
               <MultiCombobox
-                id={probeId}
                 options={probeOptions}
                 value={selectedProbeOptions}
                 placeholder="All probes"
