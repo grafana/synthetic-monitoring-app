@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { DataFrameJSON } from '@grafana/data';
+import { normalizeDataFrameJSON } from 'features/parseLokiLogs/parseLokiLogs';
 
 import { AdHocResponseResults } from './types.adhoc-check';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { useSMDS } from 'hooks/useSMDS';
 
 export interface LokiQueryResults<RefId extends keyof any = 'A'> {
@@ -21,9 +23,9 @@ export interface UseLogsQueryArgs {
 }
 
 enum KnownFieldNames {
-  Labels = 'labels',
-  Time = 'Time',
-  Line = 'Line',
+  Labels = LokiFieldNames.Labels,
+  Time = LokiFieldNames.TimeStamp,
+  Line = LokiFieldNames.Body,
 }
 
 function isKnownFieldName(subject: unknown): subject is KnownFieldNames {
@@ -48,17 +50,17 @@ export function loggify<RefId extends keyof any = 'A'>(
   result: LokiQueryResults<RefId>,
   refId: RefId = 'A' as RefId
 ): AdHocResponseResults {
-  const refResult = result.results[refId].frames[0];
+  const refResult = normalizeDataFrameJSON(result.results[refId].frames[0]);
   const indexMap = getFieldIndexMap(refResult);
-  if (indexMap.Time === null) {
-    throw new Error('Unexpected DataFrameJSON schema. Field "Time" (frame: "time.Time") not found in schema.');
+  if (indexMap[KnownFieldNames.Time] === null) {
+    throw new Error('Unexpected DataFrameJSON schema. Timestamp field not found in schema.');
   }
 
   return (
-    refResult?.data?.values[indexMap.Time].reduce<AdHocResponseResults>((acc, time, index) => {
+    refResult?.data?.values[indexMap[KnownFieldNames.Time]!].reduce<AdHocResponseResults>((acc, time, index) => {
       let line;
-      if (indexMap.Line !== null) {
-        line = refResult?.data?.values[indexMap.Line][index];
+      if (indexMap[KnownFieldNames.Line] !== null) {
+        line = refResult?.data?.values[indexMap[KnownFieldNames.Line]!][index];
         try {
           if (typeof line === 'string') {
             line = JSON.parse(line);

@@ -1,5 +1,11 @@
-import { FieldType } from '@grafana/data';
-import { flattenLogs, normalizeLokiDataFrame, parseLokiLogs, sortLogs } from 'features/parseLokiLogs/parseLokiLogs';
+import { DataFrameJSON, FieldType } from '@grafana/data';
+import {
+  flattenLogs,
+  normalizeDataFrameJSON,
+  normalizeLokiDataFrame,
+  parseLokiLogs,
+  sortLogs,
+} from 'features/parseLokiLogs/parseLokiLogs';
 
 import {
   Body,
@@ -214,6 +220,86 @@ describe(`normalizeLokiDataFrame`, () => {
     expect(normalized.fields[4].name).toBe(LokiFieldNames.Id);
     // nanos should be empty array if not provided
     expect((normalized.fields[1] as TimeStamp).nanos).toEqual([]);
+  });
+});
+
+describe(`normalizeDataFrameJSON`, () => {
+  it(`should leave new schema fields unchanged (timestamp, body)`, () => {
+    const newSchemaJSON: DataFrameJSON = {
+      schema: {
+        fields: [
+          { name: 'labels', type: FieldType.other },
+          { name: 'timestamp', type: FieldType.time },
+          { name: 'body', type: FieldType.string },
+          { name: 'labelTypes', type: FieldType.other },
+          { name: 'id', type: FieldType.string },
+        ],
+      },
+      data: {
+        values: [
+          [{ msg: 'msg 1' }, { msg: 'msg 2' }],
+          [1000, 2000],
+          ['log 1', 'log 2'],
+          [{}, {}],
+          ['id1', 'id2'],
+        ],
+      },
+    };
+
+    const normalized = normalizeDataFrameJSON(newSchemaJSON);
+
+    expect(normalized.schema?.fields[0].name).toBe(LokiFieldNames.Labels);
+    expect(normalized.schema?.fields[1].name).toBe(LokiFieldNames.TimeStamp);
+    expect(normalized.schema?.fields[2].name).toBe(LokiFieldNames.Body);
+  });
+
+  it(`should normalize old schema fields to new schema (Time → timestamp, Line → body)`, () => {
+    const oldSchemaJSON: DataFrameJSON = {
+      schema: {
+        fields: [
+          { name: 'labels', type: FieldType.other },
+          { name: 'Time', type: FieldType.time },
+          { name: 'Line', type: FieldType.string },
+          { name: 'tsNs', type: FieldType.string },
+          { name: 'labelTypes', type: FieldType.other },
+          { name: 'id', type: FieldType.string },
+        ],
+      },
+      data: {
+        values: [
+          [{ msg: 'msg 1' }, { msg: 'msg 2' }],
+          [1000, 2000],
+          ['log 1', 'log 2'],
+          ['1000000', '2000000'],
+          [{}, {}],
+          ['id1', 'id2'],
+        ],
+      },
+    };
+
+    const normalized = normalizeDataFrameJSON(oldSchemaJSON);
+
+    // Check field names are normalized
+    const fieldNames = normalized.schema?.fields.map((f) => f.name);
+    expect(fieldNames).toContain(LokiFieldNames.TimeStamp);
+    expect(fieldNames).toContain(LokiFieldNames.Body);
+    expect(fieldNames).not.toContain('Time');
+    expect(fieldNames).not.toContain('Line');
+  });
+
+  it(`should return frame unchanged if no schema`, () => {
+    const noSchemaJSON: DataFrameJSON = {
+      data: {
+        values: [
+          [1, 2],
+          ['a', 'b'],
+        ],
+      },
+    };
+
+    const normalized = normalizeDataFrameJSON(noSchemaJSON);
+
+    expect(normalized).toEqual(noSchemaJSON);
   });
 });
 
