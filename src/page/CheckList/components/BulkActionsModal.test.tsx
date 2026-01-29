@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { PROBES_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
@@ -25,7 +25,7 @@ test('shows the modal', async () => {
   const checks = [BASIC_HTTP_CHECK, BASIC_PING_CHECK];
   renderBulkEditModal('add', checks);
   const title = await screen.findByText(`Add probes to ${checks.length} selected checks`);
-  const probes = await screen.findAllByTestId(DataTestIds.ProbeButton);
+  const probes = await screen.findAllByTestId(PROBES_TEST_ID.button);
   expect(title).toBeInTheDocument();
   expect(probes).toHaveLength(DEFAULT_PROBES.length);
 });

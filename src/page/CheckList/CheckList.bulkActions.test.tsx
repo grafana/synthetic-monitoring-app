@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK } from 'test/fixtures/checks';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -41,7 +41,7 @@ describe('CheckList - Bulk Actions', () => {
 
     const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK];
     const { user } = await renderCheckList(checkList);
-    const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
+    const selectAll = await screen.findByTestId(CHECKS_TEST_ID.header.selectAll);
     await user.click(selectAll);
     const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
     expect(selectedText).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe('CheckList - Bulk Actions', () => {
       enabled: false,
     }));
     const { user } = await renderCheckList(checkList);
-    const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
+    const selectAll = await screen.findByTestId(CHECKS_TEST_ID.header.selectAll);
     await user.click(selectAll);
     const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
     expect(selectedText).toBeInTheDocument();
@@ -161,7 +161,7 @@ describe('CheckList - Bulk Actions', () => {
 
   test(`Displays check execution frequency`, async () => {
     await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
-    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
+    const checks = await screen.findAllByTestId(CHECKS_TEST_ID.card);
 
     expect(checks.length).toBe(2);
     expect(checks[0]).toHaveTextContent(`89280 executions / month`);
@@ -170,24 +170,24 @@ describe('CheckList - Bulk Actions', () => {
 
   test(`Sorts by check execution frequency`, async () => {
     const { user } = await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
-    const checksA = await screen.findAllByTestId(DataTestIds.CheckCard);
+    const checksA = await screen.findAllByTestId(CHECKS_TEST_ID.card);
 
     expect(checksA.length).toBe(2);
     expect(checksA[0]).toHaveTextContent(`89280 executions / month`);
     expect(checksA[1]).toHaveTextContent(`44640 executions / month`);
 
-    await selectOption(user, { dataTestId: DataTestIds.SortChecksByCombobox, option: 'Asc. Executions' });
+    await selectOption(user, { dataTestId: CHECKS_TEST_ID.header.sortBy, option: 'Asc. Executions' });
 
-    const checksB = await screen.findAllByTestId(DataTestIds.CheckCard);
+    const checksB = await screen.findAllByTestId(CHECKS_TEST_ID.card);
     expect(checksB.length).toBe(2);
 
     expect(checksB[0]).toHaveTextContent(`44640 executions / month`);
     expect(checksB[1]).toHaveTextContent(`89280 executions / month`);
 
-    await selectOption(user, { dataTestId: DataTestIds.SortChecksByCombobox, option: 'Desc. Executions' });
+    await selectOption(user, { dataTestId: CHECKS_TEST_ID.header.sortBy, option: 'Desc. Executions' });
 
 
-    const checksC = await screen.findAllByTestId(DataTestIds.CheckCard);
+    const checksC = await screen.findAllByTestId(CHECKS_TEST_ID.card);
     expect(checksC.length).toBe(2);
     expect(checksC[0]).toHaveTextContent(`89280 executions / month`);
     expect(checksC[1]).toHaveTextContent(`44640 executions / month`);

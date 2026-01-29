@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { K6_PRAGMA_MESSAGE } from 'schemas/forms/script/rules';
-import { DataTestIds } from 'test/dataTestIds';
+import { CODE_EDITOR_TEST_ID } from 'test/dataTestIds';
 
 import { CheckType } from 'types';
 import { submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
@@ -16,7 +16,7 @@ describe(`ScriptedCheck - 1 (Script) UI`, () => {
 
     await user.type(screen.getByLabelText('Job name', { exact: false }), `Job`);
     await user.type(screen.getByLabelText(`Instance`, { exact: false }), `Instance`);
-    await user.clear(screen.getByTestId(DataTestIds.CodeEditor));
+    await user.clear(screen.getByTestId(CODE_EDITOR_TEST_ID));
 
     await user.click(screen.getByText(`Examples`));
     expect(screen.getByText(`Basic authentication`)).toBeInTheDocument();
@@ -29,7 +29,7 @@ describe(`ScriptedCheck - 1 (Script) UI`, () => {
   // TODO: Figure out why this test just stopped working (I've verified that it still works in the UI - w1kman)
   it.skip(`will display an error and focus the script field when it is missing`, async () => {
     const { user } = await renderNewForm(checkType);
-    const scriptTextAreaPreSubmit = screen.getByTestId(DataTestIds.CodeEditor);
+    const scriptTextAreaPreSubmit = screen.getByTestId(CODE_EDITOR_TEST_ID);
     await user.clear(scriptTextAreaPreSubmit);
     await fillMandatoryFields({ user, fieldsToOmit: [`probes`], checkType });
 
@@ -37,13 +37,13 @@ describe(`ScriptedCheck - 1 (Script) UI`, () => {
     const err = await screen.findByText(`Script is required.`);
     expect(err).toBeInTheDocument();
 
-    const scriptTextAreaPostSubmit = screen.getByTestId(DataTestIds.CodeEditor);
+    const scriptTextAreaPostSubmit = screen.getByTestId(CODE_EDITOR_TEST_ID);
     await waitFor(() => expect(scriptTextAreaPostSubmit).toHaveFocus());
   });
 
   it(`will display an error when script contains a k6 version pragma`, async () => {
     const { user } = await renderNewForm(checkType);
-    const scriptTextAreaPreSubmit = screen.getByTestId(DataTestIds.CodeEditor);
+    const scriptTextAreaPreSubmit = screen.getByTestId(CODE_EDITOR_TEST_ID);
     await user.clear(scriptTextAreaPreSubmit);
 
     const scriptWithPragma = `'use k6 > 0.52'
@@ -61,7 +61,7 @@ export default function() {
 
   it(`will display an error when script imports k6 extensions`, async () => {
     const { user } = await renderNewForm(checkType);
-    const scriptTextAreaPreSubmit = screen.getByTestId(DataTestIds.CodeEditor);
+    const scriptTextAreaPreSubmit = screen.getByTestId(CODE_EDITOR_TEST_ID);
     await user.clear(scriptTextAreaPreSubmit);
 
     const scriptWithExtension = `import { Faker } from "k6/x/faker";
@@ -81,7 +81,7 @@ export default function() {
 
   it(`will display an error when script contains browser import (not allowed for scripted checks)`, async () => {
     const { user } = await renderNewForm(checkType);
-    const scriptTextAreaPreSubmit = screen.getByTestId(DataTestIds.CodeEditor);
+    const scriptTextAreaPreSubmit = screen.getByTestId(CODE_EDITOR_TEST_ID);
     await user.clear(scriptTextAreaPreSubmit);
 
     const scriptWithBrowser = `import { browser } from 'k6/browser';

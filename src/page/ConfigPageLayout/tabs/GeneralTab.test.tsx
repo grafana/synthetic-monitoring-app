@@ -3,7 +3,7 @@ import React from 'react';
 import { GRAFANA_DEV_ENTRY } from 'hooks/useProbeApiServer';
 
 import { LinkedDatasourceView } from '../../../components/LinkedDatasourceView';
-import { DataTestIds } from '../../../test/dataTestIds';
+import { CONFIG_TEST_ID, UI_TEST_ID } from '../../../test/dataTestIds';;
 import { render } from '../../../test/render';
 import { GeneralTab } from './GeneralTab';
 
@@ -15,7 +15,7 @@ jest.mock('../../../components/LinkedDatasourceView', () => {
 
 async function renderGeneralTab(metaOverrides?: any) {
   const result = render(<GeneralTab />, { meta: metaOverrides });
-  await result.findByTestId(DataTestIds.ConfigContent);
+  await result.findByTestId(CONFIG_TEST_ID.content);
 
   return result;
 }
@@ -37,7 +37,7 @@ describe('GeneralTab', () => {
     expect(getByText('Probe API Server URL')).toBeInTheDocument();
     expect(getByText('Your backend address is:')).toBeInTheDocument();
 
-    expect(getByTestId(DataTestIds.Preformatted)).toHaveTextContent(GRAFANA_DEV_ENTRY.apiServerURL);
+    expect(getByTestId(UI_TEST_ID.preformatted)).toHaveTextContent(GRAFANA_DEV_ENTRY.apiServerURL);
     expect(getByText(GRAFANA_DEV_ENTRY.backendAddress)).toBeInTheDocument();
   });
 

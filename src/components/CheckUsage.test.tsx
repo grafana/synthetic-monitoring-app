@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
 
 import { Check, CheckType } from 'types';
@@ -19,7 +19,7 @@ function RenderWrapper() {
 
 async function renderComponent(check?: Check) {
   const result = render(<RenderWrapper />);
-  await waitFor(() => screen.findByTestId(DataTestIds.CheckUsage), { timeout: 3000 });
+  await waitFor(() => screen.findByTestId(CHECKS_TEST_ID.usage), { timeout: 3000 });
 
   return result;
 }

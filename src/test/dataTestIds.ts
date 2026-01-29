@@ -19,12 +19,26 @@ export const ASSERTION_TEST_ID = {
 } as const;
 
 export const CHECKS_TEST_ID = {
+  card: 'check-card',
   emptyState: 'checks-empty-state',
   groupCard: 'check-group-card',
   usage: 'check-usage',
   form: {
     submitButton: 'check-form-submit-button',
     chooseType: 'choose-check-type',
+  },
+  filters: {
+    search: 'check-search-input',
+    status: 'check-status-filter',
+    alerts: 'check-alerts-filter',
+    probes: 'check-probes-filter',
+  },
+  header: {
+    selectAll: 'select-all-checks',
+    sortBy: 'sort-checks-by-combobox',
+  },
+  listItem: {
+    editButton: 'edit-check-button',
   },
 } as const;
 
@@ -137,6 +151,10 @@ export const PROBES_TEST_ID = {
     public: 'public-probes-list',
   },
   usageLink: 'probe-usage-link',
+  button: 'probe-button',
+  card: {
+    actionButton: 'probe-card-action-button',
+  },
 } as const;
 
 export const ROUTER_TEST_ID = {
@@ -161,3 +179,17 @@ export const UI_TEST_ID = {
 } as const;
 
 export const GROT_SAD_TEST_ID = 'grotSad';
+
+export const CODE_EDITOR_TEST_ID = 'code-editor';
+export const ALERT_TEST_ID = {
+  probePercentage: 'alert-probe-percentage',
+  timeUnitCombobox: 'alert-rule-form-time-unit-combobox',
+} as const;
+export const ALERT_SENSITIVITY_INPUT_TEST_ID = 'alert-sensitivity-input';
+export const CLIPBOARD_CONTENT_TEST_ID = 'clipboard-content';
+export const SECRET_EDIT_MODAL_TEST_ID = 'secret-edit-modal';
+export const THRESHOLD_SAVE_TEST_ID = 'threshold-save';
+export const THRESHOLD_DEFAULTS_TEST_ID = 'threshold-defaults';
+export const THRESHOLD_UPPER_LIMIT_TEST_ID = 'threshold-upper-limit';
+export const THRESHOLD_LOWER_LIMIT_TEST_ID = 'threshold-lower-limit';
+export const REFRESH_PICKER_RUN_BUTTON_TEST_ID = 'refresh-picker-run-button';

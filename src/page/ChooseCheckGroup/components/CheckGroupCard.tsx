@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackAddCheckTypeGroupButtonClicked } from 'features/tracking/checkCreationEvents';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckTypeGroup } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -29,7 +29,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const disabled = Boolean(tooltip);
 
   return (
-    <Card key={group.label} data-testid={`${DataTestIds.CheckGroupCard}-${group.value}`} className={styles.checkCard}>
+    <Card key={group.label} data-testid={`${CHECKS_TEST_ID.groupCard}-${group.value}`} className={styles.checkCard}>
       <Stack direction={`column`} justifyContent={`center`} gap={2}>
         <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />

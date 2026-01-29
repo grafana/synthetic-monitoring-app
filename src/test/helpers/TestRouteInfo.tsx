@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom-v5-compat';
 
-import { DataTestIds } from '../dataTestIds';
+import { ROUTER_TEST_ID } from '../dataTestIds';
 
 /**
  * TestRouteInfo component.
@@ -11,7 +11,7 @@ import { DataTestIds } from '../dataTestIds';
  * @important This component should only be used in tests.
  *
  * @example
- *   expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
+ *   expect(screen.getByTestId(ROUTER_TEST_ID.pathname)).toHaveTextContent(
  *     generateRoutePath(AppRoutes.ViewProbe, { id: probe.id })
  *   );
  *
@@ -27,9 +27,9 @@ export function TestRouteInfo() {
   const location = useLocation();
 
   return (
-    <div data-testid={DataTestIds.TestRouterInfo} aria-hidden>
-      <div data-testid={DataTestIds.TestRouterInfoPathname}>{location.pathname}</div>
-      <div data-testid={DataTestIds.TestRouterInfoSearch}>{location.search}</div>
+    <div data-testid={ROUTER_TEST_ID.info} aria-hidden>
+      <div data-testid={ROUTER_TEST_ID.pathname}>{location.pathname}</div>
+      <div data-testid={ROUTER_TEST_ID.search}>{location.search}</div>
     </div>
   );
 }

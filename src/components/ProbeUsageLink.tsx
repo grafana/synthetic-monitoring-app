@@ -6,7 +6,7 @@ import { ExtendedProbe } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
-import { DataTestIds } from '../test/dataTestIds';
+import { PROBES_TEST_ID } from '../test/dataTestIds';;
 interface ProbeUsageLinkProps {
   probe: ExtendedProbe;
   variant?: keyof Omit<ThemeTypographyVariantTypes, 'code'>;
@@ -26,7 +26,7 @@ export function ProbeUsageLink({ probe, className, variant, showWhenUnused = fal
 
   return (
     <TextLink
-      data-testid={DataTestIds.ProbeUsageLink}
+      data-testid={PROBES_TEST_ID.usageLink}
       className={className}
       variant={variant}
       color="link"

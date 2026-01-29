@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DataTestIds } from 'test/dataTestIds';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
 import { MOCKED_SECRETS_API_RESPONSE } from 'test/fixtures/secrets';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render as testRender } from 'test/render';
@@ -11,8 +11,8 @@ import { SECRETS_EDIT_MODE_ADD } from './constants';
 import { SecretEditModal } from './SecretEditModal';
 
 async function render(element: React.ReactElement) {
-  const result = testRender(<div data-testid={DataTestIds.ConfigContent}>{element}</div>);
-  await waitFor(() => expect(screen.getByTestId(DataTestIds.ConfigContent)).toBeInTheDocument(), {
+  const result = testRender(<div data-testid={CONFIG_TEST_ID.content}>{element}</div>);
+  await waitFor(() => expect(screen.getByTestId(CONFIG_TEST_ID.content)).toBeInTheDocument(), {
     timeout: 3000,
   });
 

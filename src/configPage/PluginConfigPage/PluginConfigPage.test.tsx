@@ -4,7 +4,7 @@ import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
 import { render, screen, waitFor, within } from '@testing-library/react';
 
 import { SMDataSource } from '../../datasource/DataSource';
-import { DataTestIds } from '../../test/dataTestIds';
+import { PLUGIN_TEST_ID } from '../../test/dataTestIds';;
 import { SM_DATASOURCE } from '../../test/fixtures/datasources';
 import { PluginConfigPage } from './PluginConfigPage';
 import { getDataSource } from './PluginConfigPage.utils';
@@ -24,7 +24,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 
 async function renderPluginConfigPage(plugin: any) {
   render(<PluginConfigPage plugin={plugin} />, { wrapper: Wrapper });
-  await waitFor(() => screen.getByTestId(DataTestIds.TestPluginConfigPage), { timeout: 3000 });
+  await waitFor(() => screen.getByTestId(PLUGIN_TEST_ID.configPage), { timeout: 3000 });
 }
 
 beforeEach(() => {
@@ -139,7 +139,7 @@ describe('PluginConfigPage', () => {
         },
       });
 
-      const dataSource = screen.queryByTestId(DataTestIds.TestPluginConfigPageLinkedDatasources);
+      const dataSource = screen.queryByTestId(PLUGIN_TEST_ID.linkedDatasources);
       const dataSourceName = dataSource && within(dataSource).getByText(SM_DATASOURCE.type);
 
       expect(dataSource).toBeInTheDocument();
@@ -153,7 +153,7 @@ describe('PluginConfigPage', () => {
         },
       });
 
-      const linkedDataSources = screen.queryByTestId(DataTestIds.TestPluginConfigPageLinkedDatasources);
+      const linkedDataSources = screen.queryByTestId(PLUGIN_TEST_ID.linkedDatasources);
       const linkedDataSourcesCount =
         linkedDataSources &&
         within(linkedDataSources).getByText(/Linked data sources \(\W?2\W?\)/i, { selector: 'h3' });
@@ -183,13 +183,13 @@ describe('PluginConfigPage', () => {
         },
       });
 
-      const linkedDataSources = screen.queryByTestId(DataTestIds.TestPluginConfigPageLinkedDatasources);
+      const linkedDataSources = screen.queryByTestId(PLUGIN_TEST_ID.linkedDatasources);
       const linkedDataSourcesCount =
         linkedDataSources &&
         within(linkedDataSources).getByText(/Linked data sources \(\W?1\W?\)/i, { selector: 'h3' });
       const missingContainer =
         linkedDataSources &&
-        within(linkedDataSources).getByTestId(DataTestIds.TestPluginConfigPageLinkedDatasourcesError);
+        within(linkedDataSources).getByTestId(PLUGIN_TEST_ID.linkedDatasourcesError);
 
       expect(linkedDataSources).toBeInTheDocument();
       expect(linkedDataSourcesCount).toBeInTheDocument();

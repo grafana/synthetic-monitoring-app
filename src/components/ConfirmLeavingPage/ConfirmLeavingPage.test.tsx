@@ -6,7 +6,7 @@ import { TextLink } from '@grafana/ui';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 
-import { DataTestIds } from '../../test/dataTestIds';
+import { UI_TEST_ID } from '../../test/dataTestIds';;
 import { ConfirmLeavingPage } from './ConfirmLeavingPage';
 
 const TEST_IDS = {
@@ -69,7 +69,7 @@ describe('ConfirmLeavingPage', () => {
       const user = userEventLib.setup();
       const link = screen.getByTestId(TEST_IDS.LEAVE_PAGE_LINK);
       await user.click(link);
-      expect(await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading)).toBeInTheDocument();
+      expect(await screen.findByTestId(UI_TEST_ID.modals.confirmUnsavedHeading)).toBeInTheDocument();
       await user.click(screen.getByText(buttonText, { selector: 'button > span' }));
       expect(await screen.findByTestId(expectedTestId)).toBeInTheDocument();
     });

@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { trackCheckCreated } from 'features/tracking/checkFormEvents';
-import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -289,7 +289,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     await fillMandatoryFields({ user, checkType: CheckType.Http, fieldsToOmit: ['job'] });
     await submitForm(user);
 
-    const pathInfo = await screen.findByTestId(DataTestIds.TestRouterInfoPathname);
+    const pathInfo = await screen.findByTestId(ROUTER_TEST_ID.pathname);
     expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_HTTP_CHECK.id! }));
   });
 
@@ -309,7 +309,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     await submitForm(user);
 
     await waitFor(() => {
-      const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
+      const pathInfo = screen.getByTestId(ROUTER_TEST_ID.pathname);
       expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_HTTP_CHECK.id! }));
     });
 

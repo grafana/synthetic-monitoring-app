@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
 
 import { ConfirmUnsavedModal } from './ConfirmUnsavedModal';
@@ -9,7 +9,7 @@ describe('<ConfirmUnsavedModal>', () => {
   it('should show when rendered', async () => {
     render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={jest.fn()} />);
 
-    expect(await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading)).toBeInTheDocument();
+    expect(await screen.findByTestId(UI_TEST_ID.modals.confirmUnsavedHeading)).toBeInTheDocument();
   });
 
   it('should call onLeavePage when leave page button clicked', async () => {
@@ -34,7 +34,7 @@ describe('<ConfirmUnsavedModal>', () => {
     const onStayOnPage = jest.fn();
     const { user } = render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={onStayOnPage} />);
 
-    await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading);
+    await screen.findByTestId(UI_TEST_ID.modals.confirmUnsavedHeading);
     const closeButton = screen.getByRole('button', { name: 'Close' });
 
     await user.click(closeButton);
@@ -46,7 +46,7 @@ describe('<ConfirmUnsavedModal>', () => {
     const onStayOnPage = jest.fn();
     const { user } = render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={onStayOnPage} />);
 
-    await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading);
+    await screen.findByTestId(UI_TEST_ID.modals.confirmUnsavedHeading);
     await user.keyboard('{Esc}');
 
     expect(onStayOnPage).toHaveBeenCalled();
