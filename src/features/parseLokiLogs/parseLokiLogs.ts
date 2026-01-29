@@ -1,4 +1,4 @@
-import { Field } from '@grafana/data';
+import { dataFrameFromJSON, DataFrameJSON, dataFrameToJSON, Field } from '@grafana/data';
 
 import {
   Body,
@@ -40,6 +40,21 @@ function isLokiFields<T, R>(fields: Field[]): fields is LokiFields<T, R> {
     fields.some(isLabelTypes) &&
     fields.some(isID)
   );
+}
+
+/**
+ * Normalizes a DataFrameJSON to use new schema field names (timestamp, body).
+ * Converts old schema (Time, Line) to new schema (timestamp, body).
+ * Uses the same normalization logic as normalizeLokiDataFrame.
+ */
+export function normalizeDataFrameJSON(frame: DataFrameJSON): DataFrameJSON {
+  if (!frame.schema?.fields) {
+    return frame;
+  }
+
+  const df = dataFrameFromJSON(frame) as LokiDataFrame<Record<string, string>, Record<string, string>>;
+  const normalized = normalizeLokiDataFrame(df);
+  return dataFrameToJSON(normalized);
 }
 
 /**
