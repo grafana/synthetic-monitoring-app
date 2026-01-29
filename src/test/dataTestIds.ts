@@ -12,6 +12,22 @@ export const APP_INITIALIZER_TEST_ID = {
   initButton: 'app-init init-button',
 } as const;
 
+export const ASSERTION_TEST_ID = {
+  individual: 'individual-assertion',
+  request: 'request-assertion',
+  multiHttp: 'multihttp-request',
+} as const;
+
+export const CHECKS_TEST_ID = {
+  emptyState: 'checks-empty-state',
+  groupCard: 'check-group-card',
+  usage: 'check-usage',
+  form: {
+    submitButton: 'check-form-submit-button',
+    chooseType: 'choose-check-type',
+  },
+} as const;
+
 export const CHECKSTER_TEST_ID = {
   navigation: {
     root: 'checkEditor navigation root',
@@ -97,64 +113,51 @@ export const CHECKSTER_TEST_ID = {
   },
 } as const;
 
+export const CONFIG_TEST_ID = {
+  content: 'config-content',
+  contentLoading: 'config-content-loading',
+  layout: {
+    activeTab: 'config-page-layout-active-tab',
+  },
+} as const;
+
+export const PLUGIN_TEST_ID = {
+  configPage: 'test-plugin-config-page',
+  linkedDatasources: 'test-plugin-config-page-linked-datasources',
+  linkedDatasourcesError: 'test-plugin-config-page-linked-datasources-error',
+} as const;
+
 export const PROBES_TEST_ID = {
   cards: {
     status: 'probes cards status',
     statusTooltip: 'probes cards statusTooltip',
   },
+  list: {
+    private: 'private-probes-list',
+    public: 'public-probes-list',
+  },
+  usageLink: 'probe-usage-link',
+} as const;
+
+export const ROUTER_TEST_ID = {
+  info: 'test-router-info',
+  pathname: 'test-router-info-pathname',
+  search: 'test-router-info-search',
+} as const;
+
+export const UI_TEST_ID = {
+  actionsBar: 'actions-bar',
+  centeredSpinner: 'centered-spinner',
+  frequency: 'frequency-component',
+  preformatted: 'preformatted',
+  timepointList: 'timepoint-list',
+  modals: {
+    confirmUnsavedHeading: 'confirm-unsaved-modal-heading',
+  },
+  page: {
+    notReady: 'page-not-ready',
+    ready: 'page-ready',
+  },
 } as const;
 
 export const GROT_SAD_TEST_ID = 'grotSad';
-
-// deprecated -- look to migrate these to follow the same patterns as above
-export enum DataTestIds {
-  ActionsBar = 'actions-bar',
-  AlertProbePercentage = 'alert-probe-percentage',
-  AlertRuleFormTimeUnitCombobox = 'alert-rule-form-time-unit-combobox',
-  AlertSensitivityInput = 'alert-sensitivity-input',
-  CenteredSpinner = 'centered-spinner',
-  CheckAlertsFilter = 'check-alerts-filter',
-  CheckCard = 'check-card',
-  CheckFormSubmitButton = 'check-form-submit-button',
-  CheckGroupCard = 'check-group-card',
-  CheckSearchInput = 'check-search-input',
-  CheckStatusFilter = 'check-status-filter',
-  CheckProbesFilter = 'check-probes-filter',
-  CheckUsage = 'check-usage',
-  ChecksEmptyState = 'checks-empty-state',
-  ChooseCheckType = 'choose-check-type',
-  ClipboardContent = 'clipboard-content',
-  CodeEditor = 'code-editor',
-  ConfigContent = 'config-content',
-  ConfigContentLoading = 'config-content-loading',
-  ConfigPageLayoutActiveTab = 'config-page-layout-active-tab',
-  ConfirmUnsavedModalHeading = 'confirm-unsaved-modal-heading',
-  EditCheckButton = 'edit-check-button',
-  FrequencyComponent = 'frequency-component',
-  IndividualAssertion = 'individual-assertion',
-  MultiHttpRequest = 'multihttp-request',
-  PageNotReady = 'page-not-ready',
-  PageReady = 'page-ready',
-  Preformatted = 'preformatted',
-  PrivateProbesList = 'private-probes-list',
-  ProbeButton = 'probe-button',
-  ProbeCardActionButton = 'probe-card-action-button',
-  ProbeUsageLink = 'probe-usage-link',
-  PublicProbesList = 'public-probes-list',
-  RefreshPickerRunButton = 'refresh-picker-run-button',
-  RequestAssertion = 'request-assertion',
-  SecretEditModal = 'secret-edit-modal',
-  SelectAllChecks = 'select-all-checks',
-  SortChecksByCombobox = 'sort-checks-by-combobox',
-  TestPluginConfigPage = 'test-plugin-config-page',
-  TestPluginConfigPageLinkedDatasources = 'test-plugin-config-page-linked-datasources',
-  TestPluginConfigPageLinkedDatasourcesError = 'test-plugin-config-page-linked-datasources-error',
-  TestRouterInfo = 'test-router-info',
-  TestRouterInfoPathname = 'test-router-info-pathname',
-  TestRouterInfoSearch = 'test-router-info-search',
-  ThresholdDefaults = 'threshold-defaults',
-  ThresholdLowerLimit = 'threshold-lower-limit',
-  ThresholdSave = 'threshold-save',
-  ThresholdUpperLimit = 'threshold-upper-limit',
-  TimepointList = 'timepoint-list',
-}
