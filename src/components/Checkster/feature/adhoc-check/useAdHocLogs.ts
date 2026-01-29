@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { DataFrameJSON } from '@grafana/data';
-
 import { normalizeDataFrameJSON } from 'features/parseLokiLogs/parseLokiLogs';
-import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 import { AdHocResponseResults } from './types.adhoc-check';
+import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { useSMDS } from 'hooks/useSMDS';
 
 export interface LokiQueryResults<RefId extends keyof any = 'A'> {
