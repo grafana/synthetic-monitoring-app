@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom-v5-compat';
-import { PluginPage } from '@grafana/runtime';
+import { useParams } from 'react-router-dom';
+import { locationService, PluginPage } from '@grafana/runtime';
 import { LinkButton, TextLink } from '@grafana/ui';
 
 import { ExtendedProbe, type Probe, type ProbePageParams } from 'types';
@@ -21,15 +21,14 @@ import { getErrorInfo, getTitle } from './EditProbe.utils';
 export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
   const [probe, setProbe] = useState<ExtendedProbe>();
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const navigate = useNavigate();
   const { canWriteProbes } = useCanEditProbe(probe);
 
   useEffect(() => {
     // This is mainly here to handle legacy links redirect
     if (probe && !canWriteProbes && !forceViewMode) {
-      navigate(generateRoutePath(AppRoutes.ViewProbe, { id: probe.id! }), { replace: true });
+      locationService.replace(generateRoutePath(AppRoutes.ViewProbe, { id: probe.id! }));
     }
-  }, [canWriteProbes, navigate, probe, forceViewMode]);
+  }, [canWriteProbes, probe, forceViewMode]);
 
   if (errorMessage) {
     return (

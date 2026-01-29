@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom-v5-compat';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
+import { locationService, PluginPage } from '@grafana/runtime';
 import { TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
@@ -44,16 +44,16 @@ export function NewCheckV2() {
     },
   ]);
 
-  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
     (newCheckType: CheckType) => {
       const search = new URLSearchParams(urlSearchParams);
       search.set(CHECK_TYPE_PARAM_NAME, newCheckType);
-      navigate({ search: search.toString() }, { replace: true });
+      locationService.replace(`${location.pathname}?${search.toString()}`);
     },
-    [navigate, urlSearchParams]
+    [location.pathname, urlSearchParams]
   );
 
   const isOverlimit = useIsOverlimit(false, checkType);

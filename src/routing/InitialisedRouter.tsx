@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { TextLink } from '@grafana/ui';
 
 import { FeatureName } from 'types';
@@ -131,7 +131,7 @@ export const InitialisedRouter = () => {
 
       <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
 
-      <Route path={`${AppRoutes.Config}`} Component={ConfigPageLayout}>
+      <Route path={`${AppRoutes.Config}`} element={<ConfigPageLayout />}>
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />

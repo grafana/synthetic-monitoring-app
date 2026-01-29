@@ -1,6 +1,5 @@
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
-import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { render, screen, waitFor, within } from '@testing-library/react';
 
 import { SMDataSource } from '../../datasource/DataSource';
@@ -13,11 +12,9 @@ jest.mock('./PluginConfigPage.utils');
 function Wrapper({ children }: { children: React.ReactNode }) {
   return (
     <MemoryRouter>
-      <CompatRouter>
-        <Routes>
-          <Route path="*" element={children} />
-        </Routes>
-      </CompatRouter>
+      <Routes>
+        <Route path="*" element={children} />
+      </Routes>
     </MemoryRouter>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { locationService } from '@grafana/runtime';
-import { Location, TransitionPromptHook } from 'history';
+import { Location } from 'history';
 
 import { useConfirmBeforeUnload } from 'hooks/useConfirmBeforeUnload';
 
@@ -20,7 +20,6 @@ interface ConfirmLeavingPageProps {
  *
  * @see {useConfirmBeforeUnload}
  * @param {boolean} enabled Whether or not to actively block transitions
- * @constructor
  */
 export function ConfirmLeavingPage({ enabled }: ConfirmLeavingPageProps) {
   const [showModal, setShowModal] = useState(false);
@@ -32,12 +31,11 @@ export function ConfirmLeavingPage({ enabled }: ConfirmLeavingPageProps) {
 
   const location = useLocation();
 
-  const blockHandler: TransitionPromptHook = useCallback(
+  const blockHandler = useCallback(
     (nextLocation: Location) => {
       const path = location.pathname;
       const nextPath = nextLocation.pathname;
 
-      // Check all the reasons to allow navigation
       if (!enabled || path === nextPath || changesDiscarded) {
         return;
       }
@@ -51,10 +49,7 @@ export function ConfirmLeavingPage({ enabled }: ConfirmLeavingPageProps) {
 
   useEffect(() => {
     const unblock = history.block(blockHandler);
-
-    return () => {
-      unblock();
-    };
+    return () => unblock();
   }, [blockHandler, blockedLocation, history]);
 
   useEffect(() => {
