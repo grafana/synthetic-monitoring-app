@@ -37,7 +37,6 @@ import {
   TimepointStatus,
   TimepointVizOptions,
   UnixTimestamp,
-  ViewerState,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   buildConfigTimeRanges,
@@ -45,7 +44,6 @@ import {
   buildTimepoints,
   extractFrequenciesAndConfigs,
   getCouldBePending,
-  getIsInTheFuture,
   getPendingProbeNames,
   getTimeAdjustedTimepoint,
   getVisibleTimepoints,
@@ -473,48 +471,6 @@ export function useCurrentAdjustedTime(check: Check) {
   }, [check.frequency]);
 
   return currentAdjustedTime;
-}
-
-interface UseIsInitialisedProps {
-  check: Check;
-  currentAdjustedTime: UnixTimestamp;
-  handleViewerStateChange: (viewerState: ViewerState) => void;
-  isLoading: boolean;
-  timepoints: StatelessTimepoint[];
-}
-
-export function useIsInitialised({
-  check,
-  isLoading,
-  handleViewerStateChange,
-  timepoints,
-  currentAdjustedTime,
-}: UseIsInitialisedProps) {
-  const probeVar = useSceneVarProbes(check);
-  const persistedIsLoading = usePersisted(isLoading, (isLoading) => !isLoading);
-
-  const handleOnInitialised = useCallback(() => {
-    const notInTheFuture = timepoints.filter((t) => !getIsInTheFuture(t, currentAdjustedTime));
-    // todo: add logic to pick a sensible entry depending on how close a timepoint is to the creation date
-    // e.g. if you create a time point with two seconds until the end of the timepoint, the user will essentially
-    // see a missing result as the first entry
-    // might make sense to bump the creation time artificially so it aligns with the timepoint?
-    const lastNotInTheFuture = notInTheFuture[notInTheFuture.length - 1] || timepoints[0];
-    const firstProbe = probeVar[0];
-
-    handleViewerStateChange([lastNotInTheFuture, firstProbe, 0]);
-  }, [currentAdjustedTime, probeVar, timepoints, handleViewerStateChange]);
-
-  useEffect(() => {
-    // we have to wait until we have the checkConfigs and subsequent timepoints built
-    // before knowing what timepoints are available and what to select
-    if (!persistedIsLoading) {
-      handleOnInitialised();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- we only want to run this once
-  }, [persistedIsLoading]);
-
-  return !persistedIsLoading;
 }
 
 export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {

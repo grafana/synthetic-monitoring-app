@@ -1,9 +1,10 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackTimepointViewerLogsViewToggled } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { formatDuration } from 'utils';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -19,10 +20,21 @@ import { TimepointViewerActions } from 'scenes/components/TimepointExplorer/Time
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
-  const { isInitialised, viewerState } = useTimepointExplorerContext();
+  const { viewerState, shouldScrollToViewer, handleSetScrollToViewer } = useTimepointExplorerContext();
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
-  const [viewerTimepoint, viewerProbeName] = viewerState;
+  const [viewerTimepoint, viewerProbeName] = viewerState || [];
   const styles = useStyles2(getStyles);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (shouldScrollToViewer && viewerTimepoint && containerRef.current) {
+      containerRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+      handleSetScrollToViewer(false);
+    }
+  }, [shouldScrollToViewer, viewerTimepoint, handleSetScrollToViewer]);
 
   const handleChangeLogsView = useCallback((view: LogsView) => {
     trackTimepointViewerLogsViewToggled({
@@ -32,7 +44,7 @@ export const TimepointViewer = () => {
   }, []);
 
   return (
-    <div className={styles.container}>
+    <div ref={containerRef} className={styles.container} data-testid={DataTestIds.TimepointViewer}>
       {viewerTimepoint ? (
         <div>
           <Box padding={2} gap={1} direction="column" position="relative">
@@ -48,8 +60,7 @@ export const TimepointViewer = () => {
         </div>
       ) : (
         <Stack justifyContent={'center'} alignItems={'center'} height={30} direction={'column'}>
-          <Text variant="h2">{isInitialised ? 'No timepoint selected' : 'Loading...'}</Text>
-          {isInitialised && <Text>Select a timepoint to view logs.</Text>}
+          <Text>Click on a data point above to view detailed logs.</Text>
         </Stack>
       )}
     </div>
@@ -81,9 +92,9 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
 
   const pendingProbeNames = couldResultBePending
     ? getPendingProbes({
-        entryProbeNames: data.filter((d) => d.executions.length).map((d) => d.probeName),
-        selectedProbeNames: probeVar,
-      })
+      entryProbeNames: data.filter((d) => d.executions.length).map((d) => d.probeName),
+      selectedProbeNames: probeVar,
+    })
     : [];
 
   const enableRefetch = !!pendingProbeNames.length;
@@ -154,6 +165,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: flex;
     flex-direction: column;
     gap: ${theme.spacing(2)};
+    scroll-margin-top: 25vh;
   `,
   loadingBarContainer: css`
     position: absolute;

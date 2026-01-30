@@ -157,4 +157,6 @@ export enum DataTestIds {
   ThresholdSave = 'threshold-save',
   ThresholdUpperLimit = 'threshold-upper-limit',
   TimepointList = 'timepoint-list',
+  TimepointListEntryBar = 'timepoint-list-entry-bar',
+  TimepointViewer = 'timepoint-viewer',
 }

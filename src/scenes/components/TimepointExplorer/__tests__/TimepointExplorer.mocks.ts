@@ -1,9 +1,20 @@
 jest.mock('@grafana/scenes-react', () => {
   const actual = jest.requireActual('@grafana/scenes-react');
 
+  const fromDate = new Date('2024-01-01T00:00:00Z');
+  const toDate = new Date('2024-01-02T00:00:00Z');
+
   let mockTimeRange = {
-    from: new Date('2024-01-01T00:00:00Z'),
-    to: new Date('2024-01-02T00:00:00Z'),
+    from: {
+      ...fromDate,
+      toDate: () => fromDate,
+      valueOf: () => fromDate.valueOf(),
+    },
+    to: {
+      ...toDate,
+      toDate: () => toDate,
+      valueOf: () => toDate.valueOf(),
+    },
     raw: { from: 'now-1d', to: 'now' },
   };
 

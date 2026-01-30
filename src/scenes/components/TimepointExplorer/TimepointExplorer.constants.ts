@@ -39,3 +39,8 @@ export const ANNOTATION_COLOR_NO_DATA = `orange`;
 export const ANNOTATION_COLOR_CHECK_CREATED = `yellow`;
 export const ANNOTATION_COLOR_CHECK_UPDATED = `blue`;
 export const ANNOTATION_COLOR_ALERTS_FIRING = `red`;
+
+// Selection styling constants
+export const NON_SELECTED_BAR_OPACITY = 0.7;
+export const SELECTED_BAR_BORDER_WIDTH = 3;
+export const BAR_BORDER_WIDTH = 2;

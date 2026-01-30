@@ -27,7 +27,6 @@ import {
   useBuiltCheckConfigs,
   useCurrentAdjustedTime,
   useExecutionDurationLogs,
-  useIsInitialised,
   useIsListResultPending,
   usePersistedMaxProbeDuration,
   useSceneAnnotationEvents,
@@ -73,6 +72,7 @@ interface TimepointExplorerContextType {
   handleMiniMapPageChange: (page: number) => void;
   handleMiniMapSectionChange: (sectionIndex: number) => void;
   handleRefetch: () => void;
+  handleSetScrollToViewer: (shouldScroll: boolean) => void;
   handleTimepointWidthChange: (timepointWidth: number, currentSectionRange: MiniMapSection) => void;
   handleViewerStateChange: (state: ViewerState) => void;
   handleViewModeChange: (viewMode: ViewMode) => void;
@@ -82,7 +82,6 @@ interface TimepointExplorerContextType {
   isCheckCreationWithinTimeRange: boolean;
   isError: boolean;
   isFetching: boolean;
-  isInitialised: boolean;
   isLoading: boolean;
   isLogsRetentionPeriodWithinTimerange: boolean;
   listLogsMap: Record<UnixTimestamp, StatefulTimepoint>;
@@ -97,6 +96,7 @@ interface TimepointExplorerContextType {
   timepointWidth: number;
   viewerState: ViewerState;
   viewMode: ViewMode;
+  shouldScrollToViewer: boolean;
   vizDisplay: VizDisplay;
   vizOptions: Record<TimepointStatus, string>;
   yAxisMax: number;
@@ -226,6 +226,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const isError = isCheckConfigsError || isExecutionDurationLogsError || isMaxProbeDurationError;
 
   const [viewerState, setViewerState] = useState<ViewerState>([]);
+  const [shouldScrollToViewer, setShouldScrollToViewer] = useState(false);
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
     setMiniMapCurrentSectionIndex(sectionIndex);
@@ -243,6 +244,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const handleViewerStateChange = useCallback((state: ViewerState) => {
     setViewerState(state);
+  }, []);
+
+  const handleSetScrollToViewer = useCallback((shouldScroll: boolean) => {
+    setShouldScrollToViewer(shouldScroll);
   }, []);
 
   const handleTimepointDisplayCountChange = useCallback(
@@ -321,14 +326,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     listLogsMap,
   });
 
-  const isInitialised = useIsInitialised({
-    check,
-    isLoading,
-    handleViewerStateChange,
-    timepoints,
-    currentAdjustedTime,
-  });
-
   const renderingStrategy = getRenderingStrategy({
     isLogsRetentionPeriodWithinTimerange,
     timepoints,
@@ -358,11 +355,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleViewModeChange,
       handleVizDisplayChange,
       handleVizOptionChange,
+      handleSetScrollToViewer,
       hoveredState,
       isCheckCreationWithinTimeRange,
       isError,
       isFetching,
-      isInitialised,
       isLoading,
       isLogsRetentionPeriodWithinTimerange,
       listLogsMap,
@@ -377,6 +374,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       timepointWidth,
       viewerState,
       viewMode,
+      shouldScrollToViewer,
       vizDisplay,
       vizOptions,
       yAxisMax,
@@ -398,11 +396,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleViewModeChange,
     handleVizDisplayChange,
     handleVizOptionChange,
+    handleSetScrollToViewer,
     hoveredState,
     isCheckCreationWithinTimeRange,
     isError,
     isFetching,
-    isInitialised,
     isLoading,
     isLogsRetentionPeriodWithinTimerange,
     listLogsMap,
@@ -417,6 +415,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timepointWidth,
     viewerState,
     viewMode,
+    shouldScrollToViewer,
     vizDisplay,
     vizOptions,
     yAxisMax,
