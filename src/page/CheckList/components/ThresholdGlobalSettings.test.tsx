@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import { TENANT_SETTINGS } from 'test/fixtures/tenants';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -15,7 +16,7 @@ const renderThresholdSettingsForm = () => {
 
 test('shows the form', async () => {
   await renderThresholdSettingsForm();
-  const saveButton = await screen.findByTestId('threshold-save');
+  const saveButton = await screen.findByTestId(DataTestIds.ThresholdSave);
   const inputs = await screen.findAllByPlaceholderText('value');
   expect(saveButton).toBeInTheDocument();
   expect(inputs).toHaveLength(12);
@@ -23,8 +24,8 @@ test('shows the form', async () => {
 
 test('has default values in form', async () => {
   const { user } = await renderThresholdSettingsForm();
-  const upperLimitInputs = await screen.findAllByTestId('upper-limit');
-  const lowerLimitInputs = await screen.findAllByTestId('lower-limit');
+  const upperLimitInputs = await screen.findAllByTestId(DataTestIds.ThresholdUpperLimit);
+  const lowerLimitInputs = await screen.findAllByTestId(DataTestIds.ThresholdLowerLimit);
   await user.click(screen.getByText('Reset all to defaults'));
   // Uptime/reachability
   expect(upperLimitInputs[0]).toHaveValue(99);
@@ -39,7 +40,7 @@ test('submits the form', async () => {
   server.use(apiRoute('updateTenantSettings', {}, record));
 
   const { user } = await renderThresholdSettingsForm();
-  const saveButton = await screen.findByTestId('threshold-save');
+  const saveButton = await screen.findByTestId(DataTestIds.ThresholdSave);
   await user.click(saveButton);
 
   const { body } = await read();

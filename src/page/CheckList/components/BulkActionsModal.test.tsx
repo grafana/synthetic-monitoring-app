@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
@@ -24,7 +25,7 @@ test('shows the modal', async () => {
   const checks = [BASIC_HTTP_CHECK, BASIC_PING_CHECK];
   renderBulkEditModal('add', checks);
   const title = await screen.findByText(`Add probes to ${checks.length} selected checks`);
-  const probes = await screen.findAllByTestId('probe-button');
+  const probes = await screen.findAllByTestId(DataTestIds.ProbeButton);
   expect(title).toBeInTheDocument();
   expect(probes).toHaveLength(DEFAULT_PROBES.length);
 });
@@ -84,7 +85,7 @@ test('Does not add duplicated probes', async () => {
   const { user } = renderBulkEditModal('add', checksWithASingleProbe);
   const probe1 = await screen.findByText(PUBLIC_PROBE_WITHMETADATA.displayName);
   const probe2 = await screen.findByText(PRIVATE_PROBE_WITHMETADATA.displayName);
-  
+
   await user.click(probe1);
   await user.click(probe2);
   const submitButton = await screen.findByText('Add probes');

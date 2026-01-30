@@ -1,8 +1,9 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Field, Select, useStyles2 } from '@grafana/ui';
+import { Combobox, Field, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormValues } from 'types';
 
@@ -16,7 +17,6 @@ export const CheckFormAlert = () => {
     formState: { disabled: isFormDisabled },
   } = useFormContext<CheckFormValues>();
   const alertSensitivity = watch('alertSensitivity');
-
   const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
 
   return (
@@ -37,19 +37,20 @@ export const CheckFormAlert = () => {
         </p>
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
-      <Field label="Select alert sensitivity" data-fs-element="Alert sensitivity select">
+      <Field label="Select alert sensitivity" htmlFor="alert-sensitivity-select" data-fs-element="Alert sensitivity select">
         <Controller
           control={control}
           name="alertSensitivity"
           render={({ field }) => {
             const { ref, ...rest } = field;
             return (
-                <Select // eslint-disable-line @typescript-eslint/no-deprecated
+              <Combobox
                 {...rest}
+                id="alert-sensitivity-select"
                 aria-label="Select alert sensitivity"
                 width={40}
                 disabled={isFormDisabled || isCustomSensitivity}
-                data-testid="alertSensitivityInput"
+                data-testid={DataTestIds.AlertSensitivityInput}
                 options={
                   isCustomSensitivity
                     ? [{ label: alertSensitivity, value: alertSensitivity }]

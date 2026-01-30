@@ -1,6 +1,6 @@
 import { OrgRole } from '@grafana/data';
 import runTime, { config } from '@grafana/runtime';
-import { act, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import {
   LOGS_DATASOURCE,
@@ -49,11 +49,7 @@ export async function fillProbeForm(user: UserEvent) {
   await user.clear(longitudeInput);
   await user.type(longitudeInput, UPDATED_VALUES.longitude.toString());
 
-  const regionInput = await screen.findByLabelText('Region', { exact: false });
-  await act(() => regionInput.focus());
-  await user.clear(regionInput);
-  await user.paste(UPDATED_VALUES.region);
-  await user.type(regionInput, '{enter}');
+  await selectCustomOption(user, { label: 'region', option: UPDATED_VALUES.region });
 
   const addLabelButton = await screen.findByText(/Add label/);
   const existingLabels = await screen.queryAllByTestId(/label-name-/);
@@ -309,17 +305,80 @@ export const getSelect = async (options: GetSelectProps, context?: HTMLElement) 
   return [parent, input];
 };
 
-type SelectOptions = GetSelectProps & {
-  option: string;
+
+
+type GetComboboxProps =
+  | {
+      dataTestId: string;
+    }
+  | {
+      label: string | RegExp;
+    }
+  | {
+      text: string | RegExp;
+    };
+
+export const getCombobox = async (options: GetComboboxProps, context?: HTMLElement) => {
+  let selector: HTMLElement;
+  if ('dataTestId' in options) {
+    selector = await screen.findByTestId(options.dataTestId);
+  } else if ('label' in options) {
+    if (context) {
+      selector = await within(context).findByLabelText(options.label, { exact: false });
+    } else {
+      selector = await screen.findByLabelText(options.label, { exact: false });
+    }
+  } else {
+    if (context) {
+      selector = await within(context).findByText(options.text);
+    } else {
+      selector = await screen.findByText(options.text);
+    }
+  }
+
+  // The selector might be the label element, so we need to find the actual combobox input
+  // Combobox renders an input with role="combobox"
+  // When using getByLabelText and the Combobox is labeled by an aria-label only,
+  // clicking the label element won't work, so we need to find the actual combobox element
+  if (selector.tagName === 'INPUT' && selector.getAttribute('role') === 'combobox') {
+    return selector;
+  }
+
+  // Find the combobox within the selector's parent or container
+  const container = selector.parentElement || selector;
+  return within(container).getByRole('combobox');
 };
 
-export const selectOption = async (user: UserEvent, options: SelectOptions, context?: HTMLElement) => {
-  const [, input] = await getSelect(options, context);
+type ComboboxOptions = GetComboboxProps & {
+  option: string | RegExp;
+};
 
-  await user.click(input);
-  const option = within(screen.getByLabelText(`Select options menu`)).getByText(options.option);
+export const selectOption = async (
+  user: UserEvent,
+  options: ComboboxOptions,
+  context?: HTMLElement
+) => {
+  testUsesCombobox();
+  const combobox = await getCombobox(options, context);
+
+  await user.click(combobox);
+
+  const option = await screen.findByRole('option', { name: options.option });
 
   await user.click(option);
+};
+
+export const selectCustomOption = async (user: UserEvent, options: ComboboxOptions, context?: HTMLElement) => {
+  testUsesCombobox();
+  const combobox = await getCombobox(options, context);
+  await user.clear(combobox);
+  await user.click(combobox);
+  await user.type(combobox, options.option as string);
+  const optionName = String(options.option);
+  // The combobox may show the option as just the value or with "  Use custom value" suffix
+  // Create a regex that matches both patterns
+  const optionPattern = new RegExp(`^${optionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( Use custom value)?$`);
+  await user.click(screen.getByRole('option', { name: optionPattern }));
 };
 
 export const probeToMetadataProbe = (probe: Probe): ProbeWithMetadata => ({

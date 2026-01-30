@@ -3,11 +3,11 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import {
   Checkbox,
+  Combobox,
   Icon,
   InlineField,
   InlineFieldRow,
   PopoverContent,
-  Select,
   Stack,
   Text,
   Tooltip,
@@ -96,14 +96,18 @@ export const RequestDurationTooHighAvgAlert = ({
               const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
 
               return (
-                <Select // eslint-disable-line @typescript-eslint/no-deprecated
+                <Combobox
                   {...fieldProps}
                   disabled={!selected || isFormDisabled}
                   data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
                   id={`alert-period-${alert.type}`}
                   options={validPeriods}
                   value={field.value}
-                  onChange={({ value = null } = {}) => {
+                  width="auto"
+                  minWidth={8}
+                  maxWidth={10}
+                  onChange={(option: { value?: string | null }) => {
+                    const value = option.value ?? null;
                     field.onChange(value);
                     trackChangePeriod({ name: alert.type, period: value ?? '' });
                     // clear threshold error if new period is valid

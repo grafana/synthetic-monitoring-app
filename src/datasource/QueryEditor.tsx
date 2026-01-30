@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { getTemplateSrv } from '@grafana/runtime';
-import { MultiSelect, Select, Spinner } from '@grafana/ui';
+import { Combobox, ComboboxOption, MultiCombobox, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { defaults } from 'lodash';
 
@@ -43,22 +43,26 @@ const getStyles = () => ({
   `,
 });
 
-function getProbeOptionsForCheck(check: TracerouteCheckOptionValue | undefined, probes: Probe[]) {
+function getProbeOptionsForCheck(check: TracerouteCheckOptionValue | undefined, probes: Probe[]): Array<ComboboxOption<string>> {
   if (check === undefined) {
     return [];
   }
-  const probeOptions = [] as Array<SelectableValue<string>>;
+  const probeOptions: Array<ComboboxOption<string>> = [];
   check.probes.forEach((probeId: number) => {
     const probe = probes.find((probe) => probeId === probe.id);
     if (!probe) {
       return;
     }
-    return probeOptions.push({
+    probeOptions.push({
       value: probe.name,
       label: probe.name,
     });
   });
   return probeOptions;
+}
+
+function createTracerouteCheckId(job: string, instance: string): string {
+  return `${job}::${instance}`;
 }
 
 export class QueryEditor extends PureComponent<Props, State> {
@@ -118,19 +122,45 @@ export class QueryEditor extends PureComponent<Props, State> {
     onRunQuery();
   };
 
-  onTracerouteCheckChange = async (check: SelectableValue<TracerouteCheckOptionValue>) => {
+  getTracerouteCheckComboboxOptions() {
+    const { tracerouteCheckOptions } = this.state;
+    return tracerouteCheckOptions.map((option) => ({
+      label: option.label,
+      value: option.value ? createTracerouteCheckId(option.value.job, option.value.instance) : '',
+      description: option.description,
+    }));
+  }
+
+  findTracerouteCheckOptionById(id: string): SelectableValue<TracerouteCheckOptionValue> | undefined {
+    const { tracerouteCheckOptions } = this.state;
+    const [job, instance] = id.split('::');
+    return tracerouteCheckOptions.find(
+      (option) => option.value?.job === job && option.value?.instance === instance
+    );
+  }
+
+  onTracerouteCheckChange = async (option: { label?: string; value: string; description?: string } | null) => {
     const { onChange, onRunQuery, query } = this.props;
-    onChange({
-      ...query,
-      queryType: QueryType.Traceroute,
-      instance: check.value?.instance,
-      job: check.value?.job,
-      probe: undefined,
-    });
-    onRunQuery();
+
+    if (!option || !option.value) {
+      return;
+    }
+
+    const originalOption = this.findTracerouteCheckOptionById(option.value);
+
+    if (originalOption?.value) {
+      onChange({
+        ...query,
+        queryType: QueryType.Traceroute,
+        instance: originalOption.value.instance,
+        job: originalOption.value.job,
+        probe: undefined,
+      });
+      onRunQuery();
+    }
   };
 
-  onTracerouteProbeChange = async (probe: Array<SelectableValue<string>>) => {
+  onTracerouteProbeChange = async (probe: Array<ComboboxOption<string>>) => {
     const { onChange, onRunQuery, query } = this.props;
     onChange({
       ...query,
@@ -165,7 +195,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     return undefined;
   }
 
-  getSelectedTracerouteProbeOptions(): Array<SelectableValue<string>> {
+  getSelectedTracerouteProbeOptions(): string[] {
     const { query } = this.props;
     const templateSrv = getTemplateSrv();
     let probe: string | undefined = templateSrv.replace('$probe');
@@ -177,7 +207,7 @@ export class QueryEditor extends PureComponent<Props, State> {
         ?.replace('{', '')
         .replace('}', '')
         .split(/[\|\,]/)
-        .map((probe) => ({ label: probe, value: probe })) ?? []
+        .filter((val) => Boolean(val)) ?? []
     );
   }
 
@@ -190,7 +220,7 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { tracerouteCheckOptions, tracerouteCheckOptionsLoading, probes } = this.state;
+    const { tracerouteCheckOptionsLoading, probes } = this.state;
     const styles = getStyles();
 
     if (tracerouteCheckOptionsLoading) {
@@ -199,11 +229,15 @@ export class QueryEditor extends PureComponent<Props, State> {
     const selectedTracerouteOption = this.getSelectedTracerouteOption();
     const probeOptions = getProbeOptionsForCheck(selectedTracerouteOption, probes);
     const selectedProbeOptions = this.getSelectedTracerouteProbeOptions();
+    const tracerouteCheckOptions = this.getTracerouteCheckComboboxOptions();
+    const selectedValue = selectedTracerouteOption
+      ? createTracerouteCheckId(selectedTracerouteOption.job, selectedTracerouteOption.instance)
+      : null;
+
     return (
       <div>
         <div className="gf-form">
-          {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-          <Select
+          <Combobox
             options={types}
             value={types.find((t) => t.value === query.queryType)}
             onChange={this.onQueryTypeChanged}
@@ -212,22 +246,18 @@ export class QueryEditor extends PureComponent<Props, State> {
         {query.queryType === QueryType.Traceroute && (
           <>
             <div className={styles.tracerouteFieldWrapper}>
-              {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-              <Select
+              <Combobox
                 options={tracerouteCheckOptions}
-                prefix="Check"
-                value={tracerouteCheckOptions.find((option) => option.value === selectedTracerouteOption)}
+                value={selectedValue}
                 onChange={this.onTracerouteCheckChange}
                 disabled={this.isOverridenByDashboardVariable()}
               />
             </div>
             <div className={styles.tracerouteFieldWrapper}>
-              {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-              <MultiSelect
+              <MultiCombobox
                 options={probeOptions}
-                prefix="Probe"
-                allowCustomValue
                 value={selectedProbeOptions}
+                placeholder="All probes"
                 onChange={this.onTracerouteProbeChange}
                 disabled={getTemplateSrv().replace('$probe') !== '$probe'}
               />

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { Button, Checkbox, Icon, Select, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, Checkbox, Combobox, Field, Icon, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort } from 'types';
@@ -85,7 +86,7 @@ export const CheckListHeader = ({
         <div>
           Currently showing {currentPageChecks.length} of {checks.length} total checks
         </div>
-        <div className={styles.stack}>
+        <Stack alignItems="center" gap={2}>
           <CheckFilters
             onReset={onResetFilters}
             checks={checks}
@@ -99,10 +100,10 @@ export const CheckListHeader = ({
           )}
 
           {canWriteChecks && <AddNewCheckButton source="check-list" />}
-        </div>
+        </Stack>
       </div>
       <div className={styles.row}>
-        <div className={styles.stack}>
+        <Stack alignItems="center" gap={2}>
           <Tooltip content={tooltip}>
             <Checkbox
               onChange={onSelectAll}
@@ -110,7 +111,7 @@ export const CheckListHeader = ({
               value={isAllSelected}
               disabled={checks.length === 0}
               aria-label="Select all"
-              data-testid="selectAll"
+              data-testid={DataTestIds.SelectAllChecks}
             />
           </Tooltip>
           {selectedCheckIds.size > 0 ? (
@@ -118,21 +119,20 @@ export const CheckListHeader = ({
           ) : (
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
           )}
-        </div>
-        {/* eslint-disable-next-line @typescript-eslint/no-deprecated */}
-        <Select
-          aria-label="Sort checks by"
-          prefix={
-            <div>
-              <Icon name="sort-amount-down" /> Sort
-            </div>
-          }
-          options={CHECK_LIST_SORT_OPTIONS}
-          defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
-          width={25}
-          onChange={onSort}
-          value={sortType}
-        />
+        </Stack>
+        <Stack alignItems="center" gap={0.5}>
+          <Icon name="sort-amount-down" />
+          <Field label="Sort" htmlFor="sort-by-select" horizontal data-fs-element="Sort by select" className={styles.field} noMargin>
+            <Combobox
+              id="sort-by-select"
+              data-testid={DataTestIds.SortChecksByCombobox}
+              options={CHECK_LIST_SORT_OPTIONS}
+              width={25}
+              onChange={onSort}
+              value={sortType}
+            />
+          </Field>
+        </Stack>
       </div>
       <ThresholdGlobalSettings onDismiss={() => setShowThresholdModal(false)} isOpen={showThresholdModal} />
     </>
@@ -146,9 +146,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: `center`,
     marginBottom: theme.spacing(2),
   }),
-  stack: css({
-    alignItems: `center`,
-    display: `flex`,
-    gap: theme.spacing(2),
+  field: css({
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    '& > div': {
+      marginBottom: 0,
+    }
   }),
 });

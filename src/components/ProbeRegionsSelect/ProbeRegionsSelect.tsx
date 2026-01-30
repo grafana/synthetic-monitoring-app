@@ -1,5 +1,5 @@
 import React from 'react';
-import { Select } from '@grafana/ui';
+import { Combobox } from '@grafana/ui';
 import { uniq } from 'lodash';
 
 import { Probe } from 'types';
@@ -16,29 +16,24 @@ type ProbeRegionsSelectProps = {
 export const ProbeRegionsSelect = ({ disabled, id, invalid, onChange, value }: ProbeRegionsSelectProps) => {
   const { data, isLoading } = useProbes();
   const regions = getRegions(data, value);
-  const options = regions.map((region) => ({ label: region, value: region }));
+  const options = regions.filter((region) => region !== undefined).map((region) => ({ label: region, value: region }));
 
   return (
-    <Select //eslint-disable-line @typescript-eslint/no-deprecated
-      inputId={id}
+    <Combobox
+      id={id}
       options={options}
       value={value || null}
-      allowCustomValue
+      createCustomValue
       onChange={(value) => {
         if (value === null) {
           return onChange(null);
         }
         onChange(value?.value);
       }}
-      onCreateOption={(value) => {
-        onChange(value);
-      }}
-      isLoading={isLoading}
       disabled={isLoading || disabled}
       placeholder="Add or select a region"
       isClearable
       invalid={invalid}
-      tabSelectsValue={false}
     />
   );
 };

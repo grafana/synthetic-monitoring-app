@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -78,7 +79,7 @@ describe('CheckList - Search Functionality', () => {
     await user.paste(BASIC_DNS_CHECK.job);
     const willBeRemoved = screen.getByText(BASIC_HTTP_CHECK.job);
     await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -90,7 +91,7 @@ describe('CheckList - Search Functionality', () => {
 
     await user.paste(BASIC_DNS_CHECK.job.toUpperCase());
     await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -102,7 +103,7 @@ describe('CheckList - Search Functionality', () => {
 
     await user.paste(BASIC_DNS_CHECK.target);
     await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -114,7 +115,7 @@ describe('CheckList - Search Functionality', () => {
 
     await user.paste(BASIC_DNS_CHECK.labels[0].name);
     await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -126,7 +127,7 @@ describe('CheckList - Search Functionality', () => {
 
     await user.paste(BASIC_DNS_CHECK.labels[0].value);
     await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -135,7 +136,7 @@ describe('CheckList - Search Functionality', () => {
     const searchInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
     expect(searchInput).toHaveValue(BASIC_DNS_CHECK.job);
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 
@@ -152,7 +153,7 @@ describe('CheckList - Search Functionality', () => {
 
     await user.paste(specialChar);
     await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(1);
   });
 });

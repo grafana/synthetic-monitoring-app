@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Modal, Stack } from '@grafana/ui';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { ThresholdSettings, ThresholdValues } from 'types';
 import { useThresholds, useUpdateThresholds } from 'data/useThresholds';
@@ -64,10 +65,10 @@ const ThresholdGlobalSettingsContent = ({ onSuccess, thresholds }: ThresholdGlob
   return (
     <>
       <Stack gap={1}>
-        <Button data-testid="threshold-save" onClick={handleSaveThresholds}>
+        <Button data-testid={DataTestIds.ThresholdSave} onClick={handleSaveThresholds}>
           Save changes
         </Button>
-        <Button data-testid="threshold-defaults" variant="secondary" onClick={handleSetDefaults}>
+        <Button data-testid={DataTestIds.ThresholdDefaults} variant="secondary" onClick={handleSetDefaults}>
           Reset all to defaults
         </Button>
       </Stack>

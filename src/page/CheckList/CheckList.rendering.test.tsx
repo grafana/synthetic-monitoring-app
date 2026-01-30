@@ -5,6 +5,7 @@ import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtur
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { selectOption } from 'test/utils';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -74,7 +75,7 @@ describe('CheckList - Rendering', () => {
 
   test('renders list of checks', async () => {
     await renderCheckList();
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(BASIC_CHECK_LIST.length);
   });
 
@@ -82,10 +83,10 @@ describe('CheckList - Rendering', () => {
     const searchParams = `sort=atoz`;
     await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
     await screen.findByText('Sort');
-    const sortValue = await screen.findByText('A-Z');
-    expect(sortValue).toBeInTheDocument();
+    const sortCombobox = await screen.findByTestId(DataTestIds.SortChecksByCombobox);
+    expect(sortCombobox).toHaveValue('A-Z');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(2);
     expect(checks[0]).toHaveTextContent(BASIC_DNS_CHECK.job);
     expect(checks[1]).toHaveTextContent(BASIC_HTTP_CHECK.job);
@@ -95,10 +96,10 @@ describe('CheckList - Rendering', () => {
     const searchParams = `sort=ztoa`;
     await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
     await screen.findByText('Sort');
-    const sortInput = await screen.findByText(/Z-A/i);
-    expect(sortInput).toBeInTheDocument();
+    const sortCombobox = await screen.findByTestId(DataTestIds.SortChecksByCombobox);
+    expect(sortCombobox).toHaveValue('Z-A');
 
-    const checks = await screen.findAllByTestId('check-card');
+    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
     expect(checks.length).toBe(2);
     expect(checks[0]).toHaveTextContent(BASIC_HTTP_CHECK.job);
     expect(checks[1]).toHaveTextContent(BASIC_DNS_CHECK.job);
@@ -106,11 +107,9 @@ describe('CheckList - Rendering', () => {
 
   test('Sorting by success rate should not crash', async () => {
     const { user } = await renderCheckList();
-    const sortPicker = screen.getByLabelText('Sort checks by');
-    await user.click(sortPicker);
-    await user.click(screen.getByText(`Asc. Reachability`, { selector: 'span' }));
+    await selectOption(user, { dataTestId: DataTestIds.SortChecksByCombobox, option: 'Asc. Reachability' });
 
-    const checks = await waitFor(() => screen.findAllByTestId('check-card'), { timeout: 5000 });
+    const checks = await waitFor(() => screen.findAllByTestId(DataTestIds.CheckCard), { timeout: 5000 });
     expect(checks.length).toBe(BASIC_CHECK_LIST.length);
   });
 });
