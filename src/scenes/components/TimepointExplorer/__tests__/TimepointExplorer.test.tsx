@@ -71,10 +71,6 @@ function renderTimepointExplorer() {
 }
 
 describe('TimepointExplorer', () => {
-  beforeEach(() => {
-    mockScrollIntoView.mockClear();
-  });
-
   it(`should not render if the feature flag is off`, async () => {
     render(renderTimepointExplorer());
     await waitFor(() => screen.queryByTestId(DataTestIds.TimepointList));
