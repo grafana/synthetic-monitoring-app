@@ -5,54 +5,76 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
+import { apiRoute } from 'test/handlers';
+import { server } from 'test/server';
+import { checksLogs1 } from 'test/fixtures/httpCheck/checkLogs';
+import {
+  createUniqueConfigFrame,
+  createUniqueConfigsResponse,
+  createMaxProbeDurationFrame,
+  createMaxProbeDurationResponse,
+} from 'test/fixtures/httpCheck/promUniqueConfigs';
 
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { DataTestIds } from 'test/dataTestIds';
 import { mockFeatureToggles } from 'test/utils';
 import { FeatureName } from 'types';
-import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import {
+  REF_ID_EXECUTION_LIST_LOGS,
+  REF_ID_MAX_PROBE_DURATION,
+  REF_ID_UNIQUE_CHECK_CONFIGS,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
-const baseTime = new Date('2024-01-01T12:00:00Z').getTime();
-const mockTimepoints: StatelessTimepoint[] = [
-  {
-    adjustedTime: baseTime - 300000, // 5 minutes before base time
-    timepointDuration: 60000,
-    index: 0,
-    config: {
-      frequency: 60000,
-      from: baseTime - 400000,
-      to: baseTime - 300000,
-      type: undefined,
-    },
-  },
-  {
-    adjustedTime: baseTime - 240000, // 4 minutes before base time
-    timepointDuration: 60000,
-    index: 1,
-    config: {
-      frequency: 60000,
-      from: baseTime - 300000,
-      to: baseTime - 240000,
-      type: undefined,
-    },
-  },
-  {
-    adjustedTime: baseTime - 180000, // 3 minutes before base time
-    timepointDuration: 60000,
-    index: 2,
-    config: {
-      frequency: 60000,
-      from: baseTime - 240000,
-      to: baseTime - 180000,
-      type: undefined,
-    },
-  },
-];
+const baseTime = new Date('2024-01-01T12:00:00Z').getTime(); // ✓ This already works
 
-jest.mock('scenes/components/TimepointExplorer/TimepointExplorer.hooks', () => ({
-  ...jest.requireActual('scenes/components/TimepointExplorer/TimepointExplorer.hooks'),
-  useTimepoints: jest.fn(() => mockTimepoints),
-}));
+// MSW handler that returns data to generate exactly 3 timepoints
+function setupMSWHandlers() {
+  server.use(
+    apiRoute('getHttpDashboard', {
+      result: async (req) => {
+        const url = new URL(req.url);
+        const refId = url.searchParams.get('refId');
+
+        // Check configs - return a single config that spans our desired timepoint range
+        if (refId === REF_ID_UNIQUE_CHECK_CONFIGS) {
+          const frame = createUniqueConfigFrame({
+            configVersion: String((baseTime - 360000) * 1_000_000),
+            frequency: '60000',
+            timestamps: [baseTime - 360000],
+            values: [1],
+          });
+
+          return {
+            json: createUniqueConfigsResponse([frame]),
+          };
+        }
+
+        // Max probe duration
+        if (refId === REF_ID_MAX_PROBE_DURATION) {
+          const frame = createMaxProbeDurationFrame({
+            refId: REF_ID_MAX_PROBE_DURATION,
+            job: BASIC_HTTP_CHECK.job,
+            instance: BASIC_HTTP_CHECK.target,
+            probe: 'atlanta',
+            timestamps: [baseTime],
+            values: [2.5],
+          });
+
+          return {
+            json: createMaxProbeDurationResponse(REF_ID_MAX_PROBE_DURATION, [frame]),
+          };
+        }
+
+        // Execution logs
+        if (refId?.startsWith(REF_ID_EXECUTION_LIST_LOGS)) {
+          return { json: checksLogs1(refId) };
+        }
+
+        return { json: { results: {} } };
+      },
+    })
+  );
+}
 
 jest.mock('scenes/components/TimepointExplorer/TimepointViewer.hooks', () => ({
   useTimepointLogs: jest.fn(() => ({
@@ -71,6 +93,15 @@ function renderTimepointExplorer() {
 }
 
 describe('TimepointExplorer', () => {
+  beforeEach(() => {
+    jest.spyOn(Date, 'now').mockReturnValue(baseTime);
+    setupMSWHandlers();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it(`should not render if the feature flag is off`, async () => {
     render(renderTimepointExplorer());
     await waitFor(() => screen.queryByTestId(DataTestIds.TimepointList));
@@ -89,16 +120,15 @@ describe('TimepointExplorer', () => {
     mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
     const { user } = render(renderTimepointExplorer());
 
-    await waitFor(() => screen.queryByTestId(DataTestIds.TimepointList));
-    await waitFor(() => screen.findByTestId(DataTestIds.TimepointViewer));
+    await screen.findByTestId(DataTestIds.TimepointList);
+    await screen.findByTestId(DataTestIds.TimepointViewer);
 
     expect(screen.getByText('Click on a data point above to view detailed logs.')).toBeInTheDocument();
 
-    const timepointButton = await waitFor(() => screen.findByTestId(`${DataTestIds.TimepointListEntryBar}-${mockTimepoints[2].index}`));
-    await user.click(timepointButton);
+    const timepointButtons = await screen.findAllByTestId(new RegExp(`${DataTestIds.TimepointListEntryBar}-`));
+    await user.click(timepointButtons[0]);
 
     expect(screen.queryByText('Click on a data point above to view detailed logs.')).not.toBeInTheDocument();
-
   });
 
   it(`should call scrollIntoView when a timepoint with data is clicked`, async () => {
@@ -107,13 +137,13 @@ describe('TimepointExplorer', () => {
 
     expect(mockScrollIntoView).not.toHaveBeenCalled();
 
-    const timepointButton = await waitFor(() => screen.findByTestId(`${DataTestIds.TimepointListEntryBar}-${mockTimepoints[2].index}`));
-    await user.click(timepointButton);
+    const timepointButtons = await screen.findAllByTestId(new RegExp(`${DataTestIds.TimepointListEntryBar}-`));
+
+    await user.click(timepointButtons[0]);
 
     expect(mockScrollIntoView).toHaveBeenCalledWith({
       behavior: 'smooth',
       block: 'start',
     });
   });
-
 });
