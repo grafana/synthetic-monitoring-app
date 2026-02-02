@@ -15,7 +15,11 @@ export const MAX_TIMEOUT_SCRIPTED = ONE_MINUTE_IN_MS * 3;
 
 function createScriptedSettingsSchema(): ZodType<ScriptedSettings> {
   return z.object({
-    script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation).superRefine(validateNonBrowserScript),
+    script: z
+      .string()
+      .min(1, `Script is required.`)
+      .superRefine(maxSizeValidation)
+      .superRefine(validateNonBrowserScript),
   });
 }
 
@@ -28,7 +32,17 @@ export function createScriptedCheckSchema(availableProbes?: ProbeWithMetadata[])
     })
     .and(
       z.object({
-        target: z.string().min(3, `Instance must be at least 3 characters long.`),
+        target: z
+          .string()
+          .min(3, `Instance must be at least 3 characters long.`)
+          .superRefine((value, ctx) => {
+            if (value !== value.trim()) {
+              ctx.addIssue({
+                code: 'custom',
+                message: `Instance cannot have leading or trailing whitespace`,
+              });
+            }
+          }),
         checkType: z.literal(CheckType.Scripted),
         settings: z.object({
           scripted: createScriptedSettingsSchema(),

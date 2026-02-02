@@ -19,7 +19,6 @@ function createBrowserSettingsSchema(): ZodType<BrowserSettings> {
   });
 }
 
-
 export function createBrowserCheckSchema(availableProbes?: ProbeWithMetadata[]): ZodType<CheckFormValuesBrowser> {
   const schema = baseCheckSchema
     .omit({
@@ -29,7 +28,17 @@ export function createBrowserCheckSchema(availableProbes?: ProbeWithMetadata[]):
     })
     .and(
       z.object({
-        target: z.string().min(3, `Instance must be at least 3 characters long.`),
+        target: z
+          .string()
+          .min(3, `Instance must be at least 3 characters long.`)
+          .superRefine((value, ctx) => {
+            if (value !== value.trim()) {
+              ctx.addIssue({
+                code: 'custom',
+                message: `Instance cannot have leading or trailing whitespace`,
+              });
+            }
+          }),
         checkType: z.literal(CheckType.Browser),
         settings: z.object({
           browser: createBrowserSettingsSchema(),
