@@ -4,6 +4,7 @@ import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@gra
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { DEFAULT_QUERY_FROM_TIME_TEXT } from 'components/constants';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const AvgLatency = () => {
@@ -126,7 +127,7 @@ export const AvgLatency = () => {
       title="Average latency"
       viz={viz}
       dataProvider={dataTransformer}
-      description={'The average time to receive an answer across all the checks during the whole time period.'}
+      description={`The average time to receive an answer across all the checks during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.`}
       menu={menu}
     />
   );

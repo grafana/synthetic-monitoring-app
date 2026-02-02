@@ -536,17 +536,18 @@ export const ASSERTION_SUBJECT_OPTIONS: Array<ComboboxOption<AssertionSubjectVar
   { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },
 ];
 
+/* For all dashboard panels and queries, the default time range is the last 3 hours. */
+export const DEFAULT_QUERY_FROM_TIME = '3h';
+export const DEFAULT_QUERY_FROM_TIME_TEXT = '3 hours';
+
 export const UPTIME_DESCRIPTION =
   'Whether any of the probes could reach the target. Uptime decreases when all the probes fail simultaneously.';
 export const REACHABILITY_DESCRIPTION =
   'The success rate of all the probes. Reachability decreases when any probe fails.';
 export const PROBE_REACHABILITY_DESCRIPTION = 'The success percentage of all checks performed by this probe.';
 export const LATENCY_DESCRIPTION =
-  'The average time to receive an answer across all the checks during the whole time period.';
+  `The average time to receive an answer across all the checks during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.`;
 
 export const STANDARD_REFRESH_INTERVAL = 1000 * 60;
 
 export const CHECK_FORM_ERROR_EVENT = `sm-check-form-error`;
-
-/* For all dashboard panels and queries, the default time range is the last 3 hours. */
-export const DEFAULT_QUERY_FROM_TIME = '3h';

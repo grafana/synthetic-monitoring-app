@@ -8,6 +8,7 @@ import { trackRoutingPreviewToggled } from 'features/tracking/perCheckAlertsEven
 import { CheckAlertType, CheckFormValuesWithAlert } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { NotOkStatusInfo } from 'components/AlertStatus/NotOkStatusInfo';
+import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 
 import { AlertRoutingPreview } from './AlertRoutingPreview';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
@@ -19,7 +20,7 @@ import { TLSTargetCertificateCloseToExpiringAlert } from './TLSTargetCertificate
 
 function createExploreLink(dataSourceName: string, query: string) {
   return urlUtil.renderUrl(`/explore`, {
-    left: JSON.stringify(['now-3h', 'now', dataSourceName, { datasource: dataSourceName, expr: query }]),
+    left: JSON.stringify([`now-${DEFAULT_QUERY_FROM_TIME}`, 'now', dataSourceName, { datasource: dataSourceName, expr: query }]),
   });
 }
 
@@ -93,13 +94,13 @@ export const AlertItem = ({
         {(alert.type === CheckAlertType.HTTPRequestDurationTooHighAvg ||
           alert.type === CheckAlertType.PingRequestDurationTooHighAvg ||
           alert.type === CheckAlertType.DNSRequestDurationTooHighAvg) && (
-          <RequestDurationTooHighAvgAlert
-            alert={alert}
-            selected={selected}
-            onSelectionChange={handleToggleAlert}
-            tooltipContent={tooltipContent}
-          />
-        )}
+            <RequestDurationTooHighAvgAlert
+              alert={alert}
+              selected={selected}
+              onSelectionChange={handleToggleAlert}
+              tooltipContent={tooltipContent}
+            />
+          )}
 
         {selected && (
           <Button

@@ -3,6 +3,7 @@ import { METRICS_DATASOURCE } from 'test/fixtures/datasources';
 
 import { ApiEntry } from 'test/handlers/types';
 import { MetricDatasourceResponse } from 'datasource/responses.types';
+import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 
 const instantMetrics = BASIC_CHECK_LIST.map((check) => ({
   metric: {
@@ -21,7 +22,7 @@ const rangeMetrics = BASIC_CHECK_LIST.map((check) => ({
 }));
 
 const checkReachabilityQuery =
-  'sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)';
+  `sum(rate(probe_all_success_sum[${DEFAULT_QUERY_FROM_TIME}])) by (job, instance) / sum(rate(probe_all_success_count[${DEFAULT_QUERY_FROM_TIME}])) by (job, instance)`;
 const checkUptimeQuery = `clamp_max(sum(max_over_time(probe_success{job=`;
 
 export const getInstantMetrics: ApiEntry<MetricDatasourceResponse<any>> = {

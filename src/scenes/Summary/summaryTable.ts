@@ -4,6 +4,7 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { DEFAULT_QUERY_FROM_TIME_TEXT } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
@@ -468,10 +469,10 @@ export function getSummaryTable(metrics: DataSourceRef, sm: DataSourceRef) {
     title: `$check_type checks`,
     description: `* instance: the instance that corresponds to this check.
     * **job**: the job that corresponds to this check.
-    * **reachability**: the percentage of all the checks that have succeeded during the whole time period.
-    * **latency**: the average time to receive an answer across all the checks during the whole time period.
+    * **reachability**: the percentage of all the checks that have succeeded during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.
+    * **latency**: the average time to receive an answer across all the checks during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.
     * **state**: whether the target was up or down the last time it was checked.
-    * **uptime**: the fraction of time the target was up  during the whole period.`,
+    * **uptime**: the fraction of time the target was up  during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.`,
 
     fieldConfig: {
       defaults: {
