@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.46.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.46.0...v1.46.1) (2026-02-02)
+
+
+### Fixes
+
+* latency tooltip time range ([#1565](https://github.com/grafana/synthetic-monitoring-app/issues/1565)) ([d12345a](https://github.com/grafana/synthetic-monitoring-app/commit/d12345a0d088588b53d9eae6a8f090d6b2bd39db))
+* normalize Loki data frames in check test button ([#1566](https://github.com/grafana/synthetic-monitoring-app/issues/1566)) ([66af354](https://github.com/grafana/synthetic-monitoring-app/commit/66af354c7838d957e7b37747dfa2b2cc2c95b82b))
+
+
+### Miscellaneous Chores
+
+* auto approve ops workflow ([#1564](https://github.com/grafana/synthetic-monitoring-app/issues/1564)) ([51a2cb7](https://github.com/grafana/synthetic-monitoring-app/commit/51a2cb72bf51a29867e2edf1da06b3ac6ffcf98a))
+* cleanup enum naming convention ([#1557](https://github.com/grafana/synthetic-monitoring-app/issues/1557)) ([c47d523](https://github.com/grafana/synthetic-monitoring-app/commit/c47d523551b3877e920ac848e357c8a2eacbca54))
+* migrate from MultiSelect to MultiCombobox ([#1554](https://github.com/grafana/synthetic-monitoring-app/issues/1554)) ([c5f2c4d](https://github.com/grafana/synthetic-monitoring-app/commit/c5f2c4dc4d1353fbb39cd85e7868f025430e25df))
+* migrate from Select to Combobox ([#1553](https://github.com/grafana/synthetic-monitoring-app/issues/1553)) ([89d55e1](https://github.com/grafana/synthetic-monitoring-app/commit/89d55e15dac4eeddec3d69d92a8aec4c1b4d5b9c))
+* provide React 19 support ([#1551](https://github.com/grafana/synthetic-monitoring-app/issues/1551)) ([468fab9](https://github.com/grafana/synthetic-monitoring-app/commit/468fab9f0b3fc85cd37470a43935bc4bf07dbb94))
+
 ## [1.46.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.45.0...v1.46.0) (2026-01-22)
 
 
