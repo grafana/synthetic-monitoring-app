@@ -148,7 +148,8 @@
     "zod": "4.1.13"
   },
   "resolutions": {
-    "rxjs": "7.8.2"
+    "rxjs": "7.8.2",
+    "strip-ansi": "^6.0.1"
   },
   "packageManager": "yarn@1.22.19"
 }
