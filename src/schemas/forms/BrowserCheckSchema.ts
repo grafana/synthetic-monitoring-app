@@ -1,5 +1,6 @@
 import { createFrequencySchema } from 'schemas/general/Frequency';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
+import { noLeadingTrailingWhitespace } from './utils/validation';
 import { z, ZodType } from 'zod';
 
 import { BrowserSettings, CheckFormValuesBrowser, CheckType, ProbeWithMetadata } from 'types';
@@ -31,14 +32,7 @@ export function createBrowserCheckSchema(availableProbes?: ProbeWithMetadata[]):
         target: z
           .string()
           .min(3, `Instance must be at least 3 characters long.`)
-          .superRefine((value, ctx) => {
-            if (value !== value.trim()) {
-              ctx.addIssue({
-                code: 'custom',
-                message: `Instance cannot have leading or trailing whitespace`,
-              });
-            }
-          }),
+          .superRefine(noLeadingTrailingWhitespace('Instance')),
         checkType: z.literal(CheckType.Browser),
         settings: z.object({
           browser: createBrowserSettingsSchema(),
