@@ -34,7 +34,7 @@ export const TimepointListEntry = ({ timepoint }: TimepointListEntryProps) => {
 };
 
 const Entry = (props: TimepointListEntryProps) => {
-  const { check, currentAdjustedTime, isLoading, viewMode } = useTimepointExplorerContext();
+  const { check, currentAdjustedTime, isInitialised, isLoading, viewMode } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(props.timepoint);
   const isInTheFuture = getIsInTheFuture(props.timepoint, currentAdjustedTime);
   const selectedProbeNames = useSceneVarProbes(check);
@@ -46,7 +46,7 @@ const Entry = (props: TimepointListEntryProps) => {
     return <div />;
   }
 
-  if (isEntryLoading) {
+  if (isEntryLoading || !isInitialised) {
     return <TimepointListEntryLoading />;
   }
 

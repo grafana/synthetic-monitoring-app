@@ -20,9 +20,9 @@ import { TimepointViewerActions } from 'scenes/components/TimepointExplorer/Time
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
-  const { viewerState, shouldScrollToViewer, handleSetScrollToViewer } = useTimepointExplorerContext();
+  const { isInitialised, viewerState, shouldScrollToViewer, handleSetScrollToViewer } = useTimepointExplorerContext();
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
-  const [viewerTimepoint, viewerProbeName] = viewerState || [];
+  const [viewerTimepoint, viewerProbeName] = viewerState;
   const styles = useStyles2(getStyles);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +60,7 @@ export const TimepointViewer = () => {
         </div>
       ) : (
         <Stack justifyContent={'center'} alignItems={'center'} height={30} direction={'column'}>
-          <Text>Click on a data point above to view detailed logs.</Text>
+          <Text>{isInitialised ? 'Click on a data point above to view detailed logs.' : 'Loading...'}</Text>
         </Stack>
       )}
     </div>

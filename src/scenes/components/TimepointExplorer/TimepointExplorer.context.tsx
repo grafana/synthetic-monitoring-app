@@ -27,6 +27,7 @@ import {
   useBuiltCheckConfigs,
   useCurrentAdjustedTime,
   useExecutionDurationLogs,
+  useIsInitialised,
   useIsListResultPending,
   usePersistedMaxProbeDuration,
   useSceneAnnotationEvents,
@@ -82,6 +83,7 @@ interface TimepointExplorerContextType {
   isCheckCreationWithinTimeRange: boolean;
   isError: boolean;
   isFetching: boolean;
+  isInitialised: boolean;
   isLoading: boolean;
   isLogsRetentionPeriodWithinTimerange: boolean;
   listLogsMap: Record<UnixTimestamp, StatefulTimepoint>;
@@ -326,6 +328,14 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     listLogsMap,
   });
 
+  const isInitialised = useIsInitialised({
+    check,
+    isLoading,
+    handleViewerStateChange,
+    timepoints,
+    currentAdjustedTime,
+  });
+
   const renderingStrategy = getRenderingStrategy({
     isLogsRetentionPeriodWithinTimerange,
     timepoints,
@@ -360,6 +370,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       isCheckCreationWithinTimeRange,
       isError,
       isFetching,
+      isInitialised,
       isLoading,
       isLogsRetentionPeriodWithinTimerange,
       listLogsMap,
@@ -401,6 +412,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isCheckCreationWithinTimeRange,
     isError,
     isFetching,
+    isInitialised,
     isLoading,
     isLogsRetentionPeriodWithinTimerange,
     listLogsMap,

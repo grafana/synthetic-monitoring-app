@@ -21,13 +21,13 @@ import { mockFeatureToggles } from 'test/utils';
 import { FeatureName } from 'types';
 import {
   REF_ID_EXECUTION_LIST_LOGS,
+  REF_ID_EXECUTION_VIEWER_LOGS,
   REF_ID_MAX_PROBE_DURATION,
   REF_ID_UNIQUE_CHECK_CONFIGS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
-const baseTime = new Date('2024-01-01T12:00:00Z').getTime(); // ✓ This already works
+const baseTime = new Date().getTime();
 
-// MSW handler that returns data to generate exactly 3 timepoints
 function setupMSWHandlers() {
   server.use(
     apiRoute('getHttpDashboard', {
@@ -35,7 +35,6 @@ function setupMSWHandlers() {
         const url = new URL(req.url);
         const refId = url.searchParams.get('refId');
 
-        // Check configs - return a single config that spans our desired timepoint range
         if (refId === REF_ID_UNIQUE_CHECK_CONFIGS) {
           const frame = createUniqueConfigFrame({
             configVersion: String((baseTime - 360000) * 1_000_000),
@@ -49,7 +48,6 @@ function setupMSWHandlers() {
           };
         }
 
-        // Max probe duration
         if (refId === REF_ID_MAX_PROBE_DURATION) {
           const frame = createMaxProbeDurationFrame({
             refId: REF_ID_MAX_PROBE_DURATION,
@@ -65,8 +63,11 @@ function setupMSWHandlers() {
           };
         }
 
-        // Execution logs
         if (refId?.startsWith(REF_ID_EXECUTION_LIST_LOGS)) {
+          return { json: checksLogs1(refId) };
+        }
+
+        if (refId?.startsWith(REF_ID_EXECUTION_VIEWER_LOGS)) {
           return { json: checksLogs1(refId) };
         }
 
@@ -76,24 +77,17 @@ function setupMSWHandlers() {
   );
 }
 
-jest.mock('scenes/components/TimepointExplorer/TimepointViewer.hooks', () => ({
-  useTimepointLogs: jest.fn(() => ({
-    data: [],
-    isFetching: false,
-    isLoading: false,
-    refetch: jest.fn(),
-  })),
-}));
 
-const mockScrollIntoView = jest.fn();
-Element.prototype.scrollIntoView = mockScrollIntoView;
 
 function renderTimepointExplorer() {
   return <TimepointExplorer check={BASIC_HTTP_CHECK} />;
 }
 
+const mockScrollIntoView = jest.fn();
+
 describe('TimepointExplorer', () => {
   beforeEach(() => {
+    Element.prototype.scrollIntoView = mockScrollIntoView;
     jest.spyOn(Date, 'now').mockReturnValue(baseTime);
     setupMSWHandlers();
   });
@@ -114,21 +108,6 @@ describe('TimepointExplorer', () => {
     render(renderTimepointExplorer());
     await waitFor(() => screen.findByTestId(DataTestIds.TimepointList));
     await waitFor(() => screen.findByTestId(DataTestIds.TimepointViewer));
-  });
-
-  it(`should not show empty state message after a timepoint is selected`, async () => {
-    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
-    const { user } = render(renderTimepointExplorer());
-
-    await screen.findByTestId(DataTestIds.TimepointList);
-    await screen.findByTestId(DataTestIds.TimepointViewer);
-
-    expect(screen.getByText('Click on a data point above to view detailed logs.')).toBeInTheDocument();
-
-    const timepointButtons = await screen.findAllByTestId(new RegExp(`${DataTestIds.TimepointListEntryBar}-`));
-    await user.click(timepointButtons[0]);
-
-    expect(screen.queryByText('Click on a data point above to view detailed logs.')).not.toBeInTheDocument();
   });
 
   it(`should call scrollIntoView when a timepoint with data is clicked`, async () => {
