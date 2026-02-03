@@ -1,6 +1,5 @@
 import { createFrequencySchema } from 'schemas/general/Frequency';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
-import { noLeadingTrailingWhitespace } from './utils/validation';
 import { z, ZodType } from 'zod';
 
 import { BrowserSettings, CheckFormValuesBrowser, CheckType, ProbeWithMetadata } from 'types';
@@ -8,6 +7,7 @@ import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
 import { maxSizeValidation, validateBrowserScript } from './script/validation';
 import { createProbeCompatibilityRefinement } from './utils/probeCompatibilityRefinement';
+import { noLeadingTrailingWhitespace } from './utils/validation';
 import { baseCheckSchema } from './BaseCheckSchema';
 
 export const MIN_FREQUENCY_BROWSER = ONE_MINUTE_IN_MS;
