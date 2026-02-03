@@ -7,6 +7,7 @@ import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
 import { maxSizeValidation, validateNonBrowserScript } from './script/validation';
 import { createProbeCompatibilityRefinement } from './utils/probeCompatibilityRefinement';
+import { noLeadingTrailingWhitespace } from './utils/validation';
 import { baseCheckSchema } from './BaseCheckSchema';
 
 export const MIN_FREQUENCY_SCRIPTED = ONE_MINUTE_IN_MS;
@@ -15,7 +16,11 @@ export const MAX_TIMEOUT_SCRIPTED = ONE_MINUTE_IN_MS * 3;
 
 function createScriptedSettingsSchema(): ZodType<ScriptedSettings> {
   return z.object({
-    script: z.string().min(1, `Script is required.`).superRefine(maxSizeValidation).superRefine(validateNonBrowserScript),
+    script: z
+      .string()
+      .min(1, `Script is required.`)
+      .superRefine(maxSizeValidation)
+      .superRefine(validateNonBrowserScript),
   });
 }
 
@@ -28,7 +33,10 @@ export function createScriptedCheckSchema(availableProbes?: ProbeWithMetadata[])
     })
     .and(
       z.object({
-        target: z.string().min(3, `Instance must be at least 3 characters long.`),
+        target: z
+          .string()
+          .min(3, `Instance must be at least 3 characters long.`)
+          .superRefine(noLeadingTrailingWhitespace('Instance')),
         checkType: z.literal(CheckType.Scripted),
         settings: z.object({
           scripted: createScriptedSettingsSchema(),

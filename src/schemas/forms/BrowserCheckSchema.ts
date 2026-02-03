@@ -7,6 +7,7 @@ import { ONE_MINUTE_IN_MS, ONE_SECOND_IN_MS } from 'utils.constants';
 
 import { maxSizeValidation, validateBrowserScript } from './script/validation';
 import { createProbeCompatibilityRefinement } from './utils/probeCompatibilityRefinement';
+import { noLeadingTrailingWhitespace } from './utils/validation';
 import { baseCheckSchema } from './BaseCheckSchema';
 
 export const MIN_FREQUENCY_BROWSER = ONE_MINUTE_IN_MS;
@@ -19,7 +20,6 @@ function createBrowserSettingsSchema(): ZodType<BrowserSettings> {
   });
 }
 
-
 export function createBrowserCheckSchema(availableProbes?: ProbeWithMetadata[]): ZodType<CheckFormValuesBrowser> {
   const schema = baseCheckSchema
     .omit({
@@ -29,7 +29,10 @@ export function createBrowserCheckSchema(availableProbes?: ProbeWithMetadata[]):
     })
     .and(
       z.object({
-        target: z.string().min(3, `Instance must be at least 3 characters long.`),
+        target: z
+          .string()
+          .min(3, `Instance must be at least 3 characters long.`)
+          .superRefine(noLeadingTrailingWhitespace('Instance')),
         checkType: z.literal(CheckType.Browser),
         settings: z.object({
           browser: createBrowserSettingsSchema(),
