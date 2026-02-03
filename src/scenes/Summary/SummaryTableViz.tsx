@@ -502,4 +502,3 @@ export const SummaryTableViz = () => {
     <VizPanel menu={menu} title={title} description={description} viz={viz} dataProvider={dataTransformer} />
   );
 };
-
