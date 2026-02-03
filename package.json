@@ -112,7 +112,7 @@
     "@grafana/faro-web-sdk": "1.19.0",
     "@grafana/runtime": "^12.1.0",
     "@grafana/scenes": "5.42.0",
-    "@grafana/scenes-react": "5.42.0",
+    "@grafana/scenes-react": "6.52.12",
     "@grafana/schema": "^12.1.0",
     "@grafana/ui": "^12.1.0",
     "@hookform/resolvers": "5.2.2",
