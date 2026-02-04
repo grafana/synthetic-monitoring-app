@@ -1,6 +1,7 @@
 import React, { PropsWithChildren } from 'react';
-import { Link, Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
+import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 import { locationService } from '@grafana/runtime';
+import { TextLink } from '@grafana/ui';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 
@@ -27,7 +28,7 @@ function Wrapper({ children }: PropsWithChildren<{}>) {
   // The component uses locationService.getHistory() internally for blocking navigation.
   // We use HistoryRouter with Grafana's history so both React Router and the component
   // share the same history instance for blocking to work.
-  const history = locationService.getHistory();
+  const history = locationService.getHistory() as unknown as Parameters<typeof HistoryRouter>[0]['history'];
 
   return (
     <HistoryRouter history={history}>
@@ -51,9 +52,9 @@ describe('ConfirmLeavingPage', () => {
     it('should render a modal when navigating away and stay on page when clicking "Stay on page"', async () => {
       render(
         <>
-          <Link to="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
+          <TextLink href="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
             Leave page
-          </Link>
+          </TextLink>
           <ConfirmLeavingPage enabled />
         </>,
         { wrapper: Wrapper }
@@ -69,15 +70,12 @@ describe('ConfirmLeavingPage', () => {
       expect(await screen.findByTestId(TEST_IDS.INITIAL_PAGE)).toBeInTheDocument();
     });
 
-    // Skip: Navigation after unblocking causes React Router errors due to unstable_HistoryRouter
-    // compatibility issues with Grafana's locationService.getHistory(). The blocking functionality
-    // is verified by the "Stay on page" test above, and by the beforeunload test below.
-    it.skip('should close modal and allow navigation when clicking "Leave page"', async () => {
+    it('should close modal and allow navigation when clicking "Leave page"', async () => {
       render(
         <>
-          <Link to="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
+          <TextLink href="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
             Leave page
-          </Link>
+          </TextLink>
           <ConfirmLeavingPage enabled />
         </>,
         { wrapper: Wrapper }
@@ -98,9 +96,9 @@ describe('ConfirmLeavingPage', () => {
     it('should trigger confirm on beforeunload', async () => {
       render(
         <>
-          <Link to="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
+          <TextLink href="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
             Leave page
-          </Link>
+          </TextLink>
           <ConfirmLeavingPage enabled />
         </>,
         { wrapper: Wrapper }

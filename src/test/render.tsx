@@ -1,11 +1,10 @@
-import React, { PropsWithChildren, type ReactElement, type ReactNode } from 'react';
-import { MemoryRouter } from 'react-router-dom';
-import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
+import React, { PropsWithChildren, type ReactElement, type ReactNode, useEffect, useState } from 'react';
+import { Route, Router, Routes } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
+import { locationService, LocationServiceProvider } from '@grafana/runtime';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
-import { createMemoryHistory, type MemoryHistory } from 'history';
 import { SM_META } from 'test/fixtures/meta';
 import { TestRouteInfo } from 'test/helpers/TestRouteInfo';
 
@@ -18,7 +17,7 @@ import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 export type ComponentWrapperProps = {
   children: ReactNode;
-  history: MemoryHistory;
+  initialEntries?: string[];
   route?: string;
   meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
 };
@@ -39,77 +38,79 @@ function getRelativeRoute(route?: string) {
   if (route.includes(`${APP_ROOT}/`)) {
     return route.replace(`${APP_ROOT}/`, '');
   }
-
   return route;
 }
 
-const DefaultWrapper = ({ children, route: _route, history, meta }: ComponentWrapperProps) => {
-  const route = getRelativeRoute(_route);
+/**
+ * Test wrapper component that provides all necessary context providers
+ * and routing setup for tests.
+ *
+ * Uses Router with locationService.getHistory() so that both React Router
+ * and locationService share the same history instance. This ensures that
+ * locationService.push/replace updates are reflected in useLocation().
+ *
+ * @see https://grafana.com/developers/plugin-tools/migration-guides/update-from-grafana-versions/v10.0.x-v10.1.x#4-fix-test-failures-with-location-service-methods
+ */
+const DefaultWrapper = ({ children, route: _route, initialEntries, meta }: ComponentWrapperProps) => {
+  const relativeRoute = getRelativeRoute(_route);
+  const history = locationService.getHistory();
+  const initialPath = initialEntries?.[0] || APP_ROOT;
+
+  const [location, setLocation] = useState(() => {
+    history.replace(initialPath);
+    return { ...history.location };
+  });
+
+  useEffect(() => {
+    const unlisten = history.listen((update) => {
+      // history v4/v5 passes { location, action }
+      const newLocation = (update as unknown as { location: typeof location }).location;
+      setLocation({ ...newLocation });
+    });
+    return unlisten;
+  }, [history]);
+
+  const fullRoutePattern = `${APP_ROOT}/${relativeRoute}`.replace('//', '/');
 
   return (
-    <QueryClientProvider client={getQueryClient()}>
-      <MetaContextProvider meta={{ ...SM_META, ...meta }}>
-        <FeatureFlagProvider>
-          <SMDatasourceProvider>
-            <PermissionsContextProvider>
-              <MemoryRouter initialEntries={history.entries}>
-                <CompatRouter>
+    <LocationServiceProvider service={locationService}>
+      <Router navigator={history} location={location}>
+        <QueryClientProvider client={getQueryClient()}>
+          <MetaContextProvider meta={{ ...SM_META, ...meta }}>
+            <FeatureFlagProvider>
+              <SMDatasourceProvider>
+                <PermissionsContextProvider>
+                  <TestRouteInfo />
                   <Routes>
-                    <Route path={APP_ROOT}>
-                      <Route
-                        path={route}
-                        element={
-                          <>
-                            <TestRouteInfo />
-                            {children}
-                          </>
-                        }
-                      />
-                    </Route>
-                    <Route path={route}>
-                      <Route
-                        path={route}
-                        element={
-                          <>
-                            <TestRouteInfo />
-                            {children}
-                          </>
-                        }
-                      />
-                    </Route>
-                    <Route
-                      path="*"
-                      element={
-                        <>
-                          <TestRouteInfo />
-                        </>
-                      }
-                    />
+                    <Route path={fullRoutePattern} element={children} />
+                    <Route path="*" element={children} />
                   </Routes>
-                </CompatRouter>
-              </MemoryRouter>
-            </PermissionsContextProvider>
-          </SMDatasourceProvider>
-        </FeatureFlagProvider>
-      </MetaContextProvider>
-    </QueryClientProvider>
+                </PermissionsContextProvider>
+              </SMDatasourceProvider>
+            </FeatureFlagProvider>
+          </MetaContextProvider>
+        </QueryClientProvider>
+      </Router>
+    </LocationServiceProvider>
   );
 };
 
 export const createWrapper = ({ route = '*', meta, path: _path, wrapper }: CreateWrapperProps = {}) => {
-  const path = _path && _path.startsWith(`${APP_ROOT}/`) ? _path : `${APP_ROOT}/${_path}`.split('//').join('/');
+  const path = _path
+    ? _path.startsWith(`${APP_ROOT}/`)
+      ? _path
+      : `${APP_ROOT}/${_path}`.replace('//', '/')
+    : APP_ROOT;
   const Component = wrapper || DefaultWrapper;
-  const history = createMemoryHistory({
-    initialEntries: path ? [path] : [APP_ROOT],
-  });
+  const initialEntries = [path];
 
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Component route={route} meta={meta} history={history}>
+    <Component route={route} meta={meta} initialEntries={initialEntries}>
       {children}
     </Component>
   );
 
-  return { Wrapper, history };
+  return { Wrapper, initialEntries };
 };
 
 export type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & CreateWrapperProps;
@@ -117,7 +118,7 @@ export type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & CreateWrapper
 const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
   const { path, route, meta, wrapper, ...rest } = options;
   const user = userEventLib.setup();
-  const { Wrapper, history } = createWrapper({
+  const { Wrapper, initialEntries } = createWrapper({
     path,
     route,
     meta,
@@ -126,7 +127,7 @@ const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
 
   return {
     user,
-    history,
+    initialEntries,
     ...render(ui, {
       wrapper: Wrapper,
       ...rest,
