@@ -2,16 +2,10 @@ version: '3.0'
 
 services:
   grafana:
-    container_name: 'grafana-synthetic-monitoring-app'
-    build:
-      context: ./.config
-      args:
-        grafana_version: ${GRAFANA_VERSION:-main}
-        grafana_image: ${GRAFANA_IMAGE:-grafana-enterprise}
-    ports:
-      - 3000:3000/tcp
+    extends:
+      file: .config/docker-compose-base.yaml
+      service: grafana
     volumes:
-      - ./dist:/var/lib/grafana/plugins/grafana-synthetic-monitoring-app
       - ./dev/provisioning:/etc/grafana/provisioning
       - ./dev/custom.ini:/etc/grafana/grafana.ini
       - ./dev/license.jwt:/var/lib/grafana/license.jwt
