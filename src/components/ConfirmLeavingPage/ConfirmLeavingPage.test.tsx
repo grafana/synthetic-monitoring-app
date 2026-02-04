@@ -1,6 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import { Route, Router, Routes } from 'react-router';
 import { locationService } from '@grafana/runtime';
+import { TextLink } from '@grafana/ui';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 
