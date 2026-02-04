@@ -26,7 +26,7 @@ import {
   REF_ID_UNIQUE_CHECK_CONFIGS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
-const baseTime = new Date().getTime();
+const baseTime = Date.now();
 
 function setupMSWHandlers() {
   server.use(
