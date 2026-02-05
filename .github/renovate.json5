@@ -9,6 +9,11 @@
   "internalChecksFilter": "strict", // https://docs.renovatebot.com/configuration-options/#await-x-time-duration-before-automerging
   "semanticCommitScope": null,
   "packageRules": [
+    // @grafana/scenes and @grafana/scenes-react must be updated together
+    {
+      "matchPackageNames": ["@grafana/scenes", "@grafana/scenes-react"],
+      "groupName": "grafana-scenes"
+    },
     // we can never update the React packages until grafana does
     {
       "matchPackageNames": [
