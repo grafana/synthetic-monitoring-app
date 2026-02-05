@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from 'react';
-import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
+import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router';
 import { locationService } from '@grafana/runtime';
 import { TextLink } from '@grafana/ui';
 import { fireEvent, render, screen } from '@testing-library/react';
