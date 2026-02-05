@@ -18,7 +18,7 @@ import {
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { DataTestIds } from 'test/dataTestIds';
 import { mockFeatureToggles } from 'test/utils';
-import { FeatureName } from 'types';
+import { FeatureName, HTTPCheck } from 'types';
 import {
   REF_ID_EXECUTION_LIST_LOGS,
   REF_ID_EXECUTION_VIEWER_LOGS,
@@ -27,6 +27,14 @@ import {
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
 const baseTime = Date.now();
+
+const TIME_MODIFIED_HTTP_CHECK: HTTPCheck = {
+  ...BASIC_HTTP_CHECK,
+  frequency: 60000,
+  timeout: 10000,
+  created: Math.floor((baseTime - 60 * 60 * 1000) / 1000),
+  modified: Math.floor((baseTime - 10 * 60 * 1000) / 1000),
+};
 
 function setupMSWHandlers() {
   server.use(
@@ -80,7 +88,7 @@ function setupMSWHandlers() {
 
 
 function renderTimepointExplorer() {
-  return <TimepointExplorer check={BASIC_HTTP_CHECK} />;
+  return <TimepointExplorer check={TIME_MODIFIED_HTTP_CHECK} />;
 }
 
 const mockScrollIntoView = jest.fn();
