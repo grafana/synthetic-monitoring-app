@@ -1090,7 +1090,7 @@
     micro-memoize "^4.1.2"
     react-i18next "^15.0.0"
 
-"@grafana/i18n@12.3.2":
+"@grafana/i18n@12.3.2", "@grafana/i18n@^12.2.0":
   version "12.3.2"
   resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.2.tgz#f4dbb9b5aae2550486e57b94a433729ccb37f728"
   integrity sha512-1H/iVe52ipd4Vj3lFvMpH266tn8QibfTDEaDoNMHgR/TP68233035Z71Tgv1GZai72k3R4gEeSF+03pMAilaOg==
