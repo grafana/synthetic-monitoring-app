@@ -1,7 +1,8 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 
 import { AppRoutes } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { useMeta } from 'hooks/useMeta';
 import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
@@ -30,11 +31,11 @@ export const UninitialisedRouter = () => {
       <Route path={AppRoutes.Alerts} element={<AlertingWelcomePage />} />
       <Route path={AppRoutes.Config} element={<ConfigPageLayout />}>
         <Route index element={<UninitializedTab />} />
-        <Route path="*" element={<Navigate to={AppRoutes.Home} />} />
+        <Route path="*" element={<Navigate to={getRoute(AppRoutes.Home)} replace />} />
       </Route>
 
       {/* TODO: Create 404 instead of navigating to home(?) */}
-      <Route path="*" element={<Navigate to={AppRoutes.Home} />} />
+      <Route path="*" element={<Navigate to={getRoute(AppRoutes.Home)} replace />} />
     </Routes>
   );
 };

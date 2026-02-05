@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useBeforeUnload } from 'react-router-dom';
+import { useBeforeUnload } from 'react-router';
 import { useSessionStorage } from 'usehooks-ts';
 
 import { DEV_STORAGE_KEYS } from 'components/DevTools/DevTools.constants';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { screen } from '@testing-library/react';
 import { SM_META } from 'test/fixtures/meta';
@@ -7,6 +7,7 @@ import { ComponentWrapperProps, render } from 'test/render';
 import { runTestWithoutSMAccess } from 'test/utils';
 
 import { hasGlobalPermission } from 'utils';
+import { PLUGIN_URL_PATH } from 'routing/constants';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
@@ -20,14 +21,14 @@ jest.mock('utils', () => {
   };
 });
 
-const Wrapper = ({ children, initialEntries, meta }: ComponentWrapperProps) => {
+const Wrapper = ({ children, initialEntries = [`${PLUGIN_URL_PATH}home`], meta }: ComponentWrapperProps) => {
   return (
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...SM_META, ...meta }}>
         <FeatureFlagProvider>
           <MemoryRouter initialEntries={initialEntries}>
             <Routes>
-              <Route path="*" element={children} />
+              <Route path={`${PLUGIN_URL_PATH}*`} element={children} />
             </Routes>
           </MemoryRouter>
         </FeatureFlagProvider>

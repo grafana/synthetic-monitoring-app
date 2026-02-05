@@ -1,11 +1,11 @@
-import { useLocation as useLocationFromReactRouter } from 'react-router-dom';
+import { useLocation as useLocationFromReactRouter } from 'react-router';
 import { locationService } from '@grafana/runtime';
 import { act, renderHook } from '@testing-library/react';
 
 import { useQueryParametersState } from './useQueryParametersState';
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useLocation: jest.fn(),
 }));
 
