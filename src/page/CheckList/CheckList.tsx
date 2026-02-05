@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { locationService, PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';

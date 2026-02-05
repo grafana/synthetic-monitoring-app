@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { matchPath, Outlet, useLocation } from 'react-router-dom';
+import { matchPath, Outlet, useLocation } from 'react-router';
 import { NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 

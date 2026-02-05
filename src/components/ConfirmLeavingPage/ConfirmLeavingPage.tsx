@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { locationService } from '@grafana/runtime';
 import { Location } from 'history';
 
@@ -12,7 +12,7 @@ interface ConfirmLeavingPageProps {
 }
 
 /**
- * When enabled is `true`, will block `react-router-dom` navigation with confirm modal.
+ * When enabled is `true`, will block `react-router` navigation with confirm modal.
  * Native navigations are handled with native `confirm`
  *
  * @example

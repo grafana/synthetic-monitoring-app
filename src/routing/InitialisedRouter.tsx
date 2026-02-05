@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { TextLink } from '@grafana/ui';
 
 import { FeatureName } from 'types';
@@ -57,7 +57,7 @@ export const InitialisedRouter = () => {
 
   return (
     <Routes>
-      <Route index element={<Navigate to={AppRoutes.Home} />} />
+      <Route index element={<Navigate to={getRoute(AppRoutes.Home)} replace />} />
 
       <Route
         path={AppRoutes.Home}
