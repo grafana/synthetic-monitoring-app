@@ -1,6 +1,5 @@
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
-import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { render } from '@testing-library/react';
 
 import { AppRoutes } from 'routing/types';
@@ -12,15 +11,13 @@ import { ConfigPageLayout } from './ConfigPageLayout';
 function Wrapper({ initialEntries = ['/'] }) {
   return (
     <MemoryRouter initialEntries={initialEntries}>
-      <CompatRouter>
-        <Routes>
-          <Route path={getRoute(AppRoutes.Config)} Component={ConfigPageLayout}>
-            <Route index element={<div data-testid="indexRoute">index</div>} />
-            <Route path="access-tokens" element={<div data-testid="indexAccessTokens">access-tokens</div>} />
-            <Route path="terraform" element={<div data-testid="terraform">terraform</div>} />
-          </Route>
-        </Routes>
-      </CompatRouter>
+      <Routes>
+        <Route path={getRoute(AppRoutes.Config)} element={<ConfigPageLayout />}>
+          <Route index element={<div data-testid="indexRoute">index</div>} />
+          <Route path="access-tokens" element={<div data-testid="indexAccessTokens">access-tokens</div>} />
+          <Route path="terraform" element={<div data-testid="terraform">terraform</div>} />
+        </Route>
+      </Routes>
     </MemoryRouter>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
+import { useLocation } from 'react-router-dom';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
+import { locationService, PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
@@ -53,7 +53,6 @@ type CheckListContentProps = {
 
 const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps) => {
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
-  const navigate = useNavigate();
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
@@ -134,7 +133,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   };
 
   const handleResetFilters = () => {
-    navigate(`${location.pathname}${sortType ? `?sort=${sortType}` : ''}`);
+    locationService.push(`${location.pathname}${sortType ? `?sort=${sortType}` : ''}`);
   };
 
   const handleLabelSelect = (label: Label) => {

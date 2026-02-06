@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { TextLink } from '@grafana/ui';
 
 import { FeatureName } from 'types';
@@ -12,6 +12,7 @@ import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { SceneRedirecter } from 'components/SceneRedirecter';
+import { ScenesProvider } from 'components/ScenesProvider';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckList } from 'page/CheckList';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
@@ -62,7 +63,9 @@ export const InitialisedRouter = () => {
         path={AppRoutes.Home}
         element={
           canReadChecks ? (
-            <SceneHomepage />
+            <ScenesProvider>
+              <SceneHomepage />
+            </ScenesProvider>
           ) : (
             <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
           )
@@ -76,7 +79,9 @@ export const InitialisedRouter = () => {
             index
             element={
               canReadChecks ? (
-                <DashboardPage />
+                <ScenesProvider>
+                  <DashboardPage />
+                </ScenesProvider>
               ) : (
                 <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
               )
@@ -131,7 +136,7 @@ export const InitialisedRouter = () => {
 
       <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
 
-      <Route path={`${AppRoutes.Config}`} Component={ConfigPageLayout}>
+      <Route path={`${AppRoutes.Config}`} element={<ConfigPageLayout />}>
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />

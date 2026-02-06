@@ -1,19 +1,24 @@
-import { useLocation as useLocationFromReactRouter } from 'react-router-dom-v5-compat';
+import { useLocation as useLocationFromReactRouter } from 'react-router-dom';
+import { locationService } from '@grafana/runtime';
 import { act, renderHook } from '@testing-library/react';
 
 import { useQueryParametersState } from './useQueryParametersState';
 
-const navigateMock = jest.fn();
-
-// useLocation: jest.fn(),
-
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
-  useNavigate: jest.fn(() => navigateMock),
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
   useLocation: jest.fn(),
 }));
 
+jest.mock('@grafana/runtime', () => ({
+  ...jest.requireActual('@grafana/runtime'),
+  locationService: {
+    push: jest.fn(),
+    replace: jest.fn(),
+  },
+}));
+
 const useLocation = useLocationFromReactRouter as jest.MockedFunction<typeof useLocationFromReactRouter>;
+const mockLocationService = locationService as jest.Mocked<typeof locationService>;
 
 describe('useQueryParametersState', () => {
   afterEach(() => {
@@ -34,7 +39,7 @@ describe('useQueryParametersState', () => {
     const { result } = renderHook(() => useQueryParametersState({ key: 'myKey', initialValue }));
 
     expect(result.current[0]).toEqual({ count: 0 });
-    expect(navigateMock).toHaveBeenCalledTimes(0);
+    expect(mockLocationService.replace).toHaveBeenCalledTimes(0);
   });
 
   test('Updates query params', () => {
@@ -60,10 +65,8 @@ describe('useQueryParametersState', () => {
       updateState(newValue);
     });
 
-    expect(navigateMock).toHaveBeenCalledTimes(1);
-    expect(navigateMock).toHaveBeenCalledWith(`/?myKey=${encodeURIComponent(JSON.stringify(newValue))}`, {
-      replace: true,
-    });
+    expect(mockLocationService.replace).toHaveBeenCalledTimes(1);
+    expect(mockLocationService.replace).toHaveBeenCalledWith(`/?myKey=${encodeURIComponent(JSON.stringify(newValue))}`);
   });
 
   test('Removes query params', () => {
@@ -89,8 +92,8 @@ describe('useQueryParametersState', () => {
 
     expect(result.current[0]).toEqual(initialValue);
 
-    expect(navigateMock).toHaveBeenCalledTimes(1);
-    expect(navigateMock).toHaveBeenCalledWith('/', { replace: true });
+    expect(mockLocationService.replace).toHaveBeenCalledTimes(1);
+    expect(mockLocationService.replace).toHaveBeenCalledWith('/');
   });
 
   test('Does not remove pre-existing query params when deleting a key', () => {
@@ -117,7 +120,7 @@ describe('useQueryParametersState', () => {
 
     expect(result.current[0]).toEqual(initialValue);
 
-    expect(navigateMock).toHaveBeenCalledTimes(1);
+    expect(mockLocationService.replace).toHaveBeenCalledTimes(1);
     const { result: anotherKeyState } = renderHook(() =>
       useQueryParametersState({ key: 'anotherKey', initialValue: '' })
     );

@@ -48,7 +48,6 @@ export const TimepointList = () => {
   }, 100);
 
   useResizeObserver({
-    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
     ref,
     onResize: () => {
       onResize(ref.current?.clientWidth ?? 0);

@@ -116,7 +116,6 @@ const TimepointMinimapContent = () => {
       : [];
 
   useResizeObserver({
-    // @ts-expect-error
     ref,
     onResize: (element) => {
       setMiniMapWidth(element.width ?? 0);

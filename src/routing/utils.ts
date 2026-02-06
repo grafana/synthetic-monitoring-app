@@ -1,4 +1,4 @@
-import { generatePath, type PathParam } from 'react-router-dom-v5-compat';
+import { generatePath, type PathParam } from 'react-router-dom';
 
 import { CheckType, CheckTypeGroup } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
