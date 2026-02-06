@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -64,7 +64,7 @@ describe('CheckList - Rendering', () => {
 
     const emptyWarning = await waitFor(
       () =>
-        screen.findByTestId(DataTestIds.ChecksEmptyState, {
+        screen.findByTestId(CHECKS_TEST_ID.emptyState, {
           exact: false,
         }),
       { timeout: 30000 }
@@ -75,7 +75,7 @@ describe('CheckList - Rendering', () => {
 
   test('renders list of checks', async () => {
     await renderCheckList();
-    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
+    const checks = await screen.findAllByTestId(CHECKS_TEST_ID.card);
     expect(checks.length).toBe(BASIC_CHECK_LIST.length);
   });
 
@@ -83,10 +83,10 @@ describe('CheckList - Rendering', () => {
     const searchParams = `sort=atoz`;
     await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
     await screen.findByText('Sort');
-    const sortCombobox = await screen.findByTestId(DataTestIds.SortChecksByCombobox);
+    const sortCombobox = await screen.findByTestId(CHECKS_TEST_ID.header.sortBy);
     expect(sortCombobox).toHaveValue('A-Z');
 
-    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
+    const checks = await screen.findAllByTestId(CHECKS_TEST_ID.card);
     expect(checks.length).toBe(2);
     expect(checks[0]).toHaveTextContent(BASIC_DNS_CHECK.job);
     expect(checks[1]).toHaveTextContent(BASIC_HTTP_CHECK.job);
@@ -96,10 +96,10 @@ describe('CheckList - Rendering', () => {
     const searchParams = `sort=ztoa`;
     await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
     await screen.findByText('Sort');
-    const sortCombobox = await screen.findByTestId(DataTestIds.SortChecksByCombobox);
+    const sortCombobox = await screen.findByTestId(CHECKS_TEST_ID.header.sortBy);
     expect(sortCombobox).toHaveValue('Z-A');
 
-    const checks = await screen.findAllByTestId(DataTestIds.CheckCard);
+    const checks = await screen.findAllByTestId(CHECKS_TEST_ID.card);
     expect(checks.length).toBe(2);
     expect(checks[0]).toHaveTextContent(BASIC_HTTP_CHECK.job);
     expect(checks[1]).toHaveTextContent(BASIC_DNS_CHECK.job);
@@ -107,9 +107,9 @@ describe('CheckList - Rendering', () => {
 
   test('Sorting by success rate should not crash', async () => {
     const { user } = await renderCheckList();
-    await selectOption(user, { dataTestId: DataTestIds.SortChecksByCombobox, option: 'Asc. Reachability' });
+    await selectOption(user, { dataTestId: CHECKS_TEST_ID.header.sortBy, option: 'Asc. Reachability' });
 
-    const checks = await waitFor(() => screen.findAllByTestId(DataTestIds.CheckCard), { timeout: 5000 });
+    const checks = await waitFor(() => screen.findAllByTestId(CHECKS_TEST_ID.card), { timeout: 5000 });
     expect(checks.length).toBe(BASIC_CHECK_LIST.length);
   });
 });

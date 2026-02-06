@@ -1,13 +1,13 @@
 import React from 'react';
 import { runTestAsRBACAdmin, runTestAsRBACReader, runTestAsSMEditor, runTestAsSMViewer } from 'test/utils';
 
-import { DataTestIds } from '../../../test/dataTestIds';
+import { CONFIG_TEST_ID } from '../../../test/dataTestIds';;
 import { render } from '../../../test/render';
 import { AccessTokensTab } from './AccessTokensTab';
 
 async function renderAccessTokensTab() {
   const result = render(<AccessTokensTab />);
-  await result.findByTestId(DataTestIds.ConfigContent);
+  await result.findByTestId(CONFIG_TEST_ID.content);
 
   return result;
 }

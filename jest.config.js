@@ -19,6 +19,7 @@ module.exports = {
     '^grafana/app/core/app_events$': '<rootDir>/src/test/mocks/grafana/app/core/app_events.js',
   },
   testTimeout: 30000,
+  maxWorkers: '50%',
   // Inform jest to only transform specific node_module packages.
   transform: {
     ...config.transform,

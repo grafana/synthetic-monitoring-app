@@ -2,7 +2,7 @@ import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
 import { Combobox, ComboboxOption, Field, Icon, Input, MultiCombobox, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { Check } from 'types';
@@ -80,7 +80,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
         aria-label="Search checks"
         prefix={<Icon name="search" />}
         width={40}
-        data-testid={DataTestIds.CheckSearchInput}
+        data-testid={CHECKS_TEST_ID.filters.search}
         type="text"
         value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
         onChange={handleSearchChange}
@@ -95,7 +95,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
               <Combobox
                 id="check-status-filter"
                 aria-label="Filter by status"
-                data-testid={DataTestIds.CheckStatusFilter}
+                data-testid={CHECKS_TEST_ID.filters.status}
                 options={CHECK_LIST_STATUS_OPTIONS}
                 width={20}
                 onChange={(option) => {
@@ -137,7 +137,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
             <Combobox
               aria-label="Filter by alerts"
               id="check-alerts-filter"
-              data-testid={DataTestIds.CheckAlertsFilter}
+              data-testid={CHECKS_TEST_ID.filters.alerts}
               options={alertOptions}
               width={20}
               onChange={(option) => {
@@ -170,7 +170,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
         <Field label="Probes" htmlFor="check-probes-filter" data-fs-element="Probes select" className={cx(styles.verticalSpace, styles.fullWidth)}>
           <MultiCombobox
             id="check-probes-filter"
-            data-testid={DataTestIds.CheckProbesFilter}
+            data-testid={CHECKS_TEST_ID.filters.probes}
             onChange={(selectedOptions) => {
               const selectedProbes: ProbeFilter[] = selectedOptions.map((option) => ({
                 label: option.label ?? '',

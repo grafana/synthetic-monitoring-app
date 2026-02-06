@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackDuplicateCheckButtonClicked } from 'features/tracking/checkListEvents';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { Check } from 'types';
 import { getCheckType } from 'utils';
@@ -66,7 +66,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
         disabled={!canWriteChecks || isPending}
       />
       <LinkButton
-        data-testid={DataTestIds.EditCheckButton}
+        data-testid={CHECKS_TEST_ID.listItem.editButton}
         href={`${generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}`}
         icon={`pen`}
         tooltip="Edit check"

@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { highlight, languages } from 'prismjs';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
@@ -45,7 +45,7 @@ export function CodeBlockDisplay({ content, title, language, showProbeTokenWarni
         </Text>
       )}
       <div className={styles.codeContainer}>
-        <pre className={styles.pre} data-testid={DataTestIds.Preformatted}>
+        <pre className={styles.pre} data-testid={UI_TEST_ID.preformatted}>
           <code className={styles.code} dangerouslySetInnerHTML={{ __html: highlightedCode }} />
         </pre>
         <CopyToClipboard

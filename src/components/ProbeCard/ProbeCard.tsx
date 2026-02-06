@@ -2,7 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Card, Link, LinkButton, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { PROBES_TEST_ID } from 'test/dataTestIds';
 
 import { type ExtendedProbe, FeatureName, type Label, Probe, ProbeWithMetadata } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -90,7 +90,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
         {canWriteProbes ? (
           <>
             <LinkButton
-              data-testid={DataTestIds.ProbeCardActionButton}
+              data-testid={PROBES_TEST_ID.card.actionButton}
               icon="pen"
               fill="outline"
               variant="secondary"
@@ -103,7 +103,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
           </>
         ) : (
           <LinkButton
-            data-testid={DataTestIds.ProbeCardActionButton}
+            data-testid={PROBES_TEST_ID.card.actionButton}
             href={probeEditHref}
             fill="outline"
             variant="secondary"

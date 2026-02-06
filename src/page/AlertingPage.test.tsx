@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
-import { DataTestIds } from 'test/dataTestIds';
+import { ALERT_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
 import { runTestAsMetricsViewer, selectOption } from 'test/utils';
 
@@ -80,7 +80,7 @@ it('adds default alerts and edits alerts', async () => {
   await user.clear(alertNameInput);
   await user.type(alertNameInput, 'A different name');
 
-  const probePercentage = await screen.findByTestId(DataTestIds.AlertProbePercentage);
+  const probePercentage = await screen.findByTestId(ALERT_TEST_ID.probePercentage);
   expect(probePercentage).toHaveValue(95);
   await user.clear(probePercentage);
   await user.type(probePercentage, '25');
@@ -90,7 +90,7 @@ it('adds default alerts and edits alerts', async () => {
   await user.clear(timeCount);
   await user.type(timeCount, '2');
 
-  await selectOption(user, { dataTestId: DataTestIds.AlertRuleFormTimeUnitCombobox, option: 'seconds' });
+  await selectOption(user, { dataTestId: ALERT_TEST_ID.timeUnitCombobox, option: 'seconds' });
 
   const labels = await toggleSection('Labels', user);
   const addLabelButton = await within(labels).findByText('Add label');

@@ -3,7 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Combobox, Field, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { ALERT_SENSITIVITY_INPUT_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues } from 'types';
 
@@ -50,7 +50,7 @@ export const CheckFormAlert = () => {
                 aria-label="Select alert sensitivity"
                 width={40}
                 disabled={isFormDisabled || isCustomSensitivity}
-                data-testid={DataTestIds.AlertSensitivityInput}
+                data-testid={ALERT_SENSITIVITY_INPUT_TEST_ID}
                 options={
                   isCustomSensitivity
                     ? [{ label: alertSensitivity, value: alertSensitivity }]

@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { trackCheckUpdated } from 'features/tracking/checkFormEvents';
-import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
@@ -91,7 +91,7 @@ describe(`<EditCheckV2 />`, () => {
     await submitForm(user);
 
     await waitFor(() => {
-      const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
+      const pathInfo = screen.getByTestId(ROUTER_TEST_ID.pathname);
       expect(pathInfo.textContent).toBe(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
     });
   });
@@ -105,7 +105,7 @@ describe(`<EditCheckV2 />`, () => {
     await submitForm(user);
 
     await waitFor(() => {
-      const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
+      const pathInfo = screen.getByTestId(ROUTER_TEST_ID.pathname);
       expect(pathInfo.textContent).toBe(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
     });
 

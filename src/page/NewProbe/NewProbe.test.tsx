@@ -7,7 +7,7 @@ import { fillProbeForm } from 'test/utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 
-import { DataTestIds } from '../../test/dataTestIds';
+import { ROUTER_TEST_ID } from '../../test/dataTestIds';;
 import { NewProbe } from './NewProbe';
 
 jest.setTimeout(60000);
@@ -29,7 +29,7 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
   const dismiss = screen.getByText('Go back to probes list');
   await user.click(dismiss);
 
-  expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
+  expect(screen.getByTestId(ROUTER_TEST_ID.pathname)).toHaveTextContent(
     generateRoutePath(AppRoutes.Probes)
   );
 });

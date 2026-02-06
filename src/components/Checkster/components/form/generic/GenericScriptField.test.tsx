@@ -1,6 +1,6 @@
 import React, { ComponentProps } from 'react';
 import { screen } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CODE_EDITOR_TEST_ID } from 'test/dataTestIds';
 
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericScriptField } from './GenericScriptField';
@@ -29,7 +29,7 @@ jest.mock('@grafana/ui', () => ({
 jest.mock('components/CodeEditor', () => ({
   CodeEditor: jest.fn(({ value, onChange, readOnly }) => (
     <textarea
-      data-testid={DataTestIds.CodeEditor}
+      data-testid={CODE_EDITOR_TEST_ID}
       value={value || ''}
       onChange={(e) => onChange?.(e.target.value)}
       readOnly={readOnly}
@@ -53,7 +53,7 @@ describe('GenericScriptField', () => {
   it('renders a code editor', () => {
     renderGenericScriptField();
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toBeInTheDocument();
   });
 
@@ -61,7 +61,7 @@ describe('GenericScriptField', () => {
     const scriptContent = 'console.log("Hello, World!");';
     renderGenericScriptField(undefined, { value: scriptContent });
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toHaveValue(scriptContent);
   });
 
@@ -70,7 +70,7 @@ describe('GenericScriptField', () => {
       field: 'settings.scripted.script' as any,
     });
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     const newContent = 'const result = 42;';
 
     await user.clear(codeEditor);
@@ -81,7 +81,7 @@ describe('GenericScriptField', () => {
 
   it('is read-only when form is disabled', () => {
     renderGenericScriptField(undefined, { disabled: true });
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toHaveAttribute('readOnly');
   });
 
@@ -107,7 +107,7 @@ describe('GenericScriptField', () => {
   it('handles empty script value', () => {
     renderGenericScriptField();
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toHaveValue('');
   });
 
@@ -125,7 +125,7 @@ describe('GenericScriptField', () => {
       { 'settings.scripted.script': multilineScript } as any
     );
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toHaveValue(multilineScript);
   });
 
@@ -140,7 +140,7 @@ describe('GenericScriptField', () => {
       { 'settings.scripted.script': scriptWithSpecialChars } as any
     );
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toHaveValue(scriptWithSpecialChars);
   });
 
@@ -151,7 +151,7 @@ describe('GenericScriptField', () => {
 
     // The component uses emotion CSS for styling the Column component
     // We can verify the component structure is rendered correctly
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toBeInTheDocument();
   });
 
@@ -160,7 +160,7 @@ describe('GenericScriptField', () => {
       field: 'settings.scripted.script' as any,
     });
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     const initialContent = 'const x = 1;';
     const updatedContent = 'const x = 2;';
 
@@ -180,7 +180,7 @@ describe('GenericScriptField', () => {
       field: 'settings.k6.script' as any,
     });
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toBeInTheDocument();
   });
 
@@ -200,7 +200,7 @@ describe('GenericScriptField', () => {
       { 'settings.scripted.script': formattedScript } as any
     );
 
-    const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+    const codeEditor = screen.getByTestId(CODE_EDITOR_TEST_ID);
     expect(codeEditor).toHaveValue(formattedScript);
   });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -24,7 +24,7 @@ describe('SecretsManagementTab', () => {
       server.use(apiRoute('listSecrets', { result: () => ({ status: 500, body: 'Error message' }) }));
       render(<SecretsManagementTab />);
 
-      await waitFor(() => expect(screen.queryByTestId(DataTestIds.CenteredSpinner)).not.toBeInTheDocument(), {
+      await waitFor(() => expect(screen.queryByTestId(UI_TEST_ID.centeredSpinner)).not.toBeInTheDocument(), {
         timeout: 3000,
       });
 
@@ -46,7 +46,7 @@ describe('SecretsManagementTab', () => {
       });
       expect(screen.getByText('secret.securevalues:read')).toBeInTheDocument();
       expect(screen.getByText('secret.securevalues:create')).toBeInTheDocument();
-      expect(screen.queryByTestId(DataTestIds.CenteredSpinner)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(UI_TEST_ID.centeredSpinner)).not.toBeInTheDocument();
     });
 
     it('shows secrets management UI for admin users', async () => {

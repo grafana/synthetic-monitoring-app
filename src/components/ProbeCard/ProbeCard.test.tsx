@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useTheme2 } from '@grafana/ui';
 import { renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { DataTestIds, PROBES_TEST_ID } from 'test/dataTestIds';
+import { PROBES_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
 import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 import { probeToExtendedProbe, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
@@ -75,7 +75,7 @@ it(`Displays the correct information for a private probe`, async () => {
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId(DataTestIds.ProbeCardActionButton);
+  const button = screen.getByTestId(PROBES_TEST_ID.card.actionButton);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('Edit');
 });
@@ -87,7 +87,7 @@ it(`Displays the correct information for a private probe as a viewer`, async () 
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId(DataTestIds.ProbeCardActionButton);
+  const button = screen.getByTestId(PROBES_TEST_ID.card.actionButton);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('View');
 });
@@ -99,7 +99,7 @@ it(`Displays the correct information for a private probe as a RBAC viewer`, asyn
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId(DataTestIds.ProbeCardActionButton);
+  const button = screen.getByTestId(PROBES_TEST_ID.card.actionButton);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('View');
 });
@@ -110,7 +110,7 @@ it(`Displays the correct information for a public probe`, async () => {
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName, { exact: false });
 
-  const button = screen.getByTestId(DataTestIds.ProbeCardActionButton);
+  const button = screen.getByTestId(PROBES_TEST_ID.card.actionButton);
   expect(button).toBeInTheDocument();
   expect(button).toHaveTextContent('View');
 });
@@ -121,7 +121,7 @@ it('handles public probe click', async () => {
   await screen.findByText(probe.displayName);
   await user.click(screen.getByText(probe.displayName));
 
-  expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
+  expect(screen.getByTestId(ROUTER_TEST_ID.pathname)).toHaveTextContent(
     generateRoutePath(AppRoutes.ViewProbe, { id: probe.id! })
   );
 });
@@ -132,7 +132,7 @@ it('handles private probe click', async () => {
   await screen.findByText(probe.displayName);
   await user.click(screen.getByText(probe.displayName));
 
-  expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
+  expect(screen.getByTestId(ROUTER_TEST_ID.pathname)).toHaveTextContent(
     generateRoutePath(AppRoutes.EditProbe, { id: probe.id! })
   );
 });
@@ -148,14 +148,14 @@ it.each<[ExtendedProbe, string]>([
 
     await screen.findByText(probe.displayName);
 
-    const usageLink = screen.getByTestId(DataTestIds.ProbeUsageLink);
+    const usageLink = screen.getByTestId(PROBES_TEST_ID.usageLink);
     expect(usageLink).toBeInTheDocument();
     expect(usageLink).toHaveTextContent(expectedText);
     await user.click(usageLink);
-    expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
+    expect(screen.getByTestId(ROUTER_TEST_ID.pathname)).toHaveTextContent(
       generateRoutePath(AppRoutes.Checks)
     );
-    expect(screen.getByTestId(DataTestIds.TestRouterInfoSearch)).toHaveTextContent(`?probes=${probe.name}`);
+    expect(screen.getByTestId(ROUTER_TEST_ID.search)).toHaveTextContent(`?probes=${probe.name}`);
   }
 );
 
@@ -165,6 +165,6 @@ it('Displays the correct information for a probe that is NOT in use', async () =
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName);
 
-  const usageLink = screen.queryByTestId(DataTestIds.ProbeUsageLink);
+  const usageLink = screen.queryByTestId(PROBES_TEST_ID.usageLink);
   expect(usageLink).not.toBeInTheDocument();
 });

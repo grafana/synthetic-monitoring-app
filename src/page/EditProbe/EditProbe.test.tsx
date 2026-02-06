@@ -12,7 +12,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { PROBE_REFETCH_INTERVAL } from 'data/useProbes';
 
-import { DataTestIds } from '../../test/dataTestIds';
+import { ROUTER_TEST_ID } from '../../test/dataTestIds';;
 import { EditProbe } from './EditProbe';
 
 const renderEditProbe = (probe: Probe, forceViewMode = false) => {
@@ -65,7 +65,7 @@ describe(`Private probes`, () => {
     const saveButton = getSaveButton();
     await user.click(saveButton!);
 
-    expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
+    expect(screen.getByTestId(ROUTER_TEST_ID.pathname)).toHaveTextContent(
       generateRoutePath(AppRoutes.Probes)
     );
 

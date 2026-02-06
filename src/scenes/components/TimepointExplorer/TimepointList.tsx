@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Box, LoadingBar, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 
 import {
   ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX,
@@ -59,7 +59,7 @@ export const TimepointList = () => {
   const padStart = renderingStrategy === 'start' && isCheckCreationWithinTimeRange;
 
   return (
-    <div data-testid={DataTestIds.TimepointList}>
+    <div data-testid={UI_TEST_ID.timepointList}>
       {isFetching ? <LoadingBar width={listWidth} /> : <div style={{ height: 1 }} />}
       <div className={styles.container}>
         {isError && (
