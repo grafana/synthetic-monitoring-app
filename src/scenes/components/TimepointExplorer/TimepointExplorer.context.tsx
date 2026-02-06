@@ -73,6 +73,7 @@ interface TimepointExplorerContextType {
   handleMiniMapPageChange: (page: number) => void;
   handleMiniMapSectionChange: (sectionIndex: number) => void;
   handleRefetch: () => void;
+  handleSetScrollToViewer: (shouldScroll: boolean) => void;
   handleTimepointWidthChange: (timepointWidth: number, currentSectionRange: MiniMapSection) => void;
   handleViewerStateChange: (state: ViewerState) => void;
   handleViewModeChange: (viewMode: ViewMode) => void;
@@ -97,6 +98,7 @@ interface TimepointExplorerContextType {
   timepointWidth: number;
   viewerState: ViewerState;
   viewMode: ViewMode;
+  shouldScrollToViewer: boolean;
   vizDisplay: VizDisplay;
   vizOptions: Record<TimepointStatus, string>;
   yAxisMax: number;
@@ -226,6 +228,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const isError = isCheckConfigsError || isExecutionDurationLogsError || isMaxProbeDurationError;
 
   const [viewerState, setViewerState] = useState<ViewerState>([]);
+  const [shouldScrollToViewer, setShouldScrollToViewer] = useState(false);
 
   const handleMiniMapSectionChange = useCallback((sectionIndex: number) => {
     setMiniMapCurrentSectionIndex(sectionIndex);
@@ -243,6 +246,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const handleViewerStateChange = useCallback((state: ViewerState) => {
     setViewerState(state);
+  }, []);
+
+  const handleSetScrollToViewer = useCallback((shouldScroll: boolean) => {
+    setShouldScrollToViewer(shouldScroll);
   }, []);
 
   const handleTimepointDisplayCountChange = useCallback(
@@ -358,6 +365,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleViewModeChange,
       handleVizDisplayChange,
       handleVizOptionChange,
+      handleSetScrollToViewer,
       hoveredState,
       isCheckCreationWithinTimeRange,
       isError,
@@ -377,6 +385,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       timepointWidth,
       viewerState,
       viewMode,
+      shouldScrollToViewer,
       vizDisplay,
       vizOptions,
       yAxisMax,
@@ -398,6 +407,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleViewModeChange,
     handleVizDisplayChange,
     handleVizOptionChange,
+    handleSetScrollToViewer,
     hoveredState,
     isCheckCreationWithinTimeRange,
     isError,
@@ -417,6 +427,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timepointWidth,
     viewerState,
     viewMode,
+    shouldScrollToViewer,
     vizDisplay,
     vizOptions,
     yAxisMax,

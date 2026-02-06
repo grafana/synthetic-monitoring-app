@@ -24,7 +24,7 @@ interface TimepointListEntryTooltipProps {
 
 export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const { currentAdjustedTime, handleHoverStateChange, handleViewerStateChange, hoveredState, viewerState } =
+  const { currentAdjustedTime, handleHoverStateChange, handleSetScrollToViewer, handleViewerStateChange, hoveredState, viewerState } =
     useTimepointExplorerContext();
 
   const statefulTimepoint = useStatefulTimepoint(timepoint);
@@ -48,9 +48,10 @@ export const TimepointListEntryTooltip = ({ timepoint }: TimepointListEntryToolt
         component: 'tooltip',
         status: statefulTimepoint.status,
       });
+      handleSetScrollToViewer(true);
       handleViewerStateChange([statefulTimepoint, probeName, index]);
     },
-    [statefulTimepoint, handleViewerStateChange]
+    [statefulTimepoint, handleViewerStateChange, handleSetScrollToViewer]
   );
 
   return (

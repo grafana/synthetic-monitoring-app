@@ -7,6 +7,9 @@ import { trackTimepointDetailsClicked } from 'features/tracking/timepointExplore
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { PlainButton } from 'components/PlainButton';
 import {
+  BAR_BORDER_WIDTH,
+  NON_SELECTED_BAR_OPACITY,
+  SELECTED_BAR_BORDER_WIDTH,
   TIMEPOINT_GAP_PX,
   TIMEPOINT_THEME_HEIGHT_PX,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
@@ -29,6 +32,7 @@ const ICON_MAP: Record<number, IconName> = {
 export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntryProps) => {
   const {
     handleHoverStateChange,
+    handleSetScrollToViewer,
     handleViewerStateChange,
     hoveredState,
     timepointWidth,
@@ -37,9 +41,12 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
     yAxisMax,
   } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const styles = useStyles2(getStyles, timepointWidth);
   const entryHeight = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
   const [hoveredTimepoint, hoveredProbeName, hoveredExecutionIndex] = hoveredState || [];
+  const [viewerTimepoint] = viewerState;
+  const hasSelection = !!viewerTimepoint;
+  const isTimepointSelected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime;
+  const styles = useStyles2(getStyles, timepointWidth, hasSelection, isTimepointSelected);
 
   // add the timepoint size to the height so the entries are rendered in the middle of the Y Axis line
   const height = `calc(${entryHeight}% + ${timepointWidth}px)`;
@@ -59,9 +66,10 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
         component: 'reachability-entry',
         status: statefulTimepoint.status,
       });
+      handleSetScrollToViewer(true);
       handleViewerStateChange([statefulTimepoint, probeName, index]);
     },
-    [statefulTimepoint, handleViewerStateChange]
+    [statefulTimepoint, handleViewerStateChange, handleSetScrollToViewer]
   );
 
   if (!executionsToRender.length) {
@@ -121,7 +129,7 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
   );
 };
 
-const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
+const getStyles = (theme: GrafanaTheme2, timepointWidth: number, hasSelection: boolean, isTimepointSelected: boolean) => {
   return {
     timepoint: css`
       display: flex;
@@ -140,6 +148,7 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
       position: relative;
       left: 50%;
       transform: translateX(-50%);
+      opacity: ${hasSelection && !isTimepointSelected ? NON_SELECTED_BAR_OPACITY : 1};
     `,
     executionContainer: css`
       position: absolute;
@@ -170,7 +179,7 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => {
       }
     `,
     viewed: css`
-      border-width: 2px;
+      border-width: ${isTimepointSelected ? SELECTED_BAR_BORDER_WIDTH : BAR_BORDER_WIDTH}px;
       z-index: 1;
     `,
     hovered: css`

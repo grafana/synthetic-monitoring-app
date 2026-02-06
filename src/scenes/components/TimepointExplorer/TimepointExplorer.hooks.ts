@@ -517,6 +517,7 @@ export function useIsInitialised({
   return !persistedIsLoading;
 }
 
+
 export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
   const { check, checkConfigs } = useTimepointExplorerContext();
   const latestConfigDate = checkConfigs[checkConfigs.length - 1].from;

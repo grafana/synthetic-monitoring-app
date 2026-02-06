@@ -3,9 +3,15 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { TimepointDetailsClick, trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { PlainButton } from 'components/PlainButton';
-import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import {
+  BAR_BORDER_WIDTH,
+  NON_SELECTED_BAR_OPACITY,
+  SELECTED_BAR_BORDER_WIDTH,
+  TIMEPOINT_GAP_PX,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import {
   useSelectedProbeNames,
@@ -32,14 +38,14 @@ export const TimepointListEntryBar = ({
   timepoint,
 }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { handleViewerStateChange, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const { handleViewerStateChange, handleSetScrollToViewer, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
   const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
-  const styles = useStyles2(getStyles, timepointWidth, height);
   const probeNameToView = selectedProbeNames.sort((a, b) => a.localeCompare(b))[0];
   const [viewerTimepoint] = viewerState;
   const isSelected = viewerTimepoint?.adjustedTime === timepoint.adjustedTime;
+  const styles = useStyles2(getStyles, timepointWidth, height, isSelected, !!viewerTimepoint);
   const ref = useRef<HTMLButtonElement>(null);
 
   const handleViewerStateClick = useCallback(() => {
@@ -47,8 +53,9 @@ export const TimepointListEntryBar = ({
       component: analyticsEventName,
       status,
     });
+    handleSetScrollToViewer(true);
     handleViewerStateChange([timepoint, probeNameToView, 0]);
-  }, [analyticsEventName, status, timepoint, probeNameToView, handleViewerStateChange]);
+  }, [analyticsEventName, status, timepoint, probeNameToView, handleViewerStateChange, handleSetScrollToViewer]);
 
   if (!vizDisplay.includes(status)) {
     return <div />;
@@ -62,7 +69,7 @@ export const TimepointListEntryBar = ({
         </div>
       )}
       <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
-        <PlainButton className={styles.button} ref={ref} onClick={handleViewerStateClick} showFocusStyles={false}>
+        <PlainButton className={styles.button} ref={ref} onClick={handleViewerStateClick} showFocusStyles={false} data-testid={`${DataTestIds.TimepointListEntryBar}-${timepoint.index}`}>
           <TimepointVizItem
             className={cx(styles.bar, GLOBAL_CLASS, {
               [styles.selected]: isSelected,
@@ -77,13 +84,20 @@ export const TimepointListEntryBar = ({
   );
 };
 
-const getStyles = (theme: GrafanaTheme2, timepointWidth: number, height: number) => {
+const getStyles = (
+  theme: GrafanaTheme2,
+  timepointWidth: number,
+  height: number,
+  isSelected: boolean,
+  hasSelection: boolean,
+) => {
   return {
     container: css`
       height: ${height}%;
       display: flex;
       flex-direction: column;
       align-items: center;
+      opacity: ${hasSelection && !isSelected ? NON_SELECTED_BAR_OPACITY : 1};
     `,
     button: css`
       width: calc(${timepointWidth}px + ${TIMEPOINT_GAP_PX}px);
@@ -131,7 +145,7 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number, height: number)
       }
     `,
     selected: css`
-      border-width: 2px;
+      border-width: ${isSelected ? SELECTED_BAR_BORDER_WIDTH : BAR_BORDER_WIDTH}px;
       z-index: 1;
     `,
     selectedIcon: css`

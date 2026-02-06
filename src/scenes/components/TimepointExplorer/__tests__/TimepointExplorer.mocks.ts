@@ -1,10 +1,13 @@
+import { dateTime } from '@grafana/data';
+
 jest.mock('@grafana/scenes-react', () => {
   const actual = jest.requireActual('@grafana/scenes-react');
 
+  const now = Date.now();
   let mockTimeRange = {
-    from: new Date('2024-01-01T00:00:00Z'),
-    to: new Date('2024-01-02T00:00:00Z'),
-    raw: { from: 'now-1d', to: 'now' },
+    from: dateTime(now - 15 * 60 * 1000),
+    to: dateTime(now),
+    raw: { from: 'now-15m', to: 'now' },
   };
 
   // Provide a default 'probe' variable so useSceneVar/useSceneVarProbes don't touch SceneContext

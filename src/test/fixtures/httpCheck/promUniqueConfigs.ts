@@ -121,3 +121,143 @@ export const promUniqueConfigs = {
     },
   },
 };
+
+interface CreateUniqueConfigFrameOptions {
+  configVersion: string;
+  frequency: string;
+  timestamps: number[];
+  values?: number[];
+  interval?: number;
+  includeCustomMeta?: boolean;
+  executedQueryString?: string;
+}
+
+export function createUniqueConfigFrame({
+  configVersion,
+  frequency,
+  timestamps,
+  values,
+  interval,
+  includeCustomMeta = false,
+  executedQueryString,
+}: CreateUniqueConfigFrameOptions) {
+  const baseFrame = promUniqueConfigs.results.uniqueCheckConfigs.frames[0];
+  const baseTimeField = baseFrame.schema.fields[0];
+  const baseValueField = baseFrame.schema.fields[1];
+
+  return {
+    ...baseFrame,
+    schema: {
+      ...baseFrame.schema,
+      meta: {
+        ...baseFrame.schema.meta,
+        ...(includeCustomMeta && baseFrame.schema.meta.custom && { custom: baseFrame.schema.meta.custom }),
+        ...(executedQueryString && { executedQueryString }),
+      },
+      fields: [
+        {
+          ...baseTimeField,
+          ...(interval && {
+            config: {
+              ...baseTimeField.config,
+              interval,
+            },
+          }),
+        },
+        {
+          ...baseValueField,
+          labels: {
+            config_version: configVersion,
+            frequency,
+          },
+          config: {
+            displayNameFromDS: `{config_version="${configVersion}", frequency="${frequency}"}`,
+          },
+        },
+      ],
+    },
+    data: {
+      values: [timestamps, values || timestamps.map(() => 1)],
+    },
+  };
+}
+
+export function createUniqueConfigsResponse(frames: Array<ReturnType<typeof createUniqueConfigFrame>>) {
+  return {
+    results: {
+      uniqueCheckConfigs: {
+        ...promUniqueConfigs.results.uniqueCheckConfigs,
+        frames,
+      },
+    },
+  };
+}
+
+interface CreateMaxProbeDurationFrameOptions {
+  refId: string;
+  job: string;
+  instance: string;
+  probe: string;
+  timestamps: number[];
+  values: number[];
+  interval?: number;
+}
+
+export function createMaxProbeDurationFrame({
+  refId,
+  job,
+  instance,
+  probe,
+  timestamps,
+  values,
+  interval = 30000,
+}: CreateMaxProbeDurationFrameOptions) {
+  return {
+    schema: {
+      refId,
+      meta: {
+        type: 'timeseries-multi' as const,
+        typeVersion: [0, 1] as [number, number],
+      },
+      fields: [
+        {
+          name: 'Time',
+          type: 'time' as const,
+          typeInfo: {
+            frame: 'time.Time',
+          },
+          config: {
+            interval,
+          },
+        },
+        {
+          name: 'Value',
+          type: 'number' as const,
+          typeInfo: {
+            frame: 'float64',
+          },
+          labels: {
+            job,
+            instance,
+            probe,
+          },
+        },
+      ],
+    },
+    data: {
+      values: [timestamps, values],
+    },
+  };
+}
+
+export function createMaxProbeDurationResponse(refId: string, frames: Array<ReturnType<typeof createMaxProbeDurationFrame>>) {
+  return {
+    results: {
+      [refId]: {
+        status: 200,
+        frames,
+      },
+    },
+  };
+}
+
