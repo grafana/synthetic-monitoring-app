@@ -30,9 +30,12 @@ export default async function () {
 
     await page.getByRole('textbox', { name: 'Username' }).fill(username);
     await page.getByRole('textbox', { name: 'Password' }).fill(password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
     
-    await expect(page.locator('//h2')).toContainText("Latest pizza recommendations");
+    const signIn = page.getByRole('button', { name: 'Sign in' });
+    await signIn.click();
+    await expect(signIn).toBeHidden();
+    
+    await expect(page.getByRole('heading')).toContainText("Latest pizza recommendations");
   
   } catch (e) {
     console.log('Error during execution:', e);

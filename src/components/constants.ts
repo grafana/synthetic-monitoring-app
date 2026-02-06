@@ -213,11 +213,13 @@ export default async function () {
 
     await page.getByRole('textbox', { name: 'Username' }).fill(username);
     await page.getByRole('textbox', { name: 'Password' }).fill(password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
 
-    const heading = page.locator('//h2');
-    await heading.waitFor({ state: "visible", timeout: 5000 });
+    const signIn = page.getByRole('button', { name: 'Sign in' });
+    await signIn.click();
+    await expect(signIn).toBeHidden();
 
+    const heading = page.getByRole('heading');
+    await expect(heading).toBeVisible();
     console.log('H2 header: ', await heading.textContent()); // will appear as logs in Loki
 
     // TIP: Use expect() to immediately abort execution and fail a test (impacts uptime/reachability)

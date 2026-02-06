@@ -31,9 +31,11 @@ export default async function () {
     await pwdInput.click();
     await page.keyboard.type('admin');
 
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    const signIn = page.getByRole('button', { name: 'Sign in' });
+    await signIn.click();
+    await expect(signIn).toBeHidden();
 
-    await expect(page.locator('//h2')).toContainText('Latest pizza recommendations');
+    await expect(page.getByRole('heading')).toContainText('Latest pizza recommendations');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;
