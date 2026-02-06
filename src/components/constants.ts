@@ -205,6 +205,7 @@ export default async function () {
   const page = await context.newPage();
   try {
     await page.goto("https://quickpizza.grafana.com/admin");
+    await page.waitForFunction("window.faro?.api");
 
     // TIP: Secure your credentials using secrets.get()
     // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/

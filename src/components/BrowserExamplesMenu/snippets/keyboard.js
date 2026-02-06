@@ -20,6 +20,7 @@ export default async function () {
 
   try {
     await page.goto('https://quickpizza.grafana.com/admin');
+    await page.waitForFunction("window.faro?.api");
 
     const userInput = page.locator('#username');
     await userInput.fill('');

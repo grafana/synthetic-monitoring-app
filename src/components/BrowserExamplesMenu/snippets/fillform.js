@@ -23,6 +23,7 @@ export default async function () {
 
   try {
     await page.goto('https://quickpizza.grafana.com/admin');
+    await page.waitForFunction("window.faro?.api");
 
     // Enter login credentials and login
     const username = 'admin'; // username = await secrets.get('quickpizza-username');
