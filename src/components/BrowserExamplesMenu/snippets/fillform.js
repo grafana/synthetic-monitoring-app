@@ -28,9 +28,9 @@ export default async function () {
     const username = 'admin'; // username = await secrets.get('quickpizza-username');
     const password = 'admin'; // password = await secrets.get('quickpizza-password');
 
-    await page.locator('#username').fill(username);
-    await page.locator('#password').fill(password);
-    await page.locator('button').click();
+    await page.getByRole('textbox', { name: 'Username' }).fill(username);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await page.getByRole('button', { name: 'Sign in' }).click();
     
     await expect(page.locator('//h2')).toContainText("Latest pizza recommendations");
   

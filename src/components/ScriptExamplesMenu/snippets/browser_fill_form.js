@@ -28,10 +28,10 @@ export default async function () {
     const username = 'admin'; // username = await secrets.get('quickpizza-username');
     const password = 'admin'; // password = await secrets.get('quickpizza-password');
 
-    page.locator('#username').type(username);
-    page.locator('#password').type(password);
+    await page.getByRole('textbox', { name: 'Username' }).type(username);
+    await page.getByRole('textbox', { name: 'Password' }).type(password);
 
-    const submitButton = page.locator('button');
+    const submitButton = page.getByRole('button', { name: 'Sign in' });
 
     await Promise.all([page.waitForNavigation(), submitButton.click()]);
 

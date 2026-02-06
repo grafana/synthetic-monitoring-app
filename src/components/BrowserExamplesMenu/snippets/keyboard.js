@@ -21,17 +21,17 @@ export default async function () {
   try {
     await page.goto('https://quickpizza.grafana.com/admin', { waitUntil: 'networkidle' });
 
-    const userInput = page.locator('#username');
+    const userInput = page.getByRole('textbox', { name: 'Username' });
     await userInput.fill('');
     await userInput.click();
     await page.keyboard.type('admin');
 
-    const pwdInput = page.locator('#password');
+    const pwdInput = page.getByRole('textbox', { name: 'Password' });
     await pwdInput.fill('');
     await pwdInput.click();
     await page.keyboard.type('admin');
 
-    await page.locator('button').click();
+    await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page.locator('//h2')).toContainText('Latest pizza recommendations');
   } catch (e) {
