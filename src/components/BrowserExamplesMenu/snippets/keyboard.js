@@ -34,7 +34,7 @@ export default async function () {
 
     await page.getByRole('button', { name: 'Sign in' }).click();
 
-    await expect(page.locator('//h2')).toContainText('Latest pizza recommendations');
+    await expect(page.getByRole('heading')).toContainText('Latest pizza recommendations');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;
