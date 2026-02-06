@@ -23,7 +23,7 @@ export default async function () {
   const page = browser.newPage();
 
   try {
-    await page.goto('https://quickpizza.grafana.com/admin');
+    await page.goto('https://quickpizza.grafana.com/admin', { waitUntil: 'networkidle' });
 
     const username = 'admin'; // username = await secrets.get('quickpizza-username');
     const password = 'admin'; // password = await secrets.get('quickpizza-password');

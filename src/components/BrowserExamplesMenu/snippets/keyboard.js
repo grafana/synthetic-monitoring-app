@@ -19,7 +19,7 @@ export default async function () {
   const page = await context.newPage();
 
   try {
-    await page.goto('https://quickpizza.grafana.com/admin');
+    await page.goto('https://quickpizza.grafana.com/admin', { waitUntil: 'networkidle' });
 
     const userInput = page.locator('#username');
     await userInput.fill('');

@@ -204,7 +204,7 @@ export default async function () {
   const context = await browser.newContext();
   const page = await context.newPage();
   try {
-    await page.goto("https://quickpizza.grafana.com/admin");
+    await page.goto('https://quickpizza.grafana.com/admin', { waitUntil: 'networkidle' });
 
     // TIP: Secure your credentials using secrets.get()
     // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/
