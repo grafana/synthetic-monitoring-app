@@ -204,20 +204,22 @@ export default async function () {
   const context = await browser.newContext();
   const page = await context.newPage();
   try {
-    await page.goto("https://quickpizza.grafana.com/admin");
+    await page.goto('https://quickpizza.grafana.com/admin', { waitUntil: 'networkidle' });
 
     // TIP: Secure your credentials using secrets.get()
     // https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/manage-secrets/
     const username = 'admin'; // username = await secrets.get('quickpizza-username');
     const password = 'admin'; // password = await secrets.get('quickpizza-password');
 
-    await page.locator("#username").fill(username);
-    await page.locator("#password").fill(password);
-    await page.locator("button").click();
+    await page.getByRole('textbox', { name: 'Username' }).fill(username);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
 
-    const heading = page.locator('//h2');
-    await heading.waitFor({ state: "visible", timeout: 5000 });
+    const signIn = page.getByRole('button', { name: 'Sign in' });
+    await signIn.click();
+    await expect(signIn).toBeHidden();
 
+    const heading = page.getByRole('heading');
+    await expect(heading).toBeVisible();
     console.log('H2 header: ', await heading.textContent()); // will appear as logs in Loki
 
     // TIP: Use expect() to immediately abort execution and fail a test (impacts uptime/reachability)

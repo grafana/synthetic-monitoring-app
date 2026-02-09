@@ -23,19 +23,19 @@ export default async function () {
   const page = browser.newPage();
 
   try {
-    await page.goto('https://quickpizza.grafana.com/admin');
+    await page.goto('https://quickpizza.grafana.com/admin', { waitUntil: 'networkidle' });
 
     const username = 'admin'; // username = await secrets.get('quickpizza-username');
     const password = 'admin'; // password = await secrets.get('quickpizza-password');
 
-    page.locator('#username').type(username);
-    page.locator('#password').type(password);
+    await page.getByRole('textbox', { name: 'Username' }).type(username);
+    await page.getByRole('textbox', { name: 'Password' }).type(password);
 
-    const submitButton = page.locator('button');
+    const submitButton = page.getByRole('button', { name: 'Sign in' });
 
     await Promise.all([page.waitForNavigation(), submitButton.click()]);
 
-    await expect(page.locator('h2')).toContainText('Latest pizza recommendations');
+    await expect(page.getByRole('heading')).toContainText('Latest pizza recommendations');
   } catch (e) {
     console.log('Error during execution:', e);
     throw e;
