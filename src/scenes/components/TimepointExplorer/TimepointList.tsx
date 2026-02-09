@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { useTimeRange } from '@grafana/scenes-react';
 import { Box, LoadingBar, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
@@ -17,11 +18,17 @@ import { TimepointExplorerAnnotations } from 'scenes/components/TimepointExplore
 import { TimepointListEntry } from 'scenes/components/TimepointExplorer/TimepointListEntry';
 import { TimepointListErrorButton } from 'scenes/components/TimepointExplorer/TimepointListErrorButton';
 import { TimepointListVizLegend } from 'scenes/components/TimepointExplorer/TimepointListVizLegend';
+import { TimepointSelectionOverlay } from 'scenes/components/TimepointExplorer/TimepointSelectionOverlay';
+import {
+  useTimepointTimeRangeSelection,
+  ZOOM_DRAG_CLASS_NAME,
+} from 'scenes/components/TimepointExplorer/useTimepointTimeRangeSelection';
 import { XAxis } from 'scenes/components/TimepointExplorer/XAxis';
 import { YAxis } from 'scenes/components/TimepointExplorer/YAxis';
 
 export const TimepointList = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const [, sceneTimeRange] = useTimeRange();
 
   const {
     handleListWidthChange,
@@ -42,6 +49,14 @@ export const TimepointList = () => {
   const styles = useStyles2((theme) => getStyles(theme, timepointWidth));
 
   const timepointsInRange = timepoints.slice(fromIndex, toIndex + 1);
+
+  const { selection, handlers } = useTimepointTimeRangeSelection({
+    timepoints: timepointsInRange,
+    containerRef: ref,
+    timepointWidth,
+    gapPx: TIMEPOINT_GAP_PX,
+    onTimeRangeChange: (timeRange) => sceneTimeRange.onTimeRangeChange(timeRange),
+  });
 
   const onResize = useDebounceCallback((width: number) => {
     handleListWidthChange(width, currentSectionRange);
@@ -85,6 +100,7 @@ export const TimepointList = () => {
                 [styles.renderFromStart]: renderingStrategy === 'start',
               })}
               id={TIMEPOINT_LIST_ID}
+              {...handlers}
             >
               {timepointsInRange.map((timepoint) => {
                 return (
@@ -94,6 +110,12 @@ export const TimepointList = () => {
                   />
                 );
               })}
+              <TimepointSelectionOverlay
+                startX={selection.startX}
+                currentX={selection.currentX}
+                isSelecting={selection.isSelecting}
+                containerRef={ref}
+              />
             </div>
           </Box>
         </div>
@@ -123,6 +145,10 @@ const getStyles = (theme: GrafanaTheme2, timepointWidth: number) => ({
     height: ${theme.spacing(TIMEPOINT_THEME_HEIGHT)};
     justify-content: end;
     position: relative;
+
+    &.${ZOOM_DRAG_CLASS_NAME} {
+      cursor: col-resize;
+    }
   `,
   renderFromStart: css`
     justify-content: start;
