@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
-import { Box, IconButton, Pagination, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Box, Collapse, IconButton, Pagination, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackMiniMapPageClicked, trackMiniMapSectionClicked } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
@@ -40,57 +40,86 @@ export const TimepointMinimap = () => {
   const isLastSectionInLastPage = isLastPage && isLastSection;
   const isFirstSectionInFirstPage = miniMapCurrentPage === 0 && miniMapCurrentSectionIndex === 0;
 
+  // Auto-hide when all timepoints fit in one view (single page with single section)
+  const shouldAutoHide = miniMapPages.length === 1 && miniMapCurrentPageSections.length === 1;
+  const [wasManuallyChanged, setWasManuallyChanged] = useState(false);
+  const [isOpen, setIsOpen] = useState(!shouldAutoHide);
+
+  // Update collapsed state when shouldAutoHide changes (only if user hasn't manually changed it)
+  React.useEffect(() => {
+    if (!wasManuallyChanged) {
+      setIsOpen(!shouldAutoHide);
+    }
+  }, [shouldAutoHide, wasManuallyChanged]);
+
+  const handleToggle = useCallback((isOpen: boolean) => {
+    setIsOpen(isOpen);
+    setWasManuallyChanged(true);
+  }, []);
+
+  const styles = useStyles2(getMinimapStyles);
+
+  const label = (
+    <div className={styles.label}>
+      <Text variant="body" weight="medium">
+        {isOpen ? 'Hide overview' : 'Show overview'}
+      </Text>
+    </div>
+  );
+
   return (
-    <Stack direction="column">
-      <Stack gap={THEME_GAP}>
-        <MiniMapNavigation
-          disabled={isLastSectionInLastPage}
-          direction="left"
-          onClick={() => {
-            const index = isLastSection ? 0 : miniMapCurrentSectionIndex + 1;
+    <Collapse label={label} isOpen={isOpen} onToggle={handleToggle}>
+      <Stack direction="column" gap={2}>
+        <Stack gap={THEME_GAP}>
+          <MiniMapNavigation
+            disabled={isLastSectionInLastPage}
+            direction="left"
+            onClick={() => {
+              const index = isLastSection ? 0 : miniMapCurrentSectionIndex + 1;
 
-            trackMiniMapSectionClicked({
-              index,
-              component: 'left-arrow',
-            });
+              trackMiniMapSectionClicked({
+                index,
+                component: 'left-arrow',
+              });
 
-            if (isLastSection) {
-              handleMiniMapPageChange(miniMapCurrentPage + 1);
-              handleMiniMapSectionChange(index);
-            } else {
-              handleMiniMapSectionChange(index);
-            }
-          }}
-        />
-        <TimepointMinimapContent />
-        <MiniMapNavigation
-          direction="right"
-          disabled={isFirstSectionInFirstPage}
-          onClick={() => {
-            const isFirstSection = miniMapCurrentSectionIndex === 0;
-            const index = isFirstSection ? MAX_MINIMAP_SECTIONS - 1 : miniMapCurrentSectionIndex - 1;
+              if (isLastSection) {
+                handleMiniMapPageChange(miniMapCurrentPage + 1);
+                handleMiniMapSectionChange(index);
+              } else {
+                handleMiniMapSectionChange(index);
+              }
+            }}
+          />
+          <TimepointMinimapContent />
+          <MiniMapNavigation
+            direction="right"
+            disabled={isFirstSectionInFirstPage}
+            onClick={() => {
+              const isFirstSection = miniMapCurrentSectionIndex === 0;
+              const index = isFirstSection ? MAX_MINIMAP_SECTIONS - 1 : miniMapCurrentSectionIndex - 1;
 
-            trackMiniMapSectionClicked({
-              index,
-              component: 'right-arrow',
-            });
+              trackMiniMapSectionClicked({
+                index,
+                component: 'right-arrow',
+              });
 
-            if (isFirstSection) {
-              const newPageIndex = miniMapCurrentPage - 1;
-              handleMiniMapPageChange(newPageIndex);
-              handleMiniMapSectionChange(index);
-            } else {
-              handleMiniMapSectionChange(index);
-            }
-          }}
-        />
+              if (isFirstSection) {
+                const newPageIndex = miniMapCurrentPage - 1;
+                handleMiniMapPageChange(newPageIndex);
+                handleMiniMapSectionChange(index);
+              } else {
+                handleMiniMapSectionChange(index);
+              }
+            }}
+          />
+        </Stack>
+        <Stack direction="row" flex={1} justifyContent="space-between">
+          <Text variant="body">{from ? dateTimeFormat(new Date(from)) : ''}</Text>
+          <MiniMapPagination miniMapCurrentPage={miniMapCurrentPage} miniMapPages={miniMapPages} />
+          <Text variant="body">{to ? dateTimeFormat(to) : ''}</Text>
+        </Stack>
       </Stack>
-      <Stack direction="row" flex={1} justifyContent="space-between">
-        <Text variant="body">{from ? dateTimeFormat(new Date(from)) : ''}</Text>
-        <MiniMapPagination miniMapCurrentPage={miniMapCurrentPage} miniMapPages={miniMapPages} />
-        <Text variant="body">{to ? dateTimeFormat(to) : ''}</Text>
-      </Stack>
-    </Stack>
+    </Collapse>
   );
 };
 
@@ -195,6 +224,13 @@ const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginati
 
   return <Pagination currentPage={currentPage} numberOfPages={numberOfPages} onNavigate={handleNavigate} />;
 };
+
+const getMinimapStyles = (theme: GrafanaTheme2) => ({
+  label: css`
+    display: flex;
+    align-items: center;
+  `,
+});
 
 const getStyles = (theme: GrafanaTheme2) => {
   const outOfRangeBorderColor = theme.visualization.getColorByName(ANNOTATION_COLOR_OUT_OF_TIMERANGE);
