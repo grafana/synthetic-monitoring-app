@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.47.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.46.1...v1.47.0) (2026-02-09)
+
+
+### Features
+
+* improve Timepoint Explorer selection UX ([#1574](https://github.com/grafana/synthetic-monitoring-app/issues/1574)) ([60d7fa2](https://github.com/grafana/synthetic-monitoring-app/commit/60d7fa20a89ce69beee366f67087430229fa8d3b))
+
+
+### Fixes
+
+* add resolution for strip-ansi dep v6 ([78622bb](https://github.com/grafana/synthetic-monitoring-app/commit/78622bb86b96cb5ef0fd9a8f756c006fbd9c2432))
+* add validation to reject leading/trailing whitespace in target field ([#1575](https://github.com/grafana/synthetic-monitoring-app/issues/1575)) ([63db3ff](https://github.com/grafana/synthetic-monitoring-app/commit/63db3ff2c5d333f03c27eb1fa19ea44d33c6ab39))
+* layout for smaller screens ([78622bb](https://github.com/grafana/synthetic-monitoring-app/commit/78622bb86b96cb5ef0fd9a8f756c006fbd9c2432))
+* recreate yarn.lock ([78622bb](https://github.com/grafana/synthetic-monitoring-app/commit/78622bb86b96cb5ef0fd9a8f756c006fbd9c2432))
+* small refactor ([78622bb](https://github.com/grafana/synthetic-monitoring-app/commit/78622bb86b96cb5ef0fd9a8f756c006fbd9c2432))
+* wait for JS chunks on quickpizza login pages + use getByRole ([#1580](https://github.com/grafana/synthetic-monitoring-app/issues/1580)) ([f80c1ed](https://github.com/grafana/synthetic-monitoring-app/commit/f80c1edc90bfd9acd53d62e0bf829af02eacad26))
+
+
+### Miscellaneous Chores
+
+* extend docker-compose from base and update default version ([#1577](https://github.com/grafana/synthetic-monitoring-app/issues/1577)) ([90d343e](https://github.com/grafana/synthetic-monitoring-app/commit/90d343e88368ceb5206eaa4a968578c15e2d3e34))
+* merge in main ([#1555](https://github.com/grafana/synthetic-monitoring-app/issues/1555)) ([1e094bb](https://github.com/grafana/synthetic-monitoring-app/commit/1e094bb279940a2259710c2a1de026a6f8c576d0))
+* upgrade scenes to v6 ([#1552](https://github.com/grafana/synthetic-monitoring-app/issues/1552)) ([78622bb](https://github.com/grafana/synthetic-monitoring-app/commit/78622bb86b96cb5ef0fd9a8f756c006fbd9c2432))
+
 ## [1.46.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.46.0...v1.46.1) (2026-02-02)
 
 
