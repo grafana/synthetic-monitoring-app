@@ -6,6 +6,7 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, ApiRoutes, getServerRequests } from 'test/handlers';
 import { server } from 'test/server';
 
+import { AlertSensitivity } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 
 type Entry = {
@@ -254,6 +255,27 @@ describe('SMDataSource', () => {
 
       expect(result).toEqual(defaultMetricsDS);
       expect(result?.uid).toEqual('grafanacloud-metrics');
+    });
+  });
+
+  describe('listChecks', () => {
+    it('should normalize empty alertSensitivity to AlertSensitivity.None', async () => {
+      const checkWithEmptySensitivity = { ...BASIC_HTTP_CHECK, alertSensitivity: '' };
+      const checkWithSetSensitivity = { ...BASIC_HTTP_CHECK, alertSensitivity: AlertSensitivity.Medium };
+
+      server.use(
+        apiRoute('listChecks', {
+          result: () => ({
+            json: [checkWithEmptySensitivity, checkWithSetSensitivity],
+          }),
+        })
+      );
+
+      const smDataSource = new SMDataSource(SM_DATASOURCE);
+      const result = await smDataSource.listChecks();
+
+      expect(result[0].alertSensitivity).toEqual(AlertSensitivity.None);
+      expect(result[1].alertSensitivity).toEqual(AlertSensitivity.Medium);
     });
   });
 });
