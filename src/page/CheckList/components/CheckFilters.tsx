@@ -1,5 +1,6 @@
 import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { Combobox, ComboboxOption, Field, Icon, Input, MultiCombobox, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
@@ -11,7 +12,6 @@ import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
 import { CheckFilterGroup } from 'page/CheckList/components/CheckFilterGroup';
 import { LabelFilterInput } from 'page/CheckList/components/LabelFilterInput';
-
 interface CheckFiltersProps {
   onReset: () => void;
   onChange: (filters: CheckFiltersType, type: FilterType) => void;
@@ -31,16 +31,16 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
 
   const options: Array<{ label: string; value: CheckTypeFilter }> = [
     {
-      label: 'All',
+      label: t('checkFilters.all', 'All'),
       value: 'all',
     },
     ...filterDesc,
   ];
 
   const alertOptions: Array<ComboboxOption<CheckAlertsFilter>> = [
-    { label: 'All', value: 'all' },
-    { label: 'With alerts', value: 'with' },
-    { label: 'Without alerts', value: 'without' },
+    { label: t('checkFilters.all', 'All'), value: 'all' },
+    { label: t('checkFilters.withAlerts', 'With alerts'), value: 'with' },
+    { label: t('checkFilters.withoutAlerts', 'Without alerts'), value: 'without' },
   ];
 
   const styles = useStyles2(getStyles);
@@ -77,14 +77,14 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
     <>
       <Input
         autoFocus
-        aria-label="Search checks"
+        aria-label={t('checkFilters.searchChecksAriaLabel', 'Search checks')}
         prefix={<Icon name="search" />}
         width={40}
         data-testid={DataTestIds.CheckSearchInput}
         type="text"
         value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
         onChange={handleSearchChange}
-        placeholder="Search by job name, endpoint, or label"
+        placeholder={t('checkFilters.searchPlaceholder', 'Search by job name, endpoint, or label')}
       />
       <CheckFilterGroup onReset={onReset} filters={checkFilters}>
         <div className={styles.flexRow}>
@@ -94,7 +94,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
             })}>
               <Combobox
                 id="check-status-filter"
-                aria-label="Filter by status"
+                aria-label={t('checkFilters.filterByStatusAriaLabel', 'Filter by status')}
                 data-testid={DataTestIds.CheckStatusFilter}
                 options={CHECK_LIST_STATUS_OPTIONS}
                 width={20}
@@ -111,11 +111,11 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
               />
             </Field>
           )}
-          <Field label="Type" htmlFor="check-type-filter" data-fs-element="Type select" className={css({
+          <Field label={t('checkFilters.type', 'Type')} htmlFor="check-type-filter" data-fs-element="Type select" className={css({
             marginBottom: 0,
           })}>
             <Combobox
-              aria-label="Filter by type"
+              aria-label={t('checkFilters.filterByTypeAriaLabel', 'Filter by type')}
               id="check-type-filter"
               options={options}
               width={20}
@@ -131,11 +131,11 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
               value={checkFilters.type}
             />
           </Field>
-          <Field label="Alerts" htmlFor="check-alerts-filter" data-fs-element="Alerts select" className={css({
+          <Field label={t('checkFilters.alerts', 'Alerts')} htmlFor="check-alerts-filter" data-fs-element="Alerts select" className={css({
             marginBottom: 0,
           })}>
             <Combobox
-              aria-label="Filter by alerts"
+              aria-label={t('checkFilters.filterByAlertsAriaLabel', 'Filter by alerts')}
               id="check-alerts-filter"
               data-testid={DataTestIds.CheckAlertsFilter}
               options={alertOptions}
@@ -167,7 +167,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
           labelFilters={checkFilters.labels}
           className={styles.verticalSpace}
         />
-        <Field label="Probes" htmlFor="check-probes-filter" data-fs-element="Probes select" className={cx(styles.verticalSpace, styles.fullWidth)}>
+        <Field label={t("checkFilters.probes", "Probes")} htmlFor="check-probes-filter" data-fs-element="Probes select" className={cx(styles.verticalSpace, styles.fullWidth)}>
           <MultiCombobox
             id="check-probes-filter"
             data-testid={DataTestIds.CheckProbesFilter}
@@ -186,7 +186,7 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
             }}
             options={probesOptions}
             value={checkFilters.probes.map((probe) => probe.value)}
-            placeholder="All probes"
+            placeholder={t('checkFilters.allProbes', 'All probes')}
             isClearable
           />
         </Field>

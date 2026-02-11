@@ -1,5 +1,6 @@
 import React, { PropsWithChildren, useCallback, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -58,7 +59,8 @@ export const CheckFilterGroup = ({ children, onReset, filters }: PropsWithChildr
     setActiveFilters(active);
   }, [filters]);
 
-  const filterTitle = `Additional filters ${activeFilters > 0 ? `(${activeFilters} active)` : ''}`;
+  const activeFiltersText = t('checkFilterGroup.activeFiltersText', '({{activeFilters}} active)', { activeFilters });
+  const filterTitle = t('checkFilterGroup.filterTitle', 'Additional filters {{activeFiltersText}}', { activeFiltersText: activeFilters > 0 ? activeFiltersText : '' });
 
   return (
     <>

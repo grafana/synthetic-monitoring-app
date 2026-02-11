@@ -1,0 +1,41 @@
+{
+  "addNewCheckButton": {
+    "createNewCheck": "Crear nuevo cheque"
+  },
+  "checkFilterGroup": {
+    "activeFiltersText": "({{activeFilters}} activo)",
+    "filterTitle": "Filtros adicionales {{activeFiltersText}}"
+  },
+  "checkFilters": {
+    "alerts": "Alertas",
+    "all": "Todos",
+    "allProbes": "Todas las sondas",
+    "filterByAlertsAriaLabel": "Filtrar por alertas",
+    "filterByStatusAriaLabel": "Filtrar por estado",
+    "filterByTypeAriaLabel": "Filtrar por tipo",
+    "probes": "Sondas",
+    "searchChecksAriaLabel": "Buscar chequeos",
+    "searchPlaceholder": "Buscar por nombre de trabajo, punto final o etiqueta",
+    "type": "Tipo",
+    "withAlerts": "Con alertas",
+    "withoutAlerts": "Sin alertas"
+  },
+  "checkList": {
+    "header": {
+      "currentlyShowing": "Actualmente se muestran {{currentPageChecksLength}} de {{checksLength}} chequeos totales",
+      "deselectAll": "Deseleccionar todos",
+      "selectAll": "Seleccionar todos",
+      "selectAllAriaLabel": "Seleccionar todos",
+      "setThresholds": "Establecer umbrales",
+      "sortOptions": {
+        "ascExecutions": "Ejecuciones asc. ",
+        "ascReachability": "Accesibilidad asc. ",
+        "descExecutions": "Ejecuciones desc. ",
+        "descReachability": "Accesibilidad desc. "
+      }
+    }
+  },
+  "labelFilterInput": {
+    "buttonCascaderLabel": "Etiquetas"
+  }
+}

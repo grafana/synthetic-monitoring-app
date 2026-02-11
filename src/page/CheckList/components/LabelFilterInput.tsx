@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { ButtonCascader, CascaderOption, ComboboxOption, MultiCombobox, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -18,6 +19,7 @@ interface AggregateLabels {
 
 export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: LabelFilterInputProps) => {
   const labelId = "check-label-filter";
+  const buttonCascaderLabel = t('labelFilterInput.buttonCascaderLabel', 'Labels');
   const styles = useStyles2(getStyles);
   const aggregatedLabels = useMemo(
     () =>
@@ -64,7 +66,7 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
   return (
     <div className={styles.filterInput}>
       <ButtonCascader options={labelCascadeOptions} onChange={handleCascadeLabelSelect}>
-        Labels
+        {buttonCascaderLabel}
       </ButtonCascader>
       <MultiCombobox
         id={labelId}
