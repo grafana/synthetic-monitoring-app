@@ -1,0 +1,41 @@
+{
+  "addNewCheckButton": {
+    "createNewCheck": "Create new check"
+  },
+  "checkFilterGroup": {
+    "activeFiltersText": "({{activeFilters}} active)",
+    "filterTitle": "Additional filters {{activeFiltersText}}"
+  },
+  "checkFilters": {
+    "alerts": "Alerts",
+    "all": "All",
+    "allProbes": "All probes",
+    "filterByAlertsAriaLabel": "Filter by alerts",
+    "filterByStatusAriaLabel": "Filter by status",
+    "filterByTypeAriaLabel": "Filter by type",
+    "probes": "Probes",
+    "searchChecksAriaLabel": "Search checks",
+    "searchPlaceholder": "Search by job name, endpoint, or label",
+    "type": "Type",
+    "withAlerts": "With alerts",
+    "withoutAlerts": "Without alerts"
+  },
+  "checkList": {
+    "header": {
+      "currentlyShowing": "Currently showing {{currentPageChecksLength}} of {{checksLength}} total checks",
+      "deselectAll": "Deselect all",
+      "selectAll": "Select all",
+      "selectAllAriaLabel": "Select all",
+      "setThresholds": "Set Thresholds",
+      "sortOptions": {
+        "ascExecutions": "Asc. Executions ",
+        "ascReachability": "Asc. Reachability ",
+        "descExecutions": "Desc. Executions ",
+        "descReachability": "Desc. Reachability "
+      }
+    }
+  },
+  "labelFilterInput": {
+    "buttonCascaderLabel": "Labels"
+  }
+}

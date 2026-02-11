@@ -75,4 +75,152 @@ We use the file nesting feature to help manage the growing number of files in th
 }
 ```
 
+## Contributing to translations
+
+This project uses [@grafana/i18n](https://www.npmjs.com/package/@grafana/i18n) for internationalization support. We use [i18next-cli](https://www.npmjs.com/package/i18next-cli) to manage translations across multiple languages.
+
+### Supported languages
+
+The list of supported languages is configured in `src/plugin.json` under the `languages` array. Currently supported languages:
+
+- `en-US` (English - United States)
+- `es-ES` (Spanish - Spain)
+
+### Adding translatable text to components
+
+There are two ways to add translatable text depending on your use case:
+
+#### Using the `t` function for simple strings
+
+Import the `t` function from `@grafana/i18n` and use it for simple text strings:
+
+```tsx
+import { t } from '@grafana/i18n';
+
+const buttonLabel = t('componentName.buttonLabel', 'Default text');
+```
+
+**Example:**
+
+```tsx
+const activeFiltersText = t('checkFilterGroup.activeFiltersText', '({{activeFilters}} active)', { 
+  activeFilters: activeFilters.length 
+});
+```
+
+#### Using the `Trans` component for JSX content
+
+Import the `Trans` component from `@grafana/i18n` when you need to translate JSX elements:
+
+```tsx
+import { Trans } from '@grafana/i18n';
+
+return (
+  <button>
+    <Trans i18nKey="componentName.buttonText">
+      Default button text
+    </Trans>
+  </button>
+);
+```
+
+**Example:**
+
+```tsx
+<LinkButton>
+  <Trans i18nKey="checks.numberOfChecks">
+    Number of checks: {{ numOfChecks: checks.length }}
+  </Trans>
+</LinkButton>
+```
+
+### Translation key naming conventions
+
+Translation keys follow a hierarchical structure:
+
+```
+componentName.specificKey
+```
+
+- Use camelCase for all parts of the key
+- The first part should be the component name (e.g., `checkFilterGroup`, `addNewCheckButton`)
+- The second part should describe the specific text (e.g., `createNewCheck`, `activeFiltersText`)
+- For nested UI elements, you can add more levels (e.g., `checkList.header.sortOptions.ascExecutions`)
+
+### Extracting translations
+
+After adding new translatable text to the codebase, you need to extract the translation keys to the locale files:
+
+```bash
+yarn i18n-extract
+```
+
+This command:
+
+1. Scans all TypeScript/TSX files in the `src` directory
+2. Extracts translation keys from `t()` function calls and `Trans` components
+3. Updates all language files in `src/locales/[language]/grafana-synthetic-monitoring-app.json`
+4. Synchronizes the primary language (en-US) and ensures all languages have the same keys
+
+### Translation file structure
+
+Translation files are organized by language code:
+
+```
+src/locales/
+  ├── en-US/
+  │   └── grafana-synthetic-monitoring-app.json
+  └── es-ES/
+      └── grafana-synthetic-monitoring-app.json
+```
+
+Each translation file uses a nested JSON structure organized by component:
+
+```json
+{
+  "componentName": {
+    "keyName": "Translated text",
+    "keyWithVariable": "Text with {{variable}}"
+  }
+}
+```
+
+### Adding a new language
+
+To add support for a new language:
+
+1. Add the language code to the `languages` array in `src/plugin.json`:
+
+```json
+"languages": ["en-US", "es-ES", "fr-FR"]
+```
+
+2. Run the extraction command to generate the translation file:
+
+```bash
+yarn i18n-extract
+```
+
+3. A new directory will be created at `src/locales/fr-FR/` with a JSON file containing all the translation keys
+4. Translate the values in the new language file
+
+### Configuration
+
+The i18next configuration is defined in `i18next.config.ts`:
+
+- **locales**: Reads the language list from `src/plugin.json`
+- **input**: Scans `src/**/*.{tsx,ts}` for translation keys
+- **output**: Generates files in `src/locales/{{language}}/{{namespace}}.json`
+- **defaultNS**: Uses the plugin ID as the namespace
+- **functions**: Extracts from `t` and `*.t` function calls
+- **transComponents**: Extracts from `Trans` components
+
+### Best practices
+
+- Always provide a default English text as the second parameter to the `t()` function
+- Use descriptive, hierarchical keys in camelCase that reflect the component structure
+- Run `yarn i18n-extract` after adding or modifying translatable text
+- Keep translation keys focused and specific to avoid reuse conflicts
+- For text with variables, use clear variable names (e.g., `{{activeFilters}}` not `{{count}}`)
+- Test your changes with different languages enabled in Grafana
 

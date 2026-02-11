@@ -1,9 +1,13 @@
 import React, { lazy, Suspense } from 'react';
 import { AppPlugin, AppRootProps } from '@grafana/data';
+import { initPluginTranslations } from '@grafana/i18n';
 import { Spinner } from '@grafana/ui';
 import { type SMPluginConfigPageProps } from 'configPage/PluginConfigPage';
+import pluginJson from 'plugin.json';
 
 import { ProvisioningJsonData } from './types';
+
+await initPluginTranslations(pluginJson.id);
 
 if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_MSW) {
   await import('./startServerWorker');

@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { Trans } from '@grafana/i18n';
 import { LinkButton } from '@grafana/ui';
 import { trackAddNewCheckButtonClicked } from 'features/tracking/checkCreationEvents';
 import { ACTIONS_TEST_ID } from 'test/dataTestIds';
@@ -27,7 +28,9 @@ export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
       onClick={handleClick}
       variant="primary"
     >
-      Create new check
+      <Trans i18nKey="addNewCheckButton.createNewCheck">
+        Create new check
+      </Trans>
     </LinkButton>
   );
 }
