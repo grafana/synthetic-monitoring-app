@@ -12,7 +12,7 @@ import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runti
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, CheckAlertDraft, ListChannelsResponse, Probe, ThresholdSettings } from '../types';
+import { AlertSensitivity, Check, CheckAlertDraft, ListChannelsResponse, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
   AddCheckResult,
@@ -311,7 +311,13 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async listChecks(includeAlerts = false) {
-    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`);
+    return this.fetchAPI<ListCheckResult>(
+      `${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`
+    ).then((checks) =>
+      checks.map((check) =>
+        check.alertSensitivity ? check : { ...check, alertSensitivity: AlertSensitivity.None }
+      )
+    );
   }
 
   async testCheck(check: Check) {
