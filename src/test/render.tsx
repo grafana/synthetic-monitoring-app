@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, type ReactElement, type ReactNode, useEffect, useState } from 'react';
+import React, { PropsWithChildren, type ReactElement, type ReactNode } from 'react';
 import { Route, Router, Routes } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
@@ -7,6 +7,7 @@ import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 import { SM_META } from 'test/fixtures/meta';
 import { TestRouteInfo } from 'test/helpers/TestRouteInfo';
+import { useLocationServiceHistory } from 'test/helpers/useLocationServiceHistory';
 
 import { ProvisioningJsonData } from 'types';
 import { MetaContextProvider } from 'contexts/MetaContext';
@@ -41,35 +42,10 @@ function getRelativeRoute(route?: string) {
   return route;
 }
 
-/**
- * Test wrapper component that provides all necessary context providers
- * and routing setup for tests.
- *
- * Uses Router with locationService.getHistory() so that both React Router
- * and locationService share the same history instance. This ensures that
- * locationService.push/replace updates are reflected in useLocation().
- *
- * @see https://grafana.com/developers/plugin-tools/migration-guides/update-from-grafana-versions/v10.0.x-v10.1.x#4-fix-test-failures-with-location-service-methods
- */
 const DefaultWrapper = ({ children, route: _route, initialEntries, meta }: ComponentWrapperProps) => {
   const relativeRoute = getRelativeRoute(_route);
-  const history = locationService.getHistory();
   const initialPath = initialEntries?.[0] || APP_ROOT;
-
-  const [location, setLocation] = useState(() => {
-    history.replace(initialPath);
-    return { ...history.location };
-  });
-
-  useEffect(() => {
-    const unlisten = history.listen((update) => {
-      // history v4/v5 passes { location, action }
-      const newLocation = (update as unknown as { location: typeof location }).location;
-      setLocation({ ...newLocation });
-    });
-    return unlisten;
-  }, [history]);
-
+  const { history, location } = useLocationServiceHistory(initialPath);
   const fullRoutePattern = `${APP_ROOT}/${relativeRoute}`.replace('//', '/');
 
   return (

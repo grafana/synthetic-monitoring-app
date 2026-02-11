@@ -1,11 +1,12 @@
 import React, { PropsWithChildren } from 'react';
-import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
+import { Route, Router, Routes } from 'react-router-dom';
 import { locationService } from '@grafana/runtime';
 import { TextLink } from '@grafana/ui';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 
 import { DataTestIds } from '../../test/dataTestIds';
+import { useLocationServiceHistory } from '../../test/helpers/useLocationServiceHistory';
 import { ConfirmLeavingPage } from './ConfirmLeavingPage';
 
 const TEST_IDS = {
@@ -14,29 +15,20 @@ const TEST_IDS = {
   OTHER_PAGE: 'ConfirmLeavingPage.other-route',
 } as const;
 
-beforeAll(() => {
-  // History needs to be reset manually between tests as it uses Grafana's global locationService
-  locationService.replace('/');
-});
-
 afterEach(() => {
-  // History needs to be reset manually between tests as it uses Grafana's global locationService
   locationService.replace('/');
 });
 
 function Wrapper({ children }: PropsWithChildren<{}>) {
-  // The component uses locationService.getHistory() internally for blocking navigation.
-  // We use HistoryRouter with Grafana's history so both React Router and the component
-  // share the same history instance for blocking to work.
-  const history = locationService.getHistory() as unknown as Parameters<typeof HistoryRouter>[0]['history'];
+  const { history, location } = useLocationServiceHistory('/');
 
   return (
-    <HistoryRouter history={history}>
+    <Router navigator={history} location={location}>
       <Routes>
         <Route path="/" element={<div data-testid={TEST_IDS.INITIAL_PAGE}>{children}</div>} />
         <Route path="*" element={<div data-testid={TEST_IDS.OTHER_PAGE} />} />
       </Routes>
-    </HistoryRouter>
+    </Router>
   );
 }
 
