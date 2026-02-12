@@ -118,10 +118,10 @@ export const FailedExecutionsAlert = ({
           invalid={!!periodError}
           error={periodError}
           validationMessageHorizontalOverflow={true}
+          disabled={!selected || formState.disabled}
         >
           <Combobox
             {...periodField}
-            disabled={!selected || formState.disabled}
             data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
             id={`alert-period-${alert.type}`}
             options={validPeriods}

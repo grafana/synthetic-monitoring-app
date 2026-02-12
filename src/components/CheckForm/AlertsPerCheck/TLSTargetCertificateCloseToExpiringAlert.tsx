@@ -77,6 +77,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
           invalid={!!thresholdError}
           error={thresholdError}
           validationMessageHorizontalOverflow={true}
+          disabled={!selected || isFormDisabled}
         >
           <Input
             {...field}
@@ -92,7 +93,6 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
               return field.onChange(value !== '' ? Number(value) : '');
             }}
             width={7}
-            disabled={!selected || isFormDisabled}
           />
         </InlineField>
         <div className={styles.alertTooltip}>

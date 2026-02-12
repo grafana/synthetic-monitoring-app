@@ -47,13 +47,13 @@ export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrl
           error={runbookUrlError}
           validationMessageHorizontalOverflow={true}
           grow={true}
+          disabled={!selected || disabled}
         >
           <Input
             {...field}
             id={`alert-runbook-url-${alertType}`}
             data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alertType].runbookUrlInput}
             placeholder="https://example.com/runbook"
-            disabled={!selected || disabled}
             width={35}
           />
         </InlineField>

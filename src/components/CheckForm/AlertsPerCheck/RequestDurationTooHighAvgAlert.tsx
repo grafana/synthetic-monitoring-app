@@ -93,10 +93,10 @@ export const RequestDurationTooHighAvgAlert = ({
           invalid={!!periodError}
           error={periodError}
           validationMessageHorizontalOverflow={true}
+          disabled={!selected || isFormDisabled}
         >
           <Combobox
             {...periodField}
-            disabled={!selected || isFormDisabled}
             data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
             id={`alert-period-${alert.type}`}
             options={validPeriods}

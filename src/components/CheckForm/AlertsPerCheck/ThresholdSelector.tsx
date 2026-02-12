@@ -31,6 +31,7 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
       invalid={!!thresholdError}
       error={thresholdError}
       validationMessageHorizontalOverflow={true}
+      disabled={!selected || isFormDisabled}
     >
       <Input
         {...field}
@@ -46,7 +47,6 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
           return field.onChange(value !== '' ? Number(value) : '');
         }}
         width={width}
-        disabled={!selected || isFormDisabled}
       />
     </InlineField>
   );
