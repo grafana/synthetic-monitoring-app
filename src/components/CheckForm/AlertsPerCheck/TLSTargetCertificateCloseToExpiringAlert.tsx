@@ -1,5 +1,5 @@
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import {
   Checkbox,
   Icon,
@@ -51,6 +51,8 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
 
   const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);
 
+  const { field } = useController({ control, name: `alerts.${alert.type}.threshold` });
+
   return (
     <Stack direction={'column'}>
       <InlineFieldRow className={styles.alertRow}>
@@ -76,29 +78,21 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
           error={thresholdError}
           validationMessageHorizontalOverflow={true}
         >
-          <Controller
-            name={`alerts.${alert.type}.threshold`}
-            control={control}
-            render={({ field }) => {
-              return (
-                <Input
-                  {...field}
-                  aria-disabled={!selected || isFormDisabled}
-                  suffix={alert.unit}
-                  type="number"
-                  step="any"
-                  id={`alert-threshold-${alert.type}`}
-                  data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].thresholdInput}
-                  onChange={(e) => {
-                    const value = e.currentTarget.value;
-                    debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
-                    return field.onChange(value !== '' ? Number(value) : '');
-                  }}
-                  width={7}
-                  disabled={!selected || isFormDisabled}
-                />
-              );
+          <Input
+            {...field}
+            aria-disabled={!selected || isFormDisabled}
+            suffix={alert.unit}
+            type="number"
+            step="any"
+            id={`alert-threshold-${alert.type}`}
+            data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].thresholdInput}
+            onChange={(e) => {
+              const value = e.currentTarget.value;
+              debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
+              return field.onChange(value !== '' ? Number(value) : '');
             }}
+            width={7}
+            disabled={!selected || isFormDisabled}
           />
         </InlineField>
         <div className={styles.alertTooltip}>

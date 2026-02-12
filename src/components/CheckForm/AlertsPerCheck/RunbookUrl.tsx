@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import { Alert, InlineField, Input, Stack, Text } from '@grafana/ui';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -30,6 +30,8 @@ export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrl
     setShowMissingRunbookMessage(false);
   }, [urlSearchParams]);
 
+  const { field } = useController({ control, name: `alerts.${alertType}.runbookUrl` });
+
   return (
     <>
       {showMissingRunbookMessage && (
@@ -46,19 +48,13 @@ export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrl
           validationMessageHorizontalOverflow={true}
           grow={true}
         >
-          <Controller
-            name={`alerts.${alertType}.runbookUrl`}
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                id={`alert-runbook-url-${alertType}`}
-                data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alertType].runbookUrlInput}
-                placeholder="https://example.com/runbook"
-                disabled={!selected || disabled}
-                width={35}
-              />
-            )}
+          <Input
+            {...field}
+            id={`alert-runbook-url-${alertType}`}
+            data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alertType].runbookUrlInput}
+            placeholder="https://example.com/runbook"
+            disabled={!selected || disabled}
+            width={35}
           />
         </InlineField>
       </Stack>

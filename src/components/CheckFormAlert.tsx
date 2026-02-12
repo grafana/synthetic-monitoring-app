@@ -1,5 +1,5 @@
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Combobox, Field, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -18,6 +18,10 @@ export const CheckFormAlert = () => {
   } = useFormContext<CheckFormValues>();
   const alertSensitivity = watch('alertSensitivity');
   const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
+
+  const {
+    field: { ref, ...alertSensitivityField },
+  } = useController({ control, name: 'alertSensitivity' });
 
   return (
     <>
@@ -38,29 +42,20 @@ export const CheckFormAlert = () => {
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
       <Field label="Select alert sensitivity" htmlFor="alert-sensitivity-select" data-fs-element="Alert sensitivity select">
-        <Controller
-          control={control}
-          name="alertSensitivity"
-          render={({ field }) => {
-            const { ref, ...rest } = field;
-            return (
-              <Combobox
-                {...rest}
-                id="alert-sensitivity-select"
-                aria-label="Select alert sensitivity"
-                width={40}
-                disabled={isFormDisabled || isCustomSensitivity}
-                data-testid={DataTestIds.AlertSensitivityInput}
-                options={
-                  isCustomSensitivity
-                    ? [{ label: alertSensitivity, value: alertSensitivity }]
-                    : ALERT_SENSITIVITY_OPTIONS
-                }
-                onChange={(e) => {
-                  field.onChange(e.value);
-                }}
-              />
-            );
+        <Combobox
+          {...alertSensitivityField}
+          id="alert-sensitivity-select"
+          aria-label="Select alert sensitivity"
+          width={40}
+          disabled={isFormDisabled || isCustomSensitivity}
+          data-testid={DataTestIds.AlertSensitivityInput}
+          options={
+            isCustomSensitivity
+              ? [{ label: alertSensitivity, value: alertSensitivity }]
+              : ALERT_SENSITIVITY_OPTIONS
+          }
+          onChange={(e) => {
+            alertSensitivityField.onChange(e.value);
           }}
         />
       </Field>

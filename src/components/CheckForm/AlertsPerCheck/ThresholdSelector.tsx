@@ -1,5 +1,5 @@
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import { InlineField, Input } from '@grafana/ui';
 import { trackChangeThreshold } from 'features/tracking/perCheckAlertsEvents';
 import { useDebounceCallback } from 'usehooks-ts';
@@ -23,6 +23,8 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
 
   const debouncedTrackChangeThreshold = useDebounceCallback(trackChangeThreshold, 750);
 
+  const { field } = useController({ control, name: `alerts.${alert.type}.threshold` });
+
   return (
     <InlineField
       htmlFor={`alert-threshold-${alert.type}`}
@@ -30,27 +32,21 @@ export const ThresholdSelector: React.FC<ThresholdSelectorProps> = ({ alert, sel
       error={thresholdError}
       validationMessageHorizontalOverflow={true}
     >
-      <Controller
-        name={`alerts.${alert.type}.threshold`}
-        control={control}
-        render={({ field }) => (
-          <Input
-            {...field}
-            aria-disabled={!selected}
-            data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].thresholdInput}
-            suffix={suffix}
-            type="number"
-            step="any"
-            id={`alert-threshold-${alert.type}`}
-            onChange={(e) => {
-              const value = e.currentTarget.value;
-              debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
-              return field.onChange(value !== '' ? Number(value) : '');
-            }}
-            width={width}
-            disabled={!selected || isFormDisabled}
-          />
-        )}
+      <Input
+        {...field}
+        aria-disabled={!selected}
+        data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].thresholdInput}
+        suffix={suffix}
+        type="number"
+        step="any"
+        id={`alert-threshold-${alert.type}`}
+        onChange={(e) => {
+          const value = e.currentTarget.value;
+          debouncedTrackChangeThreshold({ name: alert.type, threshold: value });
+          return field.onChange(value !== '' ? Number(value) : '');
+        }}
+        width={width}
+        disabled={!selected || isFormDisabled}
       />
     </InlineField>
   );
