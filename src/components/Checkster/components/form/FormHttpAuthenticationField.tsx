@@ -32,7 +32,7 @@ export function FormHttpAuthenticationField({ basicAuthField, bearerTokenField }
   const bearerToken = watch(bearerTokenField) as string | undefined; // TODO: Fix casting
 
   const authType = getHttpAuthType(basicAuth, bearerToken);
-  const dismountAuthType = useRef<HTTPAuthType | undefined>(authType);
+  const dismountAuthType = useRef<HTTPAuthType>(authType);
 
   // Ensure form values are in sync with authType
   const handleChangeAuthType = (value: HTTPAuthType) => {
