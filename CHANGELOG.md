@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.47.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.0...v1.47.1) (2026-02-13)
+
+
+### Fixes
+
+* normalize empty alertSensitivity from API to none ([#1586](https://github.com/grafana/synthetic-monitoring-app/issues/1586)) ([ef5c1df](https://github.com/grafana/synthetic-monitoring-app/commit/ef5c1df6e8838b3a6e93f21135c7a4d9c98755e5))
+
+
+### Miscellaneous Chores
+
+* bump qs from 6.14.1 to 6.14.2 ([#1591](https://github.com/grafana/synthetic-monitoring-app/issues/1591)) ([0ea4b9e](https://github.com/grafana/synthetic-monitoring-app/commit/0ea4b9efd70c1711b01d0fd90dbd7b1b5b4f5e32))
+* bump webpack from 5.102.1 to 5.104.1 ([#1581](https://github.com/grafana/synthetic-monitoring-app/issues/1581)) ([68520d8](https://github.com/grafana/synthetic-monitoring-app/commit/68520d897ef47e7b435b5dfca6ac2ac0d8ebc6df))
+* group @grafana/scenes packages in renovate config ([#1578](https://github.com/grafana/synthetic-monitoring-app/issues/1578)) ([dfbf3f0](https://github.com/grafana/synthetic-monitoring-app/commit/dfbf3f011d8a7d8646b97a0f268e9570df6d96e9))
+* migrate to React Router v6 ([#1573](https://github.com/grafana/synthetic-monitoring-app/issues/1573)) ([6edc28b](https://github.com/grafana/synthetic-monitoring-app/commit/6edc28bb4d3741e84d53d1a94e9a225289beefd3))
+* update dependency axios to v1.13.5 [security] ([#1583](https://github.com/grafana/synthetic-monitoring-app/issues/1583)) ([021ccfa](https://github.com/grafana/synthetic-monitoring-app/commit/021ccfaecd96d5453dc75db00d79fcfb0ebb5595))
+
 ## [1.47.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.46.1...v1.47.0) (2026-02-09)
 
 
