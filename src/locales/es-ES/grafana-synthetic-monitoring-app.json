@@ -1,6 +1,6 @@
 {
   "addNewCheckButton": {
-    "createNewCheck": "Crear nuevo cheque"
+    "createNewCheck": "Crear nueva prueba"
   },
   "checkFilterGroup": {
     "activeFiltersText": "({{activeFilters}} activo)",
@@ -9,29 +9,29 @@
   "checkFilters": {
     "alerts": "Alertas",
     "all": "Todos",
-    "allProbes": "Todas las sondas",
+    "allProbes": "Todos los agentes",
     "filterByAlertsAriaLabel": "Filtrar por alertas",
     "filterByStatusAriaLabel": "Filtrar por estado",
     "filterByTypeAriaLabel": "Filtrar por tipo",
-    "probes": "Sondas",
-    "searchChecksAriaLabel": "Buscar chequeos",
-    "searchPlaceholder": "Buscar por nombre de trabajo, punto final o etiqueta",
+    "probes": "Agentes",
+    "searchChecksAriaLabel": "Buscar pruebas",
+    "searchPlaceholder": "Buscar por nombre del job, endpoint o etiqueta",
     "type": "Tipo",
     "withAlerts": "Con alertas",
     "withoutAlerts": "Sin alertas"
   },
   "checkList": {
     "header": {
-      "currentlyShowing": "Actualmente se muestran {{currentPageChecksLength}} de {{checksLength}} chequeos totales",
+      "currentlyShowing": "Mostrando {{currentPageChecksLength}} de {{checksLength}} pruebas",
       "deselectAll": "Deseleccionar todos",
       "selectAll": "Seleccionar todos",
       "selectAllAriaLabel": "Seleccionar todos",
-      "setThresholds": "Establecer umbrales",
+      "setThresholds": "Definir umbrales",
       "sortOptions": {
-        "ascExecutions": "Ejecuciones asc. ",
-        "ascReachability": "Accesibilidad asc. ",
-        "descExecutions": "Ejecuciones desc. ",
-        "descReachability": "Accesibilidad desc. "
+        "ascExecutions": "Ejecuciones asc.",
+        "ascReachability": "Accesibilidad asc.",
+        "descExecutions": "Ejecuciones desc.",
+        "descReachability": "Accesibilidad desc."
       }
     }
   },

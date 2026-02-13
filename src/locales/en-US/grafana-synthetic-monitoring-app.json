@@ -28,10 +28,10 @@
       "selectAllAriaLabel": "Select all",
       "setThresholds": "Set Thresholds",
       "sortOptions": {
-        "ascExecutions": "Asc. Executions ",
-        "ascReachability": "Asc. Reachability ",
-        "descExecutions": "Desc. Executions ",
-        "descReachability": "Desc. Reachability "
+        "ascExecutions": "Asc. Executions",
+        "ascReachability": "Asc. Reachability",
+        "descExecutions": "Desc. Executions",
+        "descReachability": "Desc. Reachability"
       }
     }
   },
