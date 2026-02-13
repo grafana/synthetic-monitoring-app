@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
+import { useLocation } from 'react-router-dom';
+import { locationService } from '@grafana/runtime';
 
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
@@ -23,7 +24,6 @@ export const useQueryParametersState = <ValueType>({
   decode = JSON.parse,
   strategy = HistoryStrategy.Replace,
 }: QueryParametersStateProps<ValueType>): [ValueType, (value: ValueType | null) => void] => {
-  const navigate = useNavigate();
   const location = useLocation();
   const urlSearchParams = useURLSearchParams();
 
@@ -50,17 +50,17 @@ export const useQueryParametersState = <ValueType>({
     (href: string) => {
       switch (strategy) {
         case HistoryStrategy.Push:
-          navigate(href);
+          locationService.push(href);
           break;
         case HistoryStrategy.Replace:
-          navigate(href, { replace: true });
+          locationService.replace(href);
           break;
         default:
-          navigate(href);
+          locationService.push(href);
           break;
       }
     },
-    [strategy, navigate]
+    [strategy]
   );
 
   return [parsedExistingValue || initialValue, updateState];

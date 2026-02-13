@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppRoutes } from 'routing/types';
 import { useMeta } from 'hooks/useMeta';
@@ -28,7 +28,7 @@ export const UninitialisedRouter = () => {
       <Route path={AppRoutes.Checks} element={<ChecksWelcomePage />} />
       <Route path={AppRoutes.Probes} element={<ProbesWelcomePage />} />
       <Route path={AppRoutes.Alerts} element={<AlertingWelcomePage />} />
-      <Route path={AppRoutes.Config} Component={ConfigPageLayout}>
+      <Route path={AppRoutes.Config} element={<ConfigPageLayout />}>
         <Route index element={<UninitializedTab />} />
         <Route path="*" element={<Navigate to={AppRoutes.Home} />} />
       </Route>

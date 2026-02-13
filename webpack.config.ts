@@ -88,6 +88,14 @@ const config = async (env): Promise<Configuration> => {
     // See: https://grafana.com/blog/2025/01/22/react-19-is-coming-to-grafana-what-plugin-developers-need-to-know/
     // Requires Grafana >= 12.3.0
     externals: ['react/jsx-runtime', 'react/jsx-dev-runtime'],
+    // Ensure all @grafana/i18n imports resolve to the same copy
+    // Required for @grafana/scenes to use the i18n instance initialized by initPluginTranslations
+    resolve: {
+      alias: {
+        // workaround to keep scenes from crashing when running in dev mode, can remove when https://github.com/grafana/scenes/issues/1322 is resolved.
+        '@grafana/i18n': path.resolve(__dirname, 'node_modules/@grafana/i18n'),
+      },
+    },
     output: {
       asyncChunks: true,
       publicPath: `public/plugins/${pluginJson.id}/`,

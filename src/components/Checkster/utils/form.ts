@@ -65,7 +65,7 @@ export function getFieldErrorProps<T extends CheckFormFieldPath = CheckFormField
 export function getHttpAuthType(
   basicAuth?: { username?: string; password?: string },
   bearerToken?: string
-): HTTPAuthType | undefined {
+): HTTPAuthType {
   if (basicAuth && (basicAuth.username !== undefined || basicAuth.password !== undefined)) {
     return HTTPAuthType.BasicAuth;
   }

@@ -1,12 +1,12 @@
 import React, { PropsWithChildren } from 'react';
-import { Router } from 'react-router-dom';
-import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
+import { Route, Router, Routes } from 'react-router-dom';
 import { locationService } from '@grafana/runtime';
 import { TextLink } from '@grafana/ui';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 
 import { DataTestIds } from '../../test/dataTestIds';
+import { useLocationServiceHistory } from '../../test/helpers/useLocationServiceHistory';
 import { ConfirmLeavingPage } from './ConfirmLeavingPage';
 
 const TEST_IDS = {
@@ -15,28 +15,19 @@ const TEST_IDS = {
   OTHER_PAGE: 'ConfirmLeavingPage.other-route',
 } as const;
 
-beforeAll(() => {
-  // History needs to be reset manually between tests as it uses Grafana's global locationService
-  locationService.replace('/');
-});
-
 afterEach(() => {
-  // History needs to be reset manually between tests as it uses Grafana's global locationService
   locationService.replace('/');
 });
 
 function Wrapper({ children }: PropsWithChildren<{}>) {
-  const history = locationService.getHistory();
-  // History will not automatically be reset between tests
+  const { history, location } = useLocationServiceHistory('/');
 
   return (
-    <Router history={history}>
-      <CompatRouter>
-        <Routes>
-          <Route path="/" element={<div data-testid={TEST_IDS.INITIAL_PAGE}>{children}</div>} />
-          <Route path="*" element={<div data-testid={TEST_IDS.OTHER_PAGE} />} />
-        </Routes>
-      </CompatRouter>
+    <Router navigator={history} location={location}>
+      <Routes>
+        <Route path="/" element={<div data-testid={TEST_IDS.INITIAL_PAGE}>{children}</div>} />
+        <Route path="*" element={<div data-testid={TEST_IDS.OTHER_PAGE} />} />
+      </Routes>
     </Router>
   );
 }
@@ -50,13 +41,10 @@ describe('ConfirmLeavingPage', () => {
   });
 
   describe('router navigation', () => {
-    it.each([
-      ['Stay on page', TEST_IDS.INITIAL_PAGE],
-      ['Leave page', TEST_IDS.OTHER_PAGE],
-    ])('should render a modal when navigating away (%s)', async (buttonText, expectedTestId) => {
+    it('should render a modal when navigating away and stay on page when clicking "Stay on page"', async () => {
       render(
         <>
-          <TextLink href="some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
+          <TextLink href="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
             Leave page
           </TextLink>
           <ConfirmLeavingPage enabled />
@@ -70,8 +58,29 @@ describe('ConfirmLeavingPage', () => {
       const link = screen.getByTestId(TEST_IDS.LEAVE_PAGE_LINK);
       await user.click(link);
       expect(await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading)).toBeInTheDocument();
-      await user.click(screen.getByText(buttonText, { selector: 'button > span' }));
-      expect(await screen.findByTestId(expectedTestId)).toBeInTheDocument();
+      await user.click(screen.getByText('Stay on page', { selector: 'button > span' }));
+      expect(await screen.findByTestId(TEST_IDS.INITIAL_PAGE)).toBeInTheDocument();
+    });
+
+    it('should close modal and allow navigation when clicking "Leave page"', async () => {
+      render(
+        <>
+          <TextLink href="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
+            Leave page
+          </TextLink>
+          <ConfirmLeavingPage enabled />
+        </>,
+        { wrapper: Wrapper }
+      );
+
+      expect(await screen.findByTestId(TEST_IDS.INITIAL_PAGE)).toBeInTheDocument();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      const user = userEventLib.setup();
+      const link = screen.getByTestId(TEST_IDS.LEAVE_PAGE_LINK);
+      await user.click(link);
+      expect(await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading)).toBeInTheDocument();
+      await user.click(screen.getByText('Leave page', { selector: 'button > span' }));
+      expect(screen.queryByTestId(DataTestIds.ConfirmUnsavedModalHeading)).not.toBeInTheDocument();
     });
   });
 
@@ -79,7 +88,7 @@ describe('ConfirmLeavingPage', () => {
     it('should trigger confirm on beforeunload', async () => {
       render(
         <>
-          <TextLink href="some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
+          <TextLink href="/some-other-route" data-testid={TEST_IDS.LEAVE_PAGE_LINK}>
             Leave page
           </TextLink>
           <ConfirmLeavingPage enabled />

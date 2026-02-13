@@ -102,7 +102,6 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
   useRefetchInterval(enableRefetch, refetch);
 
   useResizeObserver({
-    // @ts-expect-error https://github.com/juliencrn/usehooks-ts/issues/663
     ref: elRef,
     onResize: (element) => {
       setViewerWidth(element.width ?? 0);

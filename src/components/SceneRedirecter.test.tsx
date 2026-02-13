@@ -19,7 +19,7 @@ jest.mock('components/RunbookRedirectAlert.utils', () => ({
   doRunbookRedirect: jest.fn(),
 }));
 
-jest.mock('react-router-dom-v5-compat', () => ({
+jest.mock('react-router-dom', () => ({
   Navigate: ({ to, replace }: { to: string; replace: boolean }) => (
     <div data-testid="navigate" data-to={to} data-replace={replace}>
       Navigate to {to}
