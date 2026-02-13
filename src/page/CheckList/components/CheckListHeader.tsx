@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
+import { t, Trans } from '@grafana/i18n';
 import { Button, Checkbox, Combobox, Field, Icon, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
@@ -38,19 +39,19 @@ const CHECK_LIST_SORT_OPTIONS = [
     value: CheckSort.ZToA,
   },
   {
-    label: 'Asc. Reachability ',
+    label: t('checkList.header.sortOptions.ascReachability', 'Asc. Reachability'),
     value: CheckSort.ReachabilityAsc,
   },
   {
-    label: 'Desc. Reachability ',
+    label: t('checkList.header.sortOptions.descReachability', 'Desc. Reachability'),
     value: CheckSort.ReachabilityDesc,
   },
   {
-    label: 'Asc. Executions ',
+    label: t('checkList.header.sortOptions.ascExecutions', 'Asc. Executions'),
     value: CheckSort.ExecutionsAsc,
   },
   {
-    label: 'Desc. Executions ',
+    label: t('checkList.header.sortOptions.descExecutions', 'Desc. Executions'),
     value: CheckSort.ExecutionsDesc,
   },
 ];
@@ -78,13 +79,15 @@ export const CheckListHeader = ({
   const isSomeSelected = hasChecks && !isAllSelected && selectedCheckIds.size > 0;
   const selectedChecks = checks.filter((check) => selectedCheckIds.has(check.id!));
 
-  const tooltip = isAllSelected ? 'Deselect all' : 'Select all';
+  const tooltip = isAllSelected ? t('checkList.header.deselectAll', 'Deselect all') : t('checkList.header.selectAll', 'Select all');
 
   return (
     <>
       <div className={styles.row}>
         <div>
-          Currently showing {currentPageChecks.length} of {checks.length} total checks
+          <Trans i18nKey="checkList.header.currentlyShowing">
+            Currently showing {{ currentPageChecksLength: currentPageChecks.length }} of {{ checksLength: checks.length }} total checks
+          </Trans>
         </div>
         <Stack alignItems="center" gap={2}>
           <CheckFilters
@@ -95,7 +98,9 @@ export const CheckListHeader = ({
           />
           {canWriteThresholds && (
             <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
-              Set Thresholds
+              <Trans i18nKey="checkList.header.setThresholds">
+                Set Thresholds
+              </Trans>
             </Button>
           )}
 
@@ -110,7 +115,7 @@ export const CheckListHeader = ({
               indeterminate={isSomeSelected}
               value={isAllSelected}
               disabled={checks.length === 0}
-              aria-label="Select all"
+              aria-label={t('checkList.header.selectAllAriaLabel', 'Select all')}
               data-testid={DataTestIds.SelectAllChecks}
             />
           </Tooltip>
