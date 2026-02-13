@@ -39,19 +39,19 @@ const CHECK_LIST_SORT_OPTIONS = [
     value: CheckSort.ZToA,
   },
   {
-    label: t('checkList.header.sortOptions.ascReachability', 'Asc. Reachability '),
+    label: t('checkList.header.sortOptions.ascReachability', 'Asc. Reachability'),
     value: CheckSort.ReachabilityAsc,
   },
   {
-    label: t('checkList.header.sortOptions.descReachability', 'Desc. Reachability '),
+    label: t('checkList.header.sortOptions.descReachability', 'Desc. Reachability'),
     value: CheckSort.ReachabilityDesc,
   },
   {
-    label: t('checkList.header.sortOptions.ascExecutions', 'Asc. Executions '),
+    label: t('checkList.header.sortOptions.ascExecutions', 'Asc. Executions'),
     value: CheckSort.ExecutionsAsc,
   },
   {
-    label: t('checkList.header.sortOptions.descExecutions', 'Desc. Executions '),
+    label: t('checkList.header.sortOptions.descExecutions', 'Desc. Executions'),
     value: CheckSort.ExecutionsDesc,
   },
 ];
