@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useController, useFormContext } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -14,7 +14,7 @@ import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.co
 export const AlertsPerCheck = () => {
   const styles = useStyles2(getStyles);
   const revalidateForm = useRevalidateForm();
-  const { getValues, setValue, control, watch } = useFormContext<CheckFormValues>();
+  const { getValues, setValue, watch } = useFormContext<CheckFormValues>();
 
   const checkType = getValues('checkType');
 
@@ -54,8 +54,6 @@ export const AlertsPerCheck = () => {
   };
 
   const selectedAlerts = watch('alerts');
-
-  useController({ control, name: 'alerts' });
 
   return (
     <>
