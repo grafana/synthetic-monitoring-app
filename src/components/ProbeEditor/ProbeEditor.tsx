@@ -1,5 +1,5 @@
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, useController, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, Input, Label, Legend, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -44,6 +44,8 @@ export const ProbeEditor = ({
   const { errors, isSubmitting } = form.formState;
   const alertRef = useRef<HTMLDivElement>(null);
   const loading = form.formState.isSubmitting;
+
+  const { field: regionField } = useController({ control: form.control, name: 'region' });
 
   const getCoordsFromMap = useCallback(
     ([long, lat]: number[]) => {
@@ -147,20 +149,14 @@ export const ProbeEditor = ({
                     required
                     htmlFor="region"
                   >
-                    <Controller
-                      control={form.control}
-                      name="region"
-                      render={({ field }) => (
-                        <ProbeRegionsSelect
-                          disabled={!writeMode}
-                          id="region"
-                          invalid={Boolean(errors.region)}
-                          onChange={(value) => {
-                            field.onChange(value);
-                          }}
-                          value={field.value}
-                        />
-                      )}
+                    <ProbeRegionsSelect
+                      disabled={!writeMode}
+                      id="region"
+                      invalid={Boolean(errors.region)}
+                      onChange={(value) => {
+                        regionField.onChange(value);
+                      }}
+                      value={regionField.value}
                     />
                   </Field>
                 </div>

@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useController, useFieldArray, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -107,6 +107,8 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
     name: 'labels',
   });
 
+  const { field: plaintextField } = useController({ control, name: 'plaintext' });
+
   const handleResetValue = () => {
     setIsConfigured(false);
   };
@@ -205,13 +207,7 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
           {...fieldError('plaintext')}
           required
         >
-          <Controller
-            control={control}
-            name="plaintext"
-            render={({ field }) => (
-              <SecretInput id="secret-value" {...field} onReset={handleResetValue} isConfigured={isConfigured} />
-            )}
-          />
+          <SecretInput id="secret-value" {...plaintextField} onReset={handleResetValue} isConfigured={isConfigured} />
         </Field>
 
         <Field

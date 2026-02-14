@@ -1,5 +1,5 @@
 import React, { ComponentProps } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import { RadioButtonGroup } from '@grafana/ui';
 
 import { GenericFieldProps } from '../../../types';
@@ -23,22 +23,18 @@ export function GenericRadioButtonGroupField({
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
 
+  const {
+    field: { ref, ...fieldProps },
+  } = useController({ control, name: field });
+
   return (
     <StyledField label={label} description={description} {...getFieldErrorProps(errors, field)} emulate>
-      <Controller
-        name={field}
-        control={control}
-        render={({ field: { ref, ...fieldProps } }) => {
-          return (
-            <RadioButtonGroup
-              aria-label={typeof label === 'string' ? label : undefined}
-              id={field}
-              {...fieldProps}
-              options={options}
-              disabled={disabled}
-            />
-          );
-        }}
+      <RadioButtonGroup
+        aria-label={typeof label === 'string' ? label : undefined}
+        id={field}
+        {...fieldProps}
+        options={options}
+        disabled={disabled}
       />
     </StyledField>
   );

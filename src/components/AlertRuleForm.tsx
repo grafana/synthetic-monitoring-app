@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, useController, useForm } from 'react-hook-form';
 import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { FetchResponse } from '@grafana/runtime';
 import { Alert, Button, Combobox, Field, Icon, Input, Label, Stack, useStyles2 } from '@grafana/ui';
@@ -186,6 +186,13 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
     }
   });
 
+  const {
+    field: { ref: sensitivityRef, ...sensitivityField },
+  } = useController({ control, name: 'sensitivity' });
+  const {
+    field: { ref: timeUnitRef, ...timeUnitField },
+  } = useController({ control, name: 'timeUnit' });
+
   if (!defaultValues) {
     return !isOpen ? (
       <button className={styles.button} onClick={() => setIsOpen(!isOpen)}>
@@ -225,14 +232,7 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
               <Stack alignItems="center" justifyContent="flex-start" wrap="wrap">
                 <span className={styles.inlineText}>Checks with a sensitivity level of</span>
                 <div className={styles.selectInput}>
-                  <Controller
-                    render={({ field }) => {
-                      const { ref, ...rest } = field;
-                      return <Combobox {...rest} options={ALERT_SENSITIVITY_OPTIONS} disabled={!canEdit} value={field.value.value} />;
-                    }}
-                    control={control}
-                    name="sensitivity"
-                  />
+                  <Combobox {...sensitivityField} options={ALERT_SENSITIVITY_OPTIONS} disabled={!canEdit} value={sensitivityField.value.value} />
                 </div>
                 <span className={styles.inlineText}>will fire an alert if less than </span>
                 <Field
@@ -265,21 +265,12 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
                   />
                 </Field>
                 <div className={styles.selectInput}>
-                  <Controller
-                    render={({ field }) => {
-                      const { ref, ...rest } = field;
-                      return (
-                        <Combobox
-                          {...rest}
-                          options={TIME_UNIT_OPTIONS}
-                          disabled={!canEdit}
-                          value={field.value.value}
-                          data-testid={DataTestIds.AlertRuleFormTimeUnitCombobox}
-                        />
-                      );
-                    }}
-                    control={control}
-                    name="timeUnit"
+                  <Combobox
+                    {...timeUnitField}
+                    options={TIME_UNIT_OPTIONS}
+                    disabled={!canEdit}
+                    value={timeUnitField.value.value}
+                    data-testid={DataTestIds.AlertRuleFormTimeUnitCombobox}
                   />
                 </div>
               </Stack>

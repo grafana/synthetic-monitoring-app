@@ -1,5 +1,5 @@
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import { FieldValidationMessage, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
@@ -27,6 +27,9 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
   const theme = useTheme2();
 
   const k6ChannelId = (getValues('channels.k6') as K6Channel | undefined)?.id;
+
+  const { field: fieldProps } = useController({ control, name: field });
+
   return (
     <Column
       grow
@@ -42,20 +45,12 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
         `
       )}
     >
-      <Controller
-        control={control}
-        name={field}
-        render={({ field: fieldProps }) => {
-          return (
-            <CodeEditor
-              {...(fieldProps as any)}
-              readOnly={disabled}
-              data-form-name={field}
-              data-form-element-selector="textarea"
-              k6Channel={k6ChannelId}
-            />
-          );
-        }}
+      <CodeEditor
+        {...(fieldProps as any)}
+        readOnly={disabled}
+        data-form-name={field}
+        data-form-element-selector="textarea"
+        k6Channel={k6ChannelId}
       />
       {fieldErrorProps.error && (
         <div
