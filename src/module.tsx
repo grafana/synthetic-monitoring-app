@@ -1,21 +1,35 @@
 import React, { lazy, Suspense } from 'react';
 import { AppPlugin, AppRootProps } from '@grafana/data';
-import { initPluginTranslations } from '@grafana/i18n';
 import { Spinner } from '@grafana/ui';
 import { type SMPluginConfigPageProps } from 'configPage/PluginConfigPage';
+import pluginJson from 'plugin.json';
 
 import { ProvisioningJsonData } from './types';
-
-await initPluginTranslations('grafana-synthetic-monitoring-app');
 
 if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_MSW) {
   await import('./startServerWorker');
 }
 
-const LazyApp = lazy(() => import('components/App'));
-const LazyPluginConfigPage = lazy(() =>
-  import('configPage/PluginConfigPage').then((module) => ({ default: module.PluginConfigPage }))
-);
+let translationsPromise: Promise<void>;
+
+function ensureTranslationsInitialized(): Promise<void> {
+  if (!translationsPromise) {
+    translationsPromise = import('@grafana/i18n').then(async ({ initPluginTranslations }) => {
+      await initPluginTranslations(pluginJson.id);
+    });
+  }
+  return translationsPromise;
+}
+
+const LazyApp = lazy(async () => {
+  await ensureTranslationsInitialized();
+  return import('components/App');
+});
+
+const LazyPluginConfigPage = lazy(async () => {
+  await ensureTranslationsInitialized();
+  return import('configPage/PluginConfigPage').then((module) => ({ default: module.PluginConfigPage }));
+});
 
 const SuspendedLazyApp = (props: AppRootProps<ProvisioningJsonData>) => (
   <Suspense fallback={<Spinner />}>
