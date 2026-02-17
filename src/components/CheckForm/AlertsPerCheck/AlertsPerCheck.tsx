@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -14,7 +14,7 @@ import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.co
 export const AlertsPerCheck = () => {
   const styles = useStyles2(getStyles);
   const revalidateForm = useRevalidateForm();
-  const { getValues, setValue, control } = useFormContext<CheckFormValues>();
+  const { getValues, setValue, watch } = useFormContext<CheckFormValues>();
 
   const checkType = getValues('checkType');
 
@@ -53,7 +53,7 @@ export const AlertsPerCheck = () => {
     revalidateForm<CheckFormValues>(`alerts.${type}`);
   };
 
-  const selectedAlerts = getValues('alerts');
+  const selectedAlerts = watch('alerts');
 
   return (
     <>
@@ -99,25 +99,19 @@ export const AlertsPerCheck = () => {
         </div>
 
         <Field>
-          <Controller
-            control={control}
-            name="alerts"
-            render={() => (
-              <Field>
-                <Stack direction="column">
-                  {Object.entries(groupedByCategory).map(([category, allAlerts]) => (
-                    <AlertsList
-                      key={category}
-                      title={category}
-                      alerts={allAlerts}
-                      selectedAlerts={selectedAlerts}
-                      onSelectionChange={handleSelectAlert}
-                    />
-                  ))}
-                </Stack>
-              </Field>
-            )}
-          />
+          <Field>
+            <Stack direction="column">
+              {Object.entries(groupedByCategory).map(([category, allAlerts]) => (
+                <AlertsList
+                  key={category}
+                  title={category}
+                  alerts={allAlerts}
+                  selectedAlerts={selectedAlerts}
+                  onSelectionChange={handleSelectAlert}
+                />
+              ))}
+            </Stack>
+          </Field>
         </Field>
       </div>
     </>

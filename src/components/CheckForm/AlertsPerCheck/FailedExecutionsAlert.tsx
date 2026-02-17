@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import {
   Checkbox,
@@ -83,6 +83,10 @@ export const FailedExecutionsAlert = ({
 
   const periodError = formState.errors?.alerts?.[alert.type]?.period?.message;
 
+  const {
+    field: { ref: periodRef, ...periodField },
+  } = useController({ control, name: `alerts.${alert.type}.period` });
+
   return (
     <Stack direction={'column'}>
       <InlineFieldRow className={styles.alertRow}>
@@ -114,32 +118,22 @@ export const FailedExecutionsAlert = ({
           invalid={!!periodError}
           error={periodError}
           validationMessageHorizontalOverflow={true}
+          disabled={!selected || formState.disabled}
         >
-          <Controller
-            name={`alerts.${alert.type}.period`}
-            control={control}
-            render={({ field }) => {
-              const { ref, ...fieldProps } = field; // ref is unused, this is to silence warnings
-
-              return (
-                <Combobox
-                  {...fieldProps}
-                  disabled={!selected || formState.disabled}
-                  data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
-                  id={`alert-period-${alert.type}`}
-                  options={validPeriods}
-                  value={field.value}
-                  width="auto"
-                  minWidth={8}
-                  maxWidth={10}
-                  onChange={({ value = null }: { value?: string | null }) => {
-                    field.onChange(value);
-                    trackChangePeriod({ name: alert.type, period: value ?? '' });
-                    // clear threshold error if new period is valid
-                    revalidateForm<CheckFormValuesWithAlert<typeof alert.type>>(`alerts.${alert.type}`);
-                  }}
-                />
-              );
+          <Combobox
+            {...periodField}
+            data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
+            id={`alert-period-${alert.type}`}
+            options={validPeriods}
+            value={periodField.value}
+            width="auto"
+            minWidth={8}
+            maxWidth={10}
+            onChange={({ value = null }: { value?: string | null }) => {
+              periodField.onChange(value);
+              trackChangePeriod({ name: alert.type, period: value ?? '' });
+              // clear threshold error if new period is valid
+              revalidateForm<CheckFormValuesWithAlert<typeof alert.type>>(`alerts.${alert.type}`);
             }}
           />
         </InlineField>
