@@ -19,26 +19,22 @@ export function useFormNavigationState(
   const [sections, _setSectionsInternal] = useState<unknown[]>([]);
   const [active, _setActive] = useState(initialSection ?? sectionOrder[0]);
   const [sectionFields, setSectionFields] = useState<SectionFieldsState>({});
-  const [errors, setErrors] = useState<string[] | undefined>(undefined);
   const [labelMap, setLabelMap] = useState<Record<FormSectionName, string>>(FORM_NAVIGATION_SECTION_LABEL_MAP);
   const { submitCount, errors: formErrors } = formMethods.formState;
 
-  useEffect(() => {
+  const errors = useMemo(() => {
     const newErrors = getFlattenErrors(formErrors);
-    const hasErrors = newErrors.length > 0;
-    if (hasErrors) {
-      setErrors(hasErrors ? newErrors : undefined);
-    }
-
-    if (submitCount <= 0) {
-      return;
-    }
-
-    setRemainingSteps([]);
-  }, [submitCount, formErrors]);
+    return newErrors.length > 0 ? newErrors : undefined;
+  }, [formErrors]);
 
   // Section progression.
   const [remainingSteps, setRemainingSteps] = useState<FormSectionName[]>(sectionOrder);
+
+  useEffect(() => {
+    if (submitCount > 0) {
+      setRemainingSteps([]);
+    }
+  }, [submitCount]);
 
   const registerSection = useCallback<FormNavigationState['registerSection']>(
     (sectionName, fields, navLabel) => {
