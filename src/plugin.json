@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "app",
   "name": "Synthetic Monitoring",
   "id": "grafana-synthetic-monitoring-app",
@@ -21,7 +22,8 @@
       }
     ],
     "version": "%VERSION%",
-    "updated": "%TODAY%"
+    "updated": "%TODAY%",
+    "keywords": ["synthetic-monitoring", "Synthetic Monitoring", "Synthetics"]
   },
   "routes": [
     {
