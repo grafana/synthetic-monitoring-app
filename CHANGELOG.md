@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.47.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.1...v1.47.2) (2026-02-17)
+
+
+### Fixes
+
+* add keywords array to plugin.json ([#1592](https://github.com/grafana/synthetic-monitoring-app/issues/1592)) ([bc3ab1c](https://github.com/grafana/synthetic-monitoring-app/commit/bc3ab1c78c04d703731d6c2155d6f4a53862e3bc))
+
+
+### Miscellaneous Chores
+
+* useController hook over Controller component ([#1590](https://github.com/grafana/synthetic-monitoring-app/issues/1590)) ([dc5e6a6](https://github.com/grafana/synthetic-monitoring-app/commit/dc5e6a6e8143c43037ff54eccd60ade319a02d99))
+
 ## [1.47.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.0...v1.47.1) (2026-02-13)
 
 
