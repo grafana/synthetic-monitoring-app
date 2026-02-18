@@ -8,7 +8,7 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { constructError, showAlert } from './utils';
 
-export const queryKeys: Record<'list', QueryKey> = {
+export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['alerts'],
 };
 
@@ -20,7 +20,7 @@ export function useAlerts() {
   const metricsDS = useMetricsDS();
 
   return useQuery({
-    queryKey: [...queryKeys.list, metricsDS?.uid],
+    queryKey: [...QUERY_KEYS.list, metricsDS?.uid],
     queryFn: () => {
       if (!metricsDS?.uid) {
         // this shouldn't matter as it won't run due to enabled being false

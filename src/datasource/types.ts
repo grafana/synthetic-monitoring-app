@@ -15,7 +15,7 @@ export interface SMQuery extends DataQuery {
   query: string;
 }
 
-export const defaultQuery: SMQuery = {
+export const DEFAULT_QUERY: SMQuery = {
   queryType: QueryType.Probes,
 } as SMQuery;
 

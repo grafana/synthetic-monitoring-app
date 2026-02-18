@@ -16,7 +16,7 @@ import {
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { CheckType } from 'types';
 
-const labelTypes = {
+const LABEL_TYPES = {
   check_name: 'I',
   detected_level: 'S',
   instance: 'I',
@@ -71,19 +71,19 @@ export const unknownExecutionLogFactory = Factory.define<UnknownExecutionLog, Ex
         source: 'synthetic-monitoring-agent' as const,
       },
       [LokiFieldNames.Body]: faker.lorem.sentence(),
-      labelTypes,
+      labelTypes: LABEL_TYPES,
       id: faker.string.uuid(),
     };
   }
 );
 
-const startingLogLabels = {
+const STARTING_LOG_LABELS = {
   msg: MSG_STRINGS_COMMON.BeginningCheck,
   timeout_seconds: '10',
   type: CheckType.Http,
 } as const;
 
-export const startingLogFactory: Factory<StartingLog> = buildExecutionLogFactory<StartingLogLabels>(startingLogLabels);
+export const startingLogFactory: Factory<StartingLog> = buildExecutionLogFactory<StartingLogLabels>(STARTING_LOG_LABELS);
 
 const succeededLogLabels = {
   duration_seconds: faker.number.float({ min: 0.1, max: 30.0, fractionDigits: 3 }).toString(),

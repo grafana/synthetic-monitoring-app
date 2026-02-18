@@ -5,7 +5,7 @@ import { ApiEntry } from 'test/handlers/types';
 import { MetricDatasourceResponse } from 'datasource/responses.types';
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 
-const instantMetrics = BASIC_CHECK_LIST.map((check) => ({
+const INSTANT_METRICS = BASIC_CHECK_LIST.map((check) => ({
   metric: {
     instance: check.target,
     job: check.job,
@@ -13,7 +13,7 @@ const instantMetrics = BASIC_CHECK_LIST.map((check) => ({
   value: [1598535155, '1'],
 }));
 
-const rangeMetrics = BASIC_CHECK_LIST.map((check) => ({
+const RANGE_METRICS = BASIC_CHECK_LIST.map((check) => ({
   metric: {
     instance: check.target,
     job: check.job,
@@ -21,9 +21,9 @@ const rangeMetrics = BASIC_CHECK_LIST.map((check) => ({
   value: [[1598535155, '1']],
 }));
 
-const checkReachabilityQuery =
+const CHECK_REACHABILITY_QUERY =
   `sum(rate(probe_all_success_sum[${DEFAULT_QUERY_FROM_TIME}])) by (job, instance) / sum(rate(probe_all_success_count[${DEFAULT_QUERY_FROM_TIME}])) by (job, instance)`;
-const checkUptimeQuery = `clamp_max(sum(max_over_time(probe_success{job=`;
+const CHECK_UPTIME_QUERY = `clamp_max(sum(max_over_time(probe_success{job=`;
 
 export const getInstantMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
   route: `${METRICS_DATASOURCE.url}/api/v1/query`,
@@ -32,13 +32,13 @@ export const getInstantMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
     const url = new URL(req.url);
     const query = url.searchParams.get('query') || ``;
 
-    if ([checkReachabilityQuery, checkUptimeQuery].includes(query)) {
+    if ([CHECK_REACHABILITY_QUERY, CHECK_UPTIME_QUERY].includes(query)) {
       return {
         status: 200,
         json: {
           status: `success`,
           data: {
-            result: instantMetrics,
+            result: INSTANT_METRICS,
             resultType: 'vector',
           },
         },
@@ -65,13 +65,13 @@ export const getRangeMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
     const url = new URL(req.url);
     const query = url.searchParams.get('query') || ``;
 
-    if ([checkReachabilityQuery, checkUptimeQuery].includes(query)) {
+    if ([CHECK_REACHABILITY_QUERY, CHECK_UPTIME_QUERY].includes(query)) {
       return {
         status: 200,
         json: {
           status: `success`,
           data: {
-            result: rangeMetrics,
+            result: RANGE_METRICS,
             resultType: 'vector',
           },
         },

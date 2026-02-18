@@ -20,7 +20,7 @@ export const FeatureTabsContext = createContext<FeatureTabsContextValue | undefi
 export const HIGHLIGHTED_TAB_TIMEOUT = 5000;
 
 // In case nothing adds up
-const panicTab: EmptyFeatureTabConfig = ['', null, []];
+const PANIC_TAB: EmptyFeatureTabConfig = ['', null, []];
 
 export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const [activeLabel, setActiveLabel] = useState<string>('');
@@ -38,10 +38,10 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
     });
   }, [checkType]);
 
-  const activeTab = useMemo<FeatureTabConfig | typeof panicTab>(() => {
+  const activeTab = useMemo<FeatureTabConfig | typeof PANIC_TAB>(() => {
     const tab = tabs.find(([label]) => label === activeLabel);
     if (!tab) {
-      const fallback = tabs[0] ?? panicTab;
+      const fallback = tabs[0] ?? PANIC_TAB;
       setActiveLabel(fallback[0]);
       return fallback;
     }
@@ -50,7 +50,7 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     if (!tabs.some(([label]) => label === activeLabel)) {
-      const fallback = tabs[0] ?? panicTab;
+      const fallback = tabs[0] ?? PANIC_TAB;
       setActiveLabel(fallback[0]);
     }
   }, [tabs, activeLabel]);

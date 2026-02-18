@@ -1,4 +1,4 @@
-export const promUniqueConfigs = {
+export const PROM_UNIQUE_CONFIGS = {
   results: {
     uniqueCheckConfigs: {
       status: 200,
@@ -141,7 +141,7 @@ export function createUniqueConfigFrame({
   includeCustomMeta = false,
   executedQueryString,
 }: CreateUniqueConfigFrameOptions) {
-  const baseFrame = promUniqueConfigs.results.uniqueCheckConfigs.frames[0];
+  const baseFrame = PROM_UNIQUE_CONFIGS.results.uniqueCheckConfigs.frames[0];
   const baseTimeField = baseFrame.schema.fields[0];
   const baseValueField = baseFrame.schema.fields[1];
 
@@ -186,7 +186,7 @@ export function createUniqueConfigsResponse(frames: Array<ReturnType<typeof crea
   return {
     results: {
       uniqueCheckConfigs: {
-        ...promUniqueConfigs.results.uniqueCheckConfigs,
+        ...PROM_UNIQUE_CONFIGS.results.uniqueCheckConfigs,
         frames,
       },
     },

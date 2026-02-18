@@ -17,7 +17,7 @@ import { renderNewForm } from './checkForm';
 import { fillMandatoryFields } from './v2.utils';
 
 // Mock channel data for tests - simpler than the full fixture, focused on testing channel selection
-export const mockChannelsResponse = {
+export const MOCK_CHANNELS_RESPONSE = {
   channels: [
     {
       id: 'v1',
@@ -44,7 +44,7 @@ export const setupChannelTest = () => {
 
   server.use(
     apiRoute('listK6Channels', {
-      result: () => ({ json: mockChannelsResponse }),
+      result: () => ({ json: MOCK_CHANNELS_RESPONSE }),
     })
   );
 };

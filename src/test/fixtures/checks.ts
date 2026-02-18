@@ -18,7 +18,7 @@ import {
 } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 
-import { db } from '../db';
+import { DB } from '../db';
 import { BASIC_CHECK_ALERTS } from './checkAlerts';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 
@@ -69,15 +69,15 @@ YCvzqCrla1em/Kakkws7Qu/pVj9R8ndHzoLktOi3l6lwwy5d4L697DyhP+02+eLt
 SBefoVnBNp449CSHW+brvPEyKD3D5CVpTIDfu2y8+nHszfBL22wuO4T+oem5h55A
 -----END RSA PRIVATE KEY-----`;
 
-const transformedValidCert = btoa(VALID_CERT);
-const transformedValidKey = btoa(VALID_KEY);
+const TRANSFORMED_VALID_CERT = btoa(VALID_CERT);
+const TRANSFORMED_VALID_KEY = btoa(VALID_KEY);
 
-export const BASIC_DNS_CHECK: DNSCheck = db.check.build(
+export const BASIC_DNS_CHECK: DNSCheck = DB.check.build(
   { job: 'Job name for dns', target: 'dns.com', probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[] },
   { transient: { type: CheckType.Dns } }
 ) as DNSCheck;
 
-export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
+export const BASIC_HTTP_CHECK: HTTPCheck = DB.check.build(
   {
     job: 'Job name for http',
     target: 'https://http.com',
@@ -93,7 +93,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = db.check.build(
   { transient: { type: CheckType.Http } }
 ) as HTTPCheck;
 
-export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.check.build(
+export const BASIC_SCRIPTED_CHECK: ScriptedCheck = DB.check.build(
   {
     job: 'Job name for k6',
     labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
@@ -107,7 +107,7 @@ export const BASIC_SCRIPTED_CHECK: ScriptedCheck = db.check.build(
   { transient: { type: CheckType.Scripted } }
 ) as ScriptedCheck;
 
-export const COMPLEX_BROWSER_CHECK: BrowserCheck = db.check.build(
+export const COMPLEX_BROWSER_CHECK: BrowserCheck = DB.check.build(
   {
     job: 'complex_browser_check',
     target: 'complex_browser_check',
@@ -121,7 +121,7 @@ export const COMPLEX_BROWSER_CHECK: BrowserCheck = db.check.build(
   { transient: { type: CheckType.Browser } }
 ) as BrowserCheck;
 
-export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
+export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = DB.check.build(
   {
     job: 'Job name for multihttp',
     labels: [{ name: 'labelName', value: 'labelValue' }],
@@ -195,7 +195,7 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = db.check.build(
   { transient: { type: CheckType.MultiHttp } }
 ) as MultiHTTPCheck;
 
-export const BASIC_PING_CHECK: PingCheck = db.check.build(
+export const BASIC_PING_CHECK: PingCheck = DB.check.build(
   {
     job: 'Job name for ping',
     target: 'grafana.com',
@@ -211,7 +211,7 @@ export const BASIC_PING_CHECK: PingCheck = db.check.build(
   { transient: { type: CheckType.Ping } }
 ) as PingCheck;
 
-export const BASIC_TCP_CHECK: TCPCheck = db.check.build(
+export const BASIC_TCP_CHECK: TCPCheck = DB.check.build(
   {
     frequency: 60000,
     basicMetricsOnly: true,
@@ -223,7 +223,7 @@ export const BASIC_TCP_CHECK: TCPCheck = db.check.build(
   { transient: { type: CheckType.Tcp } }
 ) as TCPCheck;
 
-export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = db.check.build(
+export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = DB.check.build(
   {
     frequency: 120000,
     timeout: 30000,
@@ -235,7 +235,7 @@ export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = db.check.build(
   { transient: { type: CheckType.Traceroute } }
 ) as TracerouteCheck;
 
-export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
+export const FULL_HTTP_CHECK: HTTPCheck = DB.check.build(
   {
     alertSensitivity: AlertSensitivity.Medium,
     labels: [{ name: 'agreatlabel', value: 'totally awesome label' }],
@@ -251,9 +251,9 @@ export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
         noFollowRedirects: true,
         tlsConfig: {
           insecureSkipVerify: true,
-          caCert: transformedValidCert,
-          clientCert: transformedValidCert,
-          clientKey: transformedValidKey,
+          caCert: TRANSFORMED_VALID_CERT,
+          clientCert: TRANSFORMED_VALID_CERT,
+          clientKey: TRANSFORMED_VALID_KEY,
           serverName: 'the serverName',
         },
         validStatusCodes: [100],
@@ -274,7 +274,7 @@ export const FULL_HTTP_CHECK: HTTPCheck = db.check.build(
   { transient: { type: CheckType.Http } }
 ) as HTTPCheck;
 
-export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = db.check.build(
+export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = DB.check.build(
   {
     job: `Job name for dns with custom alert sensitivity`,
     target: 'dns.com',

@@ -5,14 +5,14 @@ import { firstValueFrom } from 'rxjs';
 
 import { Check } from 'types';
 import { InstantMetric, MetricCheckSuccess, MetricDatasourceResponse, RangeMetric } from 'datasource/responses.types';
-const severityMapping = {
+const SEVERITY_MAPPING = {
   success: AppEvents.alertSuccess,
   warning: AppEvents.alertWarning,
   error: AppEvents.alertError,
 };
 
-export const showAlert = (severity: keyof typeof severityMapping = 'success', message: string) => {
-  appEvents.emit(severityMapping[severity], [message]);
+export const showAlert = (severity: keyof typeof SEVERITY_MAPPING = 'success', message: string) => {
+  appEvents.emit(SEVERITY_MAPPING[severity], [message]);
 };
 
 export function findCheckinMetrics<T extends MetricCheckSuccess>(metrics: T[], checkToFind: Check) {

@@ -23,7 +23,7 @@ import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { listK6Channels } from './k6Channels';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
-const apiRoutes = {
+const API_ROUTES = {
   addCheck,
   addProbe,
   bulkUpdateChecks,
@@ -60,7 +60,7 @@ const apiRoutes = {
   listK6Channels,
 };
 
-export type ApiRoutes = typeof apiRoutes;
+export type ApiRoutes = typeof API_ROUTES;
 
 type ApiRoutesReturnTypes = {
   [K in keyof ApiRoutes]: ApiRoutes[K];
@@ -71,7 +71,7 @@ export function apiRoute<K extends keyof ApiRoutes>(
   res?: Partial<ApiRoutesReturnTypes[K]>,
   callback?: (req: Request) => void
 ) {
-  const defaultRes = apiRoutes[routeKey];
+  const defaultRes = API_ROUTES[routeKey];
   let { route, method, result }: ApiEntry = {
     ...defaultRes,
     ...res,
@@ -139,4 +139,4 @@ export function getServerRequests() {
   return { record, read, requests };
 }
 
-export const handlers = Object.keys(apiRoutes).map((key) => apiRoute(key as keyof ApiRoutes));
+export const handlers = Object.keys(API_ROUTES).map((key) => apiRoute(key as keyof ApiRoutes));

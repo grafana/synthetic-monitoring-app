@@ -8,7 +8,7 @@ import { DEFAULT_QUERY_FROM_TIME, STANDARD_REFRESH_INTERVAL } from 'components/c
 
 import { findCheckinMetrics, getStartEnd, queryInstantMetric, queryRangeMetric } from './utils';
 
-const queryKeys: Record<'checkReachability' | 'checkUptime' | 'probeReachability', QueryKey> = {
+const QUERY_KEYS: Record<'checkReachability' | 'checkUptime' | 'probeReachability', QueryKey> = {
   checkReachability: ['check_reachability'],
   checkUptime: ['check_uptime'],
   probeReachability: ['probe_reachability'],
@@ -24,7 +24,7 @@ export function useChecksReachabilitySuccessRate() {
     // we add 'now' as an option so can't add it to the query key
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...queryKeys.checkReachability, query, url],
+    queryKey: [...QUERY_KEYS.checkReachability, query, url],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);
@@ -60,7 +60,7 @@ export function useCheckUptimeSuccessRate(check: Check) {
     // we add 'now' as an option so can't add it to the query key
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...queryKeys.checkUptime, expr, url],
+    queryKey: [...QUERY_KEYS.checkUptime, expr, url],
     queryFn: async () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);
@@ -94,7 +94,7 @@ export function useProbesReachabilitySuccessRate() {
     // we add 'now' as an option so can't add it to the query key
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...queryKeys.probeReachability, query, url],
+    queryKey: [...QUERY_KEYS.probeReachability, query, url],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);

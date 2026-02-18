@@ -14,16 +14,16 @@ import type {
   DeleteCheckResult,
   UpdateCheckResult,
 } from 'datasource/responses.types';
-import { queryClient } from 'data/queryClient';
+import { QUERY_CLIENT } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
 
-export const queryKeys: Record<'list', QueryKey> = {
+export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['checks'],
 };
 
 const checksQuery = (api: SMDataSource, includeAlerts = false) => {
   return {
-    queryKey: [...queryKeys.list, { includeAlerts }],
+    queryKey: [...QUERY_KEYS.list, { includeAlerts }],
     queryFn: () => api.listChecks(includeAlerts),
   };
 };
@@ -101,7 +101,7 @@ export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      await QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
       trackCheckUpdated({ checkType: getCheckType(data.settings) });
     },
@@ -141,7 +141,7 @@ export function useDeleteCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {
@@ -182,7 +182,7 @@ export function useBulkUpdateChecks({
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {
@@ -213,11 +213,11 @@ export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationP
       return checkIds;
     },
     onError: (error: unknown) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {

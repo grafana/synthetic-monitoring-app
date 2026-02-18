@@ -10,10 +10,10 @@ jest.mock('data/useTenant');
 const mockUseTenant = useTenant as jest.Mock;
 
 describe('useLegacyAlertsRestriction', () => {
-  let queryClient: QueryClient;
+  let QUERY_CLIENT: QueryClient;
 
   beforeEach(() => {
-    queryClient = new QueryClient({
+    QUERY_CLIENT = new QueryClient({
       defaultOptions: {
         queries: {
           retry: false,
@@ -24,7 +24,7 @@ describe('useLegacyAlertsRestriction', () => {
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children);
+    React.createElement(QueryClientProvider, { client: QUERY_CLIENT }, children);
 
   it('should return isRestricted as false when tenant data is not available', () => {
     mockUseTenant.mockReturnValue({

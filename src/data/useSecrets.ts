@@ -6,20 +6,20 @@ import { SecretWithMetadata } from 'page/ConfigPageLayout/tabs/SecretsManagement
 import { SECRETS_EDIT_MODE_ADD } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/constants';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
-import { queryClient } from './queryClient';
+import { QUERY_CLIENT } from './queryClient';
 
 export interface SecretsResponse {
   secrets: SecretWithMetadata[];
 }
 
-export const queryKeys = {
+export const QUERY_KEYS = {
   list: ['secrets'],
   byName: (name: string) => ['secrets', name],
 };
 
 function secretsQuery(api: SMDataSource) {
   return {
-    queryKey: queryKeys.list,
+    queryKey: QUERY_KEYS.list,
     queryFn: () => api.getSecrets(),
     throwOnError: true,
     select: (data: SecretsResponse) => {
@@ -52,7 +52,7 @@ export function useSecret(name?: string) {
   const smDS = useSMDS();
 
   return useQuery<SecretWithMetadata, unknown, SecretWithMetadata>({
-    queryKey: queryKeys.byName(name!),
+    queryKey: QUERY_KEYS.byName(name!),
     queryFn: () => smDS.getSecret(name!),
     enabled: !!name && name !== SECRETS_EDIT_MODE_ADD,
     select: (secret) => ({ ...secret, labels: secret.labels ?? [] }),
@@ -72,8 +72,8 @@ export function useSaveSecret() {
     },
     onSuccess: async (_data, secret) => {
       const { name, ...updatedData } = secret; // name cannot be changed
-      await queryClient.setQueryData(queryKeys.byName(secret.name!), updatedData);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      await QUERY_CLIENT.setQueryData(QUERY_KEYS.byName(secret.name!), updatedData);
+      await QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
     },
   });
 }
@@ -88,7 +88,7 @@ export function useDeleteSecret() {
   return useMutation<unknown, unknown, string>({
     mutationFn: (name) => smDS.deleteSecret(name),
     onSuccess: async (_data) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      await QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
     },
     throwOnError: true,
   });

@@ -32,7 +32,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 });
 
-const hideTelemetryForTypes = [CheckType.Scripted, CheckType.MultiHttp, CheckType.Browser];
+const HIDE_TELEMETRY_FOR_TYPES = [CheckType.Scripted, CheckType.MultiHttp, CheckType.Browser];
 
 export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
   const styles = useStyles2(getStyles);
@@ -40,7 +40,7 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
   const checkFormValues = watch();
   const usage = useUsageCalc([checkFormValuesToUsageCalcValues(checkFormValues)]);
 
-  const hideTelemetry = hideTelemetryForTypes.includes(checkType);
+  const hideTelemetry = HIDE_TELEMETRY_FOR_TYPES.includes(checkType);
 
   if (!usage) {
     return null;

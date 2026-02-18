@@ -23,12 +23,12 @@ export const TIMEPOINT_EXPLORER_VIEW_OPTIONS = [
 export const MAX_MINIMAP_SECTIONS = 5;
 export const MINIMAP_SECTION_HEIGHT = 45;
 
-const success = `success` as const;
-const failure = `failure` as const;
-const missing = `missing` as const;
-const pending = `pending` as const;
+const SUCCESS = `success` as const;
+const FAILURE = `failure` as const;
+const MISSING = `missing` as const;
+const PENDING = `pending` as const;
 
-export const VIZ_DISPLAY_OPTIONS = [success, failure, missing, pending];
+export const VIZ_DISPLAY_OPTIONS = [SUCCESS, FAILURE, MISSING, PENDING];
 
 export const ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX = 5;
 

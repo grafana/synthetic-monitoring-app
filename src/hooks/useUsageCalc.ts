@@ -19,7 +19,7 @@ export const getAccountingClass = (calcUsageValue: CalculateUsageValues): Accoun
   return AccountingClassNames[accountClass];
 };
 
-const calcFunctionMap = {
+const CALC_FUNCTION_MAP = {
   multi: calculateMultiHTTPUsage,
   other: calculateUsage,
 };
@@ -35,7 +35,7 @@ export function useUsageCalc(calcUsageValues: CalculateUsageValues[]) {
     (total, calcUsageValue) => {
       const accountingClass = getAccountingClass(calcUsageValue);
       const { assertionCount, probeCount, frequency } = calcUsageValue;
-      const calculateFunc = calcFunctionMap[calcUsageValue.checkType === CheckType.MultiHttp ? `multi` : `other`];
+      const calculateFunc = CALC_FUNCTION_MAP[calcUsageValue.checkType === CheckType.MultiHttp ? `multi` : `other`];
 
       const usage = calculateFunc({
         assertionCount,

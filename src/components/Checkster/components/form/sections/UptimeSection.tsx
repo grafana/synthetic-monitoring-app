@@ -16,7 +16,7 @@ import { ScriptedUptimeContent } from '../layouts/ScriptedUptimeContent';
 import { TcpUptimeContent } from '../layouts/TcpUptimeContent';
 import { TracerouteUptimeContent } from '../layouts/TracerouteUptimeContent';
 
-const checkTypeLayoutMap: Record<CheckType, ComponentType> = {
+const CHECK_TYPE_LAYOUT_MAP: Record<CheckType, ComponentType> = {
   /* Protocol checks (blackbox exporter)*/
   [CheckType.Http]: HttpUptimeContent,
   [CheckType.Ping]: PingUptimeContent,
@@ -30,7 +30,7 @@ const checkTypeLayoutMap: Record<CheckType, ComponentType> = {
   [CheckType.Browser]: BrowserUptimeContent,
 };
 
-const defaultUptimeFields = ['timeout'];
+const DEFAULT_UPTIME_FIELDS = ['timeout'];
 
 function getCheckTypeFields(checkType: CheckType) {
   switch (checkType) {
@@ -39,14 +39,14 @@ function getCheckTypeFields(checkType: CheckType) {
     case CheckType.Http:
       return HTTP_UPTIME_FIELDS;
     default:
-      return defaultUptimeFields;
+      return DEFAULT_UPTIME_FIELDS;
   }
 }
 
 export function UptimeSection() {
   const { checkType } = useChecksterContext();
 
-  const SectionComponent = checkTypeLayoutMap[checkType] ?? null;
+  const SectionComponent = CHECK_TYPE_LAYOUT_MAP[checkType] ?? null;
   const fields = getCheckTypeFields(checkType);
 
   return (

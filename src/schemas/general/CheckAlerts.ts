@@ -9,7 +9,7 @@ const isScientificNotation = (val: number) => {
   return /e|E/.test(val.toString());
 };
 
-const invalidThreshold = 'Threshold value must be a valid integer';
+const INVALID_THRESHOLD = 'Threshold value must be a valid integer';
 
 const checkAlertSchema = z
   .object({
@@ -17,11 +17,11 @@ const checkAlertSchema = z
     isSelected: z.boolean().optional(),
     period: z.string().optional(),
     threshold: z
-      .number({ message: invalidThreshold })
-      .int({ message: invalidThreshold })
+      .number({ message: INVALID_THRESHOLD })
+      .int({ message: INVALID_THRESHOLD })
       .optional()
       .refine((value) => !value || (value >= 1 && !isScientificNotation(value)), {
-        message: invalidThreshold,
+        message: INVALID_THRESHOLD,
       }),
     runbookUrl: z.url({ message: 'Runbook URL must be a valid URL' }).optional().or(z.literal('')),
   })
@@ -36,7 +36,7 @@ const checkAlertSchema = z
       }
       return true;
     },
-    { message: invalidThreshold, path: ['threshold'] }
+    { message: INVALID_THRESHOLD, path: ['threshold'] }
   );
 
 const checkAlertWithPeriodSchema = checkAlertSchema.refine(
