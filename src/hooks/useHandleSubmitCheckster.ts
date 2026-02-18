@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues } from '../types';
 
 import { getAlertsPayload } from '../components/Checkster/transformations/toPayload.alerts';
-import { QUERY_CLIENT } from '../data/queryClient';
+import { queryClient } from '../data/queryClient';
 import { useUpdateAlertsForCheck } from '../data/useCheckAlerts';
 import { QUERY_KEYS, useCUDChecks } from '../data/useChecks';
 import { useNavigateToCheckDashboard } from './useNavigateToCheckDashboard';
@@ -42,7 +42,7 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
         result = await createCheck(payload);
       }
       await handleAlerts(result, formValues.alerts);
-      await QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
 
       return () => navigateToCheckDashboard(result, payload?.id === undefined);
     },

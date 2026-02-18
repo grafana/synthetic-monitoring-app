@@ -139,4 +139,4 @@ export function getServerRequests() {
   return { record, read, requests };
 }
 
-export const handlers = Object.keys(API_ROUTES).map((key) => apiRoute(key as keyof ApiRoutes));
+export const HANDLERS = Object.keys(API_ROUTES).map((key) => apiRoute(key as keyof ApiRoutes));

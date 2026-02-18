@@ -4,7 +4,7 @@ import { type MutationProps } from 'data/types';
 import type { ThresholdSettings } from 'types';
 import { FaroEvent } from 'faro';
 import type { UpdateTenantSettingsResult } from 'datasource/responses.types';
-import { QUERY_CLIENT } from 'data/queryClient';
+import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const QUERY_KEYS: Record<'list', QueryKey> = {
@@ -40,7 +40,7 @@ export function useUpdateThresholds({ onError, onSuccess }: MutationProps<Update
       onError?.(error);
     },
     onSuccess: (data) => {
-      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {

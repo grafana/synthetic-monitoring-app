@@ -29,7 +29,7 @@ export const getQueryClient = () =>
     },
   });
 
-export const QUERY_CLIENT = getQueryClient();
+export const queryClient = getQueryClient();
 
 function handleSuccess(data: unknown, options: MutationOptions | QueryOptions) {
   const { meta } = options;

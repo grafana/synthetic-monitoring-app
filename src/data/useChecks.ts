@@ -14,7 +14,7 @@ import type {
   DeleteCheckResult,
   UpdateCheckResult,
 } from 'datasource/responses.types';
-import { QUERY_CLIENT } from 'data/queryClient';
+import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const QUERY_KEYS: Record<'list', QueryKey> = {
@@ -101,7 +101,7 @@ export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: async (data) => {
-      await QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
       trackCheckUpdated({ checkType: getCheckType(data.settings) });
     },
@@ -141,7 +141,7 @@ export function useDeleteCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {
@@ -182,7 +182,7 @@ export function useBulkUpdateChecks({
       onError?.(error);
     },
     onSuccess: (data) => {
-      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {
@@ -213,11 +213,11 @@ export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationP
       return checkIds;
     },
     onError: (error: unknown) => {
-      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onError?.(error);
     },
     onSuccess: (data) => {
-      QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {

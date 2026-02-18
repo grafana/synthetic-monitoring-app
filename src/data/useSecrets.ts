@@ -6,7 +6,7 @@ import { SecretWithMetadata } from 'page/ConfigPageLayout/tabs/SecretsManagement
 import { SECRETS_EDIT_MODE_ADD } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/constants';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
-import { QUERY_CLIENT } from './queryClient';
+import { queryClient } from './queryClient';
 
 export interface SecretsResponse {
   secrets: SecretWithMetadata[];
@@ -72,8 +72,8 @@ export function useSaveSecret() {
     },
     onSuccess: async (_data, secret) => {
       const { name, ...updatedData } = secret; // name cannot be changed
-      await QUERY_CLIENT.setQueryData(QUERY_KEYS.byName(secret.name!), updatedData);
-      await QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      await queryClient.setQueryData(QUERY_KEYS.byName(secret.name!), updatedData);
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
     },
   });
 }
@@ -88,7 +88,7 @@ export function useDeleteSecret() {
   return useMutation<unknown, unknown, string>({
     mutationFn: (name) => smDS.deleteSecret(name),
     onSuccess: async (_data) => {
-      await QUERY_CLIENT.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
     },
     throwOnError: true,
   });

@@ -1,4 +1,4 @@
 import { setupWorker } from 'msw/browser';
-import { handlers } from 'test/handlers';
+import { HANDLERS } from 'test/handlers';
 
-setupWorker(...handlers).start();
+setupWorker(...HANDLERS).start();

@@ -10,7 +10,7 @@ import 'jest-canvas-mock';
 // have to reimport this despite it is included in the ./config/jest-setup.JSfile
 // so the types also get imported
 import '@testing-library/jest-dom';
-import { QUERY_CLIENT } from 'data/queryClient';
+import { queryClient } from 'data/queryClient';
 
 process.env.SM_PLUGIN_ID = 'TEST.ENV.ID';
 process.env.SM_PLUGIN_VERSION = 'TEST.ENV.VERSION';
@@ -26,7 +26,7 @@ afterEach(() => {
   jest.clearAllMocks();
   jest.restoreAllMocks();
   // Clear React Query cache to prevent memory leaks
-  QUERY_CLIENT.clear();
+  queryClient.clear();
   // Ensure fake timers are restored if they were used
   if (jest.isMockFunction(setTimeout)) {
     jest.useRealTimers();
