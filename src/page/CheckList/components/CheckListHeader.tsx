@@ -127,7 +127,7 @@ export const CheckListHeader = ({
         </Stack>
         <Stack alignItems="center" gap={0.5}>
           <Icon name="sort-amount-down" />
-          <Field label={t('checkList.header.sort', 'Sort')} htmlFor="sort-by-select" horizontal data-fs-element="Sort by select" className={styles.field} noMargin>
+          <Field label="Sort" htmlFor="sort-by-select" horizontal data-fs-element="Sort by select" className={styles.field} noMargin>
             <Combobox
               id="sort-by-select"
               data-testid={DataTestIds.SortChecksByCombobox}
