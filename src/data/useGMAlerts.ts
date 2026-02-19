@@ -10,13 +10,13 @@ import { constructError, showAlert } from './utils';
 
 const GRAFANA_SM_FOLDER_UID = 'grafana-synthetic-monitoring-app';
 
-export const queryKeys: Record<'list', QueryKey> = {
+export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['alerts'],
 };
 
 export function useGMAlerts() {
   return useQuery({
-    queryKey: [...queryKeys.list],
+    queryKey: [...QUERY_KEYS.list],
     queryFn: () => {
       return queryAlertApi();
     },

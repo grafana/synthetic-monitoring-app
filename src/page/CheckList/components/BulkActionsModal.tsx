@@ -10,7 +10,7 @@ import { useProbes } from 'data/useProbes';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import { ProbesByRegion } from 'page/CheckList/components/ProbesByRegion';
 
-const actionTypeMap = {
+const ACTION_TYPE_MAP = {
   add: {
     getTitle: (checks: Check[]) => `Add probes to ${checks.length} selected checks`,
     description:
@@ -48,7 +48,7 @@ const BulkActionsModalContent = ({ onDismiss, isOpen, checks, action }: BulkActi
   const [probeIds, setProbeIds] = useState<number[]>([]);
   const commonProbes = intersection(...checks.map((check) => check.probes));
   const styles = useStyles2(getStyles);
-  const { getTitle, description } = actionTypeMap[action];
+  const { getTitle, description } = ACTION_TYPE_MAP[action];
   const isAdding = action === 'add';
 
   const selectableProbes = probes.map((probe) => {

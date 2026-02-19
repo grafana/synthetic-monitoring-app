@@ -23,10 +23,10 @@ interface Props {
 export const Gauge = ({ fetching, loading, height, width, onClick, type, value, unit, description }: Props) => {
   const { data: threshold } = useThreshold(type);
   const parsedValue = parseValue(value, unit);
-  const comparer = comparisonMap[type];
+  const comparer = COMPARISON_MAP[type];
   const color = threshold && parsedValue !== null ? comparer(threshold, parsedValue) : undefined;
-  const infoText = description || infoMap[type];
-  const title = titleMap[type];
+  const infoText = description || INFO_MAP[type];
+  const title = TITLE_MAP[type];
   const text = formatValue(parsedValue, unit, loading);
 
   const displayValue: DisplayValue = {
@@ -54,19 +54,19 @@ export const Gauge = ({ fetching, loading, height, width, onClick, type, value, 
   );
 };
 
-const infoMap = {
+const INFO_MAP = {
   latency: LATENCY_DESCRIPTION,
   reachability: REACHABILITY_DESCRIPTION,
   uptime: UPTIME_DESCRIPTION,
 };
 
-const titleMap = {
+const TITLE_MAP = {
   latency: 'Latency',
   reachability: 'Reachability',
   uptime: 'Uptime',
 };
 
-const comparisonMap = {
+const COMPARISON_MAP = {
   latency: getLatencySuccessRateThresholdColor,
   reachability: getSuccessRateThresholdColor,
   uptime: getSuccessRateThresholdColor,

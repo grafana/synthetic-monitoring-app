@@ -1,13 +1,9 @@
 import { CheckAlertType } from 'types';
 import { CheckAlertsResponse } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
-import { queryKeys } from 'data/useCheckAlerts';
+import { QUERY_KEYS } from 'data/useCheckAlerts';
 
-export function mockAlertsForCheckData(mockData: CheckAlertsResponse = alertsFromApi) {
-  queryClient.setQueryData([...queryKeys.listAlertsForCheck], mockData);
-}
-
-export const alertsFromApi: CheckAlertsResponse = {
+export const ALERTS_FROM_API: CheckAlertsResponse = {
   alerts: [
     {
       name: CheckAlertType['TLSTargetCertificateCloseToExpiring'],
@@ -25,3 +21,7 @@ export const alertsFromApi: CheckAlertsResponse = {
     },
   ],
 };
+
+export function mockAlertsForCheckData(mockData: CheckAlertsResponse = ALERTS_FROM_API) {
+  queryClient.setQueryData([...QUERY_KEYS.listAlertsForCheck], mockData);
+}

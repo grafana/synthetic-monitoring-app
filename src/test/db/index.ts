@@ -77,7 +77,7 @@ type CheckTransientParams = {
   type: CheckType;
 };
 
-export const db = {
+export const DB = {
   check: Factory.define<Check, CheckTransientParams>(({ transientParams, sequence }) => {
     const { type } = transientParams;
 

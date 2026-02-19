@@ -15,7 +15,7 @@ import { SCRIPTED_CHECK_FIELDS,ScriptedCheckContent } from '../layouts/ScriptedC
 import { TCP_REQUEST_OPTIONS_FIELDS,TcpCheckContent } from '../layouts/TcpCheckContent';
 import { TRACEROUTE_CHECK_FIELDS,TracerouteCheckContent } from '../layouts/TracerouteCheckContent';
 
-const defaultCheckFields = ['job', 'target'];
+const DEFAULT_CHECK_FIELDS = ['job', 'target'];
 
 function getCheckTypeFields(checkType: CheckType) {
   switch (checkType) {
@@ -36,11 +36,11 @@ function getCheckTypeFields(checkType: CheckType) {
     case CheckType.Browser:
       return BROWSER_CHECK_FIELDS;
     default:
-      return defaultCheckFields;
+      return DEFAULT_CHECK_FIELDS;
   }
 }
 
-const checkTypeLayoutMap: Record<CheckType, ComponentType> = {
+const CHECK_TYPE_LAYOUT_MAP: Record<CheckType, ComponentType> = {
   /* Protocol checks (blackbox exporter)*/
   [CheckType.Http]: HttpCheckContent,
   [CheckType.Ping]: PingCheckContent,
@@ -69,7 +69,7 @@ function getNavLabel(checkType: CheckType) {
 export function CheckSection() {
   const { checkType } = useChecksterContext();
 
-  const SectionComponent = checkTypeLayoutMap[checkType] ?? null;
+  const SectionComponent = CHECK_TYPE_LAYOUT_MAP[checkType] ?? null;
   const fields = getCheckTypeFields(checkType);
 
   return (

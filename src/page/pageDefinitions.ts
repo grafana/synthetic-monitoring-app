@@ -12,7 +12,7 @@ export type PageDefinition = {
   hidden?: boolean;
 };
 
-const pages: NavModelItem[] = [
+const PAGES: NavModelItem[] = [
   {
     text: 'Home',
     id: 'home',
@@ -46,7 +46,7 @@ export const getNavModel = (logo: string, path: string) => {
     img: logo,
     subTitle: 'Grafana Cloud Synthetic Monitoring',
     url: PLUGIN_URL_PATH,
-    children: pages.map((page) => {
+    children: PAGES.map((page) => {
       return {
         ...page,
         active: Boolean(page.id && path.includes(page.id)),

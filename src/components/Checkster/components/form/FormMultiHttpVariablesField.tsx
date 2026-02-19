@@ -15,7 +15,7 @@ interface FormMultiHttpVariablesFieldProps {
   field: `settings.multihttp.entries.${number}.variables`;
 }
 
-const expressionFieldPropsMap: Record<
+const EXPRESSION_FIELD_PROPS_MAP: Record<
   MultiHttpVariableType,
   Pick<ComponentProps<typeof GenericInputField>, 'label' | 'description' | 'placeholder'>
 > = {
@@ -49,7 +49,7 @@ const expressionFieldPropsMap: Record<
 };
 
 function getExpressionFieldProps(variableType: MultiHttpVariableType) {
-  return expressionFieldPropsMap[variableType];
+  return EXPRESSION_FIELD_PROPS_MAP[variableType];
 }
 
 export function FormMultiHttpVariablesField({ field }: FormMultiHttpVariablesFieldProps) {

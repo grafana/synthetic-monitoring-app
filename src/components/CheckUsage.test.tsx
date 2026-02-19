@@ -7,7 +7,7 @@ import { Check, CheckType } from 'types';
 
 import { ChecksterProvider } from './Checkster/contexts/ChecksterContext';
 import { CheckUsage } from './CheckUsage';
-import { fallbackCheckMap } from './constants';
+import { FALLBACK_CHECK_MAP } from './constants';
 
 function RenderWrapper() {
   return (
@@ -26,7 +26,7 @@ async function renderComponent(check?: Check) {
 
 describe('CheckUsage', () => {
   describe('existing check', () => {
-    const mockedCheck = fallbackCheckMap[CheckType.Http];
+    const mockedCheck = FALLBACK_CHECK_MAP[CheckType.Http];
     it('should render', async () => {
       const { container } = await renderComponent(mockedCheck);
       expect(container).toBeInTheDocument();

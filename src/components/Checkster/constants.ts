@@ -485,20 +485,20 @@ export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   },
 ];
 
-const baseTimeoutMap = {
+const BASE_TIMEOUT_MAP = {
   min: MIN_BASE_TIMEOUT,
   max: MAX_BASE_TIMEOUT,
 };
 
 export const CHECK_TYPE_TIMEOUT_MAP: Record<CheckType, { min: number; max: number }> = {
   [CheckType.Browser]: { min: MIN_TIMEOUT_BROWSER, max: MAX_TIMEOUT_BROWSER },
-  [CheckType.Dns]: baseTimeoutMap,
-  [CheckType.Grpc]: baseTimeoutMap,
-  [CheckType.Http]: baseTimeoutMap,
+  [CheckType.Dns]: BASE_TIMEOUT_MAP,
+  [CheckType.Grpc]: BASE_TIMEOUT_MAP,
+  [CheckType.Http]: BASE_TIMEOUT_MAP,
   [CheckType.MultiHttp]: { min: MIN_TIMEOUT_MULTI_HTTP, max: MAX_TIMEOUT_MULTI_HTTP },
-  [CheckType.Ping]: baseTimeoutMap,
+  [CheckType.Ping]: BASE_TIMEOUT_MAP,
   [CheckType.Scripted]: { min: MIN_TIMEOUT_SCRIPTED, max: MAX_TIMEOUT_SCRIPTED },
-  [CheckType.Tcp]: baseTimeoutMap,
+  [CheckType.Tcp]: BASE_TIMEOUT_MAP,
   [CheckType.Traceroute]: { min: MIN_TIMEOUT_TRACEROUTE, max: MAX_TIMEOUT_TRACEROUTE }, // fixed value (min === max)
 };
 

@@ -19,7 +19,7 @@ enum AlertThresholds {
   Low = 75,
 }
 
-export const defaultRules = {
+export const DEFAULT_RULES = {
   name: 'default',
   rules: [
     {
@@ -90,7 +90,7 @@ export function useAlerts() {
         headers: {
           'Content-Type': 'application/json',
         },
-        data: defaultRules,
+        data: DEFAULT_RULES,
       })
     );
 

@@ -23,7 +23,7 @@ import {
   removeProbableDuplicates,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
-import { db } from '../../../test/db';
+import { DB } from '../../../test/db';
 
 describe(`buildConfigTimeRanges`, () => {
   it(`should build the correct time range for a single config`, () => {
@@ -213,7 +213,7 @@ describe(`findNearestPageIndex`, () => {
   });
 });
 
-const PROBES = db.probe.buildList(3);
+const PROBES = DB.probe.buildList(3);
 
 describe(`getPendingProbes`, () => {
   it(`should return the correct pending probes -- all selected pending`, () => {

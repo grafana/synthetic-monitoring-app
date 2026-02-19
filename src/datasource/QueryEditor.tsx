@@ -5,7 +5,7 @@ import { Combobox, ComboboxOption, MultiCombobox, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { defaults } from 'lodash';
 
-import { defaultQuery, QueryType, SMOptions, SMQuery } from './types';
+import { DEFAULT_QUERY, QueryType, SMOptions, SMQuery } from './types';
 import { CheckType, Probe } from 'types';
 import { getCheckType } from 'utils';
 
@@ -26,7 +26,7 @@ interface State {
   // tracerouteProbeOptions: Array<SelectableValue<string>>;
 }
 
-const types = [
+const TYPES = [
   { label: 'Probes', value: QueryType.Probes },
   { label: 'Checks', value: QueryType.Checks },
   { label: 'Traceroute', value: QueryType.Traceroute },
@@ -219,7 +219,7 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   render() {
-    const query = defaults(this.props.query, defaultQuery);
+    const query = defaults(this.props.query, DEFAULT_QUERY);
     const { tracerouteCheckOptionsLoading, probes } = this.state;
     const styles = getStyles();
 
@@ -238,8 +238,8 @@ export class QueryEditor extends PureComponent<Props, State> {
       <div>
         <div className="gf-form">
           <Combobox
-            options={types}
-            value={types.find((t) => t.value === query.queryType)}
+            options={TYPES}
+            value={TYPES.find((t) => t.value === query.queryType)}
             onChange={this.onQueryTypeChanged}
           />
         </div>

@@ -1,5 +1,5 @@
 import { checksLogs1 } from 'test/fixtures/httpCheck/checkLogs';
-import { promUniqueConfigs } from 'test/fixtures/httpCheck/promUniqueConfigs';
+import { PROM_UNIQUE_CONFIGS } from 'test/fixtures/httpCheck/promUniqueConfigs';
 
 import { ApiEntry } from 'test/handlers/types';
 import {
@@ -16,7 +16,7 @@ export const getHttpDashboard: ApiEntry<unknown> = {
 
     if (refId === REF_ID_UNIQUE_CHECK_CONFIGS) {
       return {
-        json: promUniqueConfigs,
+        json: PROM_UNIQUE_CONFIGS,
       };
     }
 

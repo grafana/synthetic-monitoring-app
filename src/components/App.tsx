@@ -13,7 +13,7 @@ import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
-import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
+import { QUERY_KEYS as alertingQueryKeys } from 'data/useAlerts';
 
 import { DevTools } from './DevTools';
 import { FeatureFlagProvider } from './FeatureFlagProvider';

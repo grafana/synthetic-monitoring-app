@@ -14,9 +14,9 @@ interface Props {
   emptyText?: ReactNode;
 }
 
-const defaultEmptyText = 'No probes found';
+const DEFAULT_EMPTY_TEXT = 'No probes found';
 
-export const ProbeList = ({ 'data-testid': dataTestId, probes, title, emptyText = defaultEmptyText }: Props) => {
+export const ProbeList = ({ 'data-testid': dataTestId, probes, title, emptyText = DEFAULT_EMPTY_TEXT }: Props) => {
   const styles = useStyles2(getStyles);
 
   return (

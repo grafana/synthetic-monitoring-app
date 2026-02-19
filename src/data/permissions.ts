@@ -3,7 +3,7 @@ import { config } from '@grafana/runtime';
 
 import { FixedSecretPermission, PluginPermissions } from 'types';
 
-const roleHierarchy: Record<OrgRole, OrgRole[]> = {
+const ROLE_HIERARCHY: Record<OrgRole, OrgRole[]> = {
   [OrgRole.Viewer]: [OrgRole.Viewer, OrgRole.Editor, OrgRole.Admin],
   [OrgRole.Editor]: [OrgRole.Editor, OrgRole.Admin],
   [OrgRole.Admin]: [OrgRole.Admin],
@@ -17,7 +17,7 @@ const hasMinFallbackRole = (fallbackOrgRole: OrgRole) => {
     return false;
   }
 
-  return roleHierarchy[fallbackOrgRole]?.includes(orgRole) || false;
+  return ROLE_HIERARCHY[fallbackOrgRole]?.includes(orgRole) || false;
 };
 
 const isUserActionAllowed = (permission: PluginPermissions | FixedSecretPermission): boolean => {

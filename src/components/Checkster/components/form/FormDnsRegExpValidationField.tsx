@@ -33,7 +33,7 @@ const newItem: RegexpItem = {
   inverted: false,
 };
 
-const selectInputWidth = 13; // times theme.spacing
+const SELECT_INPUT_WIDTH = 13; // times theme.spacing
 
 export function FormDnsRegExpValidationField({
   field,
@@ -65,7 +65,7 @@ export function FormDnsRegExpValidationField({
               return (
                 <Fragment key={fieldArray.id}>
                   <GenericInputSelectField
-                    width={selectInputWidth}
+                    width={SELECT_INPUT_WIDTH}
                     field={createPath(field, index, 'responseMatch')}
                     aria-label={`Match subject for validation ${index + 1}`}
                     options={DNS_RESPONSE_MATCH_OPTIONS}
@@ -110,7 +110,7 @@ function getStyles(theme: GrafanaTheme2) {
   return {
     inputGrid: css`
       display: grid;
-      grid-template-columns: minmax(auto, ${theme.spacing(selectInputWidth)}) auto minmax(auto, 60px) minmax(auto, 30px);
+      grid-template-columns: minmax(auto, ${theme.spacing(SELECT_INPUT_WIDTH)}) auto minmax(auto, 60px) minmax(auto, 30px);
       gap: ${theme.spacing(1)};
     `,
     centeredCell: css`

@@ -29,7 +29,7 @@ jest.mock('hooks/useLegacyAlertsRestriction', () => ({
 
 const useAlertsHook = require('hooks/useAlerts');
 
-const { defaultRules } = jest.requireActual('hooks/useAlerts');
+const { DEFAULT_RULES } = jest.requireActual('hooks/useAlerts');
 const setDefaultRules = jest.fn();
 const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
 
@@ -53,7 +53,7 @@ it('adds default alerts and edits alerts', async () => {
       setRules,
     }))
     .mockImplementation(() => ({
-      alertRules: defaultRules.rules as AlertRule[],
+      alertRules: DEFAULT_RULES.rules as AlertRule[],
       alertError: '',
       setDefaultRules,
       setRules,

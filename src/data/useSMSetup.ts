@@ -8,7 +8,7 @@ import { FaroEvent } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import { LinkedDatasourceInfo } from 'datasource/types';
 
-export const queryKeys: Record<'list', QueryKey> = {
+export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['get-sm-datasource'],
 };
 
@@ -22,7 +22,7 @@ const getDataSourceName = () => {
 
 export function useGetSMDatasource() {
   return useQuery({
-    queryKey: queryKeys.list,
+    queryKey: QUERY_KEYS.list,
     queryFn: () => {
       const smDsName = getDataSourceName();
       if (!smDsName) {

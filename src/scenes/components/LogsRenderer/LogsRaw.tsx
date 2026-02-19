@@ -14,7 +14,7 @@ import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
-const logPanelOptions = {
+const LOG_PANEL_OPTIONS = {
   showTime: true,
   showLabels: true,
   showCommonLabels: false,
@@ -49,7 +49,7 @@ const LogsRawComponent = <T extends UnknownParsedLokiRecord>({ logs }: { logs: T
           height={LOGS_HEIGHT}
           data={getPanelData(logs)}
           options={{
-            ...logPanelOptions,
+            ...LOG_PANEL_OPTIONS,
             wrapLogMessage: true,
           }}
         />

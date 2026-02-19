@@ -387,7 +387,7 @@ export const FALLBACK_CHECK_TRACEROUTE: TracerouteCheck = {
   },
 };
 
-export const fallbackCheckMap = {
+export const FALLBACK_CHECK_MAP = {
   [CheckType.Browser]: FALLBACK_CHECK_BROWSER,
   [CheckType.Dns]: FALLBACK_CHECK_DNS,
   [CheckType.Grpc]: FALLBACK_CHECK_GRPC,
@@ -399,7 +399,7 @@ export const fallbackCheckMap = {
   [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
 };
 
-export const colors = {
+export const COLORS = {
   darkThemeBlueBackground: '#021B39',
   darkThemeBorderBlue: '#6394EB',
   lightThemeBlueBackground: '#E9F4FF',
@@ -503,7 +503,7 @@ export const METHOD_OPTIONS: Array<ComboboxOption<HttpMethod>> = [
   },
 ];
 
-export const headerNameOptions = [
+export const HEADER_NAME_OPTIONS = [
   { label: 'Accept', value: 'Accept' },
   { label: 'Accept-Charset', value: 'Accept-Charset' },
   { label: 'Authorization', value: 'Authorization' },

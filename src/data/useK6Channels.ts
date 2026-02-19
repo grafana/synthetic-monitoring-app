@@ -6,12 +6,12 @@ import { SMDataSource } from 'datasource/DataSource';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useSMDS } from 'hooks/useSMDS';
 
-export const queryKeys: Record<'list', () => QueryKey> = {
+export const QUERY_KEYS: Record<'list', () => QueryKey> = {
   list: () => ['k6-channels'],
 };
 
 const channelsQuery = (api: SMDataSource, enabled: boolean) => ({
-  queryKey: queryKeys.list(),
+  queryKey: QUERY_KEYS.list(),
   queryFn: async () => {
     try {
       return await api.listK6Channels();

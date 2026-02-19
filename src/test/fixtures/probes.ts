@@ -1,8 +1,8 @@
 import { Probe } from 'types';
 
-import { db } from '../db';
+import { DB } from '../db';
 
-export const PRIVATE_PROBE: Probe = db.probe.build({
+export const PRIVATE_PROBE: Probe = DB.probe.build({
   labels: [
     { name: 'Mr', value: 'Orange' },
     { name: 'chimi', value: 'churri' },
@@ -13,7 +13,7 @@ export const PRIVATE_PROBE: Probe = db.probe.build({
   },
 });
 
-export const PUBLIC_PROBE: Probe = db.probe.build({
+export const PUBLIC_PROBE: Probe = DB.probe.build({
   public: true,
   online: false,
   k6Versions: {
@@ -22,20 +22,20 @@ export const PUBLIC_PROBE: Probe = db.probe.build({
   },
 });
 
-export const ONLINE_PROBE: Probe = db.probe.build({});
+export const ONLINE_PROBE: Probe = DB.probe.build({});
 
-export const OFFLINE_PROBE: Probe = db.probe.build({
+export const OFFLINE_PROBE: Probe = DB.probe.build({
   online: false,
 });
 
-export const SCRIPTED_DISABLED_PROBE: Probe = db.probe.build({
+export const SCRIPTED_DISABLED_PROBE: Probe = DB.probe.build({
   capabilities: {
     disableScriptedChecks: true,
     disableBrowserChecks: true,
   },
 });
 
-export const UNSELECTED_PRIVATE_PROBE: Probe = db.probe.build({});
+export const UNSELECTED_PRIVATE_PROBE: Probe = DB.probe.build({});
 
 export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE, UNSELECTED_PRIVATE_PROBE];
 

@@ -3,8 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-const defaultTitle = 'Something went wrong';
-const defaultContent =
+const DEFAULT_TITLE = 'Something went wrong';
+const DEFAULT_CONTENT =
   'An error has occurred, this can be caused by either poor connectivity or an error with our servers. If you have an ad blocking extension installed in your browser, try disabling it and reload the page.';
 
 interface ErrorAlertProps {
@@ -15,9 +15,9 @@ interface ErrorAlertProps {
 }
 export const ErrorAlert = ({
   buttonText,
-  content = defaultContent,
+  content = DEFAULT_CONTENT,
   onClick,
-  title = defaultTitle,
+  title = DEFAULT_TITLE,
 }: ErrorAlertProps) => {
   const styles = useStyles2(getStyles);
 

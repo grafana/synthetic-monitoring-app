@@ -20,7 +20,7 @@ import { useSMDS } from 'hooks/useSMDS';
 import { EMPTY_METADATA, PROBES_METADATA } from './data.constants';
 import { useChecks } from './useChecks';
 
-export const queryKeys: Record<'list', QueryKey> = {
+export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['probes'],
 };
 
@@ -28,7 +28,7 @@ export const PROBE_REFETCH_INTERVAL = 10 * ONE_SECOND_IN_MS;
 
 function probesQuery(smDS: SMDataSource) {
   return {
-    queryKey: queryKeys.list,
+    queryKey: QUERY_KEYS.list,
     queryFn: () => smDS.listProbes(),
     refetchInterval: PROBE_REFETCH_INTERVAL,
   };
@@ -136,7 +136,7 @@ export function useCreateProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {
@@ -168,7 +168,7 @@ export function useUpdateProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {
@@ -200,7 +200,7 @@ export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {
@@ -223,7 +223,7 @@ export function useResetProbeToken({ eventInfo, onError, onSuccess }: MutationPr
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {

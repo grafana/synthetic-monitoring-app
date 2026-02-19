@@ -7,7 +7,7 @@ import { getStartEnd, queryInstantMetric } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { DEFAULT_QUERY_FROM_TIME, STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
-const queryKeys: Record<'latencies', QueryKey> = {
+const QUERY_KEYS: Record<'latencies', QueryKey> = {
   latencies: ['latencies'],
 };
 
@@ -17,7 +17,7 @@ export function useLatency({ job, target, settings }: Check) {
   const type = getCheckType(settings);
 
   return useQuery({
-    queryKey: [...queryKeys.latencies, url, job, target, type, metricsDS],
+    queryKey: [...QUERY_KEYS.latencies, url, job, target, type, metricsDS],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);

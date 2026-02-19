@@ -20,7 +20,7 @@ interface FormTcpQueryAndResponseFieldProps {
   addButtonText?: string;
 }
 
-const newOption = { expect: '', send: '', startTLS: false };
+const NEW_OPTION = { expect: '', send: '', startTLS: false };
 
 export function FormTcpQueryAndResponseField({
   field,
@@ -92,7 +92,7 @@ export function FormTcpQueryAndResponseField({
           align-self: flex-start; // Stops button from being 100% width
         `}
         icon="plus"
-        onClick={() => append(newOption)}
+        onClick={() => append(NEW_OPTION)}
         variant="secondary"
         size="sm"
         type="button"

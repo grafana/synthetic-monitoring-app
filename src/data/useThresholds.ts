@@ -7,7 +7,7 @@ import type { UpdateTenantSettingsResult } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
 
-export const queryKeys: Record<'list', QueryKey> = {
+export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['thresholds'],
 };
 
@@ -15,7 +15,7 @@ export function useThresholds() {
   const smDS = useSMDS();
 
   return useQuery({
-    queryKey: queryKeys.list,
+    queryKey: QUERY_KEYS.list,
     queryFn: () => smDS.getTenantSettings(),
   });
 }
@@ -40,7 +40,7 @@ export function useUpdateThresholds({ onError, onSuccess }: MutationProps<Update
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
     meta: {
