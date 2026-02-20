@@ -4,7 +4,7 @@ import { BROWSER_EXAMPLES } from 'components/WelcomeTabs/constants';
 
 import { ScriptedCheckContent } from './ScriptedCheckContent';
 
-export const BROWSER_CHECK_FIELDS = ['job', 'instance', 'channels.k6', 'settings.browser.script'];
+export const BROWSER_CHECK_FIELDS = ['job', 'target', 'channels.k6', 'settings.browser.script'];
 
 export function BrowserCheckContent() {
   return (

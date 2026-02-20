@@ -12,7 +12,7 @@ import { useAdHocCheck } from './useAdHocCheck';
 export function useOnBeforeAdhocCheck() {
   const { mutate: doAdhocCheck, data, isPending } = useAdHocCheck();
   const {
-    formNavigation: { errors, sectionByErrors },
+    formNavigation: { errors, sectionByErrors, completeAllSteps },
   } = useChecksterContext();
   const { trigger, getValues } = useFormContext<CheckFormValues>();
   const invalidFields = useInvalidFields();
@@ -20,10 +20,11 @@ export function useOnBeforeAdhocCheck() {
 
   useEffect(() => {
     if (errors && pendingGoToError) {
+      completeAllSteps();
       sectionByErrors();
       setPendingGotoError(false);
     }
-  }, [errors, pendingGoToError, sectionByErrors]);
+  }, [errors, pendingGoToError, completeAllSteps, sectionByErrors]);
 
   const triggerAdhocCheck = useCallback(() => {
     trigger().then((isValid) => {
