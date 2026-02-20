@@ -41,7 +41,12 @@ jest.mock('@grafana/runtime', () => {
   };
 
   const navigate = (path: PathArg, action: string) => {
-    const next: Location = { ...parsePath(path), state: null, key: Math.random().toString(36).slice(2) };
+    const parsed = parsePath(path);
+    // Prevent infinite loops by skipping navigation to the same location
+    if (location.pathname === parsed.pathname && location.search === parsed.search) {
+      return;
+    }
+    const next: Location = { ...parsed, state: null, key: Math.random().toString(36).slice(2) };
     for (const blocker of blockers) {
       if (blocker(next, action) === false) {
         return;

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useParams, useSearchParams } from 'react-router';
 import { GrafanaTheme2 } from '@grafana/data';
 import { locationService, PluginPage } from '@grafana/runtime';
 import { TextLink, useStyles2 } from '@grafana/ui';

@@ -1,10 +1,10 @@
-import { useBeforeUnload } from 'react-router-dom';
+import { useBeforeUnload } from 'react-router';
 import { renderHook } from '@testing-library/react';
 
 import { useConfirmBeforeUnload } from './useConfirmBeforeUnload';
 
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom');
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router');
   return {
     ...originalModule,
     useBeforeUnload: jest.fn(),

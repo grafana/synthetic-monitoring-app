@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, type ReactElement, type ReactNode } from 'react';
-import { Route, Router, Routes } from 'react-router-dom';
+import { Route, Router, Routes } from 'react-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
 import { locationService, LocationServiceProvider } from '@grafana/runtime';
