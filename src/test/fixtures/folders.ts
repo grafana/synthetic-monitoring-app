@@ -65,11 +65,64 @@ export const MOCK_FOLDERS: GrafanaFolder[] = [
     updatedBy: 'admin',
     version: 1,
   },
+  {
+    id: 5,
+    uid: 'platform-staging',
+    title: 'Staging',
+    url: '/dashboards/f/platform-staging/staging',
+    parentUid: 'platform-team',
+    hasAcl: true,
+    canSave: true,
+    canEdit: true,
+    canAdmin: true,
+    canDelete: true,
+    created: '2024-01-15T11:00:00Z',
+    updated: '2024-01-15T11:00:00Z',
+    createdBy: 'admin',
+    updatedBy: 'admin',
+    version: 1,
+  },
+  {
+    id: 6,
+    uid: 'platform-production',
+    title: 'Production',
+    url: '/dashboards/f/platform-production/production',
+    parentUid: 'platform-team',
+    hasAcl: true,
+    canSave: true,
+    canEdit: true,
+    canAdmin: true,
+    canDelete: true,
+    created: '2024-01-15T11:05:00Z',
+    updated: '2024-01-15T11:05:00Z',
+    createdBy: 'admin',
+    updatedBy: 'admin',
+    version: 1,
+  },
+  {
+    id: 7,
+    uid: 'platform-staging-eu',
+    title: 'EU',
+    url: '/dashboards/f/platform-staging-eu/eu',
+    parentUid: 'platform-staging',
+    hasAcl: true,
+    canSave: true,
+    canEdit: true,
+    canAdmin: true,
+    canDelete: true,
+    created: '2024-01-15T12:00:00Z',
+    updated: '2024-01-15T12:00:00Z',
+    createdBy: 'admin',
+    updatedBy: 'admin',
+    version: 1,
+  },
 ];
 
 export const PLATFORM_TEAM_FOLDER = MOCK_FOLDERS[0];
 export const FRONTEND_TEAM_FOLDER = MOCK_FOLDERS[1];
 export const SRE_TEAM_FOLDER = MOCK_FOLDERS[2];
 export const READONLY_TEAM_FOLDER = MOCK_FOLDERS[3];
-
+export const PLATFORM_STAGING_FOLDER = MOCK_FOLDERS[4];
+export const PLATFORM_PRODUCTION_FOLDER = MOCK_FOLDERS[5];
+export const PLATFORM_STAGING_EU_FOLDER = MOCK_FOLDERS[6];
 

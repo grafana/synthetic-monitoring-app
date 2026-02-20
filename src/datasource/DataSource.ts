@@ -330,6 +330,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         return { ...check, folderUid: 'dfa2kemr3ajggd' }; //Access test folder
         //return { ...check, folderUid: '123' };
       }
+
+      if (check.id === 2499) {
+        return { ...check, folderUid: 'dfdue0tzgf4e8a' }; // Inner folder
+      }
       return check;
     });
 

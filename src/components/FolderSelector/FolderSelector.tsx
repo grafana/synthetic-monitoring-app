@@ -3,7 +3,7 @@ import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { Button, Field, Icon, Input, Modal, Select, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { useCreateFolder, useFolder, useFolders } from 'data/useFolders';
+import { getFolderPath, useCreateFolder, useFolder, useFolders } from 'data/useFolders';
 
 interface FolderSelectorProps {
   value?: string;
@@ -25,13 +25,22 @@ export const FolderSelector = ({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const folderInfo = useFolder(value, Boolean(value));
 
+  const foldersMap = new Map(folders.map((f) => [f.uid, f]));
+
+  const sortedFolders = [...folders].sort((a, b) => {
+    const pathA = getFolderPath(a, foldersMap);
+    const pathB = getFolderPath(b, foldersMap);
+    return pathA.localeCompare(pathB);
+  });
+
   const options: Array<SelectableValue<string>> = [
     ...(includeRoot ? [{ label: 'Root (No folder)', value: '', description: 'Check will not be in a folder' }] : []),
-    ...folders.map((folder) => {
+    ...sortedFolders.map((folder) => {
+      const pathLabel = getFolderPath(folder, foldersMap);
       return {
-        label: folder.title,
+        label: pathLabel,
         value: folder.uid,
-        description: buildFolderDescription(folder),
+        description: buildFolderDescription(folder, foldersMap),
         icon: 'folder' as const,
       };
     }),
@@ -205,13 +214,7 @@ const CreateFolderModal = ({ onClose, onSuccess }: CreateFolderModalProps) => {
   );
 };
 
-function buildFolderDescription(folder: any): string {
-  const parts: string[] = [];
-
-  if (folder.parents && folder.parents.length > 0) {
-    parts.push(`Path: ${folder.parents.map((p: any) => p.title).join(' > ')} > ${folder.title}`);
-  }
-
+function buildFolderDescription(folder: any, _foldersMap?: Map<string, any>): string {
   const permissions: string[] = [];
   if (folder.canSave) {
     permissions.push('create');
@@ -224,10 +227,10 @@ function buildFolderDescription(folder: any): string {
   }
 
   if (permissions.length > 0) {
-    parts.push(`Permissions: ${permissions.join(', ')}`);
+    return `Permissions: ${permissions.join(', ')}`;
   }
 
-  return parts.join(' • ');
+  return '';
 }
 
 const getStyles = (theme: GrafanaTheme2) => {

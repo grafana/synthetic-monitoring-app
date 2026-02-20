@@ -23,10 +23,27 @@ export const folderQueryKeys = {
 
 const STALE_TIME = 5 * 60 * 1000; // 5 minutes
 
+async function fetchAllFolders(): Promise<GrafanaFolder[]> {
+  const rootFolders = await getBackendSrv().get<GrafanaFolder[]>('/api/folders');
+  const allFolders: GrafanaFolder[] = [...rootFolders];
+
+  async function fetchChildren(parentUid: string): Promise<void> {
+    const children = await getBackendSrv().get<GrafanaFolder[]>('/api/folders', { parentUid });
+    if (children.length === 0) {
+      return;
+    }
+    allFolders.push(...children);
+    await Promise.all(children.map((child) => fetchChildren(child.uid)));
+  }
+
+  await Promise.all(rootFolders.map((folder) => fetchChildren(folder.uid)));
+  return allFolders;
+}
+
 export function useFolders(): UseQueryResult<GrafanaFolder[], Error> {
   return useQuery({
     queryKey: folderQueryKeys.list(),
-    queryFn: () => getBackendSrv().get<GrafanaFolder[]>('/api/folders'),
+    queryFn: fetchAllFolders,
     staleTime: STALE_TIME,
   });
 }
@@ -84,6 +101,35 @@ export function useDeleteFolder() {
     mutationFn: (uid: string) => getBackendSrv().delete<{ message: string; id: number }>(`/api/folders/${uid}`),
     onSuccess: invalidateAllFolders,
   });
+}
+
+/**
+ * Build the full folder path (e.g. "Platform Team > Staging > EU").
+ *
+ * Works with two data shapes:
+ * - folder.parents (returned by GET /api/folders/:uid)
+ * - allFoldersMap (built from the flat list returned by useFolders)
+ */
+export function getFolderPath(folder: GrafanaFolder, allFoldersMap?: Map<string, GrafanaFolder>): string {
+  if (folder.parents?.length) {
+    return [...folder.parents.map((p) => p.title), folder.title].join(' > ');
+  }
+
+  if (allFoldersMap && folder.parentUid) {
+    const path: string[] = [folder.title];
+    let current = folder;
+    while (current.parentUid) {
+      const parent = allFoldersMap.get(current.parentUid);
+      if (!parent) {
+        break;
+      }
+      path.unshift(parent.title);
+      current = parent;
+    }
+    return path.join(' > ');
+  }
+
+  return folder.title;
 }
 
 // Helper to parse HTTP status into access flags

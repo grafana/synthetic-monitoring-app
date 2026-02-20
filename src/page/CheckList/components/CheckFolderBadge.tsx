@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 
 import { Check, FeatureName } from 'types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
-import { useFolder } from 'data/useFolders';
+import { getFolderPath, useFolder } from 'data/useFolders';
 
 interface CheckFolderBadgeProps {
   check: Check;
@@ -33,7 +33,9 @@ export function CheckFolderBadge({ check }: CheckFolderBadgeProps) {
       }
     };
 
-    return <Tag name={folderInfo.folder.title} icon="folder" onClick={handleClick} className={styles.folderTag} />;
+    const pathLabel = getFolderPath(folderInfo.folder);
+
+    return <Tag name={pathLabel} icon="folder" onClick={handleClick} className={styles.folderTag} />;
   }
 
   // Folder deleted/orphaned (404) or any error - assume deleted for better UX

@@ -3,13 +3,34 @@ import { MOCK_FOLDERS } from 'test/fixtures/folders';
 import { ApiEntry } from 'test/handlers/types';
 import { GrafanaFolder } from 'types';
 
+function buildParentsChain(folder: GrafanaFolder): GrafanaFolder[] {
+  const parents: GrafanaFolder[] = [];
+  let current = folder;
+  while (current.parentUid) {
+    const parent = MOCK_FOLDERS.find((f) => f.uid === current.parentUid);
+    if (!parent) {
+      break;
+    }
+    parents.unshift(parent);
+    current = parent;
+  }
+  return parents;
+}
+
 export const listFolders: ApiEntry<GrafanaFolder[]> = {
   route: `/api/folders`,
   method: `get`,
-  result: () => {
-    return {
-      json: MOCK_FOLDERS,
-    };
+  result: (req) => {
+    const url = new URL(req.url, 'http://localhost');
+    const parentUid = url.searchParams.get('parentUid');
+
+    if (parentUid) {
+      const children = MOCK_FOLDERS.filter((f) => f.parentUid === parentUid);
+      return { json: children };
+    }
+
+    const rootFolders = MOCK_FOLDERS.filter((f) => !f.parentUid);
+    return { json: rootFolders };
   },
 };
 
@@ -17,7 +38,7 @@ export const getFolder: ApiEntry<GrafanaFolder> = {
   route: `/api/folders/([^/]+)`,
   method: `get`,
   result: (req) => {
-    const uid = req.url.split('/').pop();
+    const uid = req.url.split('/').pop()?.split('?')[0];
     const folder = MOCK_FOLDERS.find((f) => f.uid === uid);
 
     if (!folder) {
@@ -28,7 +49,10 @@ export const getFolder: ApiEntry<GrafanaFolder> = {
     }
 
     return {
-      json: folder,
+      json: {
+        ...folder,
+        parents: buildParentsChain(folder),
+      },
     };
   },
 };

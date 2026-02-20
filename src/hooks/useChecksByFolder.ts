@@ -2,11 +2,12 @@ import { useMemo } from 'react';
 
 import { Check, FeatureName, GrafanaFolder } from 'types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
-import { useFolders } from 'data/useFolders';
+import { getFolderPath, useFolders } from 'data/useFolders';
 
 export interface FolderGroup {
   folderUid: string;
   folder?: GrafanaFolder;
+  folderPath: string;
   checks: Check[];
   isAccessible: boolean; // Has folder in accessible list
   isOrphaned: boolean; // Folder might be deleted (not in accessible list)
@@ -40,37 +41,31 @@ export function useChecksByFolder(checks: Check[]): ChecksByFolder {
     const folderMap = new Map<string, FolderGroup>();
     const rootChecks: Check[] = [];
 
-    // Create folder lookup for quick access
     const foldersById = new Map(folders.map((f) => [f.uid, f]));
 
     checks.forEach((check) => {
-      // Checks without folderUid go to root
       if (!check.folderUid) {
         rootChecks.push(check);
         return;
       }
 
-      // Create folder group if it doesn't exist
       if (!folderMap.has(check.folderUid)) {
         const folder = foldersById.get(check.folderUid);
         folderMap.set(check.folderUid, {
           folderUid: check.folderUid,
           folder,
+          folderPath: folder ? getFolderPath(folder, foldersById) : check.folderUid,
           checks: [],
           isAccessible: !!folder,
-          isOrphaned: !folder, // If not in accessible list, might be deleted
+          isOrphaned: !folder,
         });
       }
 
-      // Add check to its folder group
       folderMap.get(check.folderUid)!.checks.push(check);
     });
 
-    // Convert map to array and sort by folder title
     const folderGroups = Array.from(folderMap.values()).sort((a, b) => {
-      const titleA = a.folder?.title || a.folderUid;
-      const titleB = b.folder?.title || b.folderUid;
-      return titleA.localeCompare(titleB);
+      return a.folderPath.localeCompare(b.folderPath);
     });
 
     return {

@@ -96,7 +96,7 @@ export function CheckListFolderView({
                     <Icon name={isExpanded ? 'angle-down' : 'angle-right'} size="lg" />
                     <Icon name="folder" />
                     <span className={styles.folderTitle}>
-                      {group.folder?.title || group.folderUid}
+                      {group.folderPath}
                       {group.isOrphaned && <span className={styles.orphanedLabel}> (Folder deleted)</span>}
                     </span>
                     <span className={styles.checkCount}>
