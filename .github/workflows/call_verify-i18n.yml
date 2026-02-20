@@ -1,0 +1,33 @@
+name: Verify i18n Translations
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-i18n:
+    name: Verify i18n Translations
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Extract translation keys
+        run: yarn i18n-extract
+
+      - name: Check locale files are in sync
+        run: |
+          echo "🔍 Checking if locale files are in sync..."
+          if ! git diff --exit-code src/locales/; then
+            echo ""
+            echo "❌ Locale files are out of sync."
+            echo "Run 'yarn i18n-extract' locally and commit the changes."
+            exit 1
+          else
+            echo "✅ Locale files are in sync."
+          fi

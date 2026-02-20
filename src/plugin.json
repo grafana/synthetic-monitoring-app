@@ -284,5 +284,6 @@
   ],
   "dependencies": {
     "grafanaDependency": ">=12.3.0"
-  }
+  },
+  "languages": ["en-US", "es-ES"]
 }
