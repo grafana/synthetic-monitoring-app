@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.47.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.2...v1.47.3) (2026-02-20)
+
+
+### Fixes
+
+* check test error state ([#1594](https://github.com/grafana/synthetic-monitoring-app/issues/1594)) ([9a118c0](https://github.com/grafana/synthetic-monitoring-app/commit/9a118c05407f63b14ac6ede8c7f3a0eee33fa18c))
+
+
+### Miscellaneous Chores
+
+* cleanup constant naming convention ([#1596](https://github.com/grafana/synthetic-monitoring-app/issues/1596)) ([0e1fa9b](https://github.com/grafana/synthetic-monitoring-app/commit/0e1fa9b7be28f5d18e13dbac9030c4ef1b3326b6))
+* migrate to React Router v7 ([#1579](https://github.com/grafana/synthetic-monitoring-app/issues/1579)) ([82d6af9](https://github.com/grafana/synthetic-monitoring-app/commit/82d6af9d978ede99f4086a192e794d68ad3f2f3b))
+
 ## [1.47.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.1...v1.47.2) (2026-02-17)
 
 
