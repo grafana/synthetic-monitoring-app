@@ -101,6 +101,13 @@ jobs:
       pull-requests: write
     uses: ./.github/workflows/call_verify-probe-api-server-mappings.yml
 
+  # i18n translation files sync check
+  i18n-validation:
+    name: i18n Validation
+    permissions:
+      contents: read
+    uses: ./.github/workflows/call_verify-i18n.yml
+
   # Grafana API compatibility check
   grafana-compat:
     name: Grafana API Compatibility

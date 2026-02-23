@@ -12,7 +12,6 @@ import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { SceneRedirecter } from 'components/SceneRedirecter';
-import { ScenesProvider } from 'components/ScenesProvider';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckList } from 'page/CheckList';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
@@ -63,9 +62,7 @@ export const InitialisedRouter = () => {
         path={AppRoutes.Home}
         element={
           canReadChecks ? (
-            <ScenesProvider>
-              <SceneHomepage />
-            </ScenesProvider>
+            <SceneHomepage />
           ) : (
             <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
           )
@@ -79,9 +76,7 @@ export const InitialisedRouter = () => {
             index
             element={
               canReadChecks ? (
-                <ScenesProvider>
-                  <DashboardPage />
-                </ScenesProvider>
+                <DashboardPage />
               ) : (
                 <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
               )
