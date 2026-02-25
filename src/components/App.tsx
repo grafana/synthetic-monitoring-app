@@ -22,18 +22,20 @@ const { env, url, name } = getFaroConfig();
 
 // faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
 if (window.location.hostname !== 'localhost') {
-  initializeFaro({
-    url,
-    app: {
-      name,
-      version: getAppPluginVersion('grafana-synthetic-monitoring-app'),
-      environment: env,
-    },
-    isolate: true,
-    user: {
-      id: config.bootData.user.orgName,
-    },
-    instrumentations: getWebInstrumentations(),
+  getAppPluginVersion('grafana-synthetic-monitoring-app').then((version) => {
+    initializeFaro({
+      url,
+      app: {
+        name,
+        version: version ?? undefined,
+        environment: env,
+      },
+      isolate: true,
+      user: {
+        id: config.bootData.user.orgName,
+      },
+      instrumentations: getWebInstrumentations(),
+    });
   });
 }
 
