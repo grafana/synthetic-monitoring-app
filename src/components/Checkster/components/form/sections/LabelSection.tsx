@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { FormSectionName } from '../../../types';
+import { useTenantCostAttributionLabels } from 'data/usetenantCostAttributionLabels';
 import { useTenantLimits } from 'data/useTenantLimits';
 import { LimitsFetchWarning } from 'components/LabelField';
 
@@ -12,7 +13,11 @@ export const LABEL_SECTION_FIELDS = ['labels'];
 
 export function LabelSection() {
   // TODO: Pipe this data through the front door? Meaning as a prop to Checkster/ChecksterProvider (tenantLimits)
-  const { data: limits, isLoading, error, isRefetching, refetch } = useTenantLimits();
+  const { data: limits, isLoading: limitsLoading, error, isRefetching, refetch } = useTenantLimits();
+  const { data: calData, isLoading: calLoading } = useTenantCostAttributionLabels();
+
+  const isInitialLoad = (limitsLoading && !limits) || (calLoading && !calData);
+
   const maxAllowedMetricLabels = limits?.maxAllowedMetricLabels ?? DEFAULT_MAX_ALLOWED_METRIC_LABELS;
   const maxAllowedLogLabels = limits?.maxAllowedLogLabels ?? DEFAULT_MAX_ALLOWED_LOG_LABELS;
   const description = `Custom labels to be included with collected metrics and logs. You can add up to ${maxAllowedMetricLabels}. If you add more than ${maxAllowedLogLabels} labels, they will potentially not be used to index logs, and rather added as part of the log message.`;
@@ -24,7 +29,11 @@ export function LabelSection() {
           <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} />
         </div>
       )}
-      <GenericLabelContent description={description} isLoading={isLoading} />
+      <GenericLabelContent
+        description={description}
+        isLoading={isInitialLoad}
+        calNames={calData?.items ?? []}
+      />
     </FormSection>
   );
 }

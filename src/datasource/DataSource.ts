@@ -24,6 +24,7 @@ import {
   DeleteProbeResult,
   ListCheckResult,
   ListProbeResult,
+  ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
   LogsQueryResponse,
@@ -314,9 +315,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<ListCheckResult>(
       `${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`
     ).then((checks) =>
-      checks.map((check) =>
-        check.alertSensitivity ? check : { ...check, alertSensitivity: AlertSensitivity.None }
-      )
+      checks.map((check) => (check.alertSensitivity ? check : { ...check, alertSensitivity: AlertSensitivity.None }))
     );
   }
 
@@ -359,6 +358,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async getTenantLimits() {
     return this.fetchAPI<ListTenantLimitsResponse>(`${this.instanceSettings.url}/sm/tenant/limits`);
+  }
+
+  async getTenantCostAttributionLabels() {
+    return this.fetchAPI<ListTenantCostAttributionLabelsResponse>(`${this.instanceSettings.url}/sm/tenant/cals`);
   }
 
   async getTenantSettings() {

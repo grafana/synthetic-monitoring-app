@@ -1,7 +1,13 @@
 import isBase64 from 'is-base64';
 
-import { AlertSensitivity, CheckBase, CheckFormValues, ExistingObject, TLSConfig } from 'types';
+import { AlertSensitivity, CheckBase, CheckFormValues, ExistingObject, Label, TLSConfig } from 'types';
 import { toBase64 } from 'utils';
+
+function filterAndMapCostAttributionLabels(labels: Label[]): Label[] {
+  return labels
+    .filter((label) => label.type !== 'cost-attribution' || !!label.value)
+    .map(({ name, value }) => ({ name, value }));
+}
 
 export function getBasePayloadValuesFromForm(formValues: CheckFormValues): CheckBase & ExistingObject {
   return {
@@ -11,7 +17,7 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
     frequency: formValues.frequency,
     id: formValues.id,
     job: formValues.job,
-    labels: formValues.labels,
+    labels: filterAndMapCostAttributionLabels(formValues.labels),
     probes: formValues.probes,
     target: formValues.target,
     timeout: formValues.timeout,

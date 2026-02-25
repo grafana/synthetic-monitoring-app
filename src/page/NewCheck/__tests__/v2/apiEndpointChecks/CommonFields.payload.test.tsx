@@ -18,6 +18,13 @@ import { gotoSection, submitForm } from '../../../../../components/Checkster/__t
 import { renderNewForm, TARGET_MAP } from '../../../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../../../__testHelpers__/v2.utils';
 
+jest.mock('data/usetenantCostAttributionLabels', () => ({
+  useTenantCostAttributionLabels: () => ({
+    data: { items: [] },
+    isLoading: false,
+  }),
+}));
+
 export const FALLBACK_CHECK_MAP: Record<string, Check> = {
   [CheckType.Http]: FALLBACK_CHECK_HTTP,
   [CheckType.Ping]: FALLBACK_CHECK_PING,

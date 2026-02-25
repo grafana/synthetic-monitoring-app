@@ -1,7 +1,14 @@
-import { TENANT, TENANT_LIMITS, TENANT_SETTINGS, UPDATE_TENANT_SETTINGS } from 'test/fixtures/tenants';
+import {
+  TENANT,
+  TENANT_COST_ATTRIBUTION_LABELS,
+  TENANT_LIMITS,
+  TENANT_SETTINGS,
+  UPDATE_TENANT_SETTINGS,
+} from 'test/fixtures/tenants';
 
 import { ApiEntry } from 'test/handlers/types';
 import {
+  ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
   TenantResponse,
@@ -44,6 +51,16 @@ export const getTenantLimits: ApiEntry<ListTenantLimitsResponse> = {
   result: () => {
     return {
       json: TENANT_LIMITS,
+    };
+  },
+};
+
+export const getTenantCostAttributionLabels: ApiEntry<ListTenantCostAttributionLabelsResponse> = {
+  route: `/sm/tenant/cals`,
+  method: `get`,
+  result: () => {
+    return {
+      json: TENANT_COST_ATTRIBUTION_LABELS,
     };
   },
 };

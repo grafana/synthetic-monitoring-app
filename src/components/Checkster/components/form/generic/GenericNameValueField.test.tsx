@@ -302,4 +302,80 @@ describe('GenericNameValueField', () => {
     expect(valueInput).toBeDisabled();
     expect(addButton).toBeDisabled();
   });
+
+  describe('locked rows', () => {
+    it('makes name input readonly for locked rows', () => {
+      renderGenericNameValueField(
+        {
+          field: 'labels',
+          label: 'Labels',
+          lockedNames: new Set(['env']),
+        },
+        {
+          labels: [
+            { name: 'env', value: 'production', type: 'cost-attribution' },
+            { name: 'team', value: 'backend' },
+          ],
+        }
+      );
+
+      const envInput = screen.getByDisplayValue('env');
+      const teamInput = screen.getByDisplayValue('team');
+
+      expect(envInput).toHaveAttribute('readonly');
+      expect(teamInput).not.toHaveAttribute('readonly');
+    });
+
+    it('hides remove button for locked rows', () => {
+      renderGenericNameValueField(
+        {
+          field: 'labels',
+          label: 'Labels',
+          lockedNames: new Set(['env']),
+        },
+        {
+          labels: [
+            { name: 'env', value: 'production', type: 'cost-attribution' },
+            { name: 'team', value: 'backend' },
+          ],
+        }
+      );
+
+      const removeButtons = screen.queryAllByRole('button', { name: /^remove$/i });
+      expect(removeButtons).toHaveLength(1);
+    });
+
+    it('does not count locked rows toward the limit', () => {
+      renderGenericNameValueField(
+        {
+          field: 'labels',
+          label: 'Labels',
+          limit: 1,
+          lockedNames: new Set(['env']),
+        },
+        {
+          labels: [{ name: 'env', value: 'production', type: 'cost-attribution' }],
+        }
+      );
+
+      const addButton = screen.getByRole('button', { name: /row/i });
+      expect(addButton).not.toBeDisabled();
+    });
+
+    it('keeps value input editable for locked rows', () => {
+      renderGenericNameValueField(
+        {
+          field: 'labels',
+          label: 'Labels',
+          lockedNames: new Set(['env']),
+        },
+        {
+          labels: [{ name: 'env', value: 'production', type: 'cost-attribution' }],
+        }
+      );
+
+      const valueInput = screen.getByDisplayValue('production');
+      expect(valueInput).not.toBeDisabled();
+    });
+  });
 });

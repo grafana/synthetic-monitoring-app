@@ -14,7 +14,13 @@ import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
 import { getHttpDashboard } from 'test/handlers/httpDashboard';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
-import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
+import {
+  getTenant,
+  getTenantCostAttributionLabels,
+  getTenantLimits,
+  getTenantSettings,
+  updateTenantSettings,
+} from 'test/handlers/tenants';
 import { createAccessToken } from 'test/handlers/tokens';
 
 import { ApiEntry } from 'test/handlers/types';
@@ -45,6 +51,7 @@ const API_ROUTES = {
   getSecret,
   getSMDS,
   getTenant,
+  getTenantCostAttributionLabels,
   getTenantLimits,
   getTenantSettings,
   listAlertsForCheck,
@@ -105,14 +112,17 @@ export function getServerRequests() {
 
   const record = (request: Request) => {
     requests.push(request);
-    
+
     // In MSW 2.x, request bodies can only be read once
     // Clone and cache the body promise immediately, before the handler consumes it
     const method = request.method.toUpperCase();
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
       try {
         // Clone and parse JSON, catching both sync and async errors
-        const bodyPromise = request.clone().json().catch(() => null);
+        const bodyPromise = request
+          .clone()
+          .json()
+          .catch(() => null);
         bodies.set(request, bodyPromise);
       } catch (e) {
         // If cloning fails, store a resolved null promise
@@ -120,7 +130,7 @@ export function getServerRequests() {
       }
     }
   };
-  
+
   const read = async (index = 0, readBody = true) => {
     const request = requests[index];
     let body;

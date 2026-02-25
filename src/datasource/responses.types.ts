@@ -1,6 +1,14 @@
 import { DataFrameJSON } from '@grafana/data';
 
-import { AlertRecord, Check, CheckAlertPublished, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
+import {
+  AlertRecord,
+  Check,
+  CheckAlertPublished,
+  Probe,
+  PrometheusAlertsGroup,
+  Settings,
+  ThresholdSettings,
+} from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
@@ -86,6 +94,10 @@ export type TenantResponse = {
   reason: string;
   stackId: number;
   status: number;
+};
+
+export type ListTenantCostAttributionLabelsResponse = {
+  items: string[];
 };
 
 export type ListTenantLimitsResponse = {

@@ -105,9 +105,12 @@ export interface ExistingObject {
   tenantId?: number;
 }
 
+export type LabelType = 'custom' | 'cost-attribution';
+
 export interface Label {
   name: string;
   value: string;
+  type?: LabelType;
 }
 
 export interface Probe extends ExistingObject {

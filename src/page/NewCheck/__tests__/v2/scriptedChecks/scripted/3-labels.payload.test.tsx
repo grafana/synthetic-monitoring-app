@@ -6,6 +6,13 @@ import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/fo
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
+jest.mock('data/usetenantCostAttributionLabels', () => ({
+  useTenantCostAttributionLabels: () => ({
+    data: { items: [] },
+    isLoading: false,
+  }),
+}));
+
 const checkType = CheckType.Scripted;
 
 describe(`ScriptedCheck - Section 3 (Labels) payload`, () => {
