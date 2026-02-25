@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { useFormContext } from 'react-hook-form';
+import { useMatchInstancesToRouteTrees } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Icon, LoadingPlaceholder, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -15,14 +17,13 @@ import {
   generateAlertLabels,
 } from './alertRoutingUtils';
 import { RouteTreeDisplay } from './RouteTreeDisplay';
-import { useMatchInstancesToRouteTrees } from './useMatchInstancesToRouteTrees';
 
 interface AlertRoutingPreviewProps {
   alertType: CheckAlertType;
   alertName: string;
 }
 
-export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = ({ alertType }) => {
+const AlertRoutingPreviewContent: React.FC<AlertRoutingPreviewProps> = ({ alertType }) => {
   const styles = useStyles2(getStyles);
   const { getValues } = useFormContext<CheckFormValues>();
 
@@ -288,3 +289,22 @@ const getStyles = (theme: GrafanaTheme2) => ({
     borderTop: `1px solid ${theme.colors.border.weak}`,
   }),
 });
+
+export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = (props) => {
+  return (
+    <ErrorBoundary
+      fallback={
+        <Alert severity="warning" title="Alert routing preview unavailable">
+          <div>
+            <Text variant="body">
+              Unable to load notification policy information. Your alerts will still work correctly, but the routing
+              preview cannot be displayed at this time.
+            </Text>
+          </div>
+        </Alert>
+      }
+    >
+      <AlertRoutingPreviewContent {...props} />
+    </ErrorBoundary>
+  );
+};
