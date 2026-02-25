@@ -40,9 +40,9 @@ export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
       </Text>
 
       {isDeprecated && (
-        <Alert severity="warning" title="Deprecated Channel">
-          This channel is deprecated since {dateTimeFormat(new Date(channel.deprecatedAfter))}. Consider migrating to a
-          newer channel.
+        <Alert severity="warning" title="Deprecated k6 version channel">
+          This k6 version channel is deprecated since {dateTimeFormat(new Date(channel.deprecatedAfter))}. Consider
+          migrating to a newer channel.
         </Alert>
       )}
     </Stack>

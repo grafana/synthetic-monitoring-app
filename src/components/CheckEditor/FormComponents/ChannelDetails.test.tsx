@@ -82,7 +82,7 @@ describe('ChannelDetails', () => {
     render(<ChannelDetails channelId="deprecated" channels={mockChannels} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/deprecated channel/i)).toBeInTheDocument();
+      expect(screen.getByText(/deprecated k6 version channel/i)).toBeInTheDocument();
       expect(screen.getByText(/consider migrating to a newer channel/i)).toBeInTheDocument();
     });
   });

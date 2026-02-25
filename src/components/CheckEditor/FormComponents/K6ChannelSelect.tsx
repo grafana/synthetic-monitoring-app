@@ -83,7 +83,7 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   return (
     <div>
       <Field
-        label="k6 Version"
+        label="k6 version channel"
         description="Select the k6 version channel for this check"
         htmlFor={id}
         data-fs-element="k6 channel select"
