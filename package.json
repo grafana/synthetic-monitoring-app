@@ -36,6 +36,7 @@
     "@commitlint/config-conventional": "20.0.0",
     "@faker-js/faker": "10.1.0",
     "@grafana/eslint-config": "9.0.0",
+    "@openfeature/web-sdk": "1.7.3",
     "@grafana/tsconfig": "2.0.1",
     "@stylistic/eslint-plugin-ts": "4.4.1",
     "@swc/core": "1.15.3",
