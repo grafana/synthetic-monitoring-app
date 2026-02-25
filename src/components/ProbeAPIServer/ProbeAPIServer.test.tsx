@@ -37,6 +37,15 @@ describe('ProbeAPIServer', () => {
     expect(await screen.findByText(GRAFANA_DEV_ENTRY.backendAddress)).toBeInTheDocument();
   });
 
+  it(`should show the correct probe API server URL for a private/BYOC backend address`, async () => {
+    mockUseBackendAddress.mockReturnValue('synthetic-monitoring-api-private.example.net');
+
+    render(<ProbeAPIServer source="test" />);
+    expect(
+      await screen.findByText('synthetic-monitoring-grpc-private.example.net:443')
+    ).toBeInTheDocument();
+  });
+
   it(`should show an error if the probe API server URL is not found`, async () => {
     // Override the mock for this test only
     mockUseBackendAddress.mockReturnValue('non-matching-backend.example.com');

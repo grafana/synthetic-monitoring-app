@@ -1,0 +1,8 @@
+[
+  {
+    "region": "United States East",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-private.example.net:443",
+    "backendAddress": "synthetic-monitoring-api-private.example.net"
+  }
+]
