@@ -46,6 +46,10 @@ The project requires Node.js 24 (`.nvmrc`). Use `nvm use` or `nvm install 24`. I
 
 Docker is required for running the local Grafana instance. The `dev/license.jwt` file must exist (can be empty) or `docker compose` will fail to mount it. The Dockerfile is based on `grafana-enterprise`.
 
+### MSW service worker gotcha
+
+If you switch between `yarn dev:msw` and `yarn dev`, the MSW service worker persists in the browser and will intercept all API requests even in non-MSW mode. To fix: open Chrome DevTools > Application > Service Workers, find the `mockServiceWorker` and click Unregister, then hard-refresh (Ctrl+Shift+R).
+
 ### Testing notes
 
 - `yarn test` runs the full Jest test suite (~170 suites, ~1300 tests).
