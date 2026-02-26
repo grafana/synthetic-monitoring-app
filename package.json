@@ -31,7 +31,7 @@
   "author": "Grafana Labs",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@babel/core": "7.28.5",
+    "@babel/core": "7.29.0",
     "@commitlint/cli": "20.1.0",
     "@commitlint/config-conventional": "20.0.0",
     "@faker-js/faker": "10.1.0",
