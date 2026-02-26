@@ -63,7 +63,7 @@
     "copy-webpack-plugin": "13.0.1",
     "css-loader": "7.1.2",
     "danger": "13.0.5",
-    "eslint": "9.39.1",
+    "eslint": "9.39.3",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jest-dom": "5.5.0",
     "eslint-plugin-jsdoc": "61.1.12",
