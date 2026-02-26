@@ -1,6 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 import { MOCKED_SECRETS_API_RESPONSE } from 'test/fixtures/secrets';
 import { apiRoute, getServerRequests } from 'test/handlers';
@@ -54,22 +53,22 @@ describe('SecretEditModal', () => {
   });
 
   it('should handle adding and removing labels', async () => {
-    await render(<SecretEditModal {...defaultProps} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} />);
 
     const addLabelButton = screen.getByText('Add label');
-    await userEvent.click(addLabelButton);
+    await user.click(addLabelButton);
 
     const nameInput = screen.getByPlaceholderText('name');
     const valueInput = screen.getByPlaceholderText('value');
 
-    await userEvent.type(nameInput, 'label1');
-    await userEvent.type(valueInput, 'value1');
+    await user.type(nameInput, 'label1');
+    await user.type(valueInput, 'value1');
 
     expect(nameInput).toHaveValue('label1');
     expect(valueInput).toHaveValue('value1');
 
     const removeButton = screen.getByLabelText('Remove label');
-    await userEvent.click(removeButton);
+    await user.click(removeButton);
 
     expect(screen.queryByPlaceholderText('name')).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText('value')).not.toBeInTheDocument();
@@ -95,7 +94,7 @@ describe('SecretEditModal', () => {
   it('should submit form with correct values', async () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute('createSecret', {}, record));
-    await render(<SecretEditModal {...defaultProps} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} />);
 
     const inputValues = {
       name: 'New Secret', // should be transformed to 'new-secret'
@@ -103,12 +102,12 @@ describe('SecretEditModal', () => {
       plaintext: 'secret-value',
     };
 
-    await userEvent.type(screen.getByLabelText(/Name/), inputValues.name); // Should be transformed to 'new-secret'
-    await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
-    await userEvent.type(screen.getByLabelText(/Value/), inputValues.plaintext);
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: inputValues.name } });
+    fireEvent.change(screen.getByLabelText(/Description/), { target: { value: inputValues.description } });
+    fireEvent.change(screen.getByLabelText(/Value/), { target: { value: inputValues.plaintext } });
 
     const submitButton = screen.getByText('Save');
-    await userEvent.click(submitButton);
+    await user.click(submitButton);
 
     const { body } = await read();
 
@@ -120,14 +119,14 @@ describe('SecretEditModal', () => {
   });
 
   it('should call onDismiss after successful save', async () => {
-    await render(<SecretEditModal {...defaultProps} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} />);
 
-    await userEvent.type(screen.getByLabelText(/Name/), 'New Secret');
-    await userEvent.type(screen.getByLabelText(/Description/), 'My short description');
-    await userEvent.type(screen.getByLabelText(/Value/), 'secret-value');
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: 'New Secret' } });
+    fireEvent.change(screen.getByLabelText(/Description/), { target: { value: 'My short description' } });
+    fireEvent.change(screen.getByLabelText(/Value/), { target: { value: 'secret-value' } });
 
     const submitButton = screen.getByText('Save');
-    await userEvent.click(submitButton);
+    await user.click(submitButton);
 
     expect(defaultProps.onDismiss).toHaveBeenCalled();
   });
@@ -142,14 +141,14 @@ describe('SecretEditModal', () => {
       })
     );
 
-    await render(<SecretEditModal {...defaultProps} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} />);
 
-    await userEvent.type(screen.getByLabelText(/Name/), 'New Secret');
-    await userEvent.type(screen.getByLabelText(/Description/), 'Short description');
-    await userEvent.type(screen.getByLabelText(/Value/), 'secret-value');
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: 'New Secret' } });
+    fireEvent.change(screen.getByLabelText(/Description/), { target: { value: 'Short description' } });
+    fireEvent.change(screen.getByLabelText(/Value/), { target: { value: 'secret-value' } });
 
     const submitButton = screen.getByText('Save');
-    await userEvent.click(submitButton);
+    await user.click(submitButton);
 
     expect(screen.getByText('Unable to save secret')).toBeInTheDocument();
     expect(screen.getByText(/request failed with status code 500/i)).toBeInTheDocument();
@@ -167,19 +166,19 @@ describe('SecretEditModal', () => {
 
     const { record, read } = getServerRequests();
     server.use(apiRoute('createSecret', {}, record));
-    await render(<SecretEditModal {...defaultProps} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} />);
 
-    await userEvent.type(screen.getByLabelText(/Name/), inputValues.name); // Should be transformed to 'new-secret'
-    await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
-    await userEvent.type(screen.getByLabelText(/Value/), inputValues.plaintext);
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: inputValues.name } });
+    fireEvent.change(screen.getByLabelText(/Description/), { target: { value: inputValues.description } });
+    fireEvent.change(screen.getByLabelText(/Value/), { target: { value: inputValues.plaintext } });
 
-    await userEvent.click(screen.getByText('Add label'));
+    await user.click(screen.getByText('Add label'));
 
-    await userEvent.type(screen.getByPlaceholderText('name'), labelName);
-    await userEvent.type(screen.getByPlaceholderText('value'), labelValue);
+    await user.type(screen.getByPlaceholderText('name'), labelName);
+    await user.type(screen.getByPlaceholderText('value'), labelValue);
 
     const submitButton = screen.getByText('Save');
-    await userEvent.click(submitButton);
+    await user.click(submitButton);
 
     const { body } = await read();
 
@@ -193,28 +192,19 @@ describe('SecretEditModal', () => {
 
   it('should be possible to remove labels from the secret', async () => {
     const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
-    const inputValues = {
-      name: secretMock.name,
-      description: secretMock.description,
-      plaintext: 'secret-value',
-    };
 
     expect(secretMock.labels.length).toBeGreaterThan(0); // Ensure there are labels to remove
 
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
-    await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
-    await userEvent.type(screen.getByLabelText(/Name/), inputValues.name); // Should be transformed to 'new-secret'
-    await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
-
-    // Remove all labels
-    const removeLabelButtons = screen.getAllByLabelText('Remove label');
+    const removeLabelButtons = await screen.findAllByLabelText('Remove label');
     for (const element of removeLabelButtons) {
-      await userEvent.click(element);
+      await user.click(element);
     }
 
-    await userEvent.click(screen.getByText('Save'));
+    await user.click(screen.getByText('Save'));
 
     const { body } = await read();
 
@@ -229,34 +219,34 @@ describe('SecretEditModal', () => {
     };
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
-    await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
     expect(screen.getByLabelText(/Name/)).toHaveAttribute('readonly');
 
-    await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
+    await user.type(screen.getByLabelText(/Description/), inputValues.description);
 
-    await userEvent.click(screen.getByText('Save'));
+    await user.click(screen.getByText('Save'));
 
     const { body } = await read();
 
-    expect(body.name).toBeUndefined(); // Name is used for URL but excluded from request payload
+    expect(body.name).toBeUndefined();
   });
 
   it('should show value textarea as disabled when configured', async () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
     const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
-    await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
     const valueInput = screen.getByLabelText(/value/i);
     expect(valueInput).toBeDisabled();
     expect(valueInput).toHaveValue('configured');
 
-    await userEvent.click(screen.getByText('Save'));
+    await user.click(screen.getByText('Save'));
 
     const { body } = await read();
 
-    expect(body.plaintext).toBeUndefined(); // The plaintext should not be sent in the request
+    expect(body.plaintext).toBeUndefined();
   });
 
   it('should be possible to reset the value', async () => {
@@ -264,12 +254,12 @@ describe('SecretEditModal', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
     const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
-    await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Reset' }));
-    await userEvent.type(screen.getByLabelText(/value/i), newSecretValue);
+    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await user.type(screen.getByLabelText(/value/i), newSecretValue);
 
-    await userEvent.click(screen.getByText('Save'));
+    await user.click(screen.getByText('Save'));
 
     const { body } = await read();
 
@@ -279,19 +269,19 @@ describe('SecretEditModal', () => {
   it('should show error message when secret name is already taken', async () => {
     const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
     const inputValues = {
-      name: secretMock.name, // should be transformed to 'new-secret'
+      name: secretMock.name,
       description: 'My short description',
       plaintext: 'secret-value',
     };
 
-    await render(<SecretEditModal {...defaultProps} existingNames={[secretMock.name]} />);
+    const { user } = await render(<SecretEditModal {...defaultProps} existingNames={[secretMock.name]} />);
 
-    await userEvent.type(screen.getByLabelText(/Name/), inputValues.name); // Should be transformed to 'new-secret'
-    await userEvent.type(screen.getByLabelText(/Description/), inputValues.description);
-    await userEvent.type(screen.getByLabelText(/Value/), inputValues.plaintext);
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: inputValues.name } });
+    fireEvent.change(screen.getByLabelText(/Description/), { target: { value: inputValues.description } });
+    fireEvent.change(screen.getByLabelText(/Value/), { target: { value: inputValues.plaintext } });
 
     const submitButton = screen.getByText('Save');
-    await userEvent.click(submitButton);
+    await user.click(submitButton);
 
     expect(screen.getByText('A secret with this name already exists')).toBeInTheDocument();
   });
