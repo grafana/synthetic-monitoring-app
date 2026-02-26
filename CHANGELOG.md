@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.48.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.2...v1.48.0) (2026-02-26)
+
+
+### Features
+
+* add i18n support (Phase 1) ([#1589](https://github.com/grafana/synthetic-monitoring-app/issues/1589)) ([75be46d](https://github.com/grafana/synthetic-monitoring-app/commit/75be46d75e10e6209beb4a315d39b5e92e381b5a))
+* byoc mappings file ([#1600](https://github.com/grafana/synthetic-monitoring-app/issues/1600)) ([e996546](https://github.com/grafana/synthetic-monitoring-app/commit/e9965461c1ef062b5a0041f680f57d3653ec067d))
+
+
+### Fixes
+
+* check test error state ([#1594](https://github.com/grafana/synthetic-monitoring-app/issues/1594)) ([9a118c0](https://github.com/grafana/synthetic-monitoring-app/commit/9a118c05407f63b14ac6ede8c7f3a0eee33fa18c))
+* improve version management terminology and add channel navigation link ([#1599](https://github.com/grafana/synthetic-monitoring-app/issues/1599)) ([7357225](https://github.com/grafana/synthetic-monitoring-app/commit/7357225499dbe003f8c9c95655937606b8bbe967))
+
+
+### Miscellaneous Chores
+
+* cleanup constant naming convention ([#1596](https://github.com/grafana/synthetic-monitoring-app/issues/1596)) ([0e1fa9b](https://github.com/grafana/synthetic-monitoring-app/commit/0e1fa9b7be28f5d18e13dbac9030c4ef1b3326b6))
+* migrate to React Router v7 ([#1579](https://github.com/grafana/synthetic-monitoring-app/issues/1579)) ([82d6af9](https://github.com/grafana/synthetic-monitoring-app/commit/82d6af9d978ede99f4086a192e794d68ad3f2f3b))
+
 ## [1.47.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.1...v1.47.2) (2026-02-17)
 
 
