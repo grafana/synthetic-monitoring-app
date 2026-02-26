@@ -92,7 +92,7 @@
     "style-loader": "4.0.0",
     "styled-components": "6.1.19",
     "swc-loader": "0.2.6",
-    "terser-webpack-plugin": "5.3.14",
+    "terser-webpack-plugin": "5.3.16",
     "ts-morph": "27.0.2",
     "ts-node": "10.9.2",
     "tsconfig-paths": "4.2.0",
