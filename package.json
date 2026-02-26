@@ -61,7 +61,7 @@
     "@typescript-eslint/parser": "8.46.3",
     "axios": "1.13.5",
     "copy-webpack-plugin": "13.0.1",
-    "css-loader": "7.1.2",
+    "css-loader": "7.1.4",
     "danger": "13.0.5",
     "eslint": "9.39.1",
     "eslint-config-prettier": "10.1.8",
