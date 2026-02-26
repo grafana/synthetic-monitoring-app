@@ -39,7 +39,7 @@ export function createProbeCompatibilityRefinement<T extends CheckFormValuesBase
       ctx.addIssue({
         code: 'custom',
         path: ['probes'],
-        message: `Some of the selected probes above (${probeList}) are not compatible with channel "${selectedChannel}". Please unselect them or choose a different channel.`,
+        message: `Some of the selected probes above (${probeList}) are not compatible with channel "${selectedChannel}".`,
       });
     }
   };

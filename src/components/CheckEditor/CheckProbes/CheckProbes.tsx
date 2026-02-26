@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { Field, Stack } from '@grafana/ui';
 
 import { ProbeWithMetadata } from 'types';
@@ -15,7 +15,7 @@ interface CheckProbesProps {
   onChange: (probes: number[]) => void;
   onBlur?: () => void;
   invalid?: boolean;
-  error?: string;
+  error?: ReactNode;
 }
 
 export const PROBES_FILTER_ID = 'check-probes-filter';

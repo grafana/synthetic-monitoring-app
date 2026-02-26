@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { FieldErrors } from 'react-hook-form';
 
 import { CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
@@ -10,6 +10,7 @@ import { CheckProbes } from './CheckProbes/CheckProbes';
 interface ProbeOptionsProps {
   checkType: CheckType;
   disabled?: boolean;
+  error?: ReactNode;
   errors?: FieldErrors<CheckFormValues>['probes'];
   onlyProbes?: boolean; // TODO: Remove when CheckEditor v1 is removed
   onChange: (probes: number[]) => void;
@@ -19,6 +20,7 @@ interface ProbeOptionsProps {
 export const ProbeOptions = ({
   checkType,
   disabled,
+  error,
   errors,
   onlyProbes,
   onChange,
@@ -33,7 +35,7 @@ export const ProbeOptions = ({
         availableProbes={getAvailableProbes(probes, checkType)}
         disabled={disabled}
         invalid={Boolean(errors)}
-        error={errors?.message}
+        error={error ?? errors?.message}
         onChange={onChange}
       />
       {!onlyProbes && <Frequency checkType={checkType} disabled={disabled} />}
