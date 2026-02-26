@@ -1,3 +1,5 @@
+import byocProbeMappings from 'data/byocProbeAPIServerMappings.json';
+import devProbeMappings from 'data/devProbeAPIServerMappings.json';
 import probeMappings from 'data/probeAPIServerMappings.json';
 import { useBackendAddress } from 'hooks/useBackendAddress';
 
@@ -10,7 +12,7 @@ export const GRAFANA_DEV_ENTRY = {
 
 export function useProbeApiServer() {
   const backendAddress = useBackendAddress();
-  const probeMapping = [...probeMappings, GRAFANA_DEV_ENTRY].find(
+  const probeMapping = [...probeMappings, ...byocProbeMappings, ...devProbeMappings, GRAFANA_DEV_ENTRY].find(
     (mapping) => mapping.backendAddress === backendAddress
   );
 

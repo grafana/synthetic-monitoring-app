@@ -1,0 +1,8 @@
+[
+  {
+    "region": "United States East",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-us-east-4.aws-us-east-1-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-us-east-4.aws-us-east-1-1.grafana.net"
+  }
+]
