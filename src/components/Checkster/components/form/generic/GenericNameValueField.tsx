@@ -87,42 +87,41 @@ export function GenericNameValueField({
     >
       {/* @ts-expect-error Totally valid spacing value */}
       <Stack direction="column" gap={0.75}>
-        {fields.map((field, index) => {
-          return (
-            <Stack key={field.id} alignItems="start">
-              <StyledField
-                className={styles.field}
-                {...getFieldErrorProps(errors, [fieldName, index, 'name'], interpolationVariables)}
-              >
-                <Input
-                  prefix={namePrefix}
-                  {...register(`${fieldName}.${index}.name`)}
-                  placeholder={namePlaceholder}
-                  aria-label={`${label} ${index + 1} name`}
-                />
-              </StyledField>
-              <StyledField
-                className={styles.field}
-                {...getFieldErrorProps(errors, [fieldName, index, 'value'], interpolationVariables)}
-              >
-                <Input
-                  {...register(`${fieldName}.${index}.value`)}
-                  placeholder={valuePlaceholder}
-                  disabled={disabled}
-                  aria-label={`${label} ${index + 1} value`}
-                />
-              </StyledField>
-              <IconButton
-                data-testid={CHECKSTER_TEST_ID.form.components.GenericNameValueField.addButton}
-                style={{ marginTop: '8px' }}
-                aria-label="Remove row"
-                name="minus"
-                onClick={() => remove(index)}
-                tooltip="Remove"
+        {fields.map((field, index) => (
+          <Stack key={field.id} alignItems="start">
+            <StyledField
+              className={styles.field}
+              {...getFieldErrorProps(errors, [fieldName, index, 'name'], interpolationVariables)}
+            >
+              <Input
+                prefix={namePrefix}
+                {...register(`${fieldName}.${index}.name`)}
+                placeholder={namePlaceholder}
+                disabled={disabled}
+                aria-label={`${label} ${index + 1} name`}
               />
-            </Stack>
-          );
-        })}
+            </StyledField>
+            <StyledField
+              className={styles.field}
+              {...getFieldErrorProps(errors, [fieldName, index, 'value'], interpolationVariables)}
+            >
+              <Input
+                {...register(`${fieldName}.${index}.value`)}
+                placeholder={valuePlaceholder}
+                disabled={disabled}
+                aria-label={`${label} ${index + 1} value`}
+              />
+            </StyledField>
+            <IconButton
+              data-testid={CHECKSTER_TEST_ID.form.components.GenericNameValueField.addButton}
+              style={{ marginTop: '8px' }}
+              aria-label="Remove row"
+              name="minus"
+              onClick={() => remove(index)}
+              tooltip="Remove"
+            />
+          </Stack>
+        ))}
 
         {allowEmpty && !limitReached && (
           <Stack alignItems="start">

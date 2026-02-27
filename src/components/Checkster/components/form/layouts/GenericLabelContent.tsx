@@ -55,8 +55,6 @@ export function GenericLabelContent({ description, isLoading, calNames = [] }: G
     return <LoadingPlaceholder text="Loading label limits" />;
   }
 
-  console.log('fields', fields);
-
   return (
     <SectionContent>
       <div data-testid={CHECKSTER_TEST_ID.form.components.GenericLabelContent.root} className={styles.container}>
