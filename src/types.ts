@@ -736,6 +736,7 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
+  CALs = 'synthetic-monitoring-cals',
   GRPCChecks = 'grpc-checks',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',

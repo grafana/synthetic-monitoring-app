@@ -22,8 +22,8 @@ function renderGenericLabelContent(
   return formTestRenderer(GenericLabelContent, { description: 'Test description', ...props } as any, formValues);
 }
 
-describe('GenericLabelContent - CAL integration', () => {
-  it('renders CAL rows with readonly name inputs for a new check', async () => {
+describe('GenericLabelContent - CAL section', () => {
+  it('renders CAL rows with readonly name inputs in the CAL section', async () => {
     renderGenericLabelContent({ calNames });
 
     await waitFor(() => {
@@ -35,7 +35,22 @@ describe('GenericLabelContent - CAL integration', () => {
     });
   });
 
-  it('does not show remove buttons for CAL-only rows', async () => {
+  it('renders the CAL section heading and description', async () => {
+    renderGenericLabelContent({ calNames });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Cost attribution labels \*/)).toBeInTheDocument();
+      expect(screen.getByText(/help track costs across teams and services/)).toBeInTheDocument();
+    });
+  });
+
+  it('does not render the CAL section when calNames is empty', () => {
+    renderGenericLabelContent({ calNames: [] });
+
+    expect(screen.queryByText(/Cost attribution labels/)).not.toBeInTheDocument();
+  });
+
+  it('does not show remove buttons for CAL rows', async () => {
     renderGenericLabelContent({ calNames });
 
     await waitFor(() => {
@@ -53,15 +68,15 @@ describe('GenericLabelContent - CAL integration', () => {
       { calNames },
       {
         labels: [
-          { name: 'CAL001', value: 'team-a' },
-          { name: 'CAL002', value: 'team-b' },
+          { name: 'Team', value: 'team-a' },
+          { name: 'Service', value: 'service-a' },
         ],
       }
     );
 
     await waitFor(() => {
       expect(screen.getByDisplayValue('team-a')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('team-b')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('service-a')).toBeInTheDocument();
     });
   });
 
@@ -70,7 +85,8 @@ describe('GenericLabelContent - CAL integration', () => {
       { calNames },
       {
         labels: [
-          { name: 'CAL001', value: 'team-a' },
+          { name: 'Team', value: 'team-a' },
+          { name: 'Service', value: 'service-a' },
           { name: 'custom', value: 'my-value' },
         ],
       }
@@ -98,26 +114,26 @@ describe('GenericLabelContent - CAL integration', () => {
       { calNames },
       {
         labels: [
-          { name: 'CAL001', value: 'team-a' },
+          { name: 'Team', value: 'team-a' },
           { name: 'custom', value: 'my-value' },
         ],
       }
     );
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue('CAL001')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('team-a')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Team')).toBeInTheDocument();
+      expect(screen.getByRole('textbox', { name: 'Cost attribution label 1 value' })).toHaveValue('team-a');
       expect(screen.getByDisplayValue('custom')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('my-value')).toBeInTheDocument();
+      expect(screen.getByRole('textbox', { name: 'Custom labels 1 value' })).toHaveValue('my-value');
     });
   });
 
   it('allows removing user-added labels but not CAL rows', async () => {
     const user = renderGenericLabelContent(
-      { calNames: ['CAL001'] },
+      { calNames: ['Team'] },
       {
         labels: [
-          { name: 'CAL001', value: 'team-a' },
+          { name: 'Team', value: 'team-a' },
           { name: 'custom', value: 'my-value' },
         ],
       }
@@ -134,7 +150,7 @@ describe('GenericLabelContent - CAL integration', () => {
 
     await waitFor(() => {
       expect(screen.queryByDisplayValue('custom')).not.toBeInTheDocument();
-      expect(screen.getByDisplayValue('CAL001')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Team')).toBeInTheDocument();
     });
   });
 
@@ -144,7 +160,7 @@ describe('GenericLabelContent - CAL integration', () => {
     expect(screen.getByText('Loading label limits')).toBeInTheDocument();
   });
 
-  it('renders normally when calNames is empty', () => {
+  it('renders custom labels section when calNames is empty', () => {
     renderGenericLabelContent({ calNames: [] });
 
     const removeButtons = screen.queryAllByRole('button', { name: /^remove$/i });

@@ -27,7 +27,6 @@ interface GenericNameValueFieldProps {
   namePlaceholder?: string;
   valuePlaceholder?: string;
   limit?: number;
-  lockedNames?: Set<string>;
 }
 
 export function GenericNameValueField({
@@ -42,17 +41,14 @@ export function GenericNameValueField({
   limit,
   namePlaceholder = 'Name',
   valuePlaceholder = 'Value',
-  lockedNames,
 }: GenericNameValueFieldProps) {
   const id = useDOMId();
   const {
     register,
     setFocus,
-    watch,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
   const { fields, append, remove } = useFieldArray({ name: fieldName });
-  const watchedLabels = fieldName === 'labels' ? watch('labels') : undefined;
   const styles = useStyles2(getStyles);
 
   // State for the unregistered row
@@ -79,8 +75,7 @@ export function GenericNameValueField({
 
   // Field array root error tends to not clear when fixing error (unless submitting).
   const relevantErrors = useRelevantErrors();
-  const lockedCount = lockedNames?.size ?? 0;
-  const limitReached = limit !== undefined && fields.length - lockedCount >= limit;
+  const limitReached = limit !== undefined && fields.length >= limit;
 
   return (
     <StyledField
@@ -93,9 +88,6 @@ export function GenericNameValueField({
       {/* @ts-expect-error Totally valid spacing value */}
       <Stack direction="column" gap={0.75}>
         {fields.map((field, index) => {
-          const watchedName = watchedLabels?.[index]?.name;
-          const isLocked = !!watchedName && !!lockedNames?.has(watchedName);
-
           return (
             <Stack key={field.id} alignItems="start">
               <StyledField
@@ -103,11 +95,9 @@ export function GenericNameValueField({
                 {...getFieldErrorProps(errors, [fieldName, index, 'name'], interpolationVariables)}
               >
                 <Input
-                  prefix={isLocked ? undefined : namePrefix}
+                  prefix={namePrefix}
                   {...register(`${fieldName}.${index}.name`)}
                   placeholder={namePlaceholder}
-                  readOnly={isLocked}
-                  title={isLocked ? 'This is a cost attribution label' : undefined}
                   aria-label={`${label} ${index + 1} name`}
                 />
               </StyledField>
@@ -122,16 +112,14 @@ export function GenericNameValueField({
                   aria-label={`${label} ${index + 1} value`}
                 />
               </StyledField>
-              {isLocked ? undefined : (
-                <IconButton
-                  data-testid={CHECKSTER_TEST_ID.form.components.GenericNameValueField.addButton}
-                  style={{ marginTop: '8px' }}
-                  aria-label="Remove row"
-                  name="minus"
-                  onClick={() => remove(index)}
-                  tooltip="Remove"
-                />
-              )}
+              <IconButton
+                data-testid={CHECKSTER_TEST_ID.form.components.GenericNameValueField.addButton}
+                style={{ marginTop: '8px' }}
+                aria-label="Remove row"
+                name="minus"
+                onClick={() => remove(index)}
+                tooltip="Remove"
+              />
             </Stack>
           );
         })}

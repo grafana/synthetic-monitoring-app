@@ -303,79 +303,42 @@ describe('GenericNameValueField', () => {
     expect(addButton).toBeDisabled();
   });
 
-  describe('locked rows', () => {
-    it('makes name input readonly for locked rows', () => {
+  describe('startIndex', () => {
+    it('only renders fields from startIndex onwards', () => {
       renderGenericNameValueField(
         {
           field: 'labels',
           label: 'Labels',
-          lockedNames: new Set(['env']),
         },
         {
           labels: [
-            { name: 'env', value: 'production', type: 'cost-attribution' },
-            { name: 'team', value: 'backend' },
+            { name: 'hidden', value: 'hidden-value' },
+            { name: 'visible', value: 'visible-value' },
           ],
         }
       );
 
-      const envInput = screen.getByDisplayValue('env');
-      const teamInput = screen.getByDisplayValue('team');
-
-      expect(envInput).toHaveAttribute('readonly');
-      expect(teamInput).not.toHaveAttribute('readonly');
+      expect(screen.queryByDisplayValue('hidden')).not.toBeInTheDocument();
+      expect(screen.getByDisplayValue('visible')).toBeInTheDocument();
     });
 
-    it('hides remove button for locked rows', () => {
-      renderGenericNameValueField(
-        {
-          field: 'labels',
-          label: 'Labels',
-          lockedNames: new Set(['env']),
-        },
-        {
-          labels: [
-            { name: 'env', value: 'production', type: 'cost-attribution' },
-            { name: 'team', value: 'backend' },
-          ],
-        }
-      );
-
-      const removeButtons = screen.queryAllByRole('button', { name: /^remove$/i });
-      expect(removeButtons).toHaveLength(1);
-    });
-
-    it('does not count locked rows toward the limit', () => {
+    it('does not count skipped fields toward the limit', () => {
       renderGenericNameValueField(
         {
           field: 'labels',
           label: 'Labels',
           limit: 1,
-          lockedNames: new Set(['env']),
         },
         {
-          labels: [{ name: 'env', value: 'production', type: 'cost-attribution' }],
+          labels: [
+            { name: 'cal1', value: 'a' },
+            { name: 'cal2', value: 'b' },
+          ],
         }
       );
 
       const addButton = screen.getByRole('button', { name: /row/i });
       expect(addButton).not.toBeDisabled();
-    });
-
-    it('keeps value input editable for locked rows', () => {
-      renderGenericNameValueField(
-        {
-          field: 'labels',
-          label: 'Labels',
-          lockedNames: new Set(['env']),
-        },
-        {
-          labels: [{ name: 'env', value: 'production', type: 'cost-attribution' }],
-        }
-      );
-
-      const valueInput = screen.getByDisplayValue('production');
-      expect(valueInput).not.toBeDisabled();
     });
   });
 });

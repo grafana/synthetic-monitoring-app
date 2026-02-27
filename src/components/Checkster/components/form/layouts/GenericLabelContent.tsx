@@ -1,12 +1,15 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { LoadingPlaceholder, Tooltip } from '@grafana/ui';
+import React, { useEffect, useRef } from 'react';
+import { useFieldArray, useFormContext } from 'react-hook-form';
+import { GrafanaTheme2 } from '@grafana/data';
+import { LoadingPlaceholder, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { CheckFormValues } from 'types';
+import { CheckFormValues, FeatureName } from 'types';
+import { FeatureFlag } from 'components/FeatureFlag';
 
 import { SectionContent } from '../../ui/SectionContent';
+import { CostAttributionLabelsField } from '../generic/CostAttributionLabelsField';
 import { GenericNameValueField } from '../generic/GenericNameValueField';
 
 interface GenericLabelContentProps {
@@ -16,9 +19,11 @@ interface GenericLabelContentProps {
 }
 
 export function GenericLabelContent({ description, isLoading, calNames = [] }: GenericLabelContentProps) {
-  const { getValues, setValue } = useFormContext<CheckFormValues>();
+  const styles = useStyles2(getStyles);
+
+  const { getValues } = useFormContext<CheckFormValues>();
+  const { fields, replace } = useFieldArray<CheckFormValues>({ name: 'labels' });
   const prevCalNamesRef = useRef<string[]>([]);
-  const lockedNames = useMemo(() => new Set(calNames), [calNames]);
 
   useEffect(() => {
     const prevCalNames = prevCalNamesRef.current;
@@ -39,21 +44,29 @@ export function GenericLabelContent({ description, isLoading, calNames = [] }: G
       return { name: calName, value: existing?.value ?? '', type: 'cost-attribution' as const };
     });
 
-    if (calNames.length !== prevCalNames.length ||
-      calNames.some((name, i) => name !== prevCalNames[i])) {
-      setValue('labels', [...calRows, ...userLabels]);
+    if (calNames.length !== prevCalNames.length || calNames.some((name, i) => name !== prevCalNames[i])) {
+      replace([...calRows, ...userLabels]);
     }
 
     prevCalNamesRef.current = calNames;
-  }, [calNames, getValues, setValue]);
+  }, [calNames, getValues, replace]);
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading label limits" />;
   }
 
+  console.log('fields', fields);
+
   return (
     <SectionContent>
-      <div data-testid={CHECKSTER_TEST_ID.form.components.GenericLabelContent.root}>
+      <div data-testid={CHECKSTER_TEST_ID.form.components.GenericLabelContent.root} className={styles.container}>
+        <FeatureFlag name={FeatureName.CALs}>
+          {({ isEnabled }) =>
+            isEnabled ? (
+              <CostAttributionLabelsField calNames={calNames} />
+            ) : null
+          }
+        </FeatureFlag>
         <GenericNameValueField
           allowEmpty
           field="labels"
@@ -64,7 +77,6 @@ export function GenericLabelContent({ description, isLoading, calNames = [] }: G
           namePlaceholder="name" // Looks a bit wonky with "label_Name"
           valuePlaceholder="value" // Since we lowercase the name placeholder, do the same for value
           limit={10}
-          lockedNames={lockedNames}
           namePrefix={
             <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
               <span
@@ -84,4 +96,14 @@ export function GenericLabelContent({ description, isLoading, calNames = [] }: G
       </div>
     </SectionContent>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    container: css`
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    `,
+  };
 }
