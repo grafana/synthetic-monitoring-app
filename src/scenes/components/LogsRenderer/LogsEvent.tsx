@@ -60,13 +60,13 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
 }) => {
   const styles = useStyles2(getStyles);
   const dataSource = useSMDS();
-  const [additionalLogs, setAdditionalLogs] = useState<T[]>([]);
+  const [screenshotDataByUUID, setScreenshotDataByUUID] = useState<Map<string, Record<string, any>>>(new Map());
   const [fetchedUUIDs, setFetchedUUIDs] = useState<Set<string>>(new Set());
 
   // Extract screenshot UUIDs from logs
   const screenshotUUIDs = useMemo(() => extractScreenshotUUIDs(logs, mainKey), [logs, mainKey]);
 
-  // Fetch additional logs for each screenshot UUID
+  // Fetch screenshot data for each UUID
   useEffect(() => {
     const fetchScreenshotLogs = async () => {
       const newUUIDs = screenshotUUIDs.filter((uuid) => !fetchedUUIDs.has(uuid));
@@ -82,21 +82,45 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
         // Query logs
         const result = await dataSource.queryLogsV2(expr, 'now-1h', 'now');
 
-        // Parse results
-        const parsedLogs: T[] = [];
+        // Parse results into a map of UUID -> screenshot data
+        const dataMap = new Map<string, Record<string, any>>();
         if (result?.results?.A?.frames?.[0]) {
           const frame = result.results.A.frames[0];
           const values = frame.data?.values;
 
           if (values && values.length > 0) {
             const lineIndex = frame.schema?.fields?.findIndex((f: any) => f.name === 'line' || f.name === 'Line');
+            const labelsIndex = frame.schema?.fields?.findIndex((f: any) => f.name === 'labels' || f.name === 'Labels');
+
+            console.log('Frame schema fields:', frame.schema?.fields?.map((f: any) => f.name));
+            console.log('lineIndex:', lineIndex, 'labelsIndex:', labelsIndex);
 
             if (lineIndex !== undefined && lineIndex >= 0 && values[lineIndex]) {
-              values[lineIndex].forEach((line: unknown) => {
+              values[lineIndex].forEach((line: unknown, index: number) => {
                 if (typeof line === 'string') {
-                  const parsed = parseLogLine(line);
-                  if (parsed) {
-                    parsedLogs.push(parsed as T);
+                  try {
+                    const parsed = JSON.parse(line);
+                    console.log('Parsed screenshot log:', parsed);
+
+                    // Try to get UUID from Loki labels
+                    let uuid = null;
+                    if (labelsIndex !== undefined && labelsIndex >= 0 && values[labelsIndex]) {
+                      const labels = values[labelsIndex][index];
+                      console.log('Labels for this log:', labels);
+                      if (labels && typeof labels === 'object') {
+                        uuid = labels.id;
+                      }
+                    }
+
+                    console.log('Extracted UUID from labels:', uuid, 'Has screenshot_base64:', !!parsed.screenshot_base64);
+                    if (uuid) {
+                      console.log('Storing screenshot data for UUID:', uuid);
+                      dataMap.set(uuid, parsed);
+                    } else {
+                      console.warn('Could not extract UUID from Loki labels');
+                    }
+                  } catch (e) {
+                    console.error('Failed to parse screenshot log line:', e);
                   }
                 }
               });
@@ -105,7 +129,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
         }
 
         // Update state
-        setAdditionalLogs((prev) => [...prev, ...parsedLogs]);
+        setScreenshotDataByUUID((prev) => new Map([...prev, ...dataMap]));
         setFetchedUUIDs((prev) => new Set([...prev, ...newUUIDs]));
       } catch (error) {
         console.error('Failed to fetch screenshot logs:', error);
@@ -115,8 +139,34 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
     fetchScreenshotLogs();
   }, [screenshotUUIDs, fetchedUUIDs, dataSource]);
 
-  // Combine original logs with additional logs
-  const allLogs = useMemo(() => [...logs, ...additionalLogs], [logs, additionalLogs]);
+  // Enrich logs with screenshot data
+  const allLogs = useMemo(() => {
+    return logs.map((log) => {
+      const message = log.labels[mainKey];
+      if (message) {
+        const match = message.match(SCREENSHOT_PATTERN);
+        if (match && match[1]) {
+          const uuid = match[1];
+          const screenshotData = screenshotDataByUUID.get(uuid);
+          console.log('Checking UUID:', uuid, 'Found data:', !!screenshotData, 'Available UUIDs:', Array.from(screenshotDataByUUID.keys()));
+          if (screenshotData) {
+            console.log('Merging screenshot data for UUID:', uuid, 'Data keys:', Object.keys(screenshotData));
+            // Merge screenshot data into this log entry
+            const enrichedLog = {
+              ...log,
+              labels: {
+                ...log.labels,
+                ...screenshotData,
+              },
+            } as T;
+            console.log('Enriched log has screenshot_base64:', !!enrichedLog.labels.screenshot_base64);
+            return enrichedLog;
+          }
+        }
+      }
+      return log;
+    });
+  }, [logs, mainKey, screenshotDataByUUID]);
 
   return (
     <div className={styles.timelineContainer}>
@@ -142,7 +192,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
             >
               {level.toUpperCase()}
             </div>
-            <div className={cx(styles.mainKey, { [styles.screenshotHighlight]: isScreenshotLog })}>
+            <div className={styles.mainKey}>
               {screenshotBase64 ? (
                 <img
                   src={`data:image/png;base64,${screenshotBase64}`}
