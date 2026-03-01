@@ -10,6 +10,7 @@ export function uniqueLabels(log: ParsedLokiRecord<Record<string, string>, Recor
       key !== 'msg' &&
       !key.includes(`_extracted`) &&
       !key.includes(`label_`) &&
-      key !== 'time' // it is redundant as it corresponds to the log timestamp
+      key !== 'time' && // it is redundant as it corresponds to the log timestamp
+      key !== 'screenshot_base64' // already displayed as an image, no need to show base64 text
   );
 }
