@@ -31,26 +31,6 @@ function extractScreenshotUUIDs<T extends ParsedLokiRecord<Record<string, string
   return uuids;
 }
 
-// Helper function to parse log line as JSON
-function parseLogLine(line: string): ParsedLokiRecord<Record<string, string>, Record<string, string>> | null {
-  try {
-    const parsed = JSON.parse(line);
-    // Create a log record compatible with the existing structure
-    return {
-      id: `screenshot-${Date.now()}-${Math.random()}`,
-      [LokiFieldNames.TimeStamp]: parsed.time || Date.now(),
-      [LokiFieldNames.Body]: line,
-      labels: {
-        ...parsed,
-        detected_level: parsed.level || 'info',
-      },
-    } as ParsedLokiRecord<Record<string, string>, Record<string, string>>;
-  } catch (e) {
-    console.error('Failed to parse screenshot log line:', e);
-    return null;
-  }
-}
-
 export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Record<string, string>>>({
   logs,
   mainKey,
@@ -101,7 +81,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
                     // Try to get UUID from Loki labels
                     let uuid = null;
                     if (labelsIndex !== undefined && labelsIndex >= 0 && values[labelsIndex]) {
-                      const labels = values[labelsIndex][index];
+                      const labels = values[labelsIndex][index] as Record<string, any>;
                       if (labels && typeof labels === 'object') {
                         uuid = labels.id;
                       }
@@ -160,7 +140,6 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
       {allLogs.map((log, index) => {
         const level = log.labels.detected_level;
         const message = log.labels[mainKey];
-        const isScreenshotLog = message ? SCREENSHOT_PATTERN.test(message) : false;
         const screenshotBase64 = log.labels.screenshot_base64;
         const caption = log.labels.caption;
 
@@ -276,12 +255,10 @@ const getStyles = (theme: GrafanaTheme2) => {
       font-weight: ${theme.typography.fontWeightMedium};
     `,
     screenshotImage: css`
-      max-width: 800px;
-      max-height: 600px;
-      width: auto;
+      max-height: 200px;
+      width: auto !important;
       height: auto;
-      border-radius: ${theme.shape.radius.default};
-      border: 1px solid ${theme.colors.border.medium};
+      object-fit: contain;
       display: block;
     `,
   };
