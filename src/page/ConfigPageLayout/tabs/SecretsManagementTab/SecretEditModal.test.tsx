@@ -102,6 +102,7 @@ describe('SecretEditModal', () => {
       plaintext: 'secret-value',
     };
 
+    // fireEvent.change is used here because user.type is unreliable with these react-hook-form controlled inputs after the @grafana/ui 12.4 upgrade
     fireEvent.change(screen.getByLabelText(/Name/), { target: { value: inputValues.name } });
     fireEvent.change(screen.getByLabelText(/Description/), { target: { value: inputValues.description } });
     fireEvent.change(screen.getByLabelText(/Value/), { target: { value: inputValues.plaintext } });
