@@ -40,7 +40,7 @@ export function LogItem({ log }: { log: LogEntry }) {
 
     const fetchScreenshot = async () => {
       try {
-        const expr = `{source="synthetic-monitoring-agent-screenshot", id="${screenshotUUID}"} | json`;
+        const expr = `{source="synthetic-monitoring-agent-screenshot"} |~ "${screenshotUUID}" | json`;
         const result = await dataSource.queryLogsV2(expr, 'now-1h', 'now');
 
         if (result?.results?.A?.frames?.[0]) {

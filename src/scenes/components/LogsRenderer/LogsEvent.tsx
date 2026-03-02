@@ -57,8 +57,8 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
       }
 
       try {
-        // Build query expression for the UUIDs (similar to adhoc checks)
-        const expr = `{source="synthetic-monitoring-agent-screenshot", id=~"(${newUUIDs.join('|')})"} | json`;
+        // Build query expression for the UUIDs - search in log line content
+        const expr = `{source="synthetic-monitoring-agent-screenshot"} |~ "${newUUIDs.join('|')}" | json`;
 
         // Query logs
         const result = await dataSource.queryLogsV2(expr, 'now-1h', 'now');
@@ -71,22 +71,15 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
 
           if (values && values.length > 0) {
             const lineIndex = frame.schema?.fields?.findIndex((f: any) => f.name === 'line' || f.name === 'Line');
-            const labelsIndex = frame.schema?.fields?.findIndex((f: any) => f.name === 'labels' || f.name === 'Labels');
 
             if (lineIndex !== undefined && lineIndex >= 0 && values[lineIndex]) {
-              values[lineIndex].forEach((line: unknown, index: number) => {
+              values[lineIndex].forEach((line: unknown) => {
                 if (typeof line === 'string') {
                   try {
                     const parsed = JSON.parse(line);
 
-                    // Try to get UUID from Loki labels
-                    let uuid = null;
-                    if (labelsIndex !== undefined && labelsIndex >= 0 && values[labelsIndex]) {
-                      const labels = values[labelsIndex][index] as Record<string, any>;
-                      if (labels && typeof labels === 'object') {
-                        uuid = labels.id;
-                      }
-                    }
+                    // Extract UUID from the parsed log line content
+                    const uuid = parsed.id;
 
                     if (uuid) {
                       dataMap.set(uuid, parsed);
