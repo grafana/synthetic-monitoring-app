@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Modal, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
@@ -42,6 +42,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
   const dataSource = useSMDS();
   const [screenshotDataByUUID, setScreenshotDataByUUID] = useState<Map<string, Record<string, any>>>(new Map());
   const [fetchedUUIDs, setFetchedUUIDs] = useState<Set<string>>(new Set());
+  const [modalScreenshot, setModalScreenshot] = useState<{ base64: string; caption?: string } | null>(null);
 
   // Extract screenshot UUIDs from logs
   const screenshotUUIDs = useMemo(() => extractScreenshotUUIDs(logs, mainKey), [logs, mainKey]);
@@ -162,11 +163,13 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
             <div className={styles.mainKey}>
               {screenshotBase64 ? (
                 <div className={styles.screenshotContainer}>
-                  {caption && <div className={styles.screenshotCaption}>{caption}</div>}
+                  {caption && <div className={styles.screenshotCaption}>Screenshot: {caption}</div>}
                   <img
                     src={`data:image/png;base64,${screenshotBase64}`}
                     alt={caption || 'Screenshot'}
                     className={styles.screenshotImage}
+                    onClick={() => setModalScreenshot({ base64: screenshotBase64, caption })}
+                    title="Click to view full size"
                   />
                 </div>
               ) : (
@@ -177,6 +180,23 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
           </div>
         );
       })}
+      {modalScreenshot && (
+        <Modal
+          title={modalScreenshot.caption ? `Screenshot: ${modalScreenshot.caption}` : 'Screenshot'}
+          isOpen={true}
+          onDismiss={() => setModalScreenshot(null)}
+          contentClassName={styles.screenshotModalContent}
+          className={styles.screenshotModalOverride}
+        >
+          <div className={styles.screenshotModalImageContainer}>
+            <img
+              src={`data:image/png;base64,${modalScreenshot.base64}`}
+              alt={modalScreenshot.caption || 'Screenshot'}
+              className={styles.screenshotModalImage}
+            />
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
@@ -257,6 +277,46 @@ const getStyles = (theme: GrafanaTheme2) => {
     screenshotImage: css`
       max-height: 200px;
       width: auto !important;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    `,
+    screenshotModalOverride: css`
+      /* Force override Grafana's 750px width */
+      && {
+        width: 80vw !important;
+        max-width: 80vw !important;
+      }
+
+      /* Target nested modal elements */
+      & > div,
+      & [role='dialog'] {
+        width: 80vw !important;
+        max-width: 80vw !important;
+      }
+    `,
+    screenshotModalContent: css`
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden;
+    `,
+    screenshotModalImageContainer: css`
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: ${theme.spacing(2)};
+      overflow: hidden;
+    `,
+    screenshotModalImage: css`
+      max-width: calc(80vw - ${theme.spacing(4)});
+      max-height: 75vh;
+      width: auto;
       height: auto;
       object-fit: contain;
       display: block;
