@@ -862,10 +862,10 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@eslint/js@9.39.1":
-  version "9.39.1"
-  resolved "https://registry.yarnpkg.com/@eslint/js/-/js-9.39.1.tgz#0dd59c3a9f40e3f1882975c321470969243e0164"
-  integrity sha512-S26Stp4zCy88tH94QbBv3XCuzRQiZ9yXofEILmglYTh/Ug/a9/umqvgFtYBAo3Lp0nsI/5/qH1CCrbdK3AP1Tw==
+"@eslint/js@9.39.3":
+  version "9.39.3"
+  resolved "https://registry.yarnpkg.com/@eslint/js/-/js-9.39.3.tgz#c6168736c7e0c43ead49654ed06a4bcb3833363d"
+  integrity sha512-1B1VkCq6FuUNlQvlBYb+1jDu/gV297TIs/OeiaSR9l1H27SVW55ONE1e1Vp16NqP683+xEGzxYtv4XCiDPaQiw==
 
 "@eslint/object-schema@^2.1.7":
   version "2.1.7"
@@ -5798,10 +5798,10 @@ eslint-webpack-plugin@5.0.2:
     normalize-path "^3.0.0"
     schema-utils "^4.3.0"
 
-eslint@9.39.1:
-  version "9.39.1"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-9.39.1.tgz#be8bf7c6de77dcc4252b5a8dcb31c2efff74a6e5"
-  integrity sha512-BhHmn2yNOFA9H9JmmIVKJmd288g9hrVRDkdoIgRCRuSySRUHH7r/DI6aAXW9T1WwUuY3DFgrcaqB+deURBLR5g==
+eslint@9.39.3:
+  version "9.39.3"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-9.39.3.tgz#08d63df1533d7743c0907b32a79a7e134e63ee2f"
+  integrity sha512-VmQ+sifHUbI/IcSopBCF/HO3YiHQx/AVd3UVyYL6weuwW+HvON9VYn5l6Zl1WZzPWXPNZrSQpxwkkZ/VuvJZzg==
   dependencies:
     "@eslint-community/eslint-utils" "^4.8.0"
     "@eslint-community/regexpp" "^4.12.1"
@@ -5809,7 +5809,7 @@ eslint@9.39.1:
     "@eslint/config-helpers" "^0.4.2"
     "@eslint/core" "^0.17.0"
     "@eslint/eslintrc" "^3.3.1"
-    "@eslint/js" "9.39.1"
+    "@eslint/js" "9.39.3"
     "@eslint/plugin-kit" "^0.4.1"
     "@humanfs/node" "^0.16.6"
     "@humanwhocodes/module-importer" "^1.0.1"
