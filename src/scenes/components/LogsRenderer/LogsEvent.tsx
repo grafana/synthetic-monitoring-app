@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -6,7 +6,9 @@ import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.ms
 
 import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { useTracesDS } from 'hooks/useTracesDS';
 import { LogHTTPResponseTimings } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings';
+import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels';
 
 export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Record<string, string>>>({
@@ -17,30 +19,52 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
   mainKey: string;
 }) => {
   const styles = useStyles2(getStyles);
+  const tracesDS = useTracesDS();
+  const [expandedTraceId, setExpandedTraceId] = useState<string | null>(null);
+
+  const handleTraceToggle = useCallback((traceId: string) => {
+    setExpandedTraceId((prev) => (prev === traceId ? null : traceId));
+  }, []);
+
+  const handleTraceClose = useCallback(() => {
+    setExpandedTraceId(null);
+  }, []);
 
   return (
     <div className={styles.timelineContainer}>
       {logs.map((log, index) => {
         const level = log.labels.detected_level;
+        const hasExpandedTrace =
+          expandedTraceId !== null && Object.values(log.labels).includes(expandedTraceId);
 
         return (
-          <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>
-            <div className={styles.time}>
-              {dateTimeFormat(log[LokiFieldNames.TimeStamp], {
-                defaultWithMS: true,
-              })}
+          <div key={log.id} data-testid={`event-log-${log.id}`}>
+            <div className={styles.timelineItem}>
+              <div className={styles.time}>
+                {dateTimeFormat(log[LokiFieldNames.TimeStamp], {
+                  defaultWithMS: true,
+                })}
+              </div>
+              <div
+                className={cx(styles.level, {
+                  [styles.error]: level === 'error',
+                  [styles.info]: level === 'info',
+                  [styles.warning]: level === 'warn',
+                })}
+              >
+                {level.toUpperCase()}
+              </div>
+              <div className={styles.mainKey}>{log.labels[mainKey]}</div>
+              <LabelRenderer
+                log={logs[index]}
+                mainKey={mainKey}
+                expandedTraceId={expandedTraceId}
+                onTraceToggle={handleTraceToggle}
+              />
             </div>
-            <div
-              className={cx(styles.level, {
-                [styles.error]: level === 'error',
-                [styles.info]: level === 'info',
-                [styles.warning]: level === 'warn',
-              })}
-            >
-              {level.toUpperCase()}
-            </div>
-            <div className={styles.mainKey}>{log.labels[mainKey]}</div>
-            <LabelRenderer log={logs[index]} mainKey={mainKey} />
+            {hasExpandedTrace && tracesDS && (
+              <TracePanel traceId={expandedTraceId} tracesDS={tracesDS} onClose={handleTraceClose} />
+            )}
           </div>
         );
       })}
@@ -55,9 +79,13 @@ const MSG_MAP = {
 const LabelRenderer = ({
   log,
   mainKey,
+  expandedTraceId,
+  onTraceToggle,
 }: {
   log: ParsedLokiRecord<Record<string, string>, Record<string, string>>;
   mainKey: string;
+  expandedTraceId: string | null;
+  onTraceToggle: (traceId: string) => void;
 }) => {
   const Component = MSG_MAP[log.labels[mainKey]];
 
@@ -65,7 +93,7 @@ const LabelRenderer = ({
     return <Component log={log as unknown as HTTPResponseTimingsLog} />;
   }
 
-  return <UniqueLogLabels log={log} />;
+  return <UniqueLogLabels log={log} expandedTraceId={expandedTraceId} onTraceToggle={onTraceToggle} />;
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
