@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.48.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.48.0...v1.48.1) (2026-03-03)
+
+
+### Miscellaneous Chores
+
+* address deprecated config.apps from GrafanaBootConfig ([#1559](https://github.com/grafana/synthetic-monitoring-app/issues/1559)) ([32dc836](https://github.com/grafana/synthetic-monitoring-app/commit/32dc83699078e3275dc1e5b92ef91353308fb410))
+
 ## [1.48.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.2...v1.48.0) (2026-02-26)
 
 
