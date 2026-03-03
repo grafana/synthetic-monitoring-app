@@ -104,6 +104,8 @@ jest.mock('@grafana/runtime', () => {
 
   return {
     ...actual,
+    usePluginLinks: jest.fn(() => ({ links: [], isLoading: false })),
+    usePluginComponents: jest.fn(() => ({ components: [], isLoading: false })),
     locationService,
     LocationServiceProvider: actual.LocationServiceProvider,
     config: {

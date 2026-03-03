@@ -282,6 +282,14 @@
       "grants": ["Viewer"]
     }
   ],
+  "extensions": {
+    "extensionPoints": [
+      {
+        "id": "grafana-synthetic-monitoring-app/home/cta/v1",
+        "description": "Extension point below the home page title for CTA links"
+      }
+    ]
+  },
   "dependencies": {
     "grafanaDependency": ">=12.3.0"
   },
