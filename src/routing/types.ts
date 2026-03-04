@@ -13,4 +13,5 @@ export enum AppRoutes {
   Probes = 'probes',
   Redirect = 'redirect',
   Scene = 'scene',
+  Svalinn = 'svalinn',
 }

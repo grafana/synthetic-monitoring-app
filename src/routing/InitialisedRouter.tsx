@@ -27,6 +27,7 @@ import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
+import { SvalinnPage } from 'page/SvalinnPage/SvalinnPage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
 // Alpha (requires `synthetic-monitoring-check-editor=true`)
@@ -137,6 +138,8 @@ export const InitialisedRouter = () => {
         <Route path="terraform" element={<TerraformTab />} />
         {isFeatureEnabled(FeatureName.SecretsManagement) && <Route path="secrets" element={<SecretsManagementTab />} />}
       </Route>
+
+      <Route path={AppRoutes.Svalinn} element={<SvalinnPage />} />
 
       <Route path={AppRoutes.Redirect} element={<SceneRedirecter />} />
 
