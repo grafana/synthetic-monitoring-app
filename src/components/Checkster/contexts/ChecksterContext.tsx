@@ -12,7 +12,7 @@ import React, {
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
-import { isEqual } from 'lodash';
+import { isEqual, set } from 'lodash';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { createCheckSchema } from 'schemas/forms/utils/createCheckSchema';
 import { ZodType } from 'zod';
@@ -27,6 +27,7 @@ import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
+import { useSvalinnScript } from 'hooks/useSvalinnScript';
 
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
@@ -74,7 +75,12 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
-function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[]) {
+function useFormValuesMeta(
+  checkType: CheckType,
+  check: Check | undefined,
+  probesWithMetadata: ProbeWithMetadata[],
+  svalinnScript: string | null
+) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
   const params = useURLSearchParams();
   const svalinnId = params.get('svalinn-id');
@@ -102,11 +108,15 @@ function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probe
       defaultFormValues.job = svalinnName;
     }
 
+    if (!check && svalinnScript !== null) {
+      set(defaultFormValues, `settings.${checkType}.script`, svalinnScript);
+    }
+
     return { defaultFormValues, schema: refinedSchema, hiddenLabels };
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, svalinnName, hiddenLabels]);
+  }, [checkType, check, probeCompatibilityKey, svalinnName, svalinnScript, hiddenLabels]);
 }
 
 export function ChecksterProvider({
@@ -130,7 +140,8 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues, hiddenLabels } = useFormValuesMeta(checkType, check, probesWithMetadata);
+  const { script: svalinnScript } = useSvalinnScript();
+  const { schema, defaultFormValues, hiddenLabels } = useFormValuesMeta(checkType, check, probesWithMetadata, svalinnScript);
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
