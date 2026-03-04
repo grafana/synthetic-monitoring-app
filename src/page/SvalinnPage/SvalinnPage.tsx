@@ -1,24 +1,61 @@
 import React from 'react';
-import { type ReactElement,useState } from 'react';
+import { type ReactElement, useMemo, useState } from 'react';
 import type { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import type { StatCard, TestEntry } from './svalinn.types';
+import { useChecks } from 'data/useChecks';
+import { getCheckType } from 'utils';
+import { CheckType } from 'types';
+import type { Check } from 'types';
+
+import type { StatCard, TestEntry, TestCategory, TestProduct } from './svalinn.types';
 
 import { ImmunityCallout } from './ImmunityCallout';
 import { StatCardsRow } from './StatCardsRow';
 import { SuggestionsPanel } from './SuggestionsPanel';
-import { MOCK_TEST_ENTRIES } from './svalinn.mock';
 import { TestSuiteTable } from './TestSuiteTable';
 import type { TestSuggestion } from './useTestSuggestions';
 import { useTestSuggestions } from './useTestSuggestions';
 
+function checkToTestEntry(check: Check): TestEntry {
+  const checkType = getCheckType(check.settings);
+  const isK6 = checkType === CheckType.Scripted || checkType === CheckType.Browser;
+
+  const product: TestProduct = isK6 ? 'k6' : 'synthetics';
+  const type: TestCategory = isK6 ? 'performance' : 'availability';
+
+  const lastRun = check.modified
+    ? new Date(check.modified * 1000).toLocaleDateString()
+    : '—';
+
+  return {
+    status: check.enabled ? 'pass' : 'fail',
+    name: check.job,
+    type,
+    product,
+    linkedIncident: null,
+    lastRun,
+  };
+}
+
 export function SvalinnPage(): ReactElement {
   const styles = useStyles2(getStyles);
   const { suggestions, isGenerating, error, dismiss } = useTestSuggestions();
-  const [testEntries, setTestEntries] = useState<TestEntry[]>(MOCK_TEST_ENTRIES);
+  const { data: allChecks } = useChecks();
+  const [extraEntries, setExtraEntries] = useState<TestEntry[]>([]);
+
+  const fetchedEntries = useMemo(() => {
+    if (!allChecks) {
+      return [];
+    }
+    return allChecks
+      .filter((check) => check.labels.some((l) => l.name === 'shield' && l.value === 'svalinn'))
+      .map(checkToTestEntry);
+  }, [allChecks]);
+
+  const testEntries = [...fetchedEntries, ...extraEntries];
 
   const incidentsCovered = testEntries.reduce((sum, e) => sum + (e.incidentsCovered ?? 0), 0);
 
@@ -38,7 +75,7 @@ export function SvalinnPage(): ReactElement {
       lastRun: new Date().toISOString(),
       incidentsCovered: suggestion.incidentsCovered,
     };
-    setTestEntries((prev) => [...prev, entry]);
+    setExtraEntries((prev) => [...prev, entry]);
     dismiss(suggestion);
   };
 

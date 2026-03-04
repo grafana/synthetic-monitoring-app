@@ -30,9 +30,15 @@ export function TestSuiteTable({ entries }: Props): ReactElement {
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry) => (
-            <TestRow key={entry.name} entry={entry} />
-          ))}
+          {entries.length === 0 ? (
+            <tr>
+              <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: 'inherit' }}>
+                No tests found. Create a test from one of the suggestions above to get started.
+              </td>
+            </tr>
+          ) : (
+            entries.map((entry) => <TestRow key={entry.name} entry={entry} />)
+          )}
         </tbody>
       </table>
     </div>
@@ -114,7 +120,7 @@ function getStyles(theme: GrafanaTheme2) {
     table: css({
       width: '100%',
       borderCollapse: 'collapse',
-      'th': {
+      th: {
         textAlign: 'left',
         fontSize: '11px',
         fontWeight: theme.typography.fontWeightMedium,
@@ -125,7 +131,7 @@ function getStyles(theme: GrafanaTheme2) {
         borderBottom: `1px solid ${theme.colors.border.weak}`,
         background: theme.colors.background.primary,
       },
-      'td': {
+      td: {
         padding: `${theme.spacing(1.25)} ${theme.spacing(1.5)}`,
         fontSize: '13px',
         borderBottom: `1px solid ${theme.colors.border.weak}`,
