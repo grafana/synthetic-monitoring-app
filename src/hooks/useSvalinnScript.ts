@@ -19,7 +19,8 @@ async function fetchSvalinnScript(id: string): Promise<SvalinnResponse> {
 
 export function useSvalinnScript() {
   const params = useURLSearchParams();
-  const svalinnId = params.get('svalinn');
+  const svalinnId = params.get('svalinn-id');
+  const svalinnName = params.get('svalinn-name');
   const enabled = !!svalinnId;
 
   const { data, isFetching } = useQuery<SvalinnResponse>({
@@ -32,6 +33,7 @@ export function useSvalinnScript() {
 
   return {
     script: data?.ready ? (data.data?.script ?? null) : null,
+    name: svalinnName,
     isLoading: enabled && (!data?.ready || isFetching),
     enabled,
   };

@@ -29,7 +29,12 @@ export function SuggestionsPanel({ suggestions, isGenerating, error, onDismiss, 
         <div className={styles.state}>No suggestions available.</div>
       )}
       {suggestions.map((suggestion) => (
-        <SuggestionRow key={suggestion.incident} suggestion={suggestion} onDismiss={onDismiss} onCreateTest={onCreateTest} />
+        <SuggestionRow
+          key={suggestion.incident}
+          suggestion={suggestion}
+          onDismiss={onDismiss}
+          onCreateTest={onCreateTest}
+        />
       ))}
       {isGenerating && (
         <div className={styles.state}>
@@ -53,7 +58,9 @@ function SuggestionRow({
 
   return (
     <div className={styles.row}>
-      <span className={`${styles.severityDot} ${suggestion.severity === 'critical' ? styles.dotCritical : styles.dotWarning}`} />
+      <span
+        className={`${styles.severityDot} ${suggestion.severity === 'critical' ? styles.dotCritical : styles.dotWarning}`}
+      />
       <div className={styles.content}>
         <div className={styles.incident}>{suggestion.incident}</div>
         <div className={styles.description}>{suggestion.description}</div>
@@ -64,7 +71,7 @@ function SuggestionRow({
       <CategoryTag category={suggestion.category} />
       <a
         className={styles.aiButton}
-        href="/a/grafana-synthetic-monitoring-app/checks/new/scripted?svalinn=test"
+        href={`/a/grafana-synthetic-monitoring-app/checks/new/scripted?svalinn-id=test&svalinn-name=${encodeURIComponent(`Shield: ${suggestion.incident}`)}`}
         style={{
           background: 'linear-gradient(135deg, #6c3fb5, #e04d8a, #f08c00)',
           boxShadow: '0 0 8px rgba(192, 80, 160, 0.25)',

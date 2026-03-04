@@ -26,6 +26,8 @@ import { useDOMId } from 'hooks/useDOMId';
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
+
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
 import { flattenObjectKeys } from '../utils/form';
@@ -73,19 +75,24 @@ interface StashedValues {
 
 function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[]) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
+  const params = useURLSearchParams();
+  const svalinnName = params.get('svalinn-name');
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
     const refinedSchema = addRefinements<CheckFormValues>(schema);
 
-    return {
-      defaultFormValues: check ? toFormValues(check) : getDefaultFormValues(checkType),
-      schema: refinedSchema,
-    };
+    const defaultFormValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+
+    if (!check && svalinnName) {
+      defaultFormValues.job = svalinnName;
+    }
+
+    return { defaultFormValues, schema: refinedSchema };
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey]);
+  }, [checkType, check, probeCompatibilityKey, svalinnName]);
 }
 
 export function ChecksterProvider({
