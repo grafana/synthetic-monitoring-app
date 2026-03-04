@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useInlineAssistant } from '@grafana/assistant';
 
-import { MOCK_TEST_ENTRIES } from './svalinn.mock';
+import type { TestEntry } from './svalinn.types';
 
 export interface TestSuggestion {
   severity: 'critical' | 'warning';
@@ -49,10 +49,13 @@ function saveDismissed(dismissed: string[]): void {
   localStorage.setItem(STORAGE_KEY_DISMISSED, JSON.stringify(dismissed));
 }
 
-export function useTestSuggestions(): UseTestSuggestionsReturn {
+export function useTestSuggestions(testEntries: TestEntry[], isReady: boolean): UseTestSuggestionsReturn {
   const assistantResult = useInlineAssistant();
   const assistantRef = useRef(assistantResult);
   assistantRef.current = assistantResult;
+
+  const testEntriesRef = useRef(testEntries);
+  testEntriesRef.current = testEntries;
 
   const [suggestions, setSuggestions] = useState<TestSuggestion[]>(() => loadSuggestions());
   const [isGenerating, setIsGenerating] = useState(false);
@@ -62,7 +65,7 @@ export function useTestSuggestions(): UseTestSuggestionsReturn {
 
   useEffect(() => {
     const stored = loadSuggestions();
-    if (assistantRef.current == null || hasGenerated.current || stored.length >= 5) {
+    if (!isReady || assistantRef.current == null || hasGenerated.current || stored.length >= 5) {
       return;
     }
 
@@ -71,7 +74,7 @@ export function useTestSuggestions(): UseTestSuggestionsReturn {
     setError(null);
 
     const dismissed = loadDismissed();
-    const testNames = MOCK_TEST_ENTRIES.map((e) => e.name);
+    const testNames = testEntriesRef.current.map((e) => e.name);
 
     const contextSystemPrompt = `You are an expert at writing software and infrastructure tests. Summarize what test coverage already exists and what has been rejected, so we know what NOT to suggest next.`;
 
@@ -93,21 +96,16 @@ export function useTestSuggestions(): UseTestSuggestionsReturn {
       'Produce a concise summary (2-4 sentences) of what coverage already exists and what areas to avoid suggesting.',
     ].join('\n');
 
-    let coverageSummary = '';
-
     void assistantRef.current.generate({
       prompt: contextUserPrompt,
       systemPrompt: contextSystemPrompt,
       origin: 'grafana-irm-app/suggested-tests-context',
-      onDelta: (delta: string) => {
-        coverageSummary += delta;
-      },
       onError: (err: Error) => {
         console.error('Assistant context error:', err);
         setError(err?.message || 'Failed to generate suggestions');
         setIsGenerating(false);
       },
-      onComplete: () => {
+      onComplete: (coverageSummary: string) => {
         const needed = 5 - stored.length;
         const suggestionsSystemPrompt = [
           'You are an expert at writing software and infrastructure tests.',
@@ -120,25 +118,24 @@ export function useTestSuggestions(): UseTestSuggestionsReturn {
           `Coverage context (avoid duplicating or re-suggesting anything covered here):\n${coverageSummary}`,
         ].join('\n');
 
-        const suggestionsUserPrompt = `Look for patterns in our most recent 10 incidents and suggest up to ${needed} additional tests that would prevent similar issues. It is fine to return an empty array if no further tests are warranted. Return ONLY a JSON array.`;
-
-        let accumulated = '';
+        const noExisting = stored.length === 0;
+        const emptyArrayGuidance = noExisting
+          ? 'Always suggest at least 1–2 tests even if patterns are subtle — an empty suggestion list is not helpful.'
+          : 'It is fine to return an empty array if no further tests are warranted.';
+        const suggestionsUserPrompt = `Look for patterns in our most recent 10 incidents and suggest up to ${needed} additional tests that would prevent similar issues. ${emptyArrayGuidance} Return ONLY a JSON array.`;
 
         void assistantRef.current!.generate({
           prompt: suggestionsUserPrompt,
           systemPrompt: suggestionsSystemPrompt,
           origin: 'grafana-irm-app/suggested-tests',
-          onDelta: (delta: string) => {
-            accumulated += delta;
-          },
           onError: (err: Error) => {
             console.error('Assistant error:', err);
             setError(err?.message || 'Failed to generate suggestions');
             setIsGenerating(false);
           },
-          onComplete: () => {
+          onComplete: (text: string) => {
             try {
-              const match = accumulated.match(/\[[\s\S]*\]/);
+              const match = text.match(/\[[\s\S]*\]/);
               const newSuggestions: TestSuggestion[] = match ? JSON.parse(match[0]) : [];
               const existingDescriptions = new Set(stored.map((s) => s.description));
               const unique = newSuggestions.filter((s) => !existingDescriptions.has(s.description));
@@ -153,7 +150,7 @@ export function useTestSuggestions(): UseTestSuggestionsReturn {
         });
       },
     });
-  }, []);
+  }, [isReady]);
 
   const dismiss = (suggestion: TestSuggestion): void => {
     setSuggestions((prev) => {

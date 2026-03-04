@@ -1,10 +1,29 @@
 import React from 'react';
-import { type ReactElement } from 'react';
+import { type ReactElement, useEffect, useState } from 'react';
 import type { GrafanaTheme2 } from '@grafana/data';
 import { Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import type { Suggestion, TestCategory } from './svalinn.types';
+
+const THINKING_PHRASES = [
+  'Consulting the observability oracle...',
+  'Reading between the stack traces...',
+  'Interrogating the incident logs...',
+  'Connecting the dots across your incidents...',
+  'Summoning test coverage wisdom...',
+  'Brewing suggestions from your telemetry...',
+  'Asking the AI very nicely...',
+];
+
+function useThinkingPhrase(): string {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIndex((i) => (i + 1) % THINKING_PHRASES.length), 2500);
+    return () => clearInterval(id);
+  }, []);
+  return THINKING_PHRASES[index];
+}
 
 interface Props {
   suggestions: Suggestion[];
@@ -16,6 +35,7 @@ interface Props {
 
 export function SuggestionsPanel({ suggestions, isGenerating, error, onDismiss, onCreateTest }: Props): ReactElement {
   const styles = useStyles2(getStyles);
+  const thinkingPhrase = useThinkingPhrase();
 
   return (
     <div className={styles.panel}>
@@ -39,6 +59,7 @@ export function SuggestionsPanel({ suggestions, isGenerating, error, onDismiss, 
       {isGenerating && (
         <div className={styles.state}>
           <Spinner size="lg" />
+          <span className={styles.thinkingPhrase}>{thinkingPhrase}</span>
         </div>
       )}
     </div>
@@ -178,8 +199,14 @@ function getStyles(theme: GrafanaTheme2) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      gap: theme.spacing(1.5),
       padding: theme.spacing(3),
       color: theme.colors.text.secondary,
+    }),
+    thinkingPhrase: css({
+      fontSize: theme.typography.bodySmall.fontSize,
+      color: '#c490f5',
+      fontStyle: 'italic',
     }),
     dismissButton: css({
       display: 'inline-flex',

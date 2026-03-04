@@ -46,7 +46,6 @@ function checkToTestEntry(check: Check): TestEntry {
 
 export function SvalinnPage(): ReactElement {
   const styles = useStyles2(getStyles);
-  const { suggestions, isGenerating, error, dismiss } = useTestSuggestions();
   const { data: allChecks } = useChecks();
   const [extraEntries, setExtraEntries] = useState<TestEntry[]>([]);
 
@@ -58,6 +57,8 @@ export function SvalinnPage(): ReactElement {
       .filter((check) => check.labels.some((l) => l.name === 'shield' && l.value === 'svalinn'))
       .map(checkToTestEntry);
   }, [allChecks]);
+
+  const { suggestions, isGenerating, error, dismiss } = useTestSuggestions(fetchedEntries, allChecks !== undefined);
 
   const testEntries = [...fetchedEntries, ...extraEntries];
 
