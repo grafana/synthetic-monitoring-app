@@ -77,6 +77,7 @@ function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probe
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
   const params = useURLSearchParams();
   const svalinnName = params.get('svalinn-name');
+  const incidentsCovered = params.get('svalinn-incidents-covered');
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
@@ -88,11 +89,18 @@ function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probe
       defaultFormValues.job = svalinnName;
     }
 
+    if (!check && incidentsCovered) {
+      defaultFormValues.labels = [
+        ...defaultFormValues.labels,
+        { name: 'svalinn-incidents-covered', value: incidentsCovered },
+      ];
+    }
+
     return { defaultFormValues, schema: refinedSchema };
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, svalinnName]);
+  }, [checkType, check, probeCompatibilityKey, svalinnName, incidentsCovered]);
 }
 
 export function ChecksterProvider({

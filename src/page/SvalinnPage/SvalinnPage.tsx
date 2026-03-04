@@ -30,6 +30,9 @@ function checkToTestEntry(check: Check): TestEntry {
     ? new Date(check.modified * 1000).toLocaleDateString()
     : '—';
 
+  const incLabel = check.labels.find((l) => l.name === 'svalinn-incidents-covered');
+  const incidentsCovered = incLabel ? Number(incLabel.value) : undefined;
+
   return {
     status: check.enabled ? 'pass' : 'fail',
     name: check.job,
@@ -37,6 +40,7 @@ function checkToTestEntry(check: Check): TestEntry {
     product,
     linkedIncident: null,
     lastRun,
+    incidentsCovered,
   };
 }
 

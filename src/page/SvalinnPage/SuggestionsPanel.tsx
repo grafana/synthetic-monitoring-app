@@ -71,7 +71,7 @@ function SuggestionRow({
       <CategoryTag category={suggestion.category} />
       <a
         className={styles.aiButton}
-        href={`/a/grafana-synthetic-monitoring-app/checks/new/scripted?svalinn-id=test&svalinn-name=${encodeURIComponent(`Shield: ${suggestion.incident}`)}`}
+        href={`/a/grafana-synthetic-monitoring-app/checks/new/scripted?svalinn-id=test&svalinn-name=${encodeURIComponent(`Shield: ${suggestion.incident}`)}&svalinn-incidents-covered=${suggestion.incidentsCovered}`}
         style={{
           background: 'linear-gradient(135deg, #6c3fb5, #e04d8a, #f08c00)',
           boxShadow: '0 0 8px rgba(192, 80, 160, 0.25)',
