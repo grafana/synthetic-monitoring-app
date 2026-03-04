@@ -1,9 +1,15 @@
 import React, { ComponentProps } from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericScriptField } from './GenericScriptField';
+
+const mockUseSvalinnScript = jest.fn();
+
+jest.mock('hooks/useSvalinnScript', () => ({
+  useSvalinnScript: () => mockUseSvalinnScript(),
+}));
 
 // Mock dependencies
 jest.mock('../../../utils/form', () => ({
@@ -41,6 +47,10 @@ jest.mock('components/CodeEditor', () => ({
 const defaultProps = {
   field: 'value',
 } as any;
+
+beforeEach(() => {
+  mockUseSvalinnScript.mockReturnValue({ script: null, isLoading: false, enabled: false });
+});
 
 function renderGenericScriptField(
   props?: Partial<ComponentProps<typeof GenericScriptField>>,
@@ -202,5 +212,39 @@ describe('GenericScriptField', () => {
 
     const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
     expect(codeEditor).toHaveValue(formattedScript);
+  });
+
+  describe('svalinn param', () => {
+    it('shows "Loading script..." when svalinn param is present and script not yet ready', async () => {
+      mockUseSvalinnScript.mockReturnValue({ script: null, isLoading: true, enabled: true });
+
+      renderGenericScriptField({ field: 'settings.scripted.script' as any });
+
+      const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+      await waitFor(() => expect(codeEditor).toHaveValue('Loading script...'));
+    });
+
+    it('injects script when svalinn script is ready', async () => {
+      const injectedScript = '{"schedules":[]}';
+      mockUseSvalinnScript.mockReturnValue({ script: injectedScript, isLoading: false, enabled: true });
+
+      renderGenericScriptField({ field: 'settings.scripted.script' as any });
+
+      const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+      await waitFor(() => expect(codeEditor).toHaveValue(injectedScript));
+    });
+
+    it('does not modify editor when svalinn param is absent', () => {
+      const initialScript = 'const x = 1;';
+      mockUseSvalinnScript.mockReturnValue({ script: null, isLoading: false, enabled: false });
+
+      renderGenericScriptField(
+        { field: 'settings.scripted.script' as any },
+        { 'settings.scripted.script': initialScript } as any
+      );
+
+      const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+      expect(codeEditor).toHaveValue(initialScript);
+    });
   });
 });

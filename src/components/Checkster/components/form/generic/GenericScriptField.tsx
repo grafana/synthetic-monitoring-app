@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { FieldValidationMessage, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues, K6Channel } from 'types';
+import { useSvalinnScript } from 'hooks/useSvalinnScript';
 import { CodeEditor } from 'components/CodeEditor';
 
 import { getFieldErrorProps } from '../../../utils/form';
@@ -19,8 +20,23 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
   const {
     control,
     getValues,
+    setValue,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
+
+  const { script, enabled } = useSvalinnScript();
+
+  useEffect(() => {
+    if (enabled) {
+      setValue(field as any, 'Loading script...');
+    }
+  }, [enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (script !== null) {
+      setValue(field as any, script);
+    }
+  }, [script]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fieldErrorProps = getFieldErrorProps(errors, field);
   
