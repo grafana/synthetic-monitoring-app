@@ -30,7 +30,7 @@ function checkToTestEntry(check: Check): TestEntry {
     ? new Date(check.modified * 1000).toLocaleDateString()
     : '—';
 
-  const incLabel = check.labels.find((l) => l.name === 'svalinn-incidents-covered');
+  const incLabel = check.labels.find((l) => l.name === 'svalinn_incidents_covered');
   const incidentsCovered = incLabel ? Number(incLabel.value) : undefined;
 
   return {

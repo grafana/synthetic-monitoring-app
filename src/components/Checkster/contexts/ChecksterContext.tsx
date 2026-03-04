@@ -18,7 +18,7 @@ import { createCheckSchema } from 'schemas/forms/utils/createCheckSchema';
 import { ZodType } from 'zod';
 
 import { FormNavigationState, FormSectionName } from '../types';
-import { Check, CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
+import { Check, CheckFormValues, CheckType, Label, ProbeWithMetadata } from 'types';
 import { getCheckType } from 'utils';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
@@ -46,6 +46,7 @@ interface ChecksterContextValue {
   isNew: boolean;
   isK6Check: boolean;
   canChangeCheckType: boolean;
+  hiddenLabels: Label[];
 }
 
 export const ChecksterContext = createContext<ChecksterContextValue | null>(null);
@@ -76,8 +77,20 @@ interface StashedValues {
 function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[]) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
   const params = useURLSearchParams();
+  const svalinnId = params.get('svalinn-id');
   const svalinnName = params.get('svalinn-name');
-  const incidentsCovered = params.get('svalinn-incidents-covered');
+  const incidentsCovered = params.get('svalinn_incidents_covered');
+
+  const hiddenLabels = useMemo<Label[]>(() => {
+    if (!svalinnId || check) {
+      return [];
+    }
+    const labels: Label[] = [{ name: 'shield', value: 'svalinn' }];
+    if (incidentsCovered) {
+      labels.push({ name: 'svalinn_incidents_covered', value: incidentsCovered });
+    }
+    return labels;
+  }, [svalinnId, incidentsCovered, check]);
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
@@ -89,18 +102,11 @@ function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probe
       defaultFormValues.job = svalinnName;
     }
 
-    if (!check && incidentsCovered) {
-      defaultFormValues.labels = [
-        ...defaultFormValues.labels,
-        { name: 'svalinn-incidents-covered', value: incidentsCovered },
-      ];
-    }
-
-    return { defaultFormValues, schema: refinedSchema };
+    return { defaultFormValues, schema: refinedSchema, hiddenLabels };
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, svalinnName, incidentsCovered]);
+  }, [checkType, check, probeCompatibilityKey, svalinnName, hiddenLabels]);
 }
 
 export function ChecksterProvider({
@@ -124,7 +130,7 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata);
+  const { schema, defaultFormValues, hiddenLabels } = useFormValuesMeta(checkType, check, probesWithMetadata);
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
@@ -253,6 +259,7 @@ export function ChecksterProvider({
       canChangeCheckType,
       isK6Check: K6_CHECK_TYPES.includes(checkType),
       stashCheckTypeFormValues: stashCurrentValues,
+      hiddenLabels,
     };
   }, [
     formId,
@@ -266,6 +273,7 @@ export function ChecksterProvider({
     isNew,
     stashCurrentValues,
     canChangeCheckType,
+    hiddenLabels,
   ]);
 
   return (

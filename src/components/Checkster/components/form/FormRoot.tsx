@@ -31,6 +31,7 @@ export function FormRoot({
     formNavigation: { sectionByErrors, completeAllSteps },
     isNew,
     checkType,
+    hiddenLabels,
   } = useChecksterContext();
 
   const {
@@ -59,7 +60,10 @@ export function FormRoot({
 
   const onValid = useCallback(
     async (data: CheckFormValues) => {
-      const check = toPayload(data);
+      const payload = toPayload(data);
+      const check = hiddenLabels.length
+        ? { ...payload, labels: [...payload.labels, ...hiddenLabels] }
+        : payload;
       try {
         const callback = await onSave(check, data);
         reset(data);
@@ -73,7 +77,7 @@ export function FormRoot({
         setSaveError(error);
       }
     },
-    [onSave, reset]
+    [onSave, reset, hiddenLabels]
   );
 
   const onInvalid = useCallback(

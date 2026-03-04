@@ -29,7 +29,6 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
   useEffect(() => {
     if (enabled) {
       setValue(field as any, 'Loading script...', { shouldDirty: true });
-      setValue('labels', [{ name: 'source', value: 'svalinn' }]);
     }
   }, [enabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
