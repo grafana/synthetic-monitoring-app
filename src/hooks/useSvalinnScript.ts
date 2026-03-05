@@ -6,15 +6,21 @@ import { useURLSearchParams } from './useURLSearchParams';
 
 type SvalinnData = { script: string };
 type SvalinnResponse = { ready: boolean; data: SvalinnData | null };
+type SvalinnApiResponse = { id: number; description?: string; generated_at?: string };
+
+const BASE_URL = '/api/plugins/grafana-irm-app/resources/svalinn';
 
 async function fetchSvalinnScript(id: string): Promise<SvalinnResponse> {
   const resp = await firstValueFrom(
-    getBackendSrv().fetch<unknown>({
+    getBackendSrv().fetch<SvalinnApiResponse>({
       method: 'GET',
-      url: `https://dev.grafana-dev.net/api/plugins/grafana-synthetic-monitoring-app/settings`,
+      url: `${BASE_URL}/api/v1/suggestions/${id}`,
     })
   );
-  return { ready: true, data: { script: JSON.stringify(resp.data, null, 2) } };
+  if (resp.status === 200 && resp.data.description) {
+    return { ready: true, data: { script: resp.data.description } };
+  }
+  return { ready: false, data: null };
 }
 
 export function useSvalinnScript() {

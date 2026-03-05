@@ -1,23 +1,19 @@
-import React from 'react';
-import { type ReactElement, useMemo, useState } from 'react';
+import React, { type ReactElement, useMemo, useState } from 'react';
 import type { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { useChecks } from 'data/useChecks';
+import type { StatCard, TestCategory, TestEntry, TestProduct } from './svalinn.types';
+import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
-import { CheckType } from 'types';
-import type { Check } from 'types';
-
-import type { StatCard, TestEntry, TestCategory, TestProduct } from './svalinn.types';
+import { useChecks } from 'data/useChecks';
 
 import { ImmunityCallout } from './ImmunityCallout';
 import { StatCardsRow } from './StatCardsRow';
 import { SuggestionsPanel } from './SuggestionsPanel';
 import { TestSuiteTable } from './TestSuiteTable';
-import type { TestSuggestion } from './useTestSuggestions';
-import { useTestSuggestions } from './useTestSuggestions';
+import { type TestSuggestion, useTestSuggestions } from './useTestSuggestions';
 
 function checkToTestEntry(check: Check): TestEntry {
   const checkType = getCheckType(check.settings);
@@ -26,9 +22,7 @@ function checkToTestEntry(check: Check): TestEntry {
   const product: TestProduct = isK6 ? 'k6' : 'synthetics';
   const type: TestCategory = isK6 ? 'performance' : 'availability';
 
-  const lastRun = check.modified
-    ? new Date(check.modified * 1000).toLocaleDateString()
-    : '—';
+  const lastRun = check.modified ? new Date(check.modified * 1000).toLocaleDateString() : '—';
 
   const incLabel = check.labels.find((l) => l.name === 'svalinn_incidents_covered');
   const incidentsCovered = incLabel ? Number(incLabel.value) : undefined;
@@ -146,5 +140,3 @@ function getStyles(theme: GrafanaTheme2) {
     }),
   };
 }
-
-export default SvalinnPage;

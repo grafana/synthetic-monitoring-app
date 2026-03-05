@@ -22,13 +22,12 @@ import { Check, CheckFormValues, CheckType, Label, ProbeWithMetadata } from 'typ
 import { getCheckType } from 'utils';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
+import { useSvalinnScript } from 'hooks/useSvalinnScript';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
-import { useURLSearchParams } from 'hooks/useURLSearchParams';
-import { useSvalinnScript } from 'hooks/useSvalinnScript';
-
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
 import { flattenObjectKeys } from '../utils/form';

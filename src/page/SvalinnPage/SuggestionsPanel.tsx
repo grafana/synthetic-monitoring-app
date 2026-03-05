@@ -1,8 +1,9 @@
-import React from 'react';
-import { type ReactElement, useEffect, useState } from 'react';
+import React, { type ReactElement, useCallback, useEffect, useState } from 'react';
 import type { GrafanaTheme2 } from '@grafana/data';
+import { getBackendSrv } from '@grafana/runtime';
 import { Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { firstValueFrom } from 'rxjs';
 
 import type { Suggestion, TestCategory } from './svalinn.types';
 
@@ -66,6 +67,8 @@ export function SuggestionsPanel({ suggestions, isGenerating, error, onDismiss, 
   );
 }
 
+const BASE_URL = '/api/plugins/grafana-irm-app/resources/svalinn';
+
 function SuggestionRow({
   suggestion,
   onDismiss,
@@ -76,6 +79,25 @@ function SuggestionRow({
   onCreateTest: (suggestion: Suggestion) => void;
 }): ReactElement {
   const styles = useStyles2(getStyles);
+  const [isPosting, setIsPosting] = useState(false);
+
+  const handleCreateTest = useCallback(async () => {
+    setIsPosting(true);
+    try {
+      const resp = await firstValueFrom(
+        getBackendSrv().fetch<{ id: number }>({
+          method: 'POST',
+          url: `${BASE_URL}/api/v1/suggestions`,
+          data: { description: suggestion.description },
+        })
+      );
+      const { id } = resp.data;
+      onCreateTest(suggestion);
+      window.location.href = `/a/grafana-synthetic-monitoring-app/checks/new/scripted?svalinn-id=${id}&svalinn-name=${encodeURIComponent(`Shield: ${suggestion.incident}`)}&svalinn_incidents_covered=${suggestion.incidentsCovered}`;
+    } finally {
+      setIsPosting(false);
+    }
+  }, [suggestion, onCreateTest]);
 
   return (
     <div className={styles.row}>
@@ -90,17 +112,17 @@ function SuggestionRow({
         </div>
       </div>
       <CategoryTag category={suggestion.category} />
-      <a
+      <button
         className={styles.aiButton}
-        href={`/a/grafana-synthetic-monitoring-app/checks/new/scripted?svalinn-id=test&svalinn-name=${encodeURIComponent(`Shield: ${suggestion.incident}`)}&svalinn_incidents_covered=${suggestion.incidentsCovered}`}
         style={{
           background: 'linear-gradient(135deg, #6c3fb5, #e04d8a, #f08c00)',
           boxShadow: '0 0 8px rgba(192, 80, 160, 0.25)',
         }}
-        onClick={() => onCreateTest(suggestion)}
+        onClick={handleCreateTest}
+        disabled={isPosting}
       >
         <span className={styles.sparkle}>✨</span> {suggestion.actionLabel}
-      </a>
+      </button>
       <button className={styles.dismissButton} onClick={() => onDismiss(suggestion)} aria-label="Dismiss suggestion">
         ✕
       </button>
