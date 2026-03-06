@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { locationService } from '@grafana/runtime';
 
 import { Check, CheckAlertDraft, CheckAlertFormRecord, CheckFormValues } from '../types';
 
@@ -44,6 +45,10 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
       await handleAlerts(result, formValues.alerts);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
 
+      const search = locationService.getSearch();
+      if (search.get('svalinn-id')) {
+        return () => locationService.push('/a/grafana-synthetic-monitoring-app/svalinn');
+      }
       return () => navigateToCheckDashboard(result, payload?.id === undefined);
     },
     [initialCheck, createCheck, handleAlerts, navigateToCheckDashboard, updateCheck]
