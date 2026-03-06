@@ -1,14 +1,13 @@
 import React, { ComponentProps } from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 
+import { useChecksterContext } from '../../../contexts/ChecksterContext';
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericScriptField } from './GenericScriptField';
 
-const mockUseSvalinnScript = jest.fn();
-
-jest.mock('hooks/useSvalinnScript', () => ({
-  useSvalinnScript: () => mockUseSvalinnScript(),
+jest.mock('../../../contexts/ChecksterContext', () => ({
+  useChecksterContext: jest.fn(() => ({ svalinnIsLoading: false, svalinnError: null })),
 }));
 
 // Mock dependencies
@@ -49,7 +48,7 @@ const defaultProps = {
 } as any;
 
 beforeEach(() => {
-  mockUseSvalinnScript.mockReturnValue({ script: null, isLoading: false, enabled: false });
+  (useChecksterContext as jest.Mock).mockReturnValue({ svalinnIsLoading: false, svalinnError: null });
 });
 
 function renderGenericScriptField(
@@ -215,28 +214,24 @@ describe('GenericScriptField', () => {
   });
 
   describe('svalinn param', () => {
-    it('shows "Loading script..." when svalinn param is present and script not yet ready', async () => {
-      mockUseSvalinnScript.mockReturnValue({ script: null, isLoading: true, enabled: true });
+    it('hides code editor when svalinn is loading', () => {
+      (useChecksterContext as jest.Mock).mockReturnValue({ svalinnIsLoading: true, svalinnError: null });
 
       renderGenericScriptField({ field: 'settings.scripted.script' as any });
 
-      const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
-      await waitFor(() => expect(codeEditor).toHaveValue('Loading script...'));
+      expect(screen.queryByTestId(DataTestIds.CodeEditor)).not.toBeInTheDocument();
     });
 
-    it('injects script when svalinn script is ready', async () => {
-      const injectedScript = '{"schedules":[]}';
-      mockUseSvalinnScript.mockReturnValue({ script: injectedScript, isLoading: false, enabled: true });
+    it('hides code editor when svalinn returns an error', () => {
+      (useChecksterContext as jest.Mock).mockReturnValue({ svalinnIsLoading: false, svalinnError: 'Failed to generate script' });
 
       renderGenericScriptField({ field: 'settings.scripted.script' as any });
 
-      const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
-      await waitFor(() => expect(codeEditor).toHaveValue(injectedScript));
+      expect(screen.queryByTestId(DataTestIds.CodeEditor)).not.toBeInTheDocument();
     });
 
-    it('does not modify editor when svalinn param is absent', () => {
+    it('shows code editor when svalinn param is absent', () => {
       const initialScript = 'const x = 1;';
-      mockUseSvalinnScript.mockReturnValue({ script: null, isLoading: false, enabled: false });
 
       renderGenericScriptField(
         { field: 'settings.scripted.script' as any },

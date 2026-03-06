@@ -29,6 +29,14 @@ jest.mock('data/useProbes', () => ({
   })),
 }));
 
+jest.mock('hooks/useSvalinnScript', () => ({
+  useSvalinnScript: jest.fn(() => ({ script: null, isLoading: false, error: null, enabled: false })),
+}));
+
+jest.mock('hooks/useURLSearchParams', () => ({
+  useURLSearchParams: jest.fn(() => new URLSearchParams()),
+}));
+
 const defaultProps = {
   field: 'labels',
   label: 'Labels',

@@ -3,7 +3,9 @@
     "allow": [
       "Bash(jj diff:*)",
       "Bash(pnpm tsc:*)",
-      "Bash(yarn tsc:*)"
+      "Bash(yarn tsc:*)",
+      "Bash(pnpm test:*)",
+      "Bash(yarn jest:*)"
     ]
   }
 }
