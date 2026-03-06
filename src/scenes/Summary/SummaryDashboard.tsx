@@ -22,6 +22,7 @@ import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { DashboardContainerAnnotations } from 'scenes/Common/DashboardContainerAnnotations';
 
+import { HomepageExtensionLinks } from './HomepageExtensionLinks';
 import { useSummaryDashboardAnnotations } from './SummaryDashboard.hooks';
 import { SummaryErrorPctgViz } from './SummaryErrorPctgViz';
 import { SummaryErrorRateMapViz } from './SummaryErrorRateMapViz';
@@ -84,6 +85,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
   return (
     <>
       <PluginPage pageNav={{ text: 'Home' }} renderTitle={() => <h1>Home</h1>}>
+        <HomepageExtensionLinks />
         <Stack direction="column" gap={1}>
           <DashboardContainerAnnotations annotations={annotations}>
             <div className={styles.header}>
