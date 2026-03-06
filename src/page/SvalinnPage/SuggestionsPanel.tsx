@@ -20,7 +20,7 @@ const THINKING_PHRASES = [
 function useThinkingPhrase(): string {
   const [index, setIndex] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % THINKING_PHRASES.length), 2500);
+    const id = setInterval(() => setIndex((i) => (i + 1) % THINKING_PHRASES.length), 20000);
     return () => clearInterval(id);
   }, []);
   return THINKING_PHRASES[index];

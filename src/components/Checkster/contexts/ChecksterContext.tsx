@@ -47,6 +47,8 @@ interface ChecksterContextValue {
   isK6Check: boolean;
   canChangeCheckType: boolean;
   hiddenLabels: Label[];
+  svalinnIsLoading: boolean;
+  svalinnError: string | null;
 }
 
 export const ChecksterContext = createContext<ChecksterContextValue | null>(null);
@@ -139,7 +141,7 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { script: svalinnScript } = useSvalinnScript();
+  const { script: svalinnScript, isLoading: svalinnIsLoading, error: svalinnError } = useSvalinnScript();
   const { schema, defaultFormValues, hiddenLabels } = useFormValuesMeta(checkType, check, probesWithMetadata, svalinnScript);
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
@@ -270,6 +272,8 @@ export function ChecksterProvider({
       isK6Check: K6_CHECK_TYPES.includes(checkType),
       stashCheckTypeFormValues: stashCurrentValues,
       hiddenLabels,
+      svalinnIsLoading,
+      svalinnError,
     };
   }, [
     formId,
@@ -284,6 +288,8 @@ export function ChecksterProvider({
     stashCurrentValues,
     canChangeCheckType,
     hiddenLabels,
+    svalinnIsLoading,
+    svalinnError,
   ]);
 
   return (
