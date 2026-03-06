@@ -1,3 +1,15 @@
 {
-  "extends": "./.config/tsconfig.json"
+  "extends": "./.config/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs",
+      "target": "es5",
+      "esModuleInterop": true,
+      "moduleResolution": "node"
+    },
+    "transpileOnly": true
+  }
 }
