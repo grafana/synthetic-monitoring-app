@@ -12,16 +12,18 @@ import React, {
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
-import { isEqual } from 'lodash';
+import { isEqual, set } from 'lodash';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { createCheckSchema } from 'schemas/forms/utils/createCheckSchema';
 import { ZodType } from 'zod';
 
 import { FormNavigationState, FormSectionName } from '../types';
-import { Check, CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
+import { Check, CheckFormValues, CheckType, Label, ProbeWithMetadata } from 'types';
 import { getCheckType } from 'utils';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
+import { useSvalinnScript } from 'hooks/useSvalinnScript';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
@@ -44,6 +46,9 @@ interface ChecksterContextValue {
   isNew: boolean;
   isK6Check: boolean;
   canChangeCheckType: boolean;
+  hiddenLabels: Label[];
+  svalinnIsLoading: boolean;
+  svalinnError: string | null;
 }
 
 export const ChecksterContext = createContext<ChecksterContextValue | null>(null);
@@ -71,21 +76,48 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
-function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[]) {
+function useFormValuesMeta(
+  checkType: CheckType,
+  check: Check | undefined,
+  probesWithMetadata: ProbeWithMetadata[],
+  svalinnScript: string | null
+) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
+  const params = useURLSearchParams();
+  const svalinnId = params.get('svalinn-id');
+  const svalinnName = params.get('svalinn-name');
+  const incidentsCovered = params.get('svalinn_incidents_covered');
+
+  const hiddenLabels = useMemo<Label[]>(() => {
+    if (!svalinnId || check) {
+      return [];
+    }
+    const labels: Label[] = [{ name: 'shield', value: 'svalinn' }];
+    if (incidentsCovered) {
+      labels.push({ name: 'svalinn_incidents_covered', value: incidentsCovered });
+    }
+    return labels;
+  }, [svalinnId, incidentsCovered, check]);
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
     const refinedSchema = addRefinements<CheckFormValues>(schema);
 
-    return {
-      defaultFormValues: check ? toFormValues(check) : getDefaultFormValues(checkType),
-      schema: refinedSchema,
-    };
+    const defaultFormValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+
+    if (!check && svalinnName) {
+      defaultFormValues.job = svalinnName;
+    }
+
+    if (!check && svalinnScript !== null) {
+      set(defaultFormValues, `settings.${checkType}.script`, svalinnScript);
+    }
+
+    return { defaultFormValues, schema: refinedSchema, hiddenLabels };
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey]);
+  }, [checkType, check, probeCompatibilityKey, svalinnName, svalinnScript, hiddenLabels]);
 }
 
 export function ChecksterProvider({
@@ -109,7 +141,8 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata);
+  const { script: svalinnScript, isLoading: svalinnIsLoading, error: svalinnError } = useSvalinnScript();
+  const { schema, defaultFormValues, hiddenLabels } = useFormValuesMeta(checkType, check, probesWithMetadata, svalinnScript);
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
@@ -238,6 +271,9 @@ export function ChecksterProvider({
       canChangeCheckType,
       isK6Check: K6_CHECK_TYPES.includes(checkType),
       stashCheckTypeFormValues: stashCurrentValues,
+      hiddenLabels,
+      svalinnIsLoading,
+      svalinnError,
     };
   }, [
     formId,
@@ -251,6 +287,9 @@ export function ChecksterProvider({
     isNew,
     stashCurrentValues,
     canChangeCheckType,
+    hiddenLabels,
+    svalinnIsLoading,
+    svalinnError,
   ]);
 
   return (

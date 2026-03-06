@@ -2,8 +2,13 @@ import React, { ComponentProps } from 'react';
 import { screen } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 
+import { useChecksterContext } from '../../../contexts/ChecksterContext';
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericScriptField } from './GenericScriptField';
+
+jest.mock('../../../contexts/ChecksterContext', () => ({
+  useChecksterContext: jest.fn(() => ({ svalinnIsLoading: false, svalinnError: null })),
+}));
 
 // Mock dependencies
 jest.mock('../../../utils/form', () => ({
@@ -41,6 +46,10 @@ jest.mock('components/CodeEditor', () => ({
 const defaultProps = {
   field: 'value',
 } as any;
+
+beforeEach(() => {
+  (useChecksterContext as jest.Mock).mockReturnValue({ svalinnIsLoading: false, svalinnError: null });
+});
 
 function renderGenericScriptField(
   props?: Partial<ComponentProps<typeof GenericScriptField>>,
@@ -202,5 +211,35 @@ describe('GenericScriptField', () => {
 
     const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
     expect(codeEditor).toHaveValue(formattedScript);
+  });
+
+  describe('svalinn param', () => {
+    it('hides code editor when svalinn is loading', () => {
+      (useChecksterContext as jest.Mock).mockReturnValue({ svalinnIsLoading: true, svalinnError: null });
+
+      renderGenericScriptField({ field: 'settings.scripted.script' as any });
+
+      expect(screen.queryByTestId(DataTestIds.CodeEditor)).not.toBeInTheDocument();
+    });
+
+    it('hides code editor when svalinn returns an error', () => {
+      (useChecksterContext as jest.Mock).mockReturnValue({ svalinnIsLoading: false, svalinnError: 'Failed to generate script' });
+
+      renderGenericScriptField({ field: 'settings.scripted.script' as any });
+
+      expect(screen.queryByTestId(DataTestIds.CodeEditor)).not.toBeInTheDocument();
+    });
+
+    it('shows code editor when svalinn param is absent', () => {
+      const initialScript = 'const x = 1;';
+
+      renderGenericScriptField(
+        { field: 'settings.scripted.script' as any },
+        { 'settings.scripted.script': initialScript } as any
+      );
+
+      const codeEditor = screen.getByTestId(DataTestIds.CodeEditor);
+      expect(codeEditor).toHaveValue(initialScript);
+    });
   });
 });

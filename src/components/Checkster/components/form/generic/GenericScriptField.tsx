@@ -1,14 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
-import { FieldValidationMessage, useTheme2 } from '@grafana/ui';
+import { Alert, FieldValidationMessage, Spinner, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues, K6Channel } from 'types';
 import { CodeEditor } from 'components/CodeEditor';
 
+import { useChecksterContext } from '../../../contexts/ChecksterContext';
 import { getFieldErrorProps } from '../../../utils/form';
 import { Column } from '../../ui/Column';
+
+const THINKING_PHRASES = [
+  'Generating your script...',
+  'Analysing the incident...',
+  'Crafting the perfect test...',
+  'Teaching the AI what a k6 script looks like...',
+  'Bribing the model with compute cycles...',
+  'Untangling your stack traces...',
+  'Turning incidents into assertions...',
+  'Almost there...',
+  'Still thinking, promise...',
+  'Good things take time. Bad things take longer. This is a good thing.',
+];
+
+function useThinkingPhrase(): string {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIndex((i) => (i + 1) % THINKING_PHRASES.length), 20000);
+    return () => clearInterval(id);
+  }, []);
+  return THINKING_PHRASES[index];
+}
 
 interface GenericScriptFieldProps {
   field: CheckFormFieldPath;
@@ -22,13 +45,39 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
 
+  const { svalinnIsLoading, svalinnError } = useChecksterContext();
   const fieldErrorProps = getFieldErrorProps(errors, field);
-  
   const theme = useTheme2();
+  const thinkingPhrase = useThinkingPhrase();
 
   const k6ChannelId = (getValues('channels.k6') as K6Channel | undefined)?.id;
 
   const { field: fieldProps } = useController({ control, name: field });
+
+  if (svalinnIsLoading) {
+    return (
+      <Column
+        grow
+        className={css`
+          align-items: center;
+          justify-content: center;
+          gap: ${theme.spacing(2)};
+          flex-direction: row;
+        `}
+      >
+        <Spinner />
+        <span>{thinkingPhrase}</span>
+      </Column>
+    );
+  }
+
+  if (svalinnError) {
+    return (
+      <Column grow>
+        <Alert title={svalinnError} severity="error" />
+      </Column>
+    );
+  }
 
   return (
     <Column

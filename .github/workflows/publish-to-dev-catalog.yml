@@ -1,0 +1,35 @@
+name: Publish to Dev Catalog
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        description: 'Branch to deploy'
+        required: true
+  pull_request:
+    types:
+      - labeled
+
+permissions: {}
+
+jobs:
+  cd:
+    name: Build and Publish to Dev Catalog
+    if: contains(github.event.pull_request.labels.*.name, 'deploy-hack16-svalinn') || (github.event_name == 'workflow_dispatch' && inputs.branch != '')
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v6.0.0
+    permissions:
+      contents: write
+      pull-requests: read
+      id-token: write
+      attestations: write
+    with:
+      branch: ${{ inputs.branch || github.event.pull_request.head.ref || github.ref_name }}
+      environment: dev
+      scopes: universal
+      grafana-cloud-deployment-type: provisioned
+      argo-workflow-slack-channel: '#sm-ops-deploys'
+      trigger-argo: false
+      plugin-version-suffix: ${{ github.event.pull_request.head.sha || github.sha }}
+      node-version: 22
+      run-playwright: false

@@ -77,6 +77,13 @@
       "addToNav": true
     },
     {
+      "type": "page",
+      "name": "Svalinn",
+      "path": "/a/grafana-synthetic-monitoring-app/svalinn",
+      "action": "grafana-synthetic-monitoring-app:read",
+      "addToNav": true
+    },
+    {
       "type": "datasource",
       "name": "Synthetic Monitoring API",
       "path": "datasource/plugin.json"
