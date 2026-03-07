@@ -64,7 +64,10 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
         const result = await dataSource.queryLogsV2(expr, 'now-1h', 'now');
 
         // Parse results into a map of UUID -> screenshot data
+        // Handle chunked screenshots - collect all chunks and assemble them
         const dataMap = new Map<string, Record<string, any>>();
+        const chunksByUUID = new Map<string, Array<{ index: number; data: Record<string, any> }>>();
+
         if (result?.results?.A?.frames?.[0]) {
           const frame = result.results.A.frames[0];
           const values = frame.data?.values;
@@ -73,20 +76,59 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
             const lineIndex = frame.schema?.fields?.findIndex((f: any) => f.name === 'line' || f.name === 'Line');
 
             if (lineIndex !== undefined && lineIndex >= 0 && values[lineIndex]) {
+              // First pass: collect all chunks
               values[lineIndex].forEach((line: unknown) => {
                 if (typeof line === 'string') {
                   try {
                     const parsed = JSON.parse(line);
-
-                    // Extract UUID from the parsed log line content
                     const uuid = parsed.id;
 
                     if (uuid) {
-                      dataMap.set(uuid, parsed);
+                      // Check if this is a chunked screenshot
+                      if (parsed.chunk_total !== undefined && parsed.chunk_index !== undefined) {
+                        if (!chunksByUUID.has(uuid)) {
+                          chunksByUUID.set(uuid, []);
+                        }
+                        chunksByUUID.get(uuid)!.push({ index: parsed.chunk_index, data: parsed });
+                      } else {
+                        // Single chunk screenshot (no chunking)
+                        dataMap.set(uuid, parsed);
+                      }
                     }
                   } catch (e) {
                     console.error('Failed to parse screenshot log line:', e);
                   }
+                }
+              });
+
+              // Second pass: assemble chunked screenshots
+              chunksByUUID.forEach((chunks, uuid) => {
+                // Sort by chunk index
+                chunks.sort((a, b) => a.index - b.index);
+
+                const firstChunk = chunks[0].data;
+                const expectedTotal = firstChunk.chunk_total;
+
+                // Verify we have all chunks
+                if (chunks.length === expectedTotal) {
+                  // Concatenate all base64 chunks
+                  const assembledBase64 = chunks.map((c) => c.data.screenshot_base64 || '').join('');
+
+                  // Create assembled screenshot data using first chunk's metadata
+                  const assembledData: Record<string, any> = {
+                    ...firstChunk,
+                    screenshot_base64: assembledBase64,
+                  };
+
+                  // Remove chunk-related fields from the final data
+                  delete assembledData.chunk_index;
+                  delete assembledData.chunk_total;
+
+                  dataMap.set(uuid, assembledData);
+                } else {
+                  console.warn(
+                    `Incomplete screenshot chunks for UUID ${uuid}: got ${chunks.length} of ${expectedTotal}`
+                  );
                 }
               });
             }

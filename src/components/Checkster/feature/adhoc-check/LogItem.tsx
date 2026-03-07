@@ -50,11 +50,57 @@ export function LogItem({ log }: { log: LogEntry }) {
           if (values && values.length > 0) {
             const lineIndex = frame.schema?.fields?.findIndex((f: any) => f.name === 'line' || f.name === 'Line');
 
-            if (lineIndex !== undefined && lineIndex >= 0 && values[lineIndex] && values[lineIndex][0]) {
-              const line = values[lineIndex][0];
-              if (typeof line === 'string') {
-                const parsed = JSON.parse(line);
-                setScreenshotData(parsed);
+            if (lineIndex !== undefined && lineIndex >= 0 && values[lineIndex]) {
+              const chunks: Array<{ index: number; data: Record<string, any> }> = [];
+
+              // Collect all chunks
+              values[lineIndex].forEach((line: unknown) => {
+                if (typeof line === 'string') {
+                  try {
+                    const parsed = JSON.parse(line);
+
+                    // Check if this is a chunked screenshot
+                    if (parsed.chunk_total !== undefined && parsed.chunk_index !== undefined) {
+                      chunks.push({ index: parsed.chunk_index, data: parsed });
+                    } else if (values[lineIndex].length === 1) {
+                      // Single chunk screenshot (no chunking)
+                      setScreenshotData(parsed);
+                    }
+                  } catch (e) {
+                    console.error('Failed to parse screenshot chunk:', e);
+                  }
+                }
+              });
+
+              // If we have chunks, assemble them
+              if (chunks.length > 0) {
+                // Sort by chunk index
+                chunks.sort((a, b) => a.index - b.index);
+
+                const firstChunk = chunks[0].data;
+                const expectedTotal = firstChunk.chunk_total;
+
+                // Verify we have all chunks
+                if (chunks.length === expectedTotal) {
+                  // Concatenate all base64 chunks
+                  const assembledBase64 = chunks.map((c) => c.data.screenshot_base64 || '').join('');
+
+                  // Create assembled screenshot data using first chunk's metadata
+                  const assembledData: Record<string, any> = {
+                    ...firstChunk,
+                    screenshot_base64: assembledBase64,
+                  };
+
+                  // Remove chunk-related fields
+                  delete assembledData.chunk_index;
+                  delete assembledData.chunk_total;
+
+                  setScreenshotData(assembledData);
+                } else {
+                  console.warn(
+                    `Incomplete screenshot chunks: got ${chunks.length} of ${expectedTotal}`
+                  );
+                }
               }
             }
           }
