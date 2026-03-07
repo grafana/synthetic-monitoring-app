@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Modal, useStyles2 } from '@grafana/ui';
+import { Modal, Switch, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
@@ -43,6 +43,8 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
   const [screenshotDataByUUID, setScreenshotDataByUUID] = useState<Map<string, Record<string, any>>>(new Map());
   const [fetchedUUIDs, setFetchedUUIDs] = useState<Set<string>>(new Set());
   const [modalScreenshot, setModalScreenshot] = useState<{ base64: string; caption?: string } | null>(null);
+  const [showHttpDebug, setShowHttpDebug] = useState(false);
+  const [hideScreenshots, setHideScreenshots] = useState(false);
 
   // Extract screenshot UUIDs from logs
   const screenshotUUIDs = useMemo(() => extractScreenshotUUIDs(logs, mainKey), [logs, mainKey]);
@@ -147,7 +149,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
   }, [screenshotUUIDs, fetchedUUIDs, dataSource]);
 
   // Enrich logs with screenshot data
-  const allLogs = useMemo(() => {
+  const enrichedLogs = useMemo(() => {
     return logs.map((log) => {
       const message = log.labels[mainKey];
       if (message) {
@@ -171,8 +173,57 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
     });
   }, [logs, mainKey, screenshotDataByUUID]);
 
+  // Filter logs based on toggles
+  const allLogs = useMemo(() => {
+    let filtered = enrichedLogs;
+
+    // Filter http-debug logs
+    if (!showHttpDebug) {
+      filtered = filtered.filter((log) => {
+        const body = log[LokiFieldNames.Body];
+        if (typeof body === 'string') {
+          const hasHttpDebug = /source[=:]"?http-debug"?/.test(body);
+          return !hasHttpDebug;
+        }
+        return true;
+      });
+    }
+
+    // Filter screenshot logs
+    if (hideScreenshots) {
+      filtered = filtered.filter((log) => {
+        const message = log.labels[mainKey];
+        // Filter out logs that match screenshot pattern
+        if (message && SCREENSHOT_PATTERN.test(message)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    return filtered;
+  }, [enrichedLogs, showHttpDebug, hideScreenshots, mainKey]);
+
   return (
     <div className={styles.timelineContainer}>
+      <div className={styles.filterBar}>
+        <label className={styles.filterLabel}>
+          <Switch
+            checked={hideScreenshots}
+            onChange={(e) => setHideScreenshots(e.currentTarget.checked)}
+            transparent={false}
+          />
+          <span>hide screenshots</span>
+        </label>
+        <label className={styles.filterLabel}>
+          <Switch
+            checked={showHttpDebug}
+            onChange={(e) => setShowHttpDebug(e.currentTarget.checked)}
+            transparent={false}
+          />
+          <span>show http-debug logs</span>
+        </label>
+      </div>
       {allLogs.map((log, index) => {
         const level = log.labels.detected_level;
         const message = log.labels[mainKey];
@@ -264,6 +315,22 @@ const getStyles = (theme: GrafanaTheme2) => {
       width: 100%;
       font-family: ${theme.typography.fontFamilyMonospace};
       overflow-x: auto;
+    `,
+    filterBar: css`
+      padding: ${theme.spacing(1, 2)};
+      border-bottom: 1px solid ${theme.colors.border.medium};
+      background-color: ${theme.colors.background.secondary};
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: ${theme.spacing(2)};
+    `,
+    filterLabel: css`
+      display: flex;
+      align-items: center;
+      gap: ${theme.spacing(1)};
+      cursor: pointer;
+      margin: 0;
     `,
     timelineItem: css`
       display: grid;
