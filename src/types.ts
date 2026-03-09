@@ -912,3 +912,47 @@ export type K6ChannelRef = Pick<K6Channel, 'id'>;
 export interface ListChannelsResponse {
   channels: K6Channel[];
 }
+
+export interface EntityPropertyValuesResponse {
+  entityType: string;
+  propertyName: string;
+  values: string[];
+}
+
+export interface GraphAssertionSummary {
+  severity?: string;
+  amend?: boolean;
+  assertions?: Array<{
+    assertionName: string;
+    severity: string;
+    category: string;
+    entityType: string;
+  }>;
+}
+
+export interface KGEntity {
+  id?: number;
+  type: string;
+  name: string;
+  active?: boolean;
+  scope: Record<string, string>;
+  properties: Record<string, unknown>;
+  connectedEntityTypes?: Record<string, number>;
+  assertion?: GraphAssertionSummary;
+  connectedAssertion?: GraphAssertionSummary;
+  assertionCount?: number;
+}
+
+export interface KGEntityRelationship {
+  relationshipType: string;
+  entityType: string;
+  entityName: string;
+}
+
+export interface KGEntityData {
+  serviceName: string | undefined;
+  relationships: KGEntityRelationship[];
+  checkEntity: KGEntity | null;
+  serviceEntity: KGEntity | null;
+  isLoading: boolean;
+}
