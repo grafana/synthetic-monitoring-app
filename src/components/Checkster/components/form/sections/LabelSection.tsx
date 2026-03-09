@@ -1,4 +1,5 @@
 import React from 'react';
+import { KnowledgeGraphServiceLink } from 'features/knowledgeGraph/KnowledgeGraphServiceLink';
 
 import { FormSectionName } from '../../../types';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
@@ -35,6 +36,7 @@ export function LabelSection() {
         calNames={calData?.names ?? []}
         labelLimit={maxAllowedMetricLabels}
       />
+      <KnowledgeGraphServiceLink />
     </FormSection>
   );
 }
