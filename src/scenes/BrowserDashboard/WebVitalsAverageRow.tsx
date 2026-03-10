@@ -8,12 +8,11 @@ import { WebVitalGauge } from 'scenes/BrowserDashboard/WebVitals/WebVitalGauge';
 
 export const WebVitalsAverageRow = () => {
   return (
-    <Grid columns={6}>
+    <Grid columns={5}>
       <WebVital vital={WEB_VITAL_CONFIG.fcp} />
       <WebVital vital={WEB_VITAL_CONFIG.lcp} />
       <WebVital vital={WEB_VITAL_CONFIG.ttfb} />
       <WebVital vital={WEB_VITAL_CONFIG.cls} />
-      <WebVital vital={WEB_VITAL_CONFIG.fid} />
       <WebVital vital={WEB_VITAL_CONFIG.inp} />
     </Grid>
   );
