@@ -18,7 +18,7 @@ import { gotoSection, submitForm } from '../../../../../components/Checkster/__t
 import { renderNewForm, TARGET_MAP } from '../../../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../../../__testHelpers__/v2.utils';
 
-jest.mock('data/usetenantCostAttributionLabels', () => ({
+jest.mock('data/useTenantCostAttributionLabels', () => ({
   useTenantCostAttributionLabels: () => ({
     data: { items: [] },
     isLoading: false,

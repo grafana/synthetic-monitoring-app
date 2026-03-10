@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { FormSectionName } from '../../../types';
-import { useTenantCostAttributionLabels } from 'data/usetenantCostAttributionLabels';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useTenantLimits } from 'data/useTenantLimits';
 import { LimitsFetchWarning } from 'components/LabelField';
 

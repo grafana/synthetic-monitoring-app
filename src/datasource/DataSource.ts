@@ -315,7 +315,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<ListCheckResult>(
       `${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`
     ).then((checks) =>
-      checks.map((check) => (check.alertSensitivity ? check : { ...check, alertSensitivity: AlertSensitivity.None }))
+      checks.map((check) =>
+        check.alertSensitivity ? check : { ...check, alertSensitivity: AlertSensitivity.None }
+      )
     );
   }
 

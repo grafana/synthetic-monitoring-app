@@ -105,12 +105,9 @@ export interface ExistingObject {
   tenantId?: number;
 }
 
-export type LabelType = 'custom' | 'cost-attribution';
-
 export interface Label {
   name: string;
   value: string;
-  type?: LabelType;
 }
 
 export interface Probe extends ExistingObject {
@@ -338,6 +335,7 @@ export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertForm
 
 export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 'alerts'> & {
   publishAdvancedMetrics: boolean;
+  calLabels: Label[];
   alerts?: CheckAlertFormRecord;
   channels?: {
     k6?: K6Channel | K6ChannelRef;

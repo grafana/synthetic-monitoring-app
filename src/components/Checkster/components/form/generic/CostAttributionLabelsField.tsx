@@ -9,7 +9,7 @@ import { CheckFormValues } from 'types';
 import { StyledField } from '../../ui/StyledField';
 
 const CAL_DESCRIPTION =
-  'Cost attribution labels help track costs across teams and services. These labels are required and will be set on all checks. Choose from the list or type your own value.';
+  'Cost attribution labels help track costs across teams and services. Enter a value for each label or leave blank for unattributed.';
 
 interface CostAttributionLabelsFieldProps {
   calNames: string[];
@@ -36,7 +36,7 @@ export function CostAttributionLabelsField({ calNames }: CostAttributionLabelsFi
             </StyledField>
             <StyledField className={styles.valueField}>
               <Controller
-                name={`labels.${index}.value`}
+                name={`calLabels.${index}.value`}
                 render={({ field }) => (
                   <Input
                     {...field}

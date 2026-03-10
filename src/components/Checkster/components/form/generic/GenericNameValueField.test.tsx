@@ -303,42 +303,4 @@ describe('GenericNameValueField', () => {
     expect(addButton).toBeDisabled();
   });
 
-  describe('startIndex', () => {
-    it('only renders fields from startIndex onwards', () => {
-      renderGenericNameValueField(
-        {
-          field: 'labels',
-          label: 'Labels',
-        },
-        {
-          labels: [
-            { name: 'hidden', value: 'hidden-value' },
-            { name: 'visible', value: 'visible-value' },
-          ],
-        }
-      );
-
-      expect(screen.queryByDisplayValue('hidden')).not.toBeInTheDocument();
-      expect(screen.getByDisplayValue('visible')).toBeInTheDocument();
-    });
-
-    it('does not count skipped fields toward the limit', () => {
-      renderGenericNameValueField(
-        {
-          field: 'labels',
-          label: 'Labels',
-          limit: 1,
-        },
-        {
-          labels: [
-            { name: 'cal1', value: 'a' },
-            { name: 'cal2', value: 'b' },
-          ],
-        }
-      );
-
-      const addButton = screen.getByRole('button', { name: /row/i });
-      expect(addButton).not.toBeDisabled();
-    });
-  });
 });

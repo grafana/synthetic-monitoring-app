@@ -6,7 +6,7 @@ import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
-jest.mock('data/usetenantCostAttributionLabels', () => ({
+jest.mock('data/useTenantCostAttributionLabels', () => ({
   useTenantCostAttributionLabels: () => ({
     data: { items: [] },
     isLoading: false,

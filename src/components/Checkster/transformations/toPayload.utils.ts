@@ -3,10 +3,9 @@ import isBase64 from 'is-base64';
 import { AlertSensitivity, CheckBase, CheckFormValues, ExistingObject, Label, TLSConfig } from 'types';
 import { toBase64 } from 'utils';
 
-function filterAndMapCostAttributionLabels(labels: Label[]): Label[] {
-  return labels
-    .filter((label) => label.type !== 'cost-attribution' || !!label.value)
-    .map(({ name, value }) => ({ name, value }));
+function mergeLabelsForPayload(calLabels: Label[], labels: Label[]): Label[] {
+  const filledCalLabels = calLabels.filter((label) => !!label.value);
+  return [...filledCalLabels, ...labels];
 }
 
 export function getBasePayloadValuesFromForm(formValues: CheckFormValues): CheckBase & ExistingObject {
@@ -17,7 +16,7 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
     frequency: formValues.frequency,
     id: formValues.id,
     job: formValues.job,
-    labels: filterAndMapCostAttributionLabels(formValues.labels),
+    labels: mergeLabelsForPayload(formValues.calLabels, formValues.labels),
     probes: formValues.probes,
     target: formValues.target,
     timeout: formValues.timeout,
