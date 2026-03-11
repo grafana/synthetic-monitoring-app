@@ -8,7 +8,7 @@ import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
-import { Check, CheckEnabledStatus, CheckSort, CheckType, Label } from 'types';
+import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import {
   CheckRuntimeAlertStates,
@@ -19,6 +19,8 @@ import {
 import { useSuspenseChecks } from 'data/useChecks';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -71,6 +73,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const [applyAlertSort, setApplyAlertSort] = useState(false);
   const filters = useCheckFilters();
+  const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
+  const { data: calData } = useTenantCostAttributionLabels();
+  const calNames = isCALsEnabled ? calData?.items ?? [] : [];
 
   // Animate the initial alert-based reorder only once, when alert states first arrive.
   // Subsequent refetches re-sort silently to avoid distracting repeated animations.
@@ -247,6 +252,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
               <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
                 <CheckListItem
                   check={check}
+                  calNames={calNames}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
                   onTypeSelect={handleTypeSelect}

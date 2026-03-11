@@ -1,7 +1,7 @@
 import { SelectableValue } from '@grafana/data';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter } from 'page/CheckList/CheckList.types';
-import { AlertSensitivity, Check, CheckEnabledStatus } from 'types';
+import { AlertSensitivity, Check, CheckEnabledStatus, Label } from 'types';
 import { getCheckType, matchStrings } from 'utils';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
 
@@ -105,3 +105,19 @@ export const defaultFilters: CheckFiltersType = {
 export const getDefaultFilters = (): CheckFiltersType => {
   return defaultFilters;
 };
+
+export function splitLabels(labels: Label[], calNames: string[]): { calLabels: Label[]; customLabels: Label[] } {
+  const calNameSet = new Set(calNames);
+  const calLabels: Label[] = [];
+  const customLabels: Label[] = [];
+
+  for (const label of labels) {
+    if (calNameSet.has(label.name)) {
+      calLabels.push(label);
+    } else {
+      customLabels.push(label);
+    }
+  }
+
+  return { calLabels, customLabels };
+}
