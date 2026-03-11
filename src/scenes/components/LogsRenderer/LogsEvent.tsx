@@ -1,13 +1,35 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Modal, Switch, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
 import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { useSMDS } from 'hooks/useSMDS';
 import { LogHTTPResponseTimings } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels';
+
+// Pattern to match screenshot logs with UUID format
+const SCREENSHOT_PATTERN = /screenshot:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+
+// Helper function to extract screenshot UUIDs from logs
+function extractScreenshotUUIDs<T extends ParsedLokiRecord<Record<string, string>, Record<string, string>>>(
+  logs: T[],
+  mainKey: string
+): string[] {
+  const uuids: string[] = [];
+  logs.forEach((log) => {
+    const message = log.labels[mainKey];
+    if (message) {
+      const match = message.match(SCREENSHOT_PATTERN);
+      if (match && match[1]) {
+        uuids.push(match[1]);
+      }
+    }
+  });
+  return uuids;
+}
 
 export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Record<string, string>>>({
   logs,
@@ -17,11 +39,196 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
   mainKey: string;
 }) => {
   const styles = useStyles2(getStyles);
+  const dataSource = useSMDS();
+  const [screenshotDataByUUID, setScreenshotDataByUUID] = useState<Map<string, Record<string, any>>>(new Map());
+  const [fetchedUUIDs, setFetchedUUIDs] = useState<Set<string>>(new Set());
+  const [modalScreenshot, setModalScreenshot] = useState<{ base64: string; caption?: string } | null>(null);
+  const [showHttpDebug, setShowHttpDebug] = useState(false);
+  const [hideScreenshots, setHideScreenshots] = useState(false);
+
+  // Extract screenshot UUIDs from logs
+  const screenshotUUIDs = useMemo(() => extractScreenshotUUIDs(logs, mainKey), [logs, mainKey]);
+
+  // Fetch screenshot data for each UUID
+  useEffect(() => {
+    const fetchScreenshotLogs = async () => {
+      const newUUIDs = screenshotUUIDs.filter((uuid) => !fetchedUUIDs.has(uuid));
+
+      if (newUUIDs.length === 0) {
+        return;
+      }
+
+      try {
+        // Build query expression for the UUIDs - search in log line content
+        const expr = `{source="synthetic-monitoring-agent-screenshot"} |~ "${newUUIDs.join('|')}" | json`;
+
+        // Query logs
+        const result = await dataSource.queryLogsV2(expr, 'now-1h', 'now');
+
+        // Parse results into a map of UUID -> screenshot data
+        // Handle chunked screenshots - collect all chunks and assemble them
+        const dataMap = new Map<string, Record<string, any>>();
+        const chunksByUUID = new Map<string, Array<{ index: number; data: Record<string, any> }>>();
+
+        if (result?.results?.A?.frames?.[0]) {
+          const frame = result.results.A.frames[0];
+          const values = frame.data?.values;
+
+          if (values && values.length > 0) {
+            const lineIndex = frame.schema?.fields?.findIndex((f: any) => f.name === 'line' || f.name === 'Line');
+
+            if (lineIndex !== undefined && lineIndex >= 0 && values[lineIndex]) {
+              // First pass: collect all chunks
+              values[lineIndex].forEach((line: unknown) => {
+                if (typeof line === 'string') {
+                  try {
+                    const parsed = JSON.parse(line);
+                    const uuid = parsed.id;
+
+                    if (uuid) {
+                      // Check if this is a chunked screenshot
+                      if (parsed.chunk_total !== undefined && parsed.chunk_index !== undefined) {
+                        if (!chunksByUUID.has(uuid)) {
+                          chunksByUUID.set(uuid, []);
+                        }
+                        chunksByUUID.get(uuid)!.push({ index: parsed.chunk_index, data: parsed });
+                      } else {
+                        // Single chunk screenshot (no chunking)
+                        dataMap.set(uuid, parsed);
+                      }
+                    }
+                  } catch (e) {
+                    console.error('Failed to parse screenshot log line:', e);
+                  }
+                }
+              });
+
+              // Second pass: assemble chunked screenshots
+              chunksByUUID.forEach((chunks, uuid) => {
+                // Sort by chunk index
+                chunks.sort((a, b) => a.index - b.index);
+
+                const firstChunk = chunks[0].data;
+                const expectedTotal = firstChunk.chunk_total;
+
+                // Verify we have all chunks
+                if (chunks.length === expectedTotal) {
+                  // Concatenate all base64 chunks
+                  const assembledBase64 = chunks.map((c) => c.data.screenshot_base64 || '').join('');
+
+                  // Create assembled screenshot data using first chunk's metadata
+                  const assembledData: Record<string, any> = {
+                    ...firstChunk,
+                    screenshot_base64: assembledBase64,
+                  };
+
+                  // Remove chunk-related fields from the final data
+                  delete assembledData.chunk_index;
+                  delete assembledData.chunk_total;
+
+                  dataMap.set(uuid, assembledData);
+                } else {
+                  console.warn(
+                    `Incomplete screenshot chunks for UUID ${uuid}: got ${chunks.length} of ${expectedTotal}`
+                  );
+                }
+              });
+            }
+          }
+        }
+
+        // Update state
+        setScreenshotDataByUUID((prev) => new Map([...prev, ...dataMap]));
+        setFetchedUUIDs((prev) => new Set([...prev, ...newUUIDs]));
+      } catch (error) {
+        console.error('Failed to fetch screenshot logs:', error);
+      }
+    };
+
+    fetchScreenshotLogs();
+  }, [screenshotUUIDs, fetchedUUIDs, dataSource]);
+
+  // Enrich logs with screenshot data
+  const enrichedLogs = useMemo(() => {
+    return logs.map((log) => {
+      const message = log.labels[mainKey];
+      if (message) {
+        const match = message.match(SCREENSHOT_PATTERN);
+        if (match && match[1]) {
+          const uuid = match[1];
+          const screenshotData = screenshotDataByUUID.get(uuid);
+          if (screenshotData) {
+            // Merge screenshot data into this log entry
+            return {
+              ...log,
+              labels: {
+                ...log.labels,
+                ...screenshotData,
+              },
+            } as T;
+          }
+        }
+      }
+      return log;
+    });
+  }, [logs, mainKey, screenshotDataByUUID]);
+
+  // Filter logs based on toggles
+  const allLogs = useMemo(() => {
+    let filtered = enrichedLogs;
+
+    // Filter http-debug logs
+    if (!showHttpDebug) {
+      filtered = filtered.filter((log) => {
+        const body = log[LokiFieldNames.Body];
+        if (typeof body === 'string') {
+          const hasHttpDebug = /source[=:]"?http-debug"?/.test(body);
+          return !hasHttpDebug;
+        }
+        return true;
+      });
+    }
+
+    // Filter screenshot logs
+    if (hideScreenshots) {
+      filtered = filtered.filter((log) => {
+        const message = log.labels[mainKey];
+        // Filter out logs that match screenshot pattern
+        if (message && SCREENSHOT_PATTERN.test(message)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    return filtered;
+  }, [enrichedLogs, showHttpDebug, hideScreenshots, mainKey]);
 
   return (
     <div className={styles.timelineContainer}>
-      {logs.map((log, index) => {
+      <div className={styles.filterBar}>
+        <label className={styles.filterLabel}>
+          <Switch
+            checked={hideScreenshots}
+            onChange={(e) => setHideScreenshots(e.currentTarget.checked)}
+            transparent={false}
+          />
+          <span>hide screenshots</span>
+        </label>
+        <label className={styles.filterLabel}>
+          <Switch
+            checked={showHttpDebug}
+            onChange={(e) => setShowHttpDebug(e.currentTarget.checked)}
+            transparent={false}
+          />
+          <span>show http-debug logs</span>
+        </label>
+      </div>
+      {allLogs.map((log, index) => {
         const level = log.labels.detected_level;
+        const message = log.labels[mainKey];
+        const screenshotBase64 = log.labels.screenshot_base64;
+        const caption = log.labels.caption;
 
         return (
           <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>
@@ -39,11 +246,43 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
             >
               {level.toUpperCase()}
             </div>
-            <div className={styles.mainKey}>{log.labels[mainKey]}</div>
-            <LabelRenderer log={logs[index]} mainKey={mainKey} />
+            <div className={styles.mainKey}>
+              {screenshotBase64 ? (
+                <div className={styles.screenshotContainer}>
+                  {caption && <div className={styles.screenshotCaption}>Screenshot: {caption}</div>}
+                  <img
+                    src={`data:image/png;base64,${screenshotBase64}`}
+                    alt={caption || 'Screenshot'}
+                    className={styles.screenshotImage}
+                    onClick={() => setModalScreenshot({ base64: screenshotBase64, caption })}
+                    title="Click to view full size"
+                  />
+                </div>
+              ) : (
+                message
+              )}
+            </div>
+            <LabelRenderer log={allLogs[index]} mainKey={mainKey} />
           </div>
         );
       })}
+      {modalScreenshot && (
+        <Modal
+          title={modalScreenshot.caption ? `Screenshot: ${modalScreenshot.caption}` : 'Screenshot'}
+          isOpen={true}
+          onDismiss={() => setModalScreenshot(null)}
+          contentClassName={styles.screenshotModalContent}
+          className={styles.screenshotModalOverride}
+        >
+          <div className={styles.screenshotModalImageContainer}>
+            <img
+              src={`data:image/png;base64,${modalScreenshot.base64}`}
+              alt={modalScreenshot.caption || 'Screenshot'}
+              className={styles.screenshotModalImage}
+            />
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
@@ -77,6 +316,22 @@ const getStyles = (theme: GrafanaTheme2) => {
       font-family: ${theme.typography.fontFamilyMonospace};
       overflow-x: auto;
     `,
+    filterBar: css`
+      padding: ${theme.spacing(1, 2)};
+      border-bottom: 1px solid ${theme.colors.border.medium};
+      background-color: ${theme.colors.background.secondary};
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: ${theme.spacing(2)};
+    `,
+    filterLabel: css`
+      display: flex;
+      align-items: center;
+      gap: ${theme.spacing(1)};
+      cursor: pointer;
+      margin: 0;
+    `,
     timelineItem: css`
       display: grid;
       grid-template-columns: 210px 65px 3fr minmax(300px, 2fr);
@@ -104,6 +359,69 @@ const getStyles = (theme: GrafanaTheme2) => {
     `,
     warning: css`
       color: ${theme.colors.warning.text};
+    `,
+    screenshotHighlight: css`
+      background-color: ${theme.colors.error.main};
+      color: ${theme.colors.background.primary};
+      padding: ${theme.spacing(0.5)};
+      border-radius: ${theme.shape.radius.default};
+    `,
+    screenshotContainer: css`
+      display: flex;
+      flex-direction: column;
+      gap: ${theme.spacing(1)};
+    `,
+    screenshotCaption: css`
+      font-size: ${theme.typography.body.fontSize};
+      color: ${theme.colors.text.primary};
+      font-weight: ${theme.typography.fontWeightMedium};
+    `,
+    screenshotImage: css`
+      max-height: 200px;
+      width: auto !important;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    `,
+    screenshotModalOverride: css`
+      /* Force override Grafana's 750px width */
+      && {
+        width: 80vw !important;
+        max-width: 80vw !important;
+      }
+
+      /* Target nested modal elements */
+      & > div,
+      & [role='dialog'] {
+        width: 80vw !important;
+        max-width: 80vw !important;
+      }
+    `,
+    screenshotModalContent: css`
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden;
+    `,
+    screenshotModalImageContainer: css`
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: ${theme.spacing(2)};
+      overflow: hidden;
+    `,
+    screenshotModalImage: css`
+      max-width: calc(80vw - ${theme.spacing(4)});
+      max-height: 75vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
     `,
   };
 };
