@@ -5,10 +5,10 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { type ExtendedProbe, FeatureName, type Label, Probe, ProbeWithMetadata } from 'types';
-import { isK6VersionUnknown } from 'components/CheckEditor/CheckProbes/CheckProbes.utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { isK6VersionUnknown } from 'components/CheckEditor/CheckProbes/CheckProbes.utils';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
