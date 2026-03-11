@@ -4,17 +4,37 @@ import { Stack, Tag, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { isTraceLabel, TraceLink } from 'scenes/components/LogsRenderer/TraceLink';
 import { uniqueLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels.utils';
 
-export const UniqueLogLabels = ({ log }: { log: ParsedLokiRecord<Record<string, string>, Record<string, string>> }) => {
+interface UniqueLogLabelsProps {
+  log: ParsedLokiRecord<Record<string, string>, Record<string, string>>;
+  expandedTraceId?: string | null;
+  onTraceToggle?: (traceId: string) => void;
+}
+
+export const UniqueLogLabels = ({ log, expandedTraceId, onTraceToggle }: UniqueLogLabelsProps) => {
   const labels = uniqueLabels(log);
   const styles = useStyles2(getStyles);
 
   return (
     <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
-      {labels.map((label) => (
-        <Tag name={`${label}=${log.labels[label]}`} key={label} className={styles.tag} />
-      ))}
+      {labels.map((label) => {
+        if (isTraceLabel(label)) {
+          const value = log.labels[label];
+          return (
+            <TraceLink
+              key={label}
+              labelName={label}
+              labelValue={value}
+              isExpanded={expandedTraceId === value}
+              onToggle={onTraceToggle ? () => onTraceToggle(value) : undefined}
+            />
+          );
+        }
+
+        return <Tag name={`${label}=${log.labels[label]}`} key={label} className={styles.tag} />;
+      })}
     </Stack>
   );
 };
