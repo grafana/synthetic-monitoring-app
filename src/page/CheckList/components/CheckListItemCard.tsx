@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -9,6 +9,7 @@ import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
+import { splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
@@ -18,6 +19,7 @@ import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemCard = ({
   check,
+  calNames,
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
@@ -27,6 +29,7 @@ export const CheckListItemCard = ({
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
+  const { calLabels, customLabels } = useMemo(() => splitLabels(check.labels, calNames), [check.labels, calNames]);
 
   return (
     <div className={cx(styles.container, { [styles.disabledCard]: !check.enabled })}>
@@ -77,7 +80,20 @@ export const CheckListItemCard = ({
           </div>
           <Stack wrap="wrap" justifyContent="flex-start">
             <div className={styles.labelsContainer}>
-              {check.labels.map((label: Label, index) => (
+              {calLabels.length > 0 && (
+                <>
+                  {calLabels.map((label: Label, index) => (
+                    <CheckCardLabel
+                      key={`cal-${index}`}
+                      label={label}
+                      onLabelSelect={onLabelSelect}
+                      colorIndex={4}
+                    />
+                  ))}
+                  {customLabels.length > 0 && <span className={styles.labelDivider}>|</span>}
+                </>
+              )}
+              {customLabels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
             </div>
@@ -99,6 +115,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flexWrap: 'wrap',
     flexGrow: 1,
     gap: theme.spacing(1),
+    alignItems: 'center',
   }),
   heading: css({
     marginBottom: `0`,
@@ -148,5 +165,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   stats: css({
     display: 'flex',
     alignItems: 'center',
+  }),
+  labelDivider: css({
+    color: theme.colors.text.secondary,
+    fontWeight: theme.typography.fontWeightBold,
   }),
 });
