@@ -60,8 +60,8 @@ const baseProbeModel = ({ sequence }: { sequence: number }) => ({
     disableBrowserChecks: false,
   },
   k6Versions: faker.helpers.maybe(() => ({
-    v1: `v1.${faker.number.int({ min: 0, max: 20 })}.${faker.number.int({ min: 0, max: 9 })}`,
-    v2: faker.datatype.boolean() ? `v2.${faker.number.int({ min: 0, max: 10 })}.${faker.number.int({ min: 0, max: 9 })}` : null,
+    v1: `1.${faker.number.int({ min: 0, max: 20 })}.${faker.number.int({ min: 0, max: 9 })}`,
+    v2: faker.datatype.boolean() ? `2.${faker.number.int({ min: 0, max: 10 })}.${faker.number.int({ min: 0, max: 9 })}` : null,
   })),
 });
 
