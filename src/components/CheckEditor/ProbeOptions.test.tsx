@@ -54,7 +54,7 @@ describe('ProbeOptions', () => {
 
     render(<RenderWrapper onlyProbes checkType={CheckType.Http} onChange={() => {}} selectedProbes={[]} />);
     const offlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
-    expect(offlineStatus).toHaveStyle(`background-color: ${offlineColor}`);
+    expect(offlineStatus).toHaveStyle({ color: offlineColor });
 
     server.use(
       apiRoute('listProbes', {
@@ -76,7 +76,7 @@ describe('ProbeOptions', () => {
     await waitFor(async () => {
       jest.advanceTimersByTime(0);
       const onlineStatus = await screen.findByTestId(PROBES_TEST_ID.cards.status);
-      expect(onlineStatus).toHaveStyle(`background-color: ${onlineColor}`);
+      expect(onlineStatus).toHaveStyle({ color: onlineColor });
     });
 
     jest.useRealTimers();
