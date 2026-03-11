@@ -302,5 +302,4 @@ describe('GenericNameValueField', () => {
     expect(valueInput).toBeDisabled();
     expect(addButton).toBeDisabled();
   });
-
 });
