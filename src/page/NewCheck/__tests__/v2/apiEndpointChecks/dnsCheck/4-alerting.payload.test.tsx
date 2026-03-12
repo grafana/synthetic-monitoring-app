@@ -27,7 +27,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
     await user.click(probeCheckbox);
 
     await gotoSection(user, FormSectionName.Alerting);
@@ -74,7 +74,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
     await selectBasicFrequency(user, '10m');
 
     // Then go to section 4 for probes selection (this is the Execution section)
-    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
     await user.click(probeCheckbox);
 
     // Now go to section 5 for alerts

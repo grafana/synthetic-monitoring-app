@@ -40,7 +40,7 @@ export async function fillMandatoryFields({
   }
   if (!fieldsToOmit.includes('probes')) {
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByLabelText(PRIVATE_PROBE.name, { exact: false });
+    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(PRIVATE_PROBE.name) });
     await user.click(probeCheckbox);
   }
 }
