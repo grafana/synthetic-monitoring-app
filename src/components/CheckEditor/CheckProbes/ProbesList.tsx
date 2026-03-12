@@ -135,6 +135,9 @@ export const ProbesList = ({
                         <Tooltip
                           content={
                             <div>
+                              {!isCompatible && !isUnknown && (
+                                <div>This probe does not support the selected channel.</div>
+                              )}
                               {isUnknown && (
                                 <div>
                                   {hasKnownVersions(probe)
@@ -144,7 +147,7 @@ export const ProbesList = ({
                               )}
                               {hasKnownVersions(probe) && (
                                 <>
-                                  <div style={{ fontWeight: 'bold', marginBottom: '4px', marginTop: isUnknown ? '8px' : undefined }}>All k6 versions:</div>
+                                  <div style={{ fontWeight: 'bold', marginBottom: '4px', marginTop: !isCompatible || isUnknown ? '8px' : undefined }}>All k6 versions:</div>
                                   <div>{formatK6Versions(probe)}</div>
                                 </>
                               )}
