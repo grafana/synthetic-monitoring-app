@@ -121,7 +121,7 @@ export const ProbesList = ({
               <Label htmlFor={`probe-${probe.id}`} data-testid={CHECKSTER_TEST_ID.form.inputs.probeLabel}>
                 <div className={styles.columnLabel}>
                   <div className={`${styles.probeLabelContent} ${showIncompatibleStyling ? styles.incompatibleLabel : ''}`}>
-                    <ProbeStatus probe={probe} />{' '}
+                    <ProbeStatus probe={probe} />
                     {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${probe.provider ? `(${probe.provider})` : ''
                       }`}
                     {isVersionManagementEnabled && probe.k6Versions && selectedChannel && (
@@ -286,9 +286,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 
   probeLabelContent: css({
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    display: 'inline',
   }),
 
   incompatibleItem: css({

@@ -43,7 +43,7 @@ export function ProbeStatus({ probe }: { probe: ProbeWithMetadata }) {
         role="status"
         aria-label={ariaLabel}
       >
-        <Icon name={config.icon} className={styles.icon} aria-hidden />
+        <Icon name={config.icon} size="sm" className={styles.icon} aria-hidden />
       </span>
     </Tooltip>
   );
@@ -54,11 +54,15 @@ function getStyles(theme: GrafanaTheme2, isOnline: boolean) {
     container: css({
       display: 'inline-flex',
       alignItems: 'center',
+      verticalAlign: 'middle',
       marginRight: theme.spacing(0.75),
       color: isOnline ? theme.colors.success.text : theme.colors.error.text,
     }),
     icon: css({
-      flexShrink: 0,
+      ...(!isOnline && {
+        position: 'relative' as const,
+        top: '1px',
+      }),
     }),
     statusText: css({
       color: isOnline ? theme.colors.success.text : theme.colors.error.text,
