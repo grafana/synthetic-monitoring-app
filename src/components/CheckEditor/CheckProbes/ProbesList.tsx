@@ -105,7 +105,6 @@ export const ProbesList = ({
         {probes.map((probe: ProbeWithMetadata) => {
           const isCompatible = isProbeCompatible(probe);
           const isUnknown = hasUnknownVersion(probe);
-          const versionState = probe.k6Versions && selectedChannel ? getVersionState(probe.k6Versions[selectedChannel]) : null;
           const isSelected = selectedProbes.includes(probe.id!);
           const shouldDisable = disabled || (!isCompatible && !isSelected);
           const showIncompatibleStyling = !isCompatible && !isSelected;
@@ -126,39 +125,12 @@ export const ProbesList = ({
                     {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${probe.provider ? `(${probe.provider})` : ''
                       }`}
                     {isVersionManagementEnabled && probe.k6Versions && selectedChannel && (
-                      <>
-                        <Badge
-                          text={versionState!.text}
-                          color={versionState!.color}
-                          className={styles.versionBadge}
-                        />
-                        <Tooltip
-                          content={
-                            <div>
-                              {!isCompatible && !isUnknown && (
-                                <div>This probe does not support the selected channel.</div>
-                              )}
-                              {isUnknown && (
-                                <div>
-                                  {hasKnownVersions(probe)
-                                    ? 'This probe has not reported its k6 version for this channel. Compatibility with the selected channel cannot be guaranteed.'
-                                    : 'This probe has not reported any k6 version information. Compatibility with the selected channel cannot be guaranteed.'}
-                                </div>
-                              )}
-                              {hasKnownVersions(probe) && (
-                                <>
-                                  <div style={{ fontWeight: 'bold', marginBottom: '4px', marginTop: !isCompatible || isUnknown ? '8px' : undefined }}>All k6 versions:</div>
-                                  <div>{formatK6Versions(probe)}</div>
-                                </>
-                              )}
-                            </div>
-                          }
-                        >
-                          <span className={styles.k6IconWrapper}>
-                            <Icon name="info-circle" className={styles.infoIcon} />
-                          </span>
-                        </Tooltip>
-                      </>
+                      <ProbeVersionBadge
+                        probe={probe}
+                        selectedChannel={selectedChannel}
+                        isCompatible={isCompatible}
+                        isUnknown={isUnknown}
+                      />
                     )}
                     {probe.deprecated && (
                       <DeprecationNotice
@@ -186,6 +158,53 @@ export const ProbesList = ({
     </div>
   );
 };
+
+function ProbeVersionBadge({
+  probe,
+  selectedChannel,
+  isCompatible,
+  isUnknown,
+}: {
+  probe: ProbeWithMetadata;
+  selectedChannel: string;
+  isCompatible: boolean;
+  isUnknown: boolean;
+}) {
+  const styles = useStyles2(getStyles);
+  const versionState = getVersionState(probe.k6Versions![selectedChannel]);
+
+  return (
+    <>
+      <Badge text={versionState.text} color={versionState.color} className={styles.versionBadge} />
+      <Tooltip
+        content={
+          <div>
+            {!isCompatible && !isUnknown && <div>This probe does not support the selected channel.</div>}
+            {isUnknown && (
+              <div>
+                {hasKnownVersions(probe)
+                  ? 'This probe has not reported its k6 version for this channel. Compatibility with the selected channel cannot be guaranteed.'
+                  : 'This probe has not reported any k6 version information. Compatibility with the selected channel cannot be guaranteed.'}
+              </div>
+            )}
+            {hasKnownVersions(probe) && (
+              <>
+                <div style={{ fontWeight: 'bold', marginBottom: '4px', marginTop: !isCompatible || isUnknown ? '8px' : undefined }}>
+                  Reported k6 versions:
+                </div>
+                <div>{formatK6Versions(probe)}</div>
+              </>
+            )}
+          </div>
+        }
+      >
+        <span className={styles.k6IconWrapper}>
+          <Icon name="info-circle" className={styles.infoIcon} />
+        </span>
+      </Tooltip>
+    </>
+  );
+}
 
 const getStyles = (theme: GrafanaTheme2) => ({
   item: css({
