@@ -26,9 +26,8 @@ export function CostAttributionLabelsField({ calNames }: CostAttributionLabelsFi
   }
 
   return (
-    <StyledField label="Cost attribution labels" description={CAL_DESCRIPTION} required emulate>
-      {/* @ts-expect-error Totally valid spacing value */}
-      <Stack direction="column" gap={0.75}>
+    <StyledField label="Cost attribution labels" description={CAL_DESCRIPTION} emulate>
+      <Stack direction="column" gap={0.5}>
         {calNames.map((calName, index) => (
           <Stack key={calName} alignItems="start">
             <StyledField className={styles.nameField}>

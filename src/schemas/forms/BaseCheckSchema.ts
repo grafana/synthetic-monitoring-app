@@ -6,7 +6,7 @@ import { calLabelsSchema, labelsSchema } from 'schemas/general/Label';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
-import { AlertSensitivity, CheckFormValuesBase, K6Channel } from 'types';
+import { AlertSensitivity, CheckFormValuesBase, K6Channel, Label } from 'types';
 import { formatDuration } from 'utils';
 
 export const baseCheckSchema = z.object({
@@ -39,5 +39,17 @@ export function addRefinements<T extends CheckFormValuesBase>(schema: ZodType<T,
         });
       }
     })
-    .superRefine(checkAlertsRefinement);
+    .superRefine(checkAlertsRefinement)
+    .superRefine((data, ctx) => {
+      const calNames = new Set(data.calLabels.map((l: Label) => l.name));
+      const conflicts = data.labels.filter((l: Label) => calNames.has(l.name));
+
+      conflicts.forEach((label: Label) => {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['labels'],
+          message: `Label name "${label.name}" is already used as a cost attribution label`,
+        });
+      });
+    });
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { LoadingPlaceholder, Tooltip, useStyles2 } from '@grafana/ui';
+import { FieldValidationMessage, LoadingPlaceholder, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -20,7 +20,11 @@ interface GenericLabelContentProps {
 
 export function GenericLabelContent({ description, isLoading, calNames = [] }: GenericLabelContentProps) {
   const styles = useStyles2(getStyles);
-  const { getValues, setValue } = useFormContext<CheckFormValues>();
+  const {
+    getValues,
+    setValue,
+    formState: { errors },
+  } = useFormContext<CheckFormValues>();
   const prevCalNamesRef = useRef<string[]>([]);
 
   useEffect(() => {
@@ -94,6 +98,9 @@ export function GenericLabelContent({ description, isLoading, calNames = [] }: G
             </Tooltip>
           }
         />
+        {errors.labels?.root?.message && (
+          <FieldValidationMessage>{errors.labels.root.message}</FieldValidationMessage>
+        )}
       </div>
     </SectionContent>
   );

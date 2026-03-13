@@ -51,7 +51,7 @@ describe('GenericLabelContent', () => {
       renderGenericLabelContent({ calNames });
 
       await waitFor(() => {
-        expect(screen.getByText(/Cost attribution labels \*/)).toBeInTheDocument();
+        expect(screen.getByText('Cost attribution labels')).toBeInTheDocument();
         expect(screen.getByText(/help track costs across teams and services/)).toBeInTheDocument();
       });
     });

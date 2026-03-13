@@ -36,7 +36,7 @@ export const labelsSchema = z.array(labelSchema).superRefine((labels, ctx) => {
 
 const calLabelSchema = z.object({
   name: z.string(),
-  value: z.string().max(MAX_LENGTH, { message: `Value must be ${MAX_LENGTH} characters or less` }),
+  value: z.string().trim().max(MAX_LENGTH, { message: `Value must be ${MAX_LENGTH} characters or less` }),
 });
 
 export const calLabelsSchema = z.array(calLabelSchema);
