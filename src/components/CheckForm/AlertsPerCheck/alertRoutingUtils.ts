@@ -3,9 +3,7 @@ import {
   type Label as AlertingLabel,
   type LabelMatcher,
   type Route,
-  RouteWithID,
 } from '@grafana/alerting';
-import { RouteMatchInfo } from '@grafana/alerting/dist/types/grafana/notificationPolicies/utils';
 
 import { CheckAlertType, CheckType, Label } from 'types';
 
@@ -54,8 +52,8 @@ export const extractMatchersFromRoutes = (routeMatches: InstanceMatchResult[]): 
   routeMatches.forEach((routeMatch) => {
     routeMatch.matchedRoutes?.forEach((matchedRoute) => {
       const matchingJourney = matchedRoute.matchDetails?.matchingJourney || [];
-      matchingJourney.forEach((journey: RouteMatchInfo<RouteWithID>) => {
-        //@ts-ignore
+      matchingJourney.forEach((journey) => {
+        // @ts-expect-error matchers exist on the route at runtime but aren't in the Route type
         journey.route.matchers?.forEach((matcher: LabelMatcher) => {
           const matcherKey = `${matcher.label}:${matcher.type}:${matcher.value}`;
           matchersMap.set(matcherKey, matcher);
