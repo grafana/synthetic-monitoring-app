@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.49.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.48.1...v1.49.0) (2026-03-13)
+
+
+### Features
+
+* display warning when probe has unknown k6 version ([#1617](https://github.com/grafana/synthetic-monitoring-app/issues/1617)) ([153dadc](https://github.com/grafana/synthetic-monitoring-app/commit/153dadc17d5163e87030c30b8b04f10caf54ea84))
+
 ## [1.48.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.48.0...v1.48.1) (2026-03-11)
 
 
