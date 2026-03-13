@@ -1,7 +1,12 @@
 import isBase64 from 'is-base64';
 
-import { AlertSensitivity, CheckBase, CheckFormValues, ExistingObject, TLSConfig } from 'types';
+import { AlertSensitivity, CheckBase, CheckFormValues, ExistingObject, Label, TLSConfig } from 'types';
 import { toBase64 } from 'utils';
+
+function mergeLabelsForPayload(calLabels: Label[], labels: Label[]): Label[] {
+  const filledCalLabels = calLabels.filter((label) => !!label.value);
+  return [...filledCalLabels, ...labels];
+}
 
 export function getBasePayloadValuesFromForm(formValues: CheckFormValues): CheckBase & ExistingObject {
   return {
@@ -11,7 +16,7 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
     frequency: formValues.frequency,
     id: formValues.id,
     job: formValues.job,
-    labels: formValues.labels,
+    labels: mergeLabelsForPayload(formValues.calLabels, formValues.labels),
     probes: formValues.probes,
     target: formValues.target,
     timeout: formValues.timeout,

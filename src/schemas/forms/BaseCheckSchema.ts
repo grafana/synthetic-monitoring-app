@@ -2,7 +2,7 @@ import { checkAlertsRefinement, checkAlertsSchema } from 'schemas/general/CheckA
 import { checkProbesSchema } from 'schemas/general/CheckProbes';
 import { createFrequencySchema } from 'schemas/general/Frequency';
 import { jobSchema } from 'schemas/general/Job';
-import { labelsSchema } from 'schemas/general/Label';
+import { calLabelsSchema, labelsSchema } from 'schemas/general/Label';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
@@ -19,6 +19,7 @@ export const baseCheckSchema = z.object({
   probes: checkProbesSchema,
   alertSensitivity: z.enum(AlertSensitivity),
   labels: labelsSchema,
+  calLabels: calLabelsSchema,
   publishAdvancedMetrics: z.boolean(),
   alerts: checkAlertsSchema.optional(),
   channels: z.object({

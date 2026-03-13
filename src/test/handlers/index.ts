@@ -14,7 +14,13 @@ import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
 import { getHttpDashboard } from 'test/handlers/httpDashboard';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
-import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
+import {
+  getTenant,
+  getTenantCostAttributionLabels,
+  getTenantLimits,
+  getTenantSettings,
+  updateTenantSettings,
+} from 'test/handlers/tenants';
 import { createAccessToken } from 'test/handlers/tokens';
 
 import { ApiEntry } from 'test/handlers/types';
@@ -45,6 +51,7 @@ const API_ROUTES = {
   getSecret,
   getSMDS,
   getTenant,
+  getTenantCostAttributionLabels,
   getTenantLimits,
   getTenantSettings,
   listAlertsForCheck,

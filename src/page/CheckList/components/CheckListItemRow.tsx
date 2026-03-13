@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -6,6 +6,7 @@ import { css, cx } from '@emotion/css';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
+import { splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
@@ -14,6 +15,7 @@ import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemRow = ({
   check,
+  calNames,
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
@@ -23,6 +25,7 @@ export const CheckListItemRow = ({
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
+  const { calLabels, customLabels } = useMemo(() => splitLabels(check.labels, calNames), [check.labels, calNames]);
 
   return (
     <div className={cx(styles.container, { [styles.disabledCard]: !check.enabled })}>
@@ -57,7 +60,8 @@ export const CheckListItemRow = ({
           probeLocations={check.probes.length}
           className={styles.listItemDetails}
           labelCount={check.labels.length}
-          labels={check.labels}
+          labels={customLabels}
+          calLabels={calLabels}
           onLabelClick={onLabelSelect}
           executionsRate={usage?.checksPerMonth}
         />

@@ -7,12 +7,14 @@ import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
-import { Check, CheckEnabledStatus, CheckSort, CheckType, Label } from 'types';
+import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { findCheckinMetrics } from 'data/utils';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -57,6 +59,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const { data: checks } = useSuspenseChecks();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const filters = useCheckFilters();
+  const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
+  const { data: calData } = useTenantCostAttributionLabels();
+  const calNames = isCALsEnabled ? calData?.items ?? [] : [];
 
   const [sortType, setSortType] = useQueryParametersState<CheckSort>({
     key: 'sort',
@@ -213,6 +218,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
               <CheckListItem
                 check={check}
                 key={check.id}
+                calNames={calNames}
                 onLabelSelect={handleLabelSelect}
                 onStatusSelect={handleStatusSelect}
                 onTypeSelect={handleTypeSelect}

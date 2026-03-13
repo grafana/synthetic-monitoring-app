@@ -8,10 +8,11 @@ import { Label } from 'types';
 interface CheckCardLabelProps {
   label: Label;
   onLabelSelect: (label: Label) => void;
+  colorIndex?: number;
   className?: string;
 }
 
-export const CheckCardLabel = ({ label, onLabelSelect, className }: CheckCardLabelProps) => {
+export const CheckCardLabel = ({ label, onLabelSelect, colorIndex = 3, className }: CheckCardLabelProps) => {
   const styles = useStyles2(getStyles);
 
   return (
@@ -19,7 +20,7 @@ export const CheckCardLabel = ({ label, onLabelSelect, className }: CheckCardLab
       onClick={() => onLabelSelect(label)}
       name={`${label.name}: ${label.value}`}
       className={cx(styles.container, className)}
-      colorIndex={3}
+      colorIndex={colorIndex}
     />
   );
 };
