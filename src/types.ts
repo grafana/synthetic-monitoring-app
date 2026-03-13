@@ -335,6 +335,7 @@ export type CheckAlertFormRecord = Partial<Record<CheckAlertType, CheckAlertForm
 
 export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 'alerts'> & {
   publishAdvancedMetrics: boolean;
+  calLabels: Label[];
   alerts?: CheckAlertFormRecord;
   channels?: {
     k6?: K6Channel | K6ChannelRef;
@@ -733,6 +734,7 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
+  CALs = 'synthetic-monitoring-cals',
   GRPCChecks = 'grpc-checks',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
