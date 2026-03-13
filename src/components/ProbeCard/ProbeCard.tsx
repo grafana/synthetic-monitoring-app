@@ -8,6 +8,7 @@ import { type ExtendedProbe, FeatureName, type Label, Probe, ProbeWithMetadata }
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { isK6VersionUnknown } from 'components/CheckEditor/CheckProbes/CheckProbes.utils';
 import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
@@ -121,11 +122,16 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
 
 export function formatK6VersionsInline(probe: ProbeWithMetadata | Probe) {
   if (!probe.k6Versions || Object.keys(probe.k6Versions).length === 0) {
-    return 'none reported';
+    return 'unknown';
   }
-  return Object.values(probe.k6Versions)
-    .filter((v) => v !== null)
-    .join(', ');
+  const unique = [
+    ...new Set(
+      Object.values(probe.k6Versions)
+        .filter((v): v is string => v !== null)
+        .map((v) => (isK6VersionUnknown(v) ? 'unknown' : `v${v}`))
+    ),
+  ];
+  return unique.join(', ') || 'unknown';
 }
 
 const getStyles2 = (theme: GrafanaTheme2) => {

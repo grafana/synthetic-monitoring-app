@@ -10,6 +10,8 @@ import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { ProbeStatus } from 'components/ProbeCard/ProbeStatus';
 
+import { isK6VersionUnknown } from './CheckProbes.utils';
+
 export const ProbesList = ({
   title,
   probes,
@@ -37,6 +39,13 @@ export const ProbesList = ({
     }
     const version = probe.k6Versions[selectedChannel];
     return version !== null && version !== undefined;
+  };
+
+  const hasUnknownVersion = (probe: ProbeWithMetadata): boolean => {
+    if (!isVersionManagementEnabled || !selectedChannel || !probe.k6Versions) {
+      return false;
+    }
+    return isK6VersionUnknown(probe.k6Versions[selectedChannel]);
   };
 
   const handleToggleAll = () => {
@@ -95,6 +104,7 @@ export const ProbesList = ({
       <div className={styles.probesList}>
         {probes.map((probe: ProbeWithMetadata) => {
           const isCompatible = isProbeCompatible(probe);
+          const isUnknown = hasUnknownVersion(probe);
           const isSelected = selectedProbes.includes(probe.id!);
           const shouldDisable = disabled || (!isCompatible && !isSelected);
           const showIncompatibleStyling = !isCompatible && !isSelected;
@@ -112,29 +122,15 @@ export const ProbesList = ({
                 <div className={styles.columnLabel}>
                   <div className={showIncompatibleStyling ? styles.incompatibleLabel : undefined}>
                     <ProbeStatus probe={probe} />{' '}
-                    {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
-                      probe.provider ? `(${probe.provider})` : ''
-                    }`}
+                    {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${probe.provider ? `(${probe.provider})` : ''
+                      }`}
                     {isVersionManagementEnabled && probe.k6Versions && selectedChannel && (
-                      <>
-                        <Badge
-                          text={probe.k6Versions[selectedChannel] || 'not supported'}
-                          color={!isCompatible ? 'orange' : 'blue'}
-                          className={styles.versionBadge}
-                        />
-                        <Tooltip
-                          content={
-                            <div>
-                              <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>All k6 versions:</div>
-                              <div>{formatK6Versions(probe)}</div>
-                            </div>
-                          }
-                        >
-                          <span className={styles.k6IconWrapper}>
-                            <Icon name="info-circle" className={styles.infoIcon} />
-                          </span>
-                        </Tooltip>
-                      </>
+                      <ProbeVersionBadge
+                        probe={probe}
+                        selectedChannel={selectedChannel}
+                        isCompatible={isCompatible}
+                        isUnknown={isUnknown}
+                      />
                     )}
                     {probe.deprecated && (
                       <DeprecationNotice
@@ -162,6 +158,53 @@ export const ProbesList = ({
     </div>
   );
 };
+
+function ProbeVersionBadge({
+  probe,
+  selectedChannel,
+  isCompatible,
+  isUnknown,
+}: {
+  probe: ProbeWithMetadata;
+  selectedChannel: string;
+  isCompatible: boolean;
+  isUnknown: boolean;
+}) {
+  const styles = useStyles2(getStyles);
+  const versionState = getVersionState(probe.k6Versions![selectedChannel]);
+
+  return (
+    <>
+      <Badge text={versionState.text} color={versionState.color} className={styles.versionBadge} />
+      <Tooltip
+        content={
+          <div>
+            {!isCompatible && !isUnknown && <div>This probe does not support the selected channel.</div>}
+            {isUnknown && (
+              <div>
+                {hasKnownVersions(probe)
+                  ? 'This probe has not reported its k6 version for this channel. Compatibility with the selected channel cannot be guaranteed.'
+                  : 'This probe has not reported any k6 version information. Compatibility with the selected channel cannot be guaranteed.'}
+              </div>
+            )}
+            {hasKnownVersions(probe) && (
+              <>
+                <div style={{ fontWeight: 'bold', marginBottom: '4px', marginTop: !isCompatible || isUnknown ? '8px' : undefined }}>
+                  Reported k6 versions:
+                </div>
+                <div>{formatK6Versions(probe)}</div>
+              </>
+            )}
+          </div>
+        }
+      >
+        <span className={styles.k6IconWrapper}>
+          <Icon name="info-circle" className={styles.infoIcon} />
+        </span>
+      </Tooltip>
+    </>
+  );
+}
 
 const getStyles = (theme: GrafanaTheme2) => ({
   item: css({
@@ -251,14 +294,45 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 });
 
-function formatK6Versions(probe: ProbeWithMetadata | Probe): React.ReactNode {
+type BadgeColor = 'blue' | 'orange' | 'red';
+
+const VERSION_STATE = {
+  notSupported: { text: 'not supported', color: 'red' as BadgeColor },
+  unknown: { text: 'version unknown', color: 'orange' as BadgeColor },
+  compatible: { color: 'blue' as BadgeColor },
+} as const;
+
+function getVersionState(version: string | null | undefined) {
+  if (version === null || version === undefined) {
+    return VERSION_STATE.notSupported;
+  }
+  if (isK6VersionUnknown(version)) {
+    return VERSION_STATE.unknown;
+  }
+  return { ...VERSION_STATE.compatible, text: `v${version}` };
+}
+
+function isKnownVersion(version: string | null): boolean {
+  return version !== null && !isK6VersionUnknown(version);
+}
+
+function hasKnownVersions(probe: ProbeWithMetadata | Probe): boolean {
   if (!probe.k6Versions || Object.keys(probe.k6Versions).length === 0) {
-    return 'none reported';
+    return false;
+  }
+  return Object.values(probe.k6Versions).some(isKnownVersion);
+}
+
+function formatK6Versions(probe: ProbeWithMetadata | Probe): React.ReactNode {
+  if (!probe.k6Versions) {
+    return null;
   }
 
-  return Object.entries(probe.k6Versions).map(([channel, version]) => (
+  const knownEntries = Object.entries(probe.k6Versions).filter(([, version]) => isKnownVersion(version));
+
+  return knownEntries.map(([channel, version]) => (
     <div key={channel}>
-      <strong>{channel}</strong>: {version || 'not supported'}
+      <strong>{channel}</strong>: {getVersionState(version).text}
     </div>
   ));
 }

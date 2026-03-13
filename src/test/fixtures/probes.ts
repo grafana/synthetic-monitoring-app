@@ -8,7 +8,7 @@ export const PRIVATE_PROBE: Probe = DB.probe.build({
     { name: 'chimi', value: 'churri' },
   ],
   k6Versions: {
-    v1: 'v1.2.3',
+    v1: '1.2.3',
     v2: null, // Does not support v2
   },
 });
@@ -17,8 +17,8 @@ export const PUBLIC_PROBE: Probe = DB.probe.build({
   public: true,
   online: false,
   k6Versions: {
-    v1: 'v1.5.5',
-    v2: 'v2.0.1',
+    v1: '1.5.5',
+    v2: '2.0.1',
   },
 });
 
@@ -35,9 +35,16 @@ export const SCRIPTED_DISABLED_PROBE: Probe = DB.probe.build({
   },
 });
 
+export const UNKNOWN_VERSION_PROBE: Probe = DB.probe.build({
+  k6Versions: {
+    v1: 'unknown',
+    v2: 'unknown',
+  },
+});
+
 export const UNSELECTED_PRIVATE_PROBE: Probe = DB.probe.build({});
 
-export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE, UNSELECTED_PRIVATE_PROBE];
+export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE, UNKNOWN_VERSION_PROBE, UNSELECTED_PRIVATE_PROBE];
 
 export const ADD_PROBE_TOKEN_RESPONSE = `A very tasty added token`;
 export const UPDATED_PROBE_TOKEN_RESPONSE = `A very tasty updated token`;
