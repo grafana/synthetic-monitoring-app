@@ -35,7 +35,7 @@ export const ProbesList = ({
 
   const isProbeCompatible = (probe: ProbeWithMetadata): boolean => {
     if (!isVersionManagementEnabled || !selectedChannel || !probe.k6Versions) {
-      return true;
+      return true; // Default to compatible if feature is off or no channel selected
     }
     const version = probe.k6Versions[selectedChannel];
     return version !== null && version !== undefined;
