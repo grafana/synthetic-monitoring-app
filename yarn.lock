@@ -11054,15 +11054,10 @@ undici-types@~7.16.0:
   resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-7.16.0.tgz#ffccdff36aea4884cbfce9a750a0580224f58a46"
   integrity sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==
 
-undici@7.18.2:
-  version "7.18.2"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-7.18.2.tgz#6cf724ef799a67d94fd55adf66b1e184176efcdf"
-  integrity sha512-y+8YjDFzWdQlSE9N5nzKMT3g4a5UBX1HKowfdXh0uvAnTaqqwqB92Jt4UXBAeKekDs5IaDKyJFR4X1gYVCgXcw==
-
-undici@^7.19.0:
-  version "7.22.0"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-7.22.0.tgz#7a82590a5908e504a47d85c60b0f89ca14240e60"
-  integrity sha512-RqslV2Us5BrllB+JeiZnK4peryVTndy9Dnqq62S3yYRRTj0tFQCwEniUy2167skdGOy3vqRzEvl1Dm4sV2ReDg==
+undici@7.24.0, undici@^7.19.0:
+  version "7.24.0"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-7.24.0.tgz#c7349cdede0db44226b5930783b11207831a5eaf"
+  integrity sha512-jxytwMHhsbdpBXxLAcuu0fzlQeXCNnWdDyRHpvWsUl8vd98UwYdl9YTyn8/HcpcJPC3pwUveefsa3zTxyD/ERg==
 
 unicorn-magic@^0.3.0:
   version "0.3.0"
