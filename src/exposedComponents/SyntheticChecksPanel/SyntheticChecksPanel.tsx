@@ -1,38 +1,30 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { LoadingPlaceholder, Pagination, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { SyntheticChecksPanelProps } from './SyntheticChecksPanel.types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
-import { useChecks } from 'data/useChecks';
 
-import { filterChecksByLabels } from './SyntheticChecksPanel.utils';
+import { useChecksForUrl } from './SyntheticChecksPanel.hooks';
 import { SyntheticChecksPanelRow } from './SyntheticChecksPanelRow';
 
 const DEFAULT_PAGE_SIZE = 5;
 const DEFAULT_TITLE = 'Synthetic checks';
 
 export const SyntheticChecksPanel = ({
-  labelFilters = {},
+  urls,
   title = DEFAULT_TITLE,
   showSeeAllLink = true,
   pageSize = DEFAULT_PAGE_SIZE,
 }: SyntheticChecksPanelProps) => {
   const styles = useStyles2(getStyles);
-  const { data: checks, isLoading } = useChecks();
+  const url = urls[0];
+  const { data: matchedChecks, isLoading } = useChecksForUrl(url);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredChecks = useMemo(() => {
-    if (!checks) {
-      return [];
-    }
-
-    return filterChecksByLabels(checks, labelFilters);
-  }, [checks, labelFilters]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredChecks.length / pageSize));
-  const paginatedChecks = filteredChecks.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.max(1, Math.ceil(matchedChecks.length / pageSize));
+  const paginatedChecks = matchedChecks.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   if (isLoading) {
     return (
@@ -53,7 +45,7 @@ export const SyntheticChecksPanel = ({
         )}
       </div>
 
-      {filteredChecks.length === 0 ? (
+      {matchedChecks.length === 0 ? (
         <div className={styles.emptyState}>No checks found.</div>
       ) : (
         <>

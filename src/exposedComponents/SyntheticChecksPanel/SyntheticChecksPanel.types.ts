@@ -1,5 +1,5 @@
 export interface SyntheticChecksPanelProps {
-  labelFilters?: Record<string, string>;
+  urls: string[];
   title?: string;
   showSeeAllLink?: boolean;
   pageSize?: number;

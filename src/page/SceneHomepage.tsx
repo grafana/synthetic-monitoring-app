@@ -17,7 +17,7 @@ function SceneHomepageComponent() {
     <Stack direction="column" gap={2}>
       <SummaryDashboard checks={checks} />
       {/* TODO: remove — temporary preview of the exposed SyntheticChecksPanel component */}
-      <SyntheticChecksPanel title="Exposed component preview" pageSize={5} />
+      <SyntheticChecksPanel urls={['https://test.k6.io/']} title="Exposed component preview" pageSize={5} />
     </Stack>
   );
 }
