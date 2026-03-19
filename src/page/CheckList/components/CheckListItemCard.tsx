@@ -13,11 +13,13 @@ import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
+import { CheckRuntimeAlertBadge } from 'page/CheckList/components/CheckRuntimeAlertBadge';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemCard = ({
   check,
+  runtimeAlertState,
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
@@ -29,7 +31,12 @@ export const CheckListItemCard = ({
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
 
   return (
-    <div className={cx(styles.container, { [styles.disabledCard]: !check.enabled })}>
+    <div
+      className={cx(styles.container, {
+        [styles.disabledCard]: !check.enabled,
+        [styles.firingAlertCard]: runtimeAlertState.isFiring,
+      })}
+    >
       <div className={styles.cardWrapper} data-testid={DataTestIds.CheckCard}>
         <div>
           <Checkbox
@@ -44,8 +51,9 @@ export const CheckListItemCard = ({
         <div className={styles.wrapper}>
           <div className={cx(styles.body, { [styles.bodyDisabled]: !check.enabled })}>
             <div className={styles.checkInfoContainer}>
-              <div className={styles.stackCenter}>
+              <div className={styles.titleRow}>
                 <h3 className={styles.heading}>{check.job}</h3>
+                <CheckRuntimeAlertBadge firingCount={runtimeAlertState.firingCount} />
                 <AlertStatus check={check} />
                 {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
               </div>
@@ -93,6 +101,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     backgroundColor: theme.colors.background.secondary,
     borderRadius: '2px',
+    border: `1px solid transparent`,
   }),
   labelsContainer: css({
     display: 'flex',
@@ -102,6 +111,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   heading: css({
     marginBottom: `0`,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   }),
   cardWrapper: css({
     display: 'flex',
@@ -110,6 +122,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   disabledCard: css({
     backgroundColor: theme.colors.secondary.transparent,
+  }),
+  firingAlertCard: css({
+    borderColor: theme.colors.error.border,
+    boxShadow: `inset 4px 0 0 ${theme.colors.error.text}`,
   }),
   wrapper: css({
     overflow: `hidden`,
@@ -135,6 +151,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
+  }),
+  titleRow: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    minWidth: 0,
   }),
   checkTarget: css({
     fontSize: theme.typography.bodySmall.fontSize,
