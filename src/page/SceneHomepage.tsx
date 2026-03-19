@@ -19,7 +19,7 @@ function SceneHomepageComponent() {
       {/* TODO: remove — temporary preview of the exposed SyntheticChecksPanel component */}
       <SyntheticChecksPanel
         urls={['https://bdcf89.field-eng-demo.grafana.net/']}
-        /* timeRange={{ from: Math.floor(Date.now() / 1000) - 60 * 60 * 24, to: Math.floor(Date.now() / 1000) }}*/
+        timeRange={{ from: Math.floor(Date.now() / 1000) - 60 * 60 * 24, to: Math.floor(Date.now() / 1000) }}
         title="Exposed component preview"
         pageSize={5}
       />

@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { SceneContextProvider } from '@grafana/scenes-react';
 import { LoadingPlaceholder, Pagination, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { SyntheticChecksPanelProps } from './SyntheticChecksPanel.types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
-import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
+import { DEFAULT_QUERY_FROM_TIME, DEFAULT_QUERY_FROM_TIME_TEXT } from 'components/constants';
 
 import { useChecksForUrl } from './SyntheticChecksPanel.hooks';
 import { SyntheticChecksPanelChart } from './SyntheticChecksPanelChart';
@@ -33,6 +33,17 @@ export const SyntheticChecksPanel = ({
     }
 
     return { from: `now-${DEFAULT_QUERY_FROM_TIME}`, to: 'now' };
+  }, [timeRange]);
+
+  const timeRangeLabel = useMemo(() => {
+    if (timeRange) {
+      const from = dateTimeFormat(timeRange.from * 1000, { format: 'MMM D, HH:mm' });
+      const to = dateTimeFormat(timeRange.to * 1000, { format: 'MMM D, HH:mm' });
+
+      return `${from} – ${to}`;
+    }
+
+    return `Last ${DEFAULT_QUERY_FROM_TIME_TEXT}`;
   }, [timeRange]);
 
   const totalPages = Math.max(1, Math.ceil(matchedChecks.length / pageSize));
@@ -88,7 +99,7 @@ export const SyntheticChecksPanel = ({
           )}
 
           <SceneContextProvider timeRange={sceneTimeRange} withQueryController>
-            <SyntheticChecksPanelChart checks={matchedChecks} />
+            <SyntheticChecksPanelChart checks={matchedChecks} timeRangeLabel={timeRangeLabel} />
           </SceneContextProvider>
         </>
       )}

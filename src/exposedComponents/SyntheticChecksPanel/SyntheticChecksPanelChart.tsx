@@ -16,6 +16,7 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 
 interface SyntheticChecksPanelChartProps {
   checks: Check[];
+  timeRangeLabel: string;
 }
 
 function buildJobInstanceFilter(checks: Check[]): string {
@@ -33,7 +34,7 @@ function buildJobInstanceFilter(checks: Check[]): string {
   return `job=~"${jobs}", instance=~"${instances}"`;
 }
 
-export const SyntheticChecksPanelChart = ({ checks }: SyntheticChecksPanelChartProps) => {
+export const SyntheticChecksPanelChart = ({ checks, timeRangeLabel }: SyntheticChecksPanelChartProps) => {
   const metricsDS = useMetricsDS();
   const filter = buildJobInstanceFilter(checks);
 
@@ -80,7 +81,7 @@ export const SyntheticChecksPanelChart = ({ checks }: SyntheticChecksPanelChartP
 
   return (
     <Box height="250px">
-      <VizPanel title="Metrics over time" viz={viz} dataProvider={dataProvider} />
+      <VizPanel title={`Metrics over time ${timeRangeLabel}`} viz={viz} dataProvider={dataProvider} />
     </Box>
   );
 };
