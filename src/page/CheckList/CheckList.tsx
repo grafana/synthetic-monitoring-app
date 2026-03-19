@@ -9,10 +9,15 @@ import { getTotalChecksPerMonth } from 'checkUsageCalc';
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckEnabledStatus, CheckSort, CheckType, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import {
+  CheckRuntimeAlertStates,
+  getCheckRuntimeAlertState,
+  getCheckRuntimeAlertStateKey,
+  useChecksAlertStates,
+} from 'data/useCheckAlertStates';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
-import { findCheckinMetrics } from 'data/utils';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -55,6 +60,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
+  const { data: checkAlertStates = {} } = useChecksAlertStates(checks);
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const filters = useCheckFilters();
 
@@ -93,7 +99,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus);
-  const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates);
+  const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates);
   const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
@@ -217,6 +223,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                 onStatusSelect={handleStatusSelect}
                 onTypeSelect={handleTypeSelect}
                 onToggleCheckbox={handleCheckSelect}
+                runtimeAlertState={getCheckRuntimeAlertState(checkAlertStates, check)}
                 selected={selectedCheckIds.has(check.id!)}
                 viewType={viewType}
               />
@@ -243,56 +250,87 @@ type MetricCheckSuccessParsed = MetricCheckSuccess & {
   value: [Time, number];
 };
 
-function sortChecks(checks: Check[], sortType: CheckSort, reachabilitySuccessRates: MetricCheckSuccessParsed[]) {
-  if (sortType === CheckSort.AToZ) {
-    return checks.sort((a, b) => a.job.localeCompare(b.job));
-  }
+function sortChecks(
+  checks: Check[],
+  sortType: CheckSort,
+  reachabilitySuccessRates: MetricCheckSuccessParsed[],
+  checkAlertStates: CheckRuntimeAlertStates
+) {
+  const reachabilityMap = reachabilitySuccessRates.reduce<Record<string, number>>((acc, metric) => {
+    acc[getCheckRuntimeAlertStateKey(metric.metric.job, metric.metric.instance)] = metric.value[1];
+    return acc;
+  }, {});
 
-  if (sortType === CheckSort.ZToA) {
-    return checks.sort((a, b) => b.job.localeCompare(a.job));
-  }
+  return [...checks].sort((a, b) => {
+    const alertStateComparison = compareAlertState(a, b, checkAlertStates);
 
-  if ([CheckSort.ReachabilityAsc, CheckSort.ReachabilityDesc].includes(sortType)) {
-    const checkWithMetrics = checks.map((check) => {
-      const reachabilityMetric = findCheckinMetrics(reachabilitySuccessRates, check);
-      const reachability = reachabilityMetric === undefined ? -1 : reachabilityMetric.value[1];
+    if (alertStateComparison !== 0) {
+      return alertStateComparison;
+    }
 
-      return {
-        ...check,
-        reachability,
-      };
-    });
+    const selectedSortComparison = compareChecksBySortType(a, b, sortType, reachabilityMap);
 
-    return checkWithMetrics.sort((a, b) => {
-      if (sortType === CheckSort.ReachabilityAsc) {
-        return a.reachability - b.reachability;
-      }
+    if (selectedSortComparison !== 0) {
+      return selectedSortComparison;
+    }
 
-      return b.reachability - a.reachability;
-    });
-  }
-
-  if (sortType === CheckSort.ExecutionsAsc) {
-    return checks.sort((a, b) => {
-      const [sortA, sortB] = getNumberOfExecutions(a, b);
-      return sortA - sortB;
-    });
-  }
-
-  if (sortType === CheckSort.ExecutionsDesc) {
-    return checks.sort((a, b) => {
-      const [sortA, sortB] = getNumberOfExecutions(a, b);
-      return sortB - sortA;
-    });
-  }
-
-  return checks;
+    return a.job.localeCompare(b.job);
+  });
 }
 
 function getNumberOfExecutions(checkA: Check, checkB: Check) {
   const sortA = getTotalChecksPerMonth(checkA.probes.length, checkA.frequency / 1000) || 101;
   const sortB = getTotalChecksPerMonth(checkB.probes.length, checkB.frequency / 1000) || 101;
   return [sortA, sortB];
+}
+
+function compareAlertState(checkA: Check, checkB: Check, checkAlertStates: CheckRuntimeAlertStates) {
+  const isAFiring = getCheckRuntimeAlertState(checkAlertStates, checkA).isFiring;
+  const isBFiring = getCheckRuntimeAlertState(checkAlertStates, checkB).isFiring;
+
+  if (isAFiring === isBFiring) {
+    return 0;
+  }
+
+  return isAFiring ? -1 : 1;
+}
+
+function compareChecksBySortType(
+  checkA: Check,
+  checkB: Check,
+  sortType: CheckSort,
+  reachabilityMap: Record<string, number>
+) {
+  if (sortType === CheckSort.AToZ) {
+    return checkA.job.localeCompare(checkB.job);
+  }
+
+  if (sortType === CheckSort.ZToA) {
+    return checkB.job.localeCompare(checkA.job);
+  }
+
+  if ([CheckSort.ReachabilityAsc, CheckSort.ReachabilityDesc].includes(sortType)) {
+    const reachabilityA = reachabilityMap[getCheckRuntimeAlertStateKey(checkA.job, checkA.target)] ?? -1;
+    const reachabilityB = reachabilityMap[getCheckRuntimeAlertStateKey(checkB.job, checkB.target)] ?? -1;
+
+    if (sortType === CheckSort.ReachabilityAsc) {
+      return reachabilityA - reachabilityB;
+    }
+
+    return reachabilityB - reachabilityA;
+  }
+
+  if (sortType === CheckSort.ExecutionsAsc) {
+    const [sortA, sortB] = getNumberOfExecutions(checkA, checkB);
+    return sortA - sortB;
+  }
+
+  if (sortType === CheckSort.ExecutionsDesc) {
+    const [sortA, sortB] = getNumberOfExecutions(checkA, checkB);
+    return sortB - sortA;
+  }
+
+  return 0;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({

@@ -13,11 +13,13 @@ import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
+import { CheckRuntimeAlertBadge } from 'page/CheckList/components/CheckRuntimeAlertBadge';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemCard = ({
   check,
+  runtimeAlertState,
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
@@ -29,7 +31,12 @@ export const CheckListItemCard = ({
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
 
   return (
-    <div className={cx(styles.container, { [styles.disabledCard]: !check.enabled })}>
+    <div
+      className={cx(styles.container, {
+        [styles.disabledCard]: !check.enabled,
+        [styles.firingAlertCard]: runtimeAlertState.isFiring,
+      })}
+    >
       <div className={styles.cardWrapper} data-testid={DataTestIds.CheckCard}>
         <div>
           <Checkbox
@@ -44,8 +51,9 @@ export const CheckListItemCard = ({
         <div className={styles.wrapper}>
           <div className={cx(styles.body, { [styles.bodyDisabled]: !check.enabled })}>
             <div className={styles.checkInfoContainer}>
-              <div className={styles.stackCenter}>
+              <div className={styles.titleRow}>
                 <h3 className={styles.heading}>{check.job}</h3>
+                <CheckRuntimeAlertBadge firingCount={runtimeAlertState.firingCount} />
                 <AlertStatus check={check} />
                 {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
               </div>
