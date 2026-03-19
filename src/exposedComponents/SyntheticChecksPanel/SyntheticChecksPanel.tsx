@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { SceneContextProvider } from '@grafana/scenes-react';
 import { LoadingPlaceholder, Pagination, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { SyntheticChecksPanelProps } from './SyntheticChecksPanel.types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
+import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 
 import { useChecksForUrl } from './SyntheticChecksPanel.hooks';
+import { SyntheticChecksPanelChart } from './SyntheticChecksPanelChart';
 import { SyntheticChecksPanelRow } from './SyntheticChecksPanelRow';
 
 const DEFAULT_PAGE_SIZE = 5;
@@ -14,14 +17,23 @@ const DEFAULT_TITLE = 'Synthetic checks';
 
 export const SyntheticChecksPanel = ({
   urls,
+  timeRange,
   title = DEFAULT_TITLE,
   showSeeAllLink = true,
   pageSize = DEFAULT_PAGE_SIZE,
 }: SyntheticChecksPanelProps) => {
   const styles = useStyles2(getStyles);
   const url = urls[0];
-  const { data: matchedChecks, isLoading } = useChecksForUrl(url);
+  const { data: matchedChecks, isLoading } = useChecksForUrl({ url, timeRange });
   const [currentPage, setCurrentPage] = useState(1);
+
+  const sceneTimeRange = useMemo(() => {
+    if (timeRange) {
+      return { from: new Date(timeRange.from * 1000).toISOString(), to: new Date(timeRange.to * 1000).toISOString() };
+    }
+
+    return { from: `now-${DEFAULT_QUERY_FROM_TIME}`, to: 'now' };
+  }, [timeRange]);
 
   const totalPages = Math.max(1, Math.ceil(matchedChecks.length / pageSize));
   const paginatedChecks = matchedChecks.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -74,6 +86,10 @@ export const SyntheticChecksPanel = ({
               />
             </div>
           )}
+
+          <SceneContextProvider timeRange={sceneTimeRange} withQueryController>
+            <SyntheticChecksPanelChart checks={matchedChecks} />
+          </SceneContextProvider>
         </>
       )}
     </div>
