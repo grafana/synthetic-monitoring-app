@@ -282,6 +282,15 @@
       "grants": ["Viewer"]
     }
   ],
+  "extensions": {
+    "exposedComponents": [
+      {
+        "id": "grafana-synthetic-monitoring-app/synthetic-checks-panel/v1",
+        "title": "Synthetic Checks Panel",
+        "description": "Displays SM checks with uptime, reachability, and latency metrics. Accepts label filters to scope checks."
+      }
+    ]
+  },
   "dependencies": {
     "grafanaDependency": ">=12.4.0"
   },
