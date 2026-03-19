@@ -32,9 +32,10 @@ const LazyPluginConfigPage = lazy(async () => {
   return import('configPage/PluginConfigPage').then((module) => ({ default: module.PluginConfigPage }));
 });
 
-const LazySyntheticChecksPanel = lazy(
-  () => import('exposedComponents/SyntheticChecksPanel/SyntheticChecksPanelExposed')
-);
+const LazySyntheticChecksPanel = lazy(async () => {
+  await ensureTranslationsInitialized();
+  return import('exposedComponents/SyntheticChecksPanel/SyntheticChecksPanelExposed');
+});
 
 const SuspendedLazyApp = (props: AppRootProps<ProvisioningJsonData>) => (
   <Suspense fallback={<Spinner />}>
