@@ -15,6 +15,7 @@ interface CheckListItemDetailsProps {
   labelCount?: number;
   labels?: Label[];
   onLabelClick?: (label: Label) => void;
+  layout?: 'inline' | 'wrap';
 }
 
 export const CheckListItemDetails = ({
@@ -25,19 +26,43 @@ export const CheckListItemDetails = ({
   className,
   labels,
   onLabelClick,
+  layout = 'inline',
 }: CheckListItemDetailsProps) => {
   const styles = useStyles2(getStyles);
   const activeSeriesMessage = activeSeries !== undefined ? `${activeSeries} active series` : null;
   const probeLocationsMessage = probeLocations === 1 ? `${probeLocations} location` : `${probeLocations} locations`;
   const executionRateMessage = executionsRate ? `${executionsRate} executions / month` : null;
+  const detailItems = [
+    `${frequency / 1000}s frequency`,
+    activeSeriesMessage,
+    probeLocationsMessage,
+    executionRateMessage,
+  ].filter((item): item is string => Boolean(item));
+
   return (
-    <div className={cx(styles.checkDetails, className)}>
-      {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeriesMessage}
-      &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {probeLocationsMessage}&nbsp;&nbsp;
-      <strong>|</strong>&nbsp;&nbsp; {executionRateMessage}
+    <div
+      className={cx(styles.checkDetails, className, {
+        [styles.inlineLayout]: layout === 'inline',
+        [styles.wrapLayout]: layout === 'wrap',
+      })}
+    >
+      {detailItems.map((item, index) => (
+        <React.Fragment key={`${item}-${index}`}>
+          {layout === 'inline' && index > 0 && (
+            <span className={styles.separator} aria-hidden="true">
+              |
+            </span>
+          )}
+          <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>{item}</span>
+        </React.Fragment>
+      ))}
       {labels && onLabelClick && (
         <>
-          &nbsp;&nbsp;<strong>|</strong>
+          {layout === 'inline' && detailItems.length > 0 && (
+            <span className={styles.separator} aria-hidden="true">
+              |
+            </span>
+          )}
           <Tooltip
             placement="bottom-end"
             content={
@@ -53,7 +78,13 @@ export const CheckListItemDetails = ({
               </Stack>
             }
           >
-            <Button disabled={labels.length === 0} type="button" fill="text" size="sm">
+            <Button
+              disabled={labels.length === 0}
+              type="button"
+              fill="text"
+              size="sm"
+              className={cx({ [styles.wrapLabelButton]: layout === 'wrap' })}
+            >
               View {labels.length} label{labels.length === 1 ? '' : 's'}
             </Button>
           </Tooltip>
@@ -64,14 +95,41 @@ export const CheckListItemDetails = ({
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  checkDetails: css`
-    font-size: ${theme.typography.bodySmall.fontSize};
-    line-height: ${theme.typography.bodySmall.lineHeight};
-    white-space: nowrap;
-    align-items: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  `,
+  checkDetails: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    lineHeight: theme.typography.bodySmall.lineHeight,
+    minWidth: 0,
+  }),
+  inlineLayout: css({
+    display: 'flex',
+    alignItems: 'center',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  }),
+  wrapLayout: css({
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+  }),
+  detailItem: css({
+    minWidth: 0,
+    fontVariantNumeric: 'tabular-nums',
+  }),
+  wrapDetailItem: css({
+    backgroundColor: theme.colors.background.primary,
+    borderRadius: '2px',
+    padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
+  }),
+  separator: css({
+    padding: `0 ${theme.spacing(1)}`,
+    flexShrink: 0,
+  }),
+  wrapLabelButton: css({
+    paddingLeft: 0,
+    paddingRight: 0,
+  }),
   labelWidth: css`
     max-width: 350px;
   `,

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { t, Trans } from '@grafana/i18n';
-import { Button, Checkbox, Combobox, Field, Icon, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, Checkbox, Combobox, Field, Icon, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
@@ -83,79 +83,155 @@ export const CheckListHeader = ({
 
   return (
     <>
-      <div className={styles.row}>
-        <div>
-          <Trans i18nKey="checkList.header.currentlyShowing">
-            Currently showing {{ currentPageChecksLength: currentPageChecks.length }} of {{ checksLength: checks.length }} total checks
-          </Trans>
+      <div className={styles.header}>
+        <div className={styles.row}>
+          <div className={styles.summary}>
+            <Trans i18nKey="checkList.header.currentlyShowing">
+              Currently showing {{ currentPageChecksLength: currentPageChecks.length }} of {{ checksLength: checks.length }} total checks
+            </Trans>
+          </div>
+          <div className={styles.primaryActions}>
+            <CheckFilters
+              onReset={onResetFilters}
+              checks={checks}
+              checkFilters={checkFilters}
+              onChange={onFilterChange}
+              className={styles.filters}
+            />
+            {canWriteThresholds && (
+              <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
+                <Trans i18nKey="checkList.header.setThresholds">
+                  Set Thresholds
+                </Trans>
+              </Button>
+            )}
+            {canWriteChecks && (
+              <div className={styles.createButton}>
+                <AddNewCheckButton source="check-list" />
+              </div>
+            )}
+          </div>
         </div>
-        <Stack alignItems="center" gap={2}>
-          <CheckFilters
-            onReset={onResetFilters}
-            checks={checks}
-            checkFilters={checkFilters}
-            onChange={onFilterChange}
-          />
-          {canWriteThresholds && (
-            <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
-              <Trans i18nKey="checkList.header.setThresholds">
-                Set Thresholds
-              </Trans>
-            </Button>
-          )}
-
-          {canWriteChecks && <AddNewCheckButton source="check-list" />}
-        </Stack>
-      </div>
-      <div className={styles.row}>
-        <Stack alignItems="center" gap={2}>
-          <Tooltip content={tooltip}>
-            <Checkbox
-              onChange={onSelectAll}
-              indeterminate={isSomeSelected}
-              value={isAllSelected}
-              disabled={checks.length === 0}
-              aria-label={t('checkList.header.selectAllAriaLabel', 'Select all')}
-              data-testid={DataTestIds.SelectAllChecks}
-            />
-          </Tooltip>
-          {selectedCheckIds.size > 0 ? (
-            <BulkActions checks={selectedChecks} onResolved={onDelete} />
-          ) : (
-            <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
-          )}
-        </Stack>
-        <Stack alignItems="center" gap={0.5}>
-          <Icon name="sort-amount-down" />
-          <Field label="Sort" htmlFor="sort-by-select" horizontal data-fs-element="Sort by select" className={styles.field} noMargin>
-            <Combobox
-              id="sort-by-select"
-              data-testid={DataTestIds.SortChecksByCombobox}
-              options={CHECK_LIST_SORT_OPTIONS}
-              width={25}
-              onChange={onSort}
-              value={sortType}
-            />
-          </Field>
-        </Stack>
+        <div className={styles.row}>
+          <div className={styles.secondaryActions}>
+            <Tooltip content={tooltip}>
+              <Checkbox
+                onChange={onSelectAll}
+                indeterminate={isSomeSelected}
+                value={isAllSelected}
+                disabled={checks.length === 0}
+                aria-label={t('checkList.header.selectAllAriaLabel', 'Select all')}
+                data-testid={DataTestIds.SelectAllChecks}
+              />
+            </Tooltip>
+            {selectedCheckIds.size > 0 ? (
+              <BulkActions checks={selectedChecks} onResolved={onDelete} />
+            ) : (
+              <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
+            )}
+          </div>
+          <div className={styles.sortGroup}>
+            <Icon name="sort-amount-down" />
+            <Field
+              label="Sort"
+              htmlFor="sort-by-select"
+              horizontal
+              data-fs-element="Sort by select"
+              className={styles.field}
+              noMargin
+            >
+              <Combobox
+                id="sort-by-select"
+                data-testid={DataTestIds.SortChecksByCombobox}
+                options={CHECK_LIST_SORT_OPTIONS}
+                width={25}
+                onChange={onSort}
+                value={sortType}
+              />
+            </Field>
+          </div>
+        </div>
       </div>
       <ThresholdGlobalSettings onDismiss={() => setShowThresholdModal(false)} isOpen={showThresholdModal} />
     </>
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  row: css({
-    display: `flex`,
-    justifyContent: `space-between`,
-    alignItems: `center`,
-    marginBottom: theme.spacing(2),
-  }),
-  field: css({
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-    '& > div': {
-      marginBottom: 0,
-    }
-  }),
-});
+const getStyles = (theme: GrafanaTheme2) => {
+  const containerName = 'check-list-header';
+  const breakpoint = theme.breakpoints.values.lg;
+  const containerQuery = `@container ${containerName} (max-width: ${breakpoint}px)`;
+  const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${breakpoint}px)`;
+
+  return {
+    header: css({
+      containerName,
+      containerType: 'inline-size',
+    }),
+    row: css({
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: theme.spacing(2),
+      marginBottom: theme.spacing(2),
+    }),
+    summary: css({
+      flex: '1 1 240px',
+      minWidth: 0,
+    }),
+    primaryActions: css({
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      flexWrap: 'wrap',
+      gap: theme.spacing(2),
+      flex: '999 1 640px',
+      minWidth: 0,
+      [containerQuery]: {
+        justifyContent: 'flex-start',
+        width: '100%',
+      },
+      [mediaQuery]: {
+        justifyContent: 'flex-start',
+        width: '100%',
+      },
+    }),
+    filters: css({
+      flex: '1 1 420px',
+      minWidth: 0,
+    }),
+    createButton: css({
+      flexShrink: 0,
+    }),
+    secondaryActions: css({
+      display: 'flex',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: theme.spacing(2),
+      minWidth: 0,
+    }),
+    sortGroup: css({
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.5),
+      marginLeft: 'auto',
+      minWidth: 0,
+      [containerQuery]: {
+        marginLeft: 0,
+        width: '100%',
+      },
+      [mediaQuery]: {
+        marginLeft: 0,
+        width: '100%',
+      },
+    }),
+    field: css({
+      alignItems: 'center',
+      gap: theme.spacing(0.5),
+      '& > div': {
+        marginBottom: 0,
+      },
+    }),
+  };
+};
