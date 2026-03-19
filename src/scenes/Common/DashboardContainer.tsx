@@ -10,6 +10,7 @@ import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 import { useDashboardContainerAnnotations } from 'scenes/Common/DashboardContainer.hooks';
 import { DashboardContainerAnnotations } from 'scenes/Common/DashboardContainerAnnotations';
 import { DashboardHeader } from 'scenes/Common/DashboardHeader';
+import { FeoSessionsPanel } from 'scenes/Common/FeoSessionsPanel';
 
 interface DashboardContainerProps extends PropsWithChildren {
   check: Check;
@@ -52,7 +53,9 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
               <Stack direction="column" gap={2}>
                 <DashboardContainerAnnotations annotations={annotations}>
                   <DashboardHeader annotations={annotations} check={check} />
+                  <div>Chris is here</div>
                   {children}
+                  <FeoSessionsPanel />
                 </DashboardContainerAnnotations>
               </Stack>
             </PluginPage>

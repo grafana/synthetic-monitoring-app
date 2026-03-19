@@ -283,7 +283,10 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=12.4.0"
+    "grafanaDependency": ">=12.4.0",
+    "extensions": {
+      "exposedComponents": ["grafana-kowalski-app/sessions-extension/v1"]
+    }
   },
   "languages": ["en-US", "es-ES"]
 }
