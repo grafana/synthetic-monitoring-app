@@ -11,8 +11,8 @@ import { Check, CheckEnabledStatus, CheckSort, CheckType, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import {
   CheckRuntimeAlertStates,
+  getCheckCompositeKey,
   getCheckRuntimeAlertState,
-  getCheckRuntimeAlertStateKey,
   useChecksAlertStates,
 } from 'data/useCheckAlertStates';
 import { useSuspenseChecks } from 'data/useChecks';
@@ -257,7 +257,7 @@ function sortChecks(
   checkAlertStates: CheckRuntimeAlertStates
 ) {
   const reachabilityMap = reachabilitySuccessRates.reduce<Record<string, number>>((acc, metric) => {
-    acc[getCheckRuntimeAlertStateKey(metric.metric.job, metric.metric.instance)] = metric.value[1];
+    acc[getCheckCompositeKey(metric.metric.job, metric.metric.instance)] = metric.value[1];
     return acc;
   }, {});
 
@@ -285,8 +285,8 @@ function getNumberOfExecutions(checkA: Check, checkB: Check) {
 }
 
 function compareAlertState(checkA: Check, checkB: Check, checkAlertStates: CheckRuntimeAlertStates) {
-  const isAFiring = getCheckRuntimeAlertState(checkAlertStates, checkA).isFiring;
-  const isBFiring = getCheckRuntimeAlertState(checkAlertStates, checkB).isFiring;
+  const isAFiring = getCheckRuntimeAlertState(checkAlertStates, checkA).firingCount > 0;
+  const isBFiring = getCheckRuntimeAlertState(checkAlertStates, checkB).firingCount > 0;
 
   if (isAFiring === isBFiring) {
     return 0;
@@ -310,8 +310,8 @@ function compareChecksBySortType(
   }
 
   if ([CheckSort.ReachabilityAsc, CheckSort.ReachabilityDesc].includes(sortType)) {
-    const reachabilityA = reachabilityMap[getCheckRuntimeAlertStateKey(checkA.job, checkA.target)] ?? -1;
-    const reachabilityB = reachabilityMap[getCheckRuntimeAlertStateKey(checkB.job, checkB.target)] ?? -1;
+    const reachabilityA = reachabilityMap[getCheckCompositeKey(checkA.job, checkA.target)] ?? -1;
+    const reachabilityB = reachabilityMap[getCheckCompositeKey(checkB.job, checkB.target)] ?? -1;
 
     if (sortType === CheckSort.ReachabilityAsc) {
       return reachabilityA - reachabilityB;

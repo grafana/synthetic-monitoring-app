@@ -34,7 +34,7 @@ export const CheckListItemCard = ({
     <div
       className={cx(styles.container, {
         [styles.disabledCard]: !check.enabled,
-        [styles.firingAlertCard]: runtimeAlertState.isFiring,
+        [styles.firingAlertCard]: runtimeAlertState.firingCount > 0,
       })}
     >
       <div className={styles.cardWrapper} data-testid={DataTestIds.CheckCard}>

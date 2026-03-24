@@ -23,17 +23,15 @@ type MetricCheckAlertState = InstantMetric & {
 
 export interface CheckRuntimeAlertState {
   firingCount: number;
-  isFiring: boolean;
 }
 
 export type CheckRuntimeAlertStates = Record<string, CheckRuntimeAlertState>;
 
 const EMPTY_ALERT_STATE: CheckRuntimeAlertState = {
   firingCount: 0,
-  isFiring: false,
 };
 
-export function getCheckRuntimeAlertStateKey(job: Check['job'], target: Check['target']) {
+export function getCheckCompositeKey(job: Check['job'], target: Check['target']) {
   return JSON.stringify([job, target]);
 }
 
@@ -41,7 +39,7 @@ export function getCheckRuntimeAlertState(
   checkAlertStates: CheckRuntimeAlertStates,
   { job, target }: Pick<Check, 'job' | 'target'>
 ) {
-  return checkAlertStates[getCheckRuntimeAlertStateKey(job, target)] ?? EMPTY_ALERT_STATE;
+  return checkAlertStates[getCheckCompositeKey(job, target)] ?? EMPTY_ALERT_STATE;
 }
 
 export function useChecksAlertStates(checks: Check[]) {
@@ -67,12 +65,11 @@ export function useChecksAlertStates(checks: Check[]) {
     refetchInterval: () => STANDARD_REFRESH_INTERVAL,
     select: (data) => {
       return data.reduce<CheckRuntimeAlertStates>((acc, metric) => {
-        const key = getCheckRuntimeAlertStateKey(metric.metric.job, metric.metric.instance);
+        const key = getCheckCompositeKey(metric.metric.job, metric.metric.instance);
         const current = acc[key] ?? EMPTY_ALERT_STATE;
 
         acc[key] = {
           firingCount: current.firingCount + 1,
-          isFiring: true,
         };
 
         return acc;

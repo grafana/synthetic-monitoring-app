@@ -30,7 +30,7 @@ export const CheckListItemRow = ({
     <div
       className={cx(styles.container, {
         [styles.disabledCard]: !check.enabled,
-        [styles.firingAlertRow]: runtimeAlertState.isFiring,
+        [styles.firingAlertRow]: runtimeAlertState.firingCount > 0,
       })}
     >
       <div className={styles.listCardWrapper}>

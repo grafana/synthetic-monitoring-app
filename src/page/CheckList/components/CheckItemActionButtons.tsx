@@ -54,7 +54,7 @@ export const CheckItemActionButtons = ({
           {responsiveDashboardLink ? (
             <>
               <LinkButton
-                href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`}
+                href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
                 size="sm"
                 fill="text"
                 className={styles.dashboardTextLink}
