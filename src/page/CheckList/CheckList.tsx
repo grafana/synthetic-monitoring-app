@@ -28,10 +28,6 @@ import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 
-interface ViewTransitionDocument {
-  startViewTransition(callback: () => void): void;
-}
-
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
 
@@ -76,7 +72,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     }
 
     if ('startViewTransition' in document) {
-      (document as unknown as ViewTransitionDocument).startViewTransition(() => {
+      document.startViewTransition(() => {
         flushSync(() => setApplyAlertSort(true));
       });
     } else {
@@ -276,7 +272,7 @@ function sortChecks(
   sortType: CheckSort,
   reachabilitySuccessRates: MetricCheckSuccessParsed[],
   checkAlertStates: CheckRuntimeAlertStates,
-  isAlertStatesFetched: boolean
+  applyAlertSort: boolean
 ) {
   const reachabilityMap = reachabilitySuccessRates.reduce<Record<string, number>>((acc, metric) => {
     acc[getCheckCompositeKey(metric.metric.job, metric.metric.instance)] = metric.value[1];
@@ -284,7 +280,7 @@ function sortChecks(
   }, {});
 
   return [...checks].sort((a, b) => {
-    if (isAlertStatesFetched) {
+    if (applyAlertSort) {
       const alertStateComparison = compareAlertState(a, b, checkAlertStates);
 
       if (alertStateComparison !== 0) {
