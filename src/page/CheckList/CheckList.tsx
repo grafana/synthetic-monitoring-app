@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useLocation } from 'react-router';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { locationService, PluginPage } from '@grafana/runtime';
@@ -26,6 +27,10 @@ import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
 import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
+
+interface ViewTransitionDocument {
+  startViewTransition(callback: () => void): void;
+}
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -60,9 +65,24 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
-  const { data: checkAlertStates = {} } = useChecksAlertStates(checks);
+  const { data: checkAlertStates = {}, isFetched: isAlertStatesFetched } = useChecksAlertStates(checks);
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
+  const [applyAlertSort, setApplyAlertSort] = useState(false);
   const filters = useCheckFilters();
+
+  useEffect(() => {
+    if (!isAlertStatesFetched || applyAlertSort) {
+      return;
+    }
+
+    if ('startViewTransition' in document) {
+      (document as unknown as ViewTransitionDocument).startViewTransition(() => {
+        flushSync(() => setApplyAlertSort(true));
+      });
+    } else {
+      setApplyAlertSort(true);
+    }
+  }, [isAlertStatesFetched, applyAlertSort]);
 
   const [sortType, setSortType] = useQueryParametersState<CheckSort>({
     key: 'sort',
@@ -99,7 +119,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus);
-  const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates);
+  const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
   const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
@@ -215,18 +235,19 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       <div>
         <section className="card-section card-list-layout-list">
           <div className={styles.list}>
-            {currentPageChecks.map((check, index) => (
-              <CheckListItem
-                check={check}
-                key={check.id}
-                onLabelSelect={handleLabelSelect}
-                onStatusSelect={handleStatusSelect}
-                onTypeSelect={handleTypeSelect}
-                onToggleCheckbox={handleCheckSelect}
-                runtimeAlertState={getCheckRuntimeAlertState(checkAlertStates, check)}
-                selected={selectedCheckIds.has(check.id!)}
-                viewType={viewType}
-              />
+            {currentPageChecks.map((check) => (
+              <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
+                <CheckListItem
+                  check={check}
+                  onLabelSelect={handleLabelSelect}
+                  onStatusSelect={handleStatusSelect}
+                  onTypeSelect={handleTypeSelect}
+                  onToggleCheckbox={handleCheckSelect}
+                  runtimeAlertState={getCheckRuntimeAlertState(checkAlertStates, check)}
+                  selected={selectedCheckIds.has(check.id!)}
+                  viewType={viewType}
+                />
+              </div>
             ))}
           </div>
         </section>
@@ -254,7 +275,8 @@ function sortChecks(
   checks: Check[],
   sortType: CheckSort,
   reachabilitySuccessRates: MetricCheckSuccessParsed[],
-  checkAlertStates: CheckRuntimeAlertStates
+  checkAlertStates: CheckRuntimeAlertStates,
+  isAlertStatesFetched: boolean
 ) {
   const reachabilityMap = reachabilitySuccessRates.reduce<Record<string, number>>((acc, metric) => {
     acc[getCheckCompositeKey(metric.metric.job, metric.metric.instance)] = metric.value[1];
@@ -262,10 +284,12 @@ function sortChecks(
   }, {});
 
   return [...checks].sort((a, b) => {
-    const alertStateComparison = compareAlertState(a, b, checkAlertStates);
+    if (isAlertStatesFetched) {
+      const alertStateComparison = compareAlertState(a, b, checkAlertStates);
 
-    if (alertStateComparison !== 0) {
-      return alertStateComparison;
+      if (alertStateComparison !== 0) {
+        return alertStateComparison;
+      }
     }
 
     const selectedSortComparison = compareChecksBySortType(a, b, sortType, reachabilityMap);
