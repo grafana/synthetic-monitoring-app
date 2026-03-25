@@ -148,7 +148,7 @@
     "use-konami": "1.0.1",
     "usehooks-ts": "3.1.1",
     "valid-url": "1.0.9",
-    "yaml": "2.2.2",
+    "yaml": "2.8.3",
     "zod": "4.1.13"
   },
   "resolutions": {
