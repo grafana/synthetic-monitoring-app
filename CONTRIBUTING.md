@@ -1,6 +1,6 @@
 # Contributing to this repository
 
-## Getting started
+## Get started
 
 There are two different "modes" for developing this plugin. You can either work on just the plugin, pointed at Grafana cloud (easier to set up), or if you need to work across the entire stack you'll need to set up all the dependent components.
 
@@ -8,31 +8,38 @@ There are two different "modes" for developing this plugin. You can either work 
 
 - Set up a Grafana Cloud account
 - Make sure you have Docker installed
-- Pull this repo to your local machine
+- Clone this repo to your local machine
 
 ### Set up
 
-We need to configure our local Grafana using provisioning. Provisioning does three things for us:
+We need to configure our local Grafana using [provisioning](http://grafana.com/docs/grafana/latest/administration/provisioning/). Provisioning does three things for us:
 
 - Installs and enables the plugin in Grafana
 - Creates the necessary datasources
 - Provides some data to the plugin so it knows how to connect to the SM API and Cloud.
 
-Example provisioning files can be found in `dev/provisioning/datasources` and `dev/provisioning/plugins`
+Example provisioning files can be found in [`dev/provisioning/datasources`](./dev/provisioning/datasources/example.yaml) and [`dev/provisioning/plugins`](./dev/provisioning/plugins/example.yaml).
 
 - Create new `yaml` files in `dev/provisioning/datasources` and `dev/provisioning/plugins` folders (they can be named anything).
 - Copy the content from each example file and uncomment everything. These files will be mounted as volumes in the Grafana docker container.
 - Fill in the values for the provisioning files.
   - Datasource info:
-    - You'll need to input the basicAuthUser and password. You can find this information by going to your cloud portal, and copying the user info from the prometheus/loki datasource config UI
-    - The password should be a grafana.com api key
-    - The `name` can be anything, it just has to match what you pass as the `grafanaName` in your plugin provisioning file
+    - You'll need to input the `basicAuthUser` and `password`. You can find this information by going to your Grafana Cloud portal and copying the user info from the Prometheus/Loki datasource config UI.
+    - The password should be a Grafana API key.
+    - The `name` can be anything, it just has to match what you pass as the `grafanaName` in your plugin provisioning file.
   - Plugin info:
-    - stackId can be found using `gcom /instances/<orgSlug>`, or by visiting `https://grafana.com/orgs/<orgSlug>/stacks` and clicking the `details` button on stack you are connecting to. The id will be in the URL.
+    - `apiHost` expects a Synthetic Monitoring backend address URL. Refer to the [documentation](https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#probe-api-server-url) for the URL of the backend address corresponding to the region of your Grafana Cloud stack, and include the `https://` prefix in the URL.
+    - stackId can be found using `gcom /instances/<orgSlug>`, or by visiting `https://grafana.com/orgs/<orgSlug>/stacks` and clicking the `details` button on stack you are connecting to. The ID will be in the URL.
     - The `logs` and `metrics` section are instructing the plugin which datasources it needs to use.
-      - The `grafanaName` needs to exactly match the names specified in your datasource provisioning
-      - The `hostedId` is the same value as the `basicAuthUser` in your datasource provisioning
-      - `publisherToken` needs to be a grafana.com api key with a `MetricsPublisher` role. This is what the probes use to publish metrics to your cloud stack.
+      - The `grafanaName` needs to exactly match the names specified in your datasource provisioning.
+      - The `hostedId` is the same value as the `basicAuthUser` in your datasource provisioning.
+      - `publisherToken` is an access policy token used to communicate with your Grafana Cloud stack and publish telemetry data from the probes. The access policy needs to have the following scopes:
+        - Read stacks (Add scope -> stacks:read)
+        - Write metrics
+        - Write logs
+        - Write traces
+
+> **Note**: The Prometheus and Loki instances must be part of the same Grafana Cloud stack**. You can also add a provisioning block per [org](https://grafana.com/docs/grafana/latest/manage-users/server-admin/server-admin-manage-orgs/) to provision the plugin for multiple orgs. You can provide different values for each org block and connect to a different cloud stack per org.
 
 Grafana configuration can be adjusted using the `custom.ini` file located in `/dev`. It defaults to development app mode, and has some feature toggles. Grafana will need to be restarted to pick up changes.
 
@@ -43,7 +50,21 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/d
 - Go to `localhost:3000`
 - Changes to the plugin code will hot reload. Changes to provisioning require restarting Grafana (which will happen if you just rerun the `yarn server` command).
 
-### Running the entire stack locally
+To start using the app:
+
+1. Navigate to **Testing & synthetics -> Synthetic Monitoring** via the sidebar.
+2. Click the **Get Started** button. This will initialize the app.
+
+During the initialization process, the Synthetic Monitoring backend will:
+
+1. Validate the Publisher API key provided in the provisioning file.
+2. Ensure the account has active Grafana Cloud Prometheus and Grafana Cloud Loki services.
+3. The dashboards included with the app will then be imported.
+4. Finally, the Synthetic Monitoring backend will be notified that the service is ready.
+
+Users can then create checks to monitor their remote targets. Metrics and logs will flow into the selected Cloud stack.
+
+### Run the entire stack locally
 
 - See the instructions for [setting up the api](https://github.com/grafana/synthetic-monitoring-api/blob/main/DEVELOPMENT.md)
 - Change the `apiHost` variable in your plugin provisioning yaml file to point at your locally running API. To allow docker to reach your local API URL, you need to provision the Synthetic Monitoring app with `apiHost: http://host.docker.internal:4030`.
