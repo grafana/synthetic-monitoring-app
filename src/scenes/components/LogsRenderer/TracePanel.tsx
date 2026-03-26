@@ -2,34 +2,54 @@ import React, { useMemo } from 'react';
 import { DataSourceInstanceSettings, GrafanaTheme2, PanelData } from '@grafana/data';
 import { SceneDataNode, VizConfigBuilders } from '@grafana/scenes';
 import { VizPanel } from '@grafana/scenes-react';
-import { IconButton, Stack, useStyles2 } from '@grafana/ui';
+import { IconButton, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
+import { getExploreTracesUrl, getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
 
 const viz = VizConfigBuilders.traces().build();
+
+const TRACE_TIME_BUFFER_MS = 5 * 60 * 1000;
 
 interface TracePanelProps {
   traceId: string;
   tracesDS: DataSourceInstanceSettings;
   traceData: PanelData;
+  logTimestamp: number;
   onClose: () => void;
 }
 
-export const TracePanel = ({ traceId, tracesDS, traceData, onClose }: TracePanelProps) => {
+export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, onClose }: TracePanelProps) => {
   const styles = useStyles2(getStyles);
-  const href = getExploreTraceUrl(tracesDS.uid, traceId);
+  const exploreUrl = getExploreTraceUrl(tracesDS.uid, traceId);
+  const drilldownUrl = getExploreTracesUrl(tracesDS.uid, traceId, {
+    from: logTimestamp - TRACE_TIME_BUFFER_MS,
+    to: logTimestamp + TRACE_TIME_BUFFER_MS,
+  });
   const dataProvider = useMemo(() => new SceneDataNode({ data: traceData }), [traceData]);
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <span className={styles.title}>Trace: {traceId}</span>
+        <h4 className={styles.title}>Trace: {traceId}</h4>
         <Stack direction="row" gap={1} alignItems="center">
-          <a href={href} className={styles.exploreLink} title="Open in Explore">
-            <IconButton name="external-link-alt" aria-label="Open trace in Explore" size="md" />
-          </a>
-          <IconButton name="times" aria-label="Close trace panel" onClick={onClose} size="md" />
+          <LinkButton
+            fill="text"
+            size="md"
+            icon="gf-traces"
+            href={drilldownUrl}
+            tooltip="Open in Traces Drilldown"
+            aria-label="Open in Traces Drilldown"
+          />
+          <LinkButton
+            fill="text"
+            size="md"
+            icon="compass"
+            href={exploreUrl}
+            tooltip="Open in Explore"
+            aria-label="Open trace in Explore"
+          />
+          <IconButton name="times" aria-label="Close trace panel" tooltip="Close" onClick={onClose} size="md" />
         </Stack>
       </div>
       <div className={styles.panel}>
@@ -61,14 +81,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-  }),
-  exploreLink: css({
-    textDecoration: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    '&:hover': {
-      textDecoration: 'none',
-    },
+    margin: 0,
   }),
   panel: css({
     minHeight: '500px',

@@ -24,3 +24,18 @@ export function getExploreTraceUrl(datasourceUid: string, traceId: string): stri
 
   return `/explore?left=${left}`;
 }
+
+export function getExploreTracesUrl(
+  datasourceUid: string,
+  traceId: string,
+  timeRange: { from: number; to: number }
+): string {
+  const params = new URLSearchParams({
+    from: String(timeRange.from),
+    to: String(timeRange.to),
+    'var-ds': datasourceUid,
+    traceId,
+  });
+
+  return `/a/grafana-exploretraces-app/explore?${params.toString()}`;
+}

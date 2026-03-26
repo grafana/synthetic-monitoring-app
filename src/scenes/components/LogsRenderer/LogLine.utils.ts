@@ -10,13 +10,13 @@ export async function fetchTraceData(
   const { data } = await firstValueFrom(
     getBackendSrv().fetch<BackendDataSourceResponse>({
       method: 'POST',
-      url: `/api/ds/query?ds_type=${tracesDS.type}`,
+      url: `/api/ds/query?ds_type=${tracesDS.type}&refId=${traceId}`,
       data: {
         from: '0',
         to: '0',
         queries: [
           {
-            refId: 'A',
+            refId: traceId,
             datasource: { type: tracesDS.type, uid: tracesDS.uid },
             queryType: 'traceId',
             query: traceId,
@@ -29,7 +29,7 @@ export async function fetchTraceData(
     })
   );
 
-  const frames = data.results?.A?.frames ?? [];
+  const frames = data.results?.[traceId]?.frames ?? [];
   const series = frames.map((frame) => dataFrameFromJSON(frame));
 
   return {
