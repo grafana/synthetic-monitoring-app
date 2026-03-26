@@ -7,8 +7,6 @@ import { css } from '@emotion/css';
 
 import { getExploreTracesUrl, getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
 
-const viz = VizConfigBuilders.traces().build();
-
 const TRACE_TIME_BUFFER_MS = 5 * 60 * 1000;
 
 const ARROW_SIZE = 8;
@@ -30,6 +28,14 @@ export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, arrowOf
     to: logTimestamp + TRACE_TIME_BUFFER_MS,
   });
   const dataProvider = useMemo(() => new SceneDataNode({ data: traceData }), [traceData]);
+  const viz = useMemo(
+    () =>
+      VizConfigBuilders.traces()
+        // @ts-expect-error - waiting on https://github.com/grafana/grafana/pull/121215
+        .setOption('datasource', { type: tracesDS.type, uid: tracesDS.uid })
+        .build(),
+    [tracesDS.type, tracesDS.uid]
+  );
 
   return (
     <div className={styles.container}>
