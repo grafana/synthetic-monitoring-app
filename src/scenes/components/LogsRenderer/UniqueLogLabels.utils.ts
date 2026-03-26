@@ -12,6 +12,6 @@ export function uniqueLabels(log: ParsedLokiRecord<Record<string, string>, Recor
       key !== 'msg' &&
       !key.includes(`_extracted`) &&
       !key.includes(`label_`) &&
-      key !== 'time'
+      key !== 'time' // it is redundant as it corresponds to the log timestamp
   );
 }
