@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
@@ -28,6 +28,9 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
   const tracesDS = useTracesDS();
   const [expanded, setExpanded] = useState(false);
   const [, forceUpdate] = useState(0);
+  const traceIconRef = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
+  const [arrowOffset, setArrowOffset] = useState<number | null>(null);
 
   const labels = log.labels as Record<string, string>;
   const traceId = getTraceId(labels);
@@ -79,9 +82,21 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
     setExpanded(false);
   }, []);
 
+  useEffect(() => {
+    if (expanded && traceIconRef.current && outerRef.current) {
+      const iconRect = traceIconRef.current.getBoundingClientRect();
+      const outerRect = outerRef.current.getBoundingClientRect();
+      setArrowOffset(iconRect.left - outerRect.left + iconRect.width / 2);
+    }
+  }, [expanded]);
+
+  const gridClassName = cx(hasTraceColumn ? styles.timelineItemWithTrace : styles.timelineItem, {
+    [styles.timelineItemExpanded]: expanded,
+  });
+
   return (
-    <div data-testid={`event-log-${log.id}`}>
-      <div className={hasTraceColumn ? styles.timelineItemWithTrace : styles.timelineItem}>
+    <div data-testid={`event-log-${log.id}`} ref={outerRef}>
+      <div className={gridClassName}>
         <div className={styles.time}>{dateTimeFormat(log[LokiFieldNames.TimeStamp], { defaultWithMS: true })}</div>
         <div
           className={cx(styles.level, {
@@ -94,7 +109,7 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
         </div>
         <div className={styles.mainKey}>{labels[mainKey]}</div>
         {hasTraceColumn && (
-          <div className={styles.traceIconCell}>
+          <div className={styles.traceIconCell} ref={traceIconRef}>
             {traceId && (
               <TraceIconButton
                 isLoading={isLoading}
@@ -117,6 +132,7 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
           tracesDS={tracesDS}
           traceData={traceData}
           logTimestamp={logTimestamp}
+          arrowOffset={arrowOffset}
           onClose={handleClose}
         />
       )}
@@ -172,6 +188,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: ${theme.spacing(2)};
     border-bottom: 1px solid ${theme.colors.border.medium};
     padding: ${theme.spacing(0.5)};
+  `,
+  timelineItemExpanded: css`
+    border-bottom-color: transparent;
   `,
   mainKey: css`
     overflow-x: auto;

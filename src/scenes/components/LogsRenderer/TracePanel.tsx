@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { DataSourceInstanceSettings, GrafanaTheme2, PanelData } from '@grafana/data';
 import { SceneDataNode, VizConfigBuilders } from '@grafana/scenes';
 import { VizPanel } from '@grafana/scenes-react';
-import { IconButton, LinkButton, Stack, useStyles2 } from '@grafana/ui';
+import { Box, IconButton, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { getExploreTracesUrl, getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
@@ -11,15 +11,18 @@ const viz = VizConfigBuilders.traces().build();
 
 const TRACE_TIME_BUFFER_MS = 5 * 60 * 1000;
 
+const ARROW_SIZE = 8;
+
 interface TracePanelProps {
   traceId: string;
   tracesDS: DataSourceInstanceSettings;
   traceData: PanelData;
   logTimestamp: number;
+  arrowOffset: number | null;
   onClose: () => void;
 }
 
-export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, onClose }: TracePanelProps) => {
+export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, arrowOffset, onClose }: TracePanelProps) => {
   const styles = useStyles2(getStyles);
   const exploreUrl = getExploreTraceUrl(tracesDS.uid, traceId);
   const drilldownUrl = getExploreTracesUrl(tracesDS.uid, traceId, {
@@ -30,28 +33,28 @@ export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, onClose
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h4 className={styles.title}>Trace: {traceId}</h4>
-        <Stack direction="row" gap={1} alignItems="center">
-          <LinkButton
-            fill="text"
-            size="md"
-            icon="gf-traces"
-            href={drilldownUrl}
-            tooltip="Open in Traces Drilldown"
-            aria-label="Open in Traces Drilldown"
-          />
-          <LinkButton
-            fill="text"
-            size="md"
-            icon="compass"
-            href={exploreUrl}
-            tooltip="Open in Explore"
-            aria-label="Open trace in Explore"
-          />
-          <IconButton name="times" aria-label="Close trace panel" tooltip="Close" onClick={onClose} size="md" />
+      {arrowOffset !== null && <div className={styles.arrow} style={{ left: arrowOffset }} />}
+      <Box paddingX={2} paddingY={1}>
+        <Stack justifyContent="space-between" alignItems="center">
+          <Text element="h4">
+            <div className={styles.title}>Trace: {traceId}</div>
+          </Text>
+          <Stack direction="row" gap={1} alignItems="center">
+            <LinkButton fill="text" size="md" icon="gf-traces" href={drilldownUrl}>
+              View in Traces Drilldown
+            </LinkButton>
+            <LinkButton
+              fill="text"
+              size="md"
+              icon="compass"
+              href={exploreUrl}
+              tooltip="View Trace in Explore"
+              aria-label="View Trace in Explore"
+            />
+            <IconButton name="times" aria-label="Close trace panel" tooltip="Close" onClick={onClose} size="md" />
+          </Stack>
         </Stack>
-      </div>
+      </Box>
       <div className={styles.panel}>
         <VizPanel dataProvider={dataProvider} title="" viz={viz} />
       </div>
@@ -61,27 +64,26 @@ export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, onClose
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
-    border: `1px solid ${theme.colors.border.medium}`,
+    position: 'relative',
+    border: `1px solid ${theme.colors.warning.border}`,
     borderRadius: theme.shape.radius.default,
-    marginTop: theme.spacing(1),
+    marginTop: ARROW_SIZE,
     marginBottom: theme.spacing(1),
     background: theme.colors.background.primary,
   }),
-  header: css({
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
-    borderBottom: `1px solid ${theme.colors.border.medium}`,
+  arrow: css({
+    position: 'absolute',
+    top: -ARROW_SIZE,
+    transform: 'translateX(-50%)',
+    width: 0,
+    height: 0,
+    borderLeft: `${ARROW_SIZE}px solid transparent`,
+    borderRight: `${ARROW_SIZE}px solid transparent`,
+    borderBottom: `${ARROW_SIZE}px solid ${theme.colors.warning.border}`,
   }),
   title: css({
     fontFamily: theme.typography.fontFamilyMonospace,
     fontSize: theme.typography.bodySmall.fontSize,
-    color: theme.colors.text.secondary,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    margin: 0,
   }),
   panel: css({
     minHeight: '500px',
