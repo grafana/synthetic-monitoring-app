@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
@@ -82,12 +82,29 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
     setExpanded(false);
   }, []);
 
-  useEffect(() => {
-    if (expanded && traceIconRef.current && outerRef.current) {
-      const iconRect = traceIconRef.current.getBoundingClientRect();
-      const outerRect = outerRef.current.getBoundingClientRect();
-      setArrowOffset(iconRect.left - outerRect.left + iconRect.width / 2);
+  useLayoutEffect(() => {
+    if (!expanded) {
+      return;
     }
+
+    const outerEl = outerRef.current;
+    if (!outerEl || !traceIconRef.current) {
+      return;
+    }
+
+    const updateOffset = () => {
+      if (traceIconRef.current && outerEl) {
+        const iconRect = traceIconRef.current.getBoundingClientRect();
+        const outerRect = outerEl.getBoundingClientRect();
+        setArrowOffset(iconRect.left - outerRect.left + iconRect.width / 2);
+      }
+    };
+
+    updateOffset();
+
+    const observer = new ResizeObserver(updateOffset);
+    observer.observe(outerEl);
+    return () => observer.disconnect();
   }, [expanded]);
 
   const gridClassName = cx(hasTraceColumn ? styles.timelineItemWithTrace : styles.timelineItem, {

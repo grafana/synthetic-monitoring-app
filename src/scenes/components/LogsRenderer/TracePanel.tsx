@@ -56,7 +56,7 @@ export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, arrowOf
         </Stack>
       </Box>
       <div className={styles.panel}>
-        <VizPanel dataProvider={dataProvider} title="" viz={viz} />
+        <VizPanel dataProvider={dataProvider} title="" viz={viz} hoverHeader />
       </div>
     </div>
   );
