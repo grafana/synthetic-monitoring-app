@@ -1,37 +1,36 @@
-import React from 'react';
-import { DataSourceInstanceSettings, GrafanaTheme2 } from '@grafana/data';
-import { VizConfigBuilders } from '@grafana/scenes';
-import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
-import { IconButton, useStyles2 } from '@grafana/ui';
+import React, { useMemo } from 'react';
+import { DataSourceInstanceSettings, GrafanaTheme2, PanelData } from '@grafana/data';
+import { SceneDataNode, VizConfigBuilders } from '@grafana/scenes';
+import { VizPanel } from '@grafana/scenes-react';
+import { IconButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
 
 const viz = VizConfigBuilders.traces().build();
 
 interface TracePanelProps {
   traceId: string;
   tracesDS: DataSourceInstanceSettings;
+  traceData: PanelData;
   onClose: () => void;
 }
 
-export const TracePanel = ({ traceId, tracesDS, onClose }: TracePanelProps) => {
+export const TracePanel = ({ traceId, tracesDS, traceData, onClose }: TracePanelProps) => {
   const styles = useStyles2(getStyles);
-
-  const dataProvider = useQueryRunner({
-    queries: [
-      {
-        refId: 'A',
-        queryType: 'traceql',
-        query: traceId,
-      },
-    ],
-    datasource: { type: tracesDS.type, uid: tracesDS.uid },
-  });
+  const href = getExploreTraceUrl(tracesDS.uid, traceId);
+  const dataProvider = useMemo(() => new SceneDataNode({ data: traceData }), [traceData]);
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <span className={styles.title}>Trace: {traceId}</span>
-        <IconButton name="times" aria-label="Close trace panel" onClick={onClose} size="md" />
+        <Stack direction="row" gap={1} alignItems="center">
+          <a href={href} className={styles.exploreLink} title="Open in Explore">
+            <IconButton name="external-link-alt" aria-label="Open trace in Explore" size="md" />
+          </a>
+          <IconButton name="times" aria-label="Close trace panel" onClick={onClose} size="md" />
+        </Stack>
       </div>
       <div className={styles.panel}>
         <VizPanel dataProvider={dataProvider} title="" viz={viz} />
@@ -62,6 +61,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+  }),
+  exploreLink: css({
+    textDecoration: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    '&:hover': {
+      textDecoration: 'none',
+    },
   }),
   panel: css({
     minHeight: '500px',

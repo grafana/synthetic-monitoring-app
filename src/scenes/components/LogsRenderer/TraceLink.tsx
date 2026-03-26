@@ -1,103 +1,73 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { IconButton, Stack, Tag, useStyles2 } from '@grafana/ui';
+import { Tag, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-
-import { useTracesDS } from 'hooks/useTracesDS';
-
-const TRACE_LABEL_NAMES = new Set(['trace_id', 'traceID', 'traceId', 'span_id', 'spanID', 'spanId']);
-
-const TRACE_ID_LABEL_NAMES = new Set(['trace_id', 'traceID', 'traceId']);
-
-export function isTraceLabel(labelName: string): boolean {
-  return TRACE_LABEL_NAMES.has(labelName);
-}
-
-export function isTraceIdLabel(labelName: string): boolean {
-  return TRACE_ID_LABEL_NAMES.has(labelName);
-}
-
-export function getExploreTraceUrl(datasourceUid: string, traceId: string): string {
-  const left = encodeURIComponent(
-    JSON.stringify({
-      datasource: datasourceUid,
-      queries: [
-        {
-          refId: 'A',
-          queryType: 'traceql',
-          query: traceId,
-        },
-      ],
-    })
-  );
-
-  return `/explore?left=${left}`;
-}
 
 interface TraceLinkProps {
   labelName: string;
   labelValue: string;
   isExpanded?: boolean;
   onToggle?: () => void;
+  traceExists?: boolean;
+  isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
 }
 
-export const TraceLink = ({ labelName, labelValue, isExpanded, onToggle }: TraceLinkProps) => {
-  const tracesDS = useTracesDS();
+export const TraceLink = ({
+  labelName,
+  labelValue,
+  isExpanded,
+  onToggle,
+  traceExists,
+  isLoading,
+  isError,
+  onRetry,
+}: TraceLinkProps) => {
   const styles = useStyles2(getStyles);
-  const isTraceId = TRACE_ID_LABEL_NAMES.has(labelName);
-  const canExpand = isTraceId && onToggle;
+  const tagName = `${labelName}=${labelValue}`;
 
-  if (!tracesDS) {
-    return <Tag name={`${labelName}=${labelValue}`} className={styles.tag} />;
+  if (isLoading) {
+    return <Tag name={tagName} className={styles.tag} icon="fa fa-spinner" />;
   }
 
-  const href = getExploreTraceUrl(tracesDS.uid, labelValue);
+  if (isError) {
+    return (
+      <button type="button" onClick={() => onRetry?.()} className={styles.tagButton} aria-label="Retry trace lookup">
+        <Tag name={tagName} className={styles.clickableTag} icon="sync" />
+      </button>
+    );
+  }
+
+  if (!traceExists) {
+    return <Tag name={tagName} className={styles.tag} />;
+  }
 
   return (
-    <Stack direction="row" gap={0.5} alignItems="center">
-      <button type="button" onClick={canExpand ? onToggle : undefined} className={styles.tagButton}>
-        <Tag
-          name={`${labelName}=${labelValue}`}
-          className={canExpand ? styles.clickableTag : styles.tag}
-          icon={canExpand && isExpanded ? 'angle-down' : canExpand ? 'angle-right' : undefined}
-        />
-      </button>
-      <a href={href} className={styles.exploreLink} title="Open in Explore">
-        <IconButton name="external-link-alt" aria-label="Open trace in Explore" size="sm" />
-      </a>
-    </Stack>
+    <button type="button" onClick={onToggle} className={styles.tagButton}>
+      <Tag name={tagName} className={styles.clickableTag} icon={isExpanded ? 'angle-down' : 'angle-right'} />
+    </button>
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => {
-  return {
-    tag: css`
-      white-space: break-spaces;
-      overflow-wrap: anywhere;
-    `,
-    tagButton: css`
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-    `,
-    clickableTag: css`
-      white-space: break-spaces;
-      overflow-wrap: anywhere;
-      cursor: pointer;
+const getStyles = (theme: GrafanaTheme2) => ({
+  tag: css`
+    white-space: break-spaces;
+    overflow-wrap: anywhere;
+  `,
+  tagButton: css`
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  `,
+  clickableTag: css`
+    white-space: break-spaces;
+    overflow-wrap: anywhere;
+    cursor: pointer;
 
-      &:hover {
-        opacity: 0.85;
-      }
-    `,
-    exploreLink: css`
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-
-      &:hover {
-        text-decoration: none;
-      }
-    `,
-  };
-};
+    &:hover {
+      opacity: 0.85;
+    }
+  `,
+});

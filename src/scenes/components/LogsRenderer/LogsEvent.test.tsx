@@ -1,20 +1,29 @@
 import React from 'react';
-import { dateTimeFormat } from '@grafana/data';
-import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { dateTimeFormat, LoadingState } from '@grafana/data';
+import { screen, within } from '@testing-library/react';
 import { executionLogsFactory } from 'test/factories/executionLogs';
 import { TRACES_DATASOURCE } from 'test/fixtures/datasources';
+import { render } from 'test/render';
 
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
-import { getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink';
 
 import { LogsEvent } from './LogsEvent';
 
+const mockFetchTraceData = jest.fn();
+jest.mock('./LogLine.utils', () => ({
+  fetchTraceData: (...args: unknown[]) => mockFetchTraceData(...args),
+}));
+
 jest.mock('./TracePanel', () => ({
-  TracePanel: ({ traceId, onClose }: { traceId: string; onClose: () => void }) => (
+  TracePanel: ({ traceId, onClose, tracesDS }: { traceId: string; onClose: () => void; tracesDS: { uid: string } }) => (
     <div data-testid="trace-panel">
       <span>Trace: {traceId}</span>
-      <button onClick={onClose} aria-label="Close trace panel">
+      <a href={`/explore?trace=${traceId}&ds=${tracesDS.uid}`} title="Open in Explore">
+        <button aria-label="Open trace in Explore" type="button">
+          Explore
+        </button>
+      </a>
+      <button onClick={onClose} aria-label="Close trace panel" type="button">
         Close
       </button>
     </div>
@@ -49,143 +58,152 @@ function buildLogsWithTraceLabels(extraLabels: Record<string, string> = {}) {
 describe('LogsEvent', () => {
   const MAIN_KEY = 'msg';
 
-  it('should render all the logs correctly', () => {
+  beforeEach(() => {
+    mockFetchTraceData.mockReset();
+  });
+
+  it('should render all the logs correctly', async () => {
     const logs = executionLogsFactory.build(undefined, {
-      transient: {
-        commonLabels: {
-          probe: 'test',
-        },
-      },
+      transient: { commonLabels: { probe: 'test' } },
     });
 
     render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
-    const logLineElements = screen.getAllByTestId(/event-log-/);
+    const logLineElements = await screen.findAllByTestId(/event-log-/);
 
     logLineElements.forEach((el, index) => {
-      const renderedMainKey = within(el).getByText(logs[index].labels[MAIN_KEY]);
-      const renderedLevel = within(el).getByText(logs[index].labels.level.toUpperCase());
-      const expectedTime = dateTimeFormat(logs[index][LokiFieldNames.TimeStamp], {
-        defaultWithMS: true,
-      });
-      const logTime = within(el).getByText(expectedTime);
-
-      expect(logTime).toBeInTheDocument();
-      expect(renderedMainKey).toBeInTheDocument();
-      expect(renderedLevel).toBeInTheDocument();
+      expect(within(el).getByText(logs[index].labels[MAIN_KEY])).toBeInTheDocument();
+      expect(within(el).getByText(logs[index].labels.level.toUpperCase())).toBeInTheDocument();
+      expect(
+        within(el).getByText(dateTimeFormat(logs[index][LokiFieldNames.TimeStamp], { defaultWithMS: true }))
+      ).toBeInTheDocument();
     });
 
     const beginningCheckLog = logLineElements[0];
-
-    const beginningCheckLogTime = within(beginningCheckLog).getByText(
-      `timeout_seconds=${logs[0].labels.timeout_seconds}`
-    );
-
-    expect(beginningCheckLogTime).toBeInTheDocument();
+    expect(
+      within(beginningCheckLog).getByText(`timeout_seconds=${logs[0].labels.timeout_seconds}`)
+    ).toBeInTheDocument();
   });
 
-  describe('when traces datasource is available', () => {
+  describe('when traces datasource is available and traces exist', () => {
     beforeEach(() => {
       addTracesDS();
+      mockFetchTraceData.mockResolvedValue({
+        state: LoadingState.Done,
+        series: [{}],
+        timeRange: { from: 0, to: 0, raw: { from: '0', to: '0' } },
+      });
     });
 
-    it('renders trace_id labels with an explore link', () => {
+    it('renders trace_id tag text in label=value format', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
       render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
 
-      const exploreLinks = screen.getAllByLabelText('Open trace in Explore');
-      expect(exploreLinks.length).toBeGreaterThan(0);
-
-      const firstLink = exploreLinks[0].closest('a');
-      expect(firstLink).toHaveAttribute('href', getExploreTraceUrl(TRACES_DATASOURCE.uid, TRACE_ID));
-    });
-
-    it('renders trace_id tag text in label=value format', () => {
-      const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
-
-      const traceTags = screen.getAllByText(`trace_id=${TRACE_ID}`);
+      const traceTags = await screen.findAllByText(`trace_id=${TRACE_ID}`);
       expect(traceTags.length).toBeGreaterThan(0);
     });
 
-    it('expands trace panels when clicking a trace_id tag', async () => {
-      const user = userEvent.setup();
+    it('expands trace panel when clicking a trace_id tag', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
 
-      expect(screen.queryByTestId('trace-panel')).not.toBeInTheDocument();
+      const chevrons = await screen.findAllByTestId('angle-right');
+      await user.click(chevrons[0]);
 
-      const traceTag = screen.getAllByText(`trace_id=${TRACE_ID}`)[0];
-      await user.click(traceTag);
-
-      const tracePanels = screen.getAllByTestId('trace-panel');
+      const tracePanels = await screen.findAllByTestId('trace-panel');
       expect(tracePanels.length).toBeGreaterThan(0);
 
       const firstLogElement = screen.getAllByTestId(/event-log-/)[0];
       expect(within(firstLogElement).getByText(`Trace: ${TRACE_ID}`)).toBeInTheDocument();
     });
 
-    it('collapses all trace panels when clicking the same trace_id tag again', async () => {
-      const user = userEvent.setup();
+    it('collapses trace panel when clicking the same trace_id tag again', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
 
-      const traceTag = screen.getAllByText(`trace_id=${TRACE_ID}`)[0];
-      await user.click(traceTag);
-      expect(screen.getAllByTestId('trace-panel').length).toBeGreaterThan(0);
+      const chevrons = await screen.findAllByTestId('angle-right');
+      await user.click(chevrons[0]);
+      expect((await screen.findAllByTestId('trace-panel')).length).toBeGreaterThan(0);
 
-      await user.click(traceTag);
-      expect(screen.queryByTestId('trace-panel')).not.toBeInTheDocument();
+      const chevronDown = screen.getAllByTestId('angle-down')[0];
+      await user.click(chevronDown);
+
+      const firstLogElement = screen.getAllByTestId(/event-log-/)[0];
+      expect(within(firstLogElement).queryByTestId('trace-panel')).not.toBeInTheDocument();
     });
 
-    it('renders span_id labels with an explore link but does not expand a trace panel on click', async () => {
-      const user = userEvent.setup();
+    it('shows explore link in the expanded trace panel', async () => {
+      const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+
+      const chevrons = await screen.findAllByTestId('angle-right');
+      await user.click(chevrons[0]);
+
+      const tracePanels = await screen.findAllByTestId('trace-panel');
+      expect(within(tracePanels[0]).getByLabelText('Open trace in Explore')).toBeInTheDocument();
+    });
+
+    it('closes trace panel via the close button', async () => {
+      const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+
+      const chevrons = await screen.findAllByTestId('angle-right');
+      await user.click(chevrons[0]);
+      expect((await screen.findAllByTestId('trace-panel')).length).toBeGreaterThan(0);
+
+      const closeButtons = screen.getAllByLabelText('Close trace panel');
+      await user.click(closeButtons[0]);
+
+      const firstLogElement = screen.getAllByTestId(/event-log-/)[0];
+      expect(within(firstLogElement).queryByTestId('trace-panel')).not.toBeInTheDocument();
+    });
+
+    it('does not expand trace panel when clicking a span_id tag', async () => {
       const logs = buildLogsWithTraceLabels({ span_id: SPAN_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
 
-      const spanTags = screen.getAllByText(`span_id=${SPAN_ID}`);
-      expect(spanTags.length).toBeGreaterThan(0);
-
-      const exploreLinks = screen.getAllByLabelText('Open trace in Explore');
-      expect(exploreLinks.length).toBeGreaterThan(0);
-
-      await user.click(spanTags[0]);
-      expect(screen.queryByTestId('trace-panel')).not.toBeInTheDocument();
-    });
-
-    it('closes all trace panels via the close button', async () => {
-      const user = userEvent.setup();
-      const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
-
-      const traceTag = screen.getAllByText(`trace_id=${TRACE_ID}`)[0];
-      await user.click(traceTag);
-      expect(screen.getAllByTestId('trace-panel').length).toBeGreaterThan(0);
-
-      const closeButton = screen.getAllByLabelText('Close trace panel')[0];
-      await user.click(closeButton);
+      const spanTag = await screen.findAllByText(`span_id=${SPAN_ID}`);
+      await user.click(spanTag[0]);
       expect(screen.queryByTestId('trace-panel')).not.toBeInTheDocument();
     });
   });
 
-  describe('when traces datasource is NOT available', () => {
-    it('renders trace labels as plain tags without explore links', () => {
-      const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID, span_id: SPAN_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
-
-      expect(screen.getAllByText(`trace_id=${TRACE_ID}`).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(`span_id=${SPAN_ID}`).length).toBeGreaterThan(0);
-
-      expect(screen.queryByLabelText('Open trace in Explore')).not.toBeInTheDocument();
+  describe('when traces datasource is available but trace does not exist', () => {
+    beforeEach(() => {
+      addTracesDS();
+      mockFetchTraceData.mockRejectedValue(new Error('404'));
     });
 
-    it('does not render a trace panel when clicking a trace tag', async () => {
-      const user = userEvent.setup();
+    it('renders trace labels as plain tags', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
       render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
 
-      const traceTag = screen.getAllByText(`trace_id=${TRACE_ID}`)[0];
-      await user.click(traceTag);
-      expect(screen.queryByTestId('trace-panel')).not.toBeInTheDocument();
+      const traceTags = await screen.findAllByText(`trace_id=${TRACE_ID}`);
+      expect(traceTags.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('when trace lookup fails', () => {
+    beforeEach(() => {
+      addTracesDS();
+      mockFetchTraceData.mockRejectedValue(new Error('Network error'));
+    });
+
+    it('shows a retry button when trace lookup fails', async () => {
+      const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+
+      const retryButtons = await screen.findAllByLabelText('Retry trace lookup');
+      expect(retryButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('when traces datasource is NOT available', () => {
+    it('renders trace labels as plain tags', async () => {
+      const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID, span_id: SPAN_ID });
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+
+      expect(await screen.findAllByText(`trace_id=${TRACE_ID}`)).toHaveLength(2);
+      expect(screen.getAllByText(`span_id=${SPAN_ID}`)).toHaveLength(2);
     });
   });
 });

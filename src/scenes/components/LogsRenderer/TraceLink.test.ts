@@ -1,7 +1,8 @@
-import { getExploreTraceUrl, isTraceIdLabel, isTraceLabel } from './TraceLink';
+import { TRACE_ID_LABEL_NAMES, TRACE_LABEL_NAMES } from './TraceLink.constants';
+import { getExploreTraceUrl, isTraceIdLabel, isTraceLabel } from './TraceLink.utils';
 
 describe('isTraceLabel', () => {
-  it.each(['trace_id', 'traceID', 'traceId', 'span_id', 'spanID', 'spanId'])('returns true for %s', (label) => {
+  it.each([...TRACE_LABEL_NAMES])('returns true for %s', (label) => {
     expect(isTraceLabel(label)).toBe(true);
   });
 
@@ -11,11 +12,13 @@ describe('isTraceLabel', () => {
 });
 
 describe('isTraceIdLabel', () => {
-  it.each(['trace_id', 'traceID', 'traceId'])('returns true for %s', (label) => {
+  it.each([...TRACE_ID_LABEL_NAMES])('returns true for %s', (label) => {
     expect(isTraceIdLabel(label)).toBe(true);
   });
 
-  it.each(['span_id', 'spanID', 'spanId'])('returns false for span label %s', (label) => {
+  const spanOnlyLabels = [...TRACE_LABEL_NAMES].filter((name) => !TRACE_ID_LABEL_NAMES.has(name));
+
+  it.each(spanOnlyLabels)('returns false for span label %s', (label) => {
     expect(isTraceIdLabel(label)).toBe(false);
   });
 });
