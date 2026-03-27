@@ -1,5 +1,7 @@
 import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { Check, PrometheusAlertsGroup } from 'types';
 
@@ -9,10 +11,12 @@ import { NotOkStatusInfo } from './NotOkStatusInfo';
 interface AlertRuleDisplayProps {
   group: PrometheusAlertsGroup;
   alerts: Check['alerts'];
+  firingAlertNames: Set<string>;
 }
 
-export const GrafanaNamespaceAlertRuleDisplay = ({ group, alerts }: AlertRuleDisplayProps) => {
+export const GrafanaNamespaceAlertRuleDisplay = ({ group, alerts, firingAlertNames }: AlertRuleDisplayProps) => {
   const styles = useStyles2(getStyles);
+  const ruleStyles = useStyles2(getRuleStyles);
   const { file, name, rules } = group;
   const filteredRules = rules.filter((record) => record.type === `alerting`);
   const queryParamForAlerting = encodeURIComponent(`namespace:${file} group:${name}`);
@@ -33,12 +37,19 @@ export const GrafanaNamespaceAlertRuleDisplay = ({ group, alerts }: AlertRuleDis
       <ul className={styles.list}>
         {filteredRules.map((rule) => {
           const alert = alerts?.find((alert) => rule.name.includes(alert.name));
+          const isFiring = firingAlertNames.has(rule.name);
 
           return (
             <li key={rule.name}>
               <Stack gap={1} alignItems="center" justifyContent="space-between">
                 <Icon name="corner-down-right-alt" />
                 <span>{rule.name}</span>
+                {isFiring && (
+                  <span className={ruleStyles.firingIndicator}>
+                    <Icon name="exclamation-circle" size="sm" />
+                    <span>🔥</span>
+                  </span>
+                )}
                 {rule.uid && (
                   <LinkButton
                     href={`/alerting/grafana/${rule.uid}/view`}
@@ -60,3 +71,12 @@ export const GrafanaNamespaceAlertRuleDisplay = ({ group, alerts }: AlertRuleDis
     </Stack>
   );
 };
+
+const getRuleStyles = (theme: GrafanaTheme2) => ({
+  firingIndicator: css({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    color: theme.colors.error.text,
+  }),
+});

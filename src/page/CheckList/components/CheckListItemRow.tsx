@@ -14,6 +14,7 @@ import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemRow = ({
   check,
+  runtimeAlertState,
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
@@ -25,7 +26,12 @@ export const CheckListItemRow = ({
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
 
   return (
-    <div className={cx(styles.container, { [styles.disabledCard]: !check.enabled })}>
+    <div
+      className={cx(styles.container, {
+        [styles.disabledCard]: !check.enabled,
+        [styles.firingAlertRow]: runtimeAlertState.firingCount > 0,
+      })}
+    >
       <div className={styles.listCardWrapper}>
         <Checkbox
           aria-label="Select check"
@@ -39,7 +45,7 @@ export const CheckListItemRow = ({
           <span className={styles.truncatedText} title={check.job}>
             {check.job}
           </span>
-          <AlertStatus check={check} compact />
+          <AlertStatus check={check} compact runtimeAlertState={runtimeAlertState} />
           {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
         </div>
         <div className={styles.checkTarget}>
@@ -71,13 +77,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     backgroundColor: theme.colors.background.secondary,
     borderRadius: '2px',
+    border: `1px solid transparent`,
   }),
   disabledCard: css({
     backgroundColor: theme.colors.secondary.transparent,
   }),
+  firingAlertRow: css({
+    borderColor: theme.colors.error.border,
+    boxShadow: `inset 4px 0 0 ${theme.colors.error.text}`,
+  }),
   listCardWrapper: css({
     display: 'grid',
-    gridTemplateColumns: 'auto 175px minmax(1px, 1fr) auto auto auto',
+    gridTemplateColumns: 'auto minmax(220px, 1.25fr) minmax(1px, 1fr) auto auto auto',
     alignItems: 'center',
     gridColumnGap: theme.spacing(2),
     padding: theme.spacing(1.5, 2),
@@ -90,10 +101,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     alignItems: 'center',
     justifySelf: 'left',
+    minWidth: 0,
     width: '100%',
     gap: theme.spacing(1),
   }),
   truncatedText: css({
+    flex: 1,
+    minWidth: 0,
     textOverflow: 'ellipsis',
     overflow: 'hidden',
     whiteSpace: 'nowrap',

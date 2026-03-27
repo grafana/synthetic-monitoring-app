@@ -101,7 +101,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
           await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
           await gotoSection(user, FormSectionName.Execution);
-          const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+          const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
           await user.click(probeCheckbox);
 
           await gotoSection(user, FormSectionName.Alerting);

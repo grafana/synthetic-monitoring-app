@@ -18,9 +18,17 @@ interface CheckFiltersProps {
   checks: Check[];
   checkFilters: CheckFiltersType;
   includeStatus?: boolean;
+  className?: string;
 }
 
-export function CheckFilters({ onReset, onChange, checks, checkFilters, includeStatus = true }: CheckFiltersProps) {
+export function CheckFilters({
+  onReset,
+  onChange,
+  checks,
+  checkFilters,
+  includeStatus = true,
+  className,
+}: CheckFiltersProps) {
   const checkTypeOptions = useCheckTypeOptions();
   const filterDesc = checkTypeOptions.map((option) => {
     return {
@@ -74,137 +82,178 @@ export function CheckFilters({ onReset, onChange, checks, checkFilters, includeS
   }, [probes]);
 
   return (
-    <>
-      <Input
-        autoFocus
-        aria-label={t('checkFilters.searchChecksAriaLabel', 'Search checks')}
-        prefix={<Icon name="search" />}
-        width={40}
-        data-testid={DataTestIds.CheckSearchInput}
-        type="text"
-        value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
-        onChange={handleSearchChange}
-        placeholder={t('checkFilters.searchPlaceholder', 'Search by job name, endpoint, or label')}
-      />
-      <CheckFilterGroup onReset={onReset} filters={checkFilters}>
-        <div className={styles.flexRow}>
-          {includeStatus && (
-            <Field label="Status" htmlFor="check-status-filter" data-fs-element="Status select" className={css({
-              marginBottom: 0,
-            })}>
+    <div className={cx(styles.controls, className)}>
+      <div className={styles.searchWrapper}>
+        <Input
+          autoFocus
+          aria-label={t('checkFilters.searchChecksAriaLabel', 'Search checks')}
+          prefix={<Icon name="search" />}
+          data-testid={DataTestIds.CheckSearchInput}
+          type="text"
+          value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
+          onChange={handleSearchChange}
+          placeholder={t('checkFilters.searchPlaceholder', 'Search by job name, endpoint, or label')}
+          className={styles.searchInput}
+        />
+      </div>
+      <div className={styles.filterButtonWrapper}>
+        <CheckFilterGroup onReset={onReset} filters={checkFilters}>
+          <div className={styles.flexRow}>
+            {includeStatus && (
+              <Field
+                label="Status"
+                htmlFor="check-status-filter"
+                data-fs-element="Status select"
+                className={styles.compactField}
+              >
+                <Combobox
+                  id="check-status-filter"
+                  aria-label={t('checkFilters.filterByStatusAriaLabel', 'Filter by status')}
+                  data-testid={DataTestIds.CheckStatusFilter}
+                  options={CHECK_LIST_STATUS_OPTIONS}
+                  width={20}
+                  onChange={(option) => {
+                    onChange(
+                      {
+                        ...checkFilters,
+                        status: option,
+                      },
+                      'status'
+                    );
+                  }}
+                  value={checkFilters.status}
+                />
+              </Field>
+            )}
+            <Field
+              label={t('checkFilters.type', 'Type')}
+              htmlFor="check-type-filter"
+              data-fs-element="Type select"
+              className={styles.compactField}
+            >
               <Combobox
-                id="check-status-filter"
-                aria-label={t('checkFilters.filterByStatusAriaLabel', 'Filter by status')}
-                data-testid={DataTestIds.CheckStatusFilter}
-                options={CHECK_LIST_STATUS_OPTIONS}
+                aria-label={t('checkFilters.filterByTypeAriaLabel', 'Filter by type')}
+                id="check-type-filter"
+                options={options}
+                width={20}
+                onChange={(selected: SelectableValue) => {
+                  onChange(
+                    {
+                      ...checkFilters,
+                      type: selected?.value ?? checkFilters.type,
+                    },
+                    'type'
+                  );
+                }}
+                value={checkFilters.type}
+              />
+            </Field>
+            <Field
+              label={t('checkFilters.alerts', 'Alerts')}
+              htmlFor="check-alerts-filter"
+              data-fs-element="Alerts select"
+              className={styles.compactField}
+            >
+              <Combobox
+                aria-label={t('checkFilters.filterByAlertsAriaLabel', 'Filter by alerts')}
+                id="check-alerts-filter"
+                data-testid={DataTestIds.CheckAlertsFilter}
+                options={alertOptions}
                 width={20}
                 onChange={(option) => {
                   onChange(
                     {
                       ...checkFilters,
-                      status: option,
+                      alerts: option?.value ?? checkFilters.alerts,
                     },
-                    'status'
+                    'alerts'
                   );
                 }}
-                value={checkFilters.status}
+                value={checkFilters.alerts}
               />
             </Field>
-          )}
-          <Field label={t('checkFilters.type', 'Type')} htmlFor="check-type-filter" data-fs-element="Type select" className={css({
-            marginBottom: 0,
-          })}>
-            <Combobox
-              aria-label={t('checkFilters.filterByTypeAriaLabel', 'Filter by type')}
-              id="check-type-filter"
-              options={options}
-              width={20}
-              onChange={(selected: SelectableValue) => {
-                onChange(
-                  {
-                    ...checkFilters,
-                    type: selected?.value ?? checkFilters.type,
-                  },
-                  'type'
-                );
-              }}
-              value={checkFilters.type}
-            />
-          </Field>
-          <Field label={t('checkFilters.alerts', 'Alerts')} htmlFor="check-alerts-filter" data-fs-element="Alerts select" className={css({
-            marginBottom: 0,
-          })}>
-            <Combobox
-              aria-label={t('checkFilters.filterByAlertsAriaLabel', 'Filter by alerts')}
-              id="check-alerts-filter"
-              data-testid={DataTestIds.CheckAlertsFilter}
-              options={alertOptions}
-              width={20}
-              onChange={(option) => {
-                onChange(
-                  {
-                    ...checkFilters,
-                    alerts: option?.value ?? checkFilters.alerts,
-                  },
-                  'alerts'
-                );
-              }}
-              value={checkFilters.alerts}
-            />
-          </Field>
-        </div>
-        <LabelFilterInput
-          checks={checks}
-          onChange={(labels) => {
-            onChange(
-              {
-                ...checkFilters,
-                labels,
-              },
-              'labels'
-            );
-          }}
-          labelFilters={checkFilters.labels}
-          className={styles.verticalSpace}
-        />
-        <Field label={t("checkFilters.probes", "Probes")} htmlFor="check-probes-filter" data-fs-element="Probes select" className={cx(styles.verticalSpace, styles.fullWidth)}>
-          <MultiCombobox
-            id="check-probes-filter"
-            data-testid={DataTestIds.CheckProbesFilter}
-            onChange={(selectedOptions) => {
-              const selectedProbes: ProbeFilter[] = selectedOptions.map((option) => ({
-                label: option.label ?? '',
-                value: option.value,
-              }));
+          </div>
+          <LabelFilterInput
+            checks={checks}
+            onChange={(labels) => {
               onChange(
                 {
                   ...checkFilters,
-                  probes: selectedProbes,
+                  labels,
                 },
-                'probes'
+                'labels'
               );
             }}
-            options={probesOptions}
-            value={checkFilters.probes.map((probe) => probe.value)}
-            placeholder={t('checkFilters.allProbes', 'All probes')}
-            isClearable
+            labelFilters={checkFilters.labels}
+            className={styles.verticalSpace}
           />
-        </Field>
-      </CheckFilterGroup >
-    </>
+          <Field
+            label={t('checkFilters.probes', 'Probes')}
+            htmlFor="check-probes-filter"
+            data-fs-element="Probes select"
+            className={cx(styles.verticalSpace, styles.fullWidth)}
+          >
+            <MultiCombobox
+              id="check-probes-filter"
+              data-testid={DataTestIds.CheckProbesFilter}
+              onChange={(selectedOptions) => {
+                const selectedProbes: ProbeFilter[] = selectedOptions.map((option) => ({
+                  label: option.label ?? '',
+                  value: option.value,
+                }));
+                onChange(
+                  {
+                    ...checkFilters,
+                    probes: selectedProbes,
+                  },
+                  'probes'
+                );
+              }}
+              options={probesOptions}
+              value={checkFilters.probes.map((probe) => probe.value)}
+              placeholder={t('checkFilters.allProbes', 'All probes')}
+              isClearable
+            />
+          </Field>
+        </CheckFilterGroup>
+      </div>
+    </div>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  controls: css({
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: theme.spacing(2),
+    minWidth: 0,
+  }),
+  searchWrapper: css({
+    flex: '1 1 320px',
+    minWidth: 0,
+    maxWidth: '100%',
+  }),
+  searchInput: css({
+    width: '100%',
+  }),
+  filterButtonWrapper: css({
+    flexShrink: 0,
+  }),
   flexRow: css({
-    display: `flex`,
-    flexDirection: `row`,
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing(2),
+  }),
+  compactField: css({
+    marginBottom: 0,
   }),
   verticalSpace: css({
-    marginTop: `10px`,
-    marginTottom: `10px`,
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   }),
   fullWidth: css({
-    width: `100%`,
+    width: '100%',
   }),
 });

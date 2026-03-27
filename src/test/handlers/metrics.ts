@@ -24,6 +24,8 @@ const RANGE_METRICS = BASIC_CHECK_LIST.map((check) => ({
 const CHECK_REACHABILITY_QUERY =
   `sum(rate(probe_all_success_sum[${DEFAULT_QUERY_FROM_TIME}])) by (job, instance) / sum(rate(probe_all_success_count[${DEFAULT_QUERY_FROM_TIME}])) by (job, instance)`;
 const CHECK_UPTIME_QUERY = `clamp_max(sum(max_over_time(probe_success{job=`;
+const FIRING_ALERTS_QUERY =
+  'max by (job, instance, alertname) (ALERTS{namespace="synthetic_monitoring", alertstate="firing"} or GRAFANA_ALERTS{namespace="synthetic_monitoring", alertstate="firing"})';
 
 export const getInstantMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
   route: `${METRICS_DATASOURCE.url}/api/v1/query`,
@@ -39,6 +41,19 @@ export const getInstantMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
           status: `success`,
           data: {
             result: INSTANT_METRICS,
+            resultType: 'vector',
+          },
+        },
+      };
+    }
+
+    if (query === FIRING_ALERTS_QUERY) {
+      return {
+        status: 200,
+        json: {
+          status: `success`,
+          data: {
+            result: [],
             resultType: 'vector',
           },
         },

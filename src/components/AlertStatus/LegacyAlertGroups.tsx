@@ -14,6 +14,7 @@ interface LegacyAlertGroupsProps {
   groups: PrometheusAlertsGroup[];
   isError: boolean;
   refetch: () => void;
+  firingAlertNames: Set<string>;
 }
 
 export const LegacyAlertGroups = ({
@@ -23,6 +24,7 @@ export const LegacyAlertGroups = ({
   groups,
   isError,
   refetch,
+  firingAlertNames,
 }: LegacyAlertGroupsProps) => {
   return (
     <Stack direction="column" gap={2}>
@@ -35,7 +37,14 @@ export const LegacyAlertGroups = ({
         groups.length > 0 &&
         groups.map((group) => {
           const id = `${group.file}-${group.name}`;
-          return <LegacyNamespaceAlertRuleDisplay key={id} group={group} metricsDSName={metricsDSName} />;
+          return (
+            <LegacyNamespaceAlertRuleDisplay
+              key={id}
+              group={group}
+              metricsDSName={metricsDSName}
+              firingAlertNames={firingAlertNames}
+            />
+          );
         })}
       {!isLoading && !isError && groups.length === 0 && <ZeroStateAlerts alertSensitivity={check.alertSensitivity} />}
     </Stack>

@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.48.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.48.0...v1.48.1) (2026-03-11)
+
+
+### Fixes
+
+* remove deprecated FID web vital panels ([#1616](https://github.com/grafana/synthetic-monitoring-app/issues/1616)) ([ee4f57a](https://github.com/grafana/synthetic-monitoring-app/commit/ee4f57ab519ac7e7f94d4cc0ffd6a0e1cd6b71e5))
+
+
+### Miscellaneous Chores
+
+* address deprecated config.apps from GrafanaBootConfig ([#1559](https://github.com/grafana/synthetic-monitoring-app/issues/1559)) ([32dc836](https://github.com/grafana/synthetic-monitoring-app/commit/32dc83699078e3275dc1e5b92ef91353308fb410))
+
 ## [1.48.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.47.2...v1.48.0) (2026-02-26)
 
 

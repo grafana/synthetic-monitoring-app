@@ -14,7 +14,6 @@ enum MetricRefId {
   Lcp = 'LCP',
   Ttfb = 'TTFB',
   Cls = 'CLS',
-  Fid = 'FID',
   Inp = 'INP',
 }
 
@@ -38,10 +37,6 @@ export const MetricsByURL = () => {
       {
         refId: MetricRefId.Cls,
         ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_cls', by: ['url'] }),
-      },
-      {
-        refId: MetricRefId.Fid,
-        ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_fid', by: ['url'] }),
       },
       {
         refId: MetricRefId.Inp,
@@ -69,9 +64,6 @@ export const MetricsByURL = () => {
           [MetricRefId.Cls]: {
             stat: 'mean',
           },
-          [MetricRefId.Fid]: {
-            stat: 'mean',
-          },
           [MetricRefId.Inp]: {
             stat: 'mean',
           },
@@ -97,7 +89,6 @@ export const MetricsByURL = () => {
             [`Trend #${MetricRefId.Lcp}`]: 'LCP',
             [`Trend #${MetricRefId.Ttfb}`]: 'TTFB',
             [`Trend #${MetricRefId.Cls}`]: 'CLS',
-            [`Trend #${MetricRefId.Fid}`]: 'FID',
             [`Trend #${MetricRefId.Inp}`]: 'INP',
           },
         },
@@ -112,12 +103,6 @@ export const MetricsByURL = () => {
       lineInterpolation: LineInterpolation.Smooth,
       spanNulls: true,
       insertNulls: true,
-    })
-    .setOverrides((b) => {
-      return b
-        .matchFieldsWithName(`Trend #${MetricRefId.Fid}`)
-        .overrideCustomFieldConfig(`displayMode`, TableCellDisplayMode.Custom)
-        .build();
     })
     .setOverrides((b) => {
       return b

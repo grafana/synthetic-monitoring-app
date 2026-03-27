@@ -38,10 +38,10 @@ it(`Displays the correct information for an online probe`, async () => {
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName);
 
-  // Check status circle
+  // Check status (heart icon, accessible via tooltip/aria)
   const status = screen.getByTestId(PROBES_TEST_ID.cards.status);
   expect(status).toBeInTheDocument();
-  expect(status).toHaveStyle(`background-color: ${result.current.colors.success.text}`);
+  expect(status).toHaveStyle({ color: result.current.colors.success.text });
 
   // Check status tooltip
   await userEvent.hover(status);
@@ -57,10 +57,10 @@ it(`Displays the correct information for an offline probe`, async () => {
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.displayName);
 
-  // Check status circle
+  // Check status (heart-break icon when offline >1 min, accessible via tooltip/aria)
   const status = screen.getByTestId(PROBES_TEST_ID.cards.status);
   expect(status).toBeInTheDocument();
-  expect(status).toHaveStyle(`background-color: ${result.current.colors.error.text}`);
+  expect(status).toHaveStyle({ color: result.current.colors.error.text });
 
   // Check status tooltip
   await userEvent.hover(status);

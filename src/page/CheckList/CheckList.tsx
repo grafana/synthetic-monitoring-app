@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useLocation } from 'react-router';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { locationService, PluginPage } from '@grafana/runtime';
@@ -9,10 +10,15 @@ import { getTotalChecksPerMonth } from 'checkUsageCalc';
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckEnabledStatus, CheckSort, CheckType, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import {
+  CheckRuntimeAlertStates,
+  getCheckCompositeKey,
+  getCheckRuntimeAlertState,
+  useChecksAlertStates,
+} from 'data/useCheckAlertStates';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
-import { findCheckinMetrics } from 'data/utils';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -55,8 +61,32 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
+  const {
+    data: checkAlertStates = {},
+    isFetched: isAlertStatesFetched,
+    isFetching: isAlertStatesFetching,
+    isError: isAlertStatesError,
+    refetch: refetchAlertStates,
+  } = useChecksAlertStates(checks);
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
+  const [applyAlertSort, setApplyAlertSort] = useState(false);
   const filters = useCheckFilters();
+
+  // Animate the initial alert-based reorder only once, when alert states first arrive.
+  // Subsequent refetches re-sort silently to avoid distracting repeated animations.
+  useEffect(() => {
+    if (!isAlertStatesFetched || applyAlertSort) {
+      return;
+    }
+
+    if ('startViewTransition' in document) {
+      document.startViewTransition(() => {
+        flushSync(() => setApplyAlertSort(true));
+      });
+    } else {
+      setApplyAlertSort(true);
+    }
+  }, [isAlertStatesFetched, applyAlertSort]);
 
   const [sortType, setSortType] = useQueryParametersState<CheckSort>({
     key: 'sort',
@@ -93,7 +123,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus);
-  const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates);
+  const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
   const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
@@ -205,21 +235,27 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         selectedCheckIds={selectedCheckIds}
         sortType={sortType}
         viewType={viewType}
+        alertStatesFetching={isAlertStatesFetching}
+        alertStatesError={isAlertStatesError}
+        onRetryAlertStates={refetchAlertStates}
       />
       <div>
         <section className="card-section card-list-layout-list">
           <div className={styles.list}>
-            {currentPageChecks.map((check, index) => (
-              <CheckListItem
-                check={check}
-                key={check.id}
-                onLabelSelect={handleLabelSelect}
-                onStatusSelect={handleStatusSelect}
-                onTypeSelect={handleTypeSelect}
-                onToggleCheckbox={handleCheckSelect}
-                selected={selectedCheckIds.has(check.id!)}
-                viewType={viewType}
-              />
+            {/* Inline style is required: viewTransitionName must be unique per element and can't be set via a shared CSS class */}
+            {currentPageChecks.map((check) => (
+              <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
+                <CheckListItem
+                  check={check}
+                  onLabelSelect={handleLabelSelect}
+                  onStatusSelect={handleStatusSelect}
+                  onTypeSelect={handleTypeSelect}
+                  onToggleCheckbox={handleCheckSelect}
+                  runtimeAlertState={getCheckRuntimeAlertState(checkAlertStates, check)}
+                  selected={selectedCheckIds.has(check.id!)}
+                  viewType={viewType}
+                />
+              </div>
             ))}
           </div>
         </section>
@@ -243,56 +279,90 @@ type MetricCheckSuccessParsed = MetricCheckSuccess & {
   value: [Time, number];
 };
 
-function sortChecks(checks: Check[], sortType: CheckSort, reachabilitySuccessRates: MetricCheckSuccessParsed[]) {
-  if (sortType === CheckSort.AToZ) {
-    return checks.sort((a, b) => a.job.localeCompare(b.job));
-  }
+function sortChecks(
+  checks: Check[],
+  sortType: CheckSort,
+  reachabilitySuccessRates: MetricCheckSuccessParsed[],
+  checkAlertStates: CheckRuntimeAlertStates,
+  applyAlertSort: boolean
+) {
+  const reachabilityMap = reachabilitySuccessRates.reduce<Record<string, number>>((acc, metric) => {
+    acc[getCheckCompositeKey(metric.metric.job, metric.metric.instance)] = metric.value[1];
+    return acc;
+  }, {});
 
-  if (sortType === CheckSort.ZToA) {
-    return checks.sort((a, b) => b.job.localeCompare(a.job));
-  }
+  return [...checks].sort((a, b) => {
+    if (applyAlertSort) {
+      const alertStateComparison = compareAlertState(a, b, checkAlertStates);
 
-  if ([CheckSort.ReachabilityAsc, CheckSort.ReachabilityDesc].includes(sortType)) {
-    const checkWithMetrics = checks.map((check) => {
-      const reachabilityMetric = findCheckinMetrics(reachabilitySuccessRates, check);
-      const reachability = reachabilityMetric === undefined ? -1 : reachabilityMetric.value[1];
-
-      return {
-        ...check,
-        reachability,
-      };
-    });
-
-    return checkWithMetrics.sort((a, b) => {
-      if (sortType === CheckSort.ReachabilityAsc) {
-        return a.reachability - b.reachability;
+      if (alertStateComparison !== 0) {
+        return alertStateComparison;
       }
+    }
 
-      return b.reachability - a.reachability;
-    });
-  }
+    const selectedSortComparison = compareChecksBySortType(a, b, sortType, reachabilityMap);
 
-  if (sortType === CheckSort.ExecutionsAsc) {
-    return checks.sort((a, b) => {
-      const [sortA, sortB] = getNumberOfExecutions(a, b);
-      return sortA - sortB;
-    });
-  }
+    if (selectedSortComparison !== 0) {
+      return selectedSortComparison;
+    }
 
-  if (sortType === CheckSort.ExecutionsDesc) {
-    return checks.sort((a, b) => {
-      const [sortA, sortB] = getNumberOfExecutions(a, b);
-      return sortB - sortA;
-    });
-  }
-
-  return checks;
+    return a.job.localeCompare(b.job);
+  });
 }
 
 function getNumberOfExecutions(checkA: Check, checkB: Check) {
   const sortA = getTotalChecksPerMonth(checkA.probes.length, checkA.frequency / 1000) || 101;
   const sortB = getTotalChecksPerMonth(checkB.probes.length, checkB.frequency / 1000) || 101;
   return [sortA, sortB];
+}
+
+function compareAlertState(checkA: Check, checkB: Check, checkAlertStates: CheckRuntimeAlertStates) {
+  const isAFiring = getCheckRuntimeAlertState(checkAlertStates, checkA).firingCount > 0;
+  const isBFiring = getCheckRuntimeAlertState(checkAlertStates, checkB).firingCount > 0;
+
+  if (isAFiring === isBFiring) {
+    return 0;
+  }
+
+  return isAFiring ? -1 : 1;
+}
+
+function compareChecksBySortType(
+  checkA: Check,
+  checkB: Check,
+  sortType: CheckSort,
+  reachabilityMap: Record<string, number>
+) {
+  if (sortType === CheckSort.AToZ) {
+    return checkA.job.localeCompare(checkB.job);
+  }
+
+  if (sortType === CheckSort.ZToA) {
+    return checkB.job.localeCompare(checkA.job);
+  }
+
+  if ([CheckSort.ReachabilityAsc, CheckSort.ReachabilityDesc].includes(sortType)) {
+    const reachabilityA = reachabilityMap[getCheckCompositeKey(checkA.job, checkA.target)] ?? -1;
+    const reachabilityB = reachabilityMap[getCheckCompositeKey(checkB.job, checkB.target)] ?? -1;
+
+    if (sortType === CheckSort.ReachabilityAsc) {
+      return reachabilityA - reachabilityB;
+    }
+
+    return reachabilityB - reachabilityA;
+  }
+
+  if (sortType === CheckSort.ExecutionsAsc) {
+    const [sortA, sortB] = getNumberOfExecutions(checkA, checkB);
+    return sortA - sortB;
+  }
+
+  if (sortType === CheckSort.ExecutionsDesc) {
+    const [sortA, sortB] = getNumberOfExecutions(checkA, checkB);
+    return sortB - sortA;
+  }
+
+  return 0;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({

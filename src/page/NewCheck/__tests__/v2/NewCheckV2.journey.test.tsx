@@ -247,7 +247,7 @@ describe(`<NewCheckV2 /> journey`, () => {
 
     await selectBasicFrequency(user, '2m');
 
-    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
+    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName) });
     await user.click(probeCheckbox);
 
     await submitForm(user);
@@ -261,7 +261,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     const { user } = await renderNewForm(CheckType.Http);
     await fillMandatoryFields({ user, checkType: CheckType.Http, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
+    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName) });
     await user.click(probeCheckbox);
 
     await gotoSection(user, FormSectionName.Alerting);
