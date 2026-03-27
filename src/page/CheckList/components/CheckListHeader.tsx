@@ -79,7 +79,9 @@ export const CheckListHeader = ({
   const isSomeSelected = hasChecks && !isAllSelected && selectedCheckIds.size > 0;
   const selectedChecks = checks.filter((check) => selectedCheckIds.has(check.id!));
 
-  const tooltip = isAllSelected ? t('checkList.header.deselectAll', 'Deselect all') : t('checkList.header.selectAll', 'Select all');
+  const tooltip = isAllSelected
+    ? t('checkList.header.deselectAll', 'Deselect all')
+    : t('checkList.header.selectAll', 'Select all');
 
   return (
     <>
@@ -87,7 +89,8 @@ export const CheckListHeader = ({
         <div className={styles.row}>
           <div className={styles.summary}>
             <Trans i18nKey="checkList.header.currentlyShowing">
-              Currently showing {{ currentPageChecksLength: currentPageChecks.length }} of {{ checksLength: checks.length }} total checks
+              Currently showing {{ currentPageChecksLength: currentPageChecks.length }} of{' '}
+              {{ checksLength: checks.length }} total checks
             </Trans>
           </div>
           <div className={styles.primaryActions}>
@@ -100,9 +103,7 @@ export const CheckListHeader = ({
             />
             {canWriteThresholds && (
               <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
-                <Trans i18nKey="checkList.header.setThresholds">
-                  Set Thresholds
-                </Trans>
+                <Trans i18nKey="checkList.header.setThresholds">Set Thresholds</Trans>
               </Button>
             )}
             {canWriteChecks && (
@@ -159,9 +160,7 @@ export const CheckListHeader = ({
 
 const getStyles = (theme: GrafanaTheme2) => {
   const containerName = 'check-list-header';
-  const breakpoint = theme.breakpoints.values.lg;
-  const containerQuery = `@container ${containerName} (max-width: ${breakpoint}px)`;
-  const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${breakpoint}px)`;
+  const containerQuery = `@container ${containerName} (max-width: ${theme.breakpoints.values.lg}px)`;
 
   return {
     header: css({
@@ -192,10 +191,6 @@ const getStyles = (theme: GrafanaTheme2) => {
         justifyContent: 'flex-start',
         width: '100%',
       },
-      [mediaQuery]: {
-        justifyContent: 'flex-start',
-        width: '100%',
-      },
     }),
     filters: css({
       flex: '1 1 420px',
@@ -218,10 +213,6 @@ const getStyles = (theme: GrafanaTheme2) => {
       marginLeft: 'auto',
       minWidth: 0,
       [containerQuery]: {
-        marginLeft: 0,
-        width: '100%',
-      },
-      [mediaQuery]: {
         marginLeft: 0,
         width: '100%',
       },

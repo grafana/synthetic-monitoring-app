@@ -9,6 +9,7 @@ import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
+import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
@@ -96,11 +97,7 @@ export const CheckListItemCard = ({
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
             </div>
-            <CheckItemActionButtons
-              check={check}
-              responsiveDashboardLink
-              className={styles.actions}
-            />
+            <CheckItemActionButtons check={check} responsiveDashboardLink className={styles.actions} />
           </div>
         </div>
       </div>
@@ -109,13 +106,9 @@ export const CheckListItemCard = ({
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
-  const containerName = 'check-list-card';
-  const mediumBreakpoint = theme.breakpoints.values.lg;
-  const narrowBreakpoint = theme.breakpoints.values.md;
-  const mediumContainerQuery = `@container ${containerName} (max-width: ${mediumBreakpoint}px)`;
-  const narrowContainerQuery = `@container ${containerName} (max-width: ${narrowBreakpoint}px)`;
-  const mediumMediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${mediumBreakpoint}px)`;
-  const narrowMediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${narrowBreakpoint}px)`;
+  const containerName = CHECK_LIST_CARD_CONTAINER_NAME;
+  const mediumContainerQuery = `@container ${containerName} (max-width: ${theme.breakpoints.values.lg}px)`;
+  const narrowContainerQuery = `@container ${containerName} (max-width: ${theme.breakpoints.values.md}px)`;
 
   return {
     container: css({
@@ -133,16 +126,13 @@ const getStyles = (theme: GrafanaTheme2) => {
       minWidth: 0,
     }),
     heading: css({
-      flex: '1 1 220px',
+      flex: '0 1 auto',
       minWidth: 0,
       marginBottom: 0,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
       [mediumContainerQuery]: {
-        whiteSpace: 'normal',
-      },
-      [mediumMediaQuery]: {
         whiteSpace: 'normal',
       },
     }),
@@ -152,10 +142,6 @@ const getStyles = (theme: GrafanaTheme2) => {
       padding: theme.spacing(2),
       gap: theme.spacing(2),
       [narrowContainerQuery]: {
-        gap: theme.spacing(1.5),
-        padding: theme.spacing(1.5),
-      },
-      [narrowMediaQuery]: {
         gap: theme.spacing(1.5),
         padding: theme.spacing(1.5),
       },
@@ -183,9 +169,6 @@ const getStyles = (theme: GrafanaTheme2) => {
       [mediumContainerQuery]: {
         gridTemplateColumns: '1fr',
       },
-      [mediumMediaQuery]: {
-        gridTemplateColumns: '1fr',
-      },
     }),
     bodyDisabled: css({
       borderColor: theme.colors.border.medium,
@@ -204,9 +187,6 @@ const getStyles = (theme: GrafanaTheme2) => {
       gap: theme.spacing(1),
       minWidth: 0,
       [narrowContainerQuery]: {
-        alignItems: 'flex-start',
-      },
-      [narrowMediaQuery]: {
         alignItems: 'flex-start',
       },
     }),
@@ -229,10 +209,6 @@ const getStyles = (theme: GrafanaTheme2) => {
         whiteSpace: 'normal',
         wordBreak: 'break-word',
       },
-      [mediumMediaQuery]: {
-        whiteSpace: 'normal',
-        wordBreak: 'break-word',
-      },
     }),
     stats: css({
       display: 'flex',
@@ -247,21 +223,11 @@ const getStyles = (theme: GrafanaTheme2) => {
         paddingTop: theme.spacing(1),
         borderTop: `1px solid ${theme.colors.border.medium}`,
       },
-      [mediumMediaQuery]: {
-        justifyContent: 'flex-start',
-        flexWrap: 'wrap',
-        gap: theme.spacing(1),
-        paddingTop: theme.spacing(1),
-        borderTop: `1px solid ${theme.colors.border.medium}`,
-      },
     }),
     statItem: css({
       display: 'flex',
       justifyContent: 'flex-end',
       [mediumContainerQuery]: {
-        justifyContent: 'flex-start',
-      },
-      [mediumMediaQuery]: {
         justifyContent: 'flex-start',
       },
     }),
@@ -275,9 +241,6 @@ const getStyles = (theme: GrafanaTheme2) => {
     actions: css({
       marginLeft: 'auto',
       [narrowContainerQuery]: {
-        marginLeft: 0,
-      },
-      [narrowMediaQuery]: {
         marginLeft: 0,
       },
     }),

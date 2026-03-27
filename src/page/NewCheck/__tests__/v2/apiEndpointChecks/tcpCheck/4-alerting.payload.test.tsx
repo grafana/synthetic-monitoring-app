@@ -21,7 +21,7 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     await user.click(screen.getByText('TLS'));
     await user.click(screen.getByLabelText('Use TLS', { exact: false }));
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
     await user.click(probeCheckbox);
     await gotoSection(user, FormSectionName.Alerting);
 
@@ -58,7 +58,7 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     await gotoSection(user, FormSectionName.Uptime);
     // Do NOT enable TLS
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByLabelText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
+    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
     await user.click(probeCheckbox);
     await gotoSection(user, FormSectionName.Alerting);
 

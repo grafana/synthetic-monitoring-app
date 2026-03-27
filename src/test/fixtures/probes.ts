@@ -24,8 +24,10 @@ export const PUBLIC_PROBE: Probe = DB.probe.build({
 
 export const ONLINE_PROBE: Probe = DB.probe.build({});
 
+/** Offline probe with onlineChange in the past so it's past the 1-minute "offline" grace period. */
 export const OFFLINE_PROBE: Probe = DB.probe.build({
   online: false,
+  onlineChange: 0,
 });
 
 export const SCRIPTED_DISABLED_PROBE: Probe = DB.probe.build({
