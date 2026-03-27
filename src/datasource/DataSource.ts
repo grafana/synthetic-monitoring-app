@@ -404,7 +404,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   async listTokens(limit = 50, offset = 0): Promise<ListTokensResponse> {
     return this.fetchAPI<ListTokensResponse>(
       `${this.instanceSettings.url}/sm/token/list?limit=${limit}&offset=${offset}`
-    ).then((r) => r.data);
+    );
   }
 
   async deleteToken(id: number): Promise<void> {
