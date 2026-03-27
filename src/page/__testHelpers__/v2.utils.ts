@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { UserEvent } from '@testing-library/user-event/index';
+import { UserEvent } from '@testing-library/user-event';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
 import { CheckType } from 'types';

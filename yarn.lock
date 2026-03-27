@@ -1010,18 +1010,24 @@
     "@gitbeaker/core" "^38.12.1"
     "@gitbeaker/requester-utils" "^38.12.1"
 
-"@grafana/alerting@12.3.0":
-  version "12.3.0"
-  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-12.3.0.tgz#f5b92be217257698b8971a637b39c9316eeb20b7"
-  integrity sha512-WLp7YVNU3t6YejWm3hEaE4EhZgPq7xDEHyvprOAbN28q/n6mMMVHeO75BHGDQg18huMmni6jN7NceXfxNx/NnQ==
+"@grafana/alerting@13.0.0-22767724357":
+  version "13.0.0-22767724357"
+  resolved "https://registry.yarnpkg.com/@grafana/alerting/-/alerting-13.0.0-22767724357.tgz#ac7762b222e2e71f8f6b29d0c79af1f647a64cef"
+  integrity sha512-OdmPbReV1VHR+oqO7QpjfuSk0D38I9ZGJ17XjNJmx78i7cgaapav70dRspEFlMtI2UfwLIm7UZ9yU0dNABwmLA==
   dependencies:
     "@emotion/css" "11.13.5"
     "@faker-js/faker" "^9.8.0"
-    "@grafana/i18n" "12.3.0"
-    "@reduxjs/toolkit" "^2.9.0"
+    "@grafana/api-clients" "13.0.0-22767724357"
+    "@grafana/i18n" "13.0.0-22767724357"
+    "@reduxjs/toolkit" "2.10.1"
     fishery "^2.3.1"
     lodash "^4.17.21"
     tinycolor2 "^1.6.0"
+
+"@grafana/api-clients@13.0.0-22767724357":
+  version "13.0.0-22767724357"
+  resolved "https://registry.yarnpkg.com/@grafana/api-clients/-/api-clients-13.0.0-22767724357.tgz#fe80bed28504122ddc04be1f432d1b10555e9039"
+  integrity sha512-W9eOxmxiZxQq1B+A29og0EFwXaaktRnNTzSmyCWYAQ2XndWrSKI5rDtCQEchZuazVOHs8EOlo/7inDB9PNzczw==
 
 "@grafana/data@12.4.0":
   version "12.4.0"
@@ -1089,10 +1095,10 @@
     ua-parser-js "^1.0.32"
     web-vitals "^4.0.1"
 
-"@grafana/i18n@12.3.0":
-  version "12.3.0"
-  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.3.0.tgz#337f7973c141520fc9b9a7d12409cc55f1fb30cd"
-  integrity sha512-d4LSx0+T5UqaHZhu9chlLogAzSDXXHc9DOyVFslYYiTlebEdE+LuHSuxQWV1xdDj7DDtwfb+1/lCf87ID6nyhg==
+"@grafana/i18n@12.4.0":
+  version "12.4.0"
+  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.4.0.tgz#d376a2f3eeb15fbe023160a88b25e673d6f2856b"
+  integrity sha512-q+FqI+KjF2/jzzTv5gwDaJMmNmONjjT2SsX+SNOJby0b3Lx10B/6TSyPTEsOeeAEr59ClpQmNmSo4e1C2/v5MA==
   dependencies:
     "@formatjs/intl-durationformat" "^0.7.0"
     "@typescript-eslint/utils" "^8.33.1"
@@ -1103,10 +1109,10 @@
     micro-memoize "^4.1.2"
     react-i18next "^15.0.0"
 
-"@grafana/i18n@12.4.0":
-  version "12.4.0"
-  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-12.4.0.tgz#d376a2f3eeb15fbe023160a88b25e673d6f2856b"
-  integrity sha512-q+FqI+KjF2/jzzTv5gwDaJMmNmONjjT2SsX+SNOJby0b3Lx10B/6TSyPTEsOeeAEr59ClpQmNmSo4e1C2/v5MA==
+"@grafana/i18n@13.0.0-22767724357":
+  version "13.0.0-22767724357"
+  resolved "https://registry.yarnpkg.com/@grafana/i18n/-/i18n-13.0.0-22767724357.tgz#efa5563236f35b0db80847156038e25f13eeb621"
+  integrity sha512-9XEsigqNKzgDMATG1VSdsft2tju6/bZs/CmsA5D6JhELPN2ObKy5wojbRm7h491yYNNajxGqXmm+SYTTPYlzvg==
   dependencies:
     "@formatjs/intl-durationformat" "^0.7.0"
     "@typescript-eslint/utils" "^8.33.1"
@@ -2703,14 +2709,14 @@
   resolved "https://registry.yarnpkg.com/@react-types/shared/-/shared-3.33.0.tgz#27b9bba9e51f4cd2c5d19108e69fe562f599ab29"
   integrity sha512-xuUpP6MyuPmJtzNOqF5pzFUIHH2YogyOQfUQHag54PRmWB7AbjuGWBUv0l1UDmz6+AbzAYGmDVAzcRDOu2PFpw==
 
-"@reduxjs/toolkit@^2.9.0":
-  version "2.11.2"
-  resolved "https://registry.yarnpkg.com/@reduxjs/toolkit/-/toolkit-2.11.2.tgz#582225acea567329ca6848583e7dd72580d38e82"
-  integrity sha512-Kd6kAHTA6/nUpp8mySPqj3en3dm0tdMIgbttnQ1xFMVpufoj+ADi8pXLBsd4xzTRHQa7t/Jv8W5UnCuW4kuWMQ==
+"@reduxjs/toolkit@2.10.1":
+  version "2.10.1"
+  resolved "https://registry.yarnpkg.com/@reduxjs/toolkit/-/toolkit-2.10.1.tgz#b3b9da21335eea409d3498544bcaf83b481a0195"
+  integrity sha512-/U17EXQ9Do9Yx4DlNGU6eVNfZvFJfYpUtRRdLf19PbPjdWBxNlxGZXywQZ1p1Nz8nMkWplTI7iD/23m07nolDA==
   dependencies:
     "@standard-schema/spec" "^1.0.0"
     "@standard-schema/utils" "^0.3.0"
-    immer "^11.0.0"
+    immer "^10.2.0"
     redux "^5.0.1"
     redux-thunk "^3.1.0"
     reselect "^5.1.0"
@@ -6881,10 +6887,10 @@ ignore@^7.0.0:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-7.0.5.tgz#4cb5f6cd7d4c7ab0365738c7aea888baa6d7efd9"
   integrity sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg==
 
-immer@^11.0.0:
-  version "11.1.4"
-  resolved "https://registry.yarnpkg.com/immer/-/immer-11.1.4.tgz#37aee86890b134a8f1a2fadd44361fb86c6ae67e"
-  integrity sha512-XREFCPo6ksxVzP4E0ekD5aMdf8WMwmdNaz6vuvxgI40UaEiu6q3p8X52aU6GdyvLY3XXX/8R7JOTXStz/nBbRw==
+immer@^10.2.0:
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-10.2.0.tgz#88a4ce06a1af64172d254b70f7cb04df51c871b1"
+  integrity sha512-d/+XTN3zfODyjr89gM3mPq1WNX2B8pYsu7eORitdwyA2sBubnTl3laYlBk4sXY5FUa5qTZGBDPJICVbvqzjlbw==
 
 immutable@5.1.4, immutable@^5.0.2:
   version "5.1.4"
