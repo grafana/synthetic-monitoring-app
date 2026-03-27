@@ -10,12 +10,13 @@ export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['tokens'],
 };
 
-export function useTokens(limit = 50, offset = 0) {
+export function useTokens(limit = 50, offset = 0, enabled = true) {
   const smDS = useSMDS();
 
   return useQuery<ListTokensResponse>({
     queryKey: [...QUERY_KEYS.list, limit, offset],
     queryFn: () => smDS.listTokens(limit, offset),
+    enabled,
   });
 }
 

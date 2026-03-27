@@ -20,6 +20,11 @@ function formatNano(ns: number): string {
 export function AccessTokensTab() {
   const { canReadTokens, canWriteTokens, canDeleteTokens } = getUserPermissions();
 
+  // In Iteration 1, write permission implies read — the list is always shown to
+  // users who can write tokens, even if the explicit :read permission is absent
+  // from their session (e.g. before the plugin.json update has been picked up).
+  const canViewList = canReadTokens || canWriteTokens;
+
   // Pagination state — simple "load more" for Iteration 1
   const [offset, setOffset] = useState(0);
   const [allTokens, setAllTokens] = useState<TokenInfo[]>([]);
@@ -31,7 +36,7 @@ export function AccessTokensTab() {
   // Delete confirmation state
   const [tokenToDelete, setTokenToDelete] = useState<TokenInfo | undefined>();
 
-  const { data, isLoading, isFetching } = useTokens(PAGE_SIZE, 0);
+  const { data, isLoading, isFetching } = useTokens(PAGE_SIZE, offset, canViewList);
 
   // Merge newly fetched pages into allTokens
   React.useEffect(() => {
@@ -42,8 +47,7 @@ export function AccessTokensTab() {
         setAllTokens((prev) => [...prev, ...data.tokens]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  }, [data, offset]);
 
   const createToken = useCreateToken({
     onSuccess: (token) => {
@@ -74,20 +78,20 @@ export function AccessTokensTab() {
     setTokenToDelete(undefined);
   };
 
-  if (isLoading && canReadTokens) {
+  if (isLoading && canViewList) {
     return <ConfigContent loading ariaLoadingLabel="Loading access tokens" />;
   }
 
   return (
     <>
-      {!canReadTokens && !canWriteTokens ? (
+      {!canViewList ? (
         <ConfigContent title="Access tokens">
           <ContactAdminAlert
             title="Contact your administrator to manage Access Tokens"
-            missingPermissions={['grafana-synthetic-monitoring-app.access-tokens:read']}
+            missingPermissions={['grafana-synthetic-monitoring-app.access-tokens:write']}
           />
         </ConfigContent>
-      ) : canReadTokens && allTokens.length === 0 && !isLoading ? (
+      ) : canViewList && allTokens.length === 0 && !isLoading ? (
         <ConfigContent>
           <EmptyState
             variant="call-to-action"
@@ -139,7 +143,7 @@ export function AccessTokensTab() {
             documentation to learn more.
           </ConfigContent.Section>
 
-          {canReadTokens && allTokens.length > 0 && (
+          {canViewList && allTokens.length > 0 && (
             <ConfigContent.Section title="Your tokens">
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
