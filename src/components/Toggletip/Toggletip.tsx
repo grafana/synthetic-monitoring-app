@@ -1,5 +1,7 @@
 import React, { cloneElement, ComponentProps, ReactElement, ReactNode, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { IconButton, Portal, Toggletip as GrafanaToggletip, useStyles2, useTheme2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 import {
   arrow,
   autoUpdate,
@@ -12,8 +14,6 @@ import {
   useFloating,
   useInteractions,
 } from '@floating-ui/react';
-import { IconButton, Portal, Toggletip as GrafanaToggletip, useStyles2, useTheme2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
 
 interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, 'content'> {
   content: ReactNode;
