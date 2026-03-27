@@ -61,11 +61,19 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
-  const { data: checkAlertStates = {}, isFetched: isAlertStatesFetched } = useChecksAlertStates(checks);
+  const {
+    data: checkAlertStates = {},
+    isFetched: isAlertStatesFetched,
+    isFetching: isAlertStatesFetching,
+    isError: isAlertStatesError,
+    refetch: refetchAlertStates,
+  } = useChecksAlertStates(checks);
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const [applyAlertSort, setApplyAlertSort] = useState(false);
   const filters = useCheckFilters();
 
+  // Animate the initial alert-based reorder only once, when alert states first arrive.
+  // Subsequent refetches re-sort silently to avoid distracting repeated animations.
   useEffect(() => {
     if (!isAlertStatesFetched || applyAlertSort) {
       return;
@@ -227,10 +235,14 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         selectedCheckIds={selectedCheckIds}
         sortType={sortType}
         viewType={viewType}
+        alertStatesFetching={isAlertStatesFetching}
+        alertStatesError={isAlertStatesError}
+        onRetryAlertStates={refetchAlertStates}
       />
       <div>
         <section className="card-section card-list-layout-list">
           <div className={styles.list}>
+            {/* Inline style is required: viewTransitionName must be unique per element and can't be set via a shared CSS class */}
             {currentPageChecks.map((check) => (
               <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
                 <CheckListItem

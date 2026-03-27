@@ -14,7 +14,6 @@ import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
-import { CheckRuntimeAlertBadge } from 'page/CheckList/components/CheckRuntimeAlertBadge';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
@@ -54,8 +53,7 @@ export const CheckListItemCard = ({
             <div className={styles.checkInfoContainer}>
               <div className={styles.titleRow}>
                 <h3 className={styles.heading}>{check.job}</h3>
-                <CheckRuntimeAlertBadge firingCount={runtimeAlertState.firingCount} />
-                <AlertStatus check={check} />
+                <AlertStatus check={check} runtimeAlertState={runtimeAlertState} />
                 {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
               </div>
               <div className={styles.checkTarget}>{check.target}</div>

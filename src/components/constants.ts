@@ -547,8 +547,7 @@ export const UPTIME_DESCRIPTION =
 export const REACHABILITY_DESCRIPTION =
   'The success rate of all the probes. Reachability decreases when any probe fails.';
 export const PROBE_REACHABILITY_DESCRIPTION = 'The success percentage of all checks performed by this probe.';
-export const LATENCY_DESCRIPTION =
-  `The average time to receive an answer across all the checks during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.`;
+export const LATENCY_DESCRIPTION = `The average time to receive an answer across all the checks during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.`;
 
 export const STANDARD_REFRESH_INTERVAL = 1000 * 60;
 

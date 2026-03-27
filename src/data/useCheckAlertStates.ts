@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { AlertSensitivity, Check } from 'types';
@@ -23,16 +24,18 @@ type MetricCheckAlertState = InstantMetric & {
 
 export interface CheckRuntimeAlertState {
   firingCount: number;
+  firingAlertNames: Set<string>;
 }
 
 export type CheckRuntimeAlertStates = Record<string, CheckRuntimeAlertState>;
 
 const EMPTY_ALERT_STATE: CheckRuntimeAlertState = {
   firingCount: 0,
+  firingAlertNames: new Set<string>(),
 };
 
 export function getCheckCompositeKey(job: Check['job'], target: Check['target']) {
-  return JSON.stringify([job, target]);
+  return `${job}\0${target}`;
 }
 
 export function getCheckRuntimeAlertState(
@@ -45,16 +48,20 @@ export function getCheckRuntimeAlertState(
 export function useChecksAlertStates(checks: Check[]) {
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || '';
-  const hasAlertingChecks = checks.some((check) => {
-    const hasPerCheckAlerts = (check.alerts?.length ?? 0) > 0;
-    const hasAlertSensitivity = check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
+  const hasAlertingChecks = useMemo(
+    () =>
+      checks.some((check) => {
+        const hasPerCheckAlerts = (check.alerts?.length ?? 0) > 0;
+        const hasAlertSensitivity =
+          check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
 
-    return hasPerCheckAlerts || hasAlertSensitivity;
-  });
+        return hasPerCheckAlerts || hasAlertSensitivity;
+      }),
+    [checks]
+  );
 
   return useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...QUERY_KEYS.checkAlertStates, url],
+    queryKey: [...QUERY_KEYS.checkAlertStates, url, metricsDS],
     queryFn: () => {
       if (!metricsDS) {
         return Promise.reject(`You need to have a metrics datasource available.`);
@@ -62,15 +69,21 @@ export function useChecksAlertStates(checks: Check[]) {
 
       return queryInstantMetric<MetricCheckAlertState>({ url, query: FIRING_ALERTS_QUERY, ...getStartEnd() });
     },
-    refetchInterval: () => STANDARD_REFRESH_INTERVAL,
+    refetchInterval: STANDARD_REFRESH_INTERVAL,
     select: (data) => {
       return data.reduce<CheckRuntimeAlertStates>((acc, metric) => {
         const key = getCheckCompositeKey(metric.metric.job, metric.metric.instance);
-        const current = acc[key] ?? EMPTY_ALERT_STATE;
+        const current = acc[key];
 
-        acc[key] = {
-          firingCount: current.firingCount + 1,
-        };
+        if (current) {
+          current.firingCount += 1;
+          current.firingAlertNames.add(metric.metric.alertname);
+        } else {
+          acc[key] = {
+            firingCount: 1,
+            firingAlertNames: new Set([metric.metric.alertname]),
+          };
+        }
 
         return acc;
       }, {});

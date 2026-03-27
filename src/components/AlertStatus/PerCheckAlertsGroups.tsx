@@ -12,9 +12,17 @@ interface PerCheckAlertGroupsProps {
   isError: boolean;
   refetch: () => void;
   alerts: Check['alerts'];
+  firingAlertNames: Set<string>;
 }
 
-export const PerCheckAlertGroups = ({ groups, loading, isError, refetch, alerts }: PerCheckAlertGroupsProps) => {
+export const PerCheckAlertGroups = ({
+  groups,
+  loading,
+  isError,
+  refetch,
+  alerts,
+  firingAlertNames,
+}: PerCheckAlertGroupsProps) => {
   return (
     <Stack direction="column" gap={2}>
       <Stack direction="row" gap={1} alignItems="center">
@@ -26,7 +34,14 @@ export const PerCheckAlertGroups = ({ groups, loading, isError, refetch, alerts 
         groups.length > 0 &&
         groups.map((group) => {
           const id = `${group.file}-${group.name}`;
-          return <GrafanaNamespaceAlertRuleDisplay key={id} group={group} alerts={alerts} />;
+          return (
+            <GrafanaNamespaceAlertRuleDisplay
+              key={id}
+              group={group}
+              alerts={alerts}
+              firingAlertNames={firingAlertNames}
+            />
+          );
         })}
       {!loading && !isError && groups.length === 0 && <>No per-check alerts defined for this check</>}
     </Stack>

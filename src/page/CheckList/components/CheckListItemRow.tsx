@@ -9,7 +9,6 @@ import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
-import { CheckRuntimeAlertBadge } from 'page/CheckList/components/CheckRuntimeAlertBadge';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
@@ -46,8 +45,7 @@ export const CheckListItemRow = ({
           <span className={styles.truncatedText} title={check.job}>
             {check.job}
           </span>
-          <CheckRuntimeAlertBadge firingCount={runtimeAlertState.firingCount} className={styles.runtimeAlertBadge} />
-          <AlertStatus check={check} compact />
+          <AlertStatus check={check} compact runtimeAlertState={runtimeAlertState} />
           {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
         </div>
         <div className={styles.checkTarget}>
@@ -116,8 +114,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   listItemDetails: css({
     justifyContent: 'flex-end',
-  }),
-  runtimeAlertBadge: css({
-    flexShrink: 0,
   }),
 });
