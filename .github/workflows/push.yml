@@ -148,7 +148,7 @@ jobs:
   # Renovate reviewer (only for renovate PRs)
   renovate-reviewer:
     name: Renovate Reviewer
-    if: github.event_name == 'pull_request' && github.actor == 'renovate[bot]'
+    if: github.event_name == 'pull_request' && github.actor == 'renovate-sh-app[bot]'
     permissions:
       contents: write
       pull-requests: write
