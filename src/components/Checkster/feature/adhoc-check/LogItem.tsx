@@ -3,6 +3,9 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+import { LogEntry } from './types.adhoc-check';
+import { FeatureName } from 'types';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { SCREENSHOT_PATTERN } from 'scenes/components/LogsRenderer/screenshots/screenshots.constants';
 import { useScreenshots } from 'scenes/components/LogsRenderer/screenshots/screenshots.hooks';
 import { ScreenshotThumbnail } from 'scenes/components/LogsRenderer/screenshots/ScreenshotThumbnail';
@@ -10,7 +13,6 @@ import { ScreenshotThumbnail } from 'scenes/components/LogsRenderer/screenshots/
 import { REDUNDANT_FIRST_LINES } from './constants';
 import { LogDetails } from './LogDetails';
 import { LogMessage } from './LogMessage';
-import { LogEntry } from './types.adhoc-check';
 import { getLogLevelFromMessage, isExpectLogLine, isMultiLineString, parseExpectLogLine, stringToLines } from './utils';
 
 export function LogItem({ log }: { log: LogEntry }) {
@@ -18,15 +20,16 @@ export function LogItem({ log }: { log: LogEntry }) {
   const logLevel = getLogLevelFromMessage(log.msg, log.level);
   const [isOpen, setIsOpen] = useState(logLevel === 'error');
   const styles = useStyles2(getStyles);
+  const { isEnabled: screenshotsEnabled } = useFeatureFlag(FeatureName.Screenshots);
 
   const screenshotUUIDs = useMemo(() => {
-    if (!msg) {
+    if (!screenshotsEnabled || !msg) {
       return [];
     }
 
     const match = msg.match(SCREENSHOT_PATTERN);
     return match?.[1] ? [match[1]] : [];
-  }, [msg]);
+  }, [msg, screenshotsEnabled]);
 
   const screenshotDataByUUID = useScreenshots(screenshotUUIDs);
 

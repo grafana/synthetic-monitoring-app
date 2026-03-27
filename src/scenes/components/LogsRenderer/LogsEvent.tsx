@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Switch, useStyles2 } from '@grafana/ui';
+import { Badge, Switch, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 
 import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { FeatureName } from 'types';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { LogHTTPResponseTimings } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels';
 
@@ -22,16 +24,20 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
   mainKey: string;
 }) => {
   const styles = useStyles2(getStyles);
+  const { isEnabled: screenshotsEnabled } = useFeatureFlag(FeatureName.Screenshots);
 
   const [showHttpDebug, setShowHttpDebug] = useState(false);
   const [hideScreenshots, setHideScreenshots] = useState(false);
 
-  const screenshotUUIDs = useMemo(() => extractScreenshotUUIDs(logs, mainKey), [logs, mainKey]);
+  const screenshotUUIDs = useMemo(
+    () => (screenshotsEnabled ? extractScreenshotUUIDs(logs, mainKey) : []),
+    [logs, mainKey, screenshotsEnabled]
+  );
 
   const screenshotDataByUUID = useScreenshots(screenshotUUIDs);
 
   const enrichedLogs = useMemo(() => {
-    if (screenshotDataByUUID.size === 0) {
+    if (!screenshotsEnabled || screenshotDataByUUID.size === 0) {
       return logs;
     }
 
@@ -54,7 +60,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
         labels: { ...log.labels, ...screenshotData },
       } as T;
     });
-  }, [logs, mainKey, screenshotDataByUUID]);
+  }, [logs, mainKey, screenshotDataByUUID, screenshotsEnabled]);
 
   const filteredLogs = useMemo(() => {
     let filtered = enrichedLogs;
@@ -66,7 +72,7 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
       });
     }
 
-    if (hideScreenshots) {
+    if (screenshotsEnabled && hideScreenshots) {
       filtered = filtered.filter((log) => {
         const message = log.labels[mainKey];
         return !message || !SCREENSHOT_PATTERN.test(message);
@@ -74,15 +80,20 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
     }
 
     return filtered;
-  }, [enrichedLogs, showHttpDebug, hideScreenshots, mainKey]);
+  }, [enrichedLogs, showHttpDebug, hideScreenshots, mainKey, screenshotsEnabled]);
 
   return (
     <div className={styles.timelineContainer}>
       <div className={styles.filterBar}>
-        <label className={styles.filterLabel}>
-          <Switch checked={hideScreenshots} onChange={(e) => setHideScreenshots(e.currentTarget.checked)} />
-          <span>hide screenshots</span>
-        </label>
+        {screenshotsEnabled && (
+          <>
+            <Badge text="NEW" color="orange" />
+            <label className={styles.filterLabel}>
+              <Switch checked={hideScreenshots} onChange={(e) => setHideScreenshots(e.currentTarget.checked)} />
+              <span>hide screenshots</span>
+            </label>
+          </>
+        )}
         <label className={styles.filterLabel}>
           <Switch checked={showHttpDebug} onChange={(e) => setShowHttpDebug(e.currentTarget.checked)} />
           <span>show http-debug logs</span>
@@ -91,9 +102,9 @@ export const LogsEvent = <T extends ParsedLokiRecord<Record<string, string>, Rec
       {filteredLogs.map((log, index) => {
         const level = log.labels.detected_level;
         const message = log.labels[mainKey];
-        const screenshotBase64 = log.labels.screenshot_base64;
-        const screenshotUrl = log.labels.screenshot_url;
-        const caption = log.labels.caption;
+        const screenshotBase64 = screenshotsEnabled ? log.labels.screenshot_base64 : undefined;
+        const screenshotUrl = screenshotsEnabled ? log.labels.screenshot_url : undefined;
+        const caption = screenshotsEnabled ? log.labels.caption : undefined;
 
         return (
           <div key={log.id} className={styles.timelineItem} data-testid={`event-log-${log.id}`}>

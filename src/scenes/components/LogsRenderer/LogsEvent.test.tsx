@@ -7,6 +7,10 @@ import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 import { LogsEvent } from './LogsEvent';
 
+jest.mock('hooks/useFeatureFlag', () => ({
+  useFeatureFlag: jest.fn().mockReturnValue({ isEnabled: false }),
+}));
+
 jest.mock('./screenshots/screenshots.hooks', () => ({
   useScreenshots: jest.fn().mockReturnValue(new Map()),
 }));
@@ -45,5 +49,28 @@ describe('LogsEvent', () => {
     );
 
     expect(beginningCheckLogTime).toBeInTheDocument();
+  });
+
+  it('should not render screenshot toggle when feature flag is disabled', () => {
+    const logs = executionLogsFactory.build(undefined, {
+      transient: { commonLabels: { probe: 'test' } },
+    });
+
+    render(<LogsEvent logs={logs} mainKey="msg" />);
+    expect(screen.queryByText('hide screenshots')).not.toBeInTheDocument();
+  });
+
+  it('should render screenshot toggle when feature flag is enabled', () => {
+    const { useFeatureFlag } = require('hooks/useFeatureFlag');
+    useFeatureFlag.mockReturnValue({ isEnabled: true });
+
+    const logs = executionLogsFactory.build(undefined, {
+      transient: { commonLabels: { probe: 'test' } },
+    });
+
+    render(<LogsEvent logs={logs} mainKey="msg" />);
+    expect(screen.getByText('hide screenshots')).toBeInTheDocument();
+
+    useFeatureFlag.mockReturnValue({ isEnabled: false });
   });
 });
