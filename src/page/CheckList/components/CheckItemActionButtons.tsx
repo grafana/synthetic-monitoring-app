@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { trackDuplicateCheckButtonClicked } from 'features/tracking/checkListEvents';
 import { DataTestIds } from 'test/dataTestIds';
 
@@ -12,13 +12,21 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useDeleteCheck, useUpdateCheck } from 'data/useChecks';
 import { useDuplicateCheckUrl } from 'hooks/useDuplicateCheck';
+import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
 
 interface CheckItemActionButtonsProps {
   check: Check;
   viewDashboardAsIcon?: boolean;
+  responsiveDashboardLink?: boolean;
+  className?: string;
 }
 
-export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItemActionButtonsProps) => {
+export const CheckItemActionButtons = ({
+  check,
+  viewDashboardAsIcon,
+  responsiveDashboardLink,
+  className,
+}: CheckItemActionButtonsProps) => {
   const { canReadChecks, canWriteChecks, canDeleteChecks } = getUserPermissions();
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -41,15 +49,34 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
   }, [check, updateCheck]);
 
   return (
-    <div className={styles.actionButtonGroup}>
+    <div className={cx(styles.actionButtonGroup, className)}>
       {canReadChecks && (
         <>
-          {viewDashboardAsIcon ? (
+          {responsiveDashboardLink ? (
+            <>
+              <LinkButton
+                href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`}
+                size="sm"
+                fill="text"
+                className={styles.dashboardTextLink}
+              >
+                View dashboard
+              </LinkButton>
+              <LinkButton
+                href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
+                size="sm"
+                fill="text"
+                icon="apps"
+                tooltip="Go to dashboard"
+                className={styles.dashboardIconLink}
+              />
+            </>
+          ) : viewDashboardAsIcon ? (
             <LinkButton
               href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
               size="sm"
               fill="text"
-              name="apps"
+              icon="apps"
               tooltip="Go to dashboard"
             />
           ) : (
@@ -106,12 +133,29 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: CheckItem
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  actionButtonGroup: css`
-    display: flex;
-    align-items: center;
-    gap: ${theme.spacing(1)};
-    flex-grow: 1;
-    justify-content: flex-end;
-  `,
-});
+const getStyles = (theme: GrafanaTheme2) => {
+  const containerName = CHECK_LIST_CARD_CONTAINER_NAME;
+  const containerQuery = `@container ${containerName} (max-width: ${theme.breakpoints.values.md}px)`;
+
+  return {
+    actionButtonGroup: css({
+      display: 'flex',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: theme.spacing(1),
+      justifyContent: 'flex-end',
+      minWidth: 0,
+    }),
+    dashboardTextLink: css({
+      [containerQuery]: {
+        display: 'none',
+      },
+    }),
+    dashboardIconLink: css({
+      display: 'none',
+      [containerQuery]: {
+        display: 'inline-flex',
+      },
+    }),
+  };
+};

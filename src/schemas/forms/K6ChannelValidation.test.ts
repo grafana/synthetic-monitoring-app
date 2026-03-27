@@ -16,6 +16,12 @@ const mockK6Channel = (id: string): K6Channel => ({
   manifest: `k6>=${id.substring(1)}`,
 });
 
+const UNKNOWN_VERSION_PROBE = {
+  ...UNSELECTED_PRIVATE_PROBE,
+  id: 999,
+  name: 'unknown-version-probe',
+};
+
 const mockProbes: ProbeWithMetadata[] = [
   {
     ...EMPTY_METADATA,
@@ -24,7 +30,7 @@ const mockProbes: ProbeWithMetadata[] = [
     k6Versions: {
       v0: '0.48.0',
       v1: '1.2.3',
-      v2: null, // Not available on v2
+      v2: null,
     },
   },
   {
@@ -44,6 +50,16 @@ const mockProbes: ProbeWithMetadata[] = [
     k6Versions: {
       v0: '0.48.0',
       v1: '1.2.3',
+    },
+  },
+  {
+    ...EMPTY_METADATA,
+    ...UNKNOWN_VERSION_PROBE,
+    displayName: UNKNOWN_VERSION_PROBE.name,
+    k6Versions: {
+      v0: '0.48.0',
+      v1: 'unknown',
+      v2: 'unknown',
     },
   },
 ];
@@ -211,6 +227,36 @@ describe('K6 Channel Validation', () => {
       };
 
       expect(() => refinedSchema.parse(checkWithAnyChannel)).not.toThrow();
+    });
+
+    it('should pass validation when a probe has unknown k6 version for the channel', () => {
+      const checkWithUnknownProbe: CheckFormValuesScripted = {
+        ...baseCheck,
+        probes: [UNKNOWN_VERSION_PROBE.id!],
+        channels: {
+          k6: mockK6Channel('v2'),
+        },
+      };
+
+      const schema = createScriptedCheckSchema(mockProbes);
+      const refinedSchema = addRefinements(schema);
+
+      expect(() => refinedSchema.parse(checkWithUnknownProbe)).not.toThrow();
+    });
+
+    it('should pass validation when mixing probes with known and unknown versions', () => {
+      const checkWithMixedProbes: CheckFormValuesScripted = {
+        ...baseCheck,
+        probes: [PUBLIC_PROBE.id!, UNKNOWN_VERSION_PROBE.id!],
+        channels: {
+          k6: mockK6Channel('v2'),
+        },
+      };
+
+      const schema = createScriptedCheckSchema(mockProbes);
+      const refinedSchema = addRefinements(schema);
+
+      expect(() => refinedSchema.parse(checkWithMixedProbes)).not.toThrow();
     });
   });
 

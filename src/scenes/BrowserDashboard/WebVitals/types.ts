@@ -2,7 +2,7 @@ export type WebVitalUnit = 'seconds' | 'milliseconds' | 'score';
 
 export type WebVitalScore = 'good' | 'needs_improvement' | 'poor';
 
-export type WebVitalName = 'lcp' | 'fid' | 'cls' | 'fcp' | 'inp' | 'ttfb';
+export type WebVitalName = 'lcp' | 'cls' | 'fcp' | 'inp' | 'ttfb';
 
 export interface WebVitalValueConfig {
   name: keyof typeof WEB_VITAL_CONFIG;
@@ -36,14 +36,6 @@ export const WEB_VITAL_CONFIG: Record<WebVitalName, WebVitalConfig> = {
     unit: 'seconds',
     description: "Marks the point in the page load timeline where the page's main content has likely loaded",
     thresholds: [2500, 4000],
-  },
-  fid: {
-    name: 'fid',
-    longName: 'First Input Delay',
-    unit: 'milliseconds',
-    description:
-      'The time from when a user first interacts with a page, to the time when the browser begins processing event handlers in response to the action',
-    thresholds: [100, 300],
   },
   cls: {
     name: 'cls',

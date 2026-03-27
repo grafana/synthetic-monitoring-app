@@ -1,6 +1,5 @@
 import React, { ComponentProps, useEffect, useMemo } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { ThemeComponents } from '@grafana/data/dist/types/themes/createComponents';
 import { Dropdown, Icon, Menu, styleMixins, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
@@ -10,7 +9,7 @@ interface TargetValueHandler<T> {
   (event: { target: { value: T } }): void;
 }
 
-type InputSize = keyof ThemeComponents['height'];
+type InputSize = keyof GrafanaTheme2['components']['height'];
 
 interface InputSelectProps {
   id?: string;

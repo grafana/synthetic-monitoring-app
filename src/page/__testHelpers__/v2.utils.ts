@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { UserEvent } from '@testing-library/user-event/index';
+import { UserEvent } from '@testing-library/user-event';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
 import { CheckType } from 'types';
@@ -40,7 +40,7 @@ export async function fillMandatoryFields({
   }
   if (!fieldsToOmit.includes('probes')) {
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByLabelText(PRIVATE_PROBE.name, { exact: false });
+    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(PRIVATE_PROBE.name) });
     await user.click(probeCheckbox);
   }
 }

@@ -107,11 +107,6 @@ const InputResponseTime = () => {
     queries: [
       {
         refId: 'A',
-        ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_fid' }),
-        legendFormat: 'FID',
-      },
-      {
-        refId: 'B',
         ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_inp' }),
         legendFormat: 'INP',
       },
@@ -135,7 +130,7 @@ const InputResponseTime = () => {
 
   return (
     <Box height={`200px`}>
-      <VizPanel menu={menu} title={`Input Response Time (FID, INP) - p75`} viz={viz} dataProvider={dataProvider} />
+      <VizPanel menu={menu} title={`Input Response Time (INP) - p75`} viz={viz} dataProvider={dataProvider} />
     </Box>
   );
 };

@@ -47,7 +47,9 @@ describe('<ConfirmUnsavedModal>', () => {
     const { user } = render(<ConfirmUnsavedModal onLeavePage={jest.fn()} onStayOnPage={onStayOnPage} />);
 
     await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading);
-    await user.keyboard('{Esc}');
+    const dialog = screen.getByRole('dialog');
+    await user.click(dialog);
+    await user.keyboard('{Escape}');
 
     expect(onStayOnPage).toHaveBeenCalled();
   });
