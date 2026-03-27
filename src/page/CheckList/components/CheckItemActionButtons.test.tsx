@@ -14,6 +14,18 @@ describe('CheckItemActionButtons', () => {
       render(<CheckItemActionButtons check={BASIC_HTTP_CHECK} />);
       expect(await screen.findByText('View dashboard')).toBeInTheDocument();
     });
+
+    it(`should render both a text link and icon link when responsiveDashboardLink is true`, async () => {
+      render(<CheckItemActionButtons check={BASIC_HTTP_CHECK} responsiveDashboardLink />);
+      expect(await screen.findByText('View dashboard')).toBeInTheDocument();
+      expect(screen.getByLabelText('Go to dashboard')).toBeInTheDocument();
+    });
+
+    it(`should render only an icon link when viewDashboardAsIcon is true`, async () => {
+      render(<CheckItemActionButtons check={BASIC_HTTP_CHECK} viewDashboardAsIcon />);
+      expect(await screen.findByLabelText('Go to dashboard')).toBeInTheDocument();
+      expect(screen.queryByText('View dashboard')).not.toBeInTheDocument();
+    });
   });
 
   describe(`Enable/Disable check`, () => {

@@ -12,6 +12,7 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useDeleteCheck, useUpdateCheck } from 'data/useChecks';
 import { useDuplicateCheckUrl } from 'hooks/useDuplicateCheck';
+import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
 
 interface CheckItemActionButtonsProps {
   check: Check;
@@ -65,7 +66,7 @@ export const CheckItemActionButtons = ({
                 href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
                 size="sm"
                 fill="text"
-                name="apps"
+                icon="apps"
                 tooltip="Go to dashboard"
                 className={styles.dashboardIconLink}
               />
@@ -75,7 +76,7 @@ export const CheckItemActionButtons = ({
               href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
               size="sm"
               fill="text"
-              name="apps"
+              icon="apps"
               tooltip="Go to dashboard"
             />
           ) : (
@@ -133,10 +134,8 @@ export const CheckItemActionButtons = ({
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
-  const containerName = 'check-list-card';
-  const breakpoint = theme.breakpoints.values.md;
-  const containerQuery = `@container ${containerName} (max-width: ${breakpoint}px)`;
-  const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${breakpoint}px)`;
+  const containerName = CHECK_LIST_CARD_CONTAINER_NAME;
+  const containerQuery = `@container ${containerName} (max-width: ${theme.breakpoints.values.md}px)`;
 
   return {
     actionButtonGroup: css({
@@ -151,16 +150,10 @@ const getStyles = (theme: GrafanaTheme2) => {
       [containerQuery]: {
         display: 'none',
       },
-      [mediaQuery]: {
-        display: 'none',
-      },
     }),
     dashboardIconLink: css({
       display: 'none',
       [containerQuery]: {
-        display: 'inline-flex',
-      },
-      [mediaQuery]: {
         display: 'inline-flex',
       },
     }),

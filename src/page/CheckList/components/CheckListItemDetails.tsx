@@ -130,7 +130,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     paddingLeft: 0,
     paddingRight: 0,
   }),
-  labelWidth: css`
-    max-width: 350px;
-  `,
+  labelWidth: css({
+    maxWidth: '350px',
+  }),
 });
