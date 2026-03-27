@@ -2,6 +2,8 @@ import { LOG_LABELS_COMMON, LOG_LABELS_SM } from 'features/parseCheckLogs/checkL
 
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
+import { SCREENSHOT_LABEL_KEYS } from './screenshots/screenshots.constants';
+
 export function uniqueLabels(log: ParsedLokiRecord<Record<string, string>, Record<string, string>>) {
   return Object.keys(log[LokiFieldNames.Labels]).filter(
     (key) =>
@@ -10,8 +12,7 @@ export function uniqueLabels(log: ParsedLokiRecord<Record<string, string>, Recor
       key !== 'msg' &&
       !key.includes(`_extracted`) &&
       !key.includes(`label_`) &&
-      key !== 'time' && // it is redundant as it corresponds to the log timestamp
-      key !== 'screenshot_base64' && // already displayed as an image, no need to show base64 text
-      key !== 'caption' // already displayed above the screenshot image
+      key !== 'time' &&
+      !(SCREENSHOT_LABEL_KEYS as readonly string[]).includes(key)
   );
 }

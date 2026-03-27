@@ -7,6 +7,10 @@ import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 import { LogsEvent } from './LogsEvent';
 
+jest.mock('./screenshots/screenshots.hooks', () => ({
+  useScreenshots: jest.fn().mockReturnValue(new Map()),
+}));
+
 describe('LogsEvent', () => {
   it('should render all the logs correctly', () => {
     const MAIN_KEY = 'msg';
@@ -23,7 +27,7 @@ describe('LogsEvent', () => {
 
     logLineElements.forEach((el, index) => {
       const renderedMainKey = within(el).getByText(logs[index].labels[MAIN_KEY]);
-      const renderedLevel = within(el).getByText(logs[index].labels.level.toUpperCase());
+      const renderedLevel = within(el).getByText(logs[index].labels.detected_level.toUpperCase());
       const expectedTime = dateTimeFormat(logs[index][LokiFieldNames.TimeStamp], {
         defaultWithMS: true,
       });
