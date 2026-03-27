@@ -208,7 +208,9 @@
           { "action": "grafana-synthetic-monitoring-app:read" },
           { "action": "grafana-synthetic-monitoring-app:write" },
 
-          { "action": "grafana-synthetic-monitoring-app.access-tokens:write" }
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:write" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:read" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" }
         ]
       },
       "grants": ["Admin"]
@@ -228,6 +230,8 @@
           { "action": "grafana-synthetic-monitoring-app.alerts:write" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:write" },
           { "action": "grafana-synthetic-monitoring-app.access-tokens:write" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:read" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" },
           { "action": "grafana-synthetic-monitoring-app.checks:read" },
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
           { "action": "grafana-synthetic-monitoring-app.alerts:read" },

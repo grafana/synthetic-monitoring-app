@@ -42,7 +42,9 @@ export const getUserPermissions = () => ({
   canReadThresholds: isUserActionAllowed('grafana-synthetic-monitoring-app.thresholds:read'),
   canWriteThresholds: isUserActionAllowed('grafana-synthetic-monitoring-app.thresholds:write'),
 
+  canReadTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:read'),
   canWriteTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:write'),
+  canDeleteTokens: isUserActionAllowed('grafana-synthetic-monitoring-app.access-tokens:delete'),
 
   canWritePlugin: isUserActionAllowed('grafana-synthetic-monitoring-app.plugin:write'),
 

@@ -177,6 +177,17 @@ export type AccessTokenResponse = {
   token: string;
 };
 
+export type TokenInfo = {
+  id: number;
+  created: number; // nanosecond Unix timestamp
+  lastUsed: number; // nanosecond Unix timestamp
+};
+
+export type ListTokensResponse = {
+  tokens: TokenInfo[];
+  totalCount: number;
+};
+
 export type CheckAlertsResponse = {
   alerts: CheckAlertPublished[];
 };

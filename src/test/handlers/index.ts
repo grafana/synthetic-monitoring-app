@@ -15,7 +15,7 @@ import { getHttpDashboard } from 'test/handlers/httpDashboard';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
-import { createAccessToken } from 'test/handlers/tokens';
+import { createAccessToken, deleteAccessToken, listAccessTokens } from 'test/handlers/tokens';
 
 import { ApiEntry } from 'test/handlers/types';
 
@@ -29,6 +29,8 @@ const API_ROUTES = {
   bulkUpdateChecks,
   checkInfo,
   createAccessToken,
+  deleteAccessToken,
+  listAccessTokens,
   createSecret,
   deleteCheck,
   deleteProbe,
