@@ -65,7 +65,9 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
       <div className={styles.container}>
         <div className={styles.badgeContainer}>
           <Legend className={styles.legend}>Status:</Legend>
-          <Badge color={badgeStatus.color} icon={badgeStatus.icon} text={badgeStatus.text} />
+          <span className={!probe.online ? styles.badgeIconFix : undefined}>
+            <Badge color={badgeStatus.color} icon={badgeStatus.icon} text={badgeStatus.text} />
+          </span>
           {probe.deprecated && (
             <DeprecationNotice
               tooltipContent={
@@ -175,6 +177,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: `flex`,
     alignItems: `center`,
     gap: theme.spacing(1),
+  }),
+  badgeIconFix: css({
+    '& svg': {
+      position: 'relative',
+      top: '1px',
+    },
   }),
   metaWrapper: css({
     display: `flex`,
