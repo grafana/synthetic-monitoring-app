@@ -19,6 +19,7 @@ import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemCard = ({
   check,
+  runtimeAlertState,
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
@@ -30,7 +31,12 @@ export const CheckListItemCard = ({
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
 
   return (
-    <div className={cx(styles.container, { [styles.disabledCard]: !check.enabled })}>
+    <div
+      className={cx(styles.container, {
+        [styles.disabledCard]: !check.enabled,
+        [styles.firingAlertCard]: runtimeAlertState.firingCount > 0,
+      })}
+    >
       <div className={styles.cardWrapper} data-testid={DataTestIds.CheckCard}>
         <div>
           <Checkbox
@@ -45,9 +51,9 @@ export const CheckListItemCard = ({
         <div className={styles.wrapper}>
           <div className={cx(styles.body, { [styles.bodyDisabled]: !check.enabled })}>
             <div className={styles.checkInfoContainer}>
-              <div className={styles.stackCenter}>
+              <div className={styles.titleRow}>
                 <h3 className={styles.heading}>{check.job}</h3>
-                <AlertStatus check={check} />
+                <AlertStatus check={check} runtimeAlertState={runtimeAlertState} />
                 {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
               </div>
               <div className={styles.checkTarget}>{check.target}</div>
@@ -141,6 +147,10 @@ const getStyles = (theme: GrafanaTheme2) => {
     disabledCard: css({
       backgroundColor: theme.colors.secondary.transparent,
     }),
+    firingAlertCard: css({
+      borderColor: theme.colors.error.border,
+      boxShadow: `inset 4px 0 0 ${theme.colors.error.text}`,
+    }),
     wrapper: css({
       overflow: 'hidden',
       flex: 1,
@@ -169,6 +179,16 @@ const getStyles = (theme: GrafanaTheme2) => {
       minWidth: 0,
     }),
     stackCenter: css({
+      display: 'flex',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: theme.spacing(1),
+      minWidth: 0,
+      [narrowContainerQuery]: {
+        alignItems: 'flex-start',
+      },
+    }),
+    titleRow: css({
       display: 'flex',
       alignItems: 'center',
       flexWrap: 'wrap',
