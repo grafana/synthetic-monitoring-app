@@ -11,8 +11,7 @@
 //
 // Required secrets (Synthetic Monitoring > Config > Secrets):
 //   - sm-screenshot-loki-host: your Loki push endpoint
-//   - sm-screenshot-loki-user: your Loki instance user ID
-//   - sm-screenshot-write-key: an access policy token with write:logs scope
+//   - sm-screenshot-loki-auth: base64-encoded user:token string (used directly to avoid credential leaking via httpDebug)
 //   - sm-screenshot-gcs-token: a GCS OAuth2 access token or service account token
 //   - sm-screenshot-gcs-bucket: your GCS bucket name (e.g. my-screenshots-bucket)
 //
@@ -22,7 +21,6 @@
 // Both are required for the screenshot to appear in the UI.
 
 import http from 'k6/http';
-import encoding from 'k6/encoding';
 import secrets from 'k6/secrets';
 import { browser } from 'k6/browser';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
@@ -71,11 +69,9 @@ async function captureAndUploadScreenshot(page, caption) {
 
   // Push a small reference log line to Loki (no image data, just the URL)
   const lokiHost = await secrets.get('sm-screenshot-loki-host');
-  const lokiUser = await secrets.get('sm-screenshot-loki-user');
-  const token = await secrets.get('sm-screenshot-write-key');
+  const lokiAuth = await secrets.get('sm-screenshot-loki-auth');
 
   const host = lokiHost.startsWith('http') ? lokiHost : `https://${lokiHost}`;
-  const credentials = encoding.b64encode(`${lokiUser}:${token}`);
 
   const payload = JSON.stringify({
     streams: [
@@ -98,7 +94,7 @@ async function captureAndUploadScreenshot(page, caption) {
   const lokiRes = http.post(`${host}/loki/api/v1/push`, payload, {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Basic ${credentials}`,
+      Authorization: `Basic ${lokiAuth}`,
     },
   });
 

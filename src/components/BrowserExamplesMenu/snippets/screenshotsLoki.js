@@ -5,8 +5,7 @@
 //
 // Required secrets (Synthetic Monitoring > Config > Secrets):
 //   - sm-screenshot-loki-host: your Loki push endpoint
-//   - sm-screenshot-loki-user: your Loki instance user ID
-//   - sm-screenshot-write-key: an access policy token with write:logs scope
+//   - sm-screenshot-loki-auth: base64-encoded user:token string (used directly to avoid credential leaking via httpDebug)
 //
 // The frontend detects screenshots via two required log lines:
 //   1. console.log(`screenshot:${uuid}`) — written to execution logs for discovery
@@ -80,16 +79,14 @@ async function pushScreenshotToLoki(screenshotBuffer, caption) {
 
 async function pushToLoki(streams, uuid) {
   const lokiHost = await secrets.get('sm-screenshot-loki-host');
-  const lokiUser = await secrets.get('sm-screenshot-loki-user');
-  const token = await secrets.get('sm-screenshot-write-key');
+  const lokiAuth = await secrets.get('sm-screenshot-loki-auth');
 
   const host = lokiHost.startsWith('http') ? lokiHost : `https://${lokiHost}`;
-  const credentials = encoding.b64encode(`${lokiUser}:${token}`);
 
   const res = http.post(`${host}/loki/api/v1/push`, JSON.stringify({ streams }), {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Basic ${credentials}`,
+      Authorization: `Basic ${lokiAuth}`,
     },
   });
 
