@@ -7,9 +7,11 @@ import { SCREENSHOT_LOG_SOURCE } from './screenshots.constants';
 import { assembleChunkedScreenshots, extractFrameLines } from './screenshots.utils';
 
 /**
- * Fetches and assembles screenshot data from Loki for the given UUIDs.
+ * Fetches screenshot data for the given UUIDs. The screenshot log lines can
+ * contain either inline base64 data (optionally chunked) or a URL reference
+ * to external storage (e.g. S3/GCS). Both formats are handled transparently.
  * Tracks which UUIDs have already been fetched to avoid duplicate requests.
- * Pass a stable empty array (EMPTY_UUIDS) to skip fetching entirely.
+ * Pass an empty array to skip fetching entirely (e.g. when the feature flag is off).
  */
 export function useScreenshots(uuids: string[]): Map<string, ScreenshotData> {
   const dataSource = useSMDS();

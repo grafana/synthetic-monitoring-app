@@ -134,6 +134,40 @@ describe('assembleChunkedScreenshots', () => {
     expect(result.get('single')?.screenshot_base64).toBe('single-data');
     expect(result.get('chunked')?.screenshot_base64).toBe('part1part2');
   });
+
+  it('handles a URL-based screenshot (GCS flow)', () => {
+    const lines = [
+      JSON.stringify({
+        id: 'gcs-uuid',
+        screenshot_url: 'https://storage.googleapis.com/my-bucket/gcs-uuid.png',
+        caption: 'GCS screenshot',
+      }),
+    ];
+
+    const result = assembleChunkedScreenshots(lines);
+    expect(result.size).toBe(1);
+
+    const screenshot = result.get('gcs-uuid');
+    expect(screenshot?.screenshot_url).toBe('https://storage.googleapis.com/my-bucket/gcs-uuid.png');
+    expect(screenshot?.caption).toBe('GCS screenshot');
+    expect(screenshot?.screenshot_base64).toBeUndefined();
+  });
+
+  it('handles mix of base64 and URL-based screenshots', () => {
+    const lines = [
+      JSON.stringify({ id: 'loki-uuid', screenshot_base64: 'base64data', caption: 'From Loki' }),
+      JSON.stringify({
+        id: 'gcs-uuid',
+        screenshot_url: 'https://storage.googleapis.com/bucket/gcs-uuid.png',
+        caption: 'From GCS',
+      }),
+    ];
+
+    const result = assembleChunkedScreenshots(lines);
+    expect(result.size).toBe(2);
+    expect(result.get('loki-uuid')?.screenshot_base64).toBe('base64data');
+    expect(result.get('gcs-uuid')?.screenshot_url).toBe('https://storage.googleapis.com/bucket/gcs-uuid.png');
+  });
 });
 
 describe('sanitizeScreenshotSrc', () => {
