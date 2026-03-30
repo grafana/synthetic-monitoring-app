@@ -1,3 +1,18 @@
+// Screenshots (Loki storage)
+//
+// Captures a screenshot and stores the base64 image data directly in Loki.
+// Simple setup — only requires Loki credentials. Best for getting started.
+//
+// Required secrets (Synthetic Monitoring > Config > Secrets):
+//   - sm-screenshot-loki-host: your Loki push endpoint
+//   - sm-screenshot-loki-user: your Loki instance user ID
+//   - sm-screenshot-write-key: an access policy token with write:logs scope
+//
+// The frontend detects screenshots via two required log lines:
+//   1. console.log(`screenshot:${uuid}`) — written to execution logs for discovery
+//   2. A JSON log line with source="synthetic-monitoring-agent-screenshot" — the payload
+// Both are required for the screenshot to appear in the UI.
+
 import http from 'k6/http';
 import encoding from 'k6/encoding';
 import secrets from 'k6/secrets';
@@ -64,10 +79,6 @@ async function pushScreenshotToLoki(screenshotBuffer, caption) {
 }
 
 async function pushToLoki(streams, uuid) {
-  // These secrets must be configured in your k6 secret source:
-  // - sm-screenshot-loki-host: your Loki push endpoint (e.g. https://logs-prod-us-central1.grafana.net)
-  // - sm-screenshot-loki-user: your Loki instance user ID
-  // - sm-screenshot-write-key: an access policy token with write:logs scope
   const lokiHost = await secrets.get('sm-screenshot-loki-host');
   const lokiUser = await secrets.get('sm-screenshot-loki-user');
   const token = await secrets.get('sm-screenshot-write-key');
@@ -85,6 +96,7 @@ async function pushToLoki(streams, uuid) {
   if (res.status !== 204) {
     console.error(`Loki push failed [${res.status}]: ${res.body}`);
   } else if (uuid) {
+    // This log line is required — the frontend uses it to discover screenshots
     console.log(`screenshot:${uuid}`);
   }
 }

@@ -8,13 +8,16 @@ import { ScriptedCheckContent } from './ScriptedCheckContent';
 
 export const BROWSER_CHECK_FIELDS = ['job', 'target', 'channels.k6', 'settings.browser.script'];
 
-const SCREENSHOT_EXAMPLE_VALUE = 'screenshots.js';
+const SCREENSHOT_EXAMPLE_VALUES = ['screenshotsLoki.js', 'screenshotsGCS.js'];
 
 export function BrowserCheckContent() {
   const { isEnabled: screenshotsEnabled } = useFeatureFlag(FeatureName.Screenshots);
 
   const examples = useMemo(
-    () => (screenshotsEnabled ? BROWSER_EXAMPLES : BROWSER_EXAMPLES.filter((e) => e.value !== SCREENSHOT_EXAMPLE_VALUE)),
+    () =>
+      screenshotsEnabled
+        ? BROWSER_EXAMPLES
+        : BROWSER_EXAMPLES.filter((e) => !SCREENSHOT_EXAMPLE_VALUES.includes(e.value)),
     [screenshotsEnabled]
   );
 
