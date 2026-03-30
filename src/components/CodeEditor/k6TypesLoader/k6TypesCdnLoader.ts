@@ -24,36 +24,43 @@ const K6_MODULES: K6ModuleDefinition[] = [
 ];
 
 const CDN_BASE_URL = 'https://unpkg.com/@types/k6';
+const FETCH_TIMEOUT_MS = 5000;
 
 export async function fetchK6TypesFromCDN(channelId: string): Promise<Record<string, string>> {
   const types: Record<string, string> = {};
   const failedModules: string[] = [];
 
-  const fetchPromises = K6_MODULES.map(async (module) => {
-    try {
-      const url = `${CDN_BASE_URL}@${channelId}/${module.path}`;
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        failedModules.push(module.name);
-        return;
-      }
-      
-      const content = await response.text();
-      types[module.name] = content;
-    } catch (error) {
-      failedModules.push(module.name);
-    }
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-  await Promise.all(fetchPromises);
-  
+  try {
+    const fetchPromises = K6_MODULES.map(async (module) => {
+      try {
+        const url = `${CDN_BASE_URL}@${channelId}/${module.path}`;
+        const response = await fetch(url, { signal: controller.signal });
+
+        if (!response.ok) {
+          failedModules.push(module.name);
+          return;
+        }
+
+        const content = await response.text();
+        types[module.name] = content;
+      } catch (error) {
+        failedModules.push(module.name);
+      }
+    });
+
+    await Promise.all(fetchPromises);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
   const successCount = Object.keys(types).length;
-  
-  
+
   if (successCount === 0) {
     throw new Error(`Failed to fetch any k6 types for channel ${channelId}`);
   }
-  
+
   return types;
 }
