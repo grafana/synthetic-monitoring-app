@@ -17,7 +17,6 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({ logs, mainKey }: 
   const styles = useStyles2(getStyles);
   const { isEnabled: screenshotsEnabled } = useFeatureFlag(FeatureName.Screenshots);
 
-  const [showHttpDebug, setShowHttpDebug] = useState(false);
   const [hideScreenshots, setHideScreenshots] = useState(false);
 
   const screenshotUUIDs = useMemo(
@@ -54,24 +53,15 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({ logs, mainKey }: 
   }, [logs, mainKey, screenshotDataByUUID, screenshotsEnabled]);
 
   const filteredLogs = useMemo(() => {
-    let filtered = enrichedLogs;
-
-    if (!showHttpDebug) {
-      filtered = filtered.filter((log) => {
-        const body = log[LokiFieldNames.Body];
-        return typeof body !== 'string' || !/source[=:]"?http-debug"?/.test(body);
-      });
+    if (!screenshotsEnabled || !hideScreenshots) {
+      return enrichedLogs;
     }
 
-    if (screenshotsEnabled && hideScreenshots) {
-      filtered = filtered.filter((log) => {
-        const message = log.labels[mainKey];
-        return !message || !SCREENSHOT_PATTERN.test(message);
-      });
-    }
-
-    return filtered;
-  }, [enrichedLogs, showHttpDebug, hideScreenshots, mainKey, screenshotsEnabled]);
+    return enrichedLogs.filter((log) => {
+      const message = log.labels[mainKey];
+      return !message || !SCREENSHOT_PATTERN.test(message);
+    });
+  }, [enrichedLogs, hideScreenshots, mainKey, screenshotsEnabled]);
 
   const hasTraceColumn = useMemo(
     () =>
@@ -84,21 +74,15 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({ logs, mainKey }: 
 
   return (
     <div className={styles.timelineContainer}>
-      <div className={styles.filterBar}>
-        {screenshotsEnabled && (
-          <>
-            <Badge text="NEW" color="orange" />
-            <label className={styles.filterLabel}>
-              <Switch checked={hideScreenshots} onChange={(e) => setHideScreenshots(e.currentTarget.checked)} />
-              <span>hide screenshots</span>
-            </label>
-          </>
-        )}
-        <label className={styles.filterLabel}>
-          <Switch checked={showHttpDebug} onChange={(e) => setShowHttpDebug(e.currentTarget.checked)} />
-          <span>show http-debug logs</span>
-        </label>
-      </div>
+      {screenshotsEnabled && (
+        <div className={styles.filterBar}>
+          <Badge text="NEW" color="orange" />
+          <label className={styles.filterLabel}>
+            <Switch checked={hideScreenshots} onChange={(e) => setHideScreenshots(e.currentTarget.checked)} />
+            <span>hide screenshots</span>
+          </label>
+        </div>
+      )}
       {filteredLogs.map((log) => (
         <LogLine key={log.id} log={log} mainKey={mainKey} hasTraceColumn={hasTraceColumn} />
       ))}
