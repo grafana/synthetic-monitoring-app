@@ -280,15 +280,19 @@ describe('LogsEvent', () => {
 
     it('stops showing the propagation spinner after the window expires', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
+      // Place the log timestamp 50ms before the propagation window expires so the
+      // spinner appears briefly then disappears without a noticeable real-time wait.
+      // Fake timers can't be used here because SMDatasourceProvider's react-query
+      // hooks won't resolve with mocked timers.
       logs.forEach((log) => {
-        log[LokiFieldNames.TimeStamp] = Date.now() - PROPAGATION_WINDOW_MS + 1_500;
+        log[LokiFieldNames.TimeStamp] = Date.now() - PROPAGATION_WINDOW_MS + 50;
       });
 
       render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
 
       await screen.findAllByTestId('trace-propagation-waiting');
 
-      await waitForElementToBeRemoved(() => screen.queryAllByTestId('trace-propagation-waiting'), { timeout: 5_000 });
+      await waitForElementToBeRemoved(() => screen.queryAllByTestId('trace-propagation-waiting'));
     });
   });
 });

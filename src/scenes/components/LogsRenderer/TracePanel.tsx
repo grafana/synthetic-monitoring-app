@@ -28,7 +28,7 @@ export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, arrowOf
     to: logTimestamp + TRACE_TIME_BUFFER_MS,
   });
   const dataProvider = useMemo(() => new SceneDataNode({ data: traceData }), [traceData]);
-  const viz = useMemo(
+  const tracePanelViz = useMemo(
     () =>
       VizConfigBuilders.traces()
         // @ts-expect-error - waiting on https://github.com/grafana/grafana/pull/121215
@@ -46,7 +46,7 @@ export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, arrowOf
             <div className={styles.title}>Trace: {traceId}</div>
           </Text>
           <Stack direction="row" gap={1} alignItems="center">
-            <LinkButton fill="text" size="md" icon="gf-traces" href={drilldownUrl}>
+            <LinkButton fill="text" size="md" icon="gf-traces" href={drilldownUrl} target="_blank">
               View in Traces Drilldown
             </LinkButton>
             <LinkButton
@@ -54,6 +54,7 @@ export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, arrowOf
               size="md"
               icon="compass"
               href={exploreUrl}
+              target="_blank"
               tooltip="View Trace in Explore"
               aria-label="View Trace in Explore"
             />
@@ -62,7 +63,7 @@ export const TracePanel = ({ traceId, tracesDS, traceData, logTimestamp, arrowOf
         </Stack>
       </Box>
       <div className={styles.panel}>
-        <VizPanel dataProvider={dataProvider} title="" viz={viz} hoverHeader />
+        <VizPanel dataProvider={dataProvider} title="" viz={tracePanelViz} hoverHeader />
       </div>
     </div>
   );

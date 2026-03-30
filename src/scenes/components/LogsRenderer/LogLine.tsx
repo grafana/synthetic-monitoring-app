@@ -4,6 +4,7 @@ import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
+import { trackTraceIconClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
@@ -32,7 +33,7 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
   const outerRef = useRef<HTMLDivElement>(null);
   const [arrowOffset, setArrowOffset] = useState<number | null>(null);
 
-  const labels = log.labels as Record<string, string>;
+  const labels = log.labels;
   const traceId = getTraceId(labels);
   const level = labels.detected_level;
   const logTimestamp = log[LokiFieldNames.TimeStamp];
@@ -44,7 +45,7 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
     refetch,
   } = useQuery({
     queryKey: ['trace', traceId, tracesDS, logTimestamp],
-    queryFn: () => fetchTraceData(traceId!, tracesDS!, logTimestamp),
+    queryFn: () => fetchTraceData(traceId!, tracesDS!),
     enabled: !!traceId && !!tracesDS,
     refetchInterval: (query) => {
       const data = query.state.data;
@@ -75,8 +76,9 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
   }, [isAwaitingPropagation, logTimestamp]);
 
   const handleToggle = useCallback(() => {
+    trackTraceIconClicked({ action: expanded ? 'collapse' : 'expand' });
     setExpanded((prev) => !prev);
-  }, []);
+  }, [expanded]);
 
   const handleClose = useCallback(() => {
     setExpanded(false);
