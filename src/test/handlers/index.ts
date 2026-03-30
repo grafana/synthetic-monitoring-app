@@ -25,7 +25,7 @@ import {
   setLabelMode,
   updateTenantSettings,
 } from 'test/handlers/tenants';
-import { createAccessToken } from 'test/handlers/tokens';
+import { createAccessToken, listAccessTokens, revokeAccessToken } from 'test/handlers/tokens';
 
 import { ApiEntry } from 'test/handlers/types';
 
@@ -44,6 +44,8 @@ const API_ROUTES = {
   createDatasource,
   createFolder,
   createSecret,
+  listAccessTokens,
+  revokeAccessToken,
   deleteCheck,
   deleteFolder,
   deleteProbe,
