@@ -72,6 +72,14 @@ export const trackTimepointViewerActionClicked = timepointExplorerEvents<Timepoi
   'timepoint_viewer_action_clicked'
 );
 
+interface TraceIconClicked extends TrackingEventProps {
+  /** Whether the trace panel was expanded or collapsed. */
+  action: 'expand' | 'collapse';
+}
+
+/** Tracks when a trace icon is clicked in the log view. */
+export const trackTraceIconClicked = timepointExplorerEvents<TraceIconClicked>('trace_icon_clicked');
+
 interface TimepointViewerLogsViewToggled extends TrackingEventProps {
   /** The action that was clicked. */
   action: LogsView;

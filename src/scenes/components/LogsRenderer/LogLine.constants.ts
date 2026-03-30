@@ -1,0 +1,2 @@
+export const PROPAGATION_WINDOW_MS = 120_000;
+export const PROPAGATION_POLL_MS = 15_000;

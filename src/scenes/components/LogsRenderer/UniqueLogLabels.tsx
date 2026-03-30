@@ -6,7 +6,11 @@ import { css } from '@emotion/css';
 import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { uniqueLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels.utils';
 
-export const UniqueLogLabels = ({ log }: { log: ParsedLokiRecord<Record<string, string>, Record<string, string>> }) => {
+interface UniqueLogLabelsProps {
+  log: ParsedLokiRecord<Record<string, string>, Record<string, string>>;
+}
+
+export const UniqueLogLabels = ({ log }: UniqueLogLabelsProps) => {
   const labels = uniqueLabels(log);
   const styles = useStyles2(getStyles);
 
@@ -19,11 +23,9 @@ export const UniqueLogLabels = ({ log }: { log: ParsedLokiRecord<Record<string, 
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => {
-  return {
-    tag: css`
-      white-space: break-spaces;
-      overflow-wrap: anywhere;
-    `,
-  };
-};
+const getStyles = (theme: GrafanaTheme2) => ({
+  tag: css`
+    white-space: break-spaces;
+    overflow-wrap: anywhere;
+  `,
+});
