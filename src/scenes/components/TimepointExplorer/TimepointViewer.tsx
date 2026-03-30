@@ -92,9 +92,9 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
 
   const pendingProbeNames = couldResultBePending
     ? getPendingProbes({
-      entryProbeNames: data.filter((d) => d.executions.length).map((d) => d.probeName),
-      selectedProbeNames: probeVar,
-    })
+        entryProbeNames: data.filter((d) => d.executions.length).map((d) => d.probeName),
+        selectedProbeNames: probeVar,
+      })
     : [];
 
   const enableRefetch = !!pendingProbeNames.length;

@@ -50,7 +50,7 @@ Tracks navigation events within the check form wizard.
 | name      | type                                                                                                     | description                                     |
 | --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check.                              |
-| step      | `string`                                                                                                 | The current step in the wizard.                 |
+| step      | `"check" \| "uptime" \| "labels" \| "execution" \| "alerting"`                                           | The current step in the wizard.                 |
 | component | `"forward-button" \| "back-button" \| "stepper"`                                                         | The UI component that triggered the navigation. |
 
 #### synthetic-monitoring_check_form_adhoc_test_created
@@ -408,6 +408,16 @@ Tracks when a Timepoint Viewer action is clicked
 | name   | type                                                                                        | description                  |
 | ------ | ------------------------------------------------------------------------------------------- | ---------------------------- |
 | action | `"previous-timepoint" \| "next-timepoint" \| "view-explore-logs" \| "view-explore-metrics"` | The action that was clicked. |
+
+#### synthetic-monitoring_timepoint_explorer_trace_icon_clicked
+
+Tracks when a trace icon is clicked in the log view.
+
+##### Properties
+
+| name   | type                     | description                                        |
+| ------ | ------------------------ | -------------------------------------------------- |
+| action | `"expand" \| "collapse"` | Whether the trace panel was expanded or collapsed. |
 
 #### synthetic-monitoring_timepoint_explorer_timepoint_viewer_logs_view_toggled
 

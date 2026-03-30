@@ -213,6 +213,75 @@ export const LOGS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessContro
   accessControl: ADMIN_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 };
 
+export const TRACES_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessControlMetadata = {
+  id: 10,
+  uid: 'grafanacloud-traces',
+  type: 'tempo',
+  name: 'grafanacloud-ckbedwellksix-traces',
+  meta: {
+    id: 'tempo',
+    type: PluginType.datasource,
+    name: 'Tempo',
+    info: {
+      author: {
+        name: 'Grafana Labs',
+        url: 'https://grafana.com',
+      },
+      description: 'High volume, minimal dependency trace storage. OSS tracing solution from Grafana Labs',
+      links: [
+        {
+          name: 'Learn more',
+          url: 'https://grafana.com/oss/tempo/',
+        },
+        {
+          name: 'GitHub Project',
+          url: 'https://github.com/grafana/tempo',
+        },
+      ],
+      logos: {
+        small: 'public/app/plugins/datasource/tempo/img/tempo_logo.svg',
+        large: 'public/app/plugins/datasource/tempo/img/tempo_logo.svg',
+      },
+      build: {},
+      screenshots: [],
+      version: '',
+      updated: '',
+    },
+    dependencies: {
+      grafanaDependency: '',
+      grafanaVersion: '*',
+      plugins: [],
+      extensions: {
+        exposedComponents: [],
+      },
+    },
+    category: 'tracing',
+    backend: true,
+    annotations: false,
+    metrics: false,
+    alerting: false,
+    logs: false,
+    tracing: true,
+    streaming: false,
+    module: 'core:plugin/tempo',
+    baseUrl: 'public/app/plugins/datasource/tempo',
+    angular: {
+      detected: false,
+      hideDeprecation: false,
+    },
+  },
+  url: '/api/datasources/proxy/uid/grafanacloud-traces',
+  isDefault: false,
+  access: 'proxy',
+  jsonData: {},
+  readOnly: true,
+  cachingConfig: {
+    enabled: false,
+    TTLMs: 0,
+  },
+  accessControl: ADMIN_DEFAULT_DATASOURCE_ACCESS_CONTROL,
+};
+
 export const SM_DATASOURCE: DataSourceInstanceSettings<SMOptions> & WithAccessControlMetadata = {
   id: 6,
   uid: 'adsjbccbll2bkb',
