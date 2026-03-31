@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Button, ConfirmModal, Modal, Space, Spinner, TextLink, Tooltip } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, ConfirmModal, Modal, Space, Spinner, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { TokenInfo } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
@@ -13,6 +15,7 @@ const PAGE_SIZE = 50;
 
 export function AccessTokensTab() {
   const { canReadTokens, canWriteTokens, canDeleteTokens } = getUserPermissions();
+  const styles = useStyles2(getStyles);
 
   // write permission implies read for users who have not had the explicit :read
   // permission assigned yet (e.g. before a plugin.json update is rolled out).
@@ -84,13 +87,19 @@ export function AccessTokensTab() {
         {!isLoading && canViewList && tokens.length === 0 && <span>No tokens found.</span>}
         {canViewList && tokens.length > 0 && (
           <>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className={styles.table}>
+              <colgroup>
+                <col className={styles.colId} />
+                <col className={styles.colDate} />
+                <col className={styles.colDate} />
+                {canDeleteTokens && <col className={styles.colAction} />}
+              </colgroup>
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left', padding: '8px 0' }}>ID</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0' }}>Created</th>
-                  <th style={{ textAlign: 'left', padding: '8px 0' }}>Last used</th>
-                  {canDeleteTokens && <th />}
+                  <th className={styles.th}>ID</th>
+                  <th className={styles.th}>Created</th>
+                  <th className={styles.th}>Last used</th>
+                  {canDeleteTokens && <th className={styles.th} />}
                 </tr>
               </thead>
               <tbody>
@@ -108,12 +117,12 @@ export function AccessTokensTab() {
                   );
 
                   return (
-                    <tr key={t.id}>
-                      <td style={{ padding: '8px 0' }}>{t.id}</td>
-                      <td style={{ padding: '8px 0' }}>{formatNano(t.created)}</td>
-                      <td style={{ padding: '8px 0' }}>{formatNano(t.lastUsed)}</td>
+                    <tr key={t.id} className={styles.tr}>
+                      <td className={styles.td}>{t.id}</td>
+                      <td className={styles.td}>{formatNano(t.created)}</td>
+                      <td className={styles.td}>{formatNano(t.lastUsed)}</td>
                       {canDeleteTokens && (
-                        <td style={{ padding: '8px 0' }}>
+                        <td className={cx(styles.td, styles.tdAction)}>
                           {isCurrent ? (
                             <Tooltip content="You cannot revoke the token currently in use.">
                               <span>{revokeButton}</span>
@@ -183,4 +192,49 @@ function formatNano(ns: number): string {
   }
 
   return new Date(ns / 1_000_000).toISOString().slice(0, 16).replace('T', ' ');
+}
+
+// cx is a minimal class name joiner — avoids adding a new dependency.
+function cx(...classes: Array<string | undefined>) {
+  return classes.filter(Boolean).join(' ');
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    table: css({
+      width: '100%',
+      borderCollapse: 'collapse',
+    }),
+    colId: css({
+      width: '60px',
+    }),
+    colDate: css({
+      width: '180px',
+    }),
+    colAction: css({
+      width: '90px',
+    }),
+    th: css({
+      textAlign: 'left',
+      padding: theme.spacing(1, 2, 1, 0),
+      borderBottom: `1px solid ${theme.colors.border.weak}`,
+      color: theme.colors.text.secondary,
+      fontSize: theme.typography.bodySmall.fontSize,
+      fontWeight: theme.typography.fontWeightMedium,
+      whiteSpace: 'nowrap',
+    }),
+    tr: css({
+      '&:not(:last-child) td': {
+        borderBottom: `1px solid ${theme.colors.border.weak}`,
+      },
+    }),
+    td: css({
+      padding: theme.spacing(1, 2, 1, 0),
+      verticalAlign: 'middle',
+    }),
+    tdAction: css({
+      textAlign: 'right',
+      paddingRight: 0,
+    }),
+  };
 }
