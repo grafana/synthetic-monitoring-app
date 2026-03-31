@@ -139,6 +139,69 @@ describe('GenericLabelContent', () => {
       });
     });
 
+    describe('label limit accounts for CALs', () => {
+      const labelLimit = 10;
+
+      it('allows up to limit minus CAL count custom labels (2 CALs → 8 custom)', async () => {
+        renderGenericLabelContent({ calNames, labelLimit });
+
+        await waitFor(() => {
+          calNames.forEach((name) => {
+            expect(screen.getByDisplayValue(name)).toBeInTheDocument();
+          });
+        });
+
+        const addButton = screen.getByRole('button', { name: /label/i });
+        expect(addButton).not.toBeDisabled();
+      });
+
+      it('allows full limit when there are no CALs (0 CALs → 10 custom)', async () => {
+        renderGenericLabelContent({ calNames: [], labelLimit });
+
+        const addButton = screen.getByRole('button', { name: /label/i });
+        expect(addButton).not.toBeDisabled();
+      });
+
+      it('disables adding labels when custom labels fill remaining slots (2 CALs + 8 custom)', async () => {
+        const customLabels = Array.from({ length: 8 }, (_, i) => ({
+          name: `label${i}`,
+          value: `value${i}`,
+        }));
+
+        renderGenericLabelContent(
+          { calNames, labelLimit },
+          { labels: [...customLabels, { name: 'Team', value: 'team-a' }, { name: 'Service', value: 'svc-a' }] }
+        );
+
+        await waitFor(() => {
+          expect(screen.getByDisplayValue('label0')).toBeInTheDocument();
+        });
+
+        const addButton = screen.getByRole('button', { name: /label/i });
+        expect(addButton).toBeDisabled();
+      });
+
+      it('allows one more when a CAL-matching label frees a custom slot (2 CALs + 8 labels, 1 is a CAL)', async () => {
+        const customLabels = Array.from({ length: 7 }, (_, i) => ({
+          name: `label${i}`,
+          value: `value${i}`,
+        }));
+
+        renderGenericLabelContent(
+          { calNames, labelLimit },
+          { labels: [...customLabels, { name: 'Team', value: 'team-a' }] }
+        );
+
+        await waitFor(() => {
+          expect(screen.getByDisplayValue('label0')).toBeInTheDocument();
+          expect(screen.getByRole('textbox', { name: 'Cost attribution label 1 value' })).toHaveValue('team-a');
+        });
+
+        const addButton = screen.getByRole('button', { name: /label/i });
+        expect(addButton).not.toBeDisabled();
+      });
+    });
+
     it('allows removing user-added labels but not CAL rows', async () => {
       const user = renderGenericLabelContent(
         { calNames: ['Team'] },

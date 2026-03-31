@@ -33,6 +33,7 @@ export function LabelSection() {
         description={description}
         isLoading={isInitialLoad}
         calNames={calData?.items ?? []}
+        labelLimit={maxAllowedMetricLabels}
       />
     </FormSection>
   );

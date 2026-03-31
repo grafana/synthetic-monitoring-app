@@ -16,9 +16,10 @@ interface GenericLabelContentProps {
   description: string;
   isLoading?: boolean;
   calNames?: string[];
+  labelLimit?: number;
 }
 
-export function GenericLabelContent({ description, isLoading, calNames = [] }: GenericLabelContentProps) {
+export function GenericLabelContent({ description, isLoading, calNames = [], labelLimit }: GenericLabelContentProps) {
   const styles = useStyles2(getStyles);
   const {
     getValues,
@@ -81,7 +82,7 @@ export function GenericLabelContent({ description, isLoading, calNames = [] }: G
           interpolationVariables={{ type: 'Label' }}
           namePlaceholder="name"
           valuePlaceholder="value"
-          limit={10}
+          limit={labelLimit !== undefined ? labelLimit - calNames.length : undefined}
           namePrefix={
             <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
               <span
