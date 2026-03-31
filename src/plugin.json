@@ -202,13 +202,15 @@
     {
       "role": {
         "name": "Access tokens writer",
-        "description": "Create and delete access tokens in the Synthetic Monitoring app",
+        "description": "Create, list, and delete access tokens in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
           { "action": "grafana-synthetic-monitoring-app:read" },
           { "action": "grafana-synthetic-monitoring-app:write" },
 
-          { "action": "grafana-synthetic-monitoring-app.access-tokens:write" }
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:read" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:write" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" }
         ]
       },
       "grants": ["Admin"]
@@ -227,6 +229,7 @@
           { "action": "grafana-synthetic-monitoring-app.probes:write" },
           { "action": "grafana-synthetic-monitoring-app.alerts:write" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:write" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:read" },
           { "action": "grafana-synthetic-monitoring-app.access-tokens:write" },
           { "action": "grafana-synthetic-monitoring-app.checks:read" },
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
@@ -235,7 +238,8 @@
           { "action": "grafana-synthetic-monitoring-app.checks:delete" },
           { "action": "grafana-synthetic-monitoring-app.probes:delete" },
           { "action": "grafana-synthetic-monitoring-app.alerts:delete" },
-          { "action": "grafana-synthetic-monitoring-app.thresholds:delete" }
+          { "action": "grafana-synthetic-monitoring-app.thresholds:delete" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" }
         ]
       },
       "grants": ["Admin"]
