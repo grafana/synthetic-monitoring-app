@@ -26,6 +26,7 @@ import {
   ListProbeResult,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
+  ListTokensResponse,
   LogsQueryResponse,
   type ResetProbeTokenResult,
   TenantResponse,
@@ -398,6 +399,18 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       method: 'POST',
       data: {},
     }).then((data) => data.token);
+  }
+
+  async listTokens(limit = 50, offset = 0): Promise<ListTokensResponse> {
+    return this.fetchAPI<ListTokensResponse>(
+      `${this.instanceSettings.url}/sm/token/list?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  async deleteToken(tokenId: number): Promise<void> {
+    await this.fetchAPI(`${this.instanceSettings.url}/sm/token/${tokenId}`, {
+      method: 'DELETE',
+    });
   }
 
   //--------------------------------------------------------------------------------

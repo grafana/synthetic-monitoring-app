@@ -889,7 +889,7 @@ export type PluginPermissions =
   | `${PermissionBase}.probes:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.alerts:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
-  | `${PermissionBase}.access-tokens:${'write'}`
+  | `${PermissionBase}.access-tokens:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.plugin:${'write'}`;
 
 export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | 'write' | 'delete'}`;
