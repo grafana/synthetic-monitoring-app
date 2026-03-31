@@ -82,10 +82,9 @@ export const BASIC_HTTP_CHECK: HTTPCheck = DB.check.build(
     job: 'Job name for http',
     target: 'https://http.com',
     labels: [
-      {
-        name: 'httpLabelName',
-        value: 'httpLabelValue',
-      },
+      { name: 'Team', value: 'platform' },
+      { name: 'Service', value: 'api' },
+      { name: 'httpLabelName', value: 'httpLabelValue' },
     ],
     alerts: [...BASIC_CHECK_ALERTS.alerts],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
@@ -96,7 +95,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = DB.check.build(
 export const BASIC_SCRIPTED_CHECK: ScriptedCheck = DB.check.build(
   {
     job: 'Job name for k6',
-    labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
+    labels: [{ name: 'Team', value: 'frontend' }, { name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
     settings: {
       scripted: {
@@ -238,7 +237,7 @@ export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = DB.check.build(
 export const FULL_HTTP_CHECK: HTTPCheck = DB.check.build(
   {
     alertSensitivity: AlertSensitivity.Medium,
-    labels: [{ name: 'agreatlabel', value: 'totally awesome label' }],
+    labels: [{ name: 'Service', value: 'monitoring' }, { name: 'agreatlabel', value: 'totally awesome label' }],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
     basicMetricsOnly: true,
     settings: {
