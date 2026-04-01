@@ -195,7 +195,7 @@ export interface TcpSettings {
   queryResponse?: TCPQueryResponse[];
 }
 
-export interface TcpSettingsFormValues extends TcpSettings {}
+export interface TcpSettingsFormValues extends TcpSettings { }
 
 export interface HttpSettings {
   method: HttpMethod;
@@ -302,7 +302,7 @@ export interface PingSettings {
   dontFragment: boolean;
 }
 
-export interface PingSettingsFormValues extends PingSettings {}
+export interface PingSettingsFormValues extends PingSettings { }
 
 export interface GRPCSettings {
   ipVersion: IpVersion;
@@ -311,7 +311,7 @@ export interface GRPCSettings {
   tlsConfig?: TLSConfig;
 }
 
-export interface GRPCSettingsFormValues extends GRPCSettings {}
+export interface GRPCSettingsFormValues extends GRPCSettings { }
 
 export interface AlertFormValues {
   name: string;
@@ -420,6 +420,19 @@ export interface CheckBase {
   channels?: {
     k6?: K6Channel | K6ChannelRef;
   };
+  folderUid?: string;
+}
+
+export interface GrafanaFolder {
+  uid: string;
+  title: string;
+  url: string;
+  parentUid?: string;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canAdmin?: boolean;
+  canSave?: boolean;
+  parents?: GrafanaFolder[];
 }
 
 export type Check =
@@ -735,6 +748,7 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   CALs = 'synthetic-monitoring-cals',
+  Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
@@ -749,7 +763,7 @@ export interface UsageValues {
   dpm: number;
 }
 
-interface Params extends Record<string, string | undefined> {}
+interface Params extends Record<string, string | undefined> { }
 
 export interface CheckPageParams extends Params {
   id: string;
