@@ -18,6 +18,7 @@ import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
 import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
+import { LabelMigrationTab } from 'page/ConfigPageLayout/tabs/LabelMigrationTab';
 import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManagementTab';
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
 import { DashboardPage } from 'page/DashboardPage';
@@ -37,6 +38,7 @@ export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
   const { isFeatureEnabled } = useFeatureFlagContext();
+  const { isAdmin } = getUserPermissions();
 
   const page = urlSearchParams.get('page');
   useLimits();
@@ -135,6 +137,7 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
+        {isAdmin && <Route path="label-migration" element={<LabelMigrationTab />} />}
         {isFeatureEnabled(FeatureName.SecretsManagement) && <Route path="secrets" element={<SecretsManagementTab />} />}
       </Route>
 

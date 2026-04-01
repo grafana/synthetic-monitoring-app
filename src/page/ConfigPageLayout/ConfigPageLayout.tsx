@@ -6,6 +6,7 @@ import { PluginPage } from '@grafana/runtime';
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { getUserPermissions } from 'data/permissions';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 
 function getConfigTabUrl(tab = '/') {
@@ -28,6 +29,7 @@ function useActiveTab(route: AppRoutes) {
 export function ConfigPageLayout() {
   const activeTab = useActiveTab(AppRoutes.Config);
   const { isFeatureEnabled } = useFeatureFlagContext();
+  const { isAdmin } = getUserPermissions();
 
   const pageNav: NavModelItem = useMemo(() => {
     const navModel: NavModelItem = {
@@ -58,6 +60,16 @@ export function ConfigPageLayout() {
         },
       ],
     };
+
+    // Label Migration tab is visible to admins only (not feature-flagged).
+    if (isAdmin) {
+      navModel.children!.push({
+        icon: 'tag-alt',
+        text: 'Label Migration',
+        url: getConfigTabUrl('label-migration'),
+        active: activeTab('label-migration'),
+      });
+    }
 
     // Add secrets management tab if the feature is enabled
     if (isFeatureEnabled(FeatureName.SecretsManagement)) {
