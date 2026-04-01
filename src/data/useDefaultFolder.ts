@@ -2,8 +2,7 @@ import { useMemo } from 'react';
 
 import { useFolders } from 'data/useFolders';
 
-export const DEFAULT_FOLDER_TITLE = 'Grafana Synthetic Monitoring';
-export const DEFAULT_FOLDER_UID = 'grafana-synthetic-monitoring-app';
+import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID } from './folders.constants';
 
 /**
  * Resolves the default SM folder from the user's accessible folders.

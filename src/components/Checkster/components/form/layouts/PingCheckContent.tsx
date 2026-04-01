@@ -4,6 +4,7 @@ import { DEFAULT_EXAMPLE_HOSTNAME } from '../../../constants';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
+import { FormFolderField } from '../FormFolderField';
 import { FormIpVersionRadioField } from '../FormIpVersionRadioField';
 import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
@@ -15,6 +16,7 @@ export function PingCheckContent() {
     <SectionContent>
       <FormJobField field="job" />
       <ChooseCheckType />
+      <FormFolderField />
       <GenericInputField
         field="target"
         label="Request target"

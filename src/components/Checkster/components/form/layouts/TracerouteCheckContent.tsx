@@ -6,6 +6,7 @@ import { useHasFieldsError } from '../../../hooks/useHasFieldsError';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
+import { FormFolderField } from '../FormFolderField';
 import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
 import { GenericCheckboxField } from '../generic/GenericCheckboxField';
@@ -29,6 +30,7 @@ export function TracerouteCheckContent() {
     <SectionContent>
       <FormJobField field="job" />
       <ChooseCheckType />
+      <FormFolderField />
 
       <GenericInputField
         field="target"
