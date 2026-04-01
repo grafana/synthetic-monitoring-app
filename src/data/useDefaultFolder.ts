@@ -1,19 +1,44 @@
-import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getBackendSrv } from '@grafana/runtime';
+import { firstValueFrom } from 'rxjs';
 
-import { useFolders } from 'data/useFolders';
+import { GrafanaFolder } from 'types';
+import { folderQueryKeys } from 'data/useFolders';
 
 import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID } from './folders.constants';
 
 /**
- * Resolves the default SM folder from the user's accessible folders.
- * Tries matching by known UID first, falls back to title match.
+ * Resolves the default SM folder. Tries by known UID first, then by title.
+ * If neither is found, creates the folder automatically.
  */
 export function useDefaultFolder() {
-  const { data: folders = [], isLoading } = useFolders();
+  const { data: defaultFolder, isLoading } = useQuery({
+    queryKey: [...folderQueryKeys.all, 'default'] as const,
+    queryFn: async (): Promise<GrafanaFolder> => {
+      const folders = await firstValueFrom(
+        getBackendSrv().fetch<GrafanaFolder[]>({ method: 'GET', url: '/api/folders', showErrorAlert: false })
+      ).then((res) => res.data);
 
-  const defaultFolder = useMemo(() => {
-    return folders.find((f) => f.uid === DEFAULT_FOLDER_UID) ?? folders.find((f) => f.title === DEFAULT_FOLDER_TITLE);
-  }, [folders]);
+      const byUid = folders.find((f) => f.uid === DEFAULT_FOLDER_UID);
+      if (byUid) {
+        return byUid;
+      }
+
+      const byTitle = folders.find((f) => f.title === DEFAULT_FOLDER_TITLE);
+      if (byTitle) {
+        return byTitle;
+      }
+
+      return firstValueFrom(
+        getBackendSrv().fetch<GrafanaFolder>({
+          method: 'POST',
+          url: '/api/folders',
+          data: { title: DEFAULT_FOLDER_TITLE },
+        })
+      ).then((res) => res.data);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   return {
     defaultFolder,

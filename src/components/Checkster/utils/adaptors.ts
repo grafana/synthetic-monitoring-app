@@ -13,7 +13,6 @@ import {
   TracerouteCheck,
 } from 'types';
 import { getCheckType } from 'utils';
-import { DEFAULT_FOLDER_UID } from 'data/folders.constants';
 
 import { DEFAULT_CHECK_CONFIG, DEFAULT_CHECK_CONFIG_MAP } from '../constants';
 import { getBrowserCheckFormValues } from '../transformations/toFormValues.browser';
@@ -43,13 +42,7 @@ export function getDefaultFormValues(checkType: CheckType = CheckType.Http) {
     }
   }
 
-  const formValues = toFormValues(check);
-
-  if (!formValues.folderUid) {
-    formValues.folderUid = DEFAULT_FOLDER_UID;
-  }
-
-  return formValues;
+  return toFormValues(check);
 }
 
 export function toFormValues(check: Check): CheckFormValues {
