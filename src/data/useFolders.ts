@@ -1,9 +1,11 @@
 import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
-import { getBackendSrv } from '@grafana/runtime';
+import { getBackendSrv, isFetchError } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { GrafanaFolder } from 'types';
 import { queryClient } from 'data/queryClient';
+
+import { FOLDERS_STALE_TIME, MAX_FOLDER_DEPTH } from './folders.constants';
 
 export interface CreateFolderPayload {
   title: string;
@@ -13,11 +15,11 @@ export interface CreateFolderPayload {
 export const folderQueryKeys = {
   all: ['folders'] as const,
   list: () => [...folderQueryKeys.all, 'list'] as const,
+  children: (parentUid: string) => [...folderQueryKeys.all, 'children', parentUid] as const,
   detail: (uid: string) => [...folderQueryKeys.all, 'detail', uid] as const,
 };
 
 const FOLDERS_API = '/api/folders';
-const STALE_TIME = 5 * 60 * 1000;
 
 function fetchFolders(params?: Record<string, string>) {
   return firstValueFrom(
@@ -31,29 +33,47 @@ function fetchFolders(params?: Record<string, string>) {
 }
 
 /**
- * Fetch all folders the current user can access, including nested.
- * Walks the folder tree by fetching children recursively via parentUid.
+ * Fetch root-level folders the current user can access.
  */
 export function useFolders(): UseQueryResult<GrafanaFolder[], Error> {
   return useQuery({
     queryKey: folderQueryKeys.list(),
-    queryFn: async () => {
-      const rootFolders = await fetchFolders();
-      const allFolders: GrafanaFolder[] = [...rootFolders];
+    queryFn: () => fetchFolders(),
+    staleTime: FOLDERS_STALE_TIME,
+  });
+}
 
-      async function fetchChildren(parentUid: string): Promise<void> {
-        const children = await fetchFolders({ parentUid });
+/**
+ * Fetch the full subtree under a given parent folder.
+ * Walks children recursively up to MAX_FOLDER_DEPTH to guard against
+ * circular references and very deep trees.
+ * Disabled until parentUid is available.
+ */
+export function useFolderChildren(parentUid: string | undefined): UseQueryResult<GrafanaFolder[], Error> {
+  return useQuery({
+    queryKey: folderQueryKeys.children(parentUid!),
+    queryFn: async () => {
+      const allDescendants: GrafanaFolder[] = [];
+
+      async function fetchDescendants(uid: string, depth: number): Promise<void> {
+        if (depth >= MAX_FOLDER_DEPTH) {
+          return;
+        }
+
+        const children = await fetchFolders({ parentUid: uid });
         if (children.length === 0) {
           return;
         }
-        allFolders.push(...children);
-        await Promise.all(children.map((child) => fetchChildren(child.uid)));
+
+        allDescendants.push(...children);
+        await Promise.all(children.map((child) => fetchDescendants(child.uid, depth + 1)));
       }
 
-      await Promise.all(rootFolders.map((folder) => fetchChildren(folder.uid)));
-      return allFolders;
+      await fetchDescendants(parentUid!, 0);
+      return allDescendants;
     },
-    staleTime: STALE_TIME,
+    staleTime: FOLDERS_STALE_TIME,
+    enabled: Boolean(parentUid),
   });
 }
 
@@ -77,11 +97,11 @@ export function useFolder(uid: string | undefined, enabled = true) {
         })
       ).then((res) => res.data),
     enabled: enabled && Boolean(uid),
-    staleTime: STALE_TIME,
+    staleTime: FOLDERS_STALE_TIME,
     retry: false,
   });
 
-  const status = isError ? (error as any)?.status || 500 : folder ? 200 : 0;
+  const status = isError && isFetchError(error) ? error.status : folder ? 200 : 0;
 
   return {
     folder,
