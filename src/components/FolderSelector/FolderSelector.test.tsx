@@ -26,4 +26,11 @@ describe('FolderSelector', () => {
     await screen.findByPlaceholderText(/Select a folder/);
     expect(screen.queryByRole('button', { name: /Create folder/ })).not.toBeInTheDocument();
   });
+
+  it('shows a not found label for a deleted or missing folder', async () => {
+    const onChange = jest.fn();
+    render(<FolderSelector value="deleted-folder-uid" onChange={onChange} />);
+
+    expect(await screen.findByDisplayValue('deleted-folder-uid (folder not found)')).toBeInTheDocument();
+  });
 });
