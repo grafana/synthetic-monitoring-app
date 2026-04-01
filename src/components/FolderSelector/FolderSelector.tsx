@@ -27,14 +27,20 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
 
     const foldersMap = new Map(folders.map((f) => [f.uid, f]));
 
-    return folders
+    const result = folders
       .filter((f) => f.uid === defaultFolderUid || f.parentUid === defaultFolderUid)
       .map((folder) => ({
         label: getFolderPath(folder, foldersMap),
         value: folder.uid,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [folders, defaultFolderUid]);
+
+    if (value && !result.some((opt) => opt.value === value)) {
+      result.push({ label: `${value} (folder not found)`, value });
+    }
+
+    return result;
+  }, [folders, defaultFolderUid, value]);
 
   const handleChange = (selected: ComboboxOption<string> | null) => {
     onChange(selected?.value ?? undefined);
