@@ -3,6 +3,7 @@ import { Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Mod
 
 import { GrafanaFolder } from 'types';
 import { DEFAULT_FOLDER_TITLE } from 'data/folders.constants';
+import { useDefaultFolder } from 'data/useDefaultFolder';
 import { getFolderPath, useCreateFolder, useFolders } from 'data/useFolders';
 
 interface FolderSelectorProps {
@@ -13,19 +14,27 @@ interface FolderSelectorProps {
 }
 
 export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLabel }: FolderSelectorProps) {
-  const { data: folders = [], isLoading } = useFolders();
+  const { data: folders = [], isLoading: isFoldersLoading } = useFolders();
+  const { defaultFolderUid, isLoading: isDefaultLoading } = useDefaultFolder();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  const isLoading = isFoldersLoading || isDefaultLoading;
+
   const options: Array<ComboboxOption<string>> = useMemo(() => {
+    if (!defaultFolderUid) {
+      return [];
+    }
+
     const foldersMap = new Map(folders.map((f) => [f.uid, f]));
 
     return folders
+      .filter((f) => f.uid === defaultFolderUid || f.parentUid === defaultFolderUid)
       .map((folder) => ({
         label: getFolderPath(folder, foldersMap),
         value: folder.uid,
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [folders]);
+  }, [folders, defaultFolderUid]);
 
   const handleChange = (selected: ComboboxOption<string> | null) => {
     onChange(selected?.value ?? undefined);
@@ -36,6 +45,8 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
     setShowCreateModal(false);
   };
 
+  const selectedValue = value ?? defaultFolderUid ?? null;
+
   if (isLoading) {
     return <LoadingPlaceholder text="Loading folders..." />;
   }
@@ -44,7 +55,7 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
     <Stack gap={1.5} alignItems="center">
       <Combobox
         options={options}
-        value={value ?? null}
+        value={selectedValue}
         onChange={handleChange}
         placeholder="Select a folder"
         disabled={disabled}
@@ -64,8 +75,9 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
           </Button>
         </>
       )}
-      {showCreateModal && (
+      {showCreateModal && defaultFolderUid && (
         <CreateFolderModal
+          parentUid={defaultFolderUid}
           onCreated={handleFolderCreated}
           onDismiss={() => setShowCreateModal(false)}
         />
@@ -75,11 +87,12 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
 }
 
 interface CreateFolderModalProps {
+  parentUid: string;
   onCreated: (folder: GrafanaFolder) => void;
   onDismiss: () => void;
 }
 
-function CreateFolderModal({ onCreated, onDismiss }: CreateFolderModalProps) {
+function CreateFolderModal({ parentUid, onCreated, onDismiss }: CreateFolderModalProps) {
   const [title, setTitle] = useState('');
   const { mutateAsync: createFolder, isPending } = useCreateFolder();
 
@@ -88,7 +101,7 @@ function CreateFolderModal({ onCreated, onDismiss }: CreateFolderModalProps) {
       return;
     }
 
-    const folder = await createFolder({ title: title.trim() });
+    const folder = await createFolder({ title: title.trim(), parentUid });
     onCreated(folder);
   };
 

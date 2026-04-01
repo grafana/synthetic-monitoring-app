@@ -5,7 +5,6 @@ import { probeToMetadataProbe, selectOption } from 'test/utils';
 
 import { FormSectionName } from '../../../../../components/Checkster/types';
 import { AlertSensitivity, Check, CheckAlertType, CheckType } from 'types';
-import { DEFAULT_FOLDER_UID } from 'data/folders.constants';
 import {
   FALLBACK_CHECK_DNS,
   FALLBACK_CHECK_GRPC,
@@ -53,7 +52,6 @@ describe('Api endpoint checks - common fields payload', () => {
           job: 'JOB FIELD',
           target: TARGET_MAP[checkType],
           probes: [PRIVATE_PROBE.id],
-          folderUid: DEFAULT_FOLDER_UID,
         });
       });
 
