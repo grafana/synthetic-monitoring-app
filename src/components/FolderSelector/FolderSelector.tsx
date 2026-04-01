@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
-import { Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
 
 import { GrafanaFolder } from 'types';
 import { DEFAULT_FOLDER_TITLE } from 'data/folders.constants';
 import { useDefaultFolder } from 'data/useDefaultFolder';
-import { getFolderPath, useCreateFolder, useFolders } from 'data/useFolders';
+import { getFolderPath, useCreateFolder, useFolderChildren } from 'data/useFolders';
 
 interface FolderSelectorProps {
   value?: string;
@@ -14,21 +14,32 @@ interface FolderSelectorProps {
 }
 
 export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLabel }: FolderSelectorProps) {
-  const { data: folders = [], isLoading: isFoldersLoading } = useFolders();
-  const { defaultFolderUid, isLoading: isDefaultLoading } = useDefaultFolder();
+  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError } = useDefaultFolder();
+  const {
+    data: childFolders = [],
+    isLoading: isChildrenLoading,
+    isError: isChildrenError,
+  } = useFolderChildren(defaultFolderUid);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const isLoading = isFoldersLoading || isDefaultLoading;
+  const isLoading = isDefaultLoading || isChildrenLoading;
+  const isError = isDefaultError || isChildrenError;
+
+  useEffect(() => {
+    if (value === undefined && defaultFolderUid) {
+      onChange(defaultFolderUid);
+    }
+  }, [value, defaultFolderUid, onChange]);
 
   const options: Array<ComboboxOption<string>> = useMemo(() => {
-    if (!defaultFolderUid) {
+    if (!defaultFolder) {
       return [];
     }
 
-    const foldersMap = new Map(folders.map((f) => [f.uid, f]));
+    const allFolders = [defaultFolder, ...childFolders];
+    const foldersMap = new Map(allFolders.map((f) => [f.uid, f]));
 
-    const result = folders
-      .filter((f) => f.uid === defaultFolderUid || f.parentUid === defaultFolderUid)
+    const result = allFolders
       .map((folder) => ({
         label: getFolderPath(folder, foldersMap),
         value: folder.uid,
@@ -40,7 +51,7 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
     }
 
     return result;
-  }, [folders, defaultFolderUid, value]);
+  }, [childFolders, defaultFolder, value]);
 
   const handleChange = (selected: ComboboxOption<string> | null) => {
     onChange(selected?.value ?? undefined);
@@ -55,6 +66,10 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading folders..." />;
+  }
+
+  if (isError) {
+    return <Alert title="Unable to load folders" severity="warning" />;
   }
 
   return (
@@ -100,6 +115,7 @@ interface CreateFolderModalProps {
 
 function CreateFolderModal({ parentUid, onCreated, onDismiss }: CreateFolderModalProps) {
   const [title, setTitle] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const { mutateAsync: createFolder, isPending } = useCreateFolder();
 
   const handleSubmit = async () => {
@@ -107,8 +123,14 @@ function CreateFolderModal({ parentUid, onCreated, onDismiss }: CreateFolderModa
       return;
     }
 
-    const folder = await createFolder({ title: title.trim(), parentUid });
-    onCreated(folder);
+    setError(null);
+
+    try {
+      const folder = await createFolder({ title: title.trim(), parentUid });
+      onCreated(folder);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to create folder');
+    }
   };
 
   return (
@@ -122,6 +144,7 @@ function CreateFolderModal({ parentUid, onCreated, onDismiss }: CreateFolderModa
             autoFocus
           />
         </Field>
+        {error && <Alert title={error} severity="error" />}
         <Modal.ButtonRow>
           <Button variant="secondary" onClick={onDismiss} type="button">
             Cancel

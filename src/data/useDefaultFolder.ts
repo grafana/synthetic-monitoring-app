@@ -5,14 +5,14 @@ import { firstValueFrom } from 'rxjs';
 import { GrafanaFolder } from 'types';
 import { folderQueryKeys } from 'data/useFolders';
 
-import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID } from './folders.constants';
+import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID, FOLDERS_STALE_TIME } from './folders.constants';
 
 /**
  * Resolves the default SM folder. Tries by known UID first, then by title.
  * If neither is found, creates the folder automatically.
  */
 export function useDefaultFolder() {
-  const { data: defaultFolder, isLoading } = useQuery({
+  const { data: defaultFolder, isLoading, isError } = useQuery({
     queryKey: [...folderQueryKeys.all, 'default'] as const,
     queryFn: async (): Promise<GrafanaFolder> => {
       const folders = await firstValueFrom(
@@ -37,12 +37,14 @@ export function useDefaultFolder() {
         })
       ).then((res) => res.data);
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: FOLDERS_STALE_TIME,
+    retry: false,
   });
 
   return {
     defaultFolder,
     defaultFolderUid: defaultFolder?.uid,
     isLoading,
+    isError,
   };
 }

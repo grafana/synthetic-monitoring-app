@@ -195,7 +195,7 @@ export interface TcpSettings {
   queryResponse?: TCPQueryResponse[];
 }
 
-export interface TcpSettingsFormValues extends TcpSettings { }
+export interface TcpSettingsFormValues extends TcpSettings {}
 
 export interface HttpSettings {
   method: HttpMethod;
@@ -302,7 +302,7 @@ export interface PingSettings {
   dontFragment: boolean;
 }
 
-export interface PingSettingsFormValues extends PingSettings { }
+export interface PingSettingsFormValues extends PingSettings {}
 
 export interface GRPCSettings {
   ipVersion: IpVersion;
@@ -311,7 +311,7 @@ export interface GRPCSettings {
   tlsConfig?: TLSConfig;
 }
 
-export interface GRPCSettingsFormValues extends GRPCSettings { }
+export interface GRPCSettingsFormValues extends GRPCSettings {}
 
 export interface AlertFormValues {
   name: string;
@@ -764,7 +764,7 @@ export interface UsageValues {
   dpm: number;
 }
 
-interface Params extends Record<string, string | undefined> { }
+interface Params extends Record<string, string | undefined> {}
 
 export interface CheckPageParams extends Params {
   id: string;
