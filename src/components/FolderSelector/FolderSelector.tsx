@@ -3,7 +3,7 @@ import { Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Mod
 
 import { GrafanaFolder } from 'types';
 import { DEFAULT_FOLDER_TITLE } from 'data/folders.constants';
-import { useCreateFolder, useFolders } from 'data/useFolders';
+import { getFolderPath, useCreateFolder, useFolders } from 'data/useFolders';
 
 interface FolderSelectorProps {
   value?: string;
@@ -17,10 +17,14 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const options: Array<ComboboxOption<string>> = useMemo(() => {
-    return folders.map((folder) => ({
-      label: folder.title,
-      value: folder.uid,
-    }));
+    const foldersMap = new Map(folders.map((f) => [f.uid, f]));
+
+    return folders
+      .map((folder) => ({
+        label: getFolderPath(folder, foldersMap),
+        value: folder.uid,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [folders]);
 
   const handleChange = (selected: ComboboxOption<string> | null) => {
