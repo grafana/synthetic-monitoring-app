@@ -1,5 +1,5 @@
 import { GrafanaFolder } from 'types';
-import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID } from 'data/useDefaultFolder';
+import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID } from 'data/folders.constants';
 
 export const DEFAULT_FOLDER: GrafanaFolder = {
   uid: DEFAULT_FOLDER_UID,
