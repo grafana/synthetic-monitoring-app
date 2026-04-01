@@ -1,7 +1,7 @@
-import { GrafanaFolder } from 'types';
 import { MOCK_FOLDERS } from 'test/fixtures/folders';
 
 import { ApiEntry } from './types';
+import { GrafanaFolder } from 'types';
 
 export const listFolders: ApiEntry<GrafanaFolder[]> = {
   route: `/api/folders`,
