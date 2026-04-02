@@ -9,7 +9,7 @@ import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
-import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
+import { CHECK_LIST_CARD_CONTAINER_NAME, UNATTRIBUTED_MESSAGE_POSITION } from 'page/CheckList/CheckList.constants';
 import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
@@ -96,31 +96,44 @@ export const CheckListItemCard = ({
           </div>
           <div className={styles.footer}>
             <div className={styles.labelsContainer}>
-              {calLabels.length > 0 && (
-                <>
-                  {calLabels.map((label: Label, index) => (
-                    <CheckCardLabel
-                      key={`cal-${label.name}`}
-                      label={label}
-                      onLabelSelect={onLabelSelect}
-                      colorIndex={1}
-                    />
-                  ))}
+              {
+                calLabels.length > 0 && (
+                  <>
+                    {UNATTRIBUTED_MESSAGE_POSITION === 'before-cals' && (
+                      <UnattributedMessage missingCalNames={missingCalNames} />
+                    )}
+                    {calLabels.map((label: Label, index) => (
+                      <CheckCardLabel
+                        key={`cal-${label.name}}`}
+                        label={label}
+                        onLabelSelect={onLabelSelect}
+                        colorIndex={1}
+                      />
+                    ))}
+                    {UNATTRIBUTED_MESSAGE_POSITION === 'after-cals' && (
+                      <UnattributedMessage missingCalNames={missingCalNames} />
+                    )}        {customLabels.length > 0 && (calLabels.length > 0 || missingCalNames.length > 0) && (
+                      <span className={styles.labelDivider}>|</span>
+                    )}
+                  </>
+                )
+              }
+              {
+                customLabels.map((label: Label, index) => (
+                  <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
+                ))
+              }
+              {
+                UNATTRIBUTED_MESSAGE_POSITION === 'after-labels' && (
                   <UnattributedMessage missingCalNames={missingCalNames} />
-                  {customLabels.length > 0 && (calLabels.length > 0 || missingCalNames.length > 0) && (
-                    <span className={styles.labelDivider}>|</span>
-                  )}
-                </>
-              )}
-              {customLabels.map((label: Label, index) => (
-                <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
-              ))}
-            </div>
+                )
+              }
+            </div >
             <CheckItemActionButtons check={check} responsiveDashboardLink className={styles.actions} />
-          </div>
-        </div>
-      </div>
-    </div>
+          </div >
+        </div >
+      </div >
+    </div >
   );
 };
 
