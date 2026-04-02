@@ -101,7 +101,7 @@ export const CheckListItemCard = ({
                       key={`cal-${index}`}
                       label={label}
                       onLabelSelect={onLabelSelect}
-                      colorIndex={4}
+                      colorIndex={1}
                     />
                   ))}
                   {customLabels.length > 0 && <span className={styles.labelDivider}>|</span>}

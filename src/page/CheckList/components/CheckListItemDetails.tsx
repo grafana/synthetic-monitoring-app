@@ -74,13 +74,13 @@ export const CheckListItemDetails = ({
                 <Stack direction="column" gap={1}>
                   <div>
                     <div className={styles.tooltipSectionTitle}>Cost Attribution Labels</div>
-                    <Stack justifyContent="flex-end" wrap="wrap" gap={0.5}>
+                    <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
                       {calLabels!.map((label: Label, index) => (
                         <CheckCardLabel
                           key={`cal-${index}`}
                           label={label}
                           onLabelSelect={onLabelClick}
-                          colorIndex={4}
+                          colorIndex={1}
                         />
                       ))}
                     </Stack>
@@ -88,7 +88,7 @@ export const CheckListItemDetails = ({
                   {labels.length > 0 && (
                     <div>
                       <div className={styles.tooltipSectionTitle}>Custom Labels</div>
-                      <Stack justifyContent="flex-end" wrap="wrap" gap={0.5}>
+                      <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
                         {labels.map((label: Label, index) => (
                           <CheckCardLabel
                             key={index}
@@ -102,7 +102,7 @@ export const CheckListItemDetails = ({
                   )}
                 </Stack>
               ) : (
-                <Stack justifyContent="flex-end" wrap={'wrap'}>
+                <Stack justifyContent="flex-start" wrap={'wrap'}>
                   {labels.map((label: Label, index) => (
                     <CheckCardLabel
                       key={index}
@@ -123,8 +123,8 @@ export const CheckListItemDetails = ({
               className={cx({ [styles.wrapLabelButton]: layout === 'wrap' })}
             >
               {hasCalLabels
-                ? `View ${calLabels!.length} CAL${calLabels!.length === 1 ? '' : 's'}, ${labels.length} custom label${labels.length === 1 ? '' : 's'}`
-                : `View ${labels.length} label${labels.length === 1 ? '' : 's'}`}
+                ? `${calLabels!.length} CAL${calLabels!.length === 1 ? '' : 's'}, ${labels.length} custom label${labels.length === 1 ? '' : 's'}`
+                : `${labels.length} label${labels.length === 1 ? '' : 's'}`}
             </Button>
           </Tooltip>
         </>
