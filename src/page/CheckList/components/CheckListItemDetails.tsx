@@ -63,8 +63,13 @@ export const CheckListItemDetails = ({
           <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>{item}</span>
         </React.Fragment>
       ))}
-      {UNATTRIBUTED_MESSAGE_POSITION === 'before-cals' && (
-        <UnattributedMessage missingCalNames={missingCalNames} />
+      {UNATTRIBUTED_MESSAGE_POSITION === 'before-cals' && missingCalNames.length > 0 && (
+        <>
+          {layout === 'inline' && detailItems.length > 0 && (
+            <span className={styles.separator} aria-hidden="true">|</span>
+          )}
+          <UnattributedMessage missingCalNames={missingCalNames} />
+        </>
       )}
       {labels && onLabelClick && (
         <>
@@ -135,12 +140,15 @@ export const CheckListItemDetails = ({
           </Tooltip>
         </>
       )}
-      {UNATTRIBUTED_MESSAGE_POSITION === 'after-cals' && (
-        <UnattributedMessage missingCalNames={missingCalNames} />
-      )}
-      {UNATTRIBUTED_MESSAGE_POSITION === 'after-labels' && (
-        <UnattributedMessage missingCalNames={missingCalNames} />
-      )}
+      {(UNATTRIBUTED_MESSAGE_POSITION === 'after-cals' || UNATTRIBUTED_MESSAGE_POSITION === 'after-labels') &&
+        missingCalNames.length > 0 && (
+          <>
+            {layout === 'inline' && (
+              <span className={styles.separator} aria-hidden="true">|</span>
+            )}
+            <UnattributedMessage missingCalNames={missingCalNames} />
+          </>
+        )}
     </div>
   );
 };
