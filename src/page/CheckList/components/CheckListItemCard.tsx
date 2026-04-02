@@ -96,28 +96,23 @@ export const CheckListItemCard = ({
           </div>
           <div className={styles.footer}>
             <div className={styles.labelsContainer}>
-              {
-                calLabels.length > 0 && (
-                  <>
-                    {UNATTRIBUTED_MESSAGE_POSITION === 'before-cals' && (
-                      <UnattributedMessage missingCalNames={missingCalNames} />
-                    )}
-                    {calLabels.map((label: Label, index) => (
-                      <CheckCardLabel
-                        key={`cal-${index}`}
-                        label={label}
-                        onLabelSelect={onLabelSelect}
-                        colorIndex={1}
-                      />
-                    ))}
-                    {UNATTRIBUTED_MESSAGE_POSITION === 'after-cals' && (
-                      <UnattributedMessage missingCalNames={missingCalNames} />
-                    )}        {customLabels.length > 0 && (calLabels.length > 0 || missingCalNames.length > 0) && (
-                      <span className={styles.labelDivider}>|</span>
-                    )}
-                  </>
-                )
-              }
+              {UNATTRIBUTED_MESSAGE_POSITION === 'before-cals' && (
+                <UnattributedMessage missingCalNames={missingCalNames} />
+              )}
+              {calLabels.map((label: Label, index) => (
+                <CheckCardLabel
+                  key={`cal-${index}`}
+                  label={label}
+                  onLabelSelect={onLabelSelect}
+                  colorIndex={1}
+                />
+              ))}
+              {UNATTRIBUTED_MESSAGE_POSITION === 'after-cals' && (
+                <UnattributedMessage missingCalNames={missingCalNames} />
+              )}
+              {customLabels.length > 0 && (calLabels.length > 0 || missingCalNames.length > 0) && (
+                <span className={styles.labelDivider}>|</span>
+              )}
               {
                 customLabels.map((label: Label, index) => (
                   <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
