@@ -3,8 +3,6 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { ACTIVE_UNATTRIBUTED_MODES } from 'page/CheckList/CheckList.constants';
-
 interface UnattributedMessageProps {
   missingCalNames: string[];
 }
@@ -12,7 +10,7 @@ interface UnattributedMessageProps {
 export const UnattributedMessage = ({ missingCalNames }: UnattributedMessageProps) => {
   const styles = useStyles2(getStyles);
 
-  if (!ACTIVE_UNATTRIBUTED_MODES.has('inline-message') || missingCalNames.length === 0) {
+  if (missingCalNames.length === 0) {
     return null;
   }
 

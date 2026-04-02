@@ -9,7 +9,7 @@ import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
-import { ACTIVE_UNATTRIBUTED_MODES, CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
+import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
 import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
@@ -17,9 +17,7 @@ import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
-import { UnattributedBadge } from 'page/CheckList/components/UnattributedBadge';
 import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
-import { UnattributedPlaceholderTags } from 'page/CheckList/components/UnattributedPlaceholderTags';
 
 export const CheckListItemCard = ({
   check,
@@ -42,7 +40,6 @@ export const CheckListItemCard = ({
       className={cx(styles.container, {
         [styles.disabledCard]: !check.enabled,
         [styles.firingAlertCard]: runtimeAlertState.firingCount > 0,
-        [styles.unattributedCard]: ACTIVE_UNATTRIBUTED_MODES.has('border') && missingCalNames.length > 0,
       })}
     >
       <div className={styles.cardWrapper} data-testid={DataTestIds.CheckCard}>
@@ -63,7 +60,6 @@ export const CheckListItemCard = ({
                 <h3 className={styles.heading}>{check.job}</h3>
                 <AlertStatus check={check} runtimeAlertState={runtimeAlertState} />
                 {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
-                <UnattributedBadge missingCalNames={missingCalNames} />
               </div>
               <div className={styles.checkTarget}>{check.target}</div>
               <div className={styles.stackCenter}>
@@ -81,7 +77,6 @@ export const CheckListItemCard = ({
                   layout="wrap"
                 />
               </div>
-              <UnattributedMessage missingCalNames={missingCalNames} />
             </div>
             <div className={styles.stats}>
               {check.enabled && (
@@ -111,10 +106,12 @@ export const CheckListItemCard = ({
                       colorIndex={1}
                     />
                   ))}
-                  {customLabels.length > 0 && <span className={styles.labelDivider}>|</span>}
+                  <UnattributedMessage missingCalNames={missingCalNames} />
+                  {customLabels.length > 0 && (calLabels.length > 0 || missingCalNames.length > 0) && (
+                    <span className={styles.labelDivider}>|</span>
+                  )}
                 </>
               )}
-              <UnattributedPlaceholderTags missingCalNames={missingCalNames} />
               {customLabels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
@@ -175,10 +172,6 @@ const getStyles = (theme: GrafanaTheme2) => {
     firingAlertCard: css({
       borderColor: theme.colors.error.border,
       boxShadow: `inset 4px 0 0 ${theme.colors.error.text}`,
-    }),
-    unattributedCard: css({
-      borderColor: theme.colors.warning.border,
-      boxShadow: `inset 4px 0 0 ${theme.colors.warning.text}`,
     }),
     wrapper: css({
       overflow: 'hidden',
