@@ -6,6 +6,8 @@ import pluralize from 'pluralize';
 
 import { Label } from 'types';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
+import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
+import { UnattributedPlaceholderTags } from 'page/CheckList/components/UnattributedPlaceholderTags';
 
 interface CheckListItemDetailsProps {
   frequency: number;
@@ -15,6 +17,7 @@ interface CheckListItemDetailsProps {
   className?: string;
   labels?: Label[];
   calLabels?: Label[];
+  missingCalNames?: string[];
   onLabelClick?: (label: Label) => void;
   layout?: 'inline' | 'wrap';
 }
@@ -27,6 +30,7 @@ export const CheckListItemDetails = ({
   className,
   labels,
   calLabels,
+  missingCalNames = [],
   onLabelClick,
   layout = 'inline',
 }: CheckListItemDetailsProps) => {
@@ -82,6 +86,7 @@ export const CheckListItemDetails = ({
                           colorIndex={1}
                         />
                       ))}
+                      <UnattributedPlaceholderTags missingCalNames={missingCalNames} />
                     </Stack>
                   </div>
                   {labels.length > 0 && (
@@ -128,6 +133,7 @@ export const CheckListItemDetails = ({
           </Tooltip>
         </>
       )}
+      <UnattributedMessage missingCalNames={missingCalNames} />
     </div>
   );
 };
