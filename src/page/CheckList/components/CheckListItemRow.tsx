@@ -6,14 +6,12 @@ import { css, cx } from '@emotion/css';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
-import { ACTIVE_UNATTRIBUTED_MODES } from 'page/CheckList/CheckList.constants';
 import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
-import { UnattributedBadge } from 'page/CheckList/components/UnattributedBadge';
 
 export const CheckListItemRow = ({
   check,
@@ -36,7 +34,6 @@ export const CheckListItemRow = ({
       className={cx(styles.container, {
         [styles.disabledCard]: !check.enabled,
         [styles.firingAlertRow]: runtimeAlertState.firingCount > 0,
-        [styles.unattributedRow]: ACTIVE_UNATTRIBUTED_MODES.has('border') && missingCalNames.length > 0,
       })}
     >
       <div className={styles.listCardWrapper}>
@@ -54,7 +51,6 @@ export const CheckListItemRow = ({
           </span>
           <AlertStatus check={check} compact runtimeAlertState={runtimeAlertState} />
           {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
-          <UnattributedBadge missingCalNames={missingCalNames} />
         </div>
         <div className={styles.checkTarget}>
           <span className={styles.truncatedText}>{check.target}</span>
@@ -94,10 +90,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   firingAlertRow: css({
     borderColor: theme.colors.error.border,
     boxShadow: `inset 4px 0 0 ${theme.colors.error.text}`,
-  }),
-  unattributedRow: css({
-    borderColor: theme.colors.warning.border,
-    boxShadow: `inset 4px 0 0 ${theme.colors.warning.text}`,
   }),
   listCardWrapper: css({
     display: 'grid',

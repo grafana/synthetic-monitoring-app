@@ -1,6 +1,6 @@
-import { Check, Label } from 'types';
+import { Label } from 'types';
 
-import { getMissingCalNames, isCheckUnattributed, splitLabels } from './CheckList.utils';
+import { getMissingCalNames, splitLabels } from './CheckList.utils';
 
 describe('splitLabels', () => {
   it('returns all labels as customLabels when calNames is empty', () => {
@@ -52,42 +52,6 @@ describe('splitLabels', () => {
     const result = splitLabels(labels, ['Team']);
     expect(result.calLabels).toEqual([]);
     expect(result.customLabels).toEqual(labels);
-  });
-});
-
-const makeCheck = (labels: Label[]): Check =>
-  ({ labels } as unknown as Check);
-
-describe('isCheckUnattributed', () => {
-  it('returns false when calNames is empty', () => {
-    const check = makeCheck([{ name: 'env', value: 'prod' }]);
-    expect(isCheckUnattributed(check, [])).toBe(false);
-  });
-
-  it('returns false when all CALs have non-empty values', () => {
-    const check = makeCheck([
-      { name: 'Team', value: 'platform' },
-      { name: 'Service', value: 'api' },
-    ]);
-    expect(isCheckUnattributed(check, ['Team', 'Service'])).toBe(false);
-  });
-
-  it('returns true when a check has no CAL labels at all', () => {
-    const check = makeCheck([{ name: 'env', value: 'prod' }]);
-    expect(isCheckUnattributed(check, ['Team', 'Service'])).toBe(true);
-  });
-
-  it('returns true when some CALs are missing', () => {
-    const check = makeCheck([{ name: 'Team', value: 'platform' }]);
-    expect(isCheckUnattributed(check, ['Team', 'Service'])).toBe(true);
-  });
-
-  it('returns true when a CAL label exists but has an empty value', () => {
-    const check = makeCheck([
-      { name: 'Team', value: '' },
-      { name: 'Service', value: 'api' },
-    ]);
-    expect(isCheckUnattributed(check, ['Team', 'Service'])).toBe(true);
   });
 });
 

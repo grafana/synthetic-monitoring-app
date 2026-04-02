@@ -6,7 +6,6 @@ import { css, cx } from '@emotion/css';
 import { Label } from 'types';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
-import { UnattributedPlaceholderTags } from 'page/CheckList/components/UnattributedPlaceholderTags';
 
 interface CheckListItemDetailsProps {
   frequency: number;
@@ -85,7 +84,6 @@ export const CheckListItemDetails = ({
                           colorIndex={1}
                         />
                       ))}
-                      <UnattributedPlaceholderTags missingCalNames={missingCalNames} />
                     </Stack>
                   </div>
                   {labels.length > 0 && (

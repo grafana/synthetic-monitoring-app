@@ -9,7 +9,3 @@ export const CHECK_LIST_STATUS_OPTIONS: Array<ComboboxOption<CheckEnabledStatus>
 ];
 
 export const CHECK_LIST_CARD_CONTAINER_NAME = 'check-list-card';
-
-export type UnattributedDisplayMode = 'badge' | 'inline-message' | 'placeholder-tag' | 'border' | 'banner';
-
-export const ACTIVE_UNATTRIBUTED_MODES = new Set<UnattributedDisplayMode>(['banner']);
