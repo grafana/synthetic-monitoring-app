@@ -12,8 +12,8 @@ interface CheckListItemDetailsProps {
   probeLocations: number;
   executionsRate?: number;
   className?: string;
-  labelCount?: number;
   labels?: Label[];
+  calLabels?: Label[];
   onLabelClick?: (label: Label) => void;
   layout?: 'inline' | 'wrap';
 }
@@ -25,6 +25,7 @@ export const CheckListItemDetails = ({
   executionsRate,
   className,
   labels,
+  calLabels,
   onLabelClick,
   layout = 'inline',
 }: CheckListItemDetailsProps) => {
@@ -38,6 +39,7 @@ export const CheckListItemDetails = ({
     probeLocationsMessage,
     executionRateMessage,
   ].filter((item): item is string => Boolean(item));
+  const hasCalLabels = (calLabels?.length ?? 0) > 0;
 
   return (
     <div
@@ -66,26 +68,61 @@ export const CheckListItemDetails = ({
           <Tooltip
             placement="bottom-end"
             content={
-              <Stack justifyContent="flex-end" wrap={'wrap'}>
-                {labels.map((label: Label, index) => (
-                  <CheckCardLabel
-                    key={index}
-                    label={label}
-                    onLabelSelect={onLabelClick}
-                    className={styles.labelWidth}
-                  />
-                ))}
-              </Stack>
+              hasCalLabels ? (
+                <Stack direction="column" gap={1}>
+                  <div>
+                    <div className={styles.tooltipSectionTitle}>Cost Attribution Labels</div>
+                    <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
+                      {calLabels?.map((label: Label, index) => (
+                        <CheckCardLabel
+                          key={`cal-${index}`}
+                          label={label}
+                          onLabelSelect={onLabelClick}
+                          colorIndex={1}
+                        />
+                      ))}
+                    </Stack>
+                  </div>
+                  {labels.length > 0 && (
+                    <div>
+                      <div className={styles.tooltipSectionTitle}>Custom Labels</div>
+                      <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
+                        {labels.map((label: Label, index) => (
+                          <CheckCardLabel
+                            key={index}
+                            label={label}
+                            onLabelSelect={onLabelClick}
+                            className={styles.labelWidth}
+                          />
+                        ))}
+                      </Stack>
+                    </div>
+                  )}
+                </Stack>
+              ) : (
+                <Stack justifyContent="flex-start" wrap={'wrap'}>
+                  {labels.map((label: Label, index) => (
+                    <CheckCardLabel
+                      key={index}
+                      label={label}
+                      onLabelSelect={onLabelClick}
+                      className={styles.labelWidth}
+                    />
+                  ))}
+                </Stack>
+              )
             }
           >
             <Button
-              disabled={labels.length === 0}
+              disabled={(labels?.length ?? 0) + (calLabels?.length ?? 0) === 0}
               type="button"
               fill="text"
               size="sm"
               className={cx({ [styles.wrapLabelButton]: layout === 'wrap' })}
             >
-              View {labels.length} label{labels.length === 1 ? '' : 's'}
+              {hasCalLabels
+                ? `${calLabels!.length} CAL${calLabels!.length === 1 ? '' : 's'}, ${labels.length} custom label${labels.length === 1 ? '' : 's'}`
+                : `${labels.length} label${labels.length === 1 ? '' : 's'}`}
             </Button>
           </Tooltip>
         </>
@@ -132,5 +169,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   labelWidth: css({
     maxWidth: '350px',
+  }),
+  tooltipSectionTitle: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing(0.5),
   }),
 });
