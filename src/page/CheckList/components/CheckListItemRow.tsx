@@ -65,7 +65,6 @@ export const CheckListItemRow = ({
           activeSeries={usage?.activeSeries}
           probeLocations={check.probes.length}
           className={styles.listItemDetails}
-          labelCount={check.labels.length}
           labels={customLabels}
           calLabels={calLabels}
           onLabelClick={onLabelSelect}

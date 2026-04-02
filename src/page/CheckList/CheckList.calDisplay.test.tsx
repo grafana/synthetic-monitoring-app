@@ -106,10 +106,18 @@ describe('CheckList - CAL Display', () => {
     });
 
     describe('list view', () => {
-      it('displays check labels in list view', async () => {
+      it('shows split label count button text for CALs and custom labels', async () => {
         await renderCheckList([CHECK_WITH_CAL_AND_CUSTOM], 'view=list');
 
         expect(await screen.findByText(CHECK_WITH_CAL_AND_CUSTOM.job)).toBeInTheDocument();
+        expect(await screen.findByText('2 CALs, 1 custom label')).toBeInTheDocument();
+      });
+
+      it('shows standard label count when no CALs are present', async () => {
+        await renderCheckList([CHECK_WITH_ONLY_CUSTOM], 'view=list');
+
+        expect(await screen.findByText(CHECK_WITH_ONLY_CUSTOM.job)).toBeInTheDocument();
+        expect(await screen.findByText('1 label')).toBeInTheDocument();
       });
     });
   });

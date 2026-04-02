@@ -12,7 +12,6 @@ interface CheckListItemDetailsProps {
   probeLocations: number;
   executionsRate?: number;
   className?: string;
-  labelCount?: number;
   labels?: Label[];
   calLabels?: Label[];
   onLabelClick?: (label: Label) => void;
@@ -25,7 +24,6 @@ export const CheckListItemDetails = ({
   probeLocations,
   executionsRate,
   className,
-  labelCount,
   labels,
   calLabels,
   onLabelClick,
@@ -40,7 +38,7 @@ export const CheckListItemDetails = ({
     activeSeriesMessage,
     probeLocationsMessage,
     executionRateMessage,
-  ].filter((item): item is string => Boolean(item))
+  ].filter((item): item is string => Boolean(item));
   const hasCalLabels = (calLabels?.length ?? 0) > 0;
 
   return (
@@ -75,7 +73,7 @@ export const CheckListItemDetails = ({
                   <div>
                     <div className={styles.tooltipSectionTitle}>Cost Attribution Labels</div>
                     <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
-                      {calLabels!.map((label: Label, index) => (
+                      {calLabels?.map((label: Label, index) => (
                         <CheckCardLabel
                           key={`cal-${index}`}
                           label={label}
@@ -116,7 +114,7 @@ export const CheckListItemDetails = ({
             }
           >
             <Button
-              disabled={!labelCount || labelCount === 0}
+              disabled={(labels?.length ?? 0) + (calLabels?.length ?? 0) === 0}
               type="button"
               fill="text"
               size="sm"
@@ -129,7 +127,7 @@ export const CheckListItemDetails = ({
           </Tooltip>
         </>
       )}
-    </div >
+    </div>
   );
 };
 
