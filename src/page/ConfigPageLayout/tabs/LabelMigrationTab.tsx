@@ -1,6 +1,11 @@
-import React, { useCallback, useState } from 'react';
-import { Alert, Button, Collapse, ConfirmModal, LoadingBar, Space, Stack, Text } from '@grafana/ui';
+import React, { useCallback, useEffect, useState } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Alert, Button, Collapse, ConfirmModal, LoadingBar, Space, Spinner, Stack, Tag, Text, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
+import { queryInstantMetric, getStartEnd } from 'data/utils';
+import { InstantMetric } from 'datasource/responses.types';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 
 import { ConfigContent } from '../ConfigContent';
@@ -37,8 +42,213 @@ function modeLabel(mode: LabelModeValue): string {
   }
 }
 
+// ─── Label preview helpers ──────────────────────────────────────────────────
+
+/**
+ * Returns the user-defined label names to show in the mode preview.
+ * We use two representative labels so the dual-write case is readable.
+ */
+const EXAMPLE_USER_LABELS: Record<string, string> = {
+  env: 'prod',
+  team: 'platform',
+};
+
+/** Returns the label key=value pairs as they would appear in the given mode. */
+function exampleUserLabelPairs(mode: LabelModeValue): Array<{ key: string; value: string; dimmed?: boolean }> {
+  const pairs: Array<{ key: string; value: string; dimmed?: boolean }> = [];
+  for (const [name, val] of Object.entries(EXAMPLE_USER_LABELS)) {
+    if (mode === LabelMode.DUAL_WRITE) {
+      // Un-prefixed first (the "new" form), prefixed second (the legacy form, dimmed)
+      pairs.push({ key: name, value: val });
+      pairs.push({ key: `label_${name}`, value: val, dimmed: true });
+    } else if (mode === LabelMode.UNPREFIXED) {
+      pairs.push({ key: name, value: val });
+    } else {
+      // PREFIXED
+      pairs.push({ key: `label_${name}`, value: val });
+    }
+  }
+  return pairs;
+}
+
+// ─── Live probe_success label fetch ─────────────────────────────────────────
+
+/** Fetches a single probe_success series to show real system labels from the tenant's data. */
+function useProbeSuccessLabels(): {
+  labels: Record<string, string> | undefined;
+  loading: boolean;
+} {
+  const metricsDS = useMetricsDS();
+  const [labels, setLabels] = useState<Record<string, string> | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!metricsDS?.url) {
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    const { start, end } = getStartEnd();
+    try {
+      queryInstantMetric<InstantMetric>({
+        url: metricsDS.url,
+        query: 'probe_success',
+        start,
+        end,
+      })
+        .then((results) => {
+          if (!cancelled && results.length > 0) {
+            setLabels(results[0].metric);
+          }
+        })
+        .catch(() => {
+          // Silently swallow — preview is best-effort
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false);
+          }
+        });
+    } catch {
+      // Silently swallow — preview is best-effort (e.g. test environments without runtime)
+      if (!cancelled) {
+        setLoading(false);
+      }
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [metricsDS]);
+
+  return { labels, loading };
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+interface LabelTagProps {
+  name: string;
+  value: string;
+  dimmed?: boolean;
+  styles: ReturnType<typeof getStyles>;
+}
+
+function LabelTag({ name, value, dimmed, styles }: LabelTagProps) {
+  return (
+    <Tag
+      name={`${name}="${value}"`}
+      colorIndex={dimmed ? 9 : 3}
+      className={dimmed ? styles.tagDimmed : styles.tag}
+    />
+  );
+}
+
+interface SeriesPreviewProps {
+  mode: LabelModeValue;
+  styles: ReturnType<typeof getStyles>;
+  liveLabels?: Record<string, string>;
+  liveLoading?: boolean;
+}
+
+/**
+ * Shows two label sets side-by-side:
+ * 1. A live probe_success series with real system labels from the tenant's data.
+ * 2. A constructed example showing how user-defined labels appear in the current mode.
+ */
+function SeriesPreview({ mode, styles, liveLabels, liveLoading }: SeriesPreviewProps) {
+  // System labels from the live series (subset: the most readable ones)
+  const systemLabelKeys = liveLabels
+    ? Object.keys(liveLabels).filter((k) => !k.startsWith('__'))
+    : ['probe', 'instance', 'job', 'region'];
+
+  const systemLabelValues: Record<string, string> = liveLabels ?? {
+    probe: 'dev-local',
+    instance: 'grafana.com',
+    job: 'my-ping-check',
+    region: 'us',
+  };
+
+  const userPairs = exampleUserLabelPairs(mode);
+
+  return (
+    <div className={styles.previewCard}>
+      {/* Series name */}
+      <p className={styles.seriesName}>
+        <span className={styles.metricName}>probe_success</span>
+        {'{'}
+        <span className={styles.labelSetInline}>
+          {systemLabelKeys.map((k, i) => (
+            <span key={k}>
+              <span className={styles.labelKey}>{k}</span>=
+              <span className={styles.labelVal}>&quot;{systemLabelValues[k]}&quot;</span>
+              {i < systemLabelKeys.length - 1 ? ', ' : ''}
+            </span>
+          ))}
+          {userPairs.map((p) => (
+            <span key={`${p.key}-${p.dimmed ? 'dim' : 'bright'}`}>
+              {', '}
+              <span className={p.dimmed ? styles.labelKeyDimmed : styles.labelKey}>{p.key}</span>=
+              <span className={p.dimmed ? styles.labelValDimmed : styles.labelVal}>&quot;{p.value}&quot;</span>
+            </span>
+          ))}
+        </span>
+        {'}'}
+      </p>
+
+      <Space v={1.5} />
+
+      {/* Tag pills — system labels */}
+      <Text element="p" variant="bodySmall" color="secondary">
+        System labels {liveLoading && <Spinner size="xs" inline />}
+        {!liveLoading && !liveLabels && (
+          <span className={styles.sourceHint}> (example — no live data found)</span>
+        )}
+        {!liveLoading && liveLabels && (
+          <span className={styles.sourceHint}> (from your most recent probe_success series)</span>
+        )}
+      </Text>
+      <Space v={0.5} />
+      <Stack direction="row" gap={1} wrap="wrap">
+        {systemLabelKeys.map((k) => (
+          <Tag key={k} name={`${k}="${systemLabelValues[k]}"`} colorIndex={6} className={styles.tag} />
+        ))}
+      </Stack>
+
+      <Space v={1.5} />
+
+      {/* Tag pills — user labels */}
+      <Text element="p" variant="bodySmall" color="secondary">
+        Your check labels
+        {mode === LabelMode.DUAL_WRITE && (
+          <span className={styles.sourceHint}> (un-prefixed + legacy prefixed)</span>
+        )}
+      </Text>
+      <Space v={0.5} />
+      <Stack direction="row" gap={1} wrap="wrap" alignItems="center">
+        {userPairs.map((p) => (
+          <LabelTag
+            key={`${p.key}-${p.dimmed ? 'dim' : 'bright'}`}
+            name={p.key}
+            value={p.value}
+            dimmed={p.dimmed}
+            styles={styles}
+          />
+        ))}
+        {mode === LabelMode.DUAL_WRITE && (
+          <Text variant="bodySmall" color="secondary">
+            ← prefixed form will be removed after finalization
+          </Text>
+        )}
+      </Stack>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export function LabelMigrationTab() {
   const smDS = useSMDS();
+  const styles = useStyles2(getStyles);
+  const { labels: liveLabels, loading: liveLoading } = useProbeSuccessLabels();
 
   const [state, setState] = useState<LabelModeState | undefined>(undefined);
   const [loading, setLoading] = useState(false);
@@ -79,8 +289,7 @@ export function LabelMigrationTab() {
     };
   }, [smDS]);
 
-  // Load on mount.
-  React.useEffect(loadMode, [loadMode]);
+  useEffect(loadMode, [loadMode]);
 
   const applyMode = async (targetMode: LabelModeValue) => {
     setLoading(true);
@@ -228,6 +437,23 @@ export function LabelMigrationTab() {
             )}
           </ConfigContent.Section>
 
+          {/* ── Label preview ────────────────────────────────────────────── */}
+          <ConfigContent.Section title="How your labels appear right now">
+            <Space v={1} />
+            <Text color="secondary">
+              This preview shows how a <code>probe_success</code> series with two example user-defined check labels (
+              <code>env=&quot;prod&quot;</code>, <code>team=&quot;platform&quot;</code>) looks in{' '}
+              <strong>{modeLabel(state.mode)}</strong> mode.
+            </Text>
+            <Space v={2} />
+            <SeriesPreview
+              mode={state.mode}
+              styles={styles}
+              liveLabels={liveLabels}
+              liveLoading={liveLoading}
+            />
+          </ConfigContent.Section>
+
           {collisionError && (
             <Alert
               severity="error"
@@ -286,3 +512,56 @@ export function LabelMigrationTab() {
     </ConfigContent>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  previewCard: css`
+    background: ${theme.colors.background.secondary};
+    border: 1px solid ${theme.colors.border.medium};
+    border-radius: ${theme.shape.radius.default};
+    padding: ${theme.spacing(2)};
+  `,
+  seriesName: css`
+    font-family: ${theme.typography.fontFamilyMonospace};
+    font-size: ${theme.typography.bodySmall.fontSize};
+    line-height: 1.6;
+    word-break: break-all;
+  `,
+  metricName: css`
+    color: ${theme.colors.text.primary};
+    font-weight: ${theme.typography.fontWeightMedium};
+  `,
+  labelSetInline: css`
+    color: ${theme.colors.text.secondary};
+  `,
+  labelKey: css`
+    color: ${theme.visualization.getColorByName('blue')};
+  `,
+  labelVal: css`
+    color: ${theme.visualization.getColorByName('green')};
+  `,
+  labelKeyDimmed: css`
+    color: ${theme.colors.text.disabled};
+  `,
+  labelValDimmed: css`
+    color: ${theme.colors.text.disabled};
+  `,
+  tag: css`
+    white-space: break-spaces;
+    overflow-wrap: anywhere;
+    font-family: ${theme.typography.fontFamilyMonospace};
+    font-size: ${theme.typography.bodySmall.fontSize};
+  `,
+  tagDimmed: css`
+    white-space: break-spaces;
+    overflow-wrap: anywhere;
+    font-family: ${theme.typography.fontFamilyMonospace};
+    font-size: ${theme.typography.bodySmall.fontSize};
+    opacity: 0.45;
+  `,
+  sourceHint: css`
+    font-style: italic;
+    color: ${theme.colors.text.secondary};
+  `,
+});

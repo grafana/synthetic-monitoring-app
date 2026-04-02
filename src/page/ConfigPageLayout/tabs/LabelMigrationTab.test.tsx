@@ -24,7 +24,11 @@ describe('LabelMigrationTab', () => {
 
   it('shows the current mode in prefixed state', async () => {
     await renderTab();
-    await waitFor(() => expect(screen.getByText(/Prefixed/)).toBeInTheDocument());
+    // The mode name appears in multiple places (status + preview) — just assert at least one exists
+    await waitFor(() => {
+      const elements = screen.getAllByText('Prefixed (label_foo)', { selector: 'strong' });
+      expect(elements.length).toBeGreaterThan(0);
+    });
   });
 
   it('shows the Enable dual-write button for PREFIXED mode', async () => {
@@ -108,10 +112,10 @@ describe('LabelMigrationTab', () => {
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     const confirmButton = screen.getByTestId('data-testid Confirm Modal Danger Button');
     await userEvent.click(confirmButton);
-    // Collision error renders the collidingLabels list items
+    // Collision error renders the collidingLabels list items inside a <code> tag
     await waitFor(() => {
-      expect(screen.getByText('probe')).toBeInTheDocument();
-      expect(screen.getByText('instance')).toBeInTheDocument();
+      expect(screen.getByText('probe', { selector: 'code' })).toBeInTheDocument();
+      expect(screen.getByText('instance', { selector: 'code' })).toBeInTheDocument();
     });
   });
 
@@ -144,7 +148,10 @@ describe('LabelMigrationTab', () => {
     await renderTab();
     const retryButton = await screen.findByRole('button', { name: /Retry/i });
     await userEvent.click(retryButton);
-    await waitFor(() => expect(screen.getByText(/Prefixed/)).toBeInTheDocument());
+    await waitFor(() => {
+      const els = screen.getAllByText('Prefixed (label_foo)', { selector: 'strong' });
+      expect(els.length).toBeGreaterThan(0);
+    });
     expect(screen.queryByText(/Error loading/i)).not.toBeInTheDocument();
   });
 
@@ -153,7 +160,8 @@ describe('LabelMigrationTab', () => {
     await renderTab();
     const toggle = await screen.findByText(/Show reserved label names/i);
     await userEvent.click(toggle);
-    await waitFor(() => expect(screen.getByText('probe')).toBeInTheDocument());
+    // The reserved labels list renders names inside <code> tags
+    await waitFor(() => expect(screen.getAllByText('probe', { selector: 'code' }).length).toBeGreaterThan(0));
   });
 
   it('shows the reserved labels section in UNPREFIXED mode (for auditing)', async () => {
