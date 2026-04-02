@@ -4,6 +4,7 @@ import { Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
+import { UNATTRIBUTED_MESSAGE_POSITION } from 'page/CheckList/CheckList.constants';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
 
@@ -61,6 +62,9 @@ export const CheckListItemDetails = ({
           <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>{item}</span>
         </React.Fragment>
       ))}
+      {UNATTRIBUTED_MESSAGE_POSITION === 'before-cals' && (
+        <UnattributedMessage missingCalNames={missingCalNames} />
+      )}
       {labels && onLabelClick && (
         <>
           {layout === 'inline' && detailItems.length > 0 && (
@@ -130,7 +134,12 @@ export const CheckListItemDetails = ({
           </Tooltip>
         </>
       )}
-      <UnattributedMessage missingCalNames={missingCalNames} />
+      {UNATTRIBUTED_MESSAGE_POSITION === 'after-cals' && (
+        <UnattributedMessage missingCalNames={missingCalNames} />
+      )}
+      {UNATTRIBUTED_MESSAGE_POSITION === 'after-labels' && (
+        <UnattributedMessage missingCalNames={missingCalNames} />
+      )}
     </div>
   );
 };

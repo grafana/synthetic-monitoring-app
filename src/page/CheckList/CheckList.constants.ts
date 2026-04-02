@@ -9,3 +9,7 @@ export const CHECK_LIST_STATUS_OPTIONS: Array<ComboboxOption<CheckEnabledStatus>
 ];
 
 export const CHECK_LIST_CARD_CONTAINER_NAME = 'check-list-card';
+
+export type UnattributedMessagePosition = 'before-cals' | 'after-cals' | 'after-labels';
+
+export const UNATTRIBUTED_MESSAGE_POSITION: UnattributedMessagePosition = 'before-cals';
