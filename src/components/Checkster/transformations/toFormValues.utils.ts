@@ -50,6 +50,7 @@ export function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 
     channels: {
       k6: check.channels?.k6,
     },
+    folderUid: check.folderUid,
   };
 }
 

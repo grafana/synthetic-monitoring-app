@@ -420,6 +420,19 @@ export interface CheckBase {
   channels?: {
     k6?: K6Channel | K6ChannelRef;
   };
+  folderUid?: string;
+}
+
+export interface GrafanaFolder {
+  uid: string;
+  title: string;
+  url: string;
+  parentUid?: string;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canAdmin?: boolean;
+  canSave?: boolean;
+  parents?: GrafanaFolder[];
 }
 
 export type Check =
@@ -735,6 +748,7 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   CALs = 'synthetic-monitoring-cals',
+  Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',

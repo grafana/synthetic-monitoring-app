@@ -15,6 +15,7 @@ import { FIELD_SPACING, SECONDARY_CONTAINER_ID } from '../../../constants';
 import { ScriptExamples } from '../../ScriptExamples';
 import { Column } from '../../ui/Column';
 import { SectionContent } from '../../ui/SectionContent';
+import { FormFolderField } from '../FormFolderField';
 import { FormInstanceField } from '../FormInstanceField';
 import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
@@ -42,6 +43,7 @@ export function ScriptedCheckContent({
         <FormJobField field="job" />
         <FormInstanceField field="target" />
         <K6ChannelSelect />
+        <FormFolderField />
       </Column>
       <Column fill>
         <FormTabs actions={<HelpButton />}>
