@@ -26,9 +26,10 @@ import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
 import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
-import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
+import { isCheckUnattributed, matchesAllFilters } from 'page/CheckList/CheckList.utils';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
+import { UnattributedBanner } from 'page/CheckList/components/UnattributedBanner';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -75,7 +76,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const filters = useCheckFilters();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
   const { data: calData } = useTenantCostAttributionLabels();
-  const calNames = useMemo(() => isCALsEnabled ? calData?.items ?? [] : [], [isCALsEnabled, calData]);
+  const calNames = useMemo(() => (isCALsEnabled ? calData?.items ?? [] : []), [isCALsEnabled, calData?.items]);
 
   // Animate the initial alert-based reorder only once, when alert states first arrive.
   // Subsequent refetches re-sort silently to avoid distracting repeated animations.
@@ -128,6 +129,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus);
+  const unattributedCount = useMemo(
+    () => filteredChecks.filter((check) => isCheckUnattributed(check, calNames)).length,
+    [filteredChecks, calNames]
+  );
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
   const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
@@ -243,6 +248,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         alertStatesFetching={isAlertStatesFetching}
         alertStatesError={isAlertStatesError}
         onRetryAlertStates={refetchAlertStates}
+      />
+      <UnattributedBanner
+        unattributedCount={unattributedCount}
+        totalCount={filteredChecks.length}
       />
       <div>
         <section className="card-section card-list-layout-list">
