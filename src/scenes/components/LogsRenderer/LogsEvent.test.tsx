@@ -10,6 +10,14 @@ import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { PROPAGATION_WINDOW_MS } from './LogLine.constants';
 import { LogsEvent } from './LogsEvent';
 
+jest.mock('hooks/useFeatureFlag', () => ({
+  useFeatureFlag: jest.fn().mockReturnValue({ isEnabled: false }),
+}));
+
+jest.mock('./screenshots/screenshots.hooks', () => ({
+  useScreenshots: jest.fn().mockReturnValue(new Map()),
+}));
+
 const mockFetchTraceData = jest.fn();
 jest.mock('./LogLine.utils', () => ({
   fetchTraceData: (...args: unknown[]) => mockFetchTraceData(...args),
@@ -280,10 +288,6 @@ describe('LogsEvent', () => {
 
     it('stops showing the propagation spinner after the window expires', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      // Place the log timestamp 50ms before the propagation window expires so the
-      // spinner appears briefly then disappears without a noticeable real-time wait.
-      // Fake timers can't be used here because SMDatasourceProvider's react-query
-      // hooks won't resolve with mocked timers.
       logs.forEach((log) => {
         log[LokiFieldNames.TimeStamp] = Date.now() - PROPAGATION_WINDOW_MS + 50;
       });
@@ -294,5 +298,30 @@ describe('LogsEvent', () => {
 
       await waitForElementToBeRemoved(() => screen.queryAllByTestId('trace-propagation-waiting'));
     });
+  });
+
+  it('should not render screenshot toggle when feature flag is disabled', async () => {
+    const logs = executionLogsFactory.build(undefined, {
+      transient: { commonLabels: { probe: 'test' } },
+    });
+
+    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+    await screen.findAllByTestId(/event-log-/);
+    expect(screen.queryByText('hide screenshots')).not.toBeInTheDocument();
+  });
+
+  it('should render screenshot toggle when feature flag is enabled', async () => {
+    const { useFeatureFlag } = require('hooks/useFeatureFlag');
+    useFeatureFlag.mockReturnValue({ isEnabled: true });
+
+    const logs = executionLogsFactory.build(undefined, {
+      transient: { commonLabels: { probe: 'test' } },
+    });
+
+    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+    await screen.findAllByTestId(/event-log-/);
+    expect(screen.getByText('hide screenshots')).toBeInTheDocument();
+
+    useFeatureFlag.mockReturnValue({ isEnabled: false });
   });
 });

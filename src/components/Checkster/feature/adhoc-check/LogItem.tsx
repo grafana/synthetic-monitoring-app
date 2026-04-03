@@ -4,6 +4,11 @@ import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { LogEntry } from './types.adhoc-check';
+import { FeatureName } from 'types';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { SCREENSHOT_PATTERN } from 'scenes/components/LogsRenderer/screenshots/screenshots.constants';
+import { useScreenshots } from 'scenes/components/LogsRenderer/screenshots/screenshots.hooks';
+import { ScreenshotThumbnail } from 'scenes/components/LogsRenderer/screenshots/ScreenshotThumbnail';
 
 import { REDUNDANT_FIRST_LINES } from './constants';
 import { LogDetails } from './LogDetails';
@@ -15,6 +20,20 @@ export function LogItem({ log }: { log: LogEntry }) {
   const logLevel = getLogLevelFromMessage(log.msg, log.level);
   const [isOpen, setIsOpen] = useState(logLevel === 'error');
   const styles = useStyles2(getStyles);
+  const { isEnabled: screenshotsEnabled } = useFeatureFlag(FeatureName.Screenshots);
+
+  const screenshotUUIDs = useMemo(() => {
+    if (!screenshotsEnabled || !msg) {
+      return [];
+    }
+
+    const match = msg.match(SCREENSHOT_PATTERN);
+    return match?.[1] ? [match[1]] : [];
+  }, [msg, screenshotsEnabled]);
+
+  const screenshotDataByUUID = useScreenshots(screenshotUUIDs);
+
+  const screenshotData = screenshotUUIDs.length > 0 ? screenshotDataByUUID.get(screenshotUUIDs[0]) : undefined;
 
   const multiLineMessage = useMemo(() => {
     if (msg && isExpectLogLine(msg)) {
@@ -22,19 +41,29 @@ export function LogItem({ log }: { log: LogEntry }) {
     }
 
     if (msg && isMultiLineString(msg)) {
-      // Remove empty lines
       const [first, ...rest] = stringToLines(msg);
 
-      // Remove known redundant first lines
       if (REDUNDANT_FIRST_LINES.includes(first)) {
         return rest.filter(Boolean).join('\n');
       }
-      // Remove empty lines
+
       return [first, ...rest].filter(Boolean).join('\n');
     }
 
     return undefined;
   }, [msg]);
+
+  if (screenshotData) {
+    return (
+      <div className={styles.container}>
+        <ScreenshotThumbnail
+          base64={screenshotData.screenshot_base64}
+          url={screenshotData.screenshot_url}
+          caption={screenshotData.caption}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

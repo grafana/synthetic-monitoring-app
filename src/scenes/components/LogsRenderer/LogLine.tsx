@@ -16,6 +16,7 @@ import { TRACE_ID_LABEL_NAMES } from 'scenes/components/LogsRenderer/TraceLink.c
 import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels';
 
+import { ScreenshotThumbnail } from './screenshots/ScreenshotThumbnail';
 import { PROPAGATION_POLL_MS, PROPAGATION_WINDOW_MS } from './LogLine.constants';
 
 interface LogLineProps {
@@ -126,7 +127,13 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
         >
           {level.toUpperCase()}
         </div>
-        <div className={styles.mainKey}>{labels[mainKey]}</div>
+        <div className={styles.mainKey}>
+          {labels.screenshot_base64 || labels.screenshot_url ? (
+            <ScreenshotThumbnail base64={labels.screenshot_base64} url={labels.screenshot_url} caption={labels.caption} />
+          ) : (
+            labels[mainKey]
+          )}
+        </div>
         {hasTraceColumn && (
           <div className={styles.traceIconCell} ref={traceIconRef}>
             {traceId && (
