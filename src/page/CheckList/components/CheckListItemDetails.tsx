@@ -116,6 +116,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   detailItem: css({
     minWidth: 0,
     fontVariantNumeric: 'tabular-nums',
+    whiteSpace: 'nowrap',
   }),
   wrapDetailItem: css({
     backgroundColor: theme.colors.background.primary,
