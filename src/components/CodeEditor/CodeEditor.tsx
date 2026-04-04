@@ -7,6 +7,8 @@ import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
 import { CodeEditorProps, ConstrainedEditorProps } from './CodeEditor.types';
 // import { Overlay } from 'components/Overlay';
 import k6Types from './k6.types';
+import { FeatureName } from 'types';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 
 import { useK6TypesForChannel } from './k6TypesLoader/useK6TypesForChannel';
 import { initializeConstrainedInstance, updateConstrainedEditorRanges } from './CodeEditor.utils';
@@ -31,8 +33,14 @@ const addK6Types = (monaco: typeof monacoType, types: Record<string, string> = k
   // Clear existing k6 types first
   clearK6Types(monaco);
 
+  // Filter types based on feature flags
+  const filteredTypes = { ...types };
+  if (!isFeatureEnabled(FeatureName.SecretsManagement)) {
+    delete filteredTypes['k6/secrets'];
+  }
+
   // Add new k6 types
-  Object.entries(types).forEach(([name, type]) => {
+  Object.entries(filteredTypes).forEach(([name, type]) => {
     const uri = `file:///k6-types/${name.replace(/\//g, '-')}.d.ts`;
     monaco.languages.typescript.javascriptDefaults.addExtraLib(`declare module '${name}' { ${type} }`, uri);
     currentK6LibUris.push(uri);
