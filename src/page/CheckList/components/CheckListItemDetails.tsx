@@ -122,7 +122,7 @@ export const CheckListItemDetails = ({
               className={cx({ [styles.wrapLabelButton]: layout === 'wrap' })}
             >
               {hasCalLabels
-                ? `${calLabels!.length} ${pluralize('CAL', calLabels!.length)}, ${labels.length} custom ${pluralize('label', labels.length)}`
+                ? `${calLabels!.length} ${calLabels!.length === 1 ? 'CAL' : 'CALs'}, ${labels.length} custom ${pluralize('label', labels.length)}`
                 : `${labels.length} ${pluralize('label', labels.length)}`}
             </Button>
           </Tooltip>
