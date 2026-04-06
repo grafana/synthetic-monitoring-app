@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Modal, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { intersection } from 'lodash';
 
@@ -44,7 +44,7 @@ export const BulkActionsModal = (props: BulkActionModalProps) => {
 
 const BulkActionsModalContent = ({ onDismiss, isOpen, checks, action }: BulkActionModalProps) => {
   const { data: probes = [] } = useProbes();
-  const { mutate: bulkUpdateChecks, isPending } = useBulkUpdateChecks({ onSuccess: onDismiss });
+  const { mutate: bulkUpdateChecks, isPending, isError } = useBulkUpdateChecks({ onSuccess: onDismiss });
   const [probeIds, setProbeIds] = useState<number[]>([]);
   const commonProbes = intersection(...checks.map((check) => check.probes));
   const styles = useStyles2(getStyles);
@@ -105,6 +105,12 @@ const BulkActionsModalContent = ({ onDismiss, isOpen, checks, action }: BulkActi
           {probes && <ProbesByRegion probes={selectableProbes} onChange={handleChange} isRemoving={!isAdding} />}
         </div>
       </div>
+
+      {isError && (
+        <Alert title="Bulk update failed" severity="error">
+          The update operation failed. Try selecting fewer checks and retrying.
+        </Alert>
+      )}
 
       <div className={styles.verticalSpace}>
         <Stack>
