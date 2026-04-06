@@ -3240,10 +3240,10 @@
   dependencies:
     undici-types "~7.16.0"
 
-"@types/node@24.10.1":
-  version "24.10.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.10.1.tgz#91e92182c93db8bd6224fca031e2370cef9a8f01"
-  integrity sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==
+"@types/node@24.12.1":
+  version "24.12.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.12.1.tgz#aba167c9a3aa3c06676af9fe02a437231b0cf07c"
+  integrity sha512-v6Ct1W1Fdz7xg5jYCg4FTrbNcIqzds2jv/HL6+5Rs/Cyjf0oljAgW59zvDZXyYG7nt9MLrAFJv9erP/fLjwt+g==
   dependencies:
     undici-types "~7.16.0"
 
