@@ -1,6 +1,6 @@
 import { Label } from 'types';
 
-import { splitLabels } from './CheckList.utils';
+import { getMissingCalNames, splitLabels } from './CheckList.utils';
 
 describe('splitLabels', () => {
   it('returns all labels as customLabels when calNames is empty', () => {
@@ -52,5 +52,38 @@ describe('splitLabels', () => {
     const result = splitLabels(labels, ['Team']);
     expect(result.calLabels).toEqual([]);
     expect(result.customLabels).toEqual(labels);
+  });
+});
+
+describe('getMissingCalNames', () => {
+  it('returns all calNames when no labels match', () => {
+    const labels: Label[] = [{ name: 'env', value: 'prod' }];
+    expect(getMissingCalNames(labels, ['Team', 'Service'])).toEqual(['Team', 'Service']);
+  });
+
+  it('returns empty array when all CALs are present with values', () => {
+    const labels: Label[] = [
+      { name: 'Team', value: 'platform' },
+      { name: 'Service', value: 'api' },
+    ];
+    expect(getMissingCalNames(labels, ['Team', 'Service'])).toEqual([]);
+  });
+
+  it('returns only the missing CAL names', () => {
+    const labels: Label[] = [{ name: 'Team', value: 'platform' }];
+    expect(getMissingCalNames(labels, ['Team', 'Service'])).toEqual(['Service']);
+  });
+
+  it('treats empty-value labels as missing', () => {
+    const labels: Label[] = [
+      { name: 'Team', value: '' },
+      { name: 'Service', value: 'api' },
+    ];
+    expect(getMissingCalNames(labels, ['Team', 'Service'])).toEqual(['Team']);
+  });
+
+  it('returns empty array when calNames is empty', () => {
+    const labels: Label[] = [{ name: 'env', value: 'prod' }];
+    expect(getMissingCalNames(labels, [])).toEqual([]);
   });
 });

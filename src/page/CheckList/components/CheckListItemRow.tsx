@@ -6,7 +6,7 @@ import { css, cx } from '@emotion/css';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
-import { splitLabels } from 'page/CheckList/CheckList.utils';
+import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
@@ -27,6 +27,7 @@ export const CheckListItemRow = ({
   const checkType = getCheckType(check.settings);
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
   const { calLabels, customLabels } = useMemo(() => splitLabels(check.labels, calNames), [check.labels, calNames]);
+  const missingCalNames = useMemo(() => getMissingCalNames(check.labels, calNames), [check.labels, calNames]);
 
   return (
     <div
@@ -67,6 +68,7 @@ export const CheckListItemRow = ({
           className={styles.listItemDetails}
           labels={customLabels}
           calLabels={calLabels}
+          missingCalNames={missingCalNames}
           onLabelClick={onLabelSelect}
           executionsRate={usage?.checksPerMonth}
         />
