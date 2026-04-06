@@ -98,7 +98,7 @@ export const CheckListItemCard = ({
                 <>
                   {calLabels.map((label: Label, index) => (
                     <CheckCardLabel
-                      key={`cal-${index}`}
+                      key={`cal-${label.name}`}
                       label={label}
                       onLabelSelect={onLabelSelect}
                       colorIndex={1}

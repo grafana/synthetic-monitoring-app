@@ -2,6 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import pluralize from 'pluralize';
 
 import { Label } from 'types';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
@@ -75,7 +76,7 @@ export const CheckListItemDetails = ({
                     <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
                       {calLabels?.map((label: Label, index) => (
                         <CheckCardLabel
-                          key={`cal-${index}`}
+                          key={`cal-${label.name}`}
                           label={label}
                           onLabelSelect={onLabelClick}
                           colorIndex={1}
@@ -89,7 +90,7 @@ export const CheckListItemDetails = ({
                       <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
                         {labels.map((label: Label, index) => (
                           <CheckCardLabel
-                            key={index}
+                            key={label.name}
                             label={label}
                             onLabelSelect={onLabelClick}
                             className={styles.labelWidth}
@@ -103,7 +104,7 @@ export const CheckListItemDetails = ({
                 <Stack justifyContent="flex-start" wrap={'wrap'}>
                   {labels.map((label: Label, index) => (
                     <CheckCardLabel
-                      key={index}
+                      key={label.name}
                       label={label}
                       onLabelSelect={onLabelClick}
                       className={styles.labelWidth}
@@ -121,8 +122,8 @@ export const CheckListItemDetails = ({
               className={cx({ [styles.wrapLabelButton]: layout === 'wrap' })}
             >
               {hasCalLabels
-                ? `${calLabels!.length} CAL${calLabels!.length === 1 ? '' : 's'}, ${labels.length} custom label${labels.length === 1 ? '' : 's'}`
-                : `${labels.length} label${labels.length === 1 ? '' : 's'}`}
+                ? `${calLabels!.length} ${pluralize('CAL', calLabels!.length)}, ${labels.length} custom ${pluralize('label', labels.length)}`
+                : `${labels.length} ${pluralize('label', labels.length)}`}
             </Button>
           </Tooltip>
         </>
