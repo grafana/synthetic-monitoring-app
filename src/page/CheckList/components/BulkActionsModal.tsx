@@ -97,6 +97,12 @@ const BulkActionsModalContent = ({ onDismiss, isOpen, checks, action }: BulkActi
         onDismiss();
       }}
     >
+      {isError && (
+        <Alert title="Bulk update failed" severity="error">
+          The update operation failed. Try selecting fewer checks and retrying.
+        </Alert>
+      )}
+
       <div>
         <div className={styles.verticalSpace}>
           <i>{description}</i>
@@ -105,12 +111,6 @@ const BulkActionsModalContent = ({ onDismiss, isOpen, checks, action }: BulkActi
           {probes && <ProbesByRegion probes={selectableProbes} onChange={handleChange} isRemoving={!isAdding} />}
         </div>
       </div>
-
-      {isError && (
-        <Alert title="Bulk update failed" severity="error">
-          The update operation failed. Try selecting fewer checks and retrying.
-        </Alert>
-      )}
 
       <div className={styles.verticalSpace}>
         <Stack>
