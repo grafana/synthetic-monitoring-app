@@ -1,5 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -17,7 +18,9 @@ export const UnattributedMessage = ({ missingCalNames }: UnattributedMessageProp
   return (
     <span className={styles.message}>
       <Icon name="exclamation-triangle" size="sm" />
-      Missing cost attribution labels: {missingCalNames.join(', ')}
+      {t('checkList.unattributedMessage.missingLabels', 'Missing cost attribution labels: {{labelList}}', {
+        labelList: missingCalNames.join(', '),
+      })}
     </span>
   );
 };

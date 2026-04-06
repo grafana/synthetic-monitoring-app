@@ -113,10 +113,10 @@ export const CheckListItemCard = ({
               <UnattributedMessage missingCalNames={missingCalNames} />
             </div>
             <CheckItemActionButtons check={check} responsiveDashboardLink className={styles.actions} />
-          </div >
-        </div >
-      </div >
-    </div >
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

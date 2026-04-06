@@ -21,6 +21,9 @@
     "withoutAlerts": "Without alerts"
   },
   "checkList": {
+    "unattributedMessage": {
+      "missingLabels": "Missing cost attribution labels: {{labelList}}"
+    },
     "header": {
       "currentlyShowing": "Currently showing {{currentPageChecksLength}} of {{checksLength}} total checks",
       "deselectAll": "Deselect all",
