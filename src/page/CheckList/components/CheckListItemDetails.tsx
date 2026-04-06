@@ -5,7 +5,6 @@ import { css, cx } from '@emotion/css';
 import pluralize from 'pluralize';
 
 import { Label } from 'types';
-import { UNATTRIBUTED_MESSAGE_POSITION } from 'page/CheckList/CheckList.constants';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
 
@@ -63,14 +62,6 @@ export const CheckListItemDetails = ({
           <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>{item}</span>
         </React.Fragment>
       ))}
-      {UNATTRIBUTED_MESSAGE_POSITION === 'before-cals' && missingCalNames.length > 0 && (
-        <>
-          {layout === 'inline' && detailItems.length > 0 && (
-            <span className={styles.separator} aria-hidden="true">|</span>
-          )}
-          <UnattributedMessage missingCalNames={missingCalNames} />
-        </>
-      )}
       {labels && onLabelClick && (
         <>
           {layout === 'inline' && detailItems.length > 0 && (
@@ -140,15 +131,14 @@ export const CheckListItemDetails = ({
           </Tooltip>
         </>
       )}
-      {(UNATTRIBUTED_MESSAGE_POSITION === 'after-cals' || UNATTRIBUTED_MESSAGE_POSITION === 'after-labels') &&
-        missingCalNames.length > 0 && (
-          <>
-            {layout === 'inline' && (
-              <span className={styles.separator} aria-hidden="true">|</span>
-            )}
-            <UnattributedMessage missingCalNames={missingCalNames} />
-          </>
-        )}
+      {missingCalNames.length > 0 && (
+        <>
+          {layout === 'inline' && (
+            <span className={styles.separator} aria-hidden="true">|</span>
+          )}
+          <UnattributedMessage missingCalNames={missingCalNames} />
+        </>
+      )}
     </div>
   );
 };
