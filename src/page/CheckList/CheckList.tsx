@@ -17,19 +17,22 @@ import {
   useChecksAlertStates,
 } from 'data/useCheckAlertStates';
 import { useSuspenseChecks } from 'data/useChecks';
+import { useAllFolders } from 'data/useFolders';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
+import {
+  CHECK_LIST_STATUS_OPTIONS,
+  CHECKS_PER_PAGE_CARD,
+  CHECKS_PER_PAGE_LIST,
+} from 'page/CheckList/CheckList.constants';
 import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
 import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
+import { CheckListFolderView } from 'page/CheckList/components/CheckListFolderView';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
-
-const CHECKS_PER_PAGE_CARD = 15;
-const CHECKS_PER_PAGE_LIST = 50;
 
 export const CheckList = () => {
   const [viewType, setViewType] = useQueryParametersState<CheckListViewType>({
@@ -61,6 +64,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
+
+  const { folders, foldersMap, defaultFolderUid, isLoading: isFoldersLoading } = useAllFolders();
   const {
     data: checkAlertStates = {},
     isFetched: isAlertStatesFetched,
@@ -239,14 +244,31 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         alertStatesError={isAlertStatesError}
         onRetryAlertStates={refetchAlertStates}
       />
-      <div>
-        <section className="card-section card-list-layout-list">
-          <div className={styles.list}>
-            {/* Inline style is required: viewTransitionName must be unique per element and can't be set via a shared CSS class */}
-            {currentPageChecks.map((check) => (
-              <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
+      {viewType === CheckListViewType.Folder ? (
+        <CheckListFolderView
+          checks={sortedChecks}
+          folders={folders}
+          foldersMap={foldersMap}
+          foldersLoading={isFoldersLoading}
+          defaultFolderUid={defaultFolderUid}
+          checkAlertStates={checkAlertStates}
+          onLabelSelect={handleLabelSelect}
+          onStatusSelect={handleStatusSelect}
+          onTypeSelect={handleTypeSelect}
+          onToggleCheckbox={handleCheckSelect}
+          selectedCheckIds={selectedCheckIds}
+        />
+      ) : (
+        <div>
+          <section className="card-section card-list-layout-list">
+            <div className={styles.list}>
+              {/* Inline style is required: viewTransitionName must be unique per element and can't be set via a shared CSS class */}
+              {currentPageChecks.map((check) => (
+                <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
                 <CheckListItem
                   check={check}
+                  foldersMap={foldersMap}
+                  foldersLoading={isFoldersLoading}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
                   onTypeSelect={handleTypeSelect}
@@ -255,18 +277,19 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                   selected={selectedCheckIds.has(check.id!)}
                   viewType={viewType}
                 />
-              </div>
-            ))}
-          </div>
-        </section>
-        {totalPages > 1 && (
-          <Pagination
-            numberOfPages={totalPages}
-            currentPage={currentPage}
-            onNavigate={(toPage: number) => setCurrentPage(toPage)}
-          />
-        )}
-      </div>
+                </div>
+              ))}
+            </div>
+          </section>
+          {totalPages > 1 && (
+            <Pagination
+              numberOfPages={totalPages}
+              currentPage={currentPage}
+              onNavigate={(toPage: number) => setCurrentPage(toPage)}
+            />
+          )}
+        </div>
+      )}
     </>
   );
 };

@@ -6,6 +6,7 @@ import { css, cx } from '@emotion/css';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
+import { CheckFolderBadge } from 'page/CheckList/components/CheckFolderBadge';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
@@ -20,6 +21,8 @@ export const CheckListItemRow = ({
   onStatusSelect,
   selected,
   onToggleCheckbox,
+  foldersMap,
+  foldersLoading,
 }: CheckListItemProps) => {
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
@@ -62,11 +65,11 @@ export const CheckListItemRow = ({
           activeSeries={usage?.activeSeries}
           probeLocations={check.probes.length}
           className={styles.listItemDetails}
-          labelCount={check.labels.length}
           labels={check.labels}
           onLabelClick={onLabelSelect}
           executionsRate={usage?.checksPerMonth}
         />
+        <CheckFolderBadge check={check} foldersMap={foldersMap} foldersLoading={foldersLoading} />
         <CheckItemActionButtons check={check} viewDashboardAsIcon />
       </div>
     </div>
@@ -88,7 +91,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   listCardWrapper: css({
     display: 'grid',
-    gridTemplateColumns: 'auto minmax(220px, 1.25fr) minmax(1px, 1fr) auto auto auto',
+    gridTemplateColumns: 'auto minmax(220px, 1.25fr) minmax(1px, 1fr) auto auto auto auto',
     alignItems: 'center',
     gridColumnGap: theme.spacing(2),
     padding: theme.spacing(1.5, 2),

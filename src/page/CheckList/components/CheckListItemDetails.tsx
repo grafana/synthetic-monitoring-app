@@ -12,7 +12,6 @@ interface CheckListItemDetailsProps {
   probeLocations: number;
   executionsRate?: number;
   className?: string;
-  labelCount?: number;
   labels?: Label[];
   onLabelClick?: (label: Label) => void;
   layout?: 'inline' | 'wrap';
