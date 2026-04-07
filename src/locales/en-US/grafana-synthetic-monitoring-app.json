@@ -33,6 +33,9 @@
         "descExecutions": "Desc. Executions",
         "descReachability": "Desc. Reachability"
       }
+    },
+    "unattributedMessage": {
+      "missingLabels": "Missing cost attribution labels: {{labelList}}"
     }
   },
   "labelFilterInput": {

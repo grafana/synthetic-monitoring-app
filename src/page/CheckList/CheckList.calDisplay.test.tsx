@@ -39,6 +39,11 @@ const CHECK_WITH_ONLY_CUSTOM: HTTPCheck = buildCheckWithLabels([{ name: 'region'
 
 const CHECK_WITH_NO_LABELS: HTTPCheck = buildCheckWithLabels([]);
 
+const CHECK_WITH_MISSING_CALS: HTTPCheck = buildCheckWithLabels([
+  { name: 'Team', value: 'frontend' },
+  { name: 'env', value: 'production' },
+]);
+
 async function renderCheckList(checks: Check[] = [CHECK_WITH_CAL_AND_CUSTOM], searchParams = '') {
   server.use(
     apiRoute(`listChecks`, {
@@ -103,6 +108,20 @@ describe('CheckList - CAL Display', () => {
         expect(within(card).queryByText(/Team:/)).not.toBeInTheDocument();
         expect(within(card).queryByText(/Service:/)).not.toBeInTheDocument();
       });
+
+      it('shows missing CAL warning when a check is missing CAL values', async () => {
+        await renderCheckList([CHECK_WITH_MISSING_CALS]);
+
+        const card = await screen.findByTestId(DataTestIds.CheckCard);
+        expect(await within(card).findByText(/Missing cost attribution labels/)).toBeInTheDocument();
+      });
+
+      it('does not show missing CAL warning when all CALs have values', async () => {
+        await renderCheckList([CHECK_WITH_ONLY_CALS]);
+
+        const card = await screen.findByTestId(DataTestIds.CheckCard);
+        expect(within(card).queryByText(/Missing cost attribution labels/)).not.toBeInTheDocument();
+      });
     });
 
     describe('list view', () => {
@@ -134,6 +153,13 @@ describe('CheckList - CAL Display', () => {
       expect(within(card).getByText('Team: frontend')).toBeInTheDocument();
       expect(within(card).getByText('Service: monitoring-api')).toBeInTheDocument();
       expect(within(card).getByText('env: production')).toBeInTheDocument();
+    });
+
+    it('does not show missing CAL warning when feature flag is disabled', async () => {
+      await renderCheckList([CHECK_WITH_MISSING_CALS]);
+
+      const card = await screen.findByTestId(DataTestIds.CheckCard);
+      expect(within(card).queryByText(/Missing cost attribution labels/)).not.toBeInTheDocument();
     });
   });
 });

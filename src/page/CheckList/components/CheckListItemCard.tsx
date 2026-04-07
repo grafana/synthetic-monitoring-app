@@ -10,13 +10,14 @@ import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
 import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
-import { splitLabels } from 'page/CheckList/CheckList.utils';
+import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
+import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
 
 export const CheckListItemCard = ({
   check,
@@ -32,6 +33,7 @@ export const CheckListItemCard = ({
   const checkType = getCheckType(check.settings);
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
   const { calLabels, customLabels } = useMemo(() => splitLabels(check.labels, calNames), [check.labels, calNames]);
+  const missingCalNames = useMemo(() => getMissingCalNames(check.labels, calNames), [check.labels, calNames]);
 
   return (
     <div
@@ -94,22 +96,21 @@ export const CheckListItemCard = ({
           </div>
           <div className={styles.footer}>
             <div className={styles.labelsContainer}>
-              {calLabels.length > 0 && (
-                <>
-                  {calLabels.map((label: Label, index) => (
-                    <CheckCardLabel
-                      key={`cal-${label.name}`}
-                      label={label}
-                      onLabelSelect={onLabelSelect}
-                      colorIndex={1}
-                    />
-                  ))}
-                  {customLabels.length > 0 && <span className={styles.labelDivider}>|</span>}
-                </>
+              {calLabels.map((label: Label, index) => (
+                <CheckCardLabel
+                  key={`cal-${label.name}`}
+                  label={label}
+                  onLabelSelect={onLabelSelect}
+                  colorIndex={1}
+                />
+              ))}
+              {customLabels.length > 0 && calLabels.length > 0 && (
+                <span className={styles.labelDivider}>|</span>
               )}
               {customLabels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
+              <UnattributedMessage missingCalNames={missingCalNames} />
             </div>
             <CheckItemActionButtons check={check} responsiveDashboardLink className={styles.actions} />
           </div>

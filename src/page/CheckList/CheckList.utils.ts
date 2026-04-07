@@ -106,6 +106,14 @@ export const getDefaultFilters = (): CheckFiltersType => {
   return defaultFilters;
 };
 
+export function getMissingCalNames(labels: Label[], calNames: string[]): string[] {
+  const presentCalNames = new Set(
+    labels.filter((l) => calNames.includes(l.name) && l.value).map((l) => l.name)
+  );
+
+  return calNames.filter((name) => !presentCalNames.has(name));
+}
+
 export function splitLabels(labels: Label[], calNames: string[]): { calLabels: Label[]; customLabels: Label[] } {
   const calNameSet = new Set(calNames);
   const calLabels: Label[] = [];
