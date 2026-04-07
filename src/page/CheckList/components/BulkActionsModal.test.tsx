@@ -128,3 +128,36 @@ test('successfully removes probes', async () => {
     },
   ]);
 });
+
+test('shows an error alert when the bulk update fails', async () => {
+  const checksWithASingleProbe: Check[] = [
+    {
+      ...BASIC_HTTP_CHECK,
+      probes: [PUBLIC_PROBE.id] as number[],
+    },
+    {
+      ...BASIC_PING_CHECK,
+      probes: [PUBLIC_PROBE.id] as number[],
+    },
+  ];
+
+  server.use(
+    apiRoute(`bulkUpdateChecks`, {
+      result: () => ({
+        status: 400,
+        json: { err: 'request body too large', msg: '' },
+      }),
+    })
+  );
+
+  const { user } = renderBulkEditModal('add', checksWithASingleProbe);
+  const probe = await screen.findByText(PRIVATE_PROBE_WITHMETADATA.displayName);
+  await user.click(probe);
+  const submitButton = await screen.findByText('Add probes');
+  await user.click(submitButton);
+
+  const errorAlert = await screen.findByRole('alert');
+  expect(errorAlert).toHaveTextContent('Bulk update failed');
+  expect(errorAlert).toHaveTextContent('The update operation failed');
+  expect(onDismiss).not.toHaveBeenCalled();
+});
