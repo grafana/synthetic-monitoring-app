@@ -21,9 +21,6 @@
     "withoutAlerts": "Without alerts"
   },
   "checkList": {
-    "unattributedMessage": {
-      "missingLabels": "Missing cost attribution labels: {{labelList}}"
-    },
     "header": {
       "currentlyShowing": "Currently showing {{currentPageChecksLength}} of {{checksLength}} total checks",
       "deselectAll": "Deselect all",
@@ -36,6 +33,9 @@
         "descExecutions": "Desc. Executions",
         "descReachability": "Desc. Reachability"
       }
+    },
+    "unattributedMessage": {
+      "missingLabels": "Missing cost attribution labels: {{labelList}}"
     }
   },
   "labelFilterInput": {
