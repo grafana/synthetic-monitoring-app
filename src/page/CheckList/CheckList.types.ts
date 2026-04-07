@@ -16,7 +16,7 @@ export type CheckTypeFilter = CheckType | 'all';
 
 export type CheckAlertsFilter = 'all' | 'with' | 'without';
 
-export type FilterType = 'search' | 'labels' | 'type' | 'status' | 'probes' | 'alerts';
+export type FilterType = 'search' | 'labels' | 'type' | 'status' | 'probes' | 'alerts' | 'folder';
 
 export interface CheckFiltersType {
   [key: string]: any;
@@ -27,6 +27,7 @@ export interface CheckFiltersType {
   status: ComboboxOption<CheckEnabledStatus>;
   probes: ProbeFilter[];
   alerts: CheckAlertsFilter;
+  folders: string[];
 }
 
 export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {

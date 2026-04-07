@@ -6,7 +6,8 @@ import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
-import { Check } from 'types';
+import { Check, FeatureName, GrafanaFolder } from 'types';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useExtendedProbes } from 'data/useProbes';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
@@ -17,6 +18,8 @@ interface CheckFiltersProps {
   onChange: (filters: CheckFiltersType, type: FilterType) => void;
   checks: Check[];
   checkFilters: CheckFiltersType;
+  folders?: GrafanaFolder[];
+  defaultFolderUid?: string;
   includeStatus?: boolean;
   className?: string;
 }
@@ -26,6 +29,8 @@ export function CheckFilters({
   onChange,
   checks,
   checkFilters,
+  folders = [],
+  defaultFolderUid,
   includeStatus = true,
   className,
 }: CheckFiltersProps) {
@@ -80,6 +85,15 @@ export function CheckFilters({
         value: probe.id!,
       }));
   }, [probes]);
+
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+
+  const folderOptions: Array<ComboboxOption<string>> = useMemo(() => {
+    return folders.map((folder) => ({
+      label: folder.uid === defaultFolderUid ? `${folder.title} (default)` : folder.title,
+      value: folder.uid,
+    }));
+  }, [folders, defaultFolderUid]);
 
   return (
     <div className={cx(styles.controls, className)}>
@@ -215,6 +229,32 @@ export function CheckFilters({
               isClearable
             />
           </Field>
+          {isFoldersEnabled && (
+            <Field
+              label={t('checkFilters.folders', 'Folders')}
+              htmlFor="check-folder-filter"
+              data-fs-element="Folders select"
+              className={cx(styles.verticalSpace, styles.fullWidth)}
+            >
+              <MultiCombobox
+                id="check-folder-filter"
+                aria-label={t('checkFilters.filterByFolderAriaLabel', 'Filter by folder')}
+                onChange={(selectedOptions) => {
+                  onChange(
+                    {
+                      ...checkFilters,
+                      folders: selectedOptions.map((opt) => opt.value),
+                    },
+                    'folder'
+                  );
+                }}
+                options={folderOptions}
+                value={checkFilters.folders}
+                placeholder={t('checkFilters.allFolders', 'All folders')}
+                isClearable
+              />
+            </Field>
+          )}
         </CheckFilterGroup>
       </div>
     </div>
