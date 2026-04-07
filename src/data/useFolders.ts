@@ -1,9 +1,12 @@
+import { useMemo } from 'react';
 import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
-import { getBackendSrv, isFetchError } from '@grafana/runtime';
+import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
-import { GrafanaFolder } from 'types';
+import { FeatureName, GrafanaFolder } from 'types';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { queryClient } from 'data/queryClient';
+import { useDefaultFolder } from 'data/useDefaultFolder';
 
 import { FOLDERS_STALE_TIME, MAX_FOLDER_DEPTH } from './folders.constants';
 
@@ -14,14 +17,12 @@ export interface CreateFolderPayload {
 
 export const folderQueryKeys = {
   all: ['folders'] as const,
-  list: () => [...folderQueryKeys.all, 'list'] as const,
   children: (parentUid: string) => [...folderQueryKeys.all, 'children', parentUid] as const,
-  detail: (uid: string) => [...folderQueryKeys.all, 'detail', uid] as const,
 };
 
 const FOLDERS_API = '/api/folders';
 
-function fetchFolders(params?: Record<string, string>) {
+export function fetchFolders(params?: Record<string, string>) {
   return firstValueFrom(
     getBackendSrv().fetch<GrafanaFolder[]>({
       method: 'GET',
@@ -30,17 +31,6 @@ function fetchFolders(params?: Record<string, string>) {
       showErrorAlert: false,
     })
   ).then((res) => res.data);
-}
-
-/**
- * Fetch root-level folders the current user can access.
- */
-export function useFolders(): UseQueryResult<GrafanaFolder[], Error> {
-  return useQuery({
-    queryKey: folderQueryKeys.list(),
-    queryFn: () => fetchFolders(),
-    staleTime: FOLDERS_STALE_TIME,
-  });
 }
 
 /**
@@ -78,45 +68,7 @@ export function useFolderChildren(parentUid: string | undefined): UseQueryResult
 }
 
 /**
- * Fetch a single folder by UID, including permission flags.
- *
- * Handles three possible states:
- *  - 200: folder exists and user has access
- *  - 404: folder was deleted (orphaned reference)
- *  - 403: folder exists but user lacks access
- */
-export function useFolder(uid: string | undefined, enabled = true) {
-  const { data: folder, isLoading, isError, error } = useQuery({
-    queryKey: folderQueryKeys.detail(uid!),
-    queryFn: () =>
-      firstValueFrom(
-        getBackendSrv().fetch<GrafanaFolder>({
-          method: 'GET',
-          url: `${FOLDERS_API}/${uid}`,
-          showErrorAlert: false,
-        })
-      ).then((res) => res.data),
-    enabled: enabled && Boolean(uid),
-    staleTime: FOLDERS_STALE_TIME,
-    retry: false,
-  });
-
-  const status = isError && isFetchError(error) ? error.status : folder ? 200 : 0;
-
-  return {
-    folder,
-    isLoading,
-    isOrphaned: status === 404,
-    isForbidden: status === 403,
-    hasAccess: status === 200,
-    canEdit: folder?.canEdit ?? false,
-    canDelete: folder?.canDelete ?? false,
-    canAdmin: folder?.canAdmin ?? false,
-  };
-}
-
-/**
- * Build the full folder path (e.g. "Platform Team > Staging > EU")
+ * Build the folder path (e.g. "Platform Team > Staging > EU")
  * by walking up the parentUid chain.
  */
 export function getFolderPath(folder: GrafanaFolder, allFoldersMap: Map<string, GrafanaFolder>): string {
@@ -126,17 +78,51 @@ export function getFolderPath(folder: GrafanaFolder, allFoldersMap: Map<string, 
 
   const path: string[] = [folder.title];
   let current = folder;
+  let depth = 0;
 
-  while (current.parentUid) {
+  while (current.parentUid && depth < MAX_FOLDER_DEPTH) {
     const parent = allFoldersMap.get(current.parentUid);
     if (!parent) {
       break;
     }
     path.unshift(parent.title);
     current = parent;
+    depth++;
   }
 
   return path.join(' > ');
+}
+
+/**
+ * Fetch the default SM folder and all its descendants.
+ * Single entry point for folder data -- checks isFoldersEnabled once
+ * and gates all downstream queries via enabled params.
+ */
+export function useAllFolders() {
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError } = useDefaultFolder(isFoldersEnabled);
+  const {
+    data: childFolders = [],
+    isLoading: isChildrenLoading,
+    isError: isChildrenError,
+  } = useFolderChildren(defaultFolderUid);
+
+  const folders = useMemo(() => {
+    if (!defaultFolder) {
+      return [];
+    }
+    return [defaultFolder, ...childFolders];
+  }, [defaultFolder, childFolders]);
+
+  const foldersMap = useMemo(() => new Map(folders.map((f) => [f.uid, f])), [folders]);
+
+  return {
+    folders,
+    foldersMap,
+    defaultFolderUid,
+    isLoading: isDefaultLoading || isChildrenLoading,
+    isError: isDefaultError || isChildrenError,
+  };
 }
 
 const invalidateAllFolders = () => queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
