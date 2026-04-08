@@ -35,13 +35,14 @@ import { sanitizeLabelValue } from 'utils';
 import { useCreateGrafanaSlo } from 'data/useCreateGrafanaSlo';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { CopyToClipboard } from 'components/Clipboard/CopyToClipboard';
+import { Feedback } from 'components/Feedback';
 import { SubCollapse } from 'components/SubCollapse';
 
 const GRAFANA_SLO_CREATE = 'https://grafana.com/docs/grafana-cloud/alerting-and-irm/slo/create/';
 const GRAFANA_SLO_HTTP_API_DOCS =
   'https://grafana.com/docs/grafana-cloud/alerting-and-irm/slo/set-up/api/';
-const SM_DOCS = 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/';
 const SLO_OPENAPI_REPO = 'https://github.com/grafana/slo-openapi-client/blob/main/openapi.yaml';
+const SM_UPTIME_DOCS = 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/analyze-results/uptime-and-reachability/'
 
 /** Aligned with grafana/terraform-provider-grafana SLO name validation (max 128). */
 const MAX_SLO_NAME = 128;
@@ -252,12 +253,23 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
   );
 
   return (
-    <Modal title="Create a SLO" isOpen={isOpen} onDismiss={onDismiss} className={styles.modal}>
+    <Modal
+      title={
+        <div className={styles.modalHeader}>
+          <Text variant="h4">Create a SLO</Text>
+          <Feedback feature="create-slo" about={{ text: 'Experimental' }} />
+        </div>
+      }
+      ariaLabel="Create a SLO"
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+      className={styles.modal}
+    >
       <Stack direction="column" gap={2}>
         <Text color="secondary">
           Create a Grafana Cloud SLO from Synthetic Monitoring reachability metrics (<code>probe_all_success_*</code>).
           This is not the same as in-app &quot;uptime&quot; — see{' '}
-          <TextLink href={SM_DOCS} external>
+          <TextLink href={SM_UPTIME_DOCS} external>
             Synthetic Monitoring docs
           </TextLink>
           .
@@ -482,6 +494,17 @@ function PromqlBlock({ label, code, styles }: { label: string; code: string; sty
 const getStyles = (theme: GrafanaTheme2) => ({
   modal: css`
     width: min(720px, 95vw);
+
+    > :first-child {
+      border-bottom: none;
+    }
+  `,
+  modalHeader: css`
+    display: flex;
+    align-items: center;
+    gap: ${theme.spacing(2)};
+    margin-left: ${theme.spacing(1)};
+    margin-top: ${theme.spacing(2)};
   `,
   objectiveField: css`
     flex: 1;
