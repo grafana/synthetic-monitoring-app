@@ -243,6 +243,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         alertStatesFetching={isAlertStatesFetching}
         alertStatesError={isAlertStatesError}
         onRetryAlertStates={refetchAlertStates}
+        calNames={calNames}
       />
       <div>
         <section className="card-section card-list-layout-list">

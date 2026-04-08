@@ -9,3 +9,5 @@ export const CHECK_LIST_STATUS_OPTIONS: Array<ComboboxOption<CheckEnabledStatus>
 ];
 
 export const CHECK_LIST_CARD_CONTAINER_NAME = 'check-list-card';
+
+export const UNATTRIBUTED_SENTINEL = '__unattributed__';

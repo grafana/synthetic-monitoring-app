@@ -3,7 +3,7 @@ import { SelectableValue } from '@grafana/data';
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter } from 'page/CheckList/CheckList.types';
 import { AlertSensitivity, Check, CheckEnabledStatus, Label } from 'types';
 import { getCheckType, matchStrings } from 'utils';
-import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
+import { CHECK_LIST_STATUS_OPTIONS, UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
 const matchesFilterType = (check: Check, typeFilter: CheckTypeFilter) => {
   if (typeFilter === 'all') {
@@ -38,8 +38,16 @@ const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
     return true;
   }
 
-  return labels?.some(({ name, value }) => {
-    return labelFilters.some((filter) => filter === `${name}: ${value}`);
+  const unattributedSuffix = `: ${UNATTRIBUTED_SENTINEL}`;
+
+  return labelFilters.some((filter) => {
+    if (filter.endsWith(unattributedSuffix)) {
+      const calName = filter.replace(unattributedSuffix, '');
+      const matchingLabel = labels.find((l) => l.name === calName);
+      return !matchingLabel || !matchingLabel.value;
+    }
+
+    return labels.some(({ name, value }) => filter === `${name}: ${value}`);
   });
 };
 

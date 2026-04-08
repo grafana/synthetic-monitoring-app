@@ -1,6 +1,7 @@
-import { Label } from 'types';
+import { Check, Label } from 'types';
+import { UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
-import { getMissingCalNames, splitLabels } from './CheckList.utils';
+import { defaultFilters, getMissingCalNames, matchesAllFilters, splitLabels } from './CheckList.utils';
 
 describe('splitLabels', () => {
   it('returns all labels as customLabels when calNames is empty', () => {
@@ -85,5 +86,49 @@ describe('getMissingCalNames', () => {
   it('returns empty array when calNames is empty', () => {
     const labels: Label[] = [{ name: 'env', value: 'prod' }];
     expect(getMissingCalNames(labels, [])).toEqual([]);
+  });
+});
+
+describe('matchesAllFilters - unattributed label filter', () => {
+  const makeCheck = (labels: Label[]): Check =>
+    ({
+      id: 1,
+      job: 'test',
+      target: 'https://example.com',
+      labels,
+      probes: [],
+      settings: { http: {} },
+      enabled: true,
+      alertSensitivity: 'none',
+    } as unknown as Check);
+
+  const filtersWithLabels = (labels: string[]) => ({
+    ...defaultFilters,
+    labels,
+  });
+
+  it('matches a check missing the CAL label entirely', () => {
+    const check = makeCheck([{ name: 'env', value: 'prod' }]);
+    expect(matchesAllFilters(check, filtersWithLabels([`Team: ${UNATTRIBUTED_SENTINEL}`]))).toBe(true);
+  });
+
+  it('matches a check with the CAL label but an empty value', () => {
+    const check = makeCheck([{ name: 'Team', value: '' }]);
+    expect(matchesAllFilters(check, filtersWithLabels([`Team: ${UNATTRIBUTED_SENTINEL}`]))).toBe(true);
+  });
+
+  it('does not match a check with the CAL label and a non-empty value', () => {
+    const check = makeCheck([{ name: 'Team', value: 'frontend' }]);
+    expect(matchesAllFilters(check, filtersWithLabels([`Team: ${UNATTRIBUTED_SENTINEL}`]))).toBe(false);
+  });
+
+  it('matches when combining unattributed filter with regular label filter (OR logic)', () => {
+    const check = makeCheck([{ name: 'env', value: 'prod' }]);
+    expect(matchesAllFilters(check, filtersWithLabels([`Team: ${UNATTRIBUTED_SENTINEL}`, 'env: prod']))).toBe(true);
+  });
+
+  it('regular label filter still works alongside unattributed', () => {
+    const check = makeCheck([{ name: 'Team', value: 'frontend' }]);
+    expect(matchesAllFilters(check, filtersWithLabels(['Team: frontend']))).toBe(true);
   });
 });

@@ -5,10 +5,12 @@ import { ButtonCascader, CascaderOption, ComboboxOption, MultiCombobox, useStyle
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
+import { UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
 interface LabelFilterInputProps {
   checks: Check[];
   labelFilters: string[];
+  calNames?: string[];
   className?: string;
   onChange: (labels: string[]) => void;
 }
@@ -17,7 +19,7 @@ interface AggregateLabels {
   [key: string]: string[];
 }
 
-export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: LabelFilterInputProps) => {
+export const LabelFilterInput = ({ checks, labelFilters, calNames = [], onChange, className }: LabelFilterInputProps) => {
   const labelId = "check-label-filter";
   const buttonCascaderLabel = t('labelFilterInput.buttonCascaderLabel', 'Labels');
   const styles = useStyles2(getStyles);
@@ -38,26 +40,37 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
     [checks]
   );
 
+  const calNameSet = useMemo(() => new Set(calNames), [calNames]);
+
   const labelCascadeOptions: CascaderOption[] = useMemo(() => {
     return Object.entries(aggregatedLabels).map(([name, value]) => {
-      return {
-        value: name,
-        label: name,
-        children: value.map((labelValue: string) => ({
-          value: labelValue,
-          label: labelValue,
-        })),
-      };
+      const children = value.map((labelValue: string) => ({
+        value: labelValue,
+        label: labelValue,
+      }));
+
+      if (calNameSet.has(name)) {
+        children.unshift({ value: UNATTRIBUTED_SENTINEL, label: 'unattributed' });
+      }
+
+      return { value: name, label: name, children };
     });
-  }, [aggregatedLabels]);
+  }, [aggregatedLabels, calNameSet]);
 
   const labelFilterOptions: Array<ComboboxOption<string>> = useMemo(() => {
     return Object.entries(aggregatedLabels).reduce<Array<ComboboxOption<string>>>((acc, [name, value]) => {
+      if (calNameSet.has(name)) {
+        acc.push({
+          label: `${name}: unattributed`,
+          value: `${name}: ${UNATTRIBUTED_SENTINEL}`,
+        });
+      }
+
       return acc.concat(
         value.map((labelValue) => ({ label: `${name}: ${labelValue}`, value: `${name}: ${labelValue}` }))
       );
     }, []);
-  }, [aggregatedLabels]);
+  }, [aggregatedLabels, calNameSet]);
 
   const handleCascadeLabelSelect = (labelPath: string[]) => {
     onChange([...labelFilters, labelPath.join(': ')]);

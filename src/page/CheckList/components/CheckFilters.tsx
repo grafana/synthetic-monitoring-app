@@ -18,6 +18,7 @@ interface CheckFiltersProps {
   checks: Check[];
   checkFilters: CheckFiltersType;
   includeStatus?: boolean;
+  calNames?: string[];
   className?: string;
 }
 
@@ -27,6 +28,7 @@ export function CheckFilters({
   checks,
   checkFilters,
   includeStatus = true,
+  calNames,
   className,
 }: CheckFiltersProps) {
   const checkTypeOptions = useCheckTypeOptions();
@@ -175,6 +177,7 @@ export function CheckFilters({
           </div>
           <LabelFilterInput
             checks={checks}
+            calNames={calNames}
             onChange={(labels) => {
               onChange(
                 {
