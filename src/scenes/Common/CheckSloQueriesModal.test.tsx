@@ -1,7 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
 import { server } from 'test/server';

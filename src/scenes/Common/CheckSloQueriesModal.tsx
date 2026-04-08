@@ -30,9 +30,9 @@ import {
   DEFAULT_SLO_WINDOW_DAYS,
   defaultSloGroupNameForJob,
   defaultSloNameForJob,
-  grafanaSloManageHref,
   GRAFANA_SLO_CREATE,
   GRAFANA_SLO_HTTP_API_DOCS,
+  grafanaSloManageHref,
   SLO_OPENAPI_REPO,
   SM_UPTIME_DOCS,
 } from './CheckSloQueriesModal.utils';
@@ -87,7 +87,7 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
       <Stack direction="column" gap={2}>
         <Text color="secondary">
           Define a Grafana Cloud SLO based on probe reachability metrics (<code>probe_all_success_*</code>).
-          This measures whether probes can reach the target, which differs from the in-app "uptime" metric. See{' '}
+          This measures whether probes can reach the target, which differs from the in-app &quot;uptime&quot; metric. See{' '}
           <TextLink href={SM_UPTIME_DOCS} external>
             Synthetic Monitoring docs
           </TextLink>
