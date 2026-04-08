@@ -117,4 +117,51 @@ describe('CheckSloQueriesModal', () => {
 
     expect(await screen.findByText('Label group needs custom labels')).toBeInTheDocument();
   });
+
+  it('shows validation error for invalid SLO target', async () => {
+    const { user } = renderModal();
+
+    const targetInput = await screen.findByLabelText('SLO target percent');
+    await user.clear(targetInput);
+    await user.type(targetInput, 'abc');
+
+    const createButton = screen.getByRole('button', { name: 'Create a SLO' });
+    await user.click(createButton);
+
+    expect(await screen.findByText('Could not create SLO')).toBeInTheDocument();
+    expect(screen.getByText(/SLO target must be a percentage/)).toBeInTheDocument();
+  });
+
+  it('shows validation error for invalid window', async () => {
+    const { user } = renderModal();
+
+    const windowInput = await screen.findByLabelText('SLO window days');
+    await user.clear(windowInput);
+    await user.type(windowInput, '-5');
+
+    const createButton = screen.getByRole('button', { name: 'Create a SLO' });
+    await user.click(createButton);
+
+    expect(await screen.findByText('Could not create SLO')).toBeInTheDocument();
+    expect(screen.getByText(/Window must be a whole number/)).toBeInTheDocument();
+  });
+
+  it('shows 404 hint when error message contains Not Found', async () => {
+    server.use(
+      http.post(SLO_API_URL, () => {
+        return HttpResponse.json(
+          { error: '404 Not Found' },
+          { status: 404 }
+        );
+      })
+    );
+
+    const { user } = renderModal();
+
+    const createButton = await screen.findByRole('button', { name: 'Create a SLO' });
+    await user.click(createButton);
+
+    expect(await screen.findByText('Could not create SLO')).toBeInTheDocument();
+    expect(screen.getByText(/SLO plugin may not be installed/)).toBeInTheDocument();
+  });
 });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {
   Alert,
   Button,
@@ -85,8 +86,8 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
     >
       <Stack direction="column" gap={2}>
         <Text color="secondary">
-          Create a Grafana Cloud SLO from Synthetic Monitoring reachability metrics (<code>probe_all_success_*</code>).
-          This is not the same as in-app &quot;uptime&quot; — see{' '}
+          Define a Grafana Cloud SLO based on probe reachability metrics (<code>probe_all_success_*</code>).
+          This measures whether probes can reach the target, which differs from the in-app "uptime" metric. See{' '}
           <TextLink href={SM_UPTIME_DOCS} external>
             Synthetic Monitoring docs
           </TextLink>
@@ -105,7 +106,7 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
               <Text>
                 {feedback.name} — id <code>{feedback.uuid}</code>
               </Text>
-              <TextLink href={grafanaSloDetailDashboardHref(feedback.uuid)} external>
+              <TextLink href={grafanaSloDetailDashboardHref(feedback.uuid, config.appSubUrl)} external>
                 Open this SLO
               </TextLink>
             </Stack>
@@ -114,7 +115,14 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
 
         {feedback?.kind === 'error' && (
           <Alert severity="error" title="Could not create SLO">
-            {feedback.message}
+            <Stack direction="column" gap={1}>
+              <Text>{feedback.message}</Text>
+              {(feedback.message.toLowerCase().includes('404') || feedback.message.includes('Not Found')) && (
+                <Text color="secondary">
+                  The SLO plugin may not be installed on this stack, or its API path may have changed.
+                </Text>
+              )}
+            </Stack>
           </Alert>
         )}
 
@@ -188,6 +196,8 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
                     nameDefault: defaultSloNameForJob(check.job),
                     nameInput: singleSloName,
                     sloQuery: singleSloApiQuery,
+                    targetPercent: sloTargetPercent,
+                    windowDays: sloWindowDays,
                   })
                 }
               >
@@ -245,6 +255,8 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
                             nameDefault: defaultSloGroupNameForJob(check.job),
                             nameInput: groupSloName,
                             sloQuery: groupedSloApiQuery,
+                            targetPercent: sloTargetPercent,
+                            windowDays: sloWindowDays,
                           })
                         }
                       >

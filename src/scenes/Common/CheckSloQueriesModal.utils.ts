@@ -1,5 +1,3 @@
-import { config } from '@grafana/runtime';
-
 import { Check } from 'types';
 import { sanitizeLabelValue } from 'utils';
 
@@ -12,6 +10,9 @@ export const SM_UPTIME_DOCS =
 
 /** Aligned with grafana/terraform-provider-grafana SLO name validation (max 128). */
 export const MAX_SLO_NAME = 128;
+
+/** Prometheus label values are limited to ~128 UTF-8 bytes; keep well under to avoid silent truncation. */
+export const MAX_LABEL_VALUE_LENGTH = 150;
 
 export const DEFAULT_SLO_TARGET_PERCENT = '99.5';
 export const DEFAULT_SLO_WINDOW_DAYS = '28';
@@ -34,8 +35,8 @@ export function defaultSloGroupNameForJob(job: string): string {
   return `${prefix}${job.slice(0, Math.max(0, maxJob - 1))}…`;
 }
 
-export function grafanaSloDetailDashboardHref(sloUuid: string): string {
-  const base = config.appSubUrl ?? '';
+export function grafanaSloDetailDashboardHref(sloUuid: string, appSubUrl?: string): string {
+  const base = appSubUrl ?? '';
   return `${base}/d/grafana_slo_app-${sloUuid}/`;
 }
 
@@ -78,7 +79,7 @@ export function sloProvenanceLabels(check: Check): Array<{ key: string; value: s
   if (check.id != null) {
     labels.push({ key: 'sm_check_id', value: String(check.id) });
   }
-  const job = check.job.length > 150 ? `${check.job.slice(0, 149)}…` : check.job;
+  const job = check.job.length > MAX_LABEL_VALUE_LENGTH ? `${check.job.slice(0, MAX_LABEL_VALUE_LENGTH - 1)}…` : check.job;
   labels.push({ key: 'sm_check_job', value: sanitizeLabelValue(job) });
   return labels;
 }

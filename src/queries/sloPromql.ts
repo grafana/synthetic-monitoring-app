@@ -11,7 +11,7 @@ export function escapePrometheusLabelValue(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/"/g, '\\"');
 }
 
-function metricSelector(labels: Record<string, string>): string {
+export function metricSelector(labels: Record<string, string>): string {
   const inner = Object.entries(labels)
     .map(([k, v]) => `${k}="${escapePrometheusLabelValue(v)}"`)
     .join(',');

@@ -7,19 +7,12 @@
  *   (e.g. `[$__rate_interval]`, `$__range`, or `$__interval`).
  */
 
-import { escapePrometheusLabelValue } from 'queries/sloPromql';
+import { metricSelector } from 'queries/sloPromql';
 
 import type { SloApiQuerySpec } from './buildReachabilitySloCreateRequest';
 
 /** SLO plugin substitutes this when evaluating freeform queries (fixed `[5m]` fails validation). */
 const RANGE = '[$__rate_interval]';
-
-function metricSelector(labels: Record<string, string>): string {
-  const inner = Object.entries(labels)
-    .map(([k, v]) => `${k}="${escapePrometheusLabelValue(v)}"`)
-    .join(',');
-  return `{${inner}}`;
-}
 
 /**
  * One SM check: bare `probe_all_success_*` counters scoped to job+instance.

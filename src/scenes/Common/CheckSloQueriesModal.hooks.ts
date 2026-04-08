@@ -3,7 +3,7 @@ import { ComboboxOption } from '@grafana/ui';
 import {
   buildSingleCheckReachabilitySloQueries,
   buildSmCheckInfoFilteredReachabilitySloAggregatedQueries,
-  checkLabelNameToSmCheckInfoKey,
+  smCheckInfoMatchersFromCheckLabels,
 } from 'queries/sloPromql';
 import {
   buildReachabilitySloCreateRequest,
@@ -56,6 +56,9 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
     [check.labels]
   );
 
+  // Labels can change while check.id stays the same (e.g. the user edits and saves
+  // the check's labels). A stable string key lets us depend on label *contents*
+  // rather than the array reference, which changes on every refetch.
   const labelsKey = labelsSignature(check.labels);
 
   useEffect(() => {
@@ -86,15 +89,13 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
     if (selectedLabelIndices.length === 0) {
       return null;
     }
-    const matchers: Record<string, string> = {};
-    for (const idx of selectedLabelIndices) {
-      const label = check.labels[Number(idx)];
-      if (!label) {
-        continue;
-      }
-      matchers[checkLabelNameToSmCheckInfoKey(label.name)] = label.value;
+    const selectedLabels = selectedLabelIndices
+      .map((idx) => check.labels[Number(idx)])
+      .filter(Boolean);
+    if (selectedLabels.length === 0) {
+      return null;
     }
-    return Object.keys(matchers).length === 0 ? null : matchers;
+    return smCheckInfoMatchersFromCheckLabels(selectedLabels);
   }, [selectedLabelIndices, check.labels]);
 
   const groupedQueries = useMemo(() => {
@@ -122,7 +123,13 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
   const canCreateSlo = Boolean(metricsDS?.uid);
 
   const runCreate = useCallback(
-    async (args: { nameDefault: string; nameInput: string; sloQuery: SloApiQuerySpec }) => {
+    async (args: {
+      nameDefault: string;
+      nameInput: string;
+      sloQuery: SloApiQuerySpec;
+      targetPercent: string;
+      windowDays: string;
+    }) => {
       if (!metricsDS?.uid) {
         setFeedback({ kind: 'error', message: 'Metrics datasource is not configured for this stack.' });
         return;
@@ -130,12 +137,12 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
       setFeedback(null);
       const name = truncateSloName(args.nameInput, args.nameDefault);
       const description = `Reachability SLI from Synthetic Monitoring (probe_all_success_*). Check: ${check.job}`;
-      const parsedTarget = parseSloTargetPercent(sloTargetPercent);
+      const parsedTarget = parseSloTargetPercent(args.targetPercent);
       if (!parsedTarget.ok) {
         setFeedback({ kind: 'error', message: parsedTarget.message });
         return;
       }
-      const parsedWindow = parseSloWindowDays(sloWindowDays);
+      const parsedWindow = parseSloWindowDays(args.windowDays);
       if (!parsedWindow.ok) {
         setFeedback({ kind: 'error', message: parsedWindow.message });
         return;
@@ -157,7 +164,7 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
         setFeedback({ kind: 'error', message });
       }
     },
-    [check, metricsDS, mutateAsync, sloTargetPercent, sloWindowDays]
+    [check, metricsDS, mutateAsync]
   );
 
   return {
