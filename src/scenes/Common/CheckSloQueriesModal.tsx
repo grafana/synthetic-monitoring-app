@@ -30,7 +30,7 @@ import {
   DEFAULT_SLO_WINDOW_DAYS,
   defaultSloGroupNameForJob,
   defaultSloNameForJob,
-  grafanaSloDetailDashboardHref,
+  grafanaSloManageHref,
   GRAFANA_SLO_CREATE,
   GRAFANA_SLO_HTTP_API_DOCS,
   SLO_OPENAPI_REPO,
@@ -106,8 +106,8 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
               <Text>
                 {feedback.name} — id <code>{feedback.uuid}</code>
               </Text>
-              <TextLink href={grafanaSloDetailDashboardHref(feedback.uuid, config.appSubUrl)} external>
-                Open this SLO
+              <TextLink href={grafanaSloManageHref(config.appSubUrl)} external>
+                View SLOs
               </TextLink>
             </Stack>
           </Alert>

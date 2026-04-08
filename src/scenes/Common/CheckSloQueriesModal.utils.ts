@@ -35,9 +35,9 @@ export function defaultSloGroupNameForJob(job: string): string {
   return `${prefix}${job.slice(0, Math.max(0, maxJob - 1))}…`;
 }
 
-export function grafanaSloDetailDashboardHref(sloUuid: string, appSubUrl?: string): string {
+export function grafanaSloManageHref(appSubUrl?: string): string {
   const base = appSubUrl ?? '';
-  return `${base}/d/grafana_slo_app-${sloUuid}/`;
+  return `${base}/a/grafana-slo-app/manage-slos`;
 }
 
 export function parseSloTargetPercent(

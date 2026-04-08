@@ -1,7 +1,7 @@
 import {
   defaultSloGroupNameForJob,
   defaultSloNameForJob,
-  grafanaSloDetailDashboardHref,
+  grafanaSloManageHref,
   labelsSignature,
   MAX_LABEL_VALUE_LENGTH,
   MAX_SLO_NAME,
@@ -37,17 +37,17 @@ describe('defaultSloGroupNameForJob', () => {
   });
 });
 
-describe('grafanaSloDetailDashboardHref', () => {
-  it('builds a dashboard path from the SLO uuid', () => {
-    expect(grafanaSloDetailDashboardHref('abc-123')).toBe('/d/grafana_slo_app-abc-123/');
+describe('grafanaSloManageHref', () => {
+  it('builds the SLO management path', () => {
+    expect(grafanaSloManageHref()).toBe('/a/grafana-slo-app/manage-slos');
   });
 
   it('prepends appSubUrl when provided', () => {
-    expect(grafanaSloDetailDashboardHref('abc-123', '/grafana')).toBe('/grafana/d/grafana_slo_app-abc-123/');
+    expect(grafanaSloManageHref('/grafana')).toBe('/grafana/a/grafana-slo-app/manage-slos');
   });
 
   it('handles undefined appSubUrl', () => {
-    expect(grafanaSloDetailDashboardHref('abc-123', undefined)).toBe('/d/grafana_slo_app-abc-123/');
+    expect(grafanaSloManageHref(undefined)).toBe('/a/grafana-slo-app/manage-slos');
   });
 });
 
