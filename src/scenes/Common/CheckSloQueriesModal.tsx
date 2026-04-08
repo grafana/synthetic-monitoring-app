@@ -31,6 +31,7 @@ import {
 } from 'slo/grafanaSloReachabilityQueries';
 
 import { Check } from 'types';
+import { sanitizeLabelValue } from 'utils';
 import { useCreateGrafanaSlo } from 'data/useCreateGrafanaSlo';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { CopyToClipboard } from 'components/Clipboard/CopyToClipboard';
@@ -114,7 +115,7 @@ function sloProvenanceLabels(check: Check): Array<{ key: string; value: string }
     labels.push({ key: 'sm_check_id', value: String(check.id) });
   }
   const job = check.job.length > 150 ? `${check.job.slice(0, 149)}…` : check.job;
-  labels.push({ key: 'sm_check_job', value: job });
+  labels.push({ key: 'sm_check_job', value: sanitizeLabelValue(job) });
   return labels;
 }
 
