@@ -100,14 +100,20 @@ describe('CheckSloQueriesModal', () => {
     expect(await screen.findByText('Could not create SLO')).toBeInTheDocument();
   });
 
-  it('shows label group section when check has labels', async () => {
-    renderModal();
+  it('shows label group content when switching to label group tab', async () => {
+    const { user } = renderModal();
 
-    expect(await screen.findByText('All checks matching these labels')).toBeInTheDocument();
+    const labelGroupTab = await screen.findByRole('tab', { name: 'Label group' });
+    await user.click(labelGroupTab);
+
+    expect(await screen.findByText('Labels to match')).toBeInTheDocument();
   });
 
-  it('shows warning when check has no custom labels', async () => {
-    renderModal({ check: { ...BASIC_HTTP_CHECK, labels: [] } });
+  it('shows warning when check has no custom labels in label group tab', async () => {
+    const { user } = renderModal({ check: { ...BASIC_HTTP_CHECK, labels: [] } });
+
+    const labelGroupTab = await screen.findByRole('tab', { name: 'Label group' });
+    await user.click(labelGroupTab);
 
     expect(await screen.findByText('Label group needs custom labels')).toBeInTheDocument();
   });
