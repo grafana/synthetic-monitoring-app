@@ -546,7 +546,8 @@ export const UPTIME_DESCRIPTION =
   'Whether any of the probes could reach the target. Uptime decreases when all the probes fail simultaneously.';
 export const REACHABILITY_DESCRIPTION =
   'The success rate of all the probes. Reachability decreases when any probe fails.';
-export const PROBE_REACHABILITY_DESCRIPTION = 'The success percentage of all checks performed by this probe.';
+export const PROBE_CHECK_RUNS_TOOLTIP = `Average number of check executions per minute from this probe, using the last ${DEFAULT_QUERY_FROM_TIME_TEXT} of metrics. Includes every check that runs on this probe.`;
+export const PROBE_FAILED_CHECK_RUNS_TOOLTIP = `Average failed check executions per minute from this probe over the last ${DEFAULT_QUERY_FROM_TIME_TEXT}. This is not probe uptime—it counts check runs that reported a failure.`;
 export const LATENCY_DESCRIPTION = `The average time to receive an answer across all the checks during the last ${DEFAULT_QUERY_FROM_TIME_TEXT}.`;
 
 export const STANDARD_REFRESH_INTERVAL = 1000 * 60;

@@ -9,14 +9,14 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { isK6VersionUnknown } from 'components/CheckEditor/CheckProbes/CheckProbes.utils';
-import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
-import { SuccessRateGaugeProbe } from 'components/Gauges';
+import { ProbeCheckExecutionStats } from 'components/ProbeCheckExecutionStats';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
 import { ProbeDisabledCapabilities } from './ProbeDisabledCapabilities';
 import { ProbeLabels } from './ProbeLabels';
+import { ProbeMetaPillsRow } from './ProbeMetaPillsRow';
 import { ProbeStatus } from './ProbeStatus';
 
 export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
@@ -30,9 +30,9 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
   return (
     <Card>
       <Card.Heading>
-        <span>
+        <div className={styles.titleRow}>
           <ProbeStatus probe={probe} />
-          <Link href={probeEditHref}>
+          <Link href={probeEditHref} className={styles.probeTitleLink}>
             <span>{probe.displayName}</span>
             {probe.region && <span>&nbsp;{`(${probe.region})`}</span>}
           </Link>
@@ -52,20 +52,20 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
               }
             />
           )}
-        </span>
+        </div>
       </Card.Heading>
 
-      <Card.Meta>
-        <div>Version: {probe.version}</div>
-        <FeatureFlag name={FeatureName.VersionManagement}>
-          {({ isEnabled }) => {
-            return isEnabled ? <div>k6 versions: {formatK6VersionsInline(probe)}</div> : null;
-          }}
-        </FeatureFlag>
-      </Card.Meta>
-
-      <Card.Description className={styles.extendedDescription}>
-        <div>
+      <Card.Description className={styles.bodyDescription}>
+        <div className={styles.leftColumn}>
+          <FeatureFlag name={FeatureName.VersionManagement}>
+            {({ isEnabled }) => (
+              <ProbeMetaPillsRow
+                version={probe.version}
+                k6Pill={isEnabled ? formatK6VersionsInline(probe) : undefined}
+                trailing={<ProbeUsageLink probe={probe} className={styles.checksLinkAlign} />}
+              />
+            )}
+          </FeatureFlag>
           {labelsString && (
             <div>
               Labels:{' '}
@@ -75,15 +75,9 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
             </div>
           )}
           <ProbeDisabledCapabilities probe={probe} />
-          <ProbeUsageLink probe={probe} />
         </div>
-        <div className={styles.gaugeContainer}>
-          <SuccessRateGaugeProbe
-            probeName={probe.name}
-            height={60}
-            width={150}
-            description={PROBE_REACHABILITY_DESCRIPTION}
-          />
+        <div className={styles.statsColumn}>
+          <ProbeCheckExecutionStats probeName={probe.name} />
         </div>
       </Card.Description>
 
@@ -141,24 +135,53 @@ const getStyles2 = (theme: GrafanaTheme2) => {
     card: css({
       containerName,
     }),
+    titleRow: css({
+      display: 'flex',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: theme.spacing(0.5),
+      minWidth: 0,
+      width: '100%',
+    }),
+    probeTitleLink: css({
+      minWidth: 0,
+    }),
+    checksLinkAlign: css({
+      flexShrink: 0,
+    }),
+    bodyDescription: css({
+      display: 'grid',
+      gridTemplateColumns: 'minmax(0, 1fr) auto',
+      alignItems: 'flex-start',
+      gap: theme.spacing(2),
+      width: '100%',
+      [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+        gridTemplateColumns: '1fr',
+      },
+    }),
+    leftColumn: css({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(1),
+      minWidth: 0,
+    }),
+    statsColumn: css({
+      display: 'flex',
+      justifyContent: 'flex-end',
+      [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+        justifyContent: 'flex-start',
+        paddingTop: theme.spacing(1),
+        borderTop: `1px solid ${theme.colors.border.medium}`,
+        width: '100%',
+      },
+    }),
     badgeContainer: css({
       display: `inline-flex`,
       gap: theme.spacing(0.5),
       flexWrap: `wrap`,
     }),
-    gaugeContainer: css({
-      display: 'flex',
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-      gridArea: `gauge`,
-    }),
     extendedTags: css({
       gridRowEnd: 'span 2',
-    }),
-    extendedDescription: css({
-      gridColumn: '1 / span 3',
-      display: 'flex',
-      justifyContent: 'space-between',
     }),
     labelContainer: css({
       display: 'inline-flex',

@@ -31,6 +31,7 @@ jest.mock('@grafana/ui', () => {
 
   const Link = createRouterLink('Link');
   const TextLink = createRouterLink('TextLink');
+  const LinkButton = createRouterLink('LinkButton');
 
   const CodeEditor = forwardRef<any, any>((props, ref) => (
     <textarea ref={ref} data-testid={DataTestIds.CodeEditor} onChange={props.onChange} value={props.value} />
@@ -44,6 +45,7 @@ jest.mock('@grafana/ui', () => {
     ...actual,
     Icon,
     Link,
+    LinkButton,
     TextLink,
     CodeEditor,
     measureText: jest.fn(() => ({ width: 100, height: 14 })),

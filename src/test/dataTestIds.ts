@@ -140,6 +140,7 @@ export enum DataTestIds {
   ProbeButton = 'probe-button',
   ProbeCardActionButton = 'probe-card-action-button',
   ProbeUsageLink = 'probe-usage-link',
+  ProbeCheckExecutionStats = 'probe-check-execution-stats',
   PublicProbesList = 'public-probes-list',
   RefreshPickerRunButton = 'refresh-picker-run-button',
   RequestAssertion = 'request-assertion',
