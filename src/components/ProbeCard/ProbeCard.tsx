@@ -12,9 +12,8 @@ import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotic
 import { FeatureFlag } from 'components/FeatureFlag';
 import { ProbeCheckExecutionStats } from 'components/ProbeCheckExecutionStats';
 
-import { formatK6VersionsInline } from './ProbeCard.utils';
-
 import { ProbeUsageLink } from '../ProbeUsageLink';
+import { formatK6VersionsInline } from './ProbeCard.utils';
 import { ProbeDisabledCapabilities } from './ProbeDisabledCapabilities';
 import { ProbeLabels } from './ProbeLabels';
 import { ProbeMetaPillsRow } from './ProbeMetaPillsRow';
