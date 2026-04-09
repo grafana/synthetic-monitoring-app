@@ -432,7 +432,6 @@ export interface GrafanaFolder {
   canDelete?: boolean;
   canAdmin?: boolean;
   canSave?: boolean;
-  parents?: GrafanaFolder[];
 }
 
 export type Check =
