@@ -12,6 +12,7 @@ import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckU
 import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
 import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
+import { CheckFolderBadge } from 'page/CheckList/components/CheckFolderBadge';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
@@ -28,6 +29,8 @@ export const CheckListItemCard = ({
   onStatusSelect,
   selected,
   onToggleCheckbox,
+  foldersMap,
+  foldersLoading,
 }: CheckListItemProps) => {
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
@@ -96,6 +99,7 @@ export const CheckListItemCard = ({
           </div>
           <div className={styles.footer}>
             <div className={styles.labelsContainer}>
+              <CheckFolderBadge check={check} foldersMap={foldersMap} foldersLoading={foldersLoading} />
               {calLabels.map((label: Label, index) => (
                 <CheckCardLabel
                   key={`cal-${label.name}`}
