@@ -68,12 +68,12 @@ export function useFolderChildren(parentUid: string | undefined): UseQueryResult
 }
 
 /**
- * Build the folder path (e.g. "Platform Team > Staging > EU")
+ * Return the ordered array of folder titles from root to the given folder
  * by walking up the parentUid chain.
  */
-export function getFolderPath(folder: GrafanaFolder, allFoldersMap: Map<string, GrafanaFolder>): string {
+export function getFolderPathParts(folder: GrafanaFolder, allFoldersMap: Map<string, GrafanaFolder>): string[] {
   if (!folder.parentUid) {
-    return folder.title;
+    return [folder.title];
   }
 
   const path: string[] = [folder.title];
@@ -90,7 +90,15 @@ export function getFolderPath(folder: GrafanaFolder, allFoldersMap: Map<string, 
     depth++;
   }
 
-  return path.join(' > ');
+  return path;
+}
+
+/**
+ * Build the folder path (e.g. "Platform Team > Staging > EU")
+ * by walking up the parentUid chain.
+ */
+export function getFolderPath(folder: GrafanaFolder, allFoldersMap: Map<string, GrafanaFolder>): string {
+  return getFolderPathParts(folder, allFoldersMap).join(' > ');
 }
 
 /**

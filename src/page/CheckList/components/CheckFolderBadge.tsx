@@ -6,7 +6,7 @@ import { css, cx } from '@emotion/css';
 
 import { Check, FeatureName, GrafanaFolder } from 'types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
-import { getFolderPath } from 'data/useFolders';
+import { getFolderPathParts } from 'data/useFolders';
 
 interface CheckFolderBadgeProps {
   check: Check;
@@ -29,8 +29,8 @@ export function CheckFolderBadge({ check, foldersMap, foldersLoading }: CheckFol
   const folder = foldersMap.get(check.folderUid);
 
   if (folder) {
-    const fullPath = getFolderPath(folder, foldersMap);
-    const pathLabel = fullPath.includes(' > ') ? fullPath.split(' > ').slice(1).join(' > ') : fullPath;
+    const parts = getFolderPathParts(folder, foldersMap);
+    const pathLabel = (parts.length > 1 ? parts.slice(1) : parts).join(' > ');
 
     return (
       <Tag
