@@ -21,6 +21,7 @@ interface CheckFiltersProps {
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
   includeStatus?: boolean;
+  calNames?: string[];
   className?: string;
 }
 
@@ -32,6 +33,7 @@ export function CheckFilters({
   folders = [],
   defaultFolderUid,
   includeStatus = true,
+  calNames,
   className,
 }: CheckFiltersProps) {
   const checkTypeOptions = useCheckTypeOptions();
@@ -189,6 +191,7 @@ export function CheckFilters({
           </div>
           <LabelFilterInput
             checks={checks}
+            calNames={calNames}
             onChange={(labels) => {
               onChange(
                 {

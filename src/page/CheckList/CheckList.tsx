@@ -21,6 +21,8 @@ import { useSuspenseChecks } from 'data/useChecks';
 import { useAllFolders } from 'data/useFolders';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -78,6 +80,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const [applyAlertSort, setApplyAlertSort] = useState(false);
   const filters = useCheckFilters();
+  const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
+  const { data: calData } = useTenantCostAttributionLabels();
+  const calNames = useMemo(() => (isCALsEnabled ? calData?.items ?? [] : []), [isCALsEnabled, calData?.items]);
 
   // Animate the initial alert-based reorder only once, when alert states first arrive.
   // Subsequent refetches re-sort silently to avoid distracting repeated animations.
@@ -252,6 +257,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         alertStatesFetching={isAlertStatesFetching}
         alertStatesError={isAlertStatesError}
         onRetryAlertStates={refetchAlertStates}
+        calNames={calNames}
       />
       {viewType === CheckListViewType.Folder ? (
         <CheckListFolderView
@@ -261,6 +267,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           foldersLoading={isFoldersLoading}
           defaultFolderUid={defaultFolderUid}
           checkAlertStates={checkAlertStates}
+          calNames={calNames}
           onLabelSelect={handleLabelSelect}
           onStatusSelect={handleStatusSelect}
           onTypeSelect={handleTypeSelect}
@@ -278,6 +285,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                   check={check}
                   foldersMap={foldersMap}
                   foldersLoading={isFoldersLoading}
+                  calNames={calNames}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
                   onTypeSelect={handleTypeSelect}

@@ -1,9 +1,9 @@
 import { SelectableValue } from '@grafana/data';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter } from 'page/CheckList/CheckList.types';
-import { AlertSensitivity, Check, CheckEnabledStatus } from 'types';
+import { AlertSensitivity, Check, CheckEnabledStatus, Label } from 'types';
 import { getCheckType, matchStrings } from 'utils';
-import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
+import { CHECK_LIST_STATUS_OPTIONS, UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
 const matchesFilterType = (check: Check, typeFilter: CheckTypeFilter) => {
   if (typeFilter === 'all') {
@@ -38,8 +38,16 @@ const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
     return true;
   }
 
-  return labels?.some(({ name, value }) => {
-    return labelFilters.some((filter) => filter === `${name}: ${value}`);
+  const unattributedSuffix = `: ${UNATTRIBUTED_SENTINEL}`;
+
+  return labelFilters.some((filter) => {
+    if (filter.endsWith(unattributedSuffix)) {
+      const calName = filter.replace(unattributedSuffix, '');
+      const matchingLabel = labels.find((l) => l.name === calName);
+      return !matchingLabel || !matchingLabel.value;
+    }
+
+    return labels.some(({ name, value }) => filter === `${name}: ${value}`);
   });
 };
 
@@ -116,3 +124,27 @@ export const defaultFilters: CheckFiltersType = {
 export const getDefaultFilters = (): CheckFiltersType => {
   return defaultFilters;
 };
+
+export function getMissingCalNames(labels: Label[], calNames: string[]): string[] {
+  const presentCalNames = new Set(
+    labels.filter((l) => calNames.includes(l.name) && l.value).map((l) => l.name)
+  );
+
+  return calNames.filter((name) => !presentCalNames.has(name));
+}
+
+export function splitLabels(labels: Label[], calNames: string[]): { calLabels: Label[]; customLabels: Label[] } {
+  const calNameSet = new Set(calNames);
+  const calLabels: Label[] = [];
+  const customLabels: Label[] = [];
+
+  for (const label of labels) {
+    if (calNameSet.has(label.name)) {
+      calLabels.push(label);
+    } else {
+      customLabels.push(label);
+    }
+  }
+
+  return { calLabels, customLabels };
+}

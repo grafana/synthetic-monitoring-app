@@ -33,6 +33,7 @@ type CheckListHeaderProps = {
   alertStatesFetching: boolean;
   alertStatesError: boolean;
   onRetryAlertStates: () => void;
+  calNames?: string[];
 };
 
 const CHECK_LIST_SORT_OPTIONS = [
@@ -80,6 +81,7 @@ export const CheckListHeader = ({
   alertStatesFetching,
   alertStatesError,
   onRetryAlertStates,
+  calNames,
 }: CheckListHeaderProps) => {
   const { canWriteChecks, canWriteThresholds } = getUserPermissions();
 
@@ -112,6 +114,7 @@ export const CheckListHeader = ({
               folders={folders}
               defaultFolderUid={defaultFolderUid}
               onChange={onFilterChange}
+              calNames={calNames}
               className={styles.filters}
             />
             {canWriteThresholds && (

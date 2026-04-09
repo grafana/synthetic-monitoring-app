@@ -17,6 +17,7 @@ interface CheckListFolderViewProps {
   foldersLoading?: boolean;
   defaultFolderUid?: string;
   checkAlertStates: CheckRuntimeAlertStates;
+  calNames: string[];
   onLabelSelect: (label: Label) => void;
   onStatusSelect: (enabled: boolean) => void;
   onTypeSelect: (checkType: CheckType) => void;
@@ -31,6 +32,7 @@ export function CheckListFolderView({
   foldersLoading,
   defaultFolderUid,
   checkAlertStates,
+  calNames,
   onLabelSelect,
   onStatusSelect,
   onTypeSelect,
@@ -67,6 +69,7 @@ export function CheckListFolderView({
 
   const checkItemProps = {
     checkAlertStates,
+    calNames,
     foldersMap,
     foldersLoading,
     onLabelSelect,
@@ -142,6 +145,7 @@ export function CheckListFolderView({
 
 interface CheckItemCallbacks {
   checkAlertStates: CheckRuntimeAlertStates;
+  calNames: string[];
   foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
   onLabelSelect: (label: Label) => void;
@@ -255,6 +259,7 @@ function PaginatedCheckList({ checks, checkItemProps }: PaginatedCheckListProps)
           check={check}
           foldersMap={checkItemProps.foldersMap}
           foldersLoading={checkItemProps.foldersLoading}
+          calNames={checkItemProps.calNames}
           onLabelSelect={checkItemProps.onLabelSelect}
           onStatusSelect={checkItemProps.onStatusSelect}
           onTypeSelect={checkItemProps.onTypeSelect}

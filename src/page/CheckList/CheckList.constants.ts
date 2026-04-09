@@ -12,3 +12,5 @@ export const CHECK_LIST_CARD_CONTAINER_NAME = 'check-list-card';
 
 export const CHECKS_PER_PAGE_CARD = 15;
 export const CHECKS_PER_PAGE_LIST = 50;
+
+export const UNATTRIBUTED_SENTINEL = '__unattributed__';
