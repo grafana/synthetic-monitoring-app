@@ -144,18 +144,17 @@ it.each<[ExtendedProbe, string]>([
   'Displays the correct information for a probe that is in use',
 
   async (probe: ExtendedProbe, expectedText: string) => {
-    const { user } = render(<ProbeCard probe={probe} />);
+    render(<ProbeCard probe={probe} />);
 
     await screen.findByText(probe.displayName);
 
     const usageLink = screen.getByTestId(DataTestIds.ProbeUsageLink);
     expect(usageLink).toBeInTheDocument();
     expect(usageLink).toHaveTextContent(expectedText);
-    await user.click(usageLink);
-    expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
-      generateRoutePath(AppRoutes.Checks)
+    expect(usageLink).toHaveAttribute(
+      'href',
+      `${generateRoutePath(AppRoutes.Checks)}?probes=${encodeURIComponent(probe.name)}`
     );
-    expect(screen.getByTestId(DataTestIds.TestRouterInfoSearch)).toHaveTextContent(`?probes=${probe.name}`);
   }
 );
 
