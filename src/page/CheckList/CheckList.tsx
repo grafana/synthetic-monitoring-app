@@ -8,8 +8,9 @@ import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
-import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
+import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, GrafanaFolder, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import {
   CheckRuntimeAlertStates,
   getCheckCompositeKey,
@@ -17,6 +18,8 @@ import {
   useChecksAlertStates,
 } from 'data/useCheckAlertStates';
 import { useSuspenseChecks } from 'data/useChecks';
+import { useDefaultFolder } from 'data/useDefaultFolder';
+import { useFolderChildren } from 'data/useFolders';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
@@ -63,6 +66,16 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
+
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+  const { defaultFolder, defaultFolderUid } = useDefaultFolder();
+  const { data: childFolders = [] } = useFolderChildren(isFoldersEnabled ? defaultFolderUid : undefined);
+  const allFolders: GrafanaFolder[] = useMemo(() => {
+    if (!defaultFolder) {
+      return [];
+    }
+    return [defaultFolder, ...childFolders];
+  }, [defaultFolder, childFolders]);
   const {
     data: checkAlertStates = {},
     isFetched: isAlertStatesFetched,
@@ -106,6 +119,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [alerts, setAlerts] = filters.alerts;
   const [status, setStatus] = filters.status;
   const [probes, setProbes] = filters.probes;
+  const [folders, setFolders] = filters.folders;
 
   const checkFiltersWithStatus: CheckFiltersType = useMemo(
     () => ({
@@ -118,8 +132,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           ? ({ label: status.label, value: status.value } as CheckFiltersType['status'])
           : CHECK_LIST_STATUS_OPTIONS[0],
       probes,
+      folders: isFoldersEnabled ? folders : [],
     }),
-    [labels, search, type, alerts, status, probes]
+    [labels, search, type, alerts, status, probes, folders, isFoldersEnabled]
   );
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -127,7 +142,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const styles = useStyles2(getStyles);
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
-  const filteredChecks = filterChecks(checks, checkFiltersWithStatus);
+  const filteredChecks = filterChecks(checks, checkFiltersWithStatus, defaultFolderUid);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
   const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
@@ -156,12 +171,15 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       case 'probes':
         setProbes(filters.probes);
         break;
+      case 'folders':
+        setFolders(filters.folders);
+        break;
       default:
         break;
     }
 
     setSelectedChecksIds((current) => {
-      const filteredChecks = filterChecks(checks, filters);
+      const filteredChecks = filterChecks(checks, filters, defaultFolderUid);
       const alreadySelectedChecks = filteredChecks.filter((check) => current.has(check.id!)).map((check) => check.id!);
       return new Set(alreadySelectedChecks);
     });
@@ -231,6 +249,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         checks={filteredChecks}
         checkFilters={checkFiltersWithStatus}
         currentPageChecks={currentPageChecks}
+        folders={allFolders}
+        defaultFolderUid={defaultFolderUid}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}
         onSelectAll={handleSelectAll}
@@ -278,8 +298,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   );
 };
 
-function filterChecks(checks: Check[], filters: CheckFiltersType) {
-  return checks.filter((check) => matchesAllFilters(check, filters));
+function filterChecks(checks: Check[], filters: CheckFiltersType, defaultFolderUid?: string) {
+  return checks.filter((check) => matchesAllFilters(check, filters, defaultFolderUid));
 }
 
 type MetricCheckSuccessParsed = MetricCheckSuccess & {
