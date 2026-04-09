@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
-import { Check, CheckSort } from 'types';
+import { Check, CheckSort, GrafanaFolder } from 'types';
 import { getUserPermissions } from 'data/permissions';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { PlainButton } from 'components/PlainButton';
@@ -19,6 +19,8 @@ type CheckListHeaderProps = {
   checks: Check[];
   checkFilters: CheckFiltersType;
   currentPageChecks: Check[];
+  folders?: GrafanaFolder[];
+  defaultFolderUid?: string;
   onChangeView: (viewType: CheckListViewType) => void;
   onDelete: () => void;
   onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
@@ -64,6 +66,8 @@ export const CheckListHeader = ({
   checkFilters,
   checks,
   currentPageChecks,
+  folders,
+  defaultFolderUid,
   onChangeView,
   onDelete,
   onFilterChange,
@@ -105,6 +109,8 @@ export const CheckListHeader = ({
               onReset={onResetFilters}
               checks={checks}
               checkFilters={checkFilters}
+              folders={folders}
+              defaultFolderUid={defaultFolderUid}
               onChange={onFilterChange}
               className={styles.filters}
             />

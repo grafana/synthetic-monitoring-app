@@ -79,8 +79,17 @@ const matchesAlertsFilter = (check: Check, alertsFilter: CheckAlertsFilter) => {
   return !hasAlerts;
 };
 
-export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType) => {
-  const { type, search, labels, status, probes, alerts } = checkFilters;
+const matchesFolderFilter = (check: Check, folderFilters: string[], defaultFolderUid?: string) => {
+  if (folderFilters.length === 0) {
+    return true;
+  }
+
+  const checkFolder = check.folderUid ?? defaultFolderUid ?? '';
+  return folderFilters.includes(checkFolder);
+};
+
+export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType, defaultFolderUid?: string) => {
+  const { type, search, labels, status, probes, alerts, folders } = checkFilters;
 
   return (
     Boolean(check.id) &&
@@ -89,7 +98,8 @@ export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType) 
     matchesLabelFilter(check, labels) &&
     matchesStatusFilter(check, status) &&
     matchesSelectedProbes(check, probes) &&
-    matchesAlertsFilter(check, alerts)
+    matchesAlertsFilter(check, alerts) &&
+    matchesFolderFilter(check, folders, defaultFolderUid)
   );
 };
 
@@ -100,6 +110,7 @@ export const defaultFilters: CheckFiltersType = {
   status: CHECK_LIST_STATUS_OPTIONS[0],
   probes: [],
   alerts: 'all',
+  folders: [],
 };
 
 export const getDefaultFilters = (): CheckFiltersType => {
