@@ -20,7 +20,7 @@ import { useProbes, useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
-import { formatK6VersionsInline } from 'components/ProbeCard/ProbeCard';
+import { formatK6VersionsInline } from 'components/ProbeCard/ProbeCard.utils';
 import { ProbeMetaPillsRow } from 'components/ProbeCard/ProbeMetaPillsRow';
 import { ProbeCheckExecutionStats } from 'components/ProbeCheckExecutionStats';
 
@@ -193,15 +193,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
   probeMetaPills: css({
     marginTop: theme.spacing(1),
     paddingLeft: theme.spacing(1),
-  }),
-  k6Versions: css({
-    display: 'flex',
-    gap: theme.spacing(0.5),
-  }),
-  metaTitle: css({
-    fontWeight: 700,
-  }),
-  metaValue: css({
-    whiteSpace: 'pre-line',
   }),
 });

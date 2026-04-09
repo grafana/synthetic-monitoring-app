@@ -4,14 +4,15 @@ import { Card, Link, LinkButton, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { type ExtendedProbe, FeatureName, type Label, Probe, ProbeWithMetadata } from 'types';
+import { type ExtendedProbe, FeatureName, type Label } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
-import { isK6VersionUnknown } from 'components/CheckEditor/CheckProbes/CheckProbes.utils';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { ProbeCheckExecutionStats } from 'components/ProbeCheckExecutionStats';
+
+import { formatK6VersionsInline } from './ProbeCard.utils';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
 import { ProbeDisabledCapabilities } from './ProbeDisabledCapabilities';
@@ -113,20 +114,6 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
     </Card>
   );
 };
-
-export function formatK6VersionsInline(probe: ProbeWithMetadata | Probe) {
-  if (!probe.k6Versions || Object.keys(probe.k6Versions).length === 0) {
-    return 'unknown';
-  }
-  const unique = [
-    ...new Set(
-      Object.values(probe.k6Versions)
-        .filter((v): v is string => v !== null)
-        .map((v) => (isK6VersionUnknown(v) ? 'unknown' : `v${v}`))
-    ),
-  ];
-  return unique.join(', ') || 'unknown';
-}
 
 const getStyles2 = (theme: GrafanaTheme2) => {
   const containerName = `probeCard`;
