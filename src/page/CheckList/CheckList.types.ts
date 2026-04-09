@@ -16,7 +16,7 @@ export type CheckTypeFilter = CheckType | 'all';
 
 export type CheckAlertsFilter = 'all' | 'with' | 'without';
 
-export type FilterType = 'search' | 'labels' | 'type' | 'status' | 'probes' | 'alerts' | 'folder';
+export type FilterType = 'search' | 'labels' | 'type' | 'status' | 'probes' | 'alerts' | 'folders';
 
 export interface CheckFiltersType {
   [key: string]: any;

@@ -54,6 +54,11 @@ export const CheckFilterGroup = ({ children, onReset, filters }: PropsWithChildr
             active += 1;
           }
           break;
+        case 'folders':
+          if (filters.folders.length > 0) {
+            active += 1;
+          }
+          break;
       }
     });
     setActiveFilters(active);

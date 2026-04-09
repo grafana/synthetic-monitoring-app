@@ -245,7 +245,7 @@ export function CheckFilters({
                       ...checkFilters,
                       folders: selectedOptions.map((opt) => opt.value),
                     },
-                    'folder'
+                    'folders'
                   );
                 }}
                 options={folderOptions}

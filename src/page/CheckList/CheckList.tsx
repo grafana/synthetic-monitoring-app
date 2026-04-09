@@ -166,7 +166,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       case 'probes':
         setProbes(filters.probes);
         break;
-      case 'folder':
+      case 'folders':
         setFolders(filters.folders);
         break;
       default:
