@@ -250,6 +250,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         currentPageChecks={currentPageChecks}
         folders={allFolders}
         defaultFolderUid={defaultFolderUid}
+        getPermissions={getPermissions}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}
         onSelectAll={handleSelectAll}

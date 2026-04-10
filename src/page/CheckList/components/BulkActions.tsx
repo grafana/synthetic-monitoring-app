@@ -4,12 +4,13 @@ import { Button, ButtonCascader, ConfirmModal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
-import { getUserPermissions } from 'data/permissions';
+import { CheckPermissions } from 'data/folderPermissions';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 import { BulkActionsModal } from 'page/CheckList/components/BulkActionsModal';
 
 interface BulkActionsProps {
   checks: Check[];
+  getPermissions: (check: Pick<Check, 'folderUid'>) => CheckPermissions;
   onResolved: () => void;
 }
 
@@ -18,8 +19,9 @@ enum BulkAction {
   Remove = `remove`,
 }
 
-export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
-  const { canWriteChecks, canDeleteChecks } = getUserPermissions();
+export const BulkActions = ({ checks, getPermissions, onResolved }: BulkActionsProps) => {
+  const canWriteAll = checks.every((check) => getPermissions(check).canWrite);
+  const canDeleteAll = checks.every((check) => getPermissions(check).canDelete);
   const styles = useStyles2(getStyles);
   const [bulkEditAction, setBulkEditAction] = useState<BulkAction | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -62,7 +64,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
                 value: BulkAction.Remove,
               },
             ]}
-            disabled={!canWriteChecks}
+            disabled={!canWriteAll}
             onChange={(value: string[]) => {
               const action = value[0] as BulkAction;
               setBulkEditAction(action);
@@ -76,7 +78,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           variant="primary"
           fill="text"
           onClick={handleEnableSelectedChecks}
-          disabled={!canWriteChecks}
+          disabled={!canWriteAll}
         >
           Enable
         </Button>
@@ -85,7 +87,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           variant="secondary"
           fill="text"
           onClick={handleDisableSelectedChecks}
-          disabled={!canWriteChecks}
+          disabled={!canWriteAll}
         >
           Disable
         </Button>
@@ -95,7 +97,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           variant="destructive"
           fill="text"
           onClick={() => setShowDeleteModal(true)}
-          disabled={!canDeleteChecks}
+          disabled={!canDeleteAll}
         >
           Delete
         </Button>
