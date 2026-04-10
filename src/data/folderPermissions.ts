@@ -15,11 +15,13 @@ export interface FolderPermissionFlags {
 
 /**
  * The resolved state of a folder from GET /api/folders/:uid.
- *   - accessible: 200, user has at least View permission
- *   - forbidden:  403 (or any non-404 error — safe default)
- *   - orphaned:   404, folder was deleted
+ *   - loading:     request in flight, folder status unknown yet
+ *   - accessible:  200, user has at least View permission
+ *   - forbidden:   403 (or any non-404 error — safe default)
+ *   - orphaned:    404, folder was deleted
  */
-export type FolderDetail =
+export type FolderAccessState =
+  | { type: 'loading' }
   | { type: 'accessible'; permissions: FolderPermissionFlags }
   | { type: 'forbidden' }
   | { type: 'orphaned' };
@@ -30,13 +32,15 @@ export type FolderDetail =
  *
  *   no-folder-context: folders disabled or check has no folderUid.
  *                      SM RBAC applies directly.
+ *   loading:           folder status is not yet resolved. Check is visible
+ *                      but write/delete actions are disabled until resolved.
  *   accessible:        folder exists and user has access. Combined model applies.
  *   forbidden:         folder exists but user cannot access it. Check is hidden.
  *   orphaned:          folder was deleted. SM RBAC applies directly.
  */
 export type CheckFolderStatus =
   | { type: 'no-folder-context' }
-  | FolderDetail;
+  | FolderAccessState;
 
 /**
  * The effective permissions for a check, combining SM RBAC and folder permissions.
@@ -57,7 +61,7 @@ export interface EffectiveCheckPermissions {
  */
 export function resolveCheckFolderStatus(
   check: Pick<Check, 'folderUid'>,
-  folderDetailsByUid: Map<string, FolderDetail>,
+  folderDetailsByUid: Map<string, FolderAccessState>,
   isFoldersEnabled: boolean,
 ): CheckFolderStatus {
   if (!isFoldersEnabled || !check.folderUid) {
@@ -77,6 +81,7 @@ export function resolveCheckFolderStatus(
 export function isCheckVisible(folderStatus: CheckFolderStatus): boolean {
   switch (folderStatus.type) {
     case 'no-folder-context':
+    case 'loading':
     case 'accessible':
     case 'orphaned':
       return true;
@@ -98,6 +103,7 @@ export function isCheckVisible(folderStatus: CheckFolderStatus): boolean {
  *
  * Special cases:
  *   - no-folder-context / orphaned → SM RBAC only (no folder restriction)
+ *   - loading → visible, read only (actions disabled until resolved)
  *   - forbidden → all false (check shouldn't be visible, but safe fallback)
  */
 export function computeEffectiveCheckPermissions(
@@ -111,6 +117,13 @@ export function computeEffectiveCheckPermissions(
         canRead: smPerms.canReadChecks,
         canWrite: smPerms.canWriteChecks,
         canDelete: smPerms.canDeleteChecks,
+      };
+
+    case 'loading':
+      return {
+        canRead: smPerms.canReadChecks,
+        canWrite: false,
+        canDelete: false,
       };
 
     case 'accessible':

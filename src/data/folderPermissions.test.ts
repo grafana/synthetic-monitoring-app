@@ -4,7 +4,7 @@ import { runTestAsRBACEditor, runTestAsRBACReader } from 'test/utils';
 import {
   CheckFolderStatus,
   computeEffectiveCheckPermissions,
-  FolderDetail,
+  FolderAccessState,
   isCheckVisible,
   resolveCheckFolderStatus,
 } from './folderPermissions';
@@ -32,11 +32,12 @@ const smWriterNoDelete = () => {
   return getUserPermissions();
 };
 
-const FOLDER_ADMIN: FolderDetail = { type: 'accessible', permissions: { canEdit: true, canAdmin: true } };
-const FOLDER_EDITOR: FolderDetail = { type: 'accessible', permissions: { canEdit: true, canAdmin: false } };
-const FOLDER_VIEWER: FolderDetail = { type: 'accessible', permissions: { canEdit: false, canAdmin: false } };
-const FOLDER_FORBIDDEN: FolderDetail = { type: 'forbidden' };
-const FOLDER_ORPHANED: FolderDetail = { type: 'orphaned' };
+const FOLDER_LOADING: FolderAccessState = { type: 'loading' };
+const FOLDER_ADMIN: FolderAccessState = { type: 'accessible', permissions: { canEdit: true, canAdmin: true } };
+const FOLDER_EDITOR: FolderAccessState = { type: 'accessible', permissions: { canEdit: true, canAdmin: false } };
+const FOLDER_VIEWER: FolderAccessState = { type: 'accessible', permissions: { canEdit: false, canAdmin: false } };
+const FOLDER_FORBIDDEN: FolderAccessState = { type: 'forbidden' };
+const FOLDER_ORPHANED: FolderAccessState = { type: 'orphaned' };
 
 describe('resolveCheckFolderStatus', () => {
   it('returns no-folder-context when folders feature is disabled', () => {
@@ -84,6 +85,7 @@ describe('resolveCheckFolderStatus', () => {
 describe('isCheckVisible', () => {
   it.each<[CheckFolderStatus['type'], boolean]>([
     ['no-folder-context', true],
+    ['loading', true],
     ['accessible', true],
     ['orphaned', true],
     ['forbidden', false],
@@ -130,6 +132,16 @@ describe('computeEffectiveCheckPermissions', () => {
 
     it('returns read-only for a reader', () => {
       expect(computeEffectiveCheckPermissions(smReader(), status)).toEqual({
+        canRead: true,
+        canWrite: false,
+        canDelete: false,
+      });
+    });
+  });
+
+  describe('loading (permissions not yet resolved)', () => {
+    it('allows read but disables write and delete', () => {
+      expect(computeEffectiveCheckPermissions(smWriter(), FOLDER_LOADING)).toEqual({
         canRead: true,
         canWrite: false,
         canDelete: false,
