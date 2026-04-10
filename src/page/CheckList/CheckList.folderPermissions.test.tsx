@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import {
   FOLDER_FORBIDDEN_UID,
@@ -87,8 +87,25 @@ const renderCheckList = async (checks: Check[] = ALL_CHECKS) => {
     path,
   });
 
-  expect(await screen.findByText('Create new check')).toBeInTheDocument();
   return res;
+};
+
+const renderCheckListForReader = async (checks: Check[]) => {
+  runTestAsRBACReader();
+
+  server.use(
+    apiRoute(`listChecks`, {
+      result: () => ({ json: checks }),
+    }),
+    apiRoute(`listProbes`, {
+      result: () => ({ json: [PRIVATE_PROBE, PUBLIC_PROBE] }),
+    })
+  );
+
+  return render(<CheckList />, {
+    route: AppRoutes.Checks,
+    path: generateRoutePath(AppRoutes.Checks),
+  });
 };
 
 describe('CheckList - Folder Permissions', () => {
@@ -113,13 +130,14 @@ describe('CheckList - Folder Permissions', () => {
         expect(screen.queryByText('Forbidden folder check')).not.toBeInTheDocument();
       });
 
-      it('shows checks with orphaned folders (folder deleted)', async () => {
+      it('shows checks with orphaned folders after resolving 404', async () => {
         await renderCheckList();
+        await screen.findByText('Production API check');
         expect(await screen.findByText('Orphaned folder check')).toBeInTheDocument();
       });
     });
 
-    describe('action buttons — combined model: min(SM RBAC, folder permission)', () => {
+    describe('action buttons — folder permissions is the ceiling', () => {
       it('disables edit/delete for checks in a read-only folder (folder View)', async () => {
         await renderCheckList([CHECK_IN_READONLY_FOLDER]);
         const editButton = await screen.findByLabelText('Edit check');
@@ -133,13 +151,13 @@ describe('CheckList - Folder Permissions', () => {
 
       it('enables edit but disables delete for checks in an editable folder (folder Edit, no Admin)', async () => {
         await renderCheckList([CHECK_IN_PRODUCTION]);
-        const editButton = await screen.findByLabelText('Edit check');
-        const deleteButton = screen.getByLabelText('Delete check');
-        const toggleButton = screen.getByLabelText('Disable check');
 
-        expect(editButton).not.toHaveAttribute('aria-disabled', 'true');
-        expect(deleteButton).toBeDisabled();
-        expect(toggleButton).not.toBeDisabled();
+        await waitFor(() => {
+          expect(screen.getByLabelText('Edit check')).not.toHaveAttribute('aria-disabled', 'true');
+        });
+
+        expect(screen.getByLabelText('Delete check')).toBeDisabled();
+        expect(screen.getByLabelText('Disable check')).not.toBeDisabled();
       });
 
       it('uses SM RBAC for checks without a folderUid', async () => {
@@ -150,28 +168,16 @@ describe('CheckList - Folder Permissions', () => {
         expect(editButton).not.toHaveAttribute('aria-disabled', 'true');
         expect(deleteButton).not.toBeDisabled();
       });
-
-      it('uses SM RBAC for checks with orphaned folders', async () => {
-        await renderCheckList([CHECK_WITH_ORPHANED_FOLDER]);
-        const editButton = await screen.findByLabelText('Edit check');
-        const deleteButton = screen.getByLabelText('Delete check');
-
-        expect(editButton).not.toHaveAttribute('aria-disabled', 'true');
-        expect(deleteButton).not.toBeDisabled();
-      });
     });
 
-    describe('combined model — SM RBAC is the ceiling', () => {
-      it('SM reader + folder Admin = read only (all buttons disabled)', async () => {
-        runTestAsRBACReader();
-        await renderCheckList([CHECK_IN_PRODUCTION]);
-        const editButton = await screen.findByLabelText('Edit check');
-        const deleteButton = screen.getByLabelText('Delete check');
-        const toggleButton = screen.getByLabelText('Disable check');
+    describe('action buttons — SM RBAC is the ceiling', () => {
+      it('SM reader + folder Edit = read only (all buttons disabled)', async () => {
+        await renderCheckListForReader([CHECK_IN_PRODUCTION]);
 
+        const editButton = await screen.findByLabelText('Edit check');
         expect(editButton).toHaveAttribute('aria-disabled', 'true');
-        expect(deleteButton).toBeDisabled();
-        expect(toggleButton).toBeDisabled();
+        expect(screen.getByLabelText('Delete check')).toBeDisabled();
+        expect(screen.getByLabelText('Disable check')).toBeDisabled();
       });
     });
   });

@@ -23,6 +23,7 @@ import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -139,10 +140,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus, defaultFolderUid);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
-  const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
-  const isAllSelected = selectedCheckIds.size === filteredChecks.length;
-  const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
+  const { visibleChecks, getPermissions } = useCheckFolderAccess(sortedChecks);
+
+  const currentPageChecks = visibleChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
+
+  const isAllSelected = selectedCheckIds.size === visibleChecks.length;
+  const totalPages = Math.ceil(visibleChecks.length / CHECKS_PER_PAGE);
 
   const handleFilterChange = (filters: CheckFiltersType, type: FilterType) => {
     setCurrentPage(1);
@@ -241,7 +245,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   return (
     <>
       <CheckListHeader
-        checks={filteredChecks}
+        checks={visibleChecks}
         checkFilters={checkFiltersWithStatus}
         currentPageChecks={currentPageChecks}
         folders={allFolders}
@@ -262,7 +266,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       />
       {viewType === CheckListViewType.Folder ? (
         <CheckListFolderView
-          checks={sortedChecks}
+          checks={visibleChecks}
           folders={allFolders}
           foldersMap={foldersMap}
           foldersLoading={isFoldersLoading}
@@ -271,6 +275,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           defaultFolderUid={defaultFolderUid}
           checkAlertStates={checkAlertStates}
           calNames={calNames}
+          getPermissions={getPermissions}
           onLabelSelect={handleLabelSelect}
           onStatusSelect={handleStatusSelect}
           onTypeSelect={handleTypeSelect}
@@ -286,6 +291,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                 <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
                 <CheckListItem
                   check={check}
+                  effectivePermissions={getPermissions(check)}
                   calNames={calNames}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
