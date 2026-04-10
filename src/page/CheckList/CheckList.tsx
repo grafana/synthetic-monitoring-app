@@ -10,6 +10,7 @@ import { getTotalChecksPerMonth } from 'checkUsageCalc';
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import { CheckFolderAccessValueProvider } from 'contexts/CheckFolderAccessContext';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import {
   CheckRuntimeAlertStates,
@@ -22,9 +23,8 @@ import { useAllFolders } from 'data/useFolders';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
-import { CheckFolderAccessValueProvider } from 'contexts/CheckFolderAccessContext';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';

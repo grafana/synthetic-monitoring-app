@@ -12,8 +12,8 @@ import { mockFeatureToggles, runTestAsRBACReader, runTestAsViewer } from 'test/u
 import { Check, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { EditCheckV2 } from 'page/EditCheck/EditCheckV2';
 import { renderEditForm } from 'page/__testHelpers__/checkForm';
+import { EditCheckV2 } from 'page/EditCheck/EditCheckV2';
 
 import { submitForm } from '../../../../components/Checkster/__testHelpers__/formHelpers';
 

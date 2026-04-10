@@ -5,8 +5,8 @@ import { firstValueFrom } from 'rxjs';
 
 import { GrafanaFolder } from 'types';
 
-import { FOLDERS_STALE_TIME } from './folders.constants';
 import { FolderAccessState } from './folderPermissions';
+import { FOLDERS_STALE_TIME } from './folders.constants';
 
 const FOLDERS_API = '/api/folders';
 
