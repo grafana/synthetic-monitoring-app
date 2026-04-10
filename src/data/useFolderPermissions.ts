@@ -71,26 +71,30 @@ export function useFolderPermissions(folderUids: string[]) {
     })),
   });
 
+  const queryData = queries.map((q) => q.data);
+  const queryErrors = queries.map((q) => q.error);
+  const queryLoading = queries.map((q) => q.isLoading);
+
   const folderDetailsByUid = useMemo(() => {
     const map = new Map<string, FolderAccessState>();
 
-    queries.forEach((query, index) => {
-      const uid = uniqueUids[index];
-      if (!uid) {
-        return;
-      }
+    uniqueUids.forEach((uid, index) => {
+      const data = queryData[index];
+      const error = queryErrors[index];
+      const isLoading = queryLoading[index];
 
-      if (query.data) {
-        map.set(uid, toAccessState(query.data));
-      } else if (query.error) {
-        map.set(uid, toErrorState(query.error));
-      } else if (query.isLoading) {
+      if (data) {
+        map.set(uid, toAccessState(data));
+      } else if (error) {
+        map.set(uid, toErrorState(error));
+      } else if (isLoading) {
         map.set(uid, { type: 'loading' });
       }
     });
 
     return map;
-  }, [queries, uniqueUids]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uniqueUids, ...queryData, ...queryErrors, ...queryLoading]);
 
   return { folderDetailsByUid };
 }
