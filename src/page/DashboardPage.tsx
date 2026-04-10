@@ -1,10 +1,11 @@
 import React from 'react';
-import { useParams } from 'react-router';
+import { Navigate, useParams } from 'react-router';
 import { Spinner } from '@grafana/ui';
 
 import { CheckPageParams, CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { useChecks } from 'data/useChecks';
+import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
 import { DNSDashboard } from 'scenes/DNS/DnsDashboard';
 import { GrpcDashboard } from 'scenes/GRPC/GrpcDashboard';
@@ -21,8 +22,15 @@ function DashboardPageContent() {
   const { id } = useParams<CheckPageParams>();
   const check = checks.find((check) => String(check.id) === id);
 
+  const { getPermissions } = useCheckFolderAccess(check ? [check] : []);
+  const permissions = getPermissions({ folderUid: check?.folderUid });
+
   if (!isLoading && !check) {
     return <CheckNotFound />;
+  }
+
+  if (!permissions.canRead) {
+    return <Navigate to=".." replace />;
   }
 
   if (check && getCheckType(check.settings) === CheckType.Grpc) {
