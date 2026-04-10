@@ -21,6 +21,7 @@ import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessa
 
 export const CheckListItemCard = ({
   check,
+  effectivePermissions,
   runtimeAlertState,
   calNames,
   onLabelSelect,
@@ -112,7 +113,7 @@ export const CheckListItemCard = ({
               ))}
               <UnattributedMessage missingCalNames={missingCalNames} />
             </div>
-            <CheckItemActionButtons check={check} responsiveDashboardLink className={styles.actions} />
+            <CheckItemActionButtons check={check} effectivePermissions={effectivePermissions} responsiveDashboardLink className={styles.actions} />
           </div>
         </div>
       </div>

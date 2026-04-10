@@ -3,7 +3,7 @@ import { runTestAsRBACEditor, runTestAsRBACReader } from 'test/utils';
 
 import {
   CheckFolderStatus,
-  computeEffectiveCheckPermissions,
+    computeCheckPermissions,
   FolderAccessState,
   isCheckVisible,
   resolveCheckFolderStatus,
@@ -98,12 +98,12 @@ describe('isCheckVisible', () => {
   });
 });
 
-describe('computeEffectiveCheckPermissions', () => {
+describe('computeCheckPermissions', () => {
   describe('no-folder-context (folders disabled or no folderUid)', () => {
     const status: CheckFolderStatus = { type: 'no-folder-context' };
 
     it('returns full SM RBAC for a writer', () => {
-      expect(computeEffectiveCheckPermissions(smWriter(), status)).toEqual({
+      expect(computeCheckPermissions(smWriter(), status)).toEqual({
         canRead: true,
         canWrite: true,
         canDelete: true,
@@ -111,7 +111,7 @@ describe('computeEffectiveCheckPermissions', () => {
     });
 
     it('returns read-only for a reader', () => {
-      expect(computeEffectiveCheckPermissions(smReader(), status)).toEqual({
+      expect(computeCheckPermissions(smReader(), status)).toEqual({
         canRead: true,
         canWrite: false,
         canDelete: false,
@@ -123,7 +123,7 @@ describe('computeEffectiveCheckPermissions', () => {
     const status: CheckFolderStatus = { type: 'orphaned' };
 
     it('returns full SM RBAC — folder no longer restricts', () => {
-      expect(computeEffectiveCheckPermissions(smWriter(), status)).toEqual({
+      expect(computeCheckPermissions(smWriter(), status)).toEqual({
         canRead: true,
         canWrite: true,
         canDelete: true,
@@ -131,7 +131,7 @@ describe('computeEffectiveCheckPermissions', () => {
     });
 
     it('returns read-only for a reader', () => {
-      expect(computeEffectiveCheckPermissions(smReader(), status)).toEqual({
+      expect(computeCheckPermissions(smReader(), status)).toEqual({
         canRead: true,
         canWrite: false,
         canDelete: false,
@@ -141,7 +141,7 @@ describe('computeEffectiveCheckPermissions', () => {
 
   describe('loading (permissions not yet resolved)', () => {
     it('allows read but disables write and delete', () => {
-      expect(computeEffectiveCheckPermissions(smWriter(), FOLDER_LOADING)).toEqual({
+      expect(computeCheckPermissions(smWriter(), FOLDER_LOADING)).toEqual({
         canRead: true,
         canWrite: false,
         canDelete: false,
@@ -151,7 +151,7 @@ describe('computeEffectiveCheckPermissions', () => {
 
   describe('accessible — combined model: min(SM RBAC, folder permission)', () => {
     it('SM writer + folder Admin → full access', () => {
-      expect(computeEffectiveCheckPermissions(smWriter(), FOLDER_ADMIN)).toEqual({
+      expect(computeCheckPermissions(smWriter(), FOLDER_ADMIN)).toEqual({
         canRead: true,
         canWrite: true,
         canDelete: true,
@@ -159,7 +159,7 @@ describe('computeEffectiveCheckPermissions', () => {
     });
 
     it('SM writer + folder Edit → can read + write, not delete', () => {
-      expect(computeEffectiveCheckPermissions(smWriter(), FOLDER_EDITOR)).toEqual({
+      expect(computeCheckPermissions(smWriter(), FOLDER_EDITOR)).toEqual({
         canRead: true,
         canWrite: true,
         canDelete: false,
@@ -167,7 +167,7 @@ describe('computeEffectiveCheckPermissions', () => {
     });
 
     it('SM writer + folder View → can only read (folder is the ceiling)', () => {
-      expect(computeEffectiveCheckPermissions(smWriter(), FOLDER_VIEWER)).toEqual({
+      expect(computeCheckPermissions(smWriter(), FOLDER_VIEWER)).toEqual({
         canRead: true,
         canWrite: false,
         canDelete: false,
@@ -175,7 +175,7 @@ describe('computeEffectiveCheckPermissions', () => {
     });
 
     it('SM reader + folder Admin → can only read (SM role is the ceiling)', () => {
-      expect(computeEffectiveCheckPermissions(smReader(), FOLDER_ADMIN)).toEqual({
+      expect(computeCheckPermissions(smReader(), FOLDER_ADMIN)).toEqual({
         canRead: true,
         canWrite: false,
         canDelete: false,
@@ -183,7 +183,7 @@ describe('computeEffectiveCheckPermissions', () => {
     });
 
     it('SM writer-no-delete + folder Edit → can read + write, not delete', () => {
-      expect(computeEffectiveCheckPermissions(smWriterNoDelete(), FOLDER_EDITOR)).toEqual({
+      expect(computeCheckPermissions(smWriterNoDelete(), FOLDER_EDITOR)).toEqual({
         canRead: true,
         canWrite: true,
         canDelete: false,
@@ -191,7 +191,7 @@ describe('computeEffectiveCheckPermissions', () => {
     });
 
     it('SM writer-no-delete + folder Admin → can read + write, not delete (SM is ceiling)', () => {
-      expect(computeEffectiveCheckPermissions(smWriterNoDelete(), FOLDER_ADMIN)).toEqual({
+      expect(computeCheckPermissions(smWriterNoDelete(), FOLDER_ADMIN)).toEqual({
         canRead: true,
         canWrite: true,
         canDelete: false,
@@ -201,7 +201,7 @@ describe('computeEffectiveCheckPermissions', () => {
 
   describe('folder is forbidden — all false regardless of SM RBAC', () => {
     it('returns all false even for a full writer', () => {
-      expect(computeEffectiveCheckPermissions(smWriter(), FOLDER_FORBIDDEN)).toEqual({
+      expect(computeCheckPermissions(smWriter(), FOLDER_FORBIDDEN)).toEqual({
         canRead: false,
         canWrite: false,
         canDelete: false,

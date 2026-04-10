@@ -4,8 +4,8 @@ import { Check, FeatureName } from 'types';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import {
   CheckFolderStatus,
-  computeEffectiveCheckPermissions,
-  EffectiveCheckPermissions,
+  computeCheckPermissions,
+  CheckPermissions,
   isCheckVisible,
   resolveCheckFolderStatus,
 } from 'data/folderPermissions';
@@ -46,8 +46,8 @@ export function useCheckFolderAccess(checks: Array<Pick<Check, 'folderUid'>>) {
   );
 
   const getPermissions = useCallback(
-    (check: Pick<Check, 'folderUid'>): EffectiveCheckPermissions => {
-      return computeEffectiveCheckPermissions(smPerms, getFolderStatus(check));
+    (check: Pick<Check, 'folderUid'>): CheckPermissions => {
+      return computeCheckPermissions(smPerms, getFolderStatus(check));
     },
     [smPerms, getFolderStatus]
   );

@@ -46,7 +46,7 @@ export type CheckFolderStatus =
  * The effective permissions for a check, combining SM RBAC and folder permissions.
  * This is the single source of truth for what the user can do with a check.
  */
-export interface EffectiveCheckPermissions {
+export interface CheckPermissions {
   canRead: boolean;
   canWrite: boolean;
   canDelete: boolean;
@@ -106,10 +106,10 @@ export function isCheckVisible(folderStatus: CheckFolderStatus): boolean {
  *   - loading → visible, read only (actions disabled until resolved)
  *   - forbidden → all false (check shouldn't be visible, but safe fallback)
  */
-export function computeEffectiveCheckPermissions(
+export function computeCheckPermissions(
   smPerms: SMPermissions,
   folderStatus: CheckFolderStatus,
-): EffectiveCheckPermissions {
+): CheckPermissions {
   switch (folderStatus.type) {
     case 'no-folder-context':
     case 'orphaned':

@@ -15,6 +15,7 @@ import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 
 export const CheckListItemRow = ({
   check,
+  effectivePermissions,
   runtimeAlertState,
   calNames,
   onLabelSelect,
@@ -72,7 +73,7 @@ export const CheckListItemRow = ({
           onLabelClick={onLabelSelect}
           executionsRate={usage?.checksPerMonth}
         />
-        <CheckItemActionButtons check={check} viewDashboardAsIcon />
+        <CheckItemActionButtons check={check} effectivePermissions={effectivePermissions} viewDashboardAsIcon />
       </div>
     </div>
   );
