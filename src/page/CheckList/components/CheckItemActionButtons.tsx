@@ -9,14 +9,13 @@ import { Check } from 'types';
 import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
-import { CheckPermissions } from 'data/folderPermissions';
+import { useCheckPermissions } from 'contexts/CheckFolderAccessContext';
 import { useDeleteCheck, useUpdateCheck } from 'data/useChecks';
 import { useDuplicateCheckUrl } from 'hooks/useDuplicateCheck';
 import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
 
 interface CheckItemActionButtonsProps {
   check: Check;
-  effectivePermissions: CheckPermissions;
   viewDashboardAsIcon?: boolean;
   responsiveDashboardLink?: boolean;
   className?: string;
@@ -24,12 +23,11 @@ interface CheckItemActionButtonsProps {
 
 export const CheckItemActionButtons = ({
   check,
-  effectivePermissions,
   viewDashboardAsIcon,
   responsiveDashboardLink,
   className,
 }: CheckItemActionButtonsProps) => {
-  const { canRead: canReadChecks, canWrite: canWriteChecks, canDelete: canDeleteChecks } = effectivePermissions;
+  const { canRead: canReadChecks, canWrite: canWriteChecks, canDelete: canDeleteChecks } = useCheckPermissions(check);
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isPending, setIsPending] = useState(false);

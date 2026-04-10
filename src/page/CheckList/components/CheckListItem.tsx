@@ -2,14 +2,12 @@ import React from 'react';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckType, Label } from 'types';
-import { CheckPermissions } from 'data/folderPermissions';
 import { CheckRuntimeAlertState } from 'data/useCheckAlertStates';
 import { CheckListItemCard } from 'page/CheckList/components/CheckListItemCard';
 import { CheckListItemRow } from 'page/CheckList/components/CheckListItemRow';
 
 export interface CheckListItemProps {
   check: Check;
-  effectivePermissions: CheckPermissions;
   runtimeAlertState: CheckRuntimeAlertState;
   calNames: string[];
   selected: boolean;

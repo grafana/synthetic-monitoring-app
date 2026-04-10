@@ -7,7 +7,6 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort, GrafanaFolder } from 'types';
-import { CheckPermissions } from 'data/folderPermissions';
 import { getUserPermissions } from 'data/permissions';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { PlainButton } from 'components/PlainButton';
@@ -22,7 +21,6 @@ type CheckListHeaderProps = {
   currentPageChecks: Check[];
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
-  getPermissions: (check: Pick<Check, 'folderUid'>) => CheckPermissions;
   onChangeView: (viewType: CheckListViewType) => void;
   onDelete: () => void;
   onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
@@ -71,7 +69,6 @@ export const CheckListHeader = ({
   currentPageChecks,
   folders,
   defaultFolderUid,
-  getPermissions,
   onChangeView,
   onDelete,
   onFilterChange,
@@ -145,7 +142,7 @@ export const CheckListHeader = ({
               />
             </Tooltip>
             {selectedCheckIds.size > 0 ? (
-              <BulkActions checks={selectedChecks} getPermissions={getPermissions} onResolved={onDelete} />
+              <BulkActions checks={selectedChecks} onResolved={onDelete} />
             ) : (
               <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
             )}

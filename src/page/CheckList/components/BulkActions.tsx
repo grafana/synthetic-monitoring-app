@@ -4,13 +4,12 @@ import { Button, ButtonCascader, ConfirmModal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
-import { CheckPermissions } from 'data/folderPermissions';
+import { useBulkCheckPermissions } from 'contexts/CheckFolderAccessContext';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 import { BulkActionsModal } from 'page/CheckList/components/BulkActionsModal';
 
 interface BulkActionsProps {
   checks: Check[];
-  getPermissions: (check: Pick<Check, 'folderUid'>) => CheckPermissions;
   onResolved: () => void;
 }
 
@@ -19,9 +18,8 @@ enum BulkAction {
   Remove = `remove`,
 }
 
-export const BulkActions = ({ checks, getPermissions, onResolved }: BulkActionsProps) => {
-  const canWriteAll = checks.every((check) => getPermissions(check).canWrite);
-  const canDeleteAll = checks.every((check) => getPermissions(check).canDelete);
+export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
+  const { canWriteAll, canDeleteAll } = useBulkCheckPermissions(checks);
   const styles = useStyles2(getStyles);
   const [bulkEditAction, setBulkEditAction] = useState<BulkAction | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);

@@ -22,6 +22,7 @@ import { useAllFolders } from 'data/useFolders';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { CheckFolderAccessValueProvider } from 'contexts/CheckFolderAccessContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
@@ -140,12 +141,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus, defaultFolderUid);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
-
-  const { visibleChecks, getPermissions } = useCheckFolderAccess(sortedChecks);
+  const folderAccess = useCheckFolderAccess(sortedChecks);
+  const { visibleChecks } = folderAccess;
 
   const currentPageChecks = visibleChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
-
-  const isAllSelected = selectedCheckIds.size === visibleChecks.length;
   const totalPages = Math.ceil(visibleChecks.length / CHECKS_PER_PAGE);
 
   const handleFilterChange = (filters: CheckFiltersType, type: FilterType) => {
@@ -220,12 +219,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     }
   };
 
+  const isAllSelected = selectedCheckIds.size === visibleChecks.length;
+
   const handleSelectAll = () => {
     if (isAllSelected) {
       return handleUnselectAll();
     }
-
-    const allCheckIds = sortedChecks.map((check) => check.id!);
+    const allCheckIds = visibleChecks.map((check) => check.id!);
     setSelectedChecksIds(new Set(allCheckIds));
   };
 
@@ -243,14 +243,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   }
 
   return (
-    <>
+    <CheckFolderAccessValueProvider value={folderAccess}>
       <CheckListHeader
         checks={visibleChecks}
         checkFilters={checkFiltersWithStatus}
         currentPageChecks={currentPageChecks}
         folders={allFolders}
         defaultFolderUid={defaultFolderUid}
-        getPermissions={getPermissions}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}
         onSelectAll={handleSelectAll}
@@ -276,7 +275,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           defaultFolderUid={defaultFolderUid}
           checkAlertStates={checkAlertStates}
           calNames={calNames}
-          getPermissions={getPermissions}
           onLabelSelect={handleLabelSelect}
           onStatusSelect={handleStatusSelect}
           onTypeSelect={handleTypeSelect}
@@ -287,12 +285,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         <div>
           <section className="card-section card-list-layout-list">
             <div className={styles.list}>
-              {/* Inline style is required: viewTransitionName must be unique per element and can't be set via a shared CSS class */}
               {currentPageChecks.map((check) => (
                 <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
                 <CheckListItem
                   check={check}
-                  effectivePermissions={getPermissions(check)}
                   calNames={calNames}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
@@ -315,7 +311,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           )}
         </div>
       )}
-    </>
+    </CheckFolderAccessValueProvider>
   );
 };
 

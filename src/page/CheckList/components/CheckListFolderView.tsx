@@ -5,7 +5,6 @@ import { css } from '@emotion/css';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckType, GrafanaFolder, Label } from 'types';
-import { CheckPermissions } from 'data/folderPermissions';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 import { buildChecksByFolder, collectAllFolderUids, FolderNode, getTotalCheckCount } from 'hooks/useChecksByFolder';
 import { Feedback } from 'components/Feedback';
@@ -22,7 +21,6 @@ interface CheckListFolderViewProps {
   defaultFolderUid?: string;
   checkAlertStates: CheckRuntimeAlertStates;
   calNames: string[];
-  getPermissions: (check: Pick<Check, 'folderUid'>) => CheckPermissions;
   onLabelSelect: (label: Label) => void;
   onStatusSelect: (enabled: boolean) => void;
   onTypeSelect: (checkType: CheckType) => void;
@@ -40,7 +38,6 @@ export function CheckListFolderView({
   defaultFolderUid,
   checkAlertStates,
   calNames,
-  getPermissions,
   onLabelSelect,
   onStatusSelect,
   onTypeSelect,
@@ -104,7 +101,6 @@ export function CheckListFolderView({
     foldersMap,
     foldersLoading,
     foldersError,
-    getPermissions,
     onLabelSelect,
     onStatusSelect,
     onTypeSelect,
@@ -186,7 +182,6 @@ interface CheckItemCallbacks {
   foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
   foldersError?: boolean;
-  getPermissions: (check: Pick<Check, 'folderUid'>) => CheckPermissions;
   onLabelSelect: (label: Label) => void;
   onStatusSelect: (enabled: boolean) => void;
   onTypeSelect: (checkType: CheckType) => void;
@@ -315,7 +310,6 @@ function PaginatedCheckList({ checks, checkItemProps, hideTopPagination }: Pagin
         <CheckListItem
           key={check.id}
           check={check}
-          effectivePermissions={checkItemProps.getPermissions(check)}
           calNames={checkItemProps.calNames}
           onLabelSelect={checkItemProps.onLabelSelect}
           onStatusSelect={checkItemProps.onStatusSelect}
