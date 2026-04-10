@@ -21,7 +21,7 @@ it(`Displays the correct information`, async () => {
   await screen.findByText(probe.displayName);
 
   expect(screen.getByText((content) => content.startsWith(probe.displayName))).toBeInTheDocument();
-  expect(screen.getByText(/Version:/)).toBeInTheDocument();
+  expect(screen.getByText(/Version/)).toBeInTheDocument();
   expect(screen.getByText(probe.version, { exact: false })).toBeInTheDocument();
 
   expect(screen.getByText(/Labels:/)).toBeInTheDocument();
@@ -138,24 +138,23 @@ it('handles private probe click', async () => {
 });
 
 it.each<[ExtendedProbe, string]>([
-  [probeToExtendedProbe(PUBLIC_PROBE, [11]), 'Used in 1 check'],
-  [probeToExtendedProbe(PRIVATE_PROBE, [11, 22, 33, 44, 55, 66]), 'Used in 6 checks'],
+  [probeToExtendedProbe(PUBLIC_PROBE, [11]), 'View 1 check'],
+  [probeToExtendedProbe(PRIVATE_PROBE, [11, 22, 33, 44, 55, 66]), 'View 6 checks'],
 ])(
   'Displays the correct information for a probe that is in use',
 
   async (probe: ExtendedProbe, expectedText: string) => {
-    const { user } = render(<ProbeCard probe={probe} />);
+    render(<ProbeCard probe={probe} />);
 
     await screen.findByText(probe.displayName);
 
     const usageLink = screen.getByTestId(DataTestIds.ProbeUsageLink);
     expect(usageLink).toBeInTheDocument();
     expect(usageLink).toHaveTextContent(expectedText);
-    await user.click(usageLink);
-    expect(screen.getByTestId(DataTestIds.TestRouterInfoPathname)).toHaveTextContent(
-      generateRoutePath(AppRoutes.Checks)
+    expect(usageLink).toHaveAttribute(
+      'href',
+      `${generateRoutePath(AppRoutes.Checks)}?probes=${encodeURIComponent(probe.name)}`
     );
-    expect(screen.getByTestId(DataTestIds.TestRouterInfoSearch)).toHaveTextContent(`?probes=${probe.name}`);
   }
 );
 
