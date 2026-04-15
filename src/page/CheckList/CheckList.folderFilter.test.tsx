@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
-import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
+import { CHECK_IN_PRODUCTION, CHECK_IN_STAGING, CHECK_WITHOUT_FOLDER } from 'test/fixtures/folderChecks';
 import { FOLDER_PRODUCTION, FOLDER_STAGING } from 'test/fixtures/folders';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -11,30 +11,9 @@ import { mockFeatureToggles } from 'test/utils';
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { defaultFilters,matchesAllFilters } from 'page/CheckList/CheckList.utils';
+import { defaultFilters, matchesAllFilters } from 'page/CheckList/CheckList.utils';
 
 import { CheckList } from './CheckList';
-
-const CHECK_IN_PRODUCTION: Check = {
-  ...BASIC_HTTP_CHECK,
-  id: 100,
-  job: 'Production HTTP check',
-  folderUid: FOLDER_PRODUCTION.uid,
-};
-
-const CHECK_IN_STAGING: Check = {
-  ...BASIC_DNS_CHECK,
-  id: 101,
-  job: 'Staging DNS check',
-  folderUid: FOLDER_STAGING.uid,
-};
-
-const CHECK_WITHOUT_FOLDER: Check = {
-  ...BASIC_PING_CHECK,
-  id: 102,
-  job: 'Root level ping check',
-  folderUid: undefined,
-};
 
 const FOLDER_CHECKS = [CHECK_IN_PRODUCTION, CHECK_IN_STAGING, CHECK_WITHOUT_FOLDER];
 
