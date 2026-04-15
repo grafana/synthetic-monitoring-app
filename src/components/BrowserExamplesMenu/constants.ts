@@ -92,11 +92,13 @@ const SCREENSHOTS = [
     label: 'Screenshots (Loki storage)',
     script: SCREENSHOTS_LOKI_SCRIPT,
     value: 'screenshotsLoki.js',
+    isNew: true,
   },
   {
     label: 'Screenshots (GCS storage)',
     script: SCREENSHOTS_GCS_SCRIPT,
     value: 'screenshotsGCS.js',
+    isNew: true,
   },
 ];
 
@@ -125,6 +127,7 @@ const WAIT_FOR_FUNCTION = [
 ];
 
 export const BROWSER_EXAMPLE_CHOICES: SelectableOptGroup[] = [
+  { label: 'Screenshots', options: SCREENSHOTS },
   { label: 'Fill Form', options: FILL_FORM },
   { label: 'Cookies Manipulation', options: COOKIES },
   { label: 'Dispatch', options: DISPATCH },
@@ -133,7 +136,6 @@ export const BROWSER_EXAMPLE_CHOICES: SelectableOptGroup[] = [
   { label: 'Keyboard Interaction', options: KEYBOARD },
   { label: 'Mouse Interaction', options: MOUSE },
   { label: 'Querying', options: QUERYING },
-  { label: 'Screenshots', options: SCREENSHOTS },
   { label: 'Touchscreen Interaction', options: TOUCHSCREEN },
   { label: 'Wait for Event', options: WAIT_FOR_EVENT },
   { label: 'Wait for Function', options: WAIT_FOR_FUNCTION },

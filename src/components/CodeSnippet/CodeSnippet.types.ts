@@ -8,6 +8,7 @@ export type TabProps = {
   label: string;
   value: string;
   lang?: GrammarLanguage;
+  isNew?: boolean;
 };
 
 export type TabGroupProps = Omit<TabProps, 'code'> & {

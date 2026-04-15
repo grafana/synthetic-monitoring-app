@@ -104,7 +104,7 @@ export function getStyles(theme: GrafanaTheme2) {
       opacity: 1;
       font-weight: 500;
       min-height: ${theme.spacing(3)};
-      line-height: 1.21em; // To make wrapped text look nice
+      line-height: 1.21em;
 
       &::after {
         display: block;
@@ -121,8 +121,11 @@ export function getStyles(theme: GrafanaTheme2) {
       }
 
       &:hover {
-        text-decoration: underline;
         opacity: 1;
+
+        > span:first-of-type {
+          text-decoration: underline;
+        }
       }
     `,
     inactiveTabGroup: css`
@@ -136,7 +139,7 @@ export function getStyles(theme: GrafanaTheme2) {
       opacity: 0.65;
       font-weight: 500;
       min-height: ${theme.spacing(3)};
-      line-height: 1.21em; // To make wrapped text look nice
+      line-height: 1.21em;
 
       &::after {
         display: none;
@@ -153,8 +156,11 @@ export function getStyles(theme: GrafanaTheme2) {
       }
 
       &:hover {
-        text-decoration: underline;
         opacity: 1;
+
+        > span:first-of-type {
+          text-decoration: underline;
+        }
       }
     `,
   };

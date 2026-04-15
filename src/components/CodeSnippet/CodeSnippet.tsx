@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ClipboardButton, Tab, TabsBar, useStyles2 } from '@grafana/ui';
+import { Badge, ClipboardButton, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import { cx } from '@emotion/css';
 import { highlight, languages } from 'prismjs';
 
@@ -34,7 +34,8 @@ const CodeSnippetGroup = ({ active = false, group, onClick }: CodeSnippetGroupPr
       key={`tabGroup-${group.value}`}
       onClick={handleChangeGroup}
     >
-      {group.label}
+      <span>{group.label}</span>
+      {'isNew' in group && group.isNew && <Badge text="NEW" color="blue" />}
     </div>
   );
 };

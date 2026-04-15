@@ -11,6 +11,7 @@ const formatSCRIPT_EXAMPLES = (input: SelectableOptGroup[]) =>
           label: option.label,
           script: option.script,
           value: option.value,
+          isNew: option.isNew,
         });
       }
     });

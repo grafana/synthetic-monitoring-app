@@ -4,7 +4,7 @@
 // Simple setup — only requires Loki credentials. Best for getting started.
 //
 // Required secrets (Synthetic Monitoring > Config > Secrets):
-//   - sm-screenshot-loki-host: your Loki push endpoint
+//   - sm-screenshot-loki-host: your Loki base URL (e.g. https://logs-dev-005.grafana-dev.net)
 //   - sm-screenshot-loki-auth: base64-encoded user:token string (used directly to avoid credential leaking via httpDebug)
 //
 // The frontend detects screenshots via two required log lines:

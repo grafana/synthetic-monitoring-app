@@ -228,6 +228,8 @@ export function AdhocCheckPanel() {
                   logs={state.logs}
                   probe={state.name}
                   state={state.state}
+                  from="now-1h"
+                  to="now"
                 />
               );
             })}

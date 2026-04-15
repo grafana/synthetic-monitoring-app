@@ -10,7 +10,7 @@
 // storage credentials. The object URLs contain UUIDs and are not guessable.
 //
 // Required secrets (Synthetic Monitoring > Config > Secrets):
-//   - sm-screenshot-loki-host: your Loki push endpoint
+//   - sm-screenshot-loki-host: your Loki base URL (e.g. https://logs-dev-005.grafana-dev.net)
 //   - sm-screenshot-loki-auth: base64-encoded user:token string (used directly to avoid credential leaking via httpDebug)
 //   - sm-screenshot-gcs-token: a GCS OAuth2 access token or service account token
 //   - sm-screenshot-gcs-bucket: your GCS bucket name (e.g. my-screenshots-bucket)
