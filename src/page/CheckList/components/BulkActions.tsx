@@ -3,10 +3,12 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, ButtonCascader, ConfirmModal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check } from 'types';
+import { Check, FeatureName } from 'types';
 import { useBulkCheckPermissions } from 'contexts/CheckFolderAccessContext';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 import { BulkActionsModal } from 'page/CheckList/components/BulkActionsModal';
+import { BulkMoveToFolderModal } from 'page/CheckList/components/BulkMoveToFolderModal';
 
 interface BulkActionsProps {
   checks: Check[];
@@ -19,14 +21,21 @@ enum BulkAction {
 }
 
 export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const { canWriteAll, canDeleteAll } = useBulkCheckPermissions(checks);
   const styles = useStyles2(getStyles);
   const [bulkEditAction, setBulkEditAction] = useState<BulkAction | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showMoveToFolderModal, setShowMoveToFolderModal] = useState(false);
   const { mutate: bulkUpdateChecks } = useBulkUpdateChecks({ onSuccess: onResolved });
 
   const handleDeleteResolved = () => {
     setShowDeleteModal(false);
+    onResolved();
+  };
+
+  const handleMoveResolved = () => {
+    setShowMoveToFolderModal(false);
     onResolved();
   };
 
@@ -70,6 +79,18 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           >
             Bulk Edit Probes
           </ButtonCascader>
+        )}
+        {isFoldersEnabled && (
+          <Button
+            type="button"
+            variant="secondary"
+            fill="text"
+            icon="folder"
+            onClick={() => setShowMoveToFolderModal(true)}
+            disabled={!canWriteAll}
+          >
+            Move to folder
+          </Button>
         )}
         <Button
           type="button"
@@ -116,6 +137,13 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           confirmText="Delete checks"
           onConfirm={handleDeleteSelectedChecks}
           onDismiss={() => setShowDeleteModal(false)}
+        />
+      )}
+      {showMoveToFolderModal && (
+        <BulkMoveToFolderModal
+          checks={checks}
+          isOpen={showMoveToFolderModal}
+          onDismiss={handleMoveResolved}
         />
       )}
     </>
