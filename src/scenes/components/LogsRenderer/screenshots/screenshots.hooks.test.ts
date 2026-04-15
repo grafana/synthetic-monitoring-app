@@ -30,8 +30,11 @@ describe('useScreenshots', () => {
     mockQueryLogsV2.mockReset();
   });
 
+  const from = 1700000000000;
+  const to = 1700000060000;
+
   it('returns empty map when no UUIDs are provided', () => {
-    const { result } = renderHook(() => useScreenshots([]));
+    const { result } = renderHook(() => useScreenshots([], from, to));
     expect(result.current.size).toBe(0);
     expect(mockQueryLogsV2).not.toHaveBeenCalled();
   });
@@ -45,7 +48,7 @@ describe('useScreenshots', () => {
 
     mockQueryLogsV2.mockResolvedValue(buildLokiResponse([screenshotLine]));
 
-    const { result } = renderHook(() => useScreenshots(['loki-uuid-1']));
+    const { result } = renderHook(() => useScreenshots(['loki-uuid-1'], from, to));
 
     await waitFor(() => expect(result.current.size).toBe(1));
 
@@ -54,8 +57,8 @@ describe('useScreenshots', () => {
     expect(screenshot?.caption).toBe('Loki screenshot');
     expect(mockQueryLogsV2).toHaveBeenCalledWith(
       expect.stringContaining('loki-uuid-1'),
-      'now-1h',
-      'now'
+      from,
+      to
     );
   });
 
@@ -68,7 +71,7 @@ describe('useScreenshots', () => {
 
     mockQueryLogsV2.mockResolvedValue(buildLokiResponse([screenshotLine]));
 
-    const { result } = renderHook(() => useScreenshots(['gcs-uuid-1']));
+    const { result } = renderHook(() => useScreenshots(['gcs-uuid-1'], from, to));
 
     await waitFor(() => expect(result.current.size).toBe(1));
 
@@ -96,7 +99,7 @@ describe('useScreenshots', () => {
 
     mockQueryLogsV2.mockResolvedValue(buildLokiResponse([chunk1, chunk0]));
 
-    const { result } = renderHook(() => useScreenshots(['chunked-uuid']));
+    const { result } = renderHook(() => useScreenshots(['chunked-uuid'], from, to));
 
     await waitFor(() => expect(result.current.size).toBe(1));
 
@@ -114,7 +117,7 @@ describe('useScreenshots', () => {
 
     mockQueryLogsV2.mockResolvedValue(buildLokiResponse([lokiLine, gcsLine]));
 
-    const { result } = renderHook(() => useScreenshots(['loki-id', 'gcs-id']));
+    const { result } = renderHook(() => useScreenshots(['loki-id', 'gcs-id'], from, to));
 
     await waitFor(() => expect(result.current.size).toBe(2));
 
@@ -127,7 +130,7 @@ describe('useScreenshots', () => {
   it('silently degrades when the query fails', async () => {
     mockQueryLogsV2.mockRejectedValue(new Error('Network error'));
 
-    const { result } = renderHook(() => useScreenshots(['fail-uuid']));
+    const { result } = renderHook(() => useScreenshots(['fail-uuid'], from, to));
 
     // Wait a tick to ensure the effect has run
     await new Promise((r) => setTimeout(r, 50));
@@ -138,7 +141,7 @@ describe('useScreenshots', () => {
     const line = JSON.stringify({ id: 'uuid-once', screenshot_base64: 'data', caption: 'Once' });
     mockQueryLogsV2.mockResolvedValue(buildLokiResponse([line]));
 
-    const { result, rerender } = renderHook(({ uuids }) => useScreenshots(uuids), {
+    const { result, rerender } = renderHook(({ uuids }) => useScreenshots(uuids, from, to), {
       initialProps: { uuids: ['uuid-once'] },
     });
 

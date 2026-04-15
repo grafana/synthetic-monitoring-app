@@ -13,8 +13,10 @@ interface LogsPanelProps {
   probe: string;
   state: ProbeStateStatus;
   timeseries?: AdHocResult['line']['timeseries'];
+  from: number | string;
+  to: number | string;
 }
-export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
+export function LogsPanel({ logs, state, probe, timeseries, from, to }: LogsPanelProps) {
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -50,7 +52,7 @@ export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
             </Text>
           )}
           {logs?.map((log, index) => (
-            <LogItem key={`${log.time}-${index}`} log={log} />
+            <LogItem key={`${log.time}-${index}`} log={log} from={from} to={to} />
           ))}
           {!logs?.length && state === ProbeStateStatus.Success && (
             <Text variant="bodySmall" element="span" color="secondary">

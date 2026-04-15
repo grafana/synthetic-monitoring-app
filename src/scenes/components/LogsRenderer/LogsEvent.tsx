@@ -13,7 +13,17 @@ import { SCREENSHOT_PATTERN } from './screenshots/screenshots.constants';
 import { useScreenshots } from './screenshots/screenshots.hooks';
 import { extractScreenshotUUIDs } from './screenshots/screenshots.utils';
 
-export const LogsEvent = <T extends UnknownParsedLokiRecord>({ logs, mainKey }: { logs: T[]; mainKey: string }) => {
+export const LogsEvent = <T extends UnknownParsedLokiRecord>({
+  logs,
+  mainKey,
+  from,
+  to,
+}: {
+  logs: T[];
+  mainKey: string;
+  from: number | string;
+  to: number | string;
+}) => {
   const styles = useStyles2(getStyles);
   const { isEnabled: screenshotsEnabled } = useFeatureFlag(FeatureName.Screenshots);
 
@@ -24,7 +34,7 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({ logs, mainKey }: 
     [logs, mainKey, screenshotsEnabled]
   );
 
-  const screenshotDataByUUID = useScreenshots(screenshotUUIDs);
+  const screenshotDataByUUID = useScreenshots(screenshotUUIDs, from, to);
 
   const enrichedLogs = useMemo(() => {
     if (!screenshotsEnabled || screenshotDataByUUID.size === 0) {
@@ -48,7 +58,7 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({ logs, mainKey }: 
       return {
         ...log,
         labels: { ...log.labels, ...screenshotData },
-      } as T;
+      };
     });
   }, [logs, mainKey, screenshotDataByUUID, screenshotsEnabled]);
 

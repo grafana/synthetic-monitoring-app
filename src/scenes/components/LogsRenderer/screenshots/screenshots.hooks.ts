@@ -13,7 +13,7 @@ import { assembleChunkedScreenshots, extractFrameLines } from './screenshots.uti
  * Tracks which UUIDs have already been fetched to avoid duplicate requests.
  * Pass an empty array to skip fetching entirely (e.g. when the feature flag is off).
  */
-export function useScreenshots(uuids: string[]): Map<string, ScreenshotData> {
+export function useScreenshots(uuids: string[], from: number | string, to: number | string): Map<string, ScreenshotData> {
   const dataSource = useSMDS();
   const [screenshotsByUUID, setScreenshotsByUUID] = useState<Map<string, ScreenshotData>>(new Map());
   const fetchedUUIDsRef = useRef<Set<string>>(new Set());
@@ -31,7 +31,7 @@ export function useScreenshots(uuids: string[]): Map<string, ScreenshotData> {
       try {
         const uuidPattern = newUUIDs.join('|');
         const expr = `{source="${SCREENSHOT_LOG_SOURCE}"} |~ "${uuidPattern}" | json`;
-        const result = await dataSource.queryLogsV2(expr, 'now-1h', 'now');
+        const result = await dataSource.queryLogsV2(expr, from, to);
 
         if (cancelled) {
           return;
@@ -52,7 +52,7 @@ export function useScreenshots(uuids: string[]): Map<string, ScreenshotData> {
     return () => {
       cancelled = true;
     };
-  }, [uuids, dataSource]);
+  }, [uuids, dataSource, from, to]);
 
   return screenshotsByUUID;
 }

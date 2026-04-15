@@ -66,6 +66,8 @@ function buildLogsWithTraceLabels(extraLabels: Record<string, string> = {}) {
 
 describe('LogsEvent', () => {
   const MAIN_KEY = 'msg';
+  const from = 1700000000000;
+  const to = 1700000060000;
 
   beforeEach(() => {
     mockFetchTraceData.mockReset();
@@ -76,7 +78,7 @@ describe('LogsEvent', () => {
       transient: { commonLabels: { probe: 'test' } },
     });
 
-    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
     const logLineElements = await screen.findAllByTestId(/event-log-/);
 
     logLineElements.forEach((el, index) => {
@@ -98,7 +100,7 @@ describe('LogsEvent', () => {
       transient: { commonLabels: { probe: 'test' } },
     });
 
-    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
     await screen.findAllByTestId(/event-log-/);
 
     expect(screen.queryByLabelText('View trace')).not.toBeInTheDocument();
@@ -116,7 +118,7 @@ describe('LogsEvent', () => {
 
     it('does not render trace_id or span_id as label tags', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID, span_id: SPAN_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       await screen.findAllByLabelText('View trace');
 
@@ -126,7 +128,7 @@ describe('LogsEvent', () => {
 
     it('renders a trace icon button when log has a trace_id', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       const traceButtons = await screen.findAllByLabelText('View trace');
       expect(traceButtons.length).toBeGreaterThan(0);
@@ -134,7 +136,7 @@ describe('LogsEvent', () => {
 
     it('expands trace panel when clicking the trace icon', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       const traceButtons = await screen.findAllByLabelText('View trace');
       await user.click(traceButtons[0]);
@@ -148,7 +150,7 @@ describe('LogsEvent', () => {
 
     it('collapses trace panel when clicking the trace icon again', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       const traceButtons = await screen.findAllByLabelText('View trace');
       await user.click(traceButtons[0]);
@@ -163,7 +165,7 @@ describe('LogsEvent', () => {
 
     it('shows explore link in the expanded trace panel', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       const traceButtons = await screen.findAllByLabelText('View trace');
       await user.click(traceButtons[0]);
@@ -174,7 +176,7 @@ describe('LogsEvent', () => {
 
     it('closes trace panel via the close button', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      const { user } = render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       const traceButtons = await screen.findAllByLabelText('View trace');
       await user.click(traceButtons[0]);
@@ -189,7 +191,7 @@ describe('LogsEvent', () => {
 
     it('does not show trace icon for logs with only span_id', async () => {
       const logs = buildLogsWithTraceLabels({ span_id: SPAN_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       await screen.findAllByTestId(/event-log-/);
 
@@ -210,7 +212,7 @@ describe('LogsEvent', () => {
 
     it('does not show trace icon when trace has no data', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       await screen.findAllByTestId(/event-log-/);
 
@@ -226,7 +228,7 @@ describe('LogsEvent', () => {
 
     it('shows a retry button when trace lookup fails', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       const retryButtons = await screen.findAllByLabelText('Retry trace lookup');
       expect(retryButtons.length).toBeGreaterThan(0);
@@ -236,7 +238,7 @@ describe('LogsEvent', () => {
   describe('when traces datasource is NOT available', () => {
     it('does not render trace labels or trace icon', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID, span_id: SPAN_ID });
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       await screen.findAllByTestId(/event-log-/);
 
@@ -262,7 +264,7 @@ describe('LogsEvent', () => {
         log[LokiFieldNames.TimeStamp] = Date.now() - 10_000;
       });
 
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       const spinners = await screen.findAllByTestId('trace-propagation-waiting');
       expect(spinners.length).toBeGreaterThan(0);
@@ -278,7 +280,7 @@ describe('LogsEvent', () => {
         log[LokiFieldNames.TimeStamp] = Date.now() - 10_000;
       });
 
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       const spinners = await screen.findAllByTestId('trace-propagation-waiting');
       expect(spinners.length).toBeGreaterThan(0);
@@ -292,7 +294,7 @@ describe('LogsEvent', () => {
         log[LokiFieldNames.TimeStamp] = Date.now() - PROPAGATION_WINDOW_MS + 50;
       });
 
-      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+      render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       await screen.findAllByTestId('trace-propagation-waiting');
 
@@ -305,7 +307,7 @@ describe('LogsEvent', () => {
       transient: { commonLabels: { probe: 'test' } },
     });
 
-    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
     await screen.findAllByTestId(/event-log-/);
     expect(screen.queryByText('hide screenshots')).not.toBeInTheDocument();
   });
@@ -318,7 +320,7 @@ describe('LogsEvent', () => {
       transient: { commonLabels: { probe: 'test' } },
     });
 
-    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} />);
+    render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
     await screen.findAllByTestId(/event-log-/);
     expect(screen.getByText('hide screenshots')).toBeInTheDocument();
 

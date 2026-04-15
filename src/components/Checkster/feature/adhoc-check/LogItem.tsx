@@ -15,7 +15,7 @@ import { LogDetails } from './LogDetails';
 import { LogMessage } from './LogMessage';
 import { getLogLevelFromMessage, isExpectLogLine, isMultiLineString, parseExpectLogLine, stringToLines } from './utils';
 
-export function LogItem({ log }: { log: LogEntry }) {
+export function LogItem({ log, from, to }: { log: LogEntry; from: number | string; to: number | string }) {
   const { msg, ...props } = log;
   const logLevel = getLogLevelFromMessage(log.msg, log.level);
   const [isOpen, setIsOpen] = useState(logLevel === 'error');
@@ -31,7 +31,7 @@ export function LogItem({ log }: { log: LogEntry }) {
     return match?.[1] ? [match[1]] : [];
   }, [msg, screenshotsEnabled]);
 
-  const screenshotDataByUUID = useScreenshots(screenshotUUIDs);
+  const screenshotDataByUUID = useScreenshots(screenshotUUIDs, from, to);
 
   const screenshotData = screenshotUUIDs.length > 0 ? screenshotDataByUUID.get(screenshotUUIDs[0]) : undefined;
 
