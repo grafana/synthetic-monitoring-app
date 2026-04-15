@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, type ReactElement, type ReactNode } from 'react';
 import { Route, Router, Routes } from 'react-router';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
 import { locationService, LocationServiceProvider } from '@grafana/runtime';
 import { render, type RenderOptions } from '@testing-library/react';
@@ -19,12 +19,14 @@ import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 export type ComponentWrapperProps = {
   children: ReactNode;
   initialEntries?: string[];
+  queryClient: QueryClient;
   route?: string;
   meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
 };
 
 type CreateWrapperProps = {
   path?: string;
+  queryClient?: QueryClient;
   route?: string;
   meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
   wrapper?: (props: ComponentWrapperProps) => ReactElement;
@@ -42,7 +44,7 @@ function getRelativeRoute(route?: string) {
   return route;
 }
 
-const DefaultWrapper = ({ children, route: _route, initialEntries, meta }: ComponentWrapperProps) => {
+const DefaultWrapper = ({ children, route: _route, initialEntries, meta, queryClient }: ComponentWrapperProps) => {
   const relativeRoute = getRelativeRoute(_route);
   const initialPath = initialEntries?.[0] || APP_ROOT;
   const { history, location } = useLocationServiceHistory(initialPath);
@@ -51,7 +53,7 @@ const DefaultWrapper = ({ children, route: _route, initialEntries, meta }: Compo
   return (
     <LocationServiceProvider service={locationService}>
       <Router navigator={history} location={location}>
-        <QueryClientProvider client={getQueryClient()}>
+        <QueryClientProvider client={queryClient}>
           <MetaContextProvider meta={{ ...SM_META, ...meta }}>
             <FeatureFlagProvider>
               <SMDatasourceProvider>
@@ -71,7 +73,8 @@ const DefaultWrapper = ({ children, route: _route, initialEntries, meta }: Compo
   );
 };
 
-export const createWrapper = ({ route = '*', meta, path: _path, wrapper }: CreateWrapperProps = {}) => {
+export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wrapper }: CreateWrapperProps) => {
+  const activeQueryClient = queryClient ?? getQueryClient();
   const path = _path
     ? _path.startsWith(`${APP_ROOT}/`)
       ? _path
@@ -81,7 +84,7 @@ export const createWrapper = ({ route = '*', meta, path: _path, wrapper }: Creat
   const initialEntries = [path];
 
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Component route={route} meta={meta} initialEntries={initialEntries}>
+    <Component route={route} meta={meta} initialEntries={initialEntries} queryClient={activeQueryClient}>
       {children}
     </Component>
   );
@@ -93,9 +96,11 @@ export type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & CreateWrapper
 
 const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
   const { path, route, meta, wrapper, ...rest } = options;
+  const queryClient = getQueryClient();
   const user = userEventLib.setup();
   const { Wrapper, initialEntries } = createWrapper({
     path,
+    queryClient,
     route,
     meta,
     wrapper,
@@ -103,6 +108,7 @@ const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
 
   return {
     user,
+    queryClient,
     initialEntries,
     ...render(ui, {
       wrapper: Wrapper,

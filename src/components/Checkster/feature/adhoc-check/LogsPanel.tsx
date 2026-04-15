@@ -14,6 +14,11 @@ interface LogsPanelProps {
   state: ProbeStateStatus;
   timeseries?: AdHocResult['line']['timeseries'];
 }
+
+function getLogItemKey(log: NonNullable<LogsPanelProps['logs']>[number]) {
+  return JSON.stringify(log);
+}
+
 export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
@@ -49,8 +54,8 @@ export function LogsPanel({ logs, state, probe, timeseries }: LogsPanelProps) {
               Timed out while waiting for logs.
             </Text>
           )}
-          {logs?.map((log, index) => (
-            <LogItem key={`${log.time}-${index}`} log={log} />
+          {logs?.map((log) => (
+            <LogItem key={getLogItemKey(log)} log={log} />
           ))}
           {!logs?.length && state === ProbeStateStatus.Success && (
             <Text variant="bodySmall" element="span" color="secondary">
