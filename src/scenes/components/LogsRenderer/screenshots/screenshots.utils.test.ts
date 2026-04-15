@@ -45,22 +45,40 @@ describe('extractScreenshotUUIDs', () => {
 });
 
 describe('extractFrameLines', () => {
-  it('extracts line values from a result frame', () => {
+  const screenshotLine = '{"id":"test","screenshot_base64":"abc"}';
+
+  it('extracts values from old schema (Line field)', () => {
     const result = {
       results: {
         A: {
           frames: [
             {
-              schema: { fields: [{ name: 'time' }, { name: 'line' }] },
-              data: { values: [[1234567890], ['{"id":"test","screenshot_base64":"abc"}']] },
+              schema: { fields: [{ name: 'time' }, { name: 'Line' }] },
+              data: { values: [[1234567890], [screenshotLine]] },
             },
           ],
         },
       },
     };
 
-    const lines = extractFrameLines(result);
-    expect(lines).toEqual(['{"id":"test","screenshot_base64":"abc"}']);
+    expect(extractFrameLines(result)).toEqual([screenshotLine]);
+  });
+
+  it('extracts values from new schema (body field)', () => {
+    const result = {
+      results: {
+        A: {
+          frames: [
+            {
+              schema: { fields: [{ name: 'labels' }, { name: 'timestamp' }, { name: 'body' }] },
+              data: { values: [[{}], [1234567890], [screenshotLine]] },
+            },
+          ],
+        },
+      },
+    };
+
+    expect(extractFrameLines(result)).toEqual([screenshotLine]);
   });
 
   it('returns empty array for null/undefined result', () => {

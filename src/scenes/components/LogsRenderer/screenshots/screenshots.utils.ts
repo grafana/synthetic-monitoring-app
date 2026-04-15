@@ -1,5 +1,5 @@
 import { ScreenshotChunk, ScreenshotData } from './screenshots.types';
-import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { LokiFieldNames, LokiFieldNamesOld, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 
 import { SCREENSHOT_LABEL_KEYS, SCREENSHOT_PATTERN } from './screenshots.constants';
 
@@ -35,7 +35,9 @@ export function extractFrameLines(result: unknown): unknown[] {
     return [];
   }
 
-  const lineIndex = frame.schema?.fields?.findIndex((f) => f.name === 'line' || f.name === 'Line');
+  const lineIndex = frame.schema?.fields?.findIndex(
+    (f) => f.name === LokiFieldNames.Body || f.name === LokiFieldNamesOld.Line
+  );
 
   if (lineIndex === undefined || lineIndex < 0 || !values[lineIndex]) {
     return [];

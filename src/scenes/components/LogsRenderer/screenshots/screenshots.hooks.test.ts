@@ -16,7 +16,7 @@ function buildLokiResponse(lines: string[]) {
       A: {
         frames: [
           {
-            schema: { fields: [{ name: 'time' }, { name: 'line' }] },
+            schema: { fields: [{ name: 'timestamp' }, { name: 'body' }] },
             data: { values: [lines.map(() => Date.now()), lines] },
           },
         ],
