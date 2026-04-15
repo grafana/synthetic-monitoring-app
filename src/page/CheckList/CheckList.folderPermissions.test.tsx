@@ -1,12 +1,14 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
+import { BASIC_PING_CHECK } from 'test/fixtures/checks';
 import {
-  FOLDER_FORBIDDEN_UID,
-  FOLDER_PRODUCTION,
-  FOLDER_READONLY,
-  FOLDER_STAGING,
-} from 'test/fixtures/folders';
+  CHECK_IN_FORBIDDEN_FOLDER,
+  CHECK_IN_PRODUCTION,
+  CHECK_IN_READONLY_FOLDER,
+  CHECK_IN_STAGING,
+  CHECK_WITH_ORPHANED_FOLDER,
+  CHECK_WITHOUT_FOLDER,
+} from 'test/fixtures/folderChecks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -19,55 +21,12 @@ import { generateRoutePath } from 'routing/utils';
 
 import { CheckList } from './CheckList';
 
-const CHECK_IN_PRODUCTION: Check = {
-  ...BASIC_HTTP_CHECK,
-  id: 200,
-  job: 'Production API check',
-  folderUid: FOLDER_PRODUCTION.uid,
-};
-
-const CHECK_IN_STAGING: Check = {
-  ...BASIC_DNS_CHECK,
-  id: 201,
-  job: 'Staging DNS check',
-  folderUid: FOLDER_STAGING.uid,
-};
-
-const CHECK_IN_READONLY_FOLDER: Check = {
-  ...BASIC_PING_CHECK,
-  id: 202,
-  job: 'Read-only folder check',
-  folderUid: FOLDER_READONLY.uid,
-};
-
-const CHECK_IN_FORBIDDEN_FOLDER: Check = {
-  ...BASIC_HTTP_CHECK,
-  id: 203,
-  job: 'Forbidden folder check',
-  folderUid: FOLDER_FORBIDDEN_UID,
-};
-
-const CHECK_WITHOUT_FOLDER: Check = {
-  ...BASIC_PING_CHECK,
-  id: 204,
-  job: 'Unassigned check',
-  folderUid: undefined,
-};
-
 const CHECK_WITH_EMPTY_FOLDER_UID: Check = {
   ...BASIC_PING_CHECK,
   id: 206,
   job: 'Empty folderUid check',
   folderUid: '',
 };
-
-const CHECK_WITH_ORPHANED_FOLDER: Check = {
-  ...BASIC_DNS_CHECK,
-  id: 205,
-  job: 'Orphaned folder check',
-  folderUid: 'deleted-folder-uid',
-};
-
 const ALL_CHECKS = [
   CHECK_IN_PRODUCTION,
   CHECK_IN_STAGING,
@@ -122,7 +81,7 @@ describe('CheckList - Folder Permissions', () => {
     describe('visibility', () => {
       it('shows checks in accessible folders', async () => {
         await renderCheckList();
-        expect(await screen.findByText('Production API check')).toBeInTheDocument();
+        expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
         expect(screen.getByText('Staging DNS check')).toBeInTheDocument();
       });
 
@@ -138,13 +97,13 @@ describe('CheckList - Folder Permissions', () => {
 
       it('hides checks in forbidden folders', async () => {
         await renderCheckList();
-        await screen.findByText('Production API check');
+        await screen.findByText('Production HTTP check');
         expect(screen.queryByText('Forbidden folder check')).not.toBeInTheDocument();
       });
 
       it('shows checks with orphaned folders after resolving 404', async () => {
         await renderCheckList();
-        await screen.findByText('Production API check');
+        await screen.findByText('Production HTTP check');
         expect(await screen.findByText('Orphaned folder check')).toBeInTheDocument();
       });
     });
@@ -197,7 +156,7 @@ describe('CheckList - Folder Permissions', () => {
   describe('with folders feature disabled', () => {
     it('shows all checks regardless of folderUid', async () => {
       await renderCheckList();
-      expect(await screen.findByText('Production API check')).toBeInTheDocument();
+      expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
       expect(screen.getByText('Forbidden folder check')).toBeInTheDocument();
       expect(screen.getByText('Unassigned check')).toBeInTheDocument();
     });
