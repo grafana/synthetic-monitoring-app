@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
+import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
 import { GrafanaFolder } from 'types';
 import { DEFAULT_FOLDER_TITLE } from 'data/folders.constants';
@@ -54,10 +55,14 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
   }, [childFolders, defaultFolder, value]);
 
   const handleChange = (selected: ComboboxOption<string> | null) => {
+    if (selected?.value) {
+      trackFolderSelected({ isDefault: selected.value === defaultFolderUid });
+    }
     onChange(selected?.value ?? undefined);
   };
 
   const handleFolderCreated = (folder: GrafanaFolder) => {
+    trackFolderCreated();
     onChange(folder.uid);
     setShowCreateModal(false);
   };
