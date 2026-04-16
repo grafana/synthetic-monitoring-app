@@ -38,9 +38,10 @@ import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 
 export const CheckList = () => {
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const [viewType, setViewType] = useQueryParametersState<CheckListViewType>({
     key: 'view',
-    initialValue: CheckListViewType.Card,
+    initialValue: isFoldersEnabled ? CheckListViewType.Folder : CheckListViewType.Card,
     encode: (value) => value.toString(),
     decode: (value) => value as CheckListViewType,
   });
