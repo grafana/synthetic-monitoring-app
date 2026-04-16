@@ -75,7 +75,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const filters = useCheckFilters();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
   const { data: calData } = useTenantCostAttributionLabels();
-  const calNames = useMemo(() => (isCALsEnabled ? calData?.items ?? [] : []), [isCALsEnabled, calData?.items]);
+  const calNames = useMemo(() => (isCALsEnabled ? calData?.names ?? [] : []), [isCALsEnabled, calData?.names]);
 
   // Animate the initial alert-based reorder only once, when alert states first arrive.
   // Subsequent refetches re-sort silently to avoid distracting repeated animations.

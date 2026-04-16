@@ -16,7 +16,7 @@ jest.mock('../../../hooks/useRelevantErrors', () => ({
   useRelevantErrors: jest.fn(() => []),
 }));
 
-const calNames = TENANT_COST_ATTRIBUTION_LABELS.items;
+const calNames = TENANT_COST_ATTRIBUTION_LABELS.names;
 
 function renderGenericLabelContent(
   props: Partial<React.ComponentProps<typeof GenericLabelContent>> = {},
