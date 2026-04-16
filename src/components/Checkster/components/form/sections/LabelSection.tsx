@@ -32,7 +32,7 @@ export function LabelSection() {
       <GenericLabelContent
         description={description}
         isLoading={isInitialLoad}
-        calNames={calData?.items ?? []}
+        calNames={calData?.names ?? []}
         labelLimit={maxAllowedMetricLabels}
       />
     </FormSection>

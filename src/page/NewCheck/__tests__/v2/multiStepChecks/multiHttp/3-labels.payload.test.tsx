@@ -8,7 +8,7 @@ import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
 
 jest.mock('data/useTenantCostAttributionLabels', () => ({
   useTenantCostAttributionLabels: () => ({
-    data: { items: [] },
+    data: { names: [] },
     isLoading: false,
   }),
 }));

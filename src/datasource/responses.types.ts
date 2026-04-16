@@ -89,7 +89,7 @@ export type TenantResponse = {
 };
 
 export type ListTenantCostAttributionLabelsResponse = {
-  items: string[];
+  names: string[];
 };
 
 export type ListTenantLimitsResponse = {
