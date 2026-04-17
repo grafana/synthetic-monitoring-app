@@ -15,29 +15,56 @@ export const MAX_SLO_NAME = 128;
 export const MAX_LABEL_VALUE_LENGTH = 150;
 
 export const DEFAULT_SLO_TARGET_PERCENT = '99.5';
-export const DEFAULT_SLO_WINDOW_DAYS = '28';
 
-export function defaultSloNameForJob(job: string): string {
-  const prefix = 'SLO: ';
-  const maxJob = MAX_SLO_NAME - prefix.length;
-  if (job.length <= maxJob) {
-    return `${prefix}${job}`;
+/** Rolling error-budget windows offered in the MVP UI (days as string for Combobox values). */
+export const SLO_WINDOW_DAY_OPTIONS = ['7', '14', '28'] as const;
+export type SloWindowDaysChoice = (typeof SLO_WINDOW_DAY_OPTIONS)[number];
+export const DEFAULT_SLO_WINDOW_DAYS: SloWindowDaysChoice = '28';
+
+/**
+ * When `false`, the label-group flow is hidden in the modal but hooks/queries remain for a future iteration.
+ */
+export const SHOW_LABEL_GROUP_SLO = false;
+
+/** Single-check MVP uses reachability counters only; uptime uses different metrics — see SM uptime vs reachability docs. */
+export const DEFAULT_SLI_TYPE_LABEL = 'Reachability';
+
+export function defaultSloNameForJob(job: string, sliTypeLabel: string = DEFAULT_SLI_TYPE_LABEL): string {
+  const suffix = ` (${sliTypeLabel})`;
+  const maxMiddle = MAX_SLO_NAME - suffix.length;
+  if (maxMiddle < 1) {
+    return `…${suffix}`.slice(0, MAX_SLO_NAME);
   }
-  return `${prefix}${job.slice(0, Math.max(0, maxJob - 1))}…`;
+  const jobPart = job.length <= maxMiddle ? job : `${job.slice(0, Math.max(0, maxMiddle - 1))}…`;
+  return `${jobPart}${suffix}`;
 }
 
-export function defaultSloGroupNameForJob(job: string): string {
-  const prefix = 'SLO Group: ';
-  const maxJob = MAX_SLO_NAME - prefix.length;
-  if (job.length <= maxJob) {
-    return `${prefix}${job}`;
+export function defaultSloGroupNameForJob(job: string, sliTypeLabel: string = DEFAULT_SLI_TYPE_LABEL): string {
+  const prefix = 'Group: ';
+  const suffix = ` (${sliTypeLabel})`;
+  const maxMiddle = MAX_SLO_NAME - prefix.length - suffix.length;
+  if (maxMiddle < 1) {
+    return `${prefix}…${suffix}`.slice(0, MAX_SLO_NAME);
   }
-  return `${prefix}${job.slice(0, Math.max(0, maxJob - 1))}…`;
+  const jobPart = job.length <= maxMiddle ? job : `${job.slice(0, Math.max(0, maxMiddle - 1))}…`;
+  return `${prefix}${jobPart}${suffix}`;
 }
 
 export function grafanaSloManageHref(appSubUrl?: string): string {
   const base = appSubUrl ?? '';
   return `${base}/a/grafana-slo-app/manage-slos`;
+}
+
+/** Wizard review step for an existing SLO (uid from create response). */
+export function grafanaSloWizardReviewHref(appSubUrl: string | undefined, sloUuid: string): string {
+  const base = appSubUrl ?? '';
+  return `${base}/a/grafana-slo-app/wizard/review/${sloUuid}`;
+}
+
+/** SLO dashboard for one SLO (uid from create response). */
+export function grafanaSloDetailDashboardHref(appSubUrl: string | undefined, sloUuid: string): string {
+  const base = appSubUrl ?? '';
+  return `${base}/d/grafana_slo_app-${sloUuid}/`;
 }
 
 export function parseSloTargetPercent(
@@ -50,6 +77,10 @@ export function parseSloTargetPercent(
   return { ok: true, fraction: n / 100 };
 }
 
+export function sloWindowChoiceToObjectiveWindow(days: SloWindowDaysChoice): string {
+  return `${days}d`;
+}
+
 export function parseSloWindowDays(
   input: string
 ): { ok: true; window: string } | { ok: false; message: string } {
@@ -59,6 +90,11 @@ export function parseSloWindowDays(
   }
   return { ok: true, window: `${n}d` };
 }
+
+export function isSloWindowDaysChoice(value: string): value is SloWindowDaysChoice {
+  return (SLO_WINDOW_DAY_OPTIONS as readonly string[]).includes(value);
+}
+
 
 export function labelsSignature(labels: Check['labels']): string {
   return labels.map((l) => `${l.name}\0${l.value}`).join('\n');

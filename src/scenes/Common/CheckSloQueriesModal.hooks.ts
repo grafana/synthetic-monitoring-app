@@ -26,8 +26,9 @@ import {
   defaultSloNameForJob,
   labelsSignature,
   parseSloTargetPercent,
-  parseSloWindowDays,
   sloProvenanceLabels,
+  sloWindowChoiceToObjectiveWindow,
+  type SloWindowDaysChoice,
   truncateSloName,
 } from './CheckSloQueriesModal.utils';
 
@@ -44,7 +45,7 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
   const [singleSloName, setSingleSloName] = useState('');
   const [groupSloName, setGroupSloName] = useState('');
   const [sloTargetPercent, setSloTargetPercent] = useState(DEFAULT_SLO_TARGET_PERCENT);
-  const [sloWindowDays, setSloWindowDays] = useState(DEFAULT_SLO_WINDOW_DAYS);
+  const [sloWindowChoice, setSloWindowChoice] = useState<SloWindowDaysChoice>(DEFAULT_SLO_WINDOW_DAYS);
   const [feedback, setFeedback] = useState<CreateFeedback>(null);
 
   const labelOptions = useMemo<Array<ComboboxOption<string>>>(
@@ -69,7 +70,7 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
     setSingleSloName(defaultSloNameForJob(check.job));
     setGroupSloName(defaultSloGroupNameForJob(check.job));
     setSloTargetPercent(DEFAULT_SLO_TARGET_PERCENT);
-    setSloWindowDays(DEFAULT_SLO_WINDOW_DAYS);
+    setSloWindowChoice(DEFAULT_SLO_WINDOW_DAYS);
     setFeedback(null);
     resetMutation();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- labelsKey reflects check.labels; omit check.labels to avoid resets on reference-only churn
@@ -128,7 +129,7 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
       nameInput: string;
       sloQuery: SloApiQuerySpec;
       targetPercent: string;
-      windowDays: string;
+      windowChoice: SloWindowDaysChoice;
     }) => {
       if (!metricsDS?.uid) {
         setFeedback({ kind: 'error', message: 'Metrics datasource is not configured for this stack.' });
@@ -142,17 +143,15 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
         setFeedback({ kind: 'error', message: parsedTarget.message });
         return;
       }
-      const parsedWindow = parseSloWindowDays(args.windowDays);
-      if (!parsedWindow.ok) {
-        setFeedback({ kind: 'error', message: parsedWindow.message });
-        return;
-      }
       const body = buildReachabilitySloCreateRequest({
         name,
         description,
         metricsDatasourceUid: metricsDS.uid,
         sloQuery: args.sloQuery,
-        objective: { value: parsedTarget.fraction, window: parsedWindow.window },
+        objective: {
+          value: parsedTarget.fraction,
+          window: sloWindowChoiceToObjectiveWindow(args.windowChoice),
+        },
         labels: sloProvenanceLabels(check),
       });
       try {
@@ -174,8 +173,8 @@ export function useCheckSloModal(check: Check, isOpen: boolean) {
     setGroupSloName,
     sloTargetPercent,
     setSloTargetPercent,
-    sloWindowDays,
-    setSloWindowDays,
+    sloWindowChoice,
+    setSloWindowChoice,
     selectedLabelIndices,
     setSelectedLabelIndices,
     feedback,

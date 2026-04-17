@@ -6,8 +6,11 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { CheckSloQueriesModal } from './CheckSloQueriesModal';
+import { SHOW_LABEL_GROUP_SLO } from './CheckSloQueriesModal.utils';
 
 const SLO_API_URL = /\/api\/plugins\/grafana-slo-app\/resources\/v1\/slo/;
+
+const itLabelGroup = SHOW_LABEL_GROUP_SLO ? it : it.skip;
 
 function renderModal(props: Partial<React.ComponentProps<typeof CheckSloQueriesModal>> = {}) {
   const onDismiss = jest.fn();
@@ -22,8 +25,9 @@ describe('CheckSloQueriesModal', () => {
     renderModal();
 
     expect(await screen.findByRole('dialog', { name: 'Create a SLO' })).toBeInTheDocument();
-    expect(screen.getByLabelText('SLO target percent')).toHaveValue('99.5');
-    expect(screen.getByLabelText('SLO window days')).toHaveValue('28');
+    expect(screen.getByLabelText('Target percent')).toHaveValue('99.5');
+    expect(screen.getByText('Error budget window')).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
   it('renders the experimental feedback badge', async () => {
@@ -35,7 +39,7 @@ describe('CheckSloQueriesModal', () => {
   it('populates the SLO name from the check job', async () => {
     renderModal();
 
-    const nameInput = await screen.findByDisplayValue(`SLO: ${BASIC_HTTP_CHECK.job}`);
+    const nameInput = await screen.findByDisplayValue(`${BASIC_HTTP_CHECK.job} (Reachability)`);
     expect(nameInput).toBeInTheDocument();
   });
 
@@ -59,7 +63,7 @@ describe('CheckSloQueriesModal', () => {
     });
 
     expect(capturedBody).toMatchObject({
-      name: `SLO: ${BASIC_HTTP_CHECK.job}`,
+      name: `${BASIC_HTTP_CHECK.job} (Reachability)`,
       query: { type: 'ratio' },
       objectives: [{ value: 0.995, window: '28d' }],
     });
@@ -79,6 +83,14 @@ describe('CheckSloQueriesModal', () => {
 
     expect(await screen.findByText('SLO creation accepted')).toBeInTheDocument();
     expect(screen.getByText('test-uuid-456')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'View SLO results' })).toHaveAttribute(
+      'href',
+      '/d/grafana_slo_app-test-uuid-456/'
+    );
+    expect(screen.getByRole('link', { name: 'Edit in Grafana SLO' })).toHaveAttribute(
+      'href',
+      '/a/grafana-slo-app/wizard/review/test-uuid-456'
+    );
   });
 
   it('shows error message when SLO creation fails', async () => {
@@ -99,7 +111,7 @@ describe('CheckSloQueriesModal', () => {
     expect(await screen.findByText('Could not create SLO')).toBeInTheDocument();
   });
 
-  it('shows label group content when switching to label group tab', async () => {
+  itLabelGroup('shows label group content when switching to label group tab', async () => {
     const { user } = renderModal();
 
     const labelGroupTab = await screen.findByRole('tab', { name: 'Label group' });
@@ -108,7 +120,7 @@ describe('CheckSloQueriesModal', () => {
     expect(await screen.findByText('Labels to match')).toBeInTheDocument();
   });
 
-  it('shows warning when check has no custom labels in label group tab', async () => {
+  itLabelGroup('shows warning when check has no custom labels in label group tab', async () => {
     const { user } = renderModal({ check: { ...BASIC_HTTP_CHECK, labels: [] } });
 
     const labelGroupTab = await screen.findByRole('tab', { name: 'Label group' });
@@ -120,7 +132,7 @@ describe('CheckSloQueriesModal', () => {
   it('shows validation error for invalid SLO target', async () => {
     const { user } = renderModal();
 
-    const targetInput = await screen.findByLabelText('SLO target percent');
+    const targetInput = await screen.findByLabelText('Target percent');
     await user.clear(targetInput);
     await user.type(targetInput, 'abc');
 
@@ -129,20 +141,6 @@ describe('CheckSloQueriesModal', () => {
 
     expect(await screen.findByText('Could not create SLO')).toBeInTheDocument();
     expect(screen.getByText(/SLO target must be a percentage/)).toBeInTheDocument();
-  });
-
-  it('shows validation error for invalid window', async () => {
-    const { user } = renderModal();
-
-    const windowInput = await screen.findByLabelText('SLO window days');
-    await user.clear(windowInput);
-    await user.type(windowInput, '-5');
-
-    const createButton = screen.getByRole('button', { name: 'Create a SLO' });
-    await user.click(createButton);
-
-    expect(await screen.findByText('Could not create SLO')).toBeInTheDocument();
-    expect(screen.getByText(/Window must be a whole number/)).toBeInTheDocument();
   });
 
   it('shows 404 hint when error message contains Not Found', async () => {

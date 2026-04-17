@@ -1,19 +1,22 @@
 import {
   defaultSloGroupNameForJob,
   defaultSloNameForJob,
+  grafanaSloDetailDashboardHref,
   grafanaSloManageHref,
+  grafanaSloWizardReviewHref,
   labelsSignature,
   MAX_LABEL_VALUE_LENGTH,
   MAX_SLO_NAME,
   parseSloTargetPercent,
   parseSloWindowDays,
   sloProvenanceLabels,
+  sloWindowChoiceToObjectiveWindow,
   truncateSloName,
 } from './CheckSloQueriesModal.utils';
 
 describe('defaultSloNameForJob', () => {
-  it('prefixes job with "SLO: "', () => {
-    expect(defaultSloNameForJob('my-check')).toBe('SLO: my-check');
+  it('uses job name with SLI type suffix', () => {
+    expect(defaultSloNameForJob('my-check')).toBe('my-check (Reachability)');
   });
 
   it('truncates job that would exceed MAX_SLO_NAME', () => {
@@ -21,12 +24,13 @@ describe('defaultSloNameForJob', () => {
     const result = defaultSloNameForJob(longJob);
     expect(result.length).toBeLessThanOrEqual(MAX_SLO_NAME);
     expect(result).toContain('…');
+    expect(result).toContain('(Reachability)');
   });
 });
 
 describe('defaultSloGroupNameForJob', () => {
-  it('prefixes job with "SLO Group: "', () => {
-    expect(defaultSloGroupNameForJob('my-check')).toBe('SLO Group: my-check');
+  it('prefixes job with Group: and SLI type suffix', () => {
+    expect(defaultSloGroupNameForJob('my-check')).toBe('Group: my-check (Reachability)');
   });
 
   it('truncates job that would exceed MAX_SLO_NAME', () => {
@@ -34,6 +38,23 @@ describe('defaultSloGroupNameForJob', () => {
     const result = defaultSloGroupNameForJob(longJob);
     expect(result.length).toBeLessThanOrEqual(MAX_SLO_NAME);
     expect(result).toContain('…');
+  });
+});
+
+describe('sloWindowChoiceToObjectiveWindow', () => {
+  it('maps day choices to API window strings', () => {
+    expect(sloWindowChoiceToObjectiveWindow('7')).toBe('7d');
+    expect(sloWindowChoiceToObjectiveWindow('28')).toBe('28d');
+  });
+});
+
+describe('grafanaSloDetailDashboardHref', () => {
+  it('builds the per-SLO dashboard path', () => {
+    expect(grafanaSloDetailDashboardHref(undefined, 'abc123')).toBe('/d/grafana_slo_app-abc123/');
+  });
+
+  it('prepends appSubUrl when provided', () => {
+    expect(grafanaSloDetailDashboardHref('/grafana', 'uid1')).toBe('/grafana/d/grafana_slo_app-uid1/');
   });
 });
 
@@ -48,6 +69,18 @@ describe('grafanaSloManageHref', () => {
 
   it('handles undefined appSubUrl', () => {
     expect(grafanaSloManageHref(undefined)).toBe('/a/grafana-slo-app/manage-slos');
+  });
+});
+
+describe('grafanaSloWizardReviewHref', () => {
+  it('builds the wizard review path for an SLO id', () => {
+    expect(grafanaSloWizardReviewHref(undefined, 'pckgdbe1wumlrohkwj8wa')).toBe(
+      '/a/grafana-slo-app/wizard/review/pckgdbe1wumlrohkwj8wa'
+    );
+  });
+
+  it('prepends appSubUrl when provided', () => {
+    expect(grafanaSloWizardReviewHref('/grafana', 'abc')).toBe('/grafana/a/grafana-slo-app/wizard/review/abc');
   });
 });
 

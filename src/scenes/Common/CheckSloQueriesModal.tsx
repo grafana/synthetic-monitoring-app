@@ -4,6 +4,7 @@ import { config } from '@grafana/runtime';
 import {
   Alert,
   Button,
+  Combobox,
   ComboboxOption,
   Field,
   Input,
@@ -18,6 +19,8 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import type { ReachabilitySloQueries } from 'queries/sloPromql';
+import type { SloApiQuerySpec } from 'slo/buildReachabilitySloCreateRequest';
 
 import { Check } from 'types';
 import { CopyToClipboard } from 'components/Clipboard/CopyToClipboard';
@@ -27,15 +30,24 @@ import { SubCollapse } from 'components/SubCollapse';
 import { useCheckSloModal } from './CheckSloQueriesModal.hooks';
 import {
   DEFAULT_SLO_TARGET_PERCENT,
-  DEFAULT_SLO_WINDOW_DAYS,
   defaultSloGroupNameForJob,
   defaultSloNameForJob,
   GRAFANA_SLO_CREATE,
   GRAFANA_SLO_HTTP_API_DOCS,
-  grafanaSloManageHref,
+  grafanaSloDetailDashboardHref,
+  grafanaSloWizardReviewHref,
+  isSloWindowDaysChoice,
+  SHOW_LABEL_GROUP_SLO,
   SLO_OPENAPI_REPO,
+  type SloWindowDaysChoice,
   SM_UPTIME_DOCS,
 } from './CheckSloQueriesModal.utils';
+
+const SLO_WINDOW_COMBO_OPTIONS: Array<ComboboxOption<SloWindowDaysChoice>> = [
+  { label: '7 days', value: '7' },
+  { label: '14 days', value: '14' },
+  { label: '28 days', value: '28' },
+];
 
 type CheckSloQueriesModalProps = {
   check: Check;
@@ -56,8 +68,8 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
     setGroupSloName,
     sloTargetPercent,
     setSloTargetPercent,
-    sloWindowDays,
-    setSloWindowDays,
+    sloWindowChoice,
+    setSloWindowChoice,
     selectedLabelIndices,
     setSelectedLabelIndices,
     feedback,
@@ -106,9 +118,18 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
               <Text>
                 {feedback.name} — id <code>{feedback.uuid}</code>
               </Text>
-              <TextLink href={grafanaSloManageHref(config.appSubUrl)} external>
-                View SLOs
-              </TextLink>
+              <Text color="secondary">
+                Configure burn-rate alerts, labels, and folders in the Grafana SLO app. Charts may look empty until
+                enough data has accumulated.
+              </Text>
+              <Stack direction="row" gap={2}>
+                <TextLink href={grafanaSloDetailDashboardHref(config.appSubUrl, feedback.uuid)} external>
+                  View SLO results
+                </TextLink>
+                <TextLink href={grafanaSloWizardReviewHref(config.appSubUrl, feedback.uuid)} external>
+                  Edit in Grafana SLO
+                </TextLink>
+              </Stack>
             </Stack>
           </Alert>
         )}
@@ -128,14 +149,14 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
 
         <Stack direction="row" gap={2}>
           <Field
-            label="SLO target"
-            description="Target availability as a percentage (same idea as the SLO app), e.g. 99.5."
+            label="Target"
+            description="Availability % (Grafana SLO), e.g. 99.5."
             className={styles.objectiveField}
           >
             <Input
               type="text"
               inputMode="decimal"
-              aria-label="SLO target percent"
+              aria-label="Target percent"
               value={sloTargetPercent}
               onChange={(e) => setSloTargetPercent(e.currentTarget.value)}
               disabled={!canCreateSlo}
@@ -144,151 +165,83 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
           </Field>
           <Field
             label="Error budget window"
-            description="Rolling window length in days (sent to the API as e.g. 28d), matching the SLO app default of 28."
+            description="Rolling window (7, 14, or 28 days)."
             className={styles.objectiveField}
           >
-            <Input
-              type="text"
-              inputMode="numeric"
-              aria-label="SLO window days"
-              value={sloWindowDays}
-              onChange={(e) => setSloWindowDays(e.currentTarget.value)}
+            <Combobox
+              aria-label="Error budget window"
+              options={SLO_WINDOW_COMBO_OPTIONS}
+              value={SLO_WINDOW_COMBO_OPTIONS.find((o) => o.value === sloWindowChoice) ?? SLO_WINDOW_COMBO_OPTIONS[2]}
+              width={24}
               disabled={!canCreateSlo}
-              placeholder={DEFAULT_SLO_WINDOW_DAYS}
+              onChange={(opt) => {
+                if (opt?.value != null && isSloWindowDaysChoice(String(opt.value))) {
+                  setSloWindowChoice(opt.value);
+                }
+              }}
             />
           </Field>
         </Stack>
 
-        <TabsBar>
-          {SLO_TABS.map((tab) => (
-            <Tab
-              key={tab}
-              label={tab}
-              active={activeTab === tab}
-              onChangeTab={() => setActiveTab(tab)}
-            />
-          ))}
-        </TabsBar>
-        <TabContent className={styles.tabContent}>
-          {activeTab === 'This check' && (
-            <Stack direction="column" gap={2}>
-              <Text color="secondary">
-                One SLO for <strong>this</strong> check (job + instance). Uses the Grafana SLO API{' '}
-                <code>ratio</code> type. For the UI flow or Explore, see{' '}
-                <TextLink href={GRAFANA_SLO_CREATE} external>
-                  Create SLOs in Grafana Cloud
-                </TextLink>
-                .
-              </Text>
-              <Field label="SLO name">
-                <Input
-                  value={singleSloName}
-                  onChange={(e) => setSingleSloName(e.currentTarget.value)}
-                  disabled={!canCreateSlo}
+        {SHOW_LABEL_GROUP_SLO ? (
+          <>
+            <TabsBar>
+              {SLO_TABS.map((tab) => (
+                <Tab key={tab} label={tab} active={activeTab === tab} onChangeTab={() => setActiveTab(tab)} />
+              ))}
+            </TabsBar>
+            <TabContent className={styles.tabContent}>
+              {activeTab === 'This check' && (
+                <ThisCheckForm
+                  styles={styles}
+                  check={check}
+                  canCreateSlo={canCreateSlo}
+                  isPending={isPending}
+                  singleSloName={singleSloName}
+                  setSingleSloName={setSingleSloName}
+                  single={single}
+                  singleSloApiQuery={singleSloApiQuery}
+                  sloTargetPercent={sloTargetPercent}
+                  sloWindowChoice={sloWindowChoice}
+                  runCreate={runCreate}
                 />
-              </Field>
-              <Button
-                variant="primary"
-                disabled={!canCreateSlo || isPending}
-                style={{ alignSelf: 'flex-start' }}
-                onClick={() =>
-                  runCreate({
-                    nameDefault: defaultSloNameForJob(check.job),
-                    nameInput: singleSloName,
-                    sloQuery: singleSloApiQuery,
-                    targetPercent: sloTargetPercent,
-                    windowDays: sloWindowDays,
-                  })
-                }
-              >
-                Create a SLO
-              </Button>
-
-              <SubCollapse title="PromQL for Explore or manual SLO editor">
-                <Stack direction="column" gap={1}>
-                  <PromqlBlock label="Ratio (combined)" code={single.ratio} styles={styles} />
-                  <PromqlBlock label="Success (numerator)" code={single.successQuery} styles={styles} />
-                  <PromqlBlock label="Total attempts (denominator)" code={single.totalQuery} styles={styles} />
-                </Stack>
-              </SubCollapse>
-            </Stack>
-          )}
-
-          {activeTab === 'Label group' && (
-            <Stack direction="column" gap={2}>
-              {check.labels.length > 0 ? (
-                <>
-                  <Text color="secondary">
-                    One combined reachability SLI across every check whose <code>sm_check_info</code> matches the
-                    labels you pick (<strong>AND</strong>). Uses the API <code>freeform</code> query type.
-                  </Text>
-                  <Field
-                    label="Labels to match"
-                    description="Defaults to all labels on this check; remove any you do not want in the filter."
-                  >
-                    <MultiCombobox
-                      options={labelOptions}
-                      value={selectedLabelIndices}
-                      placeholder="Select labels"
-                      isClearable
-                      onChange={(selected: Array<ComboboxOption<string>>) =>
-                        setSelectedLabelIndices(selected.map((o) => o.value ?? '').filter(Boolean))
-                      }
-                    />
-                  </Field>
-                  {groupedQueries ? (
-                    <>
-                      <Field label="SLO name">
-                        <Input
-                          value={groupSloName}
-                          onChange={(e) => setGroupSloName(e.currentTarget.value)}
-                          disabled={!canCreateSlo}
-                        />
-                      </Field>
-                      <Button
-                        variant="primary"
-                        disabled={!canCreateSlo || isPending || !groupedSloApiQuery}
-                        style={{ alignSelf: 'flex-start' }}
-                        onClick={() =>
-                          groupedSloApiQuery &&
-                          runCreate({
-                            nameDefault: defaultSloGroupNameForJob(check.job),
-                            nameInput: groupSloName,
-                            sloQuery: groupedSloApiQuery,
-                            targetPercent: sloTargetPercent,
-                            windowDays: sloWindowDays,
-                          })
-                        }
-                      >
-                        Create a SLO
-                      </Button>
-
-                      <SubCollapse title="PromQL for Explore or manual SLO editor">
-                        <Stack direction="column" gap={1}>
-                          <PromqlBlock label="Ratio (combined)" code={groupedQueries.ratio} styles={styles} />
-                          <PromqlBlock label="Success (numerator)" code={groupedQueries.successQuery} styles={styles} />
-                          <PromqlBlock
-                            label="Total attempts (denominator)"
-                            code={groupedQueries.totalQuery}
-                            styles={styles}
-                          />
-                        </Stack>
-                      </SubCollapse>
-                    </>
-                  ) : (
-                    <Alert severity="info" title="Select at least one label">
-                      Choose one or more labels to enable group creation and PromQL.
-                    </Alert>
-                  )}
-                </>
-              ) : (
-                <Alert severity="warning" title="Label group needs custom labels">
-                  Add custom labels on the check to build a group SLO that filters <code>sm_check_info</code>.
-                </Alert>
               )}
-            </Stack>
-          )}
-        </TabContent>
+
+              {activeTab === 'Label group' && (
+                <LabelGroupForm
+                  styles={styles}
+                  check={check}
+                  canCreateSlo={canCreateSlo}
+                  isPending={isPending}
+                  groupSloName={groupSloName}
+                  setGroupSloName={setGroupSloName}
+                  labelOptions={labelOptions}
+                  selectedLabelIndices={selectedLabelIndices}
+                  setSelectedLabelIndices={setSelectedLabelIndices}
+                  groupedQueries={groupedQueries}
+                  groupedSloApiQuery={groupedSloApiQuery}
+                  sloTargetPercent={sloTargetPercent}
+                  sloWindowChoice={sloWindowChoice}
+                  runCreate={runCreate}
+                />
+              )}
+            </TabContent>
+          </>
+        ) : (
+          <ThisCheckForm
+            styles={styles}
+            check={check}
+            canCreateSlo={canCreateSlo}
+            isPending={isPending}
+            singleSloName={singleSloName}
+            setSingleSloName={setSingleSloName}
+            single={single}
+            singleSloApiQuery={singleSloApiQuery}
+            sloTargetPercent={sloTargetPercent}
+            sloWindowChoice={sloWindowChoice}
+            runCreate={runCreate}
+          />
+        )}
 
         <SubCollapse title="API details and references">
           <Stack direction="column" gap={1}>
@@ -308,6 +261,188 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
         </SubCollapse>
       </Stack>
     </Modal>
+  );
+}
+
+type RunCreateFn = (args: {
+  nameDefault: string;
+  nameInput: string;
+  sloQuery: SloApiQuerySpec;
+  targetPercent: string;
+  windowChoice: SloWindowDaysChoice;
+}) => Promise<void>;
+
+function ThisCheckForm({
+  styles,
+  check,
+  canCreateSlo,
+  isPending,
+  singleSloName,
+  setSingleSloName,
+  single,
+  singleSloApiQuery,
+  sloTargetPercent,
+  sloWindowChoice,
+  runCreate,
+}: {
+  styles: ReturnType<typeof getStyles>;
+  check: Check;
+  canCreateSlo: boolean;
+  isPending: boolean;
+  singleSloName: string;
+  setSingleSloName: (v: string) => void;
+  single: ReachabilitySloQueries;
+  singleSloApiQuery: SloApiQuerySpec;
+  sloTargetPercent: string;
+  sloWindowChoice: SloWindowDaysChoice;
+  runCreate: RunCreateFn;
+}) {
+  return (
+    <Stack direction="column" gap={2}>
+      <Text color="secondary">
+        One SLO for <strong>this</strong> check (job + instance), using <strong>reachability</strong> (
+        <code>probe_all_success_*</code>). Uses the Grafana SLO API <code>ratio</code> type. For the UI flow or
+        Explore, see{' '}
+        <TextLink href={GRAFANA_SLO_CREATE} external>
+          Create SLOs in Grafana Cloud
+        </TextLink>
+        .
+      </Text>
+      <Field label="SLO name">
+        <Input
+          value={singleSloName}
+          onChange={(e) => setSingleSloName(e.currentTarget.value)}
+          disabled={!canCreateSlo}
+        />
+      </Field>
+      <Button
+        variant="primary"
+        disabled={!canCreateSlo || isPending}
+        style={{ alignSelf: 'flex-start' }}
+        onClick={() =>
+          runCreate({
+            nameDefault: defaultSloNameForJob(check.job),
+            nameInput: singleSloName,
+            sloQuery: singleSloApiQuery,
+            targetPercent: sloTargetPercent,
+            windowChoice: sloWindowChoice,
+          })
+        }
+      >
+        Create a SLO
+      </Button>
+
+      <SubCollapse title="PromQL for Explore or manual SLO editor">
+        <Stack direction="column" gap={1}>
+          <PromqlBlock label="Ratio (combined)" code={single.ratio} styles={styles} />
+          <PromqlBlock label="Success (numerator)" code={single.successQuery} styles={styles} />
+          <PromqlBlock label="Total attempts (denominator)" code={single.totalQuery} styles={styles} />
+        </Stack>
+      </SubCollapse>
+    </Stack>
+  );
+}
+
+function LabelGroupForm({
+  styles,
+  check,
+  canCreateSlo,
+  isPending,
+  groupSloName,
+  setGroupSloName,
+  labelOptions,
+  selectedLabelIndices,
+  setSelectedLabelIndices,
+  groupedQueries,
+  groupedSloApiQuery,
+  sloTargetPercent,
+  sloWindowChoice,
+  runCreate,
+}: {
+  styles: ReturnType<typeof getStyles>;
+  check: Check;
+  canCreateSlo: boolean;
+  isPending: boolean;
+  groupSloName: string;
+  setGroupSloName: (v: string) => void;
+  labelOptions: Array<ComboboxOption<string>>;
+  selectedLabelIndices: string[];
+  setSelectedLabelIndices: (v: string[]) => void;
+  groupedQueries: ReachabilitySloQueries | null;
+  groupedSloApiQuery: SloApiQuerySpec | null;
+  sloTargetPercent: string;
+  sloWindowChoice: SloWindowDaysChoice;
+  runCreate: RunCreateFn;
+}) {
+  return (
+    <Stack direction="column" gap={2}>
+      {check.labels.length > 0 ? (
+        <>
+          <Text color="secondary">
+            One combined reachability SLI across every check whose <code>sm_check_info</code> matches the labels you
+            pick (<strong>AND</strong>). Uses the API <code>freeform</code> query type.
+          </Text>
+          <Field
+            label="Labels to match"
+            description="Defaults to all labels on this check; remove any you do not want in the filter."
+          >
+            <MultiCombobox
+              options={labelOptions}
+              value={selectedLabelIndices}
+              placeholder="Select labels"
+              isClearable
+              onChange={(selected: Array<ComboboxOption<string>>) =>
+                setSelectedLabelIndices(selected.map((o) => o.value ?? '').filter(Boolean))
+              }
+            />
+          </Field>
+          {groupedQueries ? (
+            <>
+              <Field label="SLO name">
+                <Input
+                  value={groupSloName}
+                  onChange={(e) => setGroupSloName(e.currentTarget.value)}
+                  disabled={!canCreateSlo}
+                />
+              </Field>
+              <Button
+                variant="primary"
+                disabled={!canCreateSlo || isPending || !groupedSloApiQuery}
+                style={{ alignSelf: 'flex-start' }}
+                onClick={() =>
+                  groupedSloApiQuery &&
+                  runCreate({
+                    nameDefault: defaultSloGroupNameForJob(check.job),
+                    nameInput: groupSloName,
+                    sloQuery: groupedSloApiQuery,
+                    targetPercent: sloTargetPercent,
+                    windowChoice: sloWindowChoice,
+                  })
+                }
+              >
+                Create a SLO
+              </Button>
+
+              <SubCollapse title="PromQL for Explore or manual SLO editor">
+                <Stack direction="column" gap={1}>
+                  <PromqlBlock label="Ratio (combined)" code={groupedQueries.ratio} styles={styles} />
+                  <PromqlBlock label="Success (numerator)" code={groupedQueries.successQuery} styles={styles} />
+                  <PromqlBlock label="Total attempts (denominator)" code={groupedQueries.totalQuery} styles={styles} />
+                </Stack>
+              </SubCollapse>
+            </>
+          ) : (
+            <Alert severity="info" title="Select at least one label">
+              Choose one or more labels to enable group creation and PromQL.
+            </Alert>
+          )}
+        </>
+      ) : (
+        <Alert severity="warning" title="Label group needs custom labels">
+          Add custom labels on the check to build a group SLO that filters <code>sm_check_info</code>.
+        </Alert>
+      )}
+    </Stack>
   );
 }
 
