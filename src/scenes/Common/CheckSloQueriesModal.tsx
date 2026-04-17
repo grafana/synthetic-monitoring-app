@@ -30,6 +30,7 @@ import { SubCollapse } from 'components/SubCollapse';
 import { useCheckSloModal } from './CheckSloQueriesModal.hooks';
 import {
   DEFAULT_SLO_TARGET_PERCENT,
+  DEFAULT_SLO_WINDOW_DAYS,
   defaultSloGroupNameForJob,
   defaultSloNameForJob,
   GRAFANA_SLO_CREATE,
@@ -171,7 +172,7 @@ export function CheckSloQueriesModal({ check, isOpen, onDismiss }: CheckSloQueri
             <Combobox
               aria-label="Error budget window"
               options={SLO_WINDOW_COMBO_OPTIONS}
-              value={SLO_WINDOW_COMBO_OPTIONS.find((o) => o.value === sloWindowChoice) ?? SLO_WINDOW_COMBO_OPTIONS[2]}
+              value={SLO_WINDOW_COMBO_OPTIONS.find((o) => o.value === sloWindowChoice) ?? SLO_WINDOW_COMBO_OPTIONS.find((o) => o.value === DEFAULT_SLO_WINDOW_DAYS)}
               width={24}
               disabled={!canCreateSlo}
               onChange={(opt) => {

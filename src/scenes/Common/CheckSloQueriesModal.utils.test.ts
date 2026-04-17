@@ -2,13 +2,11 @@ import {
   defaultSloGroupNameForJob,
   defaultSloNameForJob,
   grafanaSloDetailDashboardHref,
-  grafanaSloManageHref,
   grafanaSloWizardReviewHref,
   labelsSignature,
   MAX_LABEL_VALUE_LENGTH,
   MAX_SLO_NAME,
   parseSloTargetPercent,
-  parseSloWindowDays,
   sloProvenanceLabels,
   sloWindowChoiceToObjectiveWindow,
   truncateSloName,
@@ -55,20 +53,6 @@ describe('grafanaSloDetailDashboardHref', () => {
 
   it('prepends appSubUrl when provided', () => {
     expect(grafanaSloDetailDashboardHref('/grafana', 'uid1')).toBe('/grafana/d/grafana_slo_app-uid1/');
-  });
-});
-
-describe('grafanaSloManageHref', () => {
-  it('builds the SLO management path', () => {
-    expect(grafanaSloManageHref()).toBe('/a/grafana-slo-app/manage-slos');
-  });
-
-  it('prepends appSubUrl when provided', () => {
-    expect(grafanaSloManageHref('/grafana')).toBe('/grafana/a/grafana-slo-app/manage-slos');
-  });
-
-  it('handles undefined appSubUrl', () => {
-    expect(grafanaSloManageHref(undefined)).toBe('/a/grafana-slo-app/manage-slos');
   });
 });
 
@@ -121,36 +105,6 @@ describe('parseSloTargetPercent', () => {
   it('rejects negative values', () => {
     const result = parseSloTargetPercent('-5');
     expect(result.ok).toBe(false);
-  });
-});
-
-describe('parseSloWindowDays', () => {
-  it('parses a valid day count', () => {
-    expect(parseSloWindowDays('28')).toEqual({ ok: true, window: '28d' });
-  });
-
-  it('parses the minimum (1 day)', () => {
-    expect(parseSloWindowDays('1')).toEqual({ ok: true, window: '1d' });
-  });
-
-  it('parses the maximum (3650 days)', () => {
-    expect(parseSloWindowDays('3650')).toEqual({ ok: true, window: '3650d' });
-  });
-
-  it('rejects zero', () => {
-    expect(parseSloWindowDays('0').ok).toBe(false);
-  });
-
-  it('rejects negative values', () => {
-    expect(parseSloWindowDays('-5').ok).toBe(false);
-  });
-
-  it('rejects non-numeric input', () => {
-    expect(parseSloWindowDays('abc').ok).toBe(false);
-  });
-
-  it('rejects values above 3650', () => {
-    expect(parseSloWindowDays('3651').ok).toBe(false);
   });
 });
 

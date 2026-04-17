@@ -50,11 +50,6 @@ export function defaultSloGroupNameForJob(job: string, sliTypeLabel: string = DE
   return `${prefix}${jobPart}${suffix}`;
 }
 
-export function grafanaSloManageHref(appSubUrl?: string): string {
-  const base = appSubUrl ?? '';
-  return `${base}/a/grafana-slo-app/manage-slos`;
-}
-
 /** Wizard review step for an existing SLO (uid from create response). */
 export function grafanaSloWizardReviewHref(appSubUrl: string | undefined, sloUuid: string): string {
   const base = appSubUrl ?? '';
@@ -81,20 +76,9 @@ export function sloWindowChoiceToObjectiveWindow(days: SloWindowDaysChoice): str
   return `${days}d`;
 }
 
-export function parseSloWindowDays(
-  input: string
-): { ok: true; window: string } | { ok: false; message: string } {
-  const n = parseInt(input.trim(), 10);
-  if (!Number.isFinite(n) || n < 1 || n > 3650) {
-    return { ok: false, message: 'Window must be a whole number of days between 1 and 3650.' };
-  }
-  return { ok: true, window: `${n}d` };
-}
-
 export function isSloWindowDaysChoice(value: string): value is SloWindowDaysChoice {
   return (SLO_WINDOW_DAY_OPTIONS as readonly string[]).includes(value);
 }
-
 
 export function labelsSignature(labels: Check['labels']): string {
   return labels.map((l) => `${l.name}\0${l.value}`).join('\n');
