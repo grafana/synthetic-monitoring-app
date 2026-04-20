@@ -73,7 +73,7 @@ const DefaultWrapper = ({ children, route: _route, initialEntries, meta, queryCl
   );
 };
 
-export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wrapper }: CreateWrapperProps) => {
+export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wrapper }: CreateWrapperProps = {}) => {
   const activeQueryClient = queryClient ?? getQueryClient();
   const path = _path
     ? _path.startsWith(`${APP_ROOT}/`)
