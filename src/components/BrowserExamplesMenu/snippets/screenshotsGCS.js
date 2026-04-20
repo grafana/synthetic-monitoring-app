@@ -1,9 +1,9 @@
 // Screenshots (External storage — GCS)
 //
-// Captures a screenshot, uploads the image to a Google Cloud Storage bucket,
-// and logs a URL reference. The image bytes never pass through Loki — only a small
-// reference log line is stored. Best for large-scale checks where Loki ingestion
-// volume is a concern.
+// Captures a screenshot, uploads the image to a Google Cloud Storage bucket
+// using S3-compatible HMAC authentication, and logs a URL reference to Loki.
+// The image bytes never pass through Loki — only a small reference log line
+// is stored. Best for large-scale checks where Loki ingestion volume is a concern.
 //
 // IMPORTANT: The bucket must allow public read access for the stored objects.
 // The screenshots are rendered via <img> tags in the browser, which cannot attach
@@ -11,8 +11,9 @@
 //
 // Required secrets (Synthetic Monitoring > Config > Secrets):
 //   - sm-screenshot-loki-host: your Loki base URL (e.g. https://logs-dev-005.grafana-dev.net)
-//   - sm-screenshot-loki-auth: base64-encoded user:token string (used directly to avoid credential leaking via httpDebug)
-//   - sm-screenshot-gcs-token: a GCS OAuth2 access token or service account token
+//   - sm-screenshot-loki-auth: base64-encoded user:token string
+//   - sm-screenshot-gcs-access-key: GCS HMAC access key 
+//   - sm-screenshot-gcs-secret-key: GCS HMAC secret key
 //   - sm-screenshot-gcs-bucket: your GCS bucket name (e.g. my-screenshots-bucket)
 //
 // The frontend detects screenshots via two required log lines:
@@ -24,6 +25,7 @@ import http from 'k6/http';
 import secrets from 'k6/secrets';
 import { browser } from 'k6/browser';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+import { AWSConfig, S3Client } from 'https://jslib.k6.io/aws/0.14.0/s3.js';
 
 export const options = {
   scenarios: {
@@ -47,20 +49,23 @@ async function captureAndUploadScreenshot(page, caption) {
   const uuid = uuidv4();
   const filename = `${uuid}.png`;
 
-  const gcsToken = await secrets.get('sm-screenshot-gcs-token');
+  const gcsAccessKey = await secrets.get('sm-screenshot-gcs-access-key');
+  const gcsSecretKey = await secrets.get('sm-screenshot-gcs-secret-key');
   const gcsBucket = await secrets.get('sm-screenshot-gcs-bucket');
 
-  // Upload to GCS using the JSON API
-  const uploadUrl = `https://storage.googleapis.com/upload/storage/v1/b/${gcsBucket}/o?uploadType=media&name=${filename}`;
-  const uploadRes = http.post(uploadUrl, screenshotBuffer, {
-    headers: {
-      'Content-Type': 'image/png',
-      Authorization: `Bearer ${gcsToken}`,
-    },
-  });
+  const s3 = new S3Client(new AWSConfig({
+    region: 'auto',
+    accessKeyId: gcsAccessKey,
+    secretAccessKey: gcsSecretKey,
+    endpoint: 'storage.googleapis.com',
+  }));
 
-  if (uploadRes.status !== 200) {
-    console.error(`GCS upload failed [${uploadRes.status}]: ${uploadRes.body}`);
+  try {
+    await s3.putObject(gcsBucket, filename, screenshotBuffer, {
+      contentType: 'image/png',
+    });
+  } catch (err) {
+    console.error(`GCS upload failed: ${err}`);
     return;
   }
 
