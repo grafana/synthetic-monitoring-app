@@ -9,6 +9,7 @@ import { CheckListItemRow } from 'page/CheckList/components/CheckListItemRow';
 export interface CheckListItemProps {
   check: Check;
   runtimeAlertState: CheckRuntimeAlertState;
+  calNames: string[];
   selected: boolean;
   onLabelSelect: (label: Label) => void;
   onToggleCheckbox: (checkId: number) => void;

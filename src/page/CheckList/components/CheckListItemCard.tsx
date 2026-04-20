@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -10,16 +10,19 @@ import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
 import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
+import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
 import { CheckListItemDetails } from 'page/CheckList/components/CheckListItemDetails';
 import { CheckStatusType } from 'page/CheckList/components/CheckStatusType';
 import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
+import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
 
 export const CheckListItemCard = ({
   check,
   runtimeAlertState,
+  calNames,
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
@@ -29,6 +32,8 @@ export const CheckListItemCard = ({
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
+  const { calLabels, customLabels } = useMemo(() => splitLabels(check.labels, calNames), [check.labels, calNames]);
+  const missingCalNames = useMemo(() => getMissingCalNames(check.labels, calNames), [check.labels, calNames]);
 
   return (
     <div
@@ -91,9 +96,21 @@ export const CheckListItemCard = ({
           </div>
           <div className={styles.footer}>
             <div className={styles.labelsContainer}>
-              {check.labels.map((label: Label, index) => (
+              {calLabels.map((label: Label, index) => (
+                <CheckCardLabel
+                  key={`cal-${label.name}`}
+                  label={label}
+                  onLabelSelect={onLabelSelect}
+                  colorIndex={1}
+                />
+              ))}
+              {customLabels.length > 0 && calLabels.length > 0 && (
+                <span className={styles.labelDivider}>|</span>
+              )}
+              {customLabels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
+              <UnattributedMessage missingCalNames={missingCalNames} />
             </div>
             <CheckItemActionButtons check={check} responsiveDashboardLink className={styles.actions} />
           </div>
@@ -122,6 +139,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       flex: '1 1 280px',
       gap: theme.spacing(1),
       minWidth: 0,
+      alignItems: 'center',
     }),
     heading: css({
       flex: '0 1 auto',
@@ -241,6 +259,10 @@ const getStyles = (theme: GrafanaTheme2) => {
       [narrowContainerQuery]: {
         marginLeft: 0,
       },
+    }),
+    labelDivider: css({
+      color: theme.colors.text.secondary,
+      fontWeight: theme.typography.fontWeightBold,
     }),
   };
 };

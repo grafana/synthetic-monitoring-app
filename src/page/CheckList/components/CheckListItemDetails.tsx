@@ -2,9 +2,11 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import pluralize from 'pluralize';
 
 import { Label } from 'types';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
+import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
 
 interface CheckListItemDetailsProps {
   frequency: number;
@@ -12,8 +14,9 @@ interface CheckListItemDetailsProps {
   probeLocations: number;
   executionsRate?: number;
   className?: string;
-  labelCount?: number;
   labels?: Label[];
+  calLabels?: Label[];
+  missingCalNames?: string[];
   onLabelClick?: (label: Label) => void;
   layout?: 'inline' | 'wrap';
 }
@@ -25,6 +28,8 @@ export const CheckListItemDetails = ({
   executionsRate,
   className,
   labels,
+  calLabels,
+  missingCalNames = [],
   onLabelClick,
   layout = 'inline',
 }: CheckListItemDetailsProps) => {
@@ -38,6 +43,7 @@ export const CheckListItemDetails = ({
     probeLocationsMessage,
     executionRateMessage,
   ].filter((item): item is string => Boolean(item));
+  const hasCalLabels = (calLabels?.length ?? 0) > 0;
 
   return (
     <div
@@ -66,28 +72,71 @@ export const CheckListItemDetails = ({
           <Tooltip
             placement="bottom-end"
             content={
-              <Stack justifyContent="flex-end" wrap={'wrap'}>
-                {labels.map((label: Label, index) => (
-                  <CheckCardLabel
-                    key={index}
-                    label={label}
-                    onLabelSelect={onLabelClick}
-                    className={styles.labelWidth}
-                  />
-                ))}
-              </Stack>
+              hasCalLabels ? (
+                <Stack direction="column" gap={1}>
+                  <div>
+                    <div className={styles.tooltipSectionTitle}>Cost Attribution Labels</div>
+                    <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
+                      {calLabels?.map((label: Label, index) => (
+                        <CheckCardLabel
+                          key={`cal-${label.name}`}
+                          label={label}
+                          onLabelSelect={onLabelClick}
+                          colorIndex={1}
+                        />
+                      ))}
+                    </Stack>
+                  </div>
+                  {labels.length > 0 && (
+                    <div>
+                      <div className={styles.tooltipSectionTitle}>Custom Labels</div>
+                      <Stack justifyContent="flex-start" wrap="wrap" gap={0.5}>
+                        {labels.map((label: Label, index) => (
+                          <CheckCardLabel
+                            key={label.name}
+                            label={label}
+                            onLabelSelect={onLabelClick}
+                            className={styles.labelWidth}
+                          />
+                        ))}
+                      </Stack>
+                    </div>
+                  )}
+                </Stack>
+              ) : (
+                <Stack justifyContent="flex-start" wrap={'wrap'}>
+                  {labels.map((label: Label, index) => (
+                    <CheckCardLabel
+                      key={label.name}
+                      label={label}
+                      onLabelSelect={onLabelClick}
+                      className={styles.labelWidth}
+                    />
+                  ))}
+                </Stack>
+              )
             }
           >
             <Button
-              disabled={labels.length === 0}
+              disabled={(labels?.length ?? 0) + (calLabels?.length ?? 0) === 0}
               type="button"
               fill="text"
               size="sm"
               className={cx({ [styles.wrapLabelButton]: layout === 'wrap' })}
             >
-              View {labels.length} label{labels.length === 1 ? '' : 's'}
+              {hasCalLabels
+                ? `${calLabels!.length} ${calLabels!.length === 1 ? 'CAL' : 'CALs'}, ${labels.length} custom ${pluralize('label', labels.length)}`
+                : `${labels.length} ${pluralize('label', labels.length)}`}
             </Button>
           </Tooltip>
+        </>
+      )}
+      {missingCalNames.length > 0 && (
+        <>
+          {layout === 'inline' && (
+            <span className={styles.separator} aria-hidden="true">|</span>
+          )}
+          <UnattributedMessage missingCalNames={missingCalNames} />
         </>
       )}
     </div>
@@ -132,5 +181,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   labelWidth: css({
     maxWidth: '350px',
+  }),
+  tooltipSectionTitle: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing(0.5),
   }),
 });

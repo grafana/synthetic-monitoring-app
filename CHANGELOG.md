@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.49.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.48.1...v1.49.0) (2026-04-13)
+
+
+### Features
+
+* add clickable trace ID linking in Timepoint Explorer ([#1603](https://github.com/grafana/synthetic-monitoring-app/issues/1603)) ([039ad86](https://github.com/grafana/synthetic-monitoring-app/commit/039ad86b0449ccd9941925a7392fdbb394ad30ef))
+* add cost attribution labels to check create/edit ([#1614](https://github.com/grafana/synthetic-monitoring-app/issues/1614)) ([c1592c5](https://github.com/grafana/synthetic-monitoring-app/commit/c1592c58098239d9be152147a4d1ff4d03f2bd33))
+* add cost attribution labels to checks list ([#1620](https://github.com/grafana/synthetic-monitoring-app/issues/1620)) ([335fba7](https://github.com/grafana/synthetic-monitoring-app/commit/335fba7a5f9fe16b431098915e1f7b4178a64182))
+* add cost attribution labels unattributed filters ([#1647](https://github.com/grafana/synthetic-monitoring-app/issues/1647)) ([e09a853](https://github.com/grafana/synthetic-monitoring-app/commit/e09a85378d6e1f5706d37b55f18f80aa81a26acf))
+* **check-list:** surface firing alerts first ([#1630](https://github.com/grafana/synthetic-monitoring-app/issues/1630)) ([ae10cc6](https://github.com/grafana/synthetic-monitoring-app/commit/ae10cc615de765d78fcab9169ef4a6c215a4a1fb))
+* cost attribution labels missing labels ([#1643](https://github.com/grafana/synthetic-monitoring-app/issues/1643)) ([d49cde5](https://github.com/grafana/synthetic-monitoring-app/commit/d49cde59518dbbe25e6c077d3c32a332d4e05b37))
+* display warning when probe has unknown k6 version ([#1617](https://github.com/grafana/synthetic-monitoring-app/issues/1617)) ([153dadc](https://github.com/grafana/synthetic-monitoring-app/commit/153dadc17d5163e87030c30b8b04f10caf54ea84))
+* improve probe status in check creation for accessibility and br… ([#1619](https://github.com/grafana/synthetic-monitoring-app/issues/1619)) ([a257ed6](https://github.com/grafana/synthetic-monitoring-app/commit/a257ed643b5bbba5953d539bbb48eab3826d59b9))
+* **probes:** replace reachability with execution metrics on probe cards ([#1651](https://github.com/grafana/synthetic-monitoring-app/issues/1651)) ([c22b089](https://github.com/grafana/synthetic-monitoring-app/commit/c22b08911ea7075bf2b5b345464ecd942d52145f))
+* update byoc mapping to include prod-eu-west-7 ([#1654](https://github.com/grafana/synthetic-monitoring-app/issues/1654)) ([03f8bf2](https://github.com/grafana/synthetic-monitoring-app/commit/03f8bf2ba732a93806d5a38057261ab3be17a9b2))
+
+
+### Fixes
+
+* add timeout to CDN type fetching for version management ([#1636](https://github.com/grafana/synthetic-monitoring-app/issues/1636)) ([a599316](https://github.com/grafana/synthetic-monitoring-app/commit/a599316bba0716af48e0fdd82e0833a8aeba34ab))
+* **check-list:** improve responsive card layout ([#1628](https://github.com/grafana/synthetic-monitoring-app/issues/1628)) ([f819205](https://github.com/grafana/synthetic-monitoring-app/commit/f8192050152aa129ae14f51eb155e6109ca0a18b))
+* correct renovate bot actor name in CI workflow ([#1634](https://github.com/grafana/synthetic-monitoring-app/issues/1634)) ([01a5471](https://github.com/grafana/synthetic-monitoring-app/commit/01a5471dfc3ab24f004bdb8bcda91c547b54a03f))
+* mock service worker ([#1648](https://github.com/grafana/synthetic-monitoring-app/issues/1648)) ([248032c](https://github.com/grafana/synthetic-monitoring-app/commit/248032c90940645a01b5718dab7e1c861176a1f9))
+* show inline error alert in bulk edit probes modal on failure ([#1645](https://github.com/grafana/synthetic-monitoring-app/issues/1645)) ([26b67c0](https://github.com/grafana/synthetic-monitoring-app/commit/26b67c0002ba8e7054baaf6397b50427379ff6c5))
+* update dependency lodash to v4.18.1 [security] ([#1642](https://github.com/grafana/synthetic-monitoring-app/issues/1642)) ([0faa905](https://github.com/grafana/synthetic-monitoring-app/commit/0faa9051a08d8b1b2ae5094af6145e930736b666))
+* update dependency yaml to v2.8.3 [security] ([#1633](https://github.com/grafana/synthetic-monitoring-app/issues/1633)) ([2aab08f](https://github.com/grafana/synthetic-monitoring-app/commit/2aab08f2970ea12d0632fdf8ae3789a384563b8a))
+* upgrade grafana/alerting package ([#1532](https://github.com/grafana/synthetic-monitoring-app/issues/1532)) ([09cc026](https://github.com/grafana/synthetic-monitoring-app/commit/09cc0261291ae75c19a049ca795abee9fb1d50c5))
+* use absolute positioning to fix popover inside container queries ([#1635](https://github.com/grafana/synthetic-monitoring-app/issues/1635)) ([fe5dda2](https://github.com/grafana/synthetic-monitoring-app/commit/fe5dda2cfb45978d8d3f7e11042d183bc165c42c))
+
+
+### Miscellaneous Chores
+
+* bump flatted from 3.3.3 to 3.4.2 ([#1627](https://github.com/grafana/synthetic-monitoring-app/issues/1627)) ([8ecb392](https://github.com/grafana/synthetic-monitoring-app/commit/8ecb392c399450dce7d513ab24f537f2825a96aa))
+* update dependency axios to v1.15.0 [security] ([#1652](https://github.com/grafana/synthetic-monitoring-app/issues/1652)) ([7e8236a](https://github.com/grafana/synthetic-monitoring-app/commit/7e8236a514a157ed6bb6449fccd41ea3361a3a39))
+* update dependency undici to v7.24.0 [security] ([#1623](https://github.com/grafana/synthetic-monitoring-app/issues/1623)) ([3b15272](https://github.com/grafana/synthetic-monitoring-app/commit/3b1527274abb8d12e6b37c04432a2b0e2118e651))
+* update README and CONTRIBUTING files with clearer instructions ([#1632](https://github.com/grafana/synthetic-monitoring-app/issues/1632)) ([3e5d949](https://github.com/grafana/synthetic-monitoring-app/commit/3e5d949a5f3fc38a6cc8257ce1370dd2aeccc195))
+
 ## [1.48.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.48.0...v1.48.1) (2026-03-11)
 
 

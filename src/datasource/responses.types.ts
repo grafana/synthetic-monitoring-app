@@ -88,6 +88,10 @@ export type TenantResponse = {
   status: number;
 };
 
+export type ListTenantCostAttributionLabelsResponse = {
+  names: string[];
+};
+
 export type ListTenantLimitsResponse = {
   MaxBrowserChecks: number;
   MaxChecks: number;

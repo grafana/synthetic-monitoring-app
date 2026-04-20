@@ -1,4 +1,5 @@
 import {
+  ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
   TenantResponse,
@@ -47,6 +48,11 @@ export const TENANT_SETTINGS: ListTenantSettingsResult = {
 };
 
 export const UPDATE_TENANT_SETTINGS: UpdateTenantSettingsResult = { msg: 'Settings updated' };
+
+export const TENANT_COST_ATTRIBUTION_LABELS: ListTenantCostAttributionLabelsResponse = {
+  names: ['Team', 'Service'],
+};
+
 export const TENANT_LIMITS: ListTenantLimitsResponse = {
   MaxBrowserChecks: 10,
   MaxChecks: 100,

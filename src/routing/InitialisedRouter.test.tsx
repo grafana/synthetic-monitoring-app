@@ -38,8 +38,8 @@ describe('Routes to pages correctly', () => {
   });
   test('Probes page renders', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Probes) });
-    const probeReachabilityTexts = await screen.findAllByText('Reachability');
-    expect(probeReachabilityTexts.length).toBeGreaterThan(0);
+    const probeStatTexts = await screen.findAllByText('Check runs / min');
+    expect(probeStatTexts.length).toBeGreaterThan(0);
   });
   test('Alert page renders', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Alerts) });

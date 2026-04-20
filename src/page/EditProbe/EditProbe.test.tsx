@@ -181,7 +181,7 @@ function checkInformation(probe: Probe) {
   expect(regionCombobox).toHaveValue(probe.region);
   expect(screen.getByDisplayValue(probe.latitude)).toBeInTheDocument();
   expect(screen.getByDisplayValue(probe.longitude)).toBeInTheDocument();
-  expect(screen.getByText(probe.version)).toBeInTheDocument();
+  expect(screen.getByText(probe.version, { exact: false })).toBeInTheDocument();
   expect(screen.getByText(probe.online ? 'Online' : 'Offline')).toBeInTheDocument();
   expect(screen.getByText(formatDate(probe.modified! * 1000))).toBeInTheDocument();
 }

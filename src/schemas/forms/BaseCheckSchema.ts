@@ -2,11 +2,11 @@ import { checkAlertsRefinement, checkAlertsSchema } from 'schemas/general/CheckA
 import { checkProbesSchema } from 'schemas/general/CheckProbes';
 import { createFrequencySchema } from 'schemas/general/Frequency';
 import { jobSchema } from 'schemas/general/Job';
-import { labelsSchema } from 'schemas/general/Label';
+import { calLabelsSchema, labelsSchema } from 'schemas/general/Label';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
-import { AlertSensitivity, CheckFormValuesBase, K6Channel } from 'types';
+import { AlertSensitivity, CheckFormValuesBase, K6Channel, Label } from 'types';
 import { formatDuration } from 'utils';
 
 export const baseCheckSchema = z.object({
@@ -19,6 +19,7 @@ export const baseCheckSchema = z.object({
   probes: checkProbesSchema,
   alertSensitivity: z.enum(AlertSensitivity),
   labels: labelsSchema,
+  calLabels: calLabelsSchema,
   publishAdvancedMetrics: z.boolean(),
   alerts: checkAlertsSchema.optional(),
   channels: z.object({
@@ -38,5 +39,17 @@ export function addRefinements<T extends CheckFormValuesBase>(schema: ZodType<T,
         });
       }
     })
-    .superRefine(checkAlertsRefinement);
+    .superRefine(checkAlertsRefinement)
+    .superRefine((data, ctx) => {
+      const calNames = new Set(data.calLabels.map((l: Label) => l.name));
+      const conflicts = data.labels.filter((l: Label) => calNames.has(l.name));
+
+      conflicts.forEach((label: Label) => {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['labels'],
+          message: `Label name "${label.name}" is already used as a cost attribution label`,
+        });
+      });
+    });
 }

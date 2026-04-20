@@ -4,5 +4,11 @@
     "provider": "AWS",
     "apiServerURL": "synthetic-monitoring-grpc-us-east-4.aws-us-east-1-1.grafana.net:443",
     "backendAddress": "synthetic-monitoring-api-us-east-4.aws-us-east-1-1.grafana.net"
+  },
+  {
+    "region": "Europe West",
+    "provider": "AWS",
+    "apiServerURL": "synthetic-monitoring-grpc-eu-west-7.aws-eu-central-1-1.grafana.net:443",
+    "backendAddress": "synthetic-monitoring-api-eu-west-7.aws-eu-central-1-1.grafana.net"
   }
 ]

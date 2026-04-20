@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.48.1",
+  "version": "1.49.0",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
@@ -60,7 +60,7 @@
     "@types/valid-url": "1.0.7",
     "@typescript-eslint/eslint-plugin": "8.46.3",
     "@typescript-eslint/parser": "8.46.3",
-    "axios": "1.13.5",
+    "axios": "1.15.0",
     "copy-webpack-plugin": "13.0.1",
     "css-loader": "7.1.2",
     "danger": "13.0.5",
@@ -130,7 +130,7 @@
     "ip-address": "10.1.0",
     "is-base64": "1.1.0",
     "js-base64": "3.7.7",
-    "lodash": "4.17.23",
+    "lodash": "4.18.1",
     "ol": "10.7.0",
     "pluralize": "8.0.0",
     "prismjs": "1.30.0",

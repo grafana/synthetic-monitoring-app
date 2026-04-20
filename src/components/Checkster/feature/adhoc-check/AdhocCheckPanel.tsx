@@ -117,6 +117,10 @@ export function AdhocCheckPanel() {
       checkTimeoutInSeconds: newHocCheckRequest.timeout / 1000,
     };
     setLogState((prevState) => {
+      if (checkState.id in prevState) {
+        return prevState;
+      }
+
       return {
         ...prevState,
         [checkState.id]: checkState,

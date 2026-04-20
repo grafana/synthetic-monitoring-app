@@ -18,11 +18,11 @@ import { type ExtendedProbe, FeatureName } from 'types';
 import { formatDate } from 'utils';
 import { useProbes, useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
-import { PROBE_REACHABILITY_DESCRIPTION } from 'components/constants';
 import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotice';
 import { FeatureFlag } from 'components/FeatureFlag';
-import { SuccessRateGaugeProbe } from 'components/Gauges';
-import { formatK6VersionsInline } from 'components/ProbeCard/ProbeCard';
+import { formatK6VersionsInline } from 'components/ProbeCard/ProbeCard.utils';
+import { ProbeMetaPillsRow } from 'components/ProbeCard/ProbeMetaPillsRow';
+import { ProbeCheckExecutionStats } from 'components/ProbeCheckExecutionStats';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
 
@@ -111,19 +111,18 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
           </Container>
         )}
       </div>
-      <SuccessRateGaugeProbe
-        probeName={probe.name}
-        height={200}
-        width={300}
-        description={PROBE_REACHABILITY_DESCRIPTION}
-      />
+      <FeatureFlag name={FeatureName.VersionManagement}>
+        {({ isEnabled }) => (
+          <ProbeMetaPillsRow
+            className={styles.probeMetaPills}
+            version={probe.version}
+            k6Pill={isEnabled ? formatK6VersionsInline(probe) : undefined}
+            trailing={<ProbeUsageLink probe={probe} />}
+          />
+        )}
+      </FeatureFlag>
+      <ProbeCheckExecutionStats probeName={probe.name} variant="detail" />
       <div className={styles.metaWrapper}>
-        <Meta title="Version:" value={probe.version} />
-        <FeatureFlag name={FeatureName.VersionManagement}>
-          {({ isEnabled }) => {
-            return isEnabled ? <Meta title="k6 versions:" value={formatK6VersionsInline(probe)} /> : null;
-          }}
-        </FeatureFlag>
         <Meta
           title={`Last ${probe.online ? `offline` : `online`}:`}
           value={neverOnline ? `Never` : formatDate(probe.onlineChange * 1000)}
@@ -131,7 +130,6 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
         {probe.modified && (
           <Meta title="Last modified:" value={neverModified ? `Never` : formatDate(probe.modified * 1000)} />
         )}
-        <ProbeUsageLink probe={probe} />
       </div>
     </div>
   );
@@ -192,14 +190,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     paddingLeft: theme.spacing(1),
   }),
   metaItem: css({ display: `flex`, gap: theme.spacing(0.5) }),
-  k6Versions: css({
-    display: 'flex',
-    gap: theme.spacing(0.5),
-  }),
-  metaTitle: css({
-    fontWeight: 700,
-  }),
-  metaValue: css({
-    whiteSpace: 'pre-line',
+  probeMetaPills: css({
+    marginTop: theme.spacing(1),
+    paddingLeft: theme.spacing(1),
   }),
 });

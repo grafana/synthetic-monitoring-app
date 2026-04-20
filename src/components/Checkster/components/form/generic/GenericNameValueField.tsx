@@ -85,8 +85,7 @@ export function GenericNameValueField({
       required={required}
       emulate
     >
-      {/* @ts-expect-error Totally valid spacing value */}
-      <Stack direction="column" gap={0.75}>
+      <Stack direction="column" gap={0.5}>
         {fields.map((field, index) => (
           <Stack key={field.id} alignItems="start">
             <StyledField
