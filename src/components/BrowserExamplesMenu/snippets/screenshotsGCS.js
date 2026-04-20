@@ -53,6 +53,8 @@ async function captureAndUploadScreenshot(page, caption) {
   const gcsSecretKey = await secrets.get('sm-screenshot-gcs-secret-key');
   const gcsBucket = await secrets.get('sm-screenshot-gcs-bucket');
 
+  // GCS offers an S3-compatible API (https://cloud.google.com/storage/docs/interoperability)
+  // so we reuse k6's S3Client with the same signing protocol, just a different endpoint.
   const s3 = new S3Client(new AWSConfig({
     region: 'auto',
     accessKeyId: gcsAccessKey,
