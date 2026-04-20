@@ -16,6 +16,11 @@ interface LogsPanelProps {
   from: number | string;
   to: number | string;
 }
+
+function getLogItemKey(log: NonNullable<LogsPanelProps['logs']>[number]) {
+  return JSON.stringify(log);
+}
+
 export function LogsPanel({ logs, state, probe, timeseries, from, to }: LogsPanelProps) {
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
@@ -51,8 +56,8 @@ export function LogsPanel({ logs, state, probe, timeseries, from, to }: LogsPane
               Timed out while waiting for logs.
             </Text>
           )}
-          {logs?.map((log, index) => (
-            <LogItem key={`${log.time}-${index}`} log={log} from={from} to={to} />
+          {logs?.map((log) => (
+            <LogItem key={getLogItemKey(log)} log={log} from={from} to={to} />
           ))}
           {!logs?.length && state === ProbeStateStatus.Success && (
             <Text variant="bodySmall" element="span" color="secondary">

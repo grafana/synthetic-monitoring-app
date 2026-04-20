@@ -1,6 +1,6 @@
 import React from 'react';
 import { dateTimeFormat, LoadingState } from '@grafana/data';
-import { screen, waitForElementToBeRemoved, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { executionLogsFactory } from 'test/factories/executionLogs';
 import { TRACES_DATASOURCE } from 'test/fixtures/datasources';
 import { render } from 'test/render';
@@ -291,14 +291,19 @@ describe('LogsEvent', () => {
     it('stops showing the propagation spinner after the window expires', async () => {
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
       logs.forEach((log) => {
-        log[LokiFieldNames.TimeStamp] = Date.now() - PROPAGATION_WINDOW_MS + 50;
+        log[LokiFieldNames.TimeStamp] = Date.now() - PROPAGATION_WINDOW_MS + 1000;
       });
 
       render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       await screen.findAllByTestId('trace-propagation-waiting');
 
-      await waitForElementToBeRemoved(() => screen.queryAllByTestId('trace-propagation-waiting'));
+      await waitFor(
+        () => {
+          expect(screen.queryByTestId('trace-propagation-waiting')).not.toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
     });
   });
 
