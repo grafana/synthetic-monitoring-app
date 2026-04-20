@@ -66,5 +66,5 @@ export default {
   'k6/experimental/redis': k6ExperimentalRedis,
   'k6/experimental/streams': k6ExperimentalStreams,
   'k6/experimental/websockets': k6ExperimentalWebsockets,
-  ...(secretsEnabled ? { 'k6/secrets': k6Secrets } : undefined),
+  ...(secretsEnabled ? { 'k6/secrets': k6Secrets } : {}),
 };

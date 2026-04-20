@@ -21,6 +21,7 @@ const K6_MODULES: K6ModuleDefinition[] = [
   { name: 'k6/experimental/redis', path: 'experimental/redis/index.d.ts' },
   { name: 'k6/experimental/streams', path: 'experimental/streams/index.d.ts' },
   { name: 'k6/experimental/websockets', path: 'experimental/websockets/index.d.ts' },
+  { name: 'k6/secrets', path: 'secrets/index.d.ts' },
 ];
 
 const CDN_BASE_URL = 'https://unpkg.com/@types/k6';
