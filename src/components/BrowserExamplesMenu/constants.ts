@@ -9,6 +9,8 @@ import GET_ATTRIBUTE_SCRIPT from './snippets/getattribute.js?raw';
 import KEYBOARD_SCRIPT from './snippets/keyboard.js?raw';
 import MOUSE_SCRIPT from './snippets/mouse.js?raw';
 import QUERYING_SCRIPT from './snippets/querying.js?raw';
+import SCREENSHOTS_GCS_SCRIPT from './snippets/screenshotsGCS.js?raw';
+import SCREENSHOTS_LOKI_SCRIPT from './snippets/screenshotsLoki.js?raw';
 import TOUCHSCREEN_SCRIPT from './snippets/touchscreen.js?raw';
 import WAIT_FOR_EVENT_SCRIPT from './snippets/waitForEvent.js?raw';
 import WAIT_FOR_FUNCTION_SCRIPT from './snippets/waitForFunction.js?raw';
@@ -85,6 +87,21 @@ const QUERYING = [
   },
 ];
 
+const SCREENSHOTS = [
+  {
+    label: 'Screenshots (Loki storage)',
+    script: SCREENSHOTS_LOKI_SCRIPT,
+    value: 'screenshotsLoki.js',
+    isNew: true,
+  },
+  {
+    label: 'Screenshots (GCS storage)',
+    script: SCREENSHOTS_GCS_SCRIPT,
+    value: 'screenshotsGCS.js',
+    isNew: true,
+  },
+];
+
 const TOUCHSCREEN = [
   {
     label: 'Touchscreen Interaction',
@@ -110,6 +127,7 @@ const WAIT_FOR_FUNCTION = [
 ];
 
 export const BROWSER_EXAMPLE_CHOICES: SelectableOptGroup[] = [
+  { label: 'Screenshots', options: SCREENSHOTS },
   { label: 'Fill Form', options: FILL_FORM },
   { label: 'Cookies Manipulation', options: COOKIES },
   { label: 'Dispatch', options: DISPATCH },

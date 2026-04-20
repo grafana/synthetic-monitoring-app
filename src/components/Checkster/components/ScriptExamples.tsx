@@ -14,11 +14,12 @@ export function ScriptExamples({ examples }: ScriptExamplesProps) {
       {
         value: 'Example scripts',
         label: '',
-        groups: examples.map(({ label, script }) => ({
+        groups: examples.map(({ label, script, isNew }) => ({
           value: label,
           label,
           code: script,
           lang: 'js',
+          isNew,
         })),
       },
     ];

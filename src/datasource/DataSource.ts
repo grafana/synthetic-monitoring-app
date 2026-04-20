@@ -264,8 +264,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
             maxDataPoints: 1779,
           },
         ],
-        from,
-        to,
+        from: String(from),
+        to: String(to),
       },
     });
   }

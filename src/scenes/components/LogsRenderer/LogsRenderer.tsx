@@ -9,13 +9,17 @@ export const LogsRenderer = <T extends UnknownParsedLokiRecord>({
   logs,
   logsView,
   mainKey,
+  from,
+  to,
 }: {
   logs: T[];
   logsView: LogsView;
   mainKey: string;
+  from: number | string;
+  to: number | string;
 }) => {
   if (logsView === 'event') {
-    return <LogsEvent<T> logs={logs} mainKey={mainKey} />;
+    return <LogsEvent<T> logs={logs} mainKey={mainKey} from={from} to={to} />;
   }
 
   if (logsView === 'raw-logs') {

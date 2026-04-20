@@ -6,6 +6,10 @@ import { ProbeStateStatus } from './types.adhoc-check';
 
 import { LogsPanel } from './LogsPanel';
 
+jest.mock('scenes/components/LogsRenderer/screenshots/screenshots.hooks', () => ({
+  useScreenshots: jest.fn().mockReturnValue(new Map()),
+}));
+
 function buildLog({ msg, time, statusCode }: { msg: string; time: string; statusCode: string }) {
   return {
     level: 'info',
@@ -25,7 +29,14 @@ describe('adhoc-check', () => {
       ];
 
       const { rerender } = render(
-        <LogsPanel logs={initialLogs} probe="test probe" state={ProbeStateStatus.Success} timeseries={[]} />
+        <LogsPanel
+          logs={initialLogs}
+          probe="test probe"
+          state={ProbeStateStatus.Success}
+          timeseries={[]}
+          from={0}
+          to={0}
+        />
       );
 
       await user.click(screen.getByText('test probe'));
@@ -39,6 +50,8 @@ describe('adhoc-check', () => {
           probe="test probe"
           state={ProbeStateStatus.Success}
           timeseries={[]}
+          from={0}
+          to={0}
         />
       );
 

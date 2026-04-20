@@ -103,7 +103,15 @@ export const TimepointViewerExecutions = ({
             }
 
             if (executions.length > 1) {
-              return <MultipleExecutions key={probeName} executions={executions} logsView={logsView} />;
+              return (
+                <MultipleExecutions
+                  key={probeName}
+                  executions={executions}
+                  logsView={logsView}
+                  from={timepoint.adjustedTime}
+                  to={timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency}
+                />
+              );
             }
 
             return (
@@ -115,6 +123,8 @@ export const TimepointViewerExecutions = ({
                       logs={execution}
                       logsView={logsView}
                       mainKey="msg"
+                      from={timepoint.adjustedTime}
+                      to={timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency}
                     />
                   );
                 })}
@@ -176,7 +186,17 @@ const ProbeNameIcon = ({ status }: { status: TimepointStatus }) => {
   return <Icon name={ICON_MAP[status]} color={vizOption.statusColor} />;
 };
 
-const MultipleExecutions = ({ executions, logsView }: { executions: ExecutionLogs[]; logsView: LogsView }) => {
+const MultipleExecutions = ({
+  executions,
+  logsView,
+  from,
+  to,
+}: {
+  executions: ExecutionLogs[];
+  logsView: LogsView;
+  from: number | string;
+  to: number | string;
+}) => {
   const styles = useStyles2(getStyles);
   const success = useTimepointVizOptions('success');
   const failure = useTimepointVizOptions('failure');
@@ -202,7 +222,7 @@ const MultipleExecutions = ({ executions, logsView }: { executions: ExecutionLog
                     color={`${probe_success === '1' ? success.statusColor : failure.statusColor}`}
                   />
                 </Stack>
-                <LogsRenderer<UnknownExecutionLog> logs={execution} logsView={logsView} mainKey="msg" />
+                <LogsRenderer<UnknownExecutionLog> logs={execution} logsView={logsView} mainKey="msg" from={from} to={to} />
               </div>
               {index !== executions.length - 1 && <div className={styles.divider} />}
             </>

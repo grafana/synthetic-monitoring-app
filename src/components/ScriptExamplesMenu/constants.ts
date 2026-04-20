@@ -33,6 +33,7 @@ export type ExampleScript = {
   label: string;
   script: string;
   value: string;
+  isNew?: boolean;
 };
 
 const API_CRUD_OPERATIONS_CHOICES = [
