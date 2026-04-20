@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.50.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.49.0...v1.50.0) (2026-04-20)
+
+
+### Features
+
+* add screenshot thumbails to timepoint explorer ([#1610](https://github.com/grafana/synthetic-monitoring-app/issues/1610)) ([df2f379](https://github.com/grafana/synthetic-monitoring-app/commit/df2f379135aa0deea2d8ac0f16b8f0a81965c222))
+
+
+### Fixes
+
+* include k6/secrets types when version management is enabled ([#1664](https://github.com/grafana/synthetic-monitoring-app/issues/1664)) ([c11de10](https://github.com/grafana/synthetic-monitoring-app/commit/c11de10975e2eeff77d40ef2cd8d0cfa0bc9e3f2))
+* preserve adhoc test panel state during probe refreshes ([#1656](https://github.com/grafana/synthetic-monitoring-app/issues/1656)) ([0de4112](https://github.com/grafana/synthetic-monitoring-app/commit/0de4112b31970630211086f66b63693e816ac23d))
+* update cal response to use names attribute ([#1659](https://github.com/grafana/synthetic-monitoring-app/issues/1659)) ([f4fdb41](https://github.com/grafana/synthetic-monitoring-app/commit/f4fdb413364f067f10e393f7162e48eff30ddab6))
+
 ## [1.49.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.48.1...v1.49.0) (2026-04-13)
 
 
