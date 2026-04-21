@@ -162,13 +162,13 @@ describe('CheckList - Folder Badge', () => {
     beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
 
     test('displays folder path badge on check cards', async () => {
-      await renderCheckList([CHECK_IN_PRODUCTION]);
+      await renderCheckList([CHECK_IN_PRODUCTION], 'view=card');
 
       expect(await screen.findByText(FOLDER_PRODUCTION.title, {}, { timeout: 5000 })).toBeInTheDocument();
     });
 
     test('displays "Folder deleted" badge for orphaned folder', async () => {
-      await renderCheckList([CHECK_WITH_ORPHANED_FOLDER]);
+      await renderCheckList([CHECK_WITH_ORPHANED_FOLDER], 'view=card');
 
       await waitFor(
         () => expect(screen.getByText('Folder deleted')).toBeInTheDocument(),
@@ -177,7 +177,7 @@ describe('CheckList - Folder Badge', () => {
     });
 
     test('does not display folder badge for checks without a folder', async () => {
-      await renderCheckList([CHECK_WITHOUT_FOLDER]);
+      await renderCheckList([CHECK_WITHOUT_FOLDER], 'view=card');
 
       await screen.findByTestId(DataTestIds.CheckCard);
       expect(screen.queryByText('Folder deleted')).not.toBeInTheDocument();

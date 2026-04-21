@@ -21,7 +21,7 @@ export function CheckListViewSwitcher({ viewType, onChange }: CheckListViewSwitc
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const options = useMemo(() => {
     if (isFoldersEnabled) {
-      return [...BASE_VIEW_TYPE_OPTIONS, FOLDER_VIEW_OPTION];
+      return [FOLDER_VIEW_OPTION, ...BASE_VIEW_TYPE_OPTIONS];
     }
     return BASE_VIEW_TYPE_OPTIONS;
   }, [isFoldersEnabled]);

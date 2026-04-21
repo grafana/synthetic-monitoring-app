@@ -7,6 +7,7 @@ import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckType, GrafanaFolder, Label } from 'types';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 import { buildChecksByFolder, collectAllFolderUids, FolderNode, getTotalCheckCount } from 'hooks/useChecksByFolder';
+import { Feedback } from 'components/Feedback';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 
@@ -81,7 +82,10 @@ export function CheckListFolderView({
       {folderTree.length > 0 && (
         <div className={styles.foldersSection}>
           <div className={styles.foldersSectionHeader}>
-            <h3 className={styles.sectionTitle}>Folders ({allUids.length})</h3>
+            <h3 className={styles.sectionTitle}>
+              Folders ({allUids.length})
+              <Feedback feature="folder-view" about={{ text: 'New feature!' }} />
+            </h3>
             <Stack gap={1}>
               <Button
                 variant="secondary"
