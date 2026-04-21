@@ -301,8 +301,15 @@ function PaginatedCheckList({ checks, checkItemProps }: PaginatedCheckListProps)
     clampedPage * CHECKS_PER_PAGE_CARD
   );
 
+  const paginationControls = totalPages > 1 && (
+    <div className={styles.pagination}>
+      <Pagination numberOfPages={totalPages} currentPage={clampedPage} onNavigate={setCurrentPage} />
+    </div>
+  );
+
   return (
     <div className={styles.checkList}>
+      {paginationControls}
       {pageChecks.map((check) => (
         <CheckListItem
           key={check.id}
@@ -317,11 +324,7 @@ function PaginatedCheckList({ checks, checkItemProps }: PaginatedCheckListProps)
           viewType={CheckListViewType.Card}
         />
       ))}
-      {totalPages > 1 && (
-        <div className={styles.pagination}>
-          <Pagination numberOfPages={totalPages} currentPage={clampedPage} onNavigate={setCurrentPage} />
-        </div>
-      )}
+      {paginationControls}
     </div>
   );
 }
@@ -412,6 +415,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   folderContentNested: css({
     padding: theme.spacing(1.5, 0, 1.5, 3),
+    marginLeft: theme.spacing(2),
+    borderLeft: `2px solid ${theme.colors.border.medium}`,
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(1.5),
