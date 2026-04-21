@@ -50,7 +50,29 @@ export function CheckListFolderView({
     [checks, folders, defaultFolderUid]
   );
 
-  const allUids = useMemo(() => collectAllFolderUids(folderTree), [folderTree]);
+  const defaultFolderNode: FolderNode | null = useMemo(() => {
+    if (rootChecks.length === 0) {
+      return null;
+    }
+    const folder = defaultFolderUid ? foldersMap.get(defaultFolderUid) : undefined;
+    return {
+      folderUid: defaultFolderUid ?? '__default__',
+      folder: folder ? { ...folder, title: `${folder.title} (default)` } : undefined,
+      folderPath: folder?.title ?? 'Default folder',
+      checks: rootChecks,
+      children: [],
+      isAccessible: !!folder,
+      isOrphaned: false,
+    };
+  }, [rootChecks, defaultFolderUid, foldersMap]);
+
+  const allUids = useMemo(() => {
+    const uids = collectAllFolderUids(folderTree);
+    if (defaultFolderNode) {
+      uids.unshift(defaultFolderNode.folderUid);
+    }
+    return uids;
+  }, [folderTree, defaultFolderNode]);
 
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() => new Set(allUids));
 
@@ -85,9 +107,11 @@ export function CheckListFolderView({
     selectedCheckIds,
   };
 
+  const hasAnyContent = folderTree.length > 0 || defaultFolderNode !== null;
+
   return (
     <div className={styles.container}>
-      {folderTree.length > 0 && (
+      {hasAnyContent && (
         <div className={styles.foldersSection}>
           <div className={styles.foldersSectionHeader}>
             <h3 className={styles.sectionTitle}>
@@ -129,24 +153,22 @@ export function CheckListFolderView({
               onRetryFolders={onRetryFolders}
             />
           ))}
+
+          {defaultFolderNode && (
+            <FolderTreeBranch
+              key={defaultFolderNode.folderUid}
+              node={defaultFolderNode}
+              depth={0}
+              expandedFolders={expandedFolders}
+              toggleFolder={toggleFolder}
+              checkItemProps={checkItemProps}
+              onRetryFolders={onRetryFolders}
+            />
+          )}
         </div>
       )}
 
-      {rootChecks.length > 0 && (
-        <div className={styles.rootSection}>
-          <div className={styles.foldersSectionHeader}>
-            <h3 className={styles.sectionTitle}>
-              Unassigned ({rootChecks.length})
-              <Tooltip content="Checks in the default Synthetic Monitoring folder">
-                <Icon name="info-circle" size="sm" className={styles.sectionInfoIcon} />
-              </Tooltip>
-            </h3>
-          </div>
-          <PaginatedCheckList checks={rootChecks} checkItemProps={checkItemProps} />
-        </div>
-      )}
-
-      {folderTree.length === 0 && rootChecks.length === 0 && (
+      {!hasAnyContent && (
         <div className={styles.emptyState}>No checks to display</div>
       )}
     </div>
@@ -318,11 +340,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flexDirection: 'column',
     gap: theme.spacing(2),
   }),
-  rootSection: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-  }),
   foldersSectionHeader: css({
     display: 'flex',
     alignItems: 'center',
@@ -336,10 +353,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-  }),
-  sectionInfoIcon: css({
-    color: theme.colors.text.secondary,
-    cursor: 'help',
   }),
   folderGroup: css({
     border: `1px solid ${theme.colors.border.weak}`,

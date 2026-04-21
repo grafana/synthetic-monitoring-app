@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
@@ -25,12 +25,6 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
 
   const isLoading = isDefaultLoading || isChildrenLoading;
   const isError = isDefaultError || isChildrenError;
-
-  useEffect(() => {
-    if (value === undefined && defaultFolderUid) {
-      onChange(defaultFolderUid);
-    }
-  }, [value, defaultFolderUid, onChange]);
 
   const options: Array<ComboboxOption<string>> = useMemo(() => {
     if (!defaultFolder) {

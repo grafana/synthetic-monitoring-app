@@ -18,8 +18,10 @@ import { createCheckSchema } from 'schemas/forms/utils/createCheckSchema';
 import { ZodType } from 'zod';
 
 import { FormNavigationState, FormSectionName } from '../types';
-import { Check, CheckFormValues, CheckType, ProbeWithMetadata } from 'types';
+import { Check, CheckFormValues, CheckType, FeatureName, ProbeWithMetadata } from 'types';
 import { getCheckType } from 'utils';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
 
@@ -71,21 +73,26 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
-function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[]) {
+function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[], defaultFolderUid?: string) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
     const refinedSchema = addRefinements<CheckFormValues>(schema);
+    const formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+
+    if (defaultFolderUid && !formValues.folderUid) {
+      formValues.folderUid = defaultFolderUid;
+    }
 
     return {
-      defaultFormValues: check ? toFormValues(check) : getDefaultFormValues(checkType),
+      defaultFormValues: formValues,
       schema: refinedSchema,
     };
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey]);
+  }, [checkType, check, probeCompatibilityKey, defaultFolderUid]);
 }
 
 export function ChecksterProvider({
@@ -99,6 +106,8 @@ export function ChecksterProvider({
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+  const { defaultFolderUid, isLoading: isFolderLoading, isError: isFolderError } = useDefaultFolder(isFoldersEnabled);
 
   const [checkType, setCheckType] = useState<CheckType>(
     isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
@@ -109,7 +118,7 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata);
+  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata, defaultFolderUid);
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
@@ -252,6 +261,10 @@ export function ChecksterProvider({
     stashCurrentValues,
     canChangeCheckType,
   ]);
+
+  if (isFoldersEnabled && isFolderLoading && !isFolderError) {
+    return null;
+  }
 
   return (
     <ChecksterContext.Provider value={value}>
