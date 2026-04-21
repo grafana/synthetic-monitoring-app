@@ -8,7 +8,7 @@ import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { queryClient } from 'data/queryClient';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 
-import { FOLDERS_STALE_TIME, MAX_FOLDER_DEPTH } from './folders.constants';
+import { FOLDERS_STALE_TIME } from './folders.constants';
 
 export interface CreateFolderPayload {
   title: string;
@@ -35,20 +35,21 @@ export function fetchFolders(params?: Record<string, string>) {
 
 /**
  * Fetch the full subtree under a given parent folder.
- * Walks children recursively up to MAX_FOLDER_DEPTH to guard against
- * circular references and very deep trees.
- * Disabled until parentUid is available.
+ * Walks children recursively, tracking visited UIDs to guard against
+ * circular references. Disabled until parentUid is available.
  */
 export function useFolderChildren(parentUid: string | undefined): UseQueryResult<GrafanaFolder[], Error> {
   return useQuery({
     queryKey: folderQueryKeys.children(parentUid!),
     queryFn: async () => {
       const allDescendants: GrafanaFolder[] = [];
+      const visited = new Set<string>();
 
-      async function fetchDescendants(uid: string, depth: number): Promise<void> {
-        if (depth >= MAX_FOLDER_DEPTH) {
+      async function fetchDescendants(uid: string): Promise<void> {
+        if (visited.has(uid)) {
           return;
         }
+        visited.add(uid);
 
         const children = await fetchFolders({ parentUid: uid });
         if (children.length === 0) {
@@ -56,10 +57,10 @@ export function useFolderChildren(parentUid: string | undefined): UseQueryResult
         }
 
         allDescendants.push(...children);
-        await Promise.all(children.map((child) => fetchDescendants(child.uid, depth + 1)));
+        await Promise.all(children.map((child) => fetchDescendants(child.uid)));
       }
 
-      await fetchDescendants(parentUid!, 0);
+      await fetchDescendants(parentUid!);
       return allDescendants;
     },
     staleTime: FOLDERS_STALE_TIME,
@@ -78,16 +79,16 @@ export function getFolderPathParts(folder: GrafanaFolder, allFoldersMap: Map<str
 
   const path: string[] = [folder.title];
   let current = folder;
-  let depth = 0;
+  const visited = new Set<string>([folder.uid]);
 
-  while (current.parentUid && depth < MAX_FOLDER_DEPTH) {
+  while (current.parentUid && !visited.has(current.parentUid)) {
+    visited.add(current.parentUid);
     const parent = allFoldersMap.get(current.parentUid);
     if (!parent) {
       break;
     }
     path.unshift(parent.title);
     current = parent;
-    depth++;
   }
 
   return path;

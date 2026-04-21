@@ -207,19 +207,12 @@ function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkIte
 
   return (
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
-      <div
+      <button
         className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}
         onClick={() => toggleFolder(node.folderUid)}
-        role="button"
-        tabIndex={0}
         aria-expanded={isExpanded}
         aria-label={`${isExpanded ? 'Collapse' : 'Expand'} folder ${node.folder?.title ?? node.folderUid}`}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleFolder(node.folderUid);
-          }
-        }}
+        type="button"
       >
         <Stack gap={1.5} alignItems="center" wrap="wrap">
           <Icon name={isExpanded ? 'angle-down' : 'angle-right'} size="lg" />
@@ -256,7 +249,7 @@ function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkIte
             {totalChecks} {totalChecks === 1 ? 'check' : 'checks'}
           </span>
         </Stack>
-      </div>
+      </button>
 
       {isExpanded && hasContent && (
         <div className={isRoot ? styles.folderContentRoot : styles.folderContentNested}>
@@ -365,6 +358,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
     borderTop: `1px solid ${theme.colors.border.weak}`,
   }),
   folderHeaderRoot: css({
+    appearance: 'none',
+    border: 'none',
+    background: 'none',
+    width: '100%',
+    textAlign: 'left',
+    font: 'inherit',
+    color: 'inherit',
     display: 'flex',
     alignItems: 'center',
     padding: theme.spacing(1.5, 2),
@@ -380,6 +380,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
     },
   }),
   folderHeaderNested: css({
+    appearance: 'none',
+    border: 'none',
+    background: 'none',
+    width: '100%',
+    textAlign: 'left',
+    font: 'inherit',
+    color: 'inherit',
     display: 'flex',
     alignItems: 'center',
     padding: theme.spacing(1, 2),
