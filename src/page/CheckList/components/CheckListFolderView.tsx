@@ -63,6 +63,7 @@ export function CheckListFolderView({
       children: [],
       isAccessible: !!folder,
       isOrphaned: false,
+      isDefault: true,
     };
   }, [rootChecks, defaultFolderUid, foldersMap]);
 
@@ -271,7 +272,7 @@ function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkIte
             />
           ))}
           {node.checks.length > 0 && (
-            <PaginatedCheckList checks={node.checks} checkItemProps={checkItemProps} />
+            <PaginatedCheckList checks={node.checks} checkItemProps={checkItemProps} hideTopPagination={node.isDefault} />
           )}
         </div>
       )}
@@ -282,9 +283,10 @@ function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkIte
 interface PaginatedCheckListProps {
   checks: Check[];
   checkItemProps: CheckItemCallbacks;
+  hideTopPagination?: boolean;
 }
 
-function PaginatedCheckList({ checks, checkItemProps }: PaginatedCheckListProps) {
+function PaginatedCheckList({ checks, checkItemProps, hideTopPagination }: PaginatedCheckListProps) {
   const styles = useStyles2(getStyles);
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(checks.length / CHECKS_PER_PAGE_CARD);
@@ -309,7 +311,7 @@ function PaginatedCheckList({ checks, checkItemProps }: PaginatedCheckListProps)
 
   return (
     <div className={styles.checkList}>
-      {paginationControls}
+      {!hideTopPagination && paginationControls}
       {pageChecks.map((check) => (
         <CheckListItem
           key={check.id}

@@ -3,7 +3,6 @@ import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlacehold
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
 import { GrafanaFolder } from 'types';
-import { DEFAULT_FOLDER_TITLE } from 'data/folders.constants';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { getFolderPath, useCreateFolder, useFolderChildren } from 'data/useFolders';
 
@@ -97,7 +96,8 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
       )}
       {showCreateModal && defaultFolderUid && (
         <CreateFolderModal
-          parentUid={defaultFolderUid}
+          parentOptions={options}
+          defaultParentUid={defaultFolderUid}
           onCreated={handleFolderCreated}
           onDismiss={() => setShowCreateModal(false)}
         />
@@ -107,13 +107,15 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
 }
 
 interface CreateFolderModalProps {
-  parentUid: string;
+  parentOptions: Array<ComboboxOption<string>>;
+  defaultParentUid: string;
   onCreated: (folder: GrafanaFolder) => void;
   onDismiss: () => void;
 }
 
-function CreateFolderModal({ parentUid, onCreated, onDismiss }: CreateFolderModalProps) {
+function CreateFolderModal({ parentOptions, defaultParentUid, onCreated, onDismiss }: CreateFolderModalProps) {
   const [title, setTitle] = useState('');
+  const [selectedParentUid, setSelectedParentUid] = useState<string>(defaultParentUid);
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync: createFolder, isPending } = useCreateFolder();
 
@@ -125,7 +127,7 @@ function CreateFolderModal({ parentUid, onCreated, onDismiss }: CreateFolderModa
     setError(null);
 
     try {
-      const folder = await createFolder({ title: title.trim(), parentUid });
+      const folder = await createFolder({ title: title.trim(), parentUid: selectedParentUid });
       onCreated(folder);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create folder');
@@ -134,25 +136,34 @@ function CreateFolderModal({ parentUid, onCreated, onDismiss }: CreateFolderModa
 
   return (
     <Modal title="Create folder" isOpen onDismiss={onDismiss}>
-      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-        <Field label="Folder name" description={`The new folder will be created inside "${DEFAULT_FOLDER_TITLE}".`}>
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.currentTarget.value)}
-            placeholder="Enter folder name"
-            autoFocus
+      {parentOptions.length > 1 && (
+        <Field label="Parent folder">
+          <Combobox
+            options={parentOptions}
+            value={selectedParentUid}
+            onChange={(selected) => { if (selected) { setSelectedParentUid(selected.value); } }}
+            aria-label="Select parent folder"
           />
         </Field>
-        {error && <Alert title={error} severity="error" />}
-        <Modal.ButtonRow>
-          <Button variant="secondary" onClick={onDismiss} type="button">
-            Cancel
-          </Button>
-          <Button type="submit" disabled={!title.trim() || isPending}>
-            {isPending ? 'Creating...' : 'Create'}
-          </Button>
-        </Modal.ButtonRow>
-      </form>
+      )}
+      <Field label="Folder name">
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.currentTarget.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { handleSubmit(); } }}
+          placeholder="Enter folder name"
+          autoFocus
+        />
+      </Field>
+      {error && <Alert title={error} severity="error" />}
+      <Modal.ButtonRow>
+        <Button variant="secondary" onClick={onDismiss} type="button">
+          Cancel
+        </Button>
+        <Button type="button" onClick={handleSubmit} disabled={!title.trim() || isPending}>
+          {isPending ? 'Creating...' : 'Create'}
+        </Button>
+      </Modal.ButtonRow>
     </Modal>
   );
 }

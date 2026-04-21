@@ -9,6 +9,7 @@ export interface FolderNode {
   children: FolderNode[];
   isAccessible: boolean;
   isOrphaned: boolean;
+  isDefault?: boolean;
 }
 
 export interface ChecksByFolder {
