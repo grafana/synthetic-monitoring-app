@@ -161,10 +161,11 @@ describe('CheckList - Folder Badge', () => {
   describe('with folders feature enabled', () => {
     beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
 
-    test('displays folder path badge on check cards', async () => {
+    test('does not display folder badge on check cards', async () => {
       await renderCheckList([CHECK_IN_PRODUCTION], 'view=card');
 
-      expect(await screen.findByText(FOLDER_PRODUCTION.title, {}, { timeout: 5000 })).toBeInTheDocument();
+      await screen.findByTestId(DataTestIds.CheckCard);
+      expect(screen.queryByText(FOLDER_PRODUCTION.title)).not.toBeInTheDocument();
     });
 
     test('does not display badge for orphaned folder in card view', async () => {

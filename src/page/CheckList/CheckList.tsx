@@ -287,9 +287,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                 <CheckListItem
                   check={check}
                   calNames={calNames}
-                  foldersMap={foldersMap}
-                  foldersLoading={isFoldersLoading}
-                  foldersError={isFoldersError}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
                   onTypeSelect={handleTypeSelect}
