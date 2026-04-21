@@ -13,6 +13,7 @@ export interface CheckListItemProps {
   selected: boolean;
   foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
+  foldersError?: boolean;
   onLabelSelect: (label: Label) => void;
   onToggleCheckbox: (checkId: number) => void;
   onTypeSelect: (checkType: CheckType) => void;

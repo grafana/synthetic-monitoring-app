@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_STAGING, MOCK_FOLDERS } from 'test/fixtures/folders';
@@ -167,13 +167,11 @@ describe('CheckList - Folder Badge', () => {
       expect(await screen.findByText(FOLDER_PRODUCTION.title, {}, { timeout: 5000 })).toBeInTheDocument();
     });
 
-    test('displays "Folder deleted" badge for orphaned folder', async () => {
+    test('does not display badge for orphaned folder in card view', async () => {
       await renderCheckList([CHECK_WITH_ORPHANED_FOLDER], 'view=card');
 
-      await waitFor(
-        () => expect(screen.getByText('Folder deleted')).toBeInTheDocument(),
-        { timeout: 5000 }
-      );
+      await screen.findByTestId(DataTestIds.CheckCard);
+      expect(screen.queryByText('Folder deleted')).not.toBeInTheDocument();
     });
 
     test('does not display folder badge for checks without a folder', async () => {

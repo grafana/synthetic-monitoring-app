@@ -16,8 +16,11 @@ interface CheckListFolderViewProps {
   folders: GrafanaFolder[];
   foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
+  foldersError?: boolean;
+  onRetryFolders?: () => void;
   defaultFolderUid?: string;
   checkAlertStates: CheckRuntimeAlertStates;
+  calNames: string[];
   onLabelSelect: (label: Label) => void;
   onStatusSelect: (enabled: boolean) => void;
   onTypeSelect: (checkType: CheckType) => void;
@@ -30,8 +33,11 @@ export function CheckListFolderView({
   folders,
   foldersMap,
   foldersLoading,
+  foldersError,
+  onRetryFolders,
   defaultFolderUid,
   checkAlertStates,
+  calNames,
   onLabelSelect,
   onStatusSelect,
   onTypeSelect,
@@ -68,8 +74,10 @@ export function CheckListFolderView({
 
   const checkItemProps = {
     checkAlertStates,
+    calNames,
     foldersMap,
     foldersLoading,
+    foldersError,
     onLabelSelect,
     onStatusSelect,
     onTypeSelect,
@@ -118,6 +126,7 @@ export function CheckListFolderView({
               expandedFolders={expandedFolders}
               toggleFolder={toggleFolder}
               checkItemProps={checkItemProps}
+              onRetryFolders={onRetryFolders}
             />
           ))}
         </div>
@@ -148,6 +157,7 @@ interface CheckItemCallbacks {
   checkAlertStates: CheckRuntimeAlertStates;
   foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
+  foldersError?: boolean;
   onLabelSelect: (label: Label) => void;
   onStatusSelect: (enabled: boolean) => void;
   onTypeSelect: (checkType: CheckType) => void;
@@ -161,9 +171,10 @@ interface FolderTreeBranchProps {
   expandedFolders: Set<string>;
   toggleFolder: (uid: string) => void;
   checkItemProps: CheckItemCallbacks;
+  onRetryFolders?: () => void;
 }
 
-function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkItemProps }: FolderTreeBranchProps) {
+function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkItemProps, onRetryFolders }: FolderTreeBranchProps) {
   const styles = useStyles2(getStyles);
   const isExpanded = expandedFolders.has(node.folderUid);
   const totalChecks = getTotalCheckCount(node);
@@ -187,21 +198,37 @@ function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkIte
           }
         }}
       >
-        <Stack gap={1.5} alignItems="center">
+        <Stack gap={1.5} alignItems="center" wrap="wrap">
           <Icon name={isExpanded ? 'angle-down' : 'angle-right'} size="lg" />
-          <Icon name={isExpanded ? 'folder-open' : 'folder'} />
+          {node.isOrphaned && !checkItemProps.foldersLoading ? (
+            <Tooltip content={`Folder UID: ${node.folderUid}`}>
+              <Icon name="exclamation-triangle" />
+            </Tooltip>
+          ) : (
+            <Icon name={isExpanded ? 'folder-open' : 'folder'} />
+          )}
           <span className={isRoot ? styles.folderTitleRoot : styles.folderTitleNested}>
             {node.isOrphaned && checkItemProps.foldersLoading ? (
               <Spinner size="sm" />
+            ) : node.isOrphaned && checkItemProps.foldersError ? (
+              'Failed to load folder info'
+            ) : node.isOrphaned ? (
+              <span className={styles.orphanedLabel}>Folder not found</span>
             ) : (
-              <>
-                {node.folder?.title ?? node.folderUid}
-                {node.isOrphaned && !checkItemProps.foldersLoading && (
-                  <span className={styles.orphanedLabel}> (Folder deleted)</span>
-                )}
-              </>
+              node.folder?.title ?? node.folderUid
             )}
           </span>
+          {node.isOrphaned && !checkItemProps.foldersLoading && checkItemProps.foldersError && onRetryFolders && (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon="sync"
+              onClick={(e) => { e.stopPropagation(); onRetryFolders(); }}
+              tooltip="Retry loading folders"
+            >
+              Retry
+            </Button>
+          )}
           <span className={styles.checkCount}>
             {totalChecks} {totalChecks === 1 ? 'check' : 'checks'}
           </span>
@@ -218,6 +245,7 @@ function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkIte
               expandedFolders={expandedFolders}
               toggleFolder={toggleFolder}
               checkItemProps={checkItemProps}
+              onRetryFolders={onRetryFolders}
             />
           ))}
           {node.checks.length > 0 && (
@@ -259,6 +287,8 @@ function PaginatedCheckList({ checks, checkItemProps }: PaginatedCheckListProps)
           check={check}
           foldersMap={checkItemProps.foldersMap}
           foldersLoading={checkItemProps.foldersLoading}
+          foldersError={checkItemProps.foldersError}
+          calNames={checkItemProps.calNames}
           onLabelSelect={checkItemProps.onLabelSelect}
           onStatusSelect={checkItemProps.onStatusSelect}
           onTypeSelect={checkItemProps.onTypeSelect}
@@ -348,7 +378,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.bodySmall.fontSize,
   }),
   orphanedLabel: css({
-    color: theme.colors.warning.text,
+    color: theme.colors.text.secondary,
     fontStyle: 'italic',
   }),
   checkCount: css({

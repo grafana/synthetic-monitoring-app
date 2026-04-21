@@ -70,7 +70,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const { data: checks } = useSuspenseChecks();
 
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const { folders: allFolders, foldersMap, defaultFolderUid, isLoading: isFoldersLoading } = useAllFolders();
+  const { folders: allFolders, foldersMap, defaultFolderUid, isLoading: isFoldersLoading, isError: isFoldersError, refetch: refetchFolders } = useAllFolders();
   const {
     data: checkAlertStates = {},
     isFetched: isAlertStatesFetched,
@@ -266,8 +266,11 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           folders={allFolders}
           foldersMap={foldersMap}
           foldersLoading={isFoldersLoading}
+          foldersError={isFoldersError}
+          onRetryFolders={refetchFolders}
           defaultFolderUid={defaultFolderUid}
           checkAlertStates={checkAlertStates}
+          calNames={calNames}
           onLabelSelect={handleLabelSelect}
           onStatusSelect={handleStatusSelect}
           onTypeSelect={handleTypeSelect}
@@ -286,6 +289,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                   calNames={calNames}
                   foldersMap={foldersMap}
                   foldersLoading={isFoldersLoading}
+                  foldersError={isFoldersError}
                   onLabelSelect={handleLabelSelect}
                   onStatusSelect={handleStatusSelect}
                   onTypeSelect={handleTypeSelect}

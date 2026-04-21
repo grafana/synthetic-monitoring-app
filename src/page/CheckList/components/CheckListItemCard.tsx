@@ -31,6 +31,7 @@ export const CheckListItemCard = ({
   onToggleCheckbox,
   foldersMap,
   foldersLoading,
+  foldersError,
 }: CheckListItemProps) => {
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
@@ -99,7 +100,7 @@ export const CheckListItemCard = ({
           </div>
           <div className={styles.footer}>
             <div className={styles.labelsContainer}>
-              <CheckFolderBadge check={check} foldersMap={foldersMap} foldersLoading={foldersLoading} />
+              <CheckFolderBadge check={check} foldersMap={foldersMap} foldersLoading={foldersLoading} foldersError={foldersError} />
               {calLabels.map((label: Label, index) => (
                 <CheckCardLabel
                   key={`cal-${label.name}`}

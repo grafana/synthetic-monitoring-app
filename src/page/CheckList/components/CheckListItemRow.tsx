@@ -25,6 +25,7 @@ export const CheckListItemRow = ({
   onToggleCheckbox,
   foldersMap,
   foldersLoading,
+  foldersError,
 }: CheckListItemProps) => {
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
@@ -75,7 +76,7 @@ export const CheckListItemRow = ({
           onLabelClick={onLabelSelect}
           executionsRate={usage?.checksPerMonth}
         />
-        <CheckFolderBadge check={check} foldersMap={foldersMap} foldersLoading={foldersLoading} />
+        <CheckFolderBadge check={check} foldersMap={foldersMap} foldersLoading={foldersLoading} foldersError={foldersError} />
         <CheckItemActionButtons check={check} viewDashboardAsIcon />
       </div>
     </div>

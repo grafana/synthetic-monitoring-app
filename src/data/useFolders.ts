@@ -124,12 +124,16 @@ export function useAllFolders() {
 
   const foldersMap = useMemo(() => new Map(folders.map((f) => [f.uid, f])), [folders]);
 
+  const isError = isDefaultError || isChildrenError;
+  const refetch = () => queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
+
   return {
     folders,
     foldersMap,
     defaultFolderUid,
     isLoading: isDefaultLoading || isChildrenLoading,
-    isError: isDefaultError || isChildrenError,
+    isError,
+    refetch,
   };
 }
 

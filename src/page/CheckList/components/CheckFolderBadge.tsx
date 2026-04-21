@@ -1,7 +1,7 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
-import { Tag, Tooltip, useStyles2 } from '@grafana/ui';
+import { Tag, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Check, FeatureName, GrafanaFolder } from 'types';
@@ -12,9 +12,10 @@ interface CheckFolderBadgeProps {
   check: Check;
   foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
+  foldersError?: boolean;
 }
 
-export function CheckFolderBadge({ check, foldersMap, foldersLoading }: CheckFolderBadgeProps) {
+export function CheckFolderBadge({ check, foldersMap, foldersLoading, foldersError }: CheckFolderBadgeProps) {
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const styles = useStyles2(getStyles);
 
@@ -42,11 +43,7 @@ export function CheckFolderBadge({ check, foldersMap, foldersLoading }: CheckFol
     );
   }
 
-  return (
-    <Tooltip content={`Folder no longer exists: ${check.folderUid}`}>
-      <Tag name="Folder deleted" icon="folder" colorIndex={15} className={cx(styles.badgeBase, styles.errorTag)} />
-    </Tooltip>
-  );
+  return null;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -60,10 +57,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   folderTag: css({
     cursor: 'pointer',
-  }),
-  errorTag: css({
-    backgroundColor: theme.colors.warning.main,
-    color: theme.colors.warning.contrastText,
-    borderColor: theme.colors.warning.border,
   }),
 });
