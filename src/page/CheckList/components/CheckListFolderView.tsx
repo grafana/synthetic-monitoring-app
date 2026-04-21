@@ -369,6 +369,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     '&:hover': {
       backgroundColor: theme.colors.action.hover,
     },
+    '&:focus-visible': {
+      outline: `2px solid ${theme.colors.primary.border}`,
+      outlineOffset: -2,
+    },
   }),
   folderHeaderNested: css({
     display: 'flex',
@@ -379,13 +383,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
     '&:hover': {
       backgroundColor: theme.colors.action.hover,
     },
+    '&:focus-visible': {
+      outline: `2px solid ${theme.colors.primary.border}`,
+      outlineOffset: -2,
+    },
   }),
   folderTitleRoot: css({
     fontWeight: theme.typography.fontWeightMedium,
     fontSize: theme.typography.body.fontSize,
   }),
   folderTitleNested: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+    fontSize: theme.typography.body.fontSize,
   }),
   orphanedLabel: css({
     color: theme.colors.text.secondary,
@@ -396,16 +405,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.bodySmall.fontSize,
   }),
   folderContentRoot: css({
-    padding: theme.spacing(1, 2, 2),
+    padding: theme.spacing(2, 2, 2),
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(1),
+    gap: theme.spacing(1.5),
   }),
   folderContentNested: css({
-    paddingLeft: theme.spacing(3),
+    padding: theme.spacing(1.5, 0, 1.5, 3),
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(1),
+    gap: theme.spacing(1.5),
   }),
   checkList: css({
     display: 'flex',
