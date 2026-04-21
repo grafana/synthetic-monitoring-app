@@ -108,6 +108,7 @@ export function ChecksterProvider({
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const { defaultFolderUid, isLoading: isFolderLoading, isError: isFolderError } = useDefaultFolder(isFoldersEnabled);
+  const isFolderReady = !isFoldersEnabled || !isFolderLoading || isFolderError;
 
   const [checkType, setCheckType] = useState<CheckType>(
     isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
@@ -262,7 +263,7 @@ export function ChecksterProvider({
     canChangeCheckType,
   ]);
 
-  if (isFoldersEnabled && isFolderLoading && !isFolderError) {
+  if (!isFolderReady) {
     return null;
   }
 

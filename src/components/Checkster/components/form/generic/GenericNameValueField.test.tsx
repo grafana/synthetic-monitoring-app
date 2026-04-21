@@ -29,6 +29,15 @@ jest.mock('data/useProbes', () => ({
   })),
 }));
 
+jest.mock('data/useDefaultFolder', () => ({
+  useDefaultFolder: jest.fn(() => ({
+    defaultFolder: undefined,
+    defaultFolderUid: undefined,
+    isLoading: false,
+    isError: false,
+  })),
+}));
+
 const defaultProps = {
   field: 'labels',
   label: 'Labels',
