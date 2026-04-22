@@ -139,13 +139,12 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           onDismiss={() => setShowDeleteModal(false)}
         />
       )}
-      {showMoveToFolderModal && (
-        <BulkMoveToFolderModal
-          checks={checks}
-          isOpen={showMoveToFolderModal}
-          onDismiss={handleMoveResolved}
-        />
-      )}
+      <BulkMoveToFolderModal
+        checks={checks}
+        isOpen={showMoveToFolderModal}
+        onDismiss={() => setShowMoveToFolderModal(false)}
+        onMoved={handleMoveResolved}
+      />
     </>
   );
 };

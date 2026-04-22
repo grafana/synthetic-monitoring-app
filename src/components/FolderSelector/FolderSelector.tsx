@@ -21,7 +21,8 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const allFolders = useMemo(() => (defaultFolder ? [defaultFolder, ...childFolders] : []), [defaultFolder, childFolders]);
-  const { folderDetailsByUid } = useFolderPermissions(allFolders.map((f) => f.uid));
+  const allFolderUids = useMemo(() => allFolders.map((f) => f.uid), [allFolders]);
+  const { folderDetailsByUid } = useFolderPermissions(allFolderUids);
 
   const isLoading = isDefaultLoading || isChildrenLoading;
   const isError = isDefaultError || isChildrenError;
