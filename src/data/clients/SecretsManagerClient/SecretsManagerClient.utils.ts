@@ -4,14 +4,6 @@ import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTa
 
 import { SM_SECRET_DECRYPTER } from './constants';
 
-function parseTimestamp(value?: string): number {
-  if (!value) {
-    return 0;
-  }
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
 function labelsRecordToArray(labels?: Record<string, string>): Array<{ name: string; value: string }> {
   return Object.entries(labels ?? {}).map(([name, value]) => ({ name, value }));
 }
@@ -31,14 +23,10 @@ function labelsArrayToRecord(labels?: Array<{ name: string; value: string }>): R
 /**
  * Normalizes a Kubernetes-style secret resource from the Grafana secrets API
  * into the SecretWithMetadata shape the rest of the app expects.
- *
- * Fields the new API does not provide (org_id) are set to 0. `stack_id` is
- * injected from the caller since it is not returned on the resource itself.
  */
-export function normalizeSecret(item: SecretResponseItem, stackId: number): SecretWithMetadata {
+export function normalizeSecret(item: SecretResponseItem): SecretWithMetadata {
   const annotations = item.metadata.annotations ?? {};
-  const createdAt = parseTimestamp(item.metadata.creationTimestamp);
-  const modifiedAt = parseTimestamp(annotations[SECRET_ANNOTATIONS.updatedTimestamp]) || createdAt;
+  const createdAtRaw = Date.parse(item.metadata.creationTimestamp);
 
   return {
     uuid: item.metadata.uid,
@@ -46,11 +34,8 @@ export function normalizeSecret(item: SecretResponseItem, stackId: number): Secr
     description: item.spec.description,
     labels: labelsRecordToArray(item.metadata.labels),
     decrypters: item.spec.decrypters ?? [],
-    created_at: createdAt,
-    modified_at: modifiedAt,
+    created_at: Number.isNaN(createdAtRaw) ? 0 : createdAtRaw,
     created_by: annotations[SECRET_ANNOTATIONS.createdBy] ?? '',
-    org_id: 0,
-    stack_id: stackId,
   };
 }
 

@@ -24,11 +24,9 @@ import {
  * (`fetchSecret`) do not apply that scope.
  */
 export class SecretsManagerClient {
-  private readonly stackId: number;
   private readonly basePath: string;
 
   constructor(stackId: number) {
-    this.stackId = stackId;
     this.basePath = `${SECRETS_API_BASE}/namespaces/stacks-${stackId}/securevalues`;
   }
 
@@ -51,7 +49,7 @@ export class SecretsManagerClient {
     });
 
     const items = response?.items ?? [];
-    return items.map((item) => normalizeSecret(item, this.stackId));
+    return items.map(normalizeSecret);
   }
 
   async fetchSecret(name: string): Promise<SecretWithMetadata> {
@@ -59,7 +57,7 @@ export class SecretsManagerClient {
       method: 'GET',
       url: `${this.basePath}/${name}`,
     });
-    return normalizeSecret(response, this.stackId);
+    return normalizeSecret(response);
   }
 
   async createSecret(values: CreateSecretFormValues): Promise<SecretWithMetadata> {
@@ -69,7 +67,7 @@ export class SecretsManagerClient {
       url: this.basePath,
       data: payload,
     });
-    return normalizeSecret(response, this.stackId);
+    return normalizeSecret(response);
   }
 
   async updateSecret(values: SecretFormValues, currentDecrypters: string[]): Promise<SecretWithMetadata> {
@@ -79,7 +77,7 @@ export class SecretsManagerClient {
       url: `${this.basePath}/${values.name}`,
       data: payload,
     });
-    return normalizeSecret(response, this.stackId);
+    return normalizeSecret(response);
   }
 
   async deleteSecret(name: string): Promise<void> {

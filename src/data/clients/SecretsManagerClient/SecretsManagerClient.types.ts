@@ -1,10 +1,12 @@
 /**
  * Annotation keys set by the secrets management API on resource metadata.
+ *
+ * Only annotations that SM surfaces to users are listed here; others
+ * (e.g. `grafana.app/updatedBy`, `grafana.app/updatedTimestamp`) exist on
+ * the API response but aren't consumed by SM today.
  */
 export const SECRET_ANNOTATIONS = {
   createdBy: 'grafana.app/createdBy',
-  updatedBy: 'grafana.app/updatedBy',
-  updatedTimestamp: 'grafana.app/updatedTimestamp',
 } as const;
 
 /**

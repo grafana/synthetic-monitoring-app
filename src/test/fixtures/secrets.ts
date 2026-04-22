@@ -10,11 +10,9 @@ import { SM_META } from './meta';
 
 const STACK_ID = SM_META.jsonData.stackId;
 
-function makeAnnotations(createdBy: string, updatedBy: string, updatedTimestamp: string) {
+function makeAnnotations(createdBy: string) {
   return {
     [SECRET_ANNOTATIONS.createdBy]: createdBy,
-    [SECRET_ANNOTATIONS.updatedBy]: updatedBy,
-    [SECRET_ANNOTATIONS.updatedTimestamp]: updatedTimestamp,
   };
 }
 
@@ -34,7 +32,7 @@ export const MOCKED_SECURE_VALUE_ITEMS: SecretResponseItem[] = [
       resourceVersion: '1',
       creationTimestamp: '1970-01-01T00:00:00Z',
       labels: { env: 'prod', type: 'test' },
-      annotations: makeAnnotations('user1', 'user1', '1970-01-01T00:00:00Z'),
+      annotations: makeAnnotations('user1'),
     },
     spec: {
       description: 'Test Description 1',
@@ -49,7 +47,7 @@ export const MOCKED_SECURE_VALUE_ITEMS: SecretResponseItem[] = [
       resourceVersion: '1',
       creationTimestamp: '1970-01-01T00:00:00Z',
       labels: { env: 'dev' },
-      annotations: makeAnnotations('user2', 'user2', '1970-01-01T00:00:00Z'),
+      annotations: makeAnnotations('user2'),
     },
     spec: {
       description: 'Test Description 2',
@@ -63,7 +61,7 @@ export const MOCKED_SECURE_VALUE_ITEMS: SecretResponseItem[] = [
       uid: 'secret-3',
       resourceVersion: '1',
       creationTimestamp: '1970-01-01T00:00:00Z',
-      annotations: makeAnnotations('user3', 'user3', '1970-01-01T00:00:00Z'),
+      annotations: makeAnnotations('user3'),
     },
     spec: {
       description: 'Test Description 3 - No labels',
@@ -100,9 +98,6 @@ export const MOCKED_SECRETS: SecretWithMetadata[] = [
       { name: 'type', value: 'test' },
     ],
     decrypters: [SM_SECRET_DECRYPTER],
-    modified_at: 0,
-    org_id: 0,
-    stack_id: STACK_ID,
   },
   {
     uuid: 'secret-2',
@@ -112,9 +107,6 @@ export const MOCKED_SECRETS: SecretWithMetadata[] = [
     created_by: 'user2',
     labels: [{ name: 'env', value: 'dev' }],
     decrypters: [SM_SECRET_DECRYPTER],
-    modified_at: 0,
-    org_id: 0,
-    stack_id: STACK_ID,
   },
   {
     uuid: 'secret-3',
@@ -124,8 +116,5 @@ export const MOCKED_SECRETS: SecretWithMetadata[] = [
     created_by: 'user3',
     labels: [],
     decrypters: [SM_SECRET_DECRYPTER],
-    modified_at: 0,
-    org_id: 0,
-    stack_id: STACK_ID,
   },
 ];

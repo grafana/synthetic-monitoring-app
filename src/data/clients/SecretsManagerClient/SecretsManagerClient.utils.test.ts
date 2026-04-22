@@ -20,8 +20,6 @@ function makeItem(overrides: Partial<SecretResponseItem['metadata']> = {}): Secr
       labels: { env: 'prod', type: 'api-key' },
       annotations: {
         [SECRET_ANNOTATIONS.createdBy]: 'user:1',
-        [SECRET_ANNOTATIONS.updatedBy]: 'user:2',
-        [SECRET_ANNOTATIONS.updatedTimestamp]: '2024-02-02T03:04:05Z',
       },
       ...overrides,
     },
@@ -34,7 +32,7 @@ function makeItem(overrides: Partial<SecretResponseItem['metadata']> = {}): Secr
 
 describe('normalizeSecret', () => {
   it('maps metadata, spec and annotations onto SecretWithMetadata', () => {
-    const result = normalizeSecret(makeItem(), 42);
+    const result = normalizeSecret(makeItem());
 
     expect(result).toEqual({
       uuid: 'uid-123',
@@ -46,28 +44,12 @@ describe('normalizeSecret', () => {
       ],
       decrypters: [SM_SECRET_DECRYPTER],
       created_at: Date.parse('2024-01-02T03:04:05Z'),
-      modified_at: Date.parse('2024-02-02T03:04:05Z'),
       created_by: 'user:1',
-      org_id: 0,
-      stack_id: 42,
     });
   });
 
-  it('falls back to creationTimestamp when updatedTimestamp annotation is missing', () => {
-    const result = normalizeSecret(
-      makeItem({
-        annotations: { [SECRET_ANNOTATIONS.createdBy]: 'user:1' },
-      }),
-      1
-    );
-    expect(result.modified_at).toBe(Date.parse('2024-01-02T03:04:05Z'));
-  });
-
   it('handles missing labels and annotations gracefully', () => {
-    const result = normalizeSecret(
-      makeItem({ labels: undefined, annotations: undefined }),
-      1
-    );
+    const result = normalizeSecret(makeItem({ labels: undefined, annotations: undefined }));
     expect(result.labels).toEqual([]);
     expect(result.created_by).toBe('');
   });
@@ -75,13 +57,13 @@ describe('normalizeSecret', () => {
   it('exposes the full decrypter list so it can be echoed back on update', () => {
     const item = makeItem();
     item.spec.decrypters = [SM_SECRET_DECRYPTER, 'some-other-service'];
-    expect(normalizeSecret(item, 1).decrypters).toEqual([SM_SECRET_DECRYPTER, 'some-other-service']);
+    expect(normalizeSecret(item).decrypters).toEqual([SM_SECRET_DECRYPTER, 'some-other-service']);
   });
 
   it('defaults decrypters to an empty array when the API omits them', () => {
     const item = makeItem();
     delete item.spec.decrypters;
-    expect(normalizeSecret(item, 1).decrypters).toEqual([]);
+    expect(normalizeSecret(item).decrypters).toEqual([]);
   });
 });
 
