@@ -75,6 +75,9 @@ export function CheckListFolderView({
     return uids;
   }, [folderTree, defaultFolderNode]);
 
+  // Track collapsed folders rather than expanded ones so that folders
+  // arriving from async data (e.g. permission queries) appear expanded
+  // by default without overriding folders the user has manually collapsed.
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
 
   const toggleFolder = (folderUid: string) => {
@@ -92,7 +95,7 @@ export function CheckListFolderView({
   const expandAll = () => setCollapsedFolders(new Set());
   const collapseAll = () => setCollapsedFolders(new Set(allUids));
 
-  const allExpanded = allUids.length > 0 && allUids.every((uid) => !collapsedFolders.has(uid));
+  const allExpanded = collapsedFolders.size === 0;
   const allCollapsed = allUids.length > 0 && allUids.every((uid) => collapsedFolders.has(uid));
 
   const checkItemProps = {
