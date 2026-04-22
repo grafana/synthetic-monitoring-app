@@ -46,7 +46,8 @@ describe('CheckList - Bulk Move to Folder', () => {
       const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
       await user.click(selectAll);
 
-      expect(await screen.findByRole('button', { name: /Move to folder/i })).toBeInTheDocument();
+      const moveButtons = await screen.findAllByRole('button', { name: /Move to folder/i });
+      expect(moveButtons.length).toBeGreaterThan(0);
     });
 
     it('opens a modal with a folder selector when "Move to folder" is clicked', async () => {
@@ -54,8 +55,8 @@ describe('CheckList - Bulk Move to Folder', () => {
       const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
       await user.click(selectAll);
 
-      const moveButton = await screen.findByRole('button', { name: /Move to folder/i });
-      await user.click(moveButton);
+      const moveButtons = await screen.findAllByRole('button', { name: /Move to folder/i });
+      await user.click(moveButtons[0]);
 
       const modal = await screen.findByRole('dialog');
       expect(within(modal).getByText('Move 2 checks to folder')).toBeInTheDocument();
@@ -70,8 +71,9 @@ describe('CheckList - Bulk Move to Folder', () => {
       const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
       await user.click(selectAll);
 
-      const moveButton = await screen.findByRole('button', { name: /Move to folder/i });
-      expect(moveButton).toBeDisabled();
+      const moveButtons = await screen.findAllByRole('button', { name: /Move to folder/i });
+      const globalMoveButton = moveButtons[0];
+      expect(globalMoveButton).toBeDisabled();
     });
 
     it('closes the modal when cancel is clicked', async () => {
@@ -79,8 +81,8 @@ describe('CheckList - Bulk Move to Folder', () => {
       const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
       await user.click(selectAll);
 
-      const moveButton = await screen.findByRole('button', { name: /Move to folder/i });
-      await user.click(moveButton);
+      const moveButtons = await screen.findAllByRole('button', { name: /Move to folder/i });
+      await user.click(moveButtons[0]);
 
       const modal = await screen.findByRole('dialog');
       const cancelButton = within(modal).getByRole('button', { name: 'Cancel' });
