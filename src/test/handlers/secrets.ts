@@ -1,100 +1,80 @@
 import { ApiEntry } from './types';
-import { SecretsResponse } from 'data/useSecrets';
-import { SecretWithMetadata } from 'page/ConfigPageLayout/tabs/SecretsManagementTab';
-import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
+import {
+  SecretResponseItem,
+  SecretsListResponse,
+} from 'data/clients/SecretsManagerClient/SecretsManagerClient.types';
 
-import { MOCKED_SECRETS_API_RESPONSE } from '../fixtures/secrets';
+import { MOCKED_SECURE_VALUE_ITEMS, MOCKED_SECURE_VALUES_API_RESPONSE } from '../fixtures/secrets';
+
+const LIST_ROUTE = `/apis/secret.grafana.app/v1beta1/namespaces/stacks-[^/]+/securevalues`;
+const ITEM_ROUTE = `/apis/secret.grafana.app/v1beta1/namespaces/stacks-[^/]+/securevalues/([^/]+)`;
 
 /**
- * Represents an API entry for retrieving a list of secrets.
+ * Handler for `GET .../securevalues`.
  *
- * The `listSecrets` variable is an instance of `ApiEntry` that defines the
- * necessary details for making a GET request to the `/api/v1alpha1/secrets`
- * endpoint. It retrieves secret data in the form of a `SecretsResponse`.
- *
- * Properties:
- * - `route`: Specifies the API's URL endpoint as a string (`/api/v1alpha1/secrets`).
- * - `method`: Defines the HTTP method (`get`) to be used for this API request.
- * - `result`: A function that simulates the server's response by returning
- *   mocked data (`MOCKED_SECRETS_API_RESPONSE`) as JSON.
- *
- * This API is generally used to query secrets information in a predefined format.
+ * Returns a Kubernetes-style `SecureValueList`. The real API filters the
+ * list by `fieldSelector=spec.decrypter=<name>`; this mock handler does not
+ * honor the fieldSelector, so tests should set up fixtures that already
+ * represent the filtered server-side result.
  */
-export const listSecrets: ApiEntry<SecretsResponse> = {
-  route: `/api/v1alpha1/secrets`,
+export const listSecrets: ApiEntry<SecretsListResponse> = {
+  route: LIST_ROUTE,
   method: `get`,
   result: () => {
     return {
-      json: MOCKED_SECRETS_API_RESPONSE,
+      json: MOCKED_SECURE_VALUES_API_RESPONSE,
     };
   },
 };
 
 /**
- * Represents an API entry for retrieving a secret along with its metadata.
- *
- * The `getSecret` object defines the route and method to retrieve a secret
- * and provides a mechanism for simulating a response with mock data.
- * It uses the `ApiEntry` type with the `SecretWithMetadata` structure to
- * ensure the returned data adheres to the expected format.
- *
- * Properties:
- * - `route`: Specifies the API endpoint for fetching the secret. Includes a dynamic UUID value based on mocked data.
- * - `method`: HTTP method used to interact with the API (in this case, `GET`).
- * - `result`: A function representing the response handler, returning a mock JSON payload containing the secret data.
+ * Handler for `GET .../securevalues/{name}`.
  */
-export const getSecret: ApiEntry<SecretWithMetadata> = {
-  route: `/api/v1alpha1/secrets/([^/]+)`,
+export const getSecret: ApiEntry<SecretResponseItem> = {
+  route: ITEM_ROUTE,
   method: `get`,
   result: () => {
     return {
-      json: MOCKED_SECRETS_API_RESPONSE.secrets[0],
+      json: MOCKED_SECURE_VALUE_ITEMS[0],
     };
   },
 };
 
 /**
- * An API entry configuration for creating a secret entity.
+ * Handler for `POST .../securevalues` (create).
  *
- * This configuration includes the API route, HTTP method, and the expected result.
- *
- * Properties:
- * - `route`: The API endpoint for creating a new secret.
- * - `method`: The HTTP method used for the request, which is "post" in this case.
- * - `result`: A function that returns the expected result of the API call, which is a JSON response with a value of `null`.
+ * Returns the first fixture item as a stand-in for the newly created resource.
  */
-export const createSecret: ApiEntry<SecretFormValues> = {
-  route: `/api/v1alpha1/secrets`,
+export const createSecret: ApiEntry<SecretResponseItem> = {
+  route: LIST_ROUTE,
   method: `post`,
   result: () => {
     return {
-      json: null,
+      json: MOCKED_SECURE_VALUE_ITEMS[0],
     };
   },
 };
 
 /**
- * Represents the API endpoint for updating a secret's details.
+ * Handler for `PUT .../securevalues/{name}` (update).
  *
- * This configuration includes the API route, HTTP method, and the expected result.
- *
- * Properties:
- * - `route`: The API endpoint for updating an existing secret.
- * - `method`: The HTTP method used for the request, which is "put" in this case.
- * - `result`: A function that returns the expected result of the API call, which is a JSON response with a value of `null`.
+ * Returns the first fixture item as a stand-in for the updated resource.
  */
-export const updateSecret: ApiEntry<SecretFormValues> = {
-  route: `/api/v1alpha1/secrets/([^/]+)`,
+export const updateSecret: ApiEntry<SecretResponseItem> = {
+  route: ITEM_ROUTE,
   method: `put`,
   result: () => {
     return {
-      json: null,
+      json: MOCKED_SECURE_VALUE_ITEMS[0],
     };
   },
 };
 
+/**
+ * Handler for `DELETE .../securevalues/{name}` (delete).
+ */
 export const deleteSecret: ApiEntry<unknown> = {
-  route: `/api/v1alpha1/secrets/([^/]+)`,
+  route: ITEM_ROUTE,
   method: `delete`,
   result: () => {
     return {

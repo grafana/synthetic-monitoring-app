@@ -22,6 +22,7 @@ export interface SecretMetadata {
   org_id: number;
   stack_id: number;
   uuid: string;
+  decrypters: string[];
 }
 
 export interface SecretWithUuid extends Omit<Secret, 'uuid'> {

@@ -51,7 +51,14 @@ describe('SecretsManagementTab', () => {
 
     it('shows secrets management UI for admin users', async () => {
       runTestAsSMAdmin();
-      server.use(apiRoute('listSecrets', { result: () => ({ status: 200, json: { secrets: [] } }) }));
+      server.use(
+        apiRoute('listSecrets', {
+          result: () => ({
+            status: 200,
+            json: { apiVersion: 'secret.grafana.app/v1beta1', kind: 'SecureValueList', metadata: {}, items: [] },
+          }),
+        })
+      );
 
       render(<SecretsManagementTab />);
 
@@ -67,7 +74,14 @@ describe('SecretsManagementTab', () => {
 
   describe('RBAC permissions', () => {
     beforeEach(() => {
-      server.use(apiRoute('listSecrets', { result: () => ({ status: 200, json: { secrets: [] } }) }));
+      server.use(
+        apiRoute('listSecrets', {
+          result: () => ({
+            status: 200,
+            json: { apiVersion: 'secret.grafana.app/v1beta1', kind: 'SecureValueList', metadata: {}, items: [] },
+          }),
+        })
+      );
     });
 
     it('allows full access for users with all secret permissions', async () => {
