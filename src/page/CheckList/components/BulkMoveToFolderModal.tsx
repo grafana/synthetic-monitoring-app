@@ -10,6 +10,7 @@ interface BulkMoveToFolderModalProps {
   checks: Check[];
   isOpen: boolean;
   onDismiss: () => void;
+  onMoved: () => void;
 }
 
 export function BulkMoveToFolderModal(props: BulkMoveToFolderModalProps) {
@@ -20,9 +21,9 @@ export function BulkMoveToFolderModal(props: BulkMoveToFolderModalProps) {
   );
 }
 
-function BulkMoveToFolderModalContent({ checks, isOpen, onDismiss }: BulkMoveToFolderModalProps) {
+function BulkMoveToFolderModalContent({ checks, isOpen, onDismiss, onMoved }: BulkMoveToFolderModalProps) {
   const [targetFolderUid, setTargetFolderUid] = useState<string | undefined>();
-  const { mutate: bulkUpdateChecks, isPending, isError } = useBulkUpdateChecks({ onSuccess: onDismiss });
+  const { mutate: bulkUpdateChecks, isPending, isError } = useBulkUpdateChecks({ onSuccess: onMoved });
 
   const handleSubmit = () => {
     if (!targetFolderUid) {

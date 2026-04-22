@@ -111,7 +111,7 @@ describe('BulkMoveToFolderModal', () => {
     const checks = [CHECK_IN_PRODUCTION, CHECK_IN_STAGING];
 
     const { user } = render(
-      <BulkMoveToFolderModal checks={checks} isOpen onDismiss={onDismiss} />
+      <BulkMoveToFolderModal checks={checks} isOpen onDismiss={jest.fn()} onMoved={onDismiss} />
     );
 
     const combobox = await screen.findByPlaceholderText(/Select a folder/);
@@ -136,7 +136,7 @@ describe('BulkMoveToFolderModal', () => {
 
   it('does not offer read-only folders as options', async () => {
     const { user } = render(
-      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} />
+      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />
     );
 
     const combobox = await screen.findByPlaceholderText(/Select a folder/);
@@ -149,7 +149,7 @@ describe('BulkMoveToFolderModal', () => {
 
   it('disables the Move button when no folder is selected', async () => {
     render(
-      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} />
+      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />
     );
 
     await screen.findByPlaceholderText(/Select a folder/);
@@ -158,7 +158,7 @@ describe('BulkMoveToFolderModal', () => {
 
   it('shows singular title for a single check', async () => {
     render(
-      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} />
+      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />
     );
 
     expect(await screen.findByText('Move 1 check to folder')).toBeInTheDocument();
