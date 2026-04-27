@@ -3,6 +3,7 @@ import { AnnotationQuery, GrafanaTheme2 } from '@grafana/data';
 import { RefreshPicker, TimeRangePicker, VariableControl } from '@grafana/scenes-react';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { ViewInKnowledgeGraph } from 'features/knowledgeGraph/ViewInKnowledgeGraph';
 
 import { Check } from 'types';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
@@ -24,6 +25,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
           <DashboardAnnotationControls annotations={annotations} />
         </div>
         <div className={styles.actions}>
+          <ViewInKnowledgeGraph check={check} />
           <EditCheckButton id={check.id} />
           <div className={styles.dashboardControls}>
             <TimeRangePicker />
