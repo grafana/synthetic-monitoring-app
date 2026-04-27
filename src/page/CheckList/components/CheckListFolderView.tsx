@@ -75,10 +75,10 @@ export function CheckListFolderView({
     return uids;
   }, [folderTree, defaultFolderNode]);
 
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() => new Set(allUids));
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
 
   const toggleFolder = (folderUid: string) => {
-    setExpandedFolders((prev) => {
+    setCollapsedFolders((prev) => {
       const next = new Set(prev);
       if (next.has(folderUid)) {
         next.delete(folderUid);
@@ -89,11 +89,11 @@ export function CheckListFolderView({
     });
   };
 
-  const expandAll = () => setExpandedFolders(new Set(allUids));
-  const collapseAll = () => setExpandedFolders(new Set());
+  const expandAll = () => setCollapsedFolders(new Set());
+  const collapseAll = () => setCollapsedFolders(new Set(allUids));
 
-  const allExpanded = allUids.length > 0 && allUids.every((uid) => expandedFolders.has(uid));
-  const allCollapsed = expandedFolders.size === 0;
+  const allExpanded = allUids.length > 0 && allUids.every((uid) => !collapsedFolders.has(uid));
+  const allCollapsed = allUids.length > 0 && allUids.every((uid) => collapsedFolders.has(uid));
 
   const checkItemProps = {
     checkAlertStates,
@@ -147,7 +147,7 @@ export function CheckListFolderView({
               key={node.folderUid}
               node={node}
               depth={0}
-              expandedFolders={expandedFolders}
+              collapsedFolders={collapsedFolders}
               toggleFolder={toggleFolder}
               checkItemProps={checkItemProps}
               onRetryFolders={onRetryFolders}
@@ -159,7 +159,7 @@ export function CheckListFolderView({
               key={defaultFolderNode.folderUid}
               node={defaultFolderNode}
               depth={0}
-              expandedFolders={expandedFolders}
+              collapsedFolders={collapsedFolders}
               toggleFolder={toggleFolder}
               checkItemProps={checkItemProps}
               onRetryFolders={onRetryFolders}
@@ -191,15 +191,15 @@ interface CheckItemCallbacks {
 interface FolderTreeBranchProps {
   node: FolderNode;
   depth: number;
-  expandedFolders: Set<string>;
+  collapsedFolders: Set<string>;
   toggleFolder: (uid: string) => void;
   checkItemProps: CheckItemCallbacks;
   onRetryFolders?: () => void;
 }
 
-function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkItemProps, onRetryFolders }: FolderTreeBranchProps) {
+function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkItemProps, onRetryFolders }: FolderTreeBranchProps) {
   const styles = useStyles2(getStyles);
-  const isExpanded = expandedFolders.has(node.folderUid);
+  const isExpanded = !collapsedFolders.has(node.folderUid);
   const totalChecks = getTotalCheckCount(node);
   const hasContent = node.children.length > 0 || node.checks.length > 0;
 
@@ -258,7 +258,7 @@ function FolderTreeBranch({ node, depth, expandedFolders, toggleFolder, checkIte
               key={child.folderUid}
               node={child}
               depth={depth + 1}
-              expandedFolders={expandedFolders}
+              collapsedFolders={collapsedFolders}
               toggleFolder={toggleFolder}
               checkItemProps={checkItemProps}
               onRetryFolders={onRetryFolders}

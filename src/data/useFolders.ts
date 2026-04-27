@@ -64,6 +64,7 @@ export function useFolderChildren(parentUid: string | undefined): UseQueryResult
       return allDescendants;
     },
     staleTime: FOLDERS_STALE_TIME,
+    refetchOnWindowFocus: false,
     enabled: Boolean(parentUid),
   });
 }

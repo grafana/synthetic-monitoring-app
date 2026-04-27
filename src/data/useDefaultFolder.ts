@@ -12,7 +12,7 @@ import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID, FOLDERS_STALE_TIME } from './
  * If neither is found, creates the folder automatically.
  */
 export function useDefaultFolder(enabled = true) {
-  const { data: defaultFolder, isLoading, isError } = useQuery({
+  const { data: defaultFolder, isLoading, isError, refetch } = useQuery({
     queryKey: [...folderQueryKeys.all, 'default'] as const,
     queryFn: async (): Promise<GrafanaFolder> => {
       const folders = await fetchFolders();
@@ -36,6 +36,7 @@ export function useDefaultFolder(enabled = true) {
       ).then((res) => res.data);
     },
     staleTime: FOLDERS_STALE_TIME,
+    refetchOnWindowFocus: false,
     retry: false,
     enabled,
   });
@@ -45,5 +46,6 @@ export function useDefaultFolder(enabled = true) {
     defaultFolderUid: defaultFolder?.uid,
     isLoading,
     isError,
+    refetch,
   };
 }

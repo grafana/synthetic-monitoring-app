@@ -14,11 +14,12 @@ interface FolderSelectorProps {
 }
 
 export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLabel }: FolderSelectorProps) {
-  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError } = useDefaultFolder();
+  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError, refetch: refetchDefault } = useDefaultFolder();
   const {
     data: childFolders = [],
     isLoading: isChildrenLoading,
     isError: isChildrenError,
+    refetch: refetchChildren,
   } = useFolderChildren(defaultFolderUid);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -67,7 +68,18 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
   }
 
   if (isError) {
-    return <Alert title="Unable to load folders" severity="warning" />;
+    const handleRetry = () => {
+      if (isDefaultError) {
+        refetchDefault();
+      }
+      if (isChildrenError) {
+        refetchChildren();
+      }
+    };
+
+    return (
+      <Alert title="Unable to load folders" severity="warning" buttonContent="Retry" onRemove={handleRetry} />
+    );
   }
 
   return (
