@@ -910,6 +910,8 @@ export type PluginPermissions =
 
 export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | 'write' | 'delete'}`;
 
+export type GrafanaFolderPermission = `folders:${'create' | 'read' | 'write' | 'delete'}`;
+
 export type AlertingType = 'alerting' | 'sensitivity';
 
 export interface K6Channel {

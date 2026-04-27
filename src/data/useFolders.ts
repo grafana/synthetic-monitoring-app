@@ -33,6 +33,16 @@ export function fetchFolders(params?: Record<string, string>) {
   ).then((res) => res.data);
 }
 
+export function fetchFolderByUid(uid: string): Promise<GrafanaFolder> {
+  return firstValueFrom(
+    getBackendSrv().fetch<GrafanaFolder>({
+      method: 'GET',
+      url: `${FOLDERS_API}/${uid}`,
+      showErrorAlert: false,
+    })
+  ).then((res) => res.data);
+}
+
 /**
  * Fetch the full subtree under a given parent folder.
  * Walks children recursively, tracking visited UIDs to guard against
@@ -149,6 +159,7 @@ export function useCreateFolder() {
           method: 'POST',
           url: FOLDERS_API,
           data: payload,
+          showErrorAlert: false,
         })
       ).then((res) => res.data),
     onSuccess: invalidateAllFolders,

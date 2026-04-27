@@ -92,7 +92,7 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
         disabled={disabled}
         aria-label={ariaLabel}
       />
-      {!disabled && (
+      {!disabled && defaultFolder?.canSave && (
         <>
           <span>or</span>
           <Button

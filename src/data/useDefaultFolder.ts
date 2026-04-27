@@ -3,28 +3,37 @@ import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { GrafanaFolder } from 'types';
-import { fetchFolders, folderQueryKeys } from 'data/useFolders';
+import { fetchFolderByUid, fetchFolders, folderQueryKeys } from 'data/useFolders';
+import { getUserPermissions } from 'data/permissions';
 
 import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID, FOLDERS_STALE_TIME } from './folders.constants';
 
 /**
- * Resolves the default SM folder. Tries by known UID first, then by title.
- * If neither is found, creates the folder automatically.
+ * Resolves the default SM folder with permission fields (canSave, canEdit, etc.).
+ *
+ * Uses the detail endpoint (GET /api/folders/:uid) rather than the list endpoint
+ * because only the detail endpoint returns permission fields. Falls back to
+ * searching by title if the known UID is not found. If the folder doesn't exist
+ * at all and the user has folders:create permission, auto-creates it.
  */
 export function useDefaultFolder(enabled = true) {
   const { data: defaultFolder, isLoading, isError, refetch } = useQuery({
     queryKey: [...folderQueryKeys.all, 'default'] as const,
     queryFn: async (): Promise<GrafanaFolder> => {
-      const folders = await fetchFolders();
-
-      const byUid = folders.find((f) => f.uid === DEFAULT_FOLDER_UID);
-      if (byUid) {
-        return byUid;
+      try {
+        return await fetchFolderByUid(DEFAULT_FOLDER_UID);
+      } catch {
+        // UID not found — fall back to searching by title
       }
 
+      const folders = await fetchFolders();
       const byTitle = folders.find((f) => f.title === DEFAULT_FOLDER_TITLE);
       if (byTitle) {
-        return byTitle;
+        return fetchFolderByUid(byTitle.uid);
+      }
+
+      if (!getUserPermissions().canCreateFolders) {
+        throw new Error('Default Synthetic Monitoring folder not found and user lacks folders:create permission');
       }
 
       return firstValueFrom(
@@ -32,6 +41,7 @@ export function useDefaultFolder(enabled = true) {
           method: 'POST',
           url: '/api/folders',
           data: { title: DEFAULT_FOLDER_TITLE },
+          showErrorAlert: false,
         })
       ).then((res) => res.data);
     },
