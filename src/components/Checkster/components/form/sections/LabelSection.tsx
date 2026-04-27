@@ -30,13 +30,13 @@ export function LabelSection() {
           <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} />
         </div>
       )}
+      <KnowledgeGraphServiceLink />
       <GenericLabelContent
         description={description}
         isLoading={isInitialLoad}
         calNames={calData?.names ?? []}
         labelLimit={maxAllowedMetricLabels}
       />
-      <KnowledgeGraphServiceLink />
     </FormSection>
   );
 }
