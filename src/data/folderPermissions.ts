@@ -63,12 +63,18 @@ export function resolveCheckFolderStatus(
   check: Pick<Check, 'folderUid'>,
   folderDetailsByUid: Map<string, FolderAccessState>,
   isFoldersEnabled: boolean,
+  defaultFolderUid?: string,
 ): CheckFolderStatus {
-  if (!isFoldersEnabled || !check.folderUid) {
+  if (!isFoldersEnabled) {
     return { type: 'no-folder-context' };
   }
 
-  return folderDetailsByUid.get(check.folderUid) ?? { type: 'forbidden' };
+  const effectiveUid = check.folderUid || defaultFolderUid;
+  if (!effectiveUid) {
+    return { type: 'no-folder-context' };
+  }
+
+  return folderDetailsByUid.get(effectiveUid) ?? { type: 'forbidden' };
 }
 
 /**

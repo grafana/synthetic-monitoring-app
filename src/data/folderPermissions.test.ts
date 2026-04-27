@@ -3,7 +3,7 @@ import { runTestAsRBACEditor, runTestAsRBACReader } from 'test/utils';
 
 import {
   CheckFolderStatus,
-    computeCheckPermissions,
+  computeCheckPermissions,
   FolderAccessState,
   isCheckVisible,
   resolveCheckFolderStatus,
@@ -46,15 +46,29 @@ describe('resolveCheckFolderStatus', () => {
     expect(result.type).toBe('no-folder-context');
   });
 
-  it('returns no-folder-context when check has no folderUid', () => {
+  it('returns no-folder-context when check has no folderUid and no defaultFolderUid', () => {
     const result = resolveCheckFolderStatus({ folderUid: undefined }, new Map(), true);
     expect(result.type).toBe('no-folder-context');
   });
 
-  it('resolves the default folder', () => {
+  it('falls back to defaultFolderUid when check has no folderUid', () => {
+    const defaultUid = 'grafana-synthetic-monitoring-app';
+    const details = new Map([[defaultUid, FOLDER_VIEWER]]);
+    const result = resolveCheckFolderStatus({ folderUid: undefined }, details, true, defaultUid);
+    expect(result).toEqual(FOLDER_VIEWER);
+  });
+
+  it('falls back to defaultFolderUid when check has empty string folderUid', () => {
+    const defaultUid = 'grafana-synthetic-monitoring-app';
+    const details = new Map([[defaultUid, FOLDER_VIEWER]]);
+    const result = resolveCheckFolderStatus({ folderUid: '' }, details, true, defaultUid);
+    expect(result).toEqual(FOLDER_VIEWER);
+  });
+
+  it('resolves the default folder when set explicitly on the check', () => {
     const defaultUid = 'grafana-synthetic-monitoring-app';
     const details = new Map([[defaultUid, FOLDER_EDITOR]]);
-    const result = resolveCheckFolderStatus({ folderUid: defaultUid }, details, true);
+    const result = resolveCheckFolderStatus({ folderUid: defaultUid }, details, true, defaultUid);
     expect(result).toEqual(FOLDER_EDITOR);
   });
 
@@ -99,7 +113,7 @@ describe('isCheckVisible', () => {
 });
 
 describe('computeCheckPermissions', () => {
-  describe('no-folder-context (folders disabled or no folderUid)', () => {
+  describe('no-folder-context (folders disabled or no folderUid and no default folder)', () => {
     const status: CheckFolderStatus = { type: 'no-folder-context' };
 
     it('returns full SM RBAC for a writer', () => {

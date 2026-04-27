@@ -26,7 +26,7 @@ import { useAllFolders } from 'data/useFolders';
  */
 export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks: T[]) {
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const { folders: allFolders } = useAllFolders();
+  const { folders: allFolders, defaultFolderUid } = useAllFolders();
 
   const accessibleFolderUids = useMemo(
     () => new Set(allFolders.map((f) => f.uid)),
@@ -38,13 +38,16 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
       return [];
     }
     const uids = new Set<string>();
+    if (defaultFolderUid) {
+      uids.add(defaultFolderUid);
+    }
     checks.forEach((check) => {
       if (check.folderUid) {
         uids.add(check.folderUid);
       }
     });
     return [...uids];
-  }, [checks, isFoldersEnabled]);
+  }, [checks, isFoldersEnabled, defaultFolderUid]);
 
   const { folderDetailsByUid } = useFolderPermissions(folderUids);
   const smPerms = getUserPermissions();
@@ -55,21 +58,22 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
     }
 
     return checks.filter((check) => {
-      if (!check.folderUid) {
+      const effectiveUid = check.folderUid || defaultFolderUid;
+      if (!effectiveUid) {
         return true;
       }
-      if (accessibleFolderUids.has(check.folderUid)) {
+      if (accessibleFolderUids.has(effectiveUid)) {
         return true;
       }
-      return folderDetailsByUid.get(check.folderUid)?.type === 'orphaned';
+      return folderDetailsByUid.get(effectiveUid)?.type === 'orphaned';
     });
-  }, [checks, isFoldersEnabled, accessibleFolderUids, folderDetailsByUid]);
+  }, [checks, isFoldersEnabled, accessibleFolderUids, folderDetailsByUid, defaultFolderUid]);
 
   const getFolderStatus = useCallback(
     (check: Pick<Check, 'folderUid'>): CheckFolderStatus => {
-      return resolveCheckFolderStatus(check, folderDetailsByUid, isFoldersEnabled);
+      return resolveCheckFolderStatus(check, folderDetailsByUid, isFoldersEnabled, defaultFolderUid);
     },
-    [folderDetailsByUid, isFoldersEnabled]
+    [folderDetailsByUid, isFoldersEnabled, defaultFolderUid]
   );
 
   const getPermissions = useCallback(
