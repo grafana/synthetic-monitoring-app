@@ -93,7 +93,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   listCardWrapper: css({
     display: 'grid',
-    gridTemplateColumns: 'auto minmax(220px, 1.25fr) minmax(1px, 1fr) auto auto auto',
+    gridTemplateColumns: 'auto minmax(150px, 1.25fr) minmax(100px, 1fr) auto auto auto',
     alignItems: 'center',
     gridColumnGap: theme.spacing(2),
     padding: theme.spacing(1.5, 2),
@@ -101,6 +101,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   checkTarget: css({
     display: `flex`,
     fontSize: theme.typography.bodySmall.fontSize,
+    minWidth: 0,
+    overflow: 'hidden',
   }),
   checkJobListViewContainer: css({
     display: 'flex',
