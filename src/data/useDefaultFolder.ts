@@ -3,8 +3,8 @@ import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { GrafanaFolder } from 'types';
-import { fetchFolderByUid, fetchFolders, folderQueryKeys } from 'data/useFolders';
 import { getUserPermissions } from 'data/permissions';
+import { fetchFolderByUid, fetchFolders, folderQueryKeys } from 'data/useFolders';
 
 import { DEFAULT_FOLDER_TITLE, DEFAULT_FOLDER_UID, FOLDERS_STALE_TIME } from './folders.constants';
 
