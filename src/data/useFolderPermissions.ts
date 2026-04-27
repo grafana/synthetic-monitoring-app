@@ -1,24 +1,12 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import { getBackendSrv, isFetchError } from '@grafana/runtime';
-import { firstValueFrom } from 'rxjs';
+import { isFetchError } from '@grafana/runtime';
 
 import { GrafanaFolder } from 'types';
+import { fetchFolderByUid } from 'data/useFolders';
 
 import { FolderAccessState } from './folderPermissions';
 import { FOLDERS_STALE_TIME } from './folders.constants';
-
-const FOLDERS_API = '/api/folders';
-
-function fetchFolderByUid(uid: string) {
-  return firstValueFrom(
-    getBackendSrv().fetch<GrafanaFolder>({
-      method: 'GET',
-      url: `${FOLDERS_API}/${uid}`,
-      showErrorAlert: false,
-    })
-  ).then((res) => res.data);
-}
 
 function toAccessState(folder: GrafanaFolder): FolderAccessState {
   return {
