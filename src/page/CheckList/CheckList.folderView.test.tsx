@@ -1,7 +1,13 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
-import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
+import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import {
+  CHECK_IN_PRODUCTION,
+  CHECK_IN_STAGING,
+  CHECK_WITH_ORPHANED_FOLDER,
+  CHECK_WITHOUT_FOLDER,
+} from 'test/fixtures/folderChecks';
 import { DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_STAGING, MOCK_FOLDERS } from 'test/fixtures/folders';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -15,34 +21,6 @@ import { generateRoutePath } from 'routing/utils';
 import { buildChecksByFolder, collectAllFolderUids } from 'hooks/useChecksByFolder';
 
 import { CheckList } from './CheckList';
-
-const CHECK_IN_PRODUCTION: Check = {
-  ...BASIC_HTTP_CHECK,
-  id: 100,
-  job: 'Production HTTP check',
-  folderUid: FOLDER_PRODUCTION.uid,
-};
-
-const CHECK_IN_STAGING: Check = {
-  ...BASIC_DNS_CHECK,
-  id: 101,
-  job: 'Staging DNS check',
-  folderUid: FOLDER_STAGING.uid,
-};
-
-const CHECK_WITHOUT_FOLDER: Check = {
-  ...BASIC_PING_CHECK,
-  id: 102,
-  job: 'Root level ping check',
-  folderUid: undefined,
-};
-
-const CHECK_WITH_ORPHANED_FOLDER: Check = {
-  ...BASIC_DNS_CHECK,
-  id: 103,
-  job: 'Orphaned folder check',
-  folderUid: 'deleted-folder-uid',
-};
 
 const FOLDER_CHECKS = [CHECK_IN_PRODUCTION, CHECK_IN_STAGING, CHECK_WITHOUT_FOLDER];
 
