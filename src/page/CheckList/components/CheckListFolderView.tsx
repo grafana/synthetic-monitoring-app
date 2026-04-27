@@ -98,6 +98,7 @@ export function CheckListFolderView({
   const checkItemProps = {
     checkAlertStates,
     calNames,
+    foldersMap,
     foldersLoading,
     foldersError,
     onLabelSelect,
