@@ -6,6 +6,7 @@ import { useHasFieldsError } from '../../../hooks/useHasFieldsError';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
+import { FormFolderField } from '../FormFolderField';
 import { FormIpVersionRadioField } from '../FormIpVersionRadioField';
 import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
@@ -31,6 +32,7 @@ export function TcpCheckContent() {
     <SectionContent>
       <FormJobField field="job" />
       <ChooseCheckType />
+      <FormFolderField />
       <GenericInputField
         field="target"
         label="Request target"

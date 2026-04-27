@@ -6,6 +6,7 @@ import { useHasFieldsError } from '../../../hooks/useHasFieldsError';
 import { AdditionalSettings } from '../../AdditionalSettings';
 import { SectionContent } from '../../ui/SectionContent';
 import { ChooseCheckType } from '../ChooseCheckType';
+import { FormFolderField } from '../FormFolderField';
 import { FormIpVersionRadioField } from '../FormIpVersionRadioField';
 import { FormJobField } from '../FormJobField';
 import { FormTabContent, FormTabs } from '../FormTabs';
@@ -32,6 +33,7 @@ export function GrpcCheckContent() {
       <FormJobField field="job" />
 
       <ChooseCheckType />
+      <FormFolderField />
 
       {/* TODO: Would be nice to write root fields like `.target` (instead of `target`) */}
       <GenericInputField

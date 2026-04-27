@@ -420,6 +420,18 @@ export interface CheckBase {
   channels?: {
     k6?: K6Channel | K6ChannelRef;
   };
+  folderUid?: string;
+}
+
+export interface GrafanaFolder {
+  uid: string;
+  title: string;
+  url: string;
+  parentUid?: string;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canAdmin?: boolean;
+  canSave?: boolean;
 }
 
 export type Check =
@@ -735,6 +747,7 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   CALs = 'synthetic-monitoring-cals',
+  Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
   Screenshots = 'synthetic-monitoring-screenshots',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
@@ -896,6 +909,8 @@ export type PluginPermissions =
   | `${PermissionBase}.plugin:${'write'}`;
 
 export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | 'write' | 'delete'}`;
+
+export type GrafanaFolderPermission = `folders:${'create' | 'read' | 'write' | 'delete'}`;
 
 export type AlertingType = 'alerting' | 'sensitivity';
 

@@ -20,6 +20,7 @@ interface CheckFiltersProps {
     state: ProbeFilter[],
     update: (value: ProbeFilter[] | null) => void
   ];
+  folders: [state: string[], update: (value: string[] | null) => void];
 }
 
 export function useCheckFilters() {
@@ -84,6 +85,12 @@ export function useCheckFilters() {
           .filter((probe) => labels.includes(probe.displayName))
           .map((probe) => ({ label: probe.displayName, value: probe.id } as ProbeFilter));
       },
+    }),
+    folders: useQueryParametersState<string[]>({
+      key: 'folders',
+      initialValue: [],
+      encode: (value) => value.join(','),
+      decode: (value) => (value ? value.split(',').filter(Boolean) : []),
     }),
   };
 
