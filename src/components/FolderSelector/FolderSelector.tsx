@@ -16,8 +16,8 @@ interface FolderSelectorProps {
 }
 
 export function FolderSelector({ value, onChange, disabled, autoSelectDefault = true, 'aria-label': ariaLabel }: FolderSelectorProps) {
-  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError } = useDefaultFolder();
-  const { data: childFolders = [], isLoading: isChildrenLoading, isError: isChildrenError } = useFolderChildren(defaultFolderUid);
+  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError, refetch: refetchDefault } = useDefaultFolder();
+  const { data: childFolders = [], isLoading: isChildrenLoading, isError: isChildrenError, refetch: refetchChildren } = useFolderChildren(defaultFolderUid);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const allFolders = useMemo(() => (defaultFolder ? [defaultFolder, ...childFolders] : []), [defaultFolder, childFolders]);
