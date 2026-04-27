@@ -64,7 +64,12 @@ export const trackTimepointVizLegendColorClicked = timepointExplorerEvents<Timep
 
 interface TimepointViewerActionClicked extends TrackingEventProps {
   /** The action that was clicked. */
-  action: 'previous-timepoint' | 'next-timepoint' | 'view-explore-logs' | 'view-explore-metrics';
+  action:
+    | 'previous-timepoint'
+    | 'next-timepoint'
+    | 'view-explore-logs'
+    | 'view-explore-metrics'
+    | 'view-frontend-observability-session';
 }
 
 /** Tracks when a Timepoint Viewer action is clicked */
