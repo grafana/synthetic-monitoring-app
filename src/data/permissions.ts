@@ -57,3 +57,5 @@ export const getUserPermissions = () => ({
 
   isAdmin: hasMinFallbackRole(OrgRole.Admin),
 });
+
+export type SMPermissions = ReturnType<typeof getUserPermissions>;

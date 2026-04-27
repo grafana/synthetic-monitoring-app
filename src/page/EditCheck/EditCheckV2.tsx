@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { useParams } from 'react-router';
+import { Navigate, useParams } from 'react-router';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, LinkButton, Modal, Text, useStyles2 } from '@grafana/ui';
@@ -11,6 +11,7 @@ import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
+import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useHandleSubmitCheckster } from 'hooks/useHandleSubmitCheckster';
 import { useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
@@ -19,13 +20,14 @@ import { Checkster } from 'components/Checkster';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { FormSectionName } from 'components/Checkster/types';
 
-import { getUserPermissions } from '../../data/permissions';
-
 export const EditCheckV2 = () => {
   const { id } = useParams<CheckPageParams>();
   const { data: checks, isLoading, error, refetch, isFetched } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
   const urlSearchParams = useURLSearchParams();
+
+  const { getPermissions } = useCheckFolderAccess(check ? [check] : []);
+  const permissions = getPermissions({ folderUid: check?.folderUid });
 
   const handleSubmit = useHandleSubmitCheckster(check);
 
@@ -51,7 +53,9 @@ export const EditCheckV2 = () => {
     return <CenteredSpinner />;
   }
 
-  const { canWriteChecks } = getUserPermissions();
+  if (!permissions.canRead) {
+    return <Navigate to=".." replace />;
+  }
 
   return (
     <PluginPage
@@ -60,7 +64,7 @@ export const EditCheckV2 = () => {
       renderTitle={() => <Text element="h1">{`Editing ${check?.job ?? 'unknown'}`}</Text>}
     >
       <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PageReady : DataTestIds.PageNotReady}>
-        <ChecksterProvider check={check} initialSection={initialSection} disabled={!canWriteChecks}>
+        <ChecksterProvider check={check} initialSection={initialSection} disabled={!permissions.canWrite}>
           <Checkster onSave={handleSubmit} />
         </ChecksterProvider>
         {checks && !check && <NotFoundModal />}
