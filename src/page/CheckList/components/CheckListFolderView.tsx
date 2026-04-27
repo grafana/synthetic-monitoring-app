@@ -101,7 +101,6 @@ export function CheckListFolderView({
   const checkItemProps = {
     checkAlertStates,
     calNames,
-    foldersMap,
     foldersLoading,
     foldersError,
     onLabelSelect,
@@ -182,7 +181,6 @@ export function CheckListFolderView({
 interface CheckItemCallbacks {
   checkAlertStates: CheckRuntimeAlertStates;
   calNames: string[];
-  foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
   foldersError?: boolean;
   onLabelSelect: (label: Label) => void;

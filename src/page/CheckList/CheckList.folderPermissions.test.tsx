@@ -54,6 +54,13 @@ const CHECK_WITHOUT_FOLDER: Check = {
   folderUid: undefined,
 };
 
+const CHECK_WITH_EMPTY_FOLDER_UID: Check = {
+  ...BASIC_PING_CHECK,
+  id: 206,
+  job: 'Empty folderUid check',
+  folderUid: '',
+};
+
 const CHECK_WITH_ORPHANED_FOLDER: Check = {
   ...BASIC_DNS_CHECK,
   id: 205,
@@ -122,6 +129,11 @@ describe('CheckList - Folder Permissions', () => {
       it('shows checks without a folderUid', async () => {
         await renderCheckList();
         expect(await screen.findByText('Unassigned check')).toBeInTheDocument();
+      });
+
+      it('shows checks with empty string folderUid (treated as default folder)', async () => {
+        await renderCheckList([CHECK_WITH_EMPTY_FOLDER_UID]);
+        expect(await screen.findByText('Empty folderUid check')).toBeInTheDocument();
       });
 
       it('hides checks in forbidden folders', async () => {
