@@ -4,7 +4,7 @@ import { Button, ButtonCascader, ConfirmModal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
-import { getUserPermissions } from 'data/permissions';
+import { useBulkCheckPermissions } from 'contexts/CheckFolderAccessContext';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 import { BulkActionsModal } from 'page/CheckList/components/BulkActionsModal';
 
@@ -19,7 +19,7 @@ enum BulkAction {
 }
 
 export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
-  const { canWriteChecks, canDeleteChecks } = getUserPermissions();
+  const { canWriteAll, canDeleteAll } = useBulkCheckPermissions(checks);
   const styles = useStyles2(getStyles);
   const [bulkEditAction, setBulkEditAction] = useState<BulkAction | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -62,7 +62,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
                 value: BulkAction.Remove,
               },
             ]}
-            disabled={!canWriteChecks}
+            disabled={!canWriteAll}
             onChange={(value: string[]) => {
               const action = value[0] as BulkAction;
               setBulkEditAction(action);
@@ -76,7 +76,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           variant="primary"
           fill="text"
           onClick={handleEnableSelectedChecks}
-          disabled={!canWriteChecks}
+          disabled={!canWriteAll}
         >
           Enable
         </Button>
@@ -85,7 +85,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           variant="secondary"
           fill="text"
           onClick={handleDisableSelectedChecks}
-          disabled={!canWriteChecks}
+          disabled={!canWriteAll}
         >
           Disable
         </Button>
@@ -95,7 +95,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           variant="destructive"
           fill="text"
           onClick={() => setShowDeleteModal(true)}
-          disabled={!canDeleteChecks}
+          disabled={!canDeleteAll}
         >
           Delete
         </Button>

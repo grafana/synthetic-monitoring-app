@@ -4,7 +4,7 @@ import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folde
 
 import { GrafanaFolder } from 'types';
 import { useDefaultFolder } from 'data/useDefaultFolder';
-import { getFolderPath, useCreateFolder, useFolderChildren } from 'data/useFolders';
+import { getFolderPathParts, useCreateFolder, useFolderChildren } from 'data/useFolders';
 
 interface FolderSelectorProps {
   value?: string;
@@ -34,12 +34,18 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
     const allFolders = [defaultFolder, ...childFolders];
     const foldersMap = new Map(allFolders.map((f) => [f.uid, f]));
 
-    const result = allFolders
-      .map((folder) => ({
-        label: getFolderPath(folder, foldersMap),
-        value: folder.uid,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+    const children: Array<ComboboxOption<string>> = childFolders.map((folder) => {
+      const parts = getFolderPathParts(folder, foldersMap);
+      const withoutRoot = parts.length > 1 ? parts.slice(1) : parts;
+      return { label: withoutRoot.join(' > '), value: folder.uid };
+    });
+
+    children.sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+
+    const result: Array<ComboboxOption<string>> = [
+      { label: `${defaultFolder.title} (Default)`, value: defaultFolder.uid },
+      ...children,
+    ];
 
     if (value && !result.some((opt) => opt.value === value)) {
       result.push({ label: `${value} (folder not found)`, value });

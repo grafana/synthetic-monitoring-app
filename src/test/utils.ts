@@ -20,6 +20,7 @@ import {
   SECRETS_FULL_ACCESS,
   SECRETS_NO_ACCESS,
   SECRETS_READ_ONLY_ACCESS,
+  WRITER_NO_DELETE_ACCESS,
 } from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
 import { server } from './server';
@@ -208,6 +209,19 @@ export function runTestAsRBACEditor() {
       ...runtime.config.bootData,
       user: {
         permissions: FULL_WRITER_ACCESS,
+      },
+    },
+  });
+}
+
+export function runTestAsRBACWriterNoDelete() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions: WRITER_NO_DELETE_ACCESS,
       },
     },
   });

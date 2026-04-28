@@ -1,9 +1,14 @@
-import { MOCK_FOLDERS } from 'test/fixtures/folders';
+import { FOLDER_FORBIDDEN_UID, MOCK_FOLDERS } from 'test/fixtures/folders';
 
 import { ApiEntry } from './types';
 import { GrafanaFolder } from 'types';
 
-export const listFolders: ApiEntry<GrafanaFolder[]> = {
+/**
+ * GET /api/folders — list endpoint.
+ * Returns only { uid, title, url, parentUid } to match the real API,
+ * which does NOT include permission fields (canEdit, canAdmin, etc.).
+ */
+export const listFolders: ApiEntry<Array<Pick<GrafanaFolder, 'uid' | 'title' | 'url' | 'parentUid'>>> = {
   route: `/api/folders`,
   method: `get`,
   result: async (req: Request) => {
@@ -14,16 +19,28 @@ export const listFolders: ApiEntry<GrafanaFolder[]> = {
       ? MOCK_FOLDERS.filter((f) => f.parentUid === parentUid)
       : MOCK_FOLDERS.filter((f) => !f.parentUid);
 
-    return { json: filtered };
+    const stripped = filtered.map(({ uid, title, url, parentUid }) => ({ uid, title, url, parentUid }));
+
+    return { json: stripped };
   },
 };
 
+/**
+ * GET /api/folders/:uid — detail endpoint.
+ * Returns the full folder object including permission fields.
+ * Returns 403 for FOLDER_FORBIDDEN_UID, 404 for unknown UIDs.
+ */
 export const getFolder: ApiEntry<GrafanaFolder> = {
   route: /\/api\/folders\/[^/]+$/,
   method: `get`,
   result: async (req: Request) => {
     const url = new URL(req.url);
     const uid = url.pathname.split('/').pop()!;
+
+    if (uid === FOLDER_FORBIDDEN_UID) {
+      return { status: 403, json: { message: 'Access denied' } };
+    }
+
     const folder = MOCK_FOLDERS.find((f) => f.uid === uid);
 
     if (!folder) {
