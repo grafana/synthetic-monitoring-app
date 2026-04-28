@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.51.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.50.0...v1.51.0) (2026-04-28)
+
+
+### Features
+
+* folder assignment in check forms ([#1639](https://github.com/grafana/synthetic-monitoring-app/issues/1639)) ([c4e1ea8](https://github.com/grafana/synthetic-monitoring-app/commit/c4e1ea84b6f7b149a0adbf999ec5a621d87cf570))
+
+
+### Fixes
+
+* prevent text overlap in check list view on narrow screens ([#1644](https://github.com/grafana/synthetic-monitoring-app/issues/1644)) ([52e6cbe](https://github.com/grafana/synthetic-monitoring-app/commit/52e6cbede9b2ffa3cfce3180e96ab76a950c1f4b))
+
+
+### Miscellaneous Chores
+
+* bump follow-redirects from 1.15.11 to 1.16.0 ([#1655](https://github.com/grafana/synthetic-monitoring-app/issues/1655)) ([85124d9](https://github.com/grafana/synthetic-monitoring-app/commit/85124d9be326dffe38da1effd5b18cebb979312c))
+* bump protocol-buffers-schema from 3.6.0 to 3.6.1 ([#1661](https://github.com/grafana/synthetic-monitoring-app/issues/1661)) ([029a0cf](https://github.com/grafana/synthetic-monitoring-app/commit/029a0cf6eeca8520d7ee5aa1e35f0c5947d6f3f8))
+
 ## [1.50.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.49.0...v1.50.0) (2026-04-20)
 
 
