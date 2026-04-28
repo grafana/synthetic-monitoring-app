@@ -1,15 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Icon, Pagination, Spinner, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, Checkbox, Icon, Pagination, Spinner, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckType, GrafanaFolder, Label } from 'types';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
-import { buildChecksByFolder, collectAllFolderUids, FolderNode, getTotalCheckCount } from 'hooks/useChecksByFolder';
+import { buildChecksByFolder, collectAllCheckIds, collectAllChecks, collectAllFolderUids, FolderNode, getTotalCheckCount } from 'hooks/useChecksByFolder';
 import { Feedback } from 'components/Feedback';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
+import { FolderBulkActions } from 'page/CheckList/components/FolderBulkActions';
 
 interface CheckListFolderViewProps {
   checks: Check[];
@@ -25,6 +26,8 @@ interface CheckListFolderViewProps {
   onStatusSelect: (enabled: boolean) => void;
   onTypeSelect: (checkType: CheckType) => void;
   onToggleCheckbox: (checkId: number) => void;
+  onSelectChecks: (checkIds: number[]) => void;
+  onDeselectChecks: (checkIds: number[]) => void;
   selectedCheckIds: Set<number>;
 }
 
@@ -42,6 +45,8 @@ export function CheckListFolderView({
   onStatusSelect,
   onTypeSelect,
   onToggleCheckbox,
+  onSelectChecks,
+  onDeselectChecks,
   selectedCheckIds,
 }: CheckListFolderViewProps) {
   const styles = useStyles2(getStyles);
@@ -107,6 +112,8 @@ export function CheckListFolderView({
     onStatusSelect,
     onTypeSelect,
     onToggleCheckbox,
+    onSelectChecks,
+    onDeselectChecks,
     selectedCheckIds,
   };
 
@@ -187,6 +194,8 @@ interface CheckItemCallbacks {
   onStatusSelect: (enabled: boolean) => void;
   onTypeSelect: (checkType: CheckType) => void;
   onToggleCheckbox: (checkId: number) => void;
+  onSelectChecks: (checkIds: number[]) => void;
+  onDeselectChecks: (checkIds: number[]) => void;
   selectedCheckIds: Set<number>;
 }
 
@@ -207,51 +216,89 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
 
   const isRoot = depth === 0;
 
+  const allFolderCheckIds = useMemo(() => collectAllCheckIds(node), [node]);
+  const allChecksInFolder = useMemo(() => collectAllChecks(node), [node]);
+  const selectedChecksInFolder = useMemo(
+    () => allChecksInFolder.filter((c) => checkItemProps.selectedCheckIds.has(c.id!)),
+    [allChecksInFolder, checkItemProps.selectedCheckIds]
+  );
+  const selectedCount = selectedChecksInFolder.length;
+  const isAllInFolderSelected = totalChecks > 0 && selectedCount === totalChecks;
+  const isSomeInFolderSelected = selectedCount > 0 && !isAllInFolderSelected;
+
+  const handleFolderSelectAll = () => {
+    if (isAllInFolderSelected) {
+      checkItemProps.onDeselectChecks(allFolderCheckIds);
+    } else {
+      checkItemProps.onSelectChecks(allFolderCheckIds);
+    }
+  };
+
+  const handleFolderBulkResolved = () => {
+    checkItemProps.onDeselectChecks(allFolderCheckIds);
+  };
+
   return (
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
-      <button
-        className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}
-        onClick={() => toggleFolder(node.folderUid)}
-        aria-expanded={isExpanded}
-        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} folder ${node.folder?.title ?? node.folderUid}`}
-        type="button"
-      >
-        <Stack gap={1.5} alignItems="center" wrap="wrap">
-          <Icon name={isExpanded ? 'angle-down' : 'angle-right'} size="lg" />
-          {node.isOrphaned && !checkItemProps.foldersLoading ? (
-            <Tooltip content={`Folder UID: ${node.folderUid}`}>
-              <Icon name="exclamation-triangle" />
-            </Tooltip>
-          ) : (
-            <Icon name={isExpanded ? 'folder-open' : 'folder'} />
-          )}
-          <span className={isRoot ? styles.folderTitleRoot : styles.folderTitleNested}>
-            {node.isOrphaned && checkItemProps.foldersLoading ? (
-              <Spinner size="sm" />
-            ) : node.isOrphaned && checkItemProps.foldersError ? (
-              'Failed to load folder info'
-            ) : node.isOrphaned ? (
-              <span className={styles.orphanedLabel}>Folder not found</span>
+      <div className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}>
+        {totalChecks > 0 && (
+          <Checkbox
+            aria-label={`Select all checks in ${node.folder?.title ?? 'folder'}`}
+            checked={isAllInFolderSelected}
+            indeterminate={isSomeInFolderSelected}
+            onChange={handleFolderSelectAll}
+          />
+        )}
+        <button
+          className={styles.folderToggle}
+          onClick={() => toggleFolder(node.folderUid)}
+          aria-expanded={isExpanded}
+          aria-label={`${isExpanded ? 'Collapse' : 'Expand'} folder ${node.folder?.title ?? node.folderUid}`}
+          type="button"
+        >
+          <Stack gap={1.5} alignItems="center" wrap="wrap">
+            <Icon name={isExpanded ? 'angle-down' : 'angle-right'} size="lg" />
+            {node.isOrphaned && !checkItemProps.foldersLoading ? (
+              <Tooltip content={`Folder UID: ${node.folderUid}`}>
+                <Icon name="exclamation-triangle" />
+              </Tooltip>
             ) : (
-              node.folder?.title ?? node.folderUid
+              <Icon name={isExpanded ? 'folder-open' : 'folder'} />
             )}
-          </span>
-          {node.isOrphaned && !checkItemProps.foldersLoading && checkItemProps.foldersError && onRetryFolders && (
-            <Button
-              variant="secondary"
-              size="sm"
-              icon="sync"
-              onClick={(e) => { e.stopPropagation(); onRetryFolders(); }}
-              tooltip="Retry loading folders"
-            >
-              Retry
-            </Button>
-          )}
-          <span className={styles.checkCount}>
-            {totalChecks} {totalChecks === 1 ? 'check' : 'checks'}
-          </span>
-        </Stack>
-      </button>
+            <span className={isRoot ? styles.folderTitleRoot : styles.folderTitleNested}>
+              {node.isOrphaned && checkItemProps.foldersLoading ? (
+                <Spinner size="sm" />
+              ) : node.isOrphaned && checkItemProps.foldersError ? (
+                'Failed to load folder info'
+              ) : node.isOrphaned ? (
+                <span className={styles.orphanedLabel}>Folder not found</span>
+              ) : (
+                node.folder?.title ?? node.folderUid
+              )}
+            </span>
+            {node.isOrphaned && !checkItemProps.foldersLoading && checkItemProps.foldersError && onRetryFolders && (
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="sync"
+                onClick={(e) => { e.stopPropagation(); onRetryFolders(); }}
+                tooltip="Retry loading folders"
+              >
+                Retry
+              </Button>
+            )}
+            <span className={styles.checkCount}>
+              {totalChecks} {totalChecks === 1 ? 'check' : 'checks'}
+            </span>
+          </Stack>
+        </button>
+        {selectedCount > 0 && (
+          <div className={styles.folderActions}>
+            <FolderBulkActions checks={selectedChecksInFolder} onResolved={handleFolderBulkResolved} />
+            <span className={styles.selectedCount}>{selectedCount} selected</span>
+          </div>
+        )}
+      </div>
 
       {isExpanded && hasContent && (
         <div className={isRoot ? styles.folderContentRoot : styles.folderContentNested}>
@@ -360,47 +407,51 @@ const getStyles = (theme: GrafanaTheme2) => ({
     borderTop: `1px solid ${theme.colors.border.weak}`,
   }),
   folderHeaderRoot: css({
-    appearance: 'none',
-    border: 'none',
-    background: 'none',
-    width: '100%',
-    textAlign: 'left',
-    font: 'inherit',
-    color: 'inherit',
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: theme.spacing(1.5, 2),
     backgroundColor: theme.colors.background.secondary,
-    cursor: 'pointer',
-    userSelect: 'none',
-    '&:hover': {
-      backgroundColor: theme.colors.action.hover,
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${theme.colors.primary.border}`,
-      outlineOffset: -2,
-    },
+    gap: theme.spacing(2),
   }),
   folderHeaderNested: css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: theme.spacing(1, 2),
+    gap: theme.spacing(2),
+  }),
+  folderToggle: css({
     appearance: 'none',
     border: 'none',
     background: 'none',
-    width: '100%',
+    padding: 0,
     textAlign: 'left',
     font: 'inherit',
     color: 'inherit',
-    display: 'flex',
-    alignItems: 'center',
-    padding: theme.spacing(1, 2),
     cursor: 'pointer',
     userSelect: 'none',
+    flex: '1 1 auto',
+    minWidth: 0,
     '&:hover': {
-      backgroundColor: theme.colors.action.hover,
+      color: theme.colors.text.maxContrast,
     },
     '&:focus-visible': {
       outline: `2px solid ${theme.colors.primary.border}`,
-      outlineOffset: -2,
+      outlineOffset: 2,
+      borderRadius: theme.shape.radius.default,
     },
+  }),
+  folderActions: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    flexShrink: 0,
+  }),
+  selectedCount: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.text.secondary,
+    whiteSpace: 'nowrap',
   }),
   folderTitleRoot: css({
     fontWeight: theme.typography.fontWeightMedium,

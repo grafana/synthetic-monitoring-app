@@ -238,6 +238,22 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     setSelectedChecksIds(new Set());
   };
 
+  const handleSelectChecks = (checkIds: number[]) => {
+    setSelectedChecksIds((prev) => {
+      const next = new Set(prev);
+      checkIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const handleDeselectChecks = (checkIds: number[]) => {
+    setSelectedChecksIds((prev) => {
+      const next = new Set(prev);
+      checkIds.forEach((id) => next.delete(id));
+      return next;
+    });
+  };
+
   if (checks.length === 0) {
     return <ChecksEmptyState />;
   }
@@ -279,6 +295,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           onStatusSelect={handleStatusSelect}
           onTypeSelect={handleTypeSelect}
           onToggleCheckbox={handleCheckSelect}
+          onSelectChecks={handleSelectChecks}
+          onDeselectChecks={handleDeselectChecks}
           selectedCheckIds={selectedCheckIds}
         />
       ) : (

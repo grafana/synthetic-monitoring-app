@@ -1,27 +1,28 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
 import { GrafanaFolder } from 'types';
 import { useDefaultFolder } from 'data/useDefaultFolder';
+import { useFolderPermissions } from 'data/useFolderPermissions';
 import { getFolderPathParts, useCreateFolder, useFolderChildren } from 'data/useFolders';
 
 interface FolderSelectorProps {
   value?: string;
   onChange: (folderUid: string | undefined) => void;
   disabled?: boolean;
+  autoSelectDefault?: boolean;
   'aria-label'?: string;
 }
 
-export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLabel }: FolderSelectorProps) {
+export function FolderSelector({ value, onChange, disabled, autoSelectDefault = true, 'aria-label': ariaLabel }: FolderSelectorProps) {
   const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError, refetch: refetchDefault } = useDefaultFolder();
-  const {
-    data: childFolders = [],
-    isLoading: isChildrenLoading,
-    isError: isChildrenError,
-    refetch: refetchChildren,
-  } = useFolderChildren(defaultFolderUid);
+  const { data: childFolders = [], isLoading: isChildrenLoading, isError: isChildrenError, refetch: refetchChildren } = useFolderChildren(defaultFolderUid);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const allFolders = useMemo(() => (defaultFolder ? [defaultFolder, ...childFolders] : []), [defaultFolder, childFolders]);
+  const allFolderUids = useMemo(() => allFolders.map((f) => f.uid), [allFolders]);
+  const { folderDetailsByUid } = useFolderPermissions(allFolderUids);
 
   const isLoading = isDefaultLoading || isChildrenLoading;
   const isError = isDefaultError || isChildrenError;
@@ -31,28 +32,45 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
       return [];
     }
 
-    const allFolders = [defaultFolder, ...childFolders];
     const foldersMap = new Map(allFolders.map((f) => [f.uid, f]));
 
-    const children: Array<ComboboxOption<string>> = childFolders.map((folder) => {
+    const editableFolders = allFolders.filter((folder) => {
+      const state = folderDetailsByUid.get(folder.uid);
+      return state?.type === 'accessible' && state.permissions.canEdit;
+    });
+
+    const result: Array<ComboboxOption<string>> = editableFolders.map((folder) => {
+      if (folder.uid === defaultFolder.uid) {
+        return { label: `${folder.title} (Default)`, value: folder.uid };
+      }
+
       const parts = getFolderPathParts(folder, foldersMap);
       const withoutRoot = parts.length > 1 ? parts.slice(1) : parts;
       return { label: withoutRoot.join(' > '), value: folder.uid };
     });
 
-    children.sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
-
-    const result: Array<ComboboxOption<string>> = [
-      { label: `${defaultFolder.title} (Default)`, value: defaultFolder.uid },
-      ...children,
-    ];
+    result.sort((a, b) => {
+      if (a.value === defaultFolder.uid) {
+        return -1;
+      }
+      if (b.value === defaultFolder.uid) {
+        return 1;
+      }
+      return (a.label ?? '').localeCompare(b.label ?? '');
+    });
 
     if (value && !result.some((opt) => opt.value === value)) {
       result.push({ label: `${value} (folder not found)`, value });
     }
 
     return result;
-  }, [childFolders, defaultFolder, value]);
+  }, [allFolders, defaultFolder, value, folderDetailsByUid]);
+
+  useEffect(() => {
+    if (autoSelectDefault && value === undefined && defaultFolderUid) {
+      onChange(defaultFolderUid);
+    }
+  }, [autoSelectDefault, value, defaultFolderUid, onChange]);
 
   const handleChange = (selected: ComboboxOption<string> | null) => {
     if (selected?.value) {
@@ -67,7 +85,7 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
     setShowCreateModal(false);
   };
 
-  const selectedValue = value ?? defaultFolderUid ?? null;
+  const selectedValue = value ?? (autoSelectDefault ? defaultFolderUid : null) ?? null;
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading folders..." />;

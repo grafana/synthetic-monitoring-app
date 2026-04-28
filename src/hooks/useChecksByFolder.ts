@@ -37,6 +37,22 @@ export function getTotalCheckCount(node: FolderNode): number {
   return count;
 }
 
+export function collectAllCheckIds(node: FolderNode): number[] {
+  const ids = node.checks.map((c) => c.id!);
+  node.children.forEach((child) => {
+    ids.push(...collectAllCheckIds(child));
+  });
+  return ids;
+}
+
+export function collectAllChecks(node: FolderNode): Check[] {
+  const checks = [...node.checks];
+  node.children.forEach((child) => {
+    checks.push(...collectAllChecks(child));
+  });
+  return checks;
+}
+
 /**
  * Build a folder tree from checks and a pre-fetched list of folders.
  *
