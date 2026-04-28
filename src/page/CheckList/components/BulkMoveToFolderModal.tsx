@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Button, Field, Modal } from '@grafana/ui';
 
 import { Check } from 'types';
@@ -24,6 +24,12 @@ export function BulkMoveToFolderModal(props: BulkMoveToFolderModalProps) {
 function BulkMoveToFolderModalContent({ checks, isOpen, onDismiss, onMoved }: BulkMoveToFolderModalProps) {
   const [targetFolderUid, setTargetFolderUid] = useState<string | undefined>();
   const { mutate: bulkUpdateChecks, isPending, isError } = useBulkUpdateChecks({ onSuccess: onMoved });
+
+  useEffect(() => {
+    if (isOpen) {
+      setTargetFolderUid(undefined);
+    }
+  }, [isOpen]);
 
   const handleSubmit = () => {
     if (!targetFolderUid) {

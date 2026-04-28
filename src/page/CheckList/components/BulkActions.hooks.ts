@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Check, FeatureName } from 'types';
 import { useBulkCheckPermissions } from 'contexts/CheckFolderAccessContext';
@@ -17,29 +17,29 @@ export function useBulkActions({ checks, onResolved }: UseBulkActionsOptions) {
   const [showMoveToFolderModal, setShowMoveToFolderModal] = useState(false);
   const { mutate: bulkUpdateChecks } = useBulkUpdateChecks({ onSuccess: onResolved });
 
-  const handleDeleteResolved = () => {
+  const handleDeleteResolved = useCallback(() => {
     setShowDeleteModal(false);
     onResolved();
-  };
+  }, [onResolved]);
 
-  const handleMoveResolved = () => {
+  const handleMoveResolved = useCallback(() => {
     setShowMoveToFolderModal(false);
     onResolved();
-  };
+  }, [onResolved]);
 
   const { mutate: bulkDeleteChecks } = useBulkDeleteChecks({ onSuccess: handleDeleteResolved });
 
-  const enableChecks = () => {
+  const enableChecks = useCallback(() => {
     bulkUpdateChecks(checks.filter((check) => !check.enabled).map((check) => ({ ...check, enabled: true })));
-  };
+  }, [bulkUpdateChecks, checks]);
 
-  const disableChecks = () => {
+  const disableChecks = useCallback(() => {
     bulkUpdateChecks(checks.filter((check) => check.enabled).map((check) => ({ ...check, enabled: false })));
-  };
+  }, [bulkUpdateChecks, checks]);
 
-  const deleteChecks = () => {
+  const deleteChecks = useCallback(() => {
     bulkDeleteChecks(checks.map((check) => check.id!));
-  };
+  }, [bulkDeleteChecks, checks]);
 
   const deleteModalProps = {
     title: `Delete ${checks.length} check${checks.length !== 1 ? 's' : ''}`,
