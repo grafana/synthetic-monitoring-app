@@ -15,12 +15,12 @@ import {
   FULL_ADMIN_ACCESS,
   FULL_READONLY_ACCESS,
   FULL_WRITER_ACCESS,
-  WRITER_NO_DELETE_ACCESS,
   SECRETS_CREATOR_ACCESS,
   SECRETS_EDITOR_ACCESS,
   SECRETS_FULL_ACCESS,
   SECRETS_NO_ACCESS,
   SECRETS_READ_ONLY_ACCESS,
+  WRITER_NO_DELETE_ACCESS,
 } from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
 import { server } from './server';

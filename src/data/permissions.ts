@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-
 import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
