@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
@@ -59,3 +61,9 @@ export const getUserPermissions = () => ({
 });
 
 export type SMPermissions = ReturnType<typeof getUserPermissions>;
+
+export function useUserPermissions(): SMPermissions {
+  const userPermissions = config.bootData.user.permissions;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useMemo(() => getUserPermissions(), [userPermissions]);
+}

@@ -15,6 +15,7 @@ import {
   FULL_ADMIN_ACCESS,
   FULL_READONLY_ACCESS,
   FULL_WRITER_ACCESS,
+  WRITER_NO_DELETE_ACCESS,
   SECRETS_CREATOR_ACCESS,
   SECRETS_EDITOR_ACCESS,
   SECRETS_FULL_ACCESS,
@@ -208,6 +209,19 @@ export function runTestAsRBACEditor() {
       ...runtime.config.bootData,
       user: {
         permissions: FULL_WRITER_ACCESS,
+      },
+    },
+  });
+}
+
+export function runTestAsRBACWriterNoDelete() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions: WRITER_NO_DELETE_ACCESS,
       },
     },
   });

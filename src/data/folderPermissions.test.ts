@@ -1,5 +1,4 @@
-import { FULL_WRITER_ACCESS } from 'test/fixtures/rbacPermissions';
-import { runTestAsRBACEditor, runTestAsRBACReader } from 'test/utils';
+import { runTestAsRBACEditor, runTestAsRBACReader, runTestAsRBACWriterNoDelete } from 'test/utils';
 
 import {
   CheckFolderStatus,
@@ -21,14 +20,7 @@ const smReader = () => {
 };
 
 const smWriterNoDelete = () => {
-  const runtime = require('@grafana/runtime');
-  jest.replaceProperty(runtime, 'config', {
-    ...runtime.config,
-    bootData: {
-      ...runtime.config.bootData,
-      user: { permissions: { ...FULL_WRITER_ACCESS, 'grafana-synthetic-monitoring-app.checks:delete': false } },
-    },
-  });
+  runTestAsRBACWriterNoDelete();
   return getUserPermissions();
 };
 

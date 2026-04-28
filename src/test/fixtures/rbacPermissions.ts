@@ -39,6 +39,11 @@ export const FULL_WRITER_ACCESS = {
   'grafana-synthetic-monitoring-app.thresholds:delete': true,
 };
 
+export const WRITER_NO_DELETE_ACCESS = {
+  ...FULL_WRITER_ACCESS,
+  'grafana-synthetic-monitoring-app.checks:delete': false,
+};
+
 export const FULL_READONLY_ACCESS = {
   'grafana-synthetic-monitoring-app:read': true,
   'grafana-synthetic-monitoring-app.checks:read': true,

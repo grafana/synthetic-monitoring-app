@@ -8,7 +8,7 @@ import {
   computeCheckPermissions,
   resolveCheckFolderStatus,
 } from 'data/folderPermissions';
-import { getUserPermissions } from 'data/permissions';
+import { useUserPermissions } from 'data/permissions';
 import { useFolderPermissions } from 'data/useFolderPermissions';
 import { useAllFolders } from 'data/useFolders';
 
@@ -50,7 +50,7 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
   }, [checks, isFoldersEnabled, defaultFolderUid]);
 
   const { folderDetailsByUid } = useFolderPermissions(folderUids);
-  const smPerms = getUserPermissions();
+  const smPerms = useUserPermissions();
 
   const visibleChecks = useMemo(() => {
     if (!isFoldersEnabled) {
