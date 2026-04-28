@@ -241,6 +241,14 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
   return (
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
       <div className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}>
+        {totalChecks > 0 && (
+          <Checkbox
+            aria-label={`Select all checks in ${node.folder?.title ?? 'folder'}`}
+            checked={isAllInFolderSelected}
+            indeterminate={isSomeInFolderSelected}
+            onChange={handleFolderSelectAll}
+          />
+        )}
         <button
           className={styles.folderToggle}
           onClick={() => toggleFolder(node.folderUid)}
@@ -284,20 +292,10 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
             </span>
           </Stack>
         </button>
-        {totalChecks > 0 && (
+        {selectedCount > 0 && (
           <div className={styles.folderActions}>
-            {selectedCount > 0 && (
-              <>
-                <FolderBulkActions checks={selectedChecksInFolder} onResolved={handleFolderBulkResolved} />
-                <span className={styles.selectedCount}>{selectedCount} selected</span>
-              </>
-            )}
-            <Checkbox
-              aria-label={`Select all checks in ${node.folder?.title ?? 'folder'}`}
-              checked={isAllInFolderSelected}
-              indeterminate={isSomeInFolderSelected}
-              onChange={handleFolderSelectAll}
-            />
+            <FolderBulkActions checks={selectedChecksInFolder} onResolved={handleFolderBulkResolved} />
+            <span className={styles.selectedCount}>{selectedCount} selected</span>
           </div>
         )}
       </div>
