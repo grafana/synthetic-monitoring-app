@@ -1,10 +1,12 @@
 import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
-import { MOCKED_SECRETS_API_RESPONSE } from 'test/fixtures/secrets';
+import { MOCKED_SECRETS, MOCKED_SECURE_VALUE_ITEMS } from 'test/fixtures/secrets';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render as testRender } from 'test/render';
 import { server } from 'test/server';
+
+import { SM_SECRET_DECRYPTER } from 'data/clients/SecretsManagerClient';
 
 import { SECRETS_EDIT_MODE_ADD } from './constants';
 import { SecretEditModal } from './SecretEditModal';
@@ -41,7 +43,7 @@ describe('SecretEditModal', () => {
   });
 
   it('should render edit secret form for existing secret', async () => {
-    const [secret1] = MOCKED_SECRETS_API_RESPONSE.secrets; // getSecret returns first secret, this must be the same as secret1
+    const [secret1] = MOCKED_SECRETS; // getSecret returns first secret, this must be the same as secret1
     await render(<SecretEditModal {...defaultProps} name={secret1.name} />);
 
     expect(screen.getByText('Edit secret')).toBeInTheDocument();
@@ -84,7 +86,7 @@ describe('SecretEditModal', () => {
       })
     );
 
-    const [secret1] = MOCKED_SECRETS_API_RESPONSE.secrets; // getSecret returns first secret, this must be the same as secret1
+    const [secret1] = MOCKED_SECRETS; // getSecret returns first secret, this must be the same as secret1
     await render(<SecretEditModal {...defaultProps} name={secret1.name} />);
 
     expect(await screen.findByText('Unable to fetch secret')).toBeInTheDocument();
@@ -113,9 +115,14 @@ describe('SecretEditModal', () => {
     const { body } = await read();
 
     expect(body).toStrictEqual({
-      ...inputValues,
-      name: 'new-secret', // transformed to lowercase and spaces replaced with dashes
-      labels: [],
+      metadata: {
+        name: 'new-secret', // transformed to lowercase and spaces replaced with dashes
+      },
+      spec: {
+        description: inputValues.description,
+        decrypters: [SM_SECRET_DECRYPTER],
+        value: inputValues.plaintext,
+      },
     });
   });
 
@@ -156,7 +163,7 @@ describe('SecretEditModal', () => {
   });
 
   it('should be possible to add labels to the secret', async () => {
-    const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
+    const secretMock = MOCKED_SECRETS[0];
     const inputValues = {
       name: secretMock.name,
       description: secretMock.description,
@@ -183,16 +190,11 @@ describe('SecretEditModal', () => {
 
     const { body } = await read();
 
-    expect(body.labels).toStrictEqual([
-      {
-        name: labelName,
-        value: labelValue,
-      },
-    ]);
+    expect(body.metadata.labels).toStrictEqual({ [labelName]: labelValue });
   });
 
   it('should be possible to remove labels from the secret', async () => {
-    const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
+    const secretMock = MOCKED_SECRETS[0];
 
     expect(secretMock.labels.length).toBeGreaterThan(0); // Ensure there are labels to remove
 
@@ -209,11 +211,11 @@ describe('SecretEditModal', () => {
 
     const { body } = await read();
 
-    expect(body.labels).toStrictEqual([]);
+    expect(body.metadata.labels).toStrictEqual({});
   });
 
   it('should not be possible to change name for existing secret', async () => {
-    const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
+    const secretMock = MOCKED_SECRETS[0];
     const inputValues = {
       name: secretMock.name,
       description: secretMock.description,
@@ -230,13 +232,62 @@ describe('SecretEditModal', () => {
 
     const { body } = await read();
 
-    expect(body.name).toBeUndefined();
+    // The URL path encodes the name, but the payload name should always match
+    // the existing secret (the form blocks changes via readonly)
+    expect(body.metadata.name).toBe(secretMock.name);
+  });
+
+  it('should echo back the existing decrypters on update so they are not lost', async () => {
+    const secretMock = MOCKED_SECRETS[0];
+    const { record, read } = getServerRequests();
+    server.use(apiRoute('updateSecret', {}, record));
+    const { user } = await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
+
+    await user.click(screen.getByText('Save'));
+
+    const { body } = await read();
+
+    expect(body.spec.decrypters).toEqual(secretMock.decrypters);
+  });
+
+  it('should preserve extra non-SM decrypters on a secret when saving', async () => {
+    const extraDecrypters = [SM_SECRET_DECRYPTER, 'some-other-service', 'yet-another-service'];
+    const secretMock = MOCKED_SECURE_VALUE_ITEMS[0];
+
+    server.use(
+      apiRoute('getSecret', {
+        result: () => ({
+          status: 200,
+          json: {
+            ...secretMock,
+            spec: { ...secretMock.spec, decrypters: extraDecrypters },
+          },
+        }),
+      })
+    );
+
+    const { record, read } = getServerRequests();
+    server.use(apiRoute('updateSecret', {}, record));
+
+    const { user } = await render(<SecretEditModal {...defaultProps} name={secretMock.metadata.name} />);
+
+    // Wait for the modal to finish loading the existing secret so the
+    // assertion below reads the same decrypters that were served to the form.
+    await waitFor(() =>
+      expect(screen.getByDisplayValue(secretMock.spec.description)).toBeInTheDocument()
+    );
+
+    await user.click(screen.getByText('Save'));
+
+    const { body } = await read();
+
+    expect(body.spec.decrypters).toEqual(extraDecrypters);
   });
 
   it('should show value textarea as disabled when configured', async () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
-    const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
+    const secretMock = MOCKED_SECRETS[0];
     const { user } = await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
     const valueInput = screen.getByLabelText(/value/i);
@@ -247,14 +298,14 @@ describe('SecretEditModal', () => {
 
     const { body } = await read();
 
-    expect(body.plaintext).toBeUndefined();
+    expect(body.spec.value).toBeUndefined();
   });
 
   it('should be possible to reset the value', async () => {
     const newSecretValue = 'new secret value';
     const { record, read } = getServerRequests();
     server.use(apiRoute('updateSecret', {}, record));
-    const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
+    const secretMock = MOCKED_SECRETS[0];
     const { user } = await render(<SecretEditModal {...defaultProps} name={secretMock.name} />);
 
     await user.click(screen.getByRole('button', { name: 'Reset' }));
@@ -264,11 +315,11 @@ describe('SecretEditModal', () => {
 
     const { body } = await read();
 
-    expect(body.plaintext).toBe(newSecretValue);
+    expect(body.spec.value).toBe(newSecretValue);
   });
 
   it('should show error message when secret name is already taken', async () => {
-    const secretMock = MOCKED_SECRETS_API_RESPONSE.secrets[0];
+    const secretMock = MOCKED_SECRETS[0];
     const inputValues = {
       name: secretMock.name,
       description: 'My short description',

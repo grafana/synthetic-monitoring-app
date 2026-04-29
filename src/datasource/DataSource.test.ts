@@ -106,31 +106,6 @@ const entries: Entry[] = [
     payload: undefined,
     handler: 'createAccessToken',
   },
-  {
-    method: 'getSecrets',
-    payload: undefined,
-    handler: 'listSecrets',
-  },
-  {
-    method: 'getSecret',
-    payload: 'new-secret',
-    handler: 'getSecret',
-  },
-  {
-    method: 'saveSecret',
-    payload: { name: `new-secret` },
-    handler: 'createSecret',
-  },
-  {
-    method: 'saveSecret',
-    payload: { uuid: 1, name: `update-secret` },
-    handler: 'updateSecret',
-  },
-  {
-    method: 'deleteSecret',
-    payload: `delete-secret`,
-    handler: 'deleteSecret',
-  },
 ];
 
 describe('SMDataSource', () => {
