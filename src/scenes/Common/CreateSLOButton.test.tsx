@@ -1,8 +1,15 @@
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
-import { buildSLODescription, buildSLOName, buildSLOQuery } from './CreateSLOButton.utils';
+import { buildSLODescription, buildSLOLabels, buildSLOName, buildSLOQuery } from './CreateSLOButton.utils';
 
 describe('CreateSLOButton utils', () => {
+  it('builds labels with sm_check_id and source', () => {
+    expect(buildSLOLabels(BASIC_HTTP_CHECK)).toEqual([
+      { key: 'sm_check_id', value: String(BASIC_HTTP_CHECK.id) },
+      { key: 'source', value: 'grafana-synthetic-monitoring-app' },
+    ]);
+  });
+
   it('builds ratio query for the check', () => {
     const result = buildSLOQuery(BASIC_HTTP_CHECK);
 
@@ -22,7 +29,7 @@ describe('CreateSLOButton utils', () => {
 
   it('builds the expected default description', () => {
     expect(buildSLODescription(BASIC_HTTP_CHECK)).toBe(
-      'Reachability SLI from Synthetic Monitoring (probe_all_success_*). Check: Job name for http'
+      'Reachability SLI from Synthetic Monitoring. Job: Job name for http | Instance: https://http.com'
     );
   });
 });
