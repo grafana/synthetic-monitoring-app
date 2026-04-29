@@ -1,5 +1,14 @@
 import { Check } from 'types';
 
+export type SLOLabel = { key: string; value: string };
+
+export function buildSLOLabels(check: Check): SLOLabel[] {
+  return [
+    { key: 'sm_check_id', value: String(check.id) },
+    { key: 'source', value: `grafana-synthetic-monitoring-app` },
+  ];
+}
+
 export type SLORatioQuery = {
   type: 'ratio';
   ratioQuery: {
@@ -39,5 +48,5 @@ export function buildSLOName(check: Check): string {
 }
 
 export function buildSLODescription(check: Check): string {
-  return `Reachability SLI from Synthetic Monitoring (probe_all_success_*). Check: ${check.job}`;
+  return `Reachability SLI from Synthetic Monitoring. Job: ${check.job} | Instance: ${check.target}`;
 }

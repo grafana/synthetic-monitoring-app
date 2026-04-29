@@ -10,6 +10,7 @@ import { TestRouteInfo } from 'test/helpers/TestRouteInfo';
 import { useLocationServiceHistory } from 'test/helpers/useLocationServiceHistory';
 
 import { ProvisioningJsonData } from 'types';
+import { type ExternalDependenciesOverrides, ExternalDependenciesProvider } from 'contexts/ExternalDependenciesContext';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
@@ -22,6 +23,7 @@ export type ComponentWrapperProps = {
   queryClient: QueryClient;
   route?: string;
   meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
+  externalDependenciesOverrides?: ExternalDependenciesOverrides;
 };
 
 type CreateWrapperProps = {
@@ -30,6 +32,7 @@ type CreateWrapperProps = {
   route?: string;
   meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
   wrapper?: (props: ComponentWrapperProps) => ReactElement;
+  externalDependenciesOverrides?: ExternalDependenciesOverrides;
 };
 
 const APP_ROOT = '/a/grafana-synthetic-monitoring-app';
@@ -44,7 +47,14 @@ function getRelativeRoute(route?: string) {
   return route;
 }
 
-const DefaultWrapper = ({ children, route: _route, initialEntries, meta, queryClient }: ComponentWrapperProps) => {
+const DefaultWrapper = ({
+  children,
+  route: _route,
+  initialEntries,
+  meta,
+  queryClient,
+  externalDependenciesOverrides,
+}: ComponentWrapperProps) => {
   const relativeRoute = getRelativeRoute(_route);
   const initialPath = initialEntries?.[0] || APP_ROOT;
   const { history, location } = useLocationServiceHistory(initialPath);
@@ -55,17 +65,19 @@ const DefaultWrapper = ({ children, route: _route, initialEntries, meta, queryCl
       <Router navigator={history} location={location}>
         <QueryClientProvider client={queryClient}>
           <MetaContextProvider meta={{ ...SM_META, ...meta }}>
-            <FeatureFlagProvider>
-              <SMDatasourceProvider>
-                <PermissionsContextProvider>
-                  <TestRouteInfo />
-                  <Routes>
-                    <Route path={fullRoutePattern} element={children} />
-                    <Route path="*" element={children} />
-                  </Routes>
-                </PermissionsContextProvider>
-              </SMDatasourceProvider>
-            </FeatureFlagProvider>
+            <ExternalDependenciesProvider overrides={externalDependenciesOverrides}>
+              <FeatureFlagProvider>
+                <SMDatasourceProvider>
+                  <PermissionsContextProvider>
+                    <TestRouteInfo />
+                    <Routes>
+                      <Route path={fullRoutePattern} element={children} />
+                      <Route path="*" element={children} />
+                    </Routes>
+                  </PermissionsContextProvider>
+                </SMDatasourceProvider>
+              </FeatureFlagProvider>
+            </ExternalDependenciesProvider>
           </MetaContextProvider>
         </QueryClientProvider>
       </Router>
@@ -73,7 +85,19 @@ const DefaultWrapper = ({ children, route: _route, initialEntries, meta, queryCl
   );
 };
 
-export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wrapper }: CreateWrapperProps = {}) => {
+/** Default: SLO app treated as installed so scenes using `useSmCheckSlos` work without boilerplate. */
+const DEFAULT_EXTERNAL_DEPS_OVERRIDES: ExternalDependenciesOverrides = {
+  slo: { installed: true, isLoading: false },
+};
+
+export const createWrapper = ({
+  route = '*',
+  meta,
+  path: _path,
+  queryClient,
+  wrapper,
+  externalDependenciesOverrides = DEFAULT_EXTERNAL_DEPS_OVERRIDES,
+}: CreateWrapperProps = {}) => {
   const activeQueryClient = queryClient ?? getQueryClient();
   const path = _path
     ? _path.startsWith(`${APP_ROOT}/`)
@@ -84,7 +108,13 @@ export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wra
   const initialEntries = [path];
 
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Component route={route} meta={meta} initialEntries={initialEntries} queryClient={activeQueryClient}>
+    <Component
+      route={route}
+      meta={meta}
+      initialEntries={initialEntries}
+      queryClient={activeQueryClient}
+      externalDependenciesOverrides={externalDependenciesOverrides}
+    >
       {children}
     </Component>
   );
@@ -95,7 +125,7 @@ export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wra
 export type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & CreateWrapperProps;
 
 const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
-  const { path, route, meta, wrapper, ...rest } = options;
+  const { path, route, meta, wrapper, externalDependenciesOverrides, ...rest } = options;
   const queryClient = getQueryClient();
   const user = userEventLib.setup();
   const { Wrapper, initialEntries } = createWrapper({
@@ -104,6 +134,7 @@ const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
     route,
     meta,
     wrapper,
+    externalDependenciesOverrides,
   });
 
   return {
