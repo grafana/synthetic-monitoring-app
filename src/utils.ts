@@ -492,6 +492,11 @@ export function getErrorMessage(error: unknown, fallbackMessage = 'An unknown er
   return fallbackMessage;
 }
 
+/** Replace characters that are not alphanumeric, hyphens, underscores, or dots with underscores. */
+export function sanitizeLabelValue(value: string): string {
+  return value.replace(/[^A-Za-z0-9\-_.]/g, '_');
+}
+
 export function getAdditionalDuration(frequency: number, additionalTimepoints: number) {
   const adjusted = frequency * additionalTimepoints;
   const totalSeconds = Math.floor(adjusted / 1000);

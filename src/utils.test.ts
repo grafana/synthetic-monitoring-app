@@ -1,4 +1,4 @@
-import { formatDuration, formatSmallDurations, getRandomProbes, pascalCaseToSentence } from 'utils';
+import { formatDuration, formatSmallDurations, getRandomProbes, pascalCaseToSentence, sanitizeLabelValue } from 'utils';
 
 it('gets random probes', async () => {
   const probes = [11, 23, 5, 5212, 43, 3, 4, 6];
@@ -229,5 +229,23 @@ describe(`formatSmallDurations`, () => {
 
   it(`formats duration for multiple seconds with milliseconds`, () => {
     expect(formatSmallDurations(12345)).toBe('12.35s');
+  });
+});
+
+describe('sanitizeLabelValue', () => {
+  it('replaces spaces with underscores', () => {
+    expect(sanitizeLabelValue('google test')).toBe('google_test');
+  });
+
+  it('leaves valid characters unchanged', () => {
+    expect(sanitizeLabelValue('my-job_name.v2')).toBe('my-job_name.v2');
+  });
+
+  it('replaces multiple disallowed characters', () => {
+    expect(sanitizeLabelValue('job with spaces & symbols!')).toBe('job_with_spaces___symbols_');
+  });
+
+  it('returns empty string unchanged', () => {
+    expect(sanitizeLabelValue('')).toBe('');
   });
 });
