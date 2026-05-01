@@ -6,10 +6,9 @@ import { css } from '@emotion/css';
 import { CheckKnowledgeGraphInsights } from 'features/knowledgeGraph/KnowledgeGraphInsights';
 
 import { Check } from 'types';
-import { CreateSLOButton } from 'scenes/Common/CreateSLOButton';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
-import { LinkedSlosIndicator } from 'scenes/Common/LinkedSlosIndicator';
+import { SloIntegration } from 'scenes/Common/SloIntegration';
 
 interface DashboardHeaderProps {
   annotations: AnnotationQuery[];
@@ -28,8 +27,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
         </div>
         <div className={styles.actions}>
           <CheckKnowledgeGraphInsights check={check} />
-          <LinkedSlosIndicator check={check} />
-          <CreateSLOButton check={check} />
+          <SloIntegration check={check} />
           <EditCheckButton id={check.id} />
           <div className={styles.dashboardControls}>
             <TimeRangePicker />
