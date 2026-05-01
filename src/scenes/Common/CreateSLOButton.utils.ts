@@ -1,6 +1,8 @@
+import type { Slo } from './useSmCheckSlos.types';
 import { Check } from 'types';
 
 export type SLOLabel = { key: string; value: string };
+type LinkedSloLabels = Pick<Slo, 'labels'>;
 
 export function buildSLOLabels(check: Check): SLOLabel[] {
   return [
@@ -49,4 +51,47 @@ export function buildSLOName(check: Check): string {
 
 export function buildSLODescription(check: Check): string {
   return `Reachability SLI from Synthetic Monitoring. Job: ${check.job} | Instance: ${check.target}`;
+}
+
+export type SLOWizardInitialValues = {
+  name?: string;
+  description?: string;
+  query?: SLORatioQuery;
+  labels?: SLOLabel[];
+};
+
+export const SM_OBJECTIVE_KIND_LABEL_KEY = 'sm_objective_kind';
+export const REACHABILITY_OBJECTIVE_KIND_VALUE = 'reachability';
+
+export function linkedSlosHaveReachabilityObjectiveKind(linkedSlos: LinkedSloLabels[]): boolean {
+  return linkedSlos.some((slo) =>
+    slo.labels?.some(
+      (label) => label.key === SM_OBJECTIVE_KIND_LABEL_KEY && label.value === REACHABILITY_OBJECTIVE_KIND_VALUE
+    )
+  );
+}
+
+export function buildSLOWizardInitialValuesForCheck(
+  check: Check,
+  linkedSlos: LinkedSloLabels[]
+): SLOWizardInitialValues {
+  if (linkedSlosHaveReachabilityObjectiveKind(linkedSlos)) {
+    return {
+      labels: [{ key: 'sm_check_id', value: String(check.id) }],
+    };
+  }
+
+  return {
+    name: buildSLOName(check),
+    description: buildSLODescription(check),
+    query: buildSLOQuery(check),
+    labels: [
+      { key: 'sm_check_id', value: String(check.id) },
+      {
+        key: SM_OBJECTIVE_KIND_LABEL_KEY,
+        value: REACHABILITY_OBJECTIVE_KIND_VALUE,
+      },
+      { key: 'source', value: 'grafana-synthetic-monitoring-app' },
+    ],
+  };
 }

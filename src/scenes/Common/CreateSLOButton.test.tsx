@@ -1,6 +1,12 @@
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
-import { buildSLODescription, buildSLOLabels, buildSLOName, buildSLOQuery } from './CreateSLOButton.utils';
+import {
+  buildSLODescription,
+  buildSLOLabels,
+  buildSLOName,
+  buildSLOQuery,
+  buildSLOWizardInitialValuesForCheck,
+} from './CreateSLOButton.utils';
 
 describe('CreateSLOButton utils', () => {
   it('builds labels with sm_check_id and source', () => {
@@ -31,5 +37,56 @@ describe('CreateSLOButton utils', () => {
     expect(buildSLODescription(BASIC_HTTP_CHECK)).toBe(
       'Reachability SLI from Synthetic Monitoring. Job: Job name for http | Instance: https://http.com'
     );
+  });
+
+  describe('buildSLOWizardInitialValuesForCheck', () => {
+    it('prefills reachability values and labels when there are no linked SLOs', () => {
+      const result = buildSLOWizardInitialValuesForCheck(BASIC_HTTP_CHECK, []);
+
+      expect(result).toEqual({
+        name: buildSLOName(BASIC_HTTP_CHECK),
+        description: buildSLODescription(BASIC_HTTP_CHECK),
+        query: buildSLOQuery(BASIC_HTTP_CHECK),
+        labels: [
+          { key: 'sm_check_id', value: String(BASIC_HTTP_CHECK.id) },
+          { key: 'sm_objective_kind', value: 'reachability' },
+          { key: 'source', value: 'grafana-synthetic-monitoring-app' },
+        ],
+      });
+    });
+
+    it('only prefills check label when linked SLOs already contain reachability objective label', () => {
+      const result = buildSLOWizardInitialValuesForCheck(BASIC_HTTP_CHECK, [
+        {
+          labels: [
+            { key: 'sm_check_id', value: String(BASIC_HTTP_CHECK.id) },
+            { key: 'sm_objective_kind', value: 'reachability' },
+          ],
+        },
+      ]);
+
+      expect(result).toEqual({
+        labels: [{ key: 'sm_check_id', value: String(BASIC_HTTP_CHECK.id) }],
+      });
+    });
+
+    it('prefills reachability values when linked SLOs do not include reachability objective label', () => {
+      const result = buildSLOWizardInitialValuesForCheck(BASIC_HTTP_CHECK, [
+        {
+          labels: [{ key: 'sm_check_id', value: String(BASIC_HTTP_CHECK.id) }],
+        },
+      ]);
+
+      expect(result).toEqual({
+        name: buildSLOName(BASIC_HTTP_CHECK),
+        description: buildSLODescription(BASIC_HTTP_CHECK),
+        query: buildSLOQuery(BASIC_HTTP_CHECK),
+        labels: [
+          { key: 'sm_check_id', value: String(BASIC_HTTP_CHECK.id) },
+          { key: 'sm_objective_kind', value: 'reachability' },
+          { key: 'source', value: 'grafana-synthetic-monitoring-app' },
+        ],
+      });
+    });
   });
 });

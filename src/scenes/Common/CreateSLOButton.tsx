@@ -7,13 +7,11 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 import { Feedback } from 'components/Feedback/Feedback';
 
 import {
-  buildSLODescription,
-  buildSLOLabels,
-  buildSLOName,
-  buildSLOQuery,
+  buildSLOWizardInitialValuesForCheck,
   type SLOLabel,
   type SLORatioQuery,
 } from './CreateSLOButton.utils';
+import { SLOIcon } from './SLOIcon';
 
 const SLO_COMPONENT_ID = 'grafana-slo-app/wizard/v1';
 
@@ -35,9 +33,11 @@ type SLOComponentPropsV1 = {
 
 type CreateSLOButtonProps = {
   check: Check;
+  /** Called after the SLO wizard reports success (in addition to closing the drawer). */
+  onCreated?: () => void;
 };
 
-export function CreateSLOButton({ check }: CreateSLOButtonProps) {
+export function CreateSLOButton({ check, onCreated }: CreateSLOButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const metricsDS = useMetricsDS();
   const metricsDsUid = metricsDS?.uid;
@@ -47,21 +47,21 @@ export function CreateSLOButton({ check }: CreateSLOButtonProps) {
     setIsOpen(false);
   }, []);
 
+  const handleSuccess = useCallback(() => {
+    onCreated?.();
+    handleClose();
+  }, [handleClose, onCreated]);
+
   const sloProps = useMemo(
     (): SLOComponentPropsV1 => ({
-      initialValues: {
-        name: buildSLOName(check),
-        description: buildSLODescription(check),
-        query: buildSLOQuery(check),
-        labels: buildSLOLabels(check),
-      },
+      initialValues: buildSLOWizardInitialValuesForCheck(check, []),
       dataSourceUid: metricsDsUid,
       stepperOrientation: 'horizontal',
-      onSuccess: handleClose,
+      onSuccess: handleSuccess,
       submitLabel: 'Create SLO',
       onClose: handleClose,
     }),
-    [check, metricsDsUid, handleClose]
+    [check, metricsDsUid, handleClose, handleSuccess]
   );
 
   if (isLoading || !SLOComponent || !metricsDsUid) {
@@ -71,7 +71,7 @@ export function CreateSLOButton({ check }: CreateSLOButtonProps) {
   return (
     <>
       <Stack direction="row" gap={1} alignItems="center">
-        <Button variant="secondary" icon="clipboard-alt" onClick={() => setIsOpen(true)}>
+        <Button variant="secondary" icon={<SLOIcon />} onClick={() => setIsOpen(true)}>
           Create a SLO
         </Button>
       </Stack>
@@ -80,6 +80,7 @@ export function CreateSLOButton({ check }: CreateSLOButtonProps) {
         <Drawer
           title={
             <Stack direction="row" gap={2} alignItems="center">
+              <SLOIcon pixelSize={22} />
               <Text variant="h2">Create SLO</Text>
               <Feedback feature="slo-integration" about={{ text: 'Experimental' }} />
             </Stack>

@@ -5,10 +5,9 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
-import { CreateSLOButton } from 'scenes/Common/CreateSLOButton';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
-import { LinkedSlosIndicator } from 'scenes/Common/LinkedSlosIndicator';
+import { SloIntegration } from 'scenes/Common/SloIntegration';
 
 interface DashboardHeaderProps {
   annotations: AnnotationQuery[];
@@ -26,8 +25,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
           <DashboardAnnotationControls annotations={annotations} />
         </div>
         <div className={styles.actions}>
-          <LinkedSlosIndicator check={check} />
-          <CreateSLOButton check={check} />
+          <SloIntegration check={check} />
           <EditCheckButton id={check.id} />
           <div className={styles.dashboardControls}>
             <TimeRangePicker />
