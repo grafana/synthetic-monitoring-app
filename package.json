@@ -37,7 +37,12 @@
     "@commitlint/config-conventional": "20.0.0",
     "@faker-js/faker": "10.1.0",
     "@grafana/eslint-config": "9.0.0",
+<<<<<<< HEAD
     "@grafana/tsconfig": "2.2.0",
+=======
+    "@grafana/tsconfig": "2.0.1",
+    "@openfeature/web-sdk": "1.7.3",
+>>>>>>> 48904ada (feat: integrate with assistant)
     "@stylistic/eslint-plugin-ts": "4.4.1",
     "@swc/core": "1.15.3",
     "@swc/helpers": "0.5.17",
