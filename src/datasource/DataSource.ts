@@ -22,6 +22,7 @@ import {
   CheckInfoResult,
   DeleteCheckResult,
   DeleteProbeResult,
+  InsightsResponse,
   ListCheckResult,
   ListProbeResult,
   ListTenantCostAttributionLabelsResponse,
@@ -377,6 +378,14 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         ...settings,
       },
     });
+  }
+
+  //--------------------------------------------------------------------------------
+  // INSIGHTS
+  //--------------------------------------------------------------------------------
+
+  async getInsights() {
+    return this.fetchAPI<InsightsResponse>(`${this.instanceSettings.url}/sm/insights`);
   }
 
   //--------------------------------------------------------------------------------

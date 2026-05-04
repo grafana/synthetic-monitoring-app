@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
 import { AdHocFiltersVariable } from '@grafana/scenes';
 import {
   QueryVariable,
@@ -83,7 +82,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
 
   return (
     <>
-      <PluginPage pageNav={{ text: 'Home' }} renderTitle={() => <h1>Home</h1>}>
+      <>
         <Stack direction="column" gap={1}>
           <DashboardContainerAnnotations annotations={annotations}>
             <div className={styles.header}>
@@ -116,7 +115,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
             )}
           </DashboardContainerAnnotations>
         </Stack>
-      </PluginPage>
+      </>
     </>
   );
 };
