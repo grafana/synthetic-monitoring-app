@@ -227,6 +227,7 @@ function LimitBar({ label, current, max, href }: { label: string; current: numbe
 }
 
 function PerformanceSection({ data }: { data: InsightsResponse }) {
+  const styles = useStyles2(getStyles);
   const { performance, checks } = data;
 
   if (!performance) {
@@ -248,63 +249,103 @@ function PerformanceSection({ data }: { data: InsightsResponse }) {
       <SectionHeading title="Performance" tooltip="Based on metrics from the last 30 days" />
       <Stack direction="column" gap={1}>
         {performance.uptime_warnings && performance.uptime_warnings.length > 0 && (
-          <Alert title="Uptime warnings" severity="warning">
-            <Stack direction="column" gap={0.5}>
-              {performance.uptime_warnings.map((w: UptimeWarning) => (
-                <div key={w.check_id}>
-                  <a href={getCheckDashboardUrl(w.check_id)}>
-                    {getCheckLabel(w.check_id, checks)}
-                  </a>
-                  {' '}&mdash; success rate: {(w.success_rate * 100).toFixed(1)}%
+          <>
+            <span className={styles.perfGroupLabel}>
+              <Badge text={performance.uptime_warnings.length.toString()} color="red" />
+              {' '}Low uptime: success rate below threshold
+            </span>
+            {performance.uptime_warnings.map((w: UptimeWarning) => (
+              <a key={w.check_id} href={getCheckDashboardUrl(w.check_id)} className={styles.perfRow}>
+                <div className={styles.perfIndicator} style={{ backgroundColor: w.success_rate < 0.9 ? styles.colorError : styles.colorWarning }} />
+                <div className={styles.perfInfo}>
+                  <span className={styles.perfCheckName}>{getCheckLabel(w.check_id, checks)}</span>
                 </div>
-              ))}
-            </Stack>
-          </Alert>
+                <span className={styles.perfValue}>{(w.success_rate * 100).toFixed(1)}%</span>
+                <div className={styles.perfBar}>
+                  <div className={styles.perfBarTrack}>
+                    <div
+                      className={w.success_rate < 0.9 ? styles.perfBarFillError : styles.perfBarFillWarning}
+                      style={{ width: `${w.success_rate * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </a>
+            ))}
+          </>
         )}
 
         {performance.flapping_checks && performance.flapping_checks.length > 0 && (
-          <Alert title="Flapping checks" severity="warning">
-            <Stack direction="column" gap={0.5}>
-              {performance.flapping_checks.map((f: FlappingCheck) => (
-                <div key={f.check_id}>
-                  <a href={getCheckDashboardUrl(f.check_id)}>
-                    {getCheckLabel(f.check_id, checks)}
+          <>
+            <span className={styles.perfGroupLabel}>
+              <Badge text={performance.flapping_checks.length.toString()} color="orange" />
+              {' '}Flapping: frequently switching between up and down
+            </span>
+            {(() => {
+              const maxChanges = Math.max(...(performance.flapping_checks?.map((c) => c.state_changes) ?? [1]));
+              return performance.flapping_checks!.map((f: FlappingCheck) => {
+                const severity = f.state_changes / maxChanges;
+                const color = severity > 0.5 ? styles.colorError : styles.colorWarning;
+                const barClass = severity > 0.5 ? styles.perfBarFillError : styles.perfBarFillWarning;
+                return (
+                  <a key={f.check_id} href={getCheckDashboardUrl(f.check_id)} className={styles.perfRow}>
+                    <div className={styles.perfIndicator} style={{ backgroundColor: color }} />
+                    <div className={styles.perfInfo}>
+                      <span className={styles.perfCheckName}>{getCheckLabel(f.check_id, checks)}</span>
+                    </div>
+                    <span className={styles.perfValue}>{f.state_changes.toLocaleString()} changes</span>
+                    <div className={styles.perfBar}>
+                      <div className={styles.perfBarTrack}>
+                        <div className={barClass} style={{ width: `${severity * 100}%` }} />
+                      </div>
+                    </div>
                   </a>
-                  {' '}&mdash; {f.state_changes} state changes
-                </div>
-              ))}
-            </Stack>
-          </Alert>
+                );
+              });
+            })()}
+          </>
         )}
 
         {performance.regional_anomalies && performance.regional_anomalies.length > 0 && (
-          <Alert title="Regional anomalies" severity="info">
-            <Stack direction="column" gap={0.5}>
-              {performance.regional_anomalies.map((r: RegionalAnomaly) => (
-                <div key={r.check_id}>
-                  <a href={getCheckDashboardUrl(r.check_id)}>
-                    {getCheckLabel(r.check_id, checks)}
-                  </a>
-                  {' '}&mdash; failing from {r.failing_probes.join(', ')} ({r.failing_probes.length}/{r.total_probes} probes)
+          <>
+            <span className={styles.perfGroupLabel}>
+              <Badge text={performance.regional_anomalies.length.toString()} color="orange" />
+              {' '}Regional failures: failing from specific probes only
+            </span>
+            {performance.regional_anomalies.map((r: RegionalAnomaly) => (
+              <a key={r.check_id} href={getCheckDashboardUrl(r.check_id)} className={styles.perfRow}>
+                <div className={styles.perfIndicator} style={{ backgroundColor: styles.colorWarning }} />
+                <div className={styles.perfInfo}>
+                  <span className={styles.perfCheckName}>{getCheckLabel(r.check_id, checks)}</span>
                 </div>
-              ))}
-            </Stack>
-          </Alert>
+                <span className={styles.perfValue}>
+                  {r.failing_probes.join(', ')} ({r.failing_probes.length}/{r.total_probes})
+                </span>
+              </a>
+            ))}
+          </>
         )}
 
         {performance.latency_degradation && performance.latency_degradation.length > 0 && (
-          <Alert title="Latency degradation" severity="warning">
-            <Stack direction="column" gap={0.5}>
-              {performance.latency_degradation.map((l: LatencyDegradation) => (
-                <div key={l.check_id}>
-                  <a href={getCheckDashboardUrl(l.check_id)}>
-                    {getCheckLabel(l.check_id, checks)}
-                  </a>
-                  {' '}&mdash; P95 increased {l.degradation_pct.toFixed(0)}% ({l.previous_p95_ms.toFixed(0)}ms &rarr; {l.current_p95_ms.toFixed(0)}ms)
+          <>
+            <span className={styles.perfGroupLabel}>
+              <Badge text={performance.latency_degradation.length.toString()} color="orange" />
+              {' '}Latency degradation: P95 latency increasing over time
+            </span>
+            {performance.latency_degradation.map((l: LatencyDegradation) => (
+              <a key={l.check_id} href={getCheckDashboardUrl(l.check_id)} className={styles.perfRow}>
+                <div className={styles.perfIndicator} style={{ backgroundColor: styles.colorWarning }} />
+                <div className={styles.perfInfo}>
+                  <span className={styles.perfCheckName}>{getCheckLabel(l.check_id, checks)}</span>
                 </div>
-              ))}
-            </Stack>
-          </Alert>
+                <div className={styles.perfLatencyChange}>
+                  <span className={styles.mutedText}>{l.previous_p95_ms.toFixed(0)}ms</span>
+                  <span>&rarr;</span>
+                  <span className={styles.perfLatencyBad}>{l.current_p95_ms.toFixed(0)}ms</span>
+                  <Badge text={`+${l.degradation_pct.toFixed(0)}%`} color="orange" />
+                </div>
+              </a>
+            ))}
+          </>
         )}
       </Stack>
     </div>
@@ -589,6 +630,89 @@ const getStyles = (theme: GrafanaTheme2) => ({
     '&:hover': {
       textDecoration: 'underline',
     },
+  }),
+  colorError: theme.colors.error.main,
+  colorWarning: theme.colors.warning.main,
+  colorInfo: theme.colors.info.main,
+  perfRow: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1.5),
+    padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
+    borderRadius: theme.shape.radius.default,
+    backgroundColor: theme.colors.background.secondary,
+    border: `1px solid ${theme.colors.border.weak}`,
+    color: 'inherit',
+    textDecoration: 'none',
+    transition: 'border-color 0.15s ease',
+    '&:hover': {
+      borderColor: theme.colors.border.medium,
+    },
+  }),
+  perfIndicator: css({
+    width: 4,
+    height: 32,
+    borderRadius: 2,
+    flexShrink: 0,
+  }),
+  perfInfo: css({
+    flex: 1,
+    minWidth: 0,
+  }),
+  perfCheckName: css({
+    display: 'block',
+    fontWeight: theme.typography.fontWeightMedium,
+    fontSize: theme.typography.body.fontSize,
+  }),
+  perfDetail: css({
+    display: 'block',
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.text.secondary,
+  }),
+  perfGroupLabel: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+    fontSize: theme.typography.body.fontSize,
+    color: theme.colors.text.primary,
+    marginTop: theme.spacing(1),
+  }),
+  perfValue: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.text.secondary,
+    flexShrink: 0,
+    textAlign: 'right',
+    minWidth: 80,
+  }),
+  perfBar: css({
+    width: 120,
+    flexShrink: 0,
+  }),
+  perfBarTrack: css({
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.background.canvas,
+  }),
+  perfBarFillWarning: css({
+    height: '100%',
+    borderRadius: 3,
+    backgroundColor: theme.colors.warning.main,
+  }),
+  perfBarFillError: css({
+    height: '100%',
+    borderRadius: 3,
+    backgroundColor: theme.colors.error.main,
+  }),
+  perfLatencyChange: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    fontSize: theme.typography.bodySmall.fontSize,
+    flexShrink: 0,
+  }),
+  perfLatencyBad: css({
+    color: theme.colors.warning.text,
+    fontWeight: theme.typography.fontWeightMedium,
   }),
   sectionHeading: css({
     display: 'flex',
