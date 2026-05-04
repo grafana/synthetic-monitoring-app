@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Badge, Button, Card, Icon, IconButton, LoadingPlaceholder, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { useAssistant } from '@grafana/assistant';
+import { isAssistantAvailable, openAssistant as openAssistantSidebar } from '@grafana/assistant';
 
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import type {
@@ -48,28 +48,24 @@ interface UnlabeledCheck {
 }
 
 
-class AssistantErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  render() {
-    return this.state.hasError ? null : this.props.children;
-  }
+function useIsAssistantAvailable() {
+  const [available, setAvailable] = React.useState(false);
+
+  React.useEffect(() => {
+    const sub = isAssistantAvailable().subscribe({
+      next: (val) => setAvailable(val),
+      error: () => setAvailable(false),
+    });
+    return () => sub.unsubscribe();
+  }, []);
+
+  return available;
 }
 
 function AssistantButton({ prompt, origin, title, size = 'md' }: { prompt: string; origin: string; title: string; size?: 'sm' | 'md' }) {
-  return (
-    <AssistantErrorBoundary>
-      <AssistantButtonInner prompt={prompt} origin={origin} title={title} size={size} />
-    </AssistantErrorBoundary>
-  );
-}
+  const available = useIsAssistantAvailable();
 
-function AssistantButtonInner({ prompt, origin, title, size }: { prompt: string; origin: string; title: string; size: 'sm' | 'md' }) {
-  const { isLoading, isAvailable, openAssistant } = useAssistant();
-
-  if (isLoading || !isAvailable || !openAssistant) {
+  if (!available) {
     return null;
   }
 
@@ -79,7 +75,7 @@ function AssistantButtonInner({ prompt, origin, title, size }: { prompt: string;
       variant="secondary"
       fill="outline"
       icon="ai-sparkle"
-      onClick={() => openAssistant({ origin, prompt, autoSend: true })}
+      onClick={() => openAssistantSidebar({ origin, prompt, autoSend: true })}
     >
       {title}
     </Button>
