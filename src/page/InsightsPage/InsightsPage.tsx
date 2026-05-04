@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Badge, Button, Card, Icon, IconButton, LoadingPlaceholder, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useAssistant } from '@grafana/assistant';
 
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import type {
@@ -46,14 +47,66 @@ interface UnlabeledCheck {
   job: string;
 }
 
+
+class AssistantErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    return this.state.hasError ? null : this.props.children;
+  }
+}
+
+function AssistantButton({ prompt, origin, title, size = 'md' }: { prompt: string; origin: string; title: string; size?: 'sm' | 'md' }) {
+  return (
+    <AssistantErrorBoundary>
+      <AssistantButtonInner prompt={prompt} origin={origin} title={title} size={size} />
+    </AssistantErrorBoundary>
+  );
+}
+
+function AssistantButtonInner({ prompt, origin, title, size }: { prompt: string; origin: string; title: string; size: 'sm' | 'md' }) {
+  const { isLoading, isAvailable, openAssistant } = useAssistant();
+
+  if (isLoading || !isAvailable || !openAssistant) {
+    return null;
+  }
+
+  return (
+    <Button
+      size={size}
+      variant="secondary"
+      fill="outline"
+      icon="ai-sparkle"
+      onClick={() => openAssistant({ origin, prompt, autoSend: true })}
+    >
+      {title}
+    </Button>
+  );
+}
+
+
 function UsageSection({ data, unlabeledChecks, checkProbeNames }: { data: InsightsResponse; unlabeledChecks: UnlabeledCheck[]; checkProbeNames: Map<number, string[]> }) {
   const styles = useStyles2(getStyles);
   const { usage } = data;
+  const [isOpen, setIsOpen] = React.useState(true);
 
   return (
     <div>
-      <h3>Usage</h3>
-      <div className={styles.cardGrid}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <button className={styles.collapseToggle} onClick={() => setIsOpen(!isOpen)}>
+          <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
+          <h3 className={styles.collapseHeading}>Usage</h3>
+        </button>
+        <AssistantButton
+          size="sm"
+          prompt="Analyze my Synthetic Monitoring setup based on the insights data. What are the most critical issues and what should I do about them?"
+          origin="grafana/synthetic-monitoring/insights"
+          title="Analyze setup"
+        />
+      </Stack>
+      {isOpen && <div className={styles.cardGrid}>
         <Card>
           <Card.Heading>Checks by type</Card.Heading>
           <Card.Description>
@@ -177,7 +230,7 @@ function UsageSection({ data, unlabeledChecks, checkProbeNames }: { data: Insigh
             )}
           </Card.Description>
         </Card>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -229,6 +282,7 @@ function LimitBar({ label, current, max, href }: { label: string; current: numbe
 function PerformanceSection({ data }: { data: InsightsResponse }) {
   const styles = useStyles2(getStyles);
   const { performance, checks } = data;
+  const [isOpen, setIsOpen] = React.useState(true);
 
   if (!performance) {
     return null;
@@ -246,16 +300,27 @@ function PerformanceSection({ data }: { data: InsightsResponse }) {
 
   return (
     <div>
-      <SectionHeading title="Performance" tooltip="Based on metrics from the last 30 days" />
-      <Stack direction="column" gap={1}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <button className={styles.collapseToggle} onClick={() => setIsOpen(!isOpen)}>
+          <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
+          <SectionHeading title="Performance" tooltip="Based on metrics from the last 30 days" />
+        </button>
+        <AssistantButton
+          size="sm"
+          prompt="Investigate the performance issues in my Synthetic Monitoring checks. Focus on the checks with uptime warnings, flapping behavior, regional anomalies, and latency degradation. Correlate the data and suggest what to do."
+          origin="grafana/synthetic-monitoring/insights/performance"
+          title="Investigate with Assistant"
+        />
+      </Stack>
+      {isOpen && <Stack direction="column" gap={1}>
         {performance.uptime_warnings && performance.uptime_warnings.length > 0 && (
           <>
             <span className={styles.perfGroupLabel}>
               <Badge text={performance.uptime_warnings.length.toString()} color="red" />
               {' '}Low uptime: success rate below threshold
             </span>
-            {performance.uptime_warnings.map((w: UptimeWarning) => (
-              <a key={w.check_id} href={getCheckDashboardUrl(w.check_id)} className={styles.perfRow}>
+            {          performance.uptime_warnings.map((w: UptimeWarning) => (
+            <a key={w.check_id} href={getCheckDashboardUrl(w.check_id)} className={styles.perfRow}>
                 <div className={styles.perfIndicator} style={{ backgroundColor: w.success_rate < 0.9 ? styles.colorError : styles.colorWarning }} />
                 <div className={styles.perfInfo}>
                   <span className={styles.perfCheckName}>{getCheckLabel(w.check_id, checks)}</span>
@@ -347,7 +412,7 @@ function PerformanceSection({ data }: { data: InsightsResponse }) {
             ))}
           </>
         )}
-      </Stack>
+      </Stack>}
     </div>
   );
 }
@@ -380,9 +445,11 @@ function RecommendationCard({ title, description, actionLabel, onAction, onDismi
 }
 
 function RecommendationsSection({ data }: { data: InsightsResponse }) {
+  const styles = useStyles2(getStyles);
   const navigate = useNavigate();
   const { recommendations, checks } = data;
   const [dismissed, setDismissed] = React.useState<Set<string>>(new Set());
+  const [isOpen, setIsOpen] = React.useState(true);
 
   const dismiss = (key: string) => {
     setDismissed((prev) => new Set(prev).add(key));
@@ -478,12 +545,23 @@ function RecommendationsSection({ data }: { data: InsightsResponse }) {
 
   return (
     <div>
-      <SectionHeading title="Recommendations" tooltip="Based on check performance over the last 30 days and current configuration" />
-      <Stack direction="column" gap={1}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <button className={styles.collapseToggle} onClick={() => setIsOpen(!isOpen)}>
+          <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
+          <SectionHeading title="Recommendations" tooltip="Based on check performance over the last 30 days and current configuration" />
+        </button>
+        <AssistantButton
+          size="sm"
+          prompt="Based on the recommendations data, help me take action. Which checks should I reduce frequency on, and are the overlapping targets intentional or should I consolidate them?"
+          origin="grafana/synthetic-monitoring/insights/recommendations"
+          title="Get advice"
+        />
+      </Stack>
+      {isOpen && <Stack direction="column" gap={1}>
         {cards.map(({ key, element }) => (
           <React.Fragment key={key}>{element}</React.Fragment>
         ))}
-      </Stack>
+      </Stack>}
     </div>
   );
 }
@@ -714,6 +792,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.warning.text,
     fontWeight: theme.typography.fontWeightMedium,
   }),
+  investigateResult: css({
+    padding: theme.spacing(2),
+    borderRadius: theme.shape.radius.default,
+    border: `1px solid ${theme.colors.border.medium}`,
+    backgroundColor: theme.colors.background.secondary,
+  }),
+  investigateContent: css({
+    fontSize: theme.typography.body.fontSize,
+    lineHeight: theme.typography.body.lineHeight,
+    whiteSpace: 'pre-wrap',
+  }),
   sectionHeading: css({
     display: 'flex',
     alignItems: 'center',
@@ -722,6 +811,20 @@ const getStyles = (theme: GrafanaTheme2) => ({
   tooltipIcon: css({
     color: theme.colors.text.disabled,
     cursor: 'help',
+  }),
+  collapseToggle: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    color: 'inherit',
+    marginBottom: theme.spacing(1),
+  }),
+  collapseHeading: css({
+    margin: 0,
   }),
   recommendationCard: css({
     display: 'flex',
