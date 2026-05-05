@@ -8,7 +8,7 @@ import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
-import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
+import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 
 import { useMeta } from './useMeta';
 
@@ -50,9 +50,9 @@ function findDatasourceByNameAndUid(
   if (!byUid) {
     byUid = Object.values(config.datasources).find((ds) => {
       if (type === 'loki') {
-        return ds.uid === 'grafanacloud-logs';
+        return ds.uid === DEFAULT_LOGS_DS_UID;
       } else {
-        return ds.uid === 'grafanacloud-metrics';
+        return ds.uid === DEFAULT_METRICS_DS_UID;
       }
     });
   }
@@ -121,13 +121,12 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
       if (logsStatus === DatasourceStatus.NotFound) {
         throw new Error('Invalid plugin configuration. Could not find a logs datasource');
       }
-      // Either the plugin is running on prem and can find a datasource, or the provisioning matches with the default grafana cloud UIDs. Everything is good to go!
-      if (
-        (metricsStatus === DatasourceStatus.Match || metricsStatus === DatasourceStatus.NameOnly) &&
-        metricsByName &&
-        (logsStatus === DatasourceStatus.Match || logsStatus === DatasourceStatus.NameOnly) &&
-        logsByName
-      ) {
+
+      const metricsMatchOrNameOnly =
+        metricsStatus === DatasourceStatus.Match || metricsStatus === DatasourceStatus.NameOnly;
+      const logsMatchOrNameOnly = logsStatus === DatasourceStatus.Match || logsStatus === DatasourceStatus.NameOnly;
+
+      if (metricsMatchOrNameOnly && metricsByName && logsMatchOrNameOnly && logsByName) {
         const metricsHostedId = jsonData.metrics.hostedId;
         if (!metricsHostedId) {
           throw new Error('Invalid plugin configuration. Could not find metrics datasource hostedId');
@@ -148,7 +147,12 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
         return;
       }
 
-      if (metricsStatus === DatasourceStatus.UidOnly || logsStatus === DatasourceStatus.UidOnly) {
+      if (
+        metricsStatus === DatasourceStatus.UidOnly ||
+        logsStatus === DatasourceStatus.UidOnly ||
+        metricsStatus === DatasourceStatus.Mismatch ||
+        logsStatus === DatasourceStatus.Mismatch
+      ) {
         setDataSouceModalOpen(true);
       }
     } catch (e: unknown) {
