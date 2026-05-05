@@ -247,8 +247,9 @@ export interface FlappingCheck {
 
 export interface RegionalAnomaly {
   check_id: number;
-  failing_probes: string[];
+  anomalous_probes: string[];
   total_probes: number;
+  mean_success_rate: number;
 }
 
 export interface LatencyDegradation {
