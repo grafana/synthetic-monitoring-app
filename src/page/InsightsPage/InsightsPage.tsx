@@ -563,7 +563,7 @@ function RecommendationsSection({ data }: { data: InsightsResponse }) {
 }
 
 export function InsightsPage() {
-  const { data, isLoading, error } = useInsights();
+  const { data, isLoading, error, refetch } = useInsights();
   const { data: checks = [] } = useChecks();
   const { data: probes = [] } = useProbes();
 
@@ -597,7 +597,9 @@ export function InsightsPage() {
   }
 
   if (error) {
-    return <Alert title="Failed to load insights" severity="error">{String(error)}</Alert>;
+    return (
+      <Alert title="Failed to load insights." severity="warning" buttonContent="Retry" onRemove={() => refetch()} />
+    );
   }
 
   if (!data) {
