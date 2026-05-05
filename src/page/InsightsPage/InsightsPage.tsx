@@ -370,7 +370,7 @@ function PerformanceSection({ data }: { data: InsightsResponse }) {
           <>
             <span className={styles.perfGroupLabel}>
               <Badge text={performance.regional_anomalies.length.toString()} color="orange" />
-              {' '}Regional failures: failing from specific probes only
+              {' '}Regional anomalies: probes with unusual success rate deviation
             </span>
             {performance.regional_anomalies.map((r: RegionalAnomaly) => (
               <a key={r.check_id} href={getCheckDashboardUrl(r.check_id)} className={styles.perfRow}>
@@ -379,7 +379,7 @@ function PerformanceSection({ data }: { data: InsightsResponse }) {
                   <span className={styles.perfCheckName}>{getCheckLabel(r.check_id, checks)}</span>
                 </div>
                 <span className={styles.perfValue}>
-                  {r.failing_probes.join(', ')} ({r.failing_probes.length}/{r.total_probes})
+                  {r.anomalous_probes.join(', ')} ({r.anomalous_probes.length}/{r.total_probes} probes, {(r.mean_success_rate * 100).toFixed(1)}% avg)
                 </span>
               </a>
             ))}
