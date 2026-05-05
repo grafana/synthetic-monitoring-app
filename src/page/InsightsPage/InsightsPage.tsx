@@ -1,18 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Badge, Button, Card, Icon, IconButton, LoadingPlaceholder, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import { Alert, Badge, Button, Card, Icon, IconButton, LoadingPlaceholder, Pagination, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { isAssistantAvailable, openAssistant as openAssistantSidebar } from '@grafana/assistant';
 
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import type {
-  FlappingCheck,
   InsightsCheckMeta,
   InsightsResponse,
-  LatencyDegradation,
-  RegionalAnomaly,
-  UptimeWarning,
 } from 'datasource/responses.types';
 import { useChecks } from 'data/useChecks';
 import { useInsights } from 'data/useInsights';
@@ -45,6 +41,25 @@ function getCheckDashboardUrl(checkId: string | number): string {
 interface UnlabeledCheck {
   id?: number;
   job: string;
+}
+
+const PERF_PAGE_SIZE = 7;
+
+function PaginatedList<T>({ items, renderItem, pageSize = PERF_PAGE_SIZE }: { items: T[]; renderItem: (item: T, index: number) => React.ReactNode; pageSize?: number }) {
+  const [page, setPage] = React.useState(1);
+  const totalPages = Math.ceil(items.length / pageSize);
+  const visible = items.slice((page - 1) * pageSize, page * pageSize);
+
+  return (
+    <>
+      {visible.map((item, i) => renderItem(item, (page - 1) * pageSize + i))}
+      {totalPages > 1 && (
+        <Stack justifyContent="flex-end">
+          <Pagination currentPage={page} numberOfPages={totalPages} onNavigate={setPage} />
+        </Stack>
+      )}
+    </>
+  );
 }
 
 
@@ -309,119 +324,154 @@ function PerformanceSection({ data }: { data: InsightsResponse }) {
         />
       </Stack>
       {isOpen && <Stack direction="column" gap={1}>
-        {performance.uptime_warnings && performance.uptime_warnings.length > 0 && (
-          <>
-            <span className={styles.perfGroupLabel}>
-              <Badge text={performance.uptime_warnings.length.toString()} color="red" />
-              {' '}Low uptime: success rate below threshold
-            </span>
-            {          performance.uptime_warnings.map((w: UptimeWarning) => (
-            <a key={w.check_id} href={getCheckDashboardUrl(w.check_id)} className={styles.perfRow}>
-                <div className={styles.perfIndicator} style={{ backgroundColor: w.success_rate < 0.9 ? styles.colorError : styles.colorWarning }} />
-                <div className={styles.perfInfo}>
-                  <span className={styles.perfCheckName}>{getCheckLabel(w.check_id, checks)}</span>
-                </div>
-                <span className={styles.perfValue}>{(w.success_rate * 100).toFixed(1)}%</span>
-                <div className={styles.perfBar}>
-                  <div className={styles.perfBarTrack}>
-                    <div
-                      className={w.success_rate < 0.9 ? styles.perfBarFillError : styles.perfBarFillWarning}
-                      style={{ width: `${w.success_rate * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </a>
-            ))}
-          </>
-        )}
-
-        {performance.flapping_checks && performance.flapping_checks.length > 0 && (
-          <>
-            <span className={styles.perfGroupLabel}>
-              <Badge text={performance.flapping_checks.length.toString()} color="orange" />
-              {' '}Flapping: frequently switching between up and down
-            </span>
-            {(() => {
-              const maxChanges = Math.max(...(performance.flapping_checks?.map((c) => c.state_changes) ?? [1]));
-              return performance.flapping_checks!.map((f: FlappingCheck) => {
-                const severity = f.state_changes / maxChanges;
-                const color = severity > 0.5 ? styles.colorError : styles.colorWarning;
-                const barClass = severity > 0.5 ? styles.perfBarFillError : styles.perfBarFillWarning;
-                return (
-                  <a key={f.check_id} href={getCheckDashboardUrl(f.check_id)} className={styles.perfRow}>
-                    <div className={styles.perfIndicator} style={{ backgroundColor: color }} />
+        {(() => {
+          const sortedUptime = [...(performance.uptime_warnings ?? [])].sort((a, b) => a.success_rate - b.success_rate);
+          const hasCriticalUptime = sortedUptime.some((w) => w.success_rate < 0.9);
+          return sortedUptime.length > 0 && (
+            <>
+              <span className={styles.perfGroupLabel}>
+                <Badge text={sortedUptime.length.toString()} color={hasCriticalUptime ? 'red' : 'orange'} />
+                {' '}Low uptime: success rate below threshold
+              </span>
+              <PaginatedList
+                items={sortedUptime}
+                renderItem={(w) => (
+                  <a key={w.check_id} href={getCheckDashboardUrl(w.check_id)} className={styles.perfRow}>
+                    <div className={styles.perfIndicator} style={{ backgroundColor: w.success_rate < 0.9 ? styles.colorError : styles.colorWarning }} />
                     <div className={styles.perfInfo}>
-                      <span className={styles.perfCheckName}>{getCheckLabel(f.check_id, checks)}</span>
+                      <span className={styles.perfCheckName}>{getCheckLabel(w.check_id, checks)}</span>
                     </div>
-                    <span className={styles.perfValue}>{f.state_changes.toLocaleString()} changes</span>
+                    <span className={w.success_rate < 0.9 ? styles.perfValueCritical : styles.perfValue}>{(w.success_rate * 100).toFixed(1)}%</span>
                     <div className={styles.perfBar}>
                       <div className={styles.perfBarTrack}>
-                        <div className={barClass} style={{ width: `${severity * 100}%` }} />
+                        <div
+                          className={w.success_rate < 0.9 ? styles.perfBarFillError : styles.perfBarFillWarning}
+                          style={{ width: `${w.success_rate * 100}%` }}
+                        />
                       </div>
                     </div>
                   </a>
-                );
-              });
-            })()}
-          </>
-        )}
+                )}
+              />
+            </>
+          );
+        })()}
 
-        {performance.regional_anomalies && performance.regional_anomalies.length > 0 && (
-          <>
-            <span className={styles.perfGroupLabel}>
-              <Badge text={performance.regional_anomalies.length.toString()} color="orange" />
-              {' '}Regional anomalies: probes with unusual success rate deviation
-            </span>
-            {performance.regional_anomalies.map((r: RegionalAnomaly) => (
-              <a key={r.check_id} href={getCheckDashboardUrl(r.check_id)} className={styles.perfRow}>
-                <div className={styles.perfIndicator} style={{ backgroundColor: styles.colorWarning }} />
-                <div className={styles.perfInfo}>
-                  <span className={styles.perfCheckName}>{getCheckLabel(r.check_id, checks)}</span>
-                </div>
-                <span className={styles.perfValue}>
-                  {r.anomalous_probes.join(', ')} ({r.anomalous_probes.length}/{r.total_probes} probes, {(r.mean_success_rate * 100).toFixed(1)}% avg)
-                </span>
-              </a>
-            ))}
-          </>
-        )}
+        {(() => {
+          const sortedFlapping = [...(performance.flapping_checks ?? [])].sort((a, b) => b.state_changes - a.state_changes);
+          const maxChanges = sortedFlapping.length > 0 ? sortedFlapping[0].state_changes : 1;
+          const hasCriticalFlapping = sortedFlapping.some((f) => f.state_changes > 500);
+          return sortedFlapping.length > 0 && (
+            <>
+              <span className={styles.perfGroupLabel}>
+                <Badge text={sortedFlapping.length.toString()} color={hasCriticalFlapping ? 'red' : 'orange'} />
+                {' '}Flapping: frequently switching between up and down
+              </span>
+              <PaginatedList
+                items={sortedFlapping}
+                renderItem={(f) => {
+                  const severity = f.state_changes / maxChanges;
+                  const isCritical = severity > 0.5;
+                  return (
+                    <a key={f.check_id} href={getCheckDashboardUrl(f.check_id)} className={styles.perfRow}>
+                      <div className={styles.perfIndicator} style={{ backgroundColor: isCritical ? styles.colorError : styles.colorWarning }} />
+                      <div className={styles.perfInfo}>
+                        <span className={styles.perfCheckName}>{getCheckLabel(f.check_id, checks)}</span>
+                      </div>
+                      <span className={isCritical ? styles.perfValueCritical : styles.perfValue}>{f.state_changes.toLocaleString()} changes</span>
+                      <div className={styles.perfBar}>
+                        <div className={styles.perfBarTrack}>
+                          <div className={isCritical ? styles.perfBarFillError : styles.perfBarFillWarning} style={{ width: `${severity * 100}%` }} />
+                        </div>
+                      </div>
+                    </a>
+                  );
+                }}
+              />
+            </>
+          );
+        })()}
 
-        {performance.latency_degradation && performance.latency_degradation.length > 0 && (
-          <>
-            <span className={styles.perfGroupLabel}>
-              <Badge text={performance.latency_degradation.length.toString()} color="orange" />
-              {' '}Latency degradation: P95 latency increasing over time
-            </span>
-            {performance.latency_degradation.map((l: LatencyDegradation) => (
-              <a key={l.check_id} href={getCheckDashboardUrl(l.check_id)} className={styles.perfRow}>
-                <div className={styles.perfIndicator} style={{ backgroundColor: styles.colorWarning }} />
-                <div className={styles.perfInfo}>
-                  <span className={styles.perfCheckName}>{getCheckLabel(l.check_id, checks)}</span>
-                </div>
-                <div className={styles.perfLatencyChange}>
-                  <span className={styles.mutedText}>{l.previous_p95_ms.toFixed(0)}ms</span>
-                  <span>&rarr;</span>
-                  <span className={styles.perfLatencyBad}>{l.current_p95_ms.toFixed(0)}ms</span>
-                  <Badge text={`+${l.degradation_pct.toFixed(0)}%`} color="orange" />
-                </div>
-              </a>
-            ))}
-          </>
-        )}
+        {(() => {
+          const sortedRegional = [...(performance.regional_anomalies ?? [])].sort((a, b) => a.mean_success_rate - b.mean_success_rate);
+          return sortedRegional.length > 0 && (
+            <>
+              <span className={styles.perfGroupLabel}>
+                <Badge text={sortedRegional.length.toString()} color="orange" />
+                {' '}Regional anomalies: probes with unusual success rate deviation
+              </span>
+              <PaginatedList
+                items={sortedRegional}
+                renderItem={(r) => (
+                  <a key={r.check_id} href={getCheckDashboardUrl(r.check_id)} className={styles.perfRow}>
+                    <div className={styles.perfIndicator} style={{ backgroundColor: styles.colorWarning }} />
+                    <div className={styles.perfInfo}>
+                      <span className={styles.perfCheckName}>{getCheckLabel(r.check_id, checks)}</span>
+                    </div>
+                    <span className={styles.perfValue}>
+                      {r.anomalous_probes.join(', ')} ({r.anomalous_probes.length}/{r.total_probes} probes, {(r.mean_success_rate * 100).toFixed(1)}% avg)
+                    </span>
+                  </a>
+                )}
+              />
+            </>
+          );
+        })()}
+
+        {(() => {
+          const sortedLatency = [...(performance.latency_degradation ?? [])].sort((a, b) => b.degradation_pct - a.degradation_pct);
+          const hasCriticalLatency = sortedLatency.some((l) => l.degradation_pct > 100);
+          return sortedLatency.length > 0 && (
+            <>
+              <span className={styles.perfGroupLabel}>
+                <Badge text={sortedLatency.length.toString()} color={hasCriticalLatency ? 'red' : 'orange'} />
+                {' '}Latency degradation: P95 latency increasing over time
+              </span>
+              <PaginatedList
+                items={sortedLatency}
+                renderItem={(l) => {
+                  const isCritical = l.degradation_pct > 100;
+                  return (
+                    <a key={l.check_id} href={getCheckDashboardUrl(l.check_id)} className={styles.perfRow}>
+                      <div className={styles.perfIndicator} style={{ backgroundColor: isCritical ? styles.colorError : styles.colorWarning }} />
+                      <div className={styles.perfInfo}>
+                        <span className={styles.perfCheckName}>{getCheckLabel(l.check_id, checks)}</span>
+                      </div>
+                      <div className={styles.perfLatencyChange}>
+                        <span className={styles.mutedText}>{l.previous_p95_ms.toFixed(0)}ms</span>
+                        <span>&rarr;</span>
+                        <span className={isCritical ? styles.perfLatencyCritical : styles.perfLatencyBad}>{l.current_p95_ms.toFixed(0)}ms</span>
+                        <Badge text={`+${l.degradation_pct.toFixed(0)}%`} color={isCritical ? 'red' : 'orange'} />
+                      </div>
+                    </a>
+                  );
+                }}
+              />
+            </>
+          );
+        })()}
       </Stack>}
     </div>
   );
 }
 
-interface RecommendationCardProps {
+function RecommendationGroup({
+  title,
+  icon,
+  items,
+  renderItem,
+  actionLabel,
+  onAction,
+  onDismiss,
+}: {
   title: string;
-  description: React.ReactNode;
+  icon: string;
+  items: Array<{ key: string; label: string; detail: string }>;
+  renderItem?: undefined;
   actionLabel: string;
   onAction: () => void;
   onDismiss: () => void;
-}
-
-function RecommendationCard({ title, description, actionLabel, onAction, onDismiss }: RecommendationCardProps) {
+}) {
   const styles = useStyles2(getStyles);
 
   return (
@@ -430,7 +480,14 @@ function RecommendationCard({ title, description, actionLabel, onAction, onDismi
         <h4 className={styles.recommendationTitle}>{title}</h4>
         <IconButton name="times" size="sm" aria-label="Dismiss" onClick={onDismiss} />
       </div>
-      <div className={styles.recommendationDescription}>{description}</div>
+      <Stack direction="column" gap={0.5}>
+        {items.map((item) => (
+          <div key={item.key} className={styles.recoItem}>
+            <span className={styles.recoItemLabel}>{item.label}</span>
+            <span className={styles.recoItemDetail}>{item.detail}</span>
+          </div>
+        ))}
+      </Stack>
       <Stack direction="row" gap={1} justifyContent="flex-end">
         <Button size="sm" variant="primary" fill="outline" onClick={onAction}>
           {actionLabel}
@@ -451,27 +508,20 @@ function RecommendationsSection({ data }: { data: InsightsResponse }) {
     setDismissed((prev) => new Set(prev).add(key));
   };
 
-  const cards: Array<{ key: string; element: React.ReactNode }> = [];
+  const groups: Array<{ key: string; element: React.ReactNode }> = [];
 
   if (recommendations.low_value_checks && recommendations.low_value_checks.length > 0 && !dismissed.has('low-value')) {
-    const checkNames = recommendations.low_value_checks.map((l) => getCheckLabel(l.check_id, checks));
-    cards.push({
+    groups.push({
       key: 'low-value',
       element: (
-        <RecommendationCard
+        <RecommendationGroup
           title="Reduce frequency on low-value checks"
-          description={
-            <span>
-              {recommendations.low_value_checks.length} {recommendations.low_value_checks.length === 1 ? 'check has' : 'checks have'} 100%
-              success rate with high frequency. Consider reducing frequency to save executions:{' '}
-              {checkNames.map((name, i) => (
-                <React.Fragment key={name}>
-                  {i > 0 && ', '}
-                  <strong>{name}</strong>
-                </React.Fragment>
-              ))}
-            </span>
-          }
+          icon="clock"
+          items={recommendations.low_value_checks.map((l) => ({
+            key: String(l.check_id),
+            label: getCheckLabel(l.check_id, checks),
+            detail: `${(l.success_rate * 100).toFixed(0)}% success, every ${l.frequency_ms / 1000}s`,
+          }))}
           actionLabel="Reduce frequency"
           onAction={() => {
             // Will be hooked to assistant
@@ -482,60 +532,53 @@ function RecommendationsSection({ data }: { data: InsightsResponse }) {
     });
   }
 
-  if (recommendations.overlapping_targets) {
-    for (const o of recommendations.overlapping_targets) {
-      const key = `overlap-${o.target}`;
-      if (dismissed.has(key)) {
-        continue;
-      }
-      cards.push({
-        key,
-        element: (
-          <RecommendationCard
-            title={`Consolidate checks for "${o.target}"`}
-            description={
-              <span>
-                This target is monitored by <strong>{o.check_types.join(', ')}</strong> checks.
-                Consider whether all check types are needed.
-              </span>
-            }
-            actionLabel="Review checks"
-            onAction={() => {
-              navigate(`${CHECKS_URL}?search=${encodeURIComponent(o.target)}`);
-            }}
-            onDismiss={() => dismiss(key)}
-          />
-        ),
-      });
-    }
+  if (recommendations.overlapping_targets && recommendations.overlapping_targets.length > 0 && !dismissed.has('overlapping')) {
+    groups.push({
+      key: 'overlapping',
+      element: (
+        <RecommendationGroup
+          title="Consolidate overlapping targets"
+          icon="exchange-alt"
+          items={recommendations.overlapping_targets.map((o) => ({
+            key: o.target,
+            label: o.target,
+            detail: `Monitored by ${o.check_types.join(', ')} (${o.check_ids.length} checks)`,
+          }))}
+          actionLabel="Review checks"
+          onAction={() => {
+            const first = recommendations.overlapping_targets![0];
+            navigate(`${CHECKS_URL}?search=${encodeURIComponent(first.target)}`);
+          }}
+          onDismiss={() => dismiss('overlapping')}
+        />
+      ),
+    });
   }
 
-  if (recommendations.duplicate_checks) {
-    for (const d of recommendations.duplicate_checks) {
-      const key = `dup-${d.target}-${d.type}`;
-      if (dismissed.has(key)) {
-        continue;
-      }
-      cards.push({
-        key,
-        element: (
-          <RecommendationCard
-            title={`Remove duplicate "${d.type}" checks for "${d.target}"`}
-            description={
-              <span>{d.check_ids.length} checks of the same type target the same endpoint.</span>
-            }
-            actionLabel="Review duplicates"
-            onAction={() => {
-              navigate(`${CHECKS_URL}?search=${encodeURIComponent(d.target)}&type=${d.type}`);
-            }}
-            onDismiss={() => dismiss(key)}
-          />
-        ),
-      });
-    }
+  if (recommendations.duplicate_checks && recommendations.duplicate_checks.length > 0 && !dismissed.has('duplicates')) {
+    groups.push({
+      key: 'duplicates',
+      element: (
+        <RecommendationGroup
+          title="Checks with the same target and type"
+          icon="copy"
+          items={recommendations.duplicate_checks.map((d) => ({
+            key: `${d.target}-${d.type}`,
+            label: `${d.target}`,
+            detail: `${d.check_ids.length} ${d.type} checks on same target`,
+          }))}
+          actionLabel="Review duplicates"
+          onAction={() => {
+            const first = recommendations.duplicate_checks![0];
+            navigate(`${CHECKS_URL}?search=${encodeURIComponent(first.target)}&type=${first.type}`);
+          }}
+          onDismiss={() => dismiss('duplicates')}
+        />
+      ),
+    });
   }
 
-  if (cards.length === 0) {
+  if (groups.length === 0) {
     return null;
   }
 
@@ -554,7 +597,7 @@ function RecommendationsSection({ data }: { data: InsightsResponse }) {
         />
       </Stack>
       {isOpen && <Stack direction="column" gap={1}>
-        {cards.map(({ key, element }) => (
+        {groups.map(({ key, element }) => (
           <React.Fragment key={key}>{element}</React.Fragment>
         ))}
       </Stack>}
@@ -760,6 +803,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     textAlign: 'right',
     minWidth: 80,
   }),
+  perfValueCritical: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.error.text,
+    fontWeight: theme.typography.fontWeightMedium,
+    flexShrink: 0,
+    textAlign: 'right',
+    minWidth: 80,
+  }),
   perfBar: css({
     width: 120,
     flexShrink: 0,
@@ -788,6 +839,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   perfLatencyBad: css({
     color: theme.colors.warning.text,
+    fontWeight: theme.typography.fontWeightMedium,
+  }),
+  perfLatencyCritical: css({
+    color: theme.colors.error.text,
     fontWeight: theme.typography.fontWeightMedium,
   }),
   investigateResult: css({
@@ -846,5 +901,21 @@ const getStyles = (theme: GrafanaTheme2) => ({
   recommendationDescription: css({
     color: theme.colors.text.secondary,
     fontSize: theme.typography.body.fontSize,
+  }),
+  recoItem: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: `${theme.spacing(0.75)} ${theme.spacing(1.5)}`,
+    borderRadius: theme.shape.radius.default,
+    border: `1px solid ${theme.colors.border.weak}`,
+  }),
+  recoItemLabel: css({
+    fontWeight: theme.typography.fontWeightMedium,
+    fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  recoItemDetail: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.text.secondary,
   }),
 });
