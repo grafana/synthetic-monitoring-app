@@ -93,7 +93,7 @@ function AlertRow({
       {expanded && (
         <div className={styles.inlineInvestigation}>
           <Stack direction="column" gap={0.5}>
-            <span className={styles.investigateTitle}>Recommended alerts for "{check.job}"</span>
+            <span className={styles.investigateTitle}>Recommended alerts for &ldquo;{check.job}&rdquo;</span>
             {recommended.map((alert) => (
               <div key={alert.name} className={styles.recoItem}>
                 <span className={styles.recoItemLabel}>{formatAlertName(alert.name)}</span>

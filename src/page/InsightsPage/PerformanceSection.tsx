@@ -97,7 +97,7 @@ function InlineInvestigation({ checkId, issueType, data, onClose }: { checkId: n
       systemPrompt: buildInvestigationSystemPrompt(issueType, data),
       tools: metricsTool ? [metricsTool] : undefined,
     });
-  }, [checkId, checkMeta, data, generate, issueType, metricsTool]);
+  }, [checkId, checkMeta, checkName, data, generate, issueType, metricsTool]);
 
   const headerLabel = `Investigating ${ISSUE_LABELS[issueType] ?? issueType} on ${checkName}`;
 
