@@ -3,9 +3,9 @@ import { Badge, Button, Icon, Stack, useStyles2 } from '@grafana/ui';
 
 import type { Check } from 'types';
 import type { InsightsResponse, OverlappingTarget } from 'datasource/responses.types';
+import { queryClient } from 'data/queryClient';
 import { useUpdateCheck } from 'data/useChecks';
 import { INSIGHTS_QUERY_KEYS } from 'data/useInsights';
-import { queryClient } from 'data/queryClient';
 import { getCheckType } from 'components/Checkster/utils/check/getCheckType';
 
 import { getStyles } from '../InsightsPage.styles';

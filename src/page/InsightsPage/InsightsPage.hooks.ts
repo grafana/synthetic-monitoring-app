@@ -1,13 +1,13 @@
 import React from 'react';
 import {
-  isAssistantAvailable,
   createAssistantContextItem,
+  isAssistantAvailable,
   providePageContext,
 } from '@grafana/assistant';
 
 import type { InsightsResponse } from 'datasource/responses.types';
 
-import { PAGE_CONTEXT_TITLE, PAGE_CONTEXT_DESCRIPTION, PAGE_CONTEXT_INSTRUCTIONS } from './InsightsPage.prompts';
+import { PAGE_CONTEXT_DESCRIPTION, PAGE_CONTEXT_INSTRUCTIONS,PAGE_CONTEXT_TITLE } from './InsightsPage.prompts';
 
 export function useIsAssistantAvailable() {
   const [available, setAvailable] = React.useState(false);

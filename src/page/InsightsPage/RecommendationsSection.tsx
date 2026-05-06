@@ -4,14 +4,14 @@ import { Button, Icon, IconButton, Stack, useStyles2 } from '@grafana/ui';
 import type { Check } from 'types';
 import type { InsightsResponse } from 'datasource/responses.types';
 
-import { useIsAssistantAvailable } from './InsightsPage.hooks';
-import { SectionHeading } from './InsightsPage.components';
-import { getStyles } from './InsightsPage.styles';
 import { DuplicatesCard } from './recommendations/DuplicatesCard';
+import { InlineRecommendation } from './recommendations/InlineRecommendation';
 import { OverlappingCard } from './recommendations/OverlappingCard';
 import { ReduceFrequencyCard } from './recommendations/ReduceFrequencyCard';
+import { SectionHeading } from './InsightsPage.components';
+import { useIsAssistantAvailable } from './InsightsPage.hooks';
 import { buildRecoSystemPrompt, ORIGINS } from './InsightsPage.prompts';
-import { InlineRecommendation } from './recommendations/InlineRecommendation';
+import { getStyles } from './InsightsPage.styles';
 
 export function RecommendationsSection({ data, allChecks }: { data: InsightsResponse; allChecks: Check[] }) {
   const styles = useStyles2(getStyles);
