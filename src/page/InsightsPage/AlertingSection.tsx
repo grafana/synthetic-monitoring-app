@@ -3,10 +3,10 @@ import { Badge, Button, Icon, Stack, useStyles2 } from '@grafana/ui';
 
 import type { Check, CheckAlertDraft } from 'types';
 import type { InsightsResponse } from 'datasource/responses.types';
+import { queryClient } from 'data/queryClient';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { QUERY_KEYS as CHECK_QUERY_KEYS } from 'data/useChecks';
 import { INSIGHTS_QUERY_KEYS } from 'data/useInsights';
-import { queryClient } from 'data/queryClient';
 
 import { PaginatedList, SectionHeading } from './InsightsPage.components';
 import { getStyles } from './InsightsPage.styles';

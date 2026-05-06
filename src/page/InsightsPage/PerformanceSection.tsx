@@ -1,12 +1,12 @@
 import React from 'react';
-import { Badge, Button, Icon, IconButton, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
 import { useInlineAssistant } from '@grafana/assistant';
+import { Badge, Button, Icon, IconButton, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 
-import type { InsightsCheckMeta, InsightsResponse } from 'datasource/responses.types';
-import { PLUGIN_URL_PATH } from 'routing/constants';
 import { getExploreUrl } from 'utils';
+import { PLUGIN_URL_PATH } from 'routing/constants';
+import type { InsightsCheckMeta, InsightsResponse } from 'datasource/responses.types';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 

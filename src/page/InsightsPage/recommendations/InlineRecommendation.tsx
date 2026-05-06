@@ -1,13 +1,13 @@
 import React from 'react';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
 import { useInlineAssistant } from '@grafana/assistant';
 import { Badge, Button, Icon, IconButton, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 
 import type { Check } from 'types';
+import { queryClient } from 'data/queryClient';
 import { QUERY_KEYS as CHECK_QUERY_KEYS, useDeleteCheck, useUpdateCheck } from 'data/useChecks';
 import { INSIGHTS_QUERY_KEYS } from 'data/useInsights';
-import { queryClient } from 'data/queryClient';
 
 import { getStyles } from '../InsightsPage.styles';
 import { CHECKS_URL } from '../InsightsPage.utils';

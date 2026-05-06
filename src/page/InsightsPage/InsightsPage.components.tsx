@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button, Icon, Pagination, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { openAssistant as openAssistantSidebar } from '@grafana/assistant';
+import { Button, Icon, Pagination, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 
 import { useIsAssistantAvailable } from './InsightsPage.hooks';
 import { getStyles } from './InsightsPage.styles';

@@ -5,11 +5,11 @@ import { useChecks } from 'data/useChecks';
 import { useInsights } from 'data/useInsights';
 import { useProbes } from 'data/useProbes';
 
-import { useInsightsAssistantContext } from './InsightsPage.hooks';
 import { AlertingSection } from './AlertingSection';
-import { UsageSection } from './UsageSection';
+import { useInsightsAssistantContext } from './InsightsPage.hooks';
 import { PerformanceSection } from './PerformanceSection';
 import { RecommendationsSection } from './RecommendationsSection';
+import { UsageSection } from './UsageSection';
 
 export function InsightsPage() {
   const { data, isLoading, error, refetch } = useInsights();
