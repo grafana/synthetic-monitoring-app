@@ -9,7 +9,6 @@ export const ORIGINS = {
   usage: 'grafana/synthetic-monitoring/insights/usage',
   performance: 'grafana/synthetic-monitoring/insights/performance',
   recommendations: 'grafana/synthetic-monitoring/insights/recommendations',
-  alertSetup: 'grafana/synthetic-monitoring/insights/alert-setup',
 } as const;
 
 // -- Issue type labels (used in performance investigation) --
@@ -116,68 +115,6 @@ export function buildRecoSystemPrompt(data: InsightsResponse) {
 ${RECO_RESPONSE_FORMAT}
 
 ${RECO_ACTIONS_INSTRUCTIONS}
-
-Full insights data:
-${JSON.stringify(data, null, 0)}`;
-}
-
-// -- Alert setup --
-
-const ALERT_DEFAULTS = `Available alert types and their defaults per check type:
-- ALL check types: ProbeFailedExecutionsTooHigh (threshold: 1, period: "5m")
-- HTTP checks: HTTPRequestDurationTooHighAvg (threshold: 300 ms, period: "5m"), TLSTargetCertificateCloseToExpiring (threshold: 30 days, no period)
-- Ping checks: PingRequestDurationTooHighAvg (threshold: 50 ms, period: "5m")
-- DNS checks: DNSRequestDurationTooHighAvg (threshold: 100 ms, period: "5m")
-- TCP checks: TLSTargetCertificateCloseToExpiring (threshold: 30 days, no period)
-- Scripted/Browser/GRPC/MultiHTTP/Traceroute: only ProbeFailedExecutionsTooHigh`;
-
-export function buildAlertSetupPrompt(checksWithoutAlerts: Array<{ id: number; job: string; type: string }>) {
-  const checkList = checksWithoutAlerts.map((c) => `- "${c.job}" (id: ${c.id}, type: ${c.type})`).join('\n');
-  return `I have ${checksWithoutAlerts.length} checks without any alerts configured. Propose appropriate alerts for each one:
-
-${checkList}
-
-For each check, recommend which alert types to enable and what thresholds to use. Use defaults unless performance data suggests otherwise.`;
-}
-
-export function buildAlertSetupSystemPrompt(data: InsightsResponse) {
-  return `You are a Synthetic Monitoring expert setting up per-check alerts for a Grafana Cloud stack.
-
-${ALERT_DEFAULTS}
-
-Guidelines:
-- Every check should get ProbeFailedExecutionsTooHigh at minimum.
-- Add type-specific duration alerts where applicable (HTTP, Ping, DNS).
-- Add TLS certificate expiry alerts for HTTPS targets and TCP checks.
-- If the insights data shows latency or uptime issues for a check, adjust thresholds accordingly (e.g. if P95 is 500ms, set duration alert at 800ms instead of 300ms).
-- Use the check's job name when referring to it, not numeric IDs.
-
-Response format:
-- Start with a brief **Summary** of what you're recommending
-- List each check with its proposed alerts
-Keep it under 200 words. Use markdown.
-
-IMPORTANT: After the markdown, output a structured action block so the UI can apply the alerts.
-Format it EXACTLY like this:
-
-\`\`\`json:alerts
-[
-  {"check_id": 123, "check_name": "my check", "alerts": [
-    {"name": "ProbeFailedExecutionsTooHigh", "threshold": 1, "period": "5m"},
-    {"name": "HTTPRequestDurationTooHighAvg", "threshold": 300, "period": "5m"}
-  ]},
-  {"check_id": 456, "check_name": "dns check", "alerts": [
-    {"name": "ProbeFailedExecutionsTooHigh", "threshold": 1, "period": "5m"},
-    {"name": "DNSRequestDurationTooHighAvg", "threshold": 100, "period": "5m"}
-  ]}
-]
-\`\`\`
-
-Rules:
-- Use EXACT alert type names from the list above.
-- threshold is a number (ms for duration, days for TLS, count for failed executions).
-- period is a string like "5m", "10m", "15m". Omit for TLS alerts.
-- Include ALL checks from the prompt, each with appropriate alerts for its type.
 
 Full insights data:
 ${JSON.stringify(data, null, 0)}`;
