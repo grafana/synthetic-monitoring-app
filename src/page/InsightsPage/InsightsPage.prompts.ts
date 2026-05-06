@@ -65,7 +65,7 @@ export function buildInvestigationSystemPrompt(issueType: string, data: Insights
 
 CRITICAL DATA INTERPRETATION RULES:
 - All rate values (success_rate, mean_success_rate) are 0-1 decimals. Convert to percentages rounded to 1 decimal (e.g. 0.5536 = 55.4%). Never show raw floats.
-- \`success_rate\` in uptime_warnings is the check's overall success rate.
+- \`success_rate\` in uptime_warnings is the check's execution-level success ratio (called "Reachability" in the dashboard). This is NOT the same as the dashboard "Uptime" which uses max_over_time and is more lenient.
 - \`mean_success_rate\` in regional_anomalies is the average across ALL probes (including healthy ones). The \`anomalous_probes\` are the ones performing significantly worse than this mean. The API does not provide per-probe rates, so do NOT state specific percentages for individual probes. Instead say the anomalous probe is "underperforming relative to the fleet average of X%".
 - \`state_changes\` is the total number of up/down transitions in the observation window.
 - \`degradation_pct\` is already a percentage (e.g. 611 means +611%).
