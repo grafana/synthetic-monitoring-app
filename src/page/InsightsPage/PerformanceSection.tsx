@@ -28,6 +28,7 @@ function InvestigationActions({ checkId, data }: { checkId: number; data: Insigh
   const now = Date.now();
   const threeHoursAgo = now - 3 * 60 * 60 * 1000;
   const logsExpr = `{job="${checkMeta?.job ?? ''}", instance="${checkMeta?.target ?? ''}", probe_success="0"} | logfmt`;
+  const logsExpr = `{job="${checkMeta?.job ?? ''}", instance="${checkMeta?.target ?? ''}"} | logfmt | level="error"`;
   const exploreLogsUrl = logsDS?.uid
     ? getExploreUrl(logsDS.uid, [{ expr: logsExpr }], { from: threeHoursAgo, to: now })
     : null;

@@ -4,7 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 export const getStyles = (theme: GrafanaTheme2) => ({
   cardGrid: css({
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
     gap: theme.spacing(1),
     alignItems: 'stretch',
     '& > div': { height: '100%' },
@@ -18,7 +18,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
   limitLabel: css({
     display: 'flex',
     justifyContent: 'space-between',
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     marginBottom: theme.spacing(0.25),
   }),
   limitBarTrack: css({
@@ -46,7 +46,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(1),
   }),
   histogramRowLabel: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     color: theme.colors.text.secondary,
     minWidth: 60,
     textAlign: 'right' as const,
@@ -64,7 +64,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     minWidth: 4,
   }),
   histogramRowCount: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     color: theme.colors.text.secondary,
     minWidth: 20,
   }),
@@ -72,7 +72,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
   // Links
   redLink: css({
     color: theme.colors.error.text,
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     '&:hover': { textDecoration: 'underline' },
   }),
   tooltipLink: css({
@@ -83,7 +83,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     cursor: 'help',
   }),
   viewLink: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     color: theme.colors.primary.text,
     '&:hover': { textDecoration: 'underline' },
   }),
@@ -127,14 +127,14 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     marginTop: theme.spacing(1),
   }),
   perfValue: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     color: theme.colors.text.secondary,
     flexShrink: 0,
     textAlign: 'right' as const,
     minWidth: 80,
   }),
   perfValueCritical: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     color: theme.colors.error.text,
     fontWeight: theme.typography.fontWeightMedium,
     flexShrink: 0,
@@ -164,7 +164,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(0.5),
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     flexShrink: 0,
   }),
   perfLatencyBad: css({
@@ -213,7 +213,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     flexWrap: 'wrap' as const,
   }),
   actionBarLabel: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     color: theme.colors.text.secondary,
     fontWeight: theme.typography.fontWeightMedium,
   }),
@@ -224,7 +224,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     marginBottom: theme.spacing(1),
   }),
   investigateTitle: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     fontWeight: theme.typography.fontWeightMedium,
   }),
   investigateContent: css({
@@ -336,10 +336,10 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     gap: theme.spacing(0.5),
     fontWeight: theme.typography.fontWeightMedium,
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
   }),
   recoItemDetail: css({
-    fontSize: theme.typography.bodySmall.fontSize,
+    fontSize: theme.typography.body.fontSize,
     color: theme.colors.text.secondary,
   }),
   recoNewValue: css({
