@@ -8,11 +8,8 @@ import { INSIGHTS_QUERY_KEYS } from 'data/useInsights';
 import { queryClient } from 'data/queryClient';
 import { getCheckType } from 'components/Checkster/utils/check/getCheckType';
 
-import { useIsAssistantAvailable } from '../InsightsPage.hooks';
 import { getStyles } from '../InsightsPage.styles';
 import { CHECKS_URL } from '../InsightsPage.utils';
-import { buildRecoSystemPrompt, ORIGINS } from '../InsightsPage.prompts';
-import { InlineRecommendation } from './InlineRecommendation';
 
 export function OverlappingCard({
   target,
@@ -27,9 +24,6 @@ export function OverlappingCard({
   const [expanded, setExpanded] = React.useState(false);
   const [disablingIds, setDisablingIds] = React.useState<Set<number>>(new Set());
   const { mutateAsync: updateCheck } = useUpdateCheck();
-  const assistantAvailable = useIsAssistantAvailable();
-  const [showInline, setShowInline] = React.useState(false);
-
   const checksInGroup = React.useMemo(
     () => allChecks.filter((c) => c.id && target.check_ids.includes(c.id)),
     [allChecks, target.check_ids]
@@ -86,22 +80,6 @@ export function OverlappingCard({
               )}
             </div>
           ))}
-          {assistantAvailable && !showInline && (
-            <Stack direction="row" gap={1} justifyContent="flex-end">
-              <Button size="sm" variant="primary" fill="outline" icon="ai-sparkle" onClick={() => setShowInline(true)}>
-                Help me consolidate
-              </Button>
-            </Stack>
-          )}
-          {showInline && (
-            <InlineRecommendation
-              prompt={`Target "${target.target}" is monitored by ${target.check_types.join(', ')} (${target.check_ids.length} checks): ${checksInGroup.map((c) => `"${c.job}" (${getCheckType(c)}, frequency: ${c.frequency / 1000}s, probes: ${c.probes.length})`).join(', ')}. Which check types are redundant for this target? Which should I keep and which can I safely disable?`}
-              systemPrompt={buildRecoSystemPrompt(data)}
-              origin={ORIGINS.overlapping}
-              allChecks={allChecks}
-              onClose={() => setShowInline(false)}
-            />
-          )}
         </Stack>
         </div>
       )}
