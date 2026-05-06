@@ -7,11 +7,8 @@ import { useUpdateCheck } from 'data/useChecks';
 import { INSIGHTS_QUERY_KEYS } from 'data/useInsights';
 import { queryClient } from 'data/queryClient';
 
-import { useIsAssistantAvailable } from '../InsightsPage.hooks';
 import { getStyles } from '../InsightsPage.styles';
 import { CHECKS_URL } from '../InsightsPage.utils';
-import { buildRecoSystemPrompt, ORIGINS } from '../InsightsPage.prompts';
-import { InlineRecommendation } from './InlineRecommendation';
 
 export function DuplicatesCard({
   group,
@@ -26,9 +23,6 @@ export function DuplicatesCard({
   const [expanded, setExpanded] = React.useState(false);
   const [disablingIds, setDisablingIds] = React.useState<Set<number>>(new Set());
   const { mutateAsync: updateCheck } = useUpdateCheck();
-  const assistantAvailable = useIsAssistantAvailable();
-  const [showInline, setShowInline] = React.useState(false);
-
   const checksInGroup = React.useMemo(
     () => allChecks.filter((c) => c.id && group.check_ids.includes(c.id)),
     [allChecks, group.check_ids]
@@ -62,17 +56,16 @@ export function DuplicatesCard({
       {expanded && (
         <div style={{ paddingLeft: 16, marginTop: 4 }}>
         <Stack direction="column" gap={0.5}>
-          {checksInGroup.map((c, idx) => (
+          {checksInGroup.map((c) => (
             <div key={c.id} className={styles.recoItem}>
               <span className={styles.recoItemLabel}>
                 {c.job}
                 <a href={`${CHECKS_URL}/${c.id}/edit`} target="_blank" rel="noreferrer" className={styles.dashboardLink} onClick={(e) => e.stopPropagation()}>
                   <Icon name="external-link-alt" size="xs" />
                 </a>
-                {idx === 0 && <Badge text="keep" color="green" />}
                 {!c.enabled && <Badge text="disabled" color="orange" />}
               </span>
-              {idx > 0 && c.enabled && (
+              {c.enabled && (
                 <Button
                   size="sm"
                   variant="destructive"
@@ -85,22 +78,6 @@ export function DuplicatesCard({
               )}
             </div>
           ))}
-          {assistantAvailable && !showInline && (
-            <Stack direction="row" gap={1} justifyContent="flex-end">
-              <Button size="sm" variant="primary" fill="outline" icon="ai-sparkle" onClick={() => setShowInline(true)}>
-                Help me decide
-              </Button>
-            </Stack>
-          )}
-          {showInline && (
-            <InlineRecommendation
-              prompt={`I have ${group.check_ids.length} duplicate ${group.type} checks on "${group.target}": ${checksInGroup.map((c) => `"${c.job}" (id: ${c.id}, frequency: ${c.frequency / 1000}s, probes: ${c.probes.length})`).join(', ')}. Which should I keep and which should I disable? Consider their probe coverage, frequency, and configuration.`}
-              systemPrompt={buildRecoSystemPrompt(data)}
-              origin={ORIGINS.duplicates}
-              allChecks={allChecks}
-              onClose={() => setShowInline(false)}
-            />
-          )}
         </Stack>
         </div>
       )}
