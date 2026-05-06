@@ -8,12 +8,14 @@ import type { InsightsCheckMeta, InsightsResponse } from 'datasource/responses.t
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import { getExploreUrl } from 'utils';
 import { useLogsDS } from 'hooks/useLogsDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { PaginatedList, SectionHeading } from './InsightsPage.components';
 import { useCheckInvestigation, useIsAssistantAvailable } from './InsightsPage.hooks';
 import { buildInvestigationPrompt, buildInvestigationSystemPrompt, ISSUE_LABELS, ORIGINS } from './InsightsPage.prompts';
 import { getStyles } from './InsightsPage.styles';
 import { getCheckDashboardUrl, getCheckLabel } from './InsightsPage.utils';
+import { createQueryMetricsTool } from './tools';
 
 function InvestigationActions({ checkId, data }: { checkId: number; data: InsightsResponse }) {
   const styles = useStyles2(getStyles);
@@ -27,7 +29,6 @@ function InvestigationActions({ checkId, data }: { checkId: number; data: Insigh
 
   const now = Date.now();
   const threeHoursAgo = now - 3 * 60 * 60 * 1000;
-  const logsExpr = `{job="${checkMeta?.job ?? ''}", instance="${checkMeta?.target ?? ''}", probe_success="0"} | logfmt`;
   const logsExpr = `{job="${checkMeta?.job ?? ''}", instance="${checkMeta?.target ?? ''}"} | logfmt | level="error"`;
   const exploreLogsUrl = logsDS?.uid
     ? getExploreUrl(logsDS.uid, [{ expr: logsExpr }], { from: threeHoursAgo, to: now })
@@ -60,9 +61,15 @@ function InvestigationActions({ checkId, data }: { checkId: number; data: Insigh
 function InlineInvestigation({ checkId, issueType, data, onClose }: { checkId: number; issueType: string; data: InsightsResponse; onClose: () => void }) {
   const { generate, isGenerating, content, error, cancel, reset } = useInlineAssistant();
   const styles = useStyles2(getStyles);
+  const metricsDS = useMetricsDS();
   const checkMeta = data.checks[String(checkId)];
   const checkName = checkMeta?.job ?? `Check #${checkId}`;
   const hasStarted = React.useRef(false);
+
+  const metricsTool = React.useMemo(
+    () => metricsDS?.url ? createQueryMetricsTool(metricsDS.url) : null,
+    [metricsDS?.url]
+  );
 
   React.useEffect(() => {
     if (hasStarted.current) {
@@ -88,8 +95,9 @@ function InlineInvestigation({ checkId, issueType, data, onClose }: { checkId: n
       prompt: buildInvestigationPrompt({ issueType, checkName, checkMeta, allIssues }),
       origin: ORIGINS.investigate,
       systemPrompt: buildInvestigationSystemPrompt(issueType, data),
+      tools: metricsTool ? [metricsTool] : undefined,
     });
-  }, [checkId, checkMeta, data, generate, issueType]);
+  }, [checkId, checkMeta, data, generate, issueType, metricsTool]);
 
   const headerLabel = `Investigating ${ISSUE_LABELS[issueType] ?? issueType} on ${checkName}`;
 
