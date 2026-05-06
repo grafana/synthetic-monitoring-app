@@ -101,6 +101,26 @@ function InlineInvestigation({ checkId, issueType, data, onClose }: { checkId: n
 
   const headerLabel = `Investigating ${ISSUE_LABELS[issueType] ?? issueType} on ${checkName}`;
 
+  const [stale, setStale] = React.useState(false);
+  const contentRef = React.useRef(content);
+
+  React.useEffect(() => {
+    contentRef.current = content;
+    setStale(false);
+
+    if (!isGenerating) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (isGenerating && contentRef.current === content) {
+        setStale(true);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [content, isGenerating]);
+
   return (
     <div className={styles.inlineInvestigation}>
       <div className={styles.investigateHeader}>
@@ -117,6 +137,7 @@ function InlineInvestigation({ checkId, issueType, data, onClose }: { checkId: n
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(content) as string) }}
         />
       )}
+      {isGenerating && content && stale && <LoadingPlaceholder text="Querying metrics..." />}
       {error && <span className={styles.mutedText}>Investigation unavailable</span>}
       {(content || error) && <InvestigationActions checkId={checkId} data={data} />}
     </div>
