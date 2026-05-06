@@ -33,7 +33,7 @@ export function UsageSection({ data, unlabeledChecks, checkProbeNames }: {
             <Card.Heading>Checks by type</Card.Heading>
             <Card.Description>
               <Stack direction="row" gap={1} wrap="wrap">
-                {Object.entries(usage.checks_by_type).map(([type, count]) => (
+                {Object.entries(usage.checks_by_type).sort(([, a], [, b]) => b - a).map(([type, count]) => (
                   <a key={type} href={`${CHECKS_URL}?type=${type}`}>
                     <Badge text={`${type}: ${count}`} color="blue" />
                   </a>
@@ -72,33 +72,39 @@ export function UsageSection({ data, unlabeledChecks, checkProbeNames }: {
             <Card.Description>
               <Stack direction="column" gap={1}>
                 <ProbeHistogram histogram={usage.probe_distribution.histogram} />
-                {usage.probe_distribution.checks_with_few_probes.length > 0 && (
-                  <Tooltip
-                    interactive
-                    content={
-                      <Stack direction="column" gap={0.5}>
-                        {usage.probe_distribution.checks_with_few_probes.map((c) => {
-                          const name = getCheckLabel(c.check_id, data.checks);
-                          const probeNames = checkProbeNames.get(c.check_id) ?? [];
-                          return (
-                            <div key={c.check_id}>
-                              <a href={`${CHECKS_URL}?search=${encodeURIComponent(name)}`}>
-                                <strong>{name}</strong>
-                              </a>
-                              <br />
-                              <span>{probeNames.length > 0 ? probeNames.join(', ') : 'No probes'}</span>
-                            </div>
-                          );
-                        })}
-                      </Stack>
-                    }
-                    placement="bottom"
-                  >
-                    <span className={styles.tooltipLink}>
-                      {usage.probe_distribution.checks_with_few_probes.length} checks with {'<'} 3 probes
-                    </span>
-                  </Tooltip>
-                )}
+                {usage.probe_distribution.checks_with_few_probes.length > 0 && (() => {
+                  const items = usage.probe_distribution.checks_with_few_probes;
+                  const capped = items.slice(0, 10);
+                  const remaining = items.length - capped.length;
+                  return (
+                    <Tooltip
+                      interactive
+                      content={
+                        <Stack direction="column" gap={0.5}>
+                          {capped.map((c) => {
+                            const name = getCheckLabel(c.check_id, data.checks);
+                            const probeNames = checkProbeNames.get(c.check_id) ?? [];
+                            return (
+                              <div key={c.check_id}>
+                                <a href={`${CHECKS_URL}?search=${encodeURIComponent(name)}`}>
+                                  <strong>{name}</strong>
+                                </a>
+                                <br />
+                                <span>{probeNames.length > 0 ? probeNames.join(', ') : 'No probes'}</span>
+                              </div>
+                            );
+                          })}
+                          {remaining > 0 && <span>+ {remaining} more</span>}
+                        </Stack>
+                      }
+                      placement="bottom"
+                    >
+                      <span className={styles.tooltipLink}>
+                        {items.length} checks with {'<'} 3 probes
+                      </span>
+                    </Tooltip>
+                  );
+                })()}
               </Stack>
             </Card.Description>
           </Card>
@@ -115,23 +121,28 @@ export function UsageSection({ data, unlabeledChecks, checkProbeNames }: {
                       </a>
                     ))}
                   </Stack>
-                  {unlabeledChecks.length > 0 && (
-                    <Tooltip
-                      interactive
-                      content={
-                        <Stack direction="column" gap={0.25}>
-                          {unlabeledChecks.map((c) => (
-                            <a key={c.id} href={getCheckDashboardUrl(c.id ?? 0)}>
-                              {c.job}
-                            </a>
-                          ))}
-                        </Stack>
-                      }
-                      placement="bottom"
-                    >
-                      <span className={styles.tooltipLink}>{unlabeledChecks.length} checks have no labels</span>
-                    </Tooltip>
-                  )}
+                  {unlabeledChecks.length > 0 && (() => {
+                    const capped = unlabeledChecks.slice(0, 10);
+                    const remaining = unlabeledChecks.length - capped.length;
+                    return (
+                      <Tooltip
+                        interactive
+                        content={
+                          <Stack direction="column" gap={0.25}>
+                            {capped.map((c) => (
+                              <a key={c.id} href={getCheckDashboardUrl(c.id ?? 0)}>
+                                {c.job}
+                              </a>
+                            ))}
+                            {remaining > 0 && <span>+ {remaining} more</span>}
+                          </Stack>
+                        }
+                        placement="bottom"
+                      >
+                        <span className={styles.tooltipLink}>{unlabeledChecks.length} checks have no labels</span>
+                      </Tooltip>
+                    );
+                  })()}
                 </Stack>
               ) : (
                 <span className={styles.mutedText}>No checks have labels</span>

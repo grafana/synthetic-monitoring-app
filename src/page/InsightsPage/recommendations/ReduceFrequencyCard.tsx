@@ -42,7 +42,10 @@ export function ReduceFrequencyCard({
         }
         return c.frequency === insight.frequency_ms;
       })
-      .map((c) => ({ ...c, newFrequency: Math.max(c.frequency * 5, 300000) }));
+      .map((c) => {
+        const insight = insightsByCheckId.get(c.id!)!;
+        return { ...c, newFrequency: Math.max(c.frequency * 5, 300000), reason: insight.reason };
+      });
   }, [recommendations.low_value_checks, allChecks]);
 
   const handleReduceAll = async () => {
@@ -136,7 +139,7 @@ export function ReduceFrequencyCard({
                 <Icon name="external-link-alt" size="xs" />
               </a>
             </span>
-            <span className={styles.recoItemDetail}>every {c.frequency / 1000}s</span>
+            <span className={styles.recoItemDetail}>{c.reason}</span>
           </div>
         ))}
       </Stack>
