@@ -38,6 +38,7 @@ import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
 import { SecretsResponse } from 'data/useSecrets';
+import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID } from 'components/constants';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
 import { LokiQueryResults } from '../components/Checkster/feature/adhoc-check/useAdHocLogs';
@@ -108,7 +109,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       return configuredDs;
     }
     // Fall back to the default Grafana Cloud metrics datasource if configured one doesn't exist
-    return findLinkedDatasource({ ...info, uid: 'grafanacloud-metrics' });
+    return findLinkedDatasource({ ...info, uid: DEFAULT_METRICS_DS_UID });
   }
 
   getLogsDS() {
@@ -119,7 +120,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       return configuredDs;
     }
     // Fall back to the default Grafana Cloud logs datasource if configured one doesn't exist
-    return findLinkedDatasource({ ...info, uid: 'grafanacloud-logs' });
+    return findLinkedDatasource({ ...info, uid: DEFAULT_LOGS_DS_UID });
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {

@@ -8,6 +8,7 @@ import { server } from 'test/server';
 
 import { AlertSensitivity } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
+import { DEFAULT_METRICS_DS_UID } from 'components/constants';
 
 type Entry = {
   method: keyof SMDataSource;
@@ -234,8 +235,8 @@ describe('SMDataSource', () => {
       expect(result?.uid).toEqual('P4DCEA413A673ADCC');
     });
 
-    it('should fall back to default grafanacloud-metrics UID when configured datasource does not exist', () => {
-      const defaultMetricsDS = { ...METRICS_DATASOURCE, uid: 'grafanacloud-metrics' };
+    it('should fall back to default grafanacloud-prom UID when configured datasource does not exist', () => {
+      const defaultMetricsDS = { ...METRICS_DATASOURCE, name: 'renamed-metrics', uid: DEFAULT_METRICS_DS_UID };
       config.datasources = {
         [defaultMetricsDS.name]: defaultMetricsDS,
       };
@@ -247,6 +248,7 @@ describe('SMDataSource', () => {
           metrics: {
             ...SM_DATASOURCE.jsonData.metrics,
             uid: 'non-existent-uid',
+            grafanaName: 'non-existent-name',
           },
         },
       });
@@ -254,7 +256,7 @@ describe('SMDataSource', () => {
       const result = smDataSourceWithMissingConfig.getMetricsDS();
 
       expect(result).toEqual(defaultMetricsDS);
-      expect(result?.uid).toEqual('grafanacloud-metrics');
+      expect(result?.uid).toEqual(DEFAULT_METRICS_DS_UID);
     });
   });
 
