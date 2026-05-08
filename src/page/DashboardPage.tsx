@@ -10,6 +10,7 @@ import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
 import { DNSDashboard } from 'scenes/DNS/DnsDashboard';
 import { GrpcDashboard } from 'scenes/GRPC/GrpcDashboard';
 import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
+import { LLMEvaluatorDashboard } from 'scenes/LLMEvaluator/LLMEvaluatorDashboard';
 import { PingDashboard } from 'scenes/PING/PingDashboard';
 import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
 import { TcpDashboard } from 'scenes/TCP/TcpDashboard';
@@ -66,6 +67,10 @@ function DashboardPageContent() {
 
   if (check && getCheckType(check.settings) === CheckType.Browser) {
     return <BrowserDashboard check={check} />;
+  }
+
+  if (check && getCheckType(check.settings) === CheckType.LlmEvaluator) {
+    return <LLMEvaluatorDashboard check={check} />;
   }
 
   return <Spinner />;
