@@ -10,6 +10,7 @@ import {
   DNSCheck,
   GRPCCheck,
   HTTPCheck,
+  LLMEvaluatorCheck,
   MultiHTTPCheck,
   PingCheck,
   ScriptedCheck,
@@ -75,6 +76,14 @@ export function isTracerouteCheck(check: Partial<Check>): check is TracerouteChe
 
 export function isBrowserCheck(check: Partial<Check>): check is BrowserCheck {
   return CheckType.Browser in (check.settings ?? {});
+}
+
+export function isLLMEvaluatorCheck(check: Partial<Check>): check is LLMEvaluatorCheck {
+  return CheckType.LlmEvaluator in (check.settings ?? {});
+}
+
+export function isLLMEvaluatorSettings(settings: Check['settings']): settings is LLMEvaluatorCheck['settings'] {
+  return Object.hasOwnProperty.call(settings, CheckType.LlmEvaluator);
 }
 
 export function isDNSSettings(settings: Check['settings']): settings is DNSCheck['settings'] {

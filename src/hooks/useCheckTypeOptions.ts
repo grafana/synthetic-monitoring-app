@@ -64,6 +64,17 @@ export const CHECK_TYPE_OPTIONS = [
     description: 'Leverage k6 browser module to run checks in a browser.',
     group: CheckTypeGroup.Browser,
   },
+  {
+    label: 'LLM Evaluator',
+    value: CheckType.LlmEvaluator,
+    description: 'Probe an LLM endpoint and evaluate its response against natural-language criteria.',
+    status: {
+      value: CheckStatus.Experimental,
+      description: `LLM Evaluator checks are experimental.`,
+    },
+    featureToggle: FeatureName.LLMEvaluatorChecks,
+    group: CheckTypeGroup.LlmEvaluator,
+  },
 ];
 
 /**

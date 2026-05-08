@@ -18,6 +18,7 @@ export const TARGET_MAP = {
   [CheckType.Dns]: 'grafana.com',
   [CheckType.Grpc]: 'grafana.com:50051',
   [CheckType.Http]: 'https://grafana.com/',
+  [CheckType.LlmEvaluator]: 'gpt-4o-mini',
   [CheckType.MultiHttp]: 'https://grafana.com/',
   [CheckType.Ping]: 'grafana.com',
   [CheckType.Scripted]: 'Whatever string we would like',

@@ -1,4 +1,5 @@
 import { MIN_FREQUENCY_BROWSER } from 'schemas/forms/BrowserCheckSchema';
+import { MIN_FREQUENCY_LLM_EVALUATOR } from 'schemas/forms/LLMEvaluatorCheckSchema';
 import { MIN_FREQUENCY_MULTI_HTTP } from 'schemas/forms/MultiHttpCheckSchema';
 import { MIN_FREQUENCY_SCRIPTED } from 'schemas/forms/ScriptedCheckSchema';
 import { MIN_FREQUENCY_TRACEROUTE } from 'schemas/forms/TracerouteCheckSchema';
@@ -29,6 +30,7 @@ export const MIN_FREQUENCY_MAP = {
   [CheckType.Dns]: MIN_BASE_FREQUENCY,
   [CheckType.Grpc]: MIN_BASE_FREQUENCY,
   [CheckType.Http]: MIN_BASE_FREQUENCY,
+  [CheckType.LlmEvaluator]: MIN_FREQUENCY_LLM_EVALUATOR,
   [CheckType.MultiHttp]: MIN_FREQUENCY_MULTI_HTTP,
   [CheckType.Ping]: MIN_BASE_FREQUENCY,
   [CheckType.Scripted]: MIN_FREQUENCY_SCRIPTED,

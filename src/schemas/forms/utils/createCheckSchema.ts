@@ -6,6 +6,7 @@ import { createBrowserCheckSchema } from '../BrowserCheckSchema';
 import { dnsCheckSchema } from '../DNSCheckSchema';
 import { grpcCheckSchema } from '../GRPCCheckSchema';
 import { httpCheckSchema } from '../HttpCheckSchema';
+import { llmEvaluatorCheckSchema } from '../LLMEvaluatorCheckSchema';
 import { multiHttpCheckSchema } from '../MultiHttpCheckSchema';
 import { pingCheckSchema } from '../PingCheckSchema';
 import { createScriptedCheckSchema } from '../ScriptedCheckSchema';
@@ -16,6 +17,7 @@ const STATIC_SCHEMA_MAP = {
   [CheckType.Dns]: dnsCheckSchema,
   [CheckType.Grpc]: grpcCheckSchema,
   [CheckType.Http]: httpCheckSchema,
+  [CheckType.LlmEvaluator]: llmEvaluatorCheckSchema,
   [CheckType.MultiHttp]: multiHttpCheckSchema,
   [CheckType.Ping]: pingCheckSchema,
   [CheckType.Tcp]: tcpCheckSchema,

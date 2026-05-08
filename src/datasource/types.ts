@@ -124,6 +124,8 @@ export enum AccountingClassNames {
   http_basic = 'http_basic',
   http_ssl = 'http_ssl',
   http_ssl_basic = 'http_ssl_basic',
+  llmEvaluator = 'llmevaluator',
+  llmEvaluator_basic = 'llmevaluator_basic',
   multihttp = 'multihttp',
   multihttp_basic = 'multihttp_basic',
   ping = 'ping',

@@ -188,9 +188,8 @@ const settingsToTF = (check: Check): TFCheckSettings => {
     };
   }
 
-  // @ts-expect-error - This should never happen
   const settingsKey = Object.keys(check.settings)[0];
-  throw new Error(`Unknown check type: ${settingsKey}`);
+  throw new Error(`Unsupported check type for Terraform export: ${settingsKey}`);
 };
 
 export const checkToTF = (check: Check): TFCheck => {

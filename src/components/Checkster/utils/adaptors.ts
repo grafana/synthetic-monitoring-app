@@ -6,6 +6,7 @@ import {
   DNSCheck,
   GRPCCheck,
   HTTPCheck,
+  LLMEvaluatorCheck,
   MultiHTTPCheck,
   PingCheck,
   ScriptedCheck,
@@ -19,6 +20,7 @@ import { getBrowserCheckFormValues } from '../transformations/toFormValues.brows
 import { getDNSCheckFormValues } from '../transformations/toFormValues.dns';
 import { getGRPCCheckFormValues } from '../transformations/toFormValues.grpc';
 import { getHTTPCheckFormValues } from '../transformations/toFormValues.http';
+import { getLLMEvaluatorCheckFormValues } from '../transformations/toFormValues.llmevaluator';
 import { getMultiHTTPCheckFormValues } from '../transformations/toFormValues.multihttp';
 import { getPingCheckFormValues } from '../transformations/toFormValues.ping';
 import { getScriptedCheckFormValues } from '../transformations/toFormValues.scripted';
@@ -28,6 +30,7 @@ import { getBrowserPayload } from '../transformations/toPayload.browser';
 import { getDNSPayload } from '../transformations/toPayload.dns';
 import { getGRPCPayload } from '../transformations/toPayload.grpc';
 import { getHTTPPayload } from '../transformations/toPayload.http';
+import { getLLMEvaluatorPayload } from '../transformations/toPayload.llmevaluator';
 import { getMultiHTTPPayload } from '../transformations/toPayload.multihttp';
 import { getPingPayload } from '../transformations/toPayload.ping';
 import { getScriptedPayload } from '../transformations/toPayload.scripted';
@@ -67,6 +70,8 @@ export function toFormValues(check: Check): CheckFormValues {
       return getTracerouteCheckFormValues(check as TracerouteCheck);
     case CheckType.Browser:
       return getBrowserCheckFormValues(check as BrowserCheck);
+    case CheckType.LlmEvaluator:
+      return getLLMEvaluatorCheckFormValues(check as LLMEvaluatorCheck);
     default:
       throw new Error(`Unable to convert check to form values. Unknown check type: '${checkType}'`);
   }
@@ -92,6 +97,8 @@ export function toPayload(formValues: CheckFormValues): Check {
       return getTraceroutePayload(formValues);
     case CheckType.Browser:
       return getBrowserPayload(formValues);
+    case CheckType.LlmEvaluator:
+      return getLLMEvaluatorPayload(formValues);
     default:
       throw new Error(`Unable to convert form values to check. Unknown check type: '${(formValues as any).checkType}'`);
   }

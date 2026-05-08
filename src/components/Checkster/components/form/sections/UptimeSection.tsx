@@ -10,6 +10,7 @@ import { BrowserUptimeContent } from '../layouts/BrowserUptimeContent';
 import { DnsUptimeContent } from '../layouts/DnsUptimeContent';
 import { GrpcUptimeContent } from '../layouts/GrpcUptimeContent';
 import { HTTP_UPTIME_FIELDS, HttpUptimeContent } from '../layouts/HttpUptimeContent';
+import { LLMEvaluatorUptimeContent } from '../layouts/LLMEvaluatorUptimeContent';
 import { MultiHttpUptimeContent } from '../layouts/MultiHttpUptimeContent';
 import { PingUptimeContent } from '../layouts/PingUptimeContent';
 import { ScriptedUptimeContent } from '../layouts/ScriptedUptimeContent';
@@ -28,6 +29,8 @@ const CHECK_TYPE_LAYOUT_MAP: Record<CheckType, ComponentType> = {
   [CheckType.MultiHttp]: MultiHttpUptimeContent,
   [CheckType.Scripted]: ScriptedUptimeContent,
   [CheckType.Browser]: BrowserUptimeContent,
+  /* LLM Evaluator */
+  [CheckType.LlmEvaluator]: LLMEvaluatorUptimeContent,
 };
 
 const DEFAULT_UPTIME_FIELDS = ['timeout'];

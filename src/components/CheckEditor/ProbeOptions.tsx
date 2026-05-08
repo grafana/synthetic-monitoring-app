@@ -52,5 +52,11 @@ function getAvailableProbes(probes: ProbeWithMetadata[], checkType: CheckType) {
     return probes.filter((probe) => !probe.capabilities.disableBrowserChecks);
   }
 
+  if (checkType === CheckType.LlmEvaluator) {
+    return probes.filter(
+      (probe) => probe.capabilities.enableLLMEvaluatorChecks && probe.capabilities.enableProtocolSecrets
+    );
+  }
+
   return probes;
 }

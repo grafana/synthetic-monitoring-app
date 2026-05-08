@@ -10,6 +10,7 @@ import {
   HttpVersion,
   IpVersion,
   Label,
+  LLMEvaluatorCheck,
   MultiHTTPCheck,
   PingCheck,
   ScriptedCheck,
@@ -284,6 +285,29 @@ export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = DB.check.build(
   { transient: { type: CheckType.Dns } }
 ) as DNSCheck;
 
+export const BASIC_LLM_EVALUATOR_CHECK: LLMEvaluatorCheck = DB.check.build(
+  {
+    job: 'Job name for llm-evaluator',
+    target: 'gpt-4o-mini',
+    labels: [{ name: 'Team', value: 'ai' }],
+    probes: [PUBLIC_PROBE.id] as number[],
+    settings: {
+      llmEvaluator: {
+        endpoint: 'https://api.openai.com',
+        model: 'gpt-4o-mini',
+        apiKeyRef: 'openai-api-key',
+        systemPrompt: 'You are a helpful assistant.',
+        prompt: 'What is Grafana Synthetic Monitoring?',
+        criteria: [
+          'Mentions monitoring or observability',
+          'Does not mention competitor products',
+        ],
+      },
+    },
+  },
+  { transient: { type: CheckType.LlmEvaluator } }
+) as LLMEvaluatorCheck;
+
 export const BASIC_CHECK_LIST: Check[] = [
   BASIC_DNS_CHECK,
   BASIC_HTTP_CHECK,
@@ -293,6 +317,7 @@ export const BASIC_CHECK_LIST: Check[] = [
   BASIC_TCP_CHECK,
   BASIC_TRACEROUTE_CHECK,
   FULL_HTTP_CHECK,
+  BASIC_LLM_EVALUATOR_CHECK,
   CUSTOM_ALERT_SENSITIVITY_CHECK,
 ];
 

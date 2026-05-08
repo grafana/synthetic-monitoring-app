@@ -147,6 +147,8 @@ export type ExtendedProbe = ProbeWithMetadata & { checks: number[] };
 interface ProbeCapabilities {
   disableScriptedChecks: boolean;
   disableBrowserChecks: boolean;
+  enableProtocolSecrets?: boolean;
+  enableLLMEvaluatorChecks?: boolean;
 }
 
 export enum ResponseMatchType {
@@ -186,6 +188,15 @@ export interface ScriptedSettings {
 
 export interface BrowserSettings {
   script: string;
+}
+
+export interface LLMEvaluatorSettings {
+  endpoint: string;
+  model: string;
+  apiKeyRef: string;
+  systemPrompt?: string;
+  prompt: string;
+  criteria: string[];
 }
 
 export interface TcpSettings {
@@ -405,6 +416,13 @@ export type CheckFormValuesBrowser = CheckFormValuesBase & {
   };
 };
 
+export type CheckFormValuesLLMEvaluator = CheckFormValuesBase & {
+  checkType: CheckType.LlmEvaluator;
+  settings: {
+    llmEvaluator: LLMEvaluatorSettings;
+  };
+};
+
 export interface CheckBase {
   job: string;
   target: string;
@@ -439,6 +457,7 @@ export type Check =
   | DNSCheck
   | GRPCCheck
   | HTTPCheck
+  | LLMEvaluatorCheck
   | MultiHTTPCheck
   | PingCheck
   | ScriptedCheck
@@ -449,6 +468,7 @@ export type CheckFormValues =
   | CheckFormValuesDns
   | CheckFormValuesGRPC
   | CheckFormValuesHttp
+  | CheckFormValuesLLMEvaluator
   | CheckFormValuesMultiHttp
   | CheckFormValuesPing
   | CheckFormValuesScripted
@@ -471,6 +491,7 @@ export type Settings =
   | DNSCheck['settings']
   | GRPCCheck['settings']
   | HTTPCheck['settings']
+  | LLMEvaluatorCheck['settings']
   | ScriptedCheck['settings']
   | MultiHTTPCheck['settings']
   | PingCheck['settings']
@@ -512,6 +533,13 @@ export type BrowserCheck = CheckBase &
     };
   };
 
+export type LLMEvaluatorCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      llmEvaluator: LLMEvaluatorSettings;
+    };
+  };
+
 export type MultiHTTPCheck = CheckBase &
   ExistingObject & {
     settings: {
@@ -545,6 +573,7 @@ export enum CheckType {
   Dns = 'dns',
   Grpc = 'grpc',
   Http = 'http',
+  LlmEvaluator = 'llmEvaluator',
   MultiHttp = 'multihttp',
   Ping = 'ping',
   Scripted = 'scripted',
@@ -557,6 +586,7 @@ export enum CheckTypeGroup {
   MultiStep = `multistep`,
   Scripted = `scripted`,
   Browser = `browser`,
+  LlmEvaluator = `llm-evaluator`,
 }
 
 export enum DnsResponseCodes {
@@ -749,6 +779,7 @@ export enum FeatureName {
   CALs = 'synthetic-monitoring-cals',
   Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
+  LLMEvaluatorChecks = 'synthetic-monitoring-llm-evaluator-checks',
   Screenshots = 'synthetic-monitoring-screenshots',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',

@@ -96,6 +96,21 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       },
     ],
   },
+  {
+    label: `LLM Evaluator`,
+    description: `Probe an LLM endpoint and evaluate its response against natural-language criteria.`,
+    value: CheckTypeGroup.LlmEvaluator,
+    icon: `ai-sparkle`,
+    protocols: [
+      {
+        label: `OpenAI-compatible`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.LlmEvaluator}?checkType=${CheckType.LlmEvaluator}`,
+        featureToggle: FeatureName.LLMEvaluatorChecks,
+        onClick: () =>
+          trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.LlmEvaluator, protocol: CheckType.LlmEvaluator }),
+      },
+    ],
+  },
 ];
 
 export function useCheckTypeGroupOptions() {

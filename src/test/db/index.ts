@@ -255,6 +255,21 @@ export const DB = {
         };
       }
 
+      case CheckType.LlmEvaluator: {
+        return {
+          ...baseCheckModel({ sequence }),
+          settings: {
+            llmEvaluator: {
+              endpoint: 'https://api.openai.com',
+              model: 'gpt-4o-mini',
+              apiKeyRef: 'openai-api-key',
+              prompt: 'What is Grafana Synthetic Monitoring?',
+              criteria: ['Mentions monitoring or observability'],
+            },
+          },
+        };
+      }
+
       default: {
         throw new Error(`Unsupported check type: ${type}`);
       }

@@ -3,6 +3,11 @@ import { dnsCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { grpcCheckSchema } from 'schemas/forms/GRPCCheckSchema';
 import { httpCheckSchema } from 'schemas/forms/HttpCheckSchema';
 import {
+  llmEvaluatorCheckSchema,
+  MAX_TIMEOUT_LLM_EVALUATOR,
+  MIN_TIMEOUT_LLM_EVALUATOR,
+} from 'schemas/forms/LLMEvaluatorCheckSchema';
+import {
   MAX_TIMEOUT_MULTI_HTTP,
   MIN_TIMEOUT_MULTI_HTTP,
   multiHttpCheckSchema,
@@ -36,6 +41,7 @@ import {
   HttpSslOption,
   HttpVersion,
   IpVersion,
+  LLMEvaluatorCheck,
   MultiHTTPCheck,
   PingCheck,
   ResponseMatchType,
@@ -74,6 +80,7 @@ export const CHECK_TYPE_GROUP_MAP: Record<CheckTypeGroup, CheckType[]> = {
   [CheckTypeGroup.MultiStep]: [CheckType.MultiHttp],
   [CheckTypeGroup.Scripted]: [CheckType.Scripted],
   [CheckTypeGroup.Browser]: [CheckType.Browser],
+  [CheckTypeGroup.LlmEvaluator]: [CheckType.LlmEvaluator],
 };
 
 export const CHECK_TYPE_GROUP_OPTIONS_MAP: Record<CheckTypeGroup, CheckTypeGroupOption> = {
@@ -104,6 +111,13 @@ export const CHECK_TYPE_GROUP_OPTIONS_MAP: Record<CheckTypeGroup, CheckTypeGroup
     value: CheckTypeGroup.Browser,
     icon: `globe`,
     protocols: CHECK_TYPE_GROUP_MAP[CheckTypeGroup.Browser],
+  },
+  [CheckTypeGroup.LlmEvaluator]: {
+    label: `LLM Evaluator`,
+    description: `Probe an LLM endpoint and evaluate its response against natural-language criteria.`,
+    value: CheckTypeGroup.LlmEvaluator,
+    icon: `ai-sparkle`,
+    protocols: CHECK_TYPE_GROUP_MAP[CheckTypeGroup.LlmEvaluator],
   },
 };
 
@@ -178,6 +192,17 @@ export const CHECK_TYPE_OPTION_MAP: Record<CheckType, CheckTypeOption> = {
     value: CheckType.Browser,
     description: 'Leverage k6 browser module to run checks in a browser.',
     group: getCheckTypeGroup(CheckType.Browser),
+  },
+  [CheckType.LlmEvaluator]: {
+    label: 'LLM Evaluator',
+    value: CheckType.LlmEvaluator,
+    description: 'Probe an LLM endpoint and evaluate its response against natural-language criteria.',
+    group: getCheckTypeGroup(CheckType.LlmEvaluator),
+    status: {
+      value: CheckStatus.Experimental,
+      description: `LLM Evaluator checks are experimental.`,
+    },
+    featureToggle: FeatureName.LLMEvaluatorChecks,
   },
 };
 
@@ -315,6 +340,21 @@ export const DEFAULT_CHECK_CONFIG_MAP: Record<CheckType, Check> = {
       timeout: 60 * 1000,
     }
   ),
+  [CheckType.LlmEvaluator]: mergeBaseConfig<LLMEvaluatorCheck>(
+    CheckType.LlmEvaluator,
+    {
+      endpoint: '',
+      model: '',
+      apiKeyRef: '',
+      systemPrompt: '',
+      prompt: '',
+      criteria: [''],
+    },
+    {
+      frequency: 5 * 60 * 1000,
+      timeout: 30 * 1000,
+    }
+  ),
 };
 
 // Always keep in sync with DEFAULT_CHECK_TYPE
@@ -325,6 +365,7 @@ export const FORM_CHECK_TYPE_SCHEMA_MAP = {
   [CheckType.Dns]: dnsCheckSchema,
   [CheckType.Grpc]: grpcCheckSchema,
   [CheckType.Http]: httpCheckSchema,
+  [CheckType.LlmEvaluator]: llmEvaluatorCheckSchema,
   [CheckType.MultiHttp]: multiHttpCheckSchema,
   [CheckType.Ping]: pingCheckSchema,
   [CheckType.Scripted]: scriptedCheckSchema,
@@ -495,6 +536,7 @@ export const CHECK_TYPE_TIMEOUT_MAP: Record<CheckType, { min: number; max: numbe
   [CheckType.Dns]: BASE_TIMEOUT_MAP,
   [CheckType.Grpc]: BASE_TIMEOUT_MAP,
   [CheckType.Http]: BASE_TIMEOUT_MAP,
+  [CheckType.LlmEvaluator]: { min: MIN_TIMEOUT_LLM_EVALUATOR, max: MAX_TIMEOUT_LLM_EVALUATOR },
   [CheckType.MultiHttp]: { min: MIN_TIMEOUT_MULTI_HTTP, max: MAX_TIMEOUT_MULTI_HTTP },
   [CheckType.Ping]: BASE_TIMEOUT_MAP,
   [CheckType.Scripted]: { min: MIN_TIMEOUT_SCRIPTED, max: MAX_TIMEOUT_SCRIPTED },
@@ -532,6 +574,7 @@ export const CHECK_TYPE_GROUP_DEFAULT_CHECK: Record<CheckTypeGroup, CheckType> =
   [CheckTypeGroup.MultiStep]: CheckType.MultiHttp,
   [CheckTypeGroup.Browser]: CheckType.Browser,
   [CheckTypeGroup.Scripted]: CheckType.Scripted,
+  [CheckTypeGroup.LlmEvaluator]: CheckType.LlmEvaluator,
 };
 
 export const ASSISTED_FORM_MERGE_FIELDS = ['job', 'target', 'probes', 'frequency', 'labels', 'timeout'] as const;

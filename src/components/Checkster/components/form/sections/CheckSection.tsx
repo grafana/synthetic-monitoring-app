@@ -9,6 +9,7 @@ import { BROWSER_CHECK_FIELDS,BrowserCheckContent } from '../layouts/BrowserChec
 import { DNS_CHECK_FIELDS,DnsCheckContent } from '../layouts/DnsCheckContent';
 import { GRPC_CHECK_FIELDS,GrpcCheckContent } from '../layouts/GrpcCheckContent';
 import { HTTP_CHECK_FIELDS,HttpCheckContent } from '../layouts/HttpCheckContent';
+import { LLM_EVALUATOR_CHECK_FIELDS, LLMEvaluatorCheckContent } from '../layouts/LLMEvaluatorCheckContent';
 import { MULTI_HTTP_CHECK_REG_EXP_LIST,MultiHttpCheckContent } from '../layouts/MultiHttpCheckContent';
 import { PingCheckContent } from '../layouts/PingCheckContent';
 import { SCRIPTED_CHECK_FIELDS,ScriptedCheckContent } from '../layouts/ScriptedCheckContent';
@@ -35,6 +36,8 @@ function getCheckTypeFields(checkType: CheckType) {
       return SCRIPTED_CHECK_FIELDS;
     case CheckType.Browser:
       return BROWSER_CHECK_FIELDS;
+    case CheckType.LlmEvaluator:
+      return LLM_EVALUATOR_CHECK_FIELDS;
     default:
       return DEFAULT_CHECK_FIELDS;
   }
@@ -52,6 +55,8 @@ const CHECK_TYPE_LAYOUT_MAP: Record<CheckType, ComponentType> = {
   [CheckType.MultiHttp]: MultiHttpCheckContent,
   [CheckType.Scripted]: ScriptedCheckContent,
   [CheckType.Browser]: BrowserCheckContent,
+  /* LLM Evaluator */
+  [CheckType.LlmEvaluator]: LLMEvaluatorCheckContent,
 };
 
 function getNavLabel(checkType: CheckType) {
@@ -61,6 +66,8 @@ function getNavLabel(checkType: CheckType) {
       return 'Script';
     case CheckType.MultiHttp:
       return 'Requests';
+    case CheckType.LlmEvaluator:
+      return 'Evaluation';
     default:
       return 'Request';
   }
