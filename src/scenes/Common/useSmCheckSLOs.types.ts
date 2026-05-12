@@ -107,7 +107,7 @@ export interface ReadOnly {
   creationTimestamp: number;
 }
 
-export interface Slo {
+export interface SLO {
   uuid: string;
   name: string;
   destinationDatasource?: DestinationDatasource;

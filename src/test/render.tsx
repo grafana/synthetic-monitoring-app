@@ -85,7 +85,7 @@ const DefaultWrapper = ({
   );
 };
 
-/** Default: SLO app treated as installed so scenes using `useSmCheckSlos` work without boilerplate. */
+/** Default: SLO app treated as installed so scenes using `useSmCheckSLOs` work without boilerplate. */
 const DEFAULT_EXTERNAL_DEPS_OVERRIDES: ExternalDependenciesOverrides = {
   slo: { installed: true, isLoading: false },
 };

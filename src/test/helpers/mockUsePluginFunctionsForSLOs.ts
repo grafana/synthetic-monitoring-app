@@ -1,12 +1,12 @@
 import { PluginExtensionTypes } from '@grafana/data';
 
-import type { Slo } from 'scenes/Common/useSmCheckSlos.types';
+import type { SLO } from 'scenes/Common/useSmCheckSLOs.types';
 
 function getRuntimeModule(): typeof import('@grafana/runtime') {
   return require('@grafana/runtime');
 }
 
-export function spyUsePluginFunctionsForSlos(resolve: Slo[], options?: { notFound?: boolean }) {
+export function spyUsePluginFunctionsForSLOs(resolve: SLO[], options?: { notFound?: boolean }) {
   const apiStub = options?.notFound
     ? {
         getSlos: async () => ({
@@ -20,7 +20,7 @@ export function spyUsePluginFunctionsForSlos(resolve: Slo[], options?: { notFoun
         getSlos: async () => ({
           data: { slos: resolve },
         }),
-        updateSlo: jest.fn().mockImplementation(async (slo: Slo) => ({ data: slo })),
+        updateSlo: jest.fn().mockImplementation(async (slo: SLO) => ({ data: slo })),
         deleteSlo: jest.fn().mockResolvedValue({ data: {} }),
       };
 

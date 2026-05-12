@@ -36,7 +36,7 @@ type SLOComponentPropsV1 = {
   stepperOrientation?: 'horizontal' | 'vertical';
   onSuccess?: () => void;
   submitLabel?: string;
-  onClose: () => void;
+  onCancel: () => void;
   initialStep: StepKey
 };
 
@@ -68,7 +68,7 @@ export function CreateSLOButton({ check, onCreated }: CreateSLOButtonProps) {
       stepperOrientation: 'horizontal',
       onSuccess: handleSuccess,
       submitLabel: 'Create SLO',
-      onClose: handleClose,
+      onCancel: handleClose,
       initialStep: StepKey.Review,
     }),
     [check, metricsDsUid, handleClose, handleSuccess]
@@ -78,6 +78,7 @@ export function CreateSLOButton({ check, onCreated }: CreateSLOButtonProps) {
     return null;
   }
 
+  console.log(sloProps)
   return (
     <>
       <Stack direction="row" gap={1} alignItems="center">

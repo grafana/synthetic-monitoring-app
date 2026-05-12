@@ -17,14 +17,14 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import type { Slo } from './useSmCheckSlos.types';
+import type { SLO } from './useSmCheckSLOs.types';
 
-import { useSloMetrics } from './SloDetailTab.hooks';
+import { useSLOMetrics } from './SLODetailTab.hooks';
 
-export type SloDetailTabProps = {
-  slo: Slo;
-  onEdit?: (slo: Slo) => void;
-  onDelete?: (slo: Slo) => void | Promise<void>;
+export type SLODetailTabProps = {
+  slo: SLO;
+  onEdit?: (slo: SLO) => void;
+  onDelete?: (slo: SLO) => void | Promise<void>;
   isDeleting?: boolean;
   /** Matched by query only — no `sm_check_id` label. */
   isUnlinkedQueryMatch?: boolean;
@@ -121,7 +121,7 @@ function getBurnRateColor(value: number, theme: GrafanaTheme2): string {
   return theme.colors.error.text;
 }
 
-export function SloDetailTab({
+export function SLODetailTab({
   slo,
   onEdit,
   onDelete,
@@ -130,10 +130,10 @@ export function SloDetailTab({
   isLinkedToOtherCheck,
   onLinkToCheck,
   isLinking,
-}: SloDetailTabProps) {
+}: SLODetailTabProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const styles = useStyles2(getStyles);
-  const metrics = useSloMetrics(slo);
+  const metrics = useSLOMetrics(slo);
   const primaryObjective = slo.objectives[0];
   const dashboardUid = slo.readOnly?.drillDownDashboardRef?.UID;
   const dashboardHref = dashboardUid ? `${config.appSubUrl ?? ''}/d/${dashboardUid}` : undefined;

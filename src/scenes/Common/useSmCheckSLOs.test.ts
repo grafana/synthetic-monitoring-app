@@ -1,28 +1,28 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { spyUsePluginFunctionsForSlos } from 'test/helpers/mockUsePluginFunctionsForSlos';
+import { spyUsePluginFunctionsForSLOs } from 'test/helpers/mockUsePluginFunctionsForSLOs';
 import { createWrapper } from 'test/render';
 
-import type { Slo } from './useSmCheckSlos.types';
+import type { SLO } from './useSmCheckSLOs.types';
 
-import { linkSloToCheck, useSmCheckSlos } from './useSmCheckSlos';
+import { linkSLOToCheck, useSmCheckSLOs } from './useSmCheckSLOs';
 import {
-  filterSlosByLabel,
-  getMatchingSlosForSmCheck,
-  getSloQueryStrings,
-  isSloLinkedByLabel,
+  filterSLOsByLabel,
+  getMatchingSLOsForSmCheck,
+  getSLOQueryStrings,
+  isSLOLinkedByLabel,
   sloMatchesSmCheck,
-} from './useSmCheckSlos.utils';
+} from './useSmCheckSLOs.utils';
 
 const CHECK_ID = '42';
 const JOB = 'my-api-check';
 
-const baseSlo: Omit<Slo, 'uuid' | 'name' | 'query'> = {
+const baseSLO: Omit<SLO, 'uuid' | 'name' | 'query'> = {
   description: '',
   objectives: [{ value: 0.995, window: '30d' }],
 };
 
-const sloWithIdLabel: Slo = {
-  ...baseSlo,
+const sloWithIdLabel: SLO = {
+  ...baseSLO,
   uuid: 'slo-1',
   name: 'Wizard SLO',
   labels: [{ key: 'sm_check_id', value: CHECK_ID }],
@@ -35,16 +35,16 @@ const sloWithIdLabel: Slo = {
   },
 };
 
-const sloWrongId: Slo = {
-  ...baseSlo,
+const sloWrongId: SLO = {
+  ...baseSLO,
   uuid: 'slo-3',
   name: 'Wrong ID',
   labels: [{ key: 'sm_check_id', value: '99' }],
   query: { type: 'freeform', freeform: { query: 'up' } },
 };
 
-const sloManualRatio: Slo = {
-  ...baseSlo,
+const sloManualRatio: SLO = {
+  ...baseSLO,
   uuid: 'slo-4',
   name: 'Manual ratio',
   query: {
@@ -56,8 +56,8 @@ const sloManualRatio: Slo = {
   },
 };
 
-const sloManualFreeform: Slo = {
-  ...baseSlo,
+const sloManualFreeform: SLO = {
+  ...baseSLO,
   uuid: 'slo-5',
   name: 'Manual freeform',
   query: {
@@ -68,8 +68,8 @@ const sloManualFreeform: Slo = {
   },
 };
 
-const sloUnrelated: Slo = {
-  ...baseSlo,
+const sloUnrelated: SLO = {
+  ...baseSLO,
   uuid: 'slo-6',
   name: 'Unrelated',
   query: {
@@ -78,8 +78,8 @@ const sloUnrelated: Slo = {
   },
 };
 
-const sloGrafanaQueries: Slo = {
-  ...baseSlo,
+const sloGrafanaQueries: SLO = {
+  ...baseSLO,
   uuid: 'slo-7',
   name: 'Grafana queries',
   query: {
@@ -90,25 +90,25 @@ const sloGrafanaQueries: Slo = {
   },
 };
 
-describe('useSmCheckSlos utils', () => {
-  describe('isSloLinkedByLabel', () => {
+describe('useSmCheckSLOs utils', () => {
+  describe('isSLOLinkedByLabel', () => {
     it('returns false when the SLO has no sm_check_id label', () => {
-      expect(isSloLinkedByLabel(sloManualRatio, CHECK_ID)).toBe(false);
+      expect(isSLOLinkedByLabel(sloManualRatio, CHECK_ID)).toBe(false);
     });
 
     it('returns false when sm_check_id does not match the check id', () => {
-      expect(isSloLinkedByLabel(sloWrongId, CHECK_ID)).toBe(false);
+      expect(isSLOLinkedByLabel(sloWrongId, CHECK_ID)).toBe(false);
     });
 
     it('returns true when sm_check_id matches the check id', () => {
-      expect(isSloLinkedByLabel(sloWithIdLabel, CHECK_ID)).toBe(true);
+      expect(isSLOLinkedByLabel(sloWithIdLabel, CHECK_ID)).toBe(true);
     });
   });
 
-  describe('linkSloToCheck', () => {
-    it('calls updateSlo without readOnly and sets sm_check_id label', async () => {
-      const updateSlo = jest.fn().mockResolvedValue({ data: sloWithIdLabel });
-      const slo: Slo = {
+  describe('linkSLOToCheck', () => {
+    it('calls updateSLO without readOnly and sets sm_check_id label', async () => {
+      const updateSLO = jest.fn().mockResolvedValue({ data: sloWithIdLabel });
+      const slo: SLO = {
         ...sloManualRatio,
         readOnly: {
           status: { type: 'created' },
@@ -118,10 +118,10 @@ describe('useSmCheckSlos utils', () => {
         },
       };
 
-      await linkSloToCheck(slo, CHECK_ID, updateSlo);
+      await linkSLOToCheck(slo, CHECK_ID, updateSLO);
 
-      expect(updateSlo).toHaveBeenCalledTimes(1);
-      const payload = updateSlo.mock.calls[0][0];
+      expect(updateSLO).toHaveBeenCalledTimes(1);
+      const payload = updateSLO.mock.calls[0][0];
       expect(payload.readOnly).toBeUndefined();
       expect(payload.labels).toEqual(
         expect.arrayContaining([{ key: 'sm_check_id', value: CHECK_ID }])
@@ -129,34 +129,34 @@ describe('useSmCheckSlos utils', () => {
     });
   });
 
-  describe('filterSlosByLabel', () => {
+  describe('filterSLOsByLabel', () => {
     it('returns SLOs with matching sm_check_id', () => {
-      const slos: Slo[] = [sloWithIdLabel, sloWrongId, sloManualRatio];
-      expect(filterSlosByLabel(slos, CHECK_ID)).toEqual([sloWithIdLabel]);
+      const slos: SLO[] = [sloWithIdLabel, sloWrongId, sloManualRatio];
+      expect(filterSLOsByLabel(slos, CHECK_ID)).toEqual([sloWithIdLabel]);
     });
 
     it('does not match SLOs without the expected label', () => {
-      const slos: Slo[] = [sloManualRatio, sloUnrelated];
-      expect(filterSlosByLabel(slos, CHECK_ID)).toEqual([]);
+      const slos: SLO[] = [sloManualRatio, sloUnrelated];
+      expect(filterSLOsByLabel(slos, CHECK_ID)).toEqual([]);
     });
   });
 
-  describe('getSloQueryStrings', () => {
+  describe('getSLOQueryStrings', () => {
     it('extracts ratio success and total metrics', () => {
-      expect(getSloQueryStrings(sloManualRatio)).toEqual([
+      expect(getSLOQueryStrings(sloManualRatio)).toEqual([
         `probe_all_success_sum{job="${JOB}", instance="x"}`,
         `probe_all_success_count{job="${JOB}", instance="x"}`,
       ]);
     });
 
     it('extracts freeform query', () => {
-      expect(getSloQueryStrings(sloManualFreeform)).toEqual([
+      expect(getSLOQueryStrings(sloManualFreeform)).toEqual([
         `sum(sum_over_time(probe_success{job="${JOB}", instance="https://api.example.com"}[$__interval]))`,
       ]);
     });
 
     it('extracts grafanaQueries expr fields', () => {
-      expect(getSloQueryStrings(sloGrafanaQueries)).toEqual([`probe_success{job="${JOB}"}`, 'vector(1)']);
+      expect(getSLOQueryStrings(sloGrafanaQueries)).toEqual([`probe_success{job="${JOB}"}`, 'vector(1)']);
     });
   });
 
@@ -174,15 +174,15 @@ describe('useSmCheckSlos utils', () => {
     });
   });
 
-  describe('getMatchingSlosForSmCheck', () => {
+  describe('getMatchingSLOsForSmCheck', () => {
     it('dedupes when the same SLO would match label and query paths', () => {
-      const slos: Slo[] = [sloWithIdLabel];
-      expect(getMatchingSlosForSmCheck(slos, CHECK_ID, JOB)).toEqual([sloWithIdLabel]);
+      const slos: SLO[] = [sloWithIdLabel];
+      expect(getMatchingSLOsForSmCheck(slos, CHECK_ID, JOB)).toEqual([sloWithIdLabel]);
     });
 
     it('combines label matches and query fallback without duplicates', () => {
-      const slos: Slo[] = [sloWithIdLabel, sloManualRatio, sloUnrelated];
-      const result = getMatchingSlosForSmCheck(slos, CHECK_ID, JOB);
+      const slos: SLO[] = [sloWithIdLabel, sloManualRatio, sloUnrelated];
+      const result = getMatchingSLOsForSmCheck(slos, CHECK_ID, JOB);
       expect(result).toHaveLength(2);
       expect(result).toContain(sloWithIdLabel);
       expect(result).toContain(sloManualRatio);
@@ -191,7 +191,7 @@ describe('useSmCheckSlos utils', () => {
   });
 });
 
-describe('useSmCheckSlos', () => {
+describe('useSmCheckSLOs', () => {
   let usePluginFunctionsSpy: jest.SpyInstance | undefined;
 
   afterEach(() => {
@@ -199,7 +199,7 @@ describe('useSmCheckSlos', () => {
   });
 
   it('fetches SLO list and returns matches for check ID and job', async () => {
-    usePluginFunctionsSpy = spyUsePluginFunctionsForSlos([
+    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([
       sloWithIdLabel,
       sloWrongId,
       sloManualRatio,
@@ -207,7 +207,7 @@ describe('useSmCheckSlos', () => {
     ]);
 
     const { Wrapper } = createWrapper();
-    const { result } = renderHook(() => useSmCheckSlos(42, JOB), { wrapper: Wrapper });
+    const { result } = renderHook(() => useSmCheckSLOs(42, JOB), { wrapper: Wrapper });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -219,10 +219,10 @@ describe('useSmCheckSlos', () => {
   });
 
   it('returns empty list when the SLO plugin function responds with 404', async () => {
-    usePluginFunctionsSpy = spyUsePluginFunctionsForSlos([], { notFound: true });
+    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([], { notFound: true });
 
     const { Wrapper } = createWrapper();
-    const { result } = renderHook(() => useSmCheckSlos(42, JOB), { wrapper: Wrapper });
+    const { result } = renderHook(() => useSmCheckSLOs(42, JOB), { wrapper: Wrapper });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
