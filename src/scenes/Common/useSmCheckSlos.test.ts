@@ -4,11 +4,12 @@ import { createWrapper } from 'test/render';
 
 import type { Slo } from './useSmCheckSlos.types';
 
-import { useSmCheckSlos } from './useSmCheckSlos';
+import { linkSloToCheck, useSmCheckSlos } from './useSmCheckSlos';
 import {
   filterSlosByLabel,
   getMatchingSlosForSmCheck,
   getSloQueryStrings,
+  isSloLinkedByLabel,
   sloMatchesSmCheck,
 } from './useSmCheckSlos.utils';
 
@@ -90,6 +91,44 @@ const sloGrafanaQueries: Slo = {
 };
 
 describe('useSmCheckSlos utils', () => {
+  describe('isSloLinkedByLabel', () => {
+    it('returns false when the SLO has no sm_check_id label', () => {
+      expect(isSloLinkedByLabel(sloManualRatio, CHECK_ID)).toBe(false);
+    });
+
+    it('returns false when sm_check_id does not match the check id', () => {
+      expect(isSloLinkedByLabel(sloWrongId, CHECK_ID)).toBe(false);
+    });
+
+    it('returns true when sm_check_id matches the check id', () => {
+      expect(isSloLinkedByLabel(sloWithIdLabel, CHECK_ID)).toBe(true);
+    });
+  });
+
+  describe('linkSloToCheck', () => {
+    it('calls updateSlo without readOnly and sets sm_check_id label', async () => {
+      const updateSlo = jest.fn().mockResolvedValue({ data: sloWithIdLabel });
+      const slo: Slo = {
+        ...sloManualRatio,
+        readOnly: {
+          status: { type: 'created' },
+          creationTimestamp: 1,
+          parsesAsRatio: true,
+          allowedActions: ['read', 'write'],
+        },
+      };
+
+      await linkSloToCheck(slo, CHECK_ID, updateSlo);
+
+      expect(updateSlo).toHaveBeenCalledTimes(1);
+      const payload = updateSlo.mock.calls[0][0];
+      expect(payload.readOnly).toBeUndefined();
+      expect(payload.labels).toEqual(
+        expect.arrayContaining([{ key: 'sm_check_id', value: CHECK_ID }])
+      );
+    });
+  });
+
   describe('filterSlosByLabel', () => {
     it('returns SLOs with matching sm_check_id', () => {
       const slos: Slo[] = [sloWithIdLabel, sloWrongId, sloManualRatio];

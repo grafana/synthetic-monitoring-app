@@ -2,8 +2,10 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
+  Alert,
   Badge,
   Button,
+  ConfirmModal,
   Icon,
   LinkButton,
   LoadingPlaceholder,
@@ -22,6 +24,14 @@ import { useSloMetrics } from './SloDetailTab.hooks';
 export type SloDetailTabProps = {
   slo: Slo;
   onEdit?: (slo: Slo) => void;
+  onDelete?: (slo: Slo) => void | Promise<void>;
+  isDeleting?: boolean;
+  /** Matched by query only — no `sm_check_id` label. */
+  isUnlinkedQueryMatch?: boolean;
+  /** Has `sm_check_id` for a different check; query also matched this check's job. */
+  isLinkedToOtherCheck?: boolean;
+  onLinkToCheck?: () => void | Promise<void>;
+  isLinking?: boolean;
 };
 
 function formatObjectivePercent(value: number): string {
@@ -111,7 +121,17 @@ function getBurnRateColor(value: number, theme: GrafanaTheme2): string {
   return theme.colors.error.text;
 }
 
-export function SloDetailTab({ slo, onEdit }: SloDetailTabProps) {
+export function SloDetailTab({
+  slo,
+  onEdit,
+  onDelete,
+  isDeleting,
+  isUnlinkedQueryMatch,
+  isLinkedToOtherCheck,
+  onLinkToCheck,
+  isLinking,
+}: SloDetailTabProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const styles = useStyles2(getStyles);
   const metrics = useSloMetrics(slo);
   const primaryObjective = slo.objectives[0];
@@ -119,8 +139,48 @@ export function SloDetailTab({ slo, onEdit }: SloDetailTabProps) {
   const dashboardHref = dashboardUid ? `${config.appSubUrl ?? ''}/d/${dashboardUid}` : undefined;
   const window = primaryObjective?.window ?? '28d';
 
+  const showQueryMatchBanner = Boolean(isUnlinkedQueryMatch || isLinkedToOtherCheck);
+
   return (
     <Stack direction="column" gap={2}>
+      {showQueryMatchBanner ? (
+        <Alert
+          severity="info"
+          title={
+            isLinkedToOtherCheck ? 'Linked to a different check' : 'Discovered via query match'
+          }
+        >
+          <Stack direction="column" gap={1}>
+            <Text variant="bodySmall">
+              {isLinkedToOtherCheck ? (
+                <>
+                  This SLO is linked to a different check (via <code>sm_check_id</code>) but its query also matches
+                  this check&apos;s job. If it belongs here, re-link it below. If it doesn&apos;t, make the SLO query
+                  more precise by also filtering on instance.
+                </>
+              ) : (
+                <>
+                  This SLO was matched by its job label but has no explicit check link. If it belongs to this check,
+                  link it below. If it was matched incorrectly, make the SLO query more precise by adding the instance
+                  label.
+                </>
+              )}
+            </Text>
+            <div>
+              <Button
+                type="button"
+                variant="secondary"
+                icon="link"
+                disabled={Boolean(isLinking)}
+                onClick={() => void onLinkToCheck?.()}
+              >
+                Link to this check
+              </Button>
+            </div>
+          </Stack>
+        </Alert>
+      ) : null}
+
       {slo.description ? (
         <Text variant="body" color="secondary">
           {slo.description}
@@ -183,7 +243,32 @@ export function SloDetailTab({ slo, onEdit }: SloDetailTabProps) {
         <Button variant="secondary" icon="edit" onClick={() => onEdit?.(slo)}>
           Edit
         </Button>
+        {onDelete ? (
+          <Button
+            variant="destructive"
+            icon="trash-alt"
+            disabled={Boolean(isDeleting)}
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            Delete
+          </Button>
+        ) : null}
       </Stack>
+
+      {showDeleteConfirm ? (
+        <ConfirmModal
+          isOpen
+          title="Delete SLO"
+          body={`Are you sure you want to delete "${slo.name}"? This will also remove its associated alerting rules, recording rules, and dashboard.`}
+          confirmText="Delete"
+          dismissText="Cancel"
+          onConfirm={() => {
+            setShowDeleteConfirm(false);
+            void onDelete?.(slo);
+          }}
+          onDismiss={() => setShowDeleteConfirm(false)}
+        />
+      ) : null}
     </Stack>
   );
 }

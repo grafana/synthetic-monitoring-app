@@ -11,7 +11,8 @@ import { Feedback } from 'components/Feedback/Feedback';
 import { buildSLOWizardInitialValuesForCheck, type SLOLabel, type SLORatioQuery } from './CreateSLOButton.utils';
 import { SloDetailTab } from './SloDetailTab';
 import { SLOIcon } from './SLOIcon';
-import { smCheckSlosQueryKeys, useSmCheckSlos } from './useSmCheckSlos';
+import { linkSloToCheck, smCheckSlosQueryKeys, useSmCheckSlos } from './useSmCheckSlos';
+import { isSloLinkedByLabel } from './useSmCheckSlos.utils';
 
 const NEW_SLO_TAB_KEY = 'new-slo';
 const SLO_COMPONENT_ID = 'grafana-slo-app/wizard/v1';
@@ -70,20 +71,60 @@ type SloIntegrationProps = {
 };
 
 export function SloIntegration({ check }: SloIntegrationProps) {
-  const { slos, isLoading } = useSmCheckSlos(check.id, check.job);
+  const { slos, isLoading, updateSlo, deleteSlo } = useSmCheckSlos(check.id, check.job);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('');
   const [editingUuid, setEditingUuid] = useState<string | undefined>();
   const [showNewSloTab, setShowNewSloTab] = useState(false);
+  const [linkingUuid, setLinkingUuid] = useState<string | undefined>();
+  const [deletingUuid, setDeletingUuid] = useState<string | undefined>();
   const queryClient = useQueryClient();
   const metricsDS = useMetricsDS();
   const metricsDsUid = metricsDS?.uid;
   const { component: SLOComponent, isLoading: isWizardLoading } =
     usePluginComponent<SLOComponentPropsV1>(SLO_COMPONENT_ID);
 
-  const handleSloListInvalidate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: smCheckSlosQueryKeys.all });
-  }, [queryClient]);
+  const handleSloListInvalidate = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: smCheckSlosQueryKeys.all }),
+    [queryClient]
+  );
+
+  const handleLinkToCheck = useCallback(async () => {
+    const slo = slos.find((s) => s.uuid === activeTabKey);
+    const checkId = check.id !== undefined ? String(check.id) : '';
+    if (!slo || !checkId) {
+      return;
+    }
+    setLinkingUuid(slo.uuid);
+    try {
+      const result = await linkSloToCheck(slo, checkId, updateSlo);
+      if (!result.error) {
+        handleSloListInvalidate();
+      }
+    } finally {
+      setLinkingUuid(undefined);
+    }
+  }, [activeTabKey, check.id, slos, updateSlo, handleSloListInvalidate]);
+
+  const handleDeleteSlo = useCallback(
+    async (slo: Slo) => {
+      setDeletingUuid(slo.uuid);
+      try {
+        const result = await deleteSlo(slo.uuid);
+        if (!result.error) {
+          await handleSloListInvalidate();
+          const remaining = slos.filter((s) => s.uuid !== slo.uuid);
+          setActiveTabKey(remaining.length > 0 ? remaining[0].uuid : NEW_SLO_TAB_KEY);
+          if (remaining.length === 0) {
+            setDrawerOpen(false);
+          }
+        }
+      } finally {
+        setDeletingUuid(undefined);
+      }
+    },
+    [slos, deleteSlo, handleSloListInvalidate]
+  );
 
   if (isLoading) {
     return null;
@@ -91,6 +132,17 @@ export function SloIntegration({ check }: SloIntegrationProps) {
 
   const countLabel = slos.length > 0 ? (slos.length === 1 ? '1 SLO' : `${slos.length} SLOs`) : 'SLOs';
   const activeSlo = slos.find((slo) => slo.uuid === activeTabKey);
+  const checkIdStr = check.id !== undefined ? String(check.id) : '';
+  const hasSmCheckIdLabel = Boolean(activeSlo?.labels?.some((l) => l.key === 'sm_check_id'));
+  const isLinkedToThisCheck = Boolean(
+    activeSlo && checkIdStr && isSloLinkedByLabel(activeSlo, checkIdStr)
+  );
+  const isUnlinkedQueryMatch = Boolean(
+    activeSlo && checkIdStr && !hasSmCheckIdLabel && !isLinkedToThisCheck
+  );
+  const isLinkedToOtherCheck = Boolean(
+    activeSlo && checkIdStr && hasSmCheckIdLabel && !isLinkedToThisCheck
+  );
   const isEditingActiveSlo = Boolean(activeSlo && editingUuid === activeSlo.uuid);
   const isWizardReady = !isWizardLoading && Boolean(SLOComponent) && Boolean(metricsDsUid);
   const WizardComponent = SLOComponent;
@@ -130,7 +182,7 @@ export function SloIntegration({ check }: SloIntegrationProps) {
         </Stack>
         {isWizardReady ? (
           <Button variant="primary" icon="plus" onClick={handleCreateSloClick}>
-            Create SLO
+            New SLO
           </Button>
         ) : null}
       </Stack>
@@ -186,7 +238,16 @@ export function SloIntegration({ check }: SloIntegrationProps) {
                   onClose={() => setEditingUuid(undefined)}
                 />
               ) : (
-                <SloDetailTab slo={activeSlo} onEdit={(slo) => setEditingUuid(slo.uuid)} />
+                <SloDetailTab
+                  slo={activeSlo}
+                  onEdit={(slo) => setEditingUuid(slo.uuid)}
+                  onDelete={handleDeleteSlo}
+                  isDeleting={Boolean(activeSlo && deletingUuid === activeSlo.uuid)}
+                  isUnlinkedQueryMatch={isUnlinkedQueryMatch}
+                  isLinkedToOtherCheck={isLinkedToOtherCheck}
+                  onLinkToCheck={handleLinkToCheck}
+                  isLinking={Boolean(activeSlo && linkingUuid === activeSlo.uuid)}
+                />
               )
             ) : null}
 

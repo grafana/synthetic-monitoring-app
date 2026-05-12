@@ -13,11 +13,15 @@ export function spyUsePluginFunctionsForSlos(resolve: Slo[], options?: { notFoun
           error: { status: 404 },
           data: undefined,
         }),
+        updateSlo: jest.fn().mockResolvedValue({ data: resolve[0] }),
+        deleteSlo: jest.fn().mockResolvedValue({ data: {} }),
       }
     : {
         getSlos: async () => ({
           data: { slos: resolve },
         }),
+        updateSlo: jest.fn().mockImplementation(async (slo: Slo) => ({ data: slo })),
+        deleteSlo: jest.fn().mockResolvedValue({ data: {} }),
       };
 
   const fn = async () => apiStub;
