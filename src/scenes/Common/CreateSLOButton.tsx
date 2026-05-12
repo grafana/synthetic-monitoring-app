@@ -22,6 +22,14 @@ type SLOWizardInitialValues = {
   labels?: SLOLabel[];
 };
 
+export enum StepKey {
+  Information = 'information',
+  Indicator = 'indicator',
+  Objective = 'objective',
+  Alerts = 'alerts',
+  Review = 'review',
+}
+
 type SLOComponentPropsV1 = {
   initialValues?: SLOWizardInitialValues;
   dataSourceUid?: string;
@@ -29,6 +37,7 @@ type SLOComponentPropsV1 = {
   onSuccess?: () => void;
   submitLabel?: string;
   onClose: () => void;
+  initialStep: StepKey
 };
 
 type CreateSLOButtonProps = {
@@ -60,6 +69,7 @@ export function CreateSLOButton({ check, onCreated }: CreateSLOButtonProps) {
       onSuccess: handleSuccess,
       submitLabel: 'Create SLO',
       onClose: handleClose,
+      initialStep: StepKey.Review,
     }),
     [check, metricsDsUid, handleClose, handleSuccess]
   );

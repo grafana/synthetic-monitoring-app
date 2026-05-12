@@ -143,4 +143,102 @@ describe('SloDetailTab', () => {
     render(<SloDetailTab slo={slo} />);
     expect(await screen.findByText('7d SLI')).toBeInTheDocument();
   });
+
+  it('shows unlinked query-match info and link action when isUnlinkedQueryMatch is true', async () => {
+    const slo = baseSlo({ labels: [{ key: 'team', value: 'payments' }] });
+    const onLinkToCheck = jest.fn();
+    render(<SloDetailTab slo={slo} isUnlinkedQueryMatch onLinkToCheck={onLinkToCheck} />);
+    expect(await screen.findByText(/discovered via query match/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/matched by its job label but has no explicit check link/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /link to this check/i })).toBeInTheDocument();
+  });
+
+  it('shows linked-to-other-check banner when isLinkedToOtherCheck is true', async () => {
+    const slo = baseSlo({
+      labels: [
+        { key: 'sm_check_id', value: '99999' },
+        { key: 'team', value: 'payments' },
+      ],
+    });
+    render(<SloDetailTab slo={slo} isLinkedToOtherCheck onLinkToCheck={jest.fn()} />);
+    expect(
+      await screen.findByRole('status', { name: 'Linked to a different check' })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/also filtering on instance/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /link to this check/i })).toBeInTheDocument();
+  });
+
+  it('does not show the query-match alert when neither flag is true', async () => {
+    const slo = baseSlo({ labels: [{ key: 'team', value: 'payments' }] });
+    render(<SloDetailTab slo={slo} isUnlinkedQueryMatch={false} />);
+    await screen.findByText(/99\.5%/);
+    expect(screen.queryByText(/discovered via query match/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/linked to a different check/i)).not.toBeInTheDocument();
+  });
+
+  it('calls onLinkToCheck when Link to this check is clicked', async () => {
+    const slo = baseSlo({ labels: [{ key: 'team', value: 'payments' }] });
+    const onLinkToCheck = jest.fn();
+    const user = userEvent.setup();
+    render(<SloDetailTab slo={slo} isUnlinkedQueryMatch onLinkToCheck={onLinkToCheck} />);
+    await user.click(await screen.findByRole('button', { name: /link to this check/i }));
+    expect(onLinkToCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables the link button while isLinking is true', async () => {
+    const slo = baseSlo({ labels: [{ key: 'team', value: 'payments' }] });
+    render(<SloDetailTab slo={slo} isUnlinkedQueryMatch onLinkToCheck={jest.fn()} isLinking />);
+    expect(await screen.findByRole('button', { name: /link to this check/i })).toBeDisabled();
+  });
+
+  it('renders a Delete button when onDelete is provided', async () => {
+    const slo = baseSlo();
+    render(<SloDetailTab slo={slo} onDelete={jest.fn()} />);
+    expect(await screen.findByRole('button', { name: /delete/i })).toBeInTheDocument();
+  });
+
+  it('does not render a Delete button when onDelete is not provided', async () => {
+    const slo = baseSlo();
+    render(<SloDetailTab slo={slo} />);
+    await screen.findByText(/99\.5%/);
+    expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
+  });
+
+  it('shows a confirmation modal when Delete is clicked', async () => {
+    const slo = baseSlo();
+    const onDelete = jest.fn();
+    const user = userEvent.setup();
+    render(<SloDetailTab slo={slo} onDelete={onDelete} />);
+    await user.click(await screen.findByRole('button', { name: /delete/i }));
+    expect(await screen.findByText(/are you sure you want to delete/i)).toBeInTheDocument();
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
+  it('calls onDelete after confirming the deletion', async () => {
+    const slo = baseSlo();
+    const onDelete = jest.fn();
+    const user = userEvent.setup();
+    render(<SloDetailTab slo={slo} onDelete={onDelete} />);
+    await user.click(await screen.findByRole('button', { name: /delete/i }));
+    await user.click(await screen.findByTestId('data-testid Confirm Modal Danger Button'));
+    expect(onDelete).toHaveBeenCalledWith(slo);
+  });
+
+  it('does not call onDelete when cancel is clicked in the confirmation modal', async () => {
+    const slo = baseSlo();
+    const onDelete = jest.fn();
+    const user = userEvent.setup();
+    render(<SloDetailTab slo={slo} onDelete={onDelete} />);
+    await user.click(await screen.findByRole('button', { name: /delete/i }));
+    await user.click(await screen.findByRole('button', { name: /cancel/i }));
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
+  it('disables the delete button while isDeleting is true', async () => {
+    const slo = baseSlo();
+    render(<SloDetailTab slo={slo} onDelete={jest.fn()} isDeleting />);
+    expect(await screen.findByRole('button', { name: /delete/i })).toBeDisabled();
+  });
 });
