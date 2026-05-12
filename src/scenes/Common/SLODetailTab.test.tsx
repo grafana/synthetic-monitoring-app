@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from 'test/render';
 
-import type { SLO } from './useSmCheckSLOs.types';
+import type { SLO } from './useSLOCheckLinks.types';
 
 import { SLODetailTab } from './SLODetailTab';
 import type { SLOMetrics } from './SLODetailTab.hooks';
@@ -45,7 +45,6 @@ const baseSLO = (overrides: Partial<SLO> = {}): SLO => ({
   query: { type: 'ratio', ratio: { successMetric: { prometheusMetric: 'a' }, totalMetric: { prometheusMetric: 'b' } } },
   objectives: [{ value: 0.995, window: '30d' }],
   labels: [
-    { key: 'sm_check_id', value: '2319' },
     { key: 'team', value: 'payments' },
   ],
   ...overrides,
@@ -107,12 +106,6 @@ describe('SLODetailTab', () => {
     expect(await screen.findByText('30d SLI')).toBeInTheDocument();
   });
 
-  it('renders sm_check_id label when present', async () => {
-    const slo = baseSLO();
-    render(<SLODetailTab slo={slo} />);
-    expect(await screen.findByText(/sm_check_id:\s*2319/)).toBeInTheDocument();
-  });
-
   it('renders a View dashboard link when drillDownDashboardRef is present', async () => {
     const slo = baseSLO({
       readOnly: { drillDownDashboardRef: { UID: 'dash-abc' }, creationTimestamp: 0 },
@@ -142,55 +135,6 @@ describe('SLODetailTab', () => {
     const slo = baseSLO({ objectives: [{ value: 0.999, window: '7d' }] });
     render(<SLODetailTab slo={slo} />);
     expect(await screen.findByText('7d SLI')).toBeInTheDocument();
-  });
-
-  it('shows unlinked query-match info and link action when isUnlinkedQueryMatch is true', async () => {
-    const slo = baseSLO({ labels: [{ key: 'team', value: 'payments' }] });
-    const onLinkToCheck = jest.fn();
-    render(<SLODetailTab slo={slo} isUnlinkedQueryMatch onLinkToCheck={onLinkToCheck} />);
-    expect(await screen.findByText(/discovered via query match/i)).toBeInTheDocument();
-    expect(
-      await screen.findByText(/matched by its job label but has no explicit check link/i)
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /link to this check/i })).toBeInTheDocument();
-  });
-
-  it('shows linked-to-other-check banner when isLinkedToOtherCheck is true', async () => {
-    const slo = baseSLO({
-      labels: [
-        { key: 'sm_check_id', value: '99999' },
-        { key: 'team', value: 'payments' },
-      ],
-    });
-    render(<SLODetailTab slo={slo} isLinkedToOtherCheck onLinkToCheck={jest.fn()} />);
-    expect(
-      await screen.findByRole('status', { name: 'Linked to a different check' })
-    ).toBeInTheDocument();
-    expect(screen.getByText(/also filtering on instance/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /link to this check/i })).toBeInTheDocument();
-  });
-
-  it('does not show the query-match alert when neither flag is true', async () => {
-    const slo = baseSLO({ labels: [{ key: 'team', value: 'payments' }] });
-    render(<SLODetailTab slo={slo} isUnlinkedQueryMatch={false} />);
-    await screen.findByText(/99\.5%/);
-    expect(screen.queryByText(/discovered via query match/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/linked to a different check/i)).not.toBeInTheDocument();
-  });
-
-  it('calls onLinkToCheck when Link to this check is clicked', async () => {
-    const slo = baseSLO({ labels: [{ key: 'team', value: 'payments' }] });
-    const onLinkToCheck = jest.fn();
-    const user = userEvent.setup();
-    render(<SLODetailTab slo={slo} isUnlinkedQueryMatch onLinkToCheck={onLinkToCheck} />);
-    await user.click(await screen.findByRole('button', { name: /link to this check/i }));
-    expect(onLinkToCheck).toHaveBeenCalledTimes(1);
-  });
-
-  it('disables the link button while isLinking is true', async () => {
-    const slo = baseSLO({ labels: [{ key: 'team', value: 'payments' }] });
-    render(<SLODetailTab slo={slo} isUnlinkedQueryMatch onLinkToCheck={jest.fn()} isLinking />);
-    expect(await screen.findByRole('button', { name: /link to this check/i })).toBeDisabled();
   });
 
   it('renders a Delete button when onDelete is provided', async () => {

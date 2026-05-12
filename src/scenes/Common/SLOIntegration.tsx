@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { usePluginComponent } from '@grafana/runtime';
 import { Box, Button, Drawer, Stack, Tab, TabsBar, Text } from '@grafana/ui';
 
-import type { SLO } from './useSmCheckSLOs.types';
+import type { SLO } from './useSLOCheckLinks.types';
 import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { Feedback } from 'components/Feedback/Feedback';
@@ -11,8 +11,7 @@ import { Feedback } from 'components/Feedback/Feedback';
 import { buildSLOWizardInitialValuesForCheck, type SLOLabel, type SLORatioQuery } from './CreateSLOButton.utils';
 import { SLODetailTab } from './SLODetailTab';
 import { SLOIcon } from './SLOIcon';
-import { linkSLOToCheck, smCheckSLOsQueryKeys, useSmCheckSLOs } from './useSmCheckSLOs';
-import { isSLOLinkedByLabel } from './useSmCheckSLOs.utils';
+import { sloQueryKeys, useDeleteSLO, useSLOsForCheck } from './useSLOCheckLinks';
 
 const NEW_SLO_TAB_KEY = 'new-slo';
 const SLO_COMPONENT_ID = 'grafana-slo-app/wizard/v1';
@@ -80,12 +79,12 @@ type SLOIntegrationProps = {
 };
 
 export function SLOIntegration({ check }: SLOIntegrationProps) {
-  const { slos, isLoading, updateSLO, deleteSLO } = useSmCheckSLOs(check.id, check.job);
+  const { slos, isLoading } = useSLOsForCheck(check.id);
+  const deleteSLO = useDeleteSLO();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('');
   const [editingUuid, setEditingUuid] = useState<string | undefined>();
   const [showNewSLOTab, setShowNewSLOTab] = useState(false);
-  const [linkingUuid, setLinkingUuid] = useState<string | undefined>();
   const [deletingUuid, setDeletingUuid] = useState<string | undefined>();
   const queryClient = useQueryClient();
   const metricsDS = useMetricsDS();
@@ -94,26 +93,9 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
     usePluginComponent<SLOComponentPropsV1>(SLO_COMPONENT_ID);
 
   const handleSLOListInvalidate = useCallback(
-    () => queryClient.invalidateQueries({ queryKey: smCheckSLOsQueryKeys.all }),
+    () => queryClient.invalidateQueries({ queryKey: sloQueryKeys.all }),
     [queryClient]
   );
-
-  const handleLinkToCheck = useCallback(async () => {
-    const slo = slos.find((s) => s.uuid === activeTabKey);
-    const checkId = check.id !== undefined ? String(check.id) : '';
-    if (!slo || !checkId) {
-      return;
-    }
-    setLinkingUuid(slo.uuid);
-    try {
-      const result = await linkSLOToCheck(slo, checkId, updateSLO);
-      if (!result.error) {
-        handleSLOListInvalidate();
-      }
-    } finally {
-      setLinkingUuid(undefined);
-    }
-  }, [activeTabKey, check.id, slos, updateSLO, handleSLOListInvalidate]);
 
   const handleDeleteSLO = useCallback(
     async (slo: SLO) => {
@@ -141,17 +123,6 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
 
   const countLabel = slos.length > 0 ? (slos.length === 1 ? '1 SLO' : `${slos.length} SLOs`) : 'SLOs';
   const activeSLO = slos.find((slo) => slo.uuid === activeTabKey);
-  const checkIdStr = check.id !== undefined ? String(check.id) : '';
-  const hasSmCheckIdLabel = Boolean(activeSLO?.labels?.some((l) => l.key === 'sm_check_id'));
-  const isLinkedToThisCheck = Boolean(
-    activeSLO && checkIdStr && isSLOLinkedByLabel(activeSLO, checkIdStr)
-  );
-  const isUnlinkedQueryMatch = Boolean(
-    activeSLO && checkIdStr && !hasSmCheckIdLabel && !isLinkedToThisCheck
-  );
-  const isLinkedToOtherCheck = Boolean(
-    activeSLO && checkIdStr && hasSmCheckIdLabel && !isLinkedToThisCheck
-  );
   const isEditingActiveSLO = Boolean(activeSLO && editingUuid === activeSLO.uuid);
   const isWizardReady = !isWizardLoading && Boolean(SLOComponent) && Boolean(metricsDsUid);
 
@@ -252,10 +223,6 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
                   onEdit={(slo) => setEditingUuid(slo.uuid)}
                   onDelete={handleDeleteSLO}
                   isDeleting={Boolean(activeSLO && deletingUuid === activeSLO.uuid)}
-                  isUnlinkedQueryMatch={isUnlinkedQueryMatch}
-                  isLinkedToOtherCheck={isLinkedToOtherCheck}
-                  onLinkToCheck={handleLinkToCheck}
-                  isLinking={Boolean(activeSLO && linkingUuid === activeSLO.uuid)}
                 />
               )
             ) : null}
