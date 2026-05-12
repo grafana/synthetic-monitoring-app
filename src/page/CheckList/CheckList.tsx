@@ -10,6 +10,7 @@ import { getTotalChecksPerMonth } from 'checkUsageCalc';
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import { CheckFolderAccessValueProvider } from 'contexts/CheckFolderAccessContext';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import {
   CheckRuntimeAlertStates,
@@ -22,6 +23,7 @@ import { useAllFolders } from 'data/useFolders';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
@@ -139,10 +141,11 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus, defaultFolderUid);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
-  const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
+  const folderAccess = useCheckFolderAccess(sortedChecks);
+  const { visibleChecks } = folderAccess;
 
-  const isAllSelected = selectedCheckIds.size === filteredChecks.length;
-  const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
+  const currentPageChecks = visibleChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
+  const totalPages = Math.ceil(visibleChecks.length / CHECKS_PER_PAGE);
 
   const handleFilterChange = (filters: CheckFiltersType, type: FilterType) => {
     setCurrentPage(1);
@@ -216,12 +219,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     }
   };
 
+  const isAllSelected = selectedCheckIds.size === visibleChecks.length;
+
   const handleSelectAll = () => {
     if (isAllSelected) {
       return handleUnselectAll();
     }
-
-    const allCheckIds = sortedChecks.map((check) => check.id!);
+    const allCheckIds = visibleChecks.map((check) => check.id!);
     setSelectedChecksIds(new Set(allCheckIds));
   };
 
@@ -234,14 +238,30 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     setSelectedChecksIds(new Set());
   };
 
+  const handleSelectChecks = (checkIds: number[]) => {
+    setSelectedChecksIds((prev) => {
+      const next = new Set(prev);
+      checkIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const handleDeselectChecks = (checkIds: number[]) => {
+    setSelectedChecksIds((prev) => {
+      const next = new Set(prev);
+      checkIds.forEach((id) => next.delete(id));
+      return next;
+    });
+  };
+
   if (checks.length === 0) {
     return <ChecksEmptyState />;
   }
 
   return (
-    <>
+    <CheckFolderAccessValueProvider value={folderAccess}>
       <CheckListHeader
-        checks={filteredChecks}
+        checks={visibleChecks}
         checkFilters={checkFiltersWithStatus}
         currentPageChecks={currentPageChecks}
         folders={allFolders}
@@ -262,7 +282,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       />
       {viewType === CheckListViewType.Folder ? (
         <CheckListFolderView
-          checks={sortedChecks}
+          checks={visibleChecks}
           folders={allFolders}
           foldersMap={foldersMap}
           foldersLoading={isFoldersLoading}
@@ -275,13 +295,14 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           onStatusSelect={handleStatusSelect}
           onTypeSelect={handleTypeSelect}
           onToggleCheckbox={handleCheckSelect}
+          onSelectChecks={handleSelectChecks}
+          onDeselectChecks={handleDeselectChecks}
           selectedCheckIds={selectedCheckIds}
         />
       ) : (
         <div>
           <section className="card-section card-list-layout-list">
             <div className={styles.list}>
-              {/* Inline style is required: viewTransitionName must be unique per element and can't be set via a shared CSS class */}
               {currentPageChecks.map((check) => (
                 <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
                 <CheckListItem
@@ -308,7 +329,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           )}
         </div>
       )}
-    </>
+    </CheckFolderAccessValueProvider>
   );
 };
 

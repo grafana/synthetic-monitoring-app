@@ -4,9 +4,10 @@ import { Button, ButtonCascader, ConfirmModal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
-import { getUserPermissions } from 'data/permissions';
-import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 import { BulkActionsModal } from 'page/CheckList/components/BulkActionsModal';
+import { BulkMoveToFolderModal } from 'page/CheckList/components/BulkMoveToFolderModal';
+
+import { useBulkActions } from './BulkActions.hooks';
 
 interface BulkActionsProps {
   checks: Check[];
@@ -19,30 +20,22 @@ enum BulkAction {
 }
 
 export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
-  const { canWriteChecks, canDeleteChecks } = getUserPermissions();
   const styles = useStyles2(getStyles);
   const [bulkEditAction, setBulkEditAction] = useState<BulkAction | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const { mutate: bulkUpdateChecks } = useBulkUpdateChecks({ onSuccess: onResolved });
-
-  const handleDeleteResolved = () => {
-    setShowDeleteModal(false);
-    onResolved();
-  };
-
-  const { mutate: bulkDeleteChecks } = useBulkDeleteChecks({ onSuccess: handleDeleteResolved });
-
-  const handleDisableSelectedChecks = () => {
-    bulkUpdateChecks(checks.filter((check) => check.enabled).map((check) => ({ ...check, enabled: false })));
-  };
-
-  const handleEnableSelectedChecks = () => {
-    bulkUpdateChecks(checks.filter((check) => !check.enabled).map((check) => ({ ...check, enabled: true })));
-  };
-
-  const handleDeleteSelectedChecks = () => {
-    bulkDeleteChecks(checks.map((check) => check.id!));
-  };
+  const {
+    isFoldersEnabled,
+    canWriteAll,
+    canDeleteAll,
+    showDeleteModal,
+    setShowDeleteModal,
+    showMoveToFolderModal,
+    setShowMoveToFolderModal,
+    handleMoveResolved,
+    enableChecks,
+    disableChecks,
+    deleteChecks,
+    deleteModalProps,
+  } = useBulkActions({ checks, onResolved });
 
   return (
     <>
@@ -62,7 +55,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
                 value: BulkAction.Remove,
               },
             ]}
-            disabled={!canWriteChecks}
+            disabled={!canWriteAll}
             onChange={(value: string[]) => {
               const action = value[0] as BulkAction;
               setBulkEditAction(action);
@@ -71,12 +64,24 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
             Bulk Edit Probes
           </ButtonCascader>
         )}
+        {isFoldersEnabled && (
+          <Button
+            type="button"
+            variant="secondary"
+            fill="text"
+            icon="folder"
+            onClick={() => setShowMoveToFolderModal(true)}
+            disabled={!canWriteAll}
+          >
+            Move to folder
+          </Button>
+        )}
         <Button
           type="button"
           variant="primary"
           fill="text"
-          onClick={handleEnableSelectedChecks}
-          disabled={!canWriteChecks}
+          onClick={enableChecks}
+          disabled={!canWriteAll}
         >
           Enable
         </Button>
@@ -84,8 +89,8 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           type="button"
           variant="secondary"
           fill="text"
-          onClick={handleDisableSelectedChecks}
-          disabled={!canWriteChecks}
+          onClick={disableChecks}
+          disabled={!canWriteAll}
         >
           Disable
         </Button>
@@ -95,7 +100,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           variant="destructive"
           fill="text"
           onClick={() => setShowDeleteModal(true)}
-          disabled={!canDeleteChecks}
+          disabled={!canDeleteAll}
         >
           Delete
         </Button>
@@ -111,13 +116,17 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
       {showDeleteModal && (
         <ConfirmModal
           isOpen={showDeleteModal}
-          title={`Delete ${checks.length} checks`}
-          body="Are you sure you want to delete these checks?"
-          confirmText="Delete checks"
-          onConfirm={handleDeleteSelectedChecks}
+          {...deleteModalProps}
+          onConfirm={deleteChecks}
           onDismiss={() => setShowDeleteModal(false)}
         />
       )}
+      <BulkMoveToFolderModal
+        checks={checks}
+        isOpen={showMoveToFolderModal}
+        onDismiss={() => setShowMoveToFolderModal(false)}
+        onMoved={handleMoveResolved}
+      />
     </>
   );
 };

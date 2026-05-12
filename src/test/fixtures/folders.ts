@@ -44,4 +44,6 @@ export const FOLDER_READONLY: GrafanaFolder = {
   canSave: false,
 };
 
+export const FOLDER_FORBIDDEN_UID = 'folder-forbidden';
+
 export const MOCK_FOLDERS: GrafanaFolder[] = [DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_STAGING, FOLDER_READONLY];
