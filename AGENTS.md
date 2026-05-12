@@ -200,3 +200,19 @@ Agent skill (auto-trigger workflow): [`.agents/skills/write-tests/SKILL.md`](./.
 - `yarn test <filename>` runs a single file; `yarn test:changed` watches changed files.
 - Tests use MSW handlers from `src/test/handlers` for API mocking.
 - The test suite passes cleanly with no configuration needed beyond `yarn install`.
+
+### Naming conventions
+
+- "SLO" (Service Level Objective) is an acronym and MUST be written as `SLO`
+  in all identifiers and filenames -- never `Slo`.
+  - Good: `SLOIntegration`, `useSmCheckSLOs`, `linkSLOToCheck`, `handleDeleteSLO`,
+    `LinkedSLOLabels`, `SLODetailTab.tsx`.
+  - Bad: `SloIntegration`, `useSmCheckSlos`, `linkSloToCheck`.
+- Exception (external contract): the `grafana-slo-app` plugin exposes its runtime
+  function as an object with keys `getSlos`, `updateSlo`, `deleteSlo`. Those keys
+  must be referenced exactly as the plugin defines them (e.g.
+  `api.updateSlo(payload)`). Local wrappers around the API should still use
+  `SLO` (e.g. our hook returns `updateSLO` which internally calls
+  `api.updateSlo`).
+- Single-word lowercase variables like `slo` and `slos` (e.g. `slos.find((slo) => ...)`)
+  follow standard camelCase rules and remain lowercase.

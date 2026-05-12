@@ -19,18 +19,18 @@ jest.mock('./EditCheckButton', () => ({
   EditCheckButton: () => <button type="button">Edit check</button>,
 }));
 
-jest.mock('./SloIntegration', () => ({
-  SloIntegration: ({ check }: { check: { id: number } }) => (
-    <div data-testid="slo-integration">SloIntegration for {check.id}</div>
+jest.mock('./SLOIntegration', () => ({
+  SLOIntegration: ({ check }: { check: { id: number } }) => (
+    <div data-testid="slo-integration">SLOIntegration for {check.id}</div>
   ),
 }));
 
 describe('DashboardHeader', () => {
-  it('renders SloIntegration for the check', async () => {
+  it('renders SLOIntegration for the check', async () => {
     render(<DashboardHeader annotations={[]} check={BASIC_HTTP_CHECK} />);
 
     expect(await screen.findByTestId('slo-integration')).toHaveTextContent(
-      `SloIntegration for ${BASIC_HTTP_CHECK.id}`
+      `SLOIntegration for ${BASIC_HTTP_CHECK.id}`
     );
   });
 });

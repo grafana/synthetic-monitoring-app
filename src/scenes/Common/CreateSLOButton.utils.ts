@@ -1,8 +1,8 @@
-import type { Slo } from './useSmCheckSlos.types';
+import type { SLO } from './useSmCheckSLOs.types';
 import { Check } from 'types';
 
 export type SLOLabel = { key: string; value: string };
-type LinkedSloLabels = Pick<Slo, 'labels'>;
+type LinkedSLOLabels = Pick<SLO, 'labels'>;
 
 export function buildSLOLabels(check: Check): SLOLabel[] {
   return [
@@ -63,8 +63,8 @@ export type SLOWizardInitialValues = {
 export const SM_OBJECTIVE_KIND_LABEL_KEY = 'sm_objective_kind';
 export const REACHABILITY_OBJECTIVE_KIND_VALUE = 'reachability';
 
-export function linkedSlosHaveReachabilityObjectiveKind(linkedSlos: LinkedSloLabels[]): boolean {
-  return linkedSlos.some((slo) =>
+export function linkedSLOsHaveReachabilityObjectiveKind(linkedSLOs: LinkedSLOLabels[]): boolean {
+  return linkedSLOs.some((slo) =>
     slo.labels?.some(
       (label) => label.key === SM_OBJECTIVE_KIND_LABEL_KEY && label.value === REACHABILITY_OBJECTIVE_KIND_VALUE
     )
@@ -73,9 +73,9 @@ export function linkedSlosHaveReachabilityObjectiveKind(linkedSlos: LinkedSloLab
 
 export function buildSLOWizardInitialValuesForCheck(
   check: Check,
-  linkedSlos: LinkedSloLabels[]
+  linkedSLOs: LinkedSLOLabels[]
 ): SLOWizardInitialValues {
-  if (linkedSlosHaveReachabilityObjectiveKind(linkedSlos)) {
+  if (linkedSLOsHaveReachabilityObjectiveKind(linkedSLOs)) {
     return {
       labels: [{ key: 'sm_check_id', value: String(check.id) }],
     };

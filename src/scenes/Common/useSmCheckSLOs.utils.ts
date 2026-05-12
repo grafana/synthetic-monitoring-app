@@ -1,17 +1,17 @@
-import type { Slo } from './useSmCheckSlos.types';
+import type { SLO } from './useSmCheckSLOs.types';
 
 const SM_METRICS = [/\bprobe_success\b/, /\bprobe_all_success/, /\bsm_http_\w+/, /\bsm_dns_\w+/, /\bsm_ping_\w+/];
 
-export function filterSlosByLabel(slos: Slo[], checkId: string): Slo[] {
+export function filterSLOsByLabel(slos: SLO[], checkId: string): SLO[] {
   return slos.filter((slo) => slo.labels?.some((l) => l.key === 'sm_check_id' && l.value === checkId));
 }
 
 /** True when this SLO is explicitly linked to the Synthetic Monitoring check via `sm_check_id`. */
-export function isSloLinkedByLabel(slo: Slo, checkId: string): boolean {
+export function isSLOLinkedByLabel(slo: SLO, checkId: string): boolean {
   return Boolean(slo.labels?.some((l) => l.key === 'sm_check_id' && l.value === checkId));
 }
 
-export function getSloQueryStrings(slo: Slo): string[] {
+export function getSLOQueryStrings(slo: SLO): string[] {
   const q = slo.query;
   if (!q) {
     return [];
@@ -38,19 +38,19 @@ export function extractLabelValues(query: string, label: string): string[] {
   return values;
 }
 
-export function sloMatchesSmCheck(slo: Slo, job: string): boolean {
-  const queries = getSloQueryStrings(slo);
+export function sloMatchesSmCheck(slo: SLO, job: string): boolean {
+  const queries = getSLOQueryStrings(slo);
   return queries.some((qs) => SM_METRICS.some((p) => p.test(qs)) && extractLabelValues(qs, 'job').includes(job));
 }
 
-function isSloActive(slo: Slo): boolean {
+function isSLOActive(slo: SLO): boolean {
   return slo.readOnly?.status?.type !== 'deleting';
 }
 
 /** Label matches first; query-string fallback for manually-created SLOs; deduped by object identity. Excludes SLOs being deleted. */
-export function getMatchingSlosForSmCheck(slos: Slo[], checkId: string, job: string): Slo[] {
-  const active = slos.filter(isSloActive);
-  const byLabel = filterSlosByLabel(active, checkId);
+export function getMatchingSLOsForSmCheck(slos: SLO[], checkId: string, job: string): SLO[] {
+  const active = slos.filter(isSLOActive);
+  const byLabel = filterSLOsByLabel(active, checkId);
   const byLabelSet = new Set(byLabel);
   const byQuery = active.filter((slo) => !byLabelSet.has(slo) && sloMatchesSmCheck(slo, job));
   return [...byLabel, ...byQuery];
