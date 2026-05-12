@@ -10,6 +10,16 @@ There are two different "modes" for developing this plugin. You can either work 
 - Make sure you have Docker installed
 - Clone this repo to your local machine
 
+### Install
+
+After cloning and running `yarn install`, you need to manually set up git hooks:
+
+```bash
+yarn prepare
+```
+
+This is required because lifecycle scripts are disabled in `.yarnrc` for supply-chain security. The `prepare` script sets up [Husky](https://typicode.github.io/husky/) git hooks (commit message linting, pre-push checks). You only need to run this once per clone.
+
 ### Set up
 
 We need to configure our local Grafana using [provisioning](http://grafana.com/docs/grafana/latest/administration/provisioning/). Provisioning does three things for us:
