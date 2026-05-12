@@ -4,18 +4,20 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
 
-import type { SLO } from './useSmCheckSLOs.types';
+import type { SLO } from './useSLOCheckLinks.types';
 
 import { SLOIntegration } from './SLOIntegration';
-import { smCheckSLOsQueryKeys } from './useSmCheckSLOs';
+import { sloQueryKeys } from './useSLOCheckLinks';
 
-const mockUseSmCheckSLOs = jest.fn();
+const mockUseSLOsForCheck = jest.fn();
+const mockUseDeleteSLO = jest.fn();
 
-jest.mock('./useSmCheckSLOs', () => {
-  const actual = jest.requireActual<typeof import('./useSmCheckSLOs')>('./useSmCheckSLOs');
+jest.mock('./useSLOCheckLinks', () => {
+  const actual = jest.requireActual<typeof import('./useSLOCheckLinks')>('./useSLOCheckLinks');
   return {
     ...actual,
-    useSmCheckSLOs: (...args: unknown[]) => mockUseSmCheckSLOs(...args),
+    useSLOsForCheck: (...args: unknown[]) => mockUseSLOsForCheck(...args),
+    useDeleteSLO: () => mockUseDeleteSLO(),
   };
 });
 
@@ -50,33 +52,30 @@ const makeSLO = (overrides: Partial<SLO> = {}): SLO => ({
   description: '',
   query: { type: 'freeform', freeform: { query: 'up' } },
   objectives: [{ value: 0.99, window: '7d' }],
-  labels: [{ key: 'sm_check_id', value: String(BASIC_HTTP_CHECK.id) }],
+  labels: [],
   ...overrides,
 });
 
-let defaultUpdateSLO: jest.Mock;
 let defaultDeleteSLO: jest.Mock;
 
 function mockHookReturn(overrides: {
   slos: SLO[];
   isLoading?: boolean;
   error?: undefined;
-  updateSLO?: jest.Mock;
   deleteSLO?: jest.Mock;
 }) {
-  mockUseSmCheckSLOs.mockReturnValue({
+  mockUseSLOsForCheck.mockReturnValue({
     slos: overrides.slos,
     isLoading: overrides.isLoading ?? false,
     error: overrides.error ?? undefined,
-    updateSLO: overrides.updateSLO ?? defaultUpdateSLO,
-    deleteSLO: overrides.deleteSLO ?? defaultDeleteSLO,
   });
+  mockUseDeleteSLO.mockReturnValue(overrides.deleteSLO ?? defaultDeleteSLO);
 }
 
 describe('SLOIntegration', () => {
   beforeEach(() => {
-    mockUseSmCheckSLOs.mockReset();
-    defaultUpdateSLO = jest.fn().mockResolvedValue({ data: {} });
+    mockUseSLOsForCheck.mockReset();
+    mockUseDeleteSLO.mockReset();
     defaultDeleteSLO = jest.fn().mockResolvedValue({ data: {} });
     jest.mocked(usePluginComponent).mockReturnValue({
       isLoading: false,
@@ -129,7 +128,7 @@ describe('SLOIntegration', () => {
     await user.click(await screen.findByRole('button', { name: /slos/i }));
     await user.click(await screen.findByRole('button', { name: /complete wizard/i }));
 
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: smCheckSLOsQueryKeys.all });
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: sloQueryKeys.all });
   });
 
   it('shows "1 SLO" and opens a drawer with one tab and detail content', async () => {
@@ -186,50 +185,6 @@ describe('SLOIntegration', () => {
     expect(await screen.findByText('Experimental')).toBeInTheDocument();
   });
 
-  it('shows the query-match banner when the SLO is not linked via sm_check_id', async () => {
-    const slo = makeSLO({
-      uuid: 'query-only',
-      labels: [{ key: 'team', value: 'platform' }],
-    });
-    mockHookReturn({ slos: [slo] });
-
-    const { user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
-    await user.click(await screen.findByRole('button', { name: '1 SLO' }));
-
-    expect(await screen.findByText(/discovered via query match/i)).toBeInTheDocument();
-    expect(
-      await screen.findByText(/matched by its job label but has no explicit check link/i)
-    ).toBeInTheDocument();
-  });
-
-  it('shows the linked-to-other-check banner when sm_check_id points at a different check', async () => {
-    const slo = makeSLO({
-      uuid: 'other-check',
-      name: 'Other check SLO',
-      labels: [{ key: 'sm_check_id', value: '99999' }],
-    });
-    mockHookReturn({ slos: [slo] });
-
-    const { user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
-    await user.click(await screen.findByRole('button', { name: '1 SLO' }));
-
-    expect(
-      await screen.findByRole('status', { name: 'Linked to a different check' })
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/discovered via query match/i)).not.toBeInTheDocument();
-  });
-
-  it('does not show the query-match banner when sm_check_id matches the check', async () => {
-    const slo = makeSLO({ uuid: 'linked', name: 'Linked SLO' });
-    mockHookReturn({ slos: [slo] });
-
-    const { user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
-    await user.click(await screen.findByRole('button', { name: '1 SLO' }));
-
-    await screen.findByRole('dialog');
-    expect(screen.queryByText(/discovered via query match/i)).not.toBeInTheDocument();
-  });
-
   it('calls deleteSLO and invalidates queries after confirming deletion', async () => {
     const deleteSLO = jest.fn().mockResolvedValue({ data: {} });
     const slo = makeSLO({ uuid: 'delete-me', name: 'Doomed SLO' });
@@ -245,26 +200,7 @@ describe('SLOIntegration', () => {
     await waitFor(() => {
       expect(deleteSLO).toHaveBeenCalledWith('delete-me');
     });
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: smCheckSLOsQueryKeys.all });
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: sloQueryKeys.all });
   });
 
-  it('calls updateSLO and invalidates linked-SLO queries after a successful link', async () => {
-    const updateSLO = jest.fn().mockResolvedValue({ data: {} });
-    const slo = makeSLO({
-      uuid: 'link-me',
-      labels: [{ key: 'team', value: 'platform' }],
-    });
-    mockHookReturn({ slos: [slo], updateSLO });
-
-    const { queryClient, user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
-    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries');
-
-    await user.click(await screen.findByRole('button', { name: '1 SLO' }));
-    await user.click(await screen.findByRole('button', { name: /link to this check/i }));
-
-    await waitFor(() => {
-      expect(updateSLO).toHaveBeenCalled();
-    });
-    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: smCheckSLOsQueryKeys.all });
-  });
 });

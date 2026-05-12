@@ -1,16 +1,16 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { usePluginFunctions } from '@grafana/runtime';
 
-import type { SLO } from './useSmCheckSLOs.types';
+import type { SLO } from './useSLOCheckLinks.types';
 import { useExternalDependencies } from 'contexts/ExternalDependenciesContext';
+import { useChecks } from 'data/useChecks';
 
-import { SLO_APP_API_EXTENSION_POINT_ID } from './useSmCheckSLOs.constants';
-import { getMatchingSLOsForSmCheck } from './useSmCheckSLOs.utils';
+import { SLO_APP_API_EXTENSION_POINT_ID } from './useSLOCheckLinks.constants';
+import { buildSLOCheckLinkMap } from './useSLOCheckLinks.utils';
 
-export const smCheckSLOsQueryKeys = {
-  all: ['sm-check-slos'] as const,
-  matches: (checkId: string) => [...smCheckSLOsQueryKeys.all, checkId] as const,
+export const sloQueryKeys = {
+  all: ['slos'] as const,
 };
 
 export type SLOPluginUpdateResult = {
@@ -31,18 +31,6 @@ export type GrafanaSLOPluginApi = {
   updateSlo?: (slo: SLO) => Promise<SLOPluginUpdateResult>;
   deleteSlo?: (uuid: string) => Promise<SLOPluginDeleteResult>;
 };
-
-/** Adds `sm_check_id` and persists via SLO plugin `updateSlo` (drops client-only `readOnly`). */
-export async function linkSLOToCheck(
-  slo: SLO,
-  checkId: string,
-  updateSLO: (payload: SLO) => Promise<SLOPluginUpdateResult>
-): Promise<SLOPluginUpdateResult> {
-  const labels = [...(slo.labels ?? []).filter((l) => l.key !== 'sm_check_id')];
-  labels.push({ key: 'sm_check_id', value: checkId });
-  const { readOnly: _readOnly, ...rest } = slo;
-  return updateSLO({ ...rest, labels });
-}
 
 async function fetchSLOsList(getApi: () => Promise<GrafanaSLOPluginApi>): Promise<SLO[]> {
   try {
@@ -68,8 +56,7 @@ async function fetchSLOsList(getApi: () => Promise<GrafanaSLOPluginApi>): Promis
   }
 }
 
-export function useSmCheckSLOs(checkId: number | undefined, job: string) {
-  const id = checkId !== undefined ? String(checkId) : '';
+export function useAllSLOs() {
   const { slo } = useExternalDependencies();
   const pluginInstalled = slo.installed;
   const pluginCheckLoading = slo.isLoading;
@@ -79,10 +66,10 @@ export function useSmCheckSLOs(checkId: number | undefined, job: string) {
   });
 
   const listFn = functions[0]?.fn;
-  const canFetch = Boolean(id) && pluginInstalled && !functionsLoading && typeof listFn === 'function';
+  const canFetch = pluginInstalled && !functionsLoading && typeof listFn === 'function';
 
   const query = useQuery({
-    queryKey: [...smCheckSLOsQueryKeys.matches(id), listFn ?? 'pending'],
+    queryKey: [...sloQueryKeys.all, listFn],
     queryFn: () => {
       if (!listFn) {
         return Promise.resolve<SLO[]>([]);
@@ -90,10 +77,54 @@ export function useSmCheckSLOs(checkId: number | undefined, job: string) {
       return fetchSLOsList(listFn);
     },
     enabled: canFetch,
-    select: (slos) => getMatchingSLOsForSmCheck(slos, id, job),
   });
 
-  const updateSLO = useCallback(
+  return {
+    slos: query.data ?? [],
+    isLoading: pluginCheckLoading || functionsLoading || (canFetch && query.isLoading),
+    error: query.error instanceof Error ? query.error : query.error ? new Error(String(query.error)) : undefined,
+  };
+}
+
+export function useSLOCheckLinkMap() {
+  const { slos, isLoading: slosLoading, error: slosError } = useAllSLOs();
+  const { data: checks, isLoading: checksLoading, error: checksError } = useChecks();
+
+  const map = useMemo(
+    () => buildSLOCheckLinkMap(slos, checks ?? []),
+    [slos, checks]
+  );
+
+  return {
+    map,
+    isLoading: slosLoading || checksLoading,
+    error: slosError ?? (checksError instanceof Error ? checksError : undefined),
+  };
+}
+
+export function useSLOsForCheck(checkId: number | undefined) {
+  const { map, isLoading, error } = useSLOCheckLinkMap();
+  const slos = checkId !== undefined ? (map.slosByCheckId.get(checkId) ?? []) : [];
+  return { slos, isLoading, error };
+}
+
+export function useChecksForSLO(sloUuid: string) {
+  const { map, isLoading, error } = useSLOCheckLinkMap();
+  const checks = map.checksBySLOUuid.get(sloUuid) ?? [];
+  return { checks, isLoading, error };
+}
+
+function useSLOPluginApi() {
+  const { functions, isLoading } = usePluginFunctions<() => Promise<GrafanaSLOPluginApi>>({
+    extensionPointId: SLO_APP_API_EXTENSION_POINT_ID,
+  });
+  return { listFn: functions[0]?.fn, isLoading };
+}
+
+export function useUpdateSLO() {
+  const { listFn } = useSLOPluginApi();
+
+  return useCallback(
     async (payload: SLO): Promise<SLOPluginUpdateResult> => {
       if (!listFn) {
         return { error: new Error('SLO plugin API is not available') };
@@ -106,8 +137,12 @@ export function useSmCheckSLOs(checkId: number | undefined, job: string) {
     },
     [listFn]
   );
+}
 
-  const deleteSLO = useCallback(
+export function useDeleteSLO() {
+  const { listFn } = useSLOPluginApi();
+
+  return useCallback(
     async (uuid: string): Promise<SLOPluginDeleteResult> => {
       if (!listFn) {
         return { error: new Error('SLO plugin API is not available') };
@@ -120,12 +155,5 @@ export function useSmCheckSLOs(checkId: number | undefined, job: string) {
     },
     [listFn]
   );
-
-  return {
-    slos: query.data ?? [],
-    isLoading: pluginCheckLoading || functionsLoading || (canFetch && query.isLoading),
-    error: query.error instanceof Error ? query.error : query.error ? new Error(String(query.error)) : undefined,
-    updateSLO,
-    deleteSLO,
-  };
 }
+

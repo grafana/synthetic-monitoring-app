@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTimeRange } from '@grafana/scenes-react';
 
-import type { SLO } from './useSmCheckSLOs.types';
+import type { SLO } from './useSLOCheckLinks.types';
 import { InstantMetric } from 'datasource/responses.types';
 import { queryInstantMetric } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';

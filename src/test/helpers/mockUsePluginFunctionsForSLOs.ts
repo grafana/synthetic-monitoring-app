@@ -1,6 +1,6 @@
 import { PluginExtensionTypes } from '@grafana/data';
 
-import type { SLO } from 'scenes/Common/useSmCheckSLOs.types';
+import type { SLO } from 'scenes/Common/useSLOCheckLinks.types';
 
 function getRuntimeModule(): typeof import('@grafana/runtime') {
   return require('@grafana/runtime');

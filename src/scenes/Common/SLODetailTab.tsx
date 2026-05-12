@@ -2,7 +2,6 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
-  Alert,
   Badge,
   Button,
   ConfirmModal,
@@ -17,7 +16,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import type { SLO } from './useSmCheckSLOs.types';
+import type { SLO } from './useSLOCheckLinks.types';
 
 import { useSLOMetrics } from './SLODetailTab.hooks';
 
@@ -26,12 +25,6 @@ export type SLODetailTabProps = {
   onEdit?: (slo: SLO) => void;
   onDelete?: (slo: SLO) => void | Promise<void>;
   isDeleting?: boolean;
-  /** Matched by query only — no `sm_check_id` label. */
-  isUnlinkedQueryMatch?: boolean;
-  /** Has `sm_check_id` for a different check; query also matched this check's job. */
-  isLinkedToOtherCheck?: boolean;
-  onLinkToCheck?: () => void | Promise<void>;
-  isLinking?: boolean;
 };
 
 function formatObjectivePercent(value: number): string {
@@ -126,10 +119,6 @@ export function SLODetailTab({
   onEdit,
   onDelete,
   isDeleting,
-  isUnlinkedQueryMatch,
-  isLinkedToOtherCheck,
-  onLinkToCheck,
-  isLinking,
 }: SLODetailTabProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const styles = useStyles2(getStyles);
@@ -139,48 +128,8 @@ export function SLODetailTab({
   const dashboardHref = dashboardUid ? `${config.appSubUrl ?? ''}/d/${dashboardUid}` : undefined;
   const window = primaryObjective?.window ?? '28d';
 
-  const showQueryMatchBanner = Boolean(isUnlinkedQueryMatch || isLinkedToOtherCheck);
-
   return (
     <Stack direction="column" gap={2}>
-      {showQueryMatchBanner ? (
-        <Alert
-          severity="info"
-          title={
-            isLinkedToOtherCheck ? 'Linked to a different check' : 'Discovered via query match'
-          }
-        >
-          <Stack direction="column" gap={1}>
-            <Text variant="bodySmall">
-              {isLinkedToOtherCheck ? (
-                <>
-                  This SLO is linked to a different check (via <code>sm_check_id</code>) but its query also matches
-                  this check&apos;s job. If it belongs here, re-link it below. If it doesn&apos;t, make the SLO query
-                  more precise by also filtering on instance.
-                </>
-              ) : (
-                <>
-                  This SLO was matched by its job label but has no explicit check link. If it belongs to this check,
-                  link it below. If it was matched incorrectly, make the SLO query more precise by adding the instance
-                  label.
-                </>
-              )}
-            </Text>
-            <div>
-              <Button
-                type="button"
-                variant="secondary"
-                icon="link"
-                disabled={Boolean(isLinking)}
-                onClick={() => void onLinkToCheck?.()}
-              >
-                Link to this check
-              </Button>
-            </div>
-          </Stack>
-        </Alert>
-      ) : null}
-
       {slo.description ? (
         <Text variant="body" color="secondary">
           {slo.description}

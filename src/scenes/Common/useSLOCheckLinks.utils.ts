@@ -1,15 +1,7 @@
-import type { SLO } from './useSmCheckSLOs.types';
+import type { SLO } from './useSLOCheckLinks.types';
+import type { Check } from 'types';
 
 const SM_METRICS = [/\bprobe_success\b/, /\bprobe_all_success/, /\bsm_http_\w+/, /\bsm_dns_\w+/, /\bsm_ping_\w+/];
-
-export function filterSLOsByLabel(slos: SLO[], checkId: string): SLO[] {
-  return slos.filter((slo) => slo.labels?.some((l) => l.key === 'sm_check_id' && l.value === checkId));
-}
-
-/** True when this SLO is explicitly linked to the Synthetic Monitoring check via `sm_check_id`. */
-export function isSLOLinkedByLabel(slo: SLO, checkId: string): boolean {
-  return Boolean(slo.labels?.some((l) => l.key === 'sm_check_id' && l.value === checkId));
-}
 
 export function getSLOQueryStrings(slo: SLO): string[] {
   const q = slo.query;
@@ -38,7 +30,7 @@ export function extractLabelValues(query: string, label: string): string[] {
   return values;
 }
 
-export function sloMatchesSmCheck(slo: SLO, job: string): boolean {
+export function sloMatchesSMCheck(slo: SLO, job: string): boolean {
   const queries = getSLOQueryStrings(slo);
   return queries.some((qs) => SM_METRICS.some((p) => p.test(qs)) && extractLabelValues(qs, 'job').includes(job));
 }
@@ -47,11 +39,36 @@ function isSLOActive(slo: SLO): boolean {
   return slo.readOnly?.status?.type !== 'deleting';
 }
 
-/** Label matches first; query-string fallback for manually-created SLOs; deduped by object identity. Excludes SLOs being deleted. */
-export function getMatchingSLOsForSmCheck(slos: SLO[], checkId: string, job: string): SLO[] {
-  const active = slos.filter(isSLOActive);
-  const byLabel = filterSLOsByLabel(active, checkId);
-  const byLabelSet = new Set(byLabel);
-  const byQuery = active.filter((slo) => !byLabelSet.has(slo) && sloMatchesSmCheck(slo, job));
-  return [...byLabel, ...byQuery];
+export type SLOCheckLinkMap = {
+  slosByCheckId: Map<number, SLO[]>;
+  checksBySLOUuid: Map<string, Check[]>;
+};
+
+export function buildSLOCheckLinkMap(slos: SLO[], checks: Check[]): SLOCheckLinkMap {
+  const slosByCheckId = new Map<number, SLO[]>();
+  const checksBySLOUuid = new Map<string, Check[]>();
+
+  const activeSLOs = slos.filter(isSLOActive);
+
+  for (const slo of activeSLOs) {
+    for (const check of checks) {
+      if (check.id !== undefined && sloMatchesSMCheck(slo, check.job)) {
+        const forCheck = slosByCheckId.get(check.id);
+        if (forCheck) {
+          forCheck.push(slo);
+        } else {
+          slosByCheckId.set(check.id, [slo]);
+        }
+
+        const forSLO = checksBySLOUuid.get(slo.uuid);
+        if (forSLO) {
+          forSLO.push(check);
+        } else {
+          checksBySLOUuid.set(slo.uuid, [check]);
+        }
+      }
+    }
+  }
+
+  return { slosByCheckId, checksBySLOUuid };
 }

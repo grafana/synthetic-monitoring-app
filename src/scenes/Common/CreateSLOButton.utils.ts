@@ -1,4 +1,4 @@
-import type { SLO } from './useSmCheckSLOs.types';
+import type { SLO } from './useSLOCheckLinks.types';
 import { Check } from 'types';
 
 export type SLOLabel = { key: string; value: string };
@@ -6,7 +6,6 @@ type LinkedSLOLabels = Pick<SLO, 'labels'>;
 
 export function buildSLOLabels(check: Check): SLOLabel[] {
   return [
-    { key: 'sm_check_id', value: String(check.id) },
     { key: 'source', value: `grafana-synthetic-monitoring-app` },
   ];
 }
@@ -76,9 +75,7 @@ export function buildSLOWizardInitialValuesForCheck(
   linkedSLOs: LinkedSLOLabels[]
 ): SLOWizardInitialValues {
   if (linkedSLOsHaveReachabilityObjectiveKind(linkedSLOs)) {
-    return {
-      labels: [{ key: 'sm_check_id', value: String(check.id) }],
-    };
+    return {};
   }
 
   return {
@@ -86,7 +83,6 @@ export function buildSLOWizardInitialValuesForCheck(
     description: buildSLODescription(check),
     query: buildSLOQuery(check),
     labels: [
-      { key: 'sm_check_id', value: String(check.id) },
       {
         key: SM_OBJECTIVE_KIND_LABEL_KEY,
         value: REACHABILITY_OBJECTIVE_KIND_VALUE,
