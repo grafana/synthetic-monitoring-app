@@ -2,7 +2,8 @@ import { useCallback, useMemo } from 'react';
 import { IconName } from '@grafana/data';
 import { trackTimepointViewerActionClicked } from 'features/tracking/timepointExplorerEvents';
 
-import { getExploreUrl } from 'utils';
+import { CheckType } from 'types';
+import { getCheckType, getExploreUrl } from 'utils';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
@@ -10,6 +11,7 @@ import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getIsInTheFuture } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { getProbeNameToUse } from 'scenes/components/TimepointExplorer/TimepointViewerActions.utils';
+import { useFaroSessionLink } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.hooks';
 
 interface Action {
   icon: IconName;
@@ -47,6 +49,16 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
     to: timepoint.adjustedTime + timepoint.timepointDuration,
   });
 
+  const isBrowserCheck = getCheckType(check.settings) === CheckType.Browser;
+  const { data: faroSession } = useFaroSessionLink({
+    job: check.job,
+    instance: check.target,
+    probe: viewerProbeName,
+    from: timepoint.adjustedTime,
+    to: timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency,
+    enabled: isBrowserCheck,
+  });
+
   const handlePreviousTimepoint = useCallback(() => {
     if (prevTimepoint) {
       const statefulPrevTimepoint = prevTimepoint ? listLogsMap[prevTimepoint.adjustedTime] : undefined;
@@ -69,8 +81,8 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
     }
   }, [nextTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
-  return useMemo<Action[]>(
-    () => [
+  return useMemo<Action[]>(() => {
+    const actions: Action[] = [
       {
         icon: 'arrow-left',
         label: 'Previous timepoint',
@@ -103,7 +115,29 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
           });
         },
       },
-    ],
-    [prevTimepoint, nextTimepoint, exploreLogsURL, exploreMetricsURL, handleNextTimepoint, handlePreviousTimepoint]
-  );
+    ];
+
+    if (faroSession?.href) {
+      actions.push({
+        icon: 'frontend-observability',
+        label: 'View Frontend Observability session',
+        href: faroSession.href,
+        onClick: () => {
+          trackTimepointViewerActionClicked({
+            action: 'view-frontend-observability-session',
+          });
+        },
+      });
+    }
+
+    return actions;
+  }, [
+    prevTimepoint,
+    nextTimepoint,
+    exploreLogsURL,
+    exploreMetricsURL,
+    faroSession?.href,
+    handleNextTimepoint,
+    handlePreviousTimepoint,
+  ]);
 }
