@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AnnotationQuery, GrafanaTheme2 } from '@grafana/data';
 import { RefreshPicker, TimeRangePicker, VariableControl } from '@grafana/scenes-react';
-import { useStyles2 } from '@grafana/ui';
+import { Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
+import { useSloPluginAvailable } from 'data/useSloPluginAvailable';
+import { CheckSloQueriesModal } from 'scenes/Common/CheckSloQueriesModal';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
 
@@ -15,6 +17,8 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) => {
   const styles = useStyles2(getStyles);
+  const [sloModalOpen, setSloModalOpen] = useState(false);
+  const { data: isSloPluginAvailable } = useSloPluginAvailable();
 
   return (
     <div className={styles.container}>
@@ -24,6 +28,14 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
           <DashboardAnnotationControls annotations={annotations} />
         </div>
         <div className={styles.actions}>
+          {isSloPluginAvailable && (
+            <>
+              <Button variant="secondary" icon="clipboard-alt" onClick={() => setSloModalOpen(true)}>
+                Create a SLO
+              </Button>
+              <CheckSloQueriesModal check={check} isOpen={sloModalOpen} onDismiss={() => setSloModalOpen(false)} />
+            </>
+          )}
           <EditCheckButton id={check.id} />
           <div className={styles.dashboardControls}>
             <TimeRangePicker />
