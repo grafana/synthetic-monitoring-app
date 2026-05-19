@@ -4,28 +4,27 @@ import userEvent from '@testing-library/user-event';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
-import { testUsesCombobox } from 'test/utils';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { setupChannelTest } from 'page/__testHelpers__/channel';
 
 import { K6ChannelSelect } from './K6ChannelSelect';
 
-const FormWrapper = ({ 
-  children, 
-  checkType = CheckType.Browser 
-}: { 
-  children: React.ReactNode; 
+const FormWrapper = ({
+  children,
+  checkType = CheckType.Browser
+}: {
+  children: React.ReactNode;
   checkType?: CheckType;
-  }) => {
-    return (
-      <ChecksterProvider checkType={checkType}>
-        {children}
-      </ChecksterProvider>
-    );
-  };
+}) => {
+  return (
+    <ChecksterProvider checkType={checkType}>
+      {children}
+    </ChecksterProvider>
+  );
+};
 
 describe('K6ChannelSelect', () => {
   beforeEach(() => {
@@ -36,7 +35,7 @@ describe('K6ChannelSelect', () => {
     mockFeatureToggles({
       [FeatureName.VersionManagement]: false,
     });
-    
+
     render(
       <FormWrapper>
         <K6ChannelSelect />
@@ -48,13 +47,13 @@ describe('K6ChannelSelect', () => {
 
   it('should render when feature flag is enabled', async () => {
     setupChannelTest();
-    
+
     render(
       <FormWrapper>
         <K6ChannelSelect />
       </FormWrapper>
     );
-    
+
     await waitFor(() => {
       expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
     });
@@ -63,7 +62,7 @@ describe('K6ChannelSelect', () => {
 
   it('should auto-select the default channel (v2)', async () => {
     setupChannelTest();
-    
+
     render(
       <FormWrapper>
         <K6ChannelSelect />
@@ -81,7 +80,7 @@ describe('K6ChannelSelect', () => {
     mockFeatureToggles({
       [FeatureName.VersionManagement]: true,
     });
-    
+
     const channelsWithDeprecated = {
       channels: [
         {
@@ -102,11 +101,11 @@ describe('K6ChannelSelect', () => {
     };
 
     server.use(
-      apiRoute('listK6Channels', { 
-        result: () => ({ json: channelsWithDeprecated }) 
+      apiRoute('listK6Channels', {
+        result: () => ({ json: channelsWithDeprecated })
       })
     );
-    
+
     const user = userEvent.setup();
 
     render(
@@ -133,10 +132,10 @@ describe('K6ChannelSelect', () => {
     mockFeatureToggles({
       [FeatureName.VersionManagement]: true,
     });
-    
+
     server.use(
-      apiRoute('listK6Channels', { 
-        result: () => ({ status: 500, body: 'Failed to load K6 version channels. Please try again later.' }) 
+      apiRoute('listK6Channels', {
+        result: () => ({ status: 500, body: 'Failed to load K6 version channels. Please try again later.' })
       })
     );
 
