@@ -69,7 +69,7 @@ describe('ChannelDetails', () => {
 
     await waitFor(() => {
     expect(screen.getByText(/deprecated k6 version channel/i)).toBeInTheDocument();
-    expect(screen.getByText(/expected to end with the release of k6 v3/i)).toBeInTheDocument();
+    expect(screen.getByText(/will end with the release of the next k6 major version/i)).toBeInTheDocument();
     });
   });
 
