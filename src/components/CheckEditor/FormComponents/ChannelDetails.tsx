@@ -40,7 +40,7 @@ export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
       {isDeprecated && (
         <Alert severity="warning" title="Deprecated k6 version channel">
           This k6 version channel was deprecated on {dateTimeFormat(new Date(channel.deprecatedAfter))}. Support for
-          this version will end with the release of the next k6 major version. Please migrate your checks to a newer
+          this version is expected to end with the release of k6 v3 (~May 2027). Please migrate your checks to a newer
           channel.
         </Alert>
       )}
