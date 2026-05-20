@@ -15,9 +15,6 @@ export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
 
   const validChannelId = channelId && typeof channelId === 'string' && channelId.trim() !== '' ? channelId : undefined;
 
-  // Show default message when no specific channel is selected
-  // This happens when no channels are available or when all channels are filtered out
-  // (e.g., all are deprecated for new checks)
   if (!validChannelId) {
     return (
       <Text variant="bodySmall" color="secondary">
@@ -32,6 +29,7 @@ export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
   }
 
   const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
+  const isV1PreDeprecation = channel.id === 'v1' && !isDeprecated;
 
   return (
     <Stack direction="column" gap={1}>
@@ -41,8 +39,18 @@ export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
 
       {isDeprecated && (
         <Alert severity="warning" title="Deprecated k6 version channel">
-          This k6 version channel is deprecated since {dateTimeFormat(new Date(channel.deprecatedAfter))}. Consider
-          migrating to a newer channel.
+          This k6 version channel was deprecated on {dateTimeFormat(new Date(channel.deprecatedAfter))}.{' '}
+          {channel.id === 'v1'
+            ? 'Support for this version is expected to end with the release of k6 v3 (~May 2027).'
+            : 'Support for this version will end with the release of the next k6 major version.'}{' '}
+          Please migrate your checks to a newer channel.
+        </Alert>
+      )}
+
+      {isV1PreDeprecation && (
+        <Alert severity="info" title="Newer version available">
+          v2 is now the recommended default. v1 will be deprecated in the coming weeks. Support for this version is
+          expected to end with the release of k6 v3 (~May 2027).
         </Alert>
       )}
     </Stack>

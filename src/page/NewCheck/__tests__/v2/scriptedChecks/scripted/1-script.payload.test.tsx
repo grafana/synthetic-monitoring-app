@@ -64,17 +64,17 @@ describe(`ScriptedCheck - 1 (Script) payload`, () => {
     const { read, user } = await setupFormWithChannelSelector(checkType);
     await submitForm(user);
     const { body } = await read();
-    expect(body.channels?.k6?.id).toBe('v1');
+    expect(body.channels?.k6?.id).toBe('v2');
   });
 
   it(`can select and submit a non-default channel`, async () => {
     const { read, user, channelCombobox } = await setupFormWithChannelSelector(checkType);
 
-    await selectComboboxOption(user, channelCombobox, /v2\.x/i);
+    await selectComboboxOption(user, channelCombobox, /v1\.x/i);
 
     await submitForm(user);
     const { body } = await read();
-    expect(body.channels?.k6?.id).toBe('v2');
+    expect(body.channels?.k6?.id).toBe('v1');
   });
 
   it(`omits channel from payload when feature is disabled`, async () => {
