@@ -49,8 +49,8 @@ export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
 
       {isV1PreDeprecation && (
         <Alert severity="info" title="Newer version available">
-          v2 is now the recommended default. v1 will be deprecated in the coming weeks and support is expected to end
-          with the release of k6 v3 (~May 2027).
+          v2 is now the recommended default. v1 will be deprecated in the coming weeks. Support for this version is
+          expected to end with the release of k6 v3 (~May 2027).
         </Alert>
       )}
     </Stack>
