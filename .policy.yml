@@ -8,6 +8,7 @@ policy:
   approval:
     - or:
         - and:
+            - Workflow .github/workflows/dangerJS.yml succeeded or skipped
             - Workflow .github/workflows/validate_pr.yml succeeded or skipped
             - default to approval
     - or:
@@ -17,6 +18,19 @@ policy:
         - override policies
     - policy bot config is valid when modified
 approval_rules:
+  - name: Workflow .github/workflows/dangerJS.yml succeeded or skipped
+    if:
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/dangerJS\.yml$
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/dangerJS.yml
   - name: Workflow .github/workflows/validate_pr.yml succeeded or skipped
     if:
       file_not_deleted:

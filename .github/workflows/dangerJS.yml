@@ -1,14 +1,14 @@
 name: DangerJS
 
 on:
-  workflow_call:
+  pull_request:
 
 permissions:
-  pull-requests: write
-  attestations: read
-  contents: read
-  issues: read
-  statuses: write
+  actions: read          # dawidd6/action-download-artifact
+  contents: read        # actions/checkout
+  issues: read          # Why?
+  pull-requests: write  # Used to post a message to the PR with the results.
+  statuses: write       # Update the PR status
 
 jobs:
   danger-js:
@@ -27,22 +27,24 @@ jobs:
       - name: Setup Plugin Environment
         uses: ./.github/actions/setup-env
 
-      - name: Download currentBundleSize
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
-        with:
-          name: currentBundleSize
-          path: artifacts
+      - name: Make artifacts folder
+        run: mkdir -p artifacts
+
+      - name: Generate current bundle size
+        run: yarn run stats artifacts/currentBundleSize.json
 
       - name: Download mainBundleSize
+        id: download-bundle
         uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
         with:
-          workflow: push.yml
+          workflow: main-bundle-size.yml
           workflow_conclusion: success
-          branch: main
+          if_no_artifact_found: ignore
           name: mainBundleSize
           path: artifacts
 
       - name: DangerJS
+        if: ${{ hashFiles('artifacts/mainBundleSize') != '' }}
         run: yarn danger:ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
