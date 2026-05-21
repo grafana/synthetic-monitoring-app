@@ -10,49 +10,10 @@ on:
 permissions: {}
 
 jobs:
-  # Publish TechDocs to Backstage
-  publish-techdocs:
-    name: Publish TechDocs
-    if: github.event_name == 'push'
-    permissions:
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/call_publish-techdocs.yml
-
   # Main CI/CD workflow (shared workflow handles: lint, test, build, typecheck)
   cd:
-    name: Build and Deploy
-    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v8.0.0
-    permissions:
-      contents: write
-      pull-requests: read  # Required for v6.0.0
-      id-token: write
-      attestations: write
-    with:
-      # Checkout/build PR or main branch, depending on event
-      branch: ${{ github.event_name == 'push' && github.ref_name || github.ref }}
-
-      # When pushing to "main", publish and deploy to Grafana Cloud dev (CD).
-      # For PRs, skip publishing and deploying (run CI only).
-      environment: ${{ (github.event_name == 'push' && github.ref_name == 'main') && 'dev' || 'none' }}
-      
-      # Scope: universal for both on-prem and cloud
-      scopes: universal
-
-      # Argo CD inputs
-      grafana-cloud-deployment-type: provisioned
-      argo-workflow-slack-channel: "#sm-ops-deploys"
-      auto-merge-environments: dev
-
-      # Add git SHA to plugin version as suffix for CD builds
-      plugin-version-suffix: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
-
-      # Other CI inputs
-      node-version: 22
-      run-playwright: false  # Disabled - no Playwright tests configured
-
   # SM-specific custom validations (run on both PRs and main)
-  
+
   # Auto-label PRs
   auto-label:
     name: Auto Label
