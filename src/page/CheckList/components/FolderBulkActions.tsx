@@ -6,14 +6,15 @@ import { css } from '@emotion/css';
 import { Check } from 'types';
 import { BulkMoveToFolderModal } from 'page/CheckList/components/BulkMoveToFolderModal';
 
-import { useBulkActions } from './BulkActions.hooks';
+import { DeleteFolderTarget, useBulkActions } from './BulkActions.hooks';
 
 interface FolderBulkActionsProps {
   checks: Check[];
   onResolved: () => void;
+  deleteFolder?: DeleteFolderTarget;
 }
 
-export function FolderBulkActions({ checks, onResolved }: FolderBulkActionsProps) {
+export function FolderBulkActions({ checks, onResolved, deleteFolder }: FolderBulkActionsProps) {
   const styles = useStyles2(getStyles);
   const {
     isFoldersEnabled,
@@ -28,7 +29,7 @@ export function FolderBulkActions({ checks, onResolved }: FolderBulkActionsProps
     disableChecks,
     deleteChecks,
     deleteModalProps,
-  } = useBulkActions({ checks, onResolved });
+  } = useBulkActions({ checks, onResolved, deleteFolder });
 
   return (
     <div className={styles.container}>

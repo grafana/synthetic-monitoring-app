@@ -165,3 +165,21 @@ export function useCreateFolder() {
     onSuccess: invalidateAllFolders,
   });
 }
+
+export function deleteFolder(uid: string) {
+  return firstValueFrom(
+    getBackendSrv().fetch<void>({
+      method: 'DELETE',
+      url: `${FOLDERS_API}/${uid}`,
+      params: { forceDeleteRules: true },
+      showErrorAlert: false,
+    })
+  );
+}
+
+export function useDeleteFolder() {
+  return useMutation({
+    mutationFn: deleteFolder,
+    onSuccess: invalidateAllFolders,
+  });
+}
