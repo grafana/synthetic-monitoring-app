@@ -15,6 +15,7 @@ import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { QUERY_KEYS as alertingQueryKeys } from 'data/useAlerts';
 
+import { AssistantContext } from './AssistantContext';
 import { DevTools } from './DevTools';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { SMOpenFeatureProvider } from './SMOpenFeatureProvider';
@@ -61,6 +62,7 @@ const App = (props: AppRootProps<ProvisioningJsonData>) => {
             <GlobalStyles />
             <SMDatasourceProvider>
               <PermissionsContextProvider>
+                <AssistantContext />
                 <DevTools>
                   <InitialisedRouter />
                 </DevTools>
