@@ -22,24 +22,6 @@ jobs:
       pull-requests: write
     uses: ./.github/workflows/call_auto-label.yml
 
-  # Terraform configuration validation
-  terraform-validation:
-    name: Terraform Validation
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
-    uses: ./.github/workflows/call_validate-terraform.yml
-
-  # Probe API server mappings verification
-  probe-mappings-validation:
-    name: Probe API Mappings Verification
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
-    uses: ./.github/workflows/call_verify-probe-api-server-mappings.yml
-
   # i18n translation files sync check
   i18n-validation:
     name: i18n Validation

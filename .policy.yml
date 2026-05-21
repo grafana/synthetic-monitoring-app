@@ -8,8 +8,10 @@ policy:
   approval:
     - or:
         - and:
+            - Workflow .github/workflows/call_validate-terraform.yml succeeded or skipped
             - Workflow .github/workflows/dangerJS.yml succeeded or skipped
             - Workflow .github/workflows/validate_pr.yml succeeded or skipped
+            - Workflow .github/workflows/verify-probe-api-server-mappings.yml succeeded or skipped
             - default to approval
     - or:
         - and:
@@ -18,6 +20,19 @@ policy:
         - override policies
     - policy bot config is valid when modified
 approval_rules:
+  - name: Workflow .github/workflows/call_validate-terraform.yml succeeded or skipped
+    if:
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/call_validate-terraform\.yml$
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/call_validate-terraform.yml
   - name: Workflow .github/workflows/dangerJS.yml succeeded or skipped
     if:
       file_not_deleted:
@@ -44,6 +59,19 @@ approval_rules:
             - success
           workflows:
             - .github/workflows/validate_pr.yml
+  - name: Workflow .github/workflows/verify-probe-api-server-mappings.yml succeeded or skipped
+    if:
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/verify-probe-api-server-mappings\.yml$
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/verify-probe-api-server-mappings.yml
   - name: default to approval
   - name: Build & Test workflow succeeded or skipped
     requires:

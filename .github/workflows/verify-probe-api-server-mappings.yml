@@ -1,12 +1,9 @@
 name: Verify Probe API Server Mappings
 
 on:
-  workflow_call:
+  pull_request:
 
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   verify-mappings:
@@ -15,6 +12,9 @@ jobs:
     defaults:
       run:
         working-directory: .
+    permissions:
+      contents: read
+      issues: write
 
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
