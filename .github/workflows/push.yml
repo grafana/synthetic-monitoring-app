@@ -13,16 +13,6 @@ on:
 permissions: {}
 
 jobs:
-  # Release Please - manages releases and changelog
-  release-please:
-    name: Release Please
-    if: github.event_name == 'push'
-    permissions:
-      contents: write
-      pull-requests: write
-      id-token: write # Needed for create-github-app-token in the called workflow
-    uses: ./.github/workflows/call_release-please.yml
-
   # Publish TechDocs to Backstage
   publish-techdocs:
     name: Publish TechDocs

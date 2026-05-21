@@ -1,0 +1,27 @@
+# Opens (or updates) a release PR with the next version bump and CHANGELOG entries
+# based on conventional commits since the last tag. Merging the release PR creates
+# a v* tag and a GitHub Release.
+#
+# Uses the shared plugin-ci-workflows release-please action, which mints a token
+# via GATB using grafana-plugins-platform-bot (permission_set: release-please).
+#
+# Docs: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/035-github-app-permissions/#release-please-optional-workflow
+
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  release-please:
+    runs-on: ubuntu-arm64-small
+    permissions:
+      id-token: write # OIDC auth to Vault for create-github-app-token
+    steps:
+      - name: Run release-please
+        uses: grafana/plugin-ci-workflows/actions/plugins/release-please@plugins-release-please/v2.0.1
