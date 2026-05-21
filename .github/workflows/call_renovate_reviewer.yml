@@ -3,8 +3,6 @@
 name: Renovate reviewer
 
 permissions:
-  pull-requests: write
-  contents: write
   id-token: write
 
 on:

@@ -140,8 +140,6 @@ jobs:
     name: Renovate Reviewer
     if: github.event_name == 'pull_request' && github.actor == 'renovate-sh-app[bot]'
     permissions:
-      contents: write
-      pull-requests: write
       id-token: write
     uses: ./.github/workflows/call_renovate_reviewer.yml
 
