@@ -8,11 +8,29 @@ policy:
   approval:
     - or:
         - and:
-            - Build & Test workflow succeeded or skipped
+            - Workflow .github/workflows/validate_pr.yml succeeded or skipped
             - default to approval
+    - or:
+        - and:
+            - Build & Test workflow succeeded or skipped
+            - MERGE_WITH_GENERATED
         - override policies
     - policy bot config is valid when modified
 approval_rules:
+  - name: Workflow .github/workflows/validate_pr.yml succeeded or skipped
+    if:
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/validate_pr\.yml$
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/validate_pr.yml
+  - name: default to approval
   - name: Build & Test workflow succeeded or skipped
     requires:
       conditions:
@@ -22,8 +40,6 @@ approval_rules:
             - success
           workflows:
             - .github/workflows/push.yml
-
-  - name: default to approval
   - name: policy bot config is valid when modified
     if:
       changed_files:

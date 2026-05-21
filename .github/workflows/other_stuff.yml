@@ -5,10 +5,7 @@
 name: Build & Test
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
 
 permissions: {}
 
@@ -44,7 +41,7 @@ jobs:
   # Main CI/CD workflow (shared workflow handles: lint, test, build, typecheck)
   cd:
     name: Build and Deploy
-    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v6.0.0
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v8.0.0
     permissions:
       contents: write
       pull-requests: read  # Required for v6.0.0
