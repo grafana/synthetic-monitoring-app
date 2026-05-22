@@ -74,6 +74,14 @@ function question(title: string, prompt: string): Question {
   return { title, prompt };
 }
 
+const DOC_URLS = {
+  privateProbes:
+    'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/',
+  perCheckAlerts:
+    'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/configure-per-check-alerts/',
+  k6Assertions: 'https://grafana.com/docs/k6/latest/using-k6/assertions/',
+};
+
 /**
  * Hidden context attached to any page where Assistant is likely to draft or
  * edit a k6 script for Synthetic Monitoring. Tools like `k6-authoring` are
@@ -104,14 +112,6 @@ function smK6Conventions(): ChatContextItem {
       'Tools such as k6-authoring are oriented toward performance testing and tend to emit load-test-shaped scripts (stages, VUs, thresholds, env-var credentials, classic check() calls, page.screenshot() debug aids). When using their output for a Grafana Synthetic Monitoring check, TRANSFORM the script to follow the rules above before presenting it to the user — including swapping check() calls for expect() from the k6-testing library and stripping any screenshot calls.',
   });
 }
-
-const DOC_URLS = {
-  privateProbes:
-    'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/',
-  perCheckAlerts:
-    'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/configure-per-check-alerts/',
-  k6Assertions: 'https://grafana.com/docs/k6/latest/using-k6/assertions/',
-};
 
 const root = PLUGIN_URL_PATH.replace(/\/$/, '');
 
