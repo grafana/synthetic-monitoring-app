@@ -23,18 +23,24 @@ export function AssistantContext() {
       return;
     }
 
-    const contextRegistrations = ASSISTANT_PAGE_CONTEXTS.map((entry) =>
-      providePageContext(entry.urlPattern, entry.createContextItems())
-    );
+    try {
+      const contextRegistrations = ASSISTANT_PAGE_CONTEXTS.map((entry) =>
+        providePageContext(entry.urlPattern, entry.createContextItems())
+      );
 
-    const questionRegistrations = ASSISTANT_PAGE_CONTEXTS.filter((entry) => entry.createQuestions).map((entry) =>
-      provideQuestions(entry.urlPattern, entry.createQuestions!())
-    );
+      const questionRegistrations = ASSISTANT_PAGE_CONTEXTS.filter((entry) => entry.createQuestions).map((entry) =>
+        provideQuestions(entry.urlPattern, entry.createQuestions!())
+      );
 
-    return () => {
-      contextRegistrations.forEach((registration) => registration.unregister());
-      questionRegistrations.forEach((registration) => registration.unregister());
-    };
+      return () => {
+        contextRegistrations.forEach((registration) => registration.unregister());
+        questionRegistrations.forEach((registration) => registration.unregister());
+      };
+    } catch {
+      // Assistant SDK not fully available — registrations are best-effort.
+    }
+
+    return undefined;
   }, [isAvailable, isLoading]);
 
   return null;
