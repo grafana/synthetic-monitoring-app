@@ -1,9 +1,11 @@
 import React from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Alert, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Alert, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { K6Channel } from 'types';
+
+const K6_V2_MIGRATION_DOC_URL = 'https://grafana.com/docs/k6/latest/get-started/migrating-to-v2/';
 
 interface ChannelDetailsProps {
   channelId: string | null;
@@ -39,11 +41,22 @@ export function ChannelDetails({ channelId, channels }: ChannelDetailsProps) {
 
       {isDeprecated && (
         <Alert severity="warning" title="Deprecated k6 version channel">
-          This k6 version channel was deprecated on {dateTimeFormat(new Date(channel.deprecatedAfter))}.{' '}
-          {channel.id === 'v1'
-            ? 'Support for this version is expected to end with the release of k6 v3 (~May 2027).'
-            : 'Support for this version will end with the release of the next k6 major version.'}{' '}
-          Please migrate your checks to a newer channel.
+          {channel.id === 'v1' ? (
+            <>
+              This channel was deprecated on {dateTimeFormat(new Date(channel.deprecatedAfter))}. Your checks continue
+              to run. We recommend switching this check to the v2 k6 version channel. Most scripted and browser checks
+              do not need script changes. If a check fails after switching, see the{' '}
+              <TextLink href={K6_V2_MIGRATION_DOC_URL} external>
+                k6 v2 migration guide
+              </TextLink>
+              .
+            </>
+          ) : (
+            <>
+              This channel was deprecated on {dateTimeFormat(new Date(channel.deprecatedAfter))}. Your checks continue
+              to run. We recommend switching to a supported channel (v2).
+            </>
+          )}
         </Alert>
       )}
 
