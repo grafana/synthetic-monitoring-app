@@ -128,7 +128,7 @@ describe('CheckList - Folder Deletion on Bulk Delete', () => {
     await clickFolderDeleteButton(user, '2 selected');
 
     expect(await screen.findByText(/Delete folder "Deletable" \+ 2 checks/)).toBeInTheDocument();
-    expect(screen.getByText(/permanently delete the folder/)).toBeInTheDocument();
+    expect(screen.getByText(/This will delete the folder, including 2 checks\. This action cannot be undone\./)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete folder and checks' })).toBeInTheDocument();
   });
 

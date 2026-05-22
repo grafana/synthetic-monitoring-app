@@ -71,7 +71,7 @@ export function useBulkActions({ checks, onResolved, deleteFolder }: UseBulkActi
     if (deleteFolder) {
       return {
         title: `Delete folder "${deleteFolder.title}" + ${checksLabel}`,
-        body: `This will permanently delete the folder with all ${checksLabel} inside it.`,
+        body: `This will delete the folder, including ${checksLabel}. This action cannot be undone.`,
         confirmText: 'Delete folder and checks',
       };
     }
