@@ -16,10 +16,6 @@ policy:
             - Workflow .github/workflows/validate-terraform.yml succeeded or skipped
             - Workflow .github/workflows/validate_pr.yml succeeded or skipped
             - default to approval
-    - or:
-        - and:
-            - Build & Test workflow succeeded or skipped
-            - MERGE_WITH_GENERATED
         - override policies
     - policy bot config is valid when modified
 approval_rules:
@@ -121,15 +117,6 @@ approval_rules:
           workflows:
             - .github/workflows/validate_pr.yml
   - name: default to approval
-  - name: Build & Test workflow succeeded or skipped
-    requires:
-      conditions:
-        has_workflow_result:
-          conclusions:
-            - skipped
-            - success
-          workflows:
-            - .github/workflows/push.yml
   - name: policy bot config is valid when modified
     if:
       changed_files:
@@ -140,11 +127,14 @@ approval_rules:
         has_successful_status:
           - Validate policy bot config
   - name: override policies
+    description: |
+      Policy-bot can be overridden in emergency situations.
+      **Only use this when absolutely neccesary, as it allows PRs with unfinished/unvalidated CI jobs to be merged.**
+      Note that a reason is required, IE: `policy-bot disable: We need to deploy this fix to resolve [this ongoing incident with policy-bot](...).`
     options:
       methods:
-        comments:
-          - 'policy bot: approve'
-          - 'policy-bot: approve'
+        comment_patterns:
+          - (?s)policy[- ]bot:? (?:approve|disable)d?(?::?(?<reason>.*))
         github_review: false
     requires:
       count: 1
