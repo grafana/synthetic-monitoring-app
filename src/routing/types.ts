@@ -8,6 +8,7 @@ export enum AppRoutes {
   ViewProbe = 'probes/:id',
   EditProbe = 'probes/:id/edit',
   Home = 'home',
+  HomeDashboard = 'home/dashboard',
   NewCheck = 'checks/new',
   NewProbe = 'probes/new',
   Probes = 'probes',
