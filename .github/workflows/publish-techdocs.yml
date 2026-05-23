@@ -1,10 +1,13 @@
 name: Publish TechDocs
+
 on:
-  workflow_run:
-    workflows:
-      - "Validate commits to main"
-    types:
-      - completed
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'catalog-info.yaml'
 
 concurrency:
   group: '${{ github.workflow }}-${{ github.ref }}'
@@ -13,26 +16,7 @@ concurrency:
 permissions: {}
 
 jobs:
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      docs-changed: ${{ steps.changes.outputs.docs }}
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
-        id: changes
-        with:
-          filters: |
-            docs:
-              - 'docs/**'
-              - 'mkdocs.yml'
-              - 'catalog-info.yaml'
-
   publish-docs:
-    needs: check-changes
-    if: needs.check-changes.outputs.docs-changed == 'true'
     uses: grafana/shared-workflows/.github/workflows/publish-techdocs.yaml@main
     permissions:
       contents: read
