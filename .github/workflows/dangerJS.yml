@@ -37,7 +37,7 @@ jobs:
         id: download-bundle
         uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
         with:
-          workflow: main-bundle-size.yml
+          workflow: publish-main-bundle-size.yml
           workflow_conclusion: success
           if_no_artifact_found: ignore
           name: mainBundleSize
