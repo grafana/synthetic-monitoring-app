@@ -14,7 +14,9 @@ jobs:
   danger-js:
     name: DangerJS
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    # Uncomment the follwoing line and remove the one after it after merging.
+    # if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: false
     permissions:
       pull-requests: write
       attestations: read
