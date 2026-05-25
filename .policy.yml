@@ -8,6 +8,7 @@ policy:
   approval:
     - or:
         - and:
+            - Workflow .github/workflows/auto-label_pr.yml succeeded or skipped
             - Workflow .github/workflows/dangerJS.yml succeeded or skipped
             - Workflow .github/workflows/validate-grafana-compat.yml succeeded or skipped
             - Workflow .github/workflows/validate-i18n.yml succeeded or skipped
@@ -19,6 +20,19 @@ policy:
         - override policies
     - policy bot config is valid when modified
 approval_rules:
+  - name: Workflow .github/workflows/auto-label_pr.yml succeeded or skipped
+    if:
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/auto-label_pr\.yml$
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/auto-label_pr.yml
   - name: Workflow .github/workflows/dangerJS.yml succeeded or skipped
     if:
       file_not_deleted:
