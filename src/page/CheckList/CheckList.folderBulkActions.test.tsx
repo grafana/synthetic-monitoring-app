@@ -1,8 +1,15 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-import { CHECK_IN_PRODUCTION, CHECK_IN_STAGING } from 'test/fixtures/folderChecks';
+import {
+  CHECK_IN_DELETABLE_FOLDER,
+  CHECK_IN_PRODUCTION,
+  CHECK_IN_STAGING,
+  CHECK_WITH_ORPHANED_FOLDER,
+  CHECK_WITHOUT_FOLDER,
+  SECOND_CHECK_IN_DELETABLE_FOLDER,
+} from 'test/fixtures/folderChecks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
-import { apiRoute } from 'test/handlers';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 import { mockFeatureToggles } from 'test/utils';
@@ -99,5 +106,94 @@ describe('CheckList - Per-folder Bulk Actions', () => {
 
     const stagingCheckbox = screen.getByLabelText('Select all checks in Staging');
     expect(stagingCheckbox).not.toBeChecked();
+  });
+});
+
+describe('CheckList - Folder Deletion on Bulk Delete', () => {
+  beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+
+  const clickFolderDeleteButton = async (user: ReturnType<typeof render>['user'], expectedSelectedText: string) => {
+    const selectedLabel = await screen.findByText(expectedSelectedText);
+    const folderActions = selectedLabel.closest('div')!;
+    const deleteButton = within(folderActions as HTMLElement).getByRole('button', { name: 'Delete' });
+    await user.click(deleteButton);
+  };
+
+  it('shows folder-aware delete confirmation when all checks in a deletable folder are selected', async () => {
+    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
+
+    const folderCheckbox = await screen.findByLabelText('Select all checks in Deletable');
+    await user.click(folderCheckbox);
+
+    await clickFolderDeleteButton(user, '2 selected');
+
+    expect(await screen.findByText(/Delete folder "Deletable" \+ 2 checks/)).toBeInTheDocument();
+    expect(screen.getByText(/This will delete the folder, including 2 checks\. This action cannot be undone\./)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete folder and checks' })).toBeInTheDocument();
+  });
+
+  it('shows standard delete confirmation when only some checks in a folder are selected', async () => {
+    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
+
+    const checkCheckboxes = await screen.findAllByLabelText('Select check');
+    await user.click(checkCheckboxes[0]!);
+
+    await clickFolderDeleteButton(user, '1 selected');
+
+    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
+    expect(screen.getByText('Are you sure you want to delete these checks?')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete checks' })).toBeInTheDocument();
+  });
+
+  it('does not offer folder deletion for the default folder even when all checks are selected', async () => {
+    const { user } = await renderCheckList([CHECK_WITHOUT_FOLDER]);
+
+    const folderCheckbox = await screen.findByLabelText(/Select all checks in.*\(default\)/);
+    await user.click(folderCheckbox);
+
+    await clickFolderDeleteButton(user, '1 selected');
+
+    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
+    expect(screen.queryByText(/Delete folder/)).not.toBeInTheDocument();
+  });
+
+  it('does not offer folder deletion for orphaned folders', async () => {
+    const { user } = await renderCheckList([CHECK_WITH_ORPHANED_FOLDER]);
+
+    const folderCheckbox = await screen.findByLabelText(/Select all checks in/);
+    await user.click(folderCheckbox);
+
+    await clickFolderDeleteButton(user, '1 selected');
+
+    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
+    expect(screen.queryByText(/Delete folder/)).not.toBeInTheDocument();
+  });
+
+  it('calls both check delete and folder delete APIs when confirming folder deletion', async () => {
+    const { record: recordDelete, requests: deleteRequests } = getServerRequests();
+    const { record: recordFolderDelete, requests: folderDeleteRequests } = getServerRequests();
+
+    server.use(
+      apiRoute('deleteCheck', {}, recordDelete),
+      apiRoute('deleteFolder', {}, recordFolderDelete)
+    );
+
+    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER]);
+
+    const folderCheckbox = await screen.findByLabelText('Select all checks in Deletable');
+    await user.click(folderCheckbox);
+
+    await clickFolderDeleteButton(user, '1 selected');
+
+    const confirmButton = await screen.findByRole('button', { name: 'Delete folder and checks' });
+    await user.click(confirmButton);
+
+    await waitFor(() => {
+      expect(deleteRequests.length).toBe(1);
+      expect(folderDeleteRequests.length).toBe(1);
+    });
+
+    const folderDeleteUrl = new URL(folderDeleteRequests[0]!.url);
+    expect(folderDeleteUrl.pathname).toContain('folder-deletable');
   });
 });

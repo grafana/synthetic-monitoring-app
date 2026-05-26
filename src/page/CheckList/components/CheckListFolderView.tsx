@@ -5,6 +5,7 @@ import { css } from '@emotion/css';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckType, GrafanaFolder, Label } from 'types';
+import { useCheckFolderStatus } from 'contexts/CheckFolderAccessContext';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 import { buildChecksByFolder, collectAllCheckIds, collectAllChecks, collectAllFolderUids, FolderNode, getTotalCheckCount } from 'hooks/useChecksByFolder';
 import { Feedback } from 'components/Feedback';
@@ -216,6 +217,9 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
 
   const isRoot = depth === 0;
 
+  const folderStatus = useCheckFolderStatus({ folderUid: node.folderUid });
+  const folderCanDelete = folderStatus.type === 'accessible' && folderStatus.permissions.canDelete;
+
   const allFolderCheckIds = useMemo(() => collectAllCheckIds(node), [node]);
   const allChecksInFolder = useMemo(() => collectAllChecks(node), [node]);
   const selectedChecksInFolder = useMemo(
@@ -225,6 +229,10 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
   const selectedCount = selectedChecksInFolder.length;
   const isAllInFolderSelected = totalChecks > 0 && selectedCount === totalChecks;
   const isSomeInFolderSelected = selectedCount > 0 && !isAllInFolderSelected;
+
+  const deleteFolderTarget = isAllInFolderSelected && folderCanDelete && !node.isDefault && !node.isOrphaned
+    ? { uid: node.folderUid, title: node.folder?.title ?? node.folderUid }
+    : undefined;
 
   const handleFolderSelectAll = () => {
     if (isAllInFolderSelected) {
@@ -294,7 +302,11 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
         </button>
         {selectedCount > 0 && (
           <div className={styles.folderActions}>
-            <FolderBulkActions checks={selectedChecksInFolder} onResolved={handleFolderBulkResolved} />
+            <FolderBulkActions
+              checks={selectedChecksInFolder}
+              onResolved={handleFolderBulkResolved}
+              deleteFolder={deleteFolderTarget}
+            />
             <span className={styles.selectedCount}>{selectedCount} selected</span>
           </div>
         )}
