@@ -58,10 +58,7 @@ jobs:
           fi
           popd
 
-          yarn verify:terraform-test-config 2>&1 | tee /tmp/terraform_output.txt
-          exit_status=$?
-
-          if test "${exit_status}" -eq 0 ; then
+          if yarn verify:terraform-test-config 2>&1 | tee /tmp/terraform_output.txt ; then
             echo "✅ Terraform configuration validation succeeded!" | tee -a "$GITHUB_STEP_SUMMARY"
           else
             cat <<-'EOT' | tee -a "$GITHUB_STEP_SUMMARY"
