@@ -187,6 +187,31 @@ describe(`parseLokiLogs error path`, () => {
       refId: 'A',
     });
   });
+
+  it(`does not leak row values when fields contain data`, () => {
+    // Same malformed shape as above (missing labelTypes and id) but with
+    // sentinel values populated in the rows that would represent real user
+    // log content. Demonstrates the no-leak property the way a reader
+    // naturally looks for it: rows in, rows definitely not out.
+    const SENSITIVE_LABEL_VALUE = 'should-not-leak';
+    const SENSITIVE_LOG_LINE = 'sensitive log line content';
+
+    const malformedFrame = {
+      length: 1,
+      refId: 'A',
+      fields: [
+        { name: LokiFieldNames.Labels, values: [{ secret: SENSITIVE_LABEL_VALUE }] },
+        { name: LokiFieldNames.TimeStamp, values: [1234567890], nanos: [0] },
+        { name: LokiFieldNames.Body, values: [SENSITIVE_LOG_LINE] },
+      ],
+    } as unknown as LokiDataFrame<Record<string, string>, Record<string, string>>;
+
+    parseLokiLogs(malformedFrame);
+
+    const loggedArg = JSON.stringify(consoleErrorSpy.mock.calls[0]);
+    expect(loggedArg).not.toContain(SENSITIVE_LABEL_VALUE);
+    expect(loggedArg).not.toContain(SENSITIVE_LOG_LINE);
+  });
 });
 
 describe(`normalizeLokiDataFrame`, () => {
