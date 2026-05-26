@@ -78,4 +78,5 @@ jobs:
           	yarn verify:terraform-test-config
           	```
           	EOT
+          	exit 1
           fi
