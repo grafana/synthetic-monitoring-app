@@ -25,6 +25,7 @@ const config = defineConfig([
     },
     rules: {
       'custom-plugin/tracking-event-creation': 'error',
+      // {} resets upstream allow list; do not simplify to 'warn' (see eslint-config base)
       'no-console': ['warn', {}],
       'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
       '@typescript-eslint/no-redeclare': ['error'],
@@ -112,10 +113,7 @@ const config = defineConfig([
     },
   },
   {
-    // Tests and test infrastructure routinely use console.* for legitimate
-    // reasons (silenceErrors wrapper, msw handler logging, debug helpers).
-    // scripts/ is unaffected because the src/-scoped rule block above never
-    // matches it in the first place.
+    // Tests legitimately use console.* (silenceErrors, msw handlers, debug helpers).
     files: [
       'src/**/*.test.{ts,tsx}',
       'src/**/__tests__/**/*.{ts,tsx}',
