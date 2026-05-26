@@ -25,6 +25,7 @@ const config = defineConfig([
     },
     rules: {
       'custom-plugin/tracking-event-creation': 'error',
+      'no-console': ['warn', {}],
       'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
       '@typescript-eslint/no-redeclare': ['error'],
       '@typescript-eslint/no-deprecated': 'error',
@@ -108,6 +109,21 @@ const config = defineConfig([
         project: './tsconfig.json',
         tsconfigRootDir: __dirname,
       },
+    },
+  },
+  {
+    // Tests and test infrastructure routinely use console.* for legitimate
+    // reasons (silenceErrors wrapper, msw handler logging, debug helpers).
+    // scripts/ is unaffected because the src/-scoped rule block above never
+    // matches it in the first place.
+    files: [
+      'src/**/*.test.{ts,tsx}',
+      'src/**/__tests__/**/*.{ts,tsx}',
+      'src/**/__test__/**/*.{ts,tsx}',
+      'src/test/**/*.{ts,tsx}',
+    ],
+    rules: {
+      'no-console': 'off',
     },
   },
 ]);
