@@ -25,10 +25,8 @@ jobs:
       - name: Verify probe mappings are up to date
         id: verify-mappings
         run: |
-          # Run the verification and capture output to a temp file
-          yarn verify:probe-api-mappings 2>&1 | tee /tmp/verification_output.txt
-          status=$? # This should capture the failure from yarn
-          if test "$status" -eq 0 ; then
+          if yarn verify:probe-api-mappings 2>&1 | tee /tmp/verification_output.txt ; then
+            :
           else
             cat /tmp/verification_output.txt >> $GITHUB_STEP_SUMMARY
             exit 1
