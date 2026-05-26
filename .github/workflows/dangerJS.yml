@@ -4,7 +4,7 @@ on:
   pull_request:
 
 permissions:
-  actions: read          # dawidd6/action-download-artifact
+  actions: read         # dawidd6/action-download-artifact
   contents: read        # actions/checkout
   issues: read          # Why?
   pull-requests: write  # Used to post a message to the PR with the results.
@@ -14,9 +14,7 @@ jobs:
   danger-js:
     name: DangerJS
     runs-on: ubuntu-latest
-    # Uncomment the follwoing line and remove the one after it after merging.
-    # if: github.event_name == 'pull_request' && github.base_ref == 'main'
-    if: false
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
     permissions:
       pull-requests: write
       attestations: read
