@@ -165,8 +165,7 @@ describe(`parseLokiLogs error path`, () => {
   });
 
   it(`returns [] and logs only safe schema metadata when required fields are missing`, () => {
-    // New-schema frame missing labelTypes and id, so normalizeLokiDataFrame
-    // returns it as-is and isLokiFields rejects it.
+    // Missing labelTypes and id: normalize passes through, isLokiFields rejects.
     const malformedFrame = {
       length: 0,
       refId: 'A',
@@ -178,9 +177,6 @@ describe(`parseLokiLogs error path`, () => {
     } as unknown as LokiDataFrame<Record<string, string>, Record<string, string>>;
 
     expect(parseLokiLogs(malformedFrame)).toEqual([]);
-    // toHaveBeenCalledWith uses strict deep-equal; any extra key (e.g. row data
-    // smuggled into the metadata object) would fail this assertion, which is
-    // the no-PII-in-logs guarantee we care about.
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to normalize LokiDataFrame fields', {
       fieldNames: [LokiFieldNames.Labels, LokiFieldNames.TimeStamp, LokiFieldNames.Body],
       length: 0,
@@ -189,10 +185,6 @@ describe(`parseLokiLogs error path`, () => {
   });
 
   it(`does not leak row values when fields contain data`, () => {
-    // Same malformed shape as above (missing labelTypes and id) but with
-    // sentinel values populated in the rows that would represent real user
-    // log content. Demonstrates the no-leak property the way a reader
-    // naturally looks for it: rows in, rows definitely not out.
     const SENSITIVE_LABEL_VALUE = 'should-not-leak';
     const SENSITIVE_LOG_LINE = 'sensitive log line content';
 
