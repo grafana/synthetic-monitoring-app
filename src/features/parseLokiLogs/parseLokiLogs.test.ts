@@ -154,9 +154,17 @@ describe(`parseLokiLogs`, () => {
 });
 
 describe(`parseLokiLogs error path`, () => {
-  it(`returns [] and logs only safe schema metadata when required fields are missing`, () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  let consoleErrorSpy: jest.SpyInstance;
 
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`returns [] and logs only safe schema metadata when required fields are missing`, () => {
     // New-schema frame missing labelTypes and id, so normalizeLokiDataFrame
     // returns it as-is and isLokiFields rejects it.
     const malformedFrame = {
@@ -170,13 +178,14 @@ describe(`parseLokiLogs error path`, () => {
     } as unknown as LokiDataFrame<Record<string, string>, Record<string, string>>;
 
     expect(parseLokiLogs(malformedFrame)).toEqual([]);
+    // toHaveBeenCalledWith uses strict deep-equal; any extra key (e.g. row data
+    // smuggled into the metadata object) would fail this assertion, which is
+    // the no-PII-in-logs guarantee we care about.
     expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to normalize LokiDataFrame fields', {
       fieldNames: [LokiFieldNames.Labels, LokiFieldNames.TimeStamp, LokiFieldNames.Body],
       length: 0,
       refId: 'A',
     });
-
-    consoleErrorSpy.mockRestore();
   });
 });
 
