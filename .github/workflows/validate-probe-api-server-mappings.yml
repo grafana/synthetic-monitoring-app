@@ -24,7 +24,6 @@ jobs:
 
       - name: Verify probe mappings are up to date
         id: verify-mappings
-        continue-on-error: true
         run: |
           # Run the verification and capture output to a temp file
           yarn verify:probe-api-mappings 2>&1 | tee /tmp/verification_output.txt
