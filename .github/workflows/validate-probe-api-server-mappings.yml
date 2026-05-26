@@ -1,0 +1,33 @@
+name: Verify Probe API Server Mappings
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  verify-mappings:
+    name: Verify Probe API Server Mappings
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Verify probe mappings are up to date
+        id: verify-mappings
+        run: |
+          if yarn verify:probe-api-mappings 2>&1 | tee /tmp/verification_output.txt ; then
+            :
+          else
+            cat /tmp/verification_output.txt >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

@@ -1,14 +1,20 @@
 # Apply labels to PRs based on keywords in the PR title
-on:
-  workflow_call:
+name: Auto-label pull requests
 
-permissions:
-  pull-requests: write # needed to add labels to PRs
+permissions: {}
+
+on:
+  pull_request:
 
 jobs:
   label-by-title:
     runs-on: ubuntu-latest
+    permissions:
+      contents: none
+      pull-requests: write # needed to add labels to PRs
     steps:
+      # This needs a step to mint a token from GATB. Pass to github-script
+      # action so that it can write to PRs.
       - name: Label PR based on title
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:

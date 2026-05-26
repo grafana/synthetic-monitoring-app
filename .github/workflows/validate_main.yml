@@ -1,0 +1,38 @@
+name: Validate commits to main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  # Deploy to dev.
+  cd:
+    name: CD
+    # Documentation: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v8.0.1
+    permissions:
+      contents: read # write is only needed if we publish docs to the website.
+      id-token: write
+      attestations: write
+    with:
+      branch: main
+
+      environment: dev
+
+      docs-only: false
+
+      scopes: universal
+
+      # Argo CD inputs
+      grafana-cloud-deployment-type: provisioned
+      trigger-argo: true
+      argo-workflow-slack-channel: '#sm-ops-deploys'
+
+      auto-merge-environments: dev
+
+      # https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions/#customizing-the-workflows-with-inputs
+      node-version: 22
+      run-playwright: false  # Disabled - no Playwright tests configured
