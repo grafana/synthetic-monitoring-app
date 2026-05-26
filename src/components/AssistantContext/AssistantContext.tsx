@@ -10,8 +10,7 @@ import { ASSISTANT_PAGE_CONTEXTS } from './AssistantContext.constants';
  *
  * This is Phase 1 of the Assistant integration: a fixed set of `structured`
  * context items and questions keyed by URL pattern. No dynamic state is
- * exposed yet (e.g. the current check id is not included). See
- * `.cursor/references/grafana-assistant-phase-2.md` for the follow-up plan.
+ * exposed yet (e.g. the current check id is not included).
  *
  * Renders nothing. Safe to mount once at the root of the application.
  */
