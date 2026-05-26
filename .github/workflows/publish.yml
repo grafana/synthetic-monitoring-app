@@ -27,7 +27,7 @@ jobs:
     name: CD
     uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v8.0.1
     permissions:
-      contents: read # write is only needed if we publish docs to the website.
+      contents: write
       id-token: write
       attestations: write
       pull-requests: read
