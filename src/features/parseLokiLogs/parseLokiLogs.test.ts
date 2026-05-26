@@ -153,6 +153,73 @@ describe(`parseLokiLogs`, () => {
   });
 });
 
+describe(`parseLokiLogs error path`, () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`returns an empty array and logs only safe schema metadata when required fields are missing`, () => {
+    // Sentinel values that would be PII / customer payload in real usage.
+    // We assert they never appear in the console.error call.
+    const SENSITIVE_LABEL_VALUE = 'user-secret-label-value';
+    const SENSITIVE_LOG_LINE = 'secret-payload-DO-NOT-LEAK';
+
+    // New-schema frame intentionally missing labelTypes and id. normalizeLokiDataFrame
+    // returns it unchanged (no Time/Line triggers the no-op branch), so isLokiFields
+    // rejects it and parseLokiLogs hits the error path we care about.
+    const malformedFrame = {
+      length: 1,
+      refId: 'A',
+      fields: [
+        {
+          name: LokiFieldNames.Labels,
+          type: FieldType.other,
+          values: [{ secretKey: SENSITIVE_LABEL_VALUE }],
+          config: {},
+          typeInfo: { frame: 'json.RawMessage' },
+        },
+        {
+          name: LokiFieldNames.TimeStamp,
+          type: FieldType.time,
+          values: [1000],
+          nanos: [0],
+          config: {},
+          typeInfo: { frame: 'time.Time' },
+        },
+        {
+          name: LokiFieldNames.Body,
+          type: FieldType.string,
+          values: [SENSITIVE_LOG_LINE],
+          config: {},
+          typeInfo: { frame: 'string' },
+        },
+      ],
+    } as unknown as LokiDataFrame<Record<string, string>, Record<string, string>>;
+
+    const result = parseLokiLogs(malformedFrame);
+
+    expect(result).toEqual([]);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to normalize LokiDataFrame fields', {
+      fieldNames: [LokiFieldNames.Labels, LokiFieldNames.TimeStamp, LokiFieldNames.Body],
+      length: 1,
+      refId: 'A',
+    });
+
+    // Defense-in-depth: serialize the full call payload and assert no row values
+    // leaked through, in case the metadata shape gains a new key in the future.
+    const serialized = JSON.stringify(consoleErrorSpy.mock.calls);
+    expect(serialized).not.toContain(SENSITIVE_LABEL_VALUE);
+    expect(serialized).not.toContain(SENSITIVE_LOG_LINE);
+  });
+});
+
 describe(`normalizeLokiDataFrame`, () => {
   it(`should leave new schema fields unchanged (timestamp, body)`, () => {
     const newSchemaFrame: LokiDataFrame<Record<string, string>, Record<string, string>> = {
