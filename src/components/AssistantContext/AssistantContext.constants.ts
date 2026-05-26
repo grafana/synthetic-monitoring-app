@@ -80,6 +80,7 @@ const DOC_URLS = {
   perCheckAlerts:
     'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/configure-per-check-alerts/',
   k6Assertions: 'https://grafana.com/docs/k6/latest/using-k6/assertions/',
+  k6BrowserPractices: 'https://grafana.com/docs/k6/latest/using-k6-browser/recommended-practices.md',
 };
 
 /**
@@ -298,7 +299,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
         name: 'New k6 browser check',
         pageType: 'sm-new-check-browser',
         capabilities: ['k6-browser', 'browser-automation', 'page-assertions', 'multi-page-flows', 'probe-selection'],
-        help: `User is creating a k6 browser check (real headless browser) for synthetic monitoring. This is NOT a load test — the script runs as a single-VU probe check on a recurring schedule. Help with: writing browser scripts using the k6 browser API (page.goto, locator, waitForSelector), asserting on page content and DOM state with the k6-testing assertions library's auto-retrying matchers (await expect(page.locator(...)).toBeVisible(), .toHaveText(...), etc. — see ${DOC_URLS.k6Assertions}), navigating multi-page flows, referencing credentials via SM Secrets, and avoiding load-test constructs (no stages/VUs/thresholds). Prefer expect() over the classic check() function. Do NOT suggest page.screenshot() — screenshot capture is not currently functional in SM.`,
+        help: `User is creating a k6 browser check (real headless browser) for synthetic monitoring. This is NOT a load test — the script runs as a single-VU probe check on a recurring schedule. Help with: writing browser scripts using the k6 browser API (page.goto, locator, waitForSelector), asserting on page content and DOM state with the k6-testing assertions library's auto-retrying matchers (await expect(page.locator(...)).toBeVisible(), .toHaveText(...), etc. — see ${DOC_URLS.k6Assertions}), navigating multi-page flows, referencing credentials via SM Secrets, and avoiding load-test constructs (no stages/VUs/thresholds). Prefer expect() over the classic check() function. Do NOT suggest page.screenshot() — screenshot capture is not currently functional in SM. For recommended patterns on element selection, handling dynamic elements, simulating user input delay, and cleaning up resources, see ${DOC_URLS.k6BrowserPractices}.`,
       }),
       smK6Conventions(),
     ],
