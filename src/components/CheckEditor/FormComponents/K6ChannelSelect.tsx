@@ -5,7 +5,6 @@ import { trackK6ChannelRetryClicked, trackK6ChannelSelected } from 'features/tra
 
 import { CheckFormValues, FeatureName } from 'types';
 import { useFilteredK6Channels } from 'data/useK6Channels';
-import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
@@ -35,7 +34,6 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 
 function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   const { control, getValues } = useFormContext<CheckFormValues>();
-  const { check } = useChecksterContext();
   const id = 'k6-channel-select';
 
   const checkType = getValues('checkType');
@@ -51,7 +49,7 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     isLoading: isLoadingChannels,
     isError: hasChannelError,
     error: channelError,
-  } = useFilteredK6Channels(true, check); // Always true since this component only renders for scripted/browser
+  } = useFilteredK6Channels(true);
 
   // Initialize with default channel when no channel is set (new checks or existing checks without channel)
   useEffect(() => {

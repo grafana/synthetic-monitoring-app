@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
-import { Check, FeatureName, K6Channel } from 'types';
+import { FeatureName } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useSMDS } from 'hooks/useSMDS';
@@ -31,58 +31,20 @@ export function useK6Channels(isScriptedOrBrowser: boolean) {
   return useQuery(channelsQuery(smDS, enabled));
 }
 
-// Filter channels based on deprecation status
-export function getFilteredChannels(
-  channels: K6Channel[],
-  isExistingCheck: boolean,
-  previousChannelId?: string | null
-): K6Channel[] {
-  if (!channels.length) {
-    return [];
-  }
-
-  return channels.filter((channel) => {
-    const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
-
-    // Skip deprecated channels for new checks
-    if (isDeprecated && !isExistingCheck) {
-      return false;
-    }
-
-    // Skip deprecated channels for existing checks unless it was previously assigned
-    if (isDeprecated && isExistingCheck && channel.id !== previousChannelId) {
-      return false;
-    }
-
-    return true;
-  });
-}
-
-
-export function useFilteredK6Channels(isScriptedOrBrowser: boolean, check?: Check) {
+export function useFilteredK6Channels(isScriptedOrBrowser: boolean) {
   const { data: channelsResponse, ...queryResult } = useK6Channels(isScriptedOrBrowser);
-  
-  const { filteredChannels, defaultChannelId } = useMemo(() => {
-    const originalChannels = channelsResponse?.channels || [];
-    const isExistingCheck = !!check;
-    
-    const previousChannelId = isExistingCheck && check?.channels?.k6?.id
-      ? check.channels.k6.id
-      : null;
-    
-    const filteredChannels = getFilteredChannels(originalChannels, isExistingCheck, previousChannelId);
-    
-    // Find the default channel from filtered channels
-    const defaultChannel = filteredChannels.find((channel) => channel.default) || filteredChannels[0];
-    const defaultChannelId = defaultChannel?.id || '';
-    
-    return { filteredChannels, defaultChannelId };
-  }, [channelsResponse?.channels, check]);
+
+  const { channels, defaultChannelId } = useMemo(() => {
+    const channels = channelsResponse?.channels || [];
+    const defaultChannel = channels.find((channel) => channel.default) || channels[0];
+
+    return { channels, defaultChannelId: defaultChannel?.id || '' };
+  }, [channelsResponse?.channels]);
 
   return {
     ...queryResult,
-    data: channelsResponse ? { ...channelsResponse, channels: filteredChannels } : undefined,
-    channels: filteredChannels,
+    data: channelsResponse,
+    channels,
     defaultChannelId,
   };
 }
