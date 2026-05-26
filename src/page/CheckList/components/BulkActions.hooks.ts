@@ -4,7 +4,7 @@ import { Check, FeatureName } from 'types';
 import { useBulkCheckPermissions } from 'contexts/CheckFolderAccessContext';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
-import { deleteFolder as deleteFolderApi } from 'data/useFolders';
+import { useDeleteFolder } from 'data/useFolders';
 import { showAlert } from 'data/utils';
 
 export interface DeleteFolderTarget {
@@ -36,6 +36,7 @@ export function useBulkActions({ checks, onResolved, deleteFolder }: UseBulkActi
   }, [onResolved]);
 
   const { mutateAsync: bulkDeleteChecksAsync } = useBulkDeleteChecks({});
+  const { mutateAsync: deleteFolderAsync } = useDeleteFolder();
 
   const enableChecks = useCallback(() => {
     bulkUpdateChecks(checks.filter((check) => !check.enabled).map((check) => ({ ...check, enabled: true })));
@@ -55,14 +56,14 @@ export function useBulkActions({ checks, onResolved, deleteFolder }: UseBulkActi
 
     if (deleteFolder) {
       try {
-        await deleteFolderApi(deleteFolder.uid);
+        await deleteFolderAsync(deleteFolder.uid);
       } catch {
         showAlert('warning', `Checks deleted but folder "${deleteFolder.title}" could not be removed`);
       }
     }
 
     handleDeleteResolved();
-  }, [bulkDeleteChecksAsync, checks, deleteFolder, handleDeleteResolved]);
+  }, [bulkDeleteChecksAsync, deleteFolderAsync, checks, deleteFolder, handleDeleteResolved]);
 
   const checkCount = checks.length;
   const checksLabel = `${checkCount} check${checkCount !== 1 ? 's' : ''}`;
