@@ -32,7 +32,7 @@ jobs:
       - name: Validate generated Terraform (JSON and HCL)
         id: terraform-validate
         run: |
-          echo '# Terraform provider validation' | tee -a "$GITHUB_SUMMARY"
+          echo '# Terraform provider validation' | tee -a "$GITHUB_STEP_SUMMARY"
 
           echo "🔍 Validating generated Terraform configuration (JSON and HCL)..."
           echo "📦 Checking Grafana provider version..."
@@ -41,7 +41,7 @@ jobs:
           if [ -f "artifacts/terraform-validation/testTerraformConfig.tf.json" ]; then
             PROVIDER_CONSTRAINT=$(cat artifacts/terraform-validation/testTerraformConfig.tf.json | grep -A 10 '"required_providers"' | grep -A 5 '"grafana"' | grep '"version"' | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | head -1)
             if [ ! -z "$PROVIDER_CONSTRAINT" ]; then
-              echo "📋 Provider version constraint: $PROVIDER_CONSTRAINT" | tee -a "$GITHUB_SUMMARY"
+              echo "📋 Provider version constraint: $PROVIDER_CONSTRAINT" | tee -a "$GITHUB_STEP_SUMMARY"
             fi
           fi
 
@@ -51,9 +51,9 @@ jobs:
             # Extract grafana provider version from terraform version output
             RESOLVED_VERSION=$(cat /tmp/tf_version.txt | grep -i "provider.*grafana" | sed 's/.*v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
             if [ ! -z "$RESOLVED_VERSION" ]; then
-              echo "🎯 Resolved Grafana provider version: v$RESOLVED_VERSION" | tee -a "$GITHUB_SUMMARY"
+              echo "🎯 Resolved Grafana provider version: v$RESOLVED_VERSION" | tee -a "$GITHUB_STEP_SUMMARY"
             else
-              echo "⚠️  Could not determine resolved provider version" | tee -a "$GITHUB_SUMMARY"
+              echo "⚠️  Could not determine resolved provider version" | tee -a "$GITHUB_STEP_SUMMARY"
             fi
           fi
           popd
@@ -62,9 +62,9 @@ jobs:
           exit_status=$?
 
           if test "${exit_status}" -eq 0 ; then
-            echo "✅ Terraform configuration validation succeeded!" | tee -a "$GITHUB_SUMMARY"
+            echo "✅ Terraform configuration validation succeeded!" | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            cat <<-'EOT' | tee -a "$GITHUB_SUMMARY"
+            cat <<-'EOT' | tee -a "$GITHUB_STEP_SUMMARY"
           	❌ Terraform configuration validation failed!
 
           	## 🔧 How to Fix
