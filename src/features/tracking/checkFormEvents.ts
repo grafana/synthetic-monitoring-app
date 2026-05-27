@@ -81,3 +81,14 @@ export const trackTerraformConfigCopied = checkFormEvents<TerraformFormatChanged
 
 /** Tracks when the full configuration link is clicked. */
 export const trackTerraformFullConfigClicked = checkFormEvents('terraform_full_config_clicked');
+
+interface ExampleScriptEvent extends TrackingEventProps {
+  /** The value identifier of the selected example script. */
+  script: string;
+}
+
+/** Tracks when an example script is selected in the check form. */
+export const trackExampleScriptSelected = checkFormEvents<ExampleScriptEvent>('example_script_selected');
+
+/** Tracks when an example script is copied in the check form. */
+export const trackExampleScriptCopied = checkFormEvents<ExampleScriptEvent>('example_script_copied');
