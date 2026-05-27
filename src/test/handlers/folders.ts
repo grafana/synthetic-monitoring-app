@@ -70,3 +70,11 @@ export const createFolder: ApiEntry<GrafanaFolder> = {
     return { status: 200, json: newFolder };
   },
 };
+
+export const deleteFolder: ApiEntry<{ message: string }> = {
+  route: /\/api\/folders\/[^/]+$/,
+  method: `delete`,
+  result: async () => {
+    return { status: 200, json: { message: 'Folder deleted' } };
+  },
+};

@@ -68,8 +68,31 @@ describe('ChannelDetails', () => {
     render(<ChannelDetails channelId="deprecated" channels={mockChannels} />);
 
     await waitFor(() => {
-    expect(screen.getByText(/deprecated k6 version channel/i)).toBeInTheDocument();
-    expect(screen.getByText(/will end with the release of the next k6 major version/i)).toBeInTheDocument();
+      expect(screen.getByText(/deprecated k6 version channel/i)).toBeInTheDocument();
+      expect(screen.getByText(/your checks continue to run/i)).toBeInTheDocument();
+      expect(screen.getByText(/we recommend switching to a supported channel \(v2\)/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should show v1-specific deprecation warning when v1 is deprecated', async () => {
+    const channels: K6Channel[] = [
+      ...mockChannels.filter((ch) => ch.id !== 'v1'),
+      {
+        id: 'v1',
+        name: 'v1.x',
+        default: false,
+        deprecatedAfter: '2020-01-01T00:00:00Z',
+        manifest: 'k6>=1,k6<2',
+      },
+    ];
+
+    render(<ChannelDetails channelId="v1" channels={channels} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/we recommend switching this check to the v2 k6 version channel/i)).toBeInTheDocument();
+      expect(screen.getByText(/most scripted and browser checks do not need script changes/i)).toBeInTheDocument();
+      const migrationGuide = screen.getByRole('link', { name: /k6 v2 migration guide/i });
+      expect(migrationGuide).toHaveAttribute('href', 'https://grafana.com/docs/k6/latest/get-started/migrating-to-v2/');
     });
   });
 
