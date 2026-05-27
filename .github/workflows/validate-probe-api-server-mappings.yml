@@ -13,8 +13,7 @@ jobs:
       run:
         working-directory: .
     permissions:
-      contents: read
-      issues: write
+      contents: read  # actions/checkout
 
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5

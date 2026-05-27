@@ -3,12 +3,7 @@ name: DangerJS
 on:
   pull_request:
 
-permissions:
-  actions: read         # dawidd6/action-download-artifact
-  contents: read        # actions/checkout
-  issues: read          # Why?
-  pull-requests: write  # Used to post a message to the PR with the results.
-  statuses: write       # Update the PR status
+permissions: {}
 
 jobs:
   danger-js:
@@ -16,11 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
     permissions:
-      pull-requests: write
-      attestations: read
-      contents: read
-      issues: read
-      statuses: write
+      actions: read          # dawidd6/action-download-artifact, needed to download artifacts
+      contents: read         # checkout and read from the repo
+      pull-requests: write   # dangerJS *writes* a PR comment to post results; this is needed to list comments, find that comment and create or update it
+      statuses: write        # Update the PR status
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
