@@ -1357,14 +1357,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grafana/alerting@npm:13.0.1":
-  version: 13.0.1
-  resolution: "@grafana/alerting@npm:13.0.1"
+"@grafana/alerting@npm:13.0.0-22767724357":
+  version: 13.0.0-22767724357
+  resolution: "@grafana/alerting@npm:13.0.0-22767724357"
   dependencies:
     "@emotion/css": "npm:11.13.5"
     "@faker-js/faker": "npm:^9.8.0"
-    "@grafana/api-clients": "npm:13.0.1"
-    "@grafana/i18n": "npm:13.0.1"
+    "@grafana/api-clients": "npm:13.0.0-22767724357"
+    "@grafana/i18n": "npm:13.0.0-22767724357"
     "@reduxjs/toolkit": "npm:2.10.1"
     fishery: "npm:^2.3.1"
     lodash: "npm:^4.17.21"
@@ -1376,18 +1376,18 @@ __metadata:
     msw: ^2.0.0
     react: ^18.0.0
     react-dom: ^18.0.0
-  checksum: 10c0/53a8ccfa8c883c34e16f4b020ee3328d87732f5449083fa1680ae8456a7cbf7a6ad81f93726b4f853c551f00aa3bd6a678a2a7ebe88bddc9136d66f8d97bba3c
+  checksum: 10c0/e0d5e63f77e9ed2641ea52bf0bb6885435f9ea61ea1a381ac1f45edbec6f216b74de2d2b64755ec2d2ed6ce885b17a6b6ec16af24c0fe4133f82dc8f7ed53a6e
   languageName: node
   linkType: hard
 
-"@grafana/api-clients@npm:13.0.1":
-  version: 13.0.1
-  resolution: "@grafana/api-clients@npm:13.0.1"
+"@grafana/api-clients@npm:13.0.0-22767724357":
+  version: 13.0.0-22767724357
+  resolution: "@grafana/api-clients@npm:13.0.0-22767724357"
   peerDependencies:
     "@grafana/runtime": ">=11.6 <= 12.x"
     "@reduxjs/toolkit": ^2.10.0
     rxjs: 7.8.2
-  checksum: 10c0/8385087de71cb8ab21a60a34cb897e28a3eee005f879e3ab867a39ac6f2ce75b24a3e4c69709272d4467877a7b9f46b6bb1373935503e78a7782eb5d488ef4e7
+  checksum: 10c0/2b24a1d33ae571241e251dd9b08568fa4bd7441f3ab5e6a3ca80e1f41db1528bce1849070cd0d90fc76c47c101d4d9cb6ad704ba6ec84a6e1a92ccf71aee0d5b
   languageName: node
   linkType: hard
 
@@ -1498,9 +1498,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grafana/i18n@npm:13.0.1":
-  version: 13.0.1
-  resolution: "@grafana/i18n@npm:13.0.1"
+"@grafana/i18n@npm:13.0.0-22767724357":
+  version: 13.0.0-22767724357
+  resolution: "@grafana/i18n@npm:13.0.0-22767724357"
   dependencies:
     "@formatjs/intl-durationformat": "npm:^0.7.0"
     "@typescript-eslint/utils": "npm:^8.33.1"
@@ -1512,7 +1512,7 @@ __metadata:
     react-i18next: "npm:^15.0.0"
   peerDependencies:
     react: ">=18"
-  checksum: 10c0/458923a99a21ab3039be53df7f50235eb336fa28510a11fdb89cc5888e46de0c2390007ccbf2d01b0997677b05cd921ed145fc6d63d07801331847c700636fc6
+  checksum: 10c0/0a93751eca83683f39b92eadc0a9e18eea579c16a26c2ec4f89f7847ae6e002d2e089a4d1db7d26a9d2114825c278786014d51f12a793b37d9e0baefbc2521f6
   languageName: node
   linkType: hard
 
@@ -14700,7 +14700,7 @@ __metadata:
     "@commitlint/config-conventional": "npm:20.0.0"
     "@emotion/css": "npm:11.13.5"
     "@faker-js/faker": "npm:10.1.0"
-    "@grafana/alerting": "npm:13.0.1"
+    "@grafana/alerting": "npm:13.0.0-22767724357"
     "@grafana/data": "npm:12.4.3"
     "@grafana/eslint-config": "npm:9.0.0"
     "@grafana/faro-web-sdk": "npm:1.19.0"
