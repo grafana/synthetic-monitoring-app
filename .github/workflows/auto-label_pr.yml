@@ -5,19 +5,27 @@ permissions: {}
 
 on:
   pull_request:
+    branches:
+      - main
 
 jobs:
   label-by-title:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-arm64-small
     permissions:
       contents: none
+      id-token: write      # mint token
       pull-requests: write # needed to add labels to PRs
     steps:
-      # This needs a step to mint a token from GATB. Pass to github-script
-      # action so that it can write to PRs.
+      - name: Get GitHub App token
+        id: get-github-app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@580590a644e82e79bb2598bdaba0be245a14dda0 # create-github-app-token/v0.2.2
+        with:
+          github_app: synthetic-monitoring-ci
+
       - name: Label PR based on title
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
+          github-token: ${{ steps.get-github-app-token.outputs.token }}
           script: |
             const title = context.payload.pull_request && context.payload.pull_request.title || '';
             // Mapping: regex -> label name (aligned with conventional commits & release-please)
