@@ -87,6 +87,8 @@ export const CodeSnippet = ({
     return tab;
   }, [hasGroups, activeGroup, tab]);
 
+  const resolvedGroup = hasGroups ? activeGroup ?? tab.groups[0]?.value : undefined;
+
   useEffect(() => {
     if (hasGroups && tab.selected) {
       setActiveGroup(tab.selected);
@@ -132,9 +134,8 @@ export const CodeSnippet = ({
         <div className={cx(styles.codeWrapper, className)}>
           {hasGroups && (
             <div className={styles.tabGroup}>
-              {tab.groups.map((group, index) => {
-                const isGroupActive =
-                  !tab.groups.some((item) => item.value === activeGroup) && !index ? true : activeGroup === group.value;
+              {tab.groups.map((group) => {
+                const isGroupActive = resolvedGroup === group.value;
                 return (
                   <CodeSnippetGroup
                     key={`${tab.value}-${group.value}`}
@@ -156,7 +157,7 @@ export const CodeSnippet = ({
           {canCopy && (
             <CopyToClipboardButton
               data={snippet ?? ''}
-              onCopy={onCopy && activeGroup ? () => onCopy(activeGroup) : undefined}
+              onCopy={onCopy && resolvedGroup ? () => onCopy(resolvedGroup) : undefined}
             />
           )}
         </div>
