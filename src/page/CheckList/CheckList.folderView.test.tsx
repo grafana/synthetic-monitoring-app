@@ -166,25 +166,30 @@ describe('CheckList - Folder View Integration', () => {
       expect(screen.getAllByText('0 checks').length).toBeGreaterThan(0);
     });
 
-    test('empty folders show a disabled checkbox and a delete button', async () => {
-      await renderCheckList([CHECK_IN_PRODUCTION]);
+    test('selecting an empty folder reveals the delete action', async () => {
+      const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
 
       expect(await screen.findByText('Staging')).toBeInTheDocument();
 
-      const emptyCheckbox = screen.getByLabelText('Staging (empty)');
-      expect(emptyCheckbox).toBeDisabled();
+      const emptyCheckbox = screen.getByLabelText('Select folder Staging');
+      expect(emptyCheckbox).toBeEnabled();
+      expect(screen.queryByRole('button', { name: 'Delete folder' })).not.toBeInTheDocument();
 
-      const deleteButtons = screen.getAllByRole('button', { name: 'Delete folder' });
-      expect(deleteButtons.length).toBeGreaterThan(0);
+      await user.click(emptyCheckbox);
+      expect(screen.getByRole('button', { name: 'Delete folder' })).toBeInTheDocument();
     });
 
-    test('folders with checks show an enabled checkbox', async () => {
-      await renderCheckList([CHECK_IN_PRODUCTION]);
+    test('deselecting an empty folder hides the delete action', async () => {
+      const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
 
-      expect(await screen.findByText('Production')).toBeInTheDocument();
+      expect(await screen.findByText('Staging')).toBeInTheDocument();
 
-      const checkbox = screen.getByLabelText('Select all checks in Production');
-      expect(checkbox).toBeEnabled();
+      const emptyCheckbox = screen.getByLabelText('Select folder Staging');
+      await user.click(emptyCheckbox);
+      expect(screen.getByRole('button', { name: 'Delete folder' })).toBeInTheDocument();
+
+      await user.click(emptyCheckbox);
+      expect(screen.queryByRole('button', { name: 'Delete folder' })).not.toBeInTheDocument();
     });
   });
 

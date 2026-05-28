@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Checkbox, ConfirmModal, Icon, IconButton, Pagination, Spinner, Stack, Tooltip, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckType, GrafanaFolder, Label } from 'types';
@@ -252,6 +252,7 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
 
   const isEmpty = totalChecks === 0;
   const canDeleteEmptyFolder = isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned;
+  const [emptyFolderSelected, setEmptyFolderSelected] = useState(false);
   const [showDeleteEmptyFolderModal, setShowDeleteEmptyFolderModal] = useState(false);
   const { mutateAsync: deleteFolderAsync } = useDeleteFolder();
 
@@ -262,9 +263,14 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
       // Folder deletion failed — modal closes, folder stays visible
     }
     setShowDeleteEmptyFolderModal(false);
+    setEmptyFolderSelected(false);
   };
 
   const handleFolderSelectAll = () => {
+    if (isEmpty) {
+      setEmptyFolderSelected((prev) => !prev);
+      return;
+    }
     if (isAllInFolderSelected) {
       checkItemProps.onDeselectChecks(allFolderCheckIds);
     } else {
@@ -276,18 +282,19 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
     checkItemProps.onDeselectChecks(allFolderCheckIds);
   };
 
+  const showActions = isEmpty ? emptyFolderSelected : selectedCount > 0;
+
   return (
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
       <div className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}>
         <Checkbox
-          aria-label={isEmpty ? `${node.folder?.title ?? 'folder'} (empty)` : `Select all checks in ${node.folder?.title ?? 'folder'}`}
-          checked={!isEmpty && isAllInFolderSelected}
+          aria-label={isEmpty ? `Select folder ${node.folder?.title ?? 'folder'}` : `Select all checks in ${node.folder?.title ?? 'folder'}`}
+          checked={isEmpty ? emptyFolderSelected : isAllInFolderSelected}
           indeterminate={!isEmpty && isSomeInFolderSelected}
           onChange={handleFolderSelectAll}
-          disabled={isEmpty}
         />
         <button
-          className={cx(styles.folderToggle, isEmpty && styles.folderToggleMuted)}
+          className={styles.folderToggle}
           onClick={() => toggleFolder(node.folderUid)}
           aria-expanded={isExpanded}
           aria-label={`${isExpanded ? 'Collapse' : 'Expand'} folder ${node.folder?.title ?? node.folderUid}`}
@@ -329,7 +336,7 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
             </span>
           </Stack>
         </button>
-        {selectedCount > 0 && (
+        {showActions && !isEmpty && (
           <div className={styles.folderActions}>
             <FolderBulkActions
               checks={selectedChecksInFolder}
@@ -339,8 +346,8 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
             <span className={styles.selectedCount}>{selectedCount} selected</span>
           </div>
         )}
-        {canDeleteEmptyFolder && (
-          <>
+        {showActions && canDeleteEmptyFolder && (
+          <div className={styles.folderActions}>
             <IconButton
               name="trash-alt"
               aria-label="Delete folder"
@@ -349,6 +356,7 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
               variant="destructive"
               onClick={(e) => { e.stopPropagation(); setShowDeleteEmptyFolderModal(true); }}
             />
+            <span className={styles.selectedCount}>1 selected</span>
             {showDeleteEmptyFolderModal && (
               <ConfirmModal
                 isOpen={showDeleteEmptyFolderModal}
@@ -359,7 +367,7 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
                 onDismiss={() => setShowDeleteEmptyFolderModal(false)}
               />
             )}
-          </>
+          </div>
         )}
       </div>
 
@@ -503,12 +511,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
       outline: `2px solid ${theme.colors.primary.border}`,
       outlineOffset: 2,
       borderRadius: theme.shape.radius.default,
-    },
-  }),
-  folderToggleMuted: css({
-    color: theme.colors.text.secondary,
-    '&:hover': {
-      color: theme.colors.text.primary,
     },
   }),
   folderActions: css({
