@@ -64,7 +64,7 @@
     "axios": "1.15.2",
     "copy-webpack-plugin": "13.0.1",
     "css-loader": "7.1.2",
-    "danger": "13.0.5",
+    "danger": "13.0.7",
     "eslint": "9.39.1",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jest-dom": "5.5.0",
