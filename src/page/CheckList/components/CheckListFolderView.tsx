@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Checkbox, Icon, Pagination, Spinner, Stack, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Button, Checkbox, ConfirmModal, Icon, IconButton, Pagination, Spinner, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckType, GrafanaFolder, Label } from 'types';
 import { useCheckFolderStatus } from 'contexts/CheckFolderAccessContext';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
+import { useDeleteFolder } from 'data/useFolders';
 import { buildChecksByFolder, collectAllCheckIds, collectAllChecks, collectAllFolderUids, FolderNode, getTotalCheckCount } from 'hooks/useChecksByFolder';
 import { Feedback } from 'components/Feedback';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
@@ -118,6 +119,9 @@ export function CheckListFolderView({
     selectedCheckIds,
   };
 
+  const foldersWithChecks = useMemo(() => folderTree.filter((n) => getTotalCheckCount(n) > 0), [folderTree]);
+  const emptyFolders = useMemo(() => folderTree.filter((n) => getTotalCheckCount(n) === 0), [folderTree]);
+
   const hasAnyContent = folderTree.length > 0 || defaultFolderNode !== null;
 
   return (
@@ -153,7 +157,7 @@ export function CheckListFolderView({
             </Stack>
           </div>
 
-          {folderTree.map((node) => (
+          {foldersWithChecks.map((node) => (
             <FolderTreeBranch
               key={node.folderUid}
               node={node}
@@ -176,6 +180,18 @@ export function CheckListFolderView({
               onRetryFolders={onRetryFolders}
             />
           )}
+
+          {emptyFolders.map((node) => (
+            <FolderTreeBranch
+              key={node.folderUid}
+              node={node}
+              depth={0}
+              collapsedFolders={collapsedFolders}
+              toggleFolder={toggleFolder}
+              checkItemProps={checkItemProps}
+              onRetryFolders={onRetryFolders}
+            />
+          ))}
         </div>
       )}
 
@@ -234,6 +250,20 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
     ? { uid: node.folderUid, title: node.folder?.title ?? node.folderUid }
     : undefined;
 
+  const isEmpty = totalChecks === 0;
+  const canDeleteEmptyFolder = isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned;
+  const [showDeleteEmptyFolderModal, setShowDeleteEmptyFolderModal] = useState(false);
+  const { mutateAsync: deleteFolderAsync } = useDeleteFolder();
+
+  const handleDeleteEmptyFolder = async () => {
+    try {
+      await deleteFolderAsync(node.folderUid);
+    } catch {
+      // Folder deletion failed — modal closes, folder stays visible
+    }
+    setShowDeleteEmptyFolderModal(false);
+  };
+
   const handleFolderSelectAll = () => {
     if (isAllInFolderSelected) {
       checkItemProps.onDeselectChecks(allFolderCheckIds);
@@ -249,16 +279,15 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
   return (
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
       <div className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}>
-        {totalChecks > 0 && (
-          <Checkbox
-            aria-label={`Select all checks in ${node.folder?.title ?? 'folder'}`}
-            checked={isAllInFolderSelected}
-            indeterminate={isSomeInFolderSelected}
-            onChange={handleFolderSelectAll}
-          />
-        )}
+        <Checkbox
+          aria-label={isEmpty ? `${node.folder?.title ?? 'folder'} (empty)` : `Select all checks in ${node.folder?.title ?? 'folder'}`}
+          checked={!isEmpty && isAllInFolderSelected}
+          indeterminate={!isEmpty && isSomeInFolderSelected}
+          onChange={handleFolderSelectAll}
+          disabled={isEmpty}
+        />
         <button
-          className={styles.folderToggle}
+          className={cx(styles.folderToggle, isEmpty && styles.folderToggleMuted)}
           onClick={() => toggleFolder(node.folderUid)}
           aria-expanded={isExpanded}
           aria-label={`${isExpanded ? 'Collapse' : 'Expand'} folder ${node.folder?.title ?? node.folderUid}`}
@@ -309,6 +338,28 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
             />
             <span className={styles.selectedCount}>{selectedCount} selected</span>
           </div>
+        )}
+        {canDeleteEmptyFolder && (
+          <>
+            <IconButton
+              name="trash-alt"
+              aria-label="Delete folder"
+              tooltip="Delete folder"
+              size="sm"
+              variant="destructive"
+              onClick={(e) => { e.stopPropagation(); setShowDeleteEmptyFolderModal(true); }}
+            />
+            {showDeleteEmptyFolderModal && (
+              <ConfirmModal
+                isOpen={showDeleteEmptyFolderModal}
+                title={`Delete folder "${node.folder?.title ?? node.folderUid}"`}
+                body="This will delete the empty folder. This action cannot be undone."
+                confirmText="Delete folder"
+                onConfirm={handleDeleteEmptyFolder}
+                onDismiss={() => setShowDeleteEmptyFolderModal(false)}
+              />
+            )}
+          </>
         )}
       </div>
 
@@ -452,6 +503,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
       outline: `2px solid ${theme.colors.primary.border}`,
       outlineOffset: 2,
       borderRadius: theme.shape.radius.default,
+    },
+  }),
+  folderToggleMuted: css({
+    color: theme.colors.text.secondary,
+    '&:hover': {
+      color: theme.colors.text.primary,
     },
   }),
   folderActions: css({

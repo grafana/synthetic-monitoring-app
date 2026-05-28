@@ -165,6 +165,27 @@ describe('CheckList - Folder View Integration', () => {
       expect(screen.getByText('Staging')).toBeInTheDocument();
       expect(screen.getAllByText('0 checks').length).toBeGreaterThan(0);
     });
+
+    test('empty folders show a disabled checkbox and a delete button', async () => {
+      await renderCheckList([CHECK_IN_PRODUCTION]);
+
+      expect(await screen.findByText('Staging')).toBeInTheDocument();
+
+      const emptyCheckbox = screen.getByLabelText('Staging (empty)');
+      expect(emptyCheckbox).toBeDisabled();
+
+      const deleteButtons = screen.getAllByRole('button', { name: 'Delete folder' });
+      expect(deleteButtons.length).toBeGreaterThan(0);
+    });
+
+    test('folders with checks show an enabled checkbox', async () => {
+      await renderCheckList([CHECK_IN_PRODUCTION]);
+
+      expect(await screen.findByText('Production')).toBeInTheDocument();
+
+      const checkbox = screen.getByLabelText('Select all checks in Production');
+      expect(checkbox).toBeEnabled();
+    });
   });
 
   describe('with folders feature disabled', () => {

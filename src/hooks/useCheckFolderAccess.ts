@@ -46,8 +46,9 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
         uids.add(check.folderUid);
       }
     });
+    allFolders.forEach((folder) => uids.add(folder.uid));
     return [...uids];
-  }, [checks, isFoldersEnabled, defaultFolderUid]);
+  }, [checks, allFolders, isFoldersEnabled, defaultFolderUid]);
 
   const { folderDetailsByUid } = useFolderPermissions(folderUids);
   const smPerms = useUserPermissions();
