@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
+import { trackExampleScriptCopied, trackExampleScriptSelected } from 'features/tracking/checkFormEvents';
 
 import { CodeSnippetTab } from '../../CodeSnippet/CodeSnippet.types';
 
@@ -25,5 +26,15 @@ export function ScriptExamples({ examples }: ScriptExamplesProps) {
     ];
   }, [examples]);
 
-  return <CodeSnippet hideHeader canCopy dedent tabs={tabs} lang="js" />;
+  const handleGroupChange = useCallback((script: string) => {
+    trackExampleScriptSelected({ script });
+  }, []);
+
+  const handleCopy = useCallback((script: string) => {
+    trackExampleScriptCopied({ script });
+  }, []);
+
+  return (
+    <CodeSnippet hideHeader canCopy dedent tabs={tabs} lang="js" onGroupChange={handleGroupChange} onCopy={handleCopy} />
+  );
 }
