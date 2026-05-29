@@ -106,6 +106,8 @@ jest.mock('@grafana/runtime', () => {
     ...actual,
     locationService,
     LocationServiceProvider: actual.LocationServiceProvider,
+    // Defaults to "not installed"; tests can override via (useAppPluginInstalled as jest.Mock).mockReturnValue(...)
+    useAppPluginInstalled: jest.fn(() => ({ loading: false, error: undefined, value: false })),
     config: {
       ...actual.config,
       datasources: {
