@@ -8,7 +8,7 @@ import {
   CHECK_WITH_ORPHANED_FOLDER,
   CHECK_WITHOUT_FOLDER,
 } from 'test/fixtures/folderChecks';
-import { DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_STAGING, MOCK_FOLDERS } from 'test/fixtures/folders';
+import { DEFAULT_FOLDER, FOLDER_DELETABLE, FOLDER_PRODUCTION, FOLDER_READONLY, FOLDER_STAGING, MOCK_FOLDERS } from 'test/fixtures/folders';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -99,6 +99,38 @@ describe('buildChecksByFolder', () => {
     expect(rootChecks).toHaveLength(0);
   });
 
+  test('includes empty folders in the tree', () => {
+    const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
+
+    const allUids = collectAllFolderUids(folderTree);
+    expect(allUids).toContain(FOLDER_PRODUCTION.uid);
+    expect(allUids).toContain(FOLDER_STAGING.uid);
+    expect(allUids).toContain(FOLDER_READONLY.uid);
+    expect(allUids).toContain(FOLDER_DELETABLE.uid);
+  });
+
+  test('sorts empty folders after folders with checks', () => {
+    const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
+
+    const titles = folderTree.map((n) => n.folder?.title);
+    const productionIndex = titles.indexOf(FOLDER_PRODUCTION.title);
+    const emptyFolderTitles = [FOLDER_STAGING.title, FOLDER_READONLY.title, FOLDER_DELETABLE.title];
+    const emptyIndices = emptyFolderTitles.map((t) => titles.indexOf(t));
+
+    emptyIndices.forEach((emptyIdx) => {
+      expect(emptyIdx).toBeGreaterThan(productionIndex);
+    });
+  });
+
+  test('sorts empty folders alphabetically among themselves', () => {
+    const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
+
+    const emptyNodes = folderTree.filter((n) => n.checks.length === 0 && n.children.length === 0);
+    const titles = emptyNodes.map((n) => n.folder?.title ?? n.folderUid);
+    const sorted = [...titles].sort((a, b) => a.localeCompare(b));
+    expect(titles).toEqual(sorted);
+  });
+
   test('returns orphaned nodes when folders list is empty', () => {
     const { folderTree, rootChecks } = buildChecksByFolder(FOLDER_CHECKS, []);
 
@@ -124,6 +156,40 @@ describe('CheckList - Folder View Integration', () => {
       await renderCheckList(FOLDER_CHECKS, 'view=folder');
 
       expect(await screen.findByText(/Folders/)).toBeInTheDocument();
+    });
+
+    test('shows empty folders with 0 checks', async () => {
+      await renderCheckList([CHECK_IN_PRODUCTION]);
+
+      expect(await screen.findByText('Production')).toBeInTheDocument();
+      expect(screen.getByText('Staging')).toBeInTheDocument();
+      expect(screen.getAllByText('0 checks').length).toBeGreaterThan(0);
+    });
+
+    test('selecting an empty folder reveals the delete action', async () => {
+      const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+      expect(await screen.findByText('Staging')).toBeInTheDocument();
+
+      const emptyCheckbox = screen.getByLabelText('Select folder Staging');
+      expect(emptyCheckbox).toBeEnabled();
+      expect(screen.queryByRole('button', { name: 'Delete folder' })).not.toBeInTheDocument();
+
+      await user.click(emptyCheckbox);
+      expect(screen.getByRole('button', { name: 'Delete folder' })).toBeInTheDocument();
+    });
+
+    test('deselecting an empty folder hides the delete action', async () => {
+      const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+      expect(await screen.findByText('Staging')).toBeInTheDocument();
+
+      const emptyCheckbox = screen.getByLabelText('Select folder Staging');
+      await user.click(emptyCheckbox);
+      expect(screen.getByRole('button', { name: 'Delete folder' })).toBeInTheDocument();
+
+      await user.click(emptyCheckbox);
+      expect(screen.queryByRole('button', { name: 'Delete folder' })).not.toBeInTheDocument();
     });
   });
 

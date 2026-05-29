@@ -96,6 +96,12 @@ export function buildChecksByFolder(
     getOrCreateNode(check.folderUid).checks.push(check);
   });
 
+  folders.forEach((folder) => {
+    if (!isDefaultFolder(folder.uid)) {
+      getOrCreateNode(folder.uid);
+    }
+  });
+
   nodeMap.forEach((node) => {
     let current = node.folder;
     while (current?.parentUid && !isDefaultFolder(current.parentUid)) {
@@ -118,12 +124,19 @@ export function buildChecksByFolder(
     }
   });
 
+  const sortByTitle = (a: FolderNode, b: FolderNode) => {
+    const titleA = a.folder?.title ?? a.folderUid;
+    const titleB = b.folder?.title ?? b.folderUid;
+    return titleA.localeCompare(titleB);
+  };
+
   const sortNodes = (nodes: FolderNode[]) => {
-    nodes.sort((a, b) => {
-      const titleA = a.folder?.title ?? a.folderUid;
-      const titleB = b.folder?.title ?? b.folderUid;
-      return titleA.localeCompare(titleB);
-    });
+    const withChecks = nodes.filter((n) => getTotalCheckCount(n) > 0).sort(sortByTitle);
+    const empty = nodes.filter((n) => getTotalCheckCount(n) === 0).sort(sortByTitle);
+
+    nodes.length = 0;
+    nodes.push(...withChecks, ...empty);
+
     nodes.forEach((n) => sortNodes(n.children));
   };
   sortNodes(rootNodes);
