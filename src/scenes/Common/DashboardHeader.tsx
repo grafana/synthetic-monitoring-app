@@ -5,6 +5,7 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
+import { CheckKnowledgeGraphInsights } from 'features/knowledgeGraph/KnowledgeGraphInsights';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
 
@@ -24,6 +25,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
           <DashboardAnnotationControls annotations={annotations} />
         </div>
         <div className={styles.actions}>
+          <CheckKnowledgeGraphInsights check={check} />
           <EditCheckButton id={check.id} />
           <div className={styles.dashboardControls}>
             <TimeRangePicker />
