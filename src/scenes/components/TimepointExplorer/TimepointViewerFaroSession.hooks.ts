@@ -52,6 +52,7 @@ export function useFaroSessionLink({ job, instance, probe, from, to, enabled = t
 
         const parsed = frames[0] ? parseLokiLogs(frames[0]) : [];
         const session = getFaroSessionFromLogs(parsed);
+        console.log({frames, parsed, session});
 
         if (!session) {
           return null;
