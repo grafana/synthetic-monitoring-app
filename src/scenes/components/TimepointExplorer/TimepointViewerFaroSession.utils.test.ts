@@ -70,13 +70,14 @@ describe('getFaroSessionFromLogs', () => {
     id: 'id-1',
   });
 
-  it('returns the first record with both app_id and session_id', () => {
+  it('ignores records missing app_id or session_id and returns a usable one', () => {
     const result = getFaroSessionFromLogs([
       makeRecord({ app_id: '', session_id: 'ignored' }),
       makeRecord({ app_id: '2', session_id: 'abc123' }),
       makeRecord({ app_id: '2', session_id: 'def456' }),
     ]);
 
+    // Single record each, no rotation -> deterministic tie-break on first seen.
     expect(result).toEqual({ appId: '2', sessionId: 'abc123' });
   });
 
@@ -84,6 +85,43 @@ describe('getFaroSessionFromLogs', () => {
     expect(getFaroSessionFromLogs([])).toBeNull();
     expect(getFaroSessionFromLogs([makeRecord({ app_id: '2' })])).toBeNull();
     expect(getFaroSessionFromLogs([makeRecord({ session_id: 'abc' })])).toBeNull();
+  });
+
+  it('skips the rotated-away stub session even though it appears first', () => {
+    // Mirrors the real Faro behaviour: a short-lived landing session
+    // (session_start + recording.started) that is rotated away from, then the
+    // real journey session referencing it via previousSession.
+    const result = getFaroSessionFromLogs([
+      makeRecord({ app_id: '3', session_id: 'stub1', event_name: 'session_start' }),
+      makeRecord({ app_id: '3', session_id: 'stub1', event_name: 'faro.session_recording.started' }),
+      makeRecord({ app_id: '3', session_id: 'real1', session_attr_previousSession: 'stub1' }),
+      makeRecord({ app_id: '3', session_id: 'real1', page_id: '/signup' }),
+      makeRecord({ app_id: '3', session_id: 'real1', page_id: '/dashboard' }),
+    ]);
+
+    expect(result).toEqual({ appId: '3', sessionId: 'real1' });
+  });
+
+  it('picks the session with the most matching records', () => {
+    const result = getFaroSessionFromLogs([
+      makeRecord({ app_id: '3', session_id: 'sparse' }),
+      makeRecord({ app_id: '3', session_id: 'rich' }),
+      makeRecord({ app_id: '3', session_id: 'rich' }),
+      makeRecord({ app_id: '3', session_id: 'rich' }),
+    ]);
+
+    expect(result).toEqual({ appId: '3', sessionId: 'rich' });
+  });
+
+  it('settles on the terminal session across a rotation chain (older -> a -> b)', () => {
+    const result = getFaroSessionFromLogs([
+      makeRecord({ app_id: '3', session_id: 'a', session_attr_previousSession: 'older' }),
+      makeRecord({ app_id: '3', session_id: 'b', session_attr_previousSession: 'a' }),
+      makeRecord({ app_id: '3', session_id: 'b', session_attr_previousSession: 'a' }),
+    ]);
+
+    // 'older' and 'a' were rotated away from; 'b' is the terminal session.
+    expect(result).toEqual({ appId: '3', sessionId: 'b' });
   });
 });
 
