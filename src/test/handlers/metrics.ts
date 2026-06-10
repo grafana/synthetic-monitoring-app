@@ -1,3 +1,4 @@
+import { getChecksCurrentSuccessRateQuery, getOverallReachabilityQuery } from 'queries/checkStatus';
 import { getProbeExecutionRateQuery, getProbeFailureRateQuery } from 'queries/probeExecutionStats';
 import { BASIC_CHECK_LIST } from 'test/fixtures/checks';
 import { METRICS_DATASOURCE } from 'test/fixtures/datasources';
@@ -13,6 +14,22 @@ const INSTANT_METRICS = BASIC_CHECK_LIST.map((check) => ({
   },
   value: [1598535155, '1'],
 }));
+
+// First check in the list reports as failing so tests can exercise the "down" path
+const CURRENT_STATE_METRICS = BASIC_CHECK_LIST.map((check, index) => ({
+  metric: {
+    instance: check.target,
+    job: check.job,
+  },
+  value: [1598535155, index === 0 ? '0' : '1'],
+}));
+
+const OVERALL_REACHABILITY_METRICS = [
+  {
+    metric: {},
+    value: [1598535155, '0.975'],
+  },
+];
 
 const RANGE_METRICS = BASIC_CHECK_LIST.map((check) => ({
   metric: {
@@ -42,6 +59,32 @@ export const getInstantMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
           status: `success`,
           data: {
             result: INSTANT_METRICS,
+            resultType: 'vector',
+          },
+        },
+      };
+    }
+
+    if (query === getChecksCurrentSuccessRateQuery()) {
+      return {
+        status: 200,
+        json: {
+          status: `success`,
+          data: {
+            result: CURRENT_STATE_METRICS,
+            resultType: 'vector',
+          },
+        },
+      };
+    }
+
+    if (query === getOverallReachabilityQuery()) {
+      return {
+        status: 200,
+        json: {
+          status: `success`,
+          data: {
+            result: OVERALL_REACHABILITY_METRICS,
             resultType: 'vector',
           },
         },
