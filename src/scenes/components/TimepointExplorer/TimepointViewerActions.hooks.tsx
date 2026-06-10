@@ -26,7 +26,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   const metricsDS = useMetricsDS();
   const { check, currentAdjustedTime, handleViewerStateChange, listLogsMap, viewerState, timepoints } =
     useTimepointExplorerContext();
-  const [_, viewerProbeName] = viewerState;
+  const [_, viewerProbeName, viewerExecutionIndex] = viewerState;
   const logsQuery = { expr: `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"} | logfmt` };
   const metricsQuery = {
     expr: `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"}[$__range]`,
@@ -50,10 +50,19 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   });
 
   const isBrowserCheck = getCheckType(check.settings) === CheckType.Browser;
+  // Prefer the exact per-run execution id (newer agents stamp it as Loki
+  // structured metadata on every log line of the run). Falls back to the
+  // legacy job/instance/probe time-window matching when it is absent.
+  const selectedExecution =
+    viewerProbeName !== undefined && viewerExecutionIndex !== undefined
+      ? listLogsMap[timepoint.adjustedTime]?.probeResults?.[viewerProbeName]?.[viewerExecutionIndex]
+      : undefined;
+  const executionId = selectedExecution?.labels.execution_id;
   const { data: faroSession } = useFaroSessionLink({
     job: check.job,
     instance: check.target,
     probe: viewerProbeName,
+    executionId,
     from: timepoint.adjustedTime,
     to: timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency,
     enabled: isBrowserCheck,

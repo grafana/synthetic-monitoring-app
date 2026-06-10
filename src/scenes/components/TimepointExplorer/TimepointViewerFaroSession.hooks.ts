@@ -8,6 +8,7 @@ import {
   REF_ID_FARO_SESSION,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
+  buildFaroSessionByExecutionIdLogQL,
   buildFaroSessionHref,
   buildFaroSessionLogQL,
   getFaroSessionFromLogs,
@@ -23,15 +24,35 @@ interface UseFaroSessionLinkProps {
   job: string;
   instance: string;
   probe?: string;
+  // When present, correlation is pinned to this exact check run via
+  // `k6_testRunId="sm:<executionId>"`. When absent (older agents), we fall back
+  // to matching job/instance/probe inside the legacy k6_testRunId JSON blob.
+  executionId?: string;
   from: number;
   to: number;
   enabled?: boolean;
 }
 
-export function useFaroSessionLink({ job, instance, probe, from, to, enabled = true }: UseFaroSessionLinkProps) {
+export function useFaroSessionLink({
+  job,
+  instance,
+  probe,
+  executionId,
+  from,
+  to,
+  enabled = true,
+}: UseFaroSessionLinkProps) {
   const logsDS = useLogsDS();
-  const canQuery = Boolean(logsDS && job && instance && probe && from && to && from < to && enabled);
-  const expr = canQuery ? buildFaroSessionLogQL({ job, instance, probe: probe! }) : '';
+  const hasExecutionId = Boolean(executionId);
+  // The execution-id path is an exact match and does not need job/instance/probe.
+  const canQuery = Boolean(
+    logsDS && (hasExecutionId || (job && instance && probe)) && from && to && from < to && enabled
+  );
+  const expr = !canQuery
+    ? ''
+    : hasExecutionId
+      ? buildFaroSessionByExecutionIdLogQL(executionId!)
+      : buildFaroSessionLogQL({ job, instance, probe: probe! });
 
   return useQuery<FaroSessionResult | null>({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps -- logsDS.uid is a stable identifier
@@ -52,7 +73,6 @@ export function useFaroSessionLink({ job, instance, probe, from, to, enabled = t
 
         const parsed = frames[0] ? parseLokiLogs(frames[0]) : [];
         const session = getFaroSessionFromLogs(parsed);
-        console.log({frames, parsed, session});
 
         if (!session) {
           return null;

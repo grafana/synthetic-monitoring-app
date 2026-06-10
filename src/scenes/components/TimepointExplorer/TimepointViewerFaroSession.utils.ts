@@ -46,6 +46,20 @@ export function buildFaroSessionLogQL({ job, instance, probe }: BuildFaroSession
   return `{kind=~"event|measurement"} | logfmt | k6_isK6Browser="true" | ${filters.join(' | ')}`;
 }
 
+/**
+ * Builds a LogQL expression that finds the Faro web events for a specific check
+ * run, keyed on the run's execution id. Newer agents stamp each check run with
+ * an `execution_id` (Loki structured metadata) and inject it into the browser
+ * test so the Faro session's `k6_testRunId` is exactly `sm:<execution_id>`.
+ *
+ * This is an exact match, so it does not depend on the time window, the JSON
+ * shape of `k6_testRunId`, or the job/instance/probe values — it pins the
+ * session to the precise execution the user selected.
+ */
+export function buildFaroSessionByExecutionIdLogQL(executionId: string): string {
+  return `{kind=~"event|measurement"} | logfmt | k6_isK6Browser="true" | k6_testRunId="sm:${executionId}"`;
+}
+
 interface FaroSessionIds {
   appId: string;
   sessionId: string;

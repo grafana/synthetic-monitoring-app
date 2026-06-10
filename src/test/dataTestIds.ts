@@ -160,4 +160,5 @@ export enum DataTestIds {
   TimepointList = 'timepoint-list',
   TimepointListEntryBar = 'timepoint-list-entry-bar',
   TimepointViewer = 'timepoint-viewer',
+  LogsExecutionId = 'logs-execution-id',
 }

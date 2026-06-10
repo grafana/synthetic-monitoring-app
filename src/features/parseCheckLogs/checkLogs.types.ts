@@ -6,6 +6,11 @@ import { MSG_STRINGS_COMMON } from './checkLogs.constants.msgs';
 export type ExecutionLabels<T extends Record<string, string> = {}> = T & {
   check_name: CheckType;
   detected_level: 'error' | 'info' | 'warn';
+  // Loki structured metadata stamped on every check log line by the agent. A
+  // UUID identifying a single check run; used to correlate with the FE O11y
+  // (Faro) session whose k6_testRunId is `sm:<execution_id>`. Optional because
+  // older agents do not emit it.
+  execution_id?: string;
   instance: string;
   job: string;
   level: 'error' | 'info' | 'warn';
