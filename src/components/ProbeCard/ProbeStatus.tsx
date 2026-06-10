@@ -9,7 +9,7 @@ import { ProbeWithMetadata } from 'types';
 /** Show offline only after probe has been down for more than this (seconds). Brief disconnects stay "online". */
 const OFFLINE_GRACE_SECONDS = 60;
 
-function isDisplayOnline(probe: ProbeWithMetadata): boolean {
+export function isDisplayOnline(probe: ProbeWithMetadata): boolean {
   if (probe.online) {
     return true;
   }

@@ -3,6 +3,14 @@
 import '../../.config/jest-setup';
 import './setup-msw-polyfill';
 
+// Module mocks must be registered before importing anything that transitively
+// imports @grafana/runtime (e.g. data/queryClient -> data/utils). Modules loaded
+// before the mock keep a reference to the real getBackendSrv, which is never
+// initialised in tests, so their requests fail instead of going through MSW.
+import 'test/mocks/@grafana/runtime';
+import 'test/mocks/@grafana/ui';
+import 'test/mocks/components/SimpleMap';
+
 import { server } from './server';
 import 'test/silenceErrors';
 import 'jest-canvas-mock';
@@ -54,10 +62,6 @@ global.ResizeObserver = jest.fn(() => ({
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
-
-import 'test/mocks/@grafana/runtime';
-import 'test/mocks/@grafana/ui';
-import 'test/mocks/components/SimpleMap';
 
 // note there are some other mocks set up in jest.config.js
 // for example the rawLoader, unsupported_file, grafana/app/core/core

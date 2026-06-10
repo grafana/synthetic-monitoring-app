@@ -22,11 +22,11 @@ import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManageme
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
 import { DashboardPage } from 'page/DashboardPage';
 import { EditProbe } from 'page/EditProbe';
+import { HomePage } from 'page/Home';
 import { NewProbe } from 'page/NewProbe';
 import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
-import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
 // Alpha (requires `synthetic-monitoring-check-editor=true`)
@@ -62,7 +62,7 @@ export const InitialisedRouter = () => {
         path={AppRoutes.Home}
         element={
           canReadChecks ? (
-            <SceneHomepage />
+            <HomePage />
           ) : (
             <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
           )
