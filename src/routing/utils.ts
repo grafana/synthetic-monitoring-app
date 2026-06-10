@@ -31,8 +31,13 @@ export function generateRoutePath<Path extends AppRoutes>(
     [key in PathParam<Path>]: string | null | number;
   } = {} as any
 ) {
+  // react-router's generatePath no longer accepts number param values, so normalize them to strings
+  const normalizedParams = Object.fromEntries(
+    Object.entries(params).map(([key, value]) => [key, value === null ? null : String(value)])
+  );
+
   // Important: this will throw if a route requires a param but the params object doesn't hold the param key/value
-  return `${generatePath(getRoute(route), params)}`;
+  return `${generatePath(getRoute(route), normalizedParams)}`;
 }
 
 export function getRoute(route: AppRoutes) {
