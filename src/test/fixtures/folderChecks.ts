@@ -1,7 +1,7 @@
 import { Check } from 'types';
 
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from './checks';
-import { FOLDER_FORBIDDEN_UID, FOLDER_PRODUCTION, FOLDER_READONLY, FOLDER_STAGING } from './folders';
+import { FOLDER_DELETABLE, FOLDER_FORBIDDEN_UID, FOLDER_PRODUCTION, FOLDER_READONLY, FOLDER_STAGING } from './folders';
 
 export const CHECK_IN_PRODUCTION: Check = {
   ...BASIC_HTTP_CHECK,
@@ -43,4 +43,18 @@ export const CHECK_WITH_ORPHANED_FOLDER: Check = {
   id: 205,
   job: 'Orphaned folder check',
   folderUid: 'deleted-folder-uid',
+};
+
+export const CHECK_IN_DELETABLE_FOLDER: Check = {
+  ...BASIC_HTTP_CHECK,
+  id: 210,
+  job: 'Deletable folder check',
+  folderUid: FOLDER_DELETABLE.uid,
+};
+
+export const SECOND_CHECK_IN_DELETABLE_FOLDER: Check = {
+  ...BASIC_PING_CHECK,
+  id: 211,
+  job: 'Deletable folder check 2',
+  folderUid: FOLDER_DELETABLE.uid,
 };

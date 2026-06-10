@@ -1,31 +1,18 @@
-# Manual deployment workflow for Synthetic Monitoring App
-# Uses shared workflows from plugin-ci-workflows for provisioned plugins
-# Documentation: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions
-
-name: Manual Deployment
-run-name: Deploy ${{ inputs.branch }} to ${{ inputs.environment }} by @${{ github.actor }}
+name: Validate commits to main
 
 on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: Branch to publish from (can be used to deploy PRs to dev)
-        default: main
-      environment:
-        description: Environment to publish to
-        required: true
-        type: choice
-        options:
-          - 'dev'
-          - 'ops'
-          - 'prod'
+  push:
+    branches:
+      - main
 
 permissions: {}
 
 jobs:
+  # Deploy to dev.
   cd:
     name: CD
-    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v8.0.1
+    # Documentation: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions
+    #
     #  About permissions below.
     #
     # - attestations: write: publish attestations.
@@ -36,15 +23,20 @@ jobs:
     # - pull-requests: read: list PRs to determine if the branch from which the
     #   release is created is an open PR. We don't need this because we set
     #   branch=main. Remove this as soon as possible.
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v8.0.1
     permissions:
       attestations: write
       contents: write
       id-token: write
       pull-requests: read
     with:
-      branch: ${{ github.event.inputs.branch }}
+      branch: main
 
-      environment: ${{ github.event.inputs.environment }}
+      environment: dev
+
+      # Append commit SHA so each merge to main publishes a unique version
+      # to the dev catalog and GCS, instead of colliding with the released version.
+      plugin-version-suffix: ${{ github.sha }}
 
       docs-only: false
 
@@ -52,10 +44,10 @@ jobs:
 
       # Argo CD inputs
       grafana-cloud-deployment-type: provisioned
-      trigger-argo: ${{ github.event.inputs.branch == 'main' }}
+      trigger-argo: true
       argo-workflow-slack-channel: '#sm-ops-deploys'
 
-      auto-merge-environments: dev, ops
+      auto-merge-environments: dev
 
       # https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions/#customizing-the-workflows-with-inputs
       node-version: 22

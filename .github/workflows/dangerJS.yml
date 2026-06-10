@@ -1,0 +1,44 @@
+name: DangerJS
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  danger-js:
+    name: DangerJS
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    permissions:
+      actions: read          # dawidd6/action-download-artifact, needed to download artifacts
+      contents: read         # checkout and read from the repo
+      pull-requests: write   # dangerJS *writes* a PR comment to post results; this is needed to list comments, find that comment and create or update it
+      statuses: write        # Update the PR status
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Setup Plugin Environment
+        uses: ./.github/actions/setup-env
+
+      - name: Make artifacts folder
+        run: mkdir -p artifacts
+
+      - name: Generate current bundle size
+        run: yarn run stats artifacts/currentBundleSize.json
+
+      - name: Download mainBundleSize
+        id: download-bundle
+        uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
+        with:
+          workflow: publish-main-bundle-size.yml
+          workflow_conclusion: success
+          if_no_artifact_found: ignore
+          name: mainBundleSize
+          path: artifacts
+
+      - name: DangerJS
+        if: ${{ hashFiles('artifacts/mainBundleSize.json') != '' }}
+        run: yarn danger:ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

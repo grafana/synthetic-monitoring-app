@@ -25,9 +25,9 @@ const smWriterNoDelete = () => {
 };
 
 const FOLDER_LOADING: FolderAccessState = { type: 'loading' };
-const FOLDER_ADMIN: FolderAccessState = { type: 'accessible', permissions: { canEdit: true, canAdmin: true } };
-const FOLDER_EDITOR: FolderAccessState = { type: 'accessible', permissions: { canEdit: true, canAdmin: false } };
-const FOLDER_VIEWER: FolderAccessState = { type: 'accessible', permissions: { canEdit: false, canAdmin: false } };
+const FOLDER_ADMIN: FolderAccessState = { type: 'accessible', permissions: { canEdit: true, canAdmin: true, canDelete: true } };
+const FOLDER_EDITOR: FolderAccessState = { type: 'accessible', permissions: { canEdit: true, canAdmin: false, canDelete: true } };
+const FOLDER_VIEWER: FolderAccessState = { type: 'accessible', permissions: { canEdit: false, canAdmin: false, canDelete: false } };
 const FOLDER_FORBIDDEN: FolderAccessState = { type: 'forbidden' };
 const FOLDER_ORPHANED: FolderAccessState = { type: 'orphaned' };
 
@@ -97,7 +97,7 @@ describe('isCheckVisible', () => {
     ['forbidden', false],
   ])('returns %s for status type "%s"', (type, expected) => {
     const status: CheckFolderStatus = type === 'accessible'
-      ? { type, permissions: { canEdit: true, canAdmin: true } }
+      ? { type, permissions: { canEdit: true, canAdmin: true, canDelete: true } }
       : { type } as CheckFolderStatus;
 
     expect(isCheckVisible(status)).toBe(expected);

@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+#
+# docker-run-user: A wrapper for `docker run` or `podman run` that automatically
+#                  handles user ID mapping to ensure files written to mounted volumes
+#                  have the correct ownership.
+#
+# Usage:
+#   scripts/docker-run-user [docker args...]
+#
+# This script detects whether the system using Docker or Podman, inspects the
+# runtime configuration, and automatically adds the appropriate `--user` and
+# `--userns` flags to ensure that files mounted from the host are created with
+# the correct ownership.
+#
+# The basic issue is that running a container as the current user works
+# differently depending on how the container runtime is configured. The runtime
+# can run as root or as the current user, and on Linux systems, user namespaces
+# may be in use. When they are, container runtimes often remap user IDs inside
+# the container. For example, ID `1000` on the host may be mapped to ID `100000`
+# inside the container. This means that if you run a container as user `1000`
+# without additional configuration, files created in mounted volumes will be
+# owned by `100000` on the host, which in practice often leads to permission
+# issues.
+#
+# The script tries to fix that, so that things work correctly with Docker and
+# Podman in scenarios where user namespaces both are and are not in use.
+#
+# Examples:
+#   # Run a container that creates a file in your home directory
+#   scripts/docker-run-user --rm -v "${HOME}:/data" alpine touch /data/test.txt
+#
+#   # The resulting file will be owned by your user, not root
+#   ls -l ~/test.txt
+#
+# The script automatically passes all additional arguments to the container runtime.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# Global variables
+CURRENT_UID=""
+CONTAINER_RUNTIME=""
+CURRENT_GID=""
+
+# The arguments passed to the container runtime
+DOCKER_USER_ARGS=(run)
+
+# Check for required dependencies
+check_dependencies() {
+        if ! command -v jq >/dev/null 2>&1; then
+                echo "Error: jq is required but not installed" >&2
+                exit 1
+        fi
+}
+
+# Determine which container runtime to use
+detect_runtime() {
+        if command -v docker >/dev/null 2>&1; then
+                CONTAINER_RUNTIME="docker"
+        elif command -v podman >/dev/null 2>&1; then
+                CONTAINER_RUNTIME="podman"
+        else
+                echo "Error: neither docker nor podman found in PATH" >&2
+                exit 1
+        fi
+}
+
+# Get current user's UID and GID
+detect_current_user_ids() {
+        CURRENT_UID="$(id -u)"
+        CURRENT_GID="$(id -g)"
+}
+
+# Determine container arguments by looking at the `docker` or `podman` info
+# output. There are three cases:
+#
+# 1. Podman with user ID mappings enabled: use `--userns=keep-id` to
+#    keep the same user ID inside the container.
+# 2. Docker or Podman without user ID mappings, but with user namespaces
+#    enabled: use `--userns=host` and `-u UID:GID`. This disables user
+#    namespaces for the container, ensuring that the user ID inside the
+#    container matches the host.
+# 3. Docker or Podman without user namespaces: just use `-u UID:GID`.
+user_args() {
+        local runtime_info="$1"
+        local -a new_args=()
+
+        # Fill `new_args` from `jq` output, one arg per line
+        while IFS= read -r line; do
+                new_args+=("$line")
+        done < <(
+                jq -r --argjson uid "${CURRENT_UID}" --argjson gid "${CURRENT_GID}" '
+                  # If running as root, do not force any user mapping; just inherit defaults.
+                  if $uid == 0 then
+                    []
+                  elif .host.idMappings.uidmap? then
+                    # Podman case with ID mappings - use keep-id to automatically map current user
+                    ["--userns=keep-id"]
+                  else
+                    # Docker case (or Podman without mappings)
+                    if (.SecurityOptions // []) | map(select(startswith("name=userns"))) | length > 0 then
+                      ["--userns=host", "-u", "\($uid):\($gid)"]
+                    else
+                      ["-u", "\($uid):\($gid)"]
+                    end
+                  end
+                  | .[]
+                ' <<<"${runtime_info}"
+        )
+
+        DOCKER_USER_ARGS+=("${new_args[@]}")
+}
+
+main() {
+        check_dependencies
+        detect_runtime
+        detect_current_user_ids
+
+        # Get JSON-formatted info from the container runtime
+        local runtime_info
+        runtime_info="$("${CONTAINER_RUNTIME}" info --format '{{json .}}')"
+
+        user_args "${runtime_info}"
+
+        # Execute the container runtime with our calculated arguments + user arguments
+        exec "${CONTAINER_RUNTIME}" "${DOCKER_USER_ARGS[@]}" "$@"
+}
+
+main "$@"

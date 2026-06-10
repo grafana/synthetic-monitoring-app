@@ -1,4 +1,4 @@
-import { faro, isError, isObject } from '@grafana/faro-web-sdk';
+import { faro, isError } from '@grafana/faro-web-sdk';
 import { config } from '@grafana/runtime';
 
 export enum FaroEvent {
@@ -61,17 +61,14 @@ export function reportEvent(type: FaroEvent, info: Record<string, string> = {}) 
   }
 }
 
-function sanitizeError(error: Error | Object | string) {
+function sanitizeError(error: Error | string): Error {
   if (isError(error)) {
     return error;
   }
-  if (isObject(error)) {
-    return new Error(JSON.stringify(error));
-  }
-  return new Error(error);
+  return new Error(String(error));
 }
 
-export function reportError(error: Error | Object | string, type?: FaroEvent) {
+export function reportError(error: Error | string, type?: FaroEvent) {
   const valToSend = sanitizeError(error);
   try {
     faro.api.pushError(valToSend, { type });

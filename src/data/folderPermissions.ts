@@ -11,6 +11,7 @@ import { SMPermissions } from './permissions';
 export interface FolderPermissionFlags {
   canEdit: boolean;
   canAdmin: boolean;
+  canDelete: boolean;
 }
 
 /**

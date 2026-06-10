@@ -10,6 +10,20 @@ There are two different "modes" for developing this plugin. You can either work 
 - Make sure you have Docker installed
 - Clone this repo to your local machine
 
+### Package manager
+
+This project uses **Yarn 4** (Berry). The binary is vendored at `.yarn/releases/yarn-4.15.0.cjs` and referenced via `yarnPath` in `.yarnrc.yml`. When you run `yarn`, the global Yarn installation automatically delegates to this vendored binary, so the whole team uses the exact same version.
+
+If `yarn` is not found after cloning, enable [corepack](https://yarnpkg.com/corepack) (ships with most Node.js installations):
+
+```bash
+corepack enable
+```
+
+If `corepack` itself is not found (some third-party Node.js distributors strip it), install it first via `npm install -g corepack`.
+
+Once a global `yarn` command is available, `yarnPath` takes over from there.
+
 ### Install
 
 After cloning and running `yarn install`, you need to manually set up git hooks:
@@ -18,7 +32,7 @@ After cloning and running `yarn install`, you need to manually set up git hooks:
 yarn prepare
 ```
 
-This is required because lifecycle scripts are disabled in `.yarnrc` for supply-chain security. The `prepare` script sets up [Husky](https://typicode.github.io/husky/) git hooks (commit message linting, pre-push checks). You only need to run this once per clone.
+This is required because lifecycle scripts are disabled in `.yarnrc.yml` for supply-chain security. The `prepare` script sets up [Husky](https://typicode.github.io/husky/) git hooks (commit message linting, pre-push checks). You only need to run this once per clone.
 
 ### Set up
 

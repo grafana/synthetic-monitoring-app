@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.51.0",
+  "version": "1.52.0",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
@@ -8,6 +8,7 @@
     "build:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/build-probe-api-mappings.ts",
     "build:generate-terraform-test-config": "npx tsx scripts/terraform-validation/generate-test-configs.ts",
     "build": "webpack -c webpack.config.ts --env production",
+    "stats": "webpack --profile --no-devtool --json",
     "danger:ci": "yarn danger ci --dangerfile danger/dangerfile.ts",
     "danger:pr": "yarn danger pr --dangerfile danger/dangerfile.ts",
     "dev:msw": "REACT_APP_MSW=true webpack -w -c webpack.config.ts --env development",
@@ -36,8 +37,8 @@
     "@commitlint/config-conventional": "20.0.0",
     "@faker-js/faker": "10.1.0",
     "@grafana/eslint-config": "9.0.0",
-    "@openfeature/web-sdk": "1.7.3",
     "@grafana/tsconfig": "2.0.1",
+    "@openfeature/web-sdk": "1.7.3",
     "@stylistic/eslint-plugin-ts": "4.4.1",
     "@swc/core": "1.15.3",
     "@swc/helpers": "0.5.17",
@@ -60,7 +61,7 @@
     "@types/valid-url": "1.0.7",
     "@typescript-eslint/eslint-plugin": "8.46.3",
     "@typescript-eslint/parser": "8.46.3",
-    "axios": "1.15.2",
+    "axios": "1.16.0",
     "copy-webpack-plugin": "13.0.1",
     "css-loader": "7.1.2",
     "danger": "13.0.5",
@@ -103,7 +104,7 @@
     "undici": "7.24.0",
     "webpack": "5.104.1",
     "webpack-bundle-analyzer": "4.10.2",
-    "webpack-cli": "6.0.1",
+    "webpack-cli": "^7.0.2",
     "webpack-livereload-plugin": "3.0.2",
     "webpack-merge": "6.0.1",
     "webpack-subresource-integrity": "5.1.0",
@@ -112,14 +113,14 @@
   "dependencies": {
     "@emotion/css": "11.13.5",
     "@grafana/alerting": "13.0.0-22767724357",
-    "@grafana/data": "12.4.0",
+    "@grafana/data": "12.4.3",
     "@grafana/faro-web-sdk": "1.19.0",
-    "@grafana/i18n": "12.4.0",
-    "@grafana/runtime": "12.4.0",
+    "@grafana/i18n": "12.4.3",
+    "@grafana/runtime": "12.4.3",
     "@grafana/scenes": "6.52.10",
     "@grafana/scenes-react": "6.52.10",
-    "@grafana/schema": "12.4.0",
-    "@grafana/ui": "12.4.0",
+    "@grafana/schema": "12.4.3",
+    "@grafana/ui": "12.4.3",
     "@hookform/resolvers": "5.2.2",
     "@tanstack/react-query": "5.90.11",
     "@tanstack/react-query-devtools": "5.91.1",
@@ -155,5 +156,5 @@
     "rxjs": "7.8.2",
     "strip-ansi": "^6.0.1"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@4.15.0"
 }

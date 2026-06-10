@@ -26,7 +26,7 @@ import { createAccessToken } from 'test/handlers/tokens';
 import { ApiEntry } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
-import { createFolder, getFolder, listFolders } from './folders';
+import { createFolder, deleteFolder, getFolder, listFolders } from './folders';
 import { listK6Channels } from './k6Channels';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
@@ -39,6 +39,7 @@ const API_ROUTES = {
   createFolder,
   createSecret,
   deleteCheck,
+  deleteFolder,
   deleteProbe,
   deleteSecret,
   getAlertRules,

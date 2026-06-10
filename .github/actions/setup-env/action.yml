@@ -7,7 +7,6 @@ runs:
       uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
       with:
         node-version: "22"
-        cache: 'yarn'
 
     - name: Cache node_modules
       id: cache-node-modules
@@ -21,7 +20,7 @@ runs:
     - name: Get yarn cache directory path
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
       id: yarn-cache-dir-path
-      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Cache Yarn Dependencies
@@ -35,5 +34,5 @@ runs:
 
     - name: Install dependencies
       if: steps.cache-node-modules.outputs.cache-hit != 'true'
-      run: yarn install --immutable --prefer-offline
+      run: yarn install --immutable
       shell: bash
