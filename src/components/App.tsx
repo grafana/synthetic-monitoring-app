@@ -9,6 +9,7 @@ import { css, Global } from '@emotion/react';
 import { ProvisioningJsonData } from 'types';
 import { getFaroConfig } from 'faro';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
+import { ExternalDependenciesProvider } from 'contexts/ExternalDependenciesContext';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
@@ -55,17 +56,19 @@ const App = (props: AppRootProps<ProvisioningJsonData>) => {
   return (
     <QueryClientProvider client={queryClient}>
       <MetaContextProvider meta={meta}>
-        <FeatureFlagProvider>
-          <GlobalStyles />
-          <SMDatasourceProvider>
-            <PermissionsContextProvider>
-              <DevTools>
-                <InitialisedRouter />
-              </DevTools>
-            </PermissionsContextProvider>
-            <ReactQueryDevtools />
-          </SMDatasourceProvider>
-        </FeatureFlagProvider>
+        <ExternalDependenciesProvider>
+          <FeatureFlagProvider>
+            <GlobalStyles />
+            <SMDatasourceProvider>
+              <PermissionsContextProvider>
+                <DevTools>
+                  <InitialisedRouter />
+                </DevTools>
+              </PermissionsContextProvider>
+              <ReactQueryDevtools />
+            </SMDatasourceProvider>
+          </FeatureFlagProvider>
+        </ExternalDependenciesProvider>
       </MetaContextProvider>
     </QueryClientProvider>
   );
