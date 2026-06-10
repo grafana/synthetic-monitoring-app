@@ -37,11 +37,8 @@ import {
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
-import { SecretsResponse } from 'data/useSecrets';
-import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
 import { LokiQueryResults } from '../components/Checkster/feature/adhoc-check/useAdHocLogs';
-import { SecretWithMetadata } from '../page/ConfigPageLayout/tabs/SecretsManagementTab';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -403,44 +400,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       method: 'POST',
       data: {},
     }).then((data) => data.token);
-  }
-
-  //--------------------------------------------------------------------------------
-  // SECRETS MANAGEMENT
-  //--------------------------------------------------------------------------------
-
-  async getSecrets(): Promise<SecretsResponse> {
-    return this.fetchAPI<SecretsResponse>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
-      method: 'GET',
-    });
-  }
-
-  async getSecret(name: string): Promise<SecretWithMetadata> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-      method: 'GET',
-    });
-  }
-
-  async saveSecret(secret: SecretFormValues & { uuid?: string }): Promise<SecretWithMetadata> {
-    if (secret.uuid) {
-      // For updates: use name for URL but exclude it from payload
-      const { name, ...secretWithoutName } = secret;
-      return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-        method: 'PUT',
-        data: secretWithoutName,
-      });
-    }
-    // For creates: include name in payload
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets`, {
-      method: 'POST',
-      data: secret,
-    });
-  }
-
-  async deleteSecret(name: string): Promise<unknown> {
-    return this.fetchAPI<SecretWithMetadata>(`${this.instanceSettings.url}/api/v1alpha1/secrets/${name}`, {
-      method: 'DELETE',
-    });
   }
 
   //--------------------------------------------------------------------------------

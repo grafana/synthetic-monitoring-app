@@ -180,6 +180,22 @@ Tracks when a feature feedback comment is submitted.
 | reaction | `"good" \| "bad"` | The reaction to the feature. |
 | comment  | `string`          | The comment text.            |
 
+### folders
+
+#### synthetic-monitoring_folders_folder_selected
+
+Tracks when a folder is selected in the folder selector.
+
+##### Properties
+
+| name      | type            | description                                           |
+| --------- | --------------- | ----------------------------------------------------- |
+| isDefault | `false \| true` | Whether the selected folder is the default SM folder. |
+
+#### synthetic-monitoring_folders_folder_created
+
+Tracks when a new folder is created via the folder selector.
+
 ### link
 
 #### synthetic-monitoring_link_clicked

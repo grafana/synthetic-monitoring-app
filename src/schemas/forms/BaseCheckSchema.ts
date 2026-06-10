@@ -25,6 +25,7 @@ export const baseCheckSchema = z.object({
   channels: z.object({
     k6: z.custom<K6Channel>().optional(),
   }).optional(),
+  folderUid: z.string().optional(),
 });
 
 export function addRefinements<T extends CheckFormValuesBase>(schema: ZodType<T, any, any>) {

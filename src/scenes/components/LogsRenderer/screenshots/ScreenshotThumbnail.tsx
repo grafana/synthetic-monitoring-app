@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackScreenshotDismissed, trackScreenshotExpanded } from 'features/tracking/screenshotEvents';
 
 import { sanitizeScreenshotSrc } from './screenshots.utils';
 
@@ -17,6 +18,16 @@ export const ScreenshotThumbnail = ({ base64, url, caption }: ScreenshotThumbnai
   const src = sanitizeScreenshotSrc(url, base64);
   const alt = caption || 'Screenshot';
 
+  const handleExpand = useCallback(() => {
+    trackScreenshotExpanded({ hasCaption: !!caption, source: url ? 'url' : 'base64' });
+    setIsModalOpen(true);
+  }, [caption, url]);
+
+  const handleDismiss = useCallback(() => {
+    trackScreenshotDismissed();
+    setIsModalOpen(false);
+  }, []);
+
   if (!src) {
     return null;
   }
@@ -28,7 +39,7 @@ export const ScreenshotThumbnail = ({ base64, url, caption }: ScreenshotThumbnai
         <button
           type="button"
           className={styles.thumbnailButton}
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleExpand}
           aria-label={`View full size: ${alt}`}
         >
           <img src={src} alt={alt} className={styles.thumbnail} />
@@ -38,7 +49,7 @@ export const ScreenshotThumbnail = ({ base64, url, caption }: ScreenshotThumbnai
         <Modal
           title={caption ? `Screenshot: ${caption}` : 'Screenshot'}
           isOpen={true}
-          onDismiss={() => setIsModalOpen(false)}
+          onDismiss={handleDismiss}
           className={styles.modalOverride}
           contentClassName={styles.modalContent}
         >

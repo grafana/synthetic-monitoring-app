@@ -1,15 +1,19 @@
+import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { trackCheckUpdated } from 'features/tracking/checkFormEvents';
 import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import { FOLDER_FORBIDDEN_UID, FOLDER_READONLY } from 'test/fixtures/folders';
 import { apiRoute } from 'test/handlers';
+import { render } from 'test/render';
 import { server } from 'test/server';
-import { runTestAsRBACReader, runTestAsViewer } from 'test/utils';
+import { mockFeatureToggles, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
-import { CheckType } from 'types';
+import { Check, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { renderEditForm } from 'page/__testHelpers__/checkForm';
+import { EditCheckV2 } from 'page/EditCheck/EditCheckV2';
 
 import { submitForm } from '../../../../components/Checkster/__testHelpers__/formHelpers';
 
@@ -110,5 +114,61 @@ describe(`<EditCheckV2 />`, () => {
     });
 
     expect(trackCheckUpdated).toHaveBeenCalledWith({ checkType: CheckType.Dns });
+  });
+
+  describe('folder permissions', () => {
+    const CHECK_IN_READONLY_FOLDER: Check = { ...BASIC_HTTP_CHECK, folderUid: FOLDER_READONLY.uid };
+    const CHECK_IN_FORBIDDEN_FOLDER: Check = { ...BASIC_HTTP_CHECK, folderUid: FOLDER_FORBIDDEN_UID };
+
+    const renderEditPage = (check: Check) => {
+      server.use(apiRoute(`listChecks`, { result: () => ({ json: [check] }) }));
+
+      return render(<EditCheckV2 />, {
+        route: AppRoutes.EditCheck,
+        path: generateRoutePath(AppRoutes.EditCheck, { id: check.id! }),
+      });
+    };
+
+    describe('with folders feature enabled', () => {
+      beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+
+      it('redirects when the check is in a forbidden folder', async () => {
+        await renderEditPage(CHECK_IN_FORBIDDEN_FOLDER);
+
+        await waitFor(() => {
+          const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
+          expect(pathInfo.textContent).not.toContain('/edit');
+        });
+      });
+
+      it('disables the form for a check in a read-only folder', async () => {
+        await renderEditPage(CHECK_IN_READONLY_FOLDER);
+
+        await waitFor(() => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
+
+        const submitButton = await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton);
+        expect(submitButton).toBeDisabled();
+      });
+
+      it('enables the form for a check without a folderUid', async () => {
+        await renderEditPage({ ...BASIC_HTTP_CHECK, folderUid: undefined });
+
+        await waitFor(() => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
+
+        const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+        expect(jobNameInput).not.toBeDisabled();
+      });
+    });
+
+    describe('with folders feature disabled', () => {
+      it('uses SM RBAC only — form is enabled for a check in a read-only folder', async () => {
+        await renderEditPage(CHECK_IN_READONLY_FOLDER);
+
+        await waitFor(() => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
+
+        const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+        expect(jobNameInput).not.toBeDisabled();
+      });
+    });
   });
 });

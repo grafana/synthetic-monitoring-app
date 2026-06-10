@@ -11,15 +11,15 @@ export const K6_CHANNELS: K6Channel[] = [
   {
     id: 'v1',
     name: 'v1.x',
-    default: true,
-    deprecatedAfter: '2126-01-01T00:00:00Z',
+    default: false,
+    deprecatedAfter: '2026-07-01T00:00:00Z', // Deprecation coming soon but not yet
     manifest: 'k6>=1,k6<2',
   },
   {
     id: 'v2',
     name: 'v2.x',
-    default: false,
-    deprecatedAfter: '2028-12-31T00:00:00Z',
+    default: true,
+    deprecatedAfter: '2128-12-31T00:00:00Z',
     manifest: 'k6>=2',
   },
 ];

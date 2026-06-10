@@ -3,24 +3,23 @@
 set -e
 set -u
 
-IMAGE=ghcr.io/grafana/generate-policy-bot-config:latest
+IMAGE=ghcr.io/grafana/generate-policy-bot-config@sha256:d05ff5c7d4247da155c85f8c6f1f9f7c6d013d1f3fd9fd9d68eb06f1e7b0393d
 
-targetdir=${1:-}
+toplevel=$(git rev-parse --show-toplevel)
+targetdir=${1:-${toplevel}}
 mergearg=
-
-if test -z "${targetdir}" ; then
-	targetdir=$(git rev-parse --show-toplevel)
-fi
 
 if test -f "${targetdir}/.policy.yml.tmpl" ; then
 	mergearg="--merge-with=.policy.yml.tmpl"
 fi
 
-docker run --rm                       \
-	--volume "${targetdir}:/work" \
-	--user "$(id -u):$(id -g)"    \
-	--workdir /work               \
-	"${IMAGE}"                    \
-	--output /work/.policy.yml    \
-	"${mergearg}"                 \
+${toplevel}/scripts/run-as-user        \
+	--quiet                        \
+	--rm                           \
+	--volume "${targetdir}"/:/work \
+	--workdir /work                \
+	"${IMAGE}"                     \
+	--output /work/.policy.yml     \
+	--log-level=debug              \
+	${mergearg}                    \
 	.
