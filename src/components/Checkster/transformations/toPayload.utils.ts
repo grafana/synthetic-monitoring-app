@@ -27,6 +27,7 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
           },
         }
       : undefined,
+    folderUid: formValues.folderUid,
   };
 }
 

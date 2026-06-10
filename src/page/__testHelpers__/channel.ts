@@ -22,15 +22,15 @@ export const MOCK_CHANNELS_RESPONSE = {
     {
       id: 'v1',
       name: 'v1.x',
-      default: true,
-      deprecatedAfter: '2125-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
+      default: false,
+      deprecatedAfter: '2126-07-01T00:00:00Z', // Not yet deprecated, but deprecation coming
       manifest: 'k6>=1,k6<2',
     },
     {
       id: 'v2',
       name: 'v2.x',
-      default: false,
-      deprecatedAfter: '2126-12-31T00:00:00Z', // Far into the future, so it's not deprecated yet'
+      default: true,
+      deprecatedAfter: '2128-12-31T00:00:00Z',
       manifest: 'k6>=2',
     },
   ],

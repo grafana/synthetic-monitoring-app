@@ -9,10 +9,13 @@
   "checkFilters": {
     "alerts": "Alerts",
     "all": "All",
+    "allFolders": "All folders",
     "allProbes": "All probes",
     "filterByAlertsAriaLabel": "Filter by alerts",
+    "filterByFolderAriaLabel": "Filter by folder",
     "filterByStatusAriaLabel": "Filter by status",
     "filterByTypeAriaLabel": "Filter by type",
+    "folders": "Folders",
     "probes": "Probes",
     "searchChecksAriaLabel": "Search checks",
     "searchPlaceholder": "Search by job name, endpoint, or label",

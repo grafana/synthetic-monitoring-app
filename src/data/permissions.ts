@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
 import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
-import { FixedSecretPermission, PluginPermissions } from 'types';
+import { FixedSecretPermission, GrafanaFolderPermission, PluginPermissions } from 'types';
 
 const ROLE_HIERARCHY: Record<OrgRole, OrgRole[]> = {
   [OrgRole.Viewer]: [OrgRole.Viewer, OrgRole.Editor, OrgRole.Admin],
@@ -20,7 +21,7 @@ const hasMinFallbackRole = (fallbackOrgRole: OrgRole) => {
   return ROLE_HIERARCHY[fallbackOrgRole]?.includes(orgRole) || false;
 };
 
-const isUserActionAllowed = (permission: PluginPermissions | FixedSecretPermission): boolean => {
+const isUserActionAllowed = (permission: PluginPermissions | FixedSecretPermission | GrafanaFolderPermission): boolean => {
   const { permissions: userPermissions } = config.bootData.user;
 
   return Boolean(userPermissions?.[permission]);
@@ -53,5 +54,15 @@ export const getUserPermissions = () => ({
   canUpdateSecrets: isUserActionAllowed('secret.securevalues:write'),
   canDeleteSecrets: isUserActionAllowed('secret.securevalues:delete'),
 
+  canCreateFolders: isUserActionAllowed('folders:create'),
+
   isAdmin: hasMinFallbackRole(OrgRole.Admin),
 });
+
+export type SMPermissions = ReturnType<typeof getUserPermissions>;
+
+export function useUserPermissions(): SMPermissions {
+  const userPermissions = config.bootData.user.permissions;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useMemo(() => getUserPermissions(), [userPermissions]);
+}

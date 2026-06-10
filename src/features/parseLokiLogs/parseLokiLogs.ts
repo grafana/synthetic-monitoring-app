@@ -20,10 +20,13 @@ type FieldParser = Partial<Record<LokiFieldNamesOld | LokiFieldNames, (value: an
 // parser to extract individual fields before calling this function.
 export function parseLokiLogs<T, R>(dataFrame: LokiDataFrame<T, R>, parser?: FieldParser) {
   const normalizedDataFrame = normalizeLokiDataFrame(dataFrame);
-  // After normalization, fields are guaranteed to be LokiFields<T, R>
   if (!isLokiFields(normalizedDataFrame.fields)) {
     // Log error but return empty array to prevent UI crashes
-    console.error('Failed to normalize LokiDataFrame fields', normalizedDataFrame);
+    console.error('Failed to normalize LokiDataFrame fields', {
+      fieldNames: normalizedDataFrame.fields.map((f) => f.name),
+      length: normalizedDataFrame.length,
+      refId: normalizedDataFrame.refId,
+    });
     return [];
   }
   const flattenedLogs = flattenLogs(normalizedDataFrame.fields, parser);

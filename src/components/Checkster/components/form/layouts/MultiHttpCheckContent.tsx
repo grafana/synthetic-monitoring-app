@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { SectionContent } from '../../ui/SectionContent';
+import { FormFolderField } from '../FormFolderField';
 import { FormJobField } from '../FormJobField';
 import { FormMultiHttpEntriesField } from '../FormMultiHttpEntriesField';
 
@@ -11,6 +12,7 @@ export function MultiHttpCheckContent() {
   return (
     <SectionContent>
       <FormJobField field="job" />
+      <FormFolderField />
       <FormMultiHttpEntriesField field="settings.multihttp.entries" />
     </SectionContent>
   );

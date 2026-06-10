@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge, ClipboardButton, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import { cx } from '@emotion/css';
 import { highlight, languages } from 'prismjs';
@@ -40,13 +40,14 @@ const CodeSnippetGroup = ({ active = false, group, onClick }: CodeSnippetGroupPr
   );
 };
 
-const CopyToClipboardButton = (data: string) => {
+const CopyToClipboardButton = ({ data, onCopy }: { data: string; onCopy?: () => void }) => {
   return (
     <ClipboardButton
       icon="clipboard-alt"
       variant="secondary"
       size="sm"
       getText={() => data ?? ''}
+      onClipboardCopy={onCopy}
       data-cy="copy-agent-install"
     >
       Copy
@@ -62,12 +63,22 @@ export const CodeSnippet = ({
   tabs = [],
   className,
   hideHeader,
+  onGroupChange,
+  onCopy,
 }: CodeSnippetProps) => {
   const [activeTab, setActiveTab] = useState<string | undefined>(initialTab);
   const [activeGroup, setActiveGroup] = useState<string | undefined>();
   const styles = useStyles2(getStyles);
   const tab = getTab(activeTab, tabs);
   const hasGroups = tab && 'groups' in tab;
+
+  const handleGroupChange = useCallback(
+    (groupValue: string) => {
+      setActiveGroup(groupValue);
+      onGroupChange?.(groupValue);
+    },
+    [onGroupChange]
+  );
   const snippetTab = useMemo(() => {
     if (hasGroups) {
       return getTab(activeGroup, tab.groups);
@@ -75,6 +86,8 @@ export const CodeSnippet = ({
 
     return tab;
   }, [hasGroups, activeGroup, tab]);
+
+  const resolvedGroup = hasGroups ? activeGroup ?? tab.groups[0]?.value : undefined;
 
   useEffect(() => {
     if (hasGroups && tab.selected) {
@@ -121,15 +134,14 @@ export const CodeSnippet = ({
         <div className={cx(styles.codeWrapper, className)}>
           {hasGroups && (
             <div className={styles.tabGroup}>
-              {tab.groups.map((group, index) => {
-                const isGroupActive =
-                  !tab.groups.some((item) => item.value === activeGroup) && !index ? true : activeGroup === group.value;
+              {tab.groups.map((group) => {
+                const isGroupActive = resolvedGroup === group.value;
                 return (
                   <CodeSnippetGroup
                     key={`${tab.value}-${group.value}`}
                     group={group}
                     active={isGroupActive}
-                    onClick={setActiveGroup}
+                    onClick={handleGroupChange}
                   />
                 );
               })}
@@ -141,7 +153,14 @@ export const CodeSnippet = ({
             data-cy="agent-install"
           />
         </div>
-        <div className={styles.buttonWrapper}>{canCopy && CopyToClipboardButton(snippet ?? '')}</div>
+        <div className={styles.buttonWrapper}>
+          {canCopy && (
+            <CopyToClipboardButton
+              data={snippet ?? ''}
+              onCopy={onCopy && resolvedGroup ? () => onCopy(resolvedGroup) : undefined}
+            />
+          )}
+        </div>
       </section>
     </SnippetWindow>
   );
