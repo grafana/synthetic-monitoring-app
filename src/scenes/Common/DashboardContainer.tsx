@@ -1,4 +1,5 @@
 import React, { PropsWithChildren } from 'react';
+import { AnnotationQuery } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
@@ -14,11 +15,13 @@ import { DashboardHeader } from 'scenes/Common/DashboardHeader';
 interface DashboardContainerProps extends PropsWithChildren {
   check: Check;
   checkType: CheckType;
+  extraAnnotations?: AnnotationQuery[];
 }
 
-export const DashboardContainer = ({ check, checkType, children }: DashboardContainerProps) => {
+export const DashboardContainer = ({ check, checkType, children, extraAnnotations = [] }: DashboardContainerProps) => {
   const metricsDS = useMetricsDS();
-  const annotations = useDashboardContainerAnnotations(check);
+  const alertAnnotations = useDashboardContainerAnnotations(check);
+  const annotations = [...alertAnnotations, ...extraAnnotations];
 
   return (
     <SceneContextProvider timeRange={{ from: `now-${DEFAULT_QUERY_FROM_TIME}`, to: 'now' }} withQueryController>
