@@ -25,18 +25,19 @@ export const TracerouteDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
   const metricsDS = useMetricsDS();
 
-  // The >4 threshold filters out ECMP noise: load-balanced networks flap the route
-  // hash between equally-valid paths constantly, so single changes are not events.
+  // Only annotate path changes that coincide with the check failing: ECMP networks
+  // flap the route hash between equally-valid paths constantly, so churn alone is
+  // not an event. The >4/15m floor filters residual noise on top of that.
   const pathChangeAnnotation: AnnotationQuery = {
     datasource: metricsDS,
-    expr: `changes(probe_traceroute_route_hash{job="$job", instance="$instance", probe=~"$probe"}[15m]) > 4`,
+    expr: `(changes(probe_traceroute_route_hash{job="$job", instance="$instance", probe=~"$probe"}[15m]) > 4) and on (probe) (min by (probe) (probe_success{job="$job", instance="$instance", probe=~"$probe"}) == 0)`,
     hide: false,
     refId: 'pathChangeAnnotation',
-    enable: true,
+    enable: false,
     iconColor: 'orange',
     name: 'Show path changes',
     titleFormat: 'Path changed ({{probe}})',
-    textFormat: 'The route fingerprint changed repeatedly — traffic is taking a different path to the target.',
+    textFormat: 'The route changed repeatedly while the check was failing to reach the target.',
   };
 
   return (

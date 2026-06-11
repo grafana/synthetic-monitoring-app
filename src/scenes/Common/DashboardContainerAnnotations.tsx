@@ -1,6 +1,7 @@
 import React, { PropsWithChildren } from 'react';
-import { AnnotationLayer } from '@grafana/scenes-react';
 import { AnnotationQuery } from '@grafana/schema';
+
+import { ToggleableAnnotationLayer } from 'scenes/Common/ToggleableAnnotationLayer';
 
 interface DashboardContainerAnnotationsProps extends PropsWithChildren {
   annotations: AnnotationQuery[];
@@ -19,9 +20,9 @@ const RecursiveAnnotationLayer = ({ children, annotations }: PropsWithChildren<{
 
   if (currentAnnotation) {
     return (
-      <AnnotationLayer name={currentAnnotation.name} query={currentAnnotation}>
+      <ToggleableAnnotationLayer name={currentAnnotation.name} query={currentAnnotation}>
         <RecursiveAnnotationLayer annotations={annotations.slice(1)}>{children}</RecursiveAnnotationLayer>
-      </AnnotationLayer>
+      </ToggleableAnnotationLayer>
     );
   }
 
