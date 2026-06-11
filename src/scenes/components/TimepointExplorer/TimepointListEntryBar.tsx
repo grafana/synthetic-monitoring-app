@@ -38,7 +38,7 @@ export const TimepointListEntryBar = ({
   timepoint,
 }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { handleViewerStateChange, handleSetScrollToViewer, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const { checkType, handleViewerStateChange, handleSetScrollToViewer, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
   const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
@@ -50,12 +50,13 @@ export const TimepointListEntryBar = ({
 
   const handleViewerStateClick = useCallback(() => {
     trackTimepointDetailsClicked({
+      checkType,
       component: analyticsEventName,
       status,
     });
     handleSetScrollToViewer(true);
     handleViewerStateChange([timepoint, probeNameToView, 0]);
-  }, [analyticsEventName, status, timepoint, probeNameToView, handleViewerStateChange, handleSetScrollToViewer]);
+  }, [analyticsEventName, checkType, status, timepoint, probeNameToView, handleViewerStateChange, handleSetScrollToViewer]);
 
   if (!vizDisplay.includes(status)) {
     return <div />;

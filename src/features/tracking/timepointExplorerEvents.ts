@@ -1,11 +1,14 @@
 import { createSMEventFactory, TrackingEventProps } from 'features/tracking/utils';
 
+import { CheckType } from 'types';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { TimepointStatus, ViewMode } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 
 const timepointExplorerEvents = createSMEventFactory('timepoint_explorer');
 
 interface ViewToggle extends TrackingEventProps {
+  /** The type of check being explored. */
+  checkType: CheckType;
   /** The view type. */
   viewMode: ViewMode;
 }
@@ -14,6 +17,8 @@ interface ViewToggle extends TrackingEventProps {
 export const trackViewToggle = timepointExplorerEvents<ViewToggle>('view_toggle');
 
 interface MiniMapSectionClicked extends TrackingEventProps {
+  /** The type of check being explored. */
+  checkType: CheckType;
   /** The index of the section of the mini map that was clicked. */
   index: number;
   /** The UI component that was clicked. */
@@ -24,6 +29,8 @@ interface MiniMapSectionClicked extends TrackingEventProps {
 export const trackMiniMapSectionClicked = timepointExplorerEvents<MiniMapSectionClicked>('mini_map_section_clicked');
 
 interface MiniMapPageChange extends TrackingEventProps {
+  /** The type of check being explored. */
+  checkType: CheckType;
   /** The index of the page that was clicked. */
   index: number;
 }
@@ -32,6 +39,8 @@ interface MiniMapPageChange extends TrackingEventProps {
 export const trackMiniMapPageClicked = timepointExplorerEvents<MiniMapPageChange>('mini_map_page_clicked');
 
 export interface TimepointDetailsClick extends TrackingEventProps {
+  /** The type of check being explored. */
+  checkType: CheckType;
   /** The UI component that was clicked. */
   component: 'tooltip' | 'reachability-entry' | 'viewer-tab' | 'uptime-entry' | 'pending-entry';
   /** The status of the Timepoint List entry that was clicked. */
@@ -42,6 +51,8 @@ export interface TimepointDetailsClick extends TrackingEventProps {
 export const trackTimepointDetailsClicked = timepointExplorerEvents<TimepointDetailsClick>('timepoint_click');
 
 interface TimepointVizLegendClicked extends TrackingEventProps {
+  /** The type of check being explored. */
+  checkType: CheckType;
   /** The viz options that were toggled. */
   vizOptions: string;
 }
@@ -51,6 +62,8 @@ export const trackTimepointVizLegendToggled =
   timepointExplorerEvents<TimepointVizLegendClicked>('timepoint_viz_legend_toggled');
 
 interface TimepointVizLegendColorClicked extends TrackingEventProps {
+  /** The type of check being explored. */
+  checkType: CheckType;
   /** The color of the viz option that was clicked. */
   color: string;
   /** The viz option that was clicked. */
@@ -63,6 +76,8 @@ export const trackTimepointVizLegendColorClicked = timepointExplorerEvents<Timep
 );
 
 interface TimepointViewerActionClicked extends TrackingEventProps {
+  /** The type of check being explored. */
+  checkType: CheckType;
   /** The action that was clicked. */
   action: 'previous-timepoint' | 'next-timepoint' | 'view-explore-logs' | 'view-explore-metrics';
 }
@@ -81,6 +96,8 @@ interface TraceIconClicked extends TrackingEventProps {
 export const trackTraceIconClicked = timepointExplorerEvents<TraceIconClicked>('trace_icon_clicked');
 
 interface TimepointViewerLogsViewToggled extends TrackingEventProps {
+  /** The type of check being explored. */
+  checkType: CheckType;
   /** The action that was clicked. */
   action: LogsView;
 }
