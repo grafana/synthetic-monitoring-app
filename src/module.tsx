@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { AppPlugin, AppRootProps } from '@grafana/data';
+import { AppPlugin, AppRootProps, NavModelItem } from '@grafana/data';
 import { Spinner } from '@grafana/ui';
 import { type SMPluginConfigPageProps } from 'configPage/PluginConfigPage';
 import pluginJson from 'plugin.json';
@@ -31,6 +31,13 @@ const LazyPluginConfigPage = lazy(async () => {
   return import('configPage/PluginConfigPage').then((module) => ({ default: module.PluginConfigPage }));
 });
 
+const LazyTestingAndSyntheticsLanding = lazy(async () => {
+  await ensureTranslationsInitialized();
+  return import('externalComponents/testingLanding/TestingAndSyntheticsLandingPage').then((module) => ({
+    default: module.TestingAndSyntheticsLandingPage,
+  }));
+});
+
 const SuspendedLazyApp = (props: AppRootProps<ProvisioningJsonData>) => (
   <Suspense fallback={<Spinner />}>
     <LazyApp {...props} />
@@ -42,11 +49,29 @@ const SuspendedLazyPluginConfigPage = (props: SMPluginConfigPageProps) => (
   </Suspense>
 );
 
+interface TestingAndSyntheticsLandingProps {
+  node: NavModelItem;
+}
+
+const SuspendedTestingAndSyntheticsLanding = (props: TestingAndSyntheticsLandingProps) => (
+  <Suspense fallback={<Spinner />}>
+    <LazyTestingAndSyntheticsLanding {...props} />
+  </Suspense>
+);
+
 const App = (props: AppRootProps<ProvisioningJsonData>) => <SuspendedLazyApp {...props} />;
 
-export const plugin = new AppPlugin<ProvisioningJsonData>().setRootPage(App).addConfigPage({
-  title: 'Config',
-  icon: 'cog',
-  body: SuspendedLazyPluginConfigPage,
-  id: 'config',
-});
+export const plugin = new AppPlugin<ProvisioningJsonData>()
+  .setRootPage(App)
+  .addConfigPage({
+    title: 'Config',
+    icon: 'cog',
+    body: SuspendedLazyPluginConfigPage,
+    id: 'config',
+  })
+  .addComponent<TestingAndSyntheticsLandingProps>({
+    targets: 'grafana/dynamic/nav-landing-page/nav-id-testing-and-synthetics/v1',
+    title: 'Testing & synthetics landing page',
+    description: 'Disambiguation landing page for Synthetic Monitoring and Grafana Cloud k6',
+    component: SuspendedTestingAndSyntheticsLanding,
+  });
