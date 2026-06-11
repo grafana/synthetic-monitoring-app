@@ -48,7 +48,21 @@ function expandProperties(
 
   expanding.delete(obj);
 
-  return properties;
+  return dedupeProperties(properties);
+}
+
+// when the same key appears multiple times (e.g. provided by a spread and overridden
+// explicitly) only the last occurrence applies, matching JavaScript spread semantics
+function dedupeProperties(properties: Property[]): Property[] {
+  const lastByName = new Map<string, Property>();
+
+  for (const prop of properties) {
+    if (prop.key.type === 'Identifier') {
+      lastByName.set(prop.key.name, prop);
+    }
+  }
+
+  return properties.filter((prop) => prop.key.type !== 'Identifier' || lastByName.get(prop.key.name) === prop);
 }
 
 function getPropertyValueByPath(obj: ObjectExpression, path: string[], declarations: ObjectDeclarations): any {
@@ -59,10 +73,7 @@ function getPropertyValueByPath(obj: ObjectExpression, path: string[], declarati
     }
 
     const properties = expandProperties(current, declarations);
-    // search from the end so later properties win, matching spread/override semantics
-    const property = properties
-      .reverse()
-      .find((prop: Property) => prop.key.type === 'Identifier' && prop.key.name === key);
+    const property = properties.find((prop: Property) => prop.key.type === 'Identifier' && prop.key.name === key);
     if (property?.value.type === 'ObjectExpression') {
       current = property.value;
     } else if (property?.value.type === 'Literal') {

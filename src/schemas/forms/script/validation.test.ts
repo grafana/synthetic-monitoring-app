@@ -189,6 +189,70 @@ describe('validateBrowserScript', () => {
     expect(runValidation(script)).toEqual([]);
   });
 
+  it('lets an explicit scenario override one provided by a spread inside the scenarios object', () => {
+    const script = `
+      import { browser } from 'k6/browser';
+
+      const defaultScenarios = {
+        ui: {
+          executor: 'shared-iterations',
+          options: {},
+        },
+      };
+
+      export const options = {
+        scenarios: {
+          ...defaultScenarios,
+          ui: {
+            executor: 'shared-iterations',
+            options: {
+              browser: {
+                type: 'chromium',
+              },
+            },
+          },
+        },
+      };
+
+      export default async function () {}
+    `;
+
+    expect(runValidation(script)).toEqual([]);
+  });
+
+  it('errors when an explicit scenario overrides a valid one from a spread with invalid options', () => {
+    const script = `
+      import { browser } from 'k6/browser';
+
+      const defaultScenarios = {
+        ui: {
+          executor: 'shared-iterations',
+          options: {
+            browser: {
+              type: 'chromium',
+            },
+          },
+        },
+      };
+
+      export const options = {
+        scenarios: {
+          ...defaultScenarios,
+          ui: {
+            executor: 'shared-iterations',
+            options: {},
+          },
+        },
+      };
+
+      export default async function () {}
+    `;
+
+    expect(runValidation(script)).toEqual([
+      expect.objectContaining({ message: 'Script must set the type to chromium in the browser options.' }),
+    ]);
+  });
+
   it('errors with a clear message when the exported options contain a spread it cannot resolve', () => {
     const script = `
       import { browser } from 'k6/browser';
