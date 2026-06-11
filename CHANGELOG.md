@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.52.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.52.0...v1.52.1) (2026-06-01)
+
+
+### Fixes
+
+* **feature:** ppdate cost attribution feature flag ([#1713](https://github.com/grafana/synthetic-monitoring-app/issues/1713)) ([214d90c](https://github.com/grafana/synthetic-monitoring-app/commit/214d90cd2983e9fb797497de47aa5ad692d1e373))
+
 ## [1.52.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.51.0...v1.52.0) (2026-06-01)
 
 
