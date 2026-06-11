@@ -12,6 +12,7 @@ export function uniqueLabels(log: ParsedLokiRecord<Record<string, string>, Recor
       !LOG_LABELS_SM.includes(key) &&
       !TRACE_LABEL_NAMES.has(key) &&
       key !== 'msg' &&
+      key !== 'execution_id' &&
       !key.includes(`_extracted`) &&
       !key.includes(`label_`) &&
       key !== 'time' &&
