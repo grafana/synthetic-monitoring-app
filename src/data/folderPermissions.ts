@@ -103,10 +103,13 @@ export function isCheckVisible(folderStatus: CheckFolderStatus): boolean {
  * Implements the combined permission model:
  *   effective = min(SM RBAC, folder permission)
  *
- * Folder permission mapping (SLO model):
- *   - Folder View  (canEdit=false) → check READ
- *   - Folder Edit  (canEdit=true)  → check READ + WRITE
- *   - Folder Admin (canAdmin=true) → check READ + WRITE + DELETE
+ * Folder permission mapping (same as Grafana dashboards, where folder Edit
+ * grants dashboards:delete):
+ *   - Folder View (canEdit=false) → check READ
+ *   - Folder Edit (canEdit=true)  → check READ + WRITE + DELETE
+ *
+ * Deleting the folder itself is gated separately on the folder's canDelete
+ * flag (folders:delete), not handled here.
  *
  * Special cases:
  *   - no-folder-context / orphaned → SM RBAC only (no folder restriction)
@@ -137,7 +140,7 @@ export function computeCheckPermissions(
       return {
         canRead: smPerms.canReadChecks,
         canWrite: smPerms.canWriteChecks && folderStatus.permissions.canEdit,
-        canDelete: smPerms.canDeleteChecks && folderStatus.permissions.canAdmin,
+        canDelete: smPerms.canDeleteChecks && folderStatus.permissions.canEdit,
       };
 
     case 'forbidden':
