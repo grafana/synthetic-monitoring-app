@@ -24,6 +24,22 @@ Tracking issue: [#1717](https://github.com/grafana/synthetic-monitoring-app/issu
   `mockFeatureToggles` drives both backends, so test call sites are identical for legacy and
   migrated flags.
 
+## Local development
+
+The `dev/custom.ini` workflow is unchanged: Grafana's OFREP endpoint is backed by a static
+provider seeded from the same `[feature_toggles]` section, so OpenFeature flags can be
+toggled locally exactly like legacy ones:
+
+```ini
+[feature_toggles]
+synthetic-monitoring.cost-attribution = true
+```
+
+Restart Grafana after editing (`docker compose restart` — the ini is only read at startup),
+then hard-refresh the browser. Gotcha when switching between `yarn dev` and `yarn dev:msw`:
+the browser caches `module.js` (not content-hashed) and old chunks linger in `dist/`, so a
+stale bundle can silently keep running — use DevTools "Clear site data" + "Disable cache".
+
 ## Migrating one flag (one small PR per flag)
 
 ### 1. Pre-flight checks
