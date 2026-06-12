@@ -37,7 +37,7 @@ export const TimepointViewerExecutions = ({
   probeNameToView,
   timepoint,
 }: TimepointViewerExecutionsProps) => {
-  const { handleHoverStateChange, handleViewerStateChange } = useTimepointExplorerContext();
+  const { checkType, handleHoverStateChange, handleViewerStateChange } = useTimepointExplorerContext();
   const tabsToRender = useTimepointViewerExecutions({
     isLoading,
     pendingProbeNames,
@@ -49,11 +49,12 @@ export const TimepointViewerExecutions = ({
     (probeName: string, status: TimepointStatus) => {
       handleViewerStateChange([timepoint, probeName, 0]);
       trackTimepointDetailsClicked({
+        checkType,
         component: 'viewer-tab',
         status,
       });
     },
-    [handleViewerStateChange, timepoint]
+    [checkType, handleViewerStateChange, timepoint]
   );
 
   return (

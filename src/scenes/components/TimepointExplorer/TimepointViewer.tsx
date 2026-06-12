@@ -20,7 +20,7 @@ import { TimepointViewerActions } from 'scenes/components/TimepointExplorer/Time
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
-  const { isInitialised, viewerState, shouldScrollToViewer, handleSetScrollToViewer } = useTimepointExplorerContext();
+  const { checkType, isInitialised, viewerState, shouldScrollToViewer, handleSetScrollToViewer } = useTimepointExplorerContext();
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
   const [viewerTimepoint, viewerProbeName] = viewerState;
   const styles = useStyles2(getStyles);
@@ -36,12 +36,16 @@ export const TimepointViewer = () => {
     }
   }, [shouldScrollToViewer, viewerTimepoint, handleSetScrollToViewer]);
 
-  const handleChangeLogsView = useCallback((view: LogsView) => {
-    trackTimepointViewerLogsViewToggled({
-      action: view,
-    });
-    setLogsView(view);
-  }, []);
+  const handleChangeLogsView = useCallback(
+    (view: LogsView) => {
+      trackTimepointViewerLogsViewToggled({
+        checkType,
+        action: view,
+      });
+      setLogsView(view);
+    },
+    [checkType]
+  );
 
   return (
     <div ref={containerRef} className={styles.container} data-testid={DataTestIds.TimepointViewer}>
