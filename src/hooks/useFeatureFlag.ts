@@ -1,5 +1,5 @@
 import { useBooleanFlagValue } from '@openfeature/react-sdk';
-import { OPEN_FEATURE_KEYS } from 'services/openFeatureKeys';
+import { OPEN_FEATURE_KEYS } from 'services/featureFlags';
 
 import { FeatureName } from 'types';
 

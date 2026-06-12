@@ -423,7 +423,7 @@ export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
   });
 
   // also drive the OpenFeature backend so test call sites don't change when a flag migrates
-  const { OPEN_FEATURE_KEYS } = require('services/openFeatureKeys');
+  const { OPEN_FEATURE_KEYS } = require('services/featureFlags');
   const { setInMemoryFlag } = require('test/openFeatureTestProvider');
 
   Object.entries(overrides).forEach(([name, value]) => {

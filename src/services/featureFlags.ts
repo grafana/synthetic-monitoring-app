@@ -1,12 +1,18 @@
 import { config } from '@grafana/runtime';
-import type { Client, EvaluationContext } from '@openfeature/web-sdk';
+import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
+import { type Client, type EvaluationContext, OpenFeature } from '@openfeature/web-sdk';
 import pluginJson from 'plugin.json';
 
-// Loaded at plugin preload time on every Grafana page — keep the import graph
-// slim (no types.ts, no SDK statics). OPEN_FEATURE_KEYS lives in openFeatureKeys.ts for this reason.
+import { FeatureName } from 'types';
 
 // The plugin-scoped domain isolates our flags from Grafana core and other plugins.
 export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
+
+/**
+ * Adding an entry routes all consumers of that FeatureName through OpenFeature
+ * instead of legacy config.featureToggles. See docs/development/openfeature-migration.md.
+ */
+export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {};
 
 let initPromise: Promise<void> | undefined;
 let client: Client | undefined;
@@ -30,11 +36,6 @@ export function initOpenFeature(): Promise<void> {
 }
 
 async function doInit(): Promise<void> {
-  const [{ OpenFeature }, { OFREPWebProvider }] = await Promise.all([
-    import('@openfeature/web-sdk'),
-    import('@openfeature/ofrep-web-provider'),
-  ]);
-
   const baseUrl = `${config.appSubUrl || ''}/apis/features.grafana.app/v0alpha1/namespaces/${config.namespace}`;
 
   await OpenFeature.setProviderAndWait(

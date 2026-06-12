@@ -13,7 +13,8 @@ import { useFeatureFlag } from './useFeatureFlag';
 const OPEN_FEATURE_ROUTED_FLAG = FeatureName.__Turnoff;
 const OPEN_FEATURE_KEY = 'synthetic-monitoring.test-only';
 
-jest.mock('services/openFeatureKeys', () => ({
+jest.mock('services/featureFlags', () => ({
+  ...jest.requireActual('services/featureFlags'),
   OPEN_FEATURE_KEYS: {
     'test-only-do-not-use': 'synthetic-monitoring.test-only',
   },
