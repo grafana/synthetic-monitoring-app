@@ -16,9 +16,11 @@ Tracking issue: [#1717](https://github.com/grafana/synthetic-monitoring-app/issu
   The hook routes each flag based on `OPEN_FEATURE_KEYS`:
   - **Mapped** -> evaluated through OpenFeature (render-cycle aware, picks up runtime changes).
   - **Not mapped** -> legacy `config.featureToggles` (plus the `?features=` URL override).
-- In environments without the feature flag service (OSS Grafana, local MSW dev), provider
-  initialization fails gracefully and OpenFeature-routed flags resolve to their defaults
-  (off). Don't migrate a flag that needs to be settable in OSS Grafana.
+- OSS/on-prem Grafana (>= 12.x) serves the same OFREP endpoint backed by a static provider
+  seeded from `[feature_toggles]` in grafana.ini, so operators set migrated flags via ini +
+  restart, like legacy toggles. GOFF (runtime changes, rollout targeting) is Cloud-only;
+  GOFF-defined flags are default-off in OSS unless the operator opts in. Where the features
+  API doesn't exist at all, provider init fails gracefully and flags resolve to defaults.
 - In tests, the SM domain is backed by an in-memory provider
   ([`src/test/openFeatureTestProvider.ts`](../../src/test/openFeatureTestProvider.ts));
   `mockFeatureToggles` drives both backends, so test call sites are identical for legacy and
@@ -52,7 +54,8 @@ stale bundle can silently keep running — use DevTools "Clear site data" + "Dis
   flag string (search both repos).
 - Confirm the flag has no module-scope reads in this repo (a read at module-evaluation time
   returns the default forever; move it into a hook/function first).
-- Decide the OSS impact: after migration the flag is default-off outside Grafana Cloud.
+- Decide the OSS impact: after migration the flag is default-off outside Grafana Cloud
+  unless the operator enables it in `[feature_toggles]` (see Local development above).
 
 ### 2. Register the flag in deployment_tools (GOFF)
 
