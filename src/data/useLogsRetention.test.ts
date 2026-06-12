@@ -47,6 +47,25 @@ describe(`useLogsRetentionPeriod`, () => {
     expect(result.current.retentionPeriod).toBe(NINETY_DAYS_IN_HOURS * MILLISECONDS_IN_HOUR);
   });
 
+  it(`returns the retention period parsed from Loki's max_query_lookback error in HTTP 200 response`, async () => {
+    mockCanaryQuery({
+      json: {
+        results: {
+          [REF_ID_LOGS_RETENTION_CANARY]: {
+            error: MAX_QUERY_LOOKBACK_ERROR_MESSAGE,
+            frames: [],
+          },
+        },
+      },
+    });
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useLogsRetentionPeriod(), { wrapper: Wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.retentionPeriod).toBe(NINETY_DAYS_IN_HOURS * MILLISECONDS_IN_HOUR);
+  });
+
   it(`returns null when no lookback limit is enforced (query succeeds)`, async () => {
     mockCanaryQuery({
       json: {

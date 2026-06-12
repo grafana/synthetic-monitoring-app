@@ -24,6 +24,17 @@ export function queryDS({ queries, start, end }: { queries: Query[]; start: numb
     })
   ).then(({ data }) => {
     const { results } = data;
+
+    // Check for errors in the response even when HTTP status is 200
+    for (const result of Object.values(results)) {
+      if (result.error) {
+        throw {
+          message: result.error,
+          data: { results },
+        };
+      }
+    }
+
     const build: Record<string, DataFrame[]> = {};
 
     Object.entries(results).forEach(([refId, result]) => {
