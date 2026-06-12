@@ -3,8 +3,10 @@ import { Route, Router, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
 import { locationService, LocationServiceProvider } from '@grafana/runtime';
+import { OpenFeatureProvider } from '@openfeature/react-sdk';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
+import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
 import { SM_META } from 'test/fixtures/meta';
 import { TestRouteInfo } from 'test/helpers/TestRouteInfo';
 import { useLocationServiceHistory } from 'test/helpers/useLocationServiceHistory';
@@ -83,10 +85,14 @@ export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wra
   const Component = wrapper || DefaultWrapper;
   const initialEntries = [path];
 
+  // OpenFeatureProvider sits outside the swappable component so custom wrappers
+  // still satisfy useFeatureFlag's OpenFeature context
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Component route={route} meta={meta} initialEntries={initialEntries} queryClient={activeQueryClient}>
-      {children}
-    </Component>
+    <OpenFeatureProvider domain={SM_OPEN_FEATURE_DOMAIN}>
+      <Component route={route} meta={meta} initialEntries={initialEntries} queryClient={activeQueryClient}>
+        {children}
+      </Component>
+    </OpenFeatureProvider>
   );
 
   return { Wrapper, initialEntries };

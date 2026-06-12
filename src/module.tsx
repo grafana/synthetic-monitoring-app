@@ -3,12 +3,16 @@ import { AppPlugin, AppRootProps } from '@grafana/data';
 import { Spinner } from '@grafana/ui';
 import { type SMPluginConfigPageProps } from 'configPage/PluginConfigPage';
 import pluginJson from 'plugin.json';
+import { initOpenFeature } from 'services/featureFlags';
 
 import { ProvisioningJsonData } from './types';
 
 if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_MSW) {
   await import('./startServerWorker');
 }
+
+// early kickoff (plugin is preloaded) so flags are usually resolved before first render
+void initOpenFeature();
 
 let translationsPromise: Promise<void>;
 
