@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.53.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.52.1...v1.53.0) (2026-06-12)
+
+
+### Features
+
+* add check type to analytics events for check dashboards and timepoint explorer ([#1721](https://github.com/grafana/synthetic-monitoring-app/issues/1721)) ([58bf8ca](https://github.com/grafana/synthetic-monitoring-app/commit/58bf8caf687c5386f33ca6feac2d9ec8fa970c9f))
+* exclude execution_id in timepoint explorer ([#1720](https://github.com/grafana/synthetic-monitoring-app/issues/1720)) ([4a6c0c4](https://github.com/grafana/synthetic-monitoring-app/commit/4a6c0c45ed9eb454708191f94aa0a30407e7f583))
+
+
+### Fixes
+
+* allow check deletion with folder Edit permission ([#1718](https://github.com/grafana/synthetic-monitoring-app/issues/1718)) ([c37bc41](https://github.com/grafana/synthetic-monitoring-app/commit/c37bc412527b60a3fbcc289d88686fb2eeb81b52))
+* handle spread operator in browser script options validation ([#1722](https://github.com/grafana/synthetic-monitoring-app/issues/1722)) ([ddf6ef6](https://github.com/grafana/synthetic-monitoring-app/commit/ddf6ef6afa99155554e61d4008958689fe50dd95))
+* **security/high/:** update dependency react-router to v7.15.0 [security] ([#1716](https://github.com/grafana/synthetic-monitoring-app/issues/1716)) ([bb3da0e](https://github.com/grafana/synthetic-monitoring-app/commit/bb3da0e2bdcd479806a337bbbdfa9c634dc10d5b))
+* use prerelease-inclusive semver range for grafanaDependency ([#1723](https://github.com/grafana/synthetic-monitoring-app/issues/1723)) ([7e5b6bc](https://github.com/grafana/synthetic-monitoring-app/commit/7e5b6bc110a1eae8fc0241527369e7af1bec6109))
+
 ## [1.52.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.52.0...v1.52.1) (2026-06-01)
 
 
