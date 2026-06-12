@@ -114,9 +114,14 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const checkCreation = Math.ceil(check.created!) * 1000;
   const [timeRange] = useTimeRange();
   const timeRangeRef = useRef<TimeRange>(timeRange);
-  const logsRetentionPeriod = useLogsRetentionPeriod(timeRange.from.valueOf());
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- update date.now when timerange changes
-  const logsRetentionFrom = useMemo(() => Date.now() - logsRetentionPeriod, [logsRetentionPeriod, timeRange]);
+  const { retentionPeriod: logsRetentionPeriod, isLoading: isLogsRetentionLoading } = useLogsRetentionPeriod();
+  const logsRetentionFrom = useMemo(
+    // a null retention period means it couldn't be determined, so we don't clamp the time range
+    // and let Loki return whatever data it still has
+    () => (logsRetentionPeriod === null ? 0 : Date.now() - logsRetentionPeriod),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- update date.now when timerange changes
+    [logsRetentionPeriod, timeRange]
+  );
   const explorerTimeFrom = getExplorerTimeFrom({
     checkCreation,
     logsRetentionFrom,
@@ -223,7 +228,8 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timeRange: miniMapCurrentPageTimeRange,
   });
 
-  const isLoading = isCheckConfigsLoading || isExecutionDurationLogsLoading || isMaxProbeDurationLoading;
+  const isLoading =
+    isLogsRetentionLoading || isCheckConfigsLoading || isExecutionDurationLogsLoading || isMaxProbeDurationLoading;
   const isFetching = isCheckConfigsFetching || isExecutionDurationLogsFetching || isMaxProbeDurationFetching;
   const isError = isCheckConfigsError || isExecutionDurationLogsError || isMaxProbeDurationError;
 
