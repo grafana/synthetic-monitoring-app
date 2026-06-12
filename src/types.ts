@@ -752,6 +752,10 @@ export enum FeatureName {
   Screenshots = 'synthetic-monitoring-screenshots',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
+  // Uncomment to gate the revamped traceroute dashboard (path health view) behind a
+  // feature toggle — see scenes/Traceroute/TracerouteDashboard.tsx. The previous
+  // layout is available in git history.
+  // TraceroutePathHealth = 'synthetic-monitoring-traceroute-path-health',
   VersionManagement = 'synthetic-monitoring-version-management',
   __Turnoff = 'test-only-do-not-use',
 }

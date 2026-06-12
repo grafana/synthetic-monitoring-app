@@ -9,7 +9,8 @@ import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 export const AvgHops = () => {
   const metricsDS = useMetricsDS();
   const query = {
-    expr: 'avg_over_time(probe_traceroute_total_hops{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval])',
+    expr: 'avg by (probe) (avg_over_time(probe_traceroute_total_hops{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))',
+    legendFormat: '{{probe}}',
     refId: 'A',
   };
 
@@ -28,6 +29,7 @@ export const AvgHops = () => {
 
 const viz = VizConfigBuilders.stat()
   .setOption('graphMode', BigValueGraphMode.None)
+  .setDecimals(1)
   .setOption('reduceOptions', {
     values: false,
     calcs: ['mean'],
