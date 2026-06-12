@@ -17,6 +17,7 @@ import { QUERY_KEYS as alertingQueryKeys } from 'data/useAlerts';
 
 import { DevTools } from './DevTools';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
+import { SmOpenFeatureProvider } from './SmOpenFeatureProvider';
 
 const { env, url, name } = getFaroConfig();
 
@@ -55,17 +56,19 @@ const App = (props: AppRootProps<ProvisioningJsonData>) => {
   return (
     <QueryClientProvider client={queryClient}>
       <MetaContextProvider meta={meta}>
-        <FeatureFlagProvider>
-          <GlobalStyles />
-          <SMDatasourceProvider>
-            <PermissionsContextProvider>
-              <DevTools>
-                <InitialisedRouter />
-              </DevTools>
-            </PermissionsContextProvider>
-            <ReactQueryDevtools />
-          </SMDatasourceProvider>
-        </FeatureFlagProvider>
+        <SmOpenFeatureProvider>
+          <FeatureFlagProvider>
+            <GlobalStyles />
+            <SMDatasourceProvider>
+              <PermissionsContextProvider>
+                <DevTools>
+                  <InitialisedRouter />
+                </DevTools>
+              </PermissionsContextProvider>
+              <ReactQueryDevtools />
+            </SMDatasourceProvider>
+          </FeatureFlagProvider>
+        </SmOpenFeatureProvider>
       </MetaContextProvider>
     </QueryClientProvider>
   );
