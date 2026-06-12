@@ -7,10 +7,11 @@ Tracking issue: [#1717](https://github.com/grafana/synthetic-monitoring-app/issu
 
 ## How it works
 
-- The OpenFeature provider is initialized at plugin load (`initOpenFeature()` in
+- The OpenFeature provider is initialized when the app mounts (`initOpenFeature()` in
   [`src/services/featureFlags.ts`](../../src/services/featureFlags.ts)) against
   `/apis/features.grafana.app/v0alpha1/namespaces/<namespace>`, scoped to the plugin's own
-  OpenFeature domain.
+  OpenFeature domain. It deliberately does not initialize at plugin preload time: that would
+  grow the preloaded `module.js` bundle and fire OFREP requests on every Grafana page.
 - Consumers always use `useFeatureFlag(FeatureName.X)` (or the `<FeatureFlag>` component).
   The hook routes each flag based on `OPEN_FEATURE_KEYS`:
   - **Mapped** -> evaluated through OpenFeature (render-cycle aware, picks up runtime changes).
@@ -72,7 +73,7 @@ The response's `flags` array should include the new key.
 ### 4. Route the flag in this repo
 
 Add one entry to `OPEN_FEATURE_KEYS` in
-[`src/services/openFeatureKeys.ts`](../../src/services/openFeatureKeys.ts):
+[`src/services/featureFlags.ts`](../../src/services/featureFlags.ts):
 
 ```ts
 export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
