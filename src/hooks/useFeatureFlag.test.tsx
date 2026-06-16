@@ -64,7 +64,7 @@ describe('OpenFeature-routed flags (mapped in OPEN_FEATURE_KEYS)', () => {
   });
 
   test('ignores legacy config.featureToggles for mapped flags', async () => {
-    // legacy system says enabled, OpenFeature says nothing -> mapped flags must follow OpenFeature
+    // legacy enabled, OpenFeature unset -> mapped flag must follow OpenFeature
     const runtime = require('@grafana/runtime');
     jest.replaceProperty(runtime, 'config', {
       ...runtime.config,

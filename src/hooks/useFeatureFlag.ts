@@ -5,13 +5,11 @@ import { FeatureName } from 'types';
 
 import { useFeatureFlagContext } from './useFeatureFlagContext';
 
-// Sentinel evaluated for unmapped flags, as hooks can't be called conditionally
+// Sentinel for unmapped flags, since hooks can't be called conditionally
 const UNMAPPED_FLAG_KEY = 'sm-unmapped-flag';
 
-/**
- * Flags mapped in OPEN_FEATURE_KEYS are evaluated through OpenFeature; the rest
- * fall through to legacy config.featureToggles. See docs/development/openfeature-migration.md.
- */
+// Mapped flags evaluate through OpenFeature; the rest fall through to legacy
+// config.featureToggles. See docs/development/openfeature-migration.md.
 export function useFeatureFlag(featureFlag: FeatureName) {
   const { isFeatureEnabled } = useFeatureFlagContext();
   const openFeatureKey = OPEN_FEATURE_KEYS[featureFlag];

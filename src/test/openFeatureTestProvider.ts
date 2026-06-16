@@ -1,5 +1,4 @@
-// Mutable map of OpenFeature flag key -> value, written by mockFeatureToggles and
-// read by the test render wrappers, which pass it to the SDK's <OpenFeatureTestProvider>.
+// Flag values written by mockFeatureToggles, read by the test wrappers' <OpenFeatureTestProvider>.
 const testFlagValues: Record<string, boolean> = {};
 
 export function getTestFlagValues(): Record<string, boolean> {

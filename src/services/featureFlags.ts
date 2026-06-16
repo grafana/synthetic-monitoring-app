@@ -5,22 +5,17 @@ import pluginJson from 'plugin.json';
 
 import { FeatureName } from 'types';
 
-// The plugin-scoped domain isolates our flags from Grafana core and other plugins.
+// Plugin-scoped domain isolates our flags from Grafana core and other plugins.
 export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 
-/**
- * Adding an entry routes all consumers of that FeatureName through OpenFeature
- * instead of legacy config.featureToggles. See docs/development/openfeature-migration.md.
- */
+// Adding an entry routes all consumers of that FeatureName through OpenFeature instead
+// of legacy config.featureToggles. See docs/development/openfeature-migration.md.
 export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {};
 
 let initPromise: Promise<void> | undefined;
 let client: Client | undefined;
 
-/**
- * Memoized and safe to fail: without the feature flag service (e.g. OSS Grafana)
- * flags fall back to legacy values / defaults.
- */
+// Memoized and safe to fail: without the flag service (e.g. OSS Grafana) flags fall back to defaults.
 export function initOpenFeature(): Promise<void> {
   if (!initPromise) {
     initPromise = doInit().catch((error) => {
@@ -44,12 +39,12 @@ async function doInit(): Promise<void> {
       baseUrl,
       changeDetection: 'none', // flags only re-evaluate on page load
       disableVisibilityRefresh: true,
-      cacheMode: 'disabled', // no localStorage persistence
+      cacheMode: 'disabled',
       timeoutMs: 10_000,
     }),
     {
-      targetingKey: config.namespace, // flags evaluate consistently per stack
-      namespace: config.namespace, // required by the multi-tenant feature flag service
+      targetingKey: config.namespace, // evaluate consistently per stack
+      namespace: config.namespace, // required by the multi-tenant flag service
       ...((config.openFeatureContext ?? {}) as EvaluationContext),
     }
   );
@@ -57,10 +52,8 @@ async function doInit(): Promise<void> {
   client = OpenFeature.getClient(SM_OPEN_FEATURE_DOMAIN);
 }
 
-/**
- * For non-React call sites. Returns `defaultValue` until `initOpenFeature()`
- * has resolved, so avoid module-scope reads (the value would never update).
- */
+// For non-React call sites. Returns defaultValue until initOpenFeature() resolves,
+// so avoid module-scope reads (the value would never update).
 export function getBooleanFlag(key: string, defaultValue = false): boolean {
   return client?.getBooleanValue(key, defaultValue) ?? defaultValue;
 }

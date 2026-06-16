@@ -67,7 +67,7 @@ export function formTestRenderer<T extends ElementType = ElementType>(
   const WrapperComponent = Wrapper ? Wrapper : Fragment;
 
   render(
-    // OpenFeatureTestProvider required by useFeatureFlag; flagValueMap driven by mockFeatureToggles
+    // required by useFeatureFlag
     <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
       <WrapperComponent>
         <TestForm defaultValues={defaultValues}>

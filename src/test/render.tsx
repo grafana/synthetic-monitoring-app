@@ -86,9 +86,7 @@ export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wra
   const Component = wrapper || DefaultWrapper;
   const initialEntries = [path];
 
-  // OpenFeatureTestProvider sits outside the swappable component so custom wrappers
-  // still satisfy useFeatureFlag's context. flagValueMap is driven by mockFeatureToggles,
-  // so tests don't change when a flag migrates to OpenFeature.
+  // outside the swappable component so custom wrappers still get useFeatureFlag's context
   const Wrapper = ({ children }: PropsWithChildren) => (
     <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
       <Component route={route} meta={meta} initialEntries={initialEntries} queryClient={activeQueryClient}>
