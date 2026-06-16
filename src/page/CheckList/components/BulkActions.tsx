@@ -45,6 +45,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
       <div className={styles.buttonGroup}>
         {checks.length > 0 && (
           <ButtonCascader
+            variant="secondary"
             options={[
               {
                 label: 'Add probes',
@@ -61,7 +62,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
               setBulkEditAction(action);
             }}
           >
-            Bulk Edit Probes
+            Bulk edit probes
           </ButtonCascader>
         )}
         {isFoldersEnabled && (
@@ -78,7 +79,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
         )}
         <Button
           type="button"
-          variant="primary"
+          variant="secondary"
           fill="text"
           onClick={enableChecks}
           disabled={!canWriteAll}

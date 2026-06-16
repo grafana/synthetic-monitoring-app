@@ -63,7 +63,8 @@ export function collectAllChecks(node: FolderNode): Check[] {
 export function buildChecksByFolder(
   checks: Check[],
   folders: GrafanaFolder[],
-  defaultFolderUid?: string
+  defaultFolderUid?: string,
+  reverseFolderSort?: boolean
 ): ChecksByFolder {
   const foldersById = new Map(folders.map((f) => [f.uid, f]));
   const nodeMap = new Map<string, FolderNode>();
@@ -127,7 +128,8 @@ export function buildChecksByFolder(
   const sortByTitle = (a: FolderNode, b: FolderNode) => {
     const titleA = a.folder?.title ?? a.folderUid;
     const titleB = b.folder?.title ?? b.folderUid;
-    return titleA.localeCompare(titleB);
+    const result = titleA.localeCompare(titleB);
+    return reverseFolderSort ? -result : result;
   };
 
   const sortNodes = (nodes: FolderNode[]) => {

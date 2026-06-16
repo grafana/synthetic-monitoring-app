@@ -119,7 +119,7 @@ export const CheckListHeader = ({
             />
             {canWriteThresholds && (
               <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
-                <Trans i18nKey="checkList.header.setThresholds">Set Thresholds</Trans>
+                <Trans i18nKey="checkList.header.setThresholds">Set thresholds</Trans>
               </Button>
             )}
             {canWriteChecks && (
