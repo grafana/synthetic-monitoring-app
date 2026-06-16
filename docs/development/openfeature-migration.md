@@ -21,10 +21,10 @@ Tracking issue: [#1717](https://github.com/grafana/synthetic-monitoring-app/issu
   restart, like legacy toggles. GOFF (runtime changes, rollout targeting) is Cloud-only;
   GOFF-defined flags are default-off in OSS unless the operator opts in. Where the features
   API doesn't exist at all, provider init fails gracefully and flags resolve to defaults.
-- In tests, the SM domain is backed by an in-memory provider
-  ([`src/test/openFeatureTestProvider.ts`](../../src/test/openFeatureTestProvider.ts));
-  `mockFeatureToggles` drives both backends, so test call sites are identical for legacy and
-  migrated flags.
+- In tests, the render wrappers use the SDK's `OpenFeatureTestProvider`, driven by a small
+  shared flag map ([`src/test/openFeatureTestProvider.ts`](../../src/test/openFeatureTestProvider.ts)).
+  `mockFeatureToggles` writes into that map as well as `config.featureToggles`, so test call
+  sites are identical for legacy and migrated flags.
 
 ## Local development
 

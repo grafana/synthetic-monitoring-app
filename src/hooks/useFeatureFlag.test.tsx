@@ -1,8 +1,8 @@
 import React from 'react';
-import { OpenFeatureProvider } from '@openfeature/react-sdk';
+import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render, screen } from '@testing-library/react';
 import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
-import { setInMemoryFlag } from 'test/openFeatureTestProvider';
+import { getTestFlagValues } from 'test/openFeatureTestProvider';
 import { mockFeatureToggles } from 'test/utils';
 
 import { FeatureName } from 'types';
@@ -29,13 +29,13 @@ const Wrapped = ({ name }: WrappedProps) => {
   return <div>{isEnabled ? 'the feature is enabled' : 'not enabled'}</div>;
 };
 
-const renderFeatureFlag = (name: FeatureName) => {
+const renderFeatureFlag = (name: FeatureName, flagValueMap: Record<string, boolean> = getTestFlagValues()) => {
   return render(
-    <OpenFeatureProvider domain={SM_OPEN_FEATURE_DOMAIN}>
+    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={flagValueMap}>
       <FeatureFlagProvider>
         <Wrapped name={name} />
       </FeatureFlagProvider>
-    </OpenFeatureProvider>
+    </OpenFeatureTestProvider>
   );
 };
 
@@ -54,8 +54,7 @@ describe('legacy flags (not mapped in OPEN_FEATURE_KEYS)', () => {
 
 describe('OpenFeature-routed flags (mapped in OPEN_FEATURE_KEYS)', () => {
   test('reads the flag value from OpenFeature', async () => {
-    setInMemoryFlag(OPEN_FEATURE_KEY, true);
-    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG);
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: true });
     expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
   });
 

@@ -10,14 +10,11 @@ import 'jest-canvas-mock';
 // have to reimport this despite it is included in the ./config/jest-setup.JSfile
 // so the types also get imported
 import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
 import { queryClient } from 'data/queryClient';
-import { registerInMemoryProvider, resetInMemoryFlags } from 'test/openFeatureTestProvider';
+import { resetTestFlags } from 'test/openFeatureTestProvider';
 
 process.env.SM_PLUGIN_ID = 'TEST.ENV.ID';
 process.env.SM_PLUGIN_VERSION = 'TEST.ENV.VERSION';
-
-registerInMemoryProvider();
 
 beforeAll(() => {
   server.listen({
@@ -26,10 +23,7 @@ beforeAll(() => {
 });
 
 afterEach(() => {
-  // unmount before resetting flags so the provider's ConfigurationChanged
-  // event doesn't trigger state updates outside act()
-  cleanup();
-  resetInMemoryFlags();
+  resetTestFlags();
   server.resetHandlers();
   jest.clearAllMocks();
   jest.restoreAllMocks();

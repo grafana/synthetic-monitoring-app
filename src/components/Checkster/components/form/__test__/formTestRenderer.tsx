@@ -7,10 +7,11 @@ import React, {
   ReactNode,
 } from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
-import { OpenFeatureProvider } from '@openfeature/react-sdk';
+import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
+import { getTestFlagValues } from 'test/openFeatureTestProvider';
 
 export enum TestFormTestId {
   Form = 'TestForm',
@@ -66,8 +67,8 @@ export function formTestRenderer<T extends ElementType = ElementType>(
   const WrapperComponent = Wrapper ? Wrapper : Fragment;
 
   render(
-    // required by useFeatureFlag
-    <OpenFeatureProvider domain={SM_OPEN_FEATURE_DOMAIN}>
+    // OpenFeatureTestProvider required by useFeatureFlag; flagValueMap driven by mockFeatureToggles
+    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
       <WrapperComponent>
         <TestForm defaultValues={defaultValues}>
           {/* @ts-expect-error */}
@@ -75,7 +76,7 @@ export function formTestRenderer<T extends ElementType = ElementType>(
           {props?.field && <TestFormValueInfo field={props?.field} />}
         </TestForm>
       </WrapperComponent>
-    </OpenFeatureProvider>
+    </OpenFeatureTestProvider>
   );
 
   return userEvent.setup();

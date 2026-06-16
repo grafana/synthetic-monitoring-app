@@ -1,8 +1,9 @@
 import React, { PropsWithChildren } from 'react';
-import { OpenFeatureProvider } from '@openfeature/react-sdk';
+import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
+import { getTestFlagValues } from 'test/openFeatureTestProvider';
 
 import { ProbeStateStatus } from './types.adhoc-check';
 
@@ -10,7 +11,9 @@ import { LogsPanel } from './LogsPanel';
 
 // required by useFeatureFlag
 const wrapper = ({ children }: PropsWithChildren) => (
-  <OpenFeatureProvider domain={SM_OPEN_FEATURE_DOMAIN}>{children}</OpenFeatureProvider>
+  <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
+    {children}
+  </OpenFeatureTestProvider>
 );
 
 jest.mock('scenes/components/LogsRenderer/screenshots/screenshots.hooks', () => ({
