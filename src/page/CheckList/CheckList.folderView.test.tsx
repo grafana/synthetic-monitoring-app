@@ -131,6 +131,24 @@ describe('buildChecksByFolder', () => {
     expect(titles).toEqual(sorted);
   });
 
+  test('reverses folder sort order when reverseFolderSort is true', () => {
+    const { folderTree: aToZ } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false);
+    const { folderTree: zToA } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, true);
+
+    const titlesAZ = aToZ.map((n) => n.folder?.title ?? n.folderUid);
+    const titlesZA = zToA.map((n) => n.folder?.title ?? n.folderUid);
+
+    const nonEmptyAZ = aToZ.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
+    const nonEmptyZA = zToA.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
+    expect(nonEmptyZA).toEqual([...nonEmptyAZ].reverse());
+
+    const emptyAZ = aToZ.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
+    const emptyZA = zToA.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
+    expect(emptyZA).toEqual([...emptyAZ].reverse());
+
+    expect(titlesZA).not.toEqual(titlesAZ);
+  });
+
   test('returns orphaned nodes when folders list is empty', () => {
     const { folderTree, rootChecks } = buildChecksByFolder(FOLDER_CHECKS, []);
 
