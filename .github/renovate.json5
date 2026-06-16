@@ -25,15 +25,6 @@
       ],
       "enabled": false
     },
-    // @grafana/alerting uses RTK-Query APIs that require the corresponding middleware
-    // to be registered in Grafana's Redux store. The v1beta1 API is only available in
-    // Grafana 13.x+, but our grafanaDependency is >=12.4.0. Once we upgrade all
-    // @grafana/* packages to 13.x and bump grafanaDependency to >=13.0.0, this pin
-    // can be removed. See https://github.com/grafana/synthetic-monitoring-app/pull/1532
-    {
-      "matchPackageNames": ["@grafana/alerting"],
-      "enabled": false
-    },
     // packages which we consider feature complete but if they ever do receive updates we should review them
     {
       "matchPackageNames": [
