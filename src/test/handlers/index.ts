@@ -26,6 +26,7 @@ import { createAccessToken } from 'test/handlers/tokens';
 import { ApiEntry } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
+import { createFolder, deleteFolder, getFolder, listFolders } from './folders';
 import { listK6Channels } from './k6Channels';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
@@ -35,12 +36,15 @@ const API_ROUTES = {
   bulkUpdateChecks,
   checkInfo,
   createAccessToken,
+  createFolder,
   createSecret,
   deleteCheck,
+  deleteFolder,
   deleteProbe,
   deleteSecret,
   getAlertRules,
   getDashboard,
+  getFolder,
   getGrafanaAlertRules,
   getHttpDashboard,
   getInstantMetrics,
@@ -56,6 +60,7 @@ const API_ROUTES = {
   getTenantSettings,
   listAlertsForCheck,
   listChecks,
+  listFolders,
   listProbes,
   listSecrets,
   testCheck,
@@ -97,7 +102,8 @@ export function apiRoute<K extends keyof ApiRoutes>(
 }
 
 function toRestMethod({ route, method, result }: ApiEntry) {
-  const urlPattern = new RegExp(`^http://localhost.*${route}(?:\\?.*)?$`);
+  const routeSource = route instanceof RegExp ? route.source.replace(/\$$/, '') : route;
+  const urlPattern = new RegExp(`^http://localhost.*${routeSource}(?:\\?.*)?$`);
 
   return http[method](urlPattern, async ({ request }) => {
     const { status = 200, json } = await result(request);

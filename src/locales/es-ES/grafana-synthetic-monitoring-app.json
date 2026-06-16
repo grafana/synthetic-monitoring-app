@@ -9,10 +9,13 @@
   "checkFilters": {
     "alerts": "Alertas",
     "all": "Todos",
+    "allFolders": "",
     "allProbes": "Todos los agentes",
     "filterByAlertsAriaLabel": "Filtrar por alertas",
+    "filterByFolderAriaLabel": "",
     "filterByStatusAriaLabel": "Filtrar por estado",
     "filterByTypeAriaLabel": "Filtrar por tipo",
+    "folders": "",
     "probes": "Agentes",
     "searchChecksAriaLabel": "Buscar pruebas",
     "searchPlaceholder": "Buscar por nombre del job, endpoint o etiqueta",

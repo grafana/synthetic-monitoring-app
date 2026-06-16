@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, Switch, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackHideScreenshotsToggled } from 'features/tracking/screenshotEvents';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { FeatureName } from 'types';
@@ -28,6 +29,12 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({
   const { isEnabled: screenshotsEnabled } = useFeatureFlag(FeatureName.Screenshots);
 
   const [hideScreenshots, setHideScreenshots] = useState(false);
+
+  const handleToggleHideScreenshots = useCallback((e: React.FormEvent<HTMLInputElement>) => {
+    const hidden = e.currentTarget.checked;
+    trackHideScreenshotsToggled({ hidden });
+    setHideScreenshots(hidden);
+  }, []);
 
   const screenshotUUIDs = useMemo(
     () => (screenshotsEnabled ? extractScreenshotUUIDs(logs, mainKey) : []),
@@ -88,7 +95,7 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({
         <div className={styles.filterBar}>
           <Badge text="NEW" color="orange" />
           <label className={styles.filterLabel}>
-            <Switch checked={hideScreenshots} onChange={(e) => setHideScreenshots(e.currentTarget.checked)} />
+            <Switch checked={hideScreenshots} onChange={handleToggleHideScreenshots} />
             <span>hide screenshots</span>
           </label>
         </div>

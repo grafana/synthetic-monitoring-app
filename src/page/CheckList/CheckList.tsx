@@ -10,6 +10,8 @@ import { getTotalChecksPerMonth } from 'checkUsageCalc';
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import { CheckFolderAccessValueProvider } from 'contexts/CheckFolderAccessContext';
+import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import {
   CheckRuntimeAlertStates,
   getCheckCompositeKey,
@@ -17,26 +19,31 @@ import {
   useChecksAlertStates,
 } from 'data/useCheckAlertStates';
 import { useSuspenseChecks } from 'data/useChecks';
+import { useAllFolders } from 'data/useFolders';
 import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
+import {
+  CHECK_LIST_STATUS_OPTIONS,
+  CHECKS_PER_PAGE_CARD,
+  CHECKS_PER_PAGE_LIST,
+} from 'page/CheckList/CheckList.constants';
 import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
 import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
+import { CheckListFolderView } from 'page/CheckList/components/CheckListFolderView';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 
-const CHECKS_PER_PAGE_CARD = 15;
-const CHECKS_PER_PAGE_LIST = 50;
-
 export const CheckList = () => {
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const [viewType, setViewType] = useQueryParametersState<CheckListViewType>({
     key: 'view',
-    initialValue: CheckListViewType.Card,
+    initialValue: isFoldersEnabled ? CheckListViewType.Folder : CheckListViewType.Card,
     encode: (value) => value.toString(),
     decode: (value) => value as CheckListViewType,
   });
@@ -63,6 +70,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
+
+  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+  const { folders: allFolders, foldersMap, defaultFolderUid, isLoading: isFoldersLoading, isError: isFoldersError, refetch: refetchFolders } = useAllFolders();
   const {
     data: checkAlertStates = {},
     isFetched: isAlertStatesFetched,
@@ -106,6 +116,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [alerts, setAlerts] = filters.alerts;
   const [status, setStatus] = filters.status;
   const [probes, setProbes] = filters.probes;
+  const [folders, setFolders] = filters.folders;
 
   const checkFiltersWithStatus: CheckFiltersType = useMemo(
     () => ({
@@ -118,8 +129,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           ? ({ label: status.label, value: status.value } as CheckFiltersType['status'])
           : CHECK_LIST_STATUS_OPTIONS[0],
       probes,
+      folders: isFoldersEnabled ? folders : [],
     }),
-    [labels, search, type, alerts, status, probes]
+    [labels, search, type, alerts, status, probes, folders, isFoldersEnabled]
   );
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -127,12 +139,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const styles = useStyles2(getStyles);
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
-  const filteredChecks = filterChecks(checks, checkFiltersWithStatus);
+  const filteredChecks = filterChecks(checks, checkFiltersWithStatus, defaultFolderUid);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
-  const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
+  const folderAccess = useCheckFolderAccess(sortedChecks);
+  const { visibleChecks } = folderAccess;
 
-  const isAllSelected = selectedCheckIds.size === filteredChecks.length;
-  const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
+  const currentPageChecks = visibleChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
+  const totalPages = Math.ceil(visibleChecks.length / CHECKS_PER_PAGE);
 
   const handleFilterChange = (filters: CheckFiltersType, type: FilterType) => {
     setCurrentPage(1);
@@ -156,12 +169,15 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       case 'probes':
         setProbes(filters.probes);
         break;
+      case 'folders':
+        setFolders(filters.folders);
+        break;
       default:
         break;
     }
 
     setSelectedChecksIds((current) => {
-      const filteredChecks = filterChecks(checks, filters);
+      const filteredChecks = filterChecks(checks, filters, defaultFolderUid);
       const alreadySelectedChecks = filteredChecks.filter((check) => current.has(check.id!)).map((check) => check.id!);
       return new Set(alreadySelectedChecks);
     });
@@ -203,12 +219,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     }
   };
 
+  const isAllSelected = selectedCheckIds.size === visibleChecks.length;
+
   const handleSelectAll = () => {
     if (isAllSelected) {
       return handleUnselectAll();
     }
-
-    const allCheckIds = sortedChecks.map((check) => check.id!);
+    const allCheckIds = visibleChecks.map((check) => check.id!);
     setSelectedChecksIds(new Set(allCheckIds));
   };
 
@@ -221,16 +238,34 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     setSelectedChecksIds(new Set());
   };
 
+  const handleSelectChecks = (checkIds: number[]) => {
+    setSelectedChecksIds((prev) => {
+      const next = new Set(prev);
+      checkIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const handleDeselectChecks = (checkIds: number[]) => {
+    setSelectedChecksIds((prev) => {
+      const next = new Set(prev);
+      checkIds.forEach((id) => next.delete(id));
+      return next;
+    });
+  };
+
   if (checks.length === 0) {
     return <ChecksEmptyState />;
   }
 
   return (
-    <>
+    <CheckFolderAccessValueProvider value={folderAccess}>
       <CheckListHeader
-        checks={filteredChecks}
+        checks={visibleChecks}
         checkFilters={checkFiltersWithStatus}
         currentPageChecks={currentPageChecks}
+        folders={allFolders}
+        defaultFolderUid={defaultFolderUid}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}
         onSelectAll={handleSelectAll}
@@ -245,12 +280,31 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         onRetryAlertStates={refetchAlertStates}
         calNames={calNames}
       />
-      <div>
-        <section className="card-section card-list-layout-list">
-          <div className={styles.list}>
-            {/* Inline style is required: viewTransitionName must be unique per element and can't be set via a shared CSS class */}
-            {currentPageChecks.map((check) => (
-              <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
+      {viewType === CheckListViewType.Folder ? (
+        <CheckListFolderView
+          checks={visibleChecks}
+          folders={allFolders}
+          foldersMap={foldersMap}
+          foldersLoading={isFoldersLoading}
+          foldersError={isFoldersError}
+          onRetryFolders={refetchFolders}
+          defaultFolderUid={defaultFolderUid}
+          checkAlertStates={checkAlertStates}
+          calNames={calNames}
+          onLabelSelect={handleLabelSelect}
+          onStatusSelect={handleStatusSelect}
+          onTypeSelect={handleTypeSelect}
+          onToggleCheckbox={handleCheckSelect}
+          onSelectChecks={handleSelectChecks}
+          onDeselectChecks={handleDeselectChecks}
+          selectedCheckIds={selectedCheckIds}
+        />
+      ) : (
+        <div>
+          <section className="card-section card-list-layout-list">
+            <div className={styles.list}>
+              {currentPageChecks.map((check) => (
+                <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
                 <CheckListItem
                   check={check}
                   calNames={calNames}
@@ -262,24 +316,25 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                   selected={selectedCheckIds.has(check.id!)}
                   viewType={viewType}
                 />
-              </div>
-            ))}
-          </div>
-        </section>
-        {totalPages > 1 && (
-          <Pagination
-            numberOfPages={totalPages}
-            currentPage={currentPage}
-            onNavigate={(toPage: number) => setCurrentPage(toPage)}
-          />
-        )}
-      </div>
-    </>
+                </div>
+              ))}
+            </div>
+          </section>
+          {totalPages > 1 && (
+            <Pagination
+              numberOfPages={totalPages}
+              currentPage={currentPage}
+              onNavigate={(toPage: number) => setCurrentPage(toPage)}
+            />
+          )}
+        </div>
+      )}
+    </CheckFolderAccessValueProvider>
   );
 };
 
-function filterChecks(checks: Check[], filters: CheckFiltersType) {
-  return checks.filter((check) => matchesAllFilters(check, filters));
+function filterChecks(checks: Check[], filters: CheckFiltersType, defaultFolderUid?: string) {
+  return checks.filter((check) => matchesAllFilters(check, filters, defaultFolderUid));
 }
 
 type MetricCheckSuccessParsed = MetricCheckSuccess & {

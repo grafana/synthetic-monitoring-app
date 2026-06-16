@@ -8,6 +8,7 @@ import {
 } from 'test/fixtures/checks';
 
 import { Check, CheckType } from 'types';
+import { getBaseFormValuesFromCheck } from 'components/Checkster/transformations/toFormValues.utils';
 
 import { renderEditForm } from '../../../../__testHelpers__/checkForm';
 
@@ -20,7 +21,7 @@ export const CHECK_LIST_MAP: Record<string, Check> = {
   [CheckType.Traceroute]: BASIC_TRACEROUTE_CHECK,
 };
 
-describe('Api endpoint checks - common fields payload', () => {
+describe('Api endpoint checks - common fields', () => {
   Object.entries(CHECK_LIST_MAP).forEach(([cType, check]) => {
     describe(`${cType}`, () => {
       describe(`Section 1 (Request)`, () => {
@@ -36,6 +37,19 @@ describe('Api endpoint checks - common fields payload', () => {
             });
         });
       });
+    });
+  });
+
+  describe('Folder field', () => {
+    it('leaves folderUid undefined when a check has none', () => {
+      const formValues = getBaseFormValuesFromCheck(BASIC_HTTP_CHECK);
+      expect(formValues.folderUid).toBeUndefined();
+    });
+
+    it('preserves the folderUid when a check has one', () => {
+      const checkWithFolder = { ...BASIC_HTTP_CHECK, folderUid: 'custom-folder' };
+      const formValues = getBaseFormValuesFromCheck(checkWithFolder);
+      expect(formValues.folderUid).toBe('custom-folder');
     });
   });
 });

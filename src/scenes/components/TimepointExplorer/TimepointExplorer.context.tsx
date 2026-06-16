@@ -13,7 +13,8 @@ import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
 import { trackTimepointVizLegendToggled, trackViewToggle } from 'features/tracking/timepointExplorerEvents';
 
-import { Check } from 'types';
+import { Check, CheckType } from 'types';
+import { getCheckType } from 'utils';
 import { useLogsRetentionPeriod } from 'data/useLogsRetention';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
 import {
@@ -65,6 +66,7 @@ interface TimepointExplorerContextType {
   alertEvents: CheckEvent[];
   check: Check;
   checkConfigs: CheckConfig[];
+  checkType: CheckType;
   checkEvents: CheckEvent[];
   currentAdjustedTime: UnixTimestamp;
   explorerTimeFrom: UnixTimestamp;
@@ -111,6 +113,7 @@ interface TimepointExplorerProviderProps extends PropsWithChildren {
 }
 
 export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
+  const checkType = getCheckType(check.settings);
   const checkCreation = Math.ceil(check.created!) * 1000;
   const [timeRange] = useTimeRange();
   const timeRangeRef = useRef<TimeRange>(timeRange);
@@ -239,10 +242,13 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     setMiniMapCurrentSectionIndex(0);
   }, []);
 
-  const handleViewModeChange = useCallback((viewMode: ViewMode) => {
-    trackViewToggle({ viewMode });
-    setViewMode(viewMode);
-  }, []);
+  const handleViewModeChange = useCallback(
+    (viewMode: ViewMode) => {
+      trackViewToggle({ checkType, viewMode });
+      setViewMode(viewMode);
+    },
+    [checkType]
+  );
 
   const handleViewerStateChange = useCallback((state: ViewerState) => {
     setViewerState(state);
@@ -283,27 +289,31 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     [listWidth, handleTimepointDisplayCountChange]
   );
 
-  const handleVizDisplayChange = useCallback((display: TimepointStatus, usedModifier: boolean) => {
-    setVizDisplay((prev) => {
-      const isSelected = prev.includes(display);
-      const allSelected = prev.length === VIZ_DISPLAY_OPTIONS.length;
-      let newVizDisplay = [display];
+  const handleVizDisplayChange = useCallback(
+    (display: TimepointStatus, usedModifier: boolean) => {
+      setVizDisplay((prev) => {
+        const isSelected = prev.includes(display);
+        const allSelected = prev.length === VIZ_DISPLAY_OPTIONS.length;
+        let newVizDisplay = [display];
 
-      if (usedModifier) {
-        newVizDisplay = isSelected ? prev.filter((value) => value !== display) : [...prev, display];
-      }
+        if (usedModifier) {
+          newVizDisplay = isSelected ? prev.filter((value) => value !== display) : [...prev, display];
+        }
 
-      if (isSelected && !allSelected) {
-        newVizDisplay = VIZ_DISPLAY_OPTIONS;
-      }
+        if (isSelected && !allSelected) {
+          newVizDisplay = VIZ_DISPLAY_OPTIONS;
+        }
 
-      trackTimepointVizLegendToggled({
-        vizOptions: newVizDisplay.sort().join(','),
+        trackTimepointVizLegendToggled({
+          checkType,
+          vizOptions: newVizDisplay.sort().join(','),
+        });
+
+        return newVizDisplay;
       });
-
-      return newVizDisplay;
-    });
-  }, []);
+    },
+    [checkType]
+  );
 
   const handleVizOptionChange = useCallback((display: TimepointStatus, color: string) => {
     setVizOptions((prev) => {
@@ -353,6 +363,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       check,
       checkConfigs,
       checkEvents,
+      checkType,
       currentAdjustedTime,
       explorerTimeFrom,
       handleHoverStateChange,
@@ -395,6 +406,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     check,
     checkConfigs,
     checkEvents,
+    checkType,
     currentAdjustedTime,
     explorerTimeFrom,
     handleHoverStateChange,

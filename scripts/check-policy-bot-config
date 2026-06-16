@@ -1,0 +1,28 @@
+#!/bin/sh
+
+set -eu
+
+output=.policy.yml
+
+summary_output=${1:-/dev/stdout}
+
+toplevel=$(git rev-parse --show-toplevel)
+cd "$toplevel"
+
+if ! git diff --exit-code "${output}" > /dev/null ; then
+	cat <<-EOT
+		::error file=$output,title=Out of date::$output is out of date. Run "make generate-policy-bot-config" to fix this.
+	EOT
+
+	cat <<-EOT >> "${summary_output}"
+		### policy-bot configuration drift :bangbang:
+
+		\`$output\` is out of sync.
+
+		:bulb: Run \`make generate-policy-bot-config\` to update it.
+	EOT
+
+	exit 1
+fi
+
+exit 0

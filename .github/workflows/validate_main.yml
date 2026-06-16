@@ -1,0 +1,54 @@
+name: Validate commits to main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  # Deploy to dev.
+  cd:
+    name: CD
+    # Documentation: https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions
+    #
+    #  About permissions below.
+    #
+    # - attestations: write: publish attestations.
+    # - contents: write: checkout code (read); create a git tag (write, not
+    #   used); create a GitHub Release (write, not used); publish techdocs to
+    #   webiste (not used). Change to contents: read as soon as possible.
+    # - id-token: write: used to mint various tokens.
+    # - pull-requests: read: list PRs to determine if the branch from which the
+    #   release is created is an open PR. We don't need this because we set
+    #   branch=main. Remove this as soon as possible.
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v8.0.1
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+      pull-requests: read
+    with:
+      branch: main
+
+      environment: dev
+
+      # Append commit SHA so each merge to main publishes a unique version
+      # to the dev catalog and GCS, instead of colliding with the released version.
+      plugin-version-suffix: ${{ github.sha }}
+
+      docs-only: false
+
+      scopes: universal
+
+      # Argo CD inputs
+      grafana-cloud-deployment-type: provisioned
+      trigger-argo: true
+      argo-workflow-slack-channel: '#sm-ops-deploys'
+
+      auto-merge-environments: dev
+
+      # https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions/#customizing-the-workflows-with-inputs
+      node-version: 22
+      run-playwright: false  # Disabled - no Playwright tests configured

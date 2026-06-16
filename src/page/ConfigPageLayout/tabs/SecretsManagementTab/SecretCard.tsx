@@ -70,10 +70,6 @@ export function SecretCard({ secret, onEdit, onDelete }: SecretCardProps) {
       <div className={styles.keyValue}>
         <strong>Created:</strong> {formatDate(secret.created_at)} ({secret.created_by})
       </div>
-      {/* Currently there is no modified_at returned by the API(???) */}
-      {/*<div className={styles.keyValue}>*/}
-      {/*  <strong>Modified:</strong> {formatDate(secret.modified_at)}*/}
-      {/*</div>*/}
     </div>
   );
 }

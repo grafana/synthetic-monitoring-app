@@ -1,28 +1,24 @@
 name: Validate Policy Bot Config
 
 on:
-  workflow_call:
+  pull_request:
+    paths:
+      - .policy.yml
+      - .github/workflows/validate-policy-bot.yml
+      - scripts/gen-policy-bot-config
+      - scripts/check-policy-bot-config
 
-permissions:
-  contents: read
+  push:
+    branches:
+      - main
+    paths:
+      - .policy.yml
+      - .github/workflows/validate-policy-bot.yml
+      - scripts/gen-policy-bot-config
+      - scripts/check-policy-bot-config
 
 jobs:
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      policy-changed: ${{ steps.changes.outputs.policy }}
-    steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
-        id: changes
-        with:
-          filters: |
-            policy:
-              - '.policy.yml'
-
   validate:
-    needs: check-changes
-    if: needs.check-changes.outputs.policy-changed == 'true'
     name: Validate policy bot config
     runs-on: ubuntu-latest
     permissions:
@@ -34,6 +30,12 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           persist-credentials: false
+
+      - name: Check drift
+        run: |
+          ./scripts/gen-policy-bot-config
+
+          ./scripts/check-policy-bot-config "$GITHUB_STEP_SUMMARY"
 
       - name: Validate policy bot config
         run: |

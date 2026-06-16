@@ -1,10 +1,12 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useEffect, useRef } from 'react';
 import { PluginPage } from '@grafana/runtime';
 import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
 import { Stack } from '@grafana/ui';
+import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvents';
 
 import { Check, CheckType } from 'types';
+import { useCheckUptimeSuccessRate } from 'data/useSuccessRates';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 import { useDashboardContainerAnnotations } from 'scenes/Common/DashboardContainer.hooks';
@@ -16,9 +18,28 @@ interface DashboardContainerProps extends PropsWithChildren {
   checkType: CheckType;
 }
 
+const useTrackCheckDashboardViewed = (check: Check, checkType: CheckType) => {
+  const { data: uptime, isSuccess, isError } = useCheckUptimeSuccessRate(check);
+  const trackedCheckId = useRef<Check['id']>(undefined);
+
+  useEffect(() => {
+    if (trackedCheckId.current === check.id || (!isSuccess && !isError)) {
+      return;
+    }
+
+    trackedCheckId.current = check.id;
+    trackCheckDashboardViewed({
+      checkType,
+      hasFailures: typeof uptime === 'number' ? uptime < 1 : undefined,
+      uptime: typeof uptime === 'number' ? Math.round(uptime * 10000) / 100 : undefined,
+    });
+  }, [check.id, checkType, uptime, isSuccess, isError]);
+};
+
 export const DashboardContainer = ({ check, checkType, children }: DashboardContainerProps) => {
   const metricsDS = useMetricsDS();
   const annotations = useDashboardContainerAnnotations(check);
+  useTrackCheckDashboardViewed(check, checkType);
 
   return (
     <SceneContextProvider timeRange={{ from: `now-${DEFAULT_QUERY_FROM_TIME}`, to: 'now' }} withQueryController>

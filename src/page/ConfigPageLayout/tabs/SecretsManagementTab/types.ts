@@ -16,12 +16,15 @@ export interface SecretWithValue extends Omit<Secret, 'plaintext'> {
 }
 
 export interface SecretMetadata {
-  created_at: number;
-  modified_at: number;
-  created_by: string;
-  org_id: number;
-  stack_id: number;
   uuid: string;
+  created_at: number;
+  created_by: string;
+  /**
+   * List of services allowed to decrypt this secret. Only the capability
+   * list is ever returned by the API, never the raw value. SM only shows
+   * and operates on secrets whose decrypters include `synthetic-monitoring`.
+   */
+  decrypters: string[];
 }
 
 export interface SecretWithUuid extends Omit<Secret, 'uuid'> {
