@@ -45,14 +45,10 @@
     "buttonCascaderLabel": "Labels"
   },
   "testing-and-synthetics-landing": {
-    "page": {
-      "subtitle": "Optimize performance with k6 and Synthetic Monitoring insights",
-      "title": "Testing & synthetics"
-    },
     "performance": {
-      "create": "Create a test",
+      "browse-projects": "Browse projects",
       "description": "Run tests, catch regressions, and ship with confidence.",
-      "run": "Run a test",
+      "start-testing": "Start testing",
       "title": "Performance testing"
     },
     "synthetics": {
@@ -60,17 +56,20 @@
       "title": "Synthetic monitoring"
     },
     "task": {
-      "synthetics-browser": {
-        "kind": "Browser check",
-        "title": "Verify a login or other critical user journey"
+      "make-check": {
+        "action": "Create",
+        "description": "Set up browser, HTTP, or scripted checks to monitor uptime and user journeys.",
+        "title": "Make a check"
       },
-      "synthetics-endpoint": {
-        "kind": "HTTP, TCP, DNS, ping, or traceroute",
-        "title": "Check if a URL, host, or port is reachable"
+      "manage-probes": {
+        "action": "Manage",
+        "description": "Choose where checks run and add private probes on your network.",
+        "title": "Manage probes"
       },
-      "synthetics-scripted": {
-        "kind": "k6 scripted check",
-        "title": "Validate a multi-step API workflow"
+      "terraform": {
+        "action": "View",
+        "description": "Export checks, probes, and tokens for repeatable infrastructure setup.",
+        "title": "Get Terraform config"
       }
     }
   }

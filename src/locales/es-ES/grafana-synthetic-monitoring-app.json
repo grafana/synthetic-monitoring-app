@@ -45,14 +45,10 @@
     "buttonCascaderLabel": "Etiquetas"
   },
   "testing-and-synthetics-landing": {
-    "page": {
-      "subtitle": "",
-      "title": ""
-    },
     "performance": {
-      "create": "",
+      "browse-projects": "",
       "description": "",
-      "run": "",
+      "start-testing": "",
       "title": ""
     },
     "synthetics": {
@@ -60,16 +56,19 @@
       "title": ""
     },
     "task": {
-      "synthetics-browser": {
-        "kind": "",
+      "make-check": {
+        "action": "",
+        "description": "",
         "title": ""
       },
-      "synthetics-endpoint": {
-        "kind": "",
+      "manage-probes": {
+        "action": "",
+        "description": "",
         "title": ""
       },
-      "synthetics-scripted": {
-        "kind": "",
+      "terraform": {
+        "action": "",
+        "description": "",
         "title": ""
       }
     }
