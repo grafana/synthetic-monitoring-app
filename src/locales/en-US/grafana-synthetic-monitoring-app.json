@@ -43,5 +43,35 @@
   },
   "labelFilterInput": {
     "buttonCascaderLabel": "Labels"
+  },
+  "testing-and-synthetics-landing": {
+    "page": {
+      "subtitle": "Optimize performance with k6 and Synthetic Monitoring insights",
+      "title": "Testing & synthetics"
+    },
+    "performance": {
+      "create": "Create a test",
+      "description": "Run tests, catch regressions, and ship with confidence.",
+      "run": "Run a test",
+      "title": "Performance testing"
+    },
+    "synthetics": {
+      "description": "Verify services and user journeys are working from probe locations worldwide.",
+      "title": "Synthetic monitoring"
+    },
+    "task": {
+      "synthetics-browser": {
+        "kind": "Browser check",
+        "title": "Verify a login or other critical user journey"
+      },
+      "synthetics-endpoint": {
+        "kind": "HTTP, TCP, DNS, ping, or traceroute",
+        "title": "Check if a URL, host, or port is reachable"
+      },
+      "synthetics-scripted": {
+        "kind": "k6 scripted check",
+        "title": "Validate a multi-step API workflow"
+      }
+    }
   }
 }

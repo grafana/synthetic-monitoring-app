@@ -43,5 +43,35 @@
   },
   "labelFilterInput": {
     "buttonCascaderLabel": "Etiquetas"
+  },
+  "testing-and-synthetics-landing": {
+    "page": {
+      "subtitle": "",
+      "title": ""
+    },
+    "performance": {
+      "create": "",
+      "description": "",
+      "run": "",
+      "title": ""
+    },
+    "synthetics": {
+      "description": "",
+      "title": ""
+    },
+    "task": {
+      "synthetics-browser": {
+        "kind": "",
+        "title": ""
+      },
+      "synthetics-endpoint": {
+        "kind": "",
+        "title": ""
+      },
+      "synthetics-scripted": {
+        "kind": "",
+        "title": ""
+      }
+    }
   }
 }
