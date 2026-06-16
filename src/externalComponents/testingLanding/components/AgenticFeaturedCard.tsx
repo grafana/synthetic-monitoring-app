@@ -1,5 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Trans } from '@grafana/i18n';
 import { locationService } from '@grafana/runtime';
 import { Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -53,18 +54,20 @@ export function AgenticFeaturedCard() {
                 </span>
               </span>
               <Text element="h2" variant="h4" weight="medium">
-                Agentic testing
+                <Trans i18nKey="agenticFeaturedCard.title">Agentic testing</Trans>
               </Text>
               <OpenLink href={AGENTIC_URLS.home} onClick={handleOpenClick} />
             </Stack>
             <Text variant="body" color="secondary">
-              Write what to test in natural language. Each step runs directly in a browser, with pass/fail results and a
-              session recording.
+              <Trans i18nKey="agenticFeaturedCard.description">
+                Write what to test in natural language. Each step runs directly in a browser, with pass/fail results and a
+                session recording.
+              </Trans>
             </Text>
           </Stack>
           <div onClick={(event) => event.stopPropagation()}>
             <LinkButton variant="primary" icon="plus" href={AGENTIC_URLS.create} onClick={handleCreateClick}>
-              Create a test
+              <Trans i18nKey="agenticFeaturedCard.createTestButton">Create a test</Trans>
             </LinkButton>
           </div>
         </Stack>
