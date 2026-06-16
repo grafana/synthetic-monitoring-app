@@ -116,26 +116,9 @@ function getStyles(theme: GrafanaTheme2) {
     }),
     actionButton: css({
       label: 'testing-synthetics-tile-action',
-      boxShadow: 'none',
       transition: 'background 150ms ease-out',
       '&:hover': {
         background: actionButtonHoverBackground,
-        boxShadow: 'none',
-      },
-      '&:hover [data-testid^="icon-"]': {
-        transform: 'translateX(2px)',
-      },
-      '&:focus': {
-        boxShadow: 'none',
-      },
-      '&:focus-visible': {
-        outline: `2px solid ${theme.colors.text.link}`,
-        outlineOffset: '2px',
-        boxShadow: 'none',
-      },
-      '&:focus:not(:focus-visible)': {
-        outline: 'none',
-        boxShadow: 'none',
       },
     }),
   };

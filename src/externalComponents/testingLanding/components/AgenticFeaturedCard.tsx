@@ -1,7 +1,7 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
-import { LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import {
   trackAgenticCardClicked,
@@ -48,8 +48,8 @@ export function AgenticFeaturedCard() {
             <Stack direction="row" gap={1.5} alignItems="center" wrap="wrap">
               <span className={styles.logoWrap}>
                 <img src={getPluginLogoUrl(PERFORMANCE_PLUGIN_ID)} alt="k6" className={styles.logo} />
-                <span className={styles.sparkleBadge}>
-                  <SparkleGlyph />
+                <span className={styles.sparkleBadge} aria-hidden="true">
+                  <Icon name="ai-sparkle" className={styles.sparkleIcon} />
                 </span>
               </span>
               <Text element="h2" variant="h4" weight="medium">
@@ -130,22 +130,13 @@ function getStyles(theme: GrafanaTheme2) {
       alignItems: 'center',
       justifyContent: 'center',
       background: theme.colors.background.secondary,
-      border: '1px solid rgba(124, 103, 255, 0.45)',
-      '& svg': {
-        width: 9,
-        height: 9,
-      },
+      border: `1px solid ${theme.colors.border.weak}`,
+      color: theme.colors.text.primary,
+    }),
+    sparkleIcon: css({
+      label: 'testing-synthetics-sparkle-icon',
+      width: 9,
+      height: 9,
     }),
   };
 }
-
-const SparkleGlyph = () => {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="testing-synthetics-sparkle">
-      <path
-        d="M12 2.4 Q13.1 10.9 21.6 12 Q13.1 13.1 12 21.6 Q10.9 13.1 2.4 12 Q10.9 10.9 12 2.4 Z M18.6 3.2 Q19 5.4 21.2 5.8 Q19 6.2 18.6 8.4 Q18.2 6.2 16 5.8 Q18.2 5.4 18.6 3.2 Z"
-        fill="#B8A9FF"
-      />
-    </svg>
-  );
-};
