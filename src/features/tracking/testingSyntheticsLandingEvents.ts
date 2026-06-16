@@ -17,8 +17,10 @@ interface LandingViewed extends TrackingEventProps {
 export const trackTestingSyntheticsLandingViewed =
   testingSyntheticsLandingEvents<LandingViewed>('viewed');
 
-/** Tracks when the Agentic featured card body is clicked. */
-export const trackAgenticCardClicked = testingSyntheticsLandingEvents('agentic_card_clicked');
+/** Tracks when the Agentic Learn more button is clicked. */
+export const trackAgenticLearnMoreButtonClicked = testingSyntheticsLandingEvents(
+  'agentic_learn_more_button_clicked'
+);
 
 /** Tracks when the Agentic Create a test button is clicked. */
 export const trackAgenticCreateButtonClicked = testingSyntheticsLandingEvents('agentic_create_button_clicked');

@@ -3,6 +3,7 @@
     "createNewCheck": "Create new check"
   },
   "agenticFeaturedCard": {
+    "learnMoreButton": "Learn more",
     "createTestButton": "Create a test",
     "description": "Write what to test in natural language. Each step runs directly in a browser, with pass/fail results and a session recording.",
     "title": "Agentic testing"

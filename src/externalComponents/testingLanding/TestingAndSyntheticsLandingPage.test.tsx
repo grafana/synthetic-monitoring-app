@@ -3,8 +3,8 @@ import { type NavModelItem } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { screen, within } from '@testing-library/react';
 import {
-  trackAgenticCardClicked,
   trackAgenticCreateButtonClicked,
+  trackAgenticLearnMoreButtonClicked,
   trackOpenLinkClicked,
   trackPerformanceBrowseProjectsButtonClicked,
   trackPerformanceStartTestingButtonClicked,
@@ -21,7 +21,7 @@ import { TESTING_LANDING_TEST_IDS } from './TestingAndSyntheticsLandingPage.test
 jest.mock('features/tracking/testingSyntheticsLandingEvents', () => ({
   ...jest.requireActual('features/tracking/testingSyntheticsLandingEvents'),
   trackTestingSyntheticsLandingViewed: jest.fn(),
-  trackAgenticCardClicked: jest.fn(),
+  trackAgenticLearnMoreButtonClicked: jest.fn(),
   trackAgenticCreateButtonClicked: jest.fn(),
   trackOpenLinkClicked: jest.fn(),
   trackPerformanceBrowseProjectsButtonClicked: jest.fn(),
@@ -78,6 +78,13 @@ describe('TestingAndSyntheticsLandingPage', () => {
       expect(open).toHaveAttribute('href', AGENTIC_URLS.home);
     });
 
+    it('Agentic Learn more link points to agentic home', async () => {
+      await renderLanding(NAV_AGENTIC_K6);
+      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
+      const learnMore = within(card).getByRole('link', { name: /Learn more/i });
+      expect(learnMore).toHaveAttribute('href', AGENTIC_URLS.home);
+    });
+
     it('Agentic Create link points to agentic new', async () => {
       await renderLanding(NAV_AGENTIC_K6);
       const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
@@ -85,18 +92,18 @@ describe('TestingAndSyntheticsLandingPage', () => {
       expect(create).toHaveAttribute('href', AGENTIC_URLS.create);
     });
 
-    it('clicking Create does not trigger card navigation', async () => {
+    it('clicking Create navigates to agentic new', async () => {
       const { user } = await renderLanding(NAV_AGENTIC_K6);
       const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
       const create = within(card).getByRole('link', { name: /Create a test/i });
       await user.click(create);
       expect(locationService.push).toHaveBeenCalledWith(AGENTIC_URLS.create);
-      expect(locationService.push).not.toHaveBeenCalledWith(AGENTIC_URLS.home);
     });
 
-    it('clicking featured card navigates to agentic home', async () => {
+    it('clicking Learn more navigates to agentic home', async () => {
       const { user } = await renderLanding(NAV_AGENTIC_K6);
-      await user.click(screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard));
+      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
+      await user.click(within(card).getByRole('link', { name: /Learn more/i }));
       expect(locationService.push).toHaveBeenCalledWith(AGENTIC_URLS.home);
     });
 
@@ -188,15 +195,15 @@ describe('TestingAndSyntheticsLandingPage', () => {
       });
     });
 
-    it('tracks Agentic card and create interactions', async () => {
+    it('tracks Agentic learn more and create interactions', async () => {
       const { user } = await renderLanding(NAV_AGENTIC_K6);
       const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
 
+      await user.click(within(card).getByRole('link', { name: /Learn more/i }));
+      expect(trackAgenticLearnMoreButtonClicked).toHaveBeenCalled();
+
       await user.click(within(card).getByRole('link', { name: /Create a test/i }));
       expect(trackAgenticCreateButtonClicked).toHaveBeenCalled();
-
-      await user.click(card);
-      expect(trackAgenticCardClicked).toHaveBeenCalled();
     });
 
     it('tracks Performance panel interactions', async () => {

@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Trans } from '@grafana/i18n';
 import { locationService } from '@grafana/runtime';
 import { Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import {
-  trackAgenticCardClicked,
   trackAgenticCreateButtonClicked,
+  trackAgenticLearnMoreButtonClicked,
   trackOpenLinkClicked,
 } from 'features/tracking/testingSyntheticsLandingEvents';
 
@@ -19,29 +19,22 @@ import { OpenLink } from './OpenLink';
 export function AgenticFeaturedCard() {
   const styles = useStyles2(getStyles);
 
-  const handleCardClick = () => {
-    trackAgenticCardClicked();
+  const handleLearnMoreClick = useCallback(() => {
+    trackAgenticLearnMoreButtonClicked();
     locationService.push(AGENTIC_URLS.home);
-  };
+  }, []);
 
-  const handleCreateClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
+  const handleCreateClick = useCallback(() => {
     trackAgenticCreateButtonClicked();
     locationService.push(AGENTIC_URLS.create);
-  };
+  }, []);
 
-  const handleOpenClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.stopPropagation();
+  const handleOpenClick = useCallback(() => {
     trackOpenLinkClicked({ product: 'agentic' });
-  };
+  }, []);
 
   return (
-    <section
-      className={styles.card}
-      data-testid={TESTING_LANDING_TEST_IDS.agenticCard}
-      onClick={handleCardClick}
-      role="presentation"
-    >
+    <section className={styles.card} data-testid={TESTING_LANDING_TEST_IDS.agenticCard}>
       <span className={styles.accentBar} data-testid={TESTING_LANDING_TEST_IDS.accentBar} aria-hidden="true" />
       <div className={styles.body}>
         <Stack direction="column" gap={2}>
@@ -60,16 +53,19 @@ export function AgenticFeaturedCard() {
             </Stack>
             <Text variant="body" color="secondary">
               <Trans i18nKey="agenticFeaturedCard.description">
-                Write what to test in natural language. Each step runs directly in a browser, with pass/fail results and a
-                session recording.
+                Write what to test in natural language. Each step runs directly in a browser, with pass/fail results and
+                a session recording.
               </Trans>
             </Text>
           </Stack>
-          <div onClick={(event) => event.stopPropagation()}>
+          <Stack direction="row" gap={1} wrap="wrap">
+            <LinkButton variant="secondary" href={AGENTIC_URLS.home} onClick={handleLearnMoreClick}>
+              <Trans i18nKey="agenticFeaturedCard.learnMoreButton">Learn more</Trans>
+            </LinkButton>
             <LinkButton variant="primary" icon="plus" href={AGENTIC_URLS.create} onClick={handleCreateClick}>
               <Trans i18nKey="agenticFeaturedCard.createTestButton">Create a test</Trans>
             </LinkButton>
-          </div>
+          </Stack>
         </Stack>
       </div>
     </section>
@@ -85,11 +81,6 @@ function getStyles(theme: GrafanaTheme2) {
       padding: theme.spacing(3),
       borderRadius: theme.shape.radius.default,
       background: theme.colors.background.secondary,
-      cursor: 'pointer',
-      transition: 'background 150ms ease-out',
-      '&:hover': {
-        background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
-      },
       '&:hover [data-testing-synthetics-open-link] svg': {
         transform: 'translateX(2px)',
       },
