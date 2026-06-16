@@ -3,9 +3,9 @@
     "createNewCheck": "Crear nueva prueba"
   },
   "agenticFeaturedCard": {
-    "learnMoreButton": "",
     "createTestButton": "",
     "description": "",
+    "learnMoreButton": "",
     "title": ""
   },
   "checkFilterGroup": {
