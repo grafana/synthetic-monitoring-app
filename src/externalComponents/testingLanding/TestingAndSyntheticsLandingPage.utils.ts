@@ -6,13 +6,13 @@ export function getInstalledPlugins(node: NavModelItem) {
   const children = node?.children?.filter((child) => !child.hideFromTabs) ?? [];
 
   const hasAgentic = children.some(
-    (child) => child.pluginId === AGENTIC_PLUGIN_ID || child.id?.includes('agentic')
+    (child) => child.pluginId === AGENTIC_PLUGIN_ID
   );
   const hasK6 = children.some(
-    (child) => child.pluginId === PERFORMANCE_PLUGIN_ID || child.id?.includes('k6')
+    (child) => child.pluginId === PERFORMANCE_PLUGIN_ID
   );
   const hasSynthetics = children.some(
-    (child) => child.pluginId === SYNTHETICS_PLUGIN_ID || child.id?.includes('synthetic-monitoring')
+    (child) => child.pluginId === SYNTHETICS_PLUGIN_ID
   );
 
   return { hasAgentic, hasK6, hasSynthetics };

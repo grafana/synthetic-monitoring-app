@@ -88,7 +88,7 @@ function getStyles(theme: GrafanaTheme2) {
       cursor: 'pointer',
       transition: 'background 150ms ease-out',
       '&:hover': {
-        background: theme.isDark ? 'rgb(40, 43, 49)' : theme.colors.emphasize(theme.colors.background.secondary, 0.03),
+        background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
       },
       '&:hover [data-testing-synthetics-open-link] svg': {
         transform: 'translateX(2px)',
