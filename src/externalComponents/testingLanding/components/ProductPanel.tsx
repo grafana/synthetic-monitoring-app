@@ -16,6 +16,7 @@ interface ProductPanelProps {
   description: string;
   actions?: ReactNode;
   children?: ReactNode;
+  onOpenClick?: () => void;
 }
 
 export function ProductPanel({
@@ -27,6 +28,7 @@ export function ProductPanel({
   description,
   actions,
   children,
+  onOpenClick,
 }: ProductPanelProps) {
   const styles = useStyles2(getStyles);
 
@@ -39,7 +41,10 @@ export function ProductPanel({
             <Text element="h2" variant="h4" weight="medium">
               {title}
             </Text>
-            <OpenLink href={openHref} />
+            <OpenLink
+              href={openHref}
+              onClick={onOpenClick ? () => onOpenClick() : undefined}
+            />
           </Stack>
           <Text variant="body" color="secondary">
             {description}

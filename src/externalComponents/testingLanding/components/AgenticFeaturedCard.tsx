@@ -3,6 +3,11 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import {
+  trackAgenticCardClicked,
+  trackAgenticCreateButtonClicked,
+  trackOpenLinkClicked,
+} from 'features/tracking/testingSyntheticsLandingEvents';
 
 import { getPluginLogoUrl } from 'utils/pluginLogoUrl';
 
@@ -14,16 +19,19 @@ export function AgenticFeaturedCard() {
   const styles = useStyles2(getStyles);
 
   const handleCardClick = () => {
+    trackAgenticCardClicked();
     locationService.push(AGENTIC_URLS.home);
   };
 
   const handleCreateClick = (event: React.MouseEvent) => {
     event.stopPropagation();
+    trackAgenticCreateButtonClicked();
     locationService.push(AGENTIC_URLS.create);
   };
 
   const handleOpenClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.stopPropagation();
+    trackOpenLinkClicked({ product: 'agentic' });
   };
 
   return (

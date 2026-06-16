@@ -3,6 +3,9 @@ import { type GrafanaTheme2, type IconName } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackSyntheticsTileClicked } from 'features/tracking/testingSyntheticsLandingEvents';
+
+import { type SyntheticsTile } from 'features/tracking/testingSyntheticsLandingEvents.types';
 
 import { TESTING_LANDING_TEST_IDS } from '../TestingAndSyntheticsLandingPage.testIds';
 
@@ -10,6 +13,7 @@ const TILE_ACTION_ATTR = 'data-testing-synthetics-tile-action';
 const TILE_ACTION_ICON = `[${TILE_ACTION_ATTR}] [data-testid^="icon-"]`;
 
 interface UseCaseTileProps {
+  tile: SyntheticsTile;
   title: string;
   description: string;
   href: string;
@@ -17,17 +21,22 @@ interface UseCaseTileProps {
   icon: IconName;
 }
 
-export function UseCaseTile({ title, description, href, actionLabel, icon }: UseCaseTileProps) {
+export function UseCaseTile({ tile, title, description, href, actionLabel, icon }: UseCaseTileProps) {
   const styles = useStyles2(getStyles);
 
   const handleTileClick = useCallback(() => {
+    trackSyntheticsTileClicked({ tile, interaction: 'tile' });
     locationService.push(href);
-  }, [href]);
+  }, [href, tile]);
 
-  const handleActionClick = useCallback((event: React.MouseEvent) => {
-    event.stopPropagation();
-    locationService.push(href);
-  }, [href]);
+  const handleActionClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      trackSyntheticsTileClicked({ tile, interaction: 'action-button' });
+      locationService.push(href);
+    },
+    [href, tile]
+  );
 
   return (
     <div

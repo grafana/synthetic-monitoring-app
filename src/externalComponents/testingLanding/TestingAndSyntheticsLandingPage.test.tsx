@@ -2,12 +2,32 @@ import React from 'react';
 import { type NavModelItem } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { screen, within } from '@testing-library/react';
+import {
+  trackAgenticCardClicked,
+  trackAgenticCreateButtonClicked,
+  trackOpenLinkClicked,
+  trackPerformanceBrowseProjectsButtonClicked,
+  trackPerformanceStartTestingButtonClicked,
+  trackSyntheticsTileClicked,
+  trackTestingSyntheticsLandingViewed,
+} from 'features/tracking/testingSyntheticsLandingEvents';
 import { NAV_AGENTIC_K6, NAV_BOTH_PLUGINS, NAV_K6_ONLY, NAV_SM_ONLY } from 'test/fixtures/testingSyntheticsNav';
 import { render } from 'test/render';
 
 import { TestingAndSyntheticsLandingPage } from './TestingAndSyntheticsLandingPage';
 import { AGENTIC_URLS, K6_URLS, SM_URLS } from './TestingAndSyntheticsLandingPage.constants';
 import { TESTING_LANDING_TEST_IDS } from './TestingAndSyntheticsLandingPage.testIds';
+
+jest.mock('features/tracking/testingSyntheticsLandingEvents', () => ({
+  ...jest.requireActual('features/tracking/testingSyntheticsLandingEvents'),
+  trackTestingSyntheticsLandingViewed: jest.fn(),
+  trackAgenticCardClicked: jest.fn(),
+  trackAgenticCreateButtonClicked: jest.fn(),
+  trackOpenLinkClicked: jest.fn(),
+  trackPerformanceBrowseProjectsButtonClicked: jest.fn(),
+  trackPerformanceStartTestingButtonClicked: jest.fn(),
+  trackSyntheticsTileClicked: jest.fn(),
+}));
 
 async function renderLanding(node: NavModelItem) {
   const res = render(<TestingAndSyntheticsLandingPage node={node} />);
@@ -155,6 +175,59 @@ describe('TestingAndSyntheticsLandingPage', () => {
       const perf = screen.getByTestId(TESTING_LANDING_TEST_IDS.performancePanel);
       await user.click(within(perf).getByRole('link', { name: /Start testing/i }));
       expect(locationService.push).toHaveBeenCalledWith(K6_URLS.home);
+    });
+  });
+
+  describe('analytics', () => {
+    it('tracks page view with installed plugin flags', async () => {
+      await renderLanding(NAV_BOTH_PLUGINS);
+      expect(trackTestingSyntheticsLandingViewed).toHaveBeenCalledWith({
+        hasAgentic: true,
+        hasK6: true,
+        hasSynthetics: true,
+      });
+    });
+
+    it('tracks Agentic card and create interactions', async () => {
+      const { user } = await renderLanding(NAV_AGENTIC_K6);
+      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
+
+      await user.click(within(card).getByRole('link', { name: /Create a test/i }));
+      expect(trackAgenticCreateButtonClicked).toHaveBeenCalled();
+
+      await user.click(card);
+      expect(trackAgenticCardClicked).toHaveBeenCalled();
+    });
+
+    it('tracks Performance panel interactions', async () => {
+      const { user } = await renderLanding(NAV_K6_ONLY);
+      const panel = screen.getByTestId(TESTING_LANDING_TEST_IDS.performancePanel);
+
+      await user.click(within(panel).getByRole('link', { name: /^Open/i }));
+      expect(trackOpenLinkClicked).toHaveBeenCalledWith({ product: 'performance' });
+
+      await user.click(within(panel).getByRole('link', { name: /Browse projects/i }));
+      expect(trackPerformanceBrowseProjectsButtonClicked).toHaveBeenCalled();
+
+      await user.click(within(panel).getByRole('link', { name: /Start testing/i }));
+      expect(trackPerformanceStartTestingButtonClicked).toHaveBeenCalled();
+    });
+
+    it('tracks Synthetic monitoring tile interactions', async () => {
+      const { user } = await renderLanding(NAV_SM_ONLY);
+      const tile = screen.getAllByTestId(TESTING_LANDING_TEST_IDS.useCaseTile)[0];
+
+      await user.click(within(tile).getByRole('link', { name: /Create/i }));
+      expect(trackSyntheticsTileClicked).toHaveBeenCalledWith({
+        tile: 'make-check',
+        interaction: 'action-button',
+      });
+
+      await user.click(tile);
+      expect(trackSyntheticsTileClicked).toHaveBeenCalledWith({
+        tile: 'make-check',
+        interaction: 'tile',
+      });
     });
   });
 });
