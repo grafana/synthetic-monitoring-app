@@ -8,6 +8,14 @@ pa11y-report.json
 
 node_modules/
 
+# Yarn 4 (Berry) — keep releases/plugins/patches, ignore install state and cache
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
 # Runtime data
 pids
 *.pid

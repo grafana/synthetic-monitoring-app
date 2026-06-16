@@ -29,6 +29,8 @@ export interface CodeSnippetProps {
   height?: string;
   className?: string;
   hideHeader?: boolean;
+  onGroupChange?: (groupValue: string) => void;
+  onCopy?: (groupValue: string) => void;
 }
 
 export interface CodeSnippetTabProps {

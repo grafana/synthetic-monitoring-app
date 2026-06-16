@@ -5,8 +5,9 @@ import { APP_INITIALIZER_TEST_ID } from 'test/dataTestIds';
 import { LOGS_DATASOURCE, METRICS_DATASOURCE } from 'test/fixtures/datasources';
 import { render } from 'test/render';
 
+import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID } from 'datasource/constants';
+
 import { AppInitializer } from './AppInitializer';
-import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID } from './constants';
 
 const METRICS_NAME = 'test-metrics';
 const LOGS_NAME = 'test-logs';

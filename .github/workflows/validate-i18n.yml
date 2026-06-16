@@ -1,15 +1,16 @@
 name: Verify i18n Translations
 
 on:
-  workflow_call:
+  pull_request:
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   verify-i18n:
     name: Verify i18n Translations
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5

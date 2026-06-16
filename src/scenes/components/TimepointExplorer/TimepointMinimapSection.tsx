@@ -24,6 +24,7 @@ interface MiniMapSectionProps {
 
 export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMapSectionProps) => {
   const {
+    checkType,
     handleMiniMapSectionChange,
     isCheckCreationWithinTimeRange,
     miniMapCurrentPageSections,
@@ -44,11 +45,12 @@ export const TimepointMiniMapSection = ({ index, miniMapWidth, section }: MiniMa
 
   const handleMiniMapSectionClick = useCallback(() => {
     trackMiniMapSectionClicked({
+      checkType,
       index,
       component: 'section',
     });
     handleMiniMapSectionChange(index);
-  }, [index, handleMiniMapSectionChange]);
+  }, [checkType, index, handleMiniMapSectionChange]);
 
   const padStart = renderingStrategy === 'start' && isCheckCreationWithinTimeRange;
 

@@ -7,8 +7,8 @@ import { apiRoute, ApiRoutes, getServerRequests } from 'test/handlers';
 import { server } from 'test/server';
 
 import { AlertSensitivity } from 'types';
+import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID } from 'datasource/constants';
 import { SMDataSource } from 'datasource/DataSource';
-import { DEFAULT_METRICS_DS_UID } from 'components/constants';
 
 type Entry = {
   method: keyof SMDataSource;
@@ -107,31 +107,6 @@ const entries: Entry[] = [
     payload: undefined,
     handler: 'createAccessToken',
   },
-  {
-    method: 'getSecrets',
-    payload: undefined,
-    handler: 'listSecrets',
-  },
-  {
-    method: 'getSecret',
-    payload: 'new-secret',
-    handler: 'getSecret',
-  },
-  {
-    method: 'saveSecret',
-    payload: { name: `new-secret` },
-    handler: 'createSecret',
-  },
-  {
-    method: 'saveSecret',
-    payload: { uuid: 1, name: `update-secret` },
-    handler: 'updateSecret',
-  },
-  {
-    method: 'deleteSecret',
-    payload: `delete-secret`,
-    handler: 'deleteSecret',
-  },
 ];
 
 describe('SMDataSource', () => {
@@ -166,7 +141,7 @@ describe('SMDataSource', () => {
     });
 
     it('should fall back to default grafanacloud-logs UID when configured datasource does not exist', () => {
-      const defaultLogsDS = { ...LOGS_DATASOURCE, uid: 'grafanacloud-logs' };
+      const defaultLogsDS = { ...LOGS_DATASOURCE, uid: DEFAULT_LOGS_DS_UID };
       config.datasources = {
         [defaultLogsDS.name]: defaultLogsDS,
       };
@@ -185,7 +160,7 @@ describe('SMDataSource', () => {
       const result = smDataSourceWithMissingConfig.getLogsDS();
 
       expect(result).toEqual(defaultLogsDS);
-      expect(result?.uid).toEqual('grafanacloud-logs');
+      expect(result?.uid).toEqual(DEFAULT_LOGS_DS_UID);
     });
 
     it('should respect custom datasource configuration', () => {

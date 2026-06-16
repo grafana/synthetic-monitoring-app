@@ -40,7 +40,7 @@ After creating/changing provisioning files, restart Grafana (`yarn server` or `d
 
 ### Node.js version
 
-The project requires Node.js 24 (`.nvmrc`). Use `nvm use` or `nvm install 24`. Install dependencies with `yarn install --frozen-lockfile --ignore-engines` because `i18next-parser` does not yet declare Node 24 compatibility.
+The project requires Node.js 24 (`.nvmrc`). Use `nvm use` or `nvm install 24`. Install dependencies with `yarn install --frozen-lockfile --ignore-engines` because `i18next-parser` does not yet declare Node 24 compatibility. After installing, run `yarn prepare` once to set up git hooks (lifecycle scripts are disabled in `.yarnrc` for supply-chain security).
 
 ### Docker for Grafana
 

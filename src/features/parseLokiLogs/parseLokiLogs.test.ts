@@ -153,6 +153,59 @@ describe(`parseLokiLogs`, () => {
   });
 });
 
+describe(`parseLokiLogs error path`, () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
+  it(`returns [] and logs only safe schema metadata when required fields are missing`, () => {
+    // Missing labelTypes and id: normalize passes through, isLokiFields rejects.
+    const malformedFrame = {
+      length: 0,
+      refId: 'A',
+      fields: [
+        { name: LokiFieldNames.Labels, values: [] },
+        { name: LokiFieldNames.TimeStamp, values: [], nanos: [] },
+        { name: LokiFieldNames.Body, values: [] },
+      ],
+    } as unknown as LokiDataFrame<Record<string, string>, Record<string, string>>;
+
+    expect(parseLokiLogs(malformedFrame)).toEqual([]);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to normalize LokiDataFrame fields', {
+      fieldNames: [LokiFieldNames.Labels, LokiFieldNames.TimeStamp, LokiFieldNames.Body],
+      length: 0,
+      refId: 'A',
+    });
+  });
+
+  it(`does not leak row values when fields contain data`, () => {
+    const SENSITIVE_LABEL_VALUE = 'should-not-leak';
+    const SENSITIVE_LOG_LINE = 'sensitive log line content';
+
+    const malformedFrame = {
+      length: 1,
+      refId: 'A',
+      fields: [
+        { name: LokiFieldNames.Labels, values: [{ secret: SENSITIVE_LABEL_VALUE }] },
+        { name: LokiFieldNames.TimeStamp, values: [1234567890], nanos: [0] },
+        { name: LokiFieldNames.Body, values: [SENSITIVE_LOG_LINE] },
+      ],
+    } as unknown as LokiDataFrame<Record<string, string>, Record<string, string>>;
+
+    parseLokiLogs(malformedFrame);
+
+    const loggedArg = JSON.stringify(consoleErrorSpy.mock.calls[0]);
+    expect(loggedArg).not.toContain(SENSITIVE_LABEL_VALUE);
+    expect(loggedArg).not.toContain(SENSITIVE_LOG_LINE);
+  });
+});
+
 describe(`normalizeLokiDataFrame`, () => {
   it(`should leave new schema fields unchanged (timestamp, body)`, () => {
     const newSchemaFrame: LokiDataFrame<Record<string, string>, Record<string, string>> = {

@@ -8,7 +8,7 @@ import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
-import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
+import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'datasource/constants';
 
 import { useMeta } from './useMeta';
 
@@ -202,9 +202,10 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
       }
     } catch (e) {
       const err = e as SubmissionErrorWrapper;
-      setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
+      const message = err.data?.msg ?? err.data?.err ?? 'Something went wrong';
+      setError(message);
       setLoading(false);
-      reportError(err.data?.msg ?? err.data?.err ?? err, FaroEvent.Init);
+      reportError(message, FaroEvent.Init);
     }
   };
 
