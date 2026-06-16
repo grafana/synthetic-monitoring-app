@@ -1,4 +1,3 @@
-// Flag values written by mockFeatureToggles, read by the test wrappers' <OpenFeatureTestProvider>.
 const testFlagValues: Record<string, boolean> = {};
 
 export function getTestFlagValues(): Record<string, boolean> {

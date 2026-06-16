@@ -9,7 +9,6 @@ import { ProbeStateStatus } from './types.adhoc-check';
 
 import { LogsPanel } from './LogsPanel';
 
-// required by useFeatureFlag
 const wrapper = ({ children }: PropsWithChildren) => (
   <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
     {children}
