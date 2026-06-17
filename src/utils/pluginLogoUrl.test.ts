@@ -2,7 +2,7 @@ import { config } from '@grafana/runtime';
 
 import { getPluginLogoUrl } from './pluginLogoUrl';
 
-it('builds plugin logo URL from appSubUrl and plugin id', () => {
+it('builds the plugin logo URL from appSubUrl and plugin id', () => {
   jest.replaceProperty(config, 'appSubUrl', '/grafana');
 
   expect(getPluginLogoUrl('k6-app')).toBe('/grafana/public/plugins/k6-app/img/logo.svg');
