@@ -298,6 +298,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           onSelectChecks={handleSelectChecks}
           onDeselectChecks={handleDeselectChecks}
           selectedCheckIds={selectedCheckIds}
+          sortType={sortType}
         />
       ) : (
         <div>
