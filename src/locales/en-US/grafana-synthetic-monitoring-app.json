@@ -2,6 +2,12 @@
   "addNewCheckButton": {
     "createNewCheck": "Create new check"
   },
+  "agenticFeaturedCard": {
+    "createTestButton": "Create a test",
+    "description": "Write what to test in natural language. Each step runs directly in a browser, with pass/fail results and a session recording.",
+    "learnMoreButton": "Learn more",
+    "title": "Agentic testing"
+  },
   "checkFilterGroup": {
     "activeFiltersText": "({{activeFilters}} active)",
     "filterTitle": "Additional filters {{activeFiltersText}}"
@@ -43,5 +49,34 @@
   },
   "labelFilterInput": {
     "buttonCascaderLabel": "Labels"
+  },
+  "testing-and-synthetics-landing": {
+    "performance": {
+      "browse-projects": "Browse projects",
+      "description": "Run tests, catch regressions, and ship with confidence.",
+      "start-testing": "Start testing",
+      "title": "Performance testing"
+    },
+    "synthetics": {
+      "description": "Verify services and user journeys are working from probe locations worldwide.",
+      "title": "Synthetic monitoring"
+    },
+    "task": {
+      "make-check": {
+        "action": "Create",
+        "description": "Set up browser, HTTP, or scripted checks to monitor uptime and user journeys.",
+        "title": "Make a check"
+      },
+      "manage-probes": {
+        "action": "Manage",
+        "description": "Choose where checks run and add private probes on your network.",
+        "title": "Manage probes"
+      },
+      "terraform": {
+        "action": "View",
+        "description": "Export checks, probes, and tokens for repeatable infrastructure setup.",
+        "title": "Get Terraform config"
+      }
+    }
   }
 }
