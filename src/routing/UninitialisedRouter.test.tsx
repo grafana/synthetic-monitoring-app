@@ -1,7 +1,13 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { APP_INITIALIZER_TEST_ID } from 'test/dataTestIds';
+import { LOGS_DATASOURCE, METRICS_DATASOURCE } from 'test/fixtures/datasources';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { type CustomRenderOptions, render } from 'test/render';
+import { server } from 'test/server';
+import { mockFeatureToggles, runTestAsSMViewer } from 'test/utils';
 
+import { FeatureName } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import { AppRoutes } from 'routing/types';
 import { UninitialisedRouter } from 'routing/UninitialisedRouter';
@@ -56,5 +62,67 @@ describe('Renders specific welcome pages when app is not initializd', () => {
     renderUninitialisedRouting({ path: notaRoute });
     const text = await screen.findByText('Up and running in seconds, no instrumentation required');
     expect(text).toBeInTheDocument();
+  });
+});
+
+describe('Auto-initialization on check-creation deep-links', () => {
+  // Align the provisioned datasource names with the test fixtures so the
+  // initializer can resolve them and reach the /install call.
+  const INIT_META = {
+    jsonData: {
+      metrics: { grafanaName: METRICS_DATASOURCE.name, hostedId: 4 },
+      logs: { grafanaName: LOGS_DATASOURCE.name, hostedId: 8 },
+      apiHost: 'https://synthetic-monitoring-api.grafana.net',
+      stackId: 1,
+    },
+  };
+
+  const apiEndpointPath = `${getRoute(AppRoutes.NewCheck)}/api-endpoint`;
+
+  test('auto-initializes (no manual button) when landing on the API endpoint creation page with the flag on', async () => {
+    mockFeatureToggles({ [FeatureName.AutoEnableOnUrl]: true });
+    const { record, requests } = getServerRequests();
+    server.use(apiRoute('installPlugin', {}, record));
+
+    renderUninitialisedRouting({ path: apiEndpointPath, meta: INIT_META });
+
+    expect(await screen.findByTestId(APP_INITIALIZER_TEST_ID.autoInitSpinner)).toBeInTheDocument();
+    expect(screen.queryByTestId(APP_INITIALIZER_TEST_ID.initButton)).not.toBeInTheDocument();
+
+    await waitFor(() => expect(requests.length).toBeGreaterThan(0));
+  });
+
+  test('auto-initializes when landing on the check-type picker with the flag on', async () => {
+    mockFeatureToggles({ [FeatureName.AutoEnableOnUrl]: true });
+    const { record, requests } = getServerRequests();
+    server.use(apiRoute('installPlugin', {}, record));
+
+    renderUninitialisedRouting({ path: getRoute(AppRoutes.ChooseCheckGroup), meta: INIT_META });
+
+    await waitFor(() => expect(requests.length).toBeGreaterThan(0));
+  });
+
+  test('does not auto-initialize and redirects to the home welcome page when the flag is off', async () => {
+    const { record, requests } = getServerRequests();
+    server.use(apiRoute('installPlugin', {}, record));
+
+    renderUninitialisedRouting({ path: apiEndpointPath, meta: INIT_META });
+
+    expect(
+      await screen.findByText('Up and running in seconds, no instrumentation required')
+    ).toBeInTheDocument();
+    expect(requests).toHaveLength(0);
+  });
+
+  test('shows the contact-admin alert and does not initialize when the user lacks permissions', async () => {
+    mockFeatureToggles({ [FeatureName.AutoEnableOnUrl]: true });
+    runTestAsSMViewer();
+    const { record, requests } = getServerRequests();
+    server.use(apiRoute('installPlugin', {}, record));
+
+    renderUninitialisedRouting({ path: apiEndpointPath, meta: INIT_META });
+
+    expect(await screen.findByText(/Contact your administrator/)).toBeInTheDocument();
+    expect(requests).toHaveLength(0);
   });
 });

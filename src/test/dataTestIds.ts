@@ -10,6 +10,7 @@ export const ACTIONS_TEST_ID = {
 export const APP_INITIALIZER_TEST_ID = {
   root: 'app-init container',
   initButton: 'app-init init-button',
+  autoInitSpinner: 'app-init auto-init-spinner',
 } as const;
 
 export const CHECKSTER_TEST_ID = {

@@ -1,9 +1,10 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useEffect, useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { APP_INITIALIZER_TEST_ID } from 'test/dataTestIds';
 
+import { FaroEvent, reportEvent } from 'faro';
 import { hasGlobalPermission } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { getUserPermissions } from 'data/permissions';
@@ -15,10 +16,14 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 interface Props {
   redirectTo?: AppRoutes;
   buttonText: string;
+  // When true, initialization is triggered automatically on mount (no click)
+  // and the current page is reloaded on success so the user stays on their
+  // intended deep-link. Used by the auto-enable-on-URL flow.
+  autoStart?: boolean;
 }
 
 // TODO: Does this really belong under /page?
-export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
+export const AppInitializer = ({ redirectTo, buttonText, autoStart = false }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
   const { canWritePlugin } = getUserPermissions();
@@ -38,7 +43,16 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
     handleClick,
     datasourceModalOpen,
     setDataSouceModalOpen,
-  } = useAppInitializer(redirectTo);
+  } = useAppInitializer(redirectTo, autoStart);
+
+  const hasAutoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStart && !hasAutoStarted.current && canReadDs && canInitialize) {
+      hasAutoStarted.current = true;
+      reportEvent(FaroEvent.AutoInit);
+      handleClick();
+    }
+  }, [autoStart, canReadDs, canInitialize, handleClick]);
 
   if (!canReadDs) {
     return <ContactAdminAlert missingPermissions={['datasources:read']} />;
@@ -52,9 +66,19 @@ export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Pro
 
   return (
     <div data-testid={APP_INITIALIZER_TEST_ID.root}>
-      <Button data-testid={APP_INITIALIZER_TEST_ID.initButton} onClick={handleClick} disabled={loading} size="lg">
-        {loading ? <Spinner /> : buttonText}
-      </Button>
+      {autoStart ? (
+        // Auto-initializing: show a spinner instead of the manual button. If
+        // something goes wrong, the error alert / mismatch modal below take over.
+        !error && (
+          <div data-testid={APP_INITIALIZER_TEST_ID.autoInitSpinner}>
+            <Spinner size="xl" />
+          </div>
+        )
+      ) : (
+        <Button data-testid={APP_INITIALIZER_TEST_ID.initButton} onClick={handleClick} disabled={loading} size="lg">
+          {loading ? <Spinner /> : buttonText}
+        </Button>
+      )}
 
       {error && (
         <Alert title="Something went wrong:" className={styles.alert}>

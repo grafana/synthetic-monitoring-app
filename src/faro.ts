@@ -3,6 +3,7 @@ import { config } from '@grafana/runtime';
 
 export enum FaroEvent {
   Init = 'initialize',
+  AutoInit = 'synthetics_auto_enabled',
   UpdateCheck = 'update_check',
   BulkUpdateCheck = 'bulk_update_check',
   BulkDeleteCheck = 'bulk_delete_check',

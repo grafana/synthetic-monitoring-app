@@ -4,6 +4,7 @@ const IGNORE_ERRORS_LIST = [
   `Could not parse CSS stylesheet`, // silence container query errors
   `Warning: Received \`%s\` for a non-boolean attribute \`%s\``, // should be fixed upstream
   `Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s`, // probecard - card.meta in grafana/grafana is a paragraph tag
+  `Not implemented: navigation`, // jsdom doesn't implement window.location.reload/assign (used by the app initializer)
 ];
 
 beforeAll(() => {

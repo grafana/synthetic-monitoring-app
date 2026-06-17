@@ -94,7 +94,7 @@ function ensureNameAndUidMatch(
 }
 
 // TODO: Allow for the `redirectTo` to be a string (so that we can implement "return to" behaviour after initialization)
-export const useAppInitializer = (redirectTo?: AppRoutes) => {
+export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false) => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [datasourceModalOpen, setDataSouceModalOpen] = useState<boolean>(false);
@@ -190,7 +190,12 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
 
       await initializeDatasource(datasourcePayload);
 
-      if (redirectTo) {
+      if (reloadCurrent) {
+        // Reload the current URL so the user lands back on the exact page they
+        // deep-linked to (preserving check type and any query params). The full
+        // reload is required so that GrafanaBootConfig picks up the new datasource.
+        window.location.reload();
+      } else if (redirectTo) {
         window.location.href = `${window.location.origin}${getRoute(redirectTo)}`;
       } else {
         // force reload so that GrafanaBootConfig is updated.
