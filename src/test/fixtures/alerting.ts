@@ -276,39 +276,42 @@ export const MOCK_MULTI_TREE_ROUTE_MATCH: InstanceMatchResult = {
     ['alertname', 'ProbeFailedExecutionsTooHigh'],
     ['label_Environment', 'prod'],
   ],
+  // Each tree's root reuses the same route id ("route-1") on purpose: route ids
+  // are only unique within a tree, so the display must scope its dedupe per tree
+  // or named trees would vanish from the preview.
   matchedRoutes: [
     {
-      route: { id: 'route-default-root', matchers: [], continue: false },
-      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-default-root' } },
+      route: { id: 'route-1', matchers: [], continue: false },
+      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-1' } },
       matchDetails: {
         matchingJourney: [
-          { route: { id: 'route-default-root', matchers: [], continue: false }, matchDetails: [], matched: true },
+          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
         ],
       },
     },
     {
-      route: { id: 'route-vault-root', matchers: [], continue: false },
-      routeTree: { metadata: { name: 'hashicorp-vault' }, expandedSpec: { id: 'route-vault-root' } },
+      route: { id: 'route-1', matchers: [], continue: false },
+      routeTree: { metadata: { name: 'hashicorp-vault' }, expandedSpec: { id: 'route-1' } },
       matchDetails: {
         matchingJourney: [
-          { route: { id: 'route-vault-root', matchers: [], continue: false }, matchDetails: [], matched: true },
+          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
         ],
       },
     },
     {
       route: {
-        id: 'route-pam-prod',
+        id: 'route-2',
         matchers: [{ type: '=', label: 'label_Environment', value: 'prod' }],
         continue: false,
         receiver: 'PAM Incident Alert',
       },
-      routeTree: { metadata: { name: 'pam-incident-alert' }, expandedSpec: { id: 'route-pam-root' } },
+      routeTree: { metadata: { name: 'pam-incident-alert' }, expandedSpec: { id: 'route-1' } },
       matchDetails: {
         matchingJourney: [
-          { route: { id: 'route-pam-root', matchers: [], continue: false }, matchDetails: [], matched: true },
+          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
           {
             route: {
-              id: 'route-pam-prod',
+              id: 'route-2',
               matchers: [{ type: '=', label: 'label_Environment', value: 'prod' }],
               continue: false,
               receiver: 'PAM Incident Alert',

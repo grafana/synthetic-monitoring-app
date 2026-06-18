@@ -25,6 +25,9 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
       treeName?: string;
     }> = [];
 
+    // Dedupe is scoped per tree: routes within a tree share root/intermediate
+    // nodes across overlapping journeys, but route ids can repeat across trees,
+    // so a global set would drop nodes (and entire trees) that reuse an id.
     const processedRouteIds = new Set<string>();
 
     routeMatch.matchedRoutes.forEach((matchedRoute) => {
@@ -36,9 +39,10 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
 
       matchingJourney.forEach((journeyItem, index) => {
         const route = journeyItem.route;
+        const routeKey = `${treeName ?? ''}::${route.id}`;
 
-        if (!processedRouteIds.has(route.id)) {
-          processedRouteIds.add(route.id);
+        if (!processedRouteIds.has(routeKey)) {
+          processedRouteIds.add(routeKey);
 
           const isEffective = index === effectiveIndex;
 
