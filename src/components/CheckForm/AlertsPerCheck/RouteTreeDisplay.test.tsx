@@ -1,7 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 
-import { MOCK_HTTP_DURATION_ROUTE_MATCH, MOCK_PROBE_FAILED_ROUTE_MATCH } from '../../../test/fixtures/alerting';
+import {
+  MOCK_HTTP_DURATION_ROUTE_MATCH,
+  MOCK_MULTI_TREE_ROUTE_MATCH,
+  MOCK_PROBE_FAILED_ROUTE_MATCH,
+} from '../../../test/fixtures/alerting';
 import { RouteTreeDisplay } from './RouteTreeDisplay';
 
 describe('RouteTreeDisplay', () => {
@@ -78,6 +82,28 @@ describe('RouteTreeDisplay', () => {
       // Should not show any stop icons since all policies have continue=true
       const stopIcons = screen.queryAllByText('⏹️');
       expect(stopIcons.length).toBe(0);
+    });
+  });
+
+  describe('Multiple notification policy trees', () => {
+    it('labels each tree root with its tree name and only the default tree as "Default policy"', () => {
+      render(<RouteTreeDisplay routeMatch={MOCK_MULTI_TREE_ROUTE_MATCH} />);
+
+      // The default ("user-defined") tree root is still shown as "Default policy"
+      expect(screen.getByText('Default policy')).toBeInTheDocument();
+
+      // Named trees show their own name at the root rather than "Default policy"
+      expect(screen.getByText('hashicorp-vault')).toBeInTheDocument();
+      expect(screen.getByText('pam-incident-alert')).toBeInTheDocument();
+
+      // Only the pam-incident-alert tree matches a child route with a contact point
+      expect(screen.getByText('label_Environment=prod')).toBeInTheDocument();
+      expect(screen.getByText('PAM Incident Alert')).toBeInTheDocument();
+
+      // Only one contact point link, since the other two trees match only at
+      // their root with no receiver ("Sent to empty")
+      const contactPointLinks = screen.getAllByRole('link');
+      expect(contactPointLinks.length).toBe(1);
     });
   });
 });
