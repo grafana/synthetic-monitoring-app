@@ -8,13 +8,13 @@ describe('getDefaultRoutingTree', () => {
   const namedTreeB = { metadata: { name: 'pam-incident-alert' } };
 
   it('returns the user-defined tree regardless of its position in the list', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const trees = [namedTreeA, userDefinedTree, namedTreeB] as any;
     expect(getDefaultRoutingTree(trees)).toBe(userDefinedTree);
   });
 
   it('returns undefined when there is no user-defined tree', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     expect(getDefaultRoutingTree([namedTreeA, namedTreeB] as any)).toBeUndefined();
   });
 });

@@ -36,9 +36,10 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
 
       matchingJourney.forEach((journeyItem, index) => {
         const route = journeyItem.route;
+        const scopedRouteId = `${treeName || 'default'}:${route.id}`;
 
-        if (!processedRouteIds.has(route.id)) {
-          processedRouteIds.add(route.id);
+        if (!processedRouteIds.has(scopedRouteId)) {
+          processedRouteIds.add(scopedRouteId);
 
           const isEffective = index === effectiveIndex;
 
