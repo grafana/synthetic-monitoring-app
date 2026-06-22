@@ -164,11 +164,11 @@ describe('computeCheckPermissions', () => {
       });
     });
 
-    it('SM writer + folder Edit → can read + write, not delete', () => {
+    it('SM writer + folder Edit → full access (folder Edit grants delete, same as dashboards)', () => {
       expect(computeCheckPermissions(smWriter(), FOLDER_EDITOR)).toEqual({
         canRead: true,
         canWrite: true,
-        canDelete: false,
+        canDelete: true,
       });
     });
 

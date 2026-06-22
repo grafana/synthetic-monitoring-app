@@ -120,14 +120,14 @@ describe('CheckList - Folder Permissions', () => {
         expect(toggleButton).toBeDisabled();
       });
 
-      it('enables edit but disables delete for checks in an editable folder (folder Edit, no Admin)', async () => {
+      it('enables edit and delete for checks in an editable folder (folder Edit grants delete, same as dashboards)', async () => {
         await renderCheckList([CHECK_IN_PRODUCTION]);
 
         await waitFor(() => {
           expect(screen.getByLabelText('Edit check')).not.toHaveAttribute('aria-disabled', 'true');
         });
 
-        expect(screen.getByLabelText('Delete check')).toBeDisabled();
+        expect(screen.getByLabelText('Delete check')).not.toBeDisabled();
         expect(screen.getByLabelText('Disable check')).not.toBeDisabled();
       });
 

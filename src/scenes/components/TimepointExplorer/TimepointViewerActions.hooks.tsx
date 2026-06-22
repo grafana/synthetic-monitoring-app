@@ -24,7 +24,7 @@ interface Action {
 export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   const logsDS = useLogsDS();
   const metricsDS = useMetricsDS();
-  const { check, currentAdjustedTime, handleViewerStateChange, listLogsMap, viewerState, timepoints } =
+  const { check, checkType, currentAdjustedTime, handleViewerStateChange, listLogsMap, viewerState, timepoints } =
     useTimepointExplorerContext();
   const [_, viewerProbeName, viewerExecutionIndex] = viewerState;
   const logsQuery = { expr: `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"} | logfmt` };
@@ -74,10 +74,11 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
       const probeName = getProbeNameToUse(probeVar, statefulPrevTimepoint);
       handleViewerStateChange([prevTimepoint, probeName, 0]);
       trackTimepointViewerActionClicked({
+        checkType,
         action: 'previous-timepoint',
       });
     }
-  }, [prevTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
+  }, [checkType, prevTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
   const handleNextTimepoint = useCallback(() => {
     if (nextTimepoint) {
@@ -85,10 +86,11 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
       const probeName = getProbeNameToUse(probeVar, statefulNextTimepoint);
       handleViewerStateChange([nextTimepoint, probeName, 0]);
       trackTimepointViewerActionClicked({
+        checkType,
         action: 'next-timepoint',
       });
     }
-  }, [nextTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
+  }, [checkType, nextTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
   return useMemo<Action[]>(() => {
     const actions: Action[] = [
@@ -110,6 +112,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
         href: exploreLogsURL,
         onClick: () => {
           trackTimepointViewerActionClicked({
+            checkType,
             action: 'view-explore-logs',
           });
         },
@@ -120,6 +123,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
         href: exploreMetricsURL,
         onClick: () => {
           trackTimepointViewerActionClicked({
+            checkType,
             action: 'view-explore-metrics',
           });
         },
@@ -133,6 +137,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
         href: faroSession.href,
         onClick: () => {
           trackTimepointViewerActionClicked({
+            checkType,
             action: 'view-frontend-observability-session',
           });
         },
@@ -141,6 +146,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
 
     return actions;
   }, [
+    checkType,
     prevTimepoint,
     nextTimepoint,
     exploreLogsURL,

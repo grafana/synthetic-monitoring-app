@@ -1,9 +1,19 @@
 import { RefinementCtx } from 'zod';
 
-import { extractImportStatement, extractOptionsExport, getProperty, parseScript } from './parser';
+import {
+  collectObjectDeclarations,
+  containsUnresolvableSpread,
+  extractImportStatement,
+  extractOptionsExport,
+  getProperty,
+  parseScript,
+} from './parser';
 import { K6_EXTENSION_MESSAGE, K6_PRAGMA_MESSAGE, validateK6Restrictions } from './rules';
 
 const MAX_SCRIPT_IN_KB = 128;
+
+export const UNRESOLVABLE_SPREAD_MESSAGE =
+  'Script options contain a spread that can not be verified. Define the browser options inline, e.g. options: { browser: { type: "chromium" } }.';
 
 function validateScriptPragmasAndExtensions(script: string, context: RefinementCtx): void {
   const validation = validateK6Restrictions(script, parseScript);
@@ -57,15 +67,27 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
     });
   }
 
-  const hasChromium = getProperty(options, ['options', 'browser', 'type']) === 'chromium';
+  // spreads of locally declared objects (e.g. `{ ...defaultOptions }`) are resolved so their
+  // properties are validated too
+  const declarations = collectObjectDeclarations(program);
+  const hasChromium = getProperty(options, ['options', 'browser', 'type'], declarations) === 'chromium';
   if (!hasChromium) {
+    // spreads we can't resolve statically (e.g. imported values) hide the browser options
+    // from analysis, so explain why the requirement can't be verified
+    if (containsUnresolvableSpread(options, declarations)) {
+      return context.addIssue({
+        code: 'custom',
+        message: UNRESOLVABLE_SPREAD_MESSAGE,
+      });
+    }
+
     return context.addIssue({
       code: 'custom',
       message: 'Script must set the type to chromium in the browser options.',
     });
   }
 
-  const hasInvalidDuration = getProperty(options, ['duration']) !== undefined;
+  const hasInvalidDuration = getProperty(options, ['duration'], declarations) !== undefined;
   if (hasInvalidDuration) {
     return context.addIssue({
       code: 'custom',
@@ -73,16 +95,16 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
     });
   }
 
-  const vus = getProperty(options, ['vus']);
-  const hasInvaludVus = vus !== undefined && vus !== 1;
-  if (hasInvaludVus) {
+  const vus = getProperty(options, ['vus'], declarations);
+  const hasInvalidVus = vus !== undefined && vus !== 1;
+  if (hasInvalidVus) {
     return context.addIssue({
       code: 'custom',
       message: "Script can't define vus > 1 for this check",
     });
   }
 
-  const iterations = getProperty(options, ['iterations']);
+  const iterations = getProperty(options, ['iterations'], declarations);
   const hasInvalidIterations = iterations !== undefined && iterations !== 1;
   if (hasInvalidIterations) {
     return context.addIssue({
