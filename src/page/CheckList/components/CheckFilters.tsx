@@ -6,8 +6,7 @@ import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
-import { Check, FeatureName, GrafanaFolder } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { Check, GrafanaFolder } from 'types';
 import { useExtendedProbes } from 'data/useProbes';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
@@ -20,6 +19,7 @@ interface CheckFiltersProps {
   checkFilters: CheckFiltersType;
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
+  isFoldersAvailable?: boolean;
   includeStatus?: boolean;
   calNames?: string[];
   className?: string;
@@ -32,6 +32,7 @@ export function CheckFilters({
   checkFilters,
   folders = [],
   defaultFolderUid,
+  isFoldersAvailable = false,
   includeStatus = true,
   calNames,
   className,
@@ -87,8 +88,6 @@ export function CheckFilters({
         value: probe.id!,
       }));
   }, [probes]);
-
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
 
   const folderOptions: Array<ComboboxOption<string>> = useMemo(() => {
     return folders.map((folder) => ({
@@ -232,7 +231,7 @@ export function CheckFilters({
               isClearable
             />
           </Field>
-          {isFoldersEnabled && (
+          {isFoldersAvailable && (
             <Field
               label={t('checkFilters.folders', 'Folders')}
               htmlFor="check-folder-filter"

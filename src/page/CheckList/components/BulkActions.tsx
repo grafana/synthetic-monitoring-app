@@ -4,6 +4,7 @@ import { Button, ButtonCascader, ConfirmModal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
+import { useIsFoldersAvailable } from 'contexts/CheckFolderAccessContext';
 import { BulkActionsModal } from 'page/CheckList/components/BulkActionsModal';
 import { BulkMoveToFolderModal } from 'page/CheckList/components/BulkMoveToFolderModal';
 
@@ -22,8 +23,8 @@ enum BulkAction {
 export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
   const styles = useStyles2(getStyles);
   const [bulkEditAction, setBulkEditAction] = useState<BulkAction | null>(null);
+  const isFoldersAvailable = useIsFoldersAvailable();
   const {
-    isFoldersEnabled,
     canWriteAll,
     canDeleteAll,
     showDeleteModal,
@@ -35,7 +36,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
     disableChecks,
     deleteChecks,
     deleteModalProps,
-  } = useBulkActions({ checks, onResolved });
+  } = useBulkActions({ checks, onResolved, isFoldersAvailable });
 
   return (
     <>
@@ -65,7 +66,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
             Bulk edit probes
           </ButtonCascader>
         )}
-        {isFoldersEnabled && (
+        {isFoldersAvailable && (
           <Button
             type="button"
             variant="secondary"
