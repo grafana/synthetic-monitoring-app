@@ -63,13 +63,13 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
 
   return (
     <div data-testid={APP_INITIALIZER_TEST_ID.root}>
-      {autoInitialize ? (
-        !error && (
-          <div data-testid={APP_INITIALIZER_TEST_ID.autoInitSpinner}>
-            <Spinner size="xl" />
-          </div>
-        )
+      {autoInitialize && loading ? (
+        <div data-testid={APP_INITIALIZER_TEST_ID.autoInitSpinner}>
+          <Spinner size="xl" />
+        </div>
       ) : (
+        // Falls back to the button when not actively initializing so failures and
+        // non-progressing states (e.g. a dismissed mismatch modal) stay actionable.
         <Button data-testid={APP_INITIALIZER_TEST_ID.initButton} onClick={handleClick} disabled={loading} size="lg">
           {loading ? <Spinner /> : buttonText}
         </Button>

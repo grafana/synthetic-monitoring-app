@@ -145,4 +145,15 @@ describe('Auto-initialization on check-creation deep-links', () => {
     expect(await screen.findByText(/Contact your administrator/)).toBeInTheDocument();
     expect(requests).toHaveLength(0);
   });
+
+  test('surfaces an error with a retry button when auto-init fails', async () => {
+    mockFeatureToggles({ [FeatureName.AutoInitializeOnUrl]: true });
+    server.use(apiRoute('installPlugin', { result: () => ({ status: 500 }) }));
+
+    renderUninitialisedRouting({ path: apiEndpointPath, meta: INIT_META });
+
+    expect(await screen.findByText('Something went wrong:')).toBeInTheDocument();
+    expect(screen.getByTestId(APP_INITIALIZER_TEST_ID.initButton)).toBeInTheDocument();
+    expect(screen.queryByTestId(APP_INITIALIZER_TEST_ID.autoInitSpinner)).not.toBeInTheDocument();
+  });
 });
