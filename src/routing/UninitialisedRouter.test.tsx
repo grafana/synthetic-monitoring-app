@@ -90,7 +90,7 @@ describe('Auto-initialization on check-creation deep-links', () => {
   });
 
   test('auto-initializes (no manual button) when landing on the API endpoint creation page with the flag on', async () => {
-    mockFeatureToggles({ [FeatureName.AutoEnableOnUrl]: true });
+    mockFeatureToggles({ [FeatureName.AutoInitializeOnUrl]: true });
     const { record, requests } = getServerRequests();
     server.use(apiRoute('installPlugin', {}, record));
 
@@ -103,7 +103,7 @@ describe('Auto-initialization on check-creation deep-links', () => {
   });
 
   test('auto-initializes when landing on the check-type picker with the flag on', async () => {
-    mockFeatureToggles({ [FeatureName.AutoEnableOnUrl]: true });
+    mockFeatureToggles({ [FeatureName.AutoInitializeOnUrl]: true });
     const { record, requests } = getServerRequests();
     server.use(apiRoute('installPlugin', {}, record));
 
@@ -125,7 +125,7 @@ describe('Auto-initialization on check-creation deep-links', () => {
   });
 
   test('shows the contact-admin alert and does not initialize when the user lacks permissions', async () => {
-    mockFeatureToggles({ [FeatureName.AutoEnableOnUrl]: true });
+    mockFeatureToggles({ [FeatureName.AutoInitializeOnUrl]: true });
     runTestAsSMViewer();
     const { record, requests } = getServerRequests();
     server.use(apiRoute('installPlugin', {}, record));

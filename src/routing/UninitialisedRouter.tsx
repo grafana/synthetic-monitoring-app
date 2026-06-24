@@ -28,8 +28,6 @@ export const UninitialisedRouter = () => {
       <Route path={AppRoutes.Home} element={<WelcomePage />} />
       <Route path={AppRoutes.Scene} element={<WelcomePage />} />
       <Route path={AppRoutes.Checks} element={<ChecksWelcomePage />} />
-
-      {/* Check-creation deep-links auto-initialize the plugin (behind a feature flag). */}
       <Route path={AppRoutes.ChooseCheckGroup} element={<AutoInitializeCheckCreation />} />
       <Route path={AppRoutes.NewCheck}>
         <Route index element={<AutoInitializeCheckCreation />} />

@@ -16,12 +16,11 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 interface Props {
   redirectTo?: AppRoutes;
   buttonText: string;
-  // Initializes on mount (no click) and reloads back to the current deep-link on success.
-  autoStart?: boolean;
+  autoInitialize?: boolean;
 }
 
 // TODO: Does this really belong under /page?
-export const AppInitializer = ({ redirectTo, buttonText, autoStart = false }: PropsWithChildren<Props>) => {
+export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
   const { canWritePlugin } = getUserPermissions();
@@ -41,16 +40,16 @@ export const AppInitializer = ({ redirectTo, buttonText, autoStart = false }: Pr
     handleClick,
     datasourceModalOpen,
     setDataSouceModalOpen,
-  } = useAppInitializer(redirectTo, autoStart);
+  } = useAppInitializer(redirectTo, autoInitialize);
 
-  const hasAutoStarted = useRef(false);
+  const hasAutoInitialized = useRef(false);
   useEffect(() => {
-    if (autoStart && !hasAutoStarted.current && canReadDs && canInitialize) {
-      hasAutoStarted.current = true;
+    if (autoInitialize && !hasAutoInitialized.current && canReadDs && canInitialize) {
+      hasAutoInitialized.current = true;
       reportEvent(FaroEvent.AutoInit);
       handleClick();
     }
-  }, [autoStart, canReadDs, canInitialize, handleClick]);
+  }, [autoInitialize, canReadDs, canInitialize, handleClick]);
 
   if (!canReadDs) {
     return <ContactAdminAlert missingPermissions={['datasources:read']} />;
@@ -64,7 +63,7 @@ export const AppInitializer = ({ redirectTo, buttonText, autoStart = false }: Pr
 
   return (
     <div data-testid={APP_INITIALIZER_TEST_ID.root}>
-      {autoStart ? (
+      {autoInitialize ? (
         !error && (
           <div data-testid={APP_INITIALIZER_TEST_ID.autoInitSpinner}>
             <Spinner size="xl" />

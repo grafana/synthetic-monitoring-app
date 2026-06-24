@@ -10,9 +10,8 @@ import { getRoute } from 'routing/utils';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { AppInitializer } from 'components/AppInitializer';
 
-// Auto-initializes the plugin when an uninitialized user deep-links into check creation.
 export const AutoInitializeCheckCreation = () => {
-  const { isEnabled } = useFeatureFlag(FeatureName.AutoEnableOnUrl);
+  const { isEnabled } = useFeatureFlag(FeatureName.AutoInitializeOnUrl);
 
   if (!isEnabled) {
     return <Navigate to={getRoute(AppRoutes.Home)} replace />;
@@ -21,7 +20,7 @@ export const AutoInitializeCheckCreation = () => {
   return (
     <PluginPage layout={PageLayoutType.Canvas}>
       <Stack justifyContent="center" alignItems="center">
-        <AppInitializer autoStart buttonText="Get started" />
+        <AppInitializer autoInitialize buttonText="Get started" />
       </Stack>
     </PluginPage>
   );
