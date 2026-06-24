@@ -55,7 +55,7 @@ jobs:
       trigger-argo: ${{ github.event.inputs.branch == 'main' }}
       argo-workflow-slack-channel: '#sm-ops-deploys'
 
-      auto-merge-environments: dev,ops,prod
+      auto-merge-environments: dev,ops,prod-canary,prod
 
       # https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions/#customizing-the-workflows-with-inputs
       node-version: 22
