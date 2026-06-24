@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.53.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.1...v1.53.2) (2026-06-24)
+
+
+### Fixes
+
+* allow editing a check instead of redirecting to the timepoint explorer ([#1742](https://github.com/grafana/synthetic-monitoring-app/issues/1742)) ([953a099](https://github.com/grafana/synthetic-monitoring-app/commit/953a09987e5bb6d910bc9635fbeeedaddfafbdf4))
+
 ## [1.53.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.0...v1.53.1) (2026-06-24)
 
 
