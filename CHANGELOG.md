@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.53.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.0...v1.53.1) (2026-06-24)
+
+
+### Fixes
+
+* automerge deployment prs for ops and prod ([#1737](https://github.com/grafana/synthetic-monitoring-app/issues/1737)) ([c25b51e](https://github.com/grafana/synthetic-monitoring-app/commit/c25b51ef752313425e7680bb1848e49e2a051a56))
+* gracefully degrade when user lacks folder permissions ([#1739](https://github.com/grafana/synthetic-monitoring-app/issues/1739)) ([b52034a](https://github.com/grafana/synthetic-monitoring-app/commit/b52034ab530d6f53cf6cef421ab6080629eef326))
+
 ## [1.53.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.52.1...v1.53.0) (2026-06-17)
 
 
