@@ -25,8 +25,13 @@ interface WrappedProps {
 }
 
 const Wrapped = ({ name }: WrappedProps) => {
-  const { isEnabled } = useFeatureFlag(name);
-  return <div>{isEnabled ? 'the feature is enabled' : 'not enabled'}</div>;
+  const { isEnabled, isReady } = useFeatureFlag(name);
+  return (
+    <div>
+      <div>{isEnabled ? 'the feature is enabled' : 'not enabled'}</div>
+      <div>{isReady ? 'ready' : 'not ready'}</div>
+    </div>
+  );
 };
 
 const renderFeatureFlag = (name: FeatureName, flagValueMap: Record<string, boolean> = getTestFlagValues()) => {
@@ -49,6 +54,11 @@ describe('legacy flags (not mapped in OPEN_FEATURE_KEYS)', () => {
   test('disabled for flags that do not exist', async () => {
     renderFeatureFlag('not a real flag' as FeatureName);
     expect(await screen.findByText('not enabled')).toBeInTheDocument();
+  });
+
+  test('is always ready (resolves synchronously)', async () => {
+    renderFeatureFlag(FeatureName.Folders);
+    expect(await screen.findByText('ready')).toBeInTheDocument();
   });
 });
 
@@ -82,5 +92,10 @@ describe('OpenFeature-routed flags (mapped in OPEN_FEATURE_KEYS)', () => {
     mockFeatureToggles({ [OPEN_FEATURE_ROUTED_FLAG]: true });
     renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG);
     expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+  });
+
+  test('reports ready once the provider settles', async () => {
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: true });
+    expect(await screen.findByText('ready')).toBeInTheDocument();
   });
 });

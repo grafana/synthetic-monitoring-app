@@ -79,8 +79,9 @@ Note: the `?features=<flag>` URL override no longer applies once a flag is route
 
 ### Step B — move the definition to the new pattern (deployment_tools PRs)
 
-1. Define the dotted key in
-   `ksonnet/environments/hosted-grafana/waves/feature-toggles/goff/k6/{env}.libsonnet`,
+1. Define the dotted key in a dedicated Synthetic Monitoring folder,
+   `ksonnet/environments/hosted-grafana/waves/feature-toggles/goff/synthetic-monitoring/{env}.libsonnet`
+   (its own folder, matching the per-app layout of `slo`, `drilldown`, `irm`, etc.),
    mirroring the current legacy targeting. Per the deployment_tools README, GOFF flags must
    be **pre-deployed (disabled) through all waves** (`dev` → `staging` → `canary` → `prod`)
    before code evaluates them:
@@ -89,8 +90,7 @@ Note: the `?features=<flag>` URL override no longer applies once a flag is route
    'synthetic-monitoring.cost-attribution': goff.BooleanFlag(true),
    ```
 
-   > Naming: `synthetic-monitoring.<kebab-feature>` (provisional — folder precedent is
-   > `k6-app.<feature>`; confirm with #grafana-feature-flags). Reviewed by `@grafana-feature-flags`.
+   > Naming: `synthetic-monitoring.<kebab-feature>`. Reviewed by `@grafana-feature-flags`.
 2. Verify the key resolves at the OFREP endpoint (browser console on the stack):
 
    ```js
