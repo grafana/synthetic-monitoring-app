@@ -21,6 +21,7 @@ type CheckListHeaderProps = {
   currentPageChecks: Check[];
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
+  isFoldersAvailable: boolean;
   onChangeView: (viewType: CheckListViewType) => void;
   onDelete: () => void;
   onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
@@ -69,6 +70,7 @@ export const CheckListHeader = ({
   currentPageChecks,
   folders,
   defaultFolderUid,
+  isFoldersAvailable,
   onChangeView,
   onDelete,
   onFilterChange,
@@ -113,6 +115,7 @@ export const CheckListHeader = ({
               checkFilters={checkFilters}
               folders={folders}
               defaultFolderUid={defaultFolderUid}
+              isFoldersAvailable={isFoldersAvailable}
               onChange={onFilterChange}
               calNames={calNames}
               className={styles.filters}
@@ -144,7 +147,7 @@ export const CheckListHeader = ({
             {selectedCheckIds.size > 0 ? (
               <BulkActions checks={selectedChecks} onResolved={onDelete} />
             ) : (
-              <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
+              <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} isFoldersAvailable={isFoldersAvailable} />
             )}
           </div>
 

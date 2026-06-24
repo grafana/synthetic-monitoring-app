@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { Check, FeatureName } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { Check } from 'types';
 import {
   CheckFolderStatus,
   CheckPermissions,
@@ -22,11 +21,14 @@ import { useAllFolders } from 'data/useFolders';
  *      shown only after confirming 404 (orphaned). Forbidden folders stay hidden.
  *   4. Computes effective permissions per check (combined model)
  *
+ * When the feature flag is on but folder data failed to load (e.g. missing
+ * folders:read permission), falls back to pre-folders behaviour: all checks
+ * visible, SM RBAC only.
+ *
  * Returns visibleChecks (filtered) and getPermissions (lookup function).
  */
 export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks: T[]) {
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const { folders: allFolders, defaultFolderUid } = useAllFolders();
+  const { folders: allFolders, defaultFolderUid, isFoldersAvailable } = useAllFolders();
 
   const accessibleFolderUids = useMemo(
     () => new Set(allFolders.map((f) => f.uid)),
@@ -34,7 +36,7 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
   );
 
   const folderUids = useMemo(() => {
-    if (!isFoldersEnabled) {
+    if (!isFoldersAvailable) {
       return [];
     }
     const uids = new Set<string>();
@@ -48,13 +50,13 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
     });
     allFolders.forEach((folder) => uids.add(folder.uid));
     return [...uids];
-  }, [checks, allFolders, isFoldersEnabled, defaultFolderUid]);
+  }, [checks, allFolders, isFoldersAvailable, defaultFolderUid]);
 
   const { folderDetailsByUid } = useFolderPermissions(folderUids);
   const smPerms = useUserPermissions();
 
   const visibleChecks = useMemo(() => {
-    if (!isFoldersEnabled) {
+    if (!isFoldersAvailable) {
       return checks;
     }
 
@@ -68,13 +70,13 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
       }
       return folderDetailsByUid.get(effectiveUid)?.type === 'orphaned';
     });
-  }, [checks, isFoldersEnabled, accessibleFolderUids, folderDetailsByUid, defaultFolderUid]);
+  }, [checks, isFoldersAvailable, accessibleFolderUids, folderDetailsByUid, defaultFolderUid]);
 
   const getFolderStatus = useCallback(
     (check: Pick<Check, 'folderUid'>): CheckFolderStatus => {
-      return resolveCheckFolderStatus(check, folderDetailsByUid, isFoldersEnabled, defaultFolderUid);
+      return resolveCheckFolderStatus(check, folderDetailsByUid, isFoldersAvailable, defaultFolderUid);
     },
-    [folderDetailsByUid, isFoldersEnabled, defaultFolderUid]
+    [folderDetailsByUid, isFoldersAvailable, defaultFolderUid]
   );
 
   const getPermissions = useCallback(
@@ -88,5 +90,6 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
     visibleChecks,
     getPermissions,
     getFolderStatus,
+    isFoldersAvailable,
   };
 }
