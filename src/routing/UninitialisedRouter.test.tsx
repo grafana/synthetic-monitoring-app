@@ -78,6 +78,17 @@ describe('Auto-initialization on check-creation deep-links', () => {
 
   const apiEndpointPath = `${getRoute(AppRoutes.NewCheck)}/api-endpoint`;
 
+  beforeEach(() => {
+    // The auto-init success path calls window.location.reload(), which jsdom can't do.
+    const original = console.error;
+    jest.spyOn(console, 'error').mockImplementation((...args) => {
+      const message = typeof args[0] === 'string' ? args[0] : (args[0] as Error)?.message;
+      if (!message?.includes('Not implemented: navigation')) {
+        original(...args);
+      }
+    });
+  });
+
   test('auto-initializes (no manual button) when landing on the API endpoint creation page with the flag on', async () => {
     mockFeatureToggles({ [FeatureName.AutoEnableOnUrl]: true });
     const { record, requests } = getServerRequests();
