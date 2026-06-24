@@ -21,8 +21,10 @@ export function useFeatureFlag(featureFlag: FeatureName) {
 
   return {
     isEnabled: isMapped ? openFeatureValue : isFeatureEnabled(featureFlag),
-    // Legacy flags resolve synchronously, so they're always ready; mapped flags are
-    // ready once the provider settles. Lets consumers avoid the off-vs-not-ready flicker.
-    isReady: isMapped ? providerStatus === ProviderStatus.READY : true,
+    // Legacy flags resolve synchronously. For mapped flags, "ready" means the provider has
+    // settled on a final value — including ERROR/FATAL, where it falls back to defaults — so
+    // UI gated on isReady never gets stuck loading when the flag service is unavailable.
+    // NOT_READY (the initial pre-resolution state) is the only "not ready" case.
+    isReady: isMapped ? providerStatus !== ProviderStatus.NOT_READY : true,
   };
 }
