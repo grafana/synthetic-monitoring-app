@@ -83,6 +83,15 @@ export function useDefaultFolder(enabled = true) {
     },
     staleTime: FOLDERS_STALE_TIME,
     refetchOnWindowFocus: false,
+    // Once this query has settled (success or error) we must not re-fetch it
+    // every time a new observer mounts. With no data and a 403 error, React
+    // Query's `shouldLoadOnMount` is gated by `retryOnMount` (not
+    // `refetchOnMount`); leaving it at the default `true` makes each newly
+    // mounted consumer (e.g. the check form mounting once access falls back to
+    // SM RBAC) re-issue the 403. That re-fetch flips `folderStatus`
+    // loading->error, which remounts consumers, which re-fetch again: an
+    // infinite request loop. Errors here are surfaced with an explicit Retry.
+    retryOnMount: false,
     retry: false,
     enabled,
   });

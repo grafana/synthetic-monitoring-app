@@ -26,7 +26,7 @@ export const EditCheckV2 = () => {
   const check = checks?.find((c) => c.id === Number(id));
   const urlSearchParams = useURLSearchParams();
 
-  const { getPermissions } = useCheckFolderAccess(check ? [check] : []);
+  const { getPermissions, isResolving: isResolvingFolders } = useCheckFolderAccess(check ? [check] : []);
   const permissions = getPermissions({ folderUid: check?.folderUid });
 
   const handleSubmit = useHandleSubmitCheckster(check);
@@ -48,8 +48,13 @@ export const EditCheckV2 = () => {
 
   const isReady = !isLoading;
 
-  // Only show spinner for the initial fetch.
-  if (isLoading && !isFetched) {
+  // Only show spinner for the initial fetch, or while folder access is still
+  // resolving. We must not evaluate the canRead redirect until the default
+  // folder request has settled: during that optimistic window a check whose
+  // folder has already returned 403 resolves to `forbidden` (canRead=false)
+  // and would trigger an irreversible redirect, even when the eventual state
+  // is the fallback (default folder 403 -> no-folder-context -> canRead=true).
+  if ((isLoading && !isFetched) || isResolvingFolders) {
     return <CenteredSpinner />;
   }
 
