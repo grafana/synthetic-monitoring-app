@@ -66,8 +66,7 @@ describe('Renders specific welcome pages when app is not initializd', () => {
 });
 
 describe('Auto-initialization on check-creation deep-links', () => {
-  // Align the provisioned datasource names with the test fixtures so the
-  // initializer can resolve them and reach the /install call.
+  // Aligns provisioned datasource names with the fixtures so the initializer reaches /install.
   const INIT_META = {
     jsonData: {
       metrics: { grafanaName: METRICS_DATASOURCE.name, hostedId: 4 },

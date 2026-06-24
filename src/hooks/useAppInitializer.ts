@@ -191,9 +191,7 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
       await initializeDatasource(datasourcePayload);
 
       if (reloadCurrent) {
-        // Reload the current URL so the user lands back on the exact page they
-        // deep-linked to (preserving check type and any query params). The full
-        // reload is required so that GrafanaBootConfig picks up the new datasource.
+        // Reload the current deep-link so GrafanaBootConfig picks up the new datasource.
         window.location.reload();
       } else if (redirectTo) {
         window.location.href = `${window.location.origin}${getRoute(redirectTo)}`;

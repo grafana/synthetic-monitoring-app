@@ -29,9 +29,7 @@ export const UninitialisedRouter = () => {
       <Route path={AppRoutes.Scene} element={<WelcomePage />} />
       <Route path={AppRoutes.Checks} element={<ChecksWelcomePage />} />
 
-      {/* Check-creation deep-links auto-initialize the plugin (behind a feature flag)
-          so users coming from entry points like the "Monitor a URL" card land
-          directly on the check creation form instead of a manual welcome screen. */}
+      {/* Check-creation deep-links auto-initialize the plugin (behind a feature flag). */}
       <Route path={AppRoutes.ChooseCheckGroup} element={<AutoInitializeCheckCreation />} />
       <Route path={AppRoutes.NewCheck}>
         <Route index element={<AutoInitializeCheckCreation />} />

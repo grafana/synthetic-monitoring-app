@@ -16,9 +16,7 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 interface Props {
   redirectTo?: AppRoutes;
   buttonText: string;
-  // When true, initialization is triggered automatically on mount (no click)
-  // and the current page is reloaded on success so the user stays on their
-  // intended deep-link. Used by the auto-enable-on-URL flow.
+  // Initializes on mount (no click) and reloads back to the current deep-link on success.
   autoStart?: boolean;
 }
 
@@ -67,8 +65,6 @@ export const AppInitializer = ({ redirectTo, buttonText, autoStart = false }: Pr
   return (
     <div data-testid={APP_INITIALIZER_TEST_ID.root}>
       {autoStart ? (
-        // Auto-initializing: show a spinner instead of the manual button. If
-        // something goes wrong, the error alert / mismatch modal below take over.
         !error && (
           <div data-testid={APP_INITIALIZER_TEST_ID.autoInitSpinner}>
             <Spinner size="xl" />

@@ -10,12 +10,7 @@ import { getRoute } from 'routing/utils';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { AppInitializer } from 'components/AppInitializer';
 
-/**
- * Rendered for check-creation deep-links (e.g. checks/new/api-endpoint) while the
- * plugin is uninitialized. When the auto-enable feature flag is on, it triggers
- * initialization automatically and reloads the user back onto their intended page.
- * When the flag is off, it preserves the previous behavior of redirecting Home.
- */
+// Auto-initializes the plugin when an uninitialized user deep-links into check creation.
 export const AutoInitializeCheckCreation = () => {
   const { isEnabled } = useFeatureFlag(FeatureName.AutoEnableOnUrl);
 
