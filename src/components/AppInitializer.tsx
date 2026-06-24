@@ -42,8 +42,6 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
     setDataSouceModalOpen,
   } = useAppInitializer(redirectTo, autoInitialize);
 
-  // Tracks the in-flight auto-init so the spinner shows immediately on mount
-  // (no button flash) and falls back to the button once init can't proceed.
   const [autoInitializing, setAutoInitializing] = useState(autoInitialize);
   const hasAutoInitialized = useRef(false);
   useEffect(() => {
@@ -71,8 +69,6 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
           <Spinner size="xl" />
         </div>
       ) : (
-        // Falls back to the button when init can't proceed (error or dismissed
-        // mismatch modal) so the user always has a retry control.
         <Button data-testid={APP_INITIALIZER_TEST_ID.initButton} onClick={handleClick} disabled={loading} size="lg">
           {loading ? <Spinner /> : buttonText}
         </Button>
