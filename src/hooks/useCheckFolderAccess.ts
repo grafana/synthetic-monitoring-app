@@ -28,7 +28,7 @@ import { useAllFolders } from 'data/useFolders';
  * Returns visibleChecks (filtered) and getPermissions (lookup function).
  */
 export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks: T[]) {
-  const { folders: allFolders, defaultFolderUid, isFoldersAvailable } = useAllFolders();
+  const { folders: allFolders, defaultFolderUid, isFoldersAvailable, folderStatus } = useAllFolders();
 
   const accessibleFolderUids = useMemo(
     () => new Set(allFolders.map((f) => f.uid)),
@@ -91,5 +91,12 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
     getPermissions,
     getFolderStatus,
     isFoldersAvailable,
+    // True while the default folder request is still in flight. During this
+    // window isFoldersAvailable is optimistically `true`, so a check whose
+    // folder has already resolved to `forbidden` would compute canRead=false
+    // even when the eventual state is the fallback (default folder 403 ->
+    // no-folder-context). Consumers that gate navigation on canRead must wait
+    // for this to settle to avoid a premature, irreversible redirect.
+    isResolving: folderStatus === 'loading',
   };
 }
