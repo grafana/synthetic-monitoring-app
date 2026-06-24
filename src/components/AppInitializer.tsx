@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useEffect, useRef } from 'react';
+import React, { PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -42,6 +42,9 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
     setDataSouceModalOpen,
   } = useAppInitializer(redirectTo, autoInitialize);
 
+  // Tracks the in-flight auto-init so the spinner shows immediately on mount
+  // (no button flash) and falls back to the button once init can't proceed.
+  const [autoInitializing, setAutoInitializing] = useState(autoInitialize);
   const hasAutoInitialized = useRef(false);
   useEffect(() => {
     if (autoInitialize && !hasAutoInitialized.current && canReadDs && canInitialize) {
@@ -63,13 +66,13 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
 
   return (
     <div data-testid={APP_INITIALIZER_TEST_ID.root}>
-      {autoInitialize && loading ? (
+      {autoInitializing && !error && !datasourceModalOpen ? (
         <div data-testid={APP_INITIALIZER_TEST_ID.autoInitSpinner}>
           <Spinner size="xl" />
         </div>
       ) : (
-        // Falls back to the button when not actively initializing so failures and
-        // non-progressing states (e.g. a dismissed mismatch modal) stay actionable.
+        // Falls back to the button when init can't proceed (error or dismissed
+        // mismatch modal) so the user always has a retry control.
         <Button data-testid={APP_INITIALIZER_TEST_ID.initButton} onClick={handleClick} disabled={loading} size="lg">
           {loading ? <Spinner /> : buttonText}
         </Button>
@@ -87,7 +90,10 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
         metricsExpectedName={metricsByUid?.name ?? 'Not found'}
         logsFoundName={logsByName?.name ?? 'Not found'}
         logsExpectedName={logsByUid?.name ?? 'Not found'}
-        onDismiss={() => setDataSouceModalOpen(false)}
+        onDismiss={() => {
+          setDataSouceModalOpen(false);
+          setAutoInitializing(false);
+        }}
         isSubmitting={loading}
         onSubmit={() => {
           if (jsonData.metrics.hostedId && jsonData.logs.hostedId) {
