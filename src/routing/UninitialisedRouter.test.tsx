@@ -112,6 +112,16 @@ describe('Auto-initialization on check-creation deep-links', () => {
     await waitFor(() => expect(requests.length).toBeGreaterThan(0));
   });
 
+  test('auto-initializes when landing on the probe creation page with the flag on', async () => {
+    mockFeatureToggles({ [FeatureName.AutoInitializeOnUrl]: true });
+    const { record, requests } = getServerRequests();
+    server.use(apiRoute('installPlugin', {}, record));
+
+    renderUninitialisedRouting({ path: getRoute(AppRoutes.NewProbe), meta: INIT_META });
+
+    await waitFor(() => expect(requests.length).toBeGreaterThan(0));
+  });
+
   test('does not auto-initialize and redirects to the home welcome page when the flag is off', async () => {
     const { record, requests } = getServerRequests();
     server.use(apiRoute('installPlugin', {}, record));

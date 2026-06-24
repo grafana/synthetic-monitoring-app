@@ -1,11 +1,11 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
-import { AppRoutes } from 'routing/types';
+import { AppRoutes, AUTO_INITIALIZE_ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useMeta } from 'hooks/useMeta';
 import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
-import { AutoInitializeCheckCreation } from 'page/AutoInitializeCheckCreation';
+import { AutoInitializeResourceCreation } from 'page/AutoInitializeResourceCreation';
 import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { UninitializedTab } from 'page/ConfigPageLayout/tabs/UninitializedTab';
@@ -28,11 +28,9 @@ export const UninitialisedRouter = () => {
       <Route path={AppRoutes.Home} element={<WelcomePage />} />
       <Route path={AppRoutes.Scene} element={<WelcomePage />} />
       <Route path={AppRoutes.Checks} element={<ChecksWelcomePage />} />
-      <Route path={AppRoutes.ChooseCheckGroup} element={<AutoInitializeCheckCreation />} />
-      <Route path={AppRoutes.NewCheck}>
-        <Route index element={<AutoInitializeCheckCreation />} />
-        <Route path=":checkTypeGroup" element={<AutoInitializeCheckCreation />} />
-      </Route>
+      {AUTO_INITIALIZE_ROUTES.map((route) => (
+        <Route key={route} path={`${route}/*`} element={<AutoInitializeResourceCreation />} />
+      ))}
       <Route path={AppRoutes.Probes} element={<ProbesWelcomePage />} />
       <Route path={AppRoutes.Alerts} element={<AlertingWelcomePage />} />
       <Route path={AppRoutes.Config} element={<ConfigPageLayout />}>

@@ -10,10 +10,10 @@ import { getRoute } from 'routing/utils';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { AppInitializer } from 'components/AppInitializer';
 
-export const AutoInitializeCheckCreation = () => {
-  const { isEnabled } = useFeatureFlag(FeatureName.AutoInitializeOnUrl);
+export const AutoInitializeResourceCreation = () => {
+  const { isEnabled: isFeatureEnabled } = useFeatureFlag(FeatureName.AutoInitializeOnUrl);
 
-  if (!isEnabled) {
+  if (!isFeatureEnabled) {
     return <Navigate to={getRoute(AppRoutes.Home)} replace />;
   }
 

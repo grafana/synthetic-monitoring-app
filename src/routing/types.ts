@@ -14,3 +14,7 @@ export enum AppRoutes {
   Redirect = 'redirect',
   Scene = 'scene',
 }
+
+export const AUTO_INITIALIZE_ROUTES = [AppRoutes.NewCheck, AppRoutes.ChooseCheckGroup, AppRoutes.NewProbe] as const;
+
+export type AutoInitializeRoute = (typeof AUTO_INITIALIZE_ROUTES)[number];
