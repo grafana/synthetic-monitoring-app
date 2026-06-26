@@ -24,7 +24,6 @@ export const UninitialisedRouter = () => {
     <Routes>
       <Route path={AppRoutes.Home} element={<WelcomePage />} />
       <Route path={AppRoutes.Scene} element={<WelcomePage />} />
-      {/* Landing on a section or creation route auto-initializes the plugin. */}
       {AUTO_INITIALIZE_ROUTES.map((route) => (
         <Route key={route} path={`${route}/*`} element={<AutoInitializeResourceCreation />} />
       ))}

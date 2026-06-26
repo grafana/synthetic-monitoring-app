@@ -5,7 +5,6 @@ import { Stack } from '@grafana/ui';
 
 import { AppInitializer } from 'components/AppInitializer';
 
-// Auto-initializes the plugin when an uninitialized user deep-links into a resource-creation route.
 export const AutoInitializeResourceCreation = () => {
   return (
     <PluginPage layout={PageLayoutType.Canvas}>

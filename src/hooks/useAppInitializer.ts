@@ -102,8 +102,8 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
   const [loading, setLoading] = useState<boolean>(false);
   const [datasourceModalOpen, setDataSouceModalOpen] = useState<boolean>(false);
   const { jsonData, id } = useMeta();
-  // App-relative route (e.g. `checks/new/api-endpoint`) used for auto-init tracking.
   const { pathname } = useLocation();
+  // App-relative route for tracking, e.g. `checks/new/api-endpoint`.
   const currentRoute = pathname.replace(PLUGIN_URL_PATH, '').replace(/^\//, '');
 
   const metricsName = getMetricsName(jsonData.metrics.grafanaName);
