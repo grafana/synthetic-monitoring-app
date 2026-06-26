@@ -28,6 +28,7 @@ import { ApiEntry } from 'test/handlers/types';
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { createFolder, deleteFolder, getFolder, listFolders } from './folders';
 import { listK6Channels } from './k6Channels';
+import { evaluateFeatureFlags } from './openfeature';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const API_ROUTES = {
@@ -42,6 +43,7 @@ const API_ROUTES = {
   deleteFolder,
   deleteProbe,
   deleteSecret,
+  evaluateFeatureFlags,
   getAlertRules,
   getDashboard,
   getFolder,
