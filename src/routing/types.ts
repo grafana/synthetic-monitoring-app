@@ -15,6 +15,13 @@ export enum AppRoutes {
   Scene = 'scene',
 }
 
-export const AUTO_INITIALIZE_ROUTES = [AppRoutes.NewCheck, AppRoutes.ChooseCheckGroup, AppRoutes.NewProbe] as const;
+export const AUTO_INITIALIZE_ROUTES = [
+  AppRoutes.Checks,
+  AppRoutes.ChooseCheckGroup,
+  AppRoutes.NewCheck,
+  AppRoutes.Probes,
+  AppRoutes.NewProbe,
+  AppRoutes.Alerts,
+] as const;
 
 export type AutoInitializeRoute = (typeof AUTO_INITIALIZE_ROUTES)[number];

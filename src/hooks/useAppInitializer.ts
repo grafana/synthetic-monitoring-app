@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router';
 import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
+import { trackAutoInitialized, trackAutoInitializeFailed } from 'features/tracking/onboardingEvents';
 import { isNumber } from 'lodash';
 
 import { SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
+import { PLUGIN_URL_PATH } from 'routing/constants';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
@@ -99,6 +102,9 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
   const [loading, setLoading] = useState<boolean>(false);
   const [datasourceModalOpen, setDataSouceModalOpen] = useState<boolean>(false);
   const { jsonData, id } = useMeta();
+  // App-relative route (e.g. `checks/new/api-endpoint`) used for auto-init tracking.
+  const { pathname } = useLocation();
+  const currentRoute = pathname.replace(PLUGIN_URL_PATH, '').replace(/^\//, '');
 
   const metricsName = getMetricsName(jsonData.metrics.grafanaName);
   const { byName: metricsByName, byUid: metricsByUid } = findDatasourceByNameAndUid(
@@ -191,6 +197,7 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
       await initializeDatasource(datasourcePayload);
 
       if (reloadCurrent) {
+        trackAutoInitialized({ route: currentRoute });
         // Reload the current deep-link so GrafanaBootConfig picks up the new datasource.
         window.location.reload();
       } else if (redirectTo) {
@@ -202,6 +209,9 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
     } catch (e) {
       const err = e as SubmissionErrorWrapper;
       const message = err.data?.msg ?? err.data?.err ?? 'Something went wrong';
+      if (reloadCurrent) {
+        trackAutoInitializeFailed({ route: currentRoute, reason: message });
+      }
       setError(message);
       setLoading(false);
       reportError(message, FaroEvent.Init);

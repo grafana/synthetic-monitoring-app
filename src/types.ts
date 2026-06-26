@@ -746,7 +746,6 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
-  AutoInitializeOnUrl = 'synthetic-monitoring-auto-initialize-on-url',
   CALs = 'synthetic-monitoring-cost-attribution',
   Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
