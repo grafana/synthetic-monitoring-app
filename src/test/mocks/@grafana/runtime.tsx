@@ -20,6 +20,14 @@ import { DataTestIds } from '../../dataTestIds';
 jest.mock('@grafana/runtime', () => {
   const actual = jest.requireActual('@grafana/runtime');
 
+  const appEvents = {
+    publish: jest.fn(),
+    subscribe: jest.fn(() => ({ unsubscribe: jest.fn() })),
+    getStream: jest.fn(),
+    removeAllListeners: jest.fn(),
+    newScopedBus: jest.fn(),
+  };
+
   type Location = { pathname: string; search: string; hash: string; state: unknown; key: string };
   type PathArg = string | { pathname?: string; search?: string; hash?: string };
 
@@ -136,6 +144,7 @@ jest.mock('@grafana/runtime', () => {
       get: () => Promise.resolve(new SMDataSource(SM_DATASOURCE)),
     }),
     getLocationSrv: () => ({ update: (args: any) => args }),
+    getAppEvents: () => appEvents,
     PluginPage: ({ actions, children, pageNav }: { actions: any; children: ReactNode; pageNav: NavModelItem }) => (
       <div>
         <h2>{pageNav?.text}</h2>

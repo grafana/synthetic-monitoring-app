@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import { emitCheckCreatedEvent } from 'features/tracking/appEvents';
 import { trackCheckCreated } from 'features/tracking/checkFormEvents';
 import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
@@ -22,6 +23,10 @@ jest.mock('features/tracking/checkFormEvents', () => ({
   trackNavigateWizardForm: jest.fn(),
   trackAdhocCreated: jest.fn(),
   trackNeedHelpScriptsButtonClicked: jest.fn(),
+}));
+
+jest.mock('features/tracking/appEvents', () => ({
+  emitCheckCreatedEvent: jest.fn(),
 }));
 
 describe(`<NewCheckV2 /> journey`, () => {
@@ -302,7 +307,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).not.toBeDisabled();
   });
 
-  it(`should track check creation with check type`, async () => {
+  it(`should track + emit check creation with check type`, async () => {
     const { user } = await renderNewForm(CheckType.Http);
 
     await fillMandatoryFields({ user, checkType: CheckType.Http });
@@ -314,5 +319,6 @@ describe(`<NewCheckV2 /> journey`, () => {
     });
 
     expect(trackCheckCreated).toHaveBeenCalledWith({ checkType: CheckType.Http });
+    expect(emitCheckCreatedEvent).toHaveBeenCalledWith({ checkType: CheckType.Http });
   });
 });
