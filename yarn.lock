@@ -13883,7 +13883,7 @@ __metadata:
     tslib: "npm:2.8.1"
     tsx: "npm:4.20.6"
     typescript: "npm:5.9.3"
-    undici: "npm:7.24.0"
+    undici: "npm:7.28.0"
     use-konami: "npm:1.0.1"
     usehooks-ts: "npm:3.1.1"
     valid-url: "npm:1.0.9"
@@ -14475,10 +14475,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:7.24.0":
-  version: 7.24.0
-  resolution: "undici@npm:7.24.0"
-  checksum: 10c0/ccb2f3407ae35fec66183b80fff696dcc56c308bf568277c0c022d5dffa09e3ab35734ea4d99c77e837522c9c83fd284932816dec2cfc9023fcee4e02686514e
+"undici@npm:7.28.0":
+  version: 7.28.0
+  resolution: "undici@npm:7.28.0"
+  checksum: 10c0/fe781983a26098795e99bb1f64906cbb7d0bcaa029a26baade007b53ea67f2631d189b8f9671a31f4c8d0cb3773b7559608628ba54452fef51fec90e7c78bb0d
   languageName: node
   linkType: hard
 
