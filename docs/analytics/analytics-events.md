@@ -246,6 +246,29 @@ Tracks when a link is clicked.
 | search   | `string` | The search of the clicked link   |
 | source   | `string` | Where the link was clicked from  |
 
+### onboarding
+
+#### synthetic-monitoring_onboarding_auto_initialized
+
+Tracks a successful auto-initialization from a deep-link.
+
+##### Properties
+
+| name  | type     | description                                   |
+| ----- | -------- | --------------------------------------------- |
+| route | `string` | The route that triggered auto-initialization. |
+
+#### synthetic-monitoring_onboarding_auto_initialize_failed
+
+Tracks a failed auto-initialization from a deep-link.
+
+##### Properties
+
+| name   | type     | description                                   |
+| ------ | -------- | --------------------------------------------- |
+| route  | `string` | The route that triggered auto-initialization. |
+| reason | `string` | Why initialization failed.                    |
+
 ### per_check_alerts
 
 #### synthetic-monitoring_per_check_alerts_select_alert
@@ -425,9 +448,9 @@ Tracks when the Testing & synthetics landing page is viewed.
 | hasK6         | `false \| true` | Whether the Performance testing section was shown.  |
 | hasSynthetics | `false \| true` | Whether the Synthetic monitoring section was shown. |
 
-#### synthetic-monitoring_testing_synthetics_landing_agentic_card_clicked
+#### synthetic-monitoring_testing_synthetics_landing_agentic_learn_more_button_clicked
 
-Tracks when the Agentic featured card body is clicked.
+Tracks when the Agentic Learn more button is clicked.
 
 #### synthetic-monitoring_testing_synthetics_landing_agentic_create_button_clicked
 

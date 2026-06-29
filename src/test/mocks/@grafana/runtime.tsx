@@ -127,6 +127,8 @@ jest.mock('@grafana/runtime', () => {
     },
     getBackendSrv: () => ({
       datasourceRequest: axios.request,
+      post: (url: string, data?: unknown) =>
+        axios.request({ url, method: `POST`, data }).then((response) => response.data),
       fetch: (request: BackendSrvRequest) =>
         from(
           axios.request({ ...request, method: request.method }).catch((e) => {

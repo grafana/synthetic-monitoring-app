@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router';
 import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
+import { trackAutoInitialized, trackAutoInitializeFailed } from 'features/tracking/onboardingEvents';
 import { isNumber } from 'lodash';
 
 import { SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
+import { PLUGIN_URL_PATH } from 'routing/constants';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
@@ -94,11 +97,14 @@ function ensureNameAndUidMatch(
 }
 
 // TODO: Allow for the `redirectTo` to be a string (so that we can implement "return to" behaviour after initialization)
-export const useAppInitializer = (redirectTo?: AppRoutes) => {
+export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false) => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [datasourceModalOpen, setDataSouceModalOpen] = useState<boolean>(false);
   const { jsonData, id } = useMeta();
+  const { pathname } = useLocation();
+  // App-relative route for tracking, e.g. `checks/new/api-endpoint`.
+  const currentRoute = pathname.replace(PLUGIN_URL_PATH, '').replace(/^\//, '');
 
   const metricsName = getMetricsName(jsonData.metrics.grafanaName);
   const { byName: metricsByName, byUid: metricsByUid } = findDatasourceByNameAndUid(
@@ -190,7 +196,11 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
 
       await initializeDatasource(datasourcePayload);
 
-      if (redirectTo) {
+      if (reloadCurrent) {
+        trackAutoInitialized({ route: currentRoute });
+        // Reload the current deep-link so GrafanaBootConfig picks up the new datasource.
+        window.location.reload();
+      } else if (redirectTo) {
         window.location.href = `${window.location.origin}${getRoute(redirectTo)}`;
       } else {
         // force reload so that GrafanaBootConfig is updated.
@@ -199,6 +209,9 @@ export const useAppInitializer = (redirectTo?: AppRoutes) => {
     } catch (e) {
       const err = e as SubmissionErrorWrapper;
       const message = err.data?.msg ?? err.data?.err ?? 'Something went wrong';
+      if (reloadCurrent) {
+        trackAutoInitializeFailed({ route: currentRoute, reason: message });
+      }
       setError(message);
       setLoading(false);
       reportError(message, FaroEvent.Init);

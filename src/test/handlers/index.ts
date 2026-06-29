@@ -12,6 +12,7 @@ import {
 import { getDashboard } from 'test/handlers/dashboards';
 import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
 import { getHttpDashboard } from 'test/handlers/httpDashboard';
+import { createDatasource, installPlugin } from 'test/handlers/install';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import {
@@ -37,6 +38,7 @@ const API_ROUTES = {
   bulkUpdateChecks,
   checkInfo,
   createAccessToken,
+  createDatasource,
   createFolder,
   createSecret,
   deleteCheck,
@@ -60,6 +62,7 @@ const API_ROUTES = {
   getTenantCostAttributionLabels,
   getTenantLimits,
   getTenantSettings,
+  installPlugin,
   listAlertsForCheck,
   listChecks,
   listFolders,
