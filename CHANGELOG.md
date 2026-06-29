@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.54.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.2...v1.54.0) (2026-06-29)
+
+
+### Features
+
+* auto-enable Synthetic Monitoring on check-creation deep-links ([#1732](https://github.com/grafana/synthetic-monitoring-app/issues/1732)) ([2dd296a](https://github.com/grafana/synthetic-monitoring-app/commit/2dd296a75be847e67e7028d5c34ea7411a9d3e5d))
+* bootstrap OpenFeature provider behind useFeatureFlag ([#1726](https://github.com/grafana/synthetic-monitoring-app/issues/1726)) ([955e375](https://github.com/grafana/synthetic-monitoring-app/commit/955e375595aa7a560dbbdb11aa94d4ff84a585a0))
+* emit event bus event when check created ([#1744](https://github.com/grafana/synthetic-monitoring-app/issues/1744)) ([57672c4](https://github.com/grafana/synthetic-monitoring-app/commit/57672c43a69e39e8e778068317572ca6b74b3570))
+
+
+### Fixes
+
+* dangerjs ([#1746](https://github.com/grafana/synthetic-monitoring-app/issues/1746)) ([8cf019f](https://github.com/grafana/synthetic-monitoring-app/commit/8cf019f393c0d2d676f4170fe0debc18367972d3))
+* **security/high/:** update security undici to v7.28.0 [security] ([#1735](https://github.com/grafana/synthetic-monitoring-app/issues/1735)) ([9057e21](https://github.com/grafana/synthetic-monitoring-app/commit/9057e215bf7f3d2266d1022d5bb73267f68d1061))
+* **security/low/:** update security @babel/core to v7.29.6 [security] ([#1729](https://github.com/grafana/synthetic-monitoring-app/issues/1729)) ([179922c](https://github.com/grafana/synthetic-monitoring-app/commit/179922ca4e26cd0f6ff0624d7712b3721d4c4e74))
+
 ## [1.53.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.1...v1.53.2) (2026-06-24)
 
 
