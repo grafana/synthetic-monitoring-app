@@ -47,6 +47,7 @@ export const SummaryLatencyViz = () => {
   `;
 
   const dataProvider = useQueryRunner({
+    datasource: { uid: '-- Mixed --', type: 'datasource' },
     queries: [
       {
         expr: query,
@@ -54,9 +55,9 @@ export const SummaryLatencyViz = () => {
         interval: '1m',
         legendFormat: '{{job}}/{{ instance }}',
         refId: 'A',
+        datasource: metricsDS,
       },
     ],
-    datasource: metricsDS,
   });
 
   const viz = VizConfigBuilders.timeseries()
