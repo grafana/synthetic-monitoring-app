@@ -1380,6 +1380,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@grafana/assistant@npm:0.1.25":
+  version: 0.1.25
+  resolution: "@grafana/assistant@npm:0.1.25"
+  peerDependencies:
+    "@emotion/css": ">=11.0.0"
+    "@grafana/data": ">=12.1.0"
+    "@grafana/runtime": ">=12.1.0"
+    "@grafana/scenes": ">=5.41.0"
+    "@grafana/schema": ">=12.1.0"
+    "@grafana/ui": ">=12.1.0"
+    react: ">=18.0.0"
+    rxjs: ">=7.0.0"
+  checksum: 10c0/87ccb59650e17f66a09f2d069ea467a03d22a2b4e8e727c9bc06d7555743117889352965a3da341848fcfaf3f52b8afea1905f31b4601111baaf92f82ee1bd51
+  languageName: node
+  linkType: hard
+
 "@grafana/data@npm:13.0.2":
   version: 13.0.2
   resolution: "@grafana/data@npm:13.0.2"
@@ -13782,6 +13798,7 @@ __metadata:
     "@emotion/css": "npm:11.13.5"
     "@faker-js/faker": "npm:10.1.0"
     "@grafana/alerting": "npm:13.0.2"
+    "@grafana/assistant": "npm:0.1.25"
     "@grafana/data": "npm:13.0.2"
     "@grafana/eslint-config": "npm:9.0.0"
     "@grafana/faro-web-sdk": "npm:2.7.1"

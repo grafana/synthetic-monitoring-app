@@ -9,6 +9,7 @@ import { getSumDurationByProbeQuery } from 'queries/sumDurationByProbe';
 
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
+import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
 import { MetricsByURL } from 'scenes/BrowserDashboard/MetricsByURL';
 import { WebVitalsAverageRow } from 'scenes/BrowserDashboard/WebVitalsAverageRow';
 import { WebVitalsOverTimeRow } from 'scenes/BrowserDashboard/WebVitalsOverTimeRow';
@@ -28,6 +29,8 @@ import { TimepointExplorer } from 'scenes/components/TimepointExplorer/Timepoint
 export const BrowserDashboard = ({ check }: { check: Check }) => {
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
+
+  useDemAssistantContext([check], { focusedCheck: check });
 
   return (
     <DashboardContainer check={check} checkType={checkType}>
