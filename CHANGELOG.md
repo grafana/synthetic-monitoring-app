@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.54.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.54.0...v1.54.1) (2026-06-30)
+
+
+### Fixes
+
+* home summary panels show no data with label filters applied ([#1747](https://github.com/grafana/synthetic-monitoring-app/issues/1747)) ([0a4b289](https://github.com/grafana/synthetic-monitoring-app/commit/0a4b289aa8661a9ddf11bd066d9189d5e9df0009))
+
 ## [1.54.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.2...v1.54.0) (2026-06-29)
 
 
