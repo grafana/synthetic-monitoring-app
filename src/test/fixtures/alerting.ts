@@ -266,6 +266,65 @@ export const MOCK_PROBE_FAILED_ROUTE_MATCH: InstanceMatchResult = {
   ],
 } as unknown as InstanceMatchResult;
 
+// Mirrors the multiple-policy-trees scenario: three independent routing trees
+// are evaluated for the same alert. The default ("user-defined") tree and a
+// named "hashicorp-vault" tree match only at their root (no receiver), while
+// the named "pam-incident-alert" tree matches a child route that delivers to a
+// contact point.
+export const MOCK_MULTI_TREE_ROUTE_MATCH: InstanceMatchResult = {
+  labels: [
+    ['alertname', 'ProbeFailedExecutionsTooHigh'],
+    ['label_Environment', 'prod'],
+  ],
+  // Each tree's root reuses the same route id ("route-1") on purpose: route ids
+  // are only unique within a tree, so the display must scope its dedupe per tree
+  // or named trees would vanish from the preview.
+  matchedRoutes: [
+    {
+      route: { id: 'route-1', matchers: [], continue: false },
+      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-1' } },
+      matchDetails: {
+        matchingJourney: [
+          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
+        ],
+      },
+    },
+    {
+      route: { id: 'route-1', matchers: [], continue: false },
+      routeTree: { metadata: { name: 'hashicorp-vault' }, expandedSpec: { id: 'route-1' } },
+      matchDetails: {
+        matchingJourney: [
+          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
+        ],
+      },
+    },
+    {
+      route: {
+        id: 'route-2',
+        matchers: [{ type: '=', label: 'label_Environment', value: 'prod' }],
+        continue: false,
+        receiver: 'PAM Incident Alert',
+      },
+      routeTree: { metadata: { name: 'pam-incident-alert' }, expandedSpec: { id: 'route-1' } },
+      matchDetails: {
+        matchingJourney: [
+          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
+          {
+            route: {
+              id: 'route-2',
+              matchers: [{ type: '=', label: 'label_Environment', value: 'prod' }],
+              continue: false,
+              receiver: 'PAM Incident Alert',
+            },
+            matchDetails: [],
+            matched: true,
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as InstanceMatchResult;
+
 export const MOCK_HTTP_DURATION_ROUTE_MATCH: InstanceMatchResult = {
   "labels": [
     ["job", "test_http"], ["instance", "http://example.com"], ["check_name", "http"], ["frequency", "10000"],

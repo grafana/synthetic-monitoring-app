@@ -22,21 +22,27 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
       route: Route;
       level: number;
       isEffective: boolean;
+      treeName?: string;
     }> = [];
 
+    // Dedupe is scoped per tree: routes within a tree share root/intermediate
+    // nodes across overlapping journeys, but route ids can repeat across trees,
+    // so a global set would drop nodes (and entire trees) that reuse an id.
     const processedRouteIds = new Set<string>();
 
     routeMatch.matchedRoutes.forEach((matchedRoute) => {
       const matchingJourney = matchedRoute.matchDetails?.matchingJourney || [];
+      const treeName = matchedRoute.routeTree?.metadata?.name;
       // @ts-ignore
       // Find the effective index (the last route with a receiver, where it will get delivered)
       const effectiveIndex = matchingJourney.findLastIndex((item) => (item.route as Route).receiver);
 
       matchingJourney.forEach((journeyItem, index) => {
         const route = journeyItem.route;
+        const routeKey = `${treeName ?? ''}::${route.id}`;
 
-        if (!processedRouteIds.has(route.id)) {
-          processedRouteIds.add(route.id);
+        if (!processedRouteIds.has(routeKey)) {
+          processedRouteIds.add(routeKey);
 
           const isEffective = index === effectiveIndex;
 
@@ -44,6 +50,7 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
             route,
             level: index, // Use journey index as hierarchy level
             isEffective,
+            treeName,
           });
         }
       });
@@ -57,7 +64,7 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
   return (
     <div className={styles.routeTree}>
       {routesToRender.map((routeInfo, index) => {
-        const { route, level, isEffective } = routeInfo;
+        const { route, level, isEffective, treeName } = routeInfo;
         return (
           <div key={index} style={{ marginLeft: level * 16 }}>
             <RouteNode
@@ -65,6 +72,7 @@ export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }
               level={level}
               routingStops={level > 0 && !route.continue}
               isEffective={isEffective}
+              treeName={treeName}
             />
           </div>
         );
@@ -78,11 +86,12 @@ const RouteNode: React.FC<{
   level: number;
   routingStops?: boolean;
   isEffective?: boolean;
-}> = ({ route, level, routingStops, isEffective = false }) => {
+  treeName?: string;
+}> = ({ route, level, routingStops, isEffective = false, treeName }) => {
   const styles = useStyles2(getStyles);
   const hasMatchers = route.matchers && route.matchers.length > 0;
-  const isDefaultPolicy = level === 0 && !hasMatchers;
-  const policyInfo = getPolicyIdentifier(route, isDefaultPolicy);
+  const isRootPolicy = level === 0 && !hasMatchers;
+  const policyInfo = getPolicyIdentifier(route, isRootPolicy, treeName);
 
   return (
     <div className={styles.routeNode} style={{ marginLeft: level * 16 }}>
