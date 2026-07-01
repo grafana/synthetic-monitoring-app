@@ -48,14 +48,6 @@ export const trackNeedHelpScriptsButtonClicked = checkFormEvents<NeedHelpScripts
   'need_help_scripts_button_clicked'
 );
 
-interface FeatureTabChanged extends TrackingEventProps {
-  /** The label of the feature tab. */
-  label: FeatureTabLabel;
-}
-
-/** Tracks when a feature tab is changed. */
-export const trackFeatureTabChanged = checkFormEvents<FeatureTabChanged>('feature_tab_changed');
-
 interface K6ChannelSelected extends TrackingEventProps {
   /** The type of check. */
   checkType: CheckType;
@@ -68,19 +60,6 @@ export const trackK6ChannelSelected = checkFormEvents<K6ChannelSelected>('k6_cha
 
 /** Tracks when the retry button is clicked after k6 channels fail to load. */
 export const trackK6ChannelRetryClicked = checkFormEvents('k6_channel_retry_clicked');
-interface TerraformFormatChanged extends TrackingEventProps {
-  /** The format that was switched to (hcl or json). */
-  format: 'hcl' | 'json';
-}
-
-/** Tracks when the Terraform format is changed. */
-export const trackTerraformFormatChanged = checkFormEvents<TerraformFormatChanged>('terraform_format_changed');
-
-/** Tracks when Terraform configuration is copied. */
-export const trackTerraformConfigCopied = checkFormEvents<TerraformFormatChanged>('terraform_config_copied');
-
-/** Tracks when the full configuration link is clicked. */
-export const trackTerraformFullConfigClicked = checkFormEvents('terraform_full_config_clicked');
 
 interface ExampleScriptEvent extends TrackingEventProps {
   /** The value identifier of the selected example script. */

@@ -12,7 +12,7 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
-import { trackChangeThreshold, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
+import { trackChangeThreshold, trackSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import { useDebounceCallback } from 'usehooks-ts';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -38,7 +38,6 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
     if (selected) {
-      trackUnSelectAlert({ name: type });
     } else {
       trackSelectAlert({ name: type });
     }

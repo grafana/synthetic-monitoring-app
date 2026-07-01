@@ -9,13 +9,6 @@ interface PerCheckAlertEvent extends TrackingEventProps {
   name: CheckAlertType;
 }
 
-interface PerCheckAlertChangePeriod extends TrackingEventProps {
-  /** The name of the alert */
-  name: CheckAlertType;
-  /** The period of the alert */
-  period: string;
-}
-
 interface PerCheckAlertChangeThreshold extends TrackingEventProps {
   /** The name of the alert */
   name: CheckAlertType;
@@ -23,27 +16,11 @@ interface PerCheckAlertChangeThreshold extends TrackingEventProps {
   threshold: string;
 }
 
-interface PerCheckAlertRoutingPreviewToggled extends TrackingEventProps {
-  /** The name of the alert */
-  name: CheckAlertType;
-  /** Whether the routing preview is being shown or hidden */
-  action: 'show' | 'hide';
-}
-
 /** Tracks when an alert is selected from the per-check alerts list */
 export const trackSelectAlert = perCheckAlertEvents<PerCheckAlertEvent>('select_alert');
 
-/** Tracks when an alert is unselected from the per-check alerts list */
-export const trackUnSelectAlert = perCheckAlertEvents<PerCheckAlertEvent>('unselect_alert');
-
-/** Tracks when the period of an alert is changed */
-export const trackChangePeriod = perCheckAlertEvents<PerCheckAlertChangePeriod>('change_period');
-
 /** Tracks when the threshold of an alert is changed */
 export const trackChangeThreshold = perCheckAlertEvents<PerCheckAlertChangeThreshold>('change_threshold');
-
-/** Tracks when the routing preview is toggled for an alert */
-export const trackRoutingPreviewToggled = perCheckAlertEvents<PerCheckAlertRoutingPreviewToggled>('routing_preview_toggled');
 
 /** Tracks when an alert is created successfully */
 export const trackAlertCreationSuccess = perCheckAlertEvents<PerCheckAlertEvent>('creation_success');
