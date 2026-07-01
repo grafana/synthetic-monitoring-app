@@ -4,7 +4,6 @@ import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
-import { trackTraceIconClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
@@ -77,7 +76,6 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
   }, [isAwaitingPropagation, logTimestamp]);
 
   const handleToggle = useCallback(() => {
-    trackTraceIconClicked({ action: expanded ? 'collapse' : 'expand' });
     setExpanded((prev) => !prev);
   }, [expanded]);
 

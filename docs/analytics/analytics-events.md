@@ -108,16 +108,6 @@ Tracks when the 'need help writing scripts' button is clicked.
 | ------ | -------- | -------------------------------- |
 | source | `string` | The source of the clicked button |
 
-#### synthetic-monitoring_check_form_feature_tab_changed
-
-Tracks when a feature tab is changed.
-
-##### Properties
-
-| name  | type     | description                   |
-| ----- | -------- | ----------------------------- |
-| label | `string` | The label of the feature tab. |
-
 #### synthetic-monitoring_check_form_k6_channel_selected
 
 Tracks when a k6 version channel is selected.
@@ -132,30 +122,6 @@ Tracks when a k6 version channel is selected.
 #### synthetic-monitoring_check_form_k6_channel_retry_clicked
 
 Tracks when the retry button is clicked after k6 channels fail to load.
-
-#### synthetic-monitoring_check_form_terraform_format_changed
-
-Tracks when the Terraform format is changed.
-
-##### Properties
-
-| name   | type              | description                                    |
-| ------ | ----------------- | ---------------------------------------------- |
-| format | `"hcl" \| "json"` | The format that was switched to (hcl or json). |
-
-#### synthetic-monitoring_check_form_terraform_config_copied
-
-Tracks when Terraform configuration is copied.
-
-##### Properties
-
-| name   | type              | description                                    |
-| ------ | ----------------- | ---------------------------------------------- |
-| format | `"hcl" \| "json"` | The format that was switched to (hcl or json). |
-
-#### synthetic-monitoring_check_form_terraform_full_config_clicked
-
-Tracks when the full configuration link is clicked.
 
 #### synthetic-monitoring_check_form_example_script_selected
 
@@ -176,18 +142,6 @@ Tracks when an example script is copied in the check form.
 | name   | type     | description                                          |
 | ------ | -------- | ---------------------------------------------------- |
 | script | `string` | The value identifier of the selected example script. |
-
-### check_list
-
-#### synthetic-monitoring_check_list_duplicate_check_button_clicked
-
-Tracks when the duplicate check button is clicked.
-
-##### Properties
-
-| name      | type                                                                                                     | description                         |
-| --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being duplicated. |
 
 ### feature_feedback
 
@@ -281,27 +235,6 @@ Tracks when an alert is selected from the per-check alerts list
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
 | name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
 
-#### synthetic-monitoring_per_check_alerts_unselect_alert
-
-Tracks when an alert is unselected from the per-check alerts list
-
-##### Properties
-
-| name | type                                                                                                                                                                              | description           |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
-
-#### synthetic-monitoring_per_check_alerts_change_period
-
-Tracks when the period of an alert is changed
-
-##### Properties
-
-| name   | type                                                                                                                                                                              | description             |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| name   | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert   |
-| period | `string`                                                                                                                                                                          | The period of the alert |
-
 #### synthetic-monitoring_per_check_alerts_change_threshold
 
 Tracks when the threshold of an alert is changed
@@ -312,17 +245,6 @@ Tracks when the threshold of an alert is changed
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | name      | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert      |
 | threshold | `string`                                                                                                                                                                          | The threshold of the alert |
-
-#### synthetic-monitoring_per_check_alerts_routing_preview_toggled
-
-Tracks when the routing preview is toggled for an alert
-
-##### Properties
-
-| name   | type                                                                                                                                                                              | description                                          |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| name   | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert                                |
-| action | `"show" \| "hide"`                                                                                                                                                                | Whether the routing preview is being shown or hidden |
 
 #### synthetic-monitoring_per_check_alerts_creation_success
 
@@ -370,69 +292,6 @@ Tracks when the hide screenshots toggle is changed.
 | name   | type            | description                         |
 | ------ | --------------- | ----------------------------------- |
 | hidden | `false \| true` | Whether screenshots are now hidden. |
-
-### secrets_management
-
-#### synthetic-monitoring_secrets_management_create_secret_button_clicked
-
-Tracks when the create secret button is clicked.
-
-##### Properties
-
-| name     | type                                                                 | description                                                       |
-| -------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source   | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-| location | `"empty_state" \| "header_action"`                                   | The location where the create button was clicked.                 |
-
-#### synthetic-monitoring_secrets_management_edit_secret_button_clicked
-
-Tracks when the edit secret button is clicked.
-
-##### Properties
-
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-
-#### synthetic-monitoring_secrets_management_delete_secret_button_clicked
-
-Tracks when the delete secret button is clicked.
-
-##### Properties
-
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-
-#### synthetic-monitoring_secrets_management_secret_created
-
-Tracks when a secret is successfully created.
-
-##### Properties
-
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-
-#### synthetic-monitoring_secrets_management_secret_updated
-
-Tracks when a secret is successfully updated.
-
-##### Properties
-
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-
-#### synthetic-monitoring_secrets_management_secret_deleted
-
-Tracks when a secret is successfully deleted.
-
-##### Properties
-
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
 
 ### testing_synthetics_landing
 
@@ -566,16 +425,6 @@ Tracks when a Timepoint Viewer action is clicked
 | --------- | -------------------------------------------------------------------------------------------------------- | --------------------------------- |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored. |
 | action    | `"previous-timepoint" \| "next-timepoint" \| "view-explore-logs" \| "view-explore-metrics"`              | The action that was clicked.      |
-
-#### synthetic-monitoring_timepoint_explorer_trace_icon_clicked
-
-Tracks when a trace icon is clicked in the log view.
-
-##### Properties
-
-| name   | type                     | description                                        |
-| ------ | ------------------------ | -------------------------------------------------- |
-| action | `"expand" \| "collapse"` | Whether the trace panel was expanded or collapsed. |
 
 #### synthetic-monitoring_timepoint_explorer_timepoint_viewer_logs_view_toggled
 

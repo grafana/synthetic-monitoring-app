@@ -4,7 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
-import { trackSecretCreated, trackSecretUpdated } from 'features/tracking/secretsManagementEvents';
+
 import { DataTestIds } from 'test/dataTestIds';
 
 import { Secret, SecretsManagementSource } from './types';
@@ -130,9 +130,7 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
       onSuccess() {
         setSaveError(null);
         if (isNewSecret) {
-          trackSecretCreated({ source });
         } else {
-          trackSecretUpdated({ source });
         }
         onDismiss();
       },

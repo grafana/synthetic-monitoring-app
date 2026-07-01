@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { trackDuplicateCheckButtonClicked } from 'features/tracking/checkListEvents';
+
 import { DataTestIds } from 'test/dataTestIds';
 
 import { Check } from 'types';
@@ -107,7 +107,6 @@ export const CheckItemActionButtons = ({
         tooltip="Duplicate check"
         disabled={!canWriteChecks}
         onClick={() => {
-          trackDuplicateCheckButtonClicked({ checkType: getCheckType(check.settings) });
         }}
         variant="secondary"
         fill="text"

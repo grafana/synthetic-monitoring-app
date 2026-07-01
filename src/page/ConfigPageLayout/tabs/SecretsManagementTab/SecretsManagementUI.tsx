@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import { Button, ConfirmModal, EmptyState } from '@grafana/ui';
 import { css } from '@emotion/css';
-import {
-  trackCreateSecretButtonClicked,
-  trackDeleteSecretButtonClicked,
-  trackEditSecretButtonClicked,
-  trackSecretDeleted,
-} from 'features/tracking/secretsManagementEvents';
 
 import { SecretsManagementSource, SecretWithUuid } from './types';
 import { getUserPermissions } from 'data/permissions';
@@ -34,19 +28,16 @@ export function SecretsManagementUI({ source }: SecretsManagementUIProps) {
   const existingNames = secrets?.map((secret) => secret.name) ?? [];
 
   const handleAddSecret = (location: 'empty_state' | 'header_action') => {
-    trackCreateSecretButtonClicked({ source, location });
     setEditMode(SECRETS_EDIT_MODE_ADD);
   };
 
   const handleEditSecret = (name?: string) => {
     if (name) {
-      trackEditSecretButtonClicked({ source });
     }
     setEditMode(name ?? false);
   };
 
   const handleDeleteSecret = (name: string) => {
-    trackDeleteSecretButtonClicked({ source });
     const secret = secrets?.find((s) => s.name === name);
     if (secret) {
       setDeleteMode(secret);
@@ -139,7 +130,6 @@ export function SecretsManagementUI({ source }: SecretsManagementUIProps) {
           if (deleteMode) {
             deleteSecret.mutate(deleteMode.name, {
               onSuccess: () => {
-                trackSecretDeleted({ source });
               },
             });
           }
