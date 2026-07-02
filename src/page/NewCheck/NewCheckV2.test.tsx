@@ -2,11 +2,11 @@ import React, { ReactNode } from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
-import { CheckTypeGroup } from '../../types';
+import { Check, CheckType, CheckTypeGroup, IpVersion } from '../../types';
 
 import { Checkster } from '../../components/Checkster';
 import { PluginPageNotFound } from '../NotFound';
-import { NewCheckV2 } from './NewCheckV2';
+import { mergePrefilledCheck, NewCheckV2 } from './NewCheckV2';
 
 enum NewCheckTestIds {
   Ready = 'NewCheck.Ready',
@@ -67,5 +67,52 @@ describe('<NewCheckV2 />', () => {
     await renderNewCheck();
     expect(screen.getByTestId(NewCheckTestIds.PluginPageNotFound)).toBeInTheDocument();
     expect(PluginPageNotFound).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('mergePrefilledCheck (prefilled draft handling)', () => {
+  const draftBase = {
+    job: 'my-check',
+    target: 'https://example.com',
+    enabled: true,
+    probes: [],
+    labels: [],
+  } as unknown as Check;
+
+  it('fills required settings defaults omitted by the draft (HTTP ipVersion)', () => {
+    const result = mergePrefilledCheck(
+      { ...draftBase, settings: { http: { method: 'GET' } } } as unknown as Check,
+      CheckType.Http
+    );
+    const http = (result.settings as Record<string, any>).http;
+    expect(http.method).toBe('GET');
+    expect(http.ipVersion).toBe(IpVersion.V4);
+    expect(result.job).toBe('my-check');
+    expect(result.target).toBe('https://example.com');
+  });
+
+  it('normalizes a legacy `k6` settings key to `scripted`', () => {
+    const result = mergePrefilledCheck(
+      { ...draftBase, settings: { k6: { script: 'export default () => {};' } } } as unknown as Check,
+      CheckType.Http
+    );
+    expect(result.settings).toHaveProperty('scripted');
+    expect(result.settings).not.toHaveProperty('k6');
+    expect((result.settings as Record<string, any>).scripted.script).toBe('export default () => {};');
+  });
+
+  it('uses the fallback check type when the draft has no settings', () => {
+    const result = mergePrefilledCheck({ ...draftBase } as unknown as Check, CheckType.Browser);
+    expect(result.settings).toHaveProperty('browser');
+    expect(result.settings).not.toHaveProperty('http');
+  });
+
+  it('uses the fallback check type when settings is empty (does not default to HTTP)', () => {
+    const result = mergePrefilledCheck(
+      { ...draftBase, settings: {} } as unknown as Check,
+      CheckType.Scripted
+    );
+    expect(result.settings).toHaveProperty('scripted');
+    expect(result.settings).not.toHaveProperty('http');
   });
 });

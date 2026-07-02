@@ -33,24 +33,33 @@ const CHECK_TYPE_PARAM_NAME = 'checkType';
  * otherwise the form fails validation on an off-screen field and Save silently
  * does nothing.
  */
-function mergePrefilledCheck(prefill: Check): Check {
-  const checkType = getCheckType(prefill.settings);
-  const base = checkType ? DEFAULT_CHECK_CONFIG_MAP[checkType] : undefined;
+export function mergePrefilledCheck(prefill: Check, fallbackType: CheckType): Check {
+  // getCheckType throws on undefined settings and silently defaults empty settings
+  // to HTTP, so fall back to the route's check type when the draft has no settings.
+  const hasSettings = !!prefill.settings && Object.keys(prefill.settings).length > 0;
+  const checkType = hasSettings ? getCheckType(prefill.settings) : fallbackType;
+
+  const base = DEFAULT_CHECK_CONFIG_MAP[checkType];
   if (!base) {
     return prefill;
   }
-  const settingsKey = Object.keys(prefill.settings ?? {})[0];
+
+  // Merge under the CANONICAL settings key from the default config (e.g. `scripted`),
+  // reading the draft's settings value by position so a legacy `k6` key still lands
+  // on the right key instead of producing an invalid `settings: { k6: ... }`.
+  const canonicalKey = Object.keys(base.settings)[0];
   const baseSettings = base.settings as Record<string, unknown>;
-  const prefillSettings = (prefill.settings ?? {}) as Record<string, unknown>;
-  const mergedSettings = settingsKey
-    ? {
-        [settingsKey]: {
-          ...(baseSettings[settingsKey] as Record<string, unknown>),
-          ...(prefillSettings[settingsKey] as Record<string, unknown>),
-        },
-      }
-    : base.settings;
-  return { ...base, ...prefill, settings: mergedSettings } as Check;
+  const draftValue = hasSettings
+    ? (Object.values(prefill.settings as Record<string, unknown>)[0] as Record<string, unknown>)
+    : {};
+
+  return {
+    ...base,
+    ...prefill,
+    settings: {
+      [canonicalKey]: { ...(baseSettings[canonicalKey] as Record<string, unknown>), ...draftValue },
+    },
+  } as unknown as Check;
 }
 
 export function NewCheckV2() {
@@ -75,7 +84,9 @@ export function NewCheckV2() {
   // The Grafana Assistant can deep-link here with a pre-filled check draft in
   // router state so the user only has to review and click Create.
   const prefilledCheck = (location.state as { prefilledCheck?: Check } | null)?.prefilledCheck;
-  const initialCheck = duplicateCheck ?? (prefilledCheck ? mergePrefilledCheck(prefilledCheck) : undefined);
+  const fallbackCheckType = checkType ?? (group ? CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value] : CheckType.Http);
+  const initialCheck =
+    duplicateCheck ?? (prefilledCheck ? mergePrefilledCheck(prefilledCheck, fallbackCheckType) : undefined);
 
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
@@ -87,7 +98,10 @@ export function NewCheckV2() {
     [location.pathname, urlSearchParams]
   );
 
-  const isOverlimit = useIsOverlimit(false, checkType);
+  // Prefill deep-links may omit ?checkType=, so fall back to the actual check's type
+  // to keep the type-specific (browser/scripted) limit checks accurate.
+  const effectiveCheckType = checkType ?? (initialCheck ? getCheckType(initialCheck.settings) : undefined);
+  const isOverlimit = useIsOverlimit(false, effectiveCheckType);
   const { canWriteChecks } = getUserPermissions();
 
   const isLoading = (isLoadingProbes && !isProbesFetched) || isOverlimit === null || isLoadingDuplicateCheck;
