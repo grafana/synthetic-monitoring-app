@@ -6,8 +6,8 @@ import { TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckFormPageParams, CheckType } from 'types';
-import { createNavModel } from 'utils';
+import { Check, CheckFormPageParams, CheckType } from 'types';
+import { createNavModel, getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useProbes } from 'data/useProbes';
@@ -21,10 +21,37 @@ import { useDuplicateCheck } from 'page/NewCheck/NewCheckV2.hooks';
 import { PluginPageNotFound } from 'page/NotFound';
 
 import { CenteredSpinner } from '../../components/CenteredSpinner';
-import { CHECK_TYPE_GROUP_DEFAULT_CHECK } from '../../components/Checkster/constants';
+import { CHECK_TYPE_GROUP_DEFAULT_CHECK, DEFAULT_CHECK_CONFIG_MAP } from '../../components/Checkster/constants';
 import { getUserPermissions } from '../../data/permissions';
 
 const CHECK_TYPE_PARAM_NAME = 'checkType';
+
+/**
+ * A pre-filled check draft (e.g. from the Grafana Assistant deep-link) may only
+ * set a few fields. Merge it over the check type's default config so required
+ * settings the caller omitted (e.g. HTTP `ipVersion`) are still present —
+ * otherwise the form fails validation on an off-screen field and Save silently
+ * does nothing.
+ */
+function mergePrefilledCheck(prefill: Check): Check {
+  const checkType = getCheckType(prefill.settings);
+  const base = checkType ? DEFAULT_CHECK_CONFIG_MAP[checkType] : undefined;
+  if (!base) {
+    return prefill;
+  }
+  const settingsKey = Object.keys(prefill.settings ?? {})[0];
+  const baseSettings = base.settings as Record<string, unknown>;
+  const prefillSettings = (prefill.settings ?? {}) as Record<string, unknown>;
+  const mergedSettings = settingsKey
+    ? {
+        [settingsKey]: {
+          ...(baseSettings[settingsKey] as Record<string, unknown>),
+          ...(prefillSettings[settingsKey] as Record<string, unknown>),
+        },
+      }
+    : base.settings;
+  return { ...base, ...prefill, settings: mergedSettings } as Check;
+}
 
 export function NewCheckV2() {
   const [params] = useSearchParams({});
@@ -45,6 +72,10 @@ export function NewCheckV2() {
   ]);
 
   const location = useLocation();
+  // The Grafana Assistant can deep-link here with a pre-filled check draft in
+  // router state so the user only has to review and click Create.
+  const prefilledCheck = (location.state as { prefilledCheck?: Check } | null)?.prefilledCheck;
+  const initialCheck = duplicateCheck ?? (prefilledCheck ? mergePrefilledCheck(prefilledCheck) : undefined);
 
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
@@ -85,7 +116,7 @@ export function NewCheckV2() {
           checkType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
           disabled={isOverlimit || !canWriteChecks}
           onCheckTypeChange={handleCheckTypeChange}
-          check={duplicateCheck}
+          check={initialCheck}
           isDuplicate={!!duplicateCheck}
         >
           <Checkster onSave={handleSubmit} />
