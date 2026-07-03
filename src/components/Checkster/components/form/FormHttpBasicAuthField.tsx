@@ -7,8 +7,8 @@ import { CheckFormValues } from 'types';
 import { useDOMId } from 'hooks/useDOMId';
 
 import { getFieldErrorProps } from '../../utils/form';
-import { PasswordInput } from '../PasswordInput';
 import { StyledField } from '../ui/StyledField';
+import { FormSecretOrPlaintextField } from './FormSecretOrPlaintextField';
 
 interface FormHttpBasicAuthFieldProps {
   field: CheckFormFieldPath;
@@ -16,7 +16,6 @@ interface FormHttpBasicAuthFieldProps {
 
 export function FormHttpBasicAuthField({ field }: FormHttpBasicAuthFieldProps) {
   const usernameInputId = useDOMId();
-  const passwordInputId = useDOMId();
 
   const {
     register,
@@ -36,15 +35,8 @@ export function FormHttpBasicAuthField({ field }: FormHttpBasicAuthFieldProps) {
       >
         <Input id={usernameInputId} {...register(usernameField)} disabled={disabled} />
       </StyledField>
-      <StyledField
-        grow
-        htmlFor={passwordInputId}
-        label="Password"
-        required
-        {...getFieldErrorProps(errors, passwordField)}
-      >
-        <PasswordInput id={passwordInputId} {...register(passwordField)} disabled={disabled} />
-      </StyledField>
+      {/* Only the password is resolved by the agent, so only it can reference a secret. */}
+      <FormSecretOrPlaintextField grow field={passwordField} label="Password" required variant="password" allowSecrets />
     </Stack>
   );
 }
