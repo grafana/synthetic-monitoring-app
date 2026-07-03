@@ -2,8 +2,8 @@ import React, { PropsWithChildren } from 'react';
 import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { UI_TEST_ID } from 'test/dataTestIds';
 import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { getTestFlagValues } from 'test/openFeatureTestProvider';
 
 import { ProbeStateStatus } from './types.adhoc-check';
