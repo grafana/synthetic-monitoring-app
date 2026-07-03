@@ -22,11 +22,20 @@ function DashboardPageContent() {
   const { id } = useParams<CheckPageParams>();
   const check = checks.find((check) => String(check.id) === id);
 
-  const { getPermissions } = useCheckFolderAccess(check ? [check] : []);
+  const { getPermissions, isResolving: isResolvingFolders } = useCheckFolderAccess(check ? [check] : []);
   const permissions = getPermissions({ folderUid: check?.folderUid });
 
   if (!isLoading && !check) {
     return <CheckNotFound />;
+  }
+
+  // Wait for folder access to settle before evaluating the canRead redirect.
+  // During the optimistic loading window a check whose folder has returned 403
+  // resolves to `forbidden` (canRead=false) and would redirect prematurely,
+  // even when the eventual state is the fallback (canRead=true). See
+  // useCheckFolderAccess for details.
+  if (isResolvingFolders) {
+    return <Spinner />;
   }
 
   if (!permissions.canRead) {

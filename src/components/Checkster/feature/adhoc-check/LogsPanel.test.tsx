@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
+import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
+import { getTestFlagValues } from 'test/openFeatureTestProvider';
 
 import { ProbeStateStatus } from './types.adhoc-check';
 
 import { LogsPanel } from './LogsPanel';
+
+const wrapper = ({ children }: PropsWithChildren) => (
+  <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
+    {children}
+  </OpenFeatureTestProvider>
+);
 
 jest.mock('scenes/components/LogsRenderer/screenshots/screenshots.hooks', () => ({
   useScreenshots: jest.fn().mockReturnValue(new Map()),
@@ -36,7 +45,8 @@ describe('adhoc-check', () => {
           timeseries={[]}
           from={0}
           to={0}
-        />
+        />,
+        { wrapper }
       );
 
       await user.click(screen.getByText('test probe'));

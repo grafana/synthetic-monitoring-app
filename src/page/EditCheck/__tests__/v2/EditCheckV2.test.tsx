@@ -141,6 +141,26 @@ describe(`<EditCheckV2 />`, () => {
         });
       });
 
+      it('falls back to SM RBAC and loads the editable form when the user lacks folders:read (default folder 403)', async () => {
+        // When the default folder itself returns 403 the user has no
+        // folders:read, so access control falls back to SM RBAC. A check whose
+        // own folder also returns 403 must still load (and be editable) rather
+        // than redirecting out of the edit page mid-load (the premature-redirect
+        // race that otherwise cancels the in-flight request and loops).
+        server.use(
+          apiRoute('getFolder', {
+            result: async () => ({ status: 403, json: { message: 'Access denied' } }),
+          })
+        );
+
+        await renderEditPage(CHECK_IN_FORBIDDEN_FOLDER);
+
+        await waitFor(() => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
+
+        const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+        expect(jobNameInput).not.toBeDisabled();
+      });
+
       it('disables the form for a check in a read-only folder', async () => {
         await renderEditPage(CHECK_IN_READONLY_FOLDER);
 

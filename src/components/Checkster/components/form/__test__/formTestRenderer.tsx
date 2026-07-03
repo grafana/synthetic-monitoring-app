@@ -7,8 +7,11 @@ import React, {
   ReactNode,
 } from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
+import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
+import { getTestFlagValues } from 'test/openFeatureTestProvider';
 
 export enum TestFormTestId {
   Form = 'TestForm',
@@ -64,13 +67,15 @@ export function formTestRenderer<T extends ElementType = ElementType>(
   const WrapperComponent = Wrapper ? Wrapper : Fragment;
 
   render(
-    <WrapperComponent>
-      <TestForm defaultValues={defaultValues}>
-        {/* @ts-expect-error */}
-        <FieldComponent {...props} />
-        {props?.field && <TestFormValueInfo field={props?.field} />}
-      </TestForm>
-    </WrapperComponent>
+    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
+      <WrapperComponent>
+        <TestForm defaultValues={defaultValues}>
+          {/* @ts-expect-error */}
+          <FieldComponent {...props} />
+          {props?.field && <TestFormValueInfo field={props?.field} />}
+        </TestForm>
+      </WrapperComponent>
+    </OpenFeatureTestProvider>
   );
 
   return userEvent.setup();

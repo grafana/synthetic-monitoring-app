@@ -11,6 +11,7 @@ interface CheckFolderAccessContextValue {
   visibleChecks: Check[];
   getPermissions: (check: Pick<Check, 'folderUid'>) => CheckPermissions;
   getFolderStatus: (check: Pick<Check, 'folderUid'>) => CheckFolderStatus;
+  isFoldersAvailable: boolean;
 }
 
 const CheckFolderAccessContext = createContext<CheckFolderAccessContextValue | null>(null);
@@ -64,4 +65,8 @@ export function useBulkCheckPermissions(checks: Array<Pick<Check, 'folderUid'>>)
     canWriteAll: checks.every((check) => getPermissions(check).canWrite),
     canDeleteAll: checks.every((check) => getPermissions(check).canDelete),
   };
+}
+
+export function useIsFoldersAvailable() {
+  return useCheckFolderAccessContext().isFoldersAvailable;
 }

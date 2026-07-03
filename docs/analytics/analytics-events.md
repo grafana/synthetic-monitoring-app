@@ -39,6 +39,20 @@ Tracks when the 'protocol' buttons on the check type card are clicked.
 | checkTypeGroup | `"api-endpoint" \| "multistep" \| "scripted" \| "browser"` | The check group type of the check. |
 | protocol       | `string`                                                   | The protocol of the check.         |
 
+### check_dashboard
+
+#### synthetic-monitoring_check_dashboard_viewed
+
+Tracks when a check dashboard is viewed.
+
+##### Properties
+
+| name        | type                                                                                                     | description                                                                                                             |
+| ----------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| checkType   | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check the dashboard belongs to.                                                                             |
+| hasFailures | `undefined \| false \| true`                                                                             | Whether the check had any failed executions in the queried time period. Undefined when uptime could not be determined.  |
+| uptime      | `undefined \| number`                                                                                    | The uptime percentage (0-100) of the check over the queried time period. Undefined when uptime could not be determined. |
+
 ### check_form
 
 #### synthetic-monitoring_check_form_navigate_wizard_form_button_clicked
@@ -143,6 +157,26 @@ Tracks when Terraform configuration is copied.
 
 Tracks when the full configuration link is clicked.
 
+#### synthetic-monitoring_check_form_example_script_selected
+
+Tracks when an example script is selected in the check form.
+
+##### Properties
+
+| name   | type     | description                                          |
+| ------ | -------- | ---------------------------------------------------- |
+| script | `string` | The value identifier of the selected example script. |
+
+#### synthetic-monitoring_check_form_example_script_copied
+
+Tracks when an example script is copied in the check form.
+
+##### Properties
+
+| name   | type     | description                                          |
+| ------ | -------- | ---------------------------------------------------- |
+| script | `string` | The value identifier of the selected example script. |
+
 ### check_list
 
 #### synthetic-monitoring_check_list_duplicate_check_button_clicked
@@ -211,6 +245,29 @@ Tracks when a link is clicked.
 | path     | `string` | The path of the clicked link     |
 | search   | `string` | The search of the clicked link   |
 | source   | `string` | Where the link was clicked from  |
+
+### onboarding
+
+#### synthetic-monitoring_onboarding_auto_initialized
+
+Tracks a successful auto-initialization from a deep-link.
+
+##### Properties
+
+| name  | type     | description                                   |
+| ----- | -------- | --------------------------------------------- |
+| route | `string` | The route that triggered auto-initialization. |
+
+#### synthetic-monitoring_onboarding_auto_initialize_failed
+
+Tracks a failed auto-initialization from a deep-link.
+
+##### Properties
+
+| name   | type     | description                                   |
+| ------ | -------- | --------------------------------------------- |
+| route  | `string` | The route that triggered auto-initialization. |
+| reason | `string` | Why initialization failed.                    |
 
 ### per_check_alerts
 
@@ -287,6 +344,33 @@ Tracks when an alert is deleted successfully
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
 | name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
 
+### screenshots
+
+#### synthetic-monitoring_screenshots_expanded
+
+Tracks when a screenshot thumbnail is clicked to expand.
+
+##### Properties
+
+| name       | type                | description                           |
+| ---------- | ------------------- | ------------------------------------- |
+| hasCaption | `false \| true`     | Whether the screenshot has a caption. |
+| source     | `"base64" \| "url"` | The source type of the screenshot.    |
+
+#### synthetic-monitoring_screenshots_dismissed
+
+Tracks when an expanded screenshot modal is dismissed.
+
+#### synthetic-monitoring_screenshots_hide_toggled
+
+Tracks when the hide screenshots toggle is changed.
+
+##### Properties
+
+| name   | type            | description                         |
+| ------ | --------------- | ----------------------------------- |
+| hidden | `false \| true` | Whether screenshots are now hidden. |
+
 ### secrets_management
 
 #### synthetic-monitoring_secrets_management_create_secret_button_clicked
@@ -350,6 +434,57 @@ Tracks when a secret is successfully deleted.
 | ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
 
+### testing_synthetics_landing
+
+#### synthetic-monitoring_testing_synthetics_landing_viewed
+
+Tracks when the Testing & synthetics landing page is viewed.
+
+##### Properties
+
+| name          | type            | description                                         |
+| ------------- | --------------- | --------------------------------------------------- |
+| hasAgentic    | `false \| true` | Whether the Agentic testing section was shown.      |
+| hasK6         | `false \| true` | Whether the Performance testing section was shown.  |
+| hasSynthetics | `false \| true` | Whether the Synthetic monitoring section was shown. |
+
+#### synthetic-monitoring_testing_synthetics_landing_agentic_learn_more_button_clicked
+
+Tracks when the Agentic Learn more button is clicked.
+
+#### synthetic-monitoring_testing_synthetics_landing_agentic_create_button_clicked
+
+Tracks when the Agentic Create a test button is clicked.
+
+#### synthetic-monitoring_testing_synthetics_landing_open_link_clicked
+
+Tracks when an Open link is clicked.
+
+##### Properties
+
+| name    | type                                         | description                                 |
+| ------- | -------------------------------------------- | ------------------------------------------- |
+| product | `"agentic" \| "performance" \| "synthetics"` | The product panel the Open link belongs to. |
+
+#### synthetic-monitoring_testing_synthetics_landing_performance_browse_projects_button_clicked
+
+Tracks when the Browse projects button is clicked.
+
+#### synthetic-monitoring_testing_synthetics_landing_performance_start_testing_button_clicked
+
+Tracks when the Start testing button is clicked.
+
+#### synthetic-monitoring_testing_synthetics_landing_synthetics_tile_clicked
+
+Tracks when a Synthetic monitoring action tile is clicked.
+
+##### Properties
+
+| name        | type                                             | description                                                  |
+| ----------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| tile        | `"make-check" \| "manage-probes" \| "terraform"` | The synthetics action tile that was clicked.                 |
+| interaction | `"tile" \| "action-button"`                      | Whether the tile container or its action button was clicked. |
+
 ### timepoint_explorer
 
 #### synthetic-monitoring_timepoint_explorer_view_toggle
@@ -358,9 +493,10 @@ Tracks when the Timepoint Explorer view type is changed.
 
 ##### Properties
 
-| name     | type     | description    |
-| -------- | -------- | -------------- |
-| viewMode | `string` | The view type. |
+| name      | type                                                                                                     | description                       |
+| --------- | -------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored. |
+| viewMode  | `string`                                                                                                 | The view type.                    |
 
 #### synthetic-monitoring_timepoint_explorer_mini_map_section_clicked
 
@@ -368,10 +504,11 @@ Tracks when a section of the Timepoint Explorer mini map is clicked.
 
 ##### Properties
 
-| name      | type                                         | description                                                |
-| --------- | -------------------------------------------- | ---------------------------------------------------------- |
-| index     | `number`                                     | The index of the section of the mini map that was clicked. |
-| component | `"left-arrow" \| "right-arrow" \| "section"` | The UI component that was clicked.                         |
+| name      | type                                                                                                     | description                                                |
+| --------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored.                          |
+| index     | `number`                                                                                                 | The index of the section of the mini map that was clicked. |
+| component | `"left-arrow" \| "right-arrow" \| "section"`                                                             | The UI component that was clicked.                         |
 
 #### synthetic-monitoring_timepoint_explorer_mini_map_page_clicked
 
@@ -379,9 +516,10 @@ Tracks when the Timepoint Explorer mini map page is changed.
 
 ##### Properties
 
-| name  | type     | description                             |
-| ----- | -------- | --------------------------------------- |
-| index | `number` | The index of the page that was clicked. |
+| name      | type                                                                                                     | description                             |
+| --------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored.       |
+| index     | `number`                                                                                                 | The index of the page that was clicked. |
 
 #### synthetic-monitoring_timepoint_explorer_timepoint_click
 
@@ -389,10 +527,11 @@ Tracks when a probe entry in the Timepoint Viewer is clicked.
 
 ##### Properties
 
-| name      | type                                                                                     | description                                              |
-| --------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| component | `"tooltip" \| "reachability-entry" \| "viewer-tab" \| "uptime-entry" \| "pending-entry"` | The UI component that was clicked.                       |
-| status    | `"success" \| "failure" \| "missing" \| "pending"`                                       | The status of the Timepoint List entry that was clicked. |
+| name      | type                                                                                                     | description                                              |
+| --------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored.                        |
+| component | `"tooltip" \| "reachability-entry" \| "viewer-tab" \| "uptime-entry" \| "pending-entry"`                 | The UI component that was clicked.                       |
+| status    | `"success" \| "failure" \| "missing" \| "pending"`                                                       | The status of the Timepoint List entry that was clicked. |
 
 #### synthetic-monitoring_timepoint_explorer_timepoint_viz_legend_toggled
 
@@ -400,9 +539,10 @@ Tracks when a Timepoint Viz Legend is clicked.
 
 ##### Properties
 
-| name       | type     | description                        |
-| ---------- | -------- | ---------------------------------- |
-| vizOptions | `string` | The viz options that were toggled. |
+| name       | type                                                                                                     | description                        |
+| ---------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| checkType  | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored.  |
+| vizOptions | `string`                                                                                                 | The viz options that were toggled. |
 
 #### synthetic-monitoring_timepoint_explorer_timepoint_viz_legend_color_clicked
 
@@ -410,10 +550,11 @@ Tracks when a Timepoint Viz Legend color is clicked.
 
 ##### Properties
 
-| name      | type                                               | description                                   |
-| --------- | -------------------------------------------------- | --------------------------------------------- |
-| color     | `string`                                           | The color of the viz option that was clicked. |
-| vizOption | `"success" \| "failure" \| "missing" \| "pending"` | The viz option that was clicked.              |
+| name      | type                                                                                                     | description                                   |
+| --------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored.             |
+| color     | `string`                                                                                                 | The color of the viz option that was clicked. |
+| vizOption | `"success" \| "failure" \| "missing" \| "pending"`                                                       | The viz option that was clicked.              |
 
 #### synthetic-monitoring_timepoint_explorer_timepoint_viewer_action_clicked
 
@@ -421,9 +562,10 @@ Tracks when a Timepoint Viewer action is clicked
 
 ##### Properties
 
-| name   | type                                                                                        | description                  |
-| ------ | ------------------------------------------------------------------------------------------- | ---------------------------- |
-| action | `"previous-timepoint" \| "next-timepoint" \| "view-explore-logs" \| "view-explore-metrics"` | The action that was clicked. |
+| name      | type                                                                                                     | description                       |
+| --------- | -------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored. |
+| action    | `"previous-timepoint" \| "next-timepoint" \| "view-explore-logs" \| "view-explore-metrics"`              | The action that was clicked.      |
 
 #### synthetic-monitoring_timepoint_explorer_trace_icon_clicked
 
@@ -441,6 +583,7 @@ Tracks when the Timepoint Viewer logs view is toggled
 
 ##### Properties
 
-| name   | type                    | description                  |
-| ------ | ----------------------- | ---------------------------- |
-| action | `"event" \| "raw-logs"` | The action that was clicked. |
+| name      | type                                                                                                     | description                       |
+| --------- | -------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored. |
+| action    | `"event" \| "raw-logs"`                                                                                  | The action that was clicked.      |
