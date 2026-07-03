@@ -171,9 +171,6 @@ export const SCENES_TEST_ID = {
     listEntryBar: 'scenes timepoint list-entry-bar',
     viewer: 'scenes timepoint viewer',
   },
-  summary: {
-    errorPctgEmptyState: 'scenes summary error-pctg-empty-state',
-  },
 } as const;
 
 export const THRESHOLD_TEST_ID = {
