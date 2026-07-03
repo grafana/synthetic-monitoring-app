@@ -5,7 +5,7 @@ import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } 
 import { css } from '@emotion/css';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { trackSecretCreated, trackSecretUpdated } from 'features/tracking/secretsManagementEvents';
-import { DataTestIds } from 'test/dataTestIds';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
 
 import { Secret, SecretsManagementSource } from './types';
 import { getErrorMessage } from 'utils';
@@ -149,7 +149,7 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
 
   return (
     <Modal
-      data-testid={DataTestIds.SecretEditModal}
+      data-testid={CONFIG_TEST_ID.secretEditModal}
       isOpen
       onDismiss={onDismiss}
       title={title}

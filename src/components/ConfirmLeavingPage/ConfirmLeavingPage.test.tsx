@@ -5,7 +5,7 @@ import { TextLink } from '@grafana/ui';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 
-import { DataTestIds } from '../../test/dataTestIds';
+import { UI_TEST_ID } from '../../test/dataTestIds';
 import { useLocationServiceHistory } from '../../test/helpers/useLocationServiceHistory';
 import { ConfirmLeavingPage } from './ConfirmLeavingPage';
 
@@ -57,7 +57,7 @@ describe('ConfirmLeavingPage', () => {
       const user = userEventLib.setup();
       const link = screen.getByTestId(TEST_IDS.LEAVE_PAGE_LINK);
       await user.click(link);
-      expect(await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading)).toBeInTheDocument();
+      expect(await screen.findByTestId(UI_TEST_ID.modals.confirmUnsavedHeading)).toBeInTheDocument();
       await user.click(screen.getByText('Stay on page', { selector: 'button > span' }));
       expect(await screen.findByTestId(TEST_IDS.INITIAL_PAGE)).toBeInTheDocument();
     });
@@ -78,9 +78,9 @@ describe('ConfirmLeavingPage', () => {
       const user = userEventLib.setup();
       const link = screen.getByTestId(TEST_IDS.LEAVE_PAGE_LINK);
       await user.click(link);
-      expect(await screen.findByTestId(DataTestIds.ConfirmUnsavedModalHeading)).toBeInTheDocument();
+      expect(await screen.findByTestId(UI_TEST_ID.modals.confirmUnsavedHeading)).toBeInTheDocument();
       await user.click(screen.getByText('Leave page', { selector: 'button > span' }));
-      expect(screen.queryByTestId(DataTestIds.ConfirmUnsavedModalHeading)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(UI_TEST_ID.modals.confirmUnsavedHeading)).not.toBeInTheDocument();
     });
   });
 

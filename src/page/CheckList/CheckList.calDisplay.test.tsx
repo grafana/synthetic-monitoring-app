@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -80,7 +80,7 @@ describe('CheckList - CAL Display', () => {
       it('displays CAL tags with distinct styling alongside custom labels', async () => {
         await renderCheckList([CHECK_WITH_CAL_AND_CUSTOM]);
 
-        const card = await screen.findByTestId(DataTestIds.CheckCard);
+        const card = await screen.findByTestId(CHECKS_TEST_ID.card);
         expect(within(card).getByText('Team: frontend')).toBeInTheDocument();
         expect(within(card).getByText('Service: monitoring-api')).toBeInTheDocument();
         expect(within(card).getByText('env: production')).toBeInTheDocument();
@@ -89,7 +89,7 @@ describe('CheckList - CAL Display', () => {
       it('displays only CAL tags when check has no custom labels', async () => {
         await renderCheckList([CHECK_WITH_ONLY_CALS]);
 
-        const card = await screen.findByTestId(DataTestIds.CheckCard);
+        const card = await screen.findByTestId(CHECKS_TEST_ID.card);
         expect(within(card).getByText('Team: platform')).toBeInTheDocument();
         expect(within(card).getByText('Service: auth')).toBeInTheDocument();
       });
@@ -97,14 +97,14 @@ describe('CheckList - CAL Display', () => {
       it('displays only custom labels when check labels do not match any CAL names', async () => {
         await renderCheckList([CHECK_WITH_ONLY_CUSTOM]);
 
-        const card = await screen.findByTestId(DataTestIds.CheckCard);
+        const card = await screen.findByTestId(CHECKS_TEST_ID.card);
         expect(within(card).getByText('region: us-east')).toBeInTheDocument();
       });
 
       it('does not show label tags when check has no labels', async () => {
         await renderCheckList([CHECK_WITH_NO_LABELS]);
 
-        const card = await screen.findByTestId(DataTestIds.CheckCard);
+        const card = await screen.findByTestId(CHECKS_TEST_ID.card);
         expect(within(card).queryByText(/Team:/)).not.toBeInTheDocument();
         expect(within(card).queryByText(/Service:/)).not.toBeInTheDocument();
       });
@@ -112,14 +112,14 @@ describe('CheckList - CAL Display', () => {
       it('shows missing CAL warning when a check is missing CAL values', async () => {
         await renderCheckList([CHECK_WITH_MISSING_CALS]);
 
-        const card = await screen.findByTestId(DataTestIds.CheckCard);
+        const card = await screen.findByTestId(CHECKS_TEST_ID.card);
         expect(await within(card).findByText(/Missing cost attribution labels/)).toBeInTheDocument();
       });
 
       it('does not show missing CAL warning when all CALs have values', async () => {
         await renderCheckList([CHECK_WITH_ONLY_CALS]);
 
-        const card = await screen.findByTestId(DataTestIds.CheckCard);
+        const card = await screen.findByTestId(CHECKS_TEST_ID.card);
         expect(within(card).queryByText(/Missing cost attribution labels/)).not.toBeInTheDocument();
       });
     });
@@ -149,7 +149,7 @@ describe('CheckList - CAL Display', () => {
     it('displays all labels as regular labels without CAL distinction', async () => {
       await renderCheckList([CHECK_WITH_CAL_AND_CUSTOM]);
 
-      const card = await screen.findByTestId(DataTestIds.CheckCard);
+      const card = await screen.findByTestId(CHECKS_TEST_ID.card);
       expect(within(card).getByText('Team: frontend')).toBeInTheDocument();
       expect(within(card).getByText('Service: monitoring-api')).toBeInTheDocument();
       expect(within(card).getByText('env: production')).toBeInTheDocument();
@@ -158,7 +158,7 @@ describe('CheckList - CAL Display', () => {
     it('does not show missing CAL warning when feature flag is disabled', async () => {
       await renderCheckList([CHECK_WITH_MISSING_CALS]);
 
-      const card = await screen.findByTestId(DataTestIds.CheckCard);
+      const card = await screen.findByTestId(CHECKS_TEST_ID.card);
       expect(within(card).queryByText(/Missing cost attribution labels/)).not.toBeInTheDocument();
     });
   });

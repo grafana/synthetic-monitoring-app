@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { THRESHOLD_TEST_ID } from 'test/dataTestIds';
 
 import { ThresholdValues } from 'types';
 
@@ -79,7 +79,7 @@ export const ThresholdFormSection = ({
         <Dot color={config.theme2.colors.success.main} title="Good" />
         <InlineField label={isLatency ? '<=' : '>='} transparent>
           <Input
-            data-testid={DataTestIds.ThresholdUpperLimit}
+            data-testid={THRESHOLD_TEST_ID.upperLimit}
             value={isLatency ? thresholds.lowerLimit : thresholds.upperLimit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
               const key = isLatency ? 'lowerLimit' : 'upperLimit';
@@ -127,7 +127,7 @@ export const ThresholdFormSection = ({
         <Dot color={config.theme2.colors.error.main} title="Critical" />
         <InlineField label={isLatency ? '>=' : '<='} transparent>
           <Input
-            data-testid={DataTestIds.ThresholdLowerLimit}
+            data-testid={THRESHOLD_TEST_ID.lowerLimit}
             value={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
               const key = isLatency ? 'upperLimit' : 'lowerLimit';

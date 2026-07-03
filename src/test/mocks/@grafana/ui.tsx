@@ -1,5 +1,5 @@
 import React, { forwardRef, PropsWithChildren } from 'react';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 
 // Mock Link/TextLink because @grafana/ui uses react-router-dom-v5-compat internally
 jest.mock('@grafana/ui', () => {
@@ -49,7 +49,7 @@ jest.mock('@grafana/ui', () => {
   const LinkButton = createRouterLink('LinkButton');
 
   const CodeEditor = forwardRef<any, any>((props, ref) => (
-    <textarea ref={ref} data-testid={DataTestIds.CodeEditor} onChange={props.onChange} value={props.value} />
+    <textarea ref={ref} data-testid={UI_TEST_ID.codeEditor} onChange={props.onChange} value={props.value} />
   ));
   CodeEditor.displayName = 'CodeEditor';
 

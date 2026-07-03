@@ -2,7 +2,7 @@ import React, { Fragment, PropsWithChildren, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
 
 import { CenteredSpinner } from 'components/CenteredSpinner';
 
@@ -31,7 +31,7 @@ export function ConfigContent({ title, children, loading = false, actions, ariaL
   if (loading) {
     return (
       <div
-        data-testid={cx(DataTestIds.ConfigContentLoading, props['data-testid'])}
+        data-testid={cx(CONFIG_TEST_ID.contentLoading, props['data-testid'])}
         className={styles.container}
         aria-busy
       >
@@ -41,7 +41,7 @@ export function ConfigContent({ title, children, loading = false, actions, ariaL
   }
 
   return (
-    <section data-testid={DataTestIds.ConfigContent} className={styles.container}>
+    <section data-testid={CONFIG_TEST_ID.content} className={styles.container}>
       {title && (
         <div className={styles.heading}>
           <h2>{title}</h2>
