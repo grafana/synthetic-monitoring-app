@@ -1,8 +1,9 @@
 import React from 'react';
 import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data';
 import { screen, waitFor } from '@testing-library/react';
+import { from } from 'rxjs';
 import { APP_INITIALIZER_TEST_ID } from 'test/dataTestIds';
-import { LOGS_DATASOURCE, METRICS_DATASOURCE } from 'test/fixtures/datasources';
+import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
 import { render } from 'test/render';
 
 import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID } from 'datasource/constants';
@@ -149,6 +150,56 @@ describe('AppInitializer', () => {
       await clickGetStarted(user);
 
       expect(await screen.findByText('Datasource selection')).toBeInTheDocument();
+    });
+  });
+
+  describe('when one datasource is NameOnly and the other is Mismatch', () => {
+    it('proceeds using byName when byUid is missing for the NameOnly datasource', async () => {
+      const postMock = jest.fn().mockResolvedValue({ accessToken: 'test-token' });
+      const fetchMock = jest.fn().mockImplementation(() => from(Promise.resolve({ data: {} })));
+      jest.spyOn(require('@grafana/runtime'), 'getBackendSrv').mockReturnValue({
+        post: postMock,
+        fetch: fetchMock,
+      });
+
+      const mismatchedLogsByUid = makeLogsDs({ name: 'different-logs-name', uid: DEFAULT_LOGS_DS_UID });
+
+      const { user } = renderAppInitializer({
+        [SM_DATASOURCE.name]: SM_DATASOURCE,
+        [METRICS_NAME]: metricsByName,
+        [LOGS_NAME]: logsByName,
+        'different-logs-name': mismatchedLogsByUid,
+      });
+
+      await clickGetStarted(user);
+      expect(await screen.findByText('Datasource selection')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Proceed' }));
+
+      await waitFor(() => {
+        expect(postMock).toHaveBeenCalledWith(
+          expect.stringContaining('/install'),
+          expect.objectContaining({
+            stackId: 1,
+            metricsInstanceId: 100,
+            logsInstanceId: 200,
+          })
+        );
+      });
+
+      await waitFor(() => {
+        expect(fetchMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            method: 'PUT',
+            data: expect.objectContaining({
+              jsonData: expect.objectContaining({
+                metrics: expect.objectContaining({ uid: metricsByName.uid }),
+                logs: expect.objectContaining({ uid: mismatchedLogsByUid.uid }),
+              }),
+            }),
+          })
+        );
+      });
     });
   });
 
