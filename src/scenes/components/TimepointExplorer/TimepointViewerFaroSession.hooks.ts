@@ -10,7 +10,6 @@ import {
 import {
   buildFaroSessionByExecutionIdLogQL,
   buildFaroSessionHref,
-  buildFaroSessionLogQL,
   getFaroSessionFromLogs,
 } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.utils';
 
@@ -21,38 +20,21 @@ export interface FaroSessionResult {
 }
 
 interface UseFaroSessionLinkProps {
-  job: string;
-  instance: string;
-  probe?: string;
-  // When present, correlation is pinned to this exact check run via
-  // `k6_testRunId="sm:<executionId>"`. When absent (older agents), we fall back
-  // to matching job/instance/probe inside the legacy k6_testRunId JSON blob.
-  executionId?: string;
+  executionId: string;
   from: number;
   to: number;
   enabled?: boolean;
 }
 
 export function useFaroSessionLink({
-  job,
-  instance,
-  probe,
   executionId,
   from,
   to,
   enabled = true,
 }: UseFaroSessionLinkProps) {
   const logsDS = useLogsDS();
-  const hasExecutionId = Boolean(executionId);
-  // The execution-id path is an exact match and does not need job/instance/probe.
-  const canQuery = Boolean(
-    logsDS && (hasExecutionId || (job && instance && probe)) && from && to && from < to && enabled
-  );
-  const expr = !canQuery
-    ? ''
-    : hasExecutionId
-      ? buildFaroSessionByExecutionIdLogQL(executionId!)
-      : buildFaroSessionLogQL({ job, instance, probe: probe! });
+  const canQuery = Boolean(logsDS && executionId && from && to && from < to && enabled);
+  const expr = canQuery ? buildFaroSessionByExecutionIdLogQL(executionId) : '';
 
   return useQuery<FaroSessionResult | null>({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps -- logsDS.uid is a stable identifier

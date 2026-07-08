@@ -2,62 +2,8 @@ import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import {
   buildFaroSessionByExecutionIdLogQL,
   buildFaroSessionHref,
-  buildFaroSessionLogQL,
-  escapeRegex,
   getFaroSessionFromLogs,
 } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.utils';
-
-describe('escapeRegex', () => {
-  it('escapes regex special characters', () => {
-    expect(escapeRegex('hello.world+foo*bar')).toBe('hello\\.world\\+foo\\*bar');
-    expect(escapeRegex('a(b)c[d]e{f}')).toBe('a\\(b\\)c\\[d\\]e\\{f\\}');
-  });
-
-  it('leaves plain strings alone', () => {
-    expect(escapeRegex('Daily Focus Studio Homepage')).toBe('Daily Focus Studio Homepage');
-    expect(escapeRegex('probe-1')).toBe('probe-1');
-  });
-});
-
-describe('buildFaroSessionLogQL', () => {
-  it('builds a LogQL query that filters by job, instance and probe with independent label filters', () => {
-    const expr = buildFaroSessionLogQL({
-      job: 'Daily Focus Studio Homepage',
-      instance: 'daily-focus-studio',
-      probe: 'probe-1',
-    });
-
-    expect(expr).toBe(
-      '{kind=~"event|measurement"} | logfmt | k6_isK6Browser="true"' +
-        ' | k6_testRunId=~`.*"job":"Daily Focus Studio Homepage".*`' +
-        ' | k6_testRunId=~`.*"instance":"daily-focus-studio".*`' +
-        ' | k6_testRunId=~`.*"probe":"probe-1".*`'
-    );
-  });
-
-  it('uses one label filter per key so the upstream JSON key order does not matter', () => {
-    const expr = buildFaroSessionLogQL({
-      job: 'j',
-      instance: 'i',
-      probe: 'p',
-    });
-
-    const filterCount = (expr.match(/k6_testRunId=~/g) ?? []).length;
-    expect(filterCount).toBe(3);
-  });
-
-  it('escapes regex special characters in the dynamic fragments', () => {
-    const expr = buildFaroSessionLogQL({
-      job: 'foo.bar+baz',
-      instance: 'weird(instance)',
-      probe: 'p{1}',
-    });
-
-    expect(expr).toContain('"job":"foo\\.bar\\+baz"');
-    expect(expr).toContain('"instance":"weird\\(instance\\)"');
-    expect(expr).toContain('"probe":"p\\{1\\}"');
-  });
-});
 
 describe('buildFaroSessionByExecutionIdLogQL', () => {
   it('builds an exact-match query keyed on the run execution id', () => {
@@ -69,7 +15,7 @@ describe('buildFaroSessionByExecutionIdLogQL', () => {
     );
   });
 
-  it('uses an exact label match rather than the legacy regex filters', () => {
+  it('uses an exact label match', () => {
     const expr = buildFaroSessionByExecutionIdLogQL('exec-1');
 
     expect(expr).toContain('k6_testRunId="sm:exec-1"');

@@ -21,6 +21,15 @@ interface Action {
   href?: string;
 }
 
+export type FaroActionStatus = 'loading' | 'no-session' | 'available';
+
+export interface FaroAction {
+  status: FaroActionStatus;
+  href?: string;
+  tooltip: string;
+  onClick?: () => void;
+}
+
 export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   const logsDS = useLogsDS();
   const metricsDS = useMetricsDS();
@@ -50,22 +59,20 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   });
 
   const isBrowserCheck = getCheckType(check.settings) === CheckType.Browser;
-  // Prefer the exact per-run execution id (newer agents stamp it as Loki
-  // structured metadata on every log line of the run). Falls back to the
-  // legacy job/instance/probe time-window matching when it is absent.
   const selectedExecution =
     viewerProbeName !== undefined && viewerExecutionIndex !== undefined
       ? listLogsMap[timepoint.adjustedTime]?.probeResults?.[viewerProbeName]?.[viewerExecutionIndex]
       : undefined;
   const executionId = selectedExecution?.labels.execution_id;
-  const { data: faroSession } = useFaroSessionLink({
-    job: check.job,
-    instance: check.target,
-    probe: viewerProbeName,
-    executionId,
+  const {
+    data: faroSession,
+    isLoading: isFaroLoading,
+    isFetched: isFaroFetched,
+  } = useFaroSessionLink({
+    executionId: executionId ?? '',
     from: timepoint.adjustedTime,
     to: timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency,
-    enabled: isBrowserCheck,
+    enabled: isBrowserCheck && Boolean(executionId),
   });
 
   const handlePreviousTimepoint = useCallback(() => {
@@ -92,7 +99,49 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
     }
   }, [checkType, nextTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
-  return useMemo<Action[]>(() => {
+  const faroAction = useMemo<FaroAction | null>(() => {
+    if (!isBrowserCheck) {
+      // Not a browser check — Frontend Observability doesn't apply here.
+      return null;
+    }
+
+    if (!executionId) {
+      // Browser check, but no execution selected yet. Keep the action visible so it
+      // doesn't pop in/out of the header, just degrade it until there's something to check.
+      return {
+        status: 'no-session',
+        tooltip: 'Select an execution to check for a Frontend Observability session',
+      };
+    }
+
+    if (isFaroLoading || !isFaroFetched) {
+      return {
+        status: 'loading',
+        tooltip: 'Checking for a Frontend Observability session…',
+      };
+    }
+
+    if (!faroSession?.href) {
+      return {
+        status: 'no-session',
+        tooltip: 'No Frontend Observability session was found for this execution',
+      };
+    }
+
+    return {
+      status: 'available',
+      href: faroSession.href,
+      tooltip: 'View Frontend Observability session',
+      onClick: () => {
+        trackTimepointViewerActionClicked({
+          checkType,
+          action: 'view-frontend-observability-session',
+        });
+      },
+    };
+  }, [isBrowserCheck, executionId, isFaroLoading, isFaroFetched, faroSession?.href, checkType]);
+
+  const actions = useMemo<Action[]>(() => {
     const actions: Action[] = [
       {
         icon: 'arrow-left',
@@ -130,20 +179,6 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
       },
     ];
 
-    if (faroSession?.href) {
-      actions.push({
-        icon: 'frontend-observability',
-        label: 'View Frontend Observability session',
-        href: faroSession.href,
-        onClick: () => {
-          trackTimepointViewerActionClicked({
-            checkType,
-            action: 'view-frontend-observability-session',
-          });
-        },
-      });
-    }
-
     return actions;
   }, [
     checkType,
@@ -151,8 +186,9 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
     nextTimepoint,
     exploreLogsURL,
     exploreMetricsURL,
-    faroSession?.href,
     handleNextTimepoint,
     handlePreviousTimepoint,
   ]);
+
+  return { actions, faroAction };
 }
