@@ -1,7 +1,5 @@
 import { Check, Label } from 'types';
 
-import { fetchServiceNames, fetchServiceNamespaces } from './knowledgeGraphApi';
-
 export {
   KG_ENTITY_ASSERTIONS_WIDGET_ID,
   KG_NAMESPACE_LABEL,
@@ -21,12 +19,4 @@ export function findLabelValue(labels: Label[], name: string): string | undefine
  */
 export function getSyntheticCheckEntityName(check: Pick<Check, 'job' | 'target'>): string {
   return `${check.job}__${check.target}`;
-}
-
-export function fetchKGServiceNames(prefix?: string): Promise<string[]> {
-  return fetchServiceNames(prefix);
-}
-
-export function fetchKGServiceNamespaces(prefix?: string): Promise<string[]> {
-  return fetchServiceNamespaces(prefix);
 }
