@@ -410,8 +410,6 @@ export const COLORS = {
   grey: '#F7F8FA',
 };
 
-export const LEGACY_METRICS_DS_NAME = 'Synthetic Monitoring Metrics';
-export const LEGACY_LOGS_DS_NAME = 'Synthetic Monitoring Logs';
 export const SM_ALERTING_NAMESPACE = 'synthetic_monitoring';
 export const ALERTING_SEVERITY_OPTIONS: Array<ComboboxOption<AlertSeverity>> = [
   {

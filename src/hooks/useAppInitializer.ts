@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router';
 import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
-import { trackAutoInitialized, trackAutoInitializeFailed } from 'features/tracking/onboardingEvents';
 import { isNumber } from 'lodash';
 
 import { SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
-import { PLUGIN_URL_PATH } from 'routing/constants';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
-import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
+import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'datasource/constants';
 
 import { useMeta } from './useMeta';
 
@@ -53,9 +50,9 @@ function findDatasourceByNameAndUid(
   if (!byUid) {
     byUid = Object.values(config.datasources).find((ds) => {
       if (type === 'loki') {
-        return ds.uid === 'grafanacloud-logs';
+        return ds.uid === DEFAULT_LOGS_DS_UID;
       } else {
-        return ds.uid === 'grafanacloud-metrics';
+        return ds.uid === DEFAULT_METRICS_DS_UID;
       }
     });
   }
@@ -97,14 +94,11 @@ function ensureNameAndUidMatch(
 }
 
 // TODO: Allow for the `redirectTo` to be a string (so that we can implement "return to" behaviour after initialization)
-export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false) => {
+export const useAppInitializer = (redirectTo?: AppRoutes) => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [datasourceModalOpen, setDataSouceModalOpen] = useState<boolean>(false);
   const { jsonData, id } = useMeta();
-  const { pathname } = useLocation();
-  // App-relative route for tracking, e.g. `checks/new/api-endpoint`.
-  const currentRoute = pathname.replace(PLUGIN_URL_PATH, '').replace(/^\//, '');
 
   const metricsName = getMetricsName(jsonData.metrics.grafanaName);
   const { byName: metricsByName, byUid: metricsByUid } = findDatasourceByNameAndUid(
@@ -127,13 +121,12 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
       if (logsStatus === DatasourceStatus.NotFound) {
         throw new Error('Invalid plugin configuration. Could not find a logs datasource');
       }
-      // Either the plugin is running on prem and can find a datasource, or the provisioning matches with the default grafana cloud UIDs. Everything is good to go!
-      if (
-        (metricsStatus === DatasourceStatus.Match || metricsStatus === DatasourceStatus.NameOnly) &&
-        metricsByName &&
-        (logsStatus === DatasourceStatus.Match || logsStatus === DatasourceStatus.NameOnly) &&
-        logsByName
-      ) {
+
+      const metricsMatchOrNameOnly =
+        metricsStatus === DatasourceStatus.Match || metricsStatus === DatasourceStatus.NameOnly;
+      const logsMatchOrNameOnly = logsStatus === DatasourceStatus.Match || logsStatus === DatasourceStatus.NameOnly;
+
+      if (metricsMatchOrNameOnly && metricsByName && logsMatchOrNameOnly && logsByName) {
         const metricsHostedId = jsonData.metrics.hostedId;
         if (!metricsHostedId) {
           throw new Error('Invalid plugin configuration. Could not find metrics datasource hostedId');
@@ -154,7 +147,12 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
         return;
       }
 
-      if (metricsStatus === DatasourceStatus.UidOnly || logsStatus === DatasourceStatus.UidOnly) {
+      if (
+        metricsStatus === DatasourceStatus.UidOnly ||
+        logsStatus === DatasourceStatus.UidOnly ||
+        metricsStatus === DatasourceStatus.Mismatch ||
+        logsStatus === DatasourceStatus.Mismatch
+      ) {
         setDataSouceModalOpen(true);
       }
     } catch (e: unknown) {
@@ -196,11 +194,7 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
 
       await initializeDatasource(datasourcePayload);
 
-      if (reloadCurrent) {
-        trackAutoInitialized({ route: currentRoute });
-        // Reload the current deep-link so GrafanaBootConfig picks up the new datasource.
-        window.location.reload();
-      } else if (redirectTo) {
+      if (redirectTo) {
         window.location.href = `${window.location.origin}${getRoute(redirectTo)}`;
       } else {
         // force reload so that GrafanaBootConfig is updated.
@@ -209,9 +203,6 @@ export const useAppInitializer = (redirectTo?: AppRoutes, reloadCurrent = false)
     } catch (e) {
       const err = e as SubmissionErrorWrapper;
       const message = err.data?.msg ?? err.data?.err ?? 'Something went wrong';
-      if (reloadCurrent) {
-        trackAutoInitializeFailed({ route: currentRoute, reason: message });
-      }
       setError(message);
       setLoading(false);
       reportError(message, FaroEvent.Init);

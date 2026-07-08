@@ -1,10 +1,9 @@
-import React, { PropsWithChildren, useEffect, useRef, useState } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { APP_INITIALIZER_TEST_ID } from 'test/dataTestIds';
 
-import { FaroEvent, reportEvent } from 'faro';
 import { hasGlobalPermission } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { getUserPermissions } from 'data/permissions';
@@ -16,11 +15,10 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 interface Props {
   redirectTo?: AppRoutes;
   buttonText: string;
-  autoInitialize?: boolean;
 }
 
 // TODO: Does this really belong under /page?
-export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false }: PropsWithChildren<Props>) => {
+export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
   const { canWritePlugin } = getUserPermissions();
@@ -40,17 +38,7 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
     handleClick,
     datasourceModalOpen,
     setDataSouceModalOpen,
-  } = useAppInitializer(redirectTo, autoInitialize);
-
-  const [autoInitializing, setAutoInitializing] = useState(autoInitialize);
-  const hasAutoInitialized = useRef(false);
-  useEffect(() => {
-    if (autoInitialize && !hasAutoInitialized.current && canReadDs && canInitialize) {
-      hasAutoInitialized.current = true;
-      reportEvent(FaroEvent.AutoInit);
-      handleClick();
-    }
-  }, [autoInitialize, canReadDs, canInitialize, handleClick]);
+  } = useAppInitializer(redirectTo);
 
   if (!canReadDs) {
     return <ContactAdminAlert missingPermissions={['datasources:read']} />;
@@ -64,15 +52,9 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
 
   return (
     <div data-testid={APP_INITIALIZER_TEST_ID.root}>
-      {autoInitializing && !error && !datasourceModalOpen ? (
-        <div data-testid={APP_INITIALIZER_TEST_ID.autoInitSpinner}>
-          <Spinner size="xl" />
-        </div>
-      ) : (
-        <Button data-testid={APP_INITIALIZER_TEST_ID.initButton} onClick={handleClick} disabled={loading} size="lg">
-          {loading ? <Spinner /> : buttonText}
-        </Button>
-      )}
+      <Button data-testid={APP_INITIALIZER_TEST_ID.initButton} onClick={handleClick} disabled={loading} size="lg">
+        {loading ? <Spinner /> : buttonText}
+      </Button>
 
       {error && (
         <Alert title="Something went wrong:" className={styles.alert}>
@@ -86,10 +68,7 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
         metricsExpectedName={metricsByUid?.name ?? 'Not found'}
         logsFoundName={logsByName?.name ?? 'Not found'}
         logsExpectedName={logsByUid?.name ?? 'Not found'}
-        onDismiss={() => {
-          setDataSouceModalOpen(false);
-          setAutoInitializing(false);
-        }}
+        onDismiss={() => setDataSouceModalOpen(false)}
         isSubmitting={loading}
         onSubmit={() => {
           if (jsonData.metrics.hostedId && jsonData.logs.hostedId) {
