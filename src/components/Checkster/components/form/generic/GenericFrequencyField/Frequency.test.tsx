@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
 
 import { CheckType } from 'types';
@@ -33,7 +33,7 @@ function RenderWrapper(props: RenderWrapperProps) {
 
 async function renderFrequency(props?: any) {
   const result = render(<RenderWrapper {...props} />);
-  await waitFor(() => screen.findByTestId(DataTestIds.FrequencyComponent), { timeout: 3000 });
+  await waitFor(() => screen.findByTestId(UI_TEST_ID.frequency), { timeout: 3000 });
 
   return result;
 }

@@ -24,6 +24,7 @@ import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
+import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
@@ -71,6 +72,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   useSuspenseProbes(); // we need to block rendering until we have the probe list so not to initially render a check list that might have probe filters
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
+
+  useDemAssistantContext(checks);
 
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const {

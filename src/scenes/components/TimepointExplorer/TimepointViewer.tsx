@@ -4,7 +4,7 @@ import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackTimepointViewerLogsViewToggled } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
-import { DataTestIds } from 'test/dataTestIds';
+import { SCENES_TEST_ID } from 'test/dataTestIds';
 
 import { formatDuration } from 'utils';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -48,7 +48,7 @@ export const TimepointViewer = () => {
   );
 
   return (
-    <div ref={containerRef} className={styles.container} data-testid={DataTestIds.TimepointViewer}>
+    <div ref={containerRef} className={styles.container} data-testid={SCENES_TEST_ID.timepoint.viewer}>
       {viewerTimepoint ? (
         <div>
           <Box padding={2} gap={1} direction="column" position="relative">

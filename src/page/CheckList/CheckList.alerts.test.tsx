@@ -1,7 +1,7 @@
 import React from 'react';
 import { UseQueryResult } from '@tanstack/react-query';
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -92,7 +92,7 @@ describe('CheckList - Alerts', () => {
 
     await waitFor(
       () => {
-        const cards = screen.getAllByTestId(DataTestIds.CheckCard);
+        const cards = screen.getAllByTestId(CHECKS_TEST_ID.card);
         expect(cards.length).toBe(2);
         expect(cards[0]).toHaveTextContent(BASIC_HTTP_CHECK.job);
         expect(cards[1]).toHaveTextContent(BASIC_DNS_CHECK.job);
@@ -127,7 +127,7 @@ describe('CheckList - Alerts', () => {
 
     await renderCheckList([BASIC_HTTP_CHECK]);
 
-    await screen.findAllByTestId(DataTestIds.CheckCard);
+    await screen.findAllByTestId(CHECKS_TEST_ID.card);
 
     expect(screen.queryByLabelText('Alert firing')).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/alerts firing/i)).not.toBeInTheDocument();

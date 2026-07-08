@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, Switch, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackHideScreenshotsToggled } from 'features/tracking/screenshotEvents';
-import { DataTestIds } from 'test/dataTestIds';
+import { LOGS_TEST_ID } from 'test/dataTestIds';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { FeatureName } from 'types';
@@ -95,7 +95,7 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({
   return (
     <div className={styles.timelineContainer}>
       {executionId && (
-        <div className={styles.executionId} data-testid={DataTestIds.LogsExecutionId}>
+        <div className={styles.executionId} data-testid={LOGS_TEST_ID.executionId}>
           <Text color="secondary" variant="bodySmall">
             <strong>Execution ID:</strong> {executionId}
           </Text>

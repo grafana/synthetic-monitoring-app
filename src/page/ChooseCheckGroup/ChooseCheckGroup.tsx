@@ -3,7 +3,7 @@ import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
 import { OverLimitAlert } from 'components/OverLimitAlert';
@@ -23,7 +23,7 @@ export const ChooseCheckGroup = () => {
             fits your needs.
           </div>
           <OverLimitAlert />
-          <div className={styles.container} data-testid={DataTestIds.ChooseCheckType}>
+          <div className={styles.container} data-testid={CHECKS_TEST_ID.form.chooseType}>
             {options.map((group) => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}

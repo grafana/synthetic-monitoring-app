@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AppPluginMeta, GrafanaTheme2, PluginConfigPageProps } from '@grafana/data';
 import { Alert, Badge, Button, Card, Divider, LinkButton, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { PLUGIN_TEST_ID } from 'test/dataTestIds';
 
 import { ProvisioningJsonData } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -63,7 +63,7 @@ export function PluginConfigPage({ plugin }: SMPluginConfigPageProps) {
   }
 
   return (
-    <div data-testid={DataTestIds.TestPluginConfigPage}>
+    <div data-testid={PLUGIN_TEST_ID.configPage}>
       {isEnabled && initialized && (
         <Alert title="Synthetic Monitoring config" severity="info">
           Are you looking to configure Synthetic Monitoring? You can do that in the{' '}
@@ -86,7 +86,7 @@ export function PluginConfigPage({ plugin }: SMPluginConfigPageProps) {
       )}
 
       {initialized && (
-        <div data-testid={DataTestIds.TestPluginConfigPageLinkedDatasources}>
+        <div data-testid={PLUGIN_TEST_ID.linkedDatasources}>
           <div className={styles.section}>
             <h3>Data source</h3>
             <Card key={api.name} href={api.url}>
@@ -113,7 +113,7 @@ export function PluginConfigPage({ plugin }: SMPluginConfigPageProps) {
                   .
                 </div>
                 <br />
-                <div data-testid={DataTestIds.TestPluginConfigPageLinkedDatasourcesError}>
+                <div data-testid={PLUGIN_TEST_ID.linkedDatasourcesError}>
                   <strong>Missing the following data source(s):</strong>&nbsp;
                   <div className={styles.badgeContainer}>
                     {getMissingDataSourceTypes(linked).map((type) => (
