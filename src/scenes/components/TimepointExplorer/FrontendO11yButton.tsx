@@ -1,11 +1,15 @@
 import React, { useMemo } from 'react';
-import { LinkButton, Spinner } from '@grafana/ui';
+import { LinkButton, Spinner, Tooltip, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { trackTimepointViewerActionClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { CheckType } from 'types';
 import { getCheckType } from 'utils';
+import { DocsLink } from 'components/DocsLink';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { useSelectedProbeNames } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { getCouldBePending, getPendingProbeNames } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { useFaroSessionLink } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.hooks';
 
 type FaroActionStatus = 'no-session' | 'available';
@@ -17,10 +21,24 @@ interface FaroAction {
   onClick?: () => void;
 }
 
+const FRONTEND_OBSERVABILITY_DOCS_LINK =
+  'https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability';
+
 export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
-  const { check, checkType, listLogsMap, viewerState } = useTimepointExplorerContext();
+  const styles = useStyles2(() => ({
+    italic: css({ fontStyle: 'italic' }),
+  }));
+  const { check, checkType, listLogsMap, viewerState, currentAdjustedTime } = useTimepointExplorerContext();
   const [, viewerProbeName, viewerExecutionIndex] = viewerState;
   const isBrowserCheck = getCheckType(check.settings) === CheckType.Browser;
+  const statefulTimepoint = listLogsMap[timepoint.adjustedTime];
+  const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
+  const couldBePending = getCouldBePending(timepoint, currentAdjustedTime);
+  const pendingProbeNames = couldBePending
+    ? getPendingProbeNames({ statefulTimepoint, selectedProbeNames })
+    : [];
+  const isSelectedProbePending =
+    viewerProbeName !== undefined && pendingProbeNames.includes(viewerProbeName);
 
   const selectedExecution =
     viewerProbeName !== undefined && viewerExecutionIndex !== undefined
@@ -78,6 +96,26 @@ export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoin
     return <Spinner />;
   }
 
+  if (faroAction.status === 'no-session') {
+    if (isSelectedProbePending) {
+      return null;
+    }
+
+    return (
+      <Tooltip content="Add Frontend Observability to your application to start monitoring frontend performance and get insights into user experience.">
+        <div className={styles.italic}>
+          <DocsLink
+            key="frontend-observability"
+            href={FRONTEND_OBSERVABILITY_DOCS_LINK}
+            source="timepoint_explorer_frontend_observability"
+          >
+            Add RUM to your app
+          </DocsLink>
+        </div>
+      </Tooltip>
+    );
+  }
+
   return (
     <LinkButton
       key="frontend-observability"
@@ -86,8 +124,10 @@ export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoin
       disabled={faroAction.status !== 'available'}
       tooltip={faroAction.tooltip}
       onClick={faroAction.onClick}
+      variant="secondary"
+      fill="outline"
     >
-      Frontend Observability
+      View Frontend Session
     </LinkButton>
   );
 };
