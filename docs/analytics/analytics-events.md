@@ -562,10 +562,10 @@ Tracks when a Timepoint Viewer action is clicked
 
 ##### Properties
 
-| name      | type                                                                                                     | description                       |
-| --------- | -------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being explored. |
-| action    | `"previous-timepoint" \| "next-timepoint" \| "view-explore-logs" \| "view-explore-metrics"`              | The action that was clicked.      |
+| name      | type                                                                                                                                 | description                       |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"`                             | The type of check being explored. |
+| action    | `"previous-timepoint" \| "next-timepoint" \| "view-explore-logs" \| "view-explore-metrics" \| "view-frontend-observability-session"` | The action that was clicked.      |
 
 #### synthetic-monitoring_timepoint_explorer_trace_icon_clicked
 
