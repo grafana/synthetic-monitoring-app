@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.55.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.54.0...v1.55.0) (2026-07-08)
+
+
+### Features
+
+* Frontend Observability context for the Grafana Assistant on browser-check pages ([#1749](https://github.com/grafana/synthetic-monitoring-app/issues/1749)) ([3c27bd1](https://github.com/grafana/synthetic-monitoring-app/commit/3c27bd1dd243c65cc464fc4a8e4cb7b577c41d84))
+
+
+### Fixes
+
+* home summary panels show no data with label filters applied ([#1747](https://github.com/grafana/synthetic-monitoring-app/issues/1747)) ([0a4b289](https://github.com/grafana/synthetic-monitoring-app/commit/0a4b289aa8661a9ddf11bd066d9189d5e9df0009))
+
 ## [1.54.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.2...v1.54.0) (2026-06-29)
 
 
