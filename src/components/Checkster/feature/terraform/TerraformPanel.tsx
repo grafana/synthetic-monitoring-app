@@ -3,11 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ClipboardButton, Tab, TabContent, TabsBar, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import {
-  trackTerraformConfigCopied,
-  trackTerraformFormatChanged,
-  trackTerraformFullConfigClicked,
-} from 'features/tracking/checkFormEvents';
+
 import { highlight, languages } from 'prismjs';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -35,16 +31,13 @@ export function TerraformPanel() {
 
   const handleFormatChange = (format: TerraformFormat) => {
     setActiveFormat(format);
-    trackTerraformFormatChanged({ format });
   };
 
   const handleCopy = () => {
-    trackTerraformConfigCopied({ format: activeFormat });
     return content;
   };
 
   const handleFullConfigClick = () => {
-    trackTerraformFullConfigClicked();
   };
 
   const content = activeFormat === 'hcl' ? hclConfig : jsonConfig;

@@ -14,7 +14,7 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { getTotalChecksPerPeriod } from 'checkUsageCalc';
-import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
+import { trackSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import pluralize from 'pluralize';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -45,7 +45,6 @@ export const FailedExecutionsAlert = ({
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
     if (selected) {
-      trackUnSelectAlert({ name: type });
     } else {
       trackSelectAlert({ name: type });
     }
@@ -131,7 +130,6 @@ export const FailedExecutionsAlert = ({
             maxWidth={10}
             onChange={({ value = null }: { value?: string | null }) => {
               periodField.onChange(value);
-              trackChangePeriod({ name: alert.type, period: value ?? '' });
               // clear threshold error if new period is valid
               revalidateForm<CheckFormValuesWithAlert<typeof alert.type>>(`alerts.${alert.type}`);
             }}

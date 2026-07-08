@@ -13,7 +13,7 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
-import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
+import { trackSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertType, CheckFormValues } from 'types';
@@ -41,7 +41,6 @@ export const RequestDurationTooHighAvgAlert = ({
   const handleToggleAlert = (type: CheckAlertType) => {
     onSelectionChange(type);
     if (selected) {
-      trackUnSelectAlert({ name: type });
     } else {
       trackSelectAlert({ name: type });
     }
@@ -107,7 +106,6 @@ export const RequestDurationTooHighAvgAlert = ({
             onChange={(option: { value?: string | null }) => {
               const value = option.value ?? null;
               periodField.onChange(value);
-              trackChangePeriod({ name: alert.type, period: value ?? '' });
               // clear threshold error if new period is valid
               revalidateForm<CheckFormValues>(`alerts.${alert.type}`);
             }}

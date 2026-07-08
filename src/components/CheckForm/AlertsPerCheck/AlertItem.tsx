@@ -3,7 +3,6 @@ import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, urlUtil } from '@grafana/data';
 import { Button, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { trackRoutingPreviewToggled } from 'features/tracking/perCheckAlertsEvents';
 
 import { CheckAlertType, CheckFormValuesWithAlert } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -111,10 +110,6 @@ export const AlertItem = ({
             onClick={() => {
               const newShowRouting = !showRouting;
               setShowRouting(newShowRouting);
-              trackRoutingPreviewToggled({
-                name: alert.type,
-                action: newShowRouting ? 'show' : 'hide',
-              });
             }}
             className={styles.routingToggle}
           >
