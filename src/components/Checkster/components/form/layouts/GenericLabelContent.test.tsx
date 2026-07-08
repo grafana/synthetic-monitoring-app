@@ -1,7 +1,10 @@
 import React from 'react';
+import { useAppPluginInstalled } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 import { TENANT_COST_ATTRIBUTION_LABELS } from 'test/fixtures/tenants';
-import { mockFeatureToggles } from 'test/utils';
+import { server } from 'test/server';
+import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -225,6 +228,55 @@ describe('GenericLabelContent', () => {
       await waitFor(() => {
         expect(screen.queryByDisplayValue('custom')).not.toBeInTheDocument();
         expect(screen.getByDisplayValue('Team')).toBeInTheDocument();
+      });
+    });
+
+    describe('Knowledge Graph linked CALs (service_name / namespace)', () => {
+      const kgCalNames = ['service_name', 'namespace'];
+      const PROPERTY_VALUES_URL =
+        '/api/plugins/grafana-asserts-app/resources/asserts/api-server/v1/entity_type/property_values';
+
+      function mockKgSuggestions({ names = [], namespaces = [] }: { names?: string[]; namespaces?: string[] }) {
+        server.use(
+          http.post(PROPERTY_VALUES_URL, async ({ request }) => {
+            const body = (await request.json()) as { propertyName?: string };
+            const values = body?.propertyName === 'namespace' ? namespaces : names;
+            return HttpResponse.json({ values });
+          })
+        );
+      }
+
+      it('renders a KG suggestions combobox for service_name / namespace values when the KG app is installed', async () => {
+        testUsesCombobox();
+        (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
+        mockKgSuggestions({ names: ['frontend'], namespaces: ['otel-demo'] });
+
+        const user = renderGenericLabelContent(
+          { calNames: kgCalNames },
+          { calLabels: kgCalNames.map((name) => ({ name, value: '' })) }
+        );
+
+        const comboboxes = await screen.findAllByRole('combobox');
+        expect(comboboxes).toHaveLength(2);
+
+        await user.click(comboboxes[0]);
+        await user.click(await screen.findByRole('option', { name: 'frontend' }));
+
+        await waitFor(() => {
+          expect(screen.getByDisplayValue('frontend')).toBeInTheDocument();
+        });
+      });
+
+      it('renders plain value inputs for service_name / namespace when the KG app is not installed', async () => {
+        (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: false });
+
+        renderGenericLabelContent(
+          { calNames: kgCalNames },
+          { calLabels: kgCalNames.map((name) => ({ name, value: '' })) }
+        );
+
+        expect(await screen.findByRole('textbox', { name: 'Cost attribution label 1 value' })).toBeInTheDocument();
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
       });
     });
   });
