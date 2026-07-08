@@ -57,6 +57,7 @@ global.ResizeObserver = jest.fn(() => ({
   disconnect: jest.fn(),
 }));
 
+import 'test/mocks/@grafana/assistant';
 import 'test/mocks/@grafana/runtime';
 import 'test/mocks/@grafana/ui';
 import 'test/mocks/components/SimpleMap';
