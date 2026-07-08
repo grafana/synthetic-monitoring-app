@@ -2,7 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { PROBES_TEST_ID } from 'test/dataTestIds';
 
 import { Probe } from 'types';
 
@@ -54,7 +54,7 @@ export const ProbesByRegion = ({ isRemoving, probes, onChange }: ProbesByRegionP
 
                   return (
                     <Button
-                      data-testid={DataTestIds.ProbeButton}
+                      data-testid={PROBES_TEST_ID.button}
                       key={id}
                       variant={variant}
                       disabled={disabled}

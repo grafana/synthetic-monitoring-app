@@ -8,7 +8,7 @@ import { FULL_ADMIN_ACCESS } from 'test/fixtures/rbacPermissions';
 
 import { SMDataSource } from 'datasource/DataSource';
 
-import { DataTestIds } from '../../dataTestIds';
+import { CONFIG_TEST_ID } from '../../dataTestIds';
 
 /**
  * @grafana/runtime mock for React Router v6.
@@ -152,7 +152,7 @@ jest.mock('@grafana/runtime', () => {
         <h2>{pageNav?.text}</h2>
         <div>{actions}</div>
         {children}
-        <div data-testid={DataTestIds.ConfigPageLayoutActiveTab}>
+        <div data-testid={CONFIG_TEST_ID.layout.activeTab}>
           {pageNav?.children?.find((c) => c.active)?.text ?? 'No active tab'}
         </div>
       </div>

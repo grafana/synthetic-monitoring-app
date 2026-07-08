@@ -2,7 +2,7 @@ import React, { ChangeEvent, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { Label } from 'types';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
@@ -42,7 +42,7 @@ export const CheckListItemCard = ({
         [styles.firingAlertCard]: runtimeAlertState.firingCount > 0,
       })}
     >
-      <div className={styles.cardWrapper} data-testid={DataTestIds.CheckCard}>
+      <div className={styles.cardWrapper} data-testid={CHECKS_TEST_ID.card}>
         <div>
           <Checkbox
             aria-label="Select check"

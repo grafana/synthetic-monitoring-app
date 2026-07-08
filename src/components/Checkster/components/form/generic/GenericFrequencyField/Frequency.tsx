@@ -4,7 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Stack, Tab, TabsBar, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { MAX_BASE_FREQUENCY } from 'schemas/general/Frequency';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 
 import { FrequencyComponentProps } from './Frequency.types';
 import { CheckFormValues, CheckType } from 'types';
@@ -65,7 +65,7 @@ export const Frequency = ({ checkType, disabled }: ProbeOptionsProps) => {
       error={frequencyError}
       className={styles.field}
       id={FREQUENCY_INPUT_ID}
-      data-testid={DataTestIds.FrequencyComponent}
+      data-testid={UI_TEST_ID.frequency}
       data-form-name="frequency" // this is used to assist form when trying to scroll/focus error field
     >
       <Stack direction="column" gap={1.5}>

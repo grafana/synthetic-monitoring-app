@@ -3,7 +3,7 @@ import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { t, Trans } from '@grafana/i18n';
 import { Button, Checkbox, Combobox, Field, Icon, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort, GrafanaFolder } from 'types';
@@ -141,7 +141,7 @@ export const CheckListHeader = ({
                 value={isAllSelected}
                 disabled={checks.length === 0}
                 aria-label={t('checkList.header.selectAllAriaLabel', 'Select all')}
-                data-testid={DataTestIds.SelectAllChecks}
+                data-testid={CHECKS_TEST_ID.header.selectAll}
               />
             </Tooltip>
             {selectedCheckIds.size > 0 ? (
@@ -178,7 +178,7 @@ export const CheckListHeader = ({
               >
                 <Combobox
                   id="sort-by-select"
-                  data-testid={DataTestIds.SortChecksByCombobox}
+                  data-testid={CHECKS_TEST_ID.header.sortBy}
                   options={CHECK_LIST_SORT_OPTIONS}
                   width={25}
                   onChange={onSort}

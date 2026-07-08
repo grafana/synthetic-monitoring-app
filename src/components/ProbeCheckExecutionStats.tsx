@@ -18,7 +18,7 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 import { BigValueTitle } from 'components/BigValueTitle';
 import { PROBE_CHECK_RUNS_TOOLTIP, PROBE_FAILED_CHECK_RUNS_TOOLTIP } from 'components/constants';
 
-import { DataTestIds } from '../test/dataTestIds';
+import { PROBES_TEST_ID } from '../test/dataTestIds';
 
 type ProbeCheckExecutionStatsProps = {
   probeName: string;
@@ -91,7 +91,7 @@ export function ProbeCheckExecutionStats({ probeName, variant = 'card' }: ProbeC
   return (
     <div
       className={cx(styles.stats, isDetail && styles.statsDetail)}
-      data-testid={DataTestIds.ProbeCheckExecutionStats}
+      data-testid={PROBES_TEST_ID.checkExecutionStats}
     >
       <div className={cx(styles.statItem, isDetail && styles.statItemDetail)}>
         <Container>

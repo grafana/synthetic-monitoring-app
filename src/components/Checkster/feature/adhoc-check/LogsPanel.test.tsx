@@ -3,6 +3,7 @@ import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { getTestFlagValues } from 'test/openFeatureTestProvider';
 
 import { ProbeStateStatus } from './types.adhoc-check';
@@ -52,7 +53,7 @@ describe('adhoc-check', () => {
       await user.click(screen.getByText('test probe'));
       await user.click(screen.getByText('second log'));
 
-      expect(screen.getByTestId('preformatted')).toHaveTextContent('status_code: 202');
+      expect(screen.getByTestId(UI_TEST_ID.preformatted)).toHaveTextContent('status_code: 202');
 
       rerender(
         <LogsPanel
@@ -65,7 +66,7 @@ describe('adhoc-check', () => {
         />
       );
 
-      expect(screen.getByTestId('preformatted')).toHaveTextContent('status_code: 202');
+      expect(screen.getByTestId(UI_TEST_ID.preformatted)).toHaveTextContent('status_code: 202');
     });
   });
 });

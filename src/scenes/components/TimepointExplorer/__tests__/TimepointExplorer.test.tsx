@@ -16,7 +16,7 @@ import {
 } from 'test/fixtures/httpCheck/promUniqueConfigs';
 
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
-import { DataTestIds } from 'test/dataTestIds';
+import { SCENES_TEST_ID } from 'test/dataTestIds';
 import { mockFeatureToggles } from 'test/utils';
 import { FeatureName, HTTPCheck } from 'types';
 import {
@@ -106,16 +106,16 @@ describe('TimepointExplorer', () => {
 
   it(`should not render if the feature flag is off`, async () => {
     render(renderTimepointExplorer());
-    await waitFor(() => screen.queryByTestId(DataTestIds.TimepointList));
-    expect(screen.queryByTestId(DataTestIds.TimepointList)).not.toBeInTheDocument();
-    expect(screen.queryByTestId(DataTestIds.TimepointViewer)).not.toBeInTheDocument();
+    await waitFor(() => screen.queryByTestId(SCENES_TEST_ID.timepoint.list));
+    expect(screen.queryByTestId(SCENES_TEST_ID.timepoint.list)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(SCENES_TEST_ID.timepoint.viewer)).not.toBeInTheDocument();
   });
 
   it('should render if the feature flag is on', async () => {
     mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
     render(renderTimepointExplorer());
-    await waitFor(() => screen.findByTestId(DataTestIds.TimepointList));
-    await waitFor(() => screen.findByTestId(DataTestIds.TimepointViewer));
+    await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.list));
+    await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.viewer));
   });
 
   it(`should call scrollIntoView when a timepoint with data is clicked`, async () => {
@@ -124,7 +124,7 @@ describe('TimepointExplorer', () => {
 
     expect(mockScrollIntoView).not.toHaveBeenCalled();
 
-    const timepointButtons = await screen.findAllByTestId(new RegExp(`${DataTestIds.TimepointListEntryBar}-`));
+    const timepointButtons = await screen.findAllByTestId(new RegExp(`${SCENES_TEST_ID.timepoint.listEntryBar}-`));
 
     await user.click(timepointButtons[0]);
 
