@@ -1,33 +1,20 @@
+import { createAssistantContextItem } from '@grafana/assistant';
 import { renderHook } from '@testing-library/react';
 import { BASIC_HTTP_CHECK, COMPLEX_BROWSER_CHECK } from 'test/fixtures/checks';
 
 import { useDemAssistantContext } from './useDemAssistantContext';
 
-const mockSetPageContext = jest.fn();
-const mockCreateAssistantContextItem = jest.fn();
-
-jest.mock('@grafana/assistant', () => ({
-  useProvidePageContext: () => mockSetPageContext,
-  createAssistantContextItem: (...args: unknown[]) => {
-    mockCreateAssistantContextItem(...args);
-    return { args };
-  },
-}));
+const mockCreateAssistantContextItem = createAssistantContextItem as jest.Mock;
 
 const FRONTEND_OBSERVABILITY_SETUP_URL = '/a/grafana-kowalski-app/apps/new';
 
 interface StructuredParams {
   title: string;
-  bypassLimits?: boolean;
   data: {
     setup: { entryPoint: string };
     userBrowserChecks: Array<{ job: string; target: string }>;
     currentlyViewedCheck?: { job: string; target: string };
   };
-}
-
-function lastProvidedContext() {
-  return mockSetPageContext.mock.calls.at(-1)?.[0];
 }
 
 function structuredParams(callIndex = 0): StructuredParams {
@@ -42,14 +29,12 @@ describe('useDemAssistantContext', () => {
   it('provides no context when there are no checks', () => {
     renderHook(() => useDemAssistantContext([]));
 
-    expect(lastProvidedContext()).toEqual([]);
     expect(mockCreateAssistantContextItem).not.toHaveBeenCalled();
   });
 
   it('provides no context when the user has no browser checks', () => {
     renderHook(() => useDemAssistantContext([BASIC_HTTP_CHECK]));
 
-    expect(lastProvidedContext()).toEqual([]);
     expect(mockCreateAssistantContextItem).not.toHaveBeenCalled();
   });
 
@@ -60,7 +45,6 @@ describe('useDemAssistantContext', () => {
     expect(mockCreateAssistantContextItem.mock.calls[0][0]).toBe('structured');
 
     const params = structuredParams();
-    expect(params.bypassLimits).toBe(true);
     expect(params.data.setup.entryPoint).toBe(FRONTEND_OBSERVABILITY_SETUP_URL);
     expect(params.data.userBrowserChecks).toEqual([
       { job: COMPLEX_BROWSER_CHECK.job, target: COMPLEX_BROWSER_CHECK.target },

@@ -46,7 +46,6 @@ export function useDemAssistantContext(checks: Check[], options: DemAssistantCon
     return [
       createAssistantContextItem('structured', {
         title: 'Synthetic Monitoring browser checks & Frontend Observability',
-        bypassLimits: true,
         data: {
           userActivity: 'The user is working with Synthetic Monitoring browser checks in Grafana Cloud.',
           whatBrowserChecksAre:
