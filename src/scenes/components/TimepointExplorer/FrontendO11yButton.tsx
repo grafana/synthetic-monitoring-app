@@ -5,9 +5,13 @@ import { trackTimepointViewerActionClicked } from 'features/tracking/timepointEx
 
 import { CheckType } from 'types';
 import { getCheckType } from 'utils';
+import { useLogsDS } from 'hooks/useLogsDS';
 import { DocsLink } from 'components/DocsLink';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import { useSelectedProbeNames } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import {
+  useSelectedProbeNames,
+  useStatefulTimepoint,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getCouldBePending, getPendingProbeNames } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { useFaroSessionLink } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.hooks';
@@ -28,23 +32,22 @@ export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoin
   const styles = useStyles2(() => ({
     italic: css({ fontStyle: 'italic' }),
   }));
-  const { check, checkType, listLogsMap, viewerState, currentAdjustedTime } = useTimepointExplorerContext();
+  const { check, checkType, viewerState, currentAdjustedTime } = useTimepointExplorerContext();
   const [, viewerProbeName, viewerExecutionIndex] = viewerState;
+  const logsDS = useLogsDS();
   const isBrowserCheck = getCheckType(check.settings) === CheckType.Browser;
-  const statefulTimepoint = listLogsMap[timepoint.adjustedTime];
+  const statefulTimepoint = useStatefulTimepoint(timepoint);
   const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
   const couldBePending = getCouldBePending(timepoint, currentAdjustedTime);
-  const pendingProbeNames = couldBePending
-    ? getPendingProbeNames({ statefulTimepoint, selectedProbeNames })
-    : [];
-  const isSelectedProbePending =
-    viewerProbeName !== undefined && pendingProbeNames.includes(viewerProbeName);
+  const pendingProbeNames = couldBePending ? getPendingProbeNames({ statefulTimepoint, selectedProbeNames }) : [];
+  const isSelectedProbePending = viewerProbeName !== undefined && pendingProbeNames.includes(viewerProbeName);
 
   const selectedExecution =
     viewerProbeName !== undefined && viewerExecutionIndex !== undefined
-      ? listLogsMap[timepoint.adjustedTime]?.probeResults?.[viewerProbeName]?.[viewerExecutionIndex]
+      ? statefulTimepoint.probeResults?.[viewerProbeName]?.[viewerExecutionIndex]
       : undefined;
   const executionId = selectedExecution?.labels.execution_id;
+  const canQueryFaro = isBrowserCheck && Boolean(executionId) && Boolean(logsDS);
 
   const {
     data: faroSession,
@@ -54,17 +57,12 @@ export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoin
     executionId: executionId ?? '',
     from: timepoint.adjustedTime,
     to: timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency,
-    enabled: isBrowserCheck && Boolean(executionId),
+    enabled: canQueryFaro,
   });
 
-  const faroAction = useMemo<FaroAction>(() => {
-    // Browser check, but no execution selected yet. Keep the action visible so it
-    // doesn't pop in/out of the header, just degrade it until there's something to check.
-    if (!executionId) {
-      return {
-        status: 'no-session',
-        tooltip: 'Select an execution to check for a Frontend Observability session',
-      };
+  const faroAction = useMemo<FaroAction | null>(() => {
+    if (!selectedExecution?.labels.execution_id) {
+      return null;
     }
 
     if (!faroSession?.href) {
@@ -85,22 +83,23 @@ export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoin
         });
       },
     };
-  }, [executionId, faroSession?.href, checkType]);
+  }, [selectedExecution, faroSession?.href, checkType]);
 
   // Frontend Observability only applies to browser checks.
-  if (!isBrowserCheck) {
+  if (
+    !isBrowserCheck ||
+    isSelectedProbePending ||
+    !faroAction ||
+    (faroAction.status === 'no-session' && !isFaroFetched)
+  ) {
     return null;
   }
 
-  if (executionId && (isFaroLoading || !isFaroFetched)) {
+  if (canQueryFaro && (isFaroLoading || !isFaroFetched)) {
     return <Spinner />;
   }
 
   if (faroAction.status === 'no-session') {
-    if (isSelectedProbePending) {
-      return null;
-    }
-
     return (
       <Tooltip content="Add Frontend Observability to your application to start monitoring frontend performance and get insights into user experience.">
         <div className={styles.italic}>
