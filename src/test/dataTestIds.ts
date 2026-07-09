@@ -197,4 +197,8 @@ export const UI_TEST_ID = {
   },
 } as const;
 
+export const LOGS_TEST_ID = {
+  executionId: 'logs execution-id',
+} as const;
+
 export const GROT_SAD_TEST_ID = 'grotSad';

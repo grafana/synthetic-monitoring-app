@@ -24,7 +24,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   const metricsDS = useMetricsDS();
   const { check, checkType, currentAdjustedTime, handleViewerStateChange, listLogsMap, viewerState, timepoints } =
     useTimepointExplorerContext();
-  const [_, viewerProbeName] = viewerState;
+  const [, viewerProbeName] = viewerState;
   const logsQuery = { expr: `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"} | logfmt` };
   const metricsQuery = {
     expr: `{job="${check.job}", instance="${check.target}", probe="${viewerProbeName}"}[$__range]`,
@@ -71,8 +71,8 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
     }
   }, [checkType, nextTimepoint, listLogsMap, probeVar, handleViewerStateChange]);
 
-  return useMemo<Action[]>(
-    () => [
+  const actions = useMemo<Action[]>(() => {
+    const actions: Action[] = [
       {
         icon: 'arrow-left',
         label: 'Previous timepoint',
@@ -107,7 +107,18 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
           });
         },
       },
-    ],
-    [checkType, prevTimepoint, nextTimepoint, exploreLogsURL, exploreMetricsURL, handleNextTimepoint, handlePreviousTimepoint]
-  );
+    ];
+
+    return actions;
+  }, [
+    checkType,
+    prevTimepoint,
+    nextTimepoint,
+    exploreLogsURL,
+    exploreMetricsURL,
+    handleNextTimepoint,
+    handlePreviousTimepoint,
+  ]);
+
+  return { actions };
 }
