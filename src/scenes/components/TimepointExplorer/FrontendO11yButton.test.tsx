@@ -11,6 +11,7 @@ import { RumAvailability } from 'scenes/components/TimepointExplorer/TimepointVi
 const mockUseFaroSessionLink = jest.fn();
 const mockMarkRumPresent = jest.fn();
 const mockUseStatefulTimepoint = jest.fn();
+const mockUseSelectedProbeNames = jest.fn();
 
 jest.mock('scenes/components/TimepointExplorer/TimepointViewerFaroSession.hooks', () => ({
   useFaroSessionLink: (args: unknown) => mockUseFaroSessionLink(args),
@@ -18,6 +19,7 @@ jest.mock('scenes/components/TimepointExplorer/TimepointViewerFaroSession.hooks'
 
 jest.mock('scenes/components/TimepointExplorer/TimepointExplorer.hooks', () => ({
   useStatefulTimepoint: (timepoint: unknown) => mockUseStatefulTimepoint(timepoint),
+  useSelectedProbeNames: (timepoint: unknown) => mockUseSelectedProbeNames(timepoint),
 }));
 
 jest.mock('hooks/useLogsDS', () => ({
@@ -46,6 +48,7 @@ const mockedUseTimepointExplorerContext = useTimepointExplorerContext as jest.Mo
 function setupContext({
   rumAvailability = 'unknown' as RumAvailability,
   viewerState = [timepoint, 'probe-a', 0] as const,
+  currentAdjustedTime = timepoint.adjustedTime + 60_000,
 } = {}) {
   mockedUseTimepointExplorerContext.mockReturnValue({
     check: COMPLEX_BROWSER_CHECK,
@@ -53,12 +56,14 @@ function setupContext({
     viewerState,
     rumAvailability,
     markRumPresent: mockMarkRumPresent,
+    currentAdjustedTime,
   });
 }
 
 describe('FrontendO11yButton', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseSelectedProbeNames.mockReturnValue(['probe-a']);
     mockUseStatefulTimepoint.mockReturnValue({
       ...timepoint,
       status: 'success',
@@ -121,6 +126,47 @@ describe('FrontendO11yButton', () => {
     expect(screen.queryByText('Add RUM to your app')).not.toBeInTheDocument();
   });
 
+  it('shows Waiting for session while Faro lookup is in flight and RUM is present', async () => {
+    mockUseFaroSessionLink.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isFetching: true,
+      isFetched: false,
+      isError: false,
+      isSuccess: false,
+    });
+    setupContext({ rumAvailability: 'present' });
+
+    render(<FrontendO11yButton timepoint={timepoint} />);
+
+    expect(await screen.findByText('Waiting for session')).toBeInTheDocument();
+  });
+
+  it('shows Waiting for session when the selected probe is pending and RUM is present', async () => {
+    mockUseStatefulTimepoint.mockReturnValue({
+      ...timepoint,
+      status: 'pending',
+      maxProbeDuration: 1000,
+      probeResults: {},
+    });
+    mockUseFaroSessionLink.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isFetching: false,
+      isFetched: false,
+      isError: false,
+      isSuccess: false,
+    });
+    setupContext({
+      rumAvailability: 'present',
+      currentAdjustedTime: timepoint.adjustedTime,
+    });
+
+    render(<FrontendO11yButton timepoint={timepoint} />);
+
+    expect(await screen.findByText('Waiting for session')).toBeInTheDocument();
+  });
+
   it('renders nothing when the Faro lookup errors', async () => {
     mockUseFaroSessionLink.mockReturnValue({
       data: undefined,
@@ -135,10 +181,11 @@ describe('FrontendO11yButton', () => {
 
     expect(screen.queryByText('Add RUM to your app')).not.toBeInTheDocument();
     expect(screen.queryByText('No session for this run')).not.toBeInTheDocument();
+    expect(screen.queryByText('Waiting for session')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /view frontend session/i })).not.toBeInTheDocument();
   });
 
-  it('renders a spinner while the Faro lookup is in flight', async () => {
+  it('renders a spinner while the Faro lookup is in flight and RUM is not present', async () => {
     mockUseFaroSessionLink.mockReturnValue({
       data: undefined,
       isLoading: true,
@@ -147,11 +194,13 @@ describe('FrontendO11yButton', () => {
       isError: false,
       isSuccess: false,
     });
+    setupContext({ rumAvailability: 'unknown' });
 
     render(<FrontendO11yButton timepoint={timepoint} />);
 
     expect(screen.queryByText('Add RUM to your app')).not.toBeInTheDocument();
     expect(screen.queryByText('No session for this run')).not.toBeInTheDocument();
+    expect(screen.queryByText('Waiting for session')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /view frontend session/i })).not.toBeInTheDocument();
   });
 
@@ -177,6 +226,7 @@ describe('FrontendO11yButton', () => {
 
     expect(screen.queryByText('Add RUM to your app')).not.toBeInTheDocument();
     expect(screen.queryByText('No session for this run')).not.toBeInTheDocument();
+    expect(screen.queryByText('Waiting for session')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /view frontend session/i })).not.toBeInTheDocument();
   });
 });
