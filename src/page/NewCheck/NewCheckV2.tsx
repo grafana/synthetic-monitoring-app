@@ -132,6 +132,7 @@ export function NewCheckV2() {
           onCheckTypeChange={handleCheckTypeChange}
           check={initialCheck}
           isDuplicate={!!duplicateCheck}
+          isPrefilled={!duplicateCheck && !!prefilledCheck}
         >
           <Checkster onSave={handleSubmit} />
         </ChecksterProvider>

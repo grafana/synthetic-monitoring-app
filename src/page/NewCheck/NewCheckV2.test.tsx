@@ -1,8 +1,13 @@
 import React, { ReactNode } from 'react';
+import { useLocation } from 'react-router';
 import { screen, waitFor } from '@testing-library/react';
+import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
+import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
-import { Check, CheckType, CheckTypeGroup, IpVersion } from '../../types';
+import { Check, CheckType, CheckTypeGroup, HttpMethod, IpVersion } from '../../types';
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath, getRoute } from 'routing/utils';
 
 import { Checkster } from '../../components/Checkster';
 import { PluginPageNotFound } from '../NotFound';
@@ -17,6 +22,8 @@ enum NewCheckTestIds {
 function ReadyComponent({ children }: { children: ReactNode }) {
   return <div data-testid={NewCheckTestIds.Ready}>{children}</div>;
 }
+
+const { Checkster: RealCheckster } = jest.requireActual('components/Checkster');
 
 jest.mock('components/Checkster', () => ({
   Checkster: jest.fn().mockImplementation(() => (
@@ -33,6 +40,14 @@ jest.mock('page/NotFound', () => ({
     </ReadyComponent>
   )),
 }));
+
+jest.mock('react-router', () => {
+  const actual = jest.requireActual('react-router');
+  return {
+    ...actual,
+    useLocation: jest.fn((...args: unknown[]) => actual.useLocation(...args)),
+  };
+});
 
 async function renderNewCheck(options?: any) {
   const result = render(<NewCheckV2 />, options);
@@ -67,6 +82,35 @@ describe('<NewCheckV2 />', () => {
     await renderNewCheck();
     expect(screen.getByTestId(NewCheckTestIds.PluginPageNotFound)).toBeInTheDocument();
     expect(PluginPageNotFound).toHaveBeenCalledTimes(1);
+  });
+
+  it('enables Save without user interaction when a valid draft is prefilled', async () => {
+    const PREFILLED_JOB = 'assistant-prefill-test';
+    const prefilledCheck = {
+      job: PREFILLED_JOB,
+      target: 'https://grafana.com/',
+      enabled: true,
+      probes: [PRIVATE_PROBE.id],
+      labels: [],
+      settings: { http: { method: HttpMethod.Get } },
+    } as unknown as Check;
+
+    (Checkster as jest.Mock).mockImplementation(RealCheckster);
+    (useLocation as jest.Mock).mockImplementation(() => ({
+      state: { prefilledCheck },
+    }));
+
+    render(<NewCheckV2 />, {
+      path: `${generateRoutePath(AppRoutes.NewCheck)}/api-endpoint?checkType=${CheckType.Http}`,
+      route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
+    });
+
+    await waitFor(() => expect(screen.getByTestId(DataTestIds.PageReady)).toBeInTheDocument(), {
+      timeout: 10000,
+    });
+
+    expect(screen.getByLabelText(/Job name/)).toHaveValue(PREFILLED_JOB);
+    expect(await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeEnabled();
   });
 });
 
