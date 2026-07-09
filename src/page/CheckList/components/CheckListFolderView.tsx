@@ -4,7 +4,7 @@ import { Button, Checkbox, ConfirmModal, Icon, IconButton, Pagination, Spinner, 
 import { css } from '@emotion/css';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
-import { Check, CheckType, GrafanaFolder, Label } from 'types';
+import { Check, CheckSort, CheckType, GrafanaFolder, Label } from 'types';
 import { useCheckFolderStatus } from 'contexts/CheckFolderAccessContext';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 import { useDeleteFolder } from 'data/useFolders';
@@ -31,6 +31,7 @@ interface CheckListFolderViewProps {
   onSelectChecks: (checkIds: number[]) => void;
   onDeselectChecks: (checkIds: number[]) => void;
   selectedCheckIds: Set<number>;
+  sortType: CheckSort;
 }
 
 export function CheckListFolderView({
@@ -50,20 +51,22 @@ export function CheckListFolderView({
   onSelectChecks,
   onDeselectChecks,
   selectedCheckIds,
+  sortType,
 }: CheckListFolderViewProps) {
   const styles = useStyles2(getStyles);
+  const reverseFolderSort = sortType === CheckSort.ZToA;
   const { folderTree, rootChecks } = useMemo(
-    () => buildChecksByFolder(checks, folders, defaultFolderUid),
-    [checks, folders, defaultFolderUid]
+    () => buildChecksByFolder(checks, folders, defaultFolderUid, reverseFolderSort),
+    [checks, folders, defaultFolderUid, reverseFolderSort]
   );
 
   const defaultFolderNode: FolderNode | null = useMemo(() => {
-    if (rootChecks.length === 0) {
+    if (!defaultFolderUid) {
       return null;
     }
-    const folder = defaultFolderUid ? foldersMap.get(defaultFolderUid) : undefined;
+    const folder = foldersMap.get(defaultFolderUid);
     return {
-      folderUid: defaultFolderUid ?? '__default__',
+      folderUid: defaultFolderUid,
       folder: folder ? { ...folder, title: `${folder.title} (default)` } : undefined,
       folderPath: folder?.title ?? 'Default folder',
       checks: rootChecks,

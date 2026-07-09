@@ -1,6 +1,6 @@
 import React from 'react';
 import { EmptyState, TextLink } from '@grafana/ui';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 
@@ -10,7 +10,7 @@ interface ChecksEmptyStatePageProps {
 
 export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
   return (
-    <div className={className} data-testid={DataTestIds.ChecksEmptyState}>
+    <div className={className} data-testid={CHECKS_TEST_ID.emptyState}>
       <EmptyState
         variant="call-to-action"
         message="You haven't created any checks yet"

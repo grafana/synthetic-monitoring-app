@@ -12,17 +12,18 @@ import { TimepointVizItem } from 'scenes/components/TimepointExplorer/TimepointV
 
 export const TimepointListVizLegend = () => {
   const styles = useStyles2(getStyles);
-  const { handleVizDisplayChange, vizDisplay, vizOptions, handleVizOptionChange } = useTimepointExplorerContext();
+  const { checkType, handleVizDisplayChange, vizDisplay, vizOptions, handleVizOptionChange } = useTimepointExplorerContext();
 
   const handleVizOptionClick = useCallback(
     (status: TimepointStatus, color: string) => {
       trackTimepointVizLegendColorClicked({
+        checkType,
         vizOption: status,
         color,
       });
       handleVizOptionChange(status, color);
     },
-    [handleVizOptionChange]
+    [checkType, handleVizOptionChange]
   );
 
   return (

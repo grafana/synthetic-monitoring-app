@@ -11,6 +11,7 @@ import 'jest-canvas-mock';
 // so the types also get imported
 import '@testing-library/jest-dom';
 import { queryClient } from 'data/queryClient';
+import { resetTestFlags } from 'test/openFeatureTestProvider';
 
 process.env.SM_PLUGIN_ID = 'TEST.ENV.ID';
 process.env.SM_PLUGIN_VERSION = 'TEST.ENV.VERSION';
@@ -22,6 +23,7 @@ beforeAll(() => {
 });
 
 afterEach(() => {
+  resetTestFlags();
   server.resetHandlers();
   jest.clearAllMocks();
   jest.restoreAllMocks();
@@ -55,6 +57,7 @@ global.ResizeObserver = jest.fn(() => ({
   disconnect: jest.fn(),
 }));
 
+import 'test/mocks/@grafana/assistant';
 import 'test/mocks/@grafana/runtime';
 import 'test/mocks/@grafana/ui';
 import 'test/mocks/components/SimpleMap';

@@ -2,7 +2,7 @@ import React from 'react';
 import { PluginPage } from '@grafana/runtime';
 import { LinkButton, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { PROBES_TEST_ID } from 'test/dataTestIds';
 
 import { ExtendedProbe } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -85,12 +85,12 @@ const ProbesContent = () => {
   return (
     <>
       <ProbeList
-        data-testid={DataTestIds.PrivateProbesList}
+        data-testid={PROBES_TEST_ID.list.private}
         probes={privateProbes}
         title="Private Probes"
         emptyText={<PrivateProbesEmptyText />}
       />
-      <ProbeList data-testid={DataTestIds.PublicProbesList} probes={publicProbes} title="Public Probes" />
+      <ProbeList data-testid={PROBES_TEST_ID.list.public} probes={publicProbes} title="Public Probes" />
     </>
   );
 };

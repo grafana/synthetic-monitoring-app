@@ -3,11 +3,10 @@ import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafan
 import { t } from '@grafana/i18n';
 import { Combobox, ComboboxOption, Field, Icon, Input, MultiCombobox, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
-import { Check, FeatureName, GrafanaFolder } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { Check, GrafanaFolder } from 'types';
 import { useExtendedProbes } from 'data/useProbes';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
@@ -20,6 +19,7 @@ interface CheckFiltersProps {
   checkFilters: CheckFiltersType;
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
+  isFoldersAvailable?: boolean;
   includeStatus?: boolean;
   calNames?: string[];
   className?: string;
@@ -32,6 +32,7 @@ export function CheckFilters({
   checkFilters,
   folders = [],
   defaultFolderUid,
+  isFoldersAvailable = false,
   includeStatus = true,
   calNames,
   className,
@@ -88,8 +89,6 @@ export function CheckFilters({
       }));
   }, [probes]);
 
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-
   const folderOptions: Array<ComboboxOption<string>> = useMemo(() => {
     return folders.map((folder) => ({
       label: folder.uid === defaultFolderUid ? `${folder.title} (default)` : folder.title,
@@ -104,7 +103,7 @@ export function CheckFilters({
           autoFocus
           aria-label={t('checkFilters.searchChecksAriaLabel', 'Search checks')}
           prefix={<Icon name="search" />}
-          data-testid={DataTestIds.CheckSearchInput}
+          data-testid={CHECKS_TEST_ID.filters.search}
           type="text"
           value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
           onChange={handleSearchChange}
@@ -125,7 +124,7 @@ export function CheckFilters({
                 <Combobox
                   id="check-status-filter"
                   aria-label={t('checkFilters.filterByStatusAriaLabel', 'Filter by status')}
-                  data-testid={DataTestIds.CheckStatusFilter}
+                  data-testid={CHECKS_TEST_ID.filters.status}
                   options={CHECK_LIST_STATUS_OPTIONS}
                   width={20}
                   onChange={(option) => {
@@ -173,7 +172,7 @@ export function CheckFilters({
               <Combobox
                 aria-label={t('checkFilters.filterByAlertsAriaLabel', 'Filter by alerts')}
                 id="check-alerts-filter"
-                data-testid={DataTestIds.CheckAlertsFilter}
+                data-testid={CHECKS_TEST_ID.filters.alerts}
                 options={alertOptions}
                 width={20}
                 onChange={(option) => {
@@ -212,7 +211,7 @@ export function CheckFilters({
           >
             <MultiCombobox
               id="check-probes-filter"
-              data-testid={DataTestIds.CheckProbesFilter}
+              data-testid={CHECKS_TEST_ID.filters.probes}
               onChange={(selectedOptions) => {
                 const selectedProbes: ProbeFilter[] = selectedOptions.map((option) => ({
                   label: option.label ?? '',
@@ -232,7 +231,7 @@ export function CheckFilters({
               isClearable
             />
           </Field>
-          {isFoldersEnabled && (
+          {isFoldersAvailable && (
             <Field
               label={t('checkFilters.folders', 'Folders')}
               htmlFor="check-folder-filter"

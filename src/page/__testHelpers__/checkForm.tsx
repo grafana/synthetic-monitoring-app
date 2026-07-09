@@ -1,7 +1,7 @@
 import React from 'react';
-import { act, screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -54,7 +54,7 @@ export async function renderNewForm(
     route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
   });
 
-  await waitFor(async () => await screen.findByTestId(DataTestIds.PageReady), { timeout: 10000 });
+  await waitFor(async () => await screen.findByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });
 
   const typeButReallyPaste = async (target: Element, value: string, args?: any) => {
     if (target instanceof HTMLElement) {
@@ -90,7 +90,7 @@ export async function renderEditForm(id: Check['id']) {
     path: generateRoutePath(AppRoutes.EditCheck, { id: id! }),
   });
 
-  await waitFor(async () => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
+  await waitFor(async () => screen.getByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });
 
   return {
     ...res,
@@ -105,17 +105,6 @@ export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 |
   const targetButton = buttons[sectionIndex - 1];
 
   await user.click(targetButton);
-}
-
-export async function submitForm(user: UserEvent) {
-  const saveButton = await screen.findByTestId(DataTestIds.CheckFormSubmitButton);
-  await user.click(saveButton);
-}
-
-export async function testCheck(user: UserEvent) {
-  const actionsBar = screen.getByTestId(DataTestIds.ActionsBar);
-  const testButton = await within(actionsBar).findByText('Test');
-  await user.click(testButton);
 }
 
 export async function selectBasicFrequency(user: UserEvent, frequency: string) {

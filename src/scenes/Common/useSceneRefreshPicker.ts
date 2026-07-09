@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { sceneGraph, SceneRefreshPicker, SceneRefreshPickerState } from '@grafana/scenes';
 import { useSceneContext } from '@grafana/scenes-react';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 
 export function useSceneRefreshPicker(onRefresh?: () => void) {
   const sceneContext = useSceneContext();
@@ -10,7 +10,7 @@ export function useSceneRefreshPicker(onRefresh?: () => void) {
   const state = refreshPicker?.state as SceneRefreshPickerState;
 
   // backdoor... 🤮
-  const el = document.querySelector(`[data-testid=${DataTestIds.RefreshPickerRunButton}]`);
+  const el = document.querySelector(`[data-testid="${UI_TEST_ID.refreshPicker.runButton}"]`);
 
   useEffect(() => {
     const listener = () => {

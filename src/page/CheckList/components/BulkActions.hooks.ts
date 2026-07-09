@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Check, FeatureName } from 'types';
+import { Check } from 'types';
 import { useBulkCheckPermissions } from 'contexts/CheckFolderAccessContext';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 import { useDeleteFolder } from 'data/useFolders';
 import { showAlert } from 'data/utils';
@@ -16,10 +15,10 @@ interface UseBulkActionsOptions {
   checks: Check[];
   onResolved: () => void;
   deleteFolder?: DeleteFolderTarget;
+  isFoldersAvailable: boolean;
 }
 
-export function useBulkActions({ checks, onResolved, deleteFolder }: UseBulkActionsOptions) {
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+export function useBulkActions({ checks, onResolved, deleteFolder, isFoldersAvailable }: UseBulkActionsOptions) {
   const { canWriteAll, canDeleteAll } = useBulkCheckPermissions(checks);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMoveToFolderModal, setShowMoveToFolderModal] = useState(false);
@@ -85,7 +84,7 @@ export function useBulkActions({ checks, onResolved, deleteFolder }: UseBulkActi
   }, [deleteFolder, checksLabel]);
 
   return {
-    isFoldersEnabled,
+    isFoldersAvailable,
     canWriteAll,
     canDeleteAll,
     showDeleteModal,

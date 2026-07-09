@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import {
   CHECK_IN_PRODUCTION,
@@ -131,6 +131,24 @@ describe('buildChecksByFolder', () => {
     expect(titles).toEqual(sorted);
   });
 
+  test('reverses folder sort order when reverseFolderSort is true', () => {
+    const { folderTree: aToZ } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false);
+    const { folderTree: zToA } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, true);
+
+    const titlesAZ = aToZ.map((n) => n.folder?.title ?? n.folderUid);
+    const titlesZA = zToA.map((n) => n.folder?.title ?? n.folderUid);
+
+    const nonEmptyAZ = aToZ.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
+    const nonEmptyZA = zToA.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
+    expect(nonEmptyZA).toEqual([...nonEmptyAZ].reverse());
+
+    const emptyAZ = aToZ.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
+    const emptyZA = zToA.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
+    expect(emptyZA).toEqual([...emptyAZ].reverse());
+
+    expect(titlesZA).not.toEqual(titlesAZ);
+  });
+
   test('returns orphaned nodes when folders list is empty', () => {
     const { folderTree, rootChecks } = buildChecksByFolder(FOLDER_CHECKS, []);
 
@@ -208,21 +226,21 @@ describe('CheckList - Folder Badge', () => {
     test('does not display folder badge on check cards', async () => {
       await renderCheckList([CHECK_IN_PRODUCTION], 'view=card');
 
-      await screen.findByTestId(DataTestIds.CheckCard);
+      await screen.findByTestId(CHECKS_TEST_ID.card);
       expect(screen.queryByText(FOLDER_PRODUCTION.title)).not.toBeInTheDocument();
     });
 
     test('does not display badge for orphaned folder in card view', async () => {
       await renderCheckList([CHECK_WITH_ORPHANED_FOLDER], 'view=card');
 
-      await screen.findByTestId(DataTestIds.CheckCard);
+      await screen.findByTestId(CHECKS_TEST_ID.card);
       expect(screen.queryByText('Folder deleted')).not.toBeInTheDocument();
     });
 
     test('does not display folder badge for checks without a folder', async () => {
       await renderCheckList([CHECK_WITHOUT_FOLDER], 'view=card');
 
-      await screen.findByTestId(DataTestIds.CheckCard);
+      await screen.findByTestId(CHECKS_TEST_ID.card);
       expect(screen.queryByText('Folder deleted')).not.toBeInTheDocument();
     });
   });
@@ -231,7 +249,7 @@ describe('CheckList - Folder Badge', () => {
     test('does not display folder badge even when check has folderUid', async () => {
       await renderCheckList([CHECK_IN_PRODUCTION]);
 
-      await screen.findByTestId(DataTestIds.CheckCard);
+      await screen.findByTestId(CHECKS_TEST_ID.card);
       expect(screen.queryByText(FOLDER_PRODUCTION.title)).not.toBeInTheDocument();
     });
   });

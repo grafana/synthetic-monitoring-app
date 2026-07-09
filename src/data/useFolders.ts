@@ -120,7 +120,11 @@ export function getFolderPath(folder: GrafanaFolder, allFoldersMap: Map<string, 
  */
 export function useAllFolders() {
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError } = useDefaultFolder(isFoldersEnabled);
+  const {
+    defaultFolder,
+    defaultFolderUid,
+    status: folderStatus,
+  } = useDefaultFolder(isFoldersEnabled);
   const {
     data: childFolders = [],
     isLoading: isChildrenLoading,
@@ -136,15 +140,24 @@ export function useAllFolders() {
 
   const foldersMap = useMemo(() => new Map(folders.map((f) => [f.uid, f])), [folders]);
 
-  const isError = isDefaultError || isChildrenError;
+  // Folder availability is driven solely by the default folder. A child-folder
+  // failure is a partial error surfaced inside the folder view (foldersError),
+  // not a reason to disable folder grouping and access control entirely.
+  // While loading we treat folders as available (optimistic) so access control
+  // applies as soon as data arrives, instead of briefly showing every check.
+  const isFoldersAvailable =
+    isFoldersEnabled && (folderStatus === 'available' || folderStatus === 'loading');
+  const isError = isChildrenError;
   const refetch = () => queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
 
   return {
     folders,
     foldersMap,
     defaultFolderUid,
-    isLoading: isDefaultLoading || isChildrenLoading,
+    isLoading: folderStatus === 'loading' || isChildrenLoading,
     isError,
+    folderStatus,
+    isFoldersAvailable,
     refetch,
   };
 }

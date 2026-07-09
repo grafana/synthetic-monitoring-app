@@ -51,6 +51,12 @@ export function useFolderPermissions(folderUids: string[]) {
       queryKey: ['folders', 'detail', uid] as const,
       queryFn: () => fetchFolderByUid(uid),
       staleTime: FOLDERS_STALE_TIME,
+      // Don't re-issue a settled-error request every time a new observer
+      // mounts. A 403/404 folder has no data, so React Query's
+      // `shouldLoadOnMount` is governed by `retryOnMount`; leaving it `true`
+      // makes each remount re-fetch, which can drive an infinite request loop
+      // when the folder set churns. See useDefaultFolder for the full rationale.
+      retryOnMount: false,
       retry: (failureCount: number, error: unknown) => {
         if (isFetchError(error) && (error.status === 403 || error.status === 404)) {
           return false;

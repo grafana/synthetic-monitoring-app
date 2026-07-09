@@ -12,6 +12,7 @@ import {
 import { getDashboard } from 'test/handlers/dashboards';
 import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
 import { getHttpDashboard } from 'test/handlers/httpDashboard';
+import { createDatasource, installPlugin } from 'test/handlers/install';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import {
@@ -28,6 +29,7 @@ import { ApiEntry } from 'test/handlers/types';
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { createFolder, deleteFolder, getFolder, listFolders } from './folders';
 import { listK6Channels } from './k6Channels';
+import { evaluateFeatureFlags } from './openfeature';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const API_ROUTES = {
@@ -36,12 +38,14 @@ const API_ROUTES = {
   bulkUpdateChecks,
   checkInfo,
   createAccessToken,
+  createDatasource,
   createFolder,
   createSecret,
   deleteCheck,
   deleteFolder,
   deleteProbe,
   deleteSecret,
+  evaluateFeatureFlags,
   getAlertRules,
   getDashboard,
   getFolder,
@@ -58,6 +62,7 @@ const API_ROUTES = {
   getTenantCostAttributionLabels,
   getTenantLimits,
   getTenantSettings,
+  installPlugin,
   listAlertsForCheck,
   listChecks,
   listFolders,

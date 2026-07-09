@@ -33,8 +33,7 @@ jest.mock('data/useDefaultFolder', () => ({
   useDefaultFolder: jest.fn(() => ({
     defaultFolder: undefined,
     defaultFolderUid: undefined,
-    isLoading: false,
-    isError: false,
+    status: 'available',
   })),
 }));
 

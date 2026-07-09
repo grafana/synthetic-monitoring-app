@@ -15,6 +15,7 @@ import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
+import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
@@ -38,6 +39,8 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
   const annotations = useSummaryDashboardAnnotations();
   const scene = useSceneContext();
   const [filtersAdded, setFiltersAdded] = useState(false);
+
+  useDemAssistantContext(checks);
 
   const labelKeys = useMemo(() => {
     return checks.reduce<Set<string>>((acc, check) => {

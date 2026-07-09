@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { trackCheckUpdated } from 'features/tracking/checkFormEvents';
-import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, ROUTER_TEST_ID, UI_TEST_ID } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { FOLDER_FORBIDDEN_UID, FOLDER_READONLY } from 'test/fixtures/folders';
 import { apiRoute } from 'test/handlers';
@@ -95,7 +95,7 @@ describe(`<EditCheckV2 />`, () => {
     await submitForm(user);
 
     await waitFor(() => {
-      const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
+      const pathInfo = screen.getByTestId(ROUTER_TEST_ID.pathname);
       expect(pathInfo.textContent).toBe(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
     });
   });
@@ -109,7 +109,7 @@ describe(`<EditCheckV2 />`, () => {
     await submitForm(user);
 
     await waitFor(() => {
-      const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
+      const pathInfo = screen.getByTestId(ROUTER_TEST_ID.pathname);
       expect(pathInfo.textContent).toBe(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_DNS_CHECK.id! }));
     });
 
@@ -136,15 +136,35 @@ describe(`<EditCheckV2 />`, () => {
         await renderEditPage(CHECK_IN_FORBIDDEN_FOLDER);
 
         await waitFor(() => {
-          const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
+          const pathInfo = screen.getByTestId(ROUTER_TEST_ID.pathname);
           expect(pathInfo.textContent).not.toContain('/edit');
         });
+      });
+
+      it('falls back to SM RBAC and loads the editable form when the user lacks folders:read (default folder 403)', async () => {
+        // When the default folder itself returns 403 the user has no
+        // folders:read, so access control falls back to SM RBAC. A check whose
+        // own folder also returns 403 must still load (and be editable) rather
+        // than redirecting out of the edit page mid-load (the premature-redirect
+        // race that otherwise cancels the in-flight request and loops).
+        server.use(
+          apiRoute('getFolder', {
+            result: async () => ({ status: 403, json: { message: 'Access denied' } }),
+          })
+        );
+
+        await renderEditPage(CHECK_IN_FORBIDDEN_FOLDER);
+
+        await waitFor(() => screen.getByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });
+
+        const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+        expect(jobNameInput).not.toBeDisabled();
       });
 
       it('disables the form for a check in a read-only folder', async () => {
         await renderEditPage(CHECK_IN_READONLY_FOLDER);
 
-        await waitFor(() => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
+        await waitFor(() => screen.getByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });
 
         const submitButton = await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton);
         expect(submitButton).toBeDisabled();
@@ -153,7 +173,7 @@ describe(`<EditCheckV2 />`, () => {
       it('enables the form for a check without a folderUid', async () => {
         await renderEditPage({ ...BASIC_HTTP_CHECK, folderUid: undefined });
 
-        await waitFor(() => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
+        await waitFor(() => screen.getByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });
 
         const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
         expect(jobNameInput).not.toBeDisabled();
@@ -164,7 +184,7 @@ describe(`<EditCheckV2 />`, () => {
       it('uses SM RBAC only — form is enabled for a check in a read-only folder', async () => {
         await renderEditPage(CHECK_IN_READONLY_FOLDER);
 
-        await waitFor(() => screen.getByTestId(DataTestIds.PageReady), { timeout: 10000 });
+        await waitFor(() => screen.getByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });
 
         const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
         expect(jobNameInput).not.toBeDisabled();

@@ -1,39 +1,55 @@
 import React, { forwardRef, PropsWithChildren } from 'react';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 
 // Mock Link/TextLink because @grafana/ui uses react-router-dom-v5-compat internally
 jest.mock('@grafana/ui', () => {
   const actual = jest.requireActual('@grafana/ui');
 
   const createRouterLink = (displayName: string) => {
-    const Component = forwardRef<HTMLAnchorElement, any>(({ href, children, onClick, external, ...props }, ref) => {
-      const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        onClick?.(e);
-        if (external || !href || e.defaultPrevented) {
-          return;
-        }
-        e.preventDefault();
-        const { locationService } = require('@grafana/runtime');
-        locationService.push(href);
-      };
+    const Component = forwardRef<HTMLAnchorElement, any>(
+      ({ href, children, onClick, external, disabled, tooltip, icon, ...props }, ref) => {
+        const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+          if (disabled) {
+            e.preventDefault();
+            return;
+          }
+          onClick?.(e);
+          if (external || !href || e.defaultPrevented) {
+            return;
+          }
+          e.preventDefault();
+          const { locationService } = require('@grafana/runtime');
+          locationService.push(href);
+        };
 
-      const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+        const externalProps = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+        const ariaLabel = props['aria-label'] ?? (icon && !children ? tooltip : undefined);
 
-      return (
-        <a ref={ref} href={href || '#'} onClick={handleClick} {...externalProps} {...props}>
-          {children}
-        </a>
-      );
-    });
+        return (
+          <a
+            ref={ref}
+            href={href || '#'}
+            onClick={handleClick}
+            aria-disabled={disabled ? 'true' : undefined}
+            aria-label={ariaLabel}
+            {...externalProps}
+            {...props}
+          >
+            {children}
+          </a>
+        );
+      }
+    );
     Component.displayName = displayName;
     return Component;
   };
 
   const Link = createRouterLink('Link');
   const TextLink = createRouterLink('TextLink');
+  const LinkButton = createRouterLink('LinkButton');
 
   const CodeEditor = forwardRef<any, any>((props, ref) => (
-    <textarea ref={ref} data-testid={DataTestIds.CodeEditor} onChange={props.onChange} value={props.value} />
+    <textarea ref={ref} data-testid={UI_TEST_ID.codeEditor} onChange={props.onChange} value={props.value} />
   ));
   CodeEditor.displayName = 'CodeEditor';
 
@@ -45,6 +61,7 @@ jest.mock('@grafana/ui', () => {
     Icon,
     Link,
     TextLink,
+    LinkButton,
     CodeEditor,
     measureText: jest.fn(() => ({ width: 100, height: 14 })),
     BigValue: ({ value }: { value: { numeric: number; text?: string; title?: string } }) => (

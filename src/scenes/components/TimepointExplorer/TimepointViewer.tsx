@@ -4,7 +4,7 @@ import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackTimepointViewerLogsViewToggled } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
-import { DataTestIds } from 'test/dataTestIds';
+import { SCENES_TEST_ID } from 'test/dataTestIds';
 
 import { formatDuration } from 'utils';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -20,7 +20,7 @@ import { TimepointViewerActions } from 'scenes/components/TimepointExplorer/Time
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
-  const { isInitialised, viewerState, shouldScrollToViewer, handleSetScrollToViewer } = useTimepointExplorerContext();
+  const { checkType, isInitialised, viewerState, shouldScrollToViewer, handleSetScrollToViewer } = useTimepointExplorerContext();
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
   const [viewerTimepoint, viewerProbeName] = viewerState;
   const styles = useStyles2(getStyles);
@@ -36,15 +36,19 @@ export const TimepointViewer = () => {
     }
   }, [shouldScrollToViewer, viewerTimepoint, handleSetScrollToViewer]);
 
-  const handleChangeLogsView = useCallback((view: LogsView) => {
-    trackTimepointViewerLogsViewToggled({
-      action: view,
-    });
-    setLogsView(view);
-  }, []);
+  const handleChangeLogsView = useCallback(
+    (view: LogsView) => {
+      trackTimepointViewerLogsViewToggled({
+        checkType,
+        action: view,
+      });
+      setLogsView(view);
+    },
+    [checkType]
+  );
 
   return (
-    <div ref={containerRef} className={styles.container} data-testid={DataTestIds.TimepointViewer}>
+    <div ref={containerRef} className={styles.container} data-testid={SCENES_TEST_ID.timepoint.viewer}>
       {viewerTimepoint ? (
         <div>
           <Box padding={2} gap={1} direction="column" position="relative">
