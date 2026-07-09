@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { screen, waitFor } from '@testing-library/react';
-import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
@@ -105,11 +105,7 @@ describe('<NewCheckV2 />', () => {
       route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
     });
 
-    await waitFor(() => expect(screen.getByTestId(DataTestIds.PageReady)).toBeInTheDocument(), {
-      timeout: 10000,
-    });
-
-    expect(screen.getByLabelText(/Job name/)).toHaveValue(PREFILLED_JOB);
+    expect(await screen.findByLabelText(/Job name/)).toHaveValue(PREFILLED_JOB);
     expect(await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeEnabled();
   });
 });
