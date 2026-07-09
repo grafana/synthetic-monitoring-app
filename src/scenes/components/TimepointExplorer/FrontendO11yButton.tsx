@@ -8,12 +8,8 @@ import { getCheckType } from 'utils';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { DocsLink } from 'components/DocsLink';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
-import {
-  useSelectedProbeNames,
-  useStatefulTimepoint,
-} from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
+import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getCouldBePending, getPendingProbeNames } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { useFaroSessionLink } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.hooks';
 
 type FaroActionStatus = 'no-session' | 'available';
@@ -31,16 +27,13 @@ const FRONTEND_OBSERVABILITY_DOCS_LINK =
 export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
   const styles = useStyles2(() => ({
     italic: css({ fontStyle: 'italic' }),
+    muted: css({ fontStyle: 'italic', opacity: 0.7 }),
   }));
-  const { check, checkType, viewerState, currentAdjustedTime } = useTimepointExplorerContext();
+  const { check, checkType, viewerState, rumAvailability, markRumPresent } = useTimepointExplorerContext();
   const [, viewerProbeName, viewerExecutionIndex] = viewerState;
   const logsDS = useLogsDS();
   const isBrowserCheck = getCheckType(check.settings) === CheckType.Browser;
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
-  const couldBePending = getCouldBePending(timepoint, currentAdjustedTime);
-  const pendingProbeNames = couldBePending ? getPendingProbeNames({ statefulTimepoint, selectedProbeNames }) : [];
-  const isSelectedProbePending = viewerProbeName !== undefined && pendingProbeNames.includes(viewerProbeName);
 
   const selectedExecution =
     viewerProbeName !== undefined && viewerExecutionIndex !== undefined
@@ -52,54 +45,71 @@ export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoin
   const {
     data: faroSession,
     isLoading: isFaroLoading,
-    isFetched: isFaroFetched,
+    isFetching: isFaroFetching,
+    isError: isFaroError,
+    isSuccess: isFaroSuccess,
   } = useFaroSessionLink({
     executionId: executionId ?? '',
     from: timepoint.adjustedTime,
     to: timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency,
     enabled: canQueryFaro,
+    onSuccess: (session) => {
+      if (session?.href) {
+        markRumPresent();
+      }
+    },
   });
 
   const faroAction = useMemo<FaroAction | null>(() => {
-    if (!selectedExecution?.labels.execution_id) {
+    if (!executionId) {
       return null;
     }
 
-    if (!faroSession?.href) {
+    if (faroSession?.href) {
       return {
-        status: 'no-session',
-        tooltip: 'No Frontend Observability session was found for this execution',
+        status: 'available',
+        href: faroSession.href,
+        tooltip: 'View Frontend Observability session',
+        onClick: () => {
+          trackTimepointViewerActionClicked({
+            checkType,
+            action: 'view-frontend-observability-session',
+          });
+        },
       };
     }
 
     return {
-      status: 'available',
-      href: faroSession.href,
-      tooltip: 'View Frontend Observability session',
-      onClick: () => {
-        trackTimepointViewerActionClicked({
-          checkType,
-          action: 'view-frontend-observability-session',
-        });
-      },
+      status: 'no-session',
+      tooltip: 'No Frontend Observability session was found for this execution',
     };
-  }, [selectedExecution, faroSession?.href, checkType]);
+  }, [executionId, faroSession?.href, checkType]);
 
   // Frontend Observability only applies to browser checks.
-  if (
-    !isBrowserCheck ||
-    isSelectedProbePending ||
-    !faroAction ||
-    (faroAction.status === 'no-session' && !isFaroFetched)
-  ) {
+  if (!isBrowserCheck || !faroAction || isFaroError) {
     return null;
   }
 
-  if (canQueryFaro && (isFaroLoading || !isFaroFetched)) {
+  // Prefer a spinner over flashing empty/Add-RUM states, and over briefly
+  // showing the previous execution's session while the new lookup is in flight.
+  if (canQueryFaro && (isFaroLoading || isFaroFetching)) {
     return <Spinner />;
   }
 
   if (faroAction.status === 'no-session') {
+    // Only treat a completed successful empty lookup as "no session".
+    if (!isFaroSuccess) {
+      return null;
+    }
+
+    if (rumAvailability === 'present') {
+      return (
+        <Tooltip content="No Frontend Observability session was found for this execution.">
+          <div className={styles.muted}>No session for this run</div>
+        </Tooltip>
+      );
+    }
+
     return (
       <Tooltip content="Add Frontend Observability to your application to start monitoring frontend performance and get insights into user experience.">
         <div className={styles.italic}>
