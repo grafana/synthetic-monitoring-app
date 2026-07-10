@@ -5,6 +5,7 @@ import { AppRootProps } from '@grafana/data';
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { config, getAppPluginVersion } from '@grafana/runtime';
 import { css, Global } from '@emotion/react';
+import { TrackingIdentity } from 'features/tracking/TrackingIdentity';
 
 import { ProvisioningJsonData } from 'types';
 import { getFaroConfig } from 'faro';
@@ -63,6 +64,7 @@ const App = (props: AppRootProps<ProvisioningJsonData>) => {
             <SMDatasourceProvider>
               <PermissionsContextProvider>
                 <AssistantContext />
+                <TrackingIdentity />
                 <DevTools>
                   <InitialisedRouter />
                 </DevTools>
