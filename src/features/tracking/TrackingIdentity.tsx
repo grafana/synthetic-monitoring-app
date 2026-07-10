@@ -4,19 +4,23 @@ import { setTrackingBaseProps } from 'features/tracking/utils';
 import { useTenant } from 'data/useTenant';
 
 /**
- * Registers the Grafana Cloud org identity from the SM tenant as base properties on all
- * tracking events. The property is named `org_id` (rather than camelCase) because downstream
- * BigQuery consumers key off that exact column name. Renders nothing.
+ * Registers the Grafana Cloud identity from the SM tenant as base properties on all
+ * tracking events. The properties are named `org_id`/`stack_id` (rather than camelCase)
+ * because downstream BigQuery consumers key off those exact column names. Renders nothing.
  *
- * Note this is the grafana.com org id, NOT the instance-internal org id from
+ * Note these are the grafana.com org and stack ids, NOT the instance-internal org id from
  * `config.bootData.user.orgId` (which is always 1 on cloud stacks).
  */
 export const TrackingIdentity = () => {
   const { data: tenant } = useTenant();
 
   useEffect(() => {
-    if (typeof tenant?.orgId === 'number' && Number.isFinite(tenant.orgId)) {
-      setTrackingBaseProps({ org_id: tenant.orgId });
+    if (tenant) {
+      // setTrackingBaseProps drops undefined values, so an invalid field is omitted rather than reported
+      setTrackingBaseProps({
+        org_id: Number.isFinite(tenant.orgId) ? tenant.orgId : undefined,
+        stack_id: Number.isFinite(tenant.stackId) ? tenant.stackId : undefined,
+      });
     }
   }, [tenant]);
 

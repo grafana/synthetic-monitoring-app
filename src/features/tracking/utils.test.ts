@@ -33,21 +33,23 @@ describe('createEventFactory', () => {
   });
 
   it('includes base properties on events once set', () => {
-    setTrackingBaseProps({ org_id: 442 });
+    setTrackingBaseProps({ org_id: 442, stack_id: 2484 });
     trackSampleEvent({ checkType: 'browser' });
 
     expect(reportInteraction).toHaveBeenCalledWith('synthetic-monitoring_test_feature_sample_event', {
       org_id: 442,
+      stack_id: 2484,
       checkType: 'browser',
     });
   });
 
   it('includes base properties on events without their own props', () => {
-    setTrackingBaseProps({ org_id: 442 });
+    setTrackingBaseProps({ org_id: 442, stack_id: 2484 });
     trackPropslessEvent();
 
     expect(reportInteraction).toHaveBeenCalledWith('synthetic-monitoring_test_feature_propsless_event', {
       org_id: 442,
+      stack_id: 2484,
     });
   });
 
@@ -59,11 +61,12 @@ describe('createEventFactory', () => {
   });
 
   it('drops undefined base property values instead of reporting them', () => {
-    setTrackingBaseProps({ org_id: undefined });
+    setTrackingBaseProps({ org_id: undefined, stack_id: 2484 });
     trackSampleEvent({ checkType: 'browser' });
 
     const [, props] = reportInteraction.mock.calls[0];
     expect(props).not.toHaveProperty('org_id');
+    expect(props).toHaveProperty('stack_id', 2484);
   });
 
   it('lets event props win over base props on key collision', () => {
