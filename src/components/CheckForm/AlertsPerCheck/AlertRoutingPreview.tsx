@@ -44,11 +44,17 @@ const AlertRoutingPreviewContent: React.FC<AlertRoutingPreviewProps> = ({ alertT
     if (isLoading || isError || !routingTreeData?.items) {
       return [];
     }
-    // Reflect what the backend actually routes: match against every routing tree
-    // the API returns. The backend already filters trees based on the
-    // alertingMultiplePolicies feature, so the preview mirrors real delivery.
+    // SM alert rules are created without notification settings (see sm-api), so
+    // they carry no `__grafana_managed_route__` label and are always routed
+    // through the default (user-defined) tree — never through additional policy
+    // trees. Match only the default tree so the preview reflects real delivery
+    // instead of showing routes in trees the alert will never reach.
+    const defaultTree = getDefaultRoutingTree(routingTreeData.items);
+    if (!defaultTree) {
+      return [];
+    }
     try {
-      return matchInstancesToRouteTrees(routingTreeData.items, [convertLabelsToLabelPairs(alertLabels)]);
+      return matchInstancesToRouteTrees([defaultTree], [convertLabelsToLabelPairs(alertLabels)]);
     } catch (error) {
       return [];
     }
