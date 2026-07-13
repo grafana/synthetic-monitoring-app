@@ -1,7 +1,13 @@
-import { type InstanceMatchResult } from '@grafana/alerting';
+import { type InstanceMatchResult, USER_DEFINED_TREE_NAME } from '@grafana/alerting';
 
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
 
+import {
+  buildRouteWithId,
+  instanceMatchResultFactory,
+  matchingJourneyItemFactory,
+  routeMatchFactory,
+} from '../factories/routingTree';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   ALERT_PROBE_SUCCESS_RECORDING_METRIC,
@@ -271,59 +277,57 @@ export const MOCK_PROBE_FAILED_ROUTE_MATCH: InstanceMatchResult = {
 // named "hashicorp-vault" tree match only at their root (no receiver), while
 // the named "pam-incident-alert" tree matches a child route that delivers to a
 // contact point.
-export const MOCK_MULTI_TREE_ROUTE_MATCH: InstanceMatchResult = {
+//
+// Each tree's root reuses the same route id ("route-1") on purpose: route ids
+// are only unique within a tree, so the display must scope its dedupe per tree
+// or named trees would vanish from the preview.
+const multiTreeRootRoute = buildRouteWithId({ id: 'route-1', matchers: [], continue: false });
+
+export const MOCK_MULTI_TREE_ROUTE_MATCH: InstanceMatchResult = instanceMatchResultFactory.build({
   labels: [
     ['alertname', 'ProbeFailedExecutionsTooHigh'],
     ['label_Environment', 'prod'],
   ],
-  // Each tree's root reuses the same route id ("route-1") on purpose: route ids
-  // are only unique within a tree, so the display must scope its dedupe per tree
-  // or named trees would vanish from the preview.
   matchedRoutes: [
-    {
-      route: { id: 'route-1', matchers: [], continue: false },
-      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-1' } },
-      matchDetails: {
-        matchingJourney: [
-          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
-        ],
-      },
-    },
-    {
-      route: { id: 'route-1', matchers: [], continue: false },
-      routeTree: { metadata: { name: 'hashicorp-vault' }, expandedSpec: { id: 'route-1' } },
-      matchDetails: {
-        matchingJourney: [
-          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
-        ],
-      },
-    },
-    {
-      route: {
-        id: 'route-2',
-        matchers: [{ type: '=', label: 'label_Environment', value: 'prod' }],
-        continue: false,
-        receiver: 'PAM Incident Alert',
-      },
-      routeTree: { metadata: { name: 'pam-incident-alert' }, expandedSpec: { id: 'route-1' } },
-      matchDetails: {
-        matchingJourney: [
-          { route: { id: 'route-1', matchers: [], continue: false }, matchDetails: [], matched: true },
-          {
-            route: {
-              id: 'route-2',
-              matchers: [{ type: '=', label: 'label_Environment', value: 'prod' }],
-              continue: false,
-              receiver: 'PAM Incident Alert',
-            },
-            matchDetails: [],
-            matched: true,
-          },
-        ],
-      },
-    },
+    routeMatchFactory.build(
+      {},
+      {
+        transient: {
+          treeName: USER_DEFINED_TREE_NAME,
+          matchingJourney: [matchingJourneyItemFactory.build({ route: multiTreeRootRoute })],
+        },
+      }
+    ),
+    routeMatchFactory.build(
+      {},
+      {
+        transient: {
+          treeName: 'hashicorp-vault',
+          matchingJourney: [matchingJourneyItemFactory.build({ route: multiTreeRootRoute })],
+        },
+      }
+    ),
+    routeMatchFactory.build(
+      {},
+      {
+        transient: {
+          treeName: 'pam-incident-alert',
+          matchingJourney: [
+            matchingJourneyItemFactory.build({ route: multiTreeRootRoute }),
+            matchingJourneyItemFactory.build({
+              route: buildRouteWithId({
+                id: 'route-2',
+                matchers: [{ type: '=', label: 'label_Environment', value: 'prod' }],
+                continue: false,
+                receiver: 'PAM Incident Alert',
+              }),
+            }),
+          ],
+        },
+      }
+    ),
   ],
-} as unknown as InstanceMatchResult;
+});
 
 export const MOCK_HTTP_DURATION_ROUTE_MATCH: InstanceMatchResult = {
   "labels": [

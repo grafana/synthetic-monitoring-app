@@ -1,20 +1,19 @@
 import { USER_DEFINED_TREE_NAME } from '@grafana/alerting';
 
+import { routingTreeFactory } from '../../../test/factories/routingTree';
 import { getDefaultRoutingTree } from './alertRoutingUtils';
 
 describe('getDefaultRoutingTree', () => {
-  const userDefinedTree = { metadata: { name: USER_DEFINED_TREE_NAME } };
-  const namedTreeA = { metadata: { name: 'hashicorp-vault' } };
-  const namedTreeB = { metadata: { name: 'pam-incident-alert' } };
+  const userDefinedTree = routingTreeFactory.build({ metadata: { name: USER_DEFINED_TREE_NAME } });
+  const namedTreeA = routingTreeFactory.build({ metadata: { name: 'hashicorp-vault' } });
+  const namedTreeB = routingTreeFactory.build({ metadata: { name: 'pam-incident-alert' } });
 
   it('returns the user-defined tree regardless of its position in the list', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const trees = [namedTreeA, userDefinedTree, namedTreeB] as any;
+    const trees = [namedTreeA, userDefinedTree, namedTreeB];
     expect(getDefaultRoutingTree(trees)).toBe(userDefinedTree);
   });
 
   it('returns undefined when there is no user-defined tree', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(getDefaultRoutingTree([namedTreeA, namedTreeB] as any)).toBeUndefined();
+    expect(getDefaultRoutingTree([namedTreeA, namedTreeB])).toBeUndefined();
   });
 });
