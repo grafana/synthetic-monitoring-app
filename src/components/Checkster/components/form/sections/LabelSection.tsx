@@ -1,4 +1,5 @@
 import React from 'react';
+import { KnowledgeGraphServiceLink } from 'features/knowledgeGraph/KnowledgeGraphServiceLink';
 
 import { FormSectionName } from '../../../types';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
@@ -29,6 +30,7 @@ export function LabelSection() {
           <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} />
         </div>
       )}
+      <KnowledgeGraphServiceLink />
       <GenericLabelContent
         description={description}
         isLoading={isInitialLoad}

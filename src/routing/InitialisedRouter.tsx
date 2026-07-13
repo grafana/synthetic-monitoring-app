@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { TextLink } from '@grafana/ui';
+import { useKnowledgeGraphProvisioning } from 'features/knowledgeGraph/useKnowledgeGraphProvisioning';
 
 import { FeatureName } from 'types';
 import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
@@ -34,6 +35,7 @@ import { EditCheckV2 } from '../page/EditCheck/EditCheckV2';
 import { NewCheckV2 } from '../page/NewCheck/NewCheckV2';
 
 export const InitialisedRouter = () => {
+  useKnowledgeGraphProvisioning();
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
   const { isFeatureEnabled } = useFeatureFlagContext();
