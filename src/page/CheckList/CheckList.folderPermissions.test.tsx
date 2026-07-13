@@ -365,6 +365,41 @@ describe('CheckList - Folder Permissions', () => {
     });
   });
 
+  describe('child-folder fetch failure', () => {
+    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+
+    it('does not mislabel in-subtree folders as external when the subtree fetch errors', async () => {
+      server.use(
+        apiRoute(`listChecks`, {
+          result: () => ({ json: [CHECK_IN_PRODUCTION] }),
+        }),
+        apiRoute(`listProbes`, {
+          result: () => ({ json: [PRIVATE_PROBE, PUBLIC_PROBE] }),
+        }),
+        // Default folder resolves fine (detail endpoint), but fetching its
+        // children fails. The subtree is then partial, so we must not assert
+        // that a legitimate child folder lives outside it.
+        apiRoute(`listFolders`, {
+          result: (req: Request) => {
+            const url = new URL(req.url);
+            if (url.searchParams.get('parentUid')) {
+              return { status: 500, json: { message: 'Internal server error' } };
+            }
+            return { json: [] };
+          },
+        })
+      );
+
+      render(<CheckList />, {
+        route: AppRoutes.Checks,
+        path: generateRoutePath(AppRoutes.Checks),
+      });
+
+      expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+      expect(screen.queryByText('Outside default folder')).not.toBeInTheDocument();
+    });
+  });
+
   describe('with folders feature disabled', () => {
     it('shows all checks regardless of folderUid', async () => {
       await renderCheckList();

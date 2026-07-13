@@ -34,6 +34,7 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
     isFoldersAvailable,
     folderStatus,
     isLoading: isFoldersLoading,
+    isError: isFoldersError,
   } = useAllFolders();
 
   const accessibleFolderUids = useMemo(() => new Set(allFolders.map((f) => f.uid)), [allFolders]);
@@ -82,12 +83,14 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
   }, [checks, isFoldersAvailable, accessibleFolderUids, folderDetailsByUid, defaultFolderUid]);
 
   // Readable folders referenced by checks but living outside the default
-  // folder's subtree. The folder view renders these as top-level nodes so
-  // their checks don't silently disappear from the list. Empty until the
-  // subtree list settles, otherwise every folder would briefly classify as
-  // external while `accessibleFolderUids` is still empty.
+  // folder's subtree, so the folder view can show them instead of hiding
+  // their checks.
+  //
+  // We can only trust this once the subtree has loaded successfully: while
+  // loading (or if the child-folder fetch failed) we don't know the full
+  // subtree, so we'd wrongly flag in-subtree folders as external.
   const externalFolders = useMemo(() => {
-    if (isFoldersLoading) {
+    if (isFoldersLoading || isFoldersError) {
       return [];
     }
     const result: GrafanaFolder[] = [];
@@ -97,7 +100,7 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
       }
     });
     return result;
-  }, [folderDetailsByUid, accessibleFolderUids, isFoldersLoading]);
+  }, [folderDetailsByUid, accessibleFolderUids, isFoldersLoading, isFoldersError]);
 
   const getFolderStatus = useCallback(
     (check: Pick<Check, 'folderUid'>): CheckFolderStatus => {
