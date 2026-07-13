@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.56.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.55.0...v1.56.0) (2026-07-13)
+
+
+### Features
+
+* add Grafana Assistant page context for Synthetic Monitoring ([#1693](https://github.com/grafana/synthetic-monitoring-app/issues/1693)) ([13a2cdc](https://github.com/grafana/synthetic-monitoring-app/commit/13a2cdc4c3fad8d1fd14358e1596fb45a67d13da))
+* link to Frontend Observability sessions from timepoint viewer ([#1667](https://github.com/grafana/synthetic-monitoring-app/issues/1667)) ([dfad710](https://github.com/grafana/synthetic-monitoring-app/commit/dfad710469cdf9bb8e1dc28e551f3846cb189716))
+
+
+### Fixes
+
+* attach default folder UID to POST ([#1757](https://github.com/grafana/synthetic-monitoring-app/issues/1757)) ([8cb1b67](https://github.com/grafana/synthetic-monitoring-app/commit/8cb1b6709da1b3710d2f0dd9d478b23baa2a755c))
+* show checks in folders outside the default folder ([#1759](https://github.com/grafana/synthetic-monitoring-app/issues/1759)) ([f88664c](https://github.com/grafana/synthetic-monitoring-app/commit/f88664caa614d9e3e4b7e50dc2d889b2251dc313))
+
+
+### Code Refactoring
+
+* migrate DataTestIds to category-specific constants ([#1753](https://github.com/grafana/synthetic-monitoring-app/issues/1753)) ([99177e2](https://github.com/grafana/synthetic-monitoring-app/commit/99177e20ce4911c1e0cca0b8f7bf4ad11a374cc5))
+
 ## [1.55.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.54.0...v1.55.0) (2026-07-08)
 
 
