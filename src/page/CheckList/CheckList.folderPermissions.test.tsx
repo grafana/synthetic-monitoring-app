@@ -2,6 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { BASIC_PING_CHECK } from 'test/fixtures/checks';
 import {
+  CHECK_IN_EXTERNAL_FOLDER,
   CHECK_IN_FORBIDDEN_FOLDER,
   CHECK_IN_PRODUCTION,
   CHECK_IN_READONLY_FOLDER,
@@ -105,6 +106,12 @@ describe('CheckList - Folder Permissions', () => {
         await renderCheckList();
         await screen.findByText('Production HTTP check');
         expect(await screen.findByText('Orphaned folder check')).toBeInTheDocument();
+      });
+
+      it('shows checks in readable folders outside the default folder subtree', async () => {
+        await renderCheckList([...ALL_CHECKS, CHECK_IN_EXTERNAL_FOLDER]);
+        await screen.findByText('Production HTTP check');
+        expect(await screen.findByText('External folder check')).toBeInTheDocument();
       });
     });
 

@@ -3,12 +3,21 @@ import { screen } from '@testing-library/react';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import {
+  CHECK_IN_EXTERNAL_FOLDER,
   CHECK_IN_PRODUCTION,
   CHECK_IN_STAGING,
   CHECK_WITH_ORPHANED_FOLDER,
   CHECK_WITHOUT_FOLDER,
 } from 'test/fixtures/folderChecks';
-import { DEFAULT_FOLDER, FOLDER_DELETABLE, FOLDER_PRODUCTION, FOLDER_READONLY, FOLDER_STAGING, MOCK_FOLDERS } from 'test/fixtures/folders';
+import {
+  DEFAULT_FOLDER,
+  FOLDER_DELETABLE,
+  FOLDER_EXTERNAL,
+  FOLDER_PRODUCTION,
+  FOLDER_READONLY,
+  FOLDER_STAGING,
+  MOCK_FOLDERS,
+} from 'test/fixtures/folders';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -91,10 +100,7 @@ describe('buildChecksByFolder', () => {
   });
 
   test('returns empty rootChecks when no defaultFolderUid and all checks have folders', () => {
-    const { rootChecks } = buildChecksByFolder(
-      [CHECK_IN_PRODUCTION, CHECK_IN_STAGING],
-      MOCK_FOLDERS
-    );
+    const { rootChecks } = buildChecksByFolder([CHECK_IN_PRODUCTION, CHECK_IN_STAGING], MOCK_FOLDERS);
 
     expect(rootChecks).toHaveLength(0);
   });
@@ -159,6 +165,41 @@ describe('buildChecksByFolder', () => {
       expect(node.isOrphaned).toBe(true);
     });
   });
+
+  test('external folders referenced by checks appear at top level flagged as external', () => {
+    const { folderTree } = buildChecksByFolder([CHECK_IN_EXTERNAL_FOLDER], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false, [
+      FOLDER_EXTERNAL,
+    ]);
+
+    const externalNode = folderTree.find((n) => n.folderUid === FOLDER_EXTERNAL.uid);
+    expect(externalNode).toBeDefined();
+    expect(externalNode!.isExternal).toBe(true);
+    expect(externalNode!.isOrphaned).toBe(false);
+    expect(externalNode!.isAccessible).toBe(true);
+    expect(externalNode!.folder?.title).toBe(FOLDER_EXTERNAL.title);
+    expect(externalNode!.checks).toHaveLength(1);
+  });
+
+  test('external folders without checks do not get nodes', () => {
+    const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false, [
+      FOLDER_EXTERNAL,
+    ]);
+
+    expect(collectAllFolderUids(folderTree)).not.toContain(FOLDER_EXTERNAL.uid);
+  });
+
+  test('external folder ancestors outside SM folder data do not create bogus nodes', () => {
+    const nestedExternal = { ...FOLDER_EXTERNAL, uid: 'external-child', parentUid: 'unknown-parent' };
+    const checkInNested: Check = { ...CHECK_IN_EXTERNAL_FOLDER, folderUid: nestedExternal.uid };
+
+    const { folderTree } = buildChecksByFolder([checkInNested], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false, [
+      nestedExternal,
+    ]);
+
+    const allUids = collectAllFolderUids(folderTree);
+    expect(allUids).toContain(nestedExternal.uid);
+    expect(allUids).not.toContain('unknown-parent');
+  });
 });
 
 describe('CheckList - Folder View Integration', () => {
@@ -174,6 +215,18 @@ describe('CheckList - Folder View Integration', () => {
       await renderCheckList(FOLDER_CHECKS, 'view=folder');
 
       expect(await screen.findByText(/Folders/)).toBeInTheDocument();
+    });
+
+    test('renders checks in a readable folder outside the default subtree with a badge', async () => {
+      await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_EXTERNAL_FOLDER], 'view=folder');
+
+      // The external fixture duplicates the default folder's title (the
+      // stranded-folder incident scenario); the default node is suffixed.
+      expect(await screen.findByText(FOLDER_EXTERNAL.title)).toBeInTheDocument();
+      expect(screen.getByText(`${FOLDER_EXTERNAL.title} (default)`)).toBeInTheDocument();
+      expect(await screen.findByText('Outside default folder')).toBeInTheDocument();
+      expect(screen.getByText('External folder check')).toBeInTheDocument();
+      expect(screen.queryByText('Folder not found')).not.toBeInTheDocument();
     });
 
     test('shows empty folders with 0 checks', async () => {
