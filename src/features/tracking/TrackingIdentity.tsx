@@ -22,6 +22,11 @@ export const TrackingIdentity = () => {
         stack_id: Number.isFinite(tenant.stackId) ? tenant.stackId : undefined,
       });
     }
+
+    return () => {
+      // clear on unmount so the identity is only ever reported while it is known to be current
+      setTrackingBaseProps({});
+    };
   }, [tenant]);
 
   return null;
