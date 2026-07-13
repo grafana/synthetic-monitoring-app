@@ -2,6 +2,7 @@ import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import {
   CHECK_IN_DELETABLE_FOLDER,
+  CHECK_IN_EXTERNAL_FOLDER,
   CHECK_IN_PRODUCTION,
   CHECK_IN_STAGING,
   CHECK_WITH_ORPHANED_FOLDER,
@@ -159,6 +160,18 @@ describe('CheckList - Folder Deletion on Bulk Delete', () => {
 
   it('does not offer folder deletion for orphaned folders', async () => {
     const { user } = await renderCheckList([CHECK_WITH_ORPHANED_FOLDER]);
+
+    const folderCheckbox = await screen.findByLabelText(/Select all checks in/);
+    await user.click(folderCheckbox);
+
+    await clickFolderDeleteButton(user, '1 selected');
+
+    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
+    expect(screen.queryByText(/Delete folder/)).not.toBeInTheDocument();
+  });
+
+  it('does not offer folder deletion for folders outside the default folder', async () => {
+    const { user } = await renderCheckList([CHECK_IN_EXTERNAL_FOLDER]);
 
     const folderCheckbox = await screen.findByLabelText(/Select all checks in/);
     await user.click(folderCheckbox);

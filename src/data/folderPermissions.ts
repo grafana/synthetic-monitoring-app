@@ -1,4 +1,4 @@
-import { Check } from 'types';
+import { Check, GrafanaFolder } from 'types';
 
 import { SMPermissions } from './permissions';
 
@@ -23,7 +23,7 @@ export interface FolderPermissionFlags {
  */
 export type FolderAccessState =
   | { type: 'loading' }
-  | { type: 'accessible'; permissions: FolderPermissionFlags }
+  | { type: 'accessible'; permissions: FolderPermissionFlags; folder?: GrafanaFolder }
   | { type: 'forbidden' }
   | { type: 'orphaned' };
 
@@ -39,9 +39,7 @@ export type FolderAccessState =
  *   forbidden:         folder exists but user cannot access it. Check is hidden.
  *   orphaned:          folder was deleted. SM RBAC applies directly.
  */
-export type CheckFolderStatus =
-  | { type: 'no-folder-context' }
-  | FolderAccessState;
+export type CheckFolderStatus = { type: 'no-folder-context' } | FolderAccessState;
 
 /**
  * The effective permissions for a check, combining SM RBAC and folder permissions.
@@ -64,7 +62,7 @@ export function resolveCheckFolderStatus(
   check: Pick<Check, 'folderUid'>,
   folderDetailsByUid: Map<string, FolderAccessState>,
   isFoldersEnabled: boolean,
-  defaultFolderUid?: string,
+  defaultFolderUid?: string
 ): CheckFolderStatus {
   if (!isFoldersEnabled) {
     return { type: 'no-folder-context' };
@@ -116,10 +114,7 @@ export function isCheckVisible(folderStatus: CheckFolderStatus): boolean {
  *   - loading → visible, read only (actions disabled until resolved)
  *   - forbidden → all false (check shouldn't be visible, but safe fallback)
  */
-export function computeCheckPermissions(
-  smPerms: SMPermissions,
-  folderStatus: CheckFolderStatus,
-): CheckPermissions {
+export function computeCheckPermissions(smPerms: SMPermissions, folderStatus: CheckFolderStatus): CheckPermissions {
   switch (folderStatus.type) {
     case 'no-folder-context':
     case 'orphaned':
