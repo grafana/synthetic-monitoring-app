@@ -275,13 +275,17 @@ function FolderTreeBranch({
   const isAllInFolderSelected = totalChecks > 0 && selectedCount === totalChecks;
   const isSomeInFolderSelected = selectedCount > 0 && !isAllInFolderSelected;
 
+  // External folders live outside the SM folder tree and may hold unrelated
+  // content (dashboards, subfolders, alert rules), so we never offer to delete
+  // them -- the badge guides the user to move their checks out instead.
   const deleteFolderTarget =
-    isAllInFolderSelected && folderCanDelete && !node.isDefault && !node.isOrphaned
+    isAllInFolderSelected && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isExternal
       ? { uid: node.folderUid, title: node.folder?.title ?? node.folderUid }
       : undefined;
 
   const isEmpty = totalChecks === 0;
-  const canDeleteEmptyFolder = isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned;
+  const canDeleteEmptyFolder =
+    isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isExternal;
   const [emptyFolderSelected, setEmptyFolderSelected] = useState(false);
   const [showDeleteEmptyFolderModal, setShowDeleteEmptyFolderModal] = useState(false);
   const { mutateAsync: deleteFolderAsync } = useDeleteFolder();
