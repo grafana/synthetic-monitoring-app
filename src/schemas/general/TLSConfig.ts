@@ -1,6 +1,7 @@
 import { z, ZodType } from 'zod';
 
 import { TLSConfig } from 'types';
+import { isSecretRef } from 'components/Checkster/utils/secrets';
 
 const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
 const PEM_FOOTER = '-----END CERTIFICATE-----';
@@ -37,6 +38,10 @@ function validateTLSCACert(caCert?: string) {
     return true;
   }
 
+  if (isSecretRef(caCert)) {
+    return true;
+  }
+
   if (caCert.indexOf(PEM_HEADER) < 0 || caCert.indexOf(PEM_FOOTER) < 0) {
     return false;
   }
@@ -49,6 +54,10 @@ function validateTLSClientCert(clientCert?: string) {
     return true;
   }
 
+  if (isSecretRef(clientCert)) {
+    return true;
+  }
+
   if (clientCert.indexOf(PEM_HEADER) < 0 || clientCert.indexOf(PEM_FOOTER) < 0) {
     return false;
   }
@@ -58,6 +67,10 @@ function validateTLSClientCert(clientCert?: string) {
 
 function validateTLSClientKey(clientKey?: string) {
   if (!clientKey) {
+    return true;
+  }
+
+  if (isSecretRef(clientKey)) {
     return true;
   }
 
