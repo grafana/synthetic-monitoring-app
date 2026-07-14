@@ -68,14 +68,7 @@ export function FormSecretOrPlaintextField(props: FormSecretOrPlaintextFieldProp
     return <PlaintextField {...props} />;
   }
 
-  return (
-    <QueryErrorBoundary
-      title="Error loading secrets"
-      content="Failed to load secrets. Please check your connection and try again."
-    >
-      <SecretOrPlaintextField {...props} />
-    </QueryErrorBoundary>
-  );
+  return <SecretOrPlaintextField {...props} />;
 }
 
 /**
@@ -157,8 +150,6 @@ function SecretOrPlaintextField({
     }
   }, [value]);
 
-  const { data: secrets = [], isLoading } = useSecrets(true);
-
   const handleModeChange = (next: FieldMode) => {
     setMode(next);
     // Only clear a value that belongs to the *other* mode, so we never persist a
@@ -169,19 +160,6 @@ function SecretOrPlaintextField({
       setValue(field, '', { shouldDirty: true });
     }
   };
-
-  const selectedSecret = parseSecretName(value);
-  const options: Array<ComboboxOption<string>> = secrets.map((secret) => ({
-    label: secret.name,
-    value: secret.name,
-    description: secret.description,
-  }));
-  // Surface a referenced-but-missing secret so its value is not silently lost.
-  if (selectedSecret && !options.some((option) => option.value === selectedSecret)) {
-    options.push({ label: `${selectedSecret} (not found)`, value: selectedSecret });
-  }
-
-  const hasNoSecrets = !isLoading && secrets.length === 0;
 
   return (
     <div className={cx(styles.wrapper, { [styles.grow]: grow })}>
@@ -200,19 +178,15 @@ function SecretOrPlaintextField({
       </div>
       <StyledField htmlFor={id} {...getFieldErrorProps(errors, field)}>
         {mode === 'secret' ? (
-          <Combobox<string>
-            id={id}
-            options={options}
-            value={selectedSecret ?? null}
-            disabled={disabled}
-            placeholder={isLoading ? 'Loading secrets...' : 'Select a secret'}
-            onChange={(option) => {
-              const name = typeof option === 'string' ? option : option?.value;
-              if (name) {
-                setValue(field, buildSecretRef(name), { shouldDirty: true });
-              }
-            }}
-          />
+          // Scope the secrets fetch (and its error boundary) to Secret mode only,
+          // so a failing secrets-list request never blocks plaintext entry in
+          // Value mode.
+          <QueryErrorBoundary
+            title="Error loading secrets"
+            content="Failed to load secrets. Please check your connection and try again."
+          >
+            <SecretPicker id={id} field={field} value={value} disabled={disabled} />
+          </QueryErrorBoundary>
         ) : variant === 'textarea' ? (
           <TextArea
             id={id}
@@ -226,16 +200,70 @@ function SecretOrPlaintextField({
           <PasswordInput id={id} placeholder={placeholder} disabled={disabled} {...register(field)} />
         )}
       </StyledField>
-
-      {mode === 'secret' && hasNoSecrets && (
-        <Text variant="bodySmall" color="secondary">
-          No secrets available.{' '}
-          <TextLink href={`${getRoute(AppRoutes.Config)}/secrets`} variant="bodySmall">
-            Create one in Config
-          </TextLink>
-        </Text>
-      )}
     </div>
+  );
+}
+
+/**
+ * The Secret-mode control: a combobox of available secrets. Isolated into its
+ * own component so `useSecrets` (and the surrounding error boundary) only mount
+ * in Secret mode — a secrets-list failure must not take down Value-mode
+ * plaintext entry.
+ */
+function SecretPicker({
+  id,
+  field,
+  value,
+  disabled,
+}: {
+  id: string;
+  field: CheckFormFieldPath;
+  value: string | undefined;
+  disabled?: boolean;
+}) {
+  const styles = useStyles2(getStyles);
+  const { setValue } = useFormContext<CheckFormValues>();
+  const { data: secrets = [], isLoading } = useSecrets(true);
+
+  const selectedSecret = parseSecretName(value);
+  const options: Array<ComboboxOption<string>> = secrets.map((secret) => ({
+    label: secret.name,
+    value: secret.name,
+    description: secret.description,
+  }));
+  // Surface a referenced-but-missing secret so its value is not silently lost.
+  if (selectedSecret && !options.some((option) => option.value === selectedSecret)) {
+    options.push({ label: `${selectedSecret} (not found)`, value: selectedSecret });
+  }
+
+  const hasNoSecrets = !isLoading && secrets.length === 0;
+
+  return (
+    <>
+      <Combobox<string>
+        id={id}
+        options={options}
+        value={selectedSecret ?? null}
+        disabled={disabled}
+        placeholder={isLoading ? 'Loading secrets...' : 'Select a secret'}
+        onChange={(option) => {
+          const name = typeof option === 'string' ? option : option?.value;
+          if (name) {
+            setValue(field, buildSecretRef(name), { shouldDirty: true });
+          }
+        }}
+      />
+      {hasNoSecrets && (
+        <div className={styles.hint}>
+          <Text variant="bodySmall" color="secondary">
+            No secrets available.{' '}
+            <TextLink href={`${getRoute(AppRoutes.Config)}/secrets`} variant="bodySmall">
+              Create one in Config
+            </TextLink>
+          </Text>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -259,5 +287,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   label: css({
     marginBottom: 0,
+  }),
+  hint: css({
+    marginTop: theme.spacing(0.5),
   }),
 });

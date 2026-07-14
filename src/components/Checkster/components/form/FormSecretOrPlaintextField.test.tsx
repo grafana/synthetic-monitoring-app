@@ -187,3 +187,22 @@ it('reverts to Value mode when the form is reset to an empty value', async () =>
   // leave an empty Secret picker.
   expect(screen.getByRole('radio', { name: 'Value' })).toBeChecked();
 });
+
+it('keeps Value mode usable when the secrets list fails to load', () => {
+  // Value mode never calls the secrets API, so a failing secrets-list request
+  // (which the Secret-mode error boundary would otherwise surface) must not
+  // block plaintext entry.
+  (useSecrets as jest.Mock).mockImplementation(() => {
+    throw new Error('failed to load secrets');
+  });
+
+  formTestRenderer(FormSecretOrPlaintextField, {
+    field: FIELD,
+    label: 'Token',
+    variant: 'password',
+    allowSecrets: true,
+  });
+
+  expect(screen.getByRole('radio', { name: 'Value' })).toBeChecked();
+  expect(screen.getByLabelText('Token')).toBeEnabled();
+});
