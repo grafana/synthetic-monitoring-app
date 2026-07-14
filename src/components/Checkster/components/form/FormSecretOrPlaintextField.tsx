@@ -3,6 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Combobox, ComboboxOption, Input, Label, RadioButtonGroup, Text, TextArea, TextLink, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { get } from 'lodash';
 
 import { CheckFormFieldPath } from '../../types';
 import { CheckFormValues, FeatureName } from 'types';
@@ -42,13 +43,6 @@ export interface FormSecretOrPlaintextFieldProps {
 }
 
 /**
- * A credential field that can hold either a plaintext value or a reference to a
- * secret (`${secrets.<name>}`). When secrets are available it renders a
- * "Value / Secret" toggle; picking a secret writes the reference into the same
- * form field. The `secretManagerEnabled` flag is not exposed here — it is
- * inferred from field values at serialization time.
- */
-/**
  * Whether a credential field can reference a secret: the field opts in via
  * `allowSecrets`, the feature flag is on, and the user can read secrets. Exported
  * so a sibling plain field (e.g. the basic-auth username) can match this field's
@@ -60,6 +54,13 @@ export function useSecretsFieldEnabled(allowSecrets?: boolean): boolean {
   return Boolean(allowSecrets && isEnabled && canReadSecrets);
 }
 
+/**
+ * A credential field that can hold either a plaintext value or a reference to a
+ * secret (`${secrets.<name>}`). When secrets are available it renders a
+ * "Value / Secret" toggle; picking a secret writes the reference into the same
+ * form field. The `secretManagerEnabled` flag is not exposed here — it is
+ * inferred from field values at serialization time.
+ */
 export function FormSecretOrPlaintextField(props: FormSecretOrPlaintextFieldProps) {
   const secretsAvailable = useSecretsFieldEnabled(props.allowSecrets);
 
@@ -79,8 +80,8 @@ export function FormSecretOrPlaintextField(props: FormSecretOrPlaintextFieldProp
 
 /**
  * Plaintext-only render (secrets unavailable). If the field already holds a
- * secret reference (e.g. the check was created elsewhere), show it in a disabled
- * input so the reference is preserved on save rather than silently dropped.
+ * secret reference (e.g. the check was created elsewhere), show it read-only so
+ * the reference is preserved on save rather than silently dropped.
  */
 function PlaintextField({ field, label, description, required, variant, rows, placeholder, grow }: FormSecretOrPlaintextFieldProps) {
   const {
@@ -101,7 +102,10 @@ function PlaintextField({ field, label, description, required, variant, rows, pl
       {...getFieldErrorProps(errors, field)}
     >
       {holdsSecret ? (
-        <Input id={id} type="text" disabled {...register(field)} />
+        // Read-only, not disabled: React Hook Form omits disabled registered
+        // fields from the submitted values, which would drop the very reference
+        // this fallback is meant to preserve.
+        <Input id={id} type="text" readOnly {...register(field)} />
       ) : variant === 'textarea' ? (
         <TextArea id={id} rows={rows ?? 3} placeholder={placeholder} disabled={disabled} aria-label={label} {...register(field)} />
       ) : (
@@ -126,19 +130,25 @@ function SecretOrPlaintextField({
     register,
     setValue,
     watch,
-    formState: { errors, disabled },
+    formState: { errors, disabled, defaultValues },
   } = useFormContext<CheckFormValues>();
   const id = useDOMId();
   const value = watch(field) as string | undefined;
+  const defaultValue = get(defaultValues, field) as string | undefined;
 
-  // Seed the mode from the current value, then keep it in sync when the value
-  // changes externally (e.g. after the form is reset with new check data, or a
-  // ${secrets.*} reference is pasted into the value input): a secret reference
-  // must show the secret picker, not a masked input. An empty value keeps the
-  // current mode, so switching to "Secret" to pick a secret does not
-  // immediately flip back to "Value".
   const [mode, setMode] = useState<FieldMode>(() => (isSecretRef(value) ? 'secret' : 'plaintext'));
 
+  // Re-derive the mode from the current value on mount and whenever the form is
+  // reset (this field's default value changes). This returns an emptied field to
+  // Value mode after a reset rather than leaving an empty Secret picker behind.
+  useEffect(() => {
+    setMode(isSecretRef(value) ? 'secret' : 'plaintext');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs on reset (defaultValue); reads the latest value intentionally
+  }, [defaultValue]);
+
+  // A ${secrets.*} reference typed/pasted while in Value mode must flip to Secret
+  // mode; a plaintext value flips back. An empty value keeps the current mode so
+  // switching to Secret to pick a secret does not immediately bounce to Value.
   useEffect(() => {
     if (isSecretRef(value)) {
       setMode('secret');

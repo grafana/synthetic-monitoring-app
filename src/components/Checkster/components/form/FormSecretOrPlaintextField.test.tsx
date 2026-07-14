@@ -1,4 +1,7 @@
-import { screen } from '@testing-library/react';
+import React from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MOCKED_SECRETS } from 'test/fixtures/secrets';
 import { runTestAsSecretsNoAccess, runTestAsSecretsReadOnly, selectOption } from 'test/utils';
 
@@ -129,4 +132,58 @@ it('links to the secrets config page in secret mode when no secrets exist', asyn
 
   const link = screen.getByRole('link', { name: /Create one in Config/i });
   expect(link).toHaveAttribute('href', expect.stringContaining('/config/secrets'));
+});
+
+it('keeps an existing secret reference in the submitted values when secrets are unavailable', async () => {
+  // Secrets UI unavailable -> the read-only plaintext fallback renders. A disabled
+  // input would be dropped from React Hook Form's submit payload; read-only is not.
+  runTestAsSecretsNoAccess();
+  const onSubmit = jest.fn();
+  const user = userEvent.setup();
+
+  function Harness() {
+    const methods = useForm({ defaultValues: { settings: { http: { bearerToken: '${secrets.test-secret-1}' } } } });
+    return (
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <FormSecretOrPlaintextField field={FIELD} label="Token" variant="password" allowSecrets />
+          <button type="submit">Save</button>
+        </form>
+      </FormProvider>
+    );
+  }
+
+  render(<Harness />);
+  await user.click(screen.getByRole('button', { name: 'Save' }));
+
+  expect(onSubmit).toHaveBeenCalledTimes(1);
+  expect(onSubmit.mock.calls[0][0]).toMatchObject({
+    settings: { http: { bearerToken: '${secrets.test-secret-1}' } },
+  });
+});
+
+it('reverts to Value mode when the form is reset to an empty value', async () => {
+  const user = userEvent.setup();
+
+  function Harness() {
+    const methods = useForm({ defaultValues: { settings: { http: { bearerToken: '${secrets.test-secret-1}' } } } });
+    return (
+      <FormProvider {...methods}>
+        <FormSecretOrPlaintextField field={FIELD} label="Token" variant="password" allowSecrets />
+        <button type="button" onClick={() => methods.reset({ settings: { http: { bearerToken: '' } } })}>
+          Reset form
+        </button>
+      </FormProvider>
+    );
+  }
+
+  render(<Harness />);
+  // Starts in Secret mode because the field holds a reference.
+  expect(screen.getByRole('radio', { name: 'Secret' })).toBeChecked();
+
+  await user.click(screen.getByRole('button', { name: 'Reset form' }));
+
+  // A reset that empties the field must return the control to Value mode, not
+  // leave an empty Secret picker.
+  expect(screen.getByRole('radio', { name: 'Value' })).toBeChecked();
 });
