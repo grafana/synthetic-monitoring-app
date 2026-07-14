@@ -115,3 +115,18 @@ it('clears a secret reference when switching to Value mode so it is not saved as
   expect(screen.getByRole('radio', { name: 'Value' })).toBeChecked();
   expect(screen.getByTestId(TestFormTestId.Value)).not.toHaveTextContent('secrets.test-secret-1');
 });
+
+it('links to the secrets config page in secret mode when no secrets exist', async () => {
+  (useSecrets as jest.Mock).mockReturnValue({ data: [], isLoading: false });
+  const user = formTestRenderer(FormSecretOrPlaintextField, {
+    field: FIELD,
+    label: 'Token',
+    variant: 'password',
+    allowSecrets: true,
+  });
+
+  await user.click(screen.getByRole('radio', { name: 'Secret' }));
+
+  const link = screen.getByRole('link', { name: /Create one in Config/i });
+  expect(link).toHaveAttribute('href', expect.stringContaining('/config/secrets'));
+});

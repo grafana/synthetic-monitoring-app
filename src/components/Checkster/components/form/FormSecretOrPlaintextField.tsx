@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Combobox, ComboboxOption, Input, RadioButtonGroup, Stack, TextArea } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Combobox, ComboboxOption, Input, Label, RadioButtonGroup, Text, TextArea, TextLink, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
 import { CheckFormFieldPath } from '../../types';
 import { CheckFormValues, FeatureName } from 'types';
+import { AppRoutes } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { useUserPermissions } from 'data/permissions';
 import { useSecrets } from 'data/useSecrets';
 import { useDOMId } from 'hooks/useDOMId';
@@ -45,10 +48,20 @@ export interface FormSecretOrPlaintextFieldProps {
  * form field. The `secretManagerEnabled` flag is not exposed here — it is
  * inferred from field values at serialization time.
  */
-export function FormSecretOrPlaintextField(props: FormSecretOrPlaintextFieldProps) {
+/**
+ * Whether a credential field can reference a secret: the field opts in via
+ * `allowSecrets`, the feature flag is on, and the user can read secrets. Exported
+ * so a sibling plain field (e.g. the basic-auth username) can match this field's
+ * taller, toggle-carrying label row when the toggle is shown.
+ */
+export function useSecretsFieldEnabled(allowSecrets?: boolean): boolean {
   const { isEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
   const { canReadSecrets } = useUserPermissions();
-  const secretsAvailable = Boolean(props.allowSecrets && isEnabled && canReadSecrets);
+  return Boolean(allowSecrets && isEnabled && canReadSecrets);
+}
+
+export function FormSecretOrPlaintextField(props: FormSecretOrPlaintextFieldProps) {
+  const secretsAvailable = useSecretsFieldEnabled(props.allowSecrets);
 
   if (!secretsAvailable) {
     return <PlaintextField {...props} />;
@@ -98,7 +111,17 @@ function PlaintextField({ field, label, description, required, variant, rows, pl
   );
 }
 
-function SecretOrPlaintextField({ field, label, description, required, variant, rows, placeholder, grow }: FormSecretOrPlaintextFieldProps) {
+function SecretOrPlaintextField({
+  field,
+  label,
+  description,
+  required,
+  variant,
+  rows,
+  placeholder,
+  grow,
+}: FormSecretOrPlaintextFieldProps) {
+  const styles = useStyles2(getStyles);
   const {
     register,
     setValue,
@@ -148,44 +171,83 @@ function SecretOrPlaintextField({ field, label, description, required, variant, 
     options.push({ label: `${selectedSecret} (not found)`, value: selectedSecret });
   }
 
+  const hasNoSecrets = !isLoading && secrets.length === 0;
+
   return (
-    <StyledField
-      grow={grow}
-      label={label}
-      description={description}
-      required={required}
-      htmlFor={id}
-      {...getFieldErrorProps(errors, field)}
-    >
-      <Stack direction="row" gap={1} alignItems="flex-start">
+    <div className={cx(styles.wrapper, { [styles.grow]: grow })}>
+      <div className={styles.header}>
+        <Label htmlFor={id} description={description} className={styles.label}>
+          {label}
+          {required ? ' *' : ''}
+        </Label>
         <RadioButtonGroup<FieldMode>
+          size="sm"
           options={MODE_OPTIONS}
           value={mode}
           onChange={handleModeChange}
           disabled={disabled}
         />
-        <div className={css({ flexGrow: 1, minWidth: 0 })}>
-          {mode === 'secret' ? (
-            <Combobox<string>
-              id={id}
-              options={options}
-              value={selectedSecret ?? null}
-              disabled={disabled}
-              placeholder={isLoading ? 'Loading secrets...' : 'Select a secret'}
-              onChange={(option) => {
-                const name = typeof option === 'string' ? option : option?.value;
-                if (name) {
-                  setValue(field, buildSecretRef(name), { shouldDirty: true });
-                }
-              }}
-            />
-          ) : variant === 'textarea' ? (
-            <TextArea id={id} rows={rows ?? 3} placeholder={placeholder} disabled={disabled} aria-label={label} {...register(field)} />
-          ) : (
-            <PasswordInput id={id} placeholder={placeholder} disabled={disabled} {...register(field)} />
-          )}
-        </div>
-      </Stack>
-    </StyledField>
+      </div>
+      <StyledField htmlFor={id} {...getFieldErrorProps(errors, field)}>
+        {mode === 'secret' ? (
+          <Combobox<string>
+            id={id}
+            options={options}
+            value={selectedSecret ?? null}
+            disabled={disabled}
+            placeholder={isLoading ? 'Loading secrets...' : 'Select a secret'}
+            onChange={(option) => {
+              const name = typeof option === 'string' ? option : option?.value;
+              if (name) {
+                setValue(field, buildSecretRef(name), { shouldDirty: true });
+              }
+            }}
+          />
+        ) : variant === 'textarea' ? (
+          <TextArea
+            id={id}
+            rows={rows ?? 3}
+            placeholder={placeholder}
+            disabled={disabled}
+            aria-label={label}
+            {...register(field)}
+          />
+        ) : (
+          <PasswordInput id={id} placeholder={placeholder} disabled={disabled} {...register(field)} />
+        )}
+      </StyledField>
+
+      {mode === 'secret' && hasNoSecrets && (
+        <Text variant="bodySmall" color="secondary">
+          No secrets available.{' '}
+          <TextLink href={`${getRoute(AppRoutes.Config)}/secrets`} variant="bodySmall">
+            Create one in Config
+          </TextLink>
+        </Text>
+      )}
+    </div>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  wrapper: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+  }),
+  grow: css({
+    flexGrow: 1,
+  }),
+  header: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: theme.spacing(1),
+    // The sm RadioButtonGroup is theme.spacing(3) tall; pin the row to it so a
+    // sibling plain field can match this height and keep both inputs aligned.
+    minHeight: theme.spacing(3),
+  }),
+  label: css({
+    marginBottom: 0,
+  }),
+});
