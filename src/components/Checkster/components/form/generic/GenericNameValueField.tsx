@@ -175,7 +175,7 @@ function getStyles(theme: GrafanaTheme2) {
       display: flex;
     `,
     field: css`
-      flex-grow: 1;
+      flex: 1 1 0;
     `,
     buttonContainer: css`
       padding-top: ${theme.spacing(0.75)};

@@ -2,7 +2,7 @@ import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useAppPluginInstalled } from '@grafana/runtime';
-import { Input, Stack, useStyles2 } from '@grafana/ui';
+import { IconButton, Input, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { KG_NAMESPACE_LABEL, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from 'features/knowledgeGraph/knowledgeGraph';
 import { KnowledgeGraphValueCombobox } from 'features/knowledgeGraph/KnowledgeGraphValueCombobox';
@@ -80,6 +80,13 @@ export function CostAttributionLabelsField({ calNames }: CostAttributionLabelsFi
                   }
                 />
               </StyledField>
+              {/* Reserve the remove-button column so rows align with the KG service link and custom label rows. */}
+              <IconButton
+                style={{ marginTop: '8px', visibility: 'hidden' }}
+                disabled
+                name="minus"
+                aria-label="Remove row"
+              />
             </Stack>
           );
         })}
@@ -91,10 +98,10 @@ export function CostAttributionLabelsField({ calNames }: CostAttributionLabelsFi
 function getStyles(theme: GrafanaTheme2) {
   return {
     nameField: css`
-      flex-grow: 1;
+      flex: 1 1 0;
     `,
     valueField: css`
-      flex-grow: 1;
+      flex: 1 1 0;
     `,
     srOnly: css`
       position: absolute;
