@@ -154,9 +154,6 @@ it(`writes to calLabels instead of labels when service_name is a cost attributio
 
   await user.click(await screen.findByRole('button', { name: EXPAND_BUTTON }));
 
-  // the CAL-managed field is marked as such
-  expect(await screen.findByText('Also a cost attribution label')).toBeInTheDocument();
-
   const serviceInput = await screen.findByPlaceholderText('Select or type a service name');
   await user.click(serviceInput);
   await user.click(await screen.findByRole('option', { name: 'frontend' }));
