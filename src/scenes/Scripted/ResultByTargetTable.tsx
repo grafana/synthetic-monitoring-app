@@ -23,6 +23,8 @@ export interface DataRow {
   latency: number;
 }
 
+const RESULTS_BY_TARGET_PAGE_SIZE = 50;
+
 export const ResultsByTargetTable = ({ checkType }: { checkType: CheckType }) => {
   const metricsDS = useMetricsDS();
   const label = checkType === CheckType.Scripted ? 'name' : 'url';
@@ -214,7 +216,8 @@ const ResultsByTargetTableView = ({ data, checkType }: { data?: PanelData; check
           expandableComponent={({ data }) => <ResultsByTargetTableRow data={data} checkType={checkType} />}
           //@ts-ignore - noDataText expects a string, but we want to render a component and it works
           noDataText={<Placeholder state={data?.state} errors={data?.errors} hasLoaded={hasLoaded} />}
-          pagination={false}
+          pagination={tableData.length > RESULTS_BY_TARGET_PAGE_SIZE}
+          paginationPerPage={RESULTS_BY_TARGET_PAGE_SIZE}
           id="assertion-table"
           name="Assertions"
         />
