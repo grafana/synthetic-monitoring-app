@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.57.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.56.0...v1.57.0) (2026-07-16)
+
+
+### Features
+
+* add Grafana Cloud org_id and stack_id to all tracking events ([#1758](https://github.com/grafana/synthetic-monitoring-app/issues/1758)) ([510e398](https://github.com/grafana/synthetic-monitoring-app/commit/510e398cf13ad196f2449fce4e0b296d2425c57b))
+* reference secrets from HTTP check credential fields ([#1754](https://github.com/grafana/synthetic-monitoring-app/issues/1754)) ([f4e58da](https://github.com/grafana/synthetic-monitoring-app/commit/f4e58daeaafd04251215126fab6a1440d20d0a96))
+
+
+### Fixes
+
+* distinguish multiple notification policy trees in routing preview ([#1734](https://github.com/grafana/synthetic-monitoring-app/issues/1734)) ([063660c](https://github.com/grafana/synthetic-monitoring-app/commit/063660c4856b6ac392a59c252d3f6c5f6d3a26e4))
+* paginate results by URL table to limit rendering ([#1760](https://github.com/grafana/synthetic-monitoring-app/issues/1760)) ([a1e0860](https://github.com/grafana/synthetic-monitoring-app/commit/a1e0860ccf2054d1cdac94207479ab84afe2b3d2))
+
 ## [1.56.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.55.0...v1.56.0) (2026-07-13)
 
 
