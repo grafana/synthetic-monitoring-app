@@ -3,6 +3,7 @@ import { PluginPage } from '@grafana/runtime';
 import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
 import { Stack } from '@grafana/ui';
+import { ConnectedServices } from 'features/knowledgeGraph/ConnectedServices';
 import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvents';
 
 import { Check, CheckType } from 'types';
@@ -73,6 +74,7 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
               <Stack direction="column" gap={2}>
                 <DashboardContainerAnnotations annotations={annotations}>
                   <DashboardHeader annotations={annotations} check={check} />
+                  <ConnectedServices check={check} />
                   {children}
                 </DashboardContainerAnnotations>
               </Stack>
