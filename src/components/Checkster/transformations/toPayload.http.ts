@@ -9,6 +9,7 @@ import {
 } from 'types';
 import { FALLBACK_CHECK_HTTP } from 'components/constants';
 
+import { isSecretRef } from '../utils/secrets';
 import { getBasePayloadValuesFromForm, getTlsConfigFromFormValues } from './toPayload.utils';
 
 export function getHTTPPayload(formValues: CheckFormValuesHttp): HTTPCheck {
@@ -35,11 +36,26 @@ function getHttpSettingsPayload(settings: Partial<HttpSettingsFormValues> | unde
   const { sslOptions, regexValidations, followRedirects, tlsConfig, ...restToKeep } = settings;
   const transformedTlsConfig = getTlsConfigFromFormValues(tlsConfig);
 
+  // Infer the per-check secret-manager flag from the credential fields rather
+  // than exposing a toggle: if any field the agent resolves holds a
+  // `${secrets.*}` reference, the check opts in to resolution. Computed from the
+  // pre-transform form values so the scan sees the literal reference (TLS certs
+  // are base64-encoded downstream). Username is excluded — the agent resolves
+  // only the basic-auth password. Omitted when false so checks that don't use
+  // secrets keep an unchanged payload (the API treats absent as false).
+  const secretManagerEnabled =
+    isSecretRef(settings.bearerToken) ||
+    isSecretRef(settings.basicAuth?.password) ||
+    isSecretRef(tlsConfig?.caCert) ||
+    isSecretRef(tlsConfig?.clientCert) ||
+    isSecretRef(tlsConfig?.clientKey);
+
   return sanitize({
     ...restToKeep,
     ...sslConfig,
     ...validationRegexes,
     ...transformedTlsConfig,
+    ...(secretManagerEnabled ? { secretManagerEnabled: true } : {}),
     noFollowRedirects: !followRedirects,
     method: settings?.method ?? FALLBACK_CHECK_HTTP.settings.http.method,
     headers: formattedHeaders,

@@ -105,7 +105,7 @@ export function HttpCheckContent() {
 
           <FormTabContent label="TLS">
             {/* TODO: This is not super transparent */}
-            <FormTLSConfigField field="settings.http" />
+            <FormTLSConfigField field="settings.http" allowSecrets />
           </FormTabContent>
 
           <FormTabContent label="Proxy">
