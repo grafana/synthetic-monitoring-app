@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useFormContext } from 'react-hook-form';
-import { useMatchInstancesToRouteTrees } from '@grafana/alerting';
+import { matchInstancesToRouteTrees, useMatchInstancesToRouteTrees } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Icon, LoadingPlaceholder, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -15,6 +15,7 @@ import {
   encodeReceiverForUrl,
   extractMatchersFromRoutes,
   generateAlertLabels,
+  getDefaultRoutingTree,
 } from './alertRoutingUtils';
 import { RouteTreeDisplay } from './RouteTreeDisplay';
 
@@ -37,23 +38,27 @@ const AlertRoutingPreviewContent: React.FC<AlertRoutingPreviewProps> = ({ alertT
     return generateAlertLabels(alertType, { checkType, frequency, customLabels, job, instance });
   }, [alertType, checkType, frequency, customLabels, job, instance]);
 
-  const {
-    matchInstancesToRouteTrees,
-    isLoading,
-    isError,
-    currentData: routingTreeData,
-  } = useMatchInstancesToRouteTrees();
+  const { isLoading, isError, currentData: routingTreeData } = useMatchInstancesToRouteTrees();
 
   const routeMatches = useMemo(() => {
-    if (!matchInstancesToRouteTrees || isLoading || isError) {
+    if (isLoading || isError || !routingTreeData?.items) {
+      return [];
+    }
+    // SM alert rules are created without notification settings (see sm-api), so
+    // they carry no `__grafana_managed_route__` label and are always routed
+    // through the default (user-defined) tree — never through additional policy
+    // trees. Match only the default tree so the preview reflects real delivery
+    // instead of showing routes in trees the alert will never reach.
+    const defaultTree = getDefaultRoutingTree(routingTreeData.items);
+    if (!defaultTree) {
       return [];
     }
     try {
-      return matchInstancesToRouteTrees([convertLabelsToLabelPairs(alertLabels)]);
+      return matchInstancesToRouteTrees([defaultTree], [convertLabelsToLabelPairs(alertLabels)]);
     } catch (error) {
       return [];
     }
-  }, [matchInstancesToRouteTrees, isLoading, isError, alertLabels]);
+  }, [isLoading, isError, routingTreeData, alertLabels]);
 
   const highlightMatchers = useMemo(() => {
     return extractMatchersFromRoutes(routeMatches);
@@ -64,8 +69,7 @@ const AlertRoutingPreviewContent: React.FC<AlertRoutingPreviewProps> = ({ alertT
       return null;
     }
 
-    // Find the default routing tree (usually the first one)
-    const defaultTree = routingTreeData.items[0];
+    const defaultTree = getDefaultRoutingTree(routingTreeData.items);
     if (!defaultTree?.spec?.defaults) {
       return null;
     }
