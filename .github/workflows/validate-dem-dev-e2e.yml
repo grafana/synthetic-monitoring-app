@@ -44,7 +44,7 @@ jobs:
           retention-days: 1
 
   e2e:
-    name: Read and write journeys
+    name: dem-dev closed-loop journeys
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -63,7 +63,7 @@ jobs:
         shell: bash
         run: |
           set -a
-          source e2e/dem-dev/runtime.env
+          source e2e/environments/dem-dev/runtime.env
           set +a
           {
             echo "dem_dev_ref=${DEM_DEV_REF}"
@@ -174,17 +174,17 @@ jobs:
         env:
           CI: true
           DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
-          PLAYWRIGHT_BLOB_OUTPUT_FILE: artifacts/blob-report/read.zip
-          PLAYWRIGHT_OUTPUT_DIR: e2e-results/read
-        run: yarn e2e:dem:test --project=read
+          PLAYWRIGHT_BLOB_OUTPUT_FILE: artifacts/blob-report/dem-dev-read.zip
+          PLAYWRIGHT_OUTPUT_DIR: e2e-results/dem-dev/read
+        run: yarn e2e:dem:test --project=dem-dev-read
 
       - name: Run write journeys
         env:
           CI: true
           DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
-          PLAYWRIGHT_BLOB_OUTPUT_FILE: artifacts/blob-report/write.zip
-          PLAYWRIGHT_OUTPUT_DIR: e2e-results/write
-        run: yarn e2e:dem:test --project=write --no-deps
+          PLAYWRIGHT_BLOB_OUTPUT_FILE: artifacts/blob-report/dem-dev-write.zip
+          PLAYWRIGHT_OUTPUT_DIR: e2e-results/dem-dev/write
+        run: yarn e2e:dem:test --project=dem-dev-write --no-deps
 
       - name: Capture dem-dev diagnostics
         if: failure()
@@ -245,7 +245,7 @@ jobs:
           DEM_DEV_ARTIFACT_URL: ${{ steps.dem-dev-artifact.outputs.artifact-url }}
         run: |
           {
-            echo "## dem-dev E2E"
+            echo "## dem-dev closed-loop E2E"
             echo
             echo "| Item | Value |"
             echo "| --- | --- |"

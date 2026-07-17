@@ -1,8 +1,14 @@
-# End-to-end testing with dem-dev
+# Closed-loop end-to-end testing with dem-dev
 
 This prototype runs the plugin against a real local Synthetic Monitoring stack, seeds that
 stack with a deterministic historical scenario, and drives the resulting UI with Playwright.
 The same lifecycle is used locally and in pull-request CI.
+
+These are deterministic, closed-loop system tests. They exercise the real plugin, Grafana,
+SM API, MySQL, Prometheus, and Loki while using local control-plane/auth mocks and generated
+history. They do not validate Grafana Cloud deployment, provisioning, routing, authentication,
+or live service configuration. A future `grafana-cloud` suite will cover those deployed-system
+concerns with a separate Playwright configuration, workflow, credentials, and cleanup contract.
 
 Feature-on and feature-off browser tests can share this runtime. See
 [Feature flags in dem-dev E2E tests](dem-dev-feature-flags.md) for the typed test contract and the
@@ -20,6 +26,29 @@ The app repository owns:
 owns scenario definitions, ingestion verification, and the expected-values manifest consumed
 by the browser test.
 
+The app's E2E directory separates runtime inputs from reusable test code and executable
+journeys:
+
+```text
+e2e/
+├── environments/
+│   └── dem-dev/           # pinned closed-loop runtime inputs
+├── support/
+│   ├── checks.ts          # environment-independent app navigation
+│   └── dem-dev/           # scenario and feature-profile helpers
+├── tests/
+│   ├── dem-dev/
+│   │   ├── read/          # journeys that observe seeded state
+│   │   └── write/         # journeys that mutate and restore seeded state
+│   └── grafana-cloud/     # future deployed-environment journeys
+└── tsconfig.json
+```
+
+Only `tests/` contains executable specs. The target environment is always the first directory
+beneath `tests/`; read/write is a dem-dev isolation boundary, not a universal E2E taxonomy.
+Scenario definitions remain owned by dem-dev; the app reads the generated manifest from
+`artifacts/dem-dev/scenario.json` instead of maintaining a second scenario fixture.
+
 The app bridge delegates runtime commands to dem-dev's `scripts/sm-e2e.sh` when the selected
 dem-dev revision provides it. It temporarily retains its original lifecycle implementation
 as a compatibility fallback because the POC runtime lock predates that interface; after the
@@ -27,9 +56,9 @@ lock advances to a published dem-dev revision, the fallback can be deleted.
 
 The current workflow still checks out `dem-dev`, `synthetic-monitoring-api`, and
 `synthetic-monitoring-agent`. Their exact revisions are visible in
-[`e2e/dem-dev/runtime.env`](../../e2e/dem-dev/runtime.env). This is transitional: the intended
-runtime release replaces those three revisions with one version containing pinned runtime
-images and a scenario runner with its agent collector compiled in.
+[`e2e/environments/dem-dev/runtime.env`](../../e2e/environments/dem-dev/runtime.env). This is
+transitional: the intended runtime release replaces those three revisions with one version
+containing pinned runtime images and a scenario runner with its agent collector compiled in.
 
 ## Local workflow
 
@@ -69,12 +98,14 @@ yarn e2e:ui
 To run the same read-then-write buckets shown in CI without using UI mode:
 
 ```bash
-yarn e2e:dem:test --project=read
-yarn e2e:dem:test --project=write --no-deps
+yarn e2e:dem:test --project=dem-dev-read
+yarn e2e:dem:test --project=dem-dev-write --no-deps
 ```
 
 The write journey restores the seeded check to its original enabled state. Running `yarn e2e`
-without a project runs both buckets in order because the write project depends on read.
+without a project uses `playwright.dem-dev.config.ts` and runs both buckets in order because
+the dem-dev write project depends on dem-dev read. A future Grafana Cloud suite must use a
+different explicit configuration rather than being added to this default command.
 
 > `yarn e2e:dem:seed` defaults to `DEM_E2E_CLEAN=true`. It wipes all Prometheus and Loki data
 > owned by the selected dem-dev runtime before writing the scenario. Use a disposable runtime

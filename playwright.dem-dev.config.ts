@@ -5,7 +5,7 @@ const baseURL = process.env.GRAFANA_URL ?? 'http://localhost:3000';
 const captureEveryJourney = Boolean(process.env.CI) || process.env.PLAYWRIGHT_CAPTURE === 'always';
 
 export default defineConfig<PluginOptions>({
-  testDir: './e2e',
+  testDir: './e2e/tests/dem-dev',
   outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR ?? './e2e-results',
   timeout: 60_000,
   expect: {
@@ -26,15 +26,15 @@ export default defineConfig<PluginOptions>({
   },
   projects: [
     {
-      name: 'read',
+      name: 'dem-dev-read',
       testMatch: /read\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },
     },
     {
-      name: 'write',
-      dependencies: ['read'],
+      name: 'dem-dev-write',
+      dependencies: ['dem-dev-read'],
       testMatch: /write\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],

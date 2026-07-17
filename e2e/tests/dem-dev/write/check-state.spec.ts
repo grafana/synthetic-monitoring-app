@@ -1,13 +1,14 @@
 import { expect, test } from '@grafana/plugin-e2e';
 
-import { readScenarioManifest } from '../support/scenario';
+import { CHECKS_TEST_ID } from '../../../../src/test/dataTestIds.constants';
+import { readScenarioManifest } from '../../../support/dem-dev/scenarioManifest';
 
 test.describe('dem-dev write journeys', () => {
   const manifest = readScenarioManifest();
 
   test('disables and restores the scenario-defined check', async ({ page }, testInfo) => {
     const checkCard = page
-      .getByTestId('checks card')
+      .getByTestId(CHECKS_TEST_ID.card)
       .filter({ has: page.getByRole('heading', { name: manifest.job, exact: true }) });
     let restoreRequired = false;
 
