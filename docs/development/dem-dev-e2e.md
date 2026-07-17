@@ -62,6 +62,16 @@ yarn e2e:dem:seed
 yarn e2e:ui
 ```
 
+To run the same read-then-write buckets shown in CI without using UI mode:
+
+```bash
+yarn e2e:dem:test --project=read
+yarn e2e:dem:test --project=write --no-deps
+```
+
+The write journey restores the seeded check to its original enabled state. Running `yarn e2e`
+without a project runs both buckets in order because the write project depends on read.
+
 > `yarn e2e:dem:seed` defaults to `DEM_E2E_CLEAN=true`. It wipes all Prometheus and Loki data
 > owned by the selected dem-dev runtime before writing the scenario. Use a disposable runtime
 > for isolation, or set `DEM_E2E_CLEAN=false` when intentionally appending to a developer stack.
@@ -75,8 +85,9 @@ DEM_E2E_DURATION_HOURS=1 \
 yarn e2e:dem:seed
 ```
 
-The browser test reads `artifacts/dem-dev/scenario.json`, finds the generated check by the
-manifest's job name, verifies its target/frequency/probe topology, and opens its dashboard.
+The read browser journey uses `artifacts/dem-dev/scenario.json` to find the generated check,
+verify its target/frequency/probe topology, and open its dashboard. The write journey disables
+and restores that check to exercise a mutation against the real API.
 
 For the CI-shaped lifecycle, including cleanup:
 
@@ -86,6 +97,13 @@ DEM_DEV_ROOT=/path/to/dem-dev yarn e2e:dem
 
 Set `DEM_E2E_KEEP_STACK=true` to retain a failed or successful stack for local inspection.
 Otherwise failures capture per-container logs before teardown.
+
+Set `PLAYWRIGHT_CAPTURE=always` to retain videos and screenshots for every local journey. CI
+does this automatically, merges the read and write results into one HTML report, and uploads
+that report alongside the raw recordings for 14 days. Traces are retained when a journey
+fails. The workflow exposes separate timings for build, dependency/browser installation,
+runtime startup, scenario seeding, read journeys, write journeys, report generation, and
+teardown so startup improvements can be measured directly in GitHub Actions.
 
 ## Disposable runtime configuration
 

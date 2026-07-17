@@ -2,10 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 import type { PluginOptions } from '@grafana/plugin-e2e';
 
 const baseURL = process.env.GRAFANA_URL ?? 'http://localhost:3000';
+const captureEveryJourney = Boolean(process.env.CI) || process.env.PLAYWRIGHT_CAPTURE === 'always';
 
 export default defineConfig<PluginOptions>({
   testDir: './e2e',
-  outputDir: './e2e-results',
+  outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR ?? './e2e-results',
   timeout: 60_000,
   expect: {
     timeout: 30_000,
@@ -15,17 +16,26 @@ export default defineConfig<PluginOptions>({
   retries: 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI
-    ? [['line'], ['html', { open: 'never', outputFolder: 'artifacts/playwright-report' }]]
+    ? [['line'], ['github'], ['blob']]
     : [['list'], ['html', { open: 'never', outputFolder: 'artifacts/playwright-report' }]],
   use: {
     baseURL,
-    screenshot: 'only-on-failure',
+    screenshot: captureEveryJourney ? 'on' : 'only-on-failure',
     trace: 'retain-on-failure',
-    video: 'retain-on-failure',
+    video: captureEveryJourney ? 'on' : 'retain-on-failure',
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'read',
+      testMatch: /read\/.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'write',
+      dependencies: ['read'],
+      testMatch: /write\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },

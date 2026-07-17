@@ -23,6 +23,7 @@
     "e2e:dem:doctor": "bash ./scripts/dem-dev-e2e.sh doctor",
     "e2e:dem:down": "bash ./scripts/dem-dev-e2e.sh down",
     "e2e:dem:seed": "bash ./scripts/dem-dev-e2e.sh seed",
+    "e2e:dem:test": "bash ./scripts/dem-dev-e2e.sh test",
     "e2e:dem:up": "bash ./scripts/dem-dev-e2e.sh up",
     "i18n-extract": "i18next-cli extract --sync-primary",
     "lint:dashboards": "./scripts/lint-dashboards.sh",
