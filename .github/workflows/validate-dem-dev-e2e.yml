@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: dem-dev-e2e-${{ github.event.pull_request.number || github.ref }}
@@ -35,12 +36,20 @@ jobs:
             echo "sm_agent_ref=${SM_AGENT_REF}"
           } >> "${GITHUB_OUTPUT}"
 
+      - name: Get cross-repository token
+        id: github-app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@580590a644e82e79bb2598bdaba0be245a14dda0 # create-github-app-token/v0.2.2
+        with:
+          github_app: sm-release-app
+
       - name: Check out dem-dev
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           repository: grafana/dem-dev
           ref: ${{ steps.runtime.outputs.dem_dev_ref }}
           path: work/dem-dev
+          token: ${{ steps.github-app-token.outputs.token }}
+          persist-credentials: false
 
       - name: Check out synthetic-monitoring-api
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
@@ -48,6 +57,8 @@ jobs:
           repository: grafana/synthetic-monitoring-api
           ref: ${{ steps.runtime.outputs.sm_api_ref }}
           path: work/synthetic-monitoring-api
+          token: ${{ steps.github-app-token.outputs.token }}
+          persist-credentials: false
 
       - name: Check out synthetic-monitoring-agent
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
