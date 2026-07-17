@@ -12,8 +12,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  sm-app:
-    name: SM app against dem-dev
+  build:
+    name: Build plugin under test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out synthetic-monitoring-app
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+
+      - name: Install app dependencies
+        run: |
+          corepack enable
+          yarn install --immutable
+
+      - name: Validate E2E types
+        run: yarn typecheck:e2e
+
+      - name: Build plugin
+        run: yarn build
+
+      - name: Upload plugin build
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: sm-plugin-dist
+          path: dist
+          retention-days: 1
+
+  e2e:
+    name: Read and write journeys
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -77,7 +110,7 @@ jobs:
           path: work/synthetic-monitoring-agent
 
       - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
 
@@ -101,17 +134,19 @@ jobs:
           tar -xzf "${archive}" -C "${RUNNER_TEMP}"
           sudo install "${RUNNER_TEMP}/tilt" /usr/local/bin/tilt
 
-      - name: Install app and browser dependencies
-        shell: bash
+      - name: Install app dependencies
         run: |
           corepack enable
           yarn install --immutable
-          yarn playwright install --with-deps chromium
 
-      - name: Validate E2E types and build plugin under test
-        run: |
-          yarn typecheck:e2e
-          yarn build
+      - name: Install Playwright browser
+        run: yarn playwright install --with-deps chromium
+
+      - name: Download plugin build
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          name: sm-plugin-dist
+          path: dist
 
       - name: Configure disposable dem-dev runtime
         env:
@@ -120,25 +155,101 @@ jobs:
           SM_AGENT_REPO: ${{ github.workspace }}/work/synthetic-monitoring-agent
         run: yarn e2e:dem:configure
 
-      - name: Seed and test the app
+      - name: Start dem-dev runtime
+        env:
+          DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
+        run: yarn e2e:dem:up
+
+      - name: Seed deterministic scenario
+        env:
+          DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
+        run: yarn e2e:dem:seed
+
+      - name: Run read journeys
         env:
           CI: true
           DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
-        run: yarn e2e:dem
+          PLAYWRIGHT_BLOB_OUTPUT_FILE: artifacts/blob-report/read.zip
+          PLAYWRIGHT_OUTPUT_DIR: e2e-results/read
+        run: yarn e2e:dem:test --project=read
 
-      - name: Ensure runtime is stopped
+      - name: Run write journeys
+        env:
+          CI: true
+          DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
+          PLAYWRIGHT_BLOB_OUTPUT_FILE: artifacts/blob-report/write.zip
+          PLAYWRIGHT_OUTPUT_DIR: e2e-results/write
+        run: yarn e2e:dem:test --project=write --no-deps
+
+      - name: Capture dem-dev diagnostics
+        if: failure()
+        env:
+          DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
+        run: yarn e2e:dem:diagnostics
+
+      - name: Stop dem-dev runtime
         if: always()
         env:
           DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
         run: yarn e2e:dem:down || true
 
-      - name: Upload E2E evidence
+      - name: Build Playwright HTML report
         if: always()
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: artifacts/playwright-report
+        shell: bash
+        run: |
+          shopt -s nullglob
+          reports=(artifacts/blob-report/*.zip)
+          if ((${#reports[@]} == 0)); then
+            echo "No Playwright blob reports were produced; skipping HTML report generation."
+            exit 0
+          fi
+          yarn playwright merge-reports --reporter=html artifacts/blob-report
+
+      - name: Upload Playwright report and recordings
+        id: playwright-artifact
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: dem-dev-e2e
+          name: dem-dev-playwright-report
           if-no-files-found: warn
           path: |
-            artifacts/dem-dev
             artifacts/playwright-report
             e2e-results
+          retention-days: 14
+
+      - name: Upload dem-dev diagnostics
+        id: dem-dev-artifact
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: dem-dev-runtime-evidence
+          if-no-files-found: warn
+          path: artifacts/dem-dev
+          retention-days: 14
+
+      - name: Summarize E2E run
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          DEM_DEV_REF: ${{ steps.runtime.outputs.dem_dev_ref }}
+          SM_API_REF: ${{ steps.runtime.outputs.sm_api_ref }}
+          SM_AGENT_REF: ${{ steps.runtime.outputs.sm_agent_ref }}
+          PLAYWRIGHT_ARTIFACT_URL: ${{ steps.playwright-artifact.outputs.artifact-url }}
+          DEM_DEV_ARTIFACT_URL: ${{ steps.dem-dev-artifact.outputs.artifact-url }}
+        run: |
+          {
+            echo "## dem-dev E2E"
+            echo
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Result | ${JOB_STATUS} |"
+            echo "| dem-dev | \`${DEM_DEV_REF}\` |"
+            echo "| SM API | \`${SM_API_REF}\` |"
+            echo "| SM agent | \`${SM_AGENT_REF}\` |"
+            echo
+            echo "Videos and screenshots are recorded for every Playwright journey; traces are retained on failure."
+            [[ -n "${PLAYWRIGHT_ARTIFACT_URL}" ]] && echo "- [Open Playwright report and recordings](${PLAYWRIGHT_ARTIFACT_URL})"
+            [[ -n "${DEM_DEV_ARTIFACT_URL}" ]] && echo "- [Download dem-dev runtime evidence](${DEM_DEV_ARTIFACT_URL})"
+          } >> "${GITHUB_STEP_SUMMARY}"

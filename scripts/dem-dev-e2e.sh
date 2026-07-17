@@ -238,10 +238,19 @@ seed() {
 }
 
 test_e2e() {
+  local grafana_url="${GRAFANA_URL:-}"
+  local grafana_port
+
+  if [[ -z "${grafana_url}" ]]; then
+    grafana_port="$(env_value GRAFANA_PORT)"
+    grafana_url="http://localhost:${grafana_port:-3000}"
+  fi
+
   note "==> Running manifest-driven Playwright checks"
+  note "    grafana=${grafana_url}"
   (
     cd "${APP_ROOT}"
-    DEM_SCENARIO_MANIFEST="${MANIFEST_PATH}" yarn e2e
+    DEM_SCENARIO_MANIFEST="${MANIFEST_PATH}" GRAFANA_URL="${grafana_url}" yarn e2e "$@"
   )
 }
 
@@ -311,6 +320,9 @@ run_all() {
 }
 
 command="${1:-}"
+if (($# > 0)); then
+  shift
+fi
 
 # New dem-dev revisions own the runtime lifecycle. Keep the implementation below
 # as a compatibility fallback until the app's pinned dem-dev revision contains
@@ -324,7 +336,7 @@ case "${command}" in
   doctor) doctor ;;
   up) up ;;
   seed) seed ;;
-  test) test_e2e ;;
+  test) test_e2e "$@" ;;
   diagnostics) diagnostics ;;
   down) down ;;
   run) run_all ;;
