@@ -40,7 +40,8 @@ jobs:
         id: github-app-token
         uses: grafana/shared-workflows/actions/create-github-app-token@580590a644e82e79bb2598bdaba0be245a14dda0 # create-github-app-token/v0.2.2
         with:
-          github_app: sm-release-app
+          github_app: synthetic-monitoring-ci
+          permission_set: dem-dev-e2e-read
 
       - name: Check out dem-dev
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
