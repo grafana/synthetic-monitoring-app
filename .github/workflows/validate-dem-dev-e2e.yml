@@ -76,8 +76,11 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
-          go-version-file: work/dem-dev/dev/scenarios/sm/history/go.mod
-          cache-dependency-path: work/dem-dev/dev/scenarios/sm/history/go.sum
+          go-version-file: work/synthetic-monitoring-api/go.mod
+          cache-dependency-path: |
+            work/synthetic-monitoring-api/go.sum
+            work/synthetic-monitoring-agent/go.sum
+            work/dem-dev/dev/scenarios/sm/history/go.sum
 
       - name: Install Tilt
         shell: bash
