@@ -43,6 +43,14 @@ jobs:
           github_app: synthetic-monitoring-ci
           permission_set: dem-dev-e2e-read
 
+      - name: Configure private Go module access
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          APP_TOKEN: ${{ steps.github-app-token.outputs.token }}
+        run: |
+          echo "machine github.com login ${GITHUB_ACTOR} password ${APP_TOKEN}" >> "${HOME}/.netrc"
+          chmod 600 "${HOME}/.netrc"
+
       - name: Check out dem-dev
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
