@@ -164,6 +164,9 @@ jobs:
 
       - name: Seed deterministic scenario
         env:
+          # The hosted runner and disposable dem-dev checkout have fresh data volumes.
+          # Skipping cleanup avoids a full Prometheus/Loki delete-and-wait cycle.
+          DEM_E2E_CLEAN: false
           DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
         run: yarn e2e:dem:seed
 

@@ -3,6 +3,7 @@ import runTime, { config } from '@grafana/runtime';
 import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import { OPEN_FEATURE_KEYS } from 'services/featureFlags';
+import type { SmFeatureName } from 'services/featureFlags.constants';
 import {
   LOGS_DATASOURCE,
   METRICS_DATASOURCE,
@@ -419,7 +420,7 @@ export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
   });
 
   Object.entries(overrides).forEach(([name, value]) => {
-    const openFeatureKey = OPEN_FEATURE_KEYS[name as FeatureName];
+    const openFeatureKey = OPEN_FEATURE_KEYS[name as SmFeatureName];
     if (openFeatureKey) {
       setTestFlag(openFeatureKey, Boolean(value));
     }

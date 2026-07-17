@@ -4,6 +4,10 @@ This prototype runs the plugin against a real local Synthetic Monitoring stack, 
 stack with a deterministic historical scenario, and drives the resulting UI with Playwright.
 The same lifecycle is used locally and in pull-request CI.
 
+Feature-on and feature-off browser tests can share this runtime. See
+[Feature flags in dem-dev E2E tests](dem-dev-feature-flags.md) for the typed test contract and the
+boundary between browser profiles and runtime profiles.
+
 ## Responsibility boundary
 
 The app repository owns:
@@ -75,6 +79,9 @@ without a project runs both buckets in order because the write project depends o
 > `yarn e2e:dem:seed` defaults to `DEM_E2E_CLEAN=true`. It wipes all Prometheus and Loki data
 > owned by the selected dem-dev runtime before writing the scenario. Use a disposable runtime
 > for isolation, or set `DEM_E2E_CLEAN=false` when intentionally appending to a developer stack.
+
+Pull-request CI uses a fresh hosted runner and disposable data volumes, so it sets
+`DEM_E2E_CLEAN=false` and avoids paying for a cleanup cycle before the first seed.
 
 The default scenario is `http-latency-spike`, rendered as 30 minutes of history ending at
 the current time. Override it without changing test code:
