@@ -1,0 +1,121 @@
+name: Validate dem-dev E2E
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dem-dev-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sm-app:
+    name: SM app against dem-dev
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out synthetic-monitoring-app
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      # This source-level lock is the temporary form of the future single
+      # dem-dev runtime version. It deliberately avoids moving branches.
+      - name: Read dem-dev runtime lock
+        id: runtime
+        shell: bash
+        run: |
+          set -a
+          source e2e/dem-dev/runtime.env
+          set +a
+          {
+            echo "dem_dev_ref=${DEM_DEV_REF}"
+            echo "sm_api_ref=${SM_API_REF}"
+            echo "sm_agent_ref=${SM_AGENT_REF}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Check out dem-dev
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          repository: grafana/dem-dev
+          ref: ${{ steps.runtime.outputs.dem_dev_ref }}
+          path: work/dem-dev
+
+      - name: Check out synthetic-monitoring-api
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          repository: grafana/synthetic-monitoring-api
+          ref: ${{ steps.runtime.outputs.sm_api_ref }}
+          path: work/synthetic-monitoring-api
+
+      - name: Check out synthetic-monitoring-agent
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          repository: grafana/synthetic-monitoring-agent
+          ref: ${{ steps.runtime.outputs.sm_agent_ref }}
+          path: work/synthetic-monitoring-agent
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: work/dem-dev/dev/scenarios/sm/history/go.mod
+          cache-dependency-path: work/dem-dev/dev/scenarios/sm/history/go.sum
+
+      - name: Install Tilt
+        shell: bash
+        run: |
+          archive="${RUNNER_TEMP}/tilt.tar.gz"
+          curl -fsSL \
+            https://github.com/tilt-dev/tilt/releases/download/v0.36.3/tilt.0.36.3.linux.x86_64.tar.gz \
+            -o "${archive}"
+          echo "23a71a6625fe1a801bf5f5a49d985aaf6da79606dcd5e6eaee5defbef90c8fef  ${archive}" | sha256sum --check
+          tar -xzf "${archive}" -C "${RUNNER_TEMP}"
+          sudo install "${RUNNER_TEMP}/tilt" /usr/local/bin/tilt
+
+      - name: Install app and browser dependencies
+        shell: bash
+        run: |
+          corepack enable
+          yarn install --immutable --ignore-engines
+          yarn playwright install --with-deps chromium
+
+      - name: Validate E2E types and build plugin under test
+        run: |
+          yarn typecheck:e2e
+          yarn build
+
+      - name: Configure disposable dem-dev runtime
+        env:
+          DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
+          SM_API_REPO: ${{ github.workspace }}/work/synthetic-monitoring-api
+          SM_AGENT_REPO: ${{ github.workspace }}/work/synthetic-monitoring-agent
+        run: yarn e2e:dem:configure
+
+      - name: Seed and test the app
+        env:
+          CI: true
+          DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
+        run: yarn e2e:dem
+
+      - name: Ensure runtime is stopped
+        if: always()
+        env:
+          DEM_DEV_ROOT: ${{ github.workspace }}/work/dem-dev
+        run: yarn e2e:dem:down || true
+
+      - name: Upload E2E evidence
+        if: always()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: dem-dev-e2e
+          if-no-files-found: warn
+          path: |
+            artifacts/dem-dev
+            artifacts/playwright-report
+            e2e-results
