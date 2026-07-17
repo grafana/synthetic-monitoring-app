@@ -1,0 +1,29 @@
+{
+  "scenario": "http-latency-spike",
+  "dsl_version": 1,
+  "seed": 42,
+  "job": "backfill-http-latency",
+  "target": "https://shop.example",
+  "start": "2026-07-17T09:00:00Z",
+  "end": "2026-07-17T09:30:00Z",
+  "frequency_ms": 60000,
+  "check": {},
+  "probes": {
+    "probe-1": {
+      "offset_s": 7,
+      "executions": 30,
+      "status_counts": {
+        "200": 30
+      },
+      "reachability": 1,
+      "latency_p50_ms": 120,
+      "latency_p95_ms": 180
+    }
+  },
+  "aggregate": {
+    "executions": 30,
+    "reachability": 1,
+    "uptime": 1,
+    "expected_log_lines": 210
+  }
+}
