@@ -1,13 +1,14 @@
 import { expect, test } from '@grafana/plugin-e2e';
 
-import { readScenarioManifest } from '../support/scenario';
+import { CHECKS_TEST_ID } from '../../../../src/test/dataTestIds.constants';
+import { readScenarioManifest } from '../../../support/dem-dev/scenarioManifest';
 
 test.describe('dem-dev read journeys', () => {
   const manifest = readScenarioManifest();
 
   test('lists the scenario-defined check and opens its dashboard', async ({ page }, testInfo) => {
     const checkCard = page
-      .getByTestId('checks card')
+      .getByTestId(CHECKS_TEST_ID.card)
       .filter({ has: page.getByRole('heading', { name: manifest.job, exact: true }) });
 
     await test.step('Find the seeded check', async () => {

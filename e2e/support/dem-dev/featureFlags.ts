@@ -1,6 +1,6 @@
 import type { PluginOptions } from '@grafana/plugin-e2e';
 
-import { OPEN_FEATURE_KEYS, type SmFeatureName } from '../../src/services/featureFlags.constants';
+import { OPEN_FEATURE_KEYS, type SmFeatureName } from '../../../src/services/featureFlags.constants';
 
 export type SmFeatureOverrides = Partial<Record<SmFeatureName, boolean>>;
 
