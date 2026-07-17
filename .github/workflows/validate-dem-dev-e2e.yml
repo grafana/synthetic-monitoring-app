@@ -94,7 +94,7 @@ jobs:
         shell: bash
         run: |
           corepack enable
-          yarn install --immutable --ignore-engines
+          yarn install --immutable
           yarn playwright install --with-deps chromium
 
       - name: Validate E2E types and build plugin under test
