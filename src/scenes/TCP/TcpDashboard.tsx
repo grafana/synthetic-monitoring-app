@@ -2,6 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { ConnectedServices } from 'features/knowledgeGraph/ConnectedServices';
 
 import { Check, CheckType } from 'types';
 import { AvgLatency } from 'scenes/Common/AvgLatencyViz';
@@ -31,6 +32,7 @@ export const TcpDashboard = ({ check }: { check: Check }) => {
         <Frequency />
       </Stack>
       <TimepointExplorer check={check} />
+      <ConnectedServices check={check} />
 
       <div className={styles.errorRateRow}>
         <ErrorRateMap minStep={minStep} />
