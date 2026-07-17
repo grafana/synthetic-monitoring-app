@@ -1,18 +1,16 @@
-import { expect, test } from '@grafana/plugin-e2e';
+import { CHECKS_TEST_ID } from '../../../../../src/test/dataTestIds.constants';
+import { expect, test } from '../../../../support/dem-dev/fixtures';
 
-import { CHECKS_TEST_ID } from '../../../../src/test/dataTestIds.constants';
-import { readScenarioManifest } from '../../../support/dem-dev/scenarioManifest';
-
-test.describe('dem-dev write journeys', () => {
-  const manifest = readScenarioManifest();
-
-  test('disables and restores the scenario-defined check', async ({ page }, testInfo) => {
+test.describe('dem-dev historical write journeys', () => {
+  test('disables and restores the scenario-defined check', async ({ page, scenarioManifest }, testInfo) => {
     const checkCard = page
       .getByTestId(CHECKS_TEST_ID.card)
-      .filter({ has: page.getByRole('heading', { name: manifest.job, exact: true }) });
+      .filter({ has: page.getByRole('heading', { name: scenarioManifest.job, exact: true }) });
     let restoreRequired = false;
 
-    await page.goto(`/a/grafana-synthetic-monitoring-app/checks?view=card&search=${encodeURIComponent(manifest.job)}`);
+    await page.goto(
+      `/a/grafana-synthetic-monitoring-app/checks?view=card&search=${encodeURIComponent(scenarioManifest.job)}`
+    );
     await expect(checkCard).toHaveCount(1);
 
     try {

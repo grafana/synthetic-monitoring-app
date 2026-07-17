@@ -1,26 +1,22 @@
-import { expect, test } from '@grafana/plugin-e2e';
+import { CHECKS_TEST_ID } from '../../../../../src/test/dataTestIds.constants';
+import { expect, test } from '../../../../support/dem-dev/fixtures';
 
-import { CHECKS_TEST_ID } from '../../../../src/test/dataTestIds.constants';
-import { readScenarioManifest } from '../../../support/dem-dev/scenarioManifest';
-
-test.describe('dem-dev read journeys', () => {
-  const manifest = readScenarioManifest();
-
-  test('lists the scenario-defined check and opens its dashboard', async ({ page }, testInfo) => {
+test.describe('dem-dev historical read journeys', () => {
+  test('lists the scenario-defined check and opens its dashboard', async ({ page, scenarioManifest }, testInfo) => {
     const checkCard = page
       .getByTestId(CHECKS_TEST_ID.card)
-      .filter({ has: page.getByRole('heading', { name: manifest.job, exact: true }) });
+      .filter({ has: page.getByRole('heading', { name: scenarioManifest.job, exact: true }) });
 
     await test.step('Find the seeded check', async () => {
       await page.goto(
-        `/a/grafana-synthetic-monitoring-app/checks?view=card&search=${encodeURIComponent(manifest.job)}`
+        `/a/grafana-synthetic-monitoring-app/checks?view=card&search=${encodeURIComponent(scenarioManifest.job)}`
       );
 
       await expect(checkCard).toHaveCount(1);
-      await expect(checkCard).toContainText(manifest.target);
-      await expect(checkCard).toContainText(`${manifest.frequency_ms / 1000}s frequency`);
+      await expect(checkCard).toContainText(scenarioManifest.target);
+      await expect(checkCard).toContainText(`${scenarioManifest.frequency_ms / 1000}s frequency`);
 
-      const probeCount = Object.keys(manifest.probes).length;
+      const probeCount = Object.keys(scenarioManifest.probes).length;
       await expect(checkCard).toContainText(`${probeCount} ${probeCount === 1 ? 'location' : 'locations'}`);
       await testInfo.attach('seeded-check-list', {
         body: await page.screenshot({ fullPage: true }),

@@ -19,6 +19,8 @@ Commands:
   doctor       Report all missing or conflicting prerequisites
   up           Start dem-dev and return when its resources are healthy
   seed         Backfill the configured scenario and write its manifest
+  hybrid       Run the historical-to-live Simnet scenario
+  cleanup      Delete resources owned by the hybrid run
   test         Run the Playwright suite against the running environment
   diagnostics  Capture container state and logs under artifacts/dem-dev
   down         Stop the isolated dem-dev Compose project
@@ -49,7 +51,7 @@ delegate_to_dem_dev() {
     run)
       exec bash "${lifecycle}" run -- yarn e2e
       ;;
-    configure | doctor | up | seed | diagnostics | down)
+    configure | doctor | up | seed | hybrid | cleanup | diagnostics | down)
       exec bash "${lifecycle}" "${command}"
       ;;
   esac
@@ -336,6 +338,10 @@ case "${command}" in
   doctor) doctor ;;
   up) up ;;
   seed) seed ;;
+  hybrid | cleanup)
+    note "error: ${command} requires a dem-dev revision with scripts/sm-e2e.sh"
+    exit 2
+    ;;
   test) test_e2e "$@" ;;
   diagnostics) diagnostics ;;
   down) down ;;
