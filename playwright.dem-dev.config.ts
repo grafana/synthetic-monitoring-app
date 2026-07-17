@@ -14,7 +14,9 @@ export default defineConfig<PluginOptions>({
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
-  workers: process.env.CI ? 1 : undefined,
+  // All projects target the same mutable local stack. Keep them serial until the
+  // lifecycle gives each project an isolated runtime.
+  workers: 1,
   reporter: process.env.CI
     ? [['line'], ['github'], ['blob']]
     : [['list'], ['html', { open: 'never', outputFolder: 'artifacts/playwright-report' }]],
@@ -26,16 +28,22 @@ export default defineConfig<PluginOptions>({
   },
   projects: [
     {
-      name: 'dem-dev-read',
-      testMatch: /read\/.*\.spec\.ts/,
+      name: 'dem-dev-historical-read',
+      testMatch: /historical\/read\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },
     },
     {
-      name: 'dem-dev-write',
-      dependencies: ['dem-dev-read'],
-      testMatch: /write\/.*\.spec\.ts/,
+      name: 'dem-dev-historical-write',
+      testMatch: /historical\/write\/.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'dem-dev-hybrid-read',
+      testMatch: /hybrid\/read\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },

@@ -38,14 +38,18 @@ e2e/
 │   └── dem-dev/           # scenario and feature-profile helpers
 ├── tests/
 │   ├── dem-dev/
-│   │   ├── read/          # journeys that observe seeded state
-│   │   └── write/         # journeys that mutate and restore seeded state
+│   │   ├── historical/
+│   │   │   ├── read/      # journeys that observe backfilled state
+│   │   │   └── write/     # journeys that mutate and restore backfilled state
+│   │   └── hybrid/
+│   │       └── read/      # history → real probe fault → recovery journeys
 │   └── grafana-cloud/     # future deployed-environment journeys
 └── tsconfig.json
 ```
 
 Only `tests/` contains executable specs. The target environment is always the first directory
-beneath `tests/`; read/write is a dem-dev isolation boundary, not a universal E2E taxonomy.
+beneath `tests/`; the next directory records the temporal mode (`historical` or `hybrid`).
+Read/write is an isolation boundary within a temporal mode, not a universal E2E taxonomy.
 Scenario definitions remain owned by dem-dev; the app reads the generated manifest from
 `artifacts/dem-dev/scenario.json` instead of maintaining a second scenario fixture.
 
@@ -62,7 +66,7 @@ containing pinned runtime images and a scenario runner with its agent collector 
 
 ## Local workflow
 
-Point `DEM_DEV_ROOT` at an existing dem-dev checkout. Its `.env` must set:
+Point `DEM_DEV_ROOT` at an existing dem-dev checkout. For historical tests its `.env` must set:
 
 ```dotenv
 SM_GRAFANA_PLUGIN=/absolute/path/to/synthetic-monitoring-app
@@ -98,21 +102,42 @@ yarn e2e:ui
 To run the same read-then-write buckets shown in CI without using UI mode:
 
 ```bash
-yarn e2e:dem:test --project=dem-dev-read
-yarn e2e:dem:test --project=dem-dev-write --no-deps
+yarn e2e:dem:test:historical-read
+yarn e2e:dem:test:historical-write
 ```
 
-The write journey restores the seeded check to its original enabled state. Running `yarn e2e`
-without a project uses `playwright.dem-dev.config.ts` and runs both buckets in order because
-the dem-dev write project depends on dem-dev read. A future Grafana Cloud suite must use a
-different explicit configuration rather than being added to this default command.
+For the real-probe handoff, use a disposable checkout configured with the live profile:
+
+```bash
+export DEM_DEV_ROOT=/path/to/disposable/dem-dev
+export DEM_E2E_PROFILE=sm-live-probe
+yarn e2e:dem:configure
+yarn e2e:dem:up
+yarn e2e:dem:hybrid
+yarn e2e:dem:test:hybrid-read
+yarn e2e:dem:cleanup
+yarn e2e:dem:down
+```
+
+The hybrid manifest proves history, the real `503`, Simnet recovery, and the real `200`
+before Playwright starts. The controller deliberately leaves the run-owned check enabled for
+the browser evidence window; `cleanup` disables and deletes it afterward.
+
+The write journey restores the seeded check to its original enabled state. The two projects are
+independently selectable and have no Playwright dependency; the current config keeps them serial
+because they share one mutable local stack. Running `yarn e2e --list` discovers both projects
+without requiring a running or seeded dem-dev because runtime artifacts are loaded lazily by a
+test fixture. A future Grafana Cloud suite must use a different explicit configuration rather
+than being added to this default command.
 
 > `yarn e2e:dem:seed` defaults to `DEM_E2E_CLEAN=true`. It wipes all Prometheus and Loki data
 > owned by the selected dem-dev runtime before writing the scenario. Use a disposable runtime
 > for isolation, or set `DEM_E2E_CLEAN=false` when intentionally appending to a developer stack.
 
-Pull-request CI uses a fresh hosted runner and disposable data volumes, so it sets
-`DEM_E2E_CLEAN=false` and avoids paying for a cleanup cycle before the first seed.
+Pull-request CI uses two isolated hosted runners: `historical` uses the inexpensive
+`sm-seeded` profile, while `hybrid` uses `sm-live-probe`. The historical job sets
+`DEM_E2E_CLEAN=false` because its volumes are already fresh; the hybrid job always performs
+run-owned cleanup before stack teardown.
 
 The default scenario is `http-latency-spike`, rendered as 30 minutes of history ending at
 the current time. Override it without changing test code:
