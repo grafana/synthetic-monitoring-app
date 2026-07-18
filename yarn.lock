@@ -1175,15 +1175,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/core@npm:^1.7.4":
-  version: 1.7.4
-  resolution: "@floating-ui/core@npm:1.7.4"
-  dependencies:
-    "@floating-ui/utils": "npm:^0.2.10"
-  checksum: 10c0/b1175d92c0edbd0053c4ba014ad1f798ccc107de87a43a099e97af6265610cc25ef600f2b15d3763d39a79f7d36db11fcb84d0c28027beb3317e13a7ba197516
-  languageName: node
-  linkType: hard
-
 "@floating-ui/core@npm:^1.7.5":
   version: 1.7.5
   resolution: "@floating-ui/core@npm:1.7.5"
@@ -1193,17 +1184,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/dom@npm:^1.0.1":
-  version: 1.7.5
-  resolution: "@floating-ui/dom@npm:1.7.5"
-  dependencies:
-    "@floating-ui/core": "npm:^1.7.4"
-    "@floating-ui/utils": "npm:^0.2.10"
-  checksum: 10c0/94bd262127fbf1177e542f4908cb07c17392782b1ca0ab9f2dfd7e102cabcc77b4de807847304dcb4c864d4b48e8ba292b27cdcfaca3ad4e3525ab397b766a3a
-  languageName: node
-  linkType: hard
-
-"@floating-ui/dom@npm:^1.7.6":
+"@floating-ui/dom@npm:^1.0.1, @floating-ui/dom@npm:^1.7.6":
   version: 1.7.6
   resolution: "@floating-ui/dom@npm:1.7.6"
   dependencies:
@@ -1236,13 +1217,6 @@ __metadata:
     react: ">=17.0.0"
     react-dom: ">=17.0.0"
   checksum: 10c0/2a2cdfd3e67e0606833b63f922ad2a9037974f22b944e1cb8c0991b4c40450f8413d69745c0bbf4646e5ba283747f60d2fdc9a8d289b68b24448e59d81a3a96d
-  languageName: node
-  linkType: hard
-
-"@floating-ui/utils@npm:^0.2.10":
-  version: 0.2.10
-  resolution: "@floating-ui/utils@npm:0.2.10"
-  checksum: 10c0/e9bc2a1730ede1ee25843937e911ab6e846a733a4488623cd353f94721b05ec2c9ec6437613a2ac9379a94c2fd40c797a2ba6fa1df2716f5ce4aa6ddb1cf9ea4
   languageName: node
   linkType: hard
 
@@ -8914,14 +8888,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immutable@npm:^5.0.2":
-  version: 5.1.4
-  resolution: "immutable@npm:5.1.4"
-  checksum: 10c0/f1c98382e4cde14a0b218be3b9b2f8441888da8df3b8c064aa756071da55fbed6ad696e5959982508456332419be9fdeaf29b2e58d0eadc45483cc16963c0446
-  languageName: node
-  linkType: hard
-
-"immutable@npm:^5.1.5":
+"immutable@npm:^5.0.2, immutable@npm:^5.1.5":
   version: 5.1.6
   resolution: "immutable@npm:5.1.6"
   checksum: 10c0/79eb033f68ca70fca60fb052c87b5420034e460e306ce9bea2558fd7b5e0b3b59c28c4a4653867305992b4a30e169b353175d78126c1be6ed0113794b27e3317
@@ -10109,10 +10076,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-base64@npm:3.7.7":
-  version: 3.7.7
-  resolution: "js-base64@npm:3.7.7"
-  checksum: 10c0/3c905a7e78b601e4751b5e710edd0d6d045ce2d23eb84c9df03515371e1b291edc72808dc91e081cb9855aef6758292a2407006f4608ec3705373dd8baf2f80f
+"js-base64@npm:3.9.1":
+  version: 3.9.1
+  resolution: "js-base64@npm:3.9.1"
+  checksum: 10c0/5de18a23c249eac1dbbd78ad893bb36245684d099f4eeb3344734eb7e28b7817a0f5a7bd2a188dcc2d0f90324d20690b54e68edc49bb8087630abb55dbb17dd5
   languageName: node
   linkType: hard
 
@@ -12049,7 +12016,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-draggable@npm:^4.4.6":
+"react-draggable@npm:^4.4.6, react-draggable@npm:^4.5.0":
   version: 4.6.0
   resolution: "react-draggable@npm:4.6.0"
   dependencies:
@@ -12059,19 +12026,6 @@ __metadata:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
   checksum: 10c0/4fc196136a86054f18a005d77a33d0bf214751b2534e38b76f8d588df865b8230b6084c1645040c243d83b191723fc133653ec372db45ab4bea0b1842c42a38a
-  languageName: node
-  linkType: hard
-
-"react-draggable@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "react-draggable@npm:4.5.0"
-  dependencies:
-    clsx: "npm:^2.1.1"
-    prop-types: "npm:^15.8.1"
-  peerDependencies:
-    react: ">= 16.3.0"
-    react-dom: ">= 16.3.0"
-  checksum: 10c0/6f7591fe450555218bf0d9e31984be02451bf3f678fb121f51ac0a0a645d01a1b5ea8248ef9afddcd24239028911fd88032194b9c00b30ad5ece76ea13397fc3
   languageName: node
   linkType: hard
 
@@ -12434,7 +12388,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-use@npm:17.6.0, react-use@npm:^17.4.0":
+"react-use@npm:17.6.0":
   version: 17.6.0
   resolution: "react-use@npm:17.6.0"
   dependencies:
@@ -12459,7 +12413,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-use@npm:^17.5.0":
+"react-use@npm:^17.4.0, react-use@npm:^17.5.0":
   version: 17.6.1
   resolution: "react-use@npm:17.6.1"
   dependencies:
@@ -13868,7 +13822,7 @@ __metadata:
     jest: "npm:30.2.0"
     jest-canvas-mock: "npm:2.5.2"
     jest-environment-jsdom: "npm:30.2.0"
-    js-base64: "npm:3.7.7"
+    js-base64: "npm:3.9.1"
     lodash: "npm:4.18.1"
     msw: "npm:2.12.3"
     ol: "npm:10.7.0"
