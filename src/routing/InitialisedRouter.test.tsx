@@ -22,12 +22,21 @@ jest.mock('page/SceneHomepage', () => ({
   SceneHomepage: () => <h1>Home page</h1>,
 }));
 
+jest.mock('page/InsightsPage/InsightsPage', () => ({
+  InsightsPage: () => <h1>Insights page</h1>,
+}));
+
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
 
 // Would like to have asserted on the h1s but rendering the Grafana pluginpage is tricky
 describe('Routes to pages correctly', () => {
-  test('Home page renders', async () => {
+  test('Home page renders insights by default', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Home) });
+    const insightsText = await screen.findByText('Insights page', { selector: 'h1' });
+    expect(insightsText).toBeInTheDocument();
+  });
+  test('Home dashboard tab renders', async () => {
+    renderInitialisedRouting({ path: getRoute(AppRoutes.HomeDashboard) });
     const homePageText = await screen.findByText('Home page', { selector: 'h1' });
     expect(homePageText).toBeInTheDocument();
   });
