@@ -1,7 +1,6 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-
+import { render, screen } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { CheckDashboardProvider, useCheckDashboard } from './CheckDashboardProvider';

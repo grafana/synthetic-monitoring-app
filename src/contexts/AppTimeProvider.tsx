@@ -1,9 +1,10 @@
 import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import { invalidateActiveDashboardQueries } from 'dashboards/query/dashboardQueryInvalidation';
 
-import { AppRoutes } from 'routing/types';
 import { DashboardUrlState, mergeDashboardUrlState, withLegacyDashboardUrlState } from 'routing/dashboardUrl';
 import { transformLegacySceneDashboardUrl } from 'routing/legacySceneDashboardUrl';
+import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
 import {
@@ -137,6 +138,7 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
 
     setState(nextState);
     refreshListeners.current.forEach((listener) => listener());
+    void invalidateActiveDashboardQueries();
   }, [state]);
 
   useEffect(() => {

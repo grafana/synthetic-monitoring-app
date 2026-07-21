@@ -1,7 +1,7 @@
 import { dateTimeParse } from '@grafana/data';
 
-import { ALL_PROBE_SENTINELS, LEGACY_SCENE_DASHBOARD_KEYS } from './dashboardUrlSchema';
 import { DashboardUrlState, mergeDashboardUrlState, parseDashboardUrl } from './dashboardUrl';
+import { ALL_PROBE_SENTINELS, LEGACY_SCENE_DASHBOARD_KEYS } from './dashboardUrlSchema';
 
 function parseLegacyProbes(search: URLSearchParams): string[] | undefined {
   const values = search.getAll(LEGACY_SCENE_DASHBOARD_KEYS.probe).filter(Boolean);

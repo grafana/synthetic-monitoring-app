@@ -1,6 +1,5 @@
-import { renderHook, act } from '@testing-library/react';
 import { locationService } from '@grafana/runtime';
-
+import { act,renderHook } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';

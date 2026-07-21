@@ -10,7 +10,6 @@ import { TrackingIdentity } from 'features/tracking/TrackingIdentity';
 import { ProvisioningJsonData } from 'types';
 import { getFaroConfig } from 'faro';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
-import { AppTimeProvider } from 'contexts/AppTimeProvider';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
@@ -67,9 +66,7 @@ const App = (props: AppRootProps<ProvisioningJsonData>) => {
                 <AssistantContext />
                 <TrackingIdentity />
                 <DevTools>
-                  <AppTimeProvider>
-                    <InitialisedRouter />
-                  </AppTimeProvider>
+                  <InitialisedRouter />
                 </DevTools>
               </PermissionsContextProvider>
               <ReactQueryDevtools />

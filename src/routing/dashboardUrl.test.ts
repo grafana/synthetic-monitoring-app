@@ -1,8 +1,4 @@
 import {
-  DASHBOARD_URL_KEYS,
-  LEGACY_SCENE_DASHBOARD_KEYS,
-} from './dashboardUrlSchema';
-import {
   mergeDashboardUrlState,
   normalizeDashboardUrl,
   parseDashboardUrl,
@@ -11,6 +7,10 @@ import {
   withDashboardUrlState,
   withLegacyDashboardUrlState,
 } from './dashboardUrl';
+import {
+  DASHBOARD_URL_KEYS,
+  LEGACY_SCENE_DASHBOARD_KEYS,
+} from './dashboardUrlSchema';
 
 describe('dashboardUrl', () => {
   it('round-trips canonical dashboard state', () => {

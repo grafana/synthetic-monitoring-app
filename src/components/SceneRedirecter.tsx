@@ -3,9 +3,9 @@ import { Navigate } from 'react-router';
 import { PluginPage } from '@grafana/runtime';
 
 import { CheckAlertType, CheckAlertWithRunbookUrl } from 'types';
-import { AppRoutes } from 'routing/types';
 import { withLegacyDashboardUrlState } from 'routing/dashboardUrl';
 import { stripLegacySceneDashboardKeys, transformLegacySceneDashboardUrl } from 'routing/legacySceneDashboardUrl';
+import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';

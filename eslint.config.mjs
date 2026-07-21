@@ -135,7 +135,7 @@ const config = defineConfig([
           message: 'Prefer named exports',
         },
         {
-          selector: 'Literal[value=/^sm-/]',
+          selector: 'Literal[value=/^sm-(v|from|to|timezone|refresh|probe)$/]',
           message: 'Use dashboardUrlSchema for canonical sm-* dashboard URL keys.',
         },
       ],

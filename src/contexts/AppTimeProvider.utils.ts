@@ -1,4 +1,4 @@
-import { dateTime, DateTime, IntervalRange, rangeUtil, TimeRange } from '@grafana/data';
+import { dateTime, DateTime, rangeUtil, TimeRange } from '@grafana/data';
 
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 
@@ -10,7 +10,7 @@ export const DEFAULT_APP_TIME_RANGE = {
 export const DEFAULT_APP_TIMEZONE = 'browser';
 
 export function resolveTimeRange(from: string, to: string): TimeRange {
-  const raw: IntervalRange = {
+  const raw = {
     from,
     to,
   };
