@@ -10,6 +10,7 @@ import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useCheckPermissions } from 'contexts/CheckFolderAccessContext';
+import { useAppTime } from 'contexts/AppTimeProvider';
 import { useDeleteCheck, useUpdateCheck } from 'data/useChecks';
 import { useDuplicateCheckUrl } from 'hooks/useDuplicateCheck';
 import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
@@ -35,6 +36,8 @@ export const CheckItemActionButtons = ({
   const { mutate: deleteCheck } = useDeleteCheck();
   const { mutate: updateCheck } = useUpdateCheck();
   const { duplicateCheckUrl } = useDuplicateCheckUrl();
+  const { buildDashboardPath } = useAppTime();
+  const dashboardHref = buildDashboardPath(check.id!);
 
   const handleToggleEnabled = useCallback(async () => {
     setIsPending(true);
@@ -55,7 +58,7 @@ export const CheckItemActionButtons = ({
           {responsiveDashboardLink ? (
             <>
               <LinkButton
-                href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`}
+                href={dashboardHref}
                 size="sm"
                 fill="text"
                 className={styles.dashboardTextLink}
@@ -63,7 +66,7 @@ export const CheckItemActionButtons = ({
                 View dashboard
               </LinkButton>
               <LinkButton
-                href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
+                href={dashboardHref}
                 size="sm"
                 fill="text"
                 icon="apps"
@@ -73,14 +76,14 @@ export const CheckItemActionButtons = ({
             </>
           ) : viewDashboardAsIcon ? (
             <LinkButton
-              href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
+              href={dashboardHref}
               size="sm"
               fill="text"
               icon="apps"
               tooltip="Go to dashboard"
             />
           ) : (
-            <LinkButton href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`} size="sm" fill="text">
+            <LinkButton href={dashboardHref} size="sm" fill="text">
               View dashboard
             </LinkButton>
           )}

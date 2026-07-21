@@ -5,15 +5,18 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
+import { AppTimeProvider } from 'contexts/AppTimeProvider';
 import { CheckFolderAccessProvider } from 'contexts/CheckFolderAccessContext';
 
 import { CheckItemActionButtons } from './CheckItemActionButtons';
 
 const renderWithProvider = (check = BASIC_HTTP_CHECK) => {
   return render(
-    <CheckFolderAccessProvider checks={[check]}>
-      <CheckItemActionButtons check={check} />
-    </CheckFolderAccessProvider>
+    <AppTimeProvider>
+      <CheckFolderAccessProvider checks={[check]}>
+        <CheckItemActionButtons check={check} />
+      </CheckFolderAccessProvider>
+    </AppTimeProvider>
   );
 };
 
@@ -26,9 +29,11 @@ describe('CheckItemActionButtons', () => {
 
     it(`should render both a text link and icon link when responsiveDashboardLink is true`, async () => {
       render(
-        <CheckFolderAccessProvider checks={[BASIC_HTTP_CHECK]}>
-          <CheckItemActionButtons check={BASIC_HTTP_CHECK} responsiveDashboardLink />
-        </CheckFolderAccessProvider>
+        <AppTimeProvider>
+          <CheckFolderAccessProvider checks={[BASIC_HTTP_CHECK]}>
+            <CheckItemActionButtons check={BASIC_HTTP_CHECK} responsiveDashboardLink />
+          </CheckFolderAccessProvider>
+        </AppTimeProvider>
       );
       expect(await screen.findByText('View dashboard')).toBeInTheDocument();
       expect(screen.getByLabelText('Go to dashboard')).toBeInTheDocument();
@@ -36,9 +41,11 @@ describe('CheckItemActionButtons', () => {
 
     it(`should render only an icon link when viewDashboardAsIcon is true`, async () => {
       render(
-        <CheckFolderAccessProvider checks={[BASIC_HTTP_CHECK]}>
-          <CheckItemActionButtons check={BASIC_HTTP_CHECK} viewDashboardAsIcon />
-        </CheckFolderAccessProvider>
+        <AppTimeProvider>
+          <CheckFolderAccessProvider checks={[BASIC_HTTP_CHECK]}>
+            <CheckItemActionButtons check={BASIC_HTTP_CHECK} viewDashboardAsIcon />
+          </CheckFolderAccessProvider>
+        </AppTimeProvider>
       );
       expect(await screen.findByLabelText('Go to dashboard')).toBeInTheDocument();
       expect(screen.queryByText('View dashboard')).not.toBeInTheDocument();
