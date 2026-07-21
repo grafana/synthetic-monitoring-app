@@ -55,7 +55,13 @@ jobs:
       trigger-argo: ${{ github.event.inputs.branch == 'main' }}
       argo-workflow-slack-channel: '#sm-ops-deploys'
 
-      auto-merge-environments: dev,ops,prod
+      auto-merge-environments: dev,ops,prod-canary,prod
+
+      # Auto-approve every stage in Argo so the deployment progresses from
+      # canary through to prod without a manual "Resume" click.
+      # "0" = approve immediately; swap for a duration (e.g. "2h") to keep a soak.
+      auto-approve-durations: |-
+        {"dev": 0, "ops": 0, "prod-canary": 0, "prod": 0}
 
       # https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions/#customizing-the-workflows-with-inputs
       node-version: 22
