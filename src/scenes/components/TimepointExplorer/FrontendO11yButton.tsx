@@ -84,7 +84,7 @@ export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoin
   // Prefer a spinner over flashing empty/Add-RUM states, and over briefly
   // showing the previous execution's session while the new lookup is in flight.
   if (isFaroInFlight) {
-    return <Tooltip content="Looking for Frontend Observability session..."><Spinner /></Tooltip>;
+    return <Tooltip content="Looking for Frontend Observability session..."><span><Spinner /></span></Tooltip>;
   }
 
   if (faroSession?.href) {
