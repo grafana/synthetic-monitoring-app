@@ -81,7 +81,7 @@ export function ConfigPageLayout() {
       });
     }
     return navModel;
-  }, [activeTab, isFeatureEnabled]);
+  }, [activeTab, isAdmin, isFeatureEnabled]);
 
   return (
     <PluginPage pageNav={pageNav}>
