@@ -2,10 +2,17 @@ import React, { createContext, PropsWithChildren, useCallback, useContext, useEf
 import { useLocation, useNavigate } from 'react-router';
 import { invalidateActiveDashboardQueries } from 'dashboards/query/dashboardQueryInvalidation';
 
-import { DashboardUrlState, mergeDashboardUrlState, withLegacyDashboardUrlState } from 'routing/dashboardUrl';
+import { FeatureName } from 'types';
+import {
+  DashboardUrlState,
+  mergeDashboardUrlState,
+  withDashboardUrlState,
+  withLegacyDashboardUrlState,
+} from 'routing/dashboardUrl';
 import { transformLegacySceneDashboardUrl } from 'routing/legacySceneDashboardUrl';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 import {
   DEFAULT_APP_TIME_RANGE,
@@ -56,6 +63,7 @@ function hasExplicitTimeState(search: URLSearchParams): boolean {
 export function AppTimeProvider({ children }: PropsWithChildren) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isEnabled: sceneFreeHttpDashboard } = useFeatureFlag(FeatureName.SceneFreeHttpDashboard);
   const refreshListeners = useRef(new Set<() => void>());
   const [state, setState] = useState<DashboardUrlState>(() =>
     hasExplicitTimeState(new URLSearchParams(location.search))
@@ -68,6 +76,7 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
   );
 
   const participating = isTimeParticipatingPath(location.pathname);
+  const urlFormat = sceneFreeHttpDashboard && participating ? 'canonical' : 'legacy';
 
   useEffect(() => {
     if (!participating) {
@@ -89,11 +98,10 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
         return;
       }
 
-      const nextPath = withLegacyDashboardUrlState(
-        location.pathname,
-        nextState,
-        new URLSearchParams(location.search)
-      );
+      const nextPath =
+        urlFormat === 'canonical'
+          ? withDashboardUrlState(location.pathname, nextState, new URLSearchParams(location.search), 'canonical')
+          : withLegacyDashboardUrlState(location.pathname, nextState, new URLSearchParams(location.search));
       const queryIndex = nextPath.indexOf('?');
       const search = queryIndex >= 0 ? nextPath.slice(queryIndex) : '';
 
@@ -105,7 +113,7 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
         { replace }
       );
     },
-    [location.pathname, location.search, navigate, participating]
+    [location.pathname, location.search, navigate, participating, urlFormat]
   );
 
   const setTimeRange = useCallback(
@@ -189,9 +197,13 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
 
   const buildDashboardPath = useCallback(
     (checkId: number) => {
-      return withLegacyDashboardUrlState(`${getRoute(AppRoutes.Checks)}/${checkId}`, state);
+      const path = `${getRoute(AppRoutes.Checks)}/${checkId}`;
+
+      return urlFormat === 'canonical'
+        ? withDashboardUrlState(path, state, undefined, 'canonical')
+        : withLegacyDashboardUrlState(path, state);
     },
-    [state]
+    [state, urlFormat]
   );
 
   const subscribeRefresh = useCallback((listener: () => void) => {
@@ -202,10 +214,13 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
-  const raw = {
-    from: state.from ?? DEFAULT_APP_TIME_RANGE.from,
-    to: state.to ?? DEFAULT_APP_TIME_RANGE.to,
-  };
+  const raw = useMemo(
+    () => ({
+      from: state.from ?? DEFAULT_APP_TIME_RANGE.from,
+      to: state.to ?? DEFAULT_APP_TIME_RANGE.to,
+    }),
+    [state.from, state.to]
+  );
   const resolvedRange = resolveTimeRange(raw.from, raw.to);
 
   const value = useMemo<AppTimeContextValue>(
@@ -234,6 +249,10 @@ export function useAppTime(): AppTimeContextValue {
   }
 
   return context;
+}
+
+export function useAppTimeOptional(): AppTimeContextValue | null {
+  return useContext(AppTimeContext);
 }
 
 function rangeToMs(value: string): number | undefined {

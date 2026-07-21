@@ -8,6 +8,13 @@ import { getRoute } from 'routing/utils';
 
 import { AppTimeProvider, useAppTime } from './AppTimeProvider';
 
+jest.mock('hooks/useFeatureFlag', () => ({
+  useFeatureFlag: () => ({
+    isEnabled: false,
+    isReady: true,
+  }),
+}));
+
 function TimeConsumer() {
   const { raw, setTimeRange } = useAppTime();
 

@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient,QueryFunctionContext } from '@tanstack/react-query';
 
 import { dashboardQueryKeyPrefix, DashboardQueryScope } from './dashboardQueryKeys';
 
@@ -15,17 +15,20 @@ export function createDashboardQueryOptions<TQueryFnData, TData = TQueryFnData>(
   queryKey,
   queryFn,
   select,
+  enabled,
 }: {
   scope: DashboardQueryScope;
   queryKey: readonly unknown[];
-  queryFn: () => Promise<TQueryFnData>;
+  queryFn: (context: QueryFunctionContext) => Promise<TQueryFnData>;
   select?: (data: TQueryFnData) => TData;
+  enabled?: boolean;
 }) {
   return {
     queryKey: [...dashboardQueryKeyPrefix(scope), ...queryKey],
     queryFn,
     staleTime: DASHBOARD_QUERY_STALE_TIME_MS,
     select,
+    enabled,
     meta: {
       dashboardScope: scope,
     },

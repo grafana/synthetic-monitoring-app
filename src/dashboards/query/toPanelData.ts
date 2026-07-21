@@ -1,7 +1,8 @@
 import { dateTime, LoadingState, PanelData, TimeRange } from '@grafana/data';
 
-import { cloneFrame } from './frameUtils';
 import { QueryExecutionResult } from './types';
+
+import { cloneFrame } from './frameUtils';
 
 const EMPTY_TIME_RANGE: TimeRange = {
   from: dateTime(),

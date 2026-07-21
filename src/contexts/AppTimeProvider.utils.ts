@@ -1,4 +1,4 @@
-import { dateTime, DateTime, rangeUtil, TimeRange } from '@grafana/data';
+import { DateTime, dateTime, rangeUtil, TimeRange } from '@grafana/data';
 
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 

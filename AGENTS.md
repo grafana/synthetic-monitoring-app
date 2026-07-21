@@ -55,3 +55,16 @@ If you switch between `yarn dev:msw` and `yarn dev`, the MSW service worker pers
 - `yarn test` runs the full Jest test suite (~170 suites, ~1300 tests).
 - Tests use MSW handlers from `src/test/handlers` for API mocking.
 - The test suite passes cleanly with no configuration needed beyond `yarn install`.
+
+### Scene-free HTTP dashboard — branch chain (agents)
+
+Work on the scene-free HTTP check dashboard uses a **stacked branch chain** with **one PR at a time** and **isolated diffs**. Branches are breadcrumb checkpoints for the POC — do not open them all as PRs to `main`.
+
+**Read before any PR, rebase, or merge:** `.cursor/references/scene-free-http-dashboard-branch-chain.md`
+
+Summary:
+
+- PR1 `feat/dem-dev-e2e` → `main`; then PR2 `feat/check-dashboard-parity-contract` → dem-dev-e2e; then foundation slices PR3–PR7; then `feat/scene-free-http-dashboard`.
+- Do **not** bundle dem-dev + parity + foundation into one PR against `main` (see closed #1766).
+- Local integration tip for scene-free implementation: `feat/check-dashboard-query-cache`.
+- Ask the user before opening PRs for breadcrumb branches.

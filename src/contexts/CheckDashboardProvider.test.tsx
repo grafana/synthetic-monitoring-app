@@ -36,13 +36,13 @@ describe('CheckDashboardProvider', () => {
   });
 });
 
-describe('legacy HTTP dashboard route', () => {
-  it('does not mount CheckDashboardProvider on the legacy route seam', () => {
+describe('scene-free HTTP dashboard route', () => {
+  it('mounts CheckDashboardProvider on the scene-free dashboard', () => {
     jest.isolateModules(() => {
-      const { HttpDashboardRoute } = require('page/HttpDashboardRoute');
-      const routeSource = HttpDashboardRoute.toString();
+      const { SceneFreeHttpDashboard } = require('dashboards/http/SceneFreeHttpDashboard');
+      const routeSource = SceneFreeHttpDashboard.toString();
 
-      expect(routeSource).not.toContain('CheckDashboardProvider');
+      expect(routeSource).toContain('CheckDashboardProvider');
     });
   });
 });

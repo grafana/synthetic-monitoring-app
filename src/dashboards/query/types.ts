@@ -5,10 +5,14 @@ export type DashboardQueryTarget = {
   expr?: string;
   query?: string;
   hidden?: boolean;
+  hide?: boolean;
   instant?: boolean;
   range?: boolean;
   legendFormat?: string;
   format?: string;
+  interval?: string;
+  intervalFactor?: number;
+  exemplar?: boolean;
   datasource?: {
     uid?: string;
     type?: string;

@@ -759,6 +759,7 @@ export enum FeatureName {
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
   VersionManagement = 'synthetic-monitoring-version-management',
+  SceneFreeHttpDashboard = 'scene-free-http-dashboard',
   __Turnoff = 'test-only-do-not-use',
 }
 

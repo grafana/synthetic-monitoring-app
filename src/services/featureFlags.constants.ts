@@ -6,6 +6,7 @@ export const SM_FEATURE_NAMES = {
   SecretsManagement: 'synthetic-monitoring-secrets-management',
   TimepointExplorer: 'synthetic-monitoring-timepoint-explorer',
   VersionManagement: 'synthetic-monitoring-version-management',
+  SceneFreeHttpDashboard: 'scene-free-http-dashboard',
 } as const;
 
 export type SmFeatureName = (typeof SM_FEATURE_NAMES)[keyof typeof SM_FEATURE_NAMES];
