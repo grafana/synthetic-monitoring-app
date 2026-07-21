@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react';
+import { useDashboardVarProbes } from 'dashboards/hooks/useDashboardVar';
 
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useTimepointVizOptions } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -33,7 +33,7 @@ export const TimepointMinimapSectionCanvas = ({ timepoints, width, height }: Min
     vizDisplay,
   } = useTimepointExplorerContext();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const selectedProbeNames = useSceneVarProbes(check);
+  const selectedProbeNames = useDashboardVarProbes(check);
   const pendingVizOption = useTimepointVizOptions('pending');
   const successVizOption = useTimepointVizOptions('success');
   const failureVizOption = useTimepointVizOptions('failure');

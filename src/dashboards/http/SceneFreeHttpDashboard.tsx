@@ -3,6 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DashboardAnnotationsProvider } from 'dashboards/annotations/DashboardAnnotationsProvider';
+import { useDashboardContainerAnnotations } from 'dashboards/annotations/useDashboardContainerAnnotations';
 import {
   ErrorLogsPanelHeaderActions,
   HttpDashboardPage,
@@ -23,11 +25,11 @@ import {
   createSslExpiryPanelDefinition,
   createUptimePanelDefinition,
 } from 'dashboards/http/panels/headlinePanelDefinitions';
-import { TimepointExplorerSceneBridge } from 'dashboards/http/TimepointExplorerSceneBridge';
 import { PanelTimeRangeFromAppTime } from 'dashboards/runtime/PanelTimeRangeContext';
 
-import { Check } from 'types';
+import { Check, FeatureName } from 'types';
 import { CheckDashboardProvider } from 'contexts/CheckDashboardProvider';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
@@ -35,6 +37,7 @@ export function SceneFreeHttpDashboard({ check }: { check: Check }) {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
   const { unsuccessfulOnly, toggleUnsuccessfulOnly } = useErrorLogsPanelState(true);
+  const annotations = useDashboardContainerAnnotations(check);
 
   const headlinePanels = useMemo(
     () => ({
@@ -61,42 +64,48 @@ export function SceneFreeHttpDashboard({ check }: { check: Check }) {
   return (
     <CheckDashboardProvider check={check} urlFormat="canonical">
       <PanelTimeRangeFromAppTime>
-        <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
-          <HttpDashboardPage check={check}>
-            <Stack height="90px">
-              <DashboardPanel definition={{ ...headlinePanels.uptime, title: 'Uptime' }} height={90} />
-              <DashboardPanel definition={{ ...headlinePanels.reachability, title: 'Reachability' }} height={90} />
-              <DashboardPanel definition={{ ...headlinePanels.averageLatency, title: 'Average latency' }} height={90} />
-              <DashboardPanel definition={{ ...headlinePanels.sslExpiry, title: 'SSL Expiry' }} height={90} />
-              <DashboardPanel definition={{ ...headlinePanels.frequency, title: 'Frequency' }} height={90} />
-            </Stack>
+        <DashboardAnnotationsProvider check={check} definitions={annotations}>
+          <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
+            <HttpDashboardPage check={check} annotations={annotations}>
+              <Stack height="90px">
+                <DashboardPanel definition={{ ...headlinePanels.uptime, title: 'Uptime' }} height={90} />
+                <DashboardPanel definition={{ ...headlinePanels.reachability, title: 'Reachability' }} height={90} />
+                <DashboardPanel definition={{ ...headlinePanels.averageLatency, title: 'Average latency' }} height={90} />
+                <DashboardPanel definition={{ ...headlinePanels.sslExpiry, title: 'SSL Expiry' }} height={90} />
+                <DashboardPanel definition={{ ...headlinePanels.frequency, title: 'Frequency' }} height={90} />
+              </Stack>
 
-            <TimepointExplorerSceneBridge>
               <TimepointExplorer check={check} />
-            </TimepointExplorerSceneBridge>
 
-            <div className={styles.errorRateRow}>
-              <DashboardPanel definition={detailPanels.errorRateMap} height={500} />
-              <DashboardPanel definition={detailPanels.errorRate} height={500} />
-            </div>
+              <div className={styles.errorRateRow}>
+                <DashboardPanel definition={detailPanels.errorRateMap} height={500} />
+                <DashboardPanel definition={detailPanels.errorRate} height={500} />
+              </div>
 
-            <div className={styles.latencyRow}>
-              <DashboardPanel definition={detailPanels.responseLatencyByPhase} height={300} />
-              <DashboardPanel definition={detailPanels.responseLatencyByProbe} height={300} />
-            </div>
+              <div className={styles.latencyRow}>
+                <DashboardPanel definition={detailPanels.responseLatencyByPhase} height={300} />
+                <DashboardPanel definition={detailPanels.responseLatencyByProbe} height={300} />
+              </div>
 
-            <DashboardPanel
-              definition={detailPanels.errorLogs}
-              height={850}
-              headerActions={
-                <ErrorLogsPanelHeaderActions
-                  unsuccessfulOnly={unsuccessfulOnly}
-                  onToggle={toggleUnsuccessfulOnly}
-                />
-              }
-            />
-          </HttpDashboardPage>
-        </PluginPage>
+              <FeatureFlag name={FeatureName.TimepointExplorer}>
+                {({ isEnabled }) =>
+                  isEnabled ? null : (
+                    <DashboardPanel
+                      definition={detailPanels.errorLogs}
+                      height={850}
+                      headerActions={
+                        <ErrorLogsPanelHeaderActions
+                          unsuccessfulOnly={unsuccessfulOnly}
+                          onToggle={toggleUnsuccessfulOnly}
+                        />
+                      }
+                    />
+                  )
+                }
+              </FeatureFlag>
+            </HttpDashboardPage>
+          </PluginPage>
+        </DashboardAnnotationsProvider>
       </PanelTimeRangeFromAppTime>
     </CheckDashboardProvider>
   );

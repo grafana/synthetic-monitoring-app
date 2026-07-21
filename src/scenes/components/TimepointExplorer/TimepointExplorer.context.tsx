@@ -9,14 +9,14 @@ import React, {
   useState,
 } from 'react';
 import { TimeRange } from '@grafana/data';
-import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
+import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
+import { useDashboardVar } from 'dashboards/hooks/useDashboardVar';
 import { trackTimepointVizLegendToggled, trackViewToggle } from 'features/tracking/timepointExplorerEvents';
 
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { useLogsRetentionPeriod } from 'data/useLogsRetention';
-import { useSceneVar } from 'scenes/Common/useSceneVar';
 import {
   MAX_MINIMAP_SECTIONS,
   TIMEPOINT_EXPLORER_VIEW_OPTIONS,
@@ -27,11 +27,11 @@ import {
 import {
   useBuiltCheckConfigs,
   useCurrentAdjustedTime,
+  useDashboardAnnotationEventsForExplorer,
   useExecutionDurationLogs,
   useIsInitialised,
   useIsListResultPending,
   usePersistedMaxProbeDuration,
-  useSceneAnnotationEvents,
   useTimepoints,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import {
@@ -115,7 +115,7 @@ interface TimepointExplorerProviderProps extends PropsWithChildren {
 export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
   const checkType = getCheckType(check.settings);
   const checkCreation = Math.ceil(check.created!) * 1000;
-  const [timeRange] = useTimeRange();
+  const timeRange = useDashboardTime();
   const timeRangeRef = useRef<TimeRange>(timeRange);
   const { retentionPeriod: logsRetentionPeriod, isLoading: isLogsRetentionLoading } = useLogsRetentionPeriod();
   const logsRetentionFrom = useMemo(
@@ -146,7 +146,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   });
   const [listWidth, setListWidth] = useState<number>(0);
   const [timepointWidth, setTimepointWidth] = useState<number>(TIMEPOINT_SIZE);
-  const probeVarRaw = useSceneVar('probe');
+  const probeVarRaw = useDashboardVar('probe');
 
   const {
     data: maxProbeDurationData,
@@ -188,7 +188,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       }),
     [checkConfigs, explorerTimeFrom]
   );
-  const alertEvents = useSceneAnnotationEvents();
+  const alertEvents = useDashboardAnnotationEventsForExplorer();
 
   const timepoints = useTimepoints({ checkConfigs, limitFrom: explorerTimeFrom, limitTo: timeRange.to.valueOf() });
   const isLogsRetentionPeriodWithinTimerange = logsRetentionFrom > timeRange.from.valueOf();

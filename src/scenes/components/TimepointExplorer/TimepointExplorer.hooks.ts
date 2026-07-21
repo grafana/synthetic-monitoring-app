@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { colorManipulator } from '@grafana/data';
-import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
+import {
+  useDashboardAnnotationEventsForTpe,
+} from 'dashboards/annotations/DashboardAnnotationsProvider';
+import { useDashboardRefresh } from 'dashboards/hooks/useDashboardRefresh';
+import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
+import { useDashboardVar, useDashboardVarProbes } from 'dashboards/hooks/useDashboardVar';
 import { queryMimir } from 'features/queryDatasources/queryMimir';
 import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
 import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
@@ -17,10 +22,6 @@ import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { Check } from 'types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { useSceneAnnotation } from 'scenes/Common/useSceneAnnotation';
-import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
-import { useSceneVar } from 'scenes/Common/useSceneVar';
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import {
   REF_ID_EXECUTION_LIST_LOGS,
   REF_ID_MAX_PROBE_DURATION,
@@ -344,13 +345,13 @@ export function useIsListResultPending({
   handleRefetch,
   listLogsMap,
 }: UseIsResultPendingProps) {
-  const [timeRange] = useTimeRange();
+  const timeRange = useDashboardTime();
 
   const isCurrentTimeInSelectedTimeRange =
     currentAdjustedTime - check.frequency > timeRange.from.valueOf() &&
     currentAdjustedTime - check.frequency < timeRange.to.valueOf();
-  const selectedProbeNames = useSceneVarProbes(check);
-  const refreshPickerState = useSceneRefreshPicker(handleRefetch);
+  const selectedProbeNames = useDashboardVarProbes(check);
+  const refreshPickerState = useDashboardRefresh(handleRefetch);
   const refreshInMs = refreshPickerState?.refreshInMs;
   const entry = listLogsMap[currentAdjustedTime];
 
@@ -490,7 +491,7 @@ export function useIsInitialised({
   timepoints,
   currentAdjustedTime,
 }: UseIsInitialisedProps) {
-  const probeVar = useSceneVarProbes(check);
+  const probeVar = useDashboardVarProbes(check);
   const persistedIsLoading = usePersisted(isLoading, (isLoading) => !isLoading);
 
   const handleOnInitialised = useCallback(() => {
@@ -522,24 +523,23 @@ export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
   const { check, checkConfigs } = useTimepointExplorerContext();
   const latestConfigDate = checkConfigs[checkConfigs.length - 1].from;
   const isCurrentConfig = statefulTimepoint.config.from === latestConfigDate;
-  const probeVarRaw = useSceneVar('probe');
-  const probeVar = useSceneVarProbes(check);
+  const probeVarRaw = useDashboardVar('probe');
+  const probeVar = useDashboardVarProbes(check);
 
   return !isCurrentConfig && probeVarRaw.includes('.*') ? Object.keys(statefulTimepoint.probeResults) : probeVar;
 }
 
-export function useSceneAnnotationEvents() {
-  const alertsFiring = useSceneAnnotation('Show alerts firing');
-  const alertsPending = useSceneAnnotation('Show alerts pending');
+export function useDashboardAnnotationEventsForExplorer() {
+  const { firing, pending } = useDashboardAnnotationEventsForTpe();
 
-  const alertFiringEvents = alertsFiring.map<CheckEvent>(([timeStart, timeEnd]) => ({
+  const alertFiringEvents = firing.map<CheckEvent>(([timeStart, timeEnd]) => ({
     label: CheckEventType.AlertsFiring,
     to: timeEnd,
     from: timeStart,
     color: 'red',
   }));
 
-  const alertPendingEvents = alertsPending.map<CheckEvent>(([timeStart, timeEnd]) => ({
+  const alertPendingEvents = pending.map<CheckEvent>(([timeStart, timeEnd]) => ({
     label: CheckEventType.AlertsPending,
     to: timeEnd,
     from: timeStart,

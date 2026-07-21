@@ -13,7 +13,7 @@ const semanticValues: DashboardQuerySemanticValues = {
 };
 
 describe('interpolateTargets', () => {
-  it('interpolates dashboard query macros', () => {
+  it('interpolates job/instance/probe but leaves Prometheus interval macros', () => {
     const [target] = interpolateTargets(
       [
         {
@@ -25,7 +25,7 @@ describe('interpolateTargets', () => {
     );
 
     expect(target.expr).toBe(
-      'sum by(probe)(rate(metric{job="example-job", instance="https://example.com", probe=~"frankfurt|ohio"}[1m]))'
+      'sum by(probe)(rate(metric{job="example-job", instance="https://example.com", probe=~"frankfurt|ohio"}[$__rate_interval]))'
     );
   });
 

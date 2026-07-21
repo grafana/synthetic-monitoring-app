@@ -2,14 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useDashboardVar, useDashboardVarProbes } from 'dashboards/hooks/useDashboardVar';
 import { trackTimepointViewerLogsViewToggled } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
 import { SCENES_TEST_ID } from 'test/dataTestIds';
 
 import { formatDuration } from 'utils';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { useSceneVar } from 'scenes/Common/useSceneVar';
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useRefetchInterval } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
@@ -82,8 +81,8 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
   const [viewerWidth, setViewerWidth] = useState<number>(0);
   const { check, currentAdjustedTime } = useTimepointExplorerContext();
   const couldResultBePending = getCouldBePending(timepoint, currentAdjustedTime);
-  const probeVarRaw = useSceneVar('probe');
-  const probeVar = useSceneVarProbes(check);
+  const probeVarRaw = useDashboardVar('probe');
+  const probeVar = useDashboardVarProbes(check);
   const styles = useStyles2(getStyles);
 
   const { data, isFetching, isLoading, refetch } = useTimepointLogs({

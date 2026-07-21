@@ -3,15 +3,17 @@ import { PluginPage } from '@grafana/runtime';
 import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
 import { Stack } from '@grafana/ui';
+import { useDashboardContainerAnnotations } from 'dashboards/annotations/useDashboardContainerAnnotations';
 import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvents';
 
 import { Check, CheckType } from 'types';
 import { useCheckUptimeSuccessRate } from 'data/useSuccessRates';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
-import { useDashboardContainerAnnotations } from 'scenes/Common/DashboardContainer.hooks';
 import { DashboardContainerAnnotations } from 'scenes/Common/DashboardContainerAnnotations';
 import { DashboardHeader } from 'scenes/Common/DashboardHeader';
+import { SceneDashboardLegacyAnnotationsBridge } from 'scenes/Common/SceneDashboardLegacyAnnotationsBridge';
+import { SceneDashboardLegacyRuntimeBridge } from 'scenes/Common/SceneDashboardLegacyRuntimeBridge';
 
 interface DashboardContainerProps extends PropsWithChildren {
   check: Check;
@@ -72,8 +74,12 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
             <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
               <Stack direction="column" gap={2}>
                 <DashboardContainerAnnotations annotations={annotations}>
-                  <DashboardHeader annotations={annotations} check={check} />
-                  {children}
+                  <SceneDashboardLegacyAnnotationsBridge check={check}>
+                    <SceneDashboardLegacyRuntimeBridge>
+                      <DashboardHeader annotations={annotations} check={check} />
+                      {children}
+                    </SceneDashboardLegacyRuntimeBridge>
+                  </SceneDashboardLegacyAnnotationsBridge>
                 </DashboardContainerAnnotations>
               </Stack>
             </PluginPage>

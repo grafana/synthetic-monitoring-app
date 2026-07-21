@@ -44,6 +44,39 @@ describe('dashboardUrl', () => {
     expect(serialized.get(DASHBOARD_URL_KEYS.from)).toBe('now-3h');
   });
 
+  it('strips legacy Scene query parameters from canonical URLs', () => {
+    const existing = new URLSearchParams(
+      [
+        'foo=bar',
+        `${LEGACY_SCENE_DASHBOARD_KEYS.from}=now-6h`,
+        `${LEGACY_SCENE_DASHBOARD_KEYS.to}=now`,
+        `${LEGACY_SCENE_DASHBOARD_KEYS.probe}=frankfurt`,
+        `${LEGACY_SCENE_DASHBOARD_KEYS.job}=example-job`,
+        `${LEGACY_SCENE_DASHBOARD_KEYS.instance}=https://example.com`,
+        `${LEGACY_SCENE_DASHBOARD_KEYS.time}=2024-01-01T12:00:00.000Z`,
+        `${LEGACY_SCENE_DASHBOARD_KEYS.timeWindow}=1h`,
+      ].join('&')
+    );
+    const serialized = serializeDashboardUrl(
+      {
+        version: 1,
+        from: 'now-3h',
+        to: 'now',
+      },
+      existing
+    );
+
+    expect(serialized.get('foo')).toBe('bar');
+    expect(serialized.get(DASHBOARD_URL_KEYS.from)).toBe('now-3h');
+    expect(serialized.get(LEGACY_SCENE_DASHBOARD_KEYS.from)).toBeNull();
+    expect(serialized.get(LEGACY_SCENE_DASHBOARD_KEYS.to)).toBeNull();
+    expect(serialized.get(LEGACY_SCENE_DASHBOARD_KEYS.probe)).toBeNull();
+    expect(serialized.get(LEGACY_SCENE_DASHBOARD_KEYS.job)).toBeNull();
+    expect(serialized.get(LEGACY_SCENE_DASHBOARD_KEYS.instance)).toBeNull();
+    expect(serialized.get(LEGACY_SCENE_DASHBOARD_KEYS.time)).toBeNull();
+    expect(serialized.get(LEGACY_SCENE_DASHBOARD_KEYS.timeWindow)).toBeNull();
+  });
+
   it('preserves repeated probe order', () => {
     const serialized = serializeDashboardUrl({
       version: 1,
@@ -117,5 +150,52 @@ describe('dashboardUrl', () => {
       to: 'now',
       probes: ['frankfurt'],
     });
+  });
+
+  it('allows clearing probe filters via an empty probes patch', () => {
+    expect(
+      mergeDashboardUrlState(
+        {
+          version: 1,
+          from: 'now-3h',
+          probes: ['frankfurt'],
+        },
+        { probes: [] }
+      )
+    ).toEqual({
+      version: 1,
+      from: 'now-3h',
+      probes: [],
+    });
+  });
+
+  it('preserves existing probe params when serializing time-only state', () => {
+    const existing = new URLSearchParams('sm-v=1&sm-from=now-3h&sm-probe=frankfurt&sm-probe=ohio');
+    const serialized = serializeDashboardUrl(
+      {
+        version: 1,
+        from: 'now-6h',
+        to: 'now',
+      },
+      existing
+    );
+
+    expect(serialized.get(DASHBOARD_URL_KEYS.from)).toBe('now-6h');
+    expect(serialized.getAll(DASHBOARD_URL_KEYS.probe)).toEqual(['frankfurt', 'ohio']);
+  });
+
+  it('clears probe params when probes is an empty array', () => {
+    const existing = new URLSearchParams('sm-v=1&sm-from=now-3h&sm-probe=frankfurt');
+    const serialized = serializeDashboardUrl(
+      {
+        version: 1,
+        from: 'now-3h',
+        to: 'now',
+        probes: [],
+      },
+      existing
+    );
+
+    expect(serialized.getAll(DASHBOARD_URL_KEYS.probe)).toEqual([]);
   });
 });

@@ -25,24 +25,6 @@ export type CheckDashboardContextValue = {
 
 const CheckDashboardContext = createContext<CheckDashboardContextValue | null>(null);
 
-function getConfiguredProbeNames(check: Check, probesById: Map<number, string>): string[] {
-  return (check.probes ?? [])
-    .map((probeId) => probesById.get(probeId))
-    .filter((name): name is string => Boolean(name));
-}
-
-function readUrlState(search: URLSearchParams, urlFormat: DashboardUrlFormat): DashboardUrlState {
-  if (urlFormat === 'canonical') {
-    const parsed = parseDashboardUrl(search);
-
-    if (parsed.ok) {
-      return parsed.state;
-    }
-  }
-
-  return transformLegacySceneDashboardUrl(search);
-}
-
 export function CheckDashboardProvider({
   check,
   children,
@@ -66,7 +48,8 @@ export function CheckDashboardProvider({
     (probes: string[]) => {
       const current = readUrlState(new URLSearchParams(location.search), urlFormat);
       const nextState: DashboardUrlState = mergeDashboardUrlState(current, {
-        probes: probes.length > 0 ? probes : undefined,
+        // Empty array clears the filter ("All probes"); undefined would preserve existing URL probes.
+        probes: probes.length > 0 ? probes : [],
       });
       const nextPath =
         urlFormat === 'canonical'
@@ -87,21 +70,22 @@ export function CheckDashboardProvider({
   );
 
   useEffect(() => {
+    const urlProbes = readUrlState(new URLSearchParams(location.search), urlFormat).probes ?? [];
+
+    setSelectedProbes(urlProbes);
+  }, [location.search, urlFormat]);
+
+  useEffect(() => {
     if (isLoading || isError || catalog.length === 0) {
       return;
     }
 
-    setSelectedProbes((current) => {
-      const validProbes = current.filter((probe) => catalog.includes(probe));
+    const validProbes = selectedProbes.filter((probe) => catalog.includes(probe));
 
-      if (validProbes.length !== current.length) {
-        updateProbeUrl(validProbes);
-        return validProbes;
-      }
-
-      return current;
-    });
-  }, [catalog, isError, isLoading, updateProbeUrl]);
+    if (validProbes.length !== selectedProbes.length) {
+      updateProbeUrl(validProbes);
+    }
+  }, [catalog, isError, isLoading, selectedProbes, updateProbeUrl]);
 
   const setProbes = useCallback(
     (probes: string[]) => {
@@ -138,4 +122,23 @@ export function useCheckDashboard(): CheckDashboardContextValue {
 
 export function useCheckDashboardOptional(): CheckDashboardContextValue | null {
   return useContext(CheckDashboardContext);
+}
+
+
+function getConfiguredProbeNames(check: Check, probesById: Map<number, string>): string[] {
+  return (check.probes ?? [])
+    .map((probeId) => probesById.get(probeId))
+    .filter((name): name is string => Boolean(name));
+}
+
+function readUrlState(search: URLSearchParams, urlFormat: DashboardUrlFormat): DashboardUrlState {
+  if (urlFormat === 'canonical') {
+    const parsed = parseDashboardUrl(search);
+
+    if (parsed.ok) {
+      return parsed.state;
+    }
+  }
+
+  return transformLegacySceneDashboardUrl(search);
 }

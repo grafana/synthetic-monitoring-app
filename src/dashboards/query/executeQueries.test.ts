@@ -1,3 +1,4 @@
+import { FieldType } from '@grafana/data';
 import { Observable } from 'rxjs';
 
 import { createValueFrame } from './types';
@@ -104,6 +105,44 @@ describe('executeQueries', () => {
 
     expect(result.aborted).toBe(true);
     expect(unsubscribed).toBe(true);
+  });
+
+  it('preserves time fields while normalizing value field names', async () => {
+    const controller = new AbortController();
+    const result = await executeQueries({
+      signal: controller.signal,
+      requests: [
+        {
+          datasourceUid: 'prom-a',
+          datasourceType: 'prometheus',
+          requestId: 'request-1',
+          range: { from: 1, to: 2 },
+          timezone: 'utc',
+          interval: '30s',
+          intervalMs: 30_000,
+          maxDataPoints: 500,
+          targets: [{ refId: 'B', expr: 'up' }],
+        },
+      ],
+      getDataSource: async () => ({
+        query: async () => ({
+          data: [
+            {
+              refId: 'B',
+              length: 2,
+              fields: [
+                { name: 'Time', type: FieldType.time, values: [1, 2], config: {} },
+                { name: 'Value', type: FieldType.number, values: [0.6, 0.7], config: {} },
+              ],
+            },
+          ],
+        }),
+      }),
+    });
+
+    const fields = result.results[0]?.frames[0]?.fields;
+    expect(fields?.[0]).toMatchObject({ name: 'Time', type: FieldType.time });
+    expect(fields?.[1]).toMatchObject({ name: 'Value #B', type: FieldType.number });
   });
 
   it('handles promise rejections as fatal query failures', async () => {

@@ -1,6 +1,5 @@
 import React, { createContext, PropsWithChildren, useContext, useMemo } from 'react';
 import { dateTime, TimeRange } from '@grafana/data';
-import { useTimeRange as useSceneTimeRange } from '@grafana/scenes-react';
 
 import { useAppTimeOptional } from 'contexts/AppTimeProvider';
 
@@ -29,10 +28,11 @@ export function PanelTimeRangeFromAppTime({ children }: PropsWithChildren) {
   return <PanelTimeRangeContext.Provider value={{ timeRange }}>{children}</PanelTimeRangeContext.Provider>;
 }
 
-export function PanelTimeRangeFromScene({ children }: PropsWithChildren) {
-  const [sceneRange] = useSceneTimeRange();
-
-  return <PanelTimeRangeContext.Provider value={{ timeRange: sceneRange }}>{children}</PanelTimeRangeContext.Provider>;
+export function PanelTimeRangeProvider({
+  timeRange,
+  children,
+}: PropsWithChildren<{ timeRange: TimeRange }>) {
+  return <PanelTimeRangeContext.Provider value={{ timeRange }}>{children}</PanelTimeRangeContext.Provider>;
 }
 
 export function usePanelTimeRange(): TimeRange {
@@ -43,4 +43,8 @@ export function usePanelTimeRange(): TimeRange {
   }
 
   return context.timeRange;
+}
+
+export function usePanelTimeRangeOptional(): TimeRange | null {
+  return useContext(PanelTimeRangeContext)?.timeRange ?? null;
 }

@@ -1,8 +1,8 @@
 import React, { ReactNode, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useTimeRange } from '@grafana/scenes-react';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
 
 import {
   ANNOTATION_GRAPH_TRIGGER_HEIGHT_PX,
@@ -37,7 +37,7 @@ export const XAxis = ({ timepoints }: XAxisProps) => {
 const XAxisContent = ({ timepoints }: XAxisProps) => {
   const { renderingStrategy, timepointWidth } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
-  const [dashboardTimeRange] = useTimeRange();
+  const dashboardTimeRange = useDashboardTime();
   const crossesDays = doesTimeRangeCrossDays(dashboardTimeRange.from.toDate(), dashboardTimeRange.to.toDate());
   const points = useMemo(
     () => buildXAxisPoints({ timepoints, crossesDays, timepointWidth, renderingStrategy }),

@@ -43,3 +43,10 @@ export function toRawRange(from: DateTime, to: DateTime) {
     to: to.toString(),
   };
 }
+
+export function absoluteTimeRangeToRaw(range: { from: number; to: number }) {
+  return {
+    from: dateTime(range.from).toISOString(),
+    to: dateTime(range.to).toISOString(),
+  };
+}

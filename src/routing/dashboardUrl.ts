@@ -69,8 +69,17 @@ export function parseDashboardUrl(search: URLSearchParams): ParseDashboardUrlRes
 
 export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSearchParams): URLSearchParams {
   const params = new URLSearchParams(existing ?? undefined);
+  // undefined probes = leave existing probe params alone (time-only URL updates).
+  // [] = clear probe filter ("All probes").
+  const preservedProbes =
+    state.probes === undefined ? params.getAll(DASHBOARD_URL_KEYS.probe) : undefined;
 
   for (const key of Object.values(DASHBOARD_URL_KEYS)) {
+    params.delete(key);
+  }
+
+  // Canonical URLs must not keep Scene leftovers (from/to/var-probe/etc).
+  for (const key of Object.values(LEGACY_SCENE_DASHBOARD_KEYS)) {
     params.delete(key);
   }
 
@@ -79,7 +88,8 @@ export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSe
     state.to !== undefined ||
     state.timezone !== undefined ||
     state.refresh !== undefined ||
-    state.probes !== undefined;
+    state.probes !== undefined ||
+    Boolean(preservedProbes?.length);
 
   if (!hasExplicitState) {
     return params;
@@ -103,7 +113,9 @@ export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSe
     params.set(DASHBOARD_URL_KEYS.refresh, state.refresh);
   }
 
-  state.probes?.forEach((probe) => {
+  const probesToWrite = state.probes !== undefined ? state.probes : preservedProbes;
+
+  probesToWrite?.forEach((probe) => {
     params.append(DASHBOARD_URL_KEYS.probe, probe);
   });
 
@@ -112,6 +124,8 @@ export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSe
 
 export function serializeLegacyDashboardUrl(state: DashboardUrlState, existing?: URLSearchParams): URLSearchParams {
   const params = new URLSearchParams(existing ?? undefined);
+  const preservedProbes =
+    state.probes === undefined ? params.getAll(LEGACY_SCENE_DASHBOARD_KEYS.probe) : undefined;
 
   for (const key of Object.values(LEGACY_SCENE_DASHBOARD_KEYS)) {
     params.delete(key);
@@ -133,7 +147,9 @@ export function serializeLegacyDashboardUrl(state: DashboardUrlState, existing?:
     params.set(LEGACY_SCENE_DASHBOARD_KEYS.refresh, state.refresh);
   }
 
-  state.probes?.forEach((probe) => {
+  const probesToWrite = state.probes !== undefined ? state.probes : preservedProbes;
+
+  probesToWrite?.forEach((probe) => {
     params.append(LEGACY_SCENE_DASHBOARD_KEYS.probe, probe);
   });
 
@@ -180,10 +196,11 @@ export function getDefaultDashboardUrlState(): DashboardUrlState {
 export function mergeDashboardUrlState(base: DashboardUrlState, patch: Partial<DashboardUrlState>): DashboardUrlState {
   return {
     version: DASHBOARD_URL_VERSION,
-    from: patch.from !== undefined ? patch.from : base.from,
-    to: patch.to !== undefined ? patch.to : base.to,
-    timezone: patch.timezone !== undefined ? patch.timezone : base.timezone,
-    refresh: patch.refresh !== undefined ? patch.refresh : base.refresh,
-    probes: patch.probes !== undefined ? patch.probes : base.probes,
+    from: 'from' in patch ? patch.from : base.from,
+    to: 'to' in patch ? patch.to : base.to,
+    timezone: 'timezone' in patch ? patch.timezone : base.timezone,
+    // Allow explicit undefined/[] to clear refresh or probe filters.
+    refresh: 'refresh' in patch ? patch.refresh : base.refresh,
+    probes: 'probes' in patch ? patch.probes : base.probes,
   };
 }

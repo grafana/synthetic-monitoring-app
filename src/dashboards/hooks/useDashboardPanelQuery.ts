@@ -224,9 +224,18 @@ export function useDashboardPanelQuery(definition: DashboardPanelDefinition) {
     [activeDS?.uid, menuDefinition, timeRange]
   );
 
+  const title = useMemo(() => {
+    if (!definition.title) {
+      return definition.title;
+    }
+
+    return interpolateTargets([{ refId: 'title', expr: definition.title }], semanticValues)[0]?.expr;
+  }, [definition.title, semanticValues]);
+
   return {
     panelData,
     menuItems,
+    title,
     isLoading: query.isPending || query.isFetching,
   };
 }

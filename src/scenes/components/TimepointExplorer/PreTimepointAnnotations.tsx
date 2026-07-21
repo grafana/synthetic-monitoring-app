@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTimeRange } from '@grafana/scenes-react';
+import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
 
 import {
   ANNOTATION_COLOR_BEFORE_CREATION,
@@ -129,7 +129,7 @@ const OutOfRangeAnnotation = ({
   timepointsInRange,
   triggerHeight,
 }: OutOfRangeAnnotationProps) => {
-  const [timeRange] = useTimeRange();
+  const timeRange = useDashboardTime();
   const { isLogsRetentionPeriodWithinTimerange, timepointsDisplayCount } = useTimepointExplorerContext();
   const visibleEndIndex = -1;
   const visibleStartIndex = visibleEndIndex - timepointsDisplayCount + timepointsInRange.length + 1;

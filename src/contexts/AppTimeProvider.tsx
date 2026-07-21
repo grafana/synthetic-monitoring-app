@@ -44,7 +44,7 @@ function isTimeParticipatingPath(pathname: string): boolean {
 }
 
 function readDashboardState(search: URLSearchParams): DashboardUrlState {
-  return mergeDashboardUrlState(
+  const merged = mergeDashboardUrlState(
     {
       version: 1,
       timezone: DEFAULT_APP_TIMEZONE,
@@ -52,6 +52,11 @@ function readDashboardState(search: URLSearchParams): DashboardUrlState {
     },
     transformLegacySceneDashboardUrl(search)
   );
+
+  // Probe selection is owned by CheckDashboardProvider — keep AppTime time-only.
+  const { probes: _probes, ...timeState } = merged;
+
+  return timeState;
 }
 
 function hasExplicitTimeState(search: URLSearchParams): boolean {

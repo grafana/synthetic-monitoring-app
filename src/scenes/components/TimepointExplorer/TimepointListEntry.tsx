@@ -2,8 +2,8 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useDashboardVarProbes } from 'dashboards/hooks/useDashboardVar';
 
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { TIMEPOINT_GAP_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
@@ -37,7 +37,7 @@ const Entry = (props: TimepointListEntryProps) => {
   const { check, currentAdjustedTime, isInitialised, isLoading, viewMode } = useTimepointExplorerContext();
   const statefulTimepoint = useStatefulTimepoint(props.timepoint);
   const isInTheFuture = getIsInTheFuture(props.timepoint, currentAdjustedTime);
-  const selectedProbeNames = useSceneVarProbes(check);
+  const selectedProbeNames = useDashboardVarProbes(check);
   const couldBePending = getCouldBePending(props.timepoint, currentAdjustedTime);
   const pendingProbeNames = getPendingProbeNames({ statefulTimepoint, selectedProbeNames });
   const isEntryLoading = isLoading && statefulTimepoint.status === 'missing';

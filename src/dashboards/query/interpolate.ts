@@ -21,13 +21,13 @@ export function formatProbeMatcher(probes: string[]): string {
 function interpolateString(template: string, values: DashboardQuerySemanticValues): string {
   const probeMatcher = formatProbeMatcher(values.probes);
 
+  // Leave $__interval / $__rate_interval for the Prometheus datasource — it derives
+  // rate windows from request.intervalMs (pre-substituting the step breaks rate()).
   return template
     .replaceAll('$job', values.job)
     .replaceAll('$instance', values.instance)
     .replaceAll('$probe', probeMatcher)
-    .replaceAll('$__range', `${values.rangeSeconds}s`)
-    .replaceAll('$__interval', values.interval)
-    .replaceAll('$__rate_interval', values.rateInterval);
+    .replaceAll('$__range', `${values.rangeSeconds}s`);
 }
 
 function interpolateTarget(target: DashboardQueryTarget, values: DashboardQuerySemanticValues): DashboardQueryTarget {

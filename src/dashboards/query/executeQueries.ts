@@ -1,5 +1,11 @@
-import { DataFrame, DataQueryRequest, DataQueryResponse, FieldType } from '@grafana/data';
-import { DataSourceApi } from '@grafana/data';
+import {
+  DataFrame,
+  DataQueryRequest,
+  DataQueryResponse,
+  DataSourceApi,
+  dateTime,
+  FieldType,
+} from '@grafana/data';
 import { isObservable, Observable } from 'rxjs';
 
 import { ExecuteQueriesResult, QueryExecutionResult, ResolvedQueryRequest } from './types';
@@ -15,11 +21,18 @@ export type ExecuteQueriesOptions = {
 function normalizeFrame(frame: DataFrame): DataFrame {
   return {
     ...frame,
-    fields: frame.fields.map((field) => ({
-      ...field,
-      name: field.name.startsWith('Value #') ? field.name : `Value #${frame.refId ?? field.name}`,
-      type: field.type ?? FieldType.number,
-    })),
+    fields: frame.fields.map((field) => {
+      // Preserve time fields — renaming them to Value #refId breaks reduce/timeseries panels.
+      if (field.type === FieldType.time || field.name === 'Time' || field.name.startsWith('Value #')) {
+        return field;
+      }
+
+      return {
+        ...field,
+        name: `Value #${frame.refId ?? field.name}`,
+        type: field.type ?? FieldType.number,
+      };
+    }),
   };
 }
 
@@ -65,17 +78,19 @@ async function runQuery(
   }
 
   const datasource = await getDataSource(request.datasourceUid);
+  const from = dateTime(request.range.from);
+  const to = dateTime(request.range.to);
   const responsePromise = datasource.query({
     requestId: request.requestId,
     interval: request.interval,
     intervalMs: request.intervalMs,
     maxDataPoints: request.maxDataPoints,
     range: {
-      from: request.range.from,
-      to: request.range.to,
+      from,
+      to,
       raw: {
-        from: request.range.from,
-        to: request.range.to,
+        from: from.toISOString(),
+        to: to.toISOString(),
       },
     },
     scopedVars: {},

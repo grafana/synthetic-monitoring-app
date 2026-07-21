@@ -15,7 +15,7 @@ export type BuildDatasourceRequestsOptions = {
 };
 
 export function buildDatasourceRequests(options: BuildDatasourceRequestsOptions): ResolvedQueryRequest[] {
-  const visibleTargets = options.targets.filter((target) => !target.hidden);
+  const visibleTargets = options.targets.filter((target) => !target.hidden && !target.hide);
 
   if (visibleTargets.length === 0) {
     return [];

@@ -34,6 +34,30 @@ describe('CheckDashboardProvider', () => {
 
     expect(screen.getByTestId('probes')).toBeInTheDocument();
   });
+
+  it('defaults to all probes when the URL has no probe filter', () => {
+    render(
+      <MemoryRouter initialEntries={['/checks/1']}>
+        <CheckDashboardProvider check={BASIC_HTTP_CHECK} urlFormat="canonical">
+          <ProbeConsumer />
+        </CheckDashboardProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('probes')).toHaveTextContent('');
+  });
+
+  it('reads selected probes from the canonical URL', () => {
+    render(
+      <MemoryRouter initialEntries={['/checks/1?sm-v=1&sm-probe=frankfurt']}>
+        <CheckDashboardProvider check={BASIC_HTTP_CHECK} urlFormat="canonical">
+          <ProbeConsumer />
+        </CheckDashboardProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('probes')).toHaveTextContent('frankfurt');
+  });
 });
 
 describe('scene-free HTTP dashboard route', () => {

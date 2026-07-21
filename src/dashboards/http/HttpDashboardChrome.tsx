@@ -1,27 +1,51 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Button, InlineSwitch, MultiSelect, Stack, useStyles2 } from '@grafana/ui';
+import { AnnotationQuery, GrafanaTheme2, TimeRange } from '@grafana/data';
+import { InlineSwitch, MultiSelect, RefreshPicker, Stack, TimeRangePicker, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DashboardAnnotationControls } from 'dashboards/annotations/DashboardAnnotationControls';
 import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvents';
 
 import { Check, CheckType } from 'types';
 import { useAppTime } from 'contexts/AppTimeProvider';
+import { resolveTimeRange } from 'contexts/AppTimeProvider.utils';
 import { useCheckDashboard } from 'contexts/CheckDashboardProvider';
 import { useCheckUptimeSuccessRate } from 'data/useSuccessRates';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
 
+function toRawTimeValue(value: TimeRange['raw']['from']): string {
+  return typeof value === 'string' ? value : value.toISOString();
+}
+
 function HttpDashboardTimeControls() {
   const appTime = useAppTime();
+  const value = useMemo(
+    () => resolveTimeRange(appTime.raw.from, appTime.raw.to),
+    [appTime.raw.from, appTime.raw.to]
+  );
 
   return (
     <Stack alignItems="center" gap={1}>
-      <Button
-        aria-label="Refresh dashboard"
-        icon="sync"
-        variant="secondary"
-        onClick={() => appTime.refreshNow()}
+      <TimeRangePicker
+        isOnCanvas
+        value={value}
+        timeZone={appTime.timezone}
+        onChange={(range) =>
+          appTime.setTimeRange({
+            from: toRawTimeValue(range.raw.from),
+            to: toRawTimeValue(range.raw.to),
+          })
+        }
+        onChangeTimeZone={() => undefined}
+        onMoveBackward={() => undefined}
+        onMoveForward={() => undefined}
+        onZoom={() => undefined}
       />
-      <span>{`${appTime.raw.from} to ${appTime.raw.to}`}</span>
+      <RefreshPicker
+        isOnCanvas
+        value={appTime.refresh}
+        onRefresh={() => appTime.refreshNow()}
+        onIntervalChanged={(interval) => appTime.setRefresh(interval || undefined)}
+      />
     </Stack>
   );
 }
@@ -46,6 +70,7 @@ function HttpDashboardProbeControl() {
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- intentional interim probe control
     <MultiSelect
       aria-label="probe"
+      isClearable
       isLoading={catalogLoading}
       options={options}
       value={value}
@@ -55,7 +80,13 @@ function HttpDashboardProbeControl() {
   );
 }
 
-export function HttpDashboardHeader({ check }: { check: Check }) {
+export function HttpDashboardHeader({
+  check,
+  annotations = [],
+}: {
+  check: Check;
+  annotations?: AnnotationQuery[];
+}) {
   const styles = useStyles2(getStyles);
 
   return (
@@ -63,6 +94,7 @@ export function HttpDashboardHeader({ check }: { check: Check }) {
       <div className={styles.header}>
         <div className={styles.variableControls}>
           <HttpDashboardProbeControl />
+          {annotations.length > 0 ? <DashboardAnnotationControls annotations={annotations} /> : null}
         </div>
         <div className={styles.actions}>
           <EditCheckButton id={check.id} />
@@ -93,16 +125,18 @@ function useTrackCheckDashboardViewed(check: Check) {
 
 export function HttpDashboardPage({
   check,
+  annotations = [],
   children,
 }: {
   check: Check;
+  annotations?: AnnotationQuery[];
   children: React.ReactNode;
 }) {
   useTrackCheckDashboardViewed(check);
 
   return (
     <Stack direction="column" gap={2}>
-      <HttpDashboardHeader check={check} />
+      <HttpDashboardHeader check={check} annotations={annotations} />
       {children}
     </Stack>
   );

@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import { IconName } from '@grafana/data';
+import { useDashboardVarProbes } from 'dashboards/hooks/useDashboardVar';
 import { trackTimepointViewerActionClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { getExploreUrl } from 'utils';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getIsInTheFuture } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
@@ -35,7 +35,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
   const futureLessTimepoints = timepoints.filter((t) => !getIsInTheFuture(t, currentAdjustedTime));
   const prevTimepoint = timepoints[timepoint.index - 1];
   const nextTimepoint = futureLessTimepoints[timepoint.index + 1];
-  const probeVar = useSceneVarProbes(check);
+  const probeVar = useDashboardVarProbes(check);
 
   const exploreLogsURL = getExploreUrl(logsDS?.uid!, [logsQuery], {
     from: timepoint.adjustedTime,

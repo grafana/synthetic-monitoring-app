@@ -1,7 +1,10 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { FieldConfigSource, LoadingState, PanelData, PanelMenuItem } from '@grafana/data';
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { AbsoluteTimeRange, FieldConfigSource, LoadingState, PanelData, PanelMenuItem } from '@grafana/data';
 import { PanelRenderer } from '@grafana/runtime';
 import { Menu, PanelChrome } from '@grafana/ui';
+
+import { useAppTimeOptional } from 'contexts/AppTimeProvider';
+import { absoluteTimeRangeToRaw } from 'contexts/AppTimeProvider.utils';
 
 interface PanelRendererShellProps {
   title: string;
@@ -13,6 +16,7 @@ interface PanelRendererShellProps {
   menuItems?: PanelMenuItem[];
   headerActions?: ReactNode;
   height?: number | string;
+  onChangeTimeRange?: (timeRange: AbsoluteTimeRange) => void;
 }
 
 export function PanelRendererShell({
@@ -25,9 +29,25 @@ export function PanelRendererShell({
   menuItems,
   headerActions,
   height = 300,
+  onChangeTimeRange,
 }: PanelRendererShellProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const appTime = useAppTimeOptional();
+
+  const handleChangeTimeRange = useCallback(
+    (timeRange: AbsoluteTimeRange) => {
+      if (onChangeTimeRange) {
+        onChangeTimeRange(timeRange);
+        return;
+      }
+
+      if (appTime) {
+        appTime.setTimeRange(absoluteTimeRangeToRaw(timeRange));
+      }
+    },
+    [appTime, onChangeTimeRange]
+  );
 
   useEffect(() => {
     const element = containerRef.current;
@@ -97,6 +117,8 @@ export function PanelRendererShell({
               data={data}
               fieldConfig={fieldConfig}
               options={options}
+              timeZone={appTime?.timezone}
+              onChangeTimeRange={appTime || onChangeTimeRange ? handleChangeTimeRange : undefined}
             />
           ) : null}
         </div>

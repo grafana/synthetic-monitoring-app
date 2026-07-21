@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { useTimeRange } from '@grafana/scenes-react';
 import { Box, IconButton, Pagination, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
 import { trackMiniMapPageClicked, trackMiniMapSectionClicked } from 'features/tracking/timepointExplorerEvents';
 import { useResizeObserver } from 'usehooks-ts';
 
@@ -101,7 +101,7 @@ const TimepointMinimapContent = () => {
   const ref = useRef<HTMLDivElement>(null);
   const styles = useStyles2(getStyles);
   const [miniMapWidth, setMiniMapWidth] = useState<number>(0);
-  const [timeRange] = useTimeRange();
+  const timeRange = useDashboardTime();
   const {
     check,
     isCheckCreationWithinTimeRange,
