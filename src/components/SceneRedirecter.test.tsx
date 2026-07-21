@@ -238,6 +238,27 @@ describe('SceneRedirecter', () => {
       expect(mockDoRunbookRedirect).not.toHaveBeenCalled();
     });
 
+    test('preserves legacy dashboard time and probe params when redirecting to a check dashboard', () => {
+      const searchParams = createMockSearchParams({
+        'var-job': BASIC_HTTP_CHECK.job,
+        'var-instance': BASIC_HTTP_CHECK.target,
+        from: 'now-3h',
+        to: 'now',
+        refresh: '30s',
+        'var-probe': 'frankfurt',
+      });
+      mockUseURLSearchParams.mockReturnValue(searchParams);
+
+      render(<SceneRedirecter />);
+
+      const navigate = screen.getByTestId('navigate');
+      const destination = navigate.getAttribute('data-to') ?? '';
+      expect(destination).toContain('from=now-3h');
+      expect(destination).toContain('to=now');
+      expect(destination).toContain('refresh=30s');
+      expect(destination).toContain('var-probe=frankfurt');
+    });
+
     test('ignores alert parameter when runbook flag is not set', () => {
       const searchParams = createMockSearchParams({
         'var-job': BASIC_HTTP_CHECK.job,

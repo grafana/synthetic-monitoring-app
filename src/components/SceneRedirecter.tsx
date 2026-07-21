@@ -4,6 +4,8 @@ import { PluginPage } from '@grafana/runtime';
 
 import { CheckAlertType, CheckAlertWithRunbookUrl } from 'types';
 import { AppRoutes } from 'routing/types';
+import { withLegacyDashboardUrlState } from 'routing/dashboardUrl';
+import { stripLegacySceneDashboardKeys, transformLegacySceneDashboardUrl } from 'routing/legacySceneDashboardUrl';
 import { generateRoutePath } from 'routing/utils';
 import { useChecks } from 'data/useChecks';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
@@ -45,8 +47,13 @@ export function SceneRedirecter() {
     const parsedAlertName = parseAlertName(alert);
     const alertType = ALERT_NAME_TO_TYPE[parsedAlertName];
 
-    if (!alertType) {
-      return <Navigate to={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id })} replace />;
+  if (!alertType) {
+      return (
+        <Navigate
+          to={buildDashboardRedirectPath(check.id, urlSearchParams)}
+          replace
+        />
+      );
     }
 
     const alertConfig = check.alerts?.find((a) => a.name === alertType);
@@ -68,5 +75,13 @@ export function SceneRedirecter() {
     );
   }
 
-  return <Navigate to={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id })} replace />;
+  return <Navigate to={buildDashboardRedirectPath(check.id, urlSearchParams)} replace />;
+}
+
+function buildDashboardRedirectPath(checkId: number, search: URLSearchParams): string {
+  const path = generateRoutePath(AppRoutes.CheckDashboard, { id: checkId });
+  const dashboardState = transformLegacySceneDashboardUrl(search);
+  const unrelatedParams = stripLegacySceneDashboardKeys(search);
+
+  return withLegacyDashboardUrlState(path, dashboardState, unrelatedParams);
 }
