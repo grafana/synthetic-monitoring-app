@@ -39,7 +39,9 @@ export interface ScenarioManifest {
 }
 
 const manifestPath = resolve(
-  process.env.DEM_SCENARIO_HISTORY_MANIFEST ?? process.env.DEM_SCENARIO_MANIFEST ?? 'artifacts/dem-dev/scenario.json'
+  process.env.DEM_SCENARIO_HISTORY_MANIFEST ??
+    process.env.DEM_SCENARIO_MANIFEST ??
+    'artifacts/dem-dev/scenario-history.json'
 );
 
 export function readScenarioManifest(): ScenarioManifest {

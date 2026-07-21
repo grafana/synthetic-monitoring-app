@@ -34,7 +34,9 @@ export interface HybridRunManifest {
   }>;
 }
 
-const manifestPath = resolve(process.env.DEM_SCENARIO_MANIFEST ?? 'artifacts/dem-dev/scenario.json');
+const manifestPath = resolve(
+  process.env.DEM_SCENARIO_RUN_MANIFEST ?? process.env.DEM_SCENARIO_MANIFEST ?? 'artifacts/dem-dev/scenario.json'
+);
 
 export function readHybridRunManifest(): HybridRunManifest {
   let parsed: unknown;

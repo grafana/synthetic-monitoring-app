@@ -7,7 +7,8 @@ set -euo pipefail
 APP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEM_ROOT="${DEM_DEV_ROOT:-}"
 ARTIFACT_DIR="${DEM_E2E_ARTIFACT_DIR:-${APP_ROOT}/artifacts/dem-dev}"
-MANIFEST_PATH="${DEM_SCENARIO_MANIFEST:-${ARTIFACT_DIR}/scenario.json}"
+MANIFEST_PATH="${DEM_SCENARIO_RUN_MANIFEST:-${DEM_SCENARIO_MANIFEST:-${ARTIFACT_DIR}/scenario.json}}"
+HISTORY_MANIFEST_PATH="${DEM_SCENARIO_HISTORY_MANIFEST:-${MANIFEST_PATH%.*}-history.json}"
 SCENARIO="${DEM_E2E_SCENARIO:-http-latency-spike}"
 
 usage() {
@@ -44,6 +45,7 @@ delegate_to_dem_dev() {
   [[ -n "${DEM_ROOT}" && -f "${lifecycle}" ]] || return 1
 
   export DEM_E2E_ARTIFACT_DIR="${ARTIFACT_DIR}"
+  export DEM_SCENARIO_RUN_MANIFEST="${MANIFEST_PATH}"
   export DEM_SCENARIO_MANIFEST="${MANIFEST_PATH}"
   export SM_GRAFANA_PLUGIN="${SM_GRAFANA_PLUGIN:-${APP_ROOT}}"
 
@@ -252,7 +254,19 @@ test_e2e() {
   note "    grafana=${grafana_url}"
   (
     cd "${APP_ROOT}"
-    DEM_SCENARIO_MANIFEST="${MANIFEST_PATH}" GRAFANA_URL="${grafana_url}" yarn e2e "$@"
+    if [[ -n "${DEM_SCENARIO_HISTORY_MANIFEST:-}" || -f "${HISTORY_MANIFEST_PATH}" ]]; then
+      DEM_SCENARIO_RUN_MANIFEST="${MANIFEST_PATH}" \
+        DEM_SCENARIO_HISTORY_MANIFEST="${HISTORY_MANIFEST_PATH}" \
+        DEM_SCENARIO_MANIFEST="${MANIFEST_PATH}" \
+        GRAFANA_URL="${grafana_url}" \
+        yarn e2e "$@"
+    else
+      env -u DEM_SCENARIO_HISTORY_MANIFEST \
+        DEM_SCENARIO_RUN_MANIFEST="${MANIFEST_PATH}" \
+        DEM_SCENARIO_MANIFEST="${MANIFEST_PATH}" \
+        GRAFANA_URL="${grafana_url}" \
+        yarn e2e "$@"
+    fi
   )
 }
 
