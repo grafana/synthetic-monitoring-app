@@ -8,6 +8,7 @@ import { AppRoutes } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
+import { AppTimeProvider } from 'contexts/AppTimeProvider';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
@@ -55,7 +56,8 @@ export const InitialisedRouter = () => {
   const { canWriteChecks, canReadChecks, canReadProbes } = getUserPermissions();
 
   return (
-    <Routes>
+    <AppTimeProvider>
+      <Routes>
       <Route index element={<Navigate to={getRoute(AppRoutes.Home)} replace />} />
 
       <Route
@@ -152,5 +154,6 @@ export const InitialisedRouter = () => {
         }
       />
     </Routes>
+    </AppTimeProvider>
   );
 };

@@ -1,5 +1,6 @@
-import { formatProbeMatcher, interpolateTargets } from './interpolate';
 import { DashboardQuerySemanticValues } from './types';
+
+import { formatProbeMatcher, interpolateTargets } from './interpolate';
 
 const semanticValues: DashboardQuerySemanticValues = {
   job: 'example-job',

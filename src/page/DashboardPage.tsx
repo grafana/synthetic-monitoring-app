@@ -9,13 +9,13 @@ import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
 import { DNSDashboard } from 'scenes/DNS/DnsDashboard';
 import { GrpcDashboard } from 'scenes/GRPC/GrpcDashboard';
-import { HttpDashboardRoute } from './HttpDashboardRoute';
 import { PingDashboard } from 'scenes/PING/PingDashboard';
 import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
 import { TcpDashboard } from 'scenes/TCP/TcpDashboard';
 import { TracerouteDashboard } from 'scenes/Traceroute/TracerouteDashboard';
 
 import { CheckNotFound } from './NotFound/CheckNotFound';
+import { HttpDashboardRoute } from './HttpDashboardRoute';
 
 function DashboardPageContent() {
   const { data: checks = [], isLoading } = useChecks();

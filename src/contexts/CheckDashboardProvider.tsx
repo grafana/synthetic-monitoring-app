@@ -2,9 +2,9 @@ import React, { createContext, PropsWithChildren, useCallback, useContext, useEf
 import { useLocation, useNavigate } from 'react-router';
 
 import { Check } from 'types';
-import { useProbes } from 'data/useProbes';
 import { DashboardUrlState, mergeDashboardUrlState, withLegacyDashboardUrlState } from 'routing/dashboardUrl';
 import { transformLegacySceneDashboardUrl } from 'routing/legacySceneDashboardUrl';
+import { useProbes } from 'data/useProbes';
 
 export type CheckDashboardContextValue = {
   check: Check;
@@ -26,7 +26,10 @@ export function CheckDashboardProvider({ check, children }: PropsWithChildren<{ 
   const location = useLocation();
   const navigate = useNavigate();
   const { data: probes = [], isLoading, isError } = useProbes();
-  const probesById = useMemo(() => new Map(probes.map((probe) => [probe.id, probe.name])), [probes]);
+  const probesById = useMemo(
+    () => new Map(probes.map((probe) => [probe.id!, probe.name] as const)),
+    [probes]
+  );
   const catalog = useMemo(() => getConfiguredProbeNames(check, probesById), [check, probesById]);
 
   const [selectedProbes, setSelectedProbes] = useState<string[]>(() => {

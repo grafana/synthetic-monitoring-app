@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 
 import { createValueFrame } from './types';
+
 import { executeQueries } from './executeQueries';
 
 describe('executeQueries', () => {

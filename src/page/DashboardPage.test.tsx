@@ -1,7 +1,6 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
-import { render } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
+import { render, screen } from '@testing-library/react';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { AppRoutes } from 'routing/types';
@@ -44,7 +43,7 @@ describe('DashboardPage', () => {
     mockUseCheckFolderAccess.mockReturnValue({
       getPermissions: () => ({ canRead: true }),
       isResolving: false,
-    } as ReturnType<typeof useCheckFolderAccess>);
+    } as unknown as ReturnType<typeof useCheckFolderAccess>);
   });
 
   it('routes HTTP checks through HttpDashboardRoute', () => {
