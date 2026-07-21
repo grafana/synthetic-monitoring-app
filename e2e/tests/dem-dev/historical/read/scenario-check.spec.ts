@@ -1,4 +1,5 @@
 import { CHECKS_TEST_ID } from '../../../../../src/test/dataTestIds.constants';
+import { HTTP_DASHBOARD_CONTROLS } from '../../../../support/checkDashboard/httpDashboardContract';
 import { expect, test } from '../../../../support/dem-dev/fixtures';
 
 test.describe('dem-dev historical read journeys', () => {
@@ -25,7 +26,7 @@ test.describe('dem-dev historical read journeys', () => {
     });
 
     await test.step('Open the check dashboard', async () => {
-      await checkCard.getByRole('link', { name: 'View dashboard' }).click();
+      await checkCard.getByRole('link', { name: HTTP_DASHBOARD_CONTROLS.viewDashboard }).click();
 
       await expect(page).toHaveURL(/\/a\/grafana-synthetic-monitoring-app\/checks\/\d+\/?(?:\?.*)?$/);
       await expect(page.getByText('Uptime', { exact: true }).first()).toBeVisible();

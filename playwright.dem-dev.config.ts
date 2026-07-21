@@ -32,6 +32,7 @@ export default defineConfig<PluginOptions>({
       testMatch: /historical\/read\/.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
+        timezoneId: 'UTC',
       },
     },
     {
