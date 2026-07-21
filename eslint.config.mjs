@@ -124,6 +124,23 @@ const config = defineConfig([
       'no-console': 'off',
     },
   },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/routing/dashboardUrlSchema.ts', 'src/routing/dashboardUrl.test.ts', 'src/routing/legacySceneDashboardUrl.test.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ExportDefaultDeclaration',
+          message: 'Prefer named exports',
+        },
+        {
+          selector: 'Literal[value=/^sm-/]',
+          message: 'Use dashboardUrlSchema for canonical sm-* dashboard URL keys.',
+        },
+      ],
+    },
+  },
 ]);
 
 export default config;
