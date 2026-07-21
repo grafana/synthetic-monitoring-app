@@ -3,8 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Collapse, ConfirmModal, LoadingBar, Space, Spinner, Stack, Tag, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { queryInstantMetric, getStartEnd } from 'data/utils';
 import { InstantMetric } from 'datasource/responses.types';
+import { getStartEnd,queryInstantMetric } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 
@@ -315,7 +315,7 @@ export function LabelMigrationTab() {
     targetMode: LabelModeValue,
     title: string,
     body: string,
-    confirmText: string = 'Confirm'
+    confirmText = 'Confirm'
   ) => {
     setCollisionError(undefined);
     setConfirmModal({ isOpen: true, targetMode, title, body, confirmText });
@@ -354,7 +354,7 @@ export function LabelMigrationTab() {
                 <Text>
                   User-defined labels currently appear with a <code>label_</code> prefix on metrics and logs (e.g.{' '}
                   <code>label_env=&quot;prod&quot;</code>). Enable dual-write to begin your migration to un-prefixed
-                  labels. You can revert dual-write at any time before finalizing.
+                  labels. Enabling dual-write is permanent: you cannot return to prefixed-only labels afterwards.
                 </Text>
                 <Space v={2} />
                 <Button
@@ -364,7 +364,8 @@ export function LabelMigrationTab() {
                       'Enable dual-write',
                       'This will begin writing labels in both prefixed (label_foo) and un-prefixed (foo) form. ' +
                         'Your existing LBAC rules, alerts, and dashboards will continue to work during this period. ' +
-                        'You can revert this change at any time until you finalize the migration.',
+                        'This step cannot be undone — once dual-write is enabled you cannot return to ' +
+                        'prefixed-only labels.',
                       'Enable dual-write'
                     )
                   }
@@ -385,40 +386,22 @@ export function LabelMigrationTab() {
                   <code>sm_check_info</code> metrics and log streams.
                 </Alert>
                 <Space v={2} />
-                <Stack direction="row" gap={2}>
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      openConfirm(
-                        LabelMode.PREFIXED,
-                        'Revert to prefixed labels',
-                        'This will revert to writing labels with the label_ prefix only. ' +
-                          'Any rules or queries you have already migrated to un-prefixed form will stop working.',
-                        'Revert'
-                      )
-                    }
-                    disabled={loading}
-                  >
-                    Revert to prefixed
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() =>
-                      openConfirm(
-                        LabelMode.UNPREFIXED,
-                        'Finalize migration',
-                        'This will permanently switch to un-prefixed labels only. ' +
-                          'The label_ prefix will no longer appear on any metrics or logs. ' +
-                          'This cannot be undone — ensure all LBAC rules, alerts, and dashboards ' +
-                          'have been updated before proceeding.',
-                        'Finalize'
-                      )
-                    }
-                    disabled={loading}
-                  >
-                    Finalize migration
-                  </Button>
-                </Stack>
+                <Button
+                  onClick={() =>
+                    openConfirm(
+                      LabelMode.UNPREFIXED,
+                      'Finalize migration',
+                      'This will switch to un-prefixed labels only; the label_ prefix will no longer appear ' +
+                        'on any metrics or logs. Ensure all LBAC rules, alerts, and dashboards have been ' +
+                        'updated before proceeding. If you finalize too early, you can revert to dual-write ' +
+                        'to temporarily restore the prefixed form.',
+                      'Finalize'
+                    )
+                  }
+                  disabled={loading}
+                >
+                  Finalize migration
+                </Button>
               </>
             )}
 
@@ -433,6 +416,23 @@ export function LabelMigrationTab() {
                   <code>instance</code>, or <code>job</code>) is silently dropped by the agent. Audit your check and
                   probe labels to ensure none conflict with the reserved names listed below.
                 </Alert>
+                <Space v={2} />
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    openConfirm(
+                      LabelMode.DUAL_WRITE,
+                      'Revert to dual-write',
+                      'This will temporarily restore the prefixed (label_foo) form alongside the un-prefixed ' +
+                        'form, so that policies still relying on prefixed labels keep working while you finish ' +
+                        'migrating them. You can finalize again at any time.',
+                      'Revert to dual-write'
+                    )
+                  }
+                  disabled={loading}
+                >
+                  Revert to dual-write
+                </Button>
               </>
             )}
           </ConfigContent.Section>

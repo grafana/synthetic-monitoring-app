@@ -64,7 +64,9 @@ export const TENANT_LIMITS: ListTenantLimitsResponse = {
 };
 
 // Full canonical list of reserved system label names, sourced from
-// pkg/pb/synthetic_monitoring/checks_extra.go systemLabels map in the agent repo.
+// pkg/pb/synthetic_monitoring/checks_extra.go systemLabels in the agent repo
+// (27 names as of agent v0.60.0; region/from_cache/from_prefetch_cache/
+// from_service_worker/resource_type are intentionally not reserved).
 export const TENANT_LABEL_MODE: { mode: number; systemLabels: string[] } = {
   mode: 0,
   systemLabels: [
@@ -74,9 +76,6 @@ export const TENANT_LABEL_MODE: { mode: number; systemLabels: string[] } = {
     'config_version',
     'fingerprint_sha256',
     'frequency',
-    'from_cache',
-    'from_prefetch_cache',
-    'from_service_worker',
     'geohash',
     'instance',
     'issuer',
@@ -88,11 +87,10 @@ export const TENANT_LABEL_MODE: { mode: number; systemLabels: string[] } = {
     'probe',
     'proto',
     'rating',
-    'region',
-    'resource_type',
     'result',
     'scenario',
     'serialnumber',
+    'sm_region',
     'status',
     'subject',
     'subjectalternative',

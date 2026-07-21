@@ -1,12 +1,11 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { runTestAsSMAdmin } from 'test/utils';
-
-import { apiRoute } from 'test/handlers';
 import { TENANT_LABEL_MODE } from 'test/fixtures/tenants';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { runTestAsSMAdmin } from 'test/utils';
 
 import { LabelMigrationTab } from './LabelMigrationTab';
 
@@ -51,7 +50,7 @@ describe('LabelMigrationTab', () => {
     expect(buttons.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('shows Revert and Finalize buttons in DUAL_WRITE mode', async () => {
+  it('shows only the Finalize button in DUAL_WRITE mode (no revert to prefixed)', async () => {
     runTestAsSMAdmin();
     server.use(
       apiRoute('getLabelMode', {
@@ -60,9 +59,10 @@ describe('LabelMigrationTab', () => {
     );
     await renderTab();
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Revert to prefixed/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Finalize migration/i })).toBeInTheDocument();
     });
+    // Entering dual-write is irreversible: there must be no path back to prefixed-only.
+    expect(screen.queryByRole('button', { name: /Revert to prefixed/i })).not.toBeInTheDocument();
   });
 
   it('shows Finalize confirm modal with "Finalize" confirmText (not generic Confirm)', async () => {
@@ -79,7 +79,7 @@ describe('LabelMigrationTab', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /^Finalize$/i })).toBeInTheDocument());
   });
 
-  it('shows completion and silent-drop warning in UNPREFIXED mode with no action buttons', async () => {
+  it('shows completion, silent-drop warning, and revert to dual-write in UNPREFIXED mode', async () => {
     runTestAsSMAdmin();
     server.use(
       apiRoute('getLabelMode', {
@@ -90,8 +90,24 @@ describe('LabelMigrationTab', () => {
     await waitFor(() => expect(screen.getByText(/Migration complete/i)).toBeInTheDocument());
     // Silent-drop warning is now shown in UNPREFIXED mode
     expect(screen.getByText(/silently dropped/i)).toBeInTheDocument();
+    // Finalization is reversible: the tenant can restore dual-write, but never prefixed-only.
+    expect(screen.getByRole('button', { name: /Revert to dual-write/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Enable dual-write/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Finalize/i })).not.toBeInTheDocument();
+  });
+
+  it('opens a confirmation modal when Revert to dual-write is clicked in UNPREFIXED mode', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('getLabelMode', {
+        result: () => ({ json: { mode: 2, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+      })
+    );
+    await renderTab();
+    const trigger = await screen.findByRole('button', { name: /Revert to dual-write/i });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    expect(screen.getByText(/temporarily restore the prefixed/i)).toBeInTheDocument();
   });
 
   it('shows collision error with label names when API returns 409', async () => {
