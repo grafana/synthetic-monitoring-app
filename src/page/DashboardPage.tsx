@@ -9,7 +9,7 @@ import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { BrowserDashboard } from 'scenes/BrowserDashboard/BrowserDashboard';
 import { DNSDashboard } from 'scenes/DNS/DnsDashboard';
 import { GrpcDashboard } from 'scenes/GRPC/GrpcDashboard';
-import { HttpDashboard } from 'scenes/HTTP/HttpDashboard';
+import { HttpDashboardRoute } from './HttpDashboardRoute';
 import { PingDashboard } from 'scenes/PING/PingDashboard';
 import { ScriptedDashboard } from 'scenes/Scripted/ScriptedDashboard';
 import { TcpDashboard } from 'scenes/TCP/TcpDashboard';
@@ -59,7 +59,7 @@ function DashboardPageContent() {
   }
 
   if (check && getCheckType(check.settings) === CheckType.Http) {
-    return <HttpDashboard check={check} />;
+    return <HttpDashboardRoute check={check} />;
   }
 
   if (check && getCheckType(check.settings) === CheckType.Traceroute) {
