@@ -35,6 +35,7 @@ work/
 ci/
 e2e-results/
 superpowers/
+.superpowers/
 
 temp/
 .eslintcache
