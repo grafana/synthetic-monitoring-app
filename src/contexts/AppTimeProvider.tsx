@@ -70,6 +70,7 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
   const navigate = useNavigate();
   const { isEnabled: sceneFreeHttpDashboard } = useFeatureFlag(FeatureName.SceneFreeHttpDashboard);
   const refreshListeners = useRef(new Set<() => void>());
+  const [refreshRevision, setRefreshRevision] = useState(0);
   const [state, setState] = useState<DashboardUrlState>(() =>
     hasExplicitTimeState(new URLSearchParams(location.search))
       ? readDashboardState(new URLSearchParams(location.search))
@@ -150,6 +151,7 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
     const nextState = mergeDashboardUrlState(state, nextRange);
 
     setState(nextState);
+    setRefreshRevision((revision) => revision + 1);
     refreshListeners.current.forEach((listener) => listener());
     void invalidateActiveDashboardQueries();
   }, [state]);
@@ -226,7 +228,12 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
     }),
     [state.from, state.to]
   );
-  const resolvedRange = resolveTimeRange(raw.from, raw.to);
+  const resolvedRange = useMemo(
+    () => resolveTimeRange(raw.from, raw.to),
+    // Refreshing a relative range intentionally resolves "now" again without changing its raw values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [raw, refreshRevision]
+  );
 
   const value = useMemo<AppTimeContextValue>(
     () => ({

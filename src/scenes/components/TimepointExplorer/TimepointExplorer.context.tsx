@@ -37,6 +37,7 @@ import {
 import {
   CheckConfig,
   CheckEvent,
+  ExecutionResultFilter,
   HoveredState,
   MiniMapPages,
   MiniMapSection,
@@ -81,6 +82,7 @@ interface TimepointExplorerContextType {
   handleViewModeChange: (viewMode: ViewMode) => void;
   handleVizDisplayChange: (display: TimepointStatus, usedModifier: boolean) => void;
   handleVizOptionChange: (display: TimepointStatus, color: string) => void;
+  handleResultFilterChange: (filter: ExecutionResultFilter) => void;
   hoveredState: HoveredState;
   isCheckCreationWithinTimeRange: boolean;
   isError: boolean;
@@ -103,6 +105,7 @@ interface TimepointExplorerContextType {
   shouldScrollToViewer: boolean;
   vizDisplay: VizDisplay;
   vizOptions: Record<TimepointStatus, string>;
+  resultFilter: ExecutionResultFilter;
   yAxisMax: number;
 }
 
@@ -110,9 +113,16 @@ export const TimepointExplorerContext = createContext<TimepointExplorerContextTy
 
 interface TimepointExplorerProviderProps extends PropsWithChildren {
   check: Check;
+  resultFilter: ExecutionResultFilter;
+  onResultFilterChange: (filter: ExecutionResultFilter) => void;
 }
 
-export const TimepointExplorerProvider = ({ children, check }: TimepointExplorerProviderProps) => {
+export const TimepointExplorerProvider = ({
+  children,
+  check,
+  resultFilter,
+  onResultFilterChange,
+}: TimepointExplorerProviderProps) => {
   const checkType = getCheckType(check.settings);
   const checkCreation = Math.ceil(check.created!) * 1000;
   const timeRange = useDashboardTime();
@@ -164,6 +174,10 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   useEffect(() => {
     timeRangeRef.current = timeRange;
   }, [timeRange]);
+
+  useEffect(() => {
+    setVizDisplay(resultFilter === 'unsuccessful' ? ['failure'] : VIZ_DISPLAY_OPTIONS);
+  }, [resultFilter]);
 
   const yAxisMax = getYAxisMax(maxProbeDurationData, check.timeout);
 
@@ -297,28 +311,39 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
 
   const handleVizDisplayChange = useCallback(
     (display: TimepointStatus, usedModifier: boolean) => {
-      setVizDisplay((prev) => {
-        const isSelected = prev.includes(display);
-        const allSelected = prev.length === VIZ_DISPLAY_OPTIONS.length;
-        let newVizDisplay = [display];
+      const isSelected = vizDisplay.includes(display);
+      const allSelected = vizDisplay.length === VIZ_DISPLAY_OPTIONS.length;
+      let newVizDisplay = [display];
 
-        if (usedModifier) {
-          newVizDisplay = isSelected ? prev.filter((value) => value !== display) : [...prev, display];
-        }
+      if (usedModifier) {
+        newVizDisplay = isSelected
+          ? vizDisplay.filter((value) => value !== display)
+          : [...vizDisplay, display];
+      }
 
-        if (isSelected && !allSelected) {
-          newVizDisplay = VIZ_DISPLAY_OPTIONS;
-        }
+      if (isSelected && !allSelected) {
+        newVizDisplay = VIZ_DISPLAY_OPTIONS;
+      }
 
-        trackTimepointVizLegendToggled({
-          checkType,
-          vizOptions: newVizDisplay.sort().join(','),
-        });
-
-        return newVizDisplay;
+      trackTimepointVizLegendToggled({
+        checkType,
+        vizOptions: [...newVizDisplay].sort().join(','),
       });
+
+      setVizDisplay(newVizDisplay);
+      onResultFilterChange(
+        newVizDisplay.length === 1 && newVizDisplay[0] === 'failure' ? 'unsuccessful' : 'all'
+      );
     },
-    [checkType]
+    [checkType, onResultFilterChange, vizDisplay]
+  );
+
+  const handleResultFilterChange = useCallback(
+    (filter: ExecutionResultFilter) => {
+      setVizDisplay(filter === 'unsuccessful' ? ['failure'] : VIZ_DISPLAY_OPTIONS);
+      onResultFilterChange(filter);
+    },
+    [onResultFilterChange]
   );
 
   const handleVizOptionChange = useCallback((display: TimepointStatus, color: string) => {
@@ -381,6 +406,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       handleViewerStateChange,
       handleViewModeChange,
       handleVizDisplayChange,
+      handleResultFilterChange,
       handleVizOptionChange,
       handleSetScrollToViewer,
       hoveredState,
@@ -405,6 +431,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       shouldScrollToViewer,
       vizDisplay,
       vizOptions,
+      resultFilter,
       yAxisMax,
     };
   }, [
@@ -424,6 +451,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     handleViewerStateChange,
     handleViewModeChange,
     handleVizDisplayChange,
+    handleResultFilterChange,
     handleVizOptionChange,
     handleSetScrollToViewer,
     hoveredState,
@@ -448,6 +476,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     shouldScrollToViewer,
     vizDisplay,
     vizOptions,
+    resultFilter,
     yAxisMax,
   ]);
 

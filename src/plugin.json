@@ -39,6 +39,15 @@
       ]
     }
   ],
+  "extensions": {
+    "addedComponents": [
+      {
+        "targets": ["grafana/dynamic/nav-landing-page/nav-id-testing-and-synthetics/v1"],
+        "title": "Testing & synthetics landing page",
+        "description": "Disambiguation landing page for Synthetic Monitoring and Grafana Cloud k6"
+      }
+    ]
+  },
   "includes": [
     {
       "type": "page",

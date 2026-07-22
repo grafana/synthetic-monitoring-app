@@ -57,27 +57,23 @@ interface DatasourcePayload {
 // Used for stubbing out the datasource when plugin is not provisioned
 
 export function createNewApiInstance(payload: DatasourcePayload) {
-  return firstValueFrom(
-    getBackendSrv().fetch<SMOptions>({
-      method: 'POST',
-      url: 'api/datasources',
-      data: {
-        name: 'Synthetic Monitoring',
-        type: 'synthetic-monitoring-datasource',
-        access: 'proxy',
-        isDefault: false,
-        jsonData: {
-          apiHost: payload.apiHost,
-          initialized: true,
-          metrics: payload.metrics,
-          logs: payload.logs,
-        },
-        secureJsonData: {
-          accessToken: payload.accessToken,
-        },
-      },
-    })
-  );
+  const appUrl = config.appUrl || `${window.location.origin}/`;
+
+  return getBackendSrv().post<SMOptions>(new URL('api/datasources', appUrl).toString(), {
+    name: 'Synthetic Monitoring',
+    type: 'synthetic-monitoring-datasource',
+    access: 'proxy',
+    isDefault: false,
+    jsonData: {
+      apiHost: payload.apiHost,
+      initialized: true,
+      metrics: payload.metrics,
+      logs: payload.logs,
+    },
+    secureJsonData: {
+      accessToken: payload.accessToken,
+    },
+  });
 }
 
 export function initializeDatasource(datasourcePayload: DatasourcePayload) {
@@ -86,7 +82,7 @@ export function initializeDatasource(datasourcePayload: DatasourcePayload) {
     return firstValueFrom(
       getBackendSrv().fetch<SMOptions>({
         method: 'PUT',
-        url: `api/datasources/uid/${existingDatasource.uid}`,
+        url: `/api/datasources/uid/${existingDatasource.uid}`,
         data: {
           ...existingDatasource,
           access: 'proxy',

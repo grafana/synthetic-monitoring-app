@@ -19,4 +19,18 @@ describe('annotationFramesToEvents', () => {
       [3, 4],
     ]);
   });
+
+  it('accepts datasource time fields with Grafana title casing', () => {
+    const frame: DataFrame = {
+      name: 'annotations',
+      refId: 'Anno',
+      fields: [{ name: 'Time', type: FieldType.time, config: {}, values: [1, 3] }],
+      length: 2,
+    };
+
+    expect(annotationFramesToEvents([frame])).toEqual([
+      [1, 1],
+      [3, 3],
+    ]);
+  });
 });

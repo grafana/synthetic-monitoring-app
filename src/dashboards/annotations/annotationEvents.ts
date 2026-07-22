@@ -7,8 +7,8 @@ export function annotationFramesToEvents(frames: DataFrame[]): number[][] {
     return [];
   }
 
-  const timeStarts = frame.fields.find((field) => field.name === 'time')?.values ?? [];
-  const timeEnds = frame.fields.find((field) => field.name === 'timeEnd')?.values ?? [];
+  const timeStarts = frame.fields.find((field) => field.name.toLowerCase() === 'time')?.values ?? [];
+  const timeEnds = frame.fields.find((field) => field.name.toLowerCase() === 'timeend')?.values ?? [];
 
   return timeStarts.map((timeStart, index) => [timeStart, timeEnds[index] ?? timeStart]);
 }

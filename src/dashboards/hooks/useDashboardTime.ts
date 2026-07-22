@@ -13,18 +13,22 @@ export function useDashboardTime(): TimeRange {
   const checkDashboard = useCheckDashboardOptional();
   const appTime = useAppTimeOptional();
   const panelTimeRange = usePanelTimeRangeOptional();
+  const appFrom = appTime?.absolute.from;
+  const appTo = appTime?.absolute.to;
+  const rawFrom = appTime?.raw.from;
+  const rawTo = appTime?.raw.to;
 
   const appTimeRange = useMemo<TimeRange | null>(() => {
-    if (!appTime) {
+    if (appFrom === undefined || appTo === undefined || rawFrom === undefined || rawTo === undefined) {
       return null;
     }
 
     return {
-      from: dateTime(appTime.absolute.from),
-      to: dateTime(appTime.absolute.to),
-      raw: appTime.raw,
+      from: dateTime(appFrom),
+      to: dateTime(appTo),
+      raw: { from: rawFrom, to: rawTo },
     };
-  }, [appTime]);
+  }, [appFrom, appTo, rawFrom, rawTo]);
 
   return useMemo(() => {
     if (checkDashboard && appTimeRange) {

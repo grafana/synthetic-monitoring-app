@@ -16,7 +16,7 @@ import { annotationFramesToEvents, mergeAnnotationFrames } from './annotationEve
 import { executeDashboardAnnotationQueries } from './executeDashboardAnnotations';
 import { useDashboardContainerAnnotations } from './useDashboardContainerAnnotations';
 
-type DashboardAnnotationsContextValue = {
+export type DashboardAnnotationsContextValue = {
   definitions: AnnotationQuery[];
   enabledByName: Record<string, boolean>;
   framesByName: Record<string, DataFrame[]>;

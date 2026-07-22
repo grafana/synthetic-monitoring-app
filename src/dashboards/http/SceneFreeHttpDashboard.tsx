@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Stack, useStyles2 } from '@grafana/ui';
+import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DashboardAnnotationsProvider } from 'dashboards/annotations/DashboardAnnotationsProvider';
 import { useDashboardContainerAnnotations } from 'dashboards/annotations/useDashboardContainerAnnotations';
@@ -18,37 +18,21 @@ import {
   createResponseLatencyByProbePanelDefinition,
 } from 'dashboards/http/panels/detailPanelDefinitions';
 import { createErrorLogsPanelDefinition } from 'dashboards/http/panels/errorLogsPanelDefinition';
-import {
-  createAverageLatencyPanelDefinition,
-  createFrequencyPanelDefinition,
-  createReachabilityPanelDefinition,
-  createSslExpiryPanelDefinition,
-  createUptimePanelDefinition,
-} from 'dashboards/http/panels/headlinePanelDefinitions';
 import { PanelTimeRangeFromAppTime } from 'dashboards/runtime/PanelTimeRangeContext';
 
-import { Check, FeatureName } from 'types';
+import { FeatureName, HTTPCheck } from 'types';
 import { CheckDashboardProvider } from 'contexts/CheckDashboardProvider';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
+import { ExecutionResultFilter } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export function SceneFreeHttpDashboard({ check }: { check: Check }) {
+export function SceneFreeHttpDashboard({ check }: { check: HTTPCheck }) {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
   const { unsuccessfulOnly, toggleUnsuccessfulOnly } = useErrorLogsPanelState(true);
+  const [resultFilter, setResultFilter] = useState<ExecutionResultFilter>('all');
   const annotations = useDashboardContainerAnnotations(check);
-
-  const headlinePanels = useMemo(
-    () => ({
-      uptime: createUptimePanelDefinition(check),
-      reachability: createReachabilityPanelDefinition(check),
-      averageLatency: createAverageLatencyPanelDefinition(),
-      sslExpiry: createSslExpiryPanelDefinition(),
-      frequency: createFrequencyPanelDefinition(),
-    }),
-    [check]
-  );
 
   const detailPanels = useMemo(
     () => ({
@@ -65,17 +49,14 @@ export function SceneFreeHttpDashboard({ check }: { check: Check }) {
     <CheckDashboardProvider check={check} urlFormat="canonical">
       <PanelTimeRangeFromAppTime>
         <DashboardAnnotationsProvider check={check} definitions={annotations}>
-          <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
-            <HttpDashboardPage check={check} annotations={annotations}>
-              <Stack height="90px">
-                <DashboardPanel definition={{ ...headlinePanels.uptime, title: 'Uptime' }} height={90} />
-                <DashboardPanel definition={{ ...headlinePanels.reachability, title: 'Reachability' }} height={90} />
-                <DashboardPanel definition={{ ...headlinePanels.averageLatency, title: 'Average latency' }} height={90} />
-                <DashboardPanel definition={{ ...headlinePanels.sslExpiry, title: 'SSL Expiry' }} height={90} />
-                <DashboardPanel definition={{ ...headlinePanels.frequency, title: 'Frequency' }} height={90} />
-              </Stack>
-
-              <TimepointExplorer check={check} />
+          <PluginPage pageNav={{ text: check.job }} renderTitle={() => null}>
+            <HttpDashboardPage check={check}>
+              <TimepointExplorer
+                annotations={annotations}
+                check={check}
+                onResultFilterChange={setResultFilter}
+                resultFilter={resultFilter}
+              />
 
               <div className={styles.errorRateRow}>
                 <DashboardPanel definition={detailPanels.errorRateMap} height={500} />

@@ -14,7 +14,17 @@ test('shows the timepoint execution experience when Timepoint Explorer is enable
 
   await expect(page.getByTestId(SCENES_TEST_ID.timepoint.list)).toBeVisible();
   await expect(page.getByTestId(SCENES_TEST_ID.timepoint.viewer)).toBeVisible();
-  await expect(page.getByLabel('Unsuccessful runs only')).toHaveCount(0);
+  const unsuccessfulOnly = page.getByRole('button', { name: 'Unsuccessful only' });
+  await expect(unsuccessfulOnly).toBeVisible();
+  await unsuccessfulOnly.click();
+  await expect(unsuccessfulOnly).toHaveAttribute('aria-pressed', 'true');
+
+  for (const name of ['Product context', 'Compare related checks', 'Advanced filters']) {
+    const control = page.getByRole('button', { name });
+    await expect(control).toBeVisible();
+    await expect(control).toBeDisabled();
+    await expect(control).toHaveAttribute('aria-describedby', 'execution-explorer-coming-later');
+  }
   await testInfo.attach('timepoint-explorer-enabled', {
     body: await page.screenshot({ fullPage: true }),
     contentType: 'image/png',

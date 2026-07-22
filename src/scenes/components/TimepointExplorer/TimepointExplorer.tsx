@@ -1,16 +1,18 @@
-import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import React, { useCallback, useState } from 'react';
+import { AnnotationQuery, GrafanaTheme2 } from '@grafana/data';
 import { RadioButtonGroup, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, FeatureName } from 'types';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { Feedback } from 'components/Feedback';
+import { ExecutionExplorerToolbar } from 'scenes/components/TimepointExplorer/ExecutionExplorerToolbar';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   TimepointExplorerProvider,
   useTimepointExplorerContext,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
+import { ExecutionResultFilter } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointExplorerVisibleOverview } from 'scenes/components/TimepointExplorer/TimepointExplorerVisibleOverview';
 import { TimepointList } from 'scenes/components/TimepointExplorer/TimepointList';
 import { TimepointMinimap } from 'scenes/components/TimepointExplorer/TimepointMinimap';
@@ -18,17 +20,47 @@ import { TimepointViewer } from 'scenes/components/TimepointExplorer/TimepointVi
 
 interface TimepointExplorerProps {
   check: Check;
+  resultFilter?: ExecutionResultFilter;
+  onResultFilterChange?: (filter: ExecutionResultFilter) => void;
+  annotations?: AnnotationQuery[];
 }
 
-export const TimepointExplorer = ({ check }: TimepointExplorerProps) => {
+export const TimepointExplorer = ({
+  check,
+  resultFilter,
+  onResultFilterChange,
+  annotations = [],
+}: TimepointExplorerProps) => {
+  const [internalResultFilter, setInternalResultFilter] = useState<ExecutionResultFilter>('all');
+  const activeResultFilter = resultFilter ?? internalResultFilter;
+  const handleResultFilterChange = useCallback(
+    (filter: ExecutionResultFilter) => {
+      if (resultFilter === undefined) {
+        setInternalResultFilter(filter);
+      }
+      onResultFilterChange?.(filter);
+    },
+    [onResultFilterChange, resultFilter]
+  );
+
   return (
     <FeatureFlag name={FeatureName.TimepointExplorer}>
       {({ isEnabled }) =>
         isEnabled ? (
-          <TimepointExplorerProvider check={check}>
-            <TimepointExplorerInternal />
+          <TimepointExplorerProvider
+            check={check}
+            resultFilter={activeResultFilter}
+            onResultFilterChange={handleResultFilterChange}
+          >
+            <TimepointExplorerInternal annotations={annotations} />
           </TimepointExplorerProvider>
-        ) : null
+        ) : (
+          <ExecutionExplorerToolbar
+            annotations={annotations}
+            onResultFilterChange={handleResultFilterChange}
+            resultFilter={activeResultFilter}
+          />
+        )
       }
     </FeatureFlag>
   );
@@ -36,8 +68,8 @@ export const TimepointExplorer = ({ check }: TimepointExplorerProps) => {
 
 const CONTAINER_NAME = 'timepoint-explorer';
 
-const TimepointExplorerInternal = () => {
-  const { viewMode, handleViewModeChange } = useTimepointExplorerContext();
+const TimepointExplorerInternal = ({ annotations }: { annotations: AnnotationQuery[] }) => {
+  const { viewMode, handleViewModeChange, resultFilter, handleResultFilterChange } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
 
   return (
@@ -62,6 +94,12 @@ const TimepointExplorerInternal = () => {
             </div>
           </div>
         </div>
+
+        <ExecutionExplorerToolbar
+          annotations={annotations}
+          onResultFilterChange={handleResultFilterChange}
+          resultFilter={resultFilter}
+        />
 
         <Stack direction="column" gap={2}>
           <TimepointMinimap />

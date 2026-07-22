@@ -1,7 +1,7 @@
 // eslint-disable-next-line simple-import-sort/imports
 import './TimepointExplorer.mocks';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
@@ -16,6 +16,7 @@ import {
 } from 'test/fixtures/httpCheck/promUniqueConfigs';
 
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
+import { ExecutionResultFilter } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { SCENES_TEST_ID } from 'test/dataTestIds';
 import { mockFeatureToggles } from 'test/utils';
 import { FeatureName, HTTPCheck } from 'types';
@@ -107,6 +108,7 @@ describe('TimepointExplorer', () => {
     await waitFor(() => screen.queryByTestId(SCENES_TEST_ID.timepoint.list));
     expect(screen.queryByTestId(SCENES_TEST_ID.timepoint.list)).not.toBeInTheDocument();
     expect(screen.queryByTestId(SCENES_TEST_ID.timepoint.viewer)).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Product context' })).toBeDisabled();
   });
 
   it('should render if the feature flag is on', async () => {
@@ -114,6 +116,42 @@ describe('TimepointExplorer', () => {
     render(renderTimepointExplorer());
     await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.list));
     await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.viewer));
+  });
+
+  it('keeps the execution result filter controlled by its parent', async () => {
+    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+
+    function ControlledExplorer() {
+      const [resultFilter, setResultFilter] = useState<ExecutionResultFilter>('all');
+
+      return (
+        <TimepointExplorer
+          check={TIME_MODIFIED_HTTP_CHECK}
+          onResultFilterChange={setResultFilter}
+          resultFilter={resultFilter}
+        />
+      );
+    }
+
+    const { user } = render(<ControlledExplorer />);
+    const unsuccessful = await screen.findByRole('button', { name: 'Unsuccessful only' });
+
+    expect(unsuccessful).toHaveAttribute('aria-pressed', 'false');
+    await user.click(unsuccessful);
+    expect(unsuccessful).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(screen.getByRole('button', { name: 'All runs' }));
+    expect(screen.getByRole('button', { name: 'All runs' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('owns execution result state when a parent does not provide it', async () => {
+    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+    const { user } = render(renderTimepointExplorer());
+    const unsuccessful = await screen.findByRole('button', { name: 'Unsuccessful only' });
+
+    await user.click(unsuccessful);
+
+    expect(unsuccessful).toHaveAttribute('aria-pressed', 'true');
   });
 
   it(`should call scrollIntoView when a timepoint with data is clicked`, async () => {

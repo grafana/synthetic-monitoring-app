@@ -158,3 +158,10 @@ export function getServerRequests() {
 }
 
 export const HANDLERS = Object.keys(API_ROUTES).map((key) => apiRoute(key as keyof ApiRoutes));
+
+// Grafana must handle datasource creation in the local browser so the datasource
+// exists after the initializer reloads the page. Mocking this request reports a
+// false success and leaves the app in an initialize/reload loop.
+export const BROWSER_HANDLERS = Object.keys(API_ROUTES)
+  .filter((key) => key !== 'createDatasource')
+  .map((key) => apiRoute(key as keyof ApiRoutes));

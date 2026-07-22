@@ -26,14 +26,14 @@ test.describe('v2 HTTP dashboard parity — scene-free dashboard', () => {
 
     const alertAnnotations = page.getByRole('button', { name: 'Annotation region' });
     const alertToggle = page.getByRole('switch', { name: 'Show alerts firing' });
-    const alertToggleLabel = page.getByText('Show alerts firing', { exact: true });
+    const alertToggleControl = page.locator('label[aria-label="Show alerts firing"]');
     await expect(alertAnnotations).not.toHaveCount(0);
 
-    await alertToggleLabel.click();
+    await alertToggleControl.click();
     await expect(alertToggle).not.toBeChecked();
     await expect(alertAnnotations).toHaveCount(0);
 
-    await alertToggleLabel.click();
+    await alertToggleControl.click();
     await expect(alertToggle).toBeChecked();
     await expect(alertAnnotations).not.toHaveCount(0);
   });

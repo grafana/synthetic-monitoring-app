@@ -78,6 +78,8 @@ export type TimepointStatus = (typeof VIZ_DISPLAY_OPTIONS)[number];
 
 export type VizDisplay = TimepointStatus[];
 
+export type ExecutionResultFilter = 'all' | 'unsuccessful';
+
 export type TimepointVizOption = {
   border: string;
   backgroundColor: string;
