@@ -8,11 +8,13 @@ import {
   DataSourceApi,
   DataTopic,
   dateTime,
+  LoadingState,
+  PanelData,
   rangeUtil,
   TimeRange,
 } from '@grafana/data';
 import { getDataSourceSrv, getRunRequest, getTemplateSrv } from '@grafana/runtime';
-import { firstValueFrom } from 'rxjs';
+import { filter, firstValueFrom, Observable } from 'rxjs';
 
 import { dedupAnnotationEvents, postProcessAnnotationEvents } from './annotationQueryUtils';
 
@@ -28,6 +30,8 @@ function interpolateAnnotationExpr(expr: string, job: string, instance: string):
 }
 
 function shouldUseLegacyAnnotationRunner(datasource: DataSourceApi): boolean {
+  // Legacy annotationQuery remains as a fallback for older datasource plugins.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return Boolean(datasource.annotationQuery && LEGACY_ANNOTATION_RUNNER_TYPES.has(datasource.type));
 }
 
@@ -43,6 +47,16 @@ function annotationEventsToFrame(events: AnnotationEvent[]): DataFrame {
   };
 }
 
+function markAnnotationFrames(frames: DataFrame[]): DataFrame[] {
+  return frames.map((frame) => ({
+    ...frame,
+    meta: {
+      ...frame.meta,
+      dataTopic: frame.meta?.dataTopic ?? DataTopic.Annotations,
+    },
+  }));
+}
+
 async function executeLegacyAnnotationQuery(options: {
   datasource: DataSourceApi;
   annotation: AnnotationQuery;
@@ -50,10 +64,12 @@ async function executeLegacyAnnotationQuery(options: {
 }): Promise<AnnotationEvent[]> {
   const { datasource, annotation, timeRange } = options;
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (!datasource.annotationQuery) {
     return [];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const events = await datasource.annotationQuery({
     range: timeRange,
     rangeRaw: timeRange.raw,
@@ -73,6 +89,10 @@ async function executeModernAnnotationQuery(options: {
 }): Promise<DataFrame[]> {
   const { datasource, annotation, timeRange } = options;
 
+  // Query with the same top-level annotation shape the Scene AnnotationLayer used.
+  // Client-side coalescing in annotationFramesToEvents turns prometheus step
+  // samples into regions; we intentionally do not call AnnotationSupport.processEvents
+  // here because it can return empty/non-emitting results for this query shape.
   const request: DataQueryRequest = {
     app: CoreApp.Dashboard,
     requestId: `dashboard-annotation-${annotation.name}`,
@@ -93,16 +113,26 @@ async function executeModernAnnotationQuery(options: {
   };
 
   const runRequest = getRunRequest();
-  const panelData = await firstValueFrom(runRequest(datasource, request));
-  const frames = panelData.series?.length ? panelData.series : panelData.annotations ?? [];
+  // runRequest emits Loading (often empty) before Done — firstValueFrom alone
+  // would resolve too early and drop alert regions until a later refresh.
+  const panelData = await firstValueFrom(waitForSettledPanelData(runRequest(datasource, request)));
 
-  return frames.map((frame) => ({
-    ...frame,
-    meta: {
-      ...frame.meta,
-      dataTopic: frame.meta?.dataTopic ?? DataTopic.Annotations,
-    },
-  }));
+  // Prefer annotation-topic frames when present; fall back to series for datasources
+  // that still return raw prometheus samples via runRequest.
+  const frames = panelData.annotations?.length
+    ? panelData.annotations
+    : panelData.series?.length
+      ? panelData.series
+      : [];
+
+  return markAnnotationFrames(frames);
+}
+
+/** Exported for tests — wait until runRequest leaves the initial Loading state. */
+export function waitForSettledPanelData(panelData$: Observable<PanelData>): Observable<PanelData> {
+  return panelData$.pipe(
+    filter((data) => data.state === LoadingState.Done || data.state === LoadingState.Error)
+  );
 }
 
 export async function executeDashboardAnnotationQuery(options: {

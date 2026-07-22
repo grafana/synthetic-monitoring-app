@@ -60,6 +60,9 @@ export function DashboardAnnotationsProvider({
     });
   }, [resolvedDefinitions]);
 
+  const timeFromMs = timeRange.from.valueOf();
+  const timeToMs = timeRange.to.valueOf();
+
   useEffect(() => {
     if (resolvedDefinitions.length === 0) {
       setFramesByName({});
@@ -67,6 +70,7 @@ export function DashboardAnnotationsProvider({
     }
 
     const controller = new AbortController();
+    let active = true;
 
     void executeDashboardAnnotationQueries({
       annotations: resolvedDefinitions,
@@ -74,14 +78,24 @@ export function DashboardAnnotationsProvider({
       job: check.job,
       instance: check.target,
       signal: controller.signal,
-    }).then((nextFrames) => {
-      if (!controller.signal.aborted) {
-        setFramesByName(nextFrames);
-      }
-    });
+    })
+      .then((nextFrames) => {
+        if (active && !controller.signal.aborted) {
+          setFramesByName(nextFrames);
+        }
+      })
+      .catch(() => {
+        // Aborted/in-flight failures should not clear a later successful result.
+      });
 
-    return () => controller.abort();
-  }, [check.job, check.target, resolvedDefinitions, timeRange]);
+    return () => {
+      active = false;
+      controller.abort();
+    };
+    // Depend on stable time millis rather than the TimeRange object identity so
+    // we do not abort in-flight annotation queries on incidental rerenders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- timeFromMs/timeToMs track timeRange
+  }, [check.job, check.target, resolvedDefinitions, timeFromMs, timeToMs]);
 
   const setEnabled = useCallback((name: string, enabled: boolean) => {
     setEnabledByName((current) => ({ ...current, [name]: enabled }));
