@@ -1,0 +1,10 @@
+{
+  "extends": "@grafana/tsconfig",
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "types": ["node", "@playwright/test"]
+  },
+  "include": ["./**/*.ts", "../playwright.dem-dev.config.ts"]
+}

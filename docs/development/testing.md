@@ -2,6 +2,11 @@
 
 We use `jest` with `react-testing-library` for testing our application. Our aim is to have a [trophy-shaped testing strategy](https://kentcdodds.com/blog/write-tests), with a large number of integration tests and a smaller number of unit and e2e tests.
 
+Closed-loop system journeys use Playwright against a scenario-seeded `dem-dev` environment.
+They are distinct from future tests against a deployed Grafana Cloud instance. See
+[Closed-loop end-to-end testing with dem-dev](dem-dev-e2e.md) for the boundary and the local and
+pull-request workflow.
+
 The general philosophy is aiming for the right balance of confidence in core user journeys whilst keeping our tests easy to maintain and fast to run and iterate upon. Unit tests are too closely tied to implementation details and can create friction to changing the fundamentals, e2e tests can take a long time to run and be difficult to set up an easy to reproduce environment. Integration tests are by no means perfect but they are a good compromise.
 
 We will continually review our testing strategy and adjust as necessary.

@@ -1,0 +1,16 @@
+name: Validate dem-dev E2E
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dem-dev-e2e:
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/dem-dev-e2e.yml
+    with:
+      app_ref: ${{ github.sha }}

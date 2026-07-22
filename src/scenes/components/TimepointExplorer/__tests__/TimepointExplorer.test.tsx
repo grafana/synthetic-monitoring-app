@@ -85,8 +85,6 @@ function setupMSWHandlers() {
   );
 }
 
-
-
 function renderTimepointExplorer() {
   return <TimepointExplorer check={TIME_MODIFIED_HTTP_CHECK} />;
 }
@@ -125,6 +123,10 @@ describe('TimepointExplorer', () => {
     expect(mockScrollIntoView).not.toHaveBeenCalled();
 
     const timepointButtons = await screen.findAllByTestId(new RegExp(`${SCENES_TEST_ID.timepoint.listEntryBar}-`));
+
+    expect(timepointButtons[0]).toHaveAttribute('data-time');
+    expect(timepointButtons[0]).toHaveAttribute('data-status');
+    expect(timepointButtons[0]).toHaveAccessibleName(/— (success|failure|missing|pending)$/);
 
     await user.click(timepointButtons[0]);
 
