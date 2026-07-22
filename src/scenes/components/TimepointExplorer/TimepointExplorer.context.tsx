@@ -124,7 +124,7 @@ export const TimepointExplorerProvider = ({
   onResultFilterChange,
 }: TimepointExplorerProviderProps) => {
   const checkType = getCheckType(check.settings);
-  const checkCreation = Math.ceil(check.created!) * 1000;
+  const checkCreation = Math.ceil(check.created ?? 0) * 1000;
   const timeRange = useDashboardTime();
   const timeRangeRef = useRef<TimeRange>(timeRange);
   const { retentionPeriod: logsRetentionPeriod, isLoading: isLogsRetentionLoading } = useLogsRetentionPeriod();

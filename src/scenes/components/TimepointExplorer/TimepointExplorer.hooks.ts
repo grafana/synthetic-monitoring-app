@@ -437,7 +437,7 @@ export function useTimepointVizOptions(status: TimepointStatus) {
 }
 
 export function useCurrentAdjustedTime(check: Check) {
-  const checkCreation = Math.round(check.created! * 1000);
+  const checkCreation = Math.round((check.created ?? 0) * 1000);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const adjustedNowTime = getTimeAdjustedTimepoint(new Date().getTime(), check.frequency);

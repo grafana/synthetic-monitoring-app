@@ -15,11 +15,13 @@ describe('formatHttpCheckDefinition', () => {
     expect(model.target?.value).toBe(FULL_HTTP_CHECK.target);
     expect(model.facts).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: 'schedule', label: 'Runs', value: 'Every 1m from 2 probes' }),
-        expect.objectContaining({ id: 'timeout', label: 'Timeout', value: '10s' }),
-        expect.objectContaining({ id: 'uptime-rules', label: 'Uptime rules' }),
+        { id: 'frequency', label: 'Frequency', value: 'Every 1m' },
+        { id: 'configured-probes', label: 'Configured probes', value: '2' },
+        { id: 'timeout', label: 'Timeout', value: '10s' },
+        expect.objectContaining({ id: 'uptime-rules', label: 'Uptime success' }),
       ])
     );
+    expect(model.facts.some((fact) => fact.id === 'schedule')).toBe(false);
     expect(model.facts.find((fact) => fact.id === 'uptime-rules')?.value).toContain('SSL required');
     expect(model.details?.items).toEqual(
       expect.arrayContaining([

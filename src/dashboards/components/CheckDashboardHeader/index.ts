@@ -1,5 +1,6 @@
 export { CheckDefinitionSummary } from './CheckDefinitionSummary';
-export { CheckDashboardHeader } from './CheckDashboardHeader';
+export { CheckDashboardLayout } from './CheckDashboardLayout';
+export { CheckIdentitySummary } from './CheckIdentitySummary';
 export type {
   CheckDashboardHeaderProfile,
   CheckHeaderDefinitionModel,

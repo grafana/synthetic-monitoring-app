@@ -12,4 +12,12 @@ describe('getHttpHeaderMetrics', () => {
       'http-header-execution-counts'
     );
   });
+
+  it('keeps the headline metrics factual without threshold colour semantics', () => {
+    const metrics = getHttpHeaderMetrics(BASIC_HTTP_CHECK);
+    const uptime = metrics.find((metric) => metric.id === 'uptime');
+
+    expect(uptime?.getSecondaryText?.(0.4324)).toBe('From at least one location');
+    expect(metrics.every((metric) => !('getColor' in metric))).toBe(true);
+  });
 });

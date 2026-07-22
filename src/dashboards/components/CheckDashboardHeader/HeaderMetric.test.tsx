@@ -55,4 +55,13 @@ describe('HeaderMetric', () => {
     expect(screen.getByRole('region', { name: 'Uptime' })).toHaveTextContent('99.00%');
     expect(screen.getByLabelText('Updating Uptime')).toBeVisible();
   });
+
+  it('does not apply legacy threshold colours to factual values', () => {
+    jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Done, 0.9998), false));
+    const metricWithLegacyColor = { ...metric, getColor: () => '#ff0000' };
+
+    render(<HeaderMetric metric={metricWithLegacyColor} />);
+
+    expect(screen.getByText('99.98%')).not.toHaveStyle({ color: '#ff0000' });
+  });
 });

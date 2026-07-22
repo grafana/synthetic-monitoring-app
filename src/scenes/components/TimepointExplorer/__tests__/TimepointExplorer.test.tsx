@@ -118,6 +118,15 @@ describe('TimepointExplorer', () => {
     await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.viewer));
   });
 
+  it('renders when the check has no creation timestamp', async () => {
+    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+
+    render(<TimepointExplorer check={{ ...TIME_MODIFIED_HTTP_CHECK, created: undefined }} />);
+
+    expect(await screen.findByTestId(SCENES_TEST_ID.timepoint.list)).toBeVisible();
+    expect(await screen.findByTestId(SCENES_TEST_ID.timepoint.viewer)).toBeVisible();
+  });
+
   it('keeps the execution result filter controlled by its parent', async () => {
     mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
 

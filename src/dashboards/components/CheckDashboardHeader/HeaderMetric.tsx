@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, Spinner, useStyles2, useTheme2 } from '@grafana/ui';
+import { Icon, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useDashboardPanelQuery } from 'dashboards/hooks/useDashboardPanelQuery';
 
@@ -23,12 +23,10 @@ export function HeaderMetric<TCheck extends Check>({
   metric: HeaderMetricDefinition<TCheck>;
 }) {
   const styles = useStyles2(getStyles);
-  const theme = useTheme2();
   const { panelData, isLoading } = useDashboardPanelQuery(metric.definition);
   const value = metric.selectValue(panelData);
   const displayValue = value === null && isLoading ? 'Loading' : metric.formatValue(value);
   const Details = metric.Details;
-  const color = metric.getColor?.(theme, value);
   const secondaryText = metric.getSecondaryText?.(value);
 
   return (
@@ -49,9 +47,7 @@ export function HeaderMetric<TCheck extends Check>({
         </Toggletip>
       </div>
       <div className={styles.valueRow}>
-        <strong className={styles.value} style={{ color }}>
-          {displayValue}
-        </strong>
+        <strong className={styles.value}>{displayValue}</strong>
         {isLoading && value !== null ? (
           <span aria-label={`Updating ${metric.label}`} className={styles.updating}>
             <Spinner size="sm" />
@@ -80,7 +76,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: 0,
   }),
   valueRow: css({ alignItems: 'center', display: 'flex', gap: theme.spacing(1) }),
-  value: css({ fontSize: theme.typography.h3.fontSize, lineHeight: theme.typography.h3.lineHeight }),
+  value: css({
+    fontSize: `var(--header-metric-value-size, ${theme.typography.h3.fontSize})`,
+    lineHeight: theme.typography.h3.lineHeight,
+  }),
   updating: css({ color: theme.colors.text.secondary, display: 'inline-flex' }),
   secondary: css({
     color: theme.colors.text.secondary,

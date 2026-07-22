@@ -40,7 +40,6 @@ export interface HeaderMetricDefinition<TCheck extends Check = Check> {
   definition: DashboardPanelDefinition;
   selectValue: (data: PanelData) => number | null;
   formatValue: (value: number | null) => string;
-  getColor?: (theme: GrafanaTheme2, value: number | null) => string | undefined;
   getSecondaryText?: (value: number | null) => string | undefined;
   secondary?: {
     definition: DashboardPanelDefinition;

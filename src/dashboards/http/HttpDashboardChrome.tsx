@@ -1,26 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { InlineSwitch, Stack } from '@grafana/ui';
-import { CheckDashboardHeader } from 'dashboards/components/CheckDashboardHeader';
+import { InlineSwitch } from '@grafana/ui';
+import { CheckDashboardLayout } from 'dashboards/components/CheckDashboardHeader';
 import { httpDashboardHeaderProfile } from 'dashboards/http/header/httpDashboardHeaderProfile';
 import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvents';
 
 import { CheckType, HTTPCheck } from 'types';
 import { useCheckUptimeSuccessRate } from 'data/useSuccessRates';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
-
-export function HttpDashboardHeader({
-  check,
-}: {
-  check: HTTPCheck;
-}) {
-  return (
-    <CheckDashboardHeader
-      actions={<EditCheckButton id={check.id} />}
-      check={check}
-      profile={httpDashboardHeaderProfile}
-    />
-  );
-}
 
 function useTrackCheckDashboardViewed(check: HTTPCheck) {
   const { data: uptime, isSuccess, isError } = useCheckUptimeSuccessRate(check);
@@ -48,10 +34,13 @@ export function HttpDashboardPage({
   useTrackCheckDashboardViewed(check);
 
   return (
-    <Stack direction="column" gap={2}>
-      <HttpDashboardHeader check={check} />
+    <CheckDashboardLayout
+      actions={<EditCheckButton id={check.id} />}
+      check={check}
+      profile={httpDashboardHeaderProfile}
+    >
       {children}
-    </Stack>
+    </CheckDashboardLayout>
   );
 }
 

@@ -1,4 +1,3 @@
-import { GrafanaTheme2 } from '@grafana/data';
 import { HeaderMetricDefinition } from 'dashboards/components/CheckDashboardHeader';
 import {
   formatDateFromNow,
@@ -18,14 +17,6 @@ import { formatDuration } from 'utils';
 
 import { createExecutionCountsDefinition } from './httpHeaderQueryDefinitions';
 import { selectExecutionCounts } from './httpHeaderSelectors';
-
-function statusColor(theme: GrafanaTheme2, value: number | null, warning: number, healthy: number) {
-  if (value === null) {
-    return undefined;
-  }
-
-  return theme.visualization.getColorByName(value >= healthy ? 'green' : value >= warning ? 'yellow' : 'red');
-}
 
 function formatExecutionCounts(data: Parameters<typeof selectExecutionCounts>[0]) {
   const { total, successful, failed } = selectExecutionCounts(data);
@@ -59,7 +50,7 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       definition: uptimeDefinition,
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatPercent,
-      getColor: (theme, value) => statusColor(theme, value, 0.99, 0.995),
+      getSecondaryText: () => 'From at least one location',
     },
     {
       id: 'reachability',
@@ -68,7 +59,6 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       definition: reachabilityDefinition,
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatPercent,
-      getColor: (theme, value) => statusColor(theme, value, 0.99, 0.995),
       secondary: {
         definition: createExecutionCountsDefinition(),
         selectText: formatExecutionCounts,
@@ -81,7 +71,6 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       definition: latencyDefinition,
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatSeconds,
-      getColor: (theme, value) => statusColor(theme, value === null ? null : -value, -2, -1),
       getSecondaryText: () => 'Across selected probes',
     },
     {
@@ -91,7 +80,6 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       definition: sslDefinition,
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatSslRemaining,
-      getColor: (theme, value) => statusColor(theme, value, 604_800, 2_419_200),
       getSecondaryText: (value) => {
         const date = formatDateFromNow(value);
         return date ? `Expires ${date}` : undefined;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { CheckHeaderDefinitionModel } from './CheckDashboardHeader.types';
@@ -20,24 +20,16 @@ const dnsModel: CheckHeaderDefinitionModel = {
 };
 
 describe('CheckDefinitionSummary', () => {
-  it('renders a check-agnostic flattened definition and action slot', () => {
-    render(<CheckDefinitionSummary model={dnsModel} actions={<button type="button">Edit</button>} />);
-
-    expect(screen.getByRole('heading', { name: 'Authoritative DNS' })).toBeVisible();
-    expect(screen.getByText('DNS')).toBeVisible();
-    expect(screen.getByText('A')).toBeVisible();
-    expect(screen.getByLabelText('Record name example.com')).toHaveTextContent('example.com');
-    expect(screen.getByText('8.8.8.8 · UDP 53')).toBeVisible();
-    expect(screen.getByText('team: networking')).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Edit' })).toBeVisible();
-    expect(screen.queryByText('Enabled')).not.toBeInTheDocument();
-  });
-
-  it('pads both halves of the compound type badge', () => {
+  it('renders operational configuration separately from check identity', () => {
     render(<CheckDefinitionSummary model={dnsModel} />);
 
-    expect(screen.getByText('DNS')).toHaveStyle({ padding: '2px 8px' });
-    expect(screen.getByText('A')).toHaveStyle({ padding: '2px 8px' });
+    const configuration = screen.getByRole('region', { name: 'Check configuration' });
+
+    expect(within(configuration).getByRole('heading', { name: 'Check configuration' })).toBeVisible();
+    expect(within(configuration).getByText('8.8.8.8 · UDP 53')).toBeVisible();
+    expect(within(configuration).getByRole('button', { name: 'View check definition' })).toBeVisible();
+    expect(screen.queryByRole('heading', { name: 'Authoritative DNS' })).not.toBeInTheDocument();
+    expect(screen.queryByText('team: networking')).not.toBeInTheDocument();
   });
 
   it('reveals definition detail only when its toggletip is opened', async () => {

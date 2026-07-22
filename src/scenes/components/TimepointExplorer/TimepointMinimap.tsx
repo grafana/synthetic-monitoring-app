@@ -109,7 +109,7 @@ const TimepointMinimapContent = () => {
     miniMapCurrentPageSections,
     miniMapCurrentPage,
   } = useTimepointExplorerContext();
-  const checkCreation = Math.round(check.created! * 1000);
+  const checkCreation = Math.round((check.created ?? 0) * 1000);
   const isCheckCreationAfterTo = checkCreation > timeRange.to.valueOf();
   const isFirstPage = miniMapCurrentPage === 0;
 

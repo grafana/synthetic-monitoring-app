@@ -116,6 +116,38 @@ describe('DashboardScopeControls', () => {
     expect(setRefresh).toHaveBeenCalledWith('1m');
   });
 
+  it('distinguishes selected probes from the configured probe catalog', () => {
+    const contextValue = {
+      check: {} as ReturnType<typeof useCheckDashboard>['check'],
+      probes: ['Paris'],
+      setProbes: jest.fn(),
+      catalog: ['Paris', 'Tokyo'],
+      catalogLoading: false,
+      catalogError: false,
+    };
+    jest.mocked(useCheckDashboard).mockReturnValue(contextValue);
+    jest.mocked(useAppTime).mockReturnValue({
+      raw: { from: 'now-1h', to: 'now' },
+      absolute: { from: 0, to: 1 },
+      timezone: 'browser',
+      refresh: undefined,
+      setTimeRange: jest.fn(),
+      setRefresh: jest.fn(),
+      refreshNow: jest.fn(),
+      buildDashboardPath: jest.fn(),
+      subscribeRefresh: jest.fn(),
+    });
+
+    const { rerender } = render(<DashboardScopeControls />);
+
+    expect(screen.getByText('Selected probes · 1 of 2')).toBeVisible();
+
+    jest.mocked(useCheckDashboard).mockReturnValue({ ...contextValue, probes: [] });
+    rerender(<DashboardScopeControls />);
+
+    expect(screen.getByText('Selected probes · 2 of 2')).toBeVisible();
+  });
+
   it('omits the probe picker when the catalog fails', () => {
     jest.mocked(useCheckDashboard).mockReturnValue({
       check: {} as ReturnType<typeof useCheckDashboard>['check'],
