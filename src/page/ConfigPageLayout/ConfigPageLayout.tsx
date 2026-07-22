@@ -61,8 +61,9 @@ export function ConfigPageLayout() {
       ],
     };
 
-    // Label Migration tab is visible to admins only (not feature-flagged).
-    if (isAdmin) {
+    // Label Migration is feature-flagged for rollout; within enabled stacks the
+    // tab is visible to admins only, since changing the mode is an admin operation.
+    if (isAdmin && isFeatureEnabled(FeatureName.LabelMigration)) {
       navModel.children!.push({
         icon: 'tag-alt',
         text: 'Label Migration',

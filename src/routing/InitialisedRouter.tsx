@@ -137,7 +137,9 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
-        {isAdmin && <Route path="label-migration" element={<LabelMigrationTab />} />}
+        {isAdmin && isFeatureEnabled(FeatureName.LabelMigration) && (
+          <Route path="label-migration" element={<LabelMigrationTab />} />
+        )}
         {isFeatureEnabled(FeatureName.SecretsManagement) && <Route path="secrets" element={<SecretsManagementTab />} />}
       </Route>
 
