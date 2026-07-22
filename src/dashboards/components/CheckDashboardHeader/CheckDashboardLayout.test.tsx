@@ -49,9 +49,9 @@ describe('CheckDashboardLayout', () => {
 
     expect(bands.map((band) => band.textContent)).toEqual([
       'Check identity',
-      'Dashboard scope controls',
       'Observed performance',
       'Check configuration',
+      'Dashboard scope controls',
     ]);
     expect(within(layout).getByTestId('dashboard-content')).toHaveTextContent('Panels');
     expect(profile.getDefinition).toHaveBeenCalledTimes(1);

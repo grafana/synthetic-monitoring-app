@@ -99,8 +99,8 @@ describe('DashboardScopeControls', () => {
     const probePicker = screen.getByTestId('probe-multi-combobox');
     expect(probePicker).toHaveAttribute('data-loading', 'true');
     expect(probePicker).toHaveAttribute('data-width', 'auto');
-    expect(probePicker).toHaveAttribute('data-min-width', '40');
-    expect(probePicker).toHaveAttribute('data-max-width', '64');
+    expect(probePicker).toHaveAttribute('data-min-width', '24');
+    expect(probePicker).toHaveAttribute('data-max-width', '32');
     expect(screen.getByRole('combobox', { name: 'Probes' })).toBeVisible();
 
     await user.click(screen.getByRole('button', { name: 'Select probes' }));
@@ -116,7 +116,7 @@ describe('DashboardScopeControls', () => {
     expect(setRefresh).toHaveBeenCalledWith('1m');
   });
 
-  it('distinguishes selected probes from the configured probe catalog', () => {
+  it('does not add a separate probe summary beside the selector', () => {
     const contextValue = {
       check: {} as ReturnType<typeof useCheckDashboard>['check'],
       probes: ['Paris'],
@@ -140,12 +140,12 @@ describe('DashboardScopeControls', () => {
 
     const { rerender } = render(<DashboardScopeControls />);
 
-    expect(screen.getByText('Selected probes · 1 of 2')).toBeVisible();
+    expect(screen.queryByText('Selected probes · 1 of 2')).not.toBeInTheDocument();
 
     jest.mocked(useCheckDashboard).mockReturnValue({ ...contextValue, probes: [] });
     rerender(<DashboardScopeControls />);
 
-    expect(screen.getByText('Selected probes · 2 of 2')).toBeVisible();
+    expect(screen.queryByText('Selected probes · 2 of 2')).not.toBeInTheDocument();
   });
 
   it('omits the probe picker when the catalog fails', () => {

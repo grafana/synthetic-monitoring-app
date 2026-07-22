@@ -40,44 +40,46 @@ export function CheckIdentitySummary({
         {actions ? <div className={styles.actions}>{actions}</div> : null}
       </div>
 
-      {model.target ? (
-        <div aria-label={model.target.accessibleLabel} className={styles.target} title={model.target.value}>
-          {model.target.value}
-        </div>
-      ) : null}
+      <div className={styles.metadata} data-testid="check-identity-metadata">
+        {model.target ? (
+          <div aria-label={model.target.accessibleLabel} className={styles.target} title={model.target.value}>
+            {model.target.value}
+          </div>
+        ) : null}
 
-      {model.labels.length > 0 ? (
-        <div aria-label="Labels" className={styles.labels}>
-          {visibleLabels.map((label) => (
-            <span className={styles.label} key={`${label.name}-${label.value}`}>
-              {label.name}: {label.value}
-            </span>
-          ))}
-          {additionalLabels.length > 0 ? (
-            <Toggletip
-              content={
-                <div className={styles.additionalLabels}>
-                  {additionalLabels.map((label) => (
-                    <span key={`${label.name}-${label.value}`}>
-                      {label.name}: {label.value}
-                    </span>
-                  ))}
-                </div>
-              }
-            >
-              <button aria-label="View additional labels" className={styles.labelButton} type="button">
-                +{additionalLabels.length} more
-              </button>
-            </Toggletip>
-          ) : null}
-        </div>
-      ) : null}
+        {model.labels.length > 0 ? (
+          <div aria-label="Labels" className={styles.labels}>
+            {visibleLabels.map((label) => (
+              <span className={styles.label} key={`${label.name}-${label.value}`}>
+                {label.name}: {label.value}
+              </span>
+            ))}
+            {additionalLabels.length > 0 ? (
+              <Toggletip
+                content={
+                  <div className={styles.additionalLabels}>
+                    {additionalLabels.map((label) => (
+                      <span key={`${label.name}-${label.value}`}>
+                        {label.name}: {label.value}
+                      </span>
+                    ))}
+                  </div>
+                }
+              >
+                <button aria-label="View additional labels" className={styles.labelButton} type="button">
+                  +{additionalLabels.length} more
+                </button>
+              </Toggletip>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), minWidth: 0 }),
+  container: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5), minWidth: 0 }),
   titleRow: css({
     alignItems: 'center',
     display: 'flex',
@@ -91,9 +93,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     minWidth: 0,
   }),
   title: css({
-    fontSize: theme.typography.h3.fontSize,
+    fontSize: theme.typography.h4.fontSize,
     fontWeight: theme.typography.fontWeightMedium,
-    lineHeight: theme.typography.h3.lineHeight,
+    lineHeight: theme.typography.h4.lineHeight,
     margin: 0,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -118,9 +120,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(0.25, 1),
   }),
   actions: css({ flexShrink: 0 }),
+  metadata: css({ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: theme.spacing(0.5, 1) }),
   target: css({
     color: theme.colors.text.secondary,
+    flex: '0 1 auto',
+    fontSize: theme.typography.bodySmall.fontSize,
     fontFamily: theme.typography.fontFamilyMonospace,
+    maxWidth: 'min(100%, 520px)',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',

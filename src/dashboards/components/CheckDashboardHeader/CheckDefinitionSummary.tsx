@@ -33,7 +33,6 @@ export function CheckDefinitionSummary({ model }: { model: CheckHeaderDefinition
 
   return (
     <section aria-label="Check configuration" className={styles.container}>
-      <h2 className={styles.heading}>Check configuration</h2>
       <div className={styles.definitionRow}>
         <dl className={styles.factList}>
           {model.facts.map((fact) => (
@@ -48,7 +47,7 @@ export function CheckDefinitionSummary({ model }: { model: CheckHeaderDefinition
           <Toggletip content={<DefinitionDetails title={model.details.title} items={model.details.items} />}>
             <button aria-label="View check definition" className={styles.definitionButton} type="button">
               <Icon name="info-circle" />
-              Full definition
+              Definition
             </button>
           </Toggletip>
         ) : null}
@@ -61,25 +60,20 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(1),
     maxWidth: '1040px',
     width: '100%',
   }),
-  heading: css({ fontSize: theme.typography.h5.fontSize, margin: 0 }),
   definitionRow: css({
     alignItems: 'center',
-    borderBottom: `1px solid ${theme.colors.border.weak}`,
-    borderTop: `1px solid ${theme.colors.border.weak}`,
     display: 'flex',
     flexWrap: 'wrap',
-    gap: theme.spacing(1, 2),
-    padding: theme.spacing(1.5, 0),
+    gap: theme.spacing(0.5, 1),
   }),
   factList: css({
     alignItems: 'center',
     display: 'flex',
     flexWrap: 'wrap',
-    gap: theme.spacing(1, 2),
+    gap: theme.spacing(0.5, 1),
     margin: 0,
   }),
   fact: css({
@@ -88,7 +82,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(0.5),
     whiteSpace: 'nowrap',
     '& dt': { color: theme.colors.text.secondary, fontSize: theme.typography.bodySmall.fontSize },
-    '& dd': { margin: 0 },
+    '& dd': { fontSize: theme.typography.bodySmall.fontSize, margin: 0 },
   }),
   definitionButton: css({
     alignItems: 'center',

@@ -27,11 +27,11 @@ export function CheckDashboardLayout<TCheck extends Check>({
   return (
     <div className={styles.container} data-testid="check-dashboard-layout">
       <CheckIdentitySummary actions={actions} model={definition} />
+      <ObservedPerformanceSummary check={check} profile={profile} />
+      <CheckDefinitionSummary model={definition} />
       <div className={styles.scopeRow} data-testid="dashboard-scope-sticky">
         <DashboardScopeControls />
       </div>
-      <ObservedPerformanceSummary check={check} profile={profile} />
-      <CheckDefinitionSummary model={definition} />
       {children}
     </div>
   );
@@ -41,13 +41,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2),
+    gap: theme.spacing(1),
     minWidth: 0,
   }),
   scopeRow: css({
     background: theme.colors.background.primary,
-    borderBottom: `1px solid ${theme.colors.border.weak}`,
-    padding: theme.spacing(1, 0, 2),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    paddingTop: theme.spacing(1),
     position: 'sticky',
     top: theme.spacing(6),
     zIndex: theme.zIndex.navbarFixed,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 import { CheckHeaderDefinitionModel } from './CheckDashboardHeader.types';
 
@@ -26,8 +26,9 @@ describe('CheckIdentitySummary', () => {
     expect(screen.getByRole('heading', { name: 'Authoritative DNS' })).toBeVisible();
     expect(screen.getByText('DNS')).toBeVisible();
     expect(screen.getByText('A')).toBeVisible();
-    expect(screen.getByLabelText('Record name example.com')).toHaveTextContent('example.com');
-    expect(screen.getByText('team: networking')).toBeVisible();
+    const metadata = screen.getByTestId('check-identity-metadata');
+    expect(within(metadata).getByLabelText('Record name example.com')).toHaveTextContent('example.com');
+    expect(within(metadata).getByText('team: networking')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Edit' })).toBeVisible();
     expect(screen.queryByText('8.8.8.8 · UDP 53')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'View check definition' })).not.toBeInTheDocument();

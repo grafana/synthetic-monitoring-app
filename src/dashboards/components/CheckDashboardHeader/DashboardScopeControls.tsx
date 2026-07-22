@@ -17,18 +17,13 @@ function DashboardProbeControl() {
   const styles = useStyles2(getStyles);
   const { probes, setProbes, catalogLoading, catalog, catalogError } = useCheckDashboard();
   const options = useMemo(() => catalog.map((probe) => ({ label: probe, value: probe })), [catalog]);
-  const selectedProbeCount = probes.length > 0 ? probes.length : catalog.length;
-  const selectedProbeSummary = catalogLoading
-    ? 'Selected probes'
-    : `Selected probes · ${selectedProbeCount} of ${catalog.length}`;
 
   if (catalogError) {
     return null;
   }
 
   return (
-    <div className={styles.probeControl}>
-      <span className={styles.probeSummary}>{selectedProbeSummary}</span>
+    <div>
       <label className={styles.visuallyHidden} htmlFor={PROBE_CONTROL_ID}>
         Probes
       </label>
@@ -36,8 +31,8 @@ function DashboardProbeControl() {
         id={PROBE_CONTROL_ID}
         isClearable
         loading={catalogLoading}
-        maxWidth={64}
-        minWidth={40}
+        maxWidth={32}
+        minWidth={24}
         options={options}
         value={probes}
         width="auto"
@@ -49,17 +44,6 @@ function DashboardProbeControl() {
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  probeControl: css({
-    alignItems: 'center',
-    display: 'inline-flex',
-    flexWrap: 'wrap',
-    gap: theme.spacing(1),
-  }),
-  probeSummary: css({
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    whiteSpace: 'nowrap',
-  }),
   visuallyHidden: css({
     border: 0,
     clip: 'rect(0 0 0 0)',

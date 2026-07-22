@@ -25,7 +25,7 @@ describe('CheckDefinitionSummary', () => {
 
     const configuration = screen.getByRole('region', { name: 'Check configuration' });
 
-    expect(within(configuration).getByRole('heading', { name: 'Check configuration' })).toBeVisible();
+    expect(within(configuration).queryByRole('heading', { name: 'Check configuration' })).not.toBeInTheDocument();
     expect(within(configuration).getByText('8.8.8.8 · UDP 53')).toBeVisible();
     expect(within(configuration).getByRole('button', { name: 'View check definition' })).toBeVisible();
     expect(screen.queryByRole('heading', { name: 'Authoritative DNS' })).not.toBeInTheDocument();

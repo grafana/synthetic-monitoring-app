@@ -38,14 +38,15 @@ describe('ObservedPerformanceSummary', () => {
     expect(profile.getMetrics).toHaveBeenCalledTimes(1);
   });
 
-  it('groups the narrative and metric cells inside the bounded shared surface', () => {
+  it('keeps the compact shared surface without rendering a heading or narrative', () => {
     render(<ObservedPerformanceSummary check={BASIC_HTTP_CHECK} profile={profile} />);
 
     const summary = screen.getByRole('region', { name: 'Observed performance' });
     const surface = within(summary).getByTestId('observed-performance-surface');
 
     expect(summary).toHaveStyle({ maxWidth: '1040px' });
-    expect(within(surface).getByText('Factual availability narrative')).toBeVisible();
     expect(within(surface).getAllByTestId('observed-performance-metric')).toHaveLength(1);
+    expect(screen.queryByRole('heading', { name: 'Observed performance' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Factual availability narrative')).not.toBeInTheDocument();
   });
 });

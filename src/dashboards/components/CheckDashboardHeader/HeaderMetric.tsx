@@ -63,7 +63,7 @@ export function HeaderMetric<TCheck extends Check>({
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  metric: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5), minWidth: 0 }),
+  metric: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.25), minWidth: 0 }),
   labelRow: css({ alignItems: 'center', display: 'flex', gap: theme.spacing(0.5) }),
   label: css({ color: theme.colors.text.secondary, fontSize: theme.typography.bodySmall.fontSize }),
   infoButton: css({
@@ -77,8 +77,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   valueRow: css({ alignItems: 'center', display: 'flex', gap: theme.spacing(1) }),
   value: css({
-    fontSize: `var(--header-metric-value-size, ${theme.typography.h3.fontSize})`,
-    lineHeight: theme.typography.h3.lineHeight,
+    fontSize: `var(--header-metric-value-size, ${theme.typography.h4.fontSize})`,
+    lineHeight: theme.typography.h4.lineHeight,
   }),
   updating: css({ color: theme.colors.text.secondary, display: 'inline-flex' }),
   secondary: css({
@@ -86,7 +86,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     flexDirection: 'column',
     fontSize: theme.typography.bodySmall.fontSize,
-    minHeight: theme.spacing(2),
   }),
   toggletipContent: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }),
 });
