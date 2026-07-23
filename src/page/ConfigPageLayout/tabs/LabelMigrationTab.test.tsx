@@ -135,6 +135,27 @@ describe('LabelMigrationTab', () => {
     });
   });
 
+  it('shows an update error without Retry when setLabelMode fails without collisions', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => ({ status: 500, json: { msg: 'failed to update label mode' } }),
+      })
+    );
+    await renderTab();
+    const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    const confirmButton = screen.getByTestId('data-testid Confirm Modal Danger Button');
+    await userEvent.click(confirmButton);
+    // The failure is reported as an update error carrying the API's message...
+    await waitFor(() => expect(screen.getByText(/Failed to update label migration mode/i)).toBeInTheDocument());
+    expect(screen.getByText(/failed to update label mode/i)).toBeInTheDocument();
+    // ...not as a load error, whose Retry would refetch instead of retrying the change.
+    expect(screen.queryByText(/Error loading label migration status/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Retry/i })).not.toBeInTheDocument();
+  });
+
   it('shows error alert with Retry button on load failure', async () => {
     runTestAsSMAdmin();
     server.use(

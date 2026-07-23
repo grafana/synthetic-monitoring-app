@@ -92,7 +92,8 @@ function useProbeSuccessLabels(): {
     try {
       queryInstantMetric<InstantMetric>({
         url: metricsDS.url,
-        query: 'probe_success',
+        // topk keeps the response to a single series; the preview only reads one.
+        query: 'topk(1, probe_success)',
         start,
         end,
       })
@@ -145,6 +146,7 @@ function LabelTag({ name, value, dimmed, styles }: LabelTagProps) {
 interface SeriesPreviewProps {
   mode: LabelModeValue;
   styles: ReturnType<typeof getStyles>;
+  systemLabels: string[];
   liveLabels?: Record<string, string>;
   liveLoading?: boolean;
 }
@@ -154,10 +156,14 @@ interface SeriesPreviewProps {
  * 1. A live probe_success series with real system labels from the tenant's data.
  * 2. A constructed example showing how user-defined labels appear in the current mode.
  */
-function SeriesPreview({ mode, styles, liveLabels, liveLoading }: SeriesPreviewProps) {
-  // System labels from the live series (subset: the most readable ones)
+function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading }: SeriesPreviewProps) {
+  // System labels from the live series: only keys in the API's reserved set.
+  // Anything else on the series (user-defined labels, or agent-emitted labels
+  // that are deliberately not reserved) is omitted here — the constructed
+  // example below illustrates how user labels appear in each mode.
+  const reserved = new Set(systemLabels);
   const systemLabelKeys = liveLabels
-    ? Object.keys(liveLabels).filter((k) => !k.startsWith('__'))
+    ? Object.keys(liveLabels).filter((k) => !k.startsWith('__') && reserved.has(k))
     : ['probe', 'instance', 'job', 'region'];
 
   const systemLabelValues: Record<string, string> = liveLabels ?? {
@@ -253,6 +259,7 @@ export function LabelMigrationTab() {
   const [state, setState] = useState<LabelModeState | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | undefined>(undefined);
+  const [updateError, setUpdateError] = useState<string | undefined>(undefined);
   const [collisionError, setCollisionError] = useState<CollisionError | undefined>(undefined);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -293,7 +300,7 @@ export function LabelMigrationTab() {
 
   const applyMode = async (targetMode: LabelModeValue) => {
     setLoading(true);
-    setLoadError(undefined);
+    setUpdateError(undefined);
     setCollisionError(undefined);
     try {
       const updated = await smDS.setLabelMode(targetMode);
@@ -303,7 +310,7 @@ export function LabelMigrationTab() {
       if (e?.data?.collidingLabels) {
         setCollisionError(e.data);
       } else {
-        setLoadError(e?.message ?? 'Failed to update label migration mode');
+        setUpdateError(e?.data?.msg ?? e?.message ?? 'Failed to update label migration mode');
       }
     } finally {
       setLoading(false);
@@ -317,6 +324,7 @@ export function LabelMigrationTab() {
     body: string,
     confirmText = 'Confirm'
   ) => {
+    setUpdateError(undefined);
     setCollisionError(undefined);
     setConfirmModal({ isOpen: true, targetMode, title, body, confirmText });
   };
@@ -449,10 +457,17 @@ export function LabelMigrationTab() {
             <SeriesPreview
               mode={state.mode}
               styles={styles}
+              systemLabels={state.systemLabels}
               liveLabels={liveLabels}
               liveLoading={liveLoading}
             />
           </ConfigContent.Section>
+
+          {updateError && (
+            <Alert severity="error" title="Failed to update label migration mode" onRemove={() => setUpdateError(undefined)}>
+              <Text>{updateError}</Text>
+            </Alert>
+          )}
 
           {collisionError && (
             <Alert
