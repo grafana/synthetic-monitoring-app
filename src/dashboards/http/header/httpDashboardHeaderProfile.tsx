@@ -2,6 +2,7 @@ import { CheckDashboardHeaderProfile } from 'dashboards/components/CheckDashboar
 
 import { HTTPCheck } from 'types';
 
+import { HttpCheckHealthProvider } from './health/HttpCheckHealthProvider';
 import { formatHttpCheckDefinition } from './httpCheckDefinition';
 import { getHttpHeaderMetrics } from './httpHeaderMetrics';
 import { HttpHealthNarrative } from './HttpHealthNarrative';
@@ -14,4 +15,5 @@ export const httpDashboardHeaderProfile: CheckDashboardHeaderProfile<HTTPCheck> 
       metric.id === 'reachability' ? { ...metric, Details: HttpReachabilityDetails } : metric
     ),
   Narrative: HttpHealthNarrative,
+  HealthProvider: HttpCheckHealthProvider,
 };

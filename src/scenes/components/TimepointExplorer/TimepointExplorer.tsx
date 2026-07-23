@@ -5,8 +5,6 @@ import { css } from '@emotion/css';
 
 import { Check, FeatureName } from 'types';
 import { FeatureFlag } from 'components/FeatureFlag';
-import { Feedback } from 'components/Feedback';
-import { ExecutionExplorerToolbar } from 'scenes/components/TimepointExplorer/ExecutionExplorerToolbar';
 import { TIMEPOINT_EXPLORER_VIEW_OPTIONS } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   TimepointExplorerProvider,
@@ -52,15 +50,9 @@ export const TimepointExplorer = ({
             resultFilter={activeResultFilter}
             onResultFilterChange={handleResultFilterChange}
           >
-            <TimepointExplorerInternal annotations={annotations} />
+            <TimepointExplorerInternal />
           </TimepointExplorerProvider>
-        ) : (
-          <ExecutionExplorerToolbar
-            annotations={annotations}
-            onResultFilterChange={handleResultFilterChange}
-            resultFilter={activeResultFilter}
-          />
-        )
+        ) : null
       }
     </FeatureFlag>
   );
@@ -68,23 +60,16 @@ export const TimepointExplorer = ({
 
 const CONTAINER_NAME = 'timepoint-explorer';
 
-const TimepointExplorerInternal = ({ annotations }: { annotations: AnnotationQuery[] }) => {
-  const { viewMode, handleViewModeChange, resultFilter, handleResultFilterChange } = useTimepointExplorerContext();
+const TimepointExplorerInternal = () => {
+  const { viewMode, handleViewModeChange } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={styles.container}>
+    <div aria-label="Timepoint explorer" className={styles.container} role="region">
       <Stack direction={`column`} gap={2}>
         <div className={styles.header}>
           <TimepointExplorerVisibleOverview />
           <div className={styles.actions}>
-            <Feedback
-              feature="timepoint-explorer"
-              about={{
-                text: `New feature!`,
-                link: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/analyze-results/visualize-check-execution/`,
-              }}
-            />
             <div>
               <RadioButtonGroup
                 options={TIMEPOINT_EXPLORER_VIEW_OPTIONS}
@@ -94,13 +79,6 @@ const TimepointExplorerInternal = ({ annotations }: { annotations: AnnotationQue
             </div>
           </div>
         </div>
-
-        <ExecutionExplorerToolbar
-          annotations={annotations}
-          onResultFilterChange={handleResultFilterChange}
-          resultFilter={resultFilter}
-        />
-
         <Stack direction="column" gap={2}>
           <TimepointMinimap />
           <TimepointList />

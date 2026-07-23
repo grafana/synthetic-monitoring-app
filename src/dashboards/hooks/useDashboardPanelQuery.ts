@@ -13,11 +13,13 @@ import { interpolateTargets } from 'dashboards/query/interpolate';
 import { toPanelData } from 'dashboards/query/toPanelData';
 
 import { DashboardQueryTarget, ExecuteQueriesResult } from 'dashboards/query/types';
+import { useAppTime } from 'contexts/AppTimeProvider';
 import { useCheckDashboard } from 'contexts/CheckDashboardProvider';
 import { useSMDatasourceContext } from 'contexts/SMDatasourceContext';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
+import { DashboardQueryRange } from './dashboardQueryTime';
 import { useDashboardQuerySemanticValues, useDashboardTimeRange } from './useDashboardQuerySemanticValues';
 
 export type DashboardPanelDefinition = {
@@ -33,14 +35,18 @@ export type DashboardPanelDefinition = {
   datasourceType?: 'prometheus' | 'loki';
 };
 
-export function useDashboardPanelQuery(definition: DashboardPanelDefinition) {
+export function useDashboardPanelQuery(
+  definition: DashboardPanelDefinition,
+  options: { range?: DashboardQueryRange } = {}
+) {
   const { check } = useCheckDashboard();
   const { smDS } = useSMDatasourceContext();
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
   const activeDS = definition.datasourceType === 'loki' ? logsDS : metricsDS;
-  const timeRange = useDashboardTimeRange();
-  const semanticValues = useDashboardQuerySemanticValues(definition.maxDataPoints ?? 500);
+  const timeRange = useDashboardTimeRange(options.range);
+  const { timezone } = useAppTime();
+  const semanticValues = useDashboardQuerySemanticValues(definition.maxDataPoints ?? 500, options.range);
   const stackId = String((smDS.meta.jsonData as { stackId?: number } | undefined)?.stackId ?? '0');
   const scope = useMemo(() => createDashboardQueryScope(stackId, check.id!), [check.id, stackId]);
 
@@ -69,7 +75,7 @@ export function useDashboardPanelQuery(definition: DashboardPanelDefinition) {
           from: timeRange.from.valueOf(),
           to: timeRange.to.valueOf(),
         },
-        timezone: 'browser',
+        timezone,
         interval: semanticValues.interval,
         intervalMs: semanticValues.intervalMs,
         maxDataPoints: definition.maxDataPoints ?? 500,
@@ -88,6 +94,7 @@ export function useDashboardPanelQuery(definition: DashboardPanelDefinition) {
       semanticValues.interval,
       semanticValues.intervalMs,
       timeRange,
+      timezone,
     ]
   );
 
@@ -100,7 +107,7 @@ export function useDashboardPanelQuery(definition: DashboardPanelDefinition) {
           datasourceType,
           targets: interpolatedTargets,
           range: { from: timeRange.from.valueOf(), to: timeRange.to.valueOf() },
-          timezone: 'browser',
+          timezone,
           interval: semanticValues.interval,
           intervalMs: semanticValues.intervalMs,
           maxDataPoints: definition.maxDataPoints ?? 500,
@@ -117,6 +124,7 @@ export function useDashboardPanelQuery(definition: DashboardPanelDefinition) {
       scope,
       semanticValues,
       timeRange,
+      timezone,
     ]
   );
 

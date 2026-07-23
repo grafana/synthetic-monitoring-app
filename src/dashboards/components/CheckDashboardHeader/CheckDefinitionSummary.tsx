@@ -1,35 +1,21 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, useStyles2 } from '@grafana/ui';
+import { Tag, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckHeaderDefinitionModel, HeaderDefinitionFact } from './CheckDashboardHeader.types';
+import { CheckHeaderDefinitionModel } from './CheckDashboardHeader.types';
 import { Toggletip } from 'components/Toggletip';
 
-function DefinitionDetails({ title, items }: { title: string; items: HeaderDefinitionFact[] }) {
-  const styles = useStyles2(getStyles);
+const MAX_INLINE_LABELS = 3;
 
-  return (
-    <div className={styles.toggletipContent}>
-      <strong>{title}</strong>
-      {items.length > 0 ? (
-        <dl className={styles.detailList}>
-          {items.map((item) => (
-            <React.Fragment key={item.id}>
-              <dt>{item.label}</dt>
-              <dd>{item.value}</dd>
-            </React.Fragment>
-          ))}
-        </dl>
-      ) : (
-        <span>No additional configuration</span>
-      )}
-    </div>
-  );
+function formatLabelName(name: string, value: string) {
+  return `${name}: ${value}`;
 }
 
 export function CheckDefinitionSummary({ model }: { model: CheckHeaderDefinitionModel }) {
   const styles = useStyles2(getStyles);
+  const visibleLabels = model.labels.slice(0, MAX_INLINE_LABELS);
+  const additionalLabels = model.labels.slice(MAX_INLINE_LABELS);
 
   return (
     <section aria-label="Check configuration" className={styles.container}>
@@ -43,13 +29,35 @@ export function CheckDefinitionSummary({ model }: { model: CheckHeaderDefinition
           ))}
         </dl>
 
-        {model.details ? (
-          <Toggletip content={<DefinitionDetails title={model.details.title} items={model.details.items} />}>
-            <button aria-label="View check definition" className={styles.definitionButton} type="button">
-              <Icon name="info-circle" />
-              Definition
-            </button>
-          </Toggletip>
+        {model.labels.length > 0 ? (
+          <div aria-label="Labels" className={styles.labels}>
+            {visibleLabels.map((label) => (
+              <Tag
+                key={`${label.name}-${label.value}`}
+                name={formatLabelName(label.name, label.value)}
+                className={styles.label}
+              />
+            ))}
+            {additionalLabels.length > 0 ? (
+              <Toggletip
+                content={
+                  <div className={styles.additionalLabels}>
+                    {additionalLabels.map((label) => (
+                      <Tag
+                        key={`${label.name}-${label.value}`}
+                        name={formatLabelName(label.name, label.value)}
+                        className={styles.label}
+                      />
+                    ))}
+                  </div>
+                }
+              >
+                <button aria-label="View additional labels" className={styles.labelButton} type="button">
+                  +{additionalLabels.length} more
+                </button>
+              </Toggletip>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </section>
@@ -60,7 +68,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     display: 'flex',
     flexDirection: 'column',
-    maxWidth: '1040px',
+    gap: theme.spacing(1),
     width: '100%',
   }),
   definitionRow: css({
@@ -73,35 +81,40 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     display: 'flex',
     flexWrap: 'wrap',
-    gap: theme.spacing(0.5, 1),
+    gap: theme.spacing(1),
     margin: 0,
   }),
   fact: css({
     alignItems: 'baseline',
+    border: `2px solid ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.pill,
     display: 'flex',
     gap: theme.spacing(0.5),
+    padding: theme.spacing(0.5, 2),
     whiteSpace: 'nowrap',
-    '& dt': { color: theme.colors.text.secondary, fontSize: theme.typography.bodySmall.fontSize },
-    '& dd': { fontSize: theme.typography.bodySmall.fontSize, margin: 0 },
+    '& dt': { color: theme.colors.text.secondary, fontSize: theme.typography.body.fontSize },
+    '& dd': { fontSize: theme.typography.body.fontSize, margin: 0 },
   }),
-  definitionButton: css({
+  labels: css({
     alignItems: 'center',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(0.5),
+    marginLeft: 'auto',
+  }),
+  label: css({
+    maxWidth: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  }),
+  labelButton: css({
     background: 'transparent',
     border: 0,
     color: theme.colors.text.link,
     cursor: 'pointer',
-    display: 'inline-flex',
-    gap: theme.spacing(0.5),
-    marginLeft: 'auto',
-    padding: 0,
+    fontSize: theme.typography.bodySmall.fontSize,
+    padding: theme.spacing(0.25, 0.5),
   }),
-  toggletipContent: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }),
-  detailList: css({
-    display: 'grid',
-    gap: theme.spacing(0.5, 2),
-    gridTemplateColumns: 'minmax(max-content, 1fr) minmax(0, 2fr)',
-    margin: 0,
-    '& dt': { color: theme.colors.text.secondary },
-    '& dd': { margin: 0 },
-  }),
+  additionalLabels: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }),
 });

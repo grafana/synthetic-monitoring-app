@@ -15,9 +15,17 @@ import { getRoute } from 'routing/utils';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 import {
+  absoluteTimeRangeToRaw,
+  type AppTimeRangeMode,
+  canShiftTimeRangeForward,
   DEFAULT_APP_TIME_RANGE,
   DEFAULT_APP_TIMEZONE,
   getAbsoluteBounds,
+  getAppTimeRangeMode,
+  getShiftedTimeRange,
+  getZoomedTimeRange,
+  isValidTimeRange,
+  parseTimeIntervalMs,
   refreshRelativeRange,
   resolveTimeRange,
 } from './AppTimeProvider.utils';
@@ -25,11 +33,16 @@ import {
 export type AppTimeContextValue = {
   raw: { from: string; to: string };
   absolute: { from: number; to: number };
+  rangeMode: AppTimeRangeMode;
   timezone: string;
   refresh?: string;
   setTimeRange: (next: { from: string; to: string }) => void;
+  setTimezone: (timezone: string) => void;
   setRefresh: (refresh?: string) => void;
   refreshNow: () => void;
+  shiftBackward: () => void;
+  shiftForward: () => void;
+  zoomOut: () => void;
   buildDashboardPath: (checkId: number) => string;
   subscribeRefresh: (listener: () => void) => () => void;
 };
@@ -134,6 +147,18 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
     [commitState, state]
   );
 
+  const setTimezone = useCallback(
+    (timezone: string) => {
+      commitState(
+        mergeDashboardUrlState(state, {
+          timezone,
+        }),
+        true
+      );
+    },
+    [commitState, state]
+  );
+
   const setRefresh = useCallback(
     (refresh?: string) => {
       commitState(
@@ -161,7 +186,7 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    const intervalMs = rangeToMs(state.refresh);
+    const intervalMs = parseTimeIntervalMs(state.refresh);
 
     if (!intervalMs) {
       return;
@@ -228,26 +253,80 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
     }),
     [state.from, state.to]
   );
+  const timezone = state.timezone ?? DEFAULT_APP_TIMEZONE;
+  const rangeMode = useMemo(() => getAppTimeRangeMode(raw), [raw]);
   const resolvedRange = useMemo(
-    () => resolveTimeRange(raw.from, raw.to),
+    () => resolveTimeRange(raw.from, raw.to, timezone),
     // Refreshing a relative range intentionally resolves "now" again without changing its raw values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [raw, refreshRevision]
+    [raw, refreshRevision, timezone]
   );
+
+  const applyResolvedRange = useCallback(
+    (nextRange: ReturnType<typeof getShiftedTimeRange>) => {
+      if (!isValidTimeRange(nextRange)) {
+        return;
+      }
+
+      setTimeRange(
+        absoluteTimeRangeToRaw({
+          from: nextRange.from.valueOf(),
+          to: nextRange.to.valueOf(),
+        })
+      );
+    },
+    [setTimeRange]
+  );
+
+  const shiftBackward = useCallback(() => {
+    applyResolvedRange(getShiftedTimeRange('backward', resolvedRange));
+  }, [applyResolvedRange, resolvedRange]);
+
+  const shiftForward = useCallback(() => {
+    if (!canShiftTimeRangeForward(resolvedRange)) {
+      return;
+    }
+
+    applyResolvedRange(getShiftedTimeRange('forward', resolvedRange));
+  }, [applyResolvedRange, resolvedRange]);
+
+  const zoomOut = useCallback(() => {
+    applyResolvedRange(getZoomedTimeRange(resolvedRange, 2));
+  }, [applyResolvedRange, resolvedRange]);
 
   const value = useMemo<AppTimeContextValue>(
     () => ({
       raw,
       absolute: getAbsoluteBounds(resolvedRange),
-      timezone: state.timezone ?? DEFAULT_APP_TIMEZONE,
+      rangeMode,
+      timezone,
       refresh: state.refresh,
       setTimeRange,
+      setTimezone,
       setRefresh,
       refreshNow,
+      shiftBackward,
+      shiftForward,
+      zoomOut,
       buildDashboardPath,
       subscribeRefresh,
     }),
-    [buildDashboardPath, raw, refreshNow, resolvedRange, setRefresh, setTimeRange, state.refresh, state.timezone, subscribeRefresh]
+    [
+      buildDashboardPath,
+      raw,
+      rangeMode,
+      refreshNow,
+      resolvedRange,
+      setRefresh,
+      setTimeRange,
+      setTimezone,
+      shiftBackward,
+      shiftForward,
+      state.refresh,
+      subscribeRefresh,
+      timezone,
+      zoomOut,
+    ]
   );
 
   return <AppTimeContext.Provider value={value}>{children}</AppTimeContext.Provider>;
@@ -265,30 +344,4 @@ export function useAppTime(): AppTimeContextValue {
 
 export function useAppTimeOptional(): AppTimeContextValue | null {
   return useContext(AppTimeContext);
-}
-
-function rangeToMs(value: string): number | undefined {
-  const match = /^(\d+)(ms|s|m|h|d)$/.exec(value.trim());
-
-  if (!match) {
-    return undefined;
-  }
-
-  const amount = Number(match[1]);
-  const unit = match[2];
-
-  switch (unit) {
-    case 'ms':
-      return amount;
-    case 's':
-      return amount * 1_000;
-    case 'm':
-      return amount * 60_000;
-    case 'h':
-      return amount * 3_600_000;
-    case 'd':
-      return amount * 86_400_000;
-    default:
-      return undefined;
-  }
 }

@@ -24,6 +24,21 @@ test.describe('v2 HTTP dashboard parity — scene-free dashboard', () => {
     await expect(page.getByRole('region', { name: 'Uptime' }).getByText('60.77%', { exact: true })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Reachability' }).getByText('53.59%', { exact: true })).toBeVisible();
 
+    const headerRegions = await page
+      .locator('main [aria-label="Dashboard scope controls"], main [aria-label="Observed performance"]')
+      .evaluateAll((elements) => elements.map((element) => element.getAttribute('aria-label')));
+    expect(headerRegions).toEqual(['Dashboard scope controls', 'Observed performance']);
+
+    const configuration = page.getByRole('region', { name: 'Check configuration' });
+    await expect(configuration.getByRole('link', { name: 'Edit check' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Check identity' }).getByRole('link', { name: 'Edit check' })).toHaveCount(0);
+
+    const timepointExplorer = page.getByRole('region', { name: 'Timepoint explorer' });
+    await expect(timepointExplorer.getByLabel('Execution explorer controls')).toBeVisible();
+    for (const name of ['Product context', 'Compare related checks', 'Advanced filters']) {
+      await expect(page.getByRole('button', { name })).toHaveCount(0);
+    }
+
     const alertAnnotations = page.getByRole('button', { name: 'Annotation region' });
     const alertToggle = page.getByRole('switch', { name: 'Show alerts firing' });
     const alertToggleControl = page.locator('label[aria-label="Show alerts firing"]');

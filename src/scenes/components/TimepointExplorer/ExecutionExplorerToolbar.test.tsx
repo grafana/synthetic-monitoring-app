@@ -6,7 +6,7 @@ import { DashboardAnnotationsStaticProvider } from 'dashboards/annotations/Dashb
 import { ExecutionExplorerToolbar } from './ExecutionExplorerToolbar';
 
 describe('ExecutionExplorerToolbar', () => {
-  it('changes result scope and exposes inert future controls', async () => {
+  it('changes result scope without exposing unavailable controls', async () => {
     const user = userEvent.setup();
     const onResultFilterChange = jest.fn();
 
@@ -18,9 +18,7 @@ describe('ExecutionExplorerToolbar', () => {
 
     expect(onResultFilterChange).toHaveBeenCalledWith('unsuccessful');
     for (const name of ['Product context', 'Compare related checks', 'Advanced filters']) {
-      const control = screen.getByRole('button', { name });
-      expect(control).toBeDisabled();
-      expect(control).toHaveAccessibleDescription('Coming later');
+      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
     }
   });
 
@@ -33,6 +31,7 @@ describe('ExecutionExplorerToolbar', () => {
           framesByName: {},
           frames: [],
           eventsByName: { 'Show alerts firing': [[100, 200], [300, 300]] },
+          alertEpisodesByName: {},
           setEnabled: jest.fn(),
         }}
       >

@@ -68,4 +68,4 @@ Summary:
 - Do **not** bundle dem-dev + parity + foundation into one PR against `main` (see closed #1766).
 - Local integration tip for scene-free implementation: `feat/check-dashboard-query-cache`.
 - Ask the user before opening PRs for breadcrumb branches.
-- **Scene-free guardrail:** do not add `@grafana/scenes` / `@grafana/scenes-react` imports under `src/dashboards/**` or scene-free Timepoint Explorer code. Import ban: `src/dashboards/http/sceneFreeHttpDashboard.importBan.test.ts`. Scene shells/bridges on the flagged route are transitional debt to delete — success is removing scenes packages after all dashboards migrate.
+- **Scene-free guardrail:** do not add `@grafana/scenes` / `@grafana/scenes-react` imports under `src/dashboards/**` or scene-free Timepoint Explorer code. Import ban: `src/dashboards/http/HTTPDashboard.importBan.test.ts`. Scene shells/bridges on the flagged route are transitional debt to delete — success is removing scenes packages after all dashboards migrate.

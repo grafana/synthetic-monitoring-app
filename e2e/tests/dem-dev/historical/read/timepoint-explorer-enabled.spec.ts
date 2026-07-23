@@ -19,11 +19,10 @@ test('shows the timepoint execution experience when Timepoint Explorer is enable
   await unsuccessfulOnly.click();
   await expect(unsuccessfulOnly).toHaveAttribute('aria-pressed', 'true');
 
+  await expect(page.getByLabel('Execution explorer controls')).toBeVisible();
+
   for (const name of ['Product context', 'Compare related checks', 'Advanced filters']) {
-    const control = page.getByRole('button', { name });
-    await expect(control).toBeVisible();
-    await expect(control).toBeDisabled();
-    await expect(control).toHaveAttribute('aria-describedby', 'execution-explorer-coming-later');
+    await expect(page.getByRole('button', { name })).toHaveCount(0);
   }
   await testInfo.attach('timepoint-explorer-enabled', {
     body: await page.screenshot({ fullPage: true }),

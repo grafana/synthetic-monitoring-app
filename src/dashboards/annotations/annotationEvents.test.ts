@@ -1,6 +1,11 @@
 import { DataFrame, FieldType } from '@grafana/data';
 
-import { annotationFramesToEvents, coalesceAdjacentAnnotationEvents } from './annotationEvents';
+import {
+  annotationFramesToEvents,
+  annotationFramesToNamedAlertEpisodes,
+  coalesceAdjacentAnnotationEvents,
+  getAlertEpisodeStateAt,
+} from './annotationEvents';
 
 describe('annotationFramesToEvents', () => {
   it('maps time and timeEnd fields to event ranges', () => {
@@ -50,6 +55,87 @@ describe('annotationFramesToEvents', () => {
       [31_000, 41_000],
     ]);
   });
+
+  it('reads every frame returned by a grouped annotation query', () => {
+    const frames: DataFrame[] = [
+      {
+        name: 'first alert',
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [1_000] },
+          { name: 'Value', type: FieldType.number, config: {}, values: [1] },
+        ],
+        length: 1,
+      },
+      {
+        name: 'second alert',
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [2_000] },
+          { name: 'Value', type: FieldType.number, config: {}, values: [1] },
+        ],
+        length: 1,
+      },
+    ];
+
+    expect(annotationFramesToEvents(frames)).toEqual([
+      [1_000, 1_000],
+      [2_000, 2_000],
+    ]);
+  });
+});
+
+describe('annotationFramesToNamedAlertEpisodes', () => {
+  it('preserves the alertname label for each grouped series', () => {
+    const frames: DataFrame[] = [
+      {
+        name: 'ALERTS',
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [1_000, 11_000] },
+          {
+            name: 'Value',
+            type: FieldType.number,
+            config: {},
+            labels: { alertname: 'ProbeFailedExecutionsTooHigh' },
+            values: [1, 1],
+          },
+        ],
+        length: 2,
+      },
+      {
+        name: 'ALERTS',
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [31_000, 41_000] },
+          {
+            name: 'Value',
+            type: FieldType.number,
+            config: {},
+            labels: { alertname: 'HTTPRequestDurationTooHighAvg' },
+            values: [1, 1],
+          },
+        ],
+        length: 2,
+      },
+    ];
+
+    expect(annotationFramesToNamedAlertEpisodes(frames)).toEqual([
+      { alertName: 'ProbeFailedExecutionsTooHigh', from: 1_000, to: 11_000 },
+      { alertName: 'HTTPRequestDurationTooHighAvg', from: 31_000, to: 41_000 },
+    ]);
+  });
+
+  it('falls back to the frame name when the datasource omits alert labels', () => {
+    const frame: DataFrame = {
+      name: 'ProbeFailedExecutionsTooHigh',
+      fields: [
+        { name: 'Time', type: FieldType.time, config: {}, values: [1_000] },
+        { name: 'Value', type: FieldType.number, config: {}, values: [1] },
+      ],
+      length: 1,
+    };
+
+    expect(annotationFramesToNamedAlertEpisodes([frame])).toEqual([
+      { alertName: 'ProbeFailedExecutionsTooHigh', from: 1_000, to: 1_000 },
+    ]);
+  });
 });
 
 describe('coalesceAdjacentAnnotationEvents', () => {
@@ -87,5 +173,46 @@ describe('coalesceAdjacentAnnotationEvents', () => {
       [1_000, 50_000],
       [60_000, 90_000],
     ]);
+  });
+});
+
+describe('getAlertEpisodeStateAt', () => {
+  const alertName = 'ProbeFailedExecutionsTooHigh';
+
+  it('treats an episode within the query-step tolerance as firing', () => {
+    expect(
+      getAlertEpisodeStateAt(
+        [{ alertName, from: 1_000, to: 1_900 }],
+        alertName,
+        2_000,
+        200
+      )
+    ).toBe('firing');
+  });
+
+  it('distinguishes resolved and absent episodes', () => {
+    expect(
+      getAlertEpisodeStateAt(
+        [{ alertName, from: 1_000, to: 1_500 }],
+        alertName,
+        2_000,
+        200
+      )
+    ).toBe('resolved');
+    expect(getAlertEpisodeStateAt([], alertName, 2_000, 200)).toBe('none');
+  });
+
+  it('ignores episodes for other alerts and episodes that start after the evaluation point', () => {
+    expect(
+      getAlertEpisodeStateAt(
+        [
+          { alertName: 'HTTPRequestDurationTooHighAvg', from: 1_000, to: 2_000 },
+          { alertName, from: 2_100, to: 2_500 },
+        ],
+        alertName,
+        2_000,
+        200
+      )
+    ).toBe('none');
   });
 });

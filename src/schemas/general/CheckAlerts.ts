@@ -1,9 +1,7 @@
-import { durationToMilliseconds, parseDuration } from '@grafana/data';
-import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 import { z, ZodType } from 'zod';
 
 import { CheckAlertFormRecord, CheckAlertType, CheckFormValuesBase, CheckFormValuesTcp, CheckType } from 'types';
-import { formatDuration } from 'utils';
+import { validateAlertDraft } from 'components/CheckForm/AlertsPerCheck/alertDraftValidation';
 
 const isScientificNotation = (val: number) => {
   return /e|E/.test(val.toString());
@@ -74,25 +72,24 @@ function probeFailedExecutionsRefinement(data: CheckFormValuesBase, ctx: z.Refin
   const isSelected = data.alerts?.ProbeFailedExecutionsTooHigh?.isSelected;
 
   if (isSelected && probes.length) {
-    checkThresholdIsValid(data, ctx);
-    checkAlertPeriodIsValid(data, CheckAlertType.ProbeFailedExecutionsTooHigh, ctx);
+    applyAlertDraftValidation(data, CheckAlertType.ProbeFailedExecutionsTooHigh, ctx);
   }
 }
 
 function latencyAlertsRefinement(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
   const httpAlertSelected = data.alerts?.HTTPRequestDurationTooHighAvg?.isSelected;
   if (httpAlertSelected) {
-    checkAlertPeriodIsValid(data, CheckAlertType.HTTPRequestDurationTooHighAvg, ctx);
+    applyAlertDraftValidation(data, CheckAlertType.HTTPRequestDurationTooHighAvg, ctx);
   }
 
   const pingAlertSelected = data.alerts?.PingRequestDurationTooHighAvg?.isSelected;
   if (pingAlertSelected) {
-    checkAlertPeriodIsValid(data, CheckAlertType.PingRequestDurationTooHighAvg, ctx);
+    applyAlertDraftValidation(data, CheckAlertType.PingRequestDurationTooHighAvg, ctx);
   }
 
   const dnsAlertSelected = data.alerts?.DNSRequestDurationTooHighAvg?.isSelected;
   if (dnsAlertSelected) {
-    checkAlertPeriodIsValid(data, CheckAlertType.DNSRequestDurationTooHighAvg, ctx);
+    applyAlertDraftValidation(data, CheckAlertType.DNSRequestDurationTooHighAvg, ctx);
   }
 }
 
@@ -110,31 +107,41 @@ function tcpTLSTargetCertificateCloseToExpiringRefinement(data: CheckFormValuesT
   }
 }
 
-function checkThresholdIsValid(data: CheckFormValuesBase, ctx: z.RefinementCtx) {
+function applyAlertDraftValidation(
+  data: CheckFormValuesBase,
+  alertType: CheckAlertType,
+  ctx: z.RefinementCtx
+) {
   const { frequency, probes } = data;
-  const failedExecutionsAlertPeriod = data.alerts?.ProbeFailedExecutionsTooHigh?.period ?? '';
-  const failedExecutionsAlertThreshold = data.alerts?.ProbeFailedExecutionsTooHigh?.threshold ?? 0;
-  const failedExecutionAlertPeriod = durationToMilliseconds(parseDuration(failedExecutionsAlertPeriod));
-  const totalChecksPerPeriod = getTotalChecksPerPeriod(probes.length, frequency, failedExecutionAlertPeriod);
+  const alert = data.alerts?.[alertType];
 
-  if (totalChecksPerPeriod !== 0 && failedExecutionsAlertThreshold > totalChecksPerPeriod) {
+  if (!alert?.period || alert.threshold === undefined) {
+    return;
+  }
+
+  const errors = validateAlertDraft({
+    draft: {
+      name: alertType,
+      threshold: alert.threshold,
+      period: alert.period,
+      runbookUrl: alert.runbookUrl,
+    },
+    frequency,
+    probeCount: probes.length,
+  });
+
+  if (errors.threshold) {
     ctx.addIssue({
-      path: ['alerts.ProbeFailedExecutionsTooHigh.threshold'],
-      message: `Threshold (${failedExecutionsAlertThreshold}) must be lower than or equal to the total number of checks per period (${totalChecksPerPeriod})`,
+      path: [`alerts.${alertType}.threshold`],
+      message: errors.threshold,
       code: 'custom',
     });
   }
-}
 
-function checkAlertPeriodIsValid(data: CheckFormValuesBase, alertType: CheckAlertType, ctx: z.RefinementCtx) {
-  const { frequency } = data;
-  const alertPeriod = data.alerts?.[alertType]?.period ?? '';
-  const alertPeriodMs = durationToMilliseconds(parseDuration(alertPeriod));
-
-  if (alertPeriodMs < frequency) {
+  if (errors.period) {
     ctx.addIssue({
       path: [`alerts.${alertType}.period`],
-      message: `Period (${alertPeriod}) must be equal or higher to the frequency (${formatDuration(frequency)})`,
+      message: errors.period,
       code: 'custom',
     });
   }

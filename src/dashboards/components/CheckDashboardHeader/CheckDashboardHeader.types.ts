@@ -1,8 +1,8 @@
-import { ComponentType } from 'react';
-import { GrafanaTheme2, PanelData } from '@grafana/data';
+import { ComponentType, PropsWithChildren } from 'react';
+import { FieldSparkline, GrafanaTheme2, PanelData } from '@grafana/data';
 import { DashboardPanelDefinition } from 'dashboards/hooks/useDashboardPanelQuery';
 
-import { Check, Label } from 'types';
+import { Check, CheckAlertType, Label } from 'types';
 
 export interface HeaderDefinitionFact {
   id: string;
@@ -33,6 +33,10 @@ export interface HeaderMetricDetailProps<TCheck extends Check = Check> {
   check: TCheck;
 }
 
+export interface HeaderMetricHealthCapability {
+  alertTypes?: CheckAlertType[];
+}
+
 export interface HeaderMetricDefinition<TCheck extends Check = Check> {
   id: string;
   label: string;
@@ -45,6 +49,11 @@ export interface HeaderMetricDefinition<TCheck extends Check = Check> {
     definition: DashboardPanelDefinition;
     selectText: (data: PanelData) => string | undefined;
   };
+  sparkline?: {
+    definition: DashboardPanelDefinition;
+    selectSeries: (data: PanelData) => FieldSparkline | null;
+  };
+  health?: HeaderMetricHealthCapability;
   Details?: ComponentType<HeaderMetricDetailProps<TCheck>>;
 }
 
@@ -52,8 +61,14 @@ export interface HeaderNarrativeProps<TCheck extends Check = Check> {
   check: TCheck;
 }
 
+export interface CheckHealthProviderProps<TCheck extends Check = Check> {
+  check: TCheck;
+  metrics: Array<HeaderMetricDefinition<TCheck>>;
+}
+
 export interface CheckDashboardHeaderProfile<TCheck extends Check = Check> {
   getDefinition: (check: TCheck) => CheckHeaderDefinitionModel;
   getMetrics: (check: TCheck) => Array<HeaderMetricDefinition<TCheck>>;
   Narrative: ComponentType<HeaderNarrativeProps<TCheck>>;
+  HealthProvider?: ComponentType<PropsWithChildren<CheckHealthProviderProps<TCheck>>>;
 }

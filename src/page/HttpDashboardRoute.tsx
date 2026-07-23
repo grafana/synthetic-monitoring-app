@@ -1,5 +1,5 @@
 import React from 'react';
-import { SceneFreeHttpDashboard } from 'dashboards/http/SceneFreeHttpDashboard';
+import { HTTPDashboard } from 'dashboards/http/HTTPDashboard';
 
 import { Check, FeatureName } from 'types';
 import { isHttpCheck } from 'utils.types';
@@ -13,7 +13,7 @@ export function HttpDashboardRoute({ check }: { check: Check }) {
 
   return (
     <FeatureFlag name={FeatureName.SceneFreeHttpDashboard}>
-      {({ isEnabled }) => (isEnabled ? <SceneFreeHttpDashboard check={check} /> : <HttpDashboard check={check} />)}
+      {({ isEnabled }) => (isEnabled ? <HTTPDashboard check={check} /> : <HttpDashboard check={check} />)}
     </FeatureFlag>
   );
 }

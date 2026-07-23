@@ -1,7 +1,10 @@
 import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { DataFrame, PanelData } from '@grafana/data';
 import { useSceneContext } from '@grafana/scenes-react';
-import { annotationFramesToEvents } from 'dashboards/annotations/annotationEvents';
+import {
+  annotationFramesToEvents,
+  annotationFramesToNamedAlertEpisodes,
+} from 'dashboards/annotations/annotationEvents';
 import { DashboardAnnotationsStaticProvider } from 'dashboards/annotations/DashboardAnnotationsProvider';
 import { useDashboardContainerAnnotations } from 'dashboards/annotations/useDashboardContainerAnnotations';
 
@@ -100,6 +103,12 @@ export function SceneDashboardLegacyAnnotationsBridge({
         .flatMap(([, frames]) => frames),
       eventsByName: Object.fromEntries(
         Object.entries(framesByName).map(([name, frames]) => [name, annotationFramesToEvents(frames)])
+      ),
+      alertEpisodesByName: Object.fromEntries(
+        Object.entries(framesByName).map(([name, frames]) => [
+          name,
+          annotationFramesToNamedAlertEpisodes(frames),
+        ])
       ),
       setEnabled: (name: string, enabled: boolean) => {
         setEnabledByName((current) => ({ ...current, [name]: enabled }));

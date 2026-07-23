@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -27,7 +27,7 @@ import { TimepointExplorer } from 'scenes/components/TimepointExplorer/Timepoint
 import { ExecutionResultFilter } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export function SceneFreeHttpDashboard({ check }: { check: HTTPCheck }) {
+export function HTTPDashboard({ check }: { check: HTTPCheck }) {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
   const { unsuccessfulOnly, toggleUnsuccessfulOnly } = useErrorLogsPanelState(true);
@@ -49,7 +49,10 @@ export function SceneFreeHttpDashboard({ check }: { check: HTTPCheck }) {
     <CheckDashboardProvider check={check} urlFormat="canonical">
       <PanelTimeRangeFromAppTime>
         <DashboardAnnotationsProvider check={check} definitions={annotations}>
-          <PluginPage pageNav={{ text: check.job }} renderTitle={() => null}>
+          <PluginPage
+            pageNav={{ text: check.job }}
+            layout={PageLayoutType.Custom}
+          >
             <HttpDashboardPage check={check}>
               <TimepointExplorer
                 annotations={annotations}

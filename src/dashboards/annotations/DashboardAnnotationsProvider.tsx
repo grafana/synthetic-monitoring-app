@@ -11,8 +11,15 @@ import { AnnotationQuery, DataFrame } from '@grafana/data';
 import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
 
 import { Check } from 'types';
+import { useAppTimeOptional } from 'contexts/AppTimeProvider';
+import { DEFAULT_APP_TIMEZONE } from 'contexts/AppTimeProvider.utils';
 
-import { annotationFramesToEvents, mergeAnnotationFrames } from './annotationEvents';
+import {
+  annotationFramesToEvents,
+  annotationFramesToNamedAlertEpisodes,
+  mergeAnnotationFrames,
+  NamedAlertEpisode,
+} from './annotationEvents';
 import { executeDashboardAnnotationQueries } from './executeDashboardAnnotations';
 import { useDashboardContainerAnnotations } from './useDashboardContainerAnnotations';
 
@@ -22,6 +29,7 @@ export type DashboardAnnotationsContextValue = {
   framesByName: Record<string, DataFrame[]>;
   frames: DataFrame[];
   eventsByName: Record<string, number[][]>;
+  alertEpisodesByName: Record<string, NamedAlertEpisode[]>;
   setEnabled: (name: string, enabled: boolean) => void;
 };
 
@@ -40,6 +48,7 @@ export function DashboardAnnotationsProvider({
   const defaultDefinitions = useDashboardContainerAnnotations(check);
   const resolvedDefinitions = definitions ?? defaultDefinitions;
   const timeRange = useDashboardTime();
+  const timezone = useAppTimeOptional()?.timezone ?? DEFAULT_APP_TIMEZONE;
 
   const [enabledByName, setEnabledByName] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(resolvedDefinitions.map((definition) => [definition.name!, definition.enable !== false]))
@@ -75,6 +84,7 @@ export function DashboardAnnotationsProvider({
     void executeDashboardAnnotationQueries({
       annotations: resolvedDefinitions,
       timeRange,
+      timezone,
       job: check.job,
       instance: check.target,
       signal: controller.signal,
@@ -95,7 +105,7 @@ export function DashboardAnnotationsProvider({
     // Depend on stable time millis rather than the TimeRange object identity so
     // we do not abort in-flight annotation queries on incidental rerenders.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- timeFromMs/timeToMs track timeRange
-  }, [check.job, check.target, resolvedDefinitions, timeFromMs, timeToMs]);
+  }, [check.job, check.target, resolvedDefinitions, timeFromMs, timeToMs, timezone]);
 
   const setEnabled = useCallback((name: string, enabled: boolean) => {
     setEnabledByName((current) => ({ ...current, [name]: enabled }));
@@ -113,6 +123,12 @@ export function DashboardAnnotationsProvider({
       frames: mergeAnnotationFrames(enabledFrames),
       eventsByName: Object.fromEntries(
         Object.entries(framesByName).map(([name, frames]) => [name, annotationFramesToEvents(frames)])
+      ),
+      alertEpisodesByName: Object.fromEntries(
+        Object.entries(framesByName).map(([name, frames]) => [
+          name,
+          annotationFramesToNamedAlertEpisodes(frames),
+        ])
       ),
       setEnabled,
     };
@@ -146,6 +162,22 @@ export function useDashboardAnnotationEventsForTpe() {
   const pending = useDashboardAnnotationEvents('Show alerts pending');
 
   return { firing, pending };
+}
+
+export function useDashboardAlertEpisodes(alertName: string, annotationName?: string): NamedAlertEpisode[] {
+  const context = useDashboardAnnotationsOptional();
+
+  if (!context) {
+    return [];
+  }
+
+  const episodeGroups = annotationName
+    ? [context.alertEpisodesByName[annotationName] ?? []]
+    : Object.values(context.alertEpisodesByName);
+
+  return episodeGroups
+    .flat()
+    .filter((episode) => episode.alertName === alertName);
 }
 
 export function DashboardAnnotationsStaticProvider({

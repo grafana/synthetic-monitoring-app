@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const ENTRY = path.join(__dirname, 'SceneFreeHttpDashboard.tsx');
+const ENTRY = path.join(__dirname, 'HTTPDashboard.tsx');
 const SRC_ROOT = path.join(__dirname, '../..');
 const SCENE_PACKAGES = ['@grafana/scenes', '@grafana/scenes-react'];
 const MONITORED_PREFIXES = ['dashboards/', 'scenes/components/TimepointExplorer/'];
@@ -104,7 +104,7 @@ function collectReachableFiles(entryFile: string): Array<{ file: string; importP
   return violations;
 }
 
-describe('SceneFreeHttpDashboard import ban', () => {
+describe('HTTPDashboard import ban', () => {
   it('does not import @grafana/scenes or @grafana/scenes-react from monitored dashboard modules', () => {
     const violations = collectReachableFiles(ENTRY);
 

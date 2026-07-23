@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useAppTime } from 'contexts/AppTimeProvider';
@@ -59,20 +59,68 @@ jest.mock('@grafana/ui', () => ({
       </button>
     </>
   ),
-  TimeRangePicker: ({ onChange }: { onChange: (range: { raw: { from: string; to: string } }) => void }) => (
-    <button type="button" onClick={() => onChange({ raw: { from: 'now-6h', to: 'now' } })}>
-      Set time range
-    </button>
+  TimeRangePicker: ({
+    onChange,
+    onChangeTimeZone,
+    onMoveBackward,
+    onMoveForward,
+    onZoom,
+  }: {
+    onChange: (range: { raw: { from: string; to: string } }) => void;
+    onChangeTimeZone: (timezone: string) => void;
+    onMoveBackward: () => void;
+    onMoveForward: () => void;
+    onZoom: () => void;
+  }) => (
+    <>
+      <button type="button" onClick={() => onChange({ raw: { from: 'now-6h', to: 'now' } })}>
+        Set time range
+      </button>
+      <button type="button" onClick={onMoveBackward}>
+        Move backward
+      </button>
+      <button type="button" onClick={onMoveForward}>
+        Move forward
+      </button>
+      <button type="button" onClick={onZoom}>
+        Zoom out
+      </button>
+      <button type="button" onClick={() => onChangeTimeZone('utc')}>
+        Set timezone
+      </button>
+    </>
   ),
 }));
+
+function mockAppTime(overrides: Partial<ReturnType<typeof useAppTime>> = {}) {
+  const value = {
+    raw: { from: 'now-1h', to: 'now' },
+    absolute: { from: 0, to: 1 },
+    rangeMode: 'live' as const,
+    timezone: 'browser',
+    refresh: undefined,
+    setTimeRange: jest.fn(),
+    setTimezone: jest.fn(),
+    setRefresh: jest.fn(),
+    refreshNow: jest.fn(),
+    shiftBackward: jest.fn(),
+    shiftForward: jest.fn(),
+    zoomOut: jest.fn(),
+    buildDashboardPath: jest.fn(),
+    subscribeRefresh: jest.fn(),
+    ...overrides,
+  };
+
+  jest.mocked(useAppTime).mockReturnValue(value);
+
+  return value;
+}
 
 describe('DashboardScopeControls', () => {
   it('updates probe, time, and refresh scope through their existing owners', async () => {
     const user = userEvent.setup();
     const setProbes = jest.fn();
-    const setTimeRange = jest.fn();
-    const setRefresh = jest.fn();
-    const refreshNow = jest.fn();
+    const appTime = mockAppTime();
 
     jest.mocked(useCheckDashboard).mockReturnValue({
       check: {} as ReturnType<typeof useCheckDashboard>['check'],
@@ -82,19 +130,8 @@ describe('DashboardScopeControls', () => {
       catalogLoading: true,
       catalogError: false,
     });
-    jest.mocked(useAppTime).mockReturnValue({
-      raw: { from: 'now-1h', to: 'now' },
-      absolute: { from: 0, to: 1 },
-      timezone: 'browser',
-      refresh: undefined,
-      setTimeRange,
-      setRefresh,
-      refreshNow,
-      buildDashboardPath: jest.fn(),
-      subscribeRefresh: jest.fn(),
-    });
 
-    render(<DashboardScopeControls />);
+    render(<DashboardScopeControls filters={<div>Execution filters</div>} />);
 
     const probePicker = screen.getByTestId('probe-multi-combobox');
     expect(probePicker).toHaveAttribute('data-loading', 'true');
@@ -102,6 +139,13 @@ describe('DashboardScopeControls', () => {
     expect(probePicker).toHaveAttribute('data-min-width', '24');
     expect(probePicker).toHaveAttribute('data-max-width', '32');
     expect(screen.getByRole('combobox', { name: 'Probes' })).toBeVisible();
+    expect(screen.getByText('Execution filters')).toBeVisible();
+
+    const groups = within(screen.getByLabelText('Dashboard scope controls')).getAllByTestId('command-bar-group');
+    expect(groups.map((group) => group.textContent)).toEqual([
+      expect.stringMatching(/Select probes[\s\S]*Execution filters/),
+      expect.stringMatching(/Set time range[\s\S]*Refresh now/),
+    ]);
 
     await user.click(screen.getByRole('button', { name: 'Select probes' }));
     await user.click(screen.getByRole('button', { name: 'Clear probes' }));
@@ -111,9 +155,35 @@ describe('DashboardScopeControls', () => {
 
     expect(setProbes).toHaveBeenNthCalledWith(1, ['Paris', 'Tokyo']);
     expect(setProbes).toHaveBeenNthCalledWith(2, []);
-    expect(setTimeRange).toHaveBeenCalledWith({ from: 'now-6h', to: 'now' });
-    expect(refreshNow).toHaveBeenCalledTimes(1);
-    expect(setRefresh).toHaveBeenCalledWith('1m');
+    expect(appTime.setTimeRange).toHaveBeenCalledWith({ from: 'now-6h', to: 'now' });
+    expect(appTime.refreshNow).toHaveBeenCalledTimes(1);
+    expect(appTime.setRefresh).toHaveBeenCalledWith('1m');
+  });
+
+  it('wires time navigation and timezone controls to AppTimeProvider', async () => {
+    const user = userEvent.setup();
+    const appTime = mockAppTime();
+
+    jest.mocked(useCheckDashboard).mockReturnValue({
+      check: {} as ReturnType<typeof useCheckDashboard>['check'],
+      probes: [],
+      setProbes: jest.fn(),
+      catalog: ['Paris'],
+      catalogLoading: false,
+      catalogError: false,
+    });
+
+    render(<DashboardScopeControls />);
+
+    await user.click(screen.getByRole('button', { name: 'Move backward' }));
+    await user.click(screen.getByRole('button', { name: 'Move forward' }));
+    await user.click(screen.getByRole('button', { name: 'Zoom out' }));
+    await user.click(screen.getByRole('button', { name: 'Set timezone' }));
+
+    expect(appTime.shiftBackward).toHaveBeenCalledTimes(1);
+    expect(appTime.shiftForward).toHaveBeenCalledTimes(1);
+    expect(appTime.zoomOut).toHaveBeenCalledTimes(1);
+    expect(appTime.setTimezone).toHaveBeenCalledWith('utc');
   });
 
   it('does not add a separate probe summary beside the selector', () => {
@@ -126,17 +196,7 @@ describe('DashboardScopeControls', () => {
       catalogError: false,
     };
     jest.mocked(useCheckDashboard).mockReturnValue(contextValue);
-    jest.mocked(useAppTime).mockReturnValue({
-      raw: { from: 'now-1h', to: 'now' },
-      absolute: { from: 0, to: 1 },
-      timezone: 'browser',
-      refresh: undefined,
-      setTimeRange: jest.fn(),
-      setRefresh: jest.fn(),
-      refreshNow: jest.fn(),
-      buildDashboardPath: jest.fn(),
-      subscribeRefresh: jest.fn(),
-    });
+    mockAppTime();
 
     const { rerender } = render(<DashboardScopeControls />);
 
@@ -157,17 +217,7 @@ describe('DashboardScopeControls', () => {
       catalogLoading: false,
       catalogError: true,
     });
-    jest.mocked(useAppTime).mockReturnValue({
-      raw: { from: 'now-1h', to: 'now' },
-      absolute: { from: 0, to: 1 },
-      timezone: 'browser',
-      refresh: undefined,
-      setTimeRange: jest.fn(),
-      setRefresh: jest.fn(),
-      refreshNow: jest.fn(),
-      buildDashboardPath: jest.fn(),
-      subscribeRefresh: jest.fn(),
-    });
+    mockAppTime();
 
     render(<DashboardScopeControls />);
 

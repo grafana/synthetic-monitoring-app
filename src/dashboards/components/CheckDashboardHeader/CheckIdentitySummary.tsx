@@ -1,12 +1,9 @@
 import React, { ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, useTheme2 } from '@grafana/ui';
+import { Text, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckHeaderDefinitionModel } from './CheckDashboardHeader.types';
-import { Toggletip } from 'components/Toggletip';
-
-const MAX_INLINE_LABELS = 3;
 
 export function CheckIdentitySummary({
   model,
@@ -15,137 +12,94 @@ export function CheckIdentitySummary({
   model: CheckHeaderDefinitionModel;
   actions?: ReactNode;
 }) {
-  const styles = useStyles2(getStyles);
   const theme = useTheme2();
-  const visibleLabels = model.labels.slice(0, MAX_INLINE_LABELS);
-  const additionalLabels = model.labels.slice(MAX_INLINE_LABELS);
+  const styles = useStyles2(getStyles);
+  const methodColor = model.qualifier?.getColor?.(theme);
 
   return (
     <section aria-label="Check identity" className={styles.container}>
       <div className={styles.titleRow}>
-        <div className={styles.titleGroup}>
-          <h1 className={styles.title}>{model.title}</h1>
-          <span className={styles.compoundBadge}>
-            <span className={styles.typeLabel}>{model.typeLabel}</span>
-            {model.qualifier ? (
-              <span
-                className={styles.qualifier}
-                style={{ color: model.qualifier.getColor?.(theme) }}
-              >
-                {model.qualifier.text}
-              </span>
-            ) : null}
+        <div className={styles.identityGroup}>
+          <span aria-label="Check type" className={styles.typePill}>
+            {model.typeLabel}
           </span>
+          <div className={styles.identityText}>
+            <Text variant="h1">{model.title}</Text>
+            {model.target ? (
+              <div
+                aria-label={model.target.accessibleLabel}
+                className={styles.target}
+                data-testid="check-identity-metadata"
+                title={model.target.value}
+              >
+                {model.qualifier ? (
+                  <span className={styles.qualifier} style={methodColor ? { color: methodColor } : undefined}>
+                    {model.qualifier.text}
+                  </span>
+                ) : null}
+                <span className={styles.targetValue}>{model.target.value}</span>
+              </div>
+            ) : null}
+          </div>
         </div>
         {actions ? <div className={styles.actions}>{actions}</div> : null}
-      </div>
-
-      <div className={styles.metadata} data-testid="check-identity-metadata">
-        {model.target ? (
-          <div aria-label={model.target.accessibleLabel} className={styles.target} title={model.target.value}>
-            {model.target.value}
-          </div>
-        ) : null}
-
-        {model.labels.length > 0 ? (
-          <div aria-label="Labels" className={styles.labels}>
-            {visibleLabels.map((label) => (
-              <span className={styles.label} key={`${label.name}-${label.value}`}>
-                {label.name}: {label.value}
-              </span>
-            ))}
-            {additionalLabels.length > 0 ? (
-              <Toggletip
-                content={
-                  <div className={styles.additionalLabels}>
-                    {additionalLabels.map((label) => (
-                      <span key={`${label.name}-${label.value}`}>
-                        {label.name}: {label.value}
-                      </span>
-                    ))}
-                  </div>
-                }
-              >
-                <button aria-label="View additional labels" className={styles.labelButton} type="button">
-                  +{additionalLabels.length} more
-                </button>
-              </Toggletip>
-            ) : null}
-          </div>
-        ) : null}
       </div>
     </section>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5), minWidth: 0 }),
+  container: css({ display: 'flex', flexDirection: 'column', minWidth: 0 }),
   titleRow: css({
     alignItems: 'center',
     display: 'flex',
     gap: theme.spacing(2),
     justifyContent: 'space-between',
+    minWidth: 0,
   }),
-  titleGroup: css({
+  identityGroup: css({
     alignItems: 'center',
     display: 'flex',
     gap: theme.spacing(1),
     minWidth: 0,
   }),
-  title: css({
-    fontSize: theme.typography.h4.fontSize,
-    fontWeight: theme.typography.fontWeightMedium,
-    lineHeight: theme.typography.h4.lineHeight,
-    margin: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  }),
-  compoundBadge: css({
-    alignItems: 'center',
+  typePill: css({
     background: theme.colors.background.secondary,
     border: `1px solid ${theme.colors.border.medium}`,
     borderRadius: theme.shape.radius.pill,
-    display: 'inline-flex',
+    color: theme.colors.text.primary,
     flexShrink: 0,
     fontSize: theme.typography.bodySmall.fontSize,
     fontWeight: theme.typography.fontWeightMedium,
-    overflow: 'hidden',
-  }),
-  typeLabel: css({
     padding: theme.spacing(0.25, 1),
+    whiteSpace: 'nowrap',
   }),
-  qualifier: css({
-    borderLeft: `1px solid ${theme.colors.border.medium}`,
-    padding: theme.spacing(0.25, 1),
+  identityText: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.25),
+    minWidth: 0,
   }),
   actions: css({ flexShrink: 0 }),
-  metadata: css({ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: theme.spacing(0.5, 1) }),
   target: css({
+    alignItems: 'baseline',
     color: theme.colors.text.secondary,
+    display: 'flex',
     flex: '0 1 auto',
     fontSize: theme.typography.bodySmall.fontSize,
     fontFamily: theme.typography.fontFamilyMonospace,
+    gap: theme.spacing(1),
     maxWidth: 'min(100%, 520px)',
+    minWidth: 0,
+  }),
+  qualifier: css({
+    flexShrink: 0,
+    fontWeight: theme.typography.fontWeightMedium,
+  }),
+  targetValue: css({
+    minWidth: 0,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   }),
-  labels: css({ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: theme.spacing(0.5) }),
-  label: css({
-    background: theme.colors.background.secondary,
-    borderRadius: theme.shape.radius.default,
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    padding: theme.spacing(0.25, 0.75),
-  }),
-  labelButton: css({
-    background: 'transparent',
-    border: 0,
-    color: theme.colors.text.link,
-    cursor: 'pointer',
-    fontSize: theme.typography.bodySmall.fontSize,
-    padding: theme.spacing(0.25, 0.5),
-  }),
-  additionalLabels: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }),
 });

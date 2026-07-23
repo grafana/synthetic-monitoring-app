@@ -1,4 +1,5 @@
 import { HeaderMetricDefinition } from 'dashboards/components/CheckDashboardHeader';
+import { selectSparklineSeries } from 'dashboards/components/CheckDashboardHeader/headerMetricSparkline.utils';
 import {
   formatDateFromNow,
   formatPercent,
@@ -12,11 +13,16 @@ import {
   createUptimePanelDefinition,
 } from 'dashboards/http/panels/headlinePanelDefinitions';
 
-import { HTTPCheck } from 'types';
+import { CheckAlertType, HTTPCheck } from 'types';
 import { formatDuration } from 'utils';
 
 import { createExecutionCountsDefinition } from './httpHeaderQueryDefinitions';
 import { selectExecutionCounts } from './httpHeaderSelectors';
+import {
+  createAverageLatencySparklineDefinition,
+  createReachabilitySparklineDefinition,
+  createUptimeSparklineDefinition,
+} from './httpHeaderSparklineDefinitions';
 
 function formatExecutionCounts(data: Parameters<typeof selectExecutionCounts>[0]) {
   const { total, successful, failed } = selectExecutionCounts(data);
@@ -51,6 +57,10 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatPercent,
       getSecondaryText: () => 'From at least one location',
+      sparkline: {
+        definition: createUptimeSparklineDefinition(check),
+        selectSeries: selectSparklineSeries,
+      },
     },
     {
       id: 'reachability',
@@ -63,6 +73,13 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
         definition: createExecutionCountsDefinition(),
         selectText: formatExecutionCounts,
       },
+      sparkline: {
+        definition: createReachabilitySparklineDefinition(check),
+        selectSeries: selectSparklineSeries,
+      },
+      health: {
+        alertTypes: [CheckAlertType.ProbeFailedExecutionsTooHigh],
+      },
     },
     {
       id: 'average-latency',
@@ -72,6 +89,13 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatSeconds,
       getSecondaryText: () => 'Across selected probes',
+      sparkline: {
+        definition: createAverageLatencySparklineDefinition(check),
+        selectSeries: selectSparklineSeries,
+      },
+      health: {
+        alertTypes: [CheckAlertType.HTTPRequestDurationTooHighAvg],
+      },
     },
     {
       id: 'ssl-expiry',
@@ -83,6 +107,13 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       getSecondaryText: (value) => {
         const date = formatDateFromNow(value);
         return date ? `Expires ${date}` : undefined;
+      },
+      sparkline: {
+        definition: sslDefinition,
+        selectSeries: selectSparklineSeries,
+      },
+      health: {
+        alertTypes: [CheckAlertType.TLSTargetCertificateCloseToExpiring],
       },
     },
   ];

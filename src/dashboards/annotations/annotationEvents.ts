@@ -186,13 +186,7 @@ function getSeriesValueValues(frame: DataFrame): unknown[] {
     : Array.from(valueField.values as ArrayLike<unknown>);
 }
 
-export function annotationFramesToEvents(frames: DataFrame[]): number[][] {
-  const frame = frames[0];
-
-  if (!frame) {
-    return [];
-  }
-
+function annotationFrameToEvents(frame: DataFrame): number[][] {
   const timeStarts = getFieldValues(frame, 'time');
   const timeEnds = getFieldValues(frame, 'timeend');
   const values = getSeriesValueValues(frame);
@@ -219,6 +213,58 @@ export function annotationFramesToEvents(frames: DataFrame[]): number[][] {
   }
 
   return coalesceAdjacentAnnotationEvents(events);
+}
+
+export function annotationFramesToEvents(frames: DataFrame[]): number[][] {
+  return frames.flatMap(annotationFrameToEvents);
+}
+
+export interface NamedAlertEpisode {
+  alertName: string;
+  from: number;
+  to: number;
+}
+
+export type AlertEpisodeState = 'firing' | 'resolved' | 'none';
+
+export function getAlertEpisodeStateAt(
+  episodes: NamedAlertEpisode[],
+  alertName: string,
+  at: number,
+  toleranceMs: number
+): AlertEpisodeState {
+  const relevant = episodes.filter(
+    (episode) => episode.alertName === alertName && episode.from <= at
+  );
+
+  if (relevant.length === 0) {
+    return 'none';
+  }
+
+  return relevant.some((episode) => episode.to + toleranceMs >= at) ? 'firing' : 'resolved';
+}
+
+function getFrameAlertName(frame: DataFrame): string | null {
+  for (const field of frame.fields) {
+    const alertName = field.labels?.alertname;
+    if (typeof alertName === 'string' && alertName.length > 0) {
+      return alertName;
+    }
+  }
+
+  return frame.name?.trim() || null;
+}
+
+export function annotationFramesToNamedAlertEpisodes(frames: DataFrame[]): NamedAlertEpisode[] {
+  return frames.flatMap((frame) => {
+    const alertName = getFrameAlertName(frame);
+
+    if (!alertName) {
+      return [];
+    }
+
+    return annotationFrameToEvents(frame).map(([from, to]) => ({ alertName, from, to }));
+  });
 }
 
 export function mergeAnnotationFrames(framesByLayer: Record<string, DataFrame[]>): DataFrame[] {

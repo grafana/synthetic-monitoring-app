@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { CheckDashboardHeaderProfile, CheckHeaderDefinitionModel } from './CheckDashboardHeader.types';
@@ -10,7 +10,12 @@ jest.mock('./CheckIdentitySummary', () => ({
   CheckIdentitySummary: () => <div data-testid="dashboard-band">Check identity</div>,
 }));
 jest.mock('./DashboardScopeControls', () => ({
-  DashboardScopeControls: () => <div data-testid="dashboard-band">Dashboard scope controls</div>,
+  DashboardScopeControls: ({ filters }: { filters?: React.ReactNode }) => (
+    <div data-testid="dashboard-band">
+      Dashboard scope controls
+      {filters}
+    </div>
+  ),
 }));
 jest.mock('./ObservedPerformanceSummary', () => ({
   ObservedPerformanceSummary: () => <div data-testid="dashboard-band">Observed performance</div>,
@@ -39,7 +44,11 @@ describe('CheckDashboardLayout', () => {
 
   it('orders the information bands and keeps sticky scope with the dashboard content', () => {
     render(
-      <CheckDashboardLayout check={BASIC_HTTP_CHECK} profile={profile}>
+      <CheckDashboardLayout
+        check={BASIC_HTTP_CHECK}
+        filters={<span>Execution filters</span>}
+        profile={profile}
+      >
         <div data-testid="dashboard-content">Panels</div>
       </CheckDashboardLayout>
     );
@@ -49,16 +58,50 @@ describe('CheckDashboardLayout', () => {
 
     expect(bands.map((band) => band.textContent)).toEqual([
       'Check identity',
+      'Dashboard scope controlsExecution filters',
       'Observed performance',
       'Check configuration',
-      'Dashboard scope controls',
     ]);
     expect(within(layout).getByTestId('dashboard-content')).toHaveTextContent('Panels');
     expect(profile.getDefinition).toHaveBeenCalledTimes(1);
 
     const stickyScope = within(layout).getByTestId('dashboard-scope-sticky');
     expect(stickyScope).toHaveStyle({ position: 'sticky', top: '48px' });
-    expect(layout).toContainElement(stickyScope);
+    expect(stickyScope).toHaveAttribute('data-sticky', 'false');
+    expect(within(layout).getByTestId('dashboard-scope-sticky-sentinel')).toBeInTheDocument();
+    expect(stickyScope.parentElement).toBe(layout);
     expect(layout).toContainElement(screen.getByTestId('dashboard-content'));
+  });
+
+  it('applies the stuck background only after the sticky sentinel leaves view', () => {
+    let observerCallback: IntersectionObserverCallback = () => undefined;
+
+    jest.mocked(IntersectionObserver).mockImplementation((callback) => {
+      observerCallback = callback;
+      return {
+        observe: jest.fn(),
+        unobserve: jest.fn(),
+        disconnect: jest.fn(),
+        takeRecords: jest.fn(),
+        root: null,
+        rootMargin: '',
+        thresholds: [],
+      };
+    });
+
+    render(
+      <CheckDashboardLayout check={BASIC_HTTP_CHECK} profile={profile}>
+        <div>Panels</div>
+      </CheckDashboardLayout>
+    );
+
+    const stickyScope = screen.getByTestId('dashboard-scope-sticky');
+    expect(stickyScope).toHaveAttribute('data-sticky', 'false');
+
+    act(() => {
+      observerCallback([{ isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver);
+    });
+
+    expect(stickyScope).toHaveAttribute('data-sticky', 'true');
   });
 });

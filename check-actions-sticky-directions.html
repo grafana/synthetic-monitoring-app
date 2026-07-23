@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Check dashboard actions — sticky scope directions</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --g-bg-canvas: #111217;
+        --g-bg-surface: #181b1f;
+        --g-bg-elevated: #22252b;
+        --g-bg-elevated-2: #2c3137;
+        --g-text-primary: #f4f5f5;
+        --g-text-secondary: #c7d0d9;
+        --g-text-disabled: #8e969e;
+        --g-border: #343b40;
+        --g-focus: #5794f2;
+        --g-blue: #5794f2;
+        --g-green: #73bf69;
+        --g-yellow: #f2cc0c;
+        --g-red: #f2495c;
+        --g-orange: #ff9830;
+        --g-space-1: 4px;
+        --g-space-2: 8px;
+        --g-space-3: 12px;
+        --g-space-4: 16px;
+        --g-space-6: 24px;
+        --g-space-8: 32px;
+        --g-radius-sm: 2px;
+        --g-radius-md: 4px;
+        --g-font: Inter, ui-sans-serif, system-ui, -apple-system,
+          BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background: var(--g-bg-canvas);
+        color: var(--g-text-primary);
+        font: 14px/1.45 var(--g-font);
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+        color: inherit;
+      }
+
+      button,
+      input,
+      select {
+        min-height: 32px;
+      }
+
+      button,
+      select,
+      summary {
+        cursor: pointer;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--g-focus);
+        outline-offset: 2px;
+      }
+
+      svg {
+        display: block;
+        flex-shrink: 0;
+      }
+
+      .product-root {
+        min-height: 100vh;
+        container-type: inline-size;
+      }
+
+      .page {
+        min-width: 0;
+        padding: var(--g-space-6);
+        max-width: 1720px;
+        margin: 0 auto;
+      }
+
+      .breadcrumb {
+        color: var(--g-text-secondary);
+        font-size: 12px;
+        margin-bottom: var(--g-space-2);
+      }
+
+      .page-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--g-space-2);
+        margin-bottom: var(--g-space-2);
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.25;
+      }
+
+      .secondary {
+        color: var(--g-text-secondary);
+      }
+
+      .intro-note {
+        color: var(--g-text-secondary);
+        font-size: 13px;
+        margin-bottom: var(--g-space-6);
+        max-width: 90ch;
+      }
+
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--g-space-4);
+        align-items: start;
+      }
+
+      .mock-direction {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .direction-header {
+        margin-bottom: var(--g-space-3);
+      }
+
+      .direction-title {
+        margin: 0 0 2px 0;
+        font-size: 15px;
+        line-height: 1.25;
+      }
+
+      .direction-blurb {
+        margin: 0;
+        color: var(--g-text-secondary);
+        font-size: 12px;
+      }
+
+      /* --- shared "browser frame" that hosts each dashboard preview --- */
+      .frame {
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-md);
+        background: var(--g-bg-surface);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .frame-hint {
+        padding: var(--g-space-1) var(--g-space-3);
+        font-size: 11px;
+        color: var(--g-text-secondary);
+        background: var(--g-bg-elevated);
+        border-bottom: 1px solid var(--g-border);
+      }
+
+      .dash-scroll {
+        position: relative;
+        height: 460px;
+        overflow-y: auto;
+        background: var(--g-bg-canvas);
+      }
+
+      .sticky-bar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: var(--g-bg-surface);
+        border-bottom: 1px solid var(--g-border);
+      }
+
+      .banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--g-space-3);
+        padding: var(--g-space-2) var(--g-space-3);
+        background: rgba(242, 73, 92, 0.12);
+        border-bottom: 1px solid var(--g-red);
+        color: var(--g-text-primary);
+        font-size: 13px;
+      }
+
+      .banner[hidden] {
+        display: none;
+      }
+
+      .banner .button {
+        min-height: 26px;
+        padding: 0 var(--g-space-2);
+        font-size: 12px;
+      }
+
+      /* --- identity + status --- */
+      .check-id {
+        display: flex;
+        align-items: center;
+        gap: var(--g-space-2);
+        min-width: 0;
+      }
+
+      .check-name {
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .check-target {
+        color: var(--g-text-secondary);
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--g-space-1);
+        border-radius: 999px;
+        padding: 2px var(--g-space-2) 2px 6px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid var(--g-border);
+        white-space: nowrap;
+      }
+
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        flex-shrink: 0;
+      }
+
+      .status-pill.is-online {
+        color: var(--g-green);
+      }
+
+      .status-pill.is-disabled {
+        color: var(--g-text-disabled);
+      }
+
+      /* --- buttons --- */
+      .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 0 var(--g-space-3);
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-sm);
+        background: var(--g-bg-elevated);
+        color: var(--g-text-primary);
+        font-weight: 500;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .button:hover {
+        background: var(--g-bg-elevated-2);
+      }
+
+      .button--icon-only {
+        padding: 0 var(--g-space-2);
+        width: 32px;
+        justify-content: center;
+      }
+
+      .button--danger {
+        color: var(--g-red);
+        border-color: rgba(242, 73, 92, 0.4);
+      }
+
+      .button--primary {
+        border-color: var(--g-blue);
+        background: var(--g-blue);
+        color: #0b0c0e;
+      }
+
+      .button--primary:hover {
+        background: #6ba1f5;
+      }
+
+      .button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .cluster {
+        display: flex;
+        align-items: center;
+        gap: var(--g-space-2);
+        flex-wrap: wrap;
+      }
+
+      /* --- scope / time toolbar --- */
+      .scope-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--g-space-3);
+        padding: var(--g-space-2) var(--g-space-4);
+        flex-wrap: wrap;
+      }
+
+      .scope-fields {
+        display: flex;
+        align-items: center;
+        gap: var(--g-space-2);
+        flex-wrap: wrap;
+        min-width: 0;
+      }
+
+      .field {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 28px;
+        padding: 0 var(--g-space-2);
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-sm);
+        background: var(--g-bg-elevated);
+        font-size: 12px;
+        color: var(--g-text-secondary);
+        white-space: nowrap;
+      }
+
+      .field strong {
+        color: var(--g-text-primary);
+        font-weight: 600;
+      }
+
+      .identity-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--g-space-3);
+        padding: var(--g-space-3) var(--g-space-4);
+        flex-wrap: wrap;
+      }
+
+      /* --- panels below the fold --- */
+      .panel-stack {
+        padding: var(--g-space-4);
+        display: grid;
+        gap: var(--g-space-3);
+      }
+
+      .panel {
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-md);
+        background: var(--g-bg-surface);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        padding: var(--g-space-2) var(--g-space-3);
+        border-bottom: 1px solid var(--g-border);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--g-text-secondary);
+      }
+
+      .panel-body {
+        padding: var(--g-space-3);
+      }
+
+      .stat-row {
+        display: flex;
+        align-items: baseline;
+        gap: var(--g-space-2);
+      }
+
+      .stat-value {
+        font-size: 22px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .stat-value.good {
+        color: var(--g-green);
+      }
+
+      .bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+        height: 56px;
+      }
+
+      .bars span {
+        flex: 1;
+        background: var(--g-blue);
+        border-radius: 1px 1px 0 0;
+        min-width: 2px;
+      }
+
+      .probe-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .probe-table th,
+      .probe-table td {
+        padding: 6px var(--g-space-2);
+        border-bottom: 1px solid var(--g-border);
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      .probe-table th {
+        color: var(--g-text-secondary);
+        font-weight: 600;
+      }
+
+      .status-text {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+      }
+
+      .status-text.good {
+        color: var(--g-green);
+      }
+
+      .status-text.warn {
+        color: var(--g-yellow);
+      }
+
+      .log-list {
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--g-text-secondary);
+      }
+
+      .log-list li {
+        display: flex;
+        gap: var(--g-space-2);
+      }
+
+      .log-list time {
+        color: var(--g-text-disabled);
+        flex-shrink: 0;
+      }
+
+      /* --- overflow menu (direction C) --- */
+      .menu-wrap {
+        position: relative;
+      }
+
+      .menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        min-width: 168px;
+        background: var(--g-bg-elevated);
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-md);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        padding: var(--g-space-1);
+        z-index: 4;
+      }
+
+      .menu[hidden] {
+        display: none;
+      }
+
+      .menu-item {
+        display: flex;
+        align-items: center;
+        gap: var(--g-space-2);
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: var(--g-text-primary);
+        padding: var(--g-space-2);
+        border-radius: var(--g-radius-sm);
+        font-size: 13px;
+        text-align: left;
+      }
+
+      .menu-item:hover {
+        background: var(--g-bg-elevated-2);
+      }
+
+      .menu-item.danger {
+        color: var(--g-red);
+      }
+
+      /* --- dialogs --- */
+      dialog {
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-md);
+        background: var(--g-bg-elevated);
+        color: var(--g-text-primary);
+        padding: 0;
+        width: min(360px, 90vw);
+      }
+
+      dialog::backdrop {
+        background: rgba(0, 0, 0, 0.55);
+      }
+
+      .dialog-header {
+        padding: var(--g-space-3) var(--g-space-4);
+        border-bottom: 1px solid var(--g-border);
+        font-weight: 600;
+      }
+
+      .dialog-body {
+        padding: var(--g-space-4);
+        display: grid;
+        gap: var(--g-space-3);
+        font-size: 13px;
+      }
+
+      .dialog-body label {
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--g-text-secondary);
+      }
+
+      .dialog-body input {
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-sm);
+        background: var(--g-bg-surface);
+        color: var(--g-text-primary);
+        padding: 0 var(--g-space-2);
+      }
+
+      .dialog-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--g-space-2);
+        padding: var(--g-space-3) var(--g-space-4);
+        border-top: 1px solid var(--g-border);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @container (max-width: 1280px) {
+        .comparison-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @container (max-width: 760px) {
+        .page {
+          padding: var(--g-space-4);
+        }
+
+        .page-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .identity-row,
+        .scope-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="product-root">
+      <section class="page" aria-labelledby="page-title">
+        <div class="breadcrumb">Synthetic Monitoring / Checks / api-health</div>
+        <header class="page-header">
+          <div>
+            <h1 class="page-title" id="page-title">
+              Check actions in the sticky scope bar
+            </h1>
+            <div class="secondary">
+              Three ways to relocate Disable / Edit check / Delete into the
+              dashboard's sticky scope area
+            </div>
+          </div>
+        </header>
+        <p class="intro-note">
+          Each preview below scrolls independently — scroll inside a preview to
+          confirm the top bar stays put while the check dashboard panels move
+          underneath it. Data (check, target, probes) is the same in all
+          three.
+        </p>
+
+        <section class="comparison-grid" aria-label="Product directions">
+          <!-- ============================================================ -->
+          <!-- DIRECTION A: Sticky summary bar -->
+          <!-- ============================================================ -->
+          <article class="mock-direction" aria-labelledby="dirA-title">
+            <header class="direction-header">
+              <h2 class="direction-title" id="dirA-title">
+                Sticky summary bar
+              </h2>
+              <p class="direction-blurb">
+                The existing identity + actions row is unchanged, just pinned
+                to the top of the dashboard while you scroll.
+              </p>
+            </header>
+
+            <div class="frame">
+              <div class="frame-hint">Scroll inside this preview ↓</div>
+              <div
+                class="dash-scroll"
+                id="dirA-scroll"
+                tabindex="0"
+                aria-label="api-health check dashboard, direction A"
+              >
+                <div
+                  class="banner"
+                  id="dirA-banner"
+                  role="status"
+                  hidden
+                >
+                  <span>Check "api-health" deleted.</span>
+                  <button
+                    type="button"
+                    class="button"
+                    id="dirA-undo"
+                  >
+                    Undo
+                  </button>
+                </div>
+
+                <div class="sticky-bar">
+                  <div class="identity-row">
+                    <div class="check-id">
+                      <span
+                        class="status-pill is-online"
+                        id="dirA-status"
+                      >
+                        <span class="status-dot" aria-hidden="true"></span>
+                        Online
+                      </span>
+                      <span class="check-name">api-health</span>
+                      <span class="check-target"
+                        >HTTP · https://api.grafana-ops.net/health</span
+                      >
+                    </div>
+                    <div class="cluster">
+                      <button
+                        type="button"
+                        class="button"
+                        id="dirA-disable"
+                        aria-pressed="false"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            x="6"
+                            y="5"
+                            width="4"
+                            height="14"
+                            fill="currentColor"
+                          />
+                          <rect
+                            x="14"
+                            y="5"
+                            width="4"
+                            height="14"
+                            fill="currentColor"
+                          />
+                        </svg>
+                        <span id="dirA-disable-label">Disable</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="button"
+                        id="dirA-edit"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M4 20h4l10-10-4-4L4 16v4Z"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                          />
+                        </svg>
+                        <span>Edit check</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="button button--danger"
+                        id="dirA-delete"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"
+                            stroke="currentColor"
+                            stroke-width="1.6"
+                          />
+                        </svg>
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="scope-row">
+                    <div class="scope-fields">
+                      <span class="field"
+                        >Probes: <strong>3 selected</strong></span
+                      >
+                      <span class="field">Frequency: <strong>60s</strong></span>
+                    </div>
+                    <span class="field"
+                      >Last 3 hours · browser time</span
+                    >
+                  </div>
+                </div>
+
+                <div class="panel-stack" id="dirA-panels"></div>
+              </div>
+            </div>
+          </article>
+
+          <!-- ============================================================ -->
+          <!-- DIRECTION B: Merged scope toolbar -->
+          <!-- ============================================================ -->
+          <article class="mock-direction" aria-labelledby="dirB-title">
+            <header class="direction-header">
+              <h2 class="direction-title" id="dirB-title">
+                Merged scope toolbar
+              </h2>
+              <p class="direction-blurb">
+                Actions sit inline with the scope controls in one dense row,
+                so identity, filters, and actions read as a single toolbar.
+              </p>
+            </header>
+
+            <div class="frame">
+              <div class="frame-hint">Scroll inside this preview ↓</div>
+              <div
+                class="dash-scroll"
+                id="dirB-scroll"
+                tabindex="0"
+                aria-label="api-health check dashboard, direction B"
+              >
+                <div class="banner" id="dirB-banner" role="status" hidden>
+                  <span>Check "api-health" deleted.</span>
+                  <button type="button" class="button" id="dirB-undo">
+                    Undo
+                  </button>
+                </div>
+
+                <div class="sticky-bar">
+                  <div class="scope-row" style="padding-top: 12px">
+                    <div class="scope-fields">
+                      <span
+                        class="status-pill is-online"
+                        id="dirB-status"
+                      >
+                        <span class="status-dot" aria-hidden="true"></span>
+                        Online
+                      </span>
+                      <span class="check-name">api-health</span>
+                      <span class="field"
+                        >Probes: <strong>3 selected</strong></span
+                      >
+                      <span class="field">Last 3 hours</span>
+                    </div>
+                    <div class="cluster">
+                      <button
+                        type="button"
+                        class="button"
+                        id="dirB-disable"
+                        aria-pressed="false"
+                      >
+                        <span id="dirB-disable-label">Disable</span>
+                      </button>
+                      <button type="button" class="button" id="dirB-edit">
+                        Edit check
+                      </button>
+                      <button
+                        type="button"
+                        class="button button--danger"
+                        id="dirB-delete"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  <div class="scope-row" style="padding-top: 0">
+                    <span class="check-target"
+                      >HTTP · https://api.grafana-ops.net/health · every 60s
+                    </span>
+                  </div>
+                </div>
+
+                <div class="panel-stack" id="dirB-panels"></div>
+              </div>
+            </div>
+          </article>
+
+          <!-- ============================================================ -->
+          <!-- DIRECTION C: Primary action + overflow -->
+          <!-- ============================================================ -->
+          <article class="mock-direction" aria-labelledby="dirC-title">
+            <header class="direction-header">
+              <h2 class="direction-title" id="dirC-title">
+                Primary action + overflow
+              </h2>
+              <p class="direction-blurb">
+                Only "Edit check" stays a direct button; Disable and Delete
+                move behind a menu so the sticky bar stays short.
+              </p>
+            </header>
+
+            <div class="frame">
+              <div class="frame-hint">Scroll inside this preview ↓</div>
+              <div
+                class="dash-scroll"
+                id="dirC-scroll"
+                tabindex="0"
+                aria-label="api-health check dashboard, direction C"
+              >
+                <div class="banner" id="dirC-banner" role="status" hidden>
+                  <span>Check "api-health" deleted.</span>
+                  <button type="button" class="button" id="dirC-undo">
+                    Undo
+                  </button>
+                </div>
+
+                <div class="sticky-bar">
+                  <div class="identity-row">
+                    <div class="check-id">
+                      <span
+                        class="status-pill is-online"
+                        id="dirC-status"
+                      >
+                        <span class="status-dot" aria-hidden="true"></span>
+                        Online
+                      </span>
+                      <span class="check-name">api-health</span>
+                      <span class="check-target"
+                        >HTTP · https://api.grafana-ops.net/health</span
+                      >
+                    </div>
+                    <div class="cluster">
+                      <button
+                        type="button"
+                        class="button button--primary"
+                        id="dirC-edit"
+                      >
+                        Edit check
+                      </button>
+                      <div class="menu-wrap">
+                        <button
+                          type="button"
+                          class="button button--icon-only"
+                          id="dirC-menu-btn"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                          aria-label="More check actions"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <circle cx="5" cy="12" r="1.7" />
+                            <circle cx="12" cy="12" r="1.7" />
+                            <circle cx="19" cy="12" r="1.7" />
+                          </svg>
+                        </button>
+                        <div
+                          class="menu"
+                          id="dirC-menu"
+                          role="menu"
+                          aria-label="More check actions"
+                          hidden
+                        >
+                          <button
+                            type="button"
+                            class="menu-item"
+                            id="dirC-disable"
+                            role="menuitem"
+                          >
+                            <span id="dirC-disable-label">Disable check</span>
+                          </button>
+                          <button
+                            type="button"
+                            class="menu-item danger"
+                            id="dirC-delete"
+                            role="menuitem"
+                          >
+                            Delete check
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="scope-row">
+                    <div class="scope-fields">
+                      <span class="field"
+                        >Probes: <strong>3 selected</strong></span
+                      >
+                      <span class="field">Frequency: <strong>60s</strong></span>
+                    </div>
+                    <span class="field">Last 3 hours · browser time</span>
+                  </div>
+                </div>
+
+                <div class="panel-stack" id="dirC-panels"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <!-- Edit check dialog (shared markup pattern, one instance per direction) -->
+    <dialog id="dirA-edit-dialog">
+      <form method="dialog">
+        <div class="dialog-header">Edit check</div>
+        <div class="dialog-body">
+          <label
+            >Job name
+            <input type="text" value="api-health" />
+          </label>
+          <label
+            >Target URL
+            <input type="text" value="https://api.grafana-ops.net/health" />
+          </label>
+          <label
+            >Frequency (seconds)
+            <input type="number" value="60" />
+          </label>
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" value="cancel" class="button">Cancel</button>
+          <button
+            type="submit"
+            value="save"
+            class="button button--primary"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="dirA-delete-dialog">
+      <form method="dialog">
+        <div class="dialog-header">Delete check?</div>
+        <div class="dialog-body">
+          Deleting "api-health" stops all probes immediately and removes its
+          history. This can't be undone after you leave this page.
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" value="cancel" class="button">Cancel</button>
+          <button
+            type="submit"
+            value="delete"
+            class="button button--danger"
+          >
+            Delete check
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="dirB-edit-dialog">
+      <form method="dialog">
+        <div class="dialog-header">Edit check</div>
+        <div class="dialog-body">
+          <label
+            >Job name
+            <input type="text" value="api-health" />
+          </label>
+          <label
+            >Target URL
+            <input type="text" value="https://api.grafana-ops.net/health" />
+          </label>
+          <label
+            >Frequency (seconds)
+            <input type="number" value="60" />
+          </label>
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" value="cancel" class="button">Cancel</button>
+          <button
+            type="submit"
+            value="save"
+            class="button button--primary"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="dirB-delete-dialog">
+      <form method="dialog">
+        <div class="dialog-header">Delete check?</div>
+        <div class="dialog-body">
+          Deleting "api-health" stops all probes immediately and removes its
+          history. This can't be undone after you leave this page.
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" value="cancel" class="button">Cancel</button>
+          <button
+            type="submit"
+            value="delete"
+            class="button button--danger"
+          >
+            Delete check
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="dirC-edit-dialog">
+      <form method="dialog">
+        <div class="dialog-header">Edit check</div>
+        <div class="dialog-body">
+          <label
+            >Job name
+            <input type="text" value="api-health" />
+          </label>
+          <label
+            >Target URL
+            <input type="text" value="https://api.grafana-ops.net/health" />
+          </label>
+          <label
+            >Frequency (seconds)
+            <input type="number" value="60" />
+          </label>
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" value="cancel" class="button">Cancel</button>
+          <button
+            type="submit"
+            value="save"
+            class="button button--primary"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="dirC-delete-dialog">
+      <form method="dialog">
+        <div class="dialog-header">Delete check?</div>
+        <div class="dialog-body">
+          Deleting "api-health" stops all probes immediately and removes its
+          history. This can't be undone after you leave this page.
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" value="cancel" class="button">Cancel</button>
+          <button
+            type="submit"
+            value="delete"
+            class="button button--danger"
+          >
+            Delete check
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var barHeights = [22, 34, 28, 44, 38, 50, 30, 40, 46, 36, 52, 41];
+
+        function panelMarkup() {
+          var bars = barHeights
+            .map(function (h) {
+              return '<span style="height:' + h + 'px"></span>';
+            })
+            .join("");
+          return (
+            '<div class="panel">' +
+            '<div class="panel-header"><span>Reachability (30d)</span><span>updated 2m ago</span></div>' +
+            '<div class="panel-body"><div class="stat-row"><span class="stat-value good">99.98%</span><span class="secondary">of checks succeeded</span></div></div>' +
+            "</div>" +
+            '<div class="panel">' +
+            '<div class="panel-header"><span>Uptime (30d)</span><span>updated 2m ago</span></div>' +
+            '<div class="panel-body"><div class="stat-row"><span class="stat-value good">99.982%</span><span class="secondary">4m 12s downtime</span></div></div>' +
+            "</div>" +
+            '<div class="panel">' +
+            '<div class="panel-header"><span>Latency (p50 / p95 / p99)</span><span>182 / 340 / 512 ms</span></div>' +
+            '<div class="panel-body"><div class="bars" aria-hidden="true">' +
+            bars +
+            "</div></div>" +
+            "</div>" +
+            '<div class="panel">' +
+            '<div class="panel-header"><span>Probe results</span><span>3 probes</span></div>' +
+            '<div class="panel-body"><table class="probe-table"><thead><tr><th>Probe</th><th>Status</th><th>Latency</th><th>Last check</th></tr></thead><tbody>' +
+            '<tr><td>Frankfurt</td><td><span class="status-text good">● Success</span></td><td>176 ms</td><td>00:41 ago</td></tr>' +
+            '<tr><td>Ohio</td><td><span class="status-text good">● Success</span></td><td>164 ms</td><td>00:38 ago</td></tr>' +
+            '<tr><td>Singapore</td><td><span class="status-text warn">▲ Degraded</span></td><td>612 ms</td><td>00:52 ago</td></tr>' +
+            "</tbody></table></div>" +
+            "</div>" +
+            '<div class="panel">' +
+            '<div class="panel-header"><span>TLS certificate</span><span>expires in 47 days</span></div>' +
+            '<div class="panel-body secondary">Issued to *.grafana-ops.net · Let\'s Encrypt R11</div>' +
+            "</div>" +
+            '<div class="panel">' +
+            '<div class="panel-header"><span>Recent state changes</span></div>' +
+            '<div class="panel-body"><ul class="log-list">' +
+            "<li><time>3h ago</time><span>Probe Singapore recovered to Success</span></li>" +
+            "<li><time>3h ago</time><span>Probe Singapore reported Degraded</span></li>" +
+            "<li><time>1d ago</time><span>Check frequency changed to 60s</span></li>" +
+            "</ul></div>" +
+            "</div>"
+          );
+        }
+
+        ["dirA", "dirB", "dirC"].forEach(function (ns) {
+          var target = document.getElementById(ns + "-panels");
+          if (target) target.innerHTML = panelMarkup();
+        });
+
+        function wireDisable(ns) {
+          var btn = document.getElementById(ns + "-disable");
+          var label = document.getElementById(ns + "-disable-label");
+          var status = document.getElementById(ns + "-status");
+          if (!btn) return;
+          var disabled = false;
+          btn.addEventListener("click", function () {
+            disabled = !disabled;
+            btn.setAttribute("aria-pressed", String(disabled));
+            if (label) label.textContent = disabled ? "Enable" : "Disable";
+            if (status) {
+              status.classList.toggle("is-online", !disabled);
+              status.classList.toggle("is-disabled", disabled);
+              status.lastChild.textContent = disabled ? " Disabled" : " Online";
+            }
+            if (ns === "dirC") {
+              var menu = document.getElementById("dirC-menu");
+              var menuBtn = document.getElementById("dirC-menu-btn");
+              if (menu) menu.hidden = true;
+              if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+
+        function wireEdit(ns) {
+          var btn = document.getElementById(ns + "-edit");
+          var dialog = document.getElementById(ns + "-edit-dialog");
+          if (!btn || !dialog) return;
+          btn.addEventListener("click", function () {
+            dialog.showModal();
+            if (ns === "dirC") {
+              var menu = document.getElementById("dirC-menu");
+              var menuBtn = document.getElementById("dirC-menu-btn");
+              if (menu) menu.hidden = true;
+              if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+
+        function wireDelete(ns) {
+          var btn = document.getElementById(ns + "-delete");
+          var dialog = document.getElementById(ns + "-delete-dialog");
+          var banner = document.getElementById(ns + "-banner");
+          var undo = document.getElementById(ns + "-undo");
+          var stickyBar = document.querySelector(
+            "#" + ns + "-scroll .sticky-bar"
+          );
+          if (!btn || !dialog) return;
+          btn.addEventListener("click", function () {
+            dialog.showModal();
+            if (ns === "dirC") {
+              var menu = document.getElementById("dirC-menu");
+              var menuBtn = document.getElementById("dirC-menu-btn");
+              if (menu) menu.hidden = true;
+              if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+            }
+          });
+          dialog.addEventListener("close", function () {
+            if (dialog.returnValue === "delete") {
+              if (banner) banner.hidden = false;
+              if (stickyBar)
+                stickyBar
+                  .querySelectorAll("button")
+                  .forEach(function (b) {
+                    b.disabled = true;
+                  });
+            }
+          });
+          if (undo) {
+            undo.addEventListener("click", function () {
+              if (banner) banner.hidden = true;
+              if (stickyBar)
+                stickyBar
+                  .querySelectorAll("button")
+                  .forEach(function (b) {
+                    b.disabled = false;
+                  });
+            });
+          }
+        }
+
+        ["dirA", "dirB", "dirC"].forEach(function (ns) {
+          wireDisable(ns);
+          wireEdit(ns);
+          wireDelete(ns);
+        });
+
+        // Direction C overflow menu
+        (function () {
+          var menuBtn = document.getElementById("dirC-menu-btn");
+          var menu = document.getElementById("dirC-menu");
+          if (!menuBtn || !menu) return;
+
+          function closeMenu() {
+            menu.hidden = true;
+            menuBtn.setAttribute("aria-expanded", "false");
+          }
+
+          menuBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            var isOpen = !menu.hidden;
+            if (isOpen) {
+              closeMenu();
+            } else {
+              menu.hidden = false;
+              menuBtn.setAttribute("aria-expanded", "true");
+            }
+          });
+
+          document.addEventListener("click", function (event) {
+            if (!menu.hidden && !menu.contains(event.target) && event.target !== menuBtn) {
+              closeMenu();
+            }
+          });
+
+          menu.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+              closeMenu();
+              menuBtn.focus();
+            }
+          });
+        })();
+      })();
+    </script>
+  </body>
+</html>

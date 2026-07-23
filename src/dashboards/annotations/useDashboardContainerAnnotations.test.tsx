@@ -46,4 +46,13 @@ describe('useDashboardContainerAnnotations', () => {
     expect(result.current).not.toBe(initialDefinitions);
     expect(result.current[0].datasource?.uid).toBe('resolved-prometheus');
   });
+
+  it('groups alert annotations by alert name so metric identity survives the query', () => {
+    const { result } = renderHook(() => useDashboardContainerAnnotations(BASIC_HTTP_CHECK));
+
+    expect(result.current.map((definition) => definition.expr)).toEqual([
+      expect.stringContaining('max by (alertname)'),
+      expect.stringContaining('max by (alertname)'),
+    ]);
+  });
 });

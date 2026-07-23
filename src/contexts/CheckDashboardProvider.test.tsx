@@ -60,11 +60,11 @@ describe('CheckDashboardProvider', () => {
   });
 });
 
-describe('scene-free HTTP dashboard route', () => {
-  it('mounts CheckDashboardProvider on the scene-free dashboard', () => {
+describe('HTTP dashboard route', () => {
+  it('mounts CheckDashboardProvider on the HTTP dashboard', () => {
     jest.isolateModules(() => {
-      const { SceneFreeHttpDashboard } = require('dashboards/http/SceneFreeHttpDashboard');
-      const routeSource = SceneFreeHttpDashboard.toString();
+      const { HTTPDashboard } = require('dashboards/http/HTTPDashboard');
+      const routeSource = HTTPDashboard.toString();
 
       expect(routeSource).toContain('CheckDashboardProvider');
     });

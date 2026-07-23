@@ -6,7 +6,6 @@ import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvent
 
 import { CheckType, HTTPCheck } from 'types';
 import { useCheckUptimeSuccessRate } from 'data/useSuccessRates';
-import { EditCheckButton } from 'scenes/Common/EditCheckButton';
 
 function useTrackCheckDashboardViewed(check: HTTPCheck) {
   const { data: uptime, isSuccess, isError } = useCheckUptimeSuccessRate(check);
@@ -26,19 +25,17 @@ function useTrackCheckDashboardViewed(check: HTTPCheck) {
 
 export function HttpDashboardPage({
   check,
+  filters,
   children,
 }: {
   check: HTTPCheck;
+  filters?: React.ReactNode;
   children: React.ReactNode;
 }) {
   useTrackCheckDashboardViewed(check);
 
   return (
-    <CheckDashboardLayout
-      actions={<EditCheckButton id={check.id} />}
-      check={check}
-      profile={httpDashboardHeaderProfile}
-    >
+    <CheckDashboardLayout check={check} filters={filters} profile={httpDashboardHeaderProfile}>
       {children}
     </CheckDashboardLayout>
   );

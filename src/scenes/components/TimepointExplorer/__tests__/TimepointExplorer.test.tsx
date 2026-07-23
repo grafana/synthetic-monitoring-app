@@ -108,7 +108,8 @@ describe('TimepointExplorer', () => {
     await waitFor(() => screen.queryByTestId(SCENES_TEST_ID.timepoint.list));
     expect(screen.queryByTestId(SCENES_TEST_ID.timepoint.list)).not.toBeInTheDocument();
     expect(screen.queryByTestId(SCENES_TEST_ID.timepoint.viewer)).not.toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: 'Product context' })).toBeDisabled();
+    expect(await screen.findByLabelText('Execution explorer controls')).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Product context' })).not.toBeInTheDocument();
   });
 
   it('should render if the feature flag is on', async () => {
@@ -116,6 +117,15 @@ describe('TimepointExplorer', () => {
     render(renderTimepointExplorer());
     await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.list));
     await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.viewer));
+  });
+
+  it('can leave execution controls to the dashboard shell', async () => {
+    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+
+    render(<TimepointExplorer check={TIME_MODIFIED_HTTP_CHECK} />);
+
+    expect(await screen.findByRole('region', { name: 'Timepoint explorer' })).toBeVisible();
+    expect(screen.queryByLabelText('Execution explorer controls')).not.toBeInTheDocument();
   });
 
   it('renders when the check has no creation timestamp', async () => {

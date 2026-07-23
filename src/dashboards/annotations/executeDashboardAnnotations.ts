@@ -86,8 +86,9 @@ async function executeModernAnnotationQuery(options: {
   datasource: DataSourceApi;
   annotation: AnnotationQuery;
   timeRange: TimeRange;
+  timezone: string;
 }): Promise<DataFrame[]> {
-  const { datasource, annotation, timeRange } = options;
+  const { datasource, annotation, timeRange, timezone } = options;
 
   // Query with the same top-level annotation shape the Scene AnnotationLayer used.
   // Client-side coalescing in annotationFramesToEvents turns prometheus step
@@ -96,7 +97,7 @@ async function executeModernAnnotationQuery(options: {
   const request: DataQueryRequest = {
     app: CoreApp.Dashboard,
     requestId: `dashboard-annotation-${annotation.name}`,
-    timezone: 'browser',
+    timezone,
     range: timeRange,
     timeInfo: '',
     interval: rangeUtil.calculateInterval(timeRange, 500, '1s').interval,
@@ -138,11 +139,12 @@ export function waitForSettledPanelData(panelData$: Observable<PanelData>): Obse
 export async function executeDashboardAnnotationQuery(options: {
   annotation: AnnotationQuery;
   timeRange: TimeRange;
+  timezone: string;
   job: string;
   instance: string;
   signal?: AbortSignal;
 }): Promise<DataFrame[]> {
-  const { annotation, timeRange, job, instance, signal } = options;
+  const { annotation, timeRange, timezone, job, instance, signal } = options;
   const datasourceRef = annotation.datasource;
 
   if (!datasourceRef?.uid || signal?.aborted) {
@@ -180,12 +182,14 @@ export async function executeDashboardAnnotationQuery(options: {
     datasource,
     annotation: interpolated,
     timeRange,
+    timezone,
   });
 }
 
 export async function executeDashboardAnnotationQueries(options: {
   annotations: AnnotationQuery[];
   timeRange: TimeRange;
+  timezone: string;
   job: string;
   instance: string;
   signal?: AbortSignal;
@@ -201,6 +205,7 @@ export async function executeDashboardAnnotationQueries(options: {
       results[annotation.name] = await executeDashboardAnnotationQuery({
         annotation,
         timeRange: options.timeRange,
+        timezone: options.timezone,
         job: options.job,
         instance: options.instance,
         signal: options.signal,

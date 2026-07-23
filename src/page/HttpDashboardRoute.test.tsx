@@ -19,10 +19,8 @@ jest.mock('scenes/HTTP/HttpDashboard', () => ({
   ),
 }));
 
-jest.mock('dashboards/http/SceneFreeHttpDashboard', () => ({
-  SceneFreeHttpDashboard: ({ check }: { check: { job: string } }) => (
-    <div data-testid="scene-free-http-dashboard">{check.job}</div>
-  ),
+jest.mock('dashboards/http/HTTPDashboard', () => ({
+  HTTPDashboard: ({ check }: { check: { job: string } }) => <div data-testid="http-dashboard">{check.job}</div>,
 }));
 
 describe('HttpDashboardRoute', () => {

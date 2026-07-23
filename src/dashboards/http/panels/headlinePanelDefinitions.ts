@@ -201,10 +201,12 @@ export function createSslExpiryPanelDefinition(): DashboardPanelDefinition {
   return {
     id: 'http-ssl-expiry',
     pluginId: 'stat',
+    maxDataPoints: 200,
     targets: [
       {
         expr: 'min(probe_ssl_earliest_cert_expiry{probe=~"$probe",instance="$instance", job="$job"}) - time()',
-        instant: true,
+        instant: false,
+        range: true,
         legendFormat: 'sum',
         refId: 'B',
       },
@@ -222,6 +224,7 @@ export function createSslExpiryPanelDefinition(): DashboardPanelDefinition {
     },
     options: {
       graphMode: BigValueGraphMode.None,
+      reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false },
     },
     description: 'The time remaining until SSL chain expiry',
   };

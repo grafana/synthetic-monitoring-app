@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import { GrafanaTheme2, TimeRange } from '@grafana/data';
-import { MultiCombobox, RefreshPicker, Stack, TimeRangePicker, useStyles2 } from '@grafana/ui';
+import React, { ReactNode, useMemo } from 'react';
+import { GrafanaTheme2, intervalToAbbreviatedDurationString, TimeRange } from '@grafana/data';
+import { MultiCombobox, RefreshPicker, TimeRangePicker, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { useAppTime } from 'contexts/AppTimeProvider';
-import { resolveTimeRange } from 'contexts/AppTimeProvider.utils';
+import { canShiftTimeRangeForward, resolveTimeRange } from 'contexts/AppTimeProvider.utils';
 import { useCheckDashboard } from 'contexts/CheckDashboardProvider';
 
 const PROBE_CONTROL_ID = 'dashboard-probe-control';
@@ -44,6 +44,20 @@ function DashboardProbeControl() {
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  commandBar: css({
+    alignItems: 'center',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    justifyContent: 'space-between',
+  }),
+  commandGroup: css({
+    alignItems: 'center',
+    display: 'flex',
+    flex: '0 0 auto',
+    gap: theme.spacing(1),
+    minWidth: 0,
+  }),
   visuallyHidden: css({
     border: 0,
     clip: 'rect(0 0 0 0)',
@@ -60,44 +74,63 @@ const getStyles = (theme: GrafanaTheme2) => ({
 function DashboardTimeControls() {
   const appTime = useAppTime();
   const value = useMemo(
-    () => resolveTimeRange(appTime.raw.from, appTime.raw.to),
-    [appTime.raw.from, appTime.raw.to]
+    () => resolveTimeRange(appTime.raw.from, appTime.raw.to, appTime.timezone),
+    [appTime.raw.from, appTime.raw.to, appTime.timezone]
   );
+  const halfSpanMs = (value.to.valueOf() - value.from.valueOf()) / 2;
+  const moveDuration = intervalToAbbreviatedDurationString({
+    start: new Date(value.from.valueOf()),
+    end: new Date(value.from.valueOf() + halfSpanMs),
+  });
+  const canMoveForward = canShiftTimeRangeForward(value);
 
   return (
-    <Stack alignItems="center" gap={1}>
-      <TimeRangePicker
-        isOnCanvas
-        value={value}
-        timeZone={appTime.timezone}
-        onChange={(range) =>
-          appTime.setTimeRange({
-            from: toRawTimeValue(range.raw.from),
-            to: toRawTimeValue(range.raw.to),
-          })
-        }
-        onChangeTimeZone={() => undefined}
-        onMoveBackward={() => undefined}
-        onMoveForward={() => undefined}
-        onZoom={() => undefined}
-      />
-      <RefreshPicker
-        isOnCanvas
-        value={appTime.refresh}
-        onRefresh={appTime.refreshNow}
-        onIntervalChanged={(interval) => appTime.setRefresh(interval || undefined)}
-      />
-    </Stack>
+    <TimeRangePicker
+      isOnCanvas
+      value={value}
+      timeZone={appTime.timezone}
+      onChange={(range) =>
+        appTime.setTimeRange({
+          from: toRawTimeValue(range.raw.from),
+          to: toRawTimeValue(range.raw.to),
+        })
+      }
+      onChangeTimeZone={appTime.setTimezone}
+      onMoveBackward={appTime.shiftBackward}
+      onMoveForward={appTime.shiftForward}
+      moveBackwardTooltip={`Move ${moveDuration} backward`}
+      moveForwardTooltip={canMoveForward ? `Move ${moveDuration} forward` : undefined}
+      onZoom={appTime.zoomOut}
+    />
   );
 }
 
-export function DashboardScopeControls() {
+function DashboardRefreshControl() {
+  const appTime = useAppTime();
+
   return (
-    <div aria-label="Dashboard scope controls">
-      <Stack alignItems="center" justifyContent="space-between" gap={2} wrap="wrap">
+    <RefreshPicker
+      isOnCanvas
+      value={appTime.refresh}
+      onRefresh={appTime.refreshNow}
+      onIntervalChanged={(interval) => appTime.setRefresh(interval || undefined)}
+    />
+  );
+}
+
+export function DashboardScopeControls({ filters }: { filters?: ReactNode }) {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div aria-label="Dashboard scope controls" className={styles.commandBar}>
+      <div className={styles.commandGroup} data-testid="command-bar-group">
         <DashboardProbeControl />
+        {filters}
+      </div>
+      <div className={styles.commandGroup} data-testid="command-bar-group">
         <DashboardTimeControls />
-      </Stack>
+        <DashboardRefreshControl />
+      </div>
     </div>
   );
 }

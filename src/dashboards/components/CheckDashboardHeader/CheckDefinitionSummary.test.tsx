@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 import { CheckHeaderDefinitionModel } from './CheckDashboardHeader.types';
 
@@ -20,28 +19,18 @@ const dnsModel: CheckHeaderDefinitionModel = {
 };
 
 describe('CheckDefinitionSummary', () => {
-  it('renders operational configuration separately from check identity', () => {
+  it('renders operational configuration with labels on the same row', () => {
     render(<CheckDefinitionSummary model={dnsModel} />);
 
     const configuration = screen.getByRole('region', { name: 'Check configuration' });
+    const labels = within(configuration).getByLabelText('Labels');
+    const factList = within(configuration).getByText('Resolver').closest('dl');
 
     expect(within(configuration).queryByRole('heading', { name: 'Check configuration' })).not.toBeInTheDocument();
     expect(within(configuration).getByText('8.8.8.8 · UDP 53')).toBeVisible();
-    expect(within(configuration).getByRole('button', { name: 'View check definition' })).toBeVisible();
+    expect(within(labels).getByText('team: networking')).toBeVisible();
+    expect(factList?.parentElement).toContainElement(labels);
+    expect(screen.queryByRole('button', { name: 'View check definition' })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Authoritative DNS' })).not.toBeInTheDocument();
-    expect(screen.queryByText('team: networking')).not.toBeInTheDocument();
-  });
-
-  it('reveals definition detail only when its toggletip is opened', async () => {
-    const user = userEvent.setup();
-    render(<CheckDefinitionSummary model={dnsModel} />);
-
-    expect(screen.queryByText('Recursion')).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'View check definition' }));
-
-    expect(screen.getByText('DNS check definition')).toBeVisible();
-    expect(screen.getByText('Recursion')).toBeVisible();
-    expect(screen.getByText('Disabled')).toBeVisible();
   });
 });

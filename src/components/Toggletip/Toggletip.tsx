@@ -1,4 +1,13 @@
-import React, { cloneElement, ComponentProps, ReactElement, ReactNode, useRef, useState } from 'react';
+import React, {
+  cloneElement,
+  ComponentProps,
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { IconButton, Portal, Toggletip as GrafanaToggletip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -19,6 +28,8 @@ interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, '
   content: ReactNode;
   contentClassName?: string;
   children: ReactElement;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   /** @default 'absolute' — use 'fixed' only when the trigger is NOT inside a containerType ancestor */
   strategy?: 'absolute' | 'fixed';
 }
@@ -33,11 +44,29 @@ interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, '
  * `cloneElement` attaches the ref + interaction props directly to the child
  * element, avoiding a wrapper node that would affect flex/grid layouts.
  */
-export const Toggletip = ({ children, content, contentClassName, strategy = 'absolute' }: ToggletipProps) => {
+export const Toggletip = ({
+  children,
+  content,
+  contentClassName,
+  onOpenChange,
+  open,
+  strategy = 'absolute',
+}: ToggletipProps) => {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const arrowRef = useRef(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const isOpen = open ?? uncontrolledOpen;
+  const setIsOpen = useCallback(
+    (nextOpen: boolean) => {
+      if (open === undefined) {
+        setUncontrolledOpen(nextOpen);
+      }
+
+      onOpenChange?.(nextOpen);
+    },
+    [onOpenChange, open]
+  );
 
   const { context, refs, floatingStyles } = useFloating({
     open: isOpen,
@@ -49,6 +78,15 @@ export const Toggletip = ({ children, content, contentClassName, strategy = 'abs
   });
 
   const { getReferenceProps, getFloatingProps } = useInteractions([useClick(context), useDismiss(context)]);
+  const wasOpen = useRef(isOpen);
+
+  useEffect(() => {
+    if (wasOpen.current && !isOpen) {
+      (refs.domReference.current as HTMLElement | null)?.focus();
+    }
+
+    wasOpen.current = isOpen;
+  }, [isOpen, refs.domReference]);
 
   return (
     <>

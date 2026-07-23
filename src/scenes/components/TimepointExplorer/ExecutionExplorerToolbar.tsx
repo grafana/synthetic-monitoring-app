@@ -7,8 +7,6 @@ import { DashboardAnnotationMarkers } from 'dashboards/annotations/DashboardAnno
 
 import { ExecutionResultFilter } from './TimepointExplorer.types';
 
-const COMING_LATER_ID = 'execution-explorer-coming-later';
-
 export function ExecutionExplorerToolbar({
   resultFilter,
   onResultFilterChange,
@@ -44,17 +42,6 @@ export function ExecutionExplorerToolbar({
         {annotations.length > 0 ? <DashboardAnnotationControls annotations={annotations} /> : null}
         <DashboardAnnotationMarkers />
       </div>
-
-      <div className={styles.futureGroup}>
-        {['Product context', 'Compare related checks', 'Advanced filters'].map((label) => (
-          <Button aria-describedby={COMING_LATER_ID} disabled key={label} size="sm" variant="secondary">
-            {label}
-          </Button>
-        ))}
-        <span className={styles.visuallyHidden} id={COMING_LATER_ID}>
-          Coming later
-        </span>
-      </div>
     </div>
   );
 }
@@ -62,25 +49,11 @@ export function ExecutionExplorerToolbar({
 const getStyles = (theme: GrafanaTheme2) => ({
   toolbar: css({
     alignItems: 'center',
-    containerName: 'execution-explorer-toolbar',
-    containerType: 'inline-size',
     display: 'flex',
-    flexWrap: 'wrap',
-    gap: theme.spacing(1, 2),
-    justifyContent: 'space-between',
-  }),
-  filterGroup: css({ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: theme.spacing(1, 2) }),
-  segmented: css({ display: 'flex' }),
-  futureGroup: css({ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(1) }),
-  visuallyHidden: css({
-    border: 0,
-    clip: 'rect(0 0 0 0)',
-    height: '1px',
-    margin: '-1px',
-    overflow: 'hidden',
-    padding: 0,
-    position: 'absolute',
+    flex: '0 0 auto',
+    gap: theme.spacing(1),
     whiteSpace: 'nowrap',
-    width: '1px',
   }),
+  filterGroup: css({ alignItems: 'center', display: 'flex', gap: theme.spacing(1) }),
+  segmented: css({ display: 'flex' }),
 });

@@ -1,0 +1,1156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Grafana product mock</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --g-bg-canvas: #f7f8fa;
+        --g-bg-surface: #ffffff;
+        --g-bg-elevated: #f1f3f5;
+        --g-text-primary: #1f1f1f;
+        --g-text-secondary: #5f6670;
+        --g-border: #d9dfe7;
+        --g-focus: #3274d9;
+        --g-blue: #3274d9;
+        --g-green: #1a7f37;
+        --g-yellow: #b87700;
+        --g-red: #d10e5c;
+        --g-orange: #c75300;
+        --g-space-1: 4px;
+        --g-space-2: 8px;
+        --g-space-3: 12px;
+        --g-space-4: 16px;
+        --g-space-6: 24px;
+        --g-space-8: 32px;
+        --g-radius-sm: 2px;
+        --g-radius-md: 4px;
+        --g-font: Inter, ui-sans-serif, system-ui, -apple-system,
+          BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      [data-theme="dark"] {
+        color-scheme: dark;
+        --g-bg-canvas: #111217;
+        --g-bg-surface: #181b1f;
+        --g-bg-elevated: #22252b;
+        --g-text-primary: #f4f5f5;
+        --g-text-secondary: #c7d0d9;
+        --g-border: #343b40;
+        --g-focus: #5794f2;
+        --g-blue: #5794f2;
+        --g-green: #73bf69;
+        --g-yellow: #f2cc0c;
+        --g-red: #f2495c;
+        --g-orange: #ff9830;
+        --g-green-tint: rgba(115, 191, 105, 0.14);
+        --g-green-border: rgba(115, 191, 105, 0.4);
+        --g-yellow-tint: rgba(242, 204, 12, 0.14);
+        --g-yellow-border: rgba(242, 204, 12, 0.4);
+        --g-red-tint: rgba(242, 73, 92, 0.14);
+        --g-red-border: rgba(242, 73, 92, 0.4);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background: var(--g-bg-canvas);
+        color: var(--g-text-primary);
+        font: 14px/1.45 var(--g-font);
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button,
+      input,
+      select {
+        min-height: 32px;
+      }
+
+      button,
+      select {
+        cursor: pointer;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--g-focus);
+        outline-offset: 2px;
+      }
+
+      .product-root {
+        min-height: 100vh;
+        container-type: inline-size;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: 200px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .side-nav {
+        padding: var(--g-space-4);
+        border-right: 1px solid var(--g-border);
+        background: var(--g-bg-surface);
+      }
+
+      .side-nav-title {
+        margin: 0 0 var(--g-space-3);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--g-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .side-nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: var(--g-space-1);
+      }
+
+      .side-nav-list a {
+        display: block;
+        padding: var(--g-space-2) var(--g-space-2);
+        border-radius: var(--g-radius-sm);
+        color: var(--g-text-secondary);
+        text-decoration: none;
+      }
+
+      .side-nav-list a[aria-current="page"] {
+        background: var(--g-bg-elevated);
+        color: var(--g-text-primary);
+        font-weight: 600;
+      }
+
+      .page {
+        min-width: 0;
+        padding: var(--g-space-6);
+      }
+
+      .page-header,
+      .toolbar,
+      .cluster {
+        display: flex;
+        align-items: center;
+        gap: var(--g-space-2);
+      }
+
+      .page-header {
+        justify-content: space-between;
+        margin-bottom: var(--g-space-4);
+      }
+
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--g-space-4);
+        align-items: start;
+      }
+
+      .comparison-grid[data-layout="stacked"] {
+        grid-template-columns: 1fr;
+      }
+
+      .layout-toggle {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px;
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-sm);
+        background: var(--g-bg-elevated);
+      }
+
+      .layout-toggle .button {
+        border: 0;
+        background: transparent;
+      }
+
+      .layout-toggle .button[aria-pressed="true"] {
+        background: var(--g-bg-surface);
+        box-shadow: 0 0 0 1px var(--g-border);
+      }
+
+      .mock-direction {
+        min-width: 0;
+      }
+
+      .direction-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--g-space-2);
+        margin-bottom: var(--g-space-3);
+      }
+
+      .direction-title {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.25;
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.25;
+      }
+
+      .secondary {
+        color: var(--g-text-secondary);
+      }
+
+      .toolbar {
+        flex-wrap: wrap;
+        margin-bottom: var(--g-space-4);
+      }
+
+      .button,
+      .input,
+      .select {
+        min-height: 32px;
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-sm);
+        background: var(--g-bg-surface);
+        color: var(--g-text-primary);
+      }
+
+      .button {
+        padding: 0 var(--g-space-3);
+        font-weight: 600;
+      }
+
+      .button--primary {
+        border-color: var(--g-blue);
+        background: var(--g-blue);
+        color: #ffffff;
+      }
+
+      .input,
+      .select {
+        padding: 0 var(--g-space-2);
+      }
+
+      .panel {
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-md);
+        background: var(--g-bg-surface);
+      }
+
+      .panel-header {
+        padding: var(--g-space-3) var(--g-space-4);
+        border-bottom: 1px solid var(--g-border);
+      }
+
+      .panel-body {
+        padding: var(--g-space-4);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--g-space-1);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      .status--good {
+        color: var(--g-green);
+      }
+
+      .status--warning {
+        color: var(--g-yellow);
+      }
+
+      .status--bad {
+        color: var(--g-red);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* Metric card primitives shared across the three directions */
+
+      .metric-mini-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--g-space-3);
+      }
+
+      .metric-card {
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-md);
+        background: var(--g-bg-surface);
+        padding: var(--g-space-3) var(--g-space-4) var(--g-space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--g-space-2);
+        min-width: 0;
+      }
+
+      .metric-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--g-space-2);
+      }
+
+      .metric-name-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--g-text-secondary);
+        font-size: 13px;
+        min-width: 0;
+      }
+
+      .metric-name-group span.name-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .metric-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        flex-shrink: 0;
+      }
+
+      .icon-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        min-height: 0;
+        border: 0;
+        background: transparent;
+        color: var(--g-text-secondary);
+        border-radius: var(--g-radius-sm);
+        padding: 0;
+      }
+
+      .icon-button:hover {
+        background: var(--g-bg-elevated);
+        color: var(--g-text-primary);
+      }
+
+      .metric-value-row {
+        display: flex;
+        align-items: baseline;
+        gap: var(--g-space-2);
+        flex-wrap: wrap;
+      }
+
+      .metric-value {
+        font-size: 26px;
+        font-weight: 600;
+        line-height: 1.1;
+      }
+
+      .metric-sub {
+        color: var(--g-text-secondary);
+        font-size: 12px;
+      }
+
+      .metric-sparkline {
+        margin-top: 2px;
+        line-height: 0;
+      }
+
+      .status-icon {
+        display: inline-flex;
+        flex-shrink: 0;
+      }
+
+      /* Direction A: inline status */
+
+      .legend-panel {
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-md);
+        background: var(--g-bg-elevated);
+        padding: var(--g-space-3) var(--g-space-4);
+        margin-bottom: var(--g-space-3);
+      }
+
+      .legend-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: var(--g-space-2);
+        font-size: 13px;
+      }
+
+      .legend-list li {
+        display: flex;
+        align-items: center;
+        gap: var(--g-space-2);
+      }
+
+      /* Direction B: status-led cards */
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid transparent;
+      }
+
+      .status-pill--good {
+        color: var(--g-green);
+        background: var(--g-green-tint);
+        border-color: var(--g-green-border);
+      }
+
+      .status-pill--warning {
+        color: var(--g-yellow);
+        background: var(--g-yellow-tint);
+        border-color: var(--g-yellow-border);
+      }
+
+      .status-pill--critical {
+        color: var(--g-red);
+        background: var(--g-red-tint);
+        border-color: var(--g-red-border);
+      }
+
+      .link-button {
+        border: 0;
+        background: transparent;
+        color: var(--g-blue);
+        padding: 0;
+        min-height: 0;
+        font-weight: 600;
+        font-size: 12px;
+        text-align: left;
+        width: fit-content;
+      }
+
+      .link-button:hover {
+        text-decoration: underline;
+      }
+
+      .threshold-panel {
+        border-top: 1px solid var(--g-border);
+        padding-top: var(--g-space-2);
+        margin-top: 2px;
+      }
+
+      .threshold-list {
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--g-space-2);
+        font-size: 12px;
+      }
+
+      .threshold-list dt {
+        color: var(--g-text-secondary);
+        font-weight: 600;
+      }
+
+      .threshold-list dd {
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Direction C: triage rollup */
+
+      .rollup-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--g-space-3);
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-md);
+        background: var(--g-bg-elevated);
+        padding: var(--g-space-2) var(--g-space-4);
+        margin-bottom: var(--g-space-3);
+        font-size: 13px;
+      }
+
+      .rollup-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+      }
+
+      .segmented {
+        display: inline-flex;
+        border: 1px solid var(--g-border);
+        border-radius: var(--g-radius-sm);
+        overflow: hidden;
+        margin-bottom: var(--g-space-3);
+      }
+
+      .segmented .button {
+        border: 0;
+        border-radius: 0;
+        background: var(--g-bg-surface);
+      }
+
+      .segmented .button + .button {
+        border-left: 1px solid var(--g-border);
+      }
+
+      .segmented .button[aria-pressed="true"] {
+        background: var(--g-bg-elevated);
+      }
+
+      .metric-card[hidden] {
+        display: none;
+      }
+
+      @container (max-width: 1280px) {
+        .comparison-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .layout-toggle {
+          display: none;
+        }
+      }
+
+      @container (max-width: 760px) {
+        .app-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .side-nav {
+          display: none;
+        }
+
+        .page {
+          padding: var(--g-space-4);
+        }
+
+        .page-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .threshold-list {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="dark">
+    <main class="product-root">
+      <div class="app-shell">
+        <nav class="side-nav" aria-label="Product navigation">
+          <p class="side-nav-title">Synthetic Monitoring</p>
+          <ul class="side-nav-list">
+            <li><a href="#">Checks</a></li>
+            <li><a href="#" aria-current="page">Check #182 · HTTP</a></li>
+            <li><a href="#">Probes</a></li>
+            <li><a href="#">Alerts</a></li>
+          </ul>
+        </nav>
+        <section class="page" aria-labelledby="page-title">
+          <header class="page-header">
+            <div>
+              <h1 class="page-title" id="page-title">
+                Check health metrics
+              </h1>
+              <div class="secondary">
+                api.example.com · HTTP · Last 24 hours · Across selected
+                probes
+              </div>
+            </div>
+            <div class="cluster">
+              <div
+                class="layout-toggle"
+                role="group"
+                aria-label="Comparison layout"
+              >
+                <button
+                  class="button"
+                  type="button"
+                  data-layout-value="side-by-side"
+                  aria-pressed="true"
+                >
+                  Side by side
+                </button>
+                <button
+                  class="button"
+                  type="button"
+                  data-layout-value="stacked"
+                  aria-pressed="false"
+                >
+                  Stacked
+                </button>
+              </div>
+            </div>
+          </header>
+          <section
+            class="comparison-grid"
+            data-layout="side-by-side"
+            aria-label="Product directions"
+          >
+            <!-- Direction A -->
+            <article class="mock-direction" aria-labelledby="direction-a-title">
+              <header class="direction-header">
+                <h2 class="direction-title" id="direction-a-title">
+                  Inline status
+                </h2>
+              </header>
+
+              <div class="cluster" style="margin-bottom: var(--g-space-3)">
+                <button
+                  class="button"
+                  type="button"
+                  id="dir-a-legend-toggle"
+                  aria-expanded="false"
+                  aria-controls="dir-a-legend-panel"
+                >
+                  Icon legend
+                </button>
+              </div>
+              <div id="dir-a-legend-panel" class="legend-panel" hidden>
+                <ul class="legend-list">
+                  <li>
+                    <span class="status-icon status--good" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </span>
+                    Nominal — within target
+                  </li>
+                  <li>
+                    <span class="status-icon status--warning" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </span>
+                    Warning — approaching threshold
+                  </li>
+                  <li>
+                    <span class="status-icon status--bad" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    </span>
+                    Critical — action recommended
+                  </li>
+                </ul>
+              </div>
+
+              <div class="metric-mini-grid">
+                <!-- Uptime: good -->
+                <article class="metric-card">
+                  <div class="metric-card-header">
+                    <div class="metric-name-group">
+                      <span class="status-icon status--good" role="img" aria-label="Nominal status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      </span>
+                      <span class="name-text">Uptime</span>
+                    </div>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Uptime">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Uptime">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value status--good">99.98%</strong>
+                  </div>
+                  <div class="metric-sub">Target ≥ 99.9% · Across selected probes</div>
+                  <div class="metric-sparkline status--good" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,18 5,17 10,18 15,16 20,17 25,15 30,16 35,14 40,16 45,15 50,15 55,14 60,16 65,15 70,17 75,15 80,16 85,14 90,15 95,14 100,15"/></svg>
+                  </div>
+                </article>
+
+                <!-- Reachability: warning -->
+                <article class="metric-card">
+                  <div class="metric-card-header">
+                    <div class="metric-name-group">
+                      <span class="status-icon status--warning" role="img" aria-label="Warning status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      </span>
+                      <span class="name-text">Reachability</span>
+                    </div>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Reachability">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Reachability">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value status--warning">98.6%</strong>
+                  </div>
+                  <div class="metric-sub">Target ≥ 99.5% · Across selected probes</div>
+                  <div class="metric-sparkline status--warning" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,10 5,12 10,11 15,14 20,13 25,16 30,15 35,18 40,17 45,19 50,18 55,20 60,19 65,20 70,19 75,20 80,19 85,20 90,20 95,19 100,20"/></svg>
+                  </div>
+                </article>
+
+                <!-- Average latency: warning -->
+                <article class="metric-card">
+                  <div class="metric-card-header">
+                    <div class="metric-name-group">
+                      <span class="status-icon status--warning" role="img" aria-label="Warning status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      </span>
+                      <span class="name-text">Average latency</span>
+                    </div>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Average latency">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Average latency">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value status--warning">0.47 s</strong>
+                  </div>
+                  <div class="metric-sub">Target &lt; 0.30 s · Across selected probes</div>
+                  <div class="metric-sparkline status--warning" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,20 5,15 10,18 15,10 20,14 25,8 30,12 35,6 40,16 45,9 50,13 55,7 60,15 65,11 70,18 75,9 80,14 85,6 90,12 95,8 100,13"/></svg>
+                  </div>
+                </article>
+
+                <!-- Failed checks: critical -->
+                <article class="metric-card">
+                  <div class="metric-card-header">
+                    <div class="metric-name-group">
+                      <span class="status-icon status--bad" role="img" aria-label="Critical status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                      </span>
+                      <span class="name-text">Failed checks</span>
+                    </div>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Failed checks">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Failed checks">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value status--bad">18</strong>
+                  </div>
+                  <div class="metric-sub">of 1,440 checks · Target 0</div>
+                  <div class="metric-sparkline status--bad" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,22 5,21 10,22 15,20 20,18 25,19 30,10 35,14 40,6 45,12 50,9 55,15 60,8 65,16 70,7 75,17 80,9 85,13 90,4 95,11 100,6"/></svg>
+                  </div>
+                </article>
+              </div>
+            </article>
+
+            <!-- Direction B -->
+            <article class="mock-direction" aria-labelledby="direction-b-title">
+              <header class="direction-header">
+                <h2 class="direction-title" id="direction-b-title">
+                  Status-led cards
+                </h2>
+              </header>
+
+              <div class="metric-mini-grid">
+                <!-- Uptime: good -->
+                <article class="metric-card">
+                  <div class="metric-card-header">
+                    <span class="status-pill status-pill--good" role="img" aria-label="Nominal status">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      Nominal
+                    </span>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Uptime">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Uptime">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-name-group"><span class="name-text">Uptime</span></div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value">99.98%</strong>
+                    <span class="metric-sub">Across selected probes</span>
+                  </div>
+                  <button class="link-button" type="button" id="dir-b-threshold-toggle-uptime" aria-expanded="false" aria-controls="dir-b-threshold-panel-uptime">
+                    View thresholds
+                  </button>
+                  <div id="dir-b-threshold-panel-uptime" class="threshold-panel" hidden>
+                    <dl class="threshold-list">
+                      <div><dt>Target</dt><dd>≥ 99.9%</dd></div>
+                      <div><dt>Warning</dt><dd>99.5–99.9%</dd></div>
+                      <div><dt>Critical</dt><dd>&lt; 99.5%</dd></div>
+                    </dl>
+                  </div>
+                  <div class="metric-sparkline status--good" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,18 5,17 10,18 15,16 20,17 25,15 30,16 35,14 40,16 45,15 50,15 55,14 60,16 65,15 70,17 75,15 80,16 85,14 90,15 95,14 100,15"/></svg>
+                  </div>
+                </article>
+
+                <!-- Reachability: warning -->
+                <article class="metric-card">
+                  <div class="metric-card-header">
+                    <span class="status-pill status-pill--warning" role="img" aria-label="Warning status">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      Warning
+                    </span>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Reachability">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Reachability">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-name-group"><span class="name-text">Reachability</span></div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value">98.6%</strong>
+                    <span class="metric-sub">Across selected probes</span>
+                  </div>
+                  <button class="link-button" type="button" id="dir-b-threshold-toggle-reachability" aria-expanded="false" aria-controls="dir-b-threshold-panel-reachability">
+                    View thresholds
+                  </button>
+                  <div id="dir-b-threshold-panel-reachability" class="threshold-panel" hidden>
+                    <dl class="threshold-list">
+                      <div><dt>Target</dt><dd>≥ 99.5%</dd></div>
+                      <div><dt>Warning</dt><dd>98.0–99.5%</dd></div>
+                      <div><dt>Critical</dt><dd>&lt; 98.0%</dd></div>
+                    </dl>
+                  </div>
+                  <div class="metric-sparkline status--warning" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,10 5,12 10,11 15,14 20,13 25,16 30,15 35,18 40,17 45,19 50,18 55,20 60,19 65,20 70,19 75,20 80,19 85,20 90,20 95,19 100,20"/></svg>
+                  </div>
+                </article>
+
+                <!-- Average latency: warning -->
+                <article class="metric-card">
+                  <div class="metric-card-header">
+                    <span class="status-pill status-pill--warning" role="img" aria-label="Warning status">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      Warning
+                    </span>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Average latency">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Average latency">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-name-group"><span class="name-text">Average latency</span></div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value">0.47 s</strong>
+                    <span class="metric-sub">Across selected probes</span>
+                  </div>
+                  <button class="link-button" type="button" id="dir-b-threshold-toggle-latency" aria-expanded="false" aria-controls="dir-b-threshold-panel-latency">
+                    View thresholds
+                  </button>
+                  <div id="dir-b-threshold-panel-latency" class="threshold-panel" hidden>
+                    <dl class="threshold-list">
+                      <div><dt>Target</dt><dd>&lt; 0.30 s</dd></div>
+                      <div><dt>Warning</dt><dd>0.30–0.50 s</dd></div>
+                      <div><dt>Critical</dt><dd>&gt; 0.50 s</dd></div>
+                    </dl>
+                  </div>
+                  <div class="metric-sparkline status--warning" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,20 5,15 10,18 15,10 20,14 25,8 30,12 35,6 40,16 45,9 50,13 55,7 60,15 65,11 70,18 75,9 80,14 85,6 90,12 95,8 100,13"/></svg>
+                  </div>
+                </article>
+
+                <!-- Failed checks: critical -->
+                <article class="metric-card">
+                  <div class="metric-card-header">
+                    <span class="status-pill status-pill--critical" role="img" aria-label="Critical status">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                      Critical
+                    </span>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Failed checks">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Failed checks">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-name-group"><span class="name-text">Failed checks</span></div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value">18</strong>
+                    <span class="metric-sub">of 1,440 checks</span>
+                  </div>
+                  <button class="link-button" type="button" id="dir-b-threshold-toggle-failed" aria-expanded="false" aria-controls="dir-b-threshold-panel-failed">
+                    View thresholds
+                  </button>
+                  <div id="dir-b-threshold-panel-failed" class="threshold-panel" hidden>
+                    <dl class="threshold-list">
+                      <div><dt>Target</dt><dd>0</dd></div>
+                      <div><dt>Warning</dt><dd>1–9</dd></div>
+                      <div><dt>Critical</dt><dd>≥ 10</dd></div>
+                    </dl>
+                  </div>
+                  <div class="metric-sparkline status--bad" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,22 5,21 10,22 15,20 20,18 25,19 30,10 35,14 40,6 45,12 50,9 55,15 60,8 65,16 70,7 75,17 80,9 85,13 90,4 95,11 100,6"/></svg>
+                  </div>
+                </article>
+              </div>
+            </article>
+
+            <!-- Direction C -->
+            <article class="mock-direction" aria-labelledby="direction-c-title">
+              <header class="direction-header">
+                <h2 class="direction-title" id="direction-c-title">
+                  Triage rollup
+                </h2>
+              </header>
+
+              <div class="rollup-bar" role="status">
+                <span class="rollup-item status--bad">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  1 critical
+                </span>
+                <span class="rollup-item status--warning">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  2 warning
+                </span>
+                <span class="rollup-item status--good">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  1 nominal
+                </span>
+              </div>
+
+              <div class="segmented" role="group" aria-label="Filter metrics by health">
+                <button class="button" type="button" id="dir-c-filter-all" aria-pressed="true">
+                  All metrics (4)
+                </button>
+                <button class="button" type="button" id="dir-c-filter-attention" aria-pressed="false">
+                  Needs attention (3)
+                </button>
+              </div>
+
+              <div class="metric-mini-grid" id="dir-c-metric-grid">
+                <!-- Uptime: good -->
+                <article class="metric-card" data-status="good">
+                  <div class="metric-card-header">
+                    <div class="metric-name-group">
+                      <span class="status-icon status--good" role="img" aria-label="Nominal status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      </span>
+                      <span class="name-text">Uptime</span>
+                    </div>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Uptime">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Uptime">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value status--good">99.98%</strong>
+                  </div>
+                  <div class="metric-sub">Across selected probes</div>
+                  <div class="metric-sparkline status--good" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,18 5,17 10,18 15,16 20,17 25,15 30,16 35,14 40,16 45,15 50,15 55,14 60,16 65,15 70,17 75,15 80,16 85,14 90,15 95,14 100,15"/></svg>
+                  </div>
+                </article>
+
+                <!-- Reachability: warning -->
+                <article class="metric-card" data-status="warning">
+                  <div class="metric-card-header">
+                    <div class="metric-name-group">
+                      <span class="status-icon status--warning" role="img" aria-label="Warning status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      </span>
+                      <span class="name-text">Reachability</span>
+                    </div>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Reachability">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Reachability">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value status--warning">98.6%</strong>
+                  </div>
+                  <div class="metric-sub">Across selected probes</div>
+                  <div class="metric-sparkline status--warning" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,10 5,12 10,11 15,14 20,13 25,16 30,15 35,18 40,17 45,19 50,18 55,20 60,19 65,20 70,19 75,20 80,19 85,20 90,20 95,19 100,20"/></svg>
+                  </div>
+                </article>
+
+                <!-- Average latency: warning -->
+                <article class="metric-card" data-status="warning">
+                  <div class="metric-card-header">
+                    <div class="metric-name-group">
+                      <span class="status-icon status--warning" role="img" aria-label="Warning status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      </span>
+                      <span class="name-text">Average latency</span>
+                    </div>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Average latency">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Average latency">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value status--warning">0.47 s</strong>
+                  </div>
+                  <div class="metric-sub">Across selected probes</div>
+                  <div class="metric-sparkline status--warning" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,20 5,15 10,18 15,10 20,14 25,8 30,12 35,6 40,16 45,9 50,13 55,7 60,15 65,11 70,18 75,9 80,14 85,6 90,12 95,8 100,13"/></svg>
+                  </div>
+                </article>
+
+                <!-- Failed checks: critical -->
+                <article class="metric-card" data-status="critical">
+                  <div class="metric-card-header">
+                    <div class="metric-name-group">
+                      <span class="status-icon status--bad" role="img" aria-label="Critical status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                      </span>
+                      <span class="name-text">Failed checks</span>
+                    </div>
+                    <div class="metric-actions">
+                      <button class="icon-button" type="button" aria-label="About Failed checks">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                      <button class="icon-button" type="button" aria-label="Set up alert for Failed checks">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="metric-value-row">
+                    <strong class="metric-value status--bad">18</strong>
+                  </div>
+                  <div class="metric-sub">of 1,440 checks</div>
+                  <div class="metric-sparkline status--bad" aria-hidden="true">
+                    <svg width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="0,22 5,21 10,22 15,20 20,18 25,19 30,10 35,14 40,6 45,12 50,9 55,15 60,8 65,16 70,7 75,17 80,9 85,13 90,4 95,11 100,6"/></svg>
+                  </div>
+                </article>
+              </div>
+            </article>
+          </section>
+        </section>
+      </div>
+    </main>
+    <script>
+      // Comparison layout toggle (shared across all three directions).
+      const comparisonGrid = document.querySelector(".comparison-grid")
+      const layoutButtons = document.querySelectorAll("[data-layout-value]")
+
+      if (comparisonGrid) {
+        layoutButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            comparisonGrid.dataset.layout = button.dataset.layoutValue
+            layoutButtons.forEach((option) => {
+              option.setAttribute("aria-pressed", String(option === button))
+            })
+          })
+        })
+      }
+
+      // Direction A: icon legend disclosure.
+      const legendToggle = document.getElementById("dir-a-legend-toggle")
+      const legendPanel = document.getElementById("dir-a-legend-panel")
+      if (legendToggle && legendPanel) {
+        legendToggle.addEventListener("click", () => {
+          const expanded = legendToggle.getAttribute("aria-expanded") === "true"
+          legendToggle.setAttribute("aria-expanded", String(!expanded))
+          legendPanel.hidden = expanded
+        })
+      }
+
+      // Direction B: per-card threshold disclosures.
+      document.querySelectorAll('[id^="dir-b-threshold-toggle-"]').forEach((toggle) => {
+        const panel = document.getElementById(toggle.getAttribute("aria-controls"))
+        if (!panel) return
+        toggle.addEventListener("click", () => {
+          const expanded = toggle.getAttribute("aria-expanded") === "true"
+          toggle.setAttribute("aria-expanded", String(!expanded))
+          panel.hidden = expanded
+        })
+      })
+
+      // Direction C: needs-attention filter.
+      const filterAll = document.getElementById("dir-c-filter-all")
+      const filterAttention = document.getElementById("dir-c-filter-attention")
+      const cCards = document.querySelectorAll("#dir-c-metric-grid .metric-card")
+      if (filterAll && filterAttention && cCards.length) {
+        filterAll.addEventListener("click", () => {
+          filterAll.setAttribute("aria-pressed", "true")
+          filterAttention.setAttribute("aria-pressed", "false")
+          cCards.forEach((card) => {
+            card.hidden = false
+          })
+        })
+        filterAttention.addEventListener("click", () => {
+          filterAll.setAttribute("aria-pressed", "false")
+          filterAttention.setAttribute("aria-pressed", "true")
+          cCards.forEach((card) => {
+            card.hidden = card.dataset.status === "good"
+          })
+        })
+      }
+    </script>
+  </body>
+</html>
