@@ -78,10 +78,12 @@ function exampleUserLabelPairs(mode: LabelModeValue): Array<{ key: string; value
 function useProbeSuccessLabels(): {
   labels: Record<string, string> | undefined;
   loading: boolean;
+  failed: boolean;
 } {
   const metricsDS = useMetricsDS();
   const [labels, setLabels] = useState<Record<string, string> | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     if (!metricsDS?.url) {
@@ -89,6 +91,7 @@ function useProbeSuccessLabels(): {
     }
     let cancelled = false;
     setLoading(true);
+    setFailed(false);
     const { start, end } = getStartEnd();
     try {
       queryInstantMetric<InstantMetric>({
@@ -104,7 +107,11 @@ function useProbeSuccessLabels(): {
           }
         })
         .catch(() => {
-          // Silently swallow — preview is best-effort
+          // The preview is best-effort, but a failed query must not be presented
+          // as an empty result — record it so the hint can say so.
+          if (!cancelled) {
+            setFailed(true);
+          }
         })
         .finally(() => {
           if (!cancelled) {
@@ -112,8 +119,9 @@ function useProbeSuccessLabels(): {
           }
         });
     } catch {
-      // Silently swallow — preview is best-effort (e.g. test environments without runtime)
+      // e.g. test environments without runtime
       if (!cancelled) {
+        setFailed(true);
         setLoading(false);
       }
     }
@@ -122,7 +130,7 @@ function useProbeSuccessLabels(): {
     };
   }, [metricsDS]);
 
-  return { labels, loading };
+  return { labels, loading, failed };
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -150,6 +158,7 @@ interface SeriesPreviewProps {
   systemLabels: string[];
   liveLabels?: Record<string, string>;
   liveLoading?: boolean;
+  liveFailed?: boolean;
 }
 
 /**
@@ -157,7 +166,7 @@ interface SeriesPreviewProps {
  * 1. A live probe_success series with real system labels from the tenant's data.
  * 2. A constructed example showing how user-defined labels appear in the current mode.
  */
-function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading }: SeriesPreviewProps) {
+function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading, liveFailed }: SeriesPreviewProps) {
   // System labels from the live series: only keys in the API's reserved set.
   // Anything else on the series (user-defined labels, or agent-emitted labels
   // that are deliberately not reserved) is omitted here — the constructed
@@ -206,7 +215,10 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading }: 
       {/* Tag pills — system labels */}
       <Text element="p" variant="bodySmall" color="secondary">
         System labels {liveLoading && <Spinner size="xs" inline />}
-        {!liveLoading && !liveLabels && (
+        {!liveLoading && !liveLabels && liveFailed && (
+          <span className={styles.sourceHint}> (example — the live preview query failed)</span>
+        )}
+        {!liveLoading && !liveLabels && !liveFailed && (
           <span className={styles.sourceHint}> (example — no live data found)</span>
         )}
         {!liveLoading && liveLabels && (
@@ -255,7 +267,7 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading }: 
 export function LabelMigrationTab() {
   const smDS = useSMDS();
   const styles = useStyles2(getStyles);
-  const { labels: liveLabels, loading: liveLoading } = useProbeSuccessLabels();
+  const { labels: liveLabels, loading: liveLoading, failed: liveFailed } = useProbeSuccessLabels();
 
   const [state, setState] = useState<LabelModeState | undefined>(undefined);
   const [loading, setLoading] = useState(false);
@@ -461,6 +473,7 @@ export function LabelMigrationTab() {
               systemLabels={state.systemLabels}
               liveLabels={liveLabels}
               liveLoading={liveLoading}
+              liveFailed={liveFailed}
             />
           </ConfigContent.Section>
 
