@@ -38,7 +38,6 @@ export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
   const { isFeatureEnabled } = useFeatureFlagContext();
-  const { isAdmin } = getUserPermissions();
 
   const page = urlSearchParams.get('page');
   useLimits();
@@ -137,7 +136,7 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
-        {isAdmin && isFeatureEnabled(FeatureName.LabelMigration) && (
+        {isFeatureEnabled(FeatureName.LabelMigration) && (
           <Route path="label-migration" element={<LabelMigrationTab />} />
         )}
         {isFeatureEnabled(FeatureName.SecretsManagement) && <Route path="secrets" element={<SecretsManagementTab />} />}

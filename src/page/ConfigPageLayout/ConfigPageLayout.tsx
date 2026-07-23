@@ -6,7 +6,6 @@ import { PluginPage } from '@grafana/runtime';
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
-import { getUserPermissions } from 'data/permissions';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 
 function getConfigTabUrl(tab = '/') {
@@ -29,7 +28,6 @@ function useActiveTab(route: AppRoutes) {
 export function ConfigPageLayout() {
   const activeTab = useActiveTab(AppRoutes.Config);
   const { isFeatureEnabled } = useFeatureFlagContext();
-  const { isAdmin } = getUserPermissions();
 
   const pageNav: NavModelItem = useMemo(() => {
     const navModel: NavModelItem = {
@@ -61,9 +59,9 @@ export function ConfigPageLayout() {
       ],
     };
 
-    // Label Migration is feature-flagged for rollout; within enabled stacks the
-    // tab is visible to admins only, since changing the mode is an admin operation.
-    if (isAdmin && isFeatureEnabled(FeatureName.LabelMigration)) {
+    // Label Migration is feature-flagged for rollout. The tab itself limits
+    // mode changes to admins and shows a contact-admin notice otherwise.
+    if (isFeatureEnabled(FeatureName.LabelMigration)) {
       navModel.children!.push({
         icon: 'tag-alt',
         text: 'Label Migration',
@@ -82,7 +80,7 @@ export function ConfigPageLayout() {
       });
     }
     return navModel;
-  }, [activeTab, isAdmin, isFeatureEnabled]);
+  }, [activeTab, isFeatureEnabled]);
 
   return (
     <PluginPage pageNav={pageNav}>
