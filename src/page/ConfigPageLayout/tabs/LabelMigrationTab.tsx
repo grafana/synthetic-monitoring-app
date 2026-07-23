@@ -92,7 +92,7 @@ function useProbeSuccessLabels(): {
   const { data, isLoading, isError } = useQuery({
     // getStartEnd() is time-dependent, so it can't be part of the query key
     // without causing continuous refetches.
-     
+
     queryKey: ['labelMigrationSeriesPreview', query, url],
     queryFn: () => queryInstantMetric<InstantMetric>({ url, query, ...getStartEnd() }),
     enabled: Boolean(metricsDS),
@@ -295,9 +295,10 @@ export function LabelMigrationTab() {
     }
   };
 
+  // Deliberately leaves any previous attempt's error visible: the alerts are
+  // only replaced by a new attempt's outcome (in applyMode) or dismissed
+  // explicitly, so cancelling the modal doesn't discard rename guidance.
   const openConfirm = (targetMode: number, title: string, body: string, confirmText = 'Confirm') => {
-    setUpdateError(undefined);
-    setCollisionError(undefined);
     setConfirmModal({ isOpen: true, targetMode, title, body, confirmText });
   };
 

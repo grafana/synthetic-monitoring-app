@@ -274,14 +274,21 @@ describe('LabelMigrationTab', () => {
     expect(putCount).toBe(0);
   });
 
-  it('clears a previous collision error when the confirm modal is reopened', async () => {
+  it('keeps the collision list through reopen and cancel, clearing it on the next attempt', async () => {
     runTestAsSMAdmin();
+    let calls = 0;
     server.use(
       apiRoute('setLabelMode', {
-        result: () => ({
-          status: 409,
-          json: { msg: 'labels conflict', collidingLabels: ['probe'] },
-        }),
+        result: () => {
+          calls++;
+          if (calls === 1) {
+            return {
+              status: 409,
+              json: { msg: 'labels conflict', collidingLabels: ['probe'] },
+            };
+          }
+          return { json: { ...TENANT_LABEL_MODE, mode: 1 } };
+        },
       })
     );
     await renderTab();
@@ -289,9 +296,18 @@ describe('LabelMigrationTab', () => {
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
     await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
-    // Reopening the confirm modal clears the stale collision alert.
+    // Reopening and cancelling must not discard the rename guidance.
     await userEvent.click(screen.getByRole('button', { name: /Enable dual-write/i }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Cancel/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
+    // A new attempt replaces the outcome: this one succeeds and the alert clears.
+    await userEvent.click(screen.getByRole('button', { name: /Enable dual-write/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
+    await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
     expect(screen.queryByText(/Label name conflicts/i)).not.toBeInTheDocument();
   });
 
