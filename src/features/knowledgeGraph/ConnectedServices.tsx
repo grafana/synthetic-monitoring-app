@@ -57,7 +57,7 @@ interface ConnectedServicesProps {
 
 /**
  * Renders the check's Knowledge Graph service neighbourhood as an inline dashboard section (the
- * check, the Service it MONITORS, and that Service's one-hop CALLS neighbours in both directions).
+ * check, the Service linked via MONITORED_BY, and that Service's one-hop CALLS neighbours in both directions).
  * The node graph carries health arcs and insight counts, so red-ringed neighbours surface as RCA
  * hints without leaving the dashboard.
  *

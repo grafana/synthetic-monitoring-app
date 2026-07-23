@@ -26,7 +26,7 @@ describe('buildServiceNeighbourhoodQuery', () => {
     const query = buildServiceNeighbourhoodQuery('vika http check.__http://grafana.com');
 
     expect(query).toContain(
-      'MATCH (sy:SyntheticCheck {name: "vika http check.__http://grafana.com"})-[:MONITORS]->(s1:Service)'
+      'MATCH (sy:SyntheticCheck {name: "vika http check.__http://grafana.com"})<-[:MONITORED_BY]-(s1:Service)'
     );
     // outbound dependencies
     expect(query).toContain('OPTIONAL MATCH (s1)-[:CALLS]->(downstream:Service)');
