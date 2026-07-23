@@ -37,7 +37,8 @@ export function escapeCypher(value: string): string {
 /**
  * Builds the Cypher query for a check's service neighbourhood.
  *
- * Starting from the SyntheticCheck entity, it walks the MONITORS relationship to the linked
+ * Starting from the SyntheticCheck entity, it walks the MONITORED_BY relationship (Service
+ * MONITORED_BY check — the direction the KG's insight propagation expects) to the linked
  * Service, then one hop of CALLS in both directions:
  * - outbound `(s1)-[:CALLS]->(downstream)` — services the monitored service depends on
  * - inbound `(upstream)-[:CALLS]->(s1)` — services that depend on the monitored service
@@ -49,7 +50,7 @@ export function escapeCypher(value: string): string {
  */
 export function buildServiceNeighbourhoodQuery(checkEntityName: string): string {
   return [
-    `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})-[:MONITORS]->(s1:Service)`,
+    `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[:MONITORED_BY]-(s1:Service)`,
     `OPTIONAL MATCH (s1)-[:CALLS]->(downstream:Service)`,
     `OPTIONAL MATCH (upstream:Service)-[:CALLS]->(s1)`,
     `RETURN sy, s1, downstream, upstream`,

@@ -59,7 +59,7 @@ export function KnowledgeGraphServiceLink() {
       <TextLink href={`/a/${KG_PLUGIN_ID}/`} external variant="bodySmall">
         Knowledge Graph
       </TextLink>
-      . This enables the MONITORS relationship in the entity graph.
+      . This enables the MONITORED_BY relationship in the entity graph.
     </>
   );
 
