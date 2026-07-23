@@ -5,9 +5,18 @@ import { TENANT_LABEL_MODE } from 'test/fixtures/tenants';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { runTestAsSMAdmin } from 'test/utils';
+import { runTestAsSMAdmin, runTestAsSMViewer } from 'test/utils';
+
+import { queryInstantMetric } from 'data/utils';
 
 import { LabelMigrationTab } from './LabelMigrationTab';
+
+jest.mock('data/utils', () => ({
+  ...jest.requireActual('data/utils'),
+  queryInstantMetric: jest.fn(() => Promise.reject(new Error('no live metrics in tests'))),
+}));
+
+const queryInstantMetricMock = queryInstantMetric as jest.Mock;
 
 async function renderTab() {
   const result = render(<LabelMigrationTab />);
@@ -79,7 +88,7 @@ describe('LabelMigrationTab', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /^Finalize$/i })).toBeInTheDocument());
   });
 
-  it('shows completion, silent-drop warning, and revert to dual-write in UNPREFIXED mode', async () => {
+  it('shows completion, enforcement notice, and revert to dual-write in UNPREFIXED mode', async () => {
     runTestAsSMAdmin();
     server.use(
       apiRoute('getLabelMode', {
@@ -88,8 +97,10 @@ describe('LabelMigrationTab', () => {
     );
     await renderTab();
     await waitFor(() => expect(screen.getByText(/Migration complete/i)).toBeInTheDocument());
-    // Silent-drop warning is now shown in UNPREFIXED mode
-    expect(screen.getByText(/silently dropped/i)).toBeInTheDocument();
+    // Reserved names are rejected at write time once enforcement is active;
+    // the copy must not tell migrated tenants to audit for silent drops.
+    expect(screen.getByText(/Reserved label names are enforced/i)).toBeInTheDocument();
+    expect(screen.getByText(/rejected when creating or updating checks and probes/i)).toBeInTheDocument();
     // Finalization is reversible: the tenant can restore dual-write, but never prefixed-only.
     expect(screen.getByRole('button', { name: /Revert to dual-write/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Enable dual-write/i })).not.toBeInTheDocument();
@@ -199,6 +210,134 @@ describe('LabelMigrationTab', () => {
     await userEvent.click(toggle);
     // The reserved labels list renders names inside <code> tags
     await waitFor(() => expect(screen.getAllByText('probe', { selector: 'code' }).length).toBeGreaterThan(0));
+  });
+
+  it('completes the PREFIXED → DUAL_WRITE transition end to end', async () => {
+    runTestAsSMAdmin();
+    const putBodies: Array<{ mode: number }> = [];
+    server.use(
+      apiRoute('setLabelMode', {}, async (req) => {
+        putBodies.push((await req.clone().json()) as { mode: number });
+      })
+    );
+    await renderTab();
+    await userEvent.click(await screen.findByRole('button', { name: /Enable dual-write/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
+    // The PUT carried the requested mode and the UI lands in the dual-write state.
+    await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
+    expect(putBodies).toEqual([{ mode: 1 }]);
+    expect(screen.getByRole('button', { name: /Finalize migration/i })).toBeInTheDocument();
+  });
+
+  it('completes the DUAL_WRITE → UNPREFIXED transition end to end', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('getLabelMode', {
+        result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+      })
+    );
+    await renderTab();
+    await userEvent.click(await screen.findByRole('button', { name: /Finalize migration/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Finalize$/i }));
+    await waitFor(() => expect(screen.getByText(/Migration complete/i)).toBeInTheDocument());
+  });
+
+  it('completes the UNPREFIXED → DUAL_WRITE revert end to end', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('getLabelMode', {
+        result: () => ({ json: { mode: 2, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+      })
+    );
+    await renderTab();
+    await userEvent.click(await screen.findByRole('button', { name: /Revert to dual-write/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Revert to dual-write$/i }));
+    await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
+  });
+
+  it('does not fire a PUT when the confirm modal is cancelled', async () => {
+    runTestAsSMAdmin();
+    let putCount = 0;
+    server.use(
+      apiRoute('setLabelMode', {}, () => {
+        putCount++;
+      })
+    );
+    await renderTab();
+    await userEvent.click(await screen.findByRole('button', { name: /Enable dual-write/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Cancel/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(putCount).toBe(0);
+  });
+
+  it('clears a previous collision error when the confirm modal is reopened', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => ({
+          status: 409,
+          json: { msg: 'labels conflict', collidingLabels: ['probe'] },
+        }),
+      })
+    );
+    await renderTab();
+    await userEvent.click(await screen.findByRole('button', { name: /Enable dual-write/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
+    await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
+    // Reopening the confirm modal clears the stale collision alert.
+    await userEvent.click(screen.getByRole('button', { name: /Enable dual-write/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    expect(screen.queryByText(/Label name conflicts/i)).not.toBeInTheDocument();
+  });
+
+  it('shows a contact-admin notice and no action buttons for non-admin users', async () => {
+    runTestAsSMViewer();
+    await renderTab();
+    await waitFor(() => expect(screen.getByText(/Contact your administrator/i)).toBeInTheDocument());
+    // Status remains visible, actions do not.
+    expect(screen.getAllByText('Prefixed (label_foo)').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: /Enable dual-write/i })).not.toBeInTheDocument();
+  });
+
+  it('renders live series labels classified against the reserved set', async () => {
+    runTestAsSMAdmin();
+    queryInstantMetricMock.mockResolvedValueOnce([
+      {
+        metric: {
+          __name__: 'probe_success',
+          probe: 'live-probe',
+          instance: 'live.example',
+          job: 'live-job',
+          env: 'user-value',
+        },
+        value: [1721675000, 1],
+      },
+    ]);
+    await renderTab();
+    await waitFor(() => expect(screen.getByText(/from your most recent probe_success series/i)).toBeInTheDocument());
+    // Reserved keys from the live series render as system labels...
+    expect(screen.getByText('probe="live-probe"')).toBeInTheDocument();
+    // ...while non-reserved live keys (user labels) are omitted entirely.
+    expect(screen.queryByText('env="user-value"')).not.toBeInTheDocument();
+  });
+
+  it('distinguishes an empty live result from a failed preview query', async () => {
+    runTestAsSMAdmin();
+    queryInstantMetricMock.mockResolvedValueOnce([]);
+    await renderTab();
+    await waitFor(() => expect(screen.getByText(/example — no live data found/i)).toBeInTheDocument());
+  });
+
+  it('reports a failed preview query instead of claiming no data', async () => {
+    runTestAsSMAdmin();
+    // The default instant-metrics handler rejects unknown queries with a 400.
+    await renderTab();
+    await waitFor(() => expect(screen.getByText(/example — the live preview query failed/i)).toBeInTheDocument());
   });
 
   it('shows the reserved labels section in UNPREFIXED mode (for auditing)', async () => {

@@ -79,9 +79,11 @@ export const getLabelMode: ApiEntry<{ mode: number; systemLabels: string[] }> = 
 export const setLabelMode: ApiEntry<{ mode: number; systemLabels: string[] }> = {
   route: `/sm/tenant/label-mode`,
   method: `put`,
-  result: () => {
+  result: async (req) => {
+    const body = (await req.clone().json()) as { mode: number };
+
     return {
-      json: TENANT_LABEL_MODE,
+      json: { ...TENANT_LABEL_MODE, mode: body.mode },
     };
   },
 };

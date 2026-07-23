@@ -1,13 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, Collapse, LoadingBar, Space, Spinner, Stack, Tag, Text, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Collapse, Space, Spinner, Stack, Tag, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { InstantMetric } from 'datasource/responses.types';
-import { getStartEnd,queryInstantMetric } from 'data/utils';
+import { getUserPermissions } from 'data/permissions';
+import { useLabelMode, useSetLabelMode } from 'data/useLabelMode';
+import { getStartEnd, queryInstantMetric } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { useSMDS } from 'hooks/useSMDS';
 import { ConfirmModal } from 'components/ConfirmModal';
+import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../ConfigContent';
 
@@ -18,19 +21,12 @@ const LabelMode = {
   UNPREFIXED: 2,
 } as const;
 
-type LabelModeValue = (typeof LabelMode)[keyof typeof LabelMode];
-
-interface LabelModeState {
-  mode: LabelModeValue;
-  systemLabels: string[];
-}
-
 interface CollisionError {
   msg: string;
   collidingLabels: string[];
 }
 
-function modeLabel(mode: LabelModeValue): string {
+function modeLabel(mode: number): string {
   switch (mode) {
     case LabelMode.PREFIXED:
       return 'Prefixed (label_foo)';
@@ -41,6 +37,13 @@ function modeLabel(mode: LabelModeValue): string {
     default:
       return 'Unknown';
   }
+}
+
+function getErrorMessage(err: unknown, fallback: string): string {
+  // fetchAPI rejects with a Grafana FetchError, whose useful content is in
+  // `data` (the API's response body), not in an Error-style `message`.
+  const e = err as { data?: { msg?: string } };
+  return e?.data?.msg ?? fallback;
 }
 
 // ─── Label preview helpers ──────────────────────────────────────────────────
@@ -55,7 +58,7 @@ const EXAMPLE_USER_LABELS: Record<string, string> = {
 };
 
 /** Returns the label key=value pairs as they would appear in the given mode. */
-function exampleUserLabelPairs(mode: LabelModeValue): Array<{ key: string; value: string; dimmed?: boolean }> {
+function exampleUserLabelPairs(mode: number): Array<{ key: string; value: string; dimmed?: boolean }> {
   const pairs: Array<{ key: string; value: string; dimmed?: boolean }> = [];
   for (const [name, val] of Object.entries(EXAMPLE_USER_LABELS)) {
     if (mode === LabelMode.DUAL_WRITE) {
@@ -79,58 +82,29 @@ function useProbeSuccessLabels(): {
   labels: Record<string, string> | undefined;
   loading: boolean;
   failed: boolean;
+  noDatasource: boolean;
 } {
   const metricsDS = useMetricsDS();
-  const [labels, setLabels] = useState<Record<string, string> | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const url = metricsDS?.url ?? '';
+  // topk keeps the response to a single series; the preview only reads one.
+  const query = 'topk(1, probe_success)';
 
-  useEffect(() => {
-    if (!metricsDS?.url) {
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    setFailed(false);
-    const { start, end } = getStartEnd();
-    try {
-      queryInstantMetric<InstantMetric>({
-        url: metricsDS.url,
-        // topk keeps the response to a single series; the preview only reads one.
-        query: 'topk(1, probe_success)',
-        start,
-        end,
-      })
-        .then((results) => {
-          if (!cancelled && results.length > 0) {
-            setLabels(results[0].metric);
-          }
-        })
-        .catch(() => {
-          // The preview is best-effort, but a failed query must not be presented
-          // as an empty result — record it so the hint can say so.
-          if (!cancelled) {
-            setFailed(true);
-          }
-        })
-        .finally(() => {
-          if (!cancelled) {
-            setLoading(false);
-          }
-        });
-    } catch {
-      // e.g. test environments without runtime
-      if (!cancelled) {
-        setFailed(true);
-        setLoading(false);
-      }
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, [metricsDS]);
+  const { data, isLoading, isError } = useQuery({
+    // getStartEnd() is time-dependent, so it can't be part of the query key
+    // without causing continuous refetches.
+     
+    queryKey: ['labelMigrationSeriesPreview', query, url],
+    queryFn: () => queryInstantMetric<InstantMetric>({ url, query, ...getStartEnd() }),
+    enabled: Boolean(metricsDS),
+    retry: false,
+  });
 
-  return { labels, loading, failed };
+  return {
+    labels: data && data.length > 0 ? data[0].metric : undefined,
+    loading: isLoading,
+    failed: isError,
+    noDatasource: !metricsDS,
+  };
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -144,21 +118,35 @@ interface LabelTagProps {
 
 function LabelTag({ name, value, dimmed, styles }: LabelTagProps) {
   return (
-    <Tag
-      name={`${name}="${value}"`}
-      colorIndex={dimmed ? 9 : 3}
-      className={dimmed ? styles.tagDimmed : styles.tag}
-    />
+    <Tag name={`${name}="${value}"`} colorIndex={dimmed ? 9 : 3} className={dimmed ? styles.tagDimmed : styles.tag} />
   );
 }
 
 interface SeriesPreviewProps {
-  mode: LabelModeValue;
+  mode: number;
   styles: ReturnType<typeof getStyles>;
   systemLabels: string[];
   liveLabels?: Record<string, string>;
   liveLoading?: boolean;
   liveFailed?: boolean;
+  noDatasource?: boolean;
+}
+
+function previewSourceHint({
+  liveLabels,
+  liveFailed,
+  noDatasource,
+}: Pick<SeriesPreviewProps, 'liveLabels' | 'liveFailed' | 'noDatasource'>): string {
+  if (liveLabels) {
+    return ' (from your most recent probe_success series)';
+  }
+  if (noDatasource) {
+    return ' (example — no metrics datasource configured)';
+  }
+  if (liveFailed) {
+    return ' (example — the live preview query failed)';
+  }
+  return ' (example — no live data found)';
 }
 
 /**
@@ -166,7 +154,15 @@ interface SeriesPreviewProps {
  * 1. A live probe_success series with real system labels from the tenant's data.
  * 2. A constructed example showing how user-defined labels appear in the current mode.
  */
-function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading, liveFailed }: SeriesPreviewProps) {
+function SeriesPreview({
+  mode,
+  styles,
+  systemLabels,
+  liveLabels,
+  liveLoading,
+  liveFailed,
+  noDatasource,
+}: SeriesPreviewProps) {
   // System labels from the live series: only keys in the API's reserved set.
   // Anything else on the series (user-defined labels, or agent-emitted labels
   // that are deliberately not reserved) is omitted here — the constructed
@@ -185,6 +181,13 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading, li
 
   const userPairs = exampleUserLabelPairs(mode);
 
+  // One combined list so comma separators are correct even when either
+  // side is empty (e.g. a live series with no reserved keys).
+  const seriesPairs = [
+    ...systemLabelKeys.map((k) => ({ key: k, value: systemLabelValues[k], dimmed: false, system: true })),
+    ...userPairs.map((p) => ({ key: p.key, value: p.value, dimmed: Boolean(p.dimmed), system: false })),
+  ];
+
   return (
     <div className={styles.previewCard}>
       {/* Series name */}
@@ -192,16 +195,9 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading, li
         <span className={styles.metricName}>probe_success</span>
         {'{'}
         <span className={styles.labelSetInline}>
-          {systemLabelKeys.map((k, i) => (
-            <span key={k}>
-              <span className={styles.labelKey}>{k}</span>=
-              <span className={styles.labelVal}>&quot;{systemLabelValues[k]}&quot;</span>
-              {i < systemLabelKeys.length - 1 ? ', ' : ''}
-            </span>
-          ))}
-          {userPairs.map((p) => (
+          {seriesPairs.map((p, i) => (
             <span key={`${p.key}-${p.dimmed ? 'dim' : 'bright'}`}>
-              {', '}
+              {i > 0 ? ', ' : ''}
               <span className={p.dimmed ? styles.labelKeyDimmed : styles.labelKey}>{p.key}</span>=
               <span className={p.dimmed ? styles.labelValDimmed : styles.labelVal}>&quot;{p.value}&quot;</span>
             </span>
@@ -214,15 +210,14 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading, li
 
       {/* Tag pills — system labels */}
       <Text element="p" variant="bodySmall" color="secondary">
-        System labels {liveLoading && <Spinner size="xs" inline />}
-        {!liveLoading && !liveLabels && liveFailed && (
-          <span className={styles.sourceHint}> (example — the live preview query failed)</span>
-        )}
-        {!liveLoading && !liveLabels && !liveFailed && (
-          <span className={styles.sourceHint}> (example — no live data found)</span>
-        )}
-        {!liveLoading && liveLabels && (
-          <span className={styles.sourceHint}> (from your most recent probe_success series)</span>
+        System labels{' '}
+        {liveLoading ? (
+          <>
+            <Spinner size="xs" inline />
+            <span className={styles.sourceHint}> (example — loading live data)</span>
+          </>
+        ) : (
+          <span className={styles.sourceHint}>{previewSourceHint({ liveLabels, liveFailed, noDatasource })}</span>
         )}
       </Text>
       <Space v={0.5} />
@@ -237,9 +232,7 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading, li
       {/* Tag pills — user labels */}
       <Text element="p" variant="bodySmall" color="secondary">
         Your check labels
-        {mode === LabelMode.DUAL_WRITE && (
-          <span className={styles.sourceHint}> (un-prefixed + legacy prefixed)</span>
-        )}
+        {mode === LabelMode.DUAL_WRITE && <span className={styles.sourceHint}> (un-prefixed + legacy prefixed)</span>}
       </Text>
       <Space v={0.5} />
       <Stack direction="row" gap={1} wrap="wrap" alignItems="center">
@@ -254,7 +247,7 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading, li
         ))}
         {mode === LabelMode.DUAL_WRITE && (
           <Text variant="bodySmall" color="secondary">
-            ← prefixed form will be removed after finalization
+            the prefixed form will be removed after finalization
           </Text>
         )}
       </Stack>
@@ -265,96 +258,58 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading, li
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function LabelMigrationTab() {
-  const smDS = useSMDS();
   const styles = useStyles2(getStyles);
-  const { labels: liveLabels, loading: liveLoading, failed: liveFailed } = useProbeSuccessLabels();
+  const { isAdmin } = getUserPermissions();
+  const { labels: liveLabels, loading: liveLoading, failed: liveFailed, noDatasource } = useProbeSuccessLabels();
 
-  const [state, setState] = useState<LabelModeState | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
-  const [loadError, setLoadError] = useState<string | undefined>(undefined);
+  const { data: state, isLoading, error: loadError, refetch, isRefetching } = useLabelMode();
+  const setLabelModeMutation = useSetLabelMode();
+
   const [updateError, setUpdateError] = useState<string | undefined>(undefined);
   const [collisionError, setCollisionError] = useState<CollisionError | undefined>(undefined);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
-    targetMode: LabelModeValue;
+    targetMode: number;
     title: string;
     body: string;
     confirmText: string;
   } | null>(null);
   const [systemLabelsOpen, setSystemLabelsOpen] = useState(false);
 
-  const loadMode = useCallback(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError(undefined);
-    smDS
-      .getLabelMode()
-      .then((data) => {
-        if (!cancelled) {
-          setState(data as LabelModeState);
-        }
-      })
-      .catch((err: Error) => {
-        if (!cancelled) {
-          setLoadError(err.message ?? 'Failed to load label migration status');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [smDS]);
+  const busy = setLabelModeMutation.isPending;
 
-  useEffect(loadMode, [loadMode]);
-
-  const applyMode = async (targetMode: LabelModeValue) => {
-    setLoading(true);
+  const applyMode = async (targetMode: number) => {
     setUpdateError(undefined);
     setCollisionError(undefined);
     try {
-      const updated = await smDS.setLabelMode(targetMode);
-      setState(updated as LabelModeState);
+      await setLabelModeMutation.mutateAsync(targetMode);
     } catch (err: unknown) {
-      const e = err as { data?: CollisionError; message?: string; status?: number };
-      if (e?.data?.collidingLabels) {
+      const e = err as { status?: number; data?: CollisionError };
+      if (e?.status === 409 && e?.data?.collidingLabels) {
         setCollisionError(e.data);
       } else {
-        setUpdateError(e?.data?.msg ?? e?.message ?? 'Failed to update label migration mode');
+        setUpdateError(getErrorMessage(err, 'Failed to update label migration mode'));
       }
     } finally {
-      setLoading(false);
       setConfirmModal(null);
     }
   };
 
-  const openConfirm = (
-    targetMode: LabelModeValue,
-    title: string,
-    body: string,
-    confirmText = 'Confirm'
-  ) => {
+  const openConfirm = (targetMode: number, title: string, body: string, confirmText = 'Confirm') => {
     setUpdateError(undefined);
     setCollisionError(undefined);
     setConfirmModal({ isOpen: true, targetMode, title, body, confirmText });
   };
 
   return (
-    <ConfigContent title="Label Migration" loading={loading && !state} ariaLoadingLabel="Loading label mode">
-      {loading && state && <LoadingBar width={300} />}
+    <ConfigContent title="Label Migration" loading={isLoading} ariaLoadingLabel="Loading label mode">
+      {!isAdmin && <ContactAdminAlert title="Contact your administrator to change the label migration mode" />}
 
-      {loadError && (
-        <Alert
-          severity="error"
-          title="Error loading label migration status"
-          onRemove={() => setLoadError(undefined)}
-        >
+      {Boolean(loadError) && !state && (
+        <Alert severity="error" title="Error loading label migration status">
           <Stack direction="column" gap={1}>
-            <Text>{loadError}</Text>
-            <Button variant="secondary" size="sm" onClick={loadMode} disabled={loading}>
+            <Text>{getErrorMessage(loadError, 'Failed to load label migration status')}</Text>
+            <Button variant="secondary" size="sm" onClick={() => refetch()} disabled={isRefetching}>
               Retry
             </Button>
           </Stack>
@@ -378,22 +333,24 @@ export function LabelMigrationTab() {
                   labels. Enabling dual-write is permanent: you cannot return to prefixed-only labels afterwards.
                 </Text>
                 <Space v={2} />
-                <Button
-                  onClick={() =>
-                    openConfirm(
-                      LabelMode.DUAL_WRITE,
-                      'Enable dual-write',
-                      'This will begin writing labels in both prefixed (label_foo) and un-prefixed (foo) form. ' +
-                        'Your existing LBAC rules, alerts, and dashboards will continue to work during this period. ' +
-                        'This step cannot be undone — once dual-write is enabled you cannot return to ' +
-                        'prefixed-only labels.',
-                      'Enable dual-write'
-                    )
-                  }
-                  disabled={loading}
-                >
-                  Enable dual-write
-                </Button>
+                {isAdmin && (
+                  <Button
+                    onClick={() =>
+                      openConfirm(
+                        LabelMode.DUAL_WRITE,
+                        'Enable dual-write',
+                        'This will begin writing labels in both prefixed (label_foo) and un-prefixed (foo) form. ' +
+                          'Your existing LBAC rules, alerts, and dashboards will continue to work during this period. ' +
+                          'This step cannot be undone — once dual-write is enabled you cannot return to ' +
+                          'prefixed-only labels.',
+                        'Enable dual-write'
+                      )
+                    }
+                    disabled={busy}
+                  >
+                    Enable dual-write
+                  </Button>
+                )}
               </>
             )}
 
@@ -403,26 +360,28 @@ export function LabelMigrationTab() {
                   Labels are being written in both <code>label_foo</code> and <code>foo</code> form. Update your LBAC
                   rules, alert routing, queries, and dashboards to use the un-prefixed names, then finalize when ready.
                   <br />
-                  <strong>Note:</strong> dual-write temporarily doubles the label count on{' '}
-                  <code>sm_check_info</code> metrics and log streams.
+                  <strong>Note:</strong> dual-write temporarily doubles the label count on <code>sm_check_info</code>{' '}
+                  metrics and log streams.
                 </Alert>
                 <Space v={2} />
-                <Button
-                  onClick={() =>
-                    openConfirm(
-                      LabelMode.UNPREFIXED,
-                      'Finalize migration',
-                      'This will switch to un-prefixed labels only; the label_ prefix will no longer appear ' +
-                        'on any metrics or logs. Ensure all LBAC rules, alerts, and dashboards have been ' +
-                        'updated before proceeding. If you finalize too early, you can revert to dual-write ' +
-                        'to temporarily restore the prefixed form.',
-                      'Finalize'
-                    )
-                  }
-                  disabled={loading}
-                >
-                  Finalize migration
-                </Button>
+                {isAdmin && (
+                  <Button
+                    onClick={() =>
+                      openConfirm(
+                        LabelMode.UNPREFIXED,
+                        'Finalize migration',
+                        'This will switch to un-prefixed labels only; the label_ prefix will no longer appear ' +
+                          'on any metrics or logs. Ensure all LBAC rules, alerts, and dashboards have been ' +
+                          'updated before proceeding. If you finalize too early, you can revert to dual-write ' +
+                          'to temporarily restore the prefixed form.',
+                        'Finalize'
+                      )
+                    }
+                    disabled={busy}
+                  >
+                    Finalize migration
+                  </Button>
+                )}
               </>
             )}
 
@@ -432,28 +391,68 @@ export function LabelMigrationTab() {
                   Labels now appear without a prefix (e.g. <code>env=&quot;prod&quot;</code>).
                 </Alert>
                 <Space v={1} />
-                <Alert severity="warning" title="Reserved label names are silently ignored">
-                  Any user-defined label whose name matches a reserved system label (such as <code>probe</code>,{' '}
-                  <code>instance</code>, or <code>job</code>) is silently dropped by the agent. Audit your check and
-                  probe labels to ensure none conflict with the reserved names listed below.
+                <Alert severity="info" title="Reserved label names are enforced">
+                  User-defined labels whose names match a reserved system label (such as <code>probe</code>,{' '}
+                  <code>instance</code>, or <code>job</code>) are rejected when creating or updating checks and probes.
+                  Should one slip through, the agent drops it at scrape time as a backstop. The full list of reserved
+                  names is below.
                 </Alert>
                 <Space v={2} />
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    openConfirm(
-                      LabelMode.DUAL_WRITE,
-                      'Revert to dual-write',
-                      'This will temporarily restore the prefixed (label_foo) form alongside the un-prefixed ' +
-                        'form, so that policies still relying on prefixed labels keep working while you finish ' +
-                        'migrating them. You can finalize again at any time.',
-                      'Revert to dual-write'
-                    )
-                  }
-                  disabled={loading}
+                {isAdmin && (
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      openConfirm(
+                        LabelMode.DUAL_WRITE,
+                        'Revert to dual-write',
+                        'This will temporarily restore the prefixed (label_foo) form alongside the un-prefixed ' +
+                          'form, so that policies still relying on prefixed labels keep working while you finish ' +
+                          'migrating them. You can finalize again at any time.',
+                        'Revert to dual-write'
+                      )
+                    }
+                    disabled={busy}
+                  >
+                    Revert to dual-write
+                  </Button>
+                )}
+              </>
+            )}
+
+            {updateError && (
+              <>
+                <Space v={2} />
+                <Alert
+                  severity="error"
+                  title="Failed to update label migration mode"
+                  onRemove={() => setUpdateError(undefined)}
                 >
-                  Revert to dual-write
-                </Button>
+                  <Text>{updateError}</Text>
+                </Alert>
+              </>
+            )}
+
+            {collisionError && (
+              <>
+                <Space v={2} />
+                <Alert
+                  severity="error"
+                  title="Label name conflicts — cannot enable dual-write"
+                  onRemove={() => setCollisionError(undefined)}
+                >
+                  <Text>
+                    The following labels conflict with reserved system names. Rename or remove them from your checks and
+                    probes, then try again:
+                  </Text>
+                  <Space v={1} />
+                  <ul>
+                    {collisionError.collidingLabels.map((name) => (
+                      <li key={name}>
+                        <code>{name}</code>
+                      </li>
+                    ))}
+                  </ul>
+                </Alert>
               </>
             )}
           </ConfigContent.Section>
@@ -474,35 +473,9 @@ export function LabelMigrationTab() {
               liveLabels={liveLabels}
               liveLoading={liveLoading}
               liveFailed={liveFailed}
+              noDatasource={noDatasource}
             />
           </ConfigContent.Section>
-
-          {updateError && (
-            <Alert severity="error" title="Failed to update label migration mode" onRemove={() => setUpdateError(undefined)}>
-              <Text>{updateError}</Text>
-            </Alert>
-          )}
-
-          {collisionError && (
-            <Alert
-              severity="error"
-              title="Label name conflicts — cannot enable dual-write"
-              onRemove={() => setCollisionError(undefined)}
-            >
-              <Text>
-                The following labels conflict with reserved system names. Rename or remove them from your checks and
-                probes, then try again:
-              </Text>
-              <Space v={1} />
-              <ul>
-                {collisionError.collidingLabels.map((name) => (
-                  <li key={name}>
-                    <code>{name}</code>
-                  </li>
-                ))}
-              </ul>
-            </Alert>
-          )}
 
           <ConfigContent.Section title="Reserved system label names">
             <Collapse
@@ -511,9 +484,9 @@ export function LabelMigrationTab() {
               onToggle={() => setSystemLabelsOpen((v) => !v)}
             >
               <Text>
-                The following label names are reserved by the Synthetic Monitoring agent. User-defined labels with
-                these names are rejected at creation time (in dual-write or un-prefixed mode) or silently dropped at
-                scrape time.
+                The following label names are reserved by the Synthetic Monitoring agent. User-defined labels with these
+                names are rejected at creation time (in dual-write or un-prefixed mode) or silently dropped at scrape
+                time.
               </Text>
               <Space v={1} />
               <ul>
