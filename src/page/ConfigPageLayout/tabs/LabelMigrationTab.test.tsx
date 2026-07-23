@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TENANT_LABEL_MODE } from 'test/fixtures/tenants';
 import { apiRoute } from 'test/handlers';
@@ -124,9 +124,9 @@ describe('LabelMigrationTab', () => {
     // Open the confirm modal
     const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
     await userEvent.click(trigger);
-    // Click the confirm button inside the modal (Grafana ConfirmModal uses a specific data-testid)
+    // Click the confirm button inside the modal (it carries the contextual confirmText)
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
-    const confirmButton = screen.getByTestId('data-testid Confirm Modal Danger Button');
+    const confirmButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i });
     await userEvent.click(confirmButton);
     // Collision error renders the collidingLabels list items inside a <code> tag
     await waitFor(() => {
@@ -146,7 +146,7 @@ describe('LabelMigrationTab', () => {
     const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
     await userEvent.click(trigger);
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
-    const confirmButton = screen.getByTestId('data-testid Confirm Modal Danger Button');
+    const confirmButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i });
     await userEvent.click(confirmButton);
     // The failure is reported as an update error carrying the API's message...
     await waitFor(() => expect(screen.getByText(/Failed to update label migration mode/i)).toBeInTheDocument());

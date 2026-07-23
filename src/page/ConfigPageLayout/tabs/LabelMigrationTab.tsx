@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, Collapse, ConfirmModal, LoadingBar, Space, Spinner, Stack, Tag, Text, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Collapse, LoadingBar, Space, Spinner, Stack, Tag, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { InstantMetric } from 'datasource/responses.types';
 import { getStartEnd,queryInstantMetric } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
+import { ConfirmModal } from 'components/ConfirmModal';
 
 import { ConfigContent } from '../ConfigContent';
 
@@ -164,13 +165,13 @@ function SeriesPreview({ mode, styles, systemLabels, liveLabels, liveLoading }: 
   const reserved = new Set(systemLabels);
   const systemLabelKeys = liveLabels
     ? Object.keys(liveLabels).filter((k) => !k.startsWith('__') && reserved.has(k))
-    : ['probe', 'instance', 'job', 'region'];
+    : ['probe', 'instance', 'job', 'config_version'];
 
   const systemLabelValues: Record<string, string> = liveLabels ?? {
     probe: 'dev-local',
     instance: 'grafana.com',
     job: 'my-ping-check',
-    region: 'us',
+    config_version: '1721675000000000000',
   };
 
   const userPairs = exampleUserLabelPairs(mode);
@@ -516,6 +517,7 @@ export function LabelMigrationTab() {
 
       {confirmModal && (
         <ConfirmModal
+          async
           isOpen={confirmModal.isOpen}
           title={confirmModal.title}
           body={confirmModal.body}
