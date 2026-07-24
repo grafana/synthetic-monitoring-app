@@ -3,11 +3,10 @@ import { useAssistant } from '@grafana/assistant';
 import { render as renderWithoutApp, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
-  trackConfigurationViewed,
-  trackCreateIntent,
   trackInboxExposure,
   trackRecommendationReviewed,
   trackReviewEntryClicked,
+  trackSetupWithAssistant,
 } from 'features/tracking/reliabilityInboxEvents';
 import { render } from 'test/render';
 
@@ -28,8 +27,7 @@ jest.mock('features/tracking/reliabilityInboxEvents', () => ({
   trackInboxExposure: jest.fn(),
   trackReviewEntryClicked: jest.fn(),
   trackRecommendationReviewed: jest.fn(),
-  trackConfigurationViewed: jest.fn(),
-  trackCreateIntent: jest.fn(),
+  trackSetupWithAssistant: jest.fn(),
 }));
 
 const HTTP_SUGGESTION: ReliabilitySuggestion = {
@@ -119,33 +117,28 @@ describe('ReliabilityInboxPage', () => {
     });
   });
 
-  it('requires configuration review before offering Create with Assistant', async () => {
-    const { user } = renderPage();
+  it('shows a concise starting hypothesis without an inline configuration editor', async () => {
+    renderPage();
 
-    expect(screen.queryByRole('button', { name: 'Create with Assistant' })).not.toBeInTheDocument();
-    await user.click(await screen.findByRole('button', { name: 'Review configuration' }));
-
-    expect(screen.getByRole('heading', { name: 'Exact proposed check configuration' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'HTTP check for mcp.goagain.dev' })).toBeInTheDocument();
     expect(screen.getByText('https://mcp.goagain.dev/')).toBeInTheDocument();
+    expect(screen.getByText('HTTP · GET')).toBeInTheDocument();
     expect(screen.getByText('Every 1 minute')).toBeInTheDocument();
-    expect(screen.getByText('2 seconds')).toBeInTheDocument();
-    expect(screen.getByText('Response status must be 200')).toBeInTheDocument();
     expect(screen.getByText('Run from the suggested public probe in Frankfurt.')).toBeInTheDocument();
-    expect(screen.getByText('43.2k per 30-day month')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Exact proposed check configuration' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Response status must be 200')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Review configuration' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Set up with Assistant' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create with Assistant' })).not.toBeInTheDocument();
     expect(openAssistant).not.toHaveBeenCalled();
-    expect(trackConfigurationViewed).toHaveBeenCalledWith({
-      opportunityId: 'http-suggestion',
-      checkType: 'http',
-    });
   });
 
-  it('sends only the reviewed structured draft after explicit create intent', async () => {
+  it('hands structured evidence and draft to Assistant as bounded setup guidance', async () => {
     const { user } = renderPage();
 
-    await user.click(await screen.findByRole('button', { name: 'Review configuration' }));
-    await user.click(screen.getByRole('button', { name: 'Create with Assistant' }));
+    await user.click(await screen.findByRole('button', { name: 'Set up with Assistant' }));
 
-    expect(trackCreateIntent).toHaveBeenCalledWith({
+    expect(trackSetupWithAssistant).toHaveBeenCalledWith({
       opportunityId: 'http-suggestion',
       checkType: 'http',
     });
@@ -153,15 +146,25 @@ describe('ReliabilityInboxPage', () => {
       expect.objectContaining({
         origin: 'grafana-synthetic-monitoring-app/reliability-inbox',
         autoSend: true,
-        prompt: expect.stringContaining('Create the reviewed HTTP Synthetic Monitoring check'),
+        prompt: expect.stringMatching(
+          /inspect the real available probes and existing checks.*Ask only for inputs that materially change.*Do not invent credentials.*show all changes in one compact final configuration.*Do not create or save the check until I explicitly confirm/i
+        ),
         context: [
           expect.objectContaining({
             type: 'structured',
-            title: 'Reviewed Synthetic Monitoring check draft: mcp.goagain.dev',
-            data: {
-              name: 'Reviewed Reliability Inbox check draft',
-              task: 'create-reviewed-http-check',
-              reviewedDraft: expect.objectContaining({
+            title: 'Reliability Inbox setup: mcp.goagain.dev',
+            data: expect.objectContaining({
+              name: 'Reliability Inbox guided setup',
+              task: 'guide-suggested-http-check-setup',
+              evidence: expect.objectContaining({
+                target: 'https://mcp.goagain.dev/',
+                requestsPerSecond: 1.6081232492997197,
+                measurementWindow: 'last hour',
+                coverageMatch: expect.objectContaining({
+                  compared: ['observed target', 'URL path', 'HTTP check type'],
+                }),
+              }),
+              suggestedDraft: expect.objectContaining({
                 target: 'https://mcp.goagain.dev/',
                 checkType: 'http',
                 frequencyMs: 60_000,
@@ -169,8 +172,29 @@ describe('ReliabilityInboxPage', () => {
                 validStatusCodes: [200],
                 probeIds: [7],
               }),
+              setupContract: {
+                beginFromSuggestedDraft: true,
+                inspectWhereToolsPermit: ['real available probes', 'existing Synthetic Monitoring checks'],
+                askOnlyWhenMateriallyChanging: [
+                  'cadence',
+                  'timeout',
+                  'regions or probes',
+                  'response assertion',
+                  'alerting intent',
+                ],
+                neverInvent: [
+                  'credentials',
+                  'private-network details',
+                  'DNS resolvers',
+                  'probe assignments',
+                  'business semantics',
+                ],
+                finalReview: 'Show every proposed change in one compact final configuration.',
+                creationPolicy:
+                  'Do not create or save the check until the user explicitly confirms the final configuration.',
+              },
               assistantGuidance: expect.any(String),
-            },
+            }),
           }),
         ],
       })

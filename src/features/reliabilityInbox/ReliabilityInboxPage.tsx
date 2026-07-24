@@ -4,17 +4,12 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Badge, Button, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import {
-  trackConfigurationViewed,
-  trackCreateIntent,
-  trackRecommendationReviewed,
-} from 'features/tracking/reliabilityInboxEvents';
+import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/tracking/reliabilityInboxEvents';
 
-import { ReliabilityOpportunity } from './types';
 import { getUserPermissions } from 'data/permissions';
 
 import { useReliabilityInboxSuggestions } from './data';
-import { formatDuration, formatExecutions } from './model';
+import { formatDuration } from './model';
 
 const ASSISTANT_ORIGIN = 'grafana-synthetic-monitoring-app/reliability-inbox';
 
@@ -25,7 +20,7 @@ export function ReliabilityInboxPage() {
     <PluginPage pageNav={{ text: 'Reliability Inbox' }} renderTitle={() => <ReliabilityInboxTitle />}>
       <div className={styles.page}>
         <p className={styles.subtitle}>
-          Review evidence and the exact proposed configuration before choosing whether to create a check.
+          Review the evidence and use Assistant to tailor a suggested check before anything is created.
         </p>
         <ReliabilityInboxReview />
       </div>
@@ -39,7 +34,6 @@ function ReliabilityInboxReview() {
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
   const { data: opportunities = [], isLoading, isError, refetch } = useReliabilityInboxSuggestions();
   const [selectedId, setSelectedId] = useState<string>();
-  const [configurationVisible, setConfigurationVisible] = useState(false);
   const reviewedIds = useRef(new Set<string>());
 
   const sortedOpportunities = useMemo(
@@ -59,10 +53,6 @@ function ReliabilityInboxReview() {
       checkType: selected.proposedCheck.checkType,
     });
   }, [selected]);
-
-  useEffect(() => {
-    setConfigurationVisible(false);
-  }, [selected?.id]);
 
   if (isLoading) {
     return (
@@ -103,40 +93,85 @@ function ReliabilityInboxReview() {
       ? 'Grafana Assistant is unavailable'
       : undefined;
 
-  const viewConfiguration = () => {
-    setConfigurationVisible(true);
-    trackConfigurationViewed({
-      opportunityId: selected.id,
-      checkType: selected.proposedCheck.checkType,
-    });
-  };
-
-  const createWithAssistant = () => {
+  const setUpWithAssistant = () => {
     if (!openAssistant) {
       return;
     }
 
-    trackCreateIntent({
+    trackSetupWithAssistant({
       opportunityId: selected.id,
       checkType: selected.proposedCheck.checkType,
     });
 
-    const reviewedDraft = selected.proposedCheck;
+    const suggestedDraft = selected.proposedCheck;
+    const evidence = {
+      target: selected.suggestion.target,
+      recommendationRationale: selected.rationale,
+      confidence: selected.confidence,
+      requestsPerSecond: selected.suggestion.evidence.reqPerS,
+      estimatedRequestsInWindow: selected.requestVolume,
+      p99Milliseconds: selected.suggestion.evidence.p99Ms,
+      httpErrorRate: selected.errorRate,
+      statusDistribution: selected.suggestion.evidence.statusDistribution,
+      measurementWindow: 'last hour',
+      telemetryFamilies: selected.suggestion.evidence.families,
+      reachability: {
+        classification: selected.suggestion.reachability,
+        source: selected.suggestion.reachabilitySource,
+      },
+      coverageMatch: {
+        conclusion: 'No exact matching check was found among the configuration the experiment could analyze.',
+        compared: ['observed target', 'URL path', 'HTTP check type'],
+        limitations: [
+          'Aliases, redirects, upstream checks, inaccessible configuration, or a different path may cover the service.',
+          'Hostname-only similarity is not treated as certainty.',
+        ],
+      },
+    };
     const context = createAssistantContextItem('structured', {
-      title: `Reviewed Synthetic Monitoring check draft: ${selected.subject}`,
+      title: `Reliability Inbox setup: ${selected.subject}`,
       bypassLimits: true,
       data: {
-        name: 'Reviewed Reliability Inbox check draft',
-        task: 'create-reviewed-http-check',
-        reviewedDraft,
+        name: 'Reliability Inbox guided setup',
+        task: 'guide-suggested-http-check-setup',
+        evidence,
+        suggestedDraft,
+        setupContract: {
+          beginFromSuggestedDraft: true,
+          inspectWhereToolsPermit: ['real available probes', 'existing Synthetic Monitoring checks'],
+          askOnlyWhenMateriallyChanging: [
+            'cadence',
+            'timeout',
+            'regions or probes',
+            'response assertion',
+            'alerting intent',
+          ],
+          neverInvent: [
+            'credentials',
+            'private-network details',
+            'DNS resolvers',
+            'probe assignments',
+            'business semantics',
+          ],
+          finalReview: 'Show every proposed change in one compact final configuration.',
+          creationPolicy: 'Do not create or save the check until the user explicitly confirms the final configuration.',
+        },
         assistantGuidance:
-          'Use this reviewed structured draft exactly. Do not infer or replace configuration fields. Ask before changing any field, and require normal confirmation before saving the check.',
+          'Act as a bounded Synthetic Monitoring setup guide. Start from the suggested draft, validate what tools can validate, ask only questions that materially change configuration, present a compact final configuration, and wait for explicit confirmation before creating or saving anything.',
       },
     });
 
     openAssistant({
       origin: ASSISTANT_ORIGIN,
-      prompt: `Create the reviewed HTTP Synthetic Monitoring check for ${reviewedDraft.target} using the attached structured draft. Do not change any reviewed field without asking me first.`,
+      prompt: [
+        `Guide me through setting up the suggested HTTP Synthetic Monitoring check for ${suggestedDraft.target}.`,
+        'Begin from the attached suggested draft and evidence.',
+        'Where your tools permit, inspect the real available probes and existing checks before recommending changes.',
+        'Ask only for inputs that materially change cadence, timeout, regions or probes, response assertions, or alerting intent.',
+        'Do not invent credentials, private-network details, DNS resolvers, probe assignments, or business semantics.',
+        'Before taking action, show all changes in one compact final configuration.',
+        'Do not create or save the check until I explicitly confirm that final configuration.',
+      ].join(' '),
       context: [context],
       autoSend: true,
     });
@@ -212,94 +247,54 @@ function ReliabilityInboxReview() {
           </p>
         </section>
 
-        {!configurationVisible ? (
-          <div className={styles.reviewAction}>
+        <section className={styles.proposal}>
+          <div className={styles.proposalHeader}>
             <div>
-              <strong>Next: review the deterministic check draft</strong>
-              <p>Opening the configuration does not send anything to Assistant.</p>
+              <span className={styles.eyebrow}>Suggested starting point</span>
+              <h3>HTTP check for {selected.subject}</h3>
             </div>
-            <Button icon="eye" onClick={viewConfiguration}>
-              Review configuration
+            <Badge color="green" text="Deterministic draft" />
+          </div>
+
+          <dl className={styles.proposalSummary}>
+            <div>
+              <dt>What to monitor</dt>
+              <dd>{selected.proposedCheck.target}</dd>
+            </div>
+            <div>
+              <dt>Suggested check</dt>
+              <dd>HTTP · {selected.proposedCheck.method}</dd>
+            </div>
+            <div>
+              <dt>Cadence</dt>
+              <dd>Every {formatDuration(selected.proposedCheck.frequencyMs)}</dd>
+            </div>
+            <div>
+              <dt>Probe / location policy</dt>
+              <dd>{selected.proposedCheck.locationPolicy}</dd>
+            </div>
+          </dl>
+
+          <div className={styles.handoff}>
+            <div>
+              <strong>Tailor this suggestion with Assistant</strong>
+              <p>
+                Assistant can check available probes and existing checks, ask only material setup questions, and show a
+                final configuration for your confirmation. Nothing is created by opening setup.
+              </p>
+            </div>
+            <Button
+              icon="ai-sparkle"
+              disabled={assistantDisabled}
+              tooltip={assistantTooltip}
+              onClick={setUpWithAssistant}
+            >
+              Set up with Assistant
             </Button>
           </div>
-        ) : (
-          <ProposedConfiguration
-            opportunity={selected}
-            assistantDisabled={assistantDisabled}
-            assistantTooltip={assistantTooltip}
-            onCreateWithAssistant={createWithAssistant}
-          />
-        )}
+        </section>
       </article>
     </div>
-  );
-}
-
-function ProposedConfiguration({
-  opportunity,
-  assistantDisabled,
-  assistantTooltip,
-  onCreateWithAssistant,
-}: {
-  opportunity: ReliabilityOpportunity;
-  assistantDisabled: boolean;
-  assistantTooltip?: string;
-  onCreateWithAssistant: () => void;
-}) {
-  const styles = useStyles2(getStyles);
-  const draft = opportunity.proposedCheck;
-  const statusAssertion =
-    draft.validStatusCodes.length > 0
-      ? `Response status must be ${draft.validStatusCodes.join(' or ')}`
-      : 'No status-code assertion';
-
-  return (
-    <section className={styles.configuration} aria-label="Proposed check configuration">
-      <div className={styles.configurationHeader}>
-        <div>
-          <span className={styles.eyebrow}>Reviewed draft</span>
-          <h3>Exact proposed check configuration</h3>
-        </div>
-        <Badge color="green" text="Deterministic proposal" />
-      </div>
-
-      <dl className={styles.configurationGrid}>
-        <ConfigurationField label="Target" value={draft.target} />
-        <ConfigurationField label="Check type" value="HTTP" />
-        <ConfigurationField label="Method" value={draft.method} />
-        <ConfigurationField label="Frequency" value={`Every ${formatDuration(draft.frequencyMs)}`} />
-        <ConfigurationField label="Timeout" value={formatDuration(draft.timeoutMs)} />
-        <ConfigurationField label="Status assertion" value={statusAssertion} />
-        <ConfigurationField
-          label="TLS policy"
-          value={draft.failIfNotSSL ? 'Fail if the target is not served over TLS' : 'No HTTPS-only assertion'}
-        />
-        <ConfigurationField label="Probe / location policy" value={draft.locationPolicy} />
-        <ConfigurationField
-          label="Estimated executions"
-          value={
-            draft.estimatedExecutionsPerMonth
-              ? `${formatExecutions(draft.estimatedExecutionsPerMonth)} per 30-day month`
-              : 'Not available until locations are selected'
-          }
-        />
-      </dl>
-
-      <div className={styles.configurationFooter}>
-        <p>
-          Assistant receives this structured draft only when you explicitly choose{' '}
-          <strong>Create with Assistant</strong>.
-        </p>
-        <Button
-          icon="ai-sparkle"
-          disabled={assistantDisabled}
-          tooltip={assistantTooltip}
-          onClick={onCreateWithAssistant}
-        >
-          Create with Assistant
-        </Button>
-      </div>
-    </section>
   );
 }
 
@@ -310,15 +305,6 @@ function EvidenceMetric({ value, label }: { value: string; label: string }) {
     <div className={styles.metric}>
       <strong>{value}</strong>
       <span>{label}</span>
-    </div>
-  );
-}
-
-function ConfigurationField({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
     </div>
   );
 }
@@ -474,20 +460,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
     '& h3': { margin: theme.spacing(0.5, 0, 0), fontSize: theme.typography.h5.fontSize },
     '& p': { color: theme.colors.text.secondary, margin: 0 },
   }),
-  reviewAction: css({
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: theme.spacing(2),
-    padding: theme.spacing(2.5),
-    borderTop: `1px solid ${theme.colors.border.weak}`,
-    '& p': { color: theme.colors.text.secondary, margin: theme.spacing(0.5, 0, 0) },
-  }),
-  configuration: css({
+  proposal: css({
     borderTop: `1px solid ${theme.colors.border.medium}`,
     background: theme.colors.background.secondary,
   }),
-  configurationHeader: css({
+  proposalHeader: css({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -495,16 +472,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(2.5),
     '& h3': { margin: theme.spacing(0.5, 0, 0) },
   }),
-  configurationGrid: css({
+  proposalSummary: css({
     display: 'grid',
     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-    gap: theme.spacing(0),
+    gap: theme.spacing(1),
     margin: 0,
     padding: theme.spacing(0, 2.5, 2.5),
     '& > div': {
       padding: theme.spacing(1.25),
       border: `1px solid ${theme.colors.border.weak}`,
-      margin: '-1px 0 0 -1px',
+      borderRadius: theme.shape.radius.default,
+      background: theme.colors.background.primary,
     },
     '& dt': {
       color: theme.colors.text.secondary,
@@ -516,14 +494,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
       gridTemplateColumns: '1fr',
     },
   }),
-  configurationFooter: css({
+  handoff: css({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: theme.spacing(2),
     padding: theme.spacing(2),
     borderTop: `1px solid ${theme.colors.border.weak}`,
-    '& p': { color: theme.colors.text.secondary, margin: 0 },
+    '& p': { color: theme.colors.text.secondary, margin: theme.spacing(0.5, 0, 0) },
   }),
   loading: css({
     display: 'flex',

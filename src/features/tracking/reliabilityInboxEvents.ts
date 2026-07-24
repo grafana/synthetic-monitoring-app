@@ -22,7 +22,5 @@ export const trackInboxExposure = reliabilityInboxEvents<InboxExposureEvent>('ex
 export const trackReviewEntryClicked = reliabilityInboxEvents<RecommendationEvent>('review_entry_clicked');
 /** Tracks when a recommendation becomes selected for review. */
 export const trackRecommendationReviewed = reliabilityInboxEvents<RecommendationEvent>('recommendation_reviewed');
-/** Tracks when a user explicitly opens the proposed check configuration. */
-export const trackConfigurationViewed = reliabilityInboxEvents<RecommendationEvent>('configuration_viewed');
-/** Tracks explicit intent to create the reviewed draft with Assistant. */
-export const trackCreateIntent = reliabilityInboxEvents<RecommendationEvent>('create_intent');
+/** Tracks when a user explicitly hands a recommendation to Assistant for guided setup. */
+export const trackSetupWithAssistant = reliabilityInboxEvents<RecommendationEvent>('setup_with_assistant_clicked');

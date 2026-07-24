@@ -8,10 +8,7 @@ import { AppRoutes } from 'routing/types';
  * because they have no user-facing surface area (they immediately redirect
  * elsewhere on mount; see SceneRedirecter).
  */
-export const ASSISTANT_CONTEXT_EXCLUDED_ROUTES: ReadonlySet<AppRoutes> = new Set([
-  AppRoutes.Redirect,
-  AppRoutes.Scene,
-]);
+export const ASSISTANT_CONTEXT_EXCLUDED_ROUTES: ReadonlySet<AppRoutes> = new Set([AppRoutes.Redirect, AppRoutes.Scene]);
 
 interface AssistantPageContextEntry {
   /** Stable id used for diffing the registration list in tests. */
@@ -75,8 +72,7 @@ function question(title: string, prompt: string): Question {
 }
 
 const DOC_URLS = {
-  privateProbes:
-    'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/',
+  privateProbes: 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/',
   perCheckAlerts:
     'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/configure-per-check-alerts/',
   k6Assertions: 'https://grafana.com/docs/k6/latest/using-k6/assertions/',
@@ -165,8 +161,8 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
       structured('Synthetic Monitoring reliability opportunities', {
         name: 'Reliability Inbox',
         pageType: 'sm-reliability-inbox',
-        capabilities: ['review-coverage-evidence', 'configure-recommended-checks', 'complete-missing-setup'],
-        help: 'Shows evidence-backed potential Synthetic Monitoring coverage gaps derived from observed request activity. Help with: interpreting observed demand and limitations, reviewing a suggested check, asking only for configuration that cannot be inferred safely, and setting up the check after the user explicitly confirms the final configuration.',
+        capabilities: ['review-coverage-evidence', 'guide-recommended-check-setup'],
+        help: 'Shows evidence-backed potential Synthetic Monitoring coverage gaps derived from observed request activity. Help interpret observed demand and guarded coverage limitations. For setup, begin from the suggested draft, inspect real probes and checks when tools permit, ask only material configuration questions, show a compact final configuration, and wait for explicit confirmation before creating or saving anything.',
       }),
     ],
     createQuestions: () => [
@@ -175,8 +171,8 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
         'Help me review the evidence for this coverage opportunity and decide whether the suggested check is appropriate.'
       ),
       question(
-        'Complete a suggested check',
-        'Help me complete the suggested Synthetic Monitoring check. Preserve evidence-backed settings, ask me for missing values, and wait for my confirmation before creating it.'
+        'Set up a suggested check',
+        'Guide me through the suggested Synthetic Monitoring check. Start from its evidence-backed draft, verify available probes and checks where possible, ask only material setup questions, and wait for my explicit confirmation before creating it.'
       ),
     ],
   },
@@ -239,7 +235,14 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
       structured('Create a new API endpoint check', {
         name: 'New API endpoint check',
         pageType: 'sm-new-check-api',
-        capabilities: ['http-check-configuration', 'dns-check', 'tcp-check', 'grpc-check', 'response-validation', 'probe-selection'],
+        capabilities: [
+          'http-check-configuration',
+          'dns-check',
+          'tcp-check',
+          'grpc-check',
+          'response-validation',
+          'probe-selection',
+        ],
         help: 'User is creating a new API endpoint check (HTTP, DNS, TCP, or gRPC). Help with: configuring target URL/host, request method, headers and body for HTTP, response validation (status code, body content, regex, headers), SSL/TLS settings, timeout and frequency, and probe selection.',
       }),
     ],
@@ -479,10 +482,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
       }),
     ],
     createQuestions: () => [
-      question(
-        'Rotate the auth token',
-        "Walk me through rotating this probe's authentication token without downtime."
-      ),
+      question('Rotate the auth token', "Walk me through rotating this probe's authentication token without downtime."),
       question(
         'Probe labelling strategy',
         "What's a good labelling strategy for private probes across multiple regions and teams?"
