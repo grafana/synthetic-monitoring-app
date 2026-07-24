@@ -210,6 +210,58 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.queryByText('Evidence at a glance')).not.toBeInTheDocument();
   });
 
+  it('omits unavailable aggregate measurements without showing a prototype chart', async () => {
+    mockSuggestions({
+      ...HTTP_SUGGESTION,
+      evidence: {
+        reqPerS: HTTP_SUGGESTION.evidence.reqPerS,
+        families: ['traces_service_graph_request_total'],
+        activitySemantics: [],
+      },
+      evidencePrototype: undefined,
+    });
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByText('5.8k')).toBeInTheDocument();
+    expect(screen.getByText('1.6 req/s')).toBeInTheDocument();
+    expect(screen.queryByText('HTTP error responses')).not.toBeInTheDocument();
+    expect(screen.queryByText('p99 response time')).not.toBeInTheDocument();
+    expect(screen.queryByText('Demo evidence')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Observed requests over time')).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Available aggregate telemetry is shown for the last hour; unavailable measurements are omitted.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('explains when detailed traffic measurements are entirely unavailable', async () => {
+    mockSuggestions({
+      ...HTTP_SUGGESTION,
+      evidence: {
+        families: ['loki_write_request_duration_seconds_bucket'],
+        activitySemantics: [],
+      },
+      evidencePrototype: undefined,
+    });
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Detailed traffic measurements are unavailable for this suggestion.'
+    );
+    expect(screen.getByText('Public HTTP traffic · request rate unavailable')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Observed requests over time')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'View in Explore' })).not.toBeInTheDocument();
+  });
+
   it('anchors breadcrumbs and back navigation to the Synthetics home', () => {
     expect(RELIABILITY_INBOX_PAGE_NAV).toEqual({
       text: 'Reliability Inbox',

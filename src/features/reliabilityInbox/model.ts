@@ -128,7 +128,8 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
     probeIds: proposedCheck.probeIds,
   };
   const readiness = getReadiness(suggestion);
-  const requestRate = `${formatDecimal(suggestion.evidence.reqPerS)} req/s`;
+  const requestsPerSecond = suggestion.evidence.reqPerS;
+  const requestRate = requestsPerSecond === undefined ? undefined : `${formatDecimal(requestsPerSecond)} req/s`;
   const reachability = getReachabilityLabel(suggestion);
   const frequency = config.frequencyMs ? formatFrequency(config.frequencyMs) : 'Default schedule';
   const locations = config.probeIds.length;
@@ -144,7 +145,7 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
     id: suggestion.id,
     suggestion,
     subject: getSubject(suggestion.target),
-    observedSummary: `${requestRate} · ${reachability} · last hour`,
+    observedSummary: [requestRate, reachability, 'last hour'].filter(Boolean).join(' · '),
     rationale: suggestion.rationale ?? 'Observed demand appears to have no equivalent synthetic coverage.',
     value: getValue(suggestion.relevance),
     confidence: getConfidence(suggestion.confidence),
@@ -156,10 +157,10 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
         : `${frequency} · ${locationCopy} · ${assertion}`,
     estimatedUsage: estimateMonthlyUsage(config),
     sortScore: suggestion.relevance ?? suggestion.score * 100,
-    requestVolume: formatCompactNumber(suggestion.evidence.reqPerS * 60 * 60),
+    requestVolume: requestsPerSecond === undefined ? undefined : formatCompactNumber(requestsPerSecond * 60 * 60),
     requestRate,
     errorRate: formatErrorRate(suggestion),
-    p99: `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
+    p99: suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
     evidencePrototype: suggestion.evidencePrototype,
     proposedCheck,
   };
@@ -361,10 +362,16 @@ function formatDecimal(value: number) {
 }
 
 function formatErrorRate(suggestion: ReliabilitySuggestion) {
-  const errors = Object.entries(suggestion.evidence.statusDistribution).reduce((total, [status, rate]) => {
+  const { reqPerS, statusDistribution } = suggestion.evidence;
+
+  if (reqPerS === undefined || statusDistribution === undefined) {
+    return undefined;
+  }
+
+  const errors = Object.entries(statusDistribution).reduce((total, [status, rate]) => {
     return Number(status) >= 400 ? total + rate : total;
   }, 0);
-  const ratio = suggestion.evidence.reqPerS > 0 ? errors / suggestion.evidence.reqPerS : 0;
+  const ratio = reqPerS > 0 ? errors / reqPerS : 0;
 
   return new Intl.NumberFormat('en-US', {
     style: 'percent',

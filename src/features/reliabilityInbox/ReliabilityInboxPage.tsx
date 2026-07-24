@@ -117,15 +117,18 @@ function ReliabilityInboxReview() {
     });
 
     const suggestedDraft = selected.proposedCheck;
+    const { reqPerS, p99Ms, statusDistribution } = selected.suggestion.evidence;
     const evidence = {
       target: selected.suggestion.target,
       recommendationRationale: selected.rationale,
       confidence: selected.confidence,
-      requestsPerSecond: selected.suggestion.evidence.reqPerS,
-      estimatedRequestsInWindow: selected.requestVolume,
-      p99Milliseconds: selected.suggestion.evidence.p99Ms,
-      httpErrorRate: selected.errorRate,
-      statusDistribution: selected.suggestion.evidence.statusDistribution,
+      ...(reqPerS !== undefined && {
+        requestsPerSecond: reqPerS,
+        estimatedRequestsInWindow: selected.requestVolume,
+      }),
+      ...(p99Ms !== undefined && { p99Milliseconds: p99Ms }),
+      ...(selected.errorRate !== undefined && { httpErrorRate: selected.errorRate }),
+      ...(statusDistribution !== undefined && { statusDistribution }),
       measurementWindow: 'last hour',
       telemetryFamilies: selected.suggestion.evidence.families,
       reachability: {
@@ -219,7 +222,9 @@ function ReliabilityInboxReview() {
                 text={`${capitalize(opportunity.confidence)} confidence`}
               />
             </div>
-            <span>Public HTTP traffic · {opportunity.requestRate}</span>
+            <span>
+              Public HTTP traffic · {opportunity.requestRate ?? 'request rate unavailable'}
+            </span>
           </button>
         ))}
       </aside>
@@ -242,14 +247,22 @@ function ReliabilityInboxReview() {
                   color={selected.value === 'high' ? 'orange' : 'darkgrey'}
                   text={`${capitalize(selected.value)} value`}
                 />
-                <span>Observed demand and endpoint relevance make this worth reviewing.</span>
+                <span>
+                  {selected.requestRate
+                    ? 'Observed demand and endpoint relevance make this worth reviewing.'
+                    : 'Endpoint relevance makes this worth reviewing; request rate is unavailable.'}
+                </span>
               </div>
               <div>
                 <Badge
                   color={selected.confidence === 'high' ? 'green' : 'darkgrey'}
                   text={`${capitalize(selected.confidence)} confidence`}
                 />
-                <span>Endpoint and traffic signals agree.</span>
+                <span>
+                  {selected.confidence === 'high'
+                    ? 'Endpoint and available traffic signals agree.'
+                    : 'Available evidence is limited; validate this recommendation during review.'}
+                </span>
               </div>
             </div>
           </div>
@@ -285,8 +298,8 @@ function ReliabilityInboxReview() {
                   value={formatExactNumber(selected.evidencePrototype.exactRequestTotal)}
                   label={`requests · ${selected.evidencePrototype.window.label}`}
                 />
-                <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
-                <EvidenceMetric value={selected.p99} label="p99 response time" />
+                {selected.errorRate && <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />}
+                {selected.p99 && <EvidenceMetric value={selected.p99} label="p99 response time" />}
               </div>
               <ReliabilityEvidenceTrend evidence={selected.evidencePrototype} />
               <p className={styles.sectionSummary}>
@@ -295,15 +308,30 @@ function ReliabilityInboxReview() {
             </>
           ) : (
             <>
-              <div className={styles.metrics}>
-                <EvidenceMetric value={selected.requestVolume} label="estimated requests in the last hour" />
-                <EvidenceMetric value={selected.requestRate} label="observed request rate" />
-                <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
-                <EvidenceMetric value={selected.p99} label="p99 response time" />
-              </div>
-              <p className={styles.sectionSummary}>
-                Recent aggregate traffic shows sustained demand with measurable availability and latency.
-              </p>
+              {hasAggregateEvidence(selected) ? (
+                <>
+                  <div className={styles.metrics}>
+                    {selected.requestVolume && (
+                      <EvidenceMetric value={selected.requestVolume} label="estimated requests in the last hour" />
+                    )}
+                    {selected.requestRate && (
+                      <EvidenceMetric value={selected.requestRate} label="observed request rate" />
+                    )}
+                    {selected.errorRate && (
+                      <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
+                    )}
+                    {selected.p99 && <EvidenceMetric value={selected.p99} label="p99 response time" />}
+                  </div>
+                  <p className={styles.sectionSummary}>
+                    Available aggregate telemetry is shown for the last hour; unavailable measurements are omitted.
+                  </p>
+                </>
+              ) : (
+                <div className={styles.evidenceUnavailable} role="status">
+                  <Icon name="info-circle" />
+                  <span>Detailed traffic measurements are unavailable for this suggestion.</span>
+                </div>
+              )}
             </>
           )}
           <details className={styles.disclosure}>
@@ -450,6 +478,15 @@ function capitalize(value: string) {
 
 function formatExactNumber(value: number) {
   return new Intl.NumberFormat('en-US').format(value);
+}
+
+function hasAggregateEvidence(opportunity: {
+  requestVolume?: string;
+  requestRate?: string;
+  errorRate?: string;
+  p99?: string;
+}) {
+  return Boolean(opportunity.requestVolume || opportunity.requestRate || opportunity.errorRate || opportunity.p99);
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -627,7 +664,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   metrics: css({
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
     gap: theme.spacing(1),
     [`@media (max-width: ${theme.breakpoints.values.lg}px)`]: {
       gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
@@ -641,6 +678,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
     [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
       gridTemplateColumns: '1fr',
     },
+  }),
+  evidenceUnavailable: css({
+    alignItems: 'center',
+    background: theme.colors.background.secondary,
+    border: `1px dashed ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.default,
+    color: theme.colors.text.secondary,
+    display: 'flex',
+    gap: theme.spacing(1),
+    minHeight: theme.spacing(8),
+    padding: theme.spacing(2),
   }),
   metric: css({
     display: 'flex',

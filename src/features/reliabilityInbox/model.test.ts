@@ -150,6 +150,23 @@ describe('Reliability Inbox model', () => {
     );
   });
 
+  it('keeps missing evidence unavailable instead of inventing values', () => {
+    const opportunity = toReliabilityOpportunity({
+      ...HTTP_SUGGESTION,
+      evidence: {
+        families: ['traces_service_graph_request_total'],
+        activitySemantics: [],
+      },
+      evidencePrototype: undefined,
+    });
+
+    expect(opportunity.requestRate).toBeUndefined();
+    expect(opportunity.requestVolume).toBeUndefined();
+    expect(opportunity.errorRate).toBeUndefined();
+    expect(opportunity.p99).toBeUndefined();
+    expect(opportunity.observedSummary).toBe('public endpoint · last hour');
+  });
+
   it('uses hostname, non-default port, and meaningful path as the human-readable endpoint identity', () => {
     const target = 'https://api.example.com:8443/health?verbose=true#status';
     const opportunity = toReliabilityOpportunity({ ...HTTP_SUGGESTION, target });

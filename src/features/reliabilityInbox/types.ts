@@ -34,9 +34,9 @@ export const reliabilitySuggestionSchema = z
     checkType: z.enum(['http', 'dns']),
     evidence: z
       .object({
-        reqPerS: z.number(),
-        p99Ms: z.number(),
-        statusDistribution: z.record(z.string(), z.number()),
+        reqPerS: z.number().optional(),
+        p99Ms: z.number().optional(),
+        statusDistribution: z.record(z.string(), z.number()).optional(),
         families: z.array(z.string()).default([]),
         activitySemantics: z.array(z.string()).default([]),
       })
@@ -118,10 +118,10 @@ export interface ReliabilityOpportunity {
   actionSummary: string;
   estimatedUsage?: string;
   sortScore: number;
-  requestVolume: string;
-  requestRate: string;
-  errorRate: string;
-  p99: string;
+  requestVolume?: string;
+  requestRate?: string;
+  errorRate?: string;
+  p99?: string;
   evidencePrototype?: ReliabilityEvidencePrototype;
   proposedCheck: ProposedHttpCheckDraft;
 }
