@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAssistant } from '@grafana/assistant';
+import { config } from '@grafana/runtime';
 import { render as renderWithoutApp, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
@@ -23,6 +24,16 @@ jest.mock('./data', () => ({
   useReliabilityInboxSuggestions: jest.fn(),
 }));
 
+jest.mock('@grafana/scenes-react', () => {
+  const actual = jest.requireActual('@grafana/scenes-react');
+  const React = jest.requireActual('react');
+
+  return {
+    ...actual,
+    VizPanel: () => React.createElement('div', { 'data-testid': 'reliability-evidence-viz-panel' }),
+  };
+});
+
 jest.mock('features/tracking/reliabilityInboxEvents', () => ({
   trackInboxExposure: jest.fn(),
   trackReviewEntryClicked: jest.fn(),
@@ -43,6 +54,20 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
     },
     families: ['http_server_request_duration_seconds_bucket'],
     activitySemantics: ['bytes'],
+  },
+  evidencePrototype: {
+    kind: 'graft-demo-v1',
+    window: {
+      label: 'the last 24 hours',
+      from: 1_784_800_800_000,
+      to: 1_784_887_200_000,
+    },
+    exactRequestTotal: 14_700,
+    timeline: [
+      { timestamp: 1_784_800_800_000, requests: 5100 },
+      { timestamp: 1_784_804_400_000, requests: 4900 },
+      { timestamp: 1_784_808_000_000, requests: 4700 },
+    ],
   },
   reachability: 'public',
   reachabilitySource: 'service_dns_hint',
@@ -67,12 +92,11 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
     'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/. Suggested configuration: job "mcp.goagain.dev", frequency 1m0s, timeout 2s, expect HTTP status [200], fail if not SSL, probe IDs [7].',
 };
 
-const OPPORTUNITIES = [toReliabilityOpportunity(HTTP_SUGGESTION)];
 const openAssistant = jest.fn();
 
-function mockSuggestions() {
+function mockSuggestions(suggestion = HTTP_SUGGESTION) {
   jest.mocked(useReliabilityInboxSuggestions).mockReturnValue({
-    data: OPPORTUNITIES,
+    data: [toReliabilityOpportunity(suggestion)],
     isLoading: false,
     isError: false,
     refetch: jest.fn(),
@@ -91,6 +115,7 @@ function renderPage() {
 describe('ReliabilityInboxPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    config.bootData.user.orgId = 1;
     jest.mocked(useAssistant).mockReturnValue({
       isAvailable: true,
       isLoading: false,
@@ -128,6 +153,11 @@ describe('ReliabilityInboxPage', () => {
         'Synthetic Monitoring does not appear to monitor this traffic yet, so we recommend adding this check.'
       )
     ).toBeInTheDocument();
+    expect(screen.getByText('Demo evidence')).toBeInTheDocument();
+    expect(screen.getByText('14,700')).toBeInTheDocument();
+    expect(screen.getByText('requests · the last 24 hours')).toBeInTheDocument();
+    expect(screen.getByLabelText('Observed requests over time')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'View in Explore' })).not.toBeInTheDocument();
 
     const coverageDisclosure = screen.getByText('How we checked').closest('details');
     expect(coverageDisclosure).not.toHaveAttribute('open');
@@ -141,6 +171,43 @@ describe('ReliabilityInboxPage', () => {
       opportunityId: 'http-suggestion',
       checkType: 'http',
     });
+  });
+
+  it('shows an honest no-data state when prototype trend samples are empty', async () => {
+    mockSuggestions({
+      ...HTTP_SUGGESTION,
+      evidencePrototype: {
+        ...HTTP_SUGGESTION.evidencePrototype!,
+        timeline: [],
+      },
+    });
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'No traffic trend is available for this evidence window.'
+    );
+    expect(screen.queryByLabelText('Observed requests over time')).not.toBeInTheDocument();
+  });
+
+  it('keeps the existing page-level loading state while evidence is loading', async () => {
+    jest.mocked(useReliabilityInboxSuggestions).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useReliabilityInboxSuggestions>);
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByText('Loading Reliability Inbox…')).toBeInTheDocument();
+    expect(screen.queryByText('Evidence at a glance')).not.toBeInTheDocument();
   });
 
   it('anchors breadcrumbs and back navigation to the Synthetics home', () => {
