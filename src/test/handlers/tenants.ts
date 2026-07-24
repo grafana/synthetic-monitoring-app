@@ -1,6 +1,7 @@
 import {
   TENANT,
   TENANT_COST_ATTRIBUTION_LABELS,
+  TENANT_LABEL_MODE,
   TENANT_LIMITS,
   TENANT_SETTINGS,
   UPDATE_TENANT_SETTINGS,
@@ -61,6 +62,28 @@ export const getTenantCostAttributionLabels: ApiEntry<ListTenantCostAttributionL
   result: () => {
     return {
       json: TENANT_COST_ATTRIBUTION_LABELS,
+    };
+  },
+};
+
+export const getLabelMode: ApiEntry<{ mode: number; systemLabels: string[] }> = {
+  route: `/sm/tenant/label-mode`,
+  method: `get`,
+  result: () => {
+    return {
+      json: TENANT_LABEL_MODE,
+    };
+  },
+};
+
+export const setLabelMode: ApiEntry<{ mode: number; systemLabels: string[] }> = {
+  route: `/sm/tenant/label-mode`,
+  method: `put`,
+  result: async (req) => {
+    const body = (await req.clone().json()) as { mode: number };
+
+    return {
+      json: { ...TENANT_LABEL_MODE, mode: body.mode },
     };
   },
 };

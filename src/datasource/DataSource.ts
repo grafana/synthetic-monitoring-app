@@ -378,6 +378,22 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   //--------------------------------------------------------------------------------
+  // LABEL MODE
+
+  async getLabelMode() {
+    return this.fetchAPI<{ mode: number; systemLabels: string[] }>(
+      `${this.instanceSettings.url}/sm/tenant/label-mode`
+    );
+  }
+
+  async setLabelMode(mode: number) {
+    return this.fetchAPI<{ mode: number; systemLabels: string[] }>(
+      `${this.instanceSettings.url}/sm/tenant/label-mode`,
+      { method: 'PUT', data: { mode } }
+    );
+  }
+
+  //--------------------------------------------------------------------------------
   // ALERTS PER CHECK
   //--------------------------------------------------------------------------------
 

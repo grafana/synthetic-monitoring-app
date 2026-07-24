@@ -59,6 +59,17 @@ export function ConfigPageLayout() {
       ],
     };
 
+    // Label Migration is feature-flagged for rollout. The tab itself limits
+    // mode changes to admins and shows a contact-admin notice otherwise.
+    if (isFeatureEnabled(FeatureName.LabelMigration)) {
+      navModel.children!.push({
+        icon: 'tag-alt',
+        text: 'Label Migration',
+        url: getConfigTabUrl('label-migration'),
+        active: activeTab('label-migration'),
+      });
+    }
+
     // Add secrets management tab if the feature is enabled
     if (isFeatureEnabled(FeatureName.SecretsManagement)) {
       navModel.children!.push({
