@@ -17,7 +17,7 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { useReliabilityInboxSuggestions } from './data';
 import { toReliabilityOpportunity } from './model';
 import { ReliabilityInboxBanner } from './ReliabilityInboxBanner';
-import { ReliabilityInboxPage } from './ReliabilityInboxPage';
+import { RELIABILITY_INBOX_PAGE_NAV, ReliabilityInboxPage } from './ReliabilityInboxPage';
 
 jest.mock('./data', () => ({
   useReliabilityInboxSuggestions: jest.fn(),
@@ -143,6 +143,16 @@ describe('ReliabilityInboxPage', () => {
     });
   });
 
+  it('anchors breadcrumbs and back navigation to the Synthetics home', () => {
+    expect(RELIABILITY_INBOX_PAGE_NAV).toEqual({
+      text: 'Reliability Inbox',
+      parentItem: {
+        text: 'Synthetics',
+        url: generateRoutePath(AppRoutes.Home),
+      },
+    });
+  });
+
   it('shows a compact proposed check with configuration details on demand', async () => {
     const { user } = renderPage();
 
@@ -247,13 +257,12 @@ describe('ReliabilityInboxPage', () => {
     renderWithoutApp(<ReliabilityInboxBanner />);
 
     expect(screen.getByText('Reliability Inbox · 1 opportunity')).toBeInTheDocument();
-    expect(screen.getByText('Assistant-guided review')).toBeInTheDocument();
+    expect(screen.queryByText('Assistant-guided review')).not.toBeInTheDocument();
     expect(screen.getByText('Highest priority: mcp.goagain.dev')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Add an HTTP check for mcp.goagain.dev' })).not.toBeInTheDocument();
 
     const reviewLink = screen.getByRole('link', { name: 'Review opportunities' });
     expect(reviewLink).toHaveAttribute('href', generateRoutePath(AppRoutes.ReliabilityInbox));
-    expect(reviewLink).toHaveAttribute('aria-describedby', 'reliability-inbox-assistant-entry');
     await waitFor(() =>
       expect(trackInboxExposure).toHaveBeenCalledWith({
         opportunityCount: 1,

@@ -2,6 +2,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
 
 export const ASSISTANT_GRADIENT = 'linear-gradient(90deg, rgb(168, 85, 247), rgb(249, 115, 22))';
+export const ASSISTANT_ACTION_SIZE = 'md' as const;
 
 export function getAssistantActionStyle(theme: GrafanaTheme2) {
   const baseBackground = theme.colors.secondary.main;

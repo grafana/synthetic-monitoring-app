@@ -1,24 +1,34 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createAssistantContextItem, useAssistant } from '@grafana/assistant';
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Badge, Button, ClipboardButton, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/tracking/reliabilityInboxEvents';
 
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 
-import { getAssistantActionStyle } from './assistantActionStyles';
+import { ASSISTANT_ACTION_SIZE, getAssistantActionStyle } from './assistantActionStyles';
 import { useReliabilityInboxSuggestions } from './data';
 import { formatDuration } from './model';
 
 const ASSISTANT_ORIGIN = 'grafana-synthetic-monitoring-app/reliability-inbox';
 
+export const RELIABILITY_INBOX_PAGE_NAV: NavModelItem = {
+  text: 'Reliability Inbox',
+  parentItem: {
+    text: 'Synthetics',
+    url: generateRoutePath(AppRoutes.Home),
+  },
+};
+
 export function ReliabilityInboxPage() {
   const styles = useStyles2(getStyles);
 
   return (
-    <PluginPage pageNav={{ text: 'Reliability Inbox' }} renderTitle={() => <ReliabilityInboxTitle />}>
+    <PluginPage pageNav={RELIABILITY_INBOX_PAGE_NAV} renderTitle={() => <ReliabilityInboxTitle />}>
       <div className={styles.page}>
         <p className={styles.subtitle}>
           Prioritized monitoring opportunities from observed traffic. Review first; nothing is created without your
@@ -249,6 +259,7 @@ function ReliabilityInboxReview() {
               icon="ai-sparkle"
               disabled={assistantDisabled}
               tooltip={assistantTooltip}
+              size={ASSISTANT_ACTION_SIZE}
               variant="secondary"
               onClick={setUpWithAssistant}
             >
