@@ -107,6 +107,14 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.getByText('Recommended next step')).toBeInTheDocument();
     expect(screen.getByText('Highest priority')).toBeInTheDocument();
 
+    const endpoint = screen.getByLabelText('Recommended endpoint');
+    expect(within(endpoint).getByText('GET')).toBeInTheDocument();
+    expect(within(endpoint).getByText('mcp.goagain.dev')).toBeInTheDocument();
+    expect(within(endpoint).queryByText('https://mcp.goagain.dev/')).not.toBeInTheDocument();
+
+    const queueSubject = within(screen.getByLabelText('Review queue')).getByText('mcp.goagain.dev');
+    expect(queueSubject).toHaveAttribute('title', 'https://mcp.goagain.dev/');
+
     const queueSignals = screen.getByLabelText('Decision signals for mcp.goagain.dev');
     expect(within(queueSignals).getByText('High value')).toBeInTheDocument();
     expect(within(queueSignals).getByText('High confidence')).toBeInTheDocument();
@@ -138,15 +146,17 @@ describe('ReliabilityInboxPage', () => {
   it('shows a compact proposed check with configuration details on demand', async () => {
     const { user } = renderPage();
 
-    expect(await screen.findByRole('heading', { name: 'GET https://mcp.goagain.dev/' })).toBeInTheDocument();
-    expect(screen.getAllByText(/GET https:\/\/mcp\.goagain\.dev\//)).not.toHaveLength(0);
+    expect(await screen.findByRole('heading', { name: 'GET mcp.goagain.dev' })).toBeInTheDocument();
     expect(screen.getByText('HTTP GET · Every 1 minute')).toBeInTheDocument();
     expect(screen.getAllByText('Run from the suggested public probe in Frankfurt.')[0]).toBeVisible();
 
     const configurationDisclosure = screen.getByText('View configuration details').closest('details');
     expect(configurationDisclosure).not.toHaveAttribute('open');
+    expect(screen.getByText('https://mcp.goagain.dev/')).not.toBeVisible();
     await user.click(screen.getByText('View configuration details'));
     expect(configurationDisclosure).toHaveAttribute('open');
+    expect(screen.getByText('https://mcp.goagain.dev/')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Copy target URL' })).toBeVisible();
     expect(screen.getByText('2 seconds')).toBeVisible();
     expect(screen.getByText('Require HTTPS')).toBeVisible();
 

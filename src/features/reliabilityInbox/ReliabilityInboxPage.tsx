@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createAssistantContextItem, useAssistant } from '@grafana/assistant';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Badge, Button, Icon, Spinner, useStyles2 } from '@grafana/ui';
+import { Alert, Badge, Button, ClipboardButton, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/tracking/reliabilityInboxEvents';
 
@@ -194,7 +194,9 @@ function ReliabilityInboxReview() {
             onClick={() => setSelectedId(opportunity.id)}
           >
             <span className={styles.queueRank}>{index === 0 ? 'Highest priority' : `Priority ${index + 1}`}</span>
-            <strong>{opportunity.subject}</strong>
+            <strong className={styles.queueSubject} title={opportunity.proposedCheck.target}>
+              {opportunity.subject}
+            </strong>
             <div className={styles.queueSignals} aria-label={`Decision signals for ${opportunity.subject}`}>
               <Badge
                 color={opportunity.value === 'high' ? 'orange' : 'darkgrey'}
@@ -215,9 +217,10 @@ function ReliabilityInboxReview() {
           <div className={styles.recommendation}>
             <span className={styles.eyebrow}>Recommended next step</span>
             <h2>Add an HTTP check for {selected.subject}</h2>
-            <p className={styles.target}>
-              {selected.proposedCheck.method} {selected.proposedCheck.target}
-            </p>
+            <div className={styles.target} aria-label="Recommended endpoint">
+              <Badge color="darkgrey" text={selected.proposedCheck.method} />
+              <span>{selected.subject}</span>
+            </div>
             <p className={styles.outcome}>
               Review a ready-to-customize check that can continuously verify this public endpoint.
             </p>
@@ -266,7 +269,10 @@ function ReliabilityInboxReview() {
             Recent traffic shows sustained demand with measurable availability and latency.
           </p>
           <details className={styles.disclosure}>
-            <summary>Why this recommendation?</summary>
+            <summary>
+              <Icon name="angle-right" />
+              <span>Why this recommendation?</span>
+            </summary>
             <div className={styles.disclosureContent}>
               <p>{selected.rationale}</p>
               <p>Evidence covers the last hour and came from {formatList(selected.suggestion.evidence.families)}.</p>
@@ -285,7 +291,10 @@ function ReliabilityInboxReview() {
             </div>
           </div>
           <details className={styles.disclosure}>
-            <summary>How we checked</summary>
+            <summary>
+              <Icon name="angle-right" />
+              <span>How we checked</span>
+            </summary>
             <div className={styles.disclosureContent}>
               <p>We compared this endpoint and path with the HTTP checks available to us.</p>
               <p>
@@ -301,7 +310,7 @@ function ReliabilityInboxReview() {
             <div>
               <span className={styles.eyebrow}>Proposed check</span>
               <h3>
-                {selected.proposedCheck.method} {selected.proposedCheck.target}
+                {selected.proposedCheck.method} {selected.subject}
               </h3>
             </div>
             <Badge color="green" text="Ready to review" />
@@ -317,8 +326,27 @@ function ReliabilityInboxReview() {
             </div>
           </div>
           <details className={cx(styles.disclosure, styles.configurationDisclosure)}>
-            <summary>View configuration details</summary>
+            <summary>
+              <Icon name="angle-right" />
+              <span>View configuration details</span>
+            </summary>
             <dl className={styles.proposalSummary}>
+              <div className={styles.exactTarget}>
+                <dt>Target URL</dt>
+                <dd className={styles.targetValue}>
+                  <code>{selected.proposedCheck.target}</code>
+                  <ClipboardButton
+                    aria-label="Copy target URL"
+                    fill="text"
+                    getText={() => selected.proposedCheck.target}
+                    icon="clipboard-alt"
+                    size="sm"
+                    variant="secondary"
+                  >
+                    Copy
+                  </ClipboardButton>
+                </dd>
+              </div>
               <div>
                 <dt>Timeout</dt>
                 <dd>{formatDuration(selected.proposedCheck.timeoutMs)}</dd>
@@ -440,9 +468,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   queueSignals: css({
     display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     gap: theme.spacing(0.5),
+  }),
+  queueSubject: css({
+    display: 'block',
+    maxWidth: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   }),
   review: css({
     display: 'flex',
@@ -468,12 +503,19 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1,
   }),
   target: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
     color: theme.colors.text.primary,
-    overflowWrap: 'anywhere',
-    fontFamily: theme.typography.fontFamilyMonospace,
-    fontWeight: theme.typography.fontWeightMedium,
-    marginTop: 0,
-    marginBottom: `${theme.spacing(1)} !important`,
+    margin: theme.spacing(0, 0, 1),
+    minWidth: 0,
+    '& > span': {
+      fontWeight: theme.typography.fontWeightMedium,
+      minWidth: 0,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
   }),
   outcome: css({
     color: theme.colors.text.primary,
@@ -526,7 +568,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   section: css({
     padding: theme.spacing(2.5),
     borderTop: `1px solid ${theme.colors.border.weak}`,
-    '& h3': { margin: theme.spacing(0, 0, 1.5) },
+    '& h3': { color: theme.colors.text.primary, margin: theme.spacing(0, 0, 1.5) },
   }),
   metrics: css({
     display: 'grid',
@@ -557,7 +599,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(2.5),
     borderTop: `1px solid ${theme.colors.border.weak}`,
     background: theme.colors.background.secondary,
-    '& h3': { margin: theme.spacing(0.5, 0, 0), fontSize: theme.typography.h5.fontSize },
+    '& h3': {
+      color: theme.colors.text.primary,
+      margin: theme.spacing(0.5, 0, 0),
+      fontSize: theme.typography.h5.fontSize,
+    },
     '& p': { color: theme.colors.text.secondary, margin: 0 },
   }),
   coverageStatus: css({
@@ -574,10 +620,35 @@ const getStyles = (theme: GrafanaTheme2) => ({
     borderTop: `1px solid ${theme.colors.border.weak}`,
     marginTop: theme.spacing(1.5),
     '& summary': {
-      color: theme.colors.text.link,
+      alignItems: 'center',
+      boxSizing: 'border-box',
+      color: theme.colors.text.secondary,
       cursor: 'pointer',
+      display: 'flex',
+      fontSize: theme.typography.bodySmall.fontSize,
       fontWeight: theme.typography.fontWeightMedium,
-      padding: theme.spacing(1.25, 0, 0),
+      gap: theme.spacing(0.75),
+      listStyle: 'none',
+      padding: theme.spacing(1.25, 0),
+      transition: 'background-color 0.1s ease, color 0.1s ease',
+      width: '100%',
+      '&::-webkit-details-marker': { display: 'none' },
+      '&:hover': {
+        background: theme.colors.action.hover,
+        color: theme.colors.text.primary,
+      },
+      '&:focus-visible': {
+        borderRadius: theme.shape.radius.default,
+        outline: `2px solid ${theme.colors.primary.border}`,
+        outlineOffset: -2,
+      },
+      '& svg': {
+        flexShrink: 0,
+        transition: 'transform 0.1s ease',
+      },
+    },
+    '&[open] > summary svg': {
+      transform: 'rotate(90deg)',
     },
   }),
   disclosureContent: css({
@@ -597,7 +668,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     gap: theme.spacing(2),
     padding: theme.spacing(2.5),
-    '& h3': { margin: theme.spacing(0.5, 0, 0) },
+    '& h3': { color: theme.colors.text.primary, margin: theme.spacing(0.5, 0, 0) },
   }),
   compactConfig: css({
     display: 'flex',
@@ -641,6 +712,21 @@ const getStyles = (theme: GrafanaTheme2) => ({
     '& dd': { margin: theme.spacing(0.5, 0, 0), overflowWrap: 'anywhere' },
     [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
       gridTemplateColumns: '1fr',
+    },
+  }),
+  exactTarget: css({
+    gridColumn: '1 / -1',
+  }),
+  targetValue: css({
+    alignItems: 'center',
+    display: 'flex',
+    gap: theme.spacing(1),
+    justifyContent: 'space-between',
+    minWidth: 0,
+    '& code': {
+      fontFamily: theme.typography.fontFamilyMonospace,
+      minWidth: 0,
+      overflowWrap: 'anywhere',
     },
   }),
   loading: css({
