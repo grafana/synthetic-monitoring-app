@@ -1,7 +1,14 @@
 import React from 'react';
 import { useAssistant } from '@grafana/assistant';
-import { render as renderWithoutApp, screen } from '@testing-library/react';
+import { render as renderWithoutApp, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import {
+  trackConfigurationViewed,
+  trackCreateIntent,
+  trackInboxExposure,
+  trackRecommendationReviewed,
+  trackReviewEntryClicked,
+} from 'features/tracking/reliabilityInboxEvents';
 import { render } from 'test/render';
 
 import { ReliabilitySuggestion } from './types';
@@ -15,6 +22,14 @@ import { ReliabilityInboxPage } from './ReliabilityInboxPage';
 
 jest.mock('./data', () => ({
   useReliabilityInboxSuggestions: jest.fn(),
+}));
+
+jest.mock('features/tracking/reliabilityInboxEvents', () => ({
+  trackInboxExposure: jest.fn(),
+  trackReviewEntryClicked: jest.fn(),
+  trackRecommendationReviewed: jest.fn(),
+  trackConfigurationViewed: jest.fn(),
+  trackCreateIntent: jest.fn(),
 }));
 
 const HTTP_SUGGESTION: ReliabilitySuggestion = {
@@ -37,48 +52,33 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
   score: 1.4,
   dedupStatus: 'uncovered',
   authRequired: false,
-  algorithms: ['score', 'llm_rank'],
+  algorithms: ['score', 'exact_url_match'],
   relevance: 75,
   angles: ['customer_facing'],
   rationale: 'Public endpoint with steady traffic serving likely critical MCP protocol functions.',
+  proposedCheck: {
+    job: 'mcp.goagain.dev',
+    frequencyMs: 60_000,
+    timeoutMs: 2000,
+    validStatusCodes: [200],
+    failIfNotSSL: true,
+    probeIds: [7],
+    locationPolicy: 'Run from the suggested public probe in Frankfurt.',
+  },
   prompt:
     'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/. Suggested configuration: job "mcp.goagain.dev", frequency 1m0s, timeout 2s, expect HTTP status [200], fail if not SSL, probe IDs [7].',
 };
 
-const DNS_SUGGESTION: ReliabilitySuggestion = {
-  id: 'dns-suggestion',
-  target: 'host.docker.internal',
-  checkType: 'dns',
-  evidence: {
-    reqPerS: 1.3,
-    p99Ms: 4,
-    statusDistribution: { '200': 1.3 },
-    families: ['http_server_request_duration_seconds_bucket'],
-    activitySemantics: ['bytes'],
-  },
-  reachability: 'nxdomain',
-  reachabilitySource: 'service_dns_hint',
-  confidence: 'high',
-  score: 1.3,
-  dedupStatus: 'uncovered',
-  authRequired: false,
-  needsConfiguration: true,
-  configurationReason: 'private zone: configure the internal resolver and assign a private probe',
-  algorithms: ['score'],
-  angles: [],
-  prompt: 'Create a Grafana Synthetic Monitoring dns check for host.docker.internal.',
-};
-
-const OPPORTUNITIES = [toReliabilityOpportunity(HTTP_SUGGESTION), toReliabilityOpportunity(DNS_SUGGESTION)];
+const OPPORTUNITIES = [toReliabilityOpportunity(HTTP_SUGGESTION)];
 const openAssistant = jest.fn();
 
 function mockSuggestions() {
-  (useReliabilityInboxSuggestions as jest.Mock).mockReturnValue({
+  jest.mocked(useReliabilityInboxSuggestions).mockReturnValue({
     data: OPPORTUNITIES,
     isLoading: false,
     isError: false,
     refetch: jest.fn(),
-  });
+  } as unknown as ReturnType<typeof useReliabilityInboxSuggestions>);
 }
 
 function renderPage() {
@@ -92,7 +92,7 @@ function renderPage() {
 
 describe('ReliabilityInboxPage', () => {
   beforeEach(() => {
-    openAssistant.mockClear();
+    jest.clearAllMocks();
     jest.mocked(useAssistant).mockReturnValue({
       isAvailable: true,
       isLoading: false,
@@ -102,90 +102,103 @@ describe('ReliabilityInboxPage', () => {
     });
   });
 
-  it('renders only the prioritized open queue without lifecycle tabs', async () => {
+  it('shows a selected public HTTP recommendation with guarded coverage wording', async () => {
     renderPage();
 
-    expect(await screen.findByText('Potential gap for mcp.goagain.dev')).toBeInTheDocument();
-    expect(screen.getByText('Potential gap for host.docker.internal')).toBeInTheDocument();
-
-    const opportunityHeadings = screen
-      .getAllByRole('heading', { level: 2 })
-      .filter((heading) => heading.textContent?.startsWith('Potential gap'));
-    expect(opportunityHeadings[0]).toHaveTextContent('mcp.goagain.dev');
-    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
-    expect(screen.getByText('2 open opportunities')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Monitor mcp.goagain.dev' })).toBeInTheDocument();
+    expect(screen.getByText('Highest priority')).toBeInTheDocument();
+    expect(
+      screen.getByText('We did not find an exact matching check among the configuration we could analyze.')
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Hostname-only similarity is not treated as certainty/)).toBeInTheDocument();
+    expect(screen.queryByText('host.docker.internal')).not.toBeInTheDocument();
+    expect(openAssistant).not.toHaveBeenCalled();
+    expect(trackRecommendationReviewed).toHaveBeenCalledWith({
+      opportunityId: 'http-suggestion',
+      checkType: 'http',
+    });
   });
 
-  it('expands the richer, in-context Figma evidence treatment', async () => {
+  it('requires configuration review before offering Create with Assistant', async () => {
     const { user } = renderPage();
 
-    await user.click((await screen.findAllByText('View evidence'))[0]);
+    expect(screen.queryByRole('button', { name: 'Create with Assistant' })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Review configuration' }));
 
-    expect(screen.getByText('Why this was recommended')).toBeInTheDocument();
-    expect(screen.getByText('Signals measured over the last hour')).toBeInTheDocument();
-    expect(screen.getByText('5.8k')).toBeInTheDocument();
-    expect(screen.getByText(/0.14% HTTP error responses/)).toBeInTheDocument();
-    expect(screen.getByText('Coverage analysis')).toBeInTheDocument();
-    expect(screen.getByText('Confidence and limitations')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Exact proposed check configuration' })).toBeInTheDocument();
+    expect(screen.getByText('https://mcp.goagain.dev/')).toBeInTheDocument();
+    expect(screen.getByText('Every 1 minute')).toBeInTheDocument();
+    expect(screen.getByText('2 seconds')).toBeInTheDocument();
+    expect(screen.getByText('Response status must be 200')).toBeInTheDocument();
+    expect(screen.getByText('Run from the suggested public probe in Frankfurt.')).toBeInTheDocument();
+    expect(screen.getByText('43.2k per 30-day month')).toBeInTheDocument();
+    expect(openAssistant).not.toHaveBeenCalled();
+    expect(trackConfigurationViewed).toHaveBeenCalledWith({
+      opportunityId: 'http-suggestion',
+      checkType: 'http',
+    });
   });
 
-  it('opens and auto-sends the recommendation to Grafana Assistant', async () => {
+  it('sends only the reviewed structured draft after explicit create intent', async () => {
     const { user } = renderPage();
 
-    await user.click(await screen.findByText('Review check'));
+    await user.click(await screen.findByRole('button', { name: 'Review configuration' }));
+    await user.click(screen.getByRole('button', { name: 'Create with Assistant' }));
 
+    expect(trackCreateIntent).toHaveBeenCalledWith({
+      opportunityId: 'http-suggestion',
+      checkType: 'http',
+    });
     expect(openAssistant).toHaveBeenCalledWith(
       expect.objectContaining({
         origin: 'grafana-synthetic-monitoring-app/reliability-inbox',
         autoSend: true,
-        prompt: expect.stringContaining('review and set up'),
+        prompt: expect.stringContaining('Create the reviewed HTTP Synthetic Monitoring check'),
         context: [
           expect.objectContaining({
             type: 'structured',
-            title: 'Reliability opportunity: mcp.goagain.dev',
-            data: expect.objectContaining({
-              task: 'review-and-setup-check',
-              target: 'https://mcp.goagain.dev/',
-            }),
+            title: 'Reviewed Synthetic Monitoring check draft: mcp.goagain.dev',
+            data: {
+              name: 'Reviewed Reliability Inbox check draft',
+              task: 'create-reviewed-http-check',
+              reviewedDraft: expect.objectContaining({
+                target: 'https://mcp.goagain.dev/',
+                checkType: 'http',
+                frequencyMs: 60_000,
+                timeoutMs: 2000,
+                validStatusCodes: [200],
+                probeIds: [7],
+              }),
+              assistantGuidance: expect.any(String),
+            },
           }),
         ],
       })
     );
   });
 
-  it('asks Assistant to complete only the missing DNS setup', async () => {
-    const { user } = renderPage();
-
-    await user.click(await screen.findByText('Complete setup'));
-
-    expect(openAssistant).toHaveBeenCalledWith(
-      expect.objectContaining({
-        autoSend: true,
-        prompt: expect.stringContaining('The recommendation is incomplete'),
-        context: [
-          expect.objectContaining({
-            data: expect.objectContaining({
-              task: 'complete-check-setup',
-              target: 'host.docker.internal',
-              missingConfiguration: expect.stringContaining('internal resolver'),
-            }),
-          }),
-        ],
-      })
-    );
-  });
-
-  it('unfolds the home banner into the inbox instead of navigating away', async () => {
+  it('keeps Home compact and links to the dedicated review route', async () => {
     mockSuggestions();
     const user = userEvent.setup();
     renderWithoutApp(<ReliabilityInboxBanner />);
 
-    expect(screen.queryByRole('heading', { name: 'Potential coverage gaps' })).not.toBeInTheDocument();
+    expect(screen.getByText('Reliability Inbox · 1 opportunity')).toBeInTheDocument();
+    expect(screen.getByText('Highest priority: mcp.goagain.dev')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Monitor mcp.goagain.dev' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByText('Review opportunities'));
+    const reviewLink = screen.getByRole('link', { name: 'Review opportunities' });
+    expect(reviewLink).toHaveAttribute('href', generateRoutePath(AppRoutes.ReliabilityInbox));
+    await waitFor(() =>
+      expect(trackInboxExposure).toHaveBeenCalledWith({
+        opportunityCount: 1,
+        topOpportunityId: 'http-suggestion',
+      })
+    );
 
-    expect(screen.getByRole('heading', { name: 'Potential coverage gaps' })).toBeInTheDocument();
-    expect(screen.getByText('Potential gap for mcp.goagain.dev')).toBeInTheDocument();
-    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    await user.click(reviewLink);
+    expect(trackReviewEntryClicked).toHaveBeenCalledWith({
+      opportunityId: 'http-suggestion',
+      checkType: 'http',
+    });
   });
 });

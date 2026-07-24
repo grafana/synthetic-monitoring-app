@@ -2,6 +2,7 @@ import {
   OpportunityConfidence,
   OpportunityReadiness,
   OpportunityValue,
+  ProposedHttpCheckDraft,
   ReliabilityOpportunity,
   ReliabilitySuggestion,
   SuggestedCheckConfig,
@@ -40,10 +41,7 @@ export function parseSuggestedCheckConfig(prompt: string): SuggestedCheckConfig 
   };
 }
 
-export function suggestionToCheckDraft(
-  suggestion: ReliabilitySuggestion,
-  availableProbeIds: number[] = []
-): Check {
+export function suggestionToCheckDraft(suggestion: ReliabilitySuggestion, availableProbeIds: number[] = []): Check {
   const config = parseSuggestedCheckConfig(suggestion.prompt);
   const availableProbes = config.probeIds.filter((id) => availableProbeIds.includes(id));
 
@@ -121,7 +119,14 @@ export function suggestionToCheckDraft(
 }
 
 export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): ReliabilityOpportunity {
-  const config = parseSuggestedCheckConfig(suggestion.prompt);
+  const proposedCheck = getProposedHttpCheckDraft(suggestion);
+  const config = {
+    frequencyMs: proposedCheck.frequencyMs,
+    timeoutMs: proposedCheck.timeoutMs,
+    validStatusCodes: proposedCheck.validStatusCodes,
+    failIfNotSSL: proposedCheck.failIfNotSSL,
+    probeIds: proposedCheck.probeIds,
+  };
   const readiness = getReadiness(suggestion);
   const requestRate = `${formatDecimal(suggestion.evidence.reqPerS)} req/s`;
   const reachability = getReachabilityLabel(suggestion);
@@ -147,7 +152,7 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
     actionTitle: `Suggested ${suggestion.checkType.toUpperCase()} check`,
     actionSummary:
       readiness === 'needs-setup'
-        ? suggestion.configurationReason ?? 'Additional configuration is required before this check can run.'
+        ? (suggestion.configurationReason ?? 'Additional configuration is required before this check can run.')
         : `${frequency} · ${locationCopy} · ${assertion}`,
     estimatedUsage: estimateMonthlyUsage(config),
     sortScore: suggestion.relevance ?? suggestion.score * 100,
@@ -155,7 +160,73 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
     requestRate,
     errorRate: formatErrorRate(suggestion),
     p99: `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
+    proposedCheck,
   };
+}
+
+export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
+  if (
+    suggestion.checkType !== CheckType.Http ||
+    suggestion.reachability !== 'public' ||
+    suggestion.authRequired ||
+    suggestion.needsConfiguration
+  ) {
+    return false;
+  }
+
+  try {
+    const url = new URL(suggestion.target);
+    return (url.protocol === 'http:' || url.protocol === 'https:') && !isPrivateOrDevelopmentHost(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+export function getProposedHttpCheckDraft(suggestion: ReliabilitySuggestion): ProposedHttpCheckDraft {
+  const parsed = parseSuggestedCheckConfig(suggestion.prompt);
+  const structured = suggestion.proposedCheck;
+  const frequencyMs = structured?.frequencyMs ?? parsed.frequencyMs ?? ONE_MINUTE_IN_MS;
+  const timeoutMs = structured?.timeoutMs ?? parsed.timeoutMs ?? 3000;
+  const validStatusCodes =
+    structured?.validStatusCodes ?? (parsed.validStatusCodes.length > 0 ? parsed.validStatusCodes : [200]);
+  const probeIds = structured?.probeIds ?? parsed.probeIds;
+  const failIfNotSSL =
+    structured?.failIfNotSSL ?? (parsed.failIfNotSSL || suggestion.target.toLowerCase().startsWith('https://'));
+  const locationPolicy =
+    structured?.locationPolicy ??
+    (probeIds.length > 0
+      ? `Run from the configured public probe${probeIds.length === 1 ? '' : 's'} with ID${probeIds.length === 1 ? '' : 's'} ${probeIds.join(', ')}.`
+      : 'Select at least one public probe before creating the check.');
+
+  return {
+    job: structured?.job ?? parsed.job ?? getSubject(suggestion.target),
+    target: suggestion.target,
+    checkType: 'http',
+    method: 'GET',
+    frequencyMs,
+    timeoutMs,
+    validStatusCodes,
+    failIfNotSSL,
+    probeIds,
+    locationPolicy,
+    estimatedExecutionsPerMonth: probeIds.length > 0 ? (ONE_MONTH_IN_MS / frequencyMs) * probeIds.length : undefined,
+  };
+}
+
+export function formatDuration(durationMs: number) {
+  if (durationMs % ONE_MINUTE_IN_MS === 0) {
+    return `${durationMs / ONE_MINUTE_IN_MS} minute${durationMs === ONE_MINUTE_IN_MS ? '' : 's'}`;
+  }
+
+  if (durationMs % 1000 === 0) {
+    return `${durationMs / 1000} seconds`;
+  }
+
+  return `${durationMs} ms`;
+}
+
+export function formatExecutions(value: number) {
+  return formatCompactNumber(value);
 }
 
 function getSubject(target: string) {
@@ -166,6 +237,38 @@ function getSubject(target: string) {
   } catch {
     return target;
   }
+}
+
+function isPrivateOrDevelopmentHost(hostname: string) {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (
+    host === 'localhost' ||
+    host === 'host.docker.internal' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.local') ||
+    host.endsWith('.internal') ||
+    host.endsWith('.test')
+  ) {
+    return true;
+  }
+
+  if (host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80:')) {
+    return true;
+  }
+
+  const octets = host.split('.').map(Number);
+  if (octets.length !== 4 || octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) {
+    return false;
+  }
+
+  return (
+    octets[0] === 0 ||
+    octets[0] === 10 ||
+    octets[0] === 127 ||
+    (octets[0] === 169 && octets[1] === 254) ||
+    (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+    (octets[0] === 192 && octets[1] === 168)
+  );
 }
 
 function getReadiness(suggestion: ReliabilitySuggestion): OpportunityReadiness {

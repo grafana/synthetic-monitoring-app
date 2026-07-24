@@ -27,6 +27,17 @@ export const reliabilitySuggestionSchema = z
     angles: z.array(z.string()).default([]),
     purpose: z.string().optional(),
     rationale: z.string().optional(),
+    proposedCheck: z
+      .object({
+        job: z.string(),
+        frequencyMs: z.number(),
+        timeoutMs: z.number(),
+        validStatusCodes: z.array(z.number()),
+        failIfNotSSL: z.boolean(),
+        probeIds: z.array(z.number()),
+        locationPolicy: z.string().optional(),
+      })
+      .optional(),
     prompt: z.string(),
   })
   .loose();
@@ -50,6 +61,20 @@ export interface SuggestedCheckConfig {
   probeIds: number[];
 }
 
+export interface ProposedHttpCheckDraft {
+  job: string;
+  target: string;
+  checkType: 'http';
+  method: 'GET';
+  frequencyMs: number;
+  timeoutMs: number;
+  validStatusCodes: number[];
+  failIfNotSSL: boolean;
+  probeIds: number[];
+  locationPolicy: string;
+  estimatedExecutionsPerMonth?: number;
+}
+
 export interface ReliabilityOpportunity {
   id: string;
   suggestion: ReliabilitySuggestion;
@@ -67,4 +92,5 @@ export interface ReliabilityOpportunity {
   requestRate: string;
   errorRate: string;
   p99: string;
+  proposedCheck: ProposedHttpCheckDraft;
 }
