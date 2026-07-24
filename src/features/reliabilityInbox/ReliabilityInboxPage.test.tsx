@@ -100,15 +100,24 @@ describe('ReliabilityInboxPage', () => {
     });
   });
 
-  it('shows a selected public HTTP recommendation with guarded coverage wording', async () => {
-    renderPage();
+  it('leads with a decision-oriented recommendation and neutral coverage status', async () => {
+    const { user } = renderPage();
 
-    expect(await screen.findByRole('heading', { name: 'Monitor mcp.goagain.dev' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Add an HTTP check for mcp.goagain.dev' })).toBeInTheDocument();
+    expect(screen.getByText('Recommended next step')).toBeInTheDocument();
     expect(screen.getByText('Highest priority')).toBeInTheDocument();
+    expect(screen.getByText('High value · High confidence')).toBeInTheDocument();
     expect(
-      screen.getByText('We did not find an exact matching check among the configuration we could analyze.')
+      screen.getByText('No exact check match found in the configuration available to this experiment')
     ).toBeInTheDocument();
-    expect(screen.getByText(/Hostname-only similarity is not treated as certainty/)).toBeInTheDocument();
+    expect(screen.getByText('Other direct or indirect coverage may still exist.')).toBeInTheDocument();
+
+    const coverageDisclosure = screen.getByText('How coverage was checked').closest('details');
+    expect(coverageDisclosure).not.toHaveAttribute('open');
+    await user.click(screen.getByText('How coverage was checked'));
+    expect(coverageDisclosure).toHaveAttribute('open');
+    expect(screen.getByText(/Hostname-only similarity is not treated as certainty/)).toBeVisible();
+
     expect(screen.queryByText('host.docker.internal')).not.toBeInTheDocument();
     expect(openAssistant).not.toHaveBeenCalled();
     expect(trackRecommendationReviewed).toHaveBeenCalledWith({
@@ -117,26 +126,32 @@ describe('ReliabilityInboxPage', () => {
     });
   });
 
-  it('shows a concise starting hypothesis without an inline configuration editor', async () => {
-    renderPage();
+  it('shows a compact proposed check with configuration details on demand', async () => {
+    const { user } = renderPage();
 
-    expect(await screen.findByRole('heading', { name: 'HTTP check for mcp.goagain.dev' })).toBeInTheDocument();
-    expect(screen.getByText('https://mcp.goagain.dev/')).toBeInTheDocument();
-    expect(screen.getByText('HTTP · GET')).toBeInTheDocument();
-    expect(screen.getByText('Every 1 minute')).toBeInTheDocument();
-    expect(screen.getByText('Run from the suggested public probe in Frankfurt.')).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Exact proposed check configuration' })).not.toBeInTheDocument();
-    expect(screen.queryByText('Response status must be 200')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Review configuration' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Set up with Assistant' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Create with Assistant' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'GET https://mcp.goagain.dev/' })).toBeInTheDocument();
+    expect(screen.getAllByText(/GET https:\/\/mcp\.goagain\.dev\//)).not.toHaveLength(0);
+    expect(screen.getByText('HTTP GET · Every 1 minute')).toBeInTheDocument();
+    expect(screen.getAllByText('Run from the suggested public probe in Frankfurt.')[0]).toBeVisible();
+
+    const configurationDisclosure = screen.getByText('View configuration details').closest('details');
+    expect(configurationDisclosure).not.toHaveAttribute('open');
+    await user.click(screen.getByText('View configuration details'));
+    expect(configurationDisclosure).toHaveAttribute('open');
+    expect(screen.getByText('2 seconds')).toBeVisible();
+    expect(screen.getByText('Require HTTPS')).toBeVisible();
+
+    expect(screen.getByRole('button', { name: 'Review and customize check' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Opening review creates nothing. You confirm before anything is saved.')
+    ).toBeInTheDocument();
     expect(openAssistant).not.toHaveBeenCalled();
   });
 
   it('hands structured evidence and draft to Assistant as bounded setup guidance', async () => {
     const { user } = renderPage();
 
-    await user.click(await screen.findByRole('button', { name: 'Set up with Assistant' }));
+    await user.click(await screen.findByRole('button', { name: 'Review and customize check' }));
 
     expect(trackSetupWithAssistant).toHaveBeenCalledWith({
       opportunityId: 'http-suggestion',
@@ -208,7 +223,7 @@ describe('ReliabilityInboxPage', () => {
 
     expect(screen.getByText('Reliability Inbox · 1 opportunity')).toBeInTheDocument();
     expect(screen.getByText('Highest priority: mcp.goagain.dev')).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Monitor mcp.goagain.dev' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Add an HTTP check for mcp.goagain.dev' })).not.toBeInTheDocument();
 
     const reviewLink = screen.getByRole('link', { name: 'Review opportunities' });
     expect(reviewLink).toHaveAttribute('href', generateRoutePath(AppRoutes.ReliabilityInbox));
