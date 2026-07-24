@@ -160,6 +160,7 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
     requestRate,
     errorRate: formatErrorRate(suggestion),
     p99: `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
+    evidencePrototype: suggestion.evidencePrototype,
     proposedCheck,
   };
 }

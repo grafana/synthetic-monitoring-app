@@ -23,6 +23,20 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
     families: ['http_server_request_duration_seconds_bucket'],
     activitySemantics: ['bytes'],
   },
+  evidencePrototype: {
+    kind: 'graft-demo-v1',
+    window: {
+      label: 'the last 24 hours',
+      from: 1_784_800_800_000,
+      to: 1_784_887_200_000,
+    },
+    exactRequestTotal: 14_700,
+    timeline: [
+      { timestamp: 1_784_800_800_000, requests: 5100 },
+      { timestamp: 1_784_804_400_000, requests: 4900 },
+      { timestamp: 1_784_808_000_000, requests: 4700 },
+    ],
+  },
   reachability: 'public',
   reachabilitySource: 'service_dns_hint',
   confidence: 'high',
@@ -120,6 +134,7 @@ describe('Reliability Inbox model', () => {
 
     expect(opportunity.errorRate).toBe('0.14%');
     expect(opportunity.requestVolume).toBe('5.8k');
+    expect(opportunity.evidencePrototype).toEqual(HTTP_SUGGESTION.evidencePrototype);
     expect(opportunity.estimatedUsage).toBe('Estimated usage: 43.2k executions / month');
     expect(opportunity.readiness).toBe('ready');
     expect(opportunity.suggestion.checkType).toBe(CheckType.Http);

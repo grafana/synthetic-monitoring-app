@@ -13,6 +13,7 @@ import { getUserPermissions } from 'data/permissions';
 import { ASSISTANT_ACTION_SIZE, getAssistantActionStyle } from './assistantActionStyles';
 import { useReliabilityInboxSuggestions } from './data';
 import { formatDuration } from './model';
+import { ReliabilityEvidenceTrend } from './ReliabilityEvidenceTrend';
 
 const ASSISTANT_ORIGIN = 'grafana-synthetic-monitoring-app/reliability-inbox';
 
@@ -273,16 +274,38 @@ function ReliabilityInboxReview() {
         </header>
 
         <section className={styles.section}>
-          <h3>Evidence at a glance</h3>
-          <div className={styles.metrics}>
-            <EvidenceMetric value={selected.requestVolume} label="requests in the last hour" />
-            <EvidenceMetric value={selected.requestRate} label="observed request rate" />
-            <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
-            <EvidenceMetric value={selected.p99} label="p99 response time" />
+          <div className={styles.sectionTitle}>
+            <h3>Evidence at a glance</h3>
+            {selected.evidencePrototype && <Badge color="purple" text="Demo evidence" />}
           </div>
-          <p className={styles.sectionSummary}>
-            Recent traffic shows sustained demand with measurable availability and latency.
-          </p>
+          {selected.evidencePrototype ? (
+            <>
+              <div className={styles.prototypeMetrics}>
+                <EvidenceMetric
+                  value={formatExactNumber(selected.evidencePrototype.exactRequestTotal)}
+                  label={`requests · ${selected.evidencePrototype.window.label}`}
+                />
+                <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
+                <EvidenceMetric value={selected.p99} label="p99 response time" />
+              </div>
+              <ReliabilityEvidenceTrend evidence={selected.evidencePrototype} />
+              <p className={styles.sectionSummary}>
+                This visualization uses explicit prototype evidence supplied by the local demo fixture.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className={styles.metrics}>
+                <EvidenceMetric value={selected.requestVolume} label="estimated requests in the last hour" />
+                <EvidenceMetric value={selected.requestRate} label="observed request rate" />
+                <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
+                <EvidenceMetric value={selected.p99} label="p99 response time" />
+              </div>
+              <p className={styles.sectionSummary}>
+                Recent aggregate traffic shows sustained demand with measurable availability and latency.
+              </p>
+            </>
+          )}
           <details className={styles.disclosure}>
             <summary>
               <Icon name="angle-right" />
@@ -290,7 +313,16 @@ function ReliabilityInboxReview() {
             </summary>
             <div className={styles.disclosureContent}>
               <p>{selected.rationale}</p>
-              <p>Evidence covers the last hour and came from {formatList(selected.suggestion.evidence.families)}.</p>
+              <p>
+                Evidence covers {selected.evidencePrototype?.window.label ?? 'the last hour'} and came from{' '}
+                {formatList(selected.suggestion.evidence.families)}.
+              </p>
+              {selected.evidencePrototype && (
+                <p>
+                  The trend and exact total are demo contract data. Live suggestions continue to use aggregate evidence
+                  until the backend supplies an equivalent window and series.
+                </p>
+              )}
             </div>
           </details>
         </section>
@@ -414,6 +446,10 @@ function formatList(values: string[]) {
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatExactNumber(value: number) {
+  return new Intl.NumberFormat('en-US').format(value);
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -583,12 +619,27 @@ const getStyles = (theme: GrafanaTheme2) => ({
     borderTop: `1px solid ${theme.colors.border.weak}`,
     '& h3': { color: theme.colors.text.primary, margin: theme.spacing(0, 0, 1.5) },
   }),
+  sectionTitle: css({
+    alignItems: 'center',
+    display: 'flex',
+    gap: theme.spacing(1),
+    '& h3': { marginRight: 'auto' },
+  }),
   metrics: css({
     display: 'grid',
     gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
     gap: theme.spacing(1),
     [`@media (max-width: ${theme.breakpoints.values.lg}px)`]: {
       gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    },
+  }),
+  prototypeMetrics: css({
+    display: 'grid',
+    gridTemplateColumns: 'minmax(180px, 2fr) repeat(2, minmax(120px, 1fr))',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+      gridTemplateColumns: '1fr',
     },
   }),
   metric: css({
