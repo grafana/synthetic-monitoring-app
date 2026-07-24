@@ -135,6 +135,14 @@ describe('Reliability Inbox model', () => {
     );
   });
 
+  it('uses hostname, non-default port, and meaningful path as the human-readable endpoint identity', () => {
+    const target = 'https://api.example.com:8443/health?verbose=true#status';
+    const opportunity = toReliabilityOpportunity({ ...HTTP_SUGGESTION, target });
+
+    expect(opportunity.subject).toBe('api.example.com:8443/health');
+    expect(opportunity.proposedCheck.target).toBe(target);
+  });
+
   it('builds the proposal deterministically before Assistant is involved', () => {
     expect(getProposedHttpCheckDraft(HTTP_SUGGESTION)).toEqual(
       expect.objectContaining({
