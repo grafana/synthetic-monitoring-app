@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { reliabilitySuggestionsSchema } from './types';
 
-import { toReliabilityOpportunity } from './model';
+import { isInitialReviewCandidate, toReliabilityOpportunity } from './model';
 
 export const RELIABILITY_INBOX_SUGGESTIONS_URL =
   '/api/plugins/grafana-synthetic-monitoring-app/resources/reliability-inbox/suggestions';
@@ -21,7 +21,10 @@ export function useReliabilityInboxSuggestions() {
         })
       );
 
-      return reliabilitySuggestionsSchema.parse(response.data).suggestions.map(toReliabilityOpportunity);
+      return reliabilitySuggestionsSchema
+        .parse(response.data)
+        .suggestions.filter(isInitialReviewCandidate)
+        .map(toReliabilityOpportunity);
     },
     retry: false,
     staleTime: Infinity,

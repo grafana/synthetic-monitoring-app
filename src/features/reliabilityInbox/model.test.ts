@@ -1,7 +1,13 @@
 import { ReliabilitySuggestion } from './types';
 import { CheckType } from 'types';
 
-import { parseSuggestedCheckConfig, suggestionToCheckDraft, toReliabilityOpportunity } from './model';
+import {
+  getProposedHttpCheckDraft,
+  isInitialReviewCandidate,
+  parseSuggestedCheckConfig,
+  suggestionToCheckDraft,
+  toReliabilityOpportunity,
+} from './model';
 
 const HTTP_SUGGESTION: ReliabilitySuggestion = {
   id: 'http-suggestion',
@@ -28,6 +34,15 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
   angles: ['functional_criticality', 'customer_facing', 'high_traffic'],
   purpose: 'api',
   rationale: 'Public endpoint with steady traffic serving likely critical MCP protocol functions.',
+  proposedCheck: {
+    job: 'mcp.goagain.dev',
+    frequencyMs: 60_000,
+    timeoutMs: 2000,
+    validStatusCodes: [200],
+    failIfNotSSL: true,
+    probeIds: [7],
+    locationPolicy: 'Run from the suggested public probe in Frankfurt.',
+  },
   prompt:
     'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/. Suggested configuration: job "mcp.goagain.dev", frequency 1m0s, timeout 2s, expect HTTP status [200], fail if not SSL, probe IDs [7]. Why: Public endpoint with steady traffic serving likely critical MCP protocol functions.; the endpoint served 1.6 req/s (0.00% errors) over the last hour.',
 };
@@ -108,12 +123,39 @@ describe('Reliability Inbox model', () => {
     expect(opportunity.estimatedUsage).toBe('Estimated usage: 43.2k executions / month');
     expect(opportunity.readiness).toBe('ready');
     expect(opportunity.suggestion.checkType).toBe(CheckType.Http);
+    expect(opportunity.proposedCheck).toEqual(
+      expect.objectContaining({
+        target: 'https://mcp.goagain.dev/',
+        checkType: 'http',
+        method: 'GET',
+        validStatusCodes: [200],
+        locationPolicy: 'Run from the suggested public probe in Frankfurt.',
+        estimatedExecutionsPerMonth: 43_200,
+      })
+    );
   });
 
-  it('marks private DNS suggestions as needing setup', () => {
-    const opportunity = toReliabilityOpportunity(DNS_SUGGESTION);
+  it('builds the proposal deterministically before Assistant is involved', () => {
+    expect(getProposedHttpCheckDraft(HTTP_SUGGESTION)).toEqual(
+      expect.objectContaining({
+        job: 'mcp.goagain.dev',
+        frequencyMs: 60_000,
+        timeoutMs: 2000,
+        validStatusCodes: [200],
+        probeIds: [7],
+      })
+    );
+  });
 
-    expect(opportunity.readiness).toBe('needs-setup');
-    expect(opportunity.actionSummary).toContain('private zone');
+  it('suppresses private DNS and development-only targets from the initial queue', () => {
+    const developmentHttp = {
+      ...HTTP_SUGGESTION,
+      id: 'development-http',
+      target: 'http://host.docker.internal:3000/ready',
+    };
+
+    expect(isInitialReviewCandidate(HTTP_SUGGESTION)).toBe(true);
+    expect(isInitialReviewCandidate(DNS_SUGGESTION)).toBe(false);
+    expect(isInitialReviewCandidate(developmentHttp)).toBe(false);
   });
 });

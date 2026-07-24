@@ -1,70 +1,100 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createAssistantContextItem, useAssistant } from '@grafana/assistant';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import {
-  Alert,
-  Badge,
-  Button,
-  Combobox,
-  ComboboxOption,
-  Icon,
-  Modal,
-  Spinner,
-  Stack,
-  useStyles2,
-} from '@grafana/ui';
+import { Alert, Badge, Button, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import {
+  trackConfigurationViewed,
+  trackCreateIntent,
+  trackRecommendationReviewed,
+} from 'features/tracking/reliabilityInboxEvents';
 
 import { ReliabilityOpportunity } from './types';
 import { getUserPermissions } from 'data/permissions';
 
 import { useReliabilityInboxSuggestions } from './data';
-import { parseSuggestedCheckConfig } from './model';
+import { formatDuration, formatExecutions } from './model';
 
-type SortOrder = 'value' | 'confidence' | 'activity';
-
-const SORT_OPTIONS: Array<ComboboxOption<SortOrder>> = [
-  { label: 'Highest value first', value: 'value' },
-  { label: 'Highest confidence first', value: 'confidence' },
-  { label: 'Highest activity first', value: 'activity' },
-];
-
-const CONFIDENCE_SCORE = { high: 3, medium: 2, low: 1 };
-const VALUE_SCORE = { high: 3, medium: 2, lower: 1 };
 const ASSISTANT_ORIGIN = 'grafana-synthetic-monitoring-app/reliability-inbox';
-
-interface ReliabilityInboxPanelProps {
-  embedded?: boolean;
-  onCollapse?: () => void;
-}
 
 export function ReliabilityInboxPage() {
   const styles = useStyles2(getStyles);
 
   return (
-    <PluginPage
-      pageNav={{ text: 'Coverage opportunities' }}
-      renderTitle={() => <ReliabilityInboxTitle className={styles.pageTitle} />}
-    >
-      <ReliabilityInboxPanel />
+    <PluginPage pageNav={{ text: 'Reliability Inbox' }} renderTitle={() => <ReliabilityInboxTitle />}>
+      <div className={styles.page}>
+        <p className={styles.subtitle}>
+          Review evidence and the exact proposed configuration before choosing whether to create a check.
+        </p>
+        <ReliabilityInboxReview />
+      </div>
     </PluginPage>
   );
 }
 
-export function ReliabilityInboxPanel({ embedded = false, onCollapse }: ReliabilityInboxPanelProps) {
+function ReliabilityInboxReview() {
   const styles = useStyles2(getStyles);
   const { canWriteChecks } = getUserPermissions();
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
   const { data: opportunities = [], isLoading, isError, refetch } = useReliabilityInboxSuggestions();
-  const [sortOrder, setSortOrder] = useState<SortOrder>('value');
-  const [expandedId, setExpandedId] = useState<string>();
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [selectedId, setSelectedId] = useState<string>();
+  const [configurationVisible, setConfigurationVisible] = useState(false);
+  const reviewedIds = useRef(new Set<string>());
 
-  const visibleOpportunities = useMemo(
-    () => [...opportunities].sort((a, b) => compareOpportunities(a, b, sortOrder)),
-    [opportunities, sortOrder]
+  const sortedOpportunities = useMemo(
+    () => [...opportunities].sort((a, b) => b.sortScore - a.sortScore),
+    [opportunities]
   );
+  const selected = sortedOpportunities.find((opportunity) => opportunity.id === selectedId) ?? sortedOpportunities[0];
+
+  useEffect(() => {
+    if (!selected || reviewedIds.current.has(selected.id)) {
+      return;
+    }
+
+    reviewedIds.current.add(selected.id);
+    trackRecommendationReviewed({
+      opportunityId: selected.id,
+      checkType: selected.proposedCheck.checkType,
+    });
+  }, [selected]);
+
+  useEffect(() => {
+    setConfigurationVisible(false);
+  }, [selected?.id]);
+
+  if (isLoading) {
+    return (
+      <div className={styles.loading}>
+        <Spinner />
+        <span>Loading Reliability Inbox…</span>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Alert severity="error" title="Unable to load Reliability Inbox">
+        <div className={styles.retryAlert}>
+          <span>Check that the Reliability Inbox fixture interceptor is enabled in Graft.</span>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
+      </Alert>
+    );
+  }
+
+  if (!selected) {
+    return (
+      <div className={styles.emptyState}>
+        <Icon name="check-circle" size="xl" />
+        <h2>No reviewable opportunities</h2>
+        <p>Private, development-only, non-HTTP, and incomplete targets are excluded from this experiment.</p>
+      </div>
+    );
+  }
 
   const assistantDisabled = !canWriteChecks || isAssistantLoading || !isAssistantAvailable || !openAssistant;
   const assistantTooltip = !canWriteChecks
@@ -73,356 +103,239 @@ export function ReliabilityInboxPanel({ embedded = false, onCollapse }: Reliabil
       ? 'Grafana Assistant is unavailable'
       : undefined;
 
-  const requestAssistantHelp = (opportunity: ReliabilityOpportunity) => {
+  const viewConfiguration = () => {
+    setConfigurationVisible(true);
+    trackConfigurationViewed({
+      opportunityId: selected.id,
+      checkType: selected.proposedCheck.checkType,
+    });
+  };
+
+  const createWithAssistant = () => {
     if (!openAssistant) {
       return;
     }
 
-    const suggestedConfiguration = parseSuggestedCheckConfig(opportunity.suggestion.prompt);
-    const needsSetup = opportunity.readiness === 'needs-setup';
-    const task = needsSetup ? 'complete the missing configuration for' : 'review and set up';
-    const prompt = [
-      `Help me ${task} the suggested ${opportunity.suggestion.checkType.toUpperCase()} Synthetic Monitoring check for ${opportunity.subject}.`,
-      needsSetup
-        ? `The recommendation is incomplete: ${opportunity.suggestion.configurationReason ?? 'required configuration is missing'}. Ask me only for the values that cannot be derived safely.`
-        : 'Review the proposed configuration against the evidence, call out anything I should confirm, and help me finish setting it up.',
-      'Do not invent credentials, private network details, resolvers, or probe assignments. Do not create or save the check until I explicitly confirm the final configuration.',
-    ].join(' ');
+    trackCreateIntent({
+      opportunityId: selected.id,
+      checkType: selected.proposedCheck.checkType,
+    });
 
+    const reviewedDraft = selected.proposedCheck;
     const context = createAssistantContextItem('structured', {
-      title: `Reliability opportunity: ${opportunity.subject}`,
+      title: `Reviewed Synthetic Monitoring check draft: ${selected.subject}`,
       bypassLimits: true,
       data: {
-        name: 'Synthetic Monitoring Reliability Inbox recommendation',
-        task: needsSetup ? 'complete-check-setup' : 'review-and-setup-check',
-        target: opportunity.suggestion.target,
-        checkType: opportunity.suggestion.checkType,
-        readiness: opportunity.readiness,
-        rationale: opportunity.rationale,
-        evidence: {
-          requestsPerSecond: opportunity.suggestion.evidence.reqPerS,
-          estimatedRequestsInWindow: opportunity.requestVolume,
-          p99Milliseconds: opportunity.suggestion.evidence.p99Ms,
-          httpErrorRate: opportunity.errorRate,
-          statusDistribution: opportunity.suggestion.evidence.statusDistribution,
-          measurementWindow: 'last hour',
-          telemetryFamilies: opportunity.suggestion.evidence.families,
-        },
-        coverageAnalysis: {
-          status: opportunity.suggestion.dedupStatus,
-          reachability: opportunity.suggestion.reachability,
-          reachabilitySource: opportunity.suggestion.reachabilitySource,
-          algorithms: opportunity.suggestion.algorithms,
-        },
-        suggestedConfiguration,
-        missingConfiguration: opportunity.suggestion.configurationReason,
+        name: 'Reviewed Reliability Inbox check draft',
+        task: 'create-reviewed-http-check',
+        reviewedDraft,
         assistantGuidance:
-          'Act as a configuration partner for Grafana Synthetic Monitoring. Preserve the evidence-backed fields, ask for genuinely missing values, explain material tradeoffs, and wait for explicit confirmation before creating or saving a check.',
+          'Use this reviewed structured draft exactly. Do not infer or replace configuration fields. Ask before changing any field, and require normal confirmation before saving the check.',
       },
     });
 
     openAssistant({
       origin: ASSISTANT_ORIGIN,
-      prompt,
+      prompt: `Create the reviewed HTTP Synthetic Monitoring check for ${reviewedDraft.target} using the attached structured draft. Do not change any reviewed field without asking me first.`,
       context: [context],
       autoSend: true,
     });
   };
 
   return (
-    <div className={styles.page}>
-      {embedded && (
-        <div className={styles.embeddedTitleRow}>
-          <ReliabilityInboxTitle />
-          {onCollapse && (
-            <Button variant="secondary" fill="text" icon="angle-up" onClick={onCollapse}>
-              Collapse
-            </Button>
-          )}
+    <div className={styles.reviewLayout}>
+      <aside className={styles.queue} aria-label="Review queue">
+        <div className={styles.queueHeader}>
+          <strong>Review queue</strong>
+          <Badge color="blue" text={`${sortedOpportunities.length}`} />
         </div>
-      )}
+        {sortedOpportunities.map((opportunity, index) => (
+          <button
+            className={cx(styles.queueItem, { [styles.selectedQueueItem]: opportunity.id === selected.id })}
+            key={opportunity.id}
+            type="button"
+            aria-pressed={opportunity.id === selected.id}
+            onClick={() => setSelectedId(opportunity.id)}
+          >
+            <span className={styles.queueRank}>{index === 0 ? 'Highest priority' : `Priority ${index + 1}`}</span>
+            <strong>{opportunity.subject}</strong>
+            <span>{opportunity.observedSummary}</span>
+          </button>
+        ))}
+      </aside>
 
-      <div className={styles.intro}>
-        <p className={styles.subtitle}>
-          Endpoints with observed demand and no equivalent Synthetic Monitoring coverage.
-        </p>
-        <Button variant="secondary" fill="text" icon="info-circle" onClick={() => setShowHowItWorks(true)}>
-          How it works
-        </Button>
-      </div>
-
-      <div className={styles.controls}>
-        <span className={styles.openCount}>
-          {visibleOpportunities.length} open {visibleOpportunities.length === 1 ? 'opportunity' : 'opportunities'}
-        </span>
-        <Combobox<SortOrder>
-          aria-label="Sort opportunities"
-          options={SORT_OPTIONS}
-          value={sortOrder}
-          width={24}
-          onChange={(option) => setSortOrder(option.value ?? 'value')}
-        />
-      </div>
-
-      {isLoading && (
-        <div className={styles.loading}>
-          <Spinner />
-          <span>Loading coverage opportunities…</span>
-        </div>
-      )}
-
-      {isError && (
-        <Alert severity="error" title="Unable to load coverage opportunities">
-          <div className={styles.retryAlert}>
-            <span>Check that the Reliability Inbox fixture interceptor is enabled in Graft.</span>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}>
-              Retry
-            </Button>
+      <article className={styles.review}>
+        <header className={styles.reviewHeader}>
+          <div>
+            <span className={styles.eyebrow}>Selected recommendation</span>
+            <h2>Monitor {selected.subject}</h2>
+            <p>{selected.rationale}</p>
           </div>
-        </Alert>
-      )}
-
-      {!isLoading && !isError && (
-        <div className={styles.queue}>
-          <div className={styles.queueHeader}>
-            <span>Observed opportunity</span>
-            <span>Suggested action</span>
+          <div className={styles.badges}>
+            <Badge
+              color={selected.value === 'high' ? 'orange' : 'darkgrey'}
+              text={`${capitalize(selected.value)} value`}
+            />
+            <Badge
+              color={selected.confidence === 'high' ? 'green' : 'darkgrey'}
+              text={`${capitalize(selected.confidence)} confidence`}
+            />
           </div>
+        </header>
 
-          {visibleOpportunities.map((opportunity) => {
-            const evidenceExpanded = expandedId === opportunity.id;
+        <section className={styles.section}>
+          <h3>Evidence</h3>
+          <div className={styles.metrics}>
+            <EvidenceMetric value={selected.requestVolume} label="requests in the last hour" />
+            <EvidenceMetric value={selected.requestRate} label="observed request rate" />
+            <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
+            <EvidenceMetric value={selected.p99} label="p99 response time" />
+          </div>
+          <p className={styles.sourceNote}>
+            Evidence came from {formatList(selected.suggestion.evidence.families)} and covers the last hour of activity.
+          </p>
+        </section>
 
-            return (
-              <article
-                className={cx(styles.opportunity, {
-                  [styles.readyOpportunity]: opportunity.readiness === 'ready',
-                  [styles.setupOpportunity]: opportunity.readiness === 'needs-setup',
-                  [styles.expandedOpportunity]: evidenceExpanded,
-                })}
-                key={opportunity.id}
-              >
-                <div className={styles.observation}>
-                  <div className={styles.opportunityTitleRow}>
-                    <h2 className={styles.opportunityTitle}>Potential gap for {opportunity.subject}</h2>
-                    <OpportunityBadges opportunity={opportunity} />
-                  </div>
-                  <p className={styles.meta}>{opportunity.observedSummary}</p>
-                  <p className={styles.rationale}>
-                    <strong>Why it may matter:</strong> {opportunity.rationale}
-                  </p>
-                </div>
+        <section className={styles.coverage}>
+          <div>
+            <span className={styles.eyebrow}>Coverage match</span>
+            <h3>We did not find an exact matching check among the configuration we could analyze.</h3>
+          </div>
+          <p>
+            We compared the observed target, URL path, and proposed HTTP check type with the Synthetic Monitoring
+            configuration available to this experiment.
+          </p>
+          <p>
+            This is a guarded match, not proof of missing coverage. Aliases, redirects, upstream checks, inaccessible
+            configuration, or checks with a different path may cover the same service. Hostname-only similarity is not
+            treated as certainty.
+          </p>
+        </section>
 
-                <div className={styles.action}>
-                  <h3 className={styles.actionTitle}>{opportunity.actionTitle}</h3>
-                  <p className={styles.meta}>{opportunity.actionSummary}</p>
-                  {!evidenceExpanded && opportunity.estimatedUsage && (
-                    <p className={styles.usage}>{opportunity.estimatedUsage}</p>
-                  )}
-                  <div className={styles.actionButtons}>
-                    <Button
-                      variant="secondary"
-                      fill="text"
-                      size="sm"
-                      icon={evidenceExpanded ? 'angle-up' : 'angle-down'}
-                      onClick={() => setExpandedId(evidenceExpanded ? undefined : opportunity.id)}
-                    >
-                      {evidenceExpanded ? 'Hide evidence' : 'View evidence'}
-                    </Button>
-                    {!evidenceExpanded && (
-                      <AssistantActionButton
-                        opportunity={opportunity}
-                        disabled={assistantDisabled}
-                        tooltip={assistantTooltip}
-                        onClick={() => requestAssistantHelp(opportunity)}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {evidenceExpanded && (
-                  <EvidenceDetails
-                    opportunity={opportunity}
-                    assistantDisabled={assistantDisabled}
-                    assistantTooltip={assistantTooltip}
-                    onRequestAssistant={() => requestAssistantHelp(opportunity)}
-                  />
-                )}
-              </article>
-            );
-          })}
-
-          {visibleOpportunities.length === 0 && (
-            <div className={styles.emptyState}>
-              <Icon name="check-circle" size="xl" />
-              <h3>No open opportunities</h3>
-              <p>New evidence-backed coverage recommendations will appear here.</p>
+        {!configurationVisible ? (
+          <div className={styles.reviewAction}>
+            <div>
+              <strong>Next: review the deterministic check draft</strong>
+              <p>Opening the configuration does not send anything to Assistant.</p>
             </div>
-          )}
-        </div>
-      )}
-
-      <p className={styles.footer}>
-        Evidence expands in context so you keep your place in the prioritized queue. No check is created until you
-        explicitly confirm it with Grafana Assistant.
-      </p>
-
-      <Modal isOpen={showHowItWorks} title="How coverage opportunities work" onDismiss={() => setShowHowItWorks(false)}>
-        <Stack direction="column" gap={2}>
-          <p>
-            The experiment compares observed endpoint activity with current Synthetic Monitoring configuration and
-            surfaces likely coverage gaps.
-          </p>
-          <p>
-            Observed facts, inferred importance, and the proposed action are shown separately. Recommendations can be
-            incomplete or incorrect, so Grafana Assistant reviews the evidence, asks for missing configuration, and
-            waits for your confirmation before creating anything.
-          </p>
-        </Stack>
-        <Modal.ButtonRow>
-          <Button onClick={() => setShowHowItWorks(false)}>Got it</Button>
-        </Modal.ButtonRow>
-      </Modal>
+            <Button icon="eye" onClick={viewConfiguration}>
+              Review configuration
+            </Button>
+          </div>
+        ) : (
+          <ProposedConfiguration
+            opportunity={selected}
+            assistantDisabled={assistantDisabled}
+            assistantTooltip={assistantTooltip}
+            onCreateWithAssistant={createWithAssistant}
+          />
+        )}
+      </article>
     </div>
   );
 }
 
-function ReliabilityInboxTitle({ className }: { className?: string }) {
-  const styles = useStyles2(getStyles);
-
-  return (
-    <div className={cx(styles.titleRow, className)}>
-      <h1 className={styles.title}>Potential coverage gaps</h1>
-      <Badge color="blue" text="Experimental" />
-    </div>
-  );
-}
-
-function OpportunityBadges({ opportunity }: { opportunity: ReliabilityOpportunity }) {
-  const valueLabel = opportunity.value === 'lower' ? 'Lower value' : `${capitalize(opportunity.value)} value`;
-  const confidenceLabel = `${capitalize(opportunity.confidence)} confidence`;
-
-  return (
-    <div className={css({ display: 'flex', gap: 6, flexWrap: 'wrap' })}>
-      <Badge color={opportunity.value === 'high' ? 'orange' : 'darkgrey'} text={valueLabel} />
-      <Badge color={opportunity.confidence === 'high' ? 'green' : 'darkgrey'} text={confidenceLabel} />
-      <Badge
-        color={opportunity.readiness === 'ready' ? 'green' : 'orange'}
-        text={opportunity.readiness === 'ready' ? 'Ready' : 'Needs setup'}
-      />
-    </div>
-  );
-}
-
-function AssistantActionButton({
-  opportunity,
-  disabled,
-  tooltip,
-  onClick,
-}: {
-  opportunity: ReliabilityOpportunity;
-  disabled: boolean;
-  tooltip?: string;
-  onClick: () => void;
-}) {
-  return (
-    <Button icon="ai-sparkle" size="sm" disabled={disabled} tooltip={tooltip} onClick={onClick}>
-      {opportunity.readiness === 'ready' ? 'Review check' : 'Complete setup'}
-    </Button>
-  );
-}
-
-function EvidenceDetails({
+function ProposedConfiguration({
   opportunity,
   assistantDisabled,
   assistantTooltip,
-  onRequestAssistant,
+  onCreateWithAssistant,
 }: {
   opportunity: ReliabilityOpportunity;
   assistantDisabled: boolean;
   assistantTooltip?: string;
-  onRequestAssistant: () => void;
+  onCreateWithAssistant: () => void;
 }) {
   const styles = useStyles2(getStyles);
-  const { suggestion } = opportunity;
-  const coverageStatus = capitalize(suggestion.dedupStatus);
-  const limitation =
-    suggestion.configurationReason ??
-    'Request telemetry cannot confirm endpoint ownership, business intent, or indirect upstream coverage.';
+  const draft = opportunity.proposedCheck;
+  const statusAssertion =
+    draft.validStatusCodes.length > 0
+      ? `Response status must be ${draft.validStatusCodes.join(' or ')}`
+      : 'No status-code assertion';
 
   return (
-    <section className={styles.evidence}>
-      <div className={styles.evidenceHeader}>
-        <h3>Why this was recommended</h3>
-        <span>Signals measured over the last hour</span>
+    <section className={styles.configuration} aria-label="Proposed check configuration">
+      <div className={styles.configurationHeader}>
+        <div>
+          <span className={styles.eyebrow}>Reviewed draft</span>
+          <h3>Exact proposed check configuration</h3>
+        </div>
+        <Badge color="green" text="Deterministic proposal" />
       </div>
 
-      <div className={styles.evidenceGrid}>
-        <div className={styles.evidenceColumn}>
-          <div className={styles.evidenceBlock}>
-            <span className={styles.evidenceLabel}>Observed demand</span>
-            <div className={styles.metricRow}>
-              <strong>{opportunity.requestVolume}</strong>
-              <span>requests</span>
-            </div>
-            <p>
-              {opportunity.requestRate} · {opportunity.errorRate} HTTP error responses · {opportunity.p99} p99
-            </p>
-          </div>
+      <dl className={styles.configurationGrid}>
+        <ConfigurationField label="Target" value={draft.target} />
+        <ConfigurationField label="Check type" value="HTTP" />
+        <ConfigurationField label="Method" value={draft.method} />
+        <ConfigurationField label="Frequency" value={`Every ${formatDuration(draft.frequencyMs)}`} />
+        <ConfigurationField label="Timeout" value={formatDuration(draft.timeoutMs)} />
+        <ConfigurationField label="Status assertion" value={statusAssertion} />
+        <ConfigurationField
+          label="TLS policy"
+          value={draft.failIfNotSSL ? 'Fail if the target is not served over TLS' : 'No HTTPS-only assertion'}
+        />
+        <ConfigurationField label="Probe / location policy" value={draft.locationPolicy} />
+        <ConfigurationField
+          label="Estimated executions"
+          value={
+            draft.estimatedExecutionsPerMonth
+              ? `${formatExecutions(draft.estimatedExecutionsPerMonth)} per 30-day month`
+              : 'Not available until locations are selected'
+          }
+        />
+      </dl>
 
-          <div className={styles.evidenceBlock}>
-            <span className={styles.evidenceLabel}>Coverage analysis</span>
-            <strong className={styles.evidenceStatement}>{coverageStatus}</strong>
-            <p>
-              No equivalent configured check was detected. Reachability was inferred from{' '}
-              {suggestion.reachabilitySource.replaceAll('_', ' ')}.
-            </p>
-          </div>
-        </div>
-
-        <div className={styles.evidenceColumn}>
-          <div className={styles.evidenceBlock}>
-            <span className={styles.evidenceLabel}>Interpretation</span>
-            <strong className={styles.evidenceStatement}>{opportunity.rationale}</strong>
-            <p>
-              {opportunity.readiness === 'ready'
-                ? 'A check could detect availability regressions before users report them.'
-                : 'Grafana Assistant can preserve the evidence-backed fields and ask for the missing private-network configuration.'}
-            </p>
-          </div>
-
-          <div className={styles.limitation}>
-            <strong>Confidence and limitations</strong>
-            <p>
-              {capitalize(opportunity.confidence)} confidence. {limitation}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.evidenceFooter}>
-        <span>
-          Suggested check: {suggestion.checkType.toUpperCase()} · {opportunity.actionSummary}
-          {opportunity.estimatedUsage ? ` · ${opportunity.estimatedUsage.replace('Estimated usage: ', '')}` : ''}
-        </span>
-        <AssistantActionButton
-          opportunity={opportunity}
+      <div className={styles.configurationFooter}>
+        <p>
+          Assistant receives this structured draft only when you explicitly choose{' '}
+          <strong>Create with Assistant</strong>.
+        </p>
+        <Button
+          icon="ai-sparkle"
           disabled={assistantDisabled}
           tooltip={assistantTooltip}
-          onClick={onRequestAssistant}
-        />
+          onClick={onCreateWithAssistant}
+        >
+          Create with Assistant
+        </Button>
       </div>
     </section>
   );
 }
 
-function compareOpportunities(a: ReliabilityOpportunity, b: ReliabilityOpportunity, order: SortOrder) {
-  if (order === 'confidence') {
-    return CONFIDENCE_SCORE[b.confidence] - CONFIDENCE_SCORE[a.confidence] || b.sortScore - a.sortScore;
-  }
-  if (order === 'activity') {
-    return b.suggestion.evidence.reqPerS - a.suggestion.evidence.reqPerS;
-  }
-  return VALUE_SCORE[b.value] - VALUE_SCORE[a.value] || b.sortScore - a.sortScore;
+function EvidenceMetric({ value, label }: { value: string; label: string }) {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.metric}>
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function ConfigurationField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
+
+function ReliabilityInboxTitle() {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.titleRow}>
+      <h1>Reliability Inbox</h1>
+      <Badge color="blue" text="Experimental" />
+    </div>
+  );
+}
+
+function formatList(values: string[]) {
+  return values.length > 0 ? values.join(', ').replaceAll('_', ' ') : 'available request telemetry';
 }
 
 function capitalize(value: string) {
@@ -436,48 +349,181 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(2),
     minWidth: 0,
   }),
-  pageTitle: css({
-    marginBottom: 0,
-  }),
-  embeddedTitleRow: css({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing(2),
-    flexWrap: 'wrap',
-  }),
   titleRow: css({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1.5),
-    flexWrap: 'wrap',
-  }),
-  title: css({
-    margin: 0,
-    fontSize: theme.typography.h2.fontSize,
-    lineHeight: theme.typography.h2.lineHeight,
-  }),
-  intro: css({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing(2),
-    flexWrap: 'wrap',
+    '& h1': { margin: 0 },
   }),
   subtitle: css({
     color: theme.colors.text.secondary,
     margin: 0,
   }),
-  controls: css({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  reviewLayout: css({
+    display: 'grid',
+    gridTemplateColumns: 'minmax(220px, 280px) minmax(0, 1fr)',
     gap: theme.spacing(2),
-    flexWrap: 'wrap',
+    alignItems: 'start',
+    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+      gridTemplateColumns: '1fr',
+    },
   }),
-  openCount: css({
+  queue: css({
+    border: `1px solid ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.default,
+    background: theme.colors.background.secondary,
+    overflow: 'hidden',
+  }),
+  queueHeader: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.spacing(1.5),
+    borderBottom: `1px solid ${theme.colors.border.medium}`,
+  }),
+  queueItem: css({
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(1.5),
     color: theme.colors.text.secondary,
-    fontWeight: theme.typography.fontWeightMedium,
+    background: 'transparent',
+    border: 0,
+    borderBottom: `1px solid ${theme.colors.border.weak}`,
+    textAlign: 'left',
+    cursor: 'pointer',
+    '&:last-child': { borderBottom: 0 },
+    '&:hover': { background: theme.colors.action.hover },
+    '& strong': { color: theme.colors.text.primary },
+  }),
+  selectedQueueItem: css({
+    background: theme.colors.info.transparent,
+    boxShadow: `inset 3px 0 0 ${theme.colors.info.border}`,
+  }),
+  queueRank: css({
+    color: theme.colors.info.text,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightBold,
+  }),
+  review: css({
+    display: 'flex',
+    flexDirection: 'column',
+    border: `1px solid ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.default,
+    background: theme.colors.background.primary,
+    overflow: 'hidden',
+  }),
+  reviewHeader: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: theme.spacing(2),
+    padding: theme.spacing(2.5),
+    '& h2': { margin: theme.spacing(0.5, 0), fontSize: theme.typography.h3.fontSize },
+    '& p': { color: theme.colors.text.secondary, margin: 0 },
+  }),
+  eyebrow: css({
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightBold,
+    textTransform: 'uppercase',
+  }),
+  badges: css({
+    display: 'flex',
+    gap: theme.spacing(0.75),
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  }),
+  section: css({
+    padding: theme.spacing(2.5),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    '& h3': { margin: theme.spacing(0, 0, 1.5) },
+  }),
+  metrics: css({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+    gap: theme.spacing(1),
+    [`@media (max-width: ${theme.breakpoints.values.lg}px)`]: {
+      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    },
+  }),
+  metric: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(1.5),
+    borderRadius: theme.shape.radius.default,
+    background: theme.colors.background.secondary,
+    '& strong': { fontSize: theme.typography.h4.fontSize },
+    '& span': { color: theme.colors.text.secondary, fontSize: theme.typography.bodySmall.fontSize },
+  }),
+  sourceNote: css({
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    margin: theme.spacing(1.5, 0, 0),
+  }),
+  coverage: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    padding: theme.spacing(2.5),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    background: theme.colors.warning.transparent,
+    '& h3': { margin: theme.spacing(0.5, 0, 0), fontSize: theme.typography.h5.fontSize },
+    '& p': { color: theme.colors.text.secondary, margin: 0 },
+  }),
+  reviewAction: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+    padding: theme.spacing(2.5),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    '& p': { color: theme.colors.text.secondary, margin: theme.spacing(0.5, 0, 0) },
+  }),
+  configuration: css({
+    borderTop: `1px solid ${theme.colors.border.medium}`,
+    background: theme.colors.background.secondary,
+  }),
+  configurationHeader: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+    padding: theme.spacing(2.5),
+    '& h3': { margin: theme.spacing(0.5, 0, 0) },
+  }),
+  configurationGrid: css({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: theme.spacing(0),
+    margin: 0,
+    padding: theme.spacing(0, 2.5, 2.5),
+    '& > div': {
+      padding: theme.spacing(1.25),
+      border: `1px solid ${theme.colors.border.weak}`,
+      margin: '-1px 0 0 -1px',
+    },
+    '& dt': {
+      color: theme.colors.text.secondary,
+      fontSize: theme.typography.bodySmall.fontSize,
+      fontWeight: theme.typography.fontWeightBold,
+    },
+    '& dd': { margin: theme.spacing(0.5, 0, 0), overflowWrap: 'anywhere' },
+    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+      gridTemplateColumns: '1fr',
+    },
+  }),
+  configurationFooter: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+    padding: theme.spacing(2),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    '& p': { color: theme.colors.text.secondary, margin: 0 },
   }),
   loading: css({
     display: 'flex',
@@ -487,234 +533,24 @@ const getStyles = (theme: GrafanaTheme2) => ({
     minHeight: 240,
     color: theme.colors.text.secondary,
   }),
-  queue: css({
-    border: `1px solid ${theme.colors.border.medium}`,
-    borderRadius: theme.shape.radius.default,
-    overflow: 'hidden',
-    background: theme.colors.background.secondary,
-  }),
-  queueHeader: css({
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 2fr) minmax(300px, 1.05fr)',
-    gap: theme.spacing(3),
-    padding: theme.spacing(1.5, 2),
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontWeight: theme.typography.fontWeightBold,
-    textTransform: 'uppercase',
-    borderBottom: `1px solid ${theme.colors.border.medium}`,
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
-      display: 'none',
-    },
-  }),
-  opportunity: css({
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 2fr) minmax(300px, 1.05fr)',
-    gap: theme.spacing(3),
-    padding: theme.spacing(2),
-    borderBottom: `1px solid ${theme.colors.border.medium}`,
-    borderLeft: '3px solid transparent',
-    '&:last-child': {
-      borderBottom: 'none',
-    },
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
-      gridTemplateColumns: '1fr',
-      gap: theme.spacing(2),
-    },
-  }),
-  expandedOpportunity: css({
-    paddingBottom: 0,
-  }),
-  readyOpportunity: css({
-    borderLeftColor: theme.colors.info.border,
-  }),
-  setupOpportunity: css({
-    borderLeftColor: theme.colors.warning.border,
-  }),
-  observation: css({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: theme.spacing(1),
-    minWidth: 0,
-  }),
-  opportunityTitleRow: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    flexWrap: 'wrap',
-  }),
-  opportunityTitle: css({
-    fontSize: theme.typography.h5.fontSize,
-    lineHeight: theme.typography.h5.lineHeight,
-    margin: 0,
-  }),
-  meta: css({
-    color: theme.colors.text.secondary,
-    margin: 0,
-  }),
-  rationale: css({
-    color: theme.colors.text.secondary,
-    margin: 0,
-    '& strong': {
-      color: theme.colors.text.primary,
-    },
-  }),
-  action: css({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: theme.spacing(1),
-    minWidth: 0,
-  }),
-  actionTitle: css({
-    fontSize: theme.typography.h5.fontSize,
-    lineHeight: theme.typography.h5.lineHeight,
-    margin: 0,
-  }),
-  usage: css({
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    margin: 0,
-  }),
-  actionButtons: css({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: theme.spacing(1),
-    marginTop: 'auto',
-    marginLeft: 'auto',
-    flexWrap: 'wrap',
-  }),
-  evidence: css({
-    gridColumn: '1 / -1',
-    margin: theme.spacing(1, -2, 0),
-    borderTop: `1px solid ${theme.colors.border.medium}`,
-    background: theme.colors.background.primary,
-  }),
-  evidenceHeader: css({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing(2),
-    padding: theme.spacing(2),
-    '& h3': {
-      fontSize: theme.typography.h5.fontSize,
-      lineHeight: theme.typography.h5.lineHeight,
-      margin: 0,
-    },
-    '& span': {
-      color: theme.colors.text.secondary,
-      fontSize: theme.typography.bodySmall.fontSize,
-    },
-  }),
-  evidenceGrid: css({
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    padding: theme.spacing(0, 2, 2),
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
-      gridTemplateColumns: '1fr',
-    },
-  }),
-  evidenceColumn: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2.5),
-    padding: theme.spacing(1, 2),
-    minWidth: 0,
-    '& + &': {
-      borderLeft: `1px solid ${theme.colors.border.weak}`,
-    },
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
-      padding: theme.spacing(1, 0),
-      '& + &': {
-        borderLeft: 'none',
-        borderTop: `1px solid ${theme.colors.border.weak}`,
-        paddingTop: theme.spacing(2),
-      },
-    },
-  }),
-  evidenceBlock: css({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: theme.spacing(0.75),
-    color: theme.colors.text.secondary,
-    '& p': {
-      margin: 0,
-    },
-  }),
-  evidenceLabel: css({
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontWeight: theme.typography.fontWeightBold,
-    textTransform: 'uppercase',
-  }),
-  metricRow: css({
-    display: 'flex',
-    alignItems: 'baseline',
-    gap: theme.spacing(1),
-    '& strong': {
-      color: theme.colors.text.primary,
-      fontSize: theme.typography.h2.fontSize,
-      lineHeight: theme.typography.h2.lineHeight,
-    },
-  }),
-  evidenceStatement: css({
-    color: theme.colors.text.primary,
-    fontWeight: theme.typography.fontWeightMedium,
-  }),
-  limitation: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.75),
-    padding: theme.spacing(1.5),
-    border: `1px solid ${theme.colors.warning.border}`,
-    borderRadius: theme.shape.radius.default,
-    background: theme.colors.warning.transparent,
-    color: theme.colors.text.secondary,
-    '& strong': {
-      color: theme.colors.warning.text,
-    },
-    '& p': {
-      margin: 0,
-    },
-  }),
-  evidenceFooter: css({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing(2),
-    padding: theme.spacing(1.25, 2),
-    borderTop: `1px solid ${theme.colors.border.weak}`,
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    flexWrap: 'wrap',
-  }),
   emptyState: css({
-    minHeight: 220,
+    minHeight: 240,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing(1),
+    padding: theme.spacing(4),
     color: theme.colors.text.secondary,
     textAlign: 'center',
-    padding: theme.spacing(4),
-    '& h3, & p': {
-      margin: 0,
-    },
-  }),
-  footer: css({
-    color: theme.colors.text.disabled,
-    fontSize: theme.typography.bodySmall.fontSize,
-    margin: 0,
+    border: `1px solid ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.default,
+    '& h2, & p': { margin: 0 },
   }),
   retryAlert: css({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: theme.spacing(2),
-    flexWrap: 'wrap',
   }),
 });
