@@ -8,6 +8,7 @@ import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/t
 
 import { getUserPermissions } from 'data/permissions';
 
+import { getAssistantActionStyle } from './assistantActionStyles';
 import { useReliabilityInboxSuggestions } from './data';
 import { formatDuration } from './model';
 
@@ -243,14 +244,17 @@ function ReliabilityInboxReview() {
           </div>
           <div className={styles.primaryAction}>
             <Button
+              aria-describedby="reliability-inbox-assistant-action-help"
+              className={styles.assistantAction}
               icon="ai-sparkle"
               disabled={assistantDisabled}
               tooltip={assistantTooltip}
+              variant="secondary"
               onClick={setUpWithAssistant}
             >
               Review and customize check
             </Button>
-            <span>
+            <span id="reliability-inbox-assistant-action-help">
               Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or saved
               until you confirm.
             </span>
@@ -550,9 +554,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'flex-end',
     gap: theme.spacing(1),
     maxWidth: 280,
-    '& > button span': {
-      color: `${theme.colors.primary.contrastText} !important`,
-    },
     '& > span': {
       color: theme.colors.text.secondary,
       fontSize: theme.typography.bodySmall.fontSize,
@@ -565,6 +566,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
       '& > span': { textAlign: 'left' },
     },
   }),
+  assistantAction: getAssistantActionStyle(theme),
   section: css({
     padding: theme.spacing(2.5),
     borderTop: `1px solid ${theme.colors.border.weak}`,
