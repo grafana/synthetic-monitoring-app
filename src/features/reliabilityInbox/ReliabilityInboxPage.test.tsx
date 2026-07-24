@@ -161,6 +161,10 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.getByText('Require HTTPS')).toBeVisible();
 
     expect(screen.getByRole('button', { name: 'Review and customize check' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Review and customize check' })).toHaveAttribute(
+      'aria-describedby',
+      'reliability-inbox-assistant-action-help'
+    );
     expect(
       screen.getByText(
         'Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or saved until you confirm.'
@@ -243,11 +247,13 @@ describe('ReliabilityInboxPage', () => {
     renderWithoutApp(<ReliabilityInboxBanner />);
 
     expect(screen.getByText('Reliability Inbox · 1 opportunity')).toBeInTheDocument();
+    expect(screen.getByText('Assistant-guided review')).toBeInTheDocument();
     expect(screen.getByText('Highest priority: mcp.goagain.dev')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Add an HTTP check for mcp.goagain.dev' })).not.toBeInTheDocument();
 
     const reviewLink = screen.getByRole('link', { name: 'Review opportunities' });
     expect(reviewLink).toHaveAttribute('href', generateRoutePath(AppRoutes.ReliabilityInbox));
+    expect(reviewLink).toHaveAttribute('aria-describedby', 'reliability-inbox-assistant-entry');
     await waitFor(() =>
       expect(trackInboxExposure).toHaveBeenCalledWith({
         opportunityCount: 1,

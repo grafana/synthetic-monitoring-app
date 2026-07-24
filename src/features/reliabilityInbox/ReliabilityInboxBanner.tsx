@@ -8,6 +8,7 @@ import { ReliabilityOpportunity } from './types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
+import { ASSISTANT_GRADIENT, getAssistantActionStyle } from './assistantActionStyles';
 import { useReliabilityInboxSuggestions } from './data';
 
 export function ReliabilityInboxBanner() {
@@ -42,8 +43,11 @@ export function ReliabilityInboxBanner() {
   return (
     <section className={styles.banner} aria-label="Reliability Inbox">
       <div className={styles.message}>
-        <Icon name="ai-sparkle" className={styles.icon} />
+        <Icon name="ai-sparkle" className={styles.icon} aria-hidden="true" />
         <div>
+          <span className={styles.assistantLabel} id="reliability-inbox-assistant-entry">
+            Assistant-guided review
+          </span>
           <strong>
             Reliability Inbox · {opportunities.length} {opportunities.length === 1 ? 'opportunity' : 'opportunities'}
           </strong>
@@ -51,7 +55,9 @@ export function ReliabilityInboxBanner() {
         </div>
       </div>
       <LinkButton
-        icon="arrow-right"
+        aria-describedby="reliability-inbox-assistant-entry"
+        className={styles.assistantAction}
+        icon="ai-sparkle"
         size="sm"
         variant="secondary"
         href={generateRoutePath(AppRoutes.ReliabilityInbox)}
@@ -70,15 +76,26 @@ export function ReliabilityInboxBanner() {
 
 const getStyles = (theme: GrafanaTheme2) => ({
   banner: css({
+    position: 'relative',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: theme.spacing(2),
     padding: theme.spacing(1.25, 2),
-    border: `1px solid ${theme.colors.info.border}`,
+    border: `1px solid ${theme.colors.border.medium}`,
     borderRadius: theme.shape.radius.default,
-    background: theme.colors.info.transparent,
+    background: theme.colors.background.secondary,
     flexWrap: 'wrap',
+    overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      inset: '0 auto 0 0',
+      width: 3,
+      background: ASSISTANT_GRADIENT,
+      borderRadius: `${theme.shape.radius.default} 0 0 ${theme.shape.radius.default}`,
+      pointerEvents: 'none',
+    },
   }),
   message: css({
     display: 'flex',
@@ -87,16 +104,24 @@ const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.text.primary,
     '& > div': {
       display: 'flex',
-      alignItems: 'baseline',
-      gap: theme.spacing(1),
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: theme.spacing(0.25),
       flexWrap: 'wrap',
     },
   }),
+  assistantLabel: css({
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+  }),
   priority: css({
     color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
   }),
   icon: css({
-    color: theme.colors.info.text,
+    color: theme.colors.text.primary,
     flexShrink: 0,
   }),
+  assistantAction: getAssistantActionStyle(theme),
 });
