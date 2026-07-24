@@ -124,6 +124,35 @@ describe('useDashboardPanelQuery', () => {
     expect(useDashboardQuerySemanticValues).toHaveBeenCalledWith(500, explicitRange);
   });
 
+  it('uses distinct datasource request IDs for the same panel across time ranges', async () => {
+    const queryClient = createQueryClient();
+    const firstRange = { from: 100, to: 200 };
+    const secondRange = { from: 300, to: 400 };
+    jest.mocked(useDashboardTimeRange).mockImplementation((range = explicitRange) => ({
+      from: dateTime(range.from),
+      to: dateTime(range.to),
+      raw: { from: dateTime(range.from), to: dateTime(range.to) },
+    }));
+
+    renderHook(
+      () => [
+        useDashboardPanelQuery(definition, { range: firstRange }),
+        useDashboardPanelQuery(definition, { range: secondRange }),
+      ],
+      { wrapper: queryWrapper(queryClient) }
+    );
+
+    await waitFor(() => expect(executeQueries).toHaveBeenCalledTimes(2));
+
+    const requestIds = jest
+      .mocked(executeQueries)
+      .mock.calls.map(([options]) => options.requests[0]?.requestId);
+
+    expect(requestIds).toEqual(
+      expect.arrayContaining(['baseline:1:96:100:200', 'baseline:1:96:300:400'])
+    );
+  });
+
   it('pauses execution without changing cache identity and resumes the same request', async () => {
     const queryClient = createQueryClient();
     const range = { from: 1_700_000_000_000, to: 1_700_003_600_000 };

@@ -62,24 +62,26 @@ describe('HTTP header metric comparison semantics', () => {
       comparePercentagePoints({
         primary: 0.995,
         reference: 0.999,
-        referenceLabel: 'Previous period',
+        referenceLabel: '30 days ago',
       })
     ).toEqual({
-      summary: '0.4 pp lower than Previous period',
-      detail: '99.50% now · 99.90% reference',
+      plain: '0.4 pp lower',
+      compact: '↓ 0.4 pp',
+      detail: '99.50% selected · 99.90% reference',
     });
   });
 
-  it('describes equal percentage values as in line with the reference', () => {
+  it('describes equal percentage values neutrally', () => {
     expect(
       comparePercentagePoints({
         primary: 0.999,
         reference: 0.999,
-        referenceLabel: 'Normal',
+        referenceLabel: '30 days ago',
       })
     ).toEqual({
-      summary: 'In line with Normal',
-      detail: '99.90% now · 99.90% reference',
+      plain: 'No change',
+      compact: '→ 0.0 pp',
+      detail: '99.90% selected · 99.90% reference',
     });
   });
 
@@ -88,11 +90,12 @@ describe('HTTP header metric comparison semantics', () => {
       comparePercentagePoints({
         primary: 0.9994,
         reference: 0.999,
-        referenceLabel: 'Normal',
+        referenceLabel: '30 days ago',
       })
     ).toEqual({
-      summary: 'In line with Normal',
-      detail: '99.94% now · 99.90% reference',
+      plain: 'No change',
+      compact: '→ 0.0 pp',
+      detail: '99.94% selected · 99.90% reference',
     });
   });
 
@@ -106,8 +109,9 @@ describe('HTTP header metric comparison semantics', () => {
         referenceDurationMs: 60 * 60 * 1000,
       })
     ).toEqual({
-      summary: '1.0 pp higher than Previous period',
-      detail: '100.00% now · 99.00% reference · Current range: 2 hours · Previous period range: 1 hour',
+      plain: '1.0 pp higher',
+      compact: '↑ 1.0 pp',
+      detail: '100.00% selected · 99.00% reference · Current range: 2 hours · Previous period range: 1 hour',
     });
   });
 
@@ -115,13 +119,14 @@ describe('HTTP header metric comparison semantics', () => {
     const input = {
       primary: 0.47,
       reference: 0.36,
-      referenceKind: 'normal' as const,
-      referenceLabel: 'Normal',
+      referenceKind: 'shifted' as const,
+      referenceLabel: '30 days ago',
     };
 
     expect(compareLatency(input)).toEqual({
-      summary: '0.11 s slower than Normal',
-      detail: '31% slower · Normal median 0.36 s',
+      plain: '31% slower',
+      compact: '↑ 31%',
+      detail: '0.11 s slower · 30 days ago average 0.36 s',
     });
   });
 
@@ -134,8 +139,9 @@ describe('HTTP header metric comparison semantics', () => {
     };
 
     expect(compareLatency(input)).toEqual({
-      summary: '0.11 s slower than Previous period',
-      detail: '31% slower · Previous period average 0.36 s',
+      plain: '31% slower',
+      compact: '↑ 31%',
+      detail: '0.11 s slower · Previous period average 0.36 s',
     });
   });
 
@@ -148,8 +154,9 @@ describe('HTTP header metric comparison semantics', () => {
     };
 
     expect(compareLatency(input)).toEqual({
-      summary: '0.11 s faster than Previous period',
-      detail: '31% faster · Previous period average 0.36 s',
+      plain: '31% faster',
+      compact: '↓ 31%',
+      detail: '0.11 s faster · Previous period average 0.36 s',
     });
   });
 
@@ -157,13 +164,14 @@ describe('HTTP header metric comparison semantics', () => {
     const input = {
       primary: 0.364,
       reference: 0.36,
-      referenceKind: 'normal' as const,
-      referenceLabel: 'Normal',
+      referenceKind: 'shifted' as const,
+      referenceLabel: '30 days ago',
     };
 
     expect(compareLatency(input)).toEqual({
-      summary: 'In line with Normal',
-      detail: 'Normal median 0.36 s',
+      plain: 'No change',
+      compact: '→ 0%',
+      detail: '30 days ago average 0.36 s',
     });
   });
 
@@ -171,14 +179,14 @@ describe('HTTP header metric comparison semantics', () => {
     {
       direction: 'slower',
       primary: 2.006,
-      summary: '0.01 s slower than Previous period',
+      compact: '↑ <1%',
     },
     {
       direction: 'faster',
       primary: 1.994,
-      summary: '0.01 s faster than Previous period',
+      compact: '↓ <1%',
     },
-  ])('reports a directional sub-one-percent latency change as <1% $direction', ({ direction, primary, summary }) => {
+  ])('reports a directional sub-one-percent latency change as <1% $direction', ({ compact, direction, primary }) => {
     const input = {
       primary,
       reference: 2,
@@ -187,8 +195,9 @@ describe('HTTP header metric comparison semantics', () => {
     };
 
     expect(compareLatency(input)).toEqual({
-      summary,
-      detail: `<1% ${direction} · Previous period average 2.00 s`,
+      plain: `<1% ${direction}`,
+      compact,
+      detail: `0.01 s ${direction} · Previous period average 2.00 s`,
     });
   });
 
@@ -201,20 +210,21 @@ describe('HTTP header metric comparison semantics', () => {
     };
 
     expect(compareLatency(input)).toEqual({
-      summary: '0.11 s slower than Previous period',
+      plain: '0.11 s slower',
+      compact: '↑ 0.11 s',
       detail: 'Relative change unavailable from a zero reference · Previous period average 0.00 s',
     });
   });
 
   it('returns null for missing and non-finite values', () => {
     expect(
-      comparePercentagePoints({ primary: Number.POSITIVE_INFINITY, reference: 1, referenceLabel: 'Normal' })
+      comparePercentagePoints({ primary: Number.POSITIVE_INFINITY, reference: 1, referenceLabel: '30 days ago' })
     ).toBeNull();
-    expect(comparePercentagePoints({ primary: Number.NaN, reference: 1, referenceLabel: 'Normal' })).toBeNull();
-    expect(comparePercentagePoints({ primary: null, reference: 1, referenceLabel: 'Normal' })).toBeNull();
-    expect(compareLatency({ primary: Number.NEGATIVE_INFINITY, reference: 0.2, referenceLabel: 'Normal' })).toBeNull();
-    expect(compareLatency({ primary: 0.2, reference: null, referenceLabel: 'Normal' })).toBeNull();
-    expect(compareLatency({ primary: 0.2, reference: Number.NaN, referenceLabel: 'Normal' })).toBeNull();
+    expect(comparePercentagePoints({ primary: Number.NaN, reference: 1, referenceLabel: '30 days ago' })).toBeNull();
+    expect(comparePercentagePoints({ primary: null, reference: 1, referenceLabel: '30 days ago' })).toBeNull();
+    expect(compareLatency({ primary: Number.NEGATIVE_INFINITY, reference: 0.2, referenceLabel: '30 days ago' })).toBeNull();
+    expect(compareLatency({ primary: 0.2, reference: null, referenceLabel: '30 days ago' })).toBeNull();
+    expect(compareLatency({ primary: 0.2, reference: Number.NaN, referenceLabel: '30 days ago' })).toBeNull();
     expect(
       compareSslCertificate({
         primary: Number.POSITIVE_INFINITY,
@@ -247,7 +257,8 @@ describe('HTTP header metric comparison semantics', () => {
         }),
       })
     ).toEqual({
-      summary: 'Certificate renewed',
+      plain: 'Certificate renewed',
+      compact: 'Renewed',
       detail: 'Certificate identity changed since Previous period',
     });
   });
@@ -273,7 +284,8 @@ describe('HTTP header metric comparison semantics', () => {
         }),
       })
     ).toEqual({
-      summary: 'Expiry progressing as expected',
+      plain: 'Expiry progressing as expected',
+      compact: '→ On track',
       detail: 'Same certificate · 29d remaining now',
     });
   });
@@ -299,7 +311,8 @@ describe('HTTP header metric comparison semantics', () => {
         }),
       })
     ).toEqual({
-      summary: 'Certificate expiry moved earlier',
+      plain: 'Certificate expiry moved earlier',
+      compact: '← 9 days',
       detail: 'Same certificate · expiry moved 9 days earlier',
     });
   });
@@ -325,7 +338,8 @@ describe('HTTP header metric comparison semantics', () => {
         }),
       })
     ).toEqual({
-      summary: 'Certificate expiry moved earlier',
+      plain: 'Certificate expiry moved earlier',
+      compact: '← 3 days',
       detail: 'Same certificate · expiry moved 3 days earlier',
     });
   });
@@ -351,7 +365,8 @@ describe('HTTP header metric comparison semantics', () => {
         }),
       })
     ).toEqual({
-      summary: 'Certificate expiry extended',
+      plain: 'Certificate expiry extended',
+      compact: '→ 31 days',
       detail: 'Same certificate · expiry moved 31 days later',
     });
   });
@@ -369,7 +384,8 @@ describe('HTTP header metric comparison semantics', () => {
         referenceData: panelData({ remaining: 30 * DAY_SECONDS, timestamp: referenceTimestamp }),
       })
     ).toEqual({
-      summary: 'Certificate likely renewed',
+      plain: 'Certificate likely renewed',
+      compact: 'Likely renewed',
       detail: 'Expiry moved 60 days later · certificate identity unavailable',
     });
   });
@@ -411,7 +427,8 @@ describe('HTTP header metric comparison semantics', () => {
         }),
       })
     ).toEqual({
-      summary: 'Expiry progressing as expected',
+      plain: 'Expiry progressing as expected',
+      compact: '→ On track',
       detail: 'Same certificate · 29d remaining now',
     });
   });
@@ -426,7 +443,8 @@ describe('HTTP header metric comparison semantics', () => {
         referenceData: panelData(),
       })
     ).toEqual({
-      summary: 'Certificate expired',
+      plain: 'Certificate expired',
+      compact: 'Expired',
       detail: 'Expired 2d ago · certificate identity unavailable',
     });
   });
@@ -441,9 +459,10 @@ describe('HTTP header metric comparison semantics', () => {
     });
 
     expect(comparison).toEqual({
-      summary: 'Expiry progressing as expected',
+      plain: 'Expiry progressing as expected',
+      compact: '→ On track',
       detail: '29d remaining now · certificate identity unavailable',
     });
-    expect(`${comparison?.summary} ${comparison?.detail}`).not.toMatch(/worse|degrad/i);
+    expect(`${comparison?.plain} ${comparison?.detail}`).not.toMatch(/worse|degrad/i);
   });
 });

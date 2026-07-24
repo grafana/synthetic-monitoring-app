@@ -64,8 +64,6 @@ describe('getHttpHeaderMetrics', () => {
     expect(
       metrics.map((metric) => ({
         id: metric.id,
-        supportsNormalBand: metric.comparison?.supportsNormalBand,
-        normalBandDomain: metric.comparison?.normalBandDomain,
         normalBaselineId: metric.comparison?.normalBaseline?.definition.id,
         normalBaselineMaxDataPoints: metric.comparison?.normalBaseline?.definition.maxDataPoints,
         alertTypes: metric.health?.alertTypes,
@@ -73,32 +71,24 @@ describe('getHttpHeaderMetrics', () => {
     ).toEqual([
       {
         id: 'uptime',
-        supportsNormalBand: true,
-        normalBandDomain: { min: 0, max: 1 },
         normalBaselineId: 'http-health-uptime-baseline',
         normalBaselineMaxDataPoints: 720,
         alertTypes: undefined,
       },
       {
         id: 'reachability',
-        supportsNormalBand: true,
-        normalBandDomain: { min: 0, max: 1 },
         normalBaselineId: 'http-health-reachability-baseline',
         normalBaselineMaxDataPoints: 720,
         alertTypes: [CheckAlertType.ProbeFailedExecutionsTooHigh],
       },
       {
         id: 'average-latency',
-        supportsNormalBand: true,
-        normalBandDomain: { min: 0 },
         normalBaselineId: 'http-health-latency-baseline',
         normalBaselineMaxDataPoints: 720,
         alertTypes: [CheckAlertType.HTTPRequestDurationTooHighAvg],
       },
       {
         id: 'ssl-expiry',
-        supportsNormalBand: false,
-        normalBandDomain: undefined,
         normalBaselineId: undefined,
         normalBaselineMaxDataPoints: undefined,
         alertTypes: [CheckAlertType.TLSTargetCertificateCloseToExpiring],

@@ -1,9 +1,5 @@
 import { FieldSparkline, type PanelData } from '@grafana/data';
-import { type ManualReferenceAvailability, type NormalReference } from 'dashboards/comparison/comparisonCoverage';
-import {
-  type BaselineSummary,
-  summarizeBaselineForRange,
-} from 'dashboards/components/CheckDashboardHeader/health/baseline';
+import { type ManualReferenceAvailability } from 'dashboards/comparison/comparisonCoverage';
 import { useDashboardPanelQuery } from 'dashboards/hooks/useDashboardPanelQuery';
 import { hasPanelDataQueryError } from 'dashboards/query/panelDataQueryState';
 
@@ -12,17 +8,17 @@ import { type ResolvedDisplayReference } from 'dashboards/comparison/comparisonR
 import type { Check } from 'types';
 import { type DashboardComparisonContextValue, useDashboardComparison } from 'contexts/DashboardComparisonProvider';
 
+import type { MetricComparisonReadings } from './MetricComparisonReading';
+
 export type HeaderMetricComparisonVisual =
-  | {
-      kind: 'normal-band';
-      lower: number;
-      median: number;
-      upper: number;
-      label: string;
-    }
   | {
       kind: 'overlay';
       series: FieldSparkline;
+      label: string;
+    }
+  | {
+      kind: 'baseline-average';
+      value: number;
       label: string;
     }
   | {
@@ -31,14 +27,15 @@ export type HeaderMetricComparisonVisual =
 
 export interface HeaderMetricComparisonModel {
   state: 'loading' | 'ready' | 'unavailable';
-  summary?: string;
+  readings?: MetricComparisonReadings;
+  caption?: string;
   detail?: string;
   message?: string;
   visual?: HeaderMetricComparisonVisual;
 }
 
 type DisplayAvailability = DashboardComparisonContextValue['displayAvailability'];
-type ComparisonMetric = Pick<HeaderMetricDefinition, 'comparison' | 'sparkline'>;
+type ValidDisplayReference = Extract<ResolvedDisplayReference, { status: 'valid' }>;
 
 export function useHeaderMetricComparison<TCheck extends Check>({
   metric,
@@ -49,37 +46,45 @@ export function useHeaderMetricComparison<TCheck extends Check>({
   primaryValue: number | null;
   primaryData: PanelData;
 }): HeaderMetricComparisonModel | null {
-  const { displayAvailability, displayReference, enabled } = useDashboardComparison();
+  const {
+    automaticSelection,
+    displayAvailability,
+    displayReference,
+    enabled,
+  } = useDashboardComparison();
   const comparison = metric.comparison;
-  const isNormalReference =
-    displayReference?.status === 'valid' && displayReference.spec.kind === 'normal';
-  const normalBaseline = comparison?.normalBaseline;
   const referenceReady =
     enabled &&
     comparison !== undefined &&
     displayReference?.status === 'valid' &&
     isAvailabilityReady(displayAvailability);
   const visualMode = getVisualMode(metric, displayReference);
-  const valueQueryEnabled = referenceReady && (!isNormalReference || !normalBaseline);
   const visualQueryEnabled = referenceReady && visualMode === 'overlay';
-  const normalBaselineQueryEnabled = referenceReady && isNormalReference && normalBaseline !== undefined;
   const fallbackRange = panelTimeRange(primaryData);
-  const referenceRange = displayReference?.status === 'valid' ? displayReference.range : fallbackRange;
+  const referenceRange =
+    displayReference?.status === 'valid' ? displayReference.range : fallbackRange;
   const valueQuery = useDashboardPanelQuery(metric.definition, {
     range: referenceRange,
-    enabled: valueQueryEnabled,
+    enabled: referenceReady,
   });
   const visualQuery = useDashboardPanelQuery(metric.sparkline?.definition ?? metric.definition, {
     range: referenceRange,
     enabled: visualQueryEnabled,
   });
-  const normalBaselineQuery = useDashboardPanelQuery(normalBaseline?.definition ?? metric.definition, {
-    range: referenceRange,
-    enabled: normalBaselineQueryEnabled,
-  });
 
   if (!enabled || !comparison) {
     return null;
+  }
+
+  if (!displayReference && automaticSelection.status !== 'inactive') {
+    switch (automaticSelection.status) {
+      case 'finding':
+        return { state: 'loading' };
+      case 'no-data':
+        return { state: 'unavailable', message: 'No comparison data found' };
+      case 'query-error':
+        return { state: 'unavailable', message: 'Could not find comparison data' };
+    }
   }
 
   if (!isAvailabilityReady(displayAvailability)) {
@@ -101,9 +106,8 @@ export function useHeaderMetricComparison<TCheck extends Check>({
   }
 
   if (
-    (valueQueryEnabled && hasPanelDataQueryError(valueQuery.panelData)) ||
-    (visualQueryEnabled && hasPanelDataQueryError(visualQuery.panelData)) ||
-    (normalBaselineQueryEnabled && hasPanelDataQueryError(normalBaselineQuery.panelData))
+    hasPanelDataQueryError(valueQuery.panelData) ||
+    (visualQueryEnabled && hasPanelDataQueryError(visualQuery.panelData))
   ) {
     return {
       state: 'unavailable',
@@ -111,32 +115,13 @@ export function useHeaderMetricComparison<TCheck extends Check>({
     };
   }
 
-  if (
-    (valueQueryEnabled && valueQuery.isLoading) ||
-    (visualQueryEnabled && visualQuery.isLoading) ||
-    (normalBaselineQueryEnabled && normalBaselineQuery.isLoading)
-  ) {
+  if (valueQuery.isLoading || (visualQueryEnabled && visualQuery.isLoading)) {
     return { state: 'loading' };
   }
 
-  const normalSummary =
-    isNormalReference && normalBaseline && isAvailableNormalReference(displayAvailability)
-      ? summarizeBaselineForRange(
-          normalBaseline.selectSamples(normalBaselineQuery.panelData),
-          displayAvailability
-        )
-      : null;
-  const visual =
-    visualMode === 'normal-band'
-      ? createNormalVisual(metric, displayReference, normalSummary)
-      : createVisual(metric, displayReference, visualMode, visualQuery.panelData);
-  const selectedReferenceValue = metric.selectValue(valueQuery.panelData);
-  const referenceValue = normalSummary?.median ?? selectedReferenceValue;
+  const referenceValue = metric.selectValue(valueQuery.panelData);
 
-  if (
-    !Number.isFinite(referenceValue) ||
-    (visualMode === 'normal-band' && visual.kind !== 'normal-band')
-  ) {
+  if (referenceValue === null || !Number.isFinite(referenceValue)) {
     return {
       state: 'unavailable',
       message: `No ${displayReference.label} data for ${metric.label}`,
@@ -151,86 +136,77 @@ export function useHeaderMetricComparison<TCheck extends Check>({
     primaryDurationMs: rangeDuration(fallbackRange),
     referenceDurationMs: rangeDuration(displayReference.range),
     primaryData,
-    referenceData: normalSummary ? normalBaselineQuery.panelData : valueQuery.panelData,
+    referenceData: valueQuery.panelData,
   });
+
+  if (!copy) {
+    return {
+      state: 'unavailable',
+      message: `No ${displayReference.label} data for ${metric.label}`,
+    };
+  }
 
   return {
     state: 'ready',
-    summary: copy?.summary,
-    detail: appendReferenceDetail(copy?.detail, displayAvailability),
-    visual,
+    readings: {
+      plain: copy.plain,
+      reference: metric.formatValue(referenceValue),
+    },
+    caption: `Compared to ${displayReference.label}`,
+    detail: appendReferenceDetail(copy.detail, displayAvailability),
+    visual: createVisual(metric, displayReference, visualMode, visualQuery.panelData, referenceValue),
   };
 }
 
-function getVisualMode(
-  metric: ComparisonMetric,
+function getVisualMode<TCheck extends Check>(
+  metric: HeaderMetricDefinition<TCheck>,
   reference: ResolvedDisplayReference | null
 ): HeaderMetricComparisonVisual['kind'] {
   if (reference?.status !== 'valid' || !metric.sparkline) {
     return 'summary-only';
   }
 
-  if (reference.spec.kind === 'normal') {
-    return metric.comparison?.supportsNormalBand ? 'normal-band' : 'summary-only';
+  if (reference.spec.kind === 'baseline' && metric.comparison?.normalBaseline) {
+    return 'baseline-average';
   }
 
   return reference.equalDuration ? 'overlay' : 'summary-only';
 }
 
-function createVisual(
-  metric: ComparisonMetric,
-  reference: Extract<ResolvedDisplayReference, { status: 'valid' }>,
+function createVisual<TCheck extends Check>(
+  metric: HeaderMetricDefinition<TCheck>,
+  reference: ValidDisplayReference,
   mode: HeaderMetricComparisonVisual['kind'],
-  data: PanelData
+  data: PanelData,
+  referenceValue: number
 ): HeaderMetricComparisonVisual {
+  if (mode === 'baseline-average') {
+    return {
+      kind: 'baseline-average',
+      value: referenceValue,
+      label: `${reference.label} average`,
+    };
+  }
+
   if (mode !== 'overlay') {
     return { kind: 'summary-only' };
   }
 
   const series = metric.sparkline?.selectSeries(data);
 
-  if (!series) {
-    return { kind: 'summary-only' };
-  }
-
-  return {
-    kind: 'overlay',
-    series,
-    label: reference.label,
-  };
+  return series
+    ? {
+        kind: 'overlay',
+        series,
+        label: reference.label,
+      }
+    : { kind: 'summary-only' };
 }
 
-function createNormalVisual(
-  metric: ComparisonMetric,
-  reference: Extract<ResolvedDisplayReference, { status: 'valid' }>,
-  summary: BaselineSummary | null
-): HeaderMetricComparisonVisual {
-  if (!summary) {
-    return { kind: 'summary-only' };
-  }
-
-  return {
-    kind: 'normal-band',
-    lower: clamp(summary.median - 3 * summary.mad, metric.comparison?.normalBandDomain),
-    median: summary.median,
-    upper: clamp(summary.median + 3 * summary.mad, metric.comparison?.normalBandDomain),
-    label: reference.label,
-  };
-}
-
-function clamp(value: number, domain?: { min?: number; max?: number }): number {
-  return Math.min(domain?.max ?? Number.POSITIVE_INFINITY, Math.max(domain?.min ?? Number.NEGATIVE_INFINITY, value));
-}
-
-function appendReferenceDetail(detail: string | undefined, availability: DisplayAvailability): string | undefined {
-  if (availability?.status === 'available' && 'tierId' in availability) {
-    const normalEvidence = `Normal · ${availability.tierId} · ${Math.round(availability.coverage * 100)}% coverage · ${Math.round(
-      availability.executionCount
-    ).toLocaleString()} executions`;
-
-    return detail ? `${detail} · ${normalEvidence}` : normalEvidence;
-  }
-
+function appendReferenceDetail(
+  detail: string | undefined,
+  availability: DisplayAvailability
+): string | undefined {
   if (
     !availability ||
     !('coverage' in availability) ||
@@ -239,38 +215,33 @@ function appendReferenceDetail(detail: string | undefined, availability: Display
     return detail;
   }
 
-  const coverage = `${Math.round(availability.coverage * 100)}% coverage · ${Math.round(availability.executionCount).toLocaleString()} executions`;
+  const coverage = `${Math.round(availability.coverage * 100)}% coverage · ${Math.round(
+    availability.executionCount
+  ).toLocaleString()} executions`;
 
   return detail ? `${detail} · ${coverage}` : coverage;
 }
 
 function isAvailabilityReady(
   availability: DisplayAvailability
-): availability is
-  | Extract<ManualReferenceAvailability, { status: 'available' | 'partial' }>
-  | Extract<NormalReference, { status: 'available' }> {
+): availability is Extract<ManualReferenceAvailability, { status: 'available' | 'partial' }> {
   return availability?.status === 'available' || availability?.status === 'partial';
 }
 
-function isAvailableNormalReference(
+function unavailableMessage(
+  reference: ResolvedDisplayReference | null,
   availability: DisplayAvailability
-): availability is Extract<NormalReference, { status: 'available' }> {
-  return availability?.status === 'available' && 'tierId' in availability;
-}
-
-function unavailableMessage(reference: ResolvedDisplayReference | null, availability: DisplayAvailability): string {
+): string {
   const availabilityReason =
     availability?.status === 'available' || availability?.status === 'partial'
       ? undefined
       : availability?.status;
-  const reason = availabilityReason ?? (reference?.status === 'invalid' ? reference.reason : undefined);
+  const reason =
+    availabilityReason ?? (reference?.status === 'invalid' ? reference.reason : undefined);
 
   switch (reason) {
     case 'checking':
       return 'Loading comparison';
-    case 'normal-not-established':
-    case 'not-established':
-      return 'Normal not established for this period';
     case 'outside-retention':
       return 'Comparison is outside retention';
     case 'no-retained-executions':

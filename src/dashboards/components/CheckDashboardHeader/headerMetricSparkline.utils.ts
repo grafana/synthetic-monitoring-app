@@ -17,7 +17,10 @@ export interface SparklineSample {
 /** Fixed 0–1 scale so flat 100% ratio series sit at the top of the sparkline. */
 export const RATIO_SPARKLINE_Y_RANGE: SparklineYRange = { min: 0, max: 1 };
 
-function withSparklineRangeState(field: Field, fixedRange?: SparklineYRange): Field | null {
+function withSparklineRangeState(
+  field: Field,
+  options?: { fixedRange?: SparklineYRange; includeZero?: boolean }
+): Field | null {
   let dataMin = Number.POSITIVE_INFINITY;
   let dataMax = Number.NEGATIVE_INFINITY;
 
@@ -32,12 +35,17 @@ function withSparklineRangeState(field: Field, fixedRange?: SparklineYRange): Fi
     return null;
   }
 
-  const min = fixedRange?.min ?? dataMin;
-  const max = fixedRange?.max ?? dataMax;
+  const min = options?.fixedRange?.min ?? (options?.includeZero ? Math.min(0, dataMin) : dataMin);
+  const max = options?.fixedRange?.max ?? (options?.includeZero ? Math.max(0, dataMax) : dataMax);
 
   // @grafana/ui Sparkline's getYRange destructures field.state.range and throws without it.
   return {
     ...field,
+    config: {
+      ...field.config,
+      min: options?.fixedRange?.min ?? (options?.includeZero ? 0 : field.config.min),
+      max: options?.fixedRange?.max ?? field.config.max,
+    },
     state: {
       ...field.state,
       range: { min, max, delta: max - min },
@@ -45,7 +53,10 @@ function withSparklineRangeState(field: Field, fixedRange?: SparklineYRange): Fi
   };
 }
 
-export function selectSparklineSeries(data: PanelData, options?: { yRange?: SparklineYRange }): FieldSparkline | null {
+export function selectSparklineSeries(
+  data: PanelData,
+  options?: { yRange?: SparklineYRange; includeZero?: boolean }
+): FieldSparkline | null {
   if (data.state === LoadingState.Error) {
     return null;
   }
@@ -58,7 +69,10 @@ export function selectSparklineSeries(data: PanelData, options?: { yRange?: Spar
       continue;
     }
 
-    const y = withSparklineRangeState(numberField, options?.yRange);
+    const y = withSparklineRangeState(numberField, {
+      fixedRange: options?.yRange,
+      includeZero: options?.includeZero,
+    });
 
     if (!y) {
       continue;
@@ -76,6 +90,10 @@ export function selectSparklineSeries(data: PanelData, options?: { yRange?: Spar
 
 export function selectRatioSparklineSeries(data: PanelData): FieldSparkline | null {
   return selectSparklineSeries(data, { yRange: RATIO_SPARKLINE_Y_RANGE });
+}
+
+export function selectZeroBasedSparklineSeries(data: PanelData): FieldSparkline | null {
+  return selectSparklineSeries(data, { includeZero: true });
 }
 
 function valuesToArray(values: ArrayLike<unknown> | { toArray: () => unknown[] }): unknown[] {

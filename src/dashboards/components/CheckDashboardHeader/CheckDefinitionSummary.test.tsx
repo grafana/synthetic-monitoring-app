@@ -19,27 +19,24 @@ const dnsModel: CheckHeaderDefinitionModel = {
 };
 
 describe('CheckDefinitionSummary', () => {
-  it('groups configuration and labels under headings on the same row', () => {
+  it('presents the check definition as a labelled rail of configuration facts alongside labels', () => {
     render(<CheckDefinitionSummary model={dnsModel} />);
 
-    const configuration = screen.getByRole('region', { name: 'Check configuration' });
-    const labels = within(configuration).getByLabelText('Labels');
-    const factList = within(configuration).getByText('Resolver').closest('dl');
-    const factPill = within(configuration).getByText('Resolver').closest('dl > div');
-    const configGroup = factList?.parentElement;
-    const labelsGroup = labels.parentElement;
-
-    expect(within(configuration).queryByRole('heading', { name: 'Check configuration' })).not.toBeInTheDocument();
-    expect(within(configuration).getByText('Configuration')).toBeVisible();
-    expect(within(configuration).getByText('Labels')).toBeVisible();
+    const definition = screen.getByRole('region', { name: 'Check definition' });
+    const configuration = within(definition).getByLabelText('Check configuration');
+    // The check type now leads the configuration rail.
+    expect(within(configuration).getByLabelText('Check type')).toHaveTextContent('DNS');
+    const factRow = within(configuration).getByText('Resolver').closest('dl > div');
+    expect(within(configuration).getByText('Resolver')).toBeVisible();
     expect(within(configuration).getByText('8.8.8.8 · UDP 53')).toBeVisible();
-    // Facts that carry an icon render it inside their pill.
-    expect(factPill?.querySelector('svg')).toBeInTheDocument();
+    // Facts that carry an icon render it inside their stat.
+    expect(factRow?.querySelector('svg')).toBeInTheDocument();
+
+    const labels = within(definition).getByLabelText('Labels');
     expect(within(labels).getByText('team: networking')).toBeVisible();
-    // Configuration and Labels are distinct groups that still share one row.
-    expect(configGroup).not.toBe(labelsGroup);
-    expect(configGroup?.parentElement).toBe(labelsGroup?.parentElement);
-    expect(screen.queryByRole('button', { name: 'View check definition' })).not.toBeInTheDocument();
+
+    // No section heading, and identity content is not duplicated here.
+    expect(within(definition).queryByRole('heading')).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Authoritative DNS' })).not.toBeInTheDocument();
   });
 });

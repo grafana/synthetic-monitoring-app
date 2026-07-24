@@ -12,25 +12,25 @@ import { getRoute } from 'routing/utils';
 import { CheckDashboardActions } from './CheckDashboardActions';
 
 describe('CheckDashboardActions', () => {
-  describe('Enable/Disable check', () => {
-    it('renders Disable when the check is enabled', async () => {
+  describe('Pause/Resume check', () => {
+    it('renders Pause when the check is enabled', async () => {
       render(<CheckDashboardActions check={{ ...BASIC_HTTP_CHECK, enabled: true }} />);
 
-      expect(await screen.findByRole('button', { name: 'Disable' })).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Pause' })).toBeInTheDocument();
     });
 
-    it('renders Enable when the check is disabled', async () => {
+    it('renders Resume when the check is disabled', async () => {
       render(<CheckDashboardActions check={{ ...BASIC_HTTP_CHECK, enabled: false }} />);
 
-      expect(await screen.findByRole('button', { name: 'Enable' })).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Resume' })).toBeInTheDocument();
     });
 
-    it('sends a request to disable the check when Disable is clicked', async () => {
+    it('sends a request to disable the check when Pause is clicked', async () => {
       const { user } = render(<CheckDashboardActions check={{ ...BASIC_HTTP_CHECK, enabled: true }} />);
       const { read, record } = getServerRequests();
       server.use(apiRoute('updateCheck', {}, record));
 
-      await user.click(await screen.findByRole('button', { name: 'Disable' }));
+      await user.click(await screen.findByRole('button', { name: 'Pause' }));
 
       const { body } = await read();
       expect(body).toEqual({

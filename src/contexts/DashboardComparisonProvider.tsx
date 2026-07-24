@@ -1,4 +1,12 @@
-import React, { createContext, PropsWithChildren, useCallback, useContext, useMemo } from 'react';
+import React, {
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { FieldType, type PanelData } from '@grafana/data';
 import {
@@ -7,8 +15,15 @@ import {
   type NormalReference,
   selectNormalReference,
 } from 'dashboards/comparison/comparisonCoverage';
-import { COMPARISON_PRESETS } from 'dashboards/comparison/comparisonPresets';
+import {
+  BASELINE_COMPARISON_PRESETS,
+  SAME_PERIOD_COMPARISON_PRESETS,
+} from 'dashboards/comparison/comparisonPresets';
 import { resolveComparisonReference } from 'dashboards/comparison/resolveComparisonReference';
+import {
+  type AutomaticComparisonState,
+  useAutoComparisonReference,
+} from 'dashboards/comparison/useAutoComparisonReference';
 import {
   type DashboardPanelDefinition,
   useDashboardPanelQuery,
@@ -18,7 +33,7 @@ import { hasPanelDataQueryError } from 'dashboards/query/panelDataQueryState';
 import {
   type ComparisonRange,
   type ComparisonReferenceSpec,
-  type ManualComparisonReferenceSpec,
+  type ExplicitComparisonReferenceSpec,
   type ResolvedDisplayReference,
 } from 'dashboards/comparison/comparisonReference.types';
 import { type Check } from 'types';
@@ -42,9 +57,11 @@ export interface DashboardComparisonContextValue {
   referenceSpec: ComparisonReferenceSpec | null;
   healthReference: NormalReference;
   displayReference: ResolvedDisplayReference | null;
-  displayAvailability: ManualReferenceAvailability | NormalReference | null;
+  displayAvailability: ManualReferenceAvailability | null;
+  automaticSelection: AutomaticComparisonState;
   setEnabled: (enabled: boolean) => void;
-  setReference: (reference: ComparisonReferenceSpec) => void;
+  setReference: (reference: ComparisonReferenceSpec | null) => void;
+  retryAutomaticSelection: () => void;
 }
 
 export interface CheckDashboardComparisonProfile<TCheck extends Check> {
@@ -65,8 +82,10 @@ const disabledValue: DashboardComparisonContextValue = {
   healthReference: { status: 'not-established' },
   displayReference: null,
   displayAvailability: null,
+  automaticSelection: { status: 'inactive' },
   setEnabled: () => undefined,
   setReference: () => undefined,
+  retryAutomaticSelection: () => undefined,
 };
 
 const DashboardComparisonContext = createContext<DashboardComparisonContextValue | null>(null);
@@ -150,7 +169,7 @@ function ActiveDashboardComparisonProvider<TCheck extends Check>({
   );
   const knownRetentionBoundary = profile.getKnownRetentionBoundary?.(check);
   const referenceSpec = urlState.comparison ?? null;
-  const enabled = referenceSpec !== null;
+  const enabled = referenceSpec !== null && urlState.comparisonEnabled !== false;
   const normalRange = useMemo(
     () => ({
       from: primary.from - NORMAL_LOOKBACK_MS,
@@ -213,35 +232,15 @@ function ComparisonValue({
   urlFormat: DashboardUrlFormat;
 }>) {
   const availabilityContext = useContext(ComparisonAvailabilityContext)!;
-  const manualEnabled = enabled && referenceSpec?.kind !== 'normal';
-  const manualAvailability = useComparisonReferenceAvailability(
-    referenceSpec ?? { kind: 'normal' },
-    manualEnabled
-  );
-  const displayReference = useMemo(
-    () =>
-      resolveDisplayReference(
-        referenceSpec,
-        healthReference,
-        availabilityContext.primary,
-        availabilityContext.timezone
-      ),
-    [availabilityContext.primary, availabilityContext.timezone, healthReference, referenceSpec]
-  );
-  const displayAvailability = !enabled
-    ? null
-    : referenceSpec?.kind === 'normal'
-      ? healthReference
-      : manualAvailability;
   const commitComparison = useCallback(
-    (comparison: ComparisonReferenceSpec | null) => {
+    (comparison: ComparisonReferenceSpec | null, comparisonEnabled?: boolean) => {
       const current = readUrlState(new URLSearchParams(location.search), urlFormat);
 
       if (!current) {
         return;
       }
 
-      const nextState = mergeDashboardUrlState(current, { comparison });
+      const nextState = mergeDashboardUrlState(current, { comparison, comparisonEnabled });
       const nextPath =
         urlFormat === 'canonical'
           ? withDashboardUrlState(
@@ -267,15 +266,50 @@ function ComparisonValue({
     },
     [location.pathname, location.search, navigate, urlFormat]
   );
+  const [retryToken, retryAutomaticSelection] = useReducer((current: number) => current + 1, 0);
+  const automaticEnabled = enabled && referenceSpec?.kind === 'auto';
+  const automaticResult = useAutoComparisonReference({
+    definition: availabilityContext.presenceDefinition,
+    enabled: automaticEnabled,
+    knownRetentionBoundary: availabilityContext.knownRetentionBoundary,
+    primary: availabilityContext.primary,
+    retryToken,
+    timezone: availabilityContext.timezone,
+  });
+  const explicitReference: ExplicitComparisonReferenceSpec | null =
+    referenceSpec?.kind === 'auto' || referenceSpec === null ? null : referenceSpec;
+  const explicitAvailability = useComparisonReferenceAvailability(
+    explicitReference ?? { kind: 'previous' },
+    enabled && explicitReference !== null
+  );
+  const displayReference = useMemo(
+    () =>
+      resolveDisplayReference(
+        explicitReference,
+        availabilityContext.primary,
+        availabilityContext.timezone
+      ),
+    [availabilityContext.primary, availabilityContext.timezone, explicitReference]
+  );
+  const displayAvailability = enabled && explicitReference ? explicitAvailability : null;
+
+  useEffect(() => {
+    if (!automaticEnabled || !automaticResult.resolvedReference) {
+      return;
+    }
+
+    commitComparison(automaticResult.resolvedReference, true);
+  }, [automaticEnabled, automaticResult.resolvedReference, commitComparison]);
+
   const setEnabled = useCallback(
     (nextEnabled: boolean) => {
-      commitComparison(nextEnabled ? { kind: 'normal' } : null);
+      commitComparison(nextEnabled ? referenceSpec ?? { kind: 'auto' } : referenceSpec, nextEnabled);
     },
-    [commitComparison]
+    [commitComparison, referenceSpec]
   );
   const setReference = useCallback(
-    (reference: ComparisonReferenceSpec) => {
-      commitComparison(reference);
+    (reference: ComparisonReferenceSpec | null) => {
+      commitComparison(reference, reference ? true : undefined);
     },
     [commitComparison]
   );
@@ -286,8 +320,12 @@ function ComparisonValue({
       healthReference,
       displayReference,
       displayAvailability,
+      automaticSelection: automaticEnabled
+        ? automaticResult.automaticSelection
+        : { status: 'inactive' },
       setEnabled,
       setReference,
+      retryAutomaticSelection,
     }),
     [
       displayAvailability,
@@ -295,6 +333,9 @@ function ComparisonValue({
       enabled,
       healthReference,
       referenceSpec,
+      automaticEnabled,
+      automaticResult.automaticSelection,
+      retryAutomaticSelection,
       setEnabled,
       setReference,
     ]
@@ -308,7 +349,7 @@ function ComparisonValue({
 }
 
 export function useComparisonReferenceAvailability(
-  reference: ComparisonReferenceSpec,
+  reference: ExplicitComparisonReferenceSpec,
   enabled: boolean
 ): ManualReferenceAvailability {
   const context = useContext(ComparisonAvailabilityContext);
@@ -319,10 +360,7 @@ export function useComparisonReferenceAvailability(
     );
   }
 
-  const resolution =
-    reference.kind === 'normal'
-      ? { status: 'invalid' as const, reason: 'invalid-range' as const }
-      : resolveComparisonReference(reference, context.primary, context.timezone);
+  const resolution = resolveComparisonReference(reference, context.primary, context.timezone);
   const queryEnabled = enabled && resolution.status === 'valid';
   const query = useDashboardPanelQuery(context.presenceDefinition, {
     range: resolution.status === 'valid' ? resolution.range : context.primary,
@@ -376,8 +414,7 @@ function readUrlState(
 }
 
 function resolveDisplayReference(
-  spec: ComparisonReferenceSpec | null,
-  healthReference: NormalReference,
+  spec: ExplicitComparisonReferenceSpec | null,
   primary: ComparisonRange,
   timezone: string
 ): ResolvedDisplayReference | null {
@@ -385,28 +422,8 @@ function resolveDisplayReference(
     return null;
   }
 
-  if (spec.kind === 'normal') {
-    if (healthReference.status !== 'available') {
-      return {
-        status: 'invalid',
-        spec,
-        label: 'Normal',
-        reason: 'normal-not-established',
-      };
-    }
-
-    return {
-      status: 'valid',
-      spec,
-      label: 'Normal',
-      range: healthReference.range,
-      equalDuration:
-        healthReference.range.to - healthReference.range.from === primary.to - primary.from,
-    };
-  }
-
   const resolution = resolveComparisonReference(spec, primary, timezone);
-  const label = getManualReferenceLabel(spec);
+  const label = getExplicitReferenceLabel(spec);
 
   if (resolution.status === 'invalid') {
     return {
@@ -426,7 +443,7 @@ function resolveDisplayReference(
   };
 }
 
-function getManualReferenceLabel(spec: ManualComparisonReferenceSpec): string {
+function getExplicitReferenceLabel(spec: ExplicitComparisonReferenceSpec): string {
   if (spec.kind === 'previous') {
     return 'Previous period';
   }
@@ -435,7 +452,10 @@ function getManualReferenceLabel(spec: ManualComparisonReferenceSpec): string {
     return 'Custom range';
   }
 
-  return COMPARISON_PRESETS.find(({ id }) => id === spec.presetId)?.label ?? spec.presetId;
+  const presets =
+    spec.kind === 'baseline' ? BASELINE_COMPARISON_PRESETS : SAME_PERIOD_COMPARISON_PRESETS;
+
+  return presets.find(({ id }) => id === spec.presetId)?.label ?? spec.presetId;
 }
 
 function valuesToArray(values: ArrayLike<unknown> | { toArray: () => unknown[] }): unknown[] {

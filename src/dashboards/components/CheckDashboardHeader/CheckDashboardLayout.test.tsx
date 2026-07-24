@@ -108,9 +108,9 @@ describe('CheckDashboardLayout', () => {
 
     expect(bands.map((band) => band.textContent)).toEqual([
       'Check identity',
+      'Check configuration',
       'Dashboard time controls',
       'Observed performance',
-      'Check configuration',
       'Panel filtersExecution filters',
     ]);
     expect(within(layout).getByTestId('dashboard-content')).toHaveTextContent('Panels');

@@ -1,4 +1,4 @@
-import { type ManualComparisonReferenceSpec } from './comparisonReference.types';
+import { type ExplicitComparisonReferenceSpec } from './comparisonReference.types';
 
 import {
   resolveComparisonReference,
@@ -11,14 +11,14 @@ const primary = {
 };
 
 describe('resolveComparisonReference', () => {
-  it('accepts only manual comparison reference specs', () => {
-    const spec: ManualComparisonReferenceSpec = { kind: 'previous' };
+  it('accepts only explicit comparison reference specs', () => {
+    const spec: ExplicitComparisonReferenceSpec = { kind: 'previous' };
 
     expect(resolveComparisonReference(spec, primary, 'utc')).toMatchObject({ status: 'valid' });
 
     if (false) {
-      // @ts-expect-error Normal comparison is resolved by comparison coverage, not this manual resolver.
-      resolveComparisonReference({ kind: 'normal' }, primary, 'utc');
+      // @ts-expect-error Automatic comparison must resolve to an explicit reference before range resolution.
+      resolveComparisonReference({ kind: 'auto' }, primary, 'utc');
     }
   });
 
@@ -35,12 +35,23 @@ describe('resolveComparisonReference', () => {
       },
     ],
     [
-      { kind: 'shifted', presetId: '14d' } as const,
+      { kind: 'baseline', presetId: '14d' } as const,
       {
         status: 'valid',
         range: {
           from: Date.parse('2026-06-25T08:00:00.000Z'),
-          to: Date.parse('2026-06-25T11:00:00.000Z'),
+          to: Date.parse('2026-07-09T08:00:00.000Z'),
+        },
+        equalDuration: false,
+      },
+    ],
+    [
+      { kind: 'shifted', presetId: '7d' } as const,
+      {
+        status: 'valid',
+        range: {
+          from: Date.parse('2026-07-02T08:00:00.000Z'),
+          to: Date.parse('2026-07-02T11:00:00.000Z'),
         },
         equalDuration: true,
       },
@@ -88,6 +99,13 @@ describe('resolveComparisonReference', () => {
 
   it('rejects an unknown shifted preset', () => {
     expect(resolveComparisonReference({ kind: 'shifted', presetId: 'missing' }, primary, 'utc')).toEqual({
+      status: 'invalid',
+      reason: 'unknown-preset',
+    });
+  });
+
+  it('rejects an unknown baseline preset', () => {
+    expect(resolveComparisonReference({ kind: 'baseline', presetId: 'missing' }, primary, 'utc')).toEqual({
       status: 'invalid',
       reason: 'unknown-preset',
     });

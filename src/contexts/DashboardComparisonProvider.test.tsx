@@ -7,11 +7,14 @@ import {
   useNavigationType,
 } from 'react-router';
 import { FieldType, LoadingState, type PanelData } from '@grafana/data';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useDashboardPanelQuery } from 'dashboards/hooks/useDashboardPanelQuery';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
-import { type ComparisonReferenceSpec } from 'dashboards/comparison/comparisonReference.types';
+import {
+  type ComparisonReferenceSpec,
+  type ExplicitComparisonReferenceSpec,
+} from 'dashboards/comparison/comparisonReference.types';
 import { useAppTime } from 'contexts/AppTimeProvider';
 import { CheckDashboardProvider } from 'contexts/CheckDashboardProvider';
 
@@ -123,7 +126,15 @@ function ContextProbe() {
       <button onClick={() => comparison.setEnabled(true)}>enable</button>
       <button onClick={() => comparison.setEnabled(false)}>disable</button>
       <button onClick={() => comparison.setReference({ kind: 'previous' })}>previous</button>
-      <button onClick={() => comparison.setReference({ kind: 'shifted', presetId: '14d' })}>14d</button>
+      <button onClick={() => comparison.setReference({ kind: 'baseline', presetId: '14d' })}>14d</button>
+      <button
+        onClick={() =>
+          (comparison.setReference as (reference: ComparisonReferenceSpec | null) => void)(null)
+        }
+      >
+        remove comparison
+      </button>
+      <button onClick={() => comparison.retryAutomaticSelection()}>retry automatic</button>
     </>
   );
 }
@@ -132,7 +143,7 @@ function AvailabilityProbe({
   reference,
   enabled,
 }: {
-  reference: ComparisonReferenceSpec;
+  reference: ExplicitComparisonReferenceSpec;
   enabled: boolean;
 }) {
   return <output data-testid="availability">{JSON.stringify(useComparisonReferenceAvailability(reference, enabled))}</output>;
@@ -212,7 +223,7 @@ describe('DashboardComparisonProvider', () => {
     });
   });
 
-  it('enables at Normal and disabling clears every comparison URL key', () => {
+  it('enables automatic selection and disabling preserves the selected comparison', () => {
     const { navigator } = renderProvider({
       initialEntry:
         '/checks/1?sm-v=1&sm-compare=custom&sm-compare-from=2026-07-01T00%3A00%3A00.000Z&sm-compare-to=2026-07-02T00%3A00%3A00.000Z&sm-compare-match-duration=1',
@@ -221,30 +232,78 @@ describe('DashboardComparisonProvider', () => {
 
     fireEvent.click(screen.getByText('disable'));
 
-    expect(screen.getByTestId('search')).not.toHaveTextContent('sm-compare');
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=custom');
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare-enabled=0');
     expect(screen.getByTestId('navigation-type')).toHaveTextContent('REPLACE');
     expect(replace).toHaveBeenLastCalledWith(
       expect.any(Object),
       undefined,
       expect.objectContaining({ replace: true })
     );
-    expect(readComparison()).toMatchObject({ enabled: false, referenceSpec: null });
+    expect(readComparison()).toMatchObject({
+      enabled: false,
+      referenceSpec: {
+        kind: 'custom',
+        from: '2026-07-01T00:00:00.000Z',
+        to: '2026-07-02T00:00:00.000Z',
+        matchPrimaryDuration: true,
+      },
+    });
 
     fireEvent.click(screen.getByText('enable'));
 
-    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=normal');
-    expect(readComparison()).toMatchObject({ enabled: true, referenceSpec: { kind: 'normal' } });
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=custom');
+    expect(screen.getByTestId('search')).not.toHaveTextContent('sm-compare-enabled');
+    expect(readComparison()).toMatchObject({
+      enabled: true,
+      referenceSpec: {
+        kind: 'custom',
+        from: '2026-07-01T00:00:00.000Z',
+        to: '2026-07-02T00:00:00.000Z',
+        matchPrimaryDuration: true,
+      },
+    });
   });
 
-  it('re-enables at Normal instead of restoring the previous manual reference', () => {
+  it('restores the previous explicit reference when comparison is re-enabled', () => {
     renderProvider({ initialEntry: '/checks/1?sm-v=1&sm-compare=shifted&sm-compare-preset=14d' });
 
     fireEvent.click(screen.getByText('disable'));
     fireEvent.click(screen.getByText('enable'));
 
-    expect(readComparison().referenceSpec).toEqual({ kind: 'normal' });
-    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=normal');
-    expect(screen.getByTestId('search')).not.toHaveTextContent('sm-compare-preset');
+    expect(readComparison().referenceSpec).toEqual({ kind: 'baseline', presetId: '14d' });
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=baseline');
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare-preset=14d');
+  });
+
+  it('preserves the selected reference while disabled and removes it only through the reference action', () => {
+    renderProvider({
+      initialEntry: '/checks/1?sm-v=1&sm-compare=baseline&sm-compare-preset=14d',
+    });
+
+    fireEvent.click(screen.getByText('disable'));
+
+    expect(readComparison()).toMatchObject({
+      enabled: false,
+      referenceSpec: { kind: 'baseline', presetId: '14d' },
+    });
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=baseline');
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare-preset=14d');
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare-enabled=0');
+
+    fireEvent.click(screen.getByText('enable'));
+
+    expect(readComparison()).toMatchObject({
+      enabled: true,
+      referenceSpec: { kind: 'baseline', presetId: '14d' },
+    });
+    expect(screen.getByTestId('search')).not.toHaveTextContent('sm-compare-enabled');
+
+    fireEvent.click(screen.getByText('disable'));
+    fireEvent.click(screen.getByText('remove comparison'));
+
+    expect(readComparison()).toMatchObject({ enabled: false, referenceSpec: null });
+    expect(screen.getByTestId('search')).not.toHaveTextContent('sm-compare');
   });
 
   it('imports legacy comparison state on a canonical dashboard and writes subsequent changes canonically', () => {
@@ -255,7 +314,7 @@ describe('DashboardComparisonProvider', () => {
 
     expect(readComparison()).toMatchObject({
       enabled: true,
-      referenceSpec: { kind: 'shifted', presetId: '14d' },
+      referenceSpec: { kind: 'baseline', presetId: '14d' },
     });
 
     fireEvent.click(screen.getByText('previous'));
@@ -280,13 +339,14 @@ describe('DashboardComparisonProvider', () => {
 
     fireEvent.click(screen.getByText('enable'));
 
-    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=normal');
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=baseline');
+    expect(screen.getByTestId('search')).toHaveTextContent('sm-compare-preset=30d');
     expect(screen.getByTestId('search')).not.toHaveTextContent('compare=shifted');
     expect(screen.getByTestId('search')).not.toHaveTextContent('compare.preset');
   });
 
   it('changes the display reference without changing the coverage-selected health reference', () => {
-    renderProvider({ initialEntry: '/checks/1?sm-v=1&sm-compare=normal' });
+    renderProvider({ initialEntry: '/checks/1?sm-v=1&sm-compare=auto' });
     const healthReference = readComparison().healthReference;
 
     fireEvent.click(screen.getByText('14d'));
@@ -294,20 +354,19 @@ describe('DashboardComparisonProvider', () => {
     expect(readComparison().healthReference).toEqual(healthReference);
     expect(readComparison().displayReference).toMatchObject({
       status: 'valid',
-      spec: { kind: 'shifted', presetId: '14d' },
+      spec: { kind: 'baseline', presetId: '14d' },
       range: {
         from: primary.from - 14 * DAY_MS,
-        to: primary.to - 14 * DAY_MS,
+        to: primary.from,
       },
     });
   });
 
-  it('anchors Normal and Previous immediately before a historical primary range', () => {
-    renderProvider({ initialEntry: '/checks/1?sm-v=1&sm-compare=normal' });
+  it('keeps the learned health range separate while anchoring Previous before a historical primary range', () => {
+    renderProvider();
 
-    expect(readComparison().displayReference).toMatchObject({
-      status: 'valid',
-      spec: { kind: 'normal' },
+    expect(readComparison().healthReference).toMatchObject({
+      status: 'available',
       range: { from: primary.from - DAY_MS, to: primary.from },
     });
 
@@ -317,6 +376,36 @@ describe('DashboardComparisonProvider', () => {
       status: 'valid',
       spec: { kind: 'previous' },
       range: { from: primary.from - 3 * HOUR_MS, to: primary.from },
+    });
+  });
+
+  it('selects the longest automatic baseline with retained executions and writes it explicitly', async () => {
+    jest.mocked(useDashboardPanelQuery).mockImplementation((_definition, options) => {
+      const range = options?.range ?? primary;
+
+      if (range.from === primary.from - 30 * DAY_MS && range.to === primary.from) {
+        return queryResult(samplesEndingAt(primary.from));
+      }
+
+      return queryResult([]);
+    });
+
+    renderProvider({ initialEntry: '/checks/1?sm-v=1&sm-compare=auto' });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('search')).toHaveTextContent('sm-compare=baseline');
+      expect(screen.getByTestId('search')).toHaveTextContent('sm-compare-preset=30d');
+    });
+
+    expect(readComparison()).toMatchObject({
+      referenceSpec: { kind: 'baseline', presetId: '30d' },
+      displayReference: {
+        status: 'valid',
+        range: {
+          from: primary.from - 30 * DAY_MS,
+          to: primary.from,
+        },
+      },
     });
   });
 
@@ -514,7 +603,7 @@ describe('DashboardComparisonProvider', () => {
   });
 
   it('does not query a disabled candidate and queries only a valid enabled candidate range', () => {
-    const reference = { kind: 'shifted', presetId: '14d' } as const;
+    const reference = { kind: 'baseline', presetId: '14d' } as const;
     const rendered = renderProvider({
       child: <AvailabilityProbe enabled={false} reference={reference} />,
     });
@@ -542,7 +631,7 @@ describe('DashboardComparisonProvider', () => {
     expect(enabledCalls).toHaveLength(2);
     expect(enabledCalls[1][1]?.range).toEqual({
       from: primary.from - 14 * DAY_MS,
-      to: primary.to - 14 * DAY_MS,
+      to: primary.from,
     });
   });
 
@@ -600,7 +689,9 @@ describe('DashboardComparisonProvider', () => {
     fireEvent.click(screen.getByText('disable'));
 
     expect(screen.getByTestId('search')).toHaveTextContent('?keep=1');
-    expect(screen.getByTestId('search')).not.toHaveTextContent('compare=');
+    expect(screen.getByTestId('search')).toHaveTextContent('compare=baseline');
+    expect(screen.getByTestId('search')).toHaveTextContent('compare.enabled=0');
+    expect(screen.getByTestId('search')).toHaveTextContent('compare.preset=14d');
     expect(screen.getByTestId('navigation-type')).toHaveTextContent('REPLACE');
     expect(replace).toHaveBeenLastCalledWith(
       expect.any(Object),
@@ -610,7 +701,8 @@ describe('DashboardComparisonProvider', () => {
 
     fireEvent.click(screen.getByText('enable'));
 
-    expect(screen.getByTestId('search')).toHaveTextContent('compare=normal');
+    expect(screen.getByTestId('search')).toHaveTextContent('compare=baseline');
+    expect(screen.getByTestId('search')).toHaveTextContent('compare.preset=14d');
     expect(screen.getByTestId('search')).not.toHaveTextContent('sm-compare');
     expect(screen.getByTestId('navigation-type')).toHaveTextContent('REPLACE');
   });

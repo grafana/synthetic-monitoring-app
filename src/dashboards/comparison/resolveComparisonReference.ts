@@ -3,10 +3,13 @@ import { dateTime } from '@grafana/data';
 import {
   ComparisonRange,
   ComparisonReferenceValidation,
-  ManualComparisonReferenceSpec,
+  ExplicitComparisonReferenceSpec,
 } from './comparisonReference.types';
 
-import { COMPARISON_PRESETS } from './comparisonPresets';
+import {
+  BASELINE_COMPARISON_PRESETS,
+  SAME_PERIOD_COMPARISON_PRESETS,
+} from './comparisonPresets';
 
 export function rangesOverlap(left: ComparisonRange, right: ComparisonRange): boolean {
   return left.from < right.to && right.from < left.to;
@@ -29,7 +32,7 @@ export function setLockedCustomBoundary({
 }
 
 export function resolveComparisonReference(
-  spec: ManualComparisonReferenceSpec,
+  spec: ExplicitComparisonReferenceSpec,
   primary: ComparisonRange,
   timezone: string
 ): ComparisonReferenceValidation {
@@ -43,8 +46,18 @@ export function resolveComparisonReference(
     return valid({ from: primary.from - duration, to: primary.from }, primary);
   }
 
+  if (spec.kind === 'baseline') {
+    const preset = BASELINE_COMPARISON_PRESETS.find(({ id }) => id === spec.presetId);
+
+    if (!preset) {
+      return { status: 'invalid', reason: 'unknown-preset' };
+    }
+
+    return valid(preset.resolve(primary, timezone), primary);
+  }
+
   if (spec.kind === 'shifted') {
-    const preset = COMPARISON_PRESETS.find(({ id }) => id === spec.presetId);
+    const preset = SAME_PERIOD_COMPARISON_PRESETS.find(({ id }) => id === spec.presetId);
 
     if (!preset) {
       return { status: 'invalid', reason: 'unknown-preset' };
@@ -87,5 +100,5 @@ function parseTimestamp(value: string): number {
 }
 
 function assertNever(value: never): never {
-  throw new Error(`Unsupported manual comparison reference: ${JSON.stringify(value)}`);
+  throw new Error(`Unsupported explicit comparison reference: ${JSON.stringify(value)}`);
 }

@@ -6,7 +6,19 @@ import { type ComparisonPreset } from './comparisonReference.types';
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 
-function durationPreset(id: string, label: string, order: number, shiftMs: number): ComparisonPreset {
+function baselinePreset(id: string, label: string, order: number, durationMs: number): ComparisonPreset {
+  return {
+    id,
+    label,
+    order,
+    resolve: (primary) => ({
+      from: primary.from - durationMs,
+      to: primary.from,
+    }),
+  };
+}
+
+function shiftedDurationPreset(id: string, label: string, order: number, shiftMs: number): ComparisonPreset {
   return {
     id,
     label,
@@ -40,12 +52,16 @@ function calendarPreset(
   };
 }
 
-export const COMPARISON_PRESETS: ComparisonPreset[] = [
-  durationPreset('24h', '24 hours ago', 1, 24 * HOUR_MS),
-  durationPreset('7d', '7 days ago', 2, 7 * DAY_MS),
-  durationPreset('14d', '14 days ago', 3, 14 * DAY_MS),
-  durationPreset('21d', '21 days ago', 4, 21 * DAY_MS),
-  durationPreset('30d', '30 days ago', 5, 30 * DAY_MS),
-  calendarPreset('3m', '3 months ago', 6, 3, 'month'),
-  calendarPreset('1y', '1 year ago', 7, 1, 'year'),
+export const BASELINE_COMPARISON_PRESETS: ComparisonPreset[] = [
+  baselinePreset('30d', 'Last 30 days', 1, 30 * DAY_MS),
+  baselinePreset('21d', 'Last 21 days', 2, 21 * DAY_MS),
+  baselinePreset('14d', 'Last 14 days', 3, 14 * DAY_MS),
+  baselinePreset('7d', 'Last 7 days', 4, 7 * DAY_MS),
+  baselinePreset('24h', 'Last 24 hours', 5, DAY_MS),
+];
+
+export const SAME_PERIOD_COMPARISON_PRESETS: ComparisonPreset[] = [
+  shiftedDurationPreset('24h', 'Same period yesterday', 1, DAY_MS),
+  shiftedDurationPreset('7d', 'Same period last week', 2, 7 * DAY_MS),
+  calendarPreset('1m', 'Same period last month', 3, 1, 'month'),
 ];

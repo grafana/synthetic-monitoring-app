@@ -165,8 +165,10 @@ function setComparison(
     healthReference,
     displayReference,
     displayAvailability: null,
+    automaticSelection: { status: 'inactive' },
     setEnabled: jest.fn(),
     setReference: jest.fn(),
+    retryAutomaticSelection: jest.fn(),
   });
 }
 

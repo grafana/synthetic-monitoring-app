@@ -29,27 +29,29 @@ export function CheckDashboardActions({ check, size = 'md' }: CheckDashboardActi
     updateCheck({ ...check, enabled: !check.enabled });
   }, [check, updateCheck]);
 
+  const pauseLabel = check.enabled ? 'Pause' : 'Resume';
+
   return (
-    <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
+    <Stack direction="row" gap={0.5} alignItems="center">
       <Button
+        aria-label={pauseLabel}
+        tooltip={pauseLabel}
         variant="primary"
         icon={isUpdating ? 'fa fa-spinner' : check.enabled ? 'pause' : 'play'}
         size={size}
         onClick={handleToggleEnabled}
         disabled={!canWriteChecks || isUpdating || isDeleting}
-      >
-        {check.enabled ? 'Pause' : 'Resume'}
-      </Button>
-      <EditCheckButton id={check.id} size={size} />
+      />
+      <EditCheckButton id={check.id} size={size} iconOnly />
       <Button
+        aria-label="Delete"
+        tooltip="Delete"
         variant="destructive"
         icon="trash-alt"
         size={size}
         onClick={() => setShowDeleteModal(true)}
         disabled={!canDeleteChecks || isUpdating || isDeleting}
-      >
-        Delete
-      </Button>
+      />
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete check"

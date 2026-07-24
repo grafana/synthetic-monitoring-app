@@ -1,10 +1,16 @@
-import React, { ReactNode, useMemo } from 'react';
+import React, { ReactNode, useEffect, useMemo, useRef } from 'react';
 import { GrafanaTheme2, intervalToAbbreviatedDurationString, TimeRange } from '@grafana/data';
 import { Button, Field, MultiCombobox, RefreshPicker, TimeRangePicker, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { useAppTime } from 'contexts/AppTimeProvider';
-import { canShiftTimeRangeForward, DEFAULT_APP_TIME_RANGE, resolveTimeRange } from 'contexts/AppTimeProvider.utils';
+import {
+  canShiftTimeRangeForward,
+  DEFAULT_APP_TIME_RANGE,
+  getDefaultRefreshInterval,
+  resolveTimeRange,
+} from 'contexts/AppTimeProvider.utils';
+import { useCheckDashboardOptional } from 'contexts/CheckDashboardProvider';
 import { useDashboardPanelScope } from 'contexts/DashboardPanelScopeProvider';
 
 import { DashboardComparisonControls } from './DashboardComparisonControls';
@@ -116,6 +122,24 @@ function DashboardTimeRangeControl() {
 
 function DashboardRefreshControl() {
   const appTime = useAppTime();
+  const checkDashboard = useCheckDashboardOptional();
+  const check = checkDashboard?.check;
+  const initializedCheckId = useRef<number | undefined>(undefined);
+
+  // Auto-refresh is on by default, using an interval derived from how often the
+  // check runs. We seed it once per check when the user hasn't chosen a refresh
+  // interval, so turning it off (or picking another value) is respected.
+  useEffect(() => {
+    if (!check || initializedCheckId.current === check.id) {
+      return;
+    }
+
+    initializedCheckId.current = check.id;
+
+    if (appTime.refresh === undefined) {
+      appTime.setRefresh(getDefaultRefreshInterval(check.frequency));
+    }
+  }, [appTime, check]);
 
   if (appTime.rangeMode === 'historical') {
     return (

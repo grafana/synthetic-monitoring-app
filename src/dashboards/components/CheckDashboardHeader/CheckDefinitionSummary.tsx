@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, Tag, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { CheckHeaderDefinitionModel } from './CheckDashboardHeader.types';
+import { CheckHeaderDefinitionModel, HeaderDefinitionFact } from './CheckDashboardHeader.types';
 import { Toggletip } from 'components/Toggletip';
 
 const MAX_INLINE_LABELS = 3;
@@ -16,26 +16,33 @@ export function CheckDefinitionSummary({ model }: { model: CheckHeaderDefinition
   const styles = useStyles2(getStyles);
   const visibleLabels = model.labels.slice(0, MAX_INLINE_LABELS);
   const additionalLabels = model.labels.slice(MAX_INLINE_LABELS);
+  const configFacts = model.facts.filter((fact) => fact.kind !== 'result');
+  const resultFacts = model.facts.filter((fact) => fact.kind === 'result');
+
+  const renderToken = (fact: HeaderDefinitionFact, isResult: boolean) => (
+    <div className={cx(styles.token, isResult && styles.tokenResult)} key={fact.id}>
+      <dt className={styles.tokenKey}>
+        {fact.icon ? <Icon aria-hidden className={styles.tokenIcon} name={fact.icon} size="xs" /> : null}
+        {fact.label}
+      </dt>
+      <dd className={styles.tokenValue}>{fact.value}</dd>
+    </div>
+  );
 
   return (
-    <section aria-label="Check configuration" className={styles.container}>
+    <section aria-label="Check definition" className={styles.container}>
       <div className={styles.definitionRow}>
-        <div className={styles.group}>
-          <span className={styles.groupLabel}>Configuration</span>
-          <dl className={styles.factList}>
-            {model.facts.map((fact) => (
-              <div className={styles.fact} key={fact.id}>
-                {fact.icon ? <Icon className={styles.factIcon} name={fact.icon} aria-hidden /> : null}
-                <dt>{fact.label}</dt>
-                <dd>{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
+        <dl aria-label="Check configuration" className={styles.rail}>
+          <div aria-label="Check type" className={styles.token}>
+            <dd className={styles.tokenValue}>{model.typeLabel}</dd>
+          </div>
+          {configFacts.map((fact) => renderToken(fact, false))}
+          {resultFacts.length > 0 ? <div aria-hidden className={styles.groupSeparator} /> : null}
+          {resultFacts.map((fact) => renderToken(fact, true))}
+        </dl>
 
         {model.labels.length > 0 ? (
           <div className={cx(styles.group, styles.labelsGroup)}>
-            <span className={styles.groupLabel}>Labels</span>
             <div aria-label="Labels" className={styles.labels}>
               {visibleLabels.map((label) => (
                 <Tag
@@ -79,11 +86,58 @@ const getStyles = (theme: GrafanaTheme2) => ({
     width: '100%',
   }),
   definitionRow: css({
-    alignItems: 'flex-end',
+    alignItems: 'center',
     display: 'flex',
     flexWrap: 'wrap',
     gap: theme.spacing(1.5, 3),
     justifyContent: 'space-between',
+  }),
+  rail: css({
+    alignItems: 'center',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    margin: 0,
+    minWidth: 0,
+  }),
+  token: css({
+    alignItems: 'center',
+    background: theme.colors.background.secondary,
+    border: `1px solid ${theme.colors.border.weak}`,
+    borderRadius: theme.shape.radius.default,
+    display: 'inline-flex',
+    gap: theme.spacing(0.75),
+    padding: theme.spacing(0.5, 1),
+  }),
+  tokenResult: css({
+    borderColor: theme.colors.success.borderTransparent,
+    '& dt, & svg': {
+      color: theme.colors.success.text,
+    },
+  }),
+  tokenKey: css({
+    alignItems: 'center',
+    color: theme.colors.text.secondary,
+    display: 'inline-flex',
+    fontSize: theme.typography.bodySmall.fontSize,
+    gap: theme.spacing(0.5),
+    whiteSpace: 'nowrap',
+  }),
+  tokenIcon: css({
+    color: theme.colors.text.secondary,
+  }),
+  tokenValue: css({
+    color: theme.colors.text.primary,
+    fontSize: theme.typography.body.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+    margin: 0,
+    whiteSpace: 'nowrap',
+  }),
+  groupSeparator: css({
+    alignSelf: 'stretch',
+    background: theme.colors.border.weak,
+    margin: theme.spacing(0.25, 0.5),
+    width: 1,
   }),
   group: css({
     display: 'flex',
@@ -93,40 +147,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   labelsGroup: css({
     alignItems: 'flex-end',
-  }),
-  groupLabel: css({
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontWeight: theme.typography.fontWeightMedium,
-    letterSpacing: '0.05em',
-    lineHeight: 1,
-    textTransform: 'uppercase',
-  }),
-  factList: css({
-    alignItems: 'center',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: theme.spacing(1),
-    margin: 0,
-  }),
-  fact: css({
-    alignItems: 'center',
-    border: `2px solid ${theme.colors.border.medium}`,
-    borderRadius: theme.shape.radius.pill,
-    display: 'flex',
-    gap: theme.spacing(0.5),
-    padding: theme.spacing(0.5, 2),
-    whiteSpace: 'nowrap',
-    '& dt': { color: theme.colors.text.secondary, fontSize: theme.typography.body.fontSize },
-    '& dd': {
-      fontSize: theme.typography.body.fontSize,
-      fontWeight: theme.typography.fontWeightMedium,
-      margin: 0,
-    },
-  }),
-  factIcon: css({
-    color: theme.colors.text.secondary,
-    marginRight: theme.spacing(0.25),
   }),
   labels: css({
     alignItems: 'center',

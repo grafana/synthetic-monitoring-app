@@ -44,7 +44,7 @@ describe('legacySceneDashboardUrl', () => {
   });
 
   it.each<ComparisonReferenceSpec>([
-    { kind: 'normal' },
+    { kind: 'auto' },
     { kind: 'previous' },
     { kind: 'shifted', presetId: 'future-preset-id' },
     {
@@ -57,6 +57,12 @@ describe('legacySceneDashboardUrl', () => {
     const params = serializeLegacyDashboardUrl({ version: 1, comparison });
 
     expect(transformLegacySceneDashboardUrl(params).comparison).toEqual(comparison);
+  });
+
+  it('imports the retired legacy Normal reference as automatic selection', () => {
+    expect(transformLegacySceneDashboardUrl(new URLSearchParams('compare=normal')).comparison).toEqual({
+      kind: 'auto',
+    });
   });
 
   it('prefers canonical comparison state over legacy comparison state', () => {
@@ -73,8 +79,8 @@ describe('legacySceneDashboardUrl', () => {
     const state = transformLegacySceneDashboardUrl(legacy);
     const canonical = serializeDashboardUrl(state, legacy);
 
-    expect(state.comparison).toEqual({ kind: 'shifted', presetId: '14d' });
-    expect(canonical.get('sm-compare')).toBe('shifted');
+    expect(state.comparison).toEqual({ kind: 'baseline', presetId: '14d' });
+    expect(canonical.get('sm-compare')).toBe('baseline');
     expect(canonical.get('sm-compare-preset')).toBe('14d');
     expect(canonical.get('compare')).toBeNull();
     expect(canonical.get('compare.preset')).toBeNull();

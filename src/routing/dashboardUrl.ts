@@ -9,6 +9,7 @@ import {
 
 interface ComparisonUrlKeys {
   kind: string;
+  enabled: string;
   preset: string;
   from: string;
   to: string;
@@ -17,6 +18,7 @@ interface ComparisonUrlKeys {
 
 const CANONICAL_COMPARISON_URL_KEYS: ComparisonUrlKeys = {
   kind: DASHBOARD_URL_KEYS.comparison,
+  enabled: DASHBOARD_URL_KEYS.comparisonEnabled,
   preset: DASHBOARD_URL_KEYS.comparisonPreset,
   from: DASHBOARD_URL_KEYS.comparisonFrom,
   to: DASHBOARD_URL_KEYS.comparisonTo,
@@ -25,6 +27,7 @@ const CANONICAL_COMPARISON_URL_KEYS: ComparisonUrlKeys = {
 
 const LEGACY_COMPARISON_URL_KEYS: ComparisonUrlKeys = {
   kind: LEGACY_SCENE_DASHBOARD_KEYS.comparison,
+  enabled: LEGACY_SCENE_DASHBOARD_KEYS.comparisonEnabled,
   preset: LEGACY_SCENE_DASHBOARD_KEYS.comparisonPreset,
   from: LEGACY_SCENE_DASHBOARD_KEYS.comparisonFrom,
   to: LEGACY_SCENE_DASHBOARD_KEYS.comparisonTo,
@@ -41,6 +44,7 @@ export type DashboardUrlState = {
   refresh?: string;
   probes?: string[];
   comparison?: ComparisonReferenceSpec | null;
+  comparisonEnabled?: boolean;
 };
 
 export type ParseDashboardUrlResult =
@@ -48,6 +52,7 @@ export type ParseDashboardUrlResult =
   | { ok: false; reason: 'unsupported-version'; version: string };
 
 const DEFAULT_TIMEZONE = 'browser';
+const RETIRED_SHIFTED_BASELINE_PRESETS = new Set(['14d', '21d', '30d']);
 
 function parseVersion(search: URLSearchParams): ParseDashboardUrlResult | { version: number } {
   const rawVersion = search.get(DASHBOARD_URL_KEYS.version);
@@ -79,12 +84,21 @@ function parseProbes(search: URLSearchParams, key: string): string[] | undefined
 
 function parseComparison(search: URLSearchParams, keys: ComparisonUrlKeys): ComparisonReferenceSpec | undefined {
   switch (search.get(keys.kind)) {
+    case 'auto':
+      return { kind: 'auto' };
     case 'normal':
-      return { kind: 'normal' };
+      return { kind: 'auto' };
     case 'previous':
       return { kind: 'previous' };
-    case 'shifted':
-      return { kind: 'shifted', presetId: search.get(keys.preset) ?? '' };
+    case 'baseline':
+      return { kind: 'baseline', presetId: search.get(keys.preset) ?? '' };
+    case 'shifted': {
+      const presetId = search.get(keys.preset) ?? '';
+
+      return RETIRED_SHIFTED_BASELINE_PRESETS.has(presetId)
+        ? { kind: 'baseline', presetId }
+        : { kind: 'shifted', presetId };
+    }
     case 'custom':
       return {
         kind: 'custom',
@@ -101,6 +115,7 @@ function writeComparison(
   params: URLSearchParams,
   keys: ComparisonUrlKeys,
   comparison: ComparisonReferenceSpec | null | undefined,
+  comparisonEnabled: boolean | undefined,
   preserved: URLSearchParams
 ): void {
   for (const comparisonKeys of COMPARISON_URL_KEY_SETS) {
@@ -115,6 +130,10 @@ function writeComparison(
         ? parseComparison(preserved, CANONICAL_COMPARISON_URL_KEYS)
         : parseComparison(preserved, LEGACY_COMPARISON_URL_KEYS)
       : comparison;
+  const nextEnabled =
+    comparisonEnabled === undefined
+      ? parseComparisonEnabled(preserved, hasCanonicalComparisonParameters(preserved) ? CANONICAL_COMPARISON_URL_KEYS : LEGACY_COMPARISON_URL_KEYS)
+      : comparisonEnabled;
 
   if (nextComparison === null || nextComparison === undefined) {
     return;
@@ -122,7 +141,11 @@ function writeComparison(
 
   params.set(keys.kind, nextComparison.kind);
 
-  if (nextComparison.kind === 'shifted') {
+  if (nextEnabled === false) {
+    params.set(keys.enabled, '0');
+  }
+
+  if (nextComparison.kind === 'baseline' || nextComparison.kind === 'shifted') {
     params.set(keys.preset, nextComparison.presetId);
   }
 
@@ -131,6 +154,16 @@ function writeComparison(
     params.set(keys.to, nextComparison.to);
     params.set(keys.matchDuration, nextComparison.matchPrimaryDuration ? '1' : '0');
   }
+}
+
+function parseComparisonEnabled(search: URLSearchParams, keys: ComparisonUrlKeys): boolean | undefined {
+  const value = search.get(keys.enabled);
+
+  if (value === null) {
+    return undefined;
+  }
+
+  return value !== '0';
 }
 
 function hasComparisonParameters(params: URLSearchParams): boolean {
@@ -156,6 +189,7 @@ export function parseDashboardUrl(search: URLSearchParams): ParseDashboardUrlRes
     refresh: search.get(DASHBOARD_URL_KEYS.refresh) ?? undefined,
     probes: parseProbes(search, DASHBOARD_URL_KEYS.probe),
     comparison: parseComparison(search, CANONICAL_COMPARISON_URL_KEYS),
+    comparisonEnabled: parseComparisonEnabled(search, CANONICAL_COMPARISON_URL_KEYS),
   };
 
   return { ok: true, state };
@@ -185,6 +219,7 @@ export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSe
     state.refresh !== undefined ||
     state.probes !== undefined ||
     state.comparison !== undefined ||
+    state.comparisonEnabled !== undefined ||
     hasComparisonParameters(preservedComparison) ||
     Boolean(preservedProbes?.length);
 
@@ -216,7 +251,13 @@ export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSe
     params.append(DASHBOARD_URL_KEYS.probe, probe);
   });
 
-  writeComparison(params, CANONICAL_COMPARISON_URL_KEYS, state.comparison, preservedComparison);
+  writeComparison(
+    params,
+    CANONICAL_COMPARISON_URL_KEYS,
+    state.comparison,
+    state.comparisonEnabled,
+    preservedComparison
+  );
 
   return params;
 }
@@ -253,7 +294,13 @@ export function serializeLegacyDashboardUrl(state: DashboardUrlState, existing?:
     params.append(LEGACY_SCENE_DASHBOARD_KEYS.probe, probe);
   });
 
-  writeComparison(params, LEGACY_COMPARISON_URL_KEYS, state.comparison, preservedComparison);
+  writeComparison(
+    params,
+    LEGACY_COMPARISON_URL_KEYS,
+    state.comparison,
+    state.comparisonEnabled,
+    preservedComparison
+  );
 
   return params;
 }
@@ -305,6 +352,8 @@ export function mergeDashboardUrlState(base: DashboardUrlState, patch: Partial<D
     refresh: 'refresh' in patch ? patch.refresh : base.refresh,
     probes: 'probes' in patch ? patch.probes : base.probes,
     comparison: 'comparison' in patch ? patch.comparison : base.comparison,
+    comparisonEnabled:
+      'comparisonEnabled' in patch ? patch.comparisonEnabled : base.comparisonEnabled,
   };
 }
 

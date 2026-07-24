@@ -12,6 +12,7 @@ import { useCheckHealthOptional } from './health/CheckHealthContext';
 import { AlertFiringMarker } from './AlertFiringMarker';
 import { HeaderMetricSparkline } from './HeaderMetricSparkline';
 import { MetricAlertControl } from './MetricAlertControl';
+import { MetricComparisonReading } from './MetricComparisonReading';
 import { type HeaderMetricComparisonVisual, useHeaderMetricComparison } from './useHeaderMetricComparison';
 
 const HEALTH_ICON: Record<HealthState, IconName> = {
@@ -63,9 +64,7 @@ export function HeaderMetric<TCheck extends Check>({
   const health = useCheckHealthOptional()?.metrics[metric.id];
   const hasSecondary = Boolean(secondaryText || metric.secondary);
   const hasSummary = health != null;
-  const hasFiringMarker =
-    health?.alert.state === 'firing' || health?.alert.state === 'historical';
-  const hasStatus = hasSecondary || hasSummary || hasFiringMarker;
+  const hasStatus = hasSecondary || hasSummary || comparison !== null;
 
   return (
     <section aria-label={metric.label} className={styles.metric} role="region">
@@ -75,29 +74,44 @@ export function HeaderMetric<TCheck extends Check>({
             {metric.label}
           </Text>
         </div>
-        {check ? <MetricAlertControl check={check} metric={metric} /> : null}
-      </div>
-      <div className={cx(styles.valueRow, hasStatus && styles.valueRowBeforeStatus)}>
-        <div className={styles.valueCluster}>
-          <strong className={cx(styles.value, health && styles[health.rangeState])}>
-            {displayValue}
-          </strong>
-          {isLoading && value !== null ? (
-            <span aria-label={`Updating ${metric.label}`} className={styles.updating}>
-              <Spinner size="sm" />
-            </span>
+        <div className={styles.labelActions}>
+          {health?.alert ? (
+            <AlertFiringMarker alert={health.alert} metricLabel={metric.label} />
           ) : null}
+          {check ? <MetricAlertControl check={check} metric={metric} /> : null}
+        </div>
+      </div>
+      <div
+        className={cx(
+          styles.evidenceRow,
+          !metric.sparkline && styles.evidenceRowWithoutChart,
+          hasStatus && styles.evidenceRowBeforeStatus
+        )}
+      >
+        <div className={styles.metricReading} data-testid="header-metric-reading">
+          <div className={styles.valueLine}>
+            <strong className={cx(styles.value, health && styles[health.rangeState])}>
+              {displayValue}
+            </strong>
+            {isLoading && value !== null ? (
+              <span aria-label={`Updating ${metric.label}`} className={styles.updating}>
+                <Spinner size="sm" />
+              </span>
+            ) : null}
+          </div>
         </div>
         {metric.sparkline ? (
-          <HeaderMetricSparklineSlot
-            sparkline={metric.sparkline}
-            state={health?.rangeState}
-            visual={comparison?.visual}
-          />
+          <div className={styles.chartReading} data-testid="header-metric-chart">
+            <HeaderMetricSparklineSlot
+              sparkline={metric.sparkline}
+              state={health?.rangeState}
+              visual={comparison?.visual}
+            />
+          </div>
         ) : null}
       </div>
       {hasStatus ? (
-        <div className={styles.statusRow}>
+        <div className={styles.statusRow} data-testid="header-metric-health">
           <div className={styles.statusLeading}>
             {hasSecondary ? (
               <div className={styles.secondary}>
@@ -105,7 +119,33 @@ export function HeaderMetric<TCheck extends Check>({
                 {metric.secondary ? <HeaderMetricSecondary secondary={metric.secondary} /> : null}
               </div>
             ) : null}
-            {hasSummary ? (
+            {comparison?.state === 'ready' && comparison.readings && comparison.caption ? (
+              <MetricComparisonReading
+                caption={comparison.caption}
+                metricLabel={metric.label}
+                readings={comparison.readings}
+              />
+            ) : null}
+            {comparison?.state === 'loading' ? (
+              <span
+                aria-live="polite"
+                className={styles.comparisonLoading}
+                data-testid="header-metric-comparison-loading"
+              >
+                <Spinner size="sm" />
+                <span>Loading comparison</span>
+              </span>
+            ) : null}
+            {comparison?.message ? (
+              <span
+                aria-atomic="true"
+                aria-live="polite"
+                className={styles.comparisonUnavailable}
+              >
+                {comparison.message}
+              </span>
+            ) : null}
+            {comparison === null && hasSummary ? (
               <div className={styles.summary}>
                 {health ? (
                   <Icon
@@ -123,35 +163,7 @@ export function HeaderMetric<TCheck extends Check>({
               </div>
             ) : null}
           </div>
-          {health?.alert ? (
-            <AlertFiringMarker alert={health.alert} metricLabel={metric.label} />
-          ) : null}
         </div>
-      ) : null}
-      {comparison?.state === 'loading' ? (
-        <span
-          aria-live="polite"
-          className={styles.comparisonLoading}
-          data-testid="header-metric-comparison-loading"
-        >
-          <Spinner size="sm" />
-          <span>Loading comparison</span>
-        </span>
-      ) : null}
-      {comparison?.summary ? (
-        <div className={styles.comparison}>
-          <span>{comparison.summary}</span>
-          {comparison.detail ? <span>{comparison.detail}</span> : null}
-        </div>
-      ) : null}
-      {comparison?.message ? (
-        <span
-          aria-atomic="true"
-          aria-live="polite"
-          className={styles.comparisonUnavailable}
-        >
-          {comparison.message}
-        </span>
       ) : null}
     </section>
   );
@@ -164,6 +176,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: 0,
     height: '100%',
     minWidth: 0,
+    containerType: 'inline-size',
     width: '100%',
   }),
   labelRow: css({
@@ -181,6 +194,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(0.5),
     minWidth: 0,
   }),
+  labelActions: css({
+    alignItems: 'center',
+    display: 'inline-flex',
+    flexShrink: 0,
+    gap: theme.spacing(1),
+    marginLeft: 'auto',
+  }),
   infoButton: css({
     alignItems: 'center',
     background: 'transparent',
@@ -190,29 +210,47 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'inline-flex',
     padding: 0,
   }),
-  valueRow: css({
+  evidenceRow: css({
+    alignItems: 'center',
+    display: 'grid',
+    gap: theme.spacing(2),
+    gridTemplateColumns: 'minmax(0, 0.85fr) minmax(96px, 1.15fr)',
+    minWidth: 0,
+    width: '100%',
+    '@container (max-width: 280px)': {
+      alignItems: 'stretch',
+      gridTemplateColumns: 'minmax(0, 1fr)',
+    },
+  }),
+  evidenceRowWithoutChart: css({
+    gridTemplateColumns: 'minmax(0, 1fr)',
+  }),
+  evidenceRowBeforeStatus: css({
+    marginBottom: theme.spacing(2),
+  }),
+  metricReading: css({
+    alignItems: 'flex-start',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    minWidth: 0,
+  }),
+  valueLine: css({
     alignItems: 'center',
     display: 'flex',
-    gap: theme.spacing(1.5),
+    gap: theme.spacing(1),
+    minWidth: 0,
+  }),
+  chartReading: css({
     minWidth: 0,
     width: '100%',
   }),
-  valueRowBeforeStatus: css({
-    marginBottom: theme.spacing(3)
-  }),
-  valueCluster: css({
-    alignItems: 'center',
-    display: 'flex',
-    flex: '0 0 auto',
-    gap: theme.spacing(1),
-  }),
   value: css({
-    // Keep sparklines aligned across cards; sized for the widest common value ("100.00%").
     display: 'block',
     fontSize: theme.typography.h1.fontSize,
     fontVariantNumeric: 'tabular-nums',
     lineHeight: theme.typography.h1.lineHeight,
-    width: '7ch',
+    whiteSpace: 'nowrap',
   }),
   healthy: css({ color: theme.colors.success.text }),
   degraded: css({ color: theme.colors.warning.text }),
@@ -227,6 +265,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     gap: theme.spacing(1),
     justifyContent: 'space-between',
+    marginTop: 'auto',
     minWidth: 0,
     width: '100%',
   }),
@@ -252,27 +291,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.text.secondary,
     fontSize: theme.typography.bodySmall.fontSize,
   }),
-  comparison: css({
-    color: theme.colors.text.secondary,
-    display: 'flex',
-    flexDirection: 'column',
-    fontSize: theme.typography.bodySmall.fontSize,
-    gap: theme.spacing(0.25),
-    marginTop: theme.spacing(0.5),
-    minWidth: 0,
-  }),
   comparisonLoading: css({
     alignItems: 'center',
     color: theme.colors.text.secondary,
     display: 'inline-flex',
     fontSize: theme.typography.bodySmall.fontSize,
     gap: theme.spacing(0.5),
-    marginTop: theme.spacing(0.5),
   }),
   comparisonUnavailable: css({
     color: theme.colors.text.secondary,
     fontSize: theme.typography.bodySmall.fontSize,
-    marginTop: theme.spacing(0.5),
   }),
   toggletipContent: css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }),
 });

@@ -3,7 +3,9 @@ import { dateTime, toUtc } from '@grafana/data';
 import {
   absoluteTimeRangeToRaw,
   canShiftTimeRangeForward,
+  DEFAULT_REFRESH_INTERVAL,
   getAppTimeRangeMode,
+  getDefaultRefreshInterval,
   getShiftedTimeRange,
   getZoomedTimeRange,
   isValidTimeRange,
@@ -121,5 +123,22 @@ describe('parseTimeIntervalMs', () => {
 
   it('rejects unsupported values', () => {
     expect(parseTimeIntervalMs('weekly')).toBeUndefined();
+  });
+});
+
+describe('getDefaultRefreshInterval', () => {
+  it.each([
+    ['a matching frequency', 60_000, '1m'],
+    ['snaps down when there is no exact option', 120_000, '1m'],
+    ['a 10s check', 10_000, '10s'],
+    ['a 5m check', 300_000, '5m'],
+    ['an hourly check', 3_600_000, '1h'],
+    ['clamps sub-second-option frequencies to the smallest option', 1_000, '5s'],
+  ])('picks the best interval for %s', (_label, frequencyMs, expected) => {
+    expect(getDefaultRefreshInterval(frequencyMs)).toBe(expected);
+  });
+
+  it.each([[undefined], [0]])('falls back to the default for an unknown frequency (%s)', (frequencyMs) => {
+    expect(getDefaultRefreshInterval(frequencyMs)).toBe(DEFAULT_REFRESH_INTERVAL);
   });
 });

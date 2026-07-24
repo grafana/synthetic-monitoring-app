@@ -58,7 +58,6 @@ function appendUnequalDurations(detail: string, input: NumericComparisonInput): 
   const { primaryDurationMs, referenceDurationMs, referenceLabel } = input;
 
   if (
-    input.referenceKind === 'normal' ||
     !isFiniteNumber(primaryDurationMs) ||
     !isFiniteNumber(referenceDurationMs) ||
     primaryDurationMs < 0 ||
@@ -74,7 +73,7 @@ function appendUnequalDurations(detail: string, input: NumericComparisonInput): 
 }
 
 export function comparePercentagePoints(input: NumericComparisonInput): HeaderMetricComparisonCopy | null {
-  const { primary, reference, referenceLabel } = input;
+  const { primary, reference } = input;
 
   if (!isFiniteNumber(primary) || !isFiniteNumber(reference)) {
     return null;
@@ -82,14 +81,19 @@ export function comparePercentagePoints(input: NumericComparisonInput): HeaderMe
 
   const difference = (primary - reference) * 100;
   const displayedDifference = Math.abs(difference).toFixed(1);
-  const summary =
+  const plain =
     Number(displayedDifference) === 0
-      ? `In line with ${referenceLabel}`
-      : `${displayedDifference} pp ${difference > 0 ? 'higher' : 'lower'} than ${referenceLabel}`;
-  const detail = `${(primary * 100).toFixed(2)}% now · ${(reference * 100).toFixed(2)}% reference`;
+      ? 'No change'
+      : `${displayedDifference} pp ${difference > 0 ? 'higher' : 'lower'}`;
+  const compact =
+    Number(displayedDifference) === 0
+      ? '→ 0.0 pp'
+      : `${difference > 0 ? '↑' : '↓'} ${displayedDifference} pp`;
+  const detail = `${(primary * 100).toFixed(2)}% selected · ${(reference * 100).toFixed(2)}% reference`;
 
   return {
-    summary,
+    plain,
+    compact,
     detail: appendUnequalDurations(detail, input),
   };
 }
@@ -103,15 +107,12 @@ export function compareLatency(input: NumericComparisonInput): HeaderMetricCompa
 
   const difference = primary - reference;
   const displayedDifference = Math.abs(difference).toFixed(2);
-  const referenceSummary = `${
-    input.referenceKind === 'normal' || (input.referenceKind === undefined && referenceLabel === 'Normal')
-      ? `${referenceLabel} median`
-      : `${referenceLabel} average`
-  } ${reference.toFixed(2)} s`;
+  const referenceSummary = `${referenceLabel} average ${reference.toFixed(2)} s`;
 
   if (Number(displayedDifference) === 0) {
     return {
-      summary: `In line with ${referenceLabel}`,
+      plain: 'No change',
+      compact: '→ 0%',
       detail: appendUnequalDurations(referenceSummary, input),
     };
   }
@@ -119,14 +120,20 @@ export function compareLatency(input: NumericComparisonInput): HeaderMetricCompa
   const direction = difference > 0 ? 'slower' : 'faster';
   const relativePercentage =
     reference === 0 ? undefined : Math.round((Math.abs(difference) / Math.abs(reference)) * 100);
-  const relativeCopy =
+  const relativeMagnitude =
     relativePercentage === undefined
-      ? 'Relative change unavailable from a zero reference'
-      : `${relativePercentage === 0 ? '<1' : relativePercentage}% ${direction}`;
-  const detail = `${relativeCopy} · ${referenceSummary}`;
+      ? undefined
+      : `${relativePercentage === 0 ? '<1' : relativePercentage}%`;
+  const absoluteCopy = `${displayedDifference} s ${direction}`;
+  const plain = relativeMagnitude ? `${relativeMagnitude} ${direction}` : absoluteCopy;
+  const compact = `${direction === 'slower' ? '↑' : '↓'} ${relativeMagnitude ?? `${displayedDifference} s`}`;
+  const detail = relativeMagnitude
+    ? `${absoluteCopy} · ${referenceSummary}`
+    : `Relative change unavailable from a zero reference · ${referenceSummary}`;
 
   return {
-    summary: `${displayedDifference} s ${direction} than ${referenceLabel}`,
+    plain,
+    compact,
     detail: appendUnequalDurations(detail, input),
   };
 }
@@ -291,7 +298,8 @@ export function compareSslCertificate(input: SslComparisonInput): HeaderMetricCo
       comparableIdentity && primaryIdentity !== referenceIdentity ? 'Certificate identity changed' : identityDetail;
 
     return {
-      summary: 'Certificate expired',
+      plain: 'Certificate expired',
+      compact: 'Expired',
       detail: appendUnequalDurations(
         `${formatCurrentExpiry(primaryObservation.remaining)} · ${expiredIdentityDetail}`,
         input
@@ -301,7 +309,8 @@ export function compareSslCertificate(input: SslComparisonInput): HeaderMetricCo
 
   if (comparableIdentity && primaryIdentity !== referenceIdentity) {
     return {
-      summary: 'Certificate renewed',
+      plain: 'Certificate renewed',
+      compact: 'Renewed',
       detail: appendUnequalDurations(`Certificate identity changed since ${referenceLabel}`, input),
     };
   }
@@ -312,10 +321,13 @@ export function compareSslCertificate(input: SslComparisonInput): HeaderMetricCo
     primaryExpiry !== undefined && referenceExpiry !== undefined ? primaryExpiry - referenceExpiry : undefined;
 
   if (expiryMovement !== undefined && expiryMovement < -EXPIRY_TIME_TOLERANCE_MS) {
+    const movement = formatExpiryMovement(expiryMovement);
+
     return {
-      summary: 'Certificate expiry moved earlier',
+      plain: 'Certificate expiry moved earlier',
+      compact: `← ${movement}`,
       detail: appendUnequalDurations(
-        `${identityDetail} · expiry moved ${formatExpiryMovement(expiryMovement)} earlier`,
+        `${identityDetail} · expiry moved ${movement} earlier`,
         input
       ),
     };
@@ -327,20 +339,23 @@ export function compareSslCertificate(input: SslComparisonInput): HeaderMetricCo
 
   if (forwardMovement) {
     const movement = expiryMovement ?? remainingMovementMs;
+    const formattedMovement = formatExpiryMovement(movement);
 
     return {
-      summary: sameIdentity ? 'Certificate expiry extended' : 'Certificate likely renewed',
+      plain: sameIdentity ? 'Certificate expiry extended' : 'Certificate likely renewed',
+      compact: sameIdentity ? `→ ${formattedMovement}` : 'Likely renewed',
       detail: appendUnequalDurations(
         sameIdentity
-          ? `${identityDetail} · expiry moved ${formatExpiryMovement(movement)} later`
-          : `Expiry moved ${formatExpiryMovement(movement)} later · ${identityDetail}`,
+          ? `${identityDetail} · expiry moved ${formattedMovement} later`
+          : `Expiry moved ${formattedMovement} later · ${identityDetail}`,
         input
       ),
     };
   }
 
   return {
-    summary: 'Expiry progressing as expected',
+    plain: 'Expiry progressing as expected',
+    compact: '→ On track',
     detail: appendUnequalDurations(
       sameIdentity
         ? `${identityDetail} · ${formatCurrentExpiry(primaryObservation.remaining)}`

@@ -32,8 +32,9 @@ describe('dashboardUrl', () => {
   });
 
   it.each<ComparisonReferenceSpec>([
-    { kind: 'normal' },
+    { kind: 'auto' },
     { kind: 'previous' },
+    { kind: 'baseline', presetId: '14d' },
     { kind: 'shifted', presetId: 'future-preset-id' },
     {
       kind: 'custom',
@@ -59,6 +60,33 @@ describe('dashboardUrl', () => {
       },
     });
   });
+
+  it('migrates the retired Normal comparison URL to automatic selection', () => {
+    expect(parseDashboardUrl(new URLSearchParams('sm-v=1&sm-compare=normal'))).toEqual({
+      ok: true,
+      state: {
+        version: 1,
+        comparison: { kind: 'auto' },
+      },
+    });
+  });
+
+  it.each(['14d', '21d', '30d'])(
+    'migrates the retired %s shifted comparison to a normal baseline',
+    (presetId) => {
+      expect(
+        parseDashboardUrl(
+          new URLSearchParams(`sm-v=1&sm-compare=shifted&sm-compare-preset=${presetId}`)
+        )
+      ).toEqual({
+        ok: true,
+        state: {
+          version: 1,
+          comparison: { kind: 'baseline', presetId },
+        },
+      });
+    }
+  );
 
   it('preserves unrelated query parameters', () => {
     const existing = new URLSearchParams('foo=bar&sm-from=now-1h');
@@ -307,12 +335,12 @@ describe('dashboardUrl', () => {
     const existing = new URLSearchParams(
       'sm-compare=previous&sm-compare-preset=canonical&compare=shifted&compare.preset=legacy'
     );
-    const canonical = serializeDashboardUrl({ version: 1, comparison: { kind: 'normal' } }, existing);
-    const legacy = serializeLegacyDashboardUrl({ version: 1, comparison: { kind: 'normal' } }, existing);
+    const canonical = serializeDashboardUrl({ version: 1, comparison: { kind: 'auto' } }, existing);
+    const legacy = serializeLegacyDashboardUrl({ version: 1, comparison: { kind: 'auto' } }, existing);
 
-    expect(canonical.get(DASHBOARD_URL_KEYS.comparison)).toBe('normal');
+    expect(canonical.get(DASHBOARD_URL_KEYS.comparison)).toBe('auto');
     expect(canonical.get(LEGACY_SCENE_DASHBOARD_KEYS.comparison)).toBeNull();
-    expect(legacy.get(LEGACY_SCENE_DASHBOARD_KEYS.comparison)).toBe('normal');
+    expect(legacy.get(LEGACY_SCENE_DASHBOARD_KEYS.comparison)).toBe('auto');
     expect(legacy.get(DASHBOARD_URL_KEYS.comparison)).toBeNull();
   });
 

@@ -27,6 +27,50 @@ export function getAppTimeRangeMode(raw: { from: string; to: string }): AppTimeR
   return 'historical';
 }
 
+/**
+ * Ordered ascending; mirrors the RefreshPicker's default interval options.
+ */
+const REFRESH_INTERVAL_OPTIONS_MS: ReadonlyArray<{ label: string; ms: number }> = [
+  { label: '5s', ms: 5_000 },
+  { label: '10s', ms: 10_000 },
+  { label: '30s', ms: 30_000 },
+  { label: '1m', ms: 60_000 },
+  { label: '5m', ms: 300_000 },
+  { label: '15m', ms: 900_000 },
+  { label: '30m', ms: 1_800_000 },
+  { label: '1h', ms: 3_600_000 },
+  { label: '2h', ms: 7_200_000 },
+  { label: '1d', ms: 86_400_000 },
+];
+
+export const DEFAULT_REFRESH_INTERVAL = '1m';
+
+/**
+ * Picks a sensible auto-refresh interval for a check dashboard from how often
+ * the check runs. We align the refresh cadence with the check frequency so the
+ * dashboard reflects new data promptly, snapping to the closest supported
+ * interval at or below the frequency so the view never lags more than one
+ * check period. Frequencies below the smallest option clamp to it, and an
+ * unknown frequency falls back to a safe default.
+ */
+export function getDefaultRefreshInterval(frequencyMs?: number): string {
+  if (!frequencyMs || frequencyMs <= 0) {
+    return DEFAULT_REFRESH_INTERVAL;
+  }
+
+  let selected = REFRESH_INTERVAL_OPTIONS_MS[0];
+
+  for (const option of REFRESH_INTERVAL_OPTIONS_MS) {
+    if (option.ms <= frequencyMs) {
+      selected = option;
+    } else {
+      break;
+    }
+  }
+
+  return selected.label;
+}
+
 export function parseTimeIntervalMs(value: string): number | undefined {
   const match = /^(\d+)(ms|s|m|h|d)$/.exec(value.trim());
 

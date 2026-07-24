@@ -8,6 +8,7 @@ import {
   panelDataToTrendSamples,
   selectRatioSparklineSeries,
   selectSparklineSeries,
+  selectZeroBasedSparklineSeries,
 } from './headerMetricSparkline.utils';
 
 function panelData(partial: Partial<PanelData> & Pick<PanelData, 'series' | 'state'>): PanelData {
@@ -221,6 +222,27 @@ describe('selectSparklineSeries', () => {
     );
 
     expect(series?.y.state?.range).toEqual({ min: 0, max: 1, delta: 1 });
+    expect(series?.y.config).toMatchObject({ min: 0, max: 1 });
+  });
+
+  it('keeps zero visible for latency sparklines', () => {
+    const series = selectZeroBasedSparklineSeries(
+      panelData({
+        state: LoadingState.Done,
+        series: [
+          {
+            length: 2,
+            fields: [
+              { name: 'Time', type: FieldType.time, values: [0, 1000], config: {} },
+              { name: 'Value', type: FieldType.number, values: [0.42, 0.47], config: {} },
+            ],
+          },
+        ],
+      })
+    );
+
+    expect(series?.y.state?.range).toEqual({ min: 0, max: 0.47, delta: 0.47 });
+    expect(series?.y.config).toMatchObject({ min: 0 });
   });
 });
 

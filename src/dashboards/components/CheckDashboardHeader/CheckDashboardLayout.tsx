@@ -1,11 +1,12 @@
 import React, { PropsWithChildren, ReactNode, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, useTheme2 } from '@grafana/ui';
+import { Stack, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { CheckDashboardActions } from 'dashboards/components/CheckDashboardHeader';
 
-import { CheckDashboardHeaderProfile } from './CheckDashboardHeader.types';
+import { CheckDashboardHeaderProfile, CheckHeaderMetaItem } from './CheckDashboardHeader.types';
 import { Check } from 'types';
+import { formatDate } from 'utils';
 import { DashboardComparisonProvider } from 'contexts/DashboardComparisonProvider';
 import { DashboardPanelScopeProvider } from 'contexts/DashboardPanelScopeProvider';
 
@@ -17,6 +18,10 @@ import { DashboardPanelScopeControls, DashboardTimeControls } from './DashboardS
 import { ObservedPerformanceSummary } from './ObservedPerformanceSummary';
 
 const STICKY_TOP_SPACING = 6;
+
+function formatMetaDate(seconds: number) {
+  return new Date(seconds * 1000).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 export function CheckDashboardLayout<TCheck extends Check>({
   check,
@@ -36,11 +41,45 @@ export function CheckDashboardLayout<TCheck extends Check>({
   const panelStickyTopPx = stickyTopPx + globalControlsHeight;
   const { sentinelRef: panelSentinelRef, isSticky: isPanelSticky } = useStickySentinel(panelStickyTopPx);
   const definition = useMemo(() => profile.getDefinition(check), [check, profile]);
+  const status = useMemo(
+    () => ({ label: check.enabled ? 'Running' : 'Paused', running: check.enabled }),
+    [check.enabled]
+  );
+  const meta = useMemo<CheckHeaderMetaItem[]>(() => {
+    const items: CheckHeaderMetaItem[] = [];
+    if (check.created) {
+      items.push({
+        id: 'created',
+        label: 'Created',
+        value: formatMetaDate(check.created),
+        title: formatDate(check.created * 1000),
+        icon: 'calendar-alt',
+      });
+    }
+    if (check.modified) {
+      items.push({
+        id: 'updated',
+        label: 'Updated',
+        value: formatMetaDate(check.modified),
+        title: formatDate(check.modified * 1000),
+        icon: 'history',
+      });
+    }
+    return items;
+  }, [check.created, check.modified]);
 
   return (
     <div className={styles.container} data-testid="check-dashboard-layout">
       <div className={styles.inset}>
-        <CheckIdentitySummary model={definition} actions={<CheckDashboardActions check={check} />} />
+        <Stack direction="column" gap={2}>
+          <CheckIdentitySummary
+            model={definition}
+            status={status}
+            meta={meta}
+            actions={<CheckDashboardActions check={check} />}
+          />
+          <CheckDefinitionSummary model={definition} />
+        </Stack>
       </div>
       <DashboardComparisonProvider check={check} profile={profile.Comparison}>
         <div
@@ -60,9 +99,6 @@ export function CheckDashboardLayout<TCheck extends Check>({
         </div>
         <ObservedPerformanceSummary check={check} profile={profile} />
       </DashboardComparisonProvider>
-      <div className={styles.definition}>
-        <CheckDefinitionSummary model={definition} />
-      </div>
       <DashboardPanelScopeProvider>
         <div
           aria-hidden
@@ -86,18 +122,17 @@ export function CheckDashboardLayout<TCheck extends Check>({
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
     minWidth: 0,
     paddingTop: theme.spacing(CHECK_DASHBOARD_PAGE_GUTTER),
-    width: '100%',
   }),
   inset: css({
+    borderBottom: `1px solid ${theme.colors.border.weak}`,
+    marginBottom: theme.spacing(2),
     minWidth: 0,
-    padding: theme.spacing(0, CHECK_DASHBOARD_PAGE_GUTTER),
+    padding: theme.spacing(0, CHECK_DASHBOARD_PAGE_GUTTER, 2),
   }),
   globalControls: css({
+    marginBottom: theme.spacing(2),
     minWidth: 0,
     padding: theme.spacing(1, CHECK_DASHBOARD_PAGE_GUTTER),
     zIndex: theme.zIndex.navbarFixed + 1,
@@ -110,7 +145,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   globalStickySentinel: css({
     height: 0,
-    marginBottom: theme.spacing(-2),
+    marginBottom: 0,
   }),
   stickyRow: css({
     background: 'transparent',
@@ -126,10 +161,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   scopeRow: css({
     padding: theme.spacing(1, CHECK_DASHBOARD_PAGE_GUTTER),
-  }),
-  definition: css({
-    margin: theme.spacing(0, CHECK_DASHBOARD_PAGE_GUTTER),
-    minWidth: 0,
   }),
   content: css({
     borderTop: `2px solid ${theme.colors.border.weak}`,

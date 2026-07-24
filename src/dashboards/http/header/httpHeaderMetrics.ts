@@ -3,6 +3,7 @@ import {
   panelDataToTrendSamples,
   selectRatioSparklineSeries,
   selectSparklineSeries,
+  selectZeroBasedSparklineSeries,
 } from 'dashboards/components/CheckDashboardHeader/headerMetricSparkline.utils';
 import {
   formatPercent,
@@ -57,12 +58,10 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatPercent,
       comparison: {
-        supportsNormalBand: true,
         normalBaseline: {
           definition: uptimeBaselineDefinition,
           selectSamples: panelDataToTrendSamples,
         },
-        normalBandDomain: { min: 0, max: 1 },
         compare: comparePercentagePoints,
       },
       sparkline: {
@@ -78,12 +77,10 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatPercent,
       comparison: {
-        supportsNormalBand: true,
         normalBaseline: {
           definition: reachabilityBaselineDefinition,
           selectSamples: panelDataToTrendSamples,
         },
-        normalBandDomain: { min: 0, max: 1 },
         compare: comparePercentagePoints,
       },
       sparkline: {
@@ -102,17 +99,15 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatSeconds,
       comparison: {
-        supportsNormalBand: true,
         normalBaseline: {
           definition: latencyBaselineDefinition,
           selectSamples: panelDataToTrendSamples,
         },
-        normalBandDomain: { min: 0 },
         compare: compareLatency,
       },
       sparkline: {
         definition: createAverageLatencySparklineDefinition(check),
-        selectSeries: selectSparklineSeries,
+        selectSeries: selectZeroBasedSparklineSeries,
       },
       health: {
         alertTypes: [CheckAlertType.HTTPRequestDurationTooHighAvg],
@@ -126,7 +121,6 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatSslRemaining,
       comparison: {
-        supportsNormalBand: false,
         compare: compareSslCertificate,
       },
       sparkline: {

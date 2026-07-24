@@ -1,10 +1,7 @@
 import React, { type PropsWithChildren } from 'react';
 import { dateTime, FieldType, LoadingState, type PanelData } from '@grafana/data';
 import { renderHook } from '@testing-library/react';
-import { panelDataToTrendSamples } from 'dashboards/components/CheckDashboardHeader/headerMetricSparkline.utils';
 import { useDashboardPanelQuery } from 'dashboards/hooks/useDashboardPanelQuery';
-import { getHttpHeaderMetrics } from 'dashboards/http/header/httpHeaderMetrics';
-import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import type { HeaderMetricDefinition } from './CheckDashboardHeader.types';
 import type { ResolvedDisplayReference } from 'dashboards/comparison/comparisonReference.types';
@@ -28,18 +25,10 @@ const previousReference: ResolvedDisplayReference = {
   range: { from: -2 * HOUR_MS, to: 0 },
   equalDuration: true,
 };
-const normalReference = {
-  status: 'valid',
-  spec: { kind: 'normal' },
-  label: 'Normal',
-  range: { from: -24 * HOUR_MS, to: 0 },
-  equalDuration: false,
-} satisfies Extract<ResolvedDisplayReference, { status: 'valid' }>;
 
 function panelData(
   values: number[] = [],
-  state: LoadingState = LoadingState.Done,
-  times?: number[]
+  state: LoadingState = LoadingState.Done
 ): PanelData {
   return {
     state,
@@ -52,7 +41,7 @@ function panelData(
                 {
                   name: 'Time',
                   type: FieldType.time,
-                  values: values.map((_, index) => times?.[index] ?? index * HOUR_MS),
+                  values: values.map((_, index) => index * HOUR_MS),
                   config: {},
                 },
                 { name: 'Value', type: FieldType.number, values, config: {} },
@@ -68,13 +57,6 @@ function panelData(
   };
 }
 
-function normalPanelData(pattern: number[]): PanelData {
-  const values = Array.from({ length: 24 }, (_, index) => pattern[index % pattern.length]!);
-  const times = values.map((_, index) => normalReference.range.from + index * HOUR_MS);
-
-  return panelData(values, LoadingState.Done, times);
-}
-
 function queryResult(data: PanelData, isLoading = false) {
   return { panelData: data, isLoading, menuItems: undefined, title: undefined };
 }
@@ -86,34 +68,30 @@ function comparisonValue(overrides: Partial<DashboardComparisonContextValue> = {
     healthReference: { status: 'not-established' },
     displayReference: previousReference,
     displayAvailability: { status: 'available', coverage: 1, executionCount: 12 },
+    automaticSelection: { status: 'inactive' },
     setEnabled: jest.fn(),
     setReference: jest.fn(),
+    retryAutomaticSelection: jest.fn(),
     ...overrides,
   };
 }
 
-function createMetric({
-  supportsNormalBand = true,
-  normalBandDomain,
-  withNormalBaseline = supportsNormalBand,
-}: {
-  supportsNormalBand?: boolean;
-  normalBandDomain?: { min?: number; max?: number };
-  withNormalBaseline?: boolean;
-} = {}) {
+function createMetric() {
   const compare = jest.fn(
     ({
       primary,
       reference,
-      referenceLabel,
     }: {
       primary: number | null;
       reference: number | null;
-      referenceLabel: string;
-    }) => ({
-      summary: `${primary} compared with ${referenceLabel}`,
-      detail: `${reference} reference`,
-    })
+    }) =>
+      primary === null || reference === null
+        ? null
+        : {
+            plain: `${primary - reference} higher`,
+            compact: `↑ ${primary - reference}`,
+            detail: `${primary} selected · ${reference} reference`,
+          }
   );
   const metric: HeaderMetricDefinition = {
     id: 'generic-metric',
@@ -130,7 +108,7 @@ function createMetric({
       const value = data.series[0]?.fields.find((field) => field.type === FieldType.number)?.values[0];
       return typeof value === 'number' ? value : null;
     },
-    formatValue: (value) => String(value),
+    formatValue: (value) => (value === null ? 'N/A' : `${value.toFixed(2)} ms`),
     sparkline: {
       definition: {
         id: 'generic-metric-sparkline',
@@ -147,24 +125,7 @@ function createMetric({
         return y ? { x, y, timeRange: data.timeRange } : null;
       },
     },
-    comparison: {
-      supportsNormalBand,
-      normalBandDomain,
-      normalBaseline: withNormalBaseline
-        ? {
-            definition: {
-              id: 'generic-metric-baseline',
-              pluginId: 'timeseries',
-              fieldConfig: { defaults: {}, overrides: [] },
-              options: {},
-              maxDataPoints: 720,
-              targets: [],
-            },
-            selectSamples: panelDataToTrendSamples,
-          }
-        : undefined,
-      compare,
-    },
+    comparison: { compare },
   };
 
   return { compare, metric };
@@ -178,22 +139,12 @@ describe('useHeaderMetricComparison', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(useDashboardComparison).mockReturnValue(comparisonValue());
-    jest
-      .mocked(useDashboardPanelQuery)
-      .mockImplementation((definition) => {
-        if (definition.id.endsWith('baseline') || definition.id.endsWith('sparkline')) {
-          return queryResult(
-            definition.id.endsWith('baseline')
-              ? normalPanelData([0.8, 0.9, 1])
-              : panelData([0.8, 0.9, 1])
-          );
-        }
-
-        return queryResult(panelData([0.7]));
-      });
+    jest.mocked(useDashboardPanelQuery).mockImplementation((definition) =>
+      queryResult(definition.id.endsWith('sparkline') ? panelData([0.7, 0.8]) : panelData([0.7]))
+    );
   });
 
-  it('returns null and disables every reference query when comparison is off', () => {
+  it('returns null and disables reference queries when comparison is off', () => {
     const { metric } = createMetric();
     jest.mocked(useDashboardComparison).mockReturnValue(
       comparisonValue({
@@ -205,288 +156,80 @@ describe('useHeaderMetricComparison', () => {
     );
 
     const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
+      () => useHeaderMetricComparison({ metric, primaryData: panelData([0.9]), primaryValue: 0.9 }),
       { wrapper }
     );
 
     expect(result.current).toBeNull();
-    expect(jest.mocked(useDashboardPanelQuery).mock.calls).toEqual([
-      [metric.definition, expect.objectContaining({ enabled: false })],
-      [metric.sparkline!.definition, expect.objectContaining({ enabled: false })],
-      [metric.comparison!.normalBaseline!.definition, expect.objectContaining({ enabled: false })],
-    ]);
-  });
-
-  it('builds and generically clamps a median/MAD Normal band for a supported metric', () => {
-    const { compare, metric } = createMetric({ normalBandDomain: { min: 0, max: 1 } });
-    jest.mocked(useDashboardComparison).mockReturnValue(
-      comparisonValue({
-        referenceSpec: { kind: 'normal' },
-        displayReference: normalReference,
-        displayAvailability: {
-          status: 'available',
-          tierId: '24h',
-          coverage: 1,
-          executionCount: 24,
-          range: normalReference.range,
-        },
-      })
+    expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(
+      1,
+      metric.definition,
+      expect.objectContaining({ enabled: false })
     );
-
-    const primaryData = panelData([0.95]);
-    const { result } = renderHook(() => useHeaderMetricComparison({ metric, primaryData, primaryValue: 0.95 }), {
-      wrapper,
-    });
-
-    expect(result.current).toMatchObject({
-      state: 'ready',
-      summary: '0.95 compared with Normal',
-      detail: '0.9 reference · Normal · 24h · 100% coverage · 24 executions',
-      visual: { kind: 'normal-band', label: 'Normal', median: 0.9 },
-    });
-    expect(result.current?.visual?.kind).toBe('normal-band');
-    if (result.current?.visual?.kind === 'normal-band') {
-      expect(result.current.visual.lower).toBeCloseTo(0.6);
-      expect(result.current.visual.upper).toBe(1);
-    }
-    expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(1, metric.definition, {
-      range: normalReference.range,
-      enabled: false,
-    });
-    expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(2, metric.sparkline!.definition, {
-      range: normalReference.range,
-      enabled: false,
-    });
-    expect(useDashboardPanelQuery).toHaveBeenCalledWith(metric.comparison!.normalBaseline!.definition, {
-      range: normalReference.range,
-      enabled: true,
-    });
-    expect(compare).toHaveBeenCalledWith({
-      primary: 0.95,
-      reference: 0.9,
-      referenceKind: 'normal',
-      referenceLabel: 'Normal',
-      primaryDurationMs: 2 * HOUR_MS,
-      referenceDurationMs: 24 * HOUR_MS,
-      primaryData,
-      referenceData: expect.objectContaining({ series: expect.any(Array) }),
-    });
+    expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(
+      2,
+      metric.sparkline!.definition,
+      expect.objectContaining({ enabled: false })
+    );
   });
 
   it.each([
-    {
-      availability: { status: 'checking' } as const,
-      expected: { state: 'loading' },
-    },
-    {
-      availability: { status: 'query-error' } as const,
-      expected: { state: 'unavailable', message: 'Comparison unavailable' },
-    },
-    {
-      availability: { status: 'not-established' } as const,
-      expected: { state: 'unavailable', message: 'Normal not established for this period' },
-    },
-  ])('keeps Normal availability evidence distinct for $availability.status', ({ availability, expected }) => {
+    [{ status: 'finding', candidatePresetId: '30d' } as const, { state: 'loading' }],
+    [{ status: 'no-data' } as const, { state: 'unavailable', message: 'No comparison data found' }],
+    [{ status: 'query-error' } as const, { state: 'unavailable', message: 'Could not find comparison data' }],
+  ])('reflects automatic-selection state without issuing metric queries', (automaticSelection, expected) => {
     const { metric } = createMetric();
     jest.mocked(useDashboardComparison).mockReturnValue(
       comparisonValue({
-        referenceSpec: { kind: 'normal' },
-        displayReference: {
-          status: 'invalid',
-          spec: { kind: 'normal' },
-          label: 'Normal',
-          reason: 'normal-not-established',
-        },
-        displayAvailability: availability,
+        referenceSpec: { kind: 'auto' },
+        displayReference: null,
+        displayAvailability: null,
+        automaticSelection,
       })
     );
 
     const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
+      () => useHeaderMetricComparison({ metric, primaryData: panelData([0.9]), primaryValue: 0.9 }),
       { wrapper }
     );
 
     expect(result.current).toEqual(expected);
+    expect(jest.mocked(useDashboardPanelQuery).mock.calls.every(([, options]) => options?.enabled === false)).toBe(true);
   });
 
-  it('reports metric-specific unavailable evidence when a Normal series has no samples', () => {
+  it('returns locally cyclable readings, a fixed caption, and an additive overlay', () => {
     const { compare, metric } = createMetric();
-    jest.mocked(useDashboardComparison).mockReturnValue(
-      comparisonValue({
-        referenceSpec: { kind: 'normal' },
-        displayReference: normalReference,
-        displayAvailability: {
-          status: 'available',
-          tierId: '24h',
-          coverage: 1,
-          executionCount: 24,
-          range: normalReference.range,
-        },
-      })
-    );
-    jest
-      .mocked(useDashboardPanelQuery)
-      .mockImplementation((definition) =>
-        definition.id.endsWith('baseline') ? queryResult(panelData()) : queryResult(panelData([0.7]))
-      );
 
     const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
-      { wrapper }
-    );
-
-    expect(result.current).toEqual({
-      state: 'unavailable',
-      message: 'No Normal data for Generic metric',
-    });
-    expect(compare).not.toHaveBeenCalled();
-  });
-
-  it('reports metric-specific unavailable evidence when a manual reference has no summary value', () => {
-    const { compare, metric } = createMetric();
-    jest
-      .mocked(useDashboardPanelQuery)
-      .mockImplementation((definition) =>
-        definition.id.endsWith('sparkline') ? queryResult(panelData([0.8, 0.9, 1])) : queryResult(panelData())
-      );
-
-    const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
-      { wrapper }
-    );
-
-    expect(result.current).toEqual({
-      state: 'unavailable',
-      message: 'No Previous period data for Generic metric',
-    });
-    expect(compare).not.toHaveBeenCalled();
-  });
-
-  it('uses the learned Normal series median for the registered HTTP latency copy', () => {
-    const metric = getHttpHeaderMetrics(BASIC_HTTP_CHECK).find(({ id }) => id === 'average-latency')!;
-    jest.mocked(useDashboardComparison).mockReturnValue(
-      comparisonValue({
-        referenceSpec: { kind: 'normal' },
-        displayReference: normalReference,
-        displayAvailability: {
-          status: 'available',
-          tierId: '24h',
-          coverage: 1,
-          executionCount: 24,
-          range: normalReference.range,
-        },
-      })
-    );
-    jest
-      .mocked(useDashboardPanelQuery)
-      .mockImplementation((definition) =>
-        definition.id.endsWith('baseline')
-          ? queryResult(normalPanelData([0.3, 0.36, 0.4]))
-          : queryResult(panelData([0.7]))
-      );
-
-    const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.47]),
-          primaryValue: 0.47,
-        }),
+      () => useHeaderMetricComparison({ metric, primaryData: panelData([0.9]), primaryValue: 0.9 }),
       { wrapper }
     );
 
     expect(result.current).toMatchObject({
       state: 'ready',
-      summary: '0.11 s slower than Normal',
-      detail: '31% slower · Normal median 0.36 s · Normal · 24h · 100% coverage · 24 executions',
-      visual: { kind: 'normal-band', median: 0.36 },
-    });
-    expect(useDashboardPanelQuery).toHaveBeenCalledWith(metric.comparison!.normalBaseline!.definition, {
-      range: normalReference.range,
-      enabled: true,
-    });
-    expect(
-      jest
-        .mocked(useDashboardPanelQuery)
-        .mock.calls.some(([definition, options]) => definition === metric.definition && options?.enabled)
-    ).toBe(false);
-  });
-
-  it.each([
-    ['Previous period', previousReference],
-    [
-      '14 days earlier',
-      {
-        ...previousReference,
-        spec: { kind: 'shifted', presetId: '14d' } as const,
-        label: '14 days earlier',
+      readings: {
+        plain: '0.20000000000000007 higher',
+        reference: '0.70 ms',
       },
-    ],
-    [
-      'Custom range',
-      {
-        ...previousReference,
-        spec: {
-          kind: 'custom',
-          from: '2026-07-01T00:00:00.000Z',
-          to: '2026-07-01T02:00:00.000Z',
-          matchPrimaryDuration: true,
-        } as const,
-        label: 'Custom range',
-      },
-    ],
-  ])('builds an overlay for an equal-duration %s reference', (_label, displayReference) => {
-    const { metric } = createMetric();
-    jest.mocked(useDashboardComparison).mockReturnValue(
-      comparisonValue({
-        referenceSpec: displayReference.spec,
-        displayReference,
-      })
-    );
-
-    const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
-      { wrapper }
-    );
-
-    expect(result.current).toMatchObject({
-      state: 'ready',
+      caption: 'Compared to Previous period',
+      detail: '0.9 selected · 0.7 reference',
       visual: {
         kind: 'overlay',
-        label: displayReference.label,
+        label: 'Previous period',
         series: expect.objectContaining({
-          y: expect.objectContaining({ values: [0.8, 0.9, 1] }),
+          y: expect.objectContaining({ values: [0.7, 0.8] }),
         }),
       },
     });
+    expect(compare).toHaveBeenCalledWith(
+      expect.objectContaining({
+        referenceKind: 'previous',
+        referenceLabel: 'Previous period',
+      })
+    );
   });
 
-  it('uses summary-only evidence for an unequal custom reference and skips the sparkline query', () => {
+  it('uses summary-only evidence for an unequal reference and skips the sparkline query', () => {
     const { metric } = createMetric();
     const displayReference: ResolvedDisplayReference = {
       status: 'valid',
@@ -508,84 +251,64 @@ describe('useHeaderMetricComparison', () => {
     );
 
     const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
+      () => useHeaderMetricComparison({ metric, primaryData: panelData([0.9]), primaryValue: 0.9 }),
       { wrapper }
     );
 
     expect(result.current).toMatchObject({
       state: 'ready',
+      caption: 'Compared to Custom range',
       visual: { kind: 'summary-only' },
     });
-    expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(
-      1,
-      metric.definition,
-      expect.objectContaining({ enabled: true })
-    );
     expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(
       2,
       metric.sparkline!.definition,
       expect.objectContaining({ enabled: false })
     );
-    expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(
-      3,
-      metric.comparison!.normalBaseline!.definition,
-      expect.objectContaining({ enabled: false })
-    );
   });
 
-  it('keeps SSL Normal comparison as summary evidence without a learned band', () => {
-    const { metric } = createMetric({ supportsNormalBand: false });
+  it('uses the full baseline average as a horizontal sparkline reference', () => {
+    const { metric } = createMetric();
+    metric.comparison!.normalBaseline = {
+      definition: metric.definition,
+      selectSamples: () => [],
+    };
+    const displayReference: ResolvedDisplayReference = {
+      status: 'valid',
+      spec: { kind: 'baseline', presetId: '14d' },
+      label: 'Last 14 days',
+      range: { from: -14 * 24 * HOUR_MS, to: 0 },
+      equalDuration: false,
+    };
     jest.mocked(useDashboardComparison).mockReturnValue(
       comparisonValue({
-        referenceSpec: { kind: 'normal' },
-        displayReference: normalReference,
-        displayAvailability: {
-          status: 'available',
-          tierId: '24h',
-          coverage: 1,
-          executionCount: 24,
-          range: normalReference.range,
-        },
+        referenceSpec: displayReference.spec,
+        displayReference,
       })
     );
 
     const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
+      () => useHeaderMetricComparison({ metric, primaryData: panelData([0.9]), primaryValue: 0.9 }),
       { wrapper }
     );
 
     expect(result.current).toMatchObject({
       state: 'ready',
-      visual: { kind: 'summary-only' },
+      caption: 'Compared to Last 14 days',
+      visual: {
+        kind: 'baseline-average',
+        label: 'Last 14 days average',
+        value: 0.7,
+      },
     });
-    expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(
-      1,
-      metric.definition,
-      expect.objectContaining({ enabled: true })
-    );
     expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(
       2,
       metric.sparkline!.definition,
       expect.objectContaining({ enabled: false })
     );
-    expect(useDashboardPanelQuery).toHaveBeenNthCalledWith(
-      3,
-      metric.definition,
-      expect.objectContaining({ enabled: false })
-    );
   });
 
-  it('appends partial coverage and execution count to the comparison detail', () => {
+  it('appends partial coverage to detail without changing the fixed caption', () => {
     const { metric } = createMetric();
     jest.mocked(useDashboardComparison).mockReturnValue(
       comparisonValue({
@@ -594,19 +317,17 @@ describe('useHeaderMetricComparison', () => {
     );
 
     const { result } = renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
+      () => useHeaderMetricComparison({ metric, primaryData: panelData([0.9]), primaryValue: 0.9 }),
       { wrapper }
     );
 
-    expect(result.current?.detail).toBe('0.7 reference · 63% coverage · 16 executions');
+    expect(result.current).toMatchObject({
+      caption: 'Compared to Previous period',
+      detail: '0.9 selected · 0.7 reference · 63% coverage · 16 executions',
+    });
   });
 
-  it('reports a display metric query error without changing the supplied primary data', () => {
+  it('reports reference query failures and missing values without changing primary data', () => {
     const { compare, metric } = createMetric();
     const primaryData = panelData([0.9]);
     jest.mocked(useDashboardPanelQuery).mockImplementation((definition) =>
@@ -616,72 +337,46 @@ describe('useHeaderMetricComparison', () => {
             state: LoadingState.Error,
             error: new Error('reference failed'),
           })
-        : queryResult(panelData([0.8, 0.9, 1]))
+        : queryResult(panelData([0.8, 0.9]))
     );
 
-    const { result } = renderHook(() => useHeaderMetricComparison({ metric, primaryData, primaryValue: 0.9 }), {
-      wrapper,
-    });
-
-    expect(result.current).toEqual({
-      state: 'unavailable',
-      message: 'Comparison unavailable',
-    });
-    expect(primaryData.series[0]?.fields[1]?.values).toEqual([0.9]);
-    expect(compare).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    {
-      name: 'empty',
-      context: comparisonValue({
-        enabled: false,
-        referenceSpec: null,
-        displayReference: null,
-        displayAvailability: null,
-      }),
-    },
-    {
-      name: 'invalid',
-      context: comparisonValue({
-        displayReference: {
-          status: 'invalid',
-          spec: {
-            kind: 'custom',
-            from: 'invalid',
-            to: 'invalid',
-            matchPrimaryDuration: false,
-          },
-          label: 'Custom range',
-          reason: 'invalid-range',
-        },
-        displayAvailability: { status: 'invalid-range' },
-      }),
-    },
-    {
-      name: 'unavailable',
-      context: comparisonValue({
-        displayAvailability: { status: 'no-retained-executions' },
-      }),
-    },
-  ])('disables metric reference queries for an $name display reference', ({ context }) => {
-    const { metric } = createMetric();
-    jest.mocked(useDashboardComparison).mockReturnValue(context);
-
-    renderHook(
-      () =>
-        useHeaderMetricComparison({
-          metric,
-          primaryData: panelData([0.9]),
-          primaryValue: 0.9,
-        }),
+    const { result } = renderHook(
+      () => useHeaderMetricComparison({ metric, primaryData, primaryValue: 0.9 }),
       { wrapper }
     );
 
-    expect(jest.mocked(useDashboardPanelQuery).mock.calls).toEqual([
-      [metric.definition, expect.objectContaining({ enabled: false })],
-      [metric.sparkline!.definition, expect.objectContaining({ enabled: false })],
-      [metric.comparison!.normalBaseline!.definition, expect.objectContaining({ enabled: false })],
-    ]);
+    expect(result.current).toEqual({ state: 'unavailable', message: 'Comparison unavailable' });
+    expect(primaryData.series[0]?.fields[1]?.values).toEqual([0.9]);
+    expect(compare).not.toHaveBeenCalled();
+
+    jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(panelData()));
+    const missing = renderHook(
+      () => useHeaderMetricComparison({ metric, primaryData, primaryValue: 0.9 }),
+      { wrapper }
+    );
+    expect(missing.result.current).toEqual({
+      state: 'unavailable',
+      message: 'No Previous period data for Generic metric',
+    });
+  });
+
+  it.each([
+    [{ status: 'checking' } as const, { state: 'loading' }],
+    [{ status: 'outside-retention' } as const, { state: 'unavailable', message: 'Comparison is outside retention' }],
+    [{ status: 'no-retained-executions' } as const, { state: 'unavailable', message: 'No retained executions' }],
+    [{ status: 'query-error' } as const, { state: 'unavailable', message: 'Comparison unavailable' }],
+  ])('maps explicit availability %o and leaves metric queries disabled', (displayAvailability, expected) => {
+    const { metric } = createMetric();
+    jest.mocked(useDashboardComparison).mockReturnValue(
+      comparisonValue({ displayAvailability })
+    );
+
+    const { result } = renderHook(
+      () => useHeaderMetricComparison({ metric, primaryData: panelData([0.9]), primaryValue: 0.9 }),
+      { wrapper }
+    );
+
+    expect(result.current).toEqual(expected);
+    expect(jest.mocked(useDashboardPanelQuery).mock.calls.every(([, options]) => options?.enabled === false)).toBe(true);
   });
 });

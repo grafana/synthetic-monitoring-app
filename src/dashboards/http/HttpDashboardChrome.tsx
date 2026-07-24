@@ -36,7 +36,9 @@ export function HttpDashboardPage({
 
   return (
     <CheckDashboardLayout check={check} filters={filters} profile={httpDashboardHeaderProfile}>
-      {children}
+      <div>
+        {children}
+      </div>
     </CheckDashboardLayout>
   );
 }

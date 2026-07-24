@@ -90,7 +90,13 @@ export function formatHttpCheckDefinition(check: HTTPCheck): CheckHeaderDefiniti
         icon: 'globe',
       },
       { id: 'timeout', label: 'Timeout', value: formatDuration(check.timeout, true), icon: 'hourglass' },
-      { id: 'uptime-rules', label: 'Uptime success', value: formatHttpUptimeRules(http), icon: 'shield' },
+      {
+        id: 'uptime-rules',
+        label: 'Uptime success',
+        value: formatHttpUptimeRules(http),
+        icon: 'shield',
+        kind: 'result',
+      },
     ],
     labels: check.labels,
     details: {

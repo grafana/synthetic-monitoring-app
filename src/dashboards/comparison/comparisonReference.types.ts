@@ -4,8 +4,9 @@ export interface ComparisonRange {
 }
 
 export type ComparisonReferenceSpec =
-  | { kind: 'normal' }
+  | { kind: 'auto' }
   | { kind: 'previous' }
+  | { kind: 'baseline'; presetId: string }
   | { kind: 'shifted'; presetId: string }
   | {
       kind: 'custom';
@@ -14,7 +15,7 @@ export type ComparisonReferenceSpec =
       matchPrimaryDuration: boolean;
     };
 
-export type ManualComparisonReferenceSpec = Exclude<ComparisonReferenceSpec, { kind: 'normal' }>;
+export type ExplicitComparisonReferenceSpec = Exclude<ComparisonReferenceSpec, { kind: 'auto' }>;
 
 export type ComparisonReferenceValidation =
   | {
@@ -30,16 +31,16 @@ export type ComparisonReferenceValidation =
 export type ResolvedDisplayReference =
   | {
       status: 'valid';
-      spec: ComparisonReferenceSpec;
+      spec: ExplicitComparisonReferenceSpec;
       label: string;
       range: ComparisonRange;
       equalDuration: boolean;
     }
   | {
       status: 'invalid';
-      spec: ComparisonReferenceSpec;
+      spec: ExplicitComparisonReferenceSpec;
       label: string;
-      reason: 'invalid-range' | 'overlaps-primary' | 'unknown-preset' | 'normal-not-established';
+      reason: 'invalid-range' | 'overlaps-primary' | 'unknown-preset';
     };
 
 export interface ComparisonPreset {

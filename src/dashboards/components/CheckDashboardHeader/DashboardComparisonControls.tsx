@@ -1,19 +1,24 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dateTimeForTimeZone, dateTimeParse, type GrafanaTheme2 } from '@grafana/data';
 import { type TimeZone } from '@grafana/schema';
-import { Button, Dropdown, Field, InlineSwitch, Input, Menu, useStyles2 } from '@grafana/ui';
+import { Button, Dropdown, Field, Icon, InlineSwitch, Input, Menu, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { type ManualReferenceAvailability, type NormalReference } from 'dashboards/comparison/comparisonCoverage';
-import { COMPARISON_PRESETS } from 'dashboards/comparison/comparisonPresets';
+import { type ManualReferenceAvailability } from 'dashboards/comparison/comparisonCoverage';
+import {
+  BASELINE_COMPARISON_PRESETS,
+  SAME_PERIOD_COMPARISON_PRESETS,
+} from 'dashboards/comparison/comparisonPresets';
 import { resolveComparisonReference, setLockedCustomBoundary } from 'dashboards/comparison/resolveComparisonReference';
+import { type AutomaticComparisonState } from 'dashboards/comparison/useAutoComparisonReference';
 
 import {
   type ComparisonRange,
   type ComparisonReferenceSpec,
-  type ManualComparisonReferenceSpec,
+  type ExplicitComparisonReferenceSpec,
 } from 'dashboards/comparison/comparisonReference.types';
 import { useAppTime } from 'contexts/AppTimeProvider';
-import { useComparisonReferenceAvailability, useDashboardComparison } from 'contexts/DashboardComparisonProvider';
+import { useDashboardComparison } from 'contexts/DashboardComparisonProvider';
+import { Toggletip } from 'components/Toggletip';
 
 const DATETIME_LOCAL_FORMAT = 'YYYY-MM-DDTHH:mm';
 const DISPLAY_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS Z';
@@ -23,8 +28,6 @@ const MATCH_PRIMARY_DURATION_ID = 'comparison-match-primary-duration';
 const CUSTOM_FROM_ERROR_ID = 'comparison-custom-from-error';
 const CUSTOM_TO_ERROR_ID = 'comparison-custom-to-error';
 const CUSTOM_RANGE_ERROR_ID = 'comparison-custom-range-error';
-
-type Availability = ManualReferenceAvailability | NormalReference;
 
 interface CustomDraft {
   fromLocal: string;
@@ -36,12 +39,6 @@ interface ResolvedLocalDateTime {
   iso: string;
   offset: string;
   timestamp: number;
-}
-
-interface CandidateAvailabilityStatus {
-  description: string;
-  label: string;
-  status: ManualReferenceAvailability['status'];
 }
 
 export function toAbsoluteIso(localValue: string, timezone: string): string | null {
@@ -122,22 +119,27 @@ export function applyCustomReference({
 export function DashboardComparisonControls() {
   const styles = useStyles2(getStyles);
   const appTime = useAppTime();
-  const { displayAvailability, enabled, healthReference, referenceSpec, setEnabled, setReference } =
-    useDashboardComparison();
+  const {
+    automaticSelection,
+    displayAvailability,
+    enabled,
+    referenceSpec,
+    retryAutomaticSelection,
+    setEnabled,
+    setReference,
+  } = useDashboardComparison();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [candidateAvailability, setCandidateAvailability] = useState<Record<string, CandidateAvailabilityStatus>>({});
   const [customOpen, setCustomOpen] = useState(false);
   const [customDraft, setCustomDraft] = useState<CustomDraft>(() =>
     createCustomDraft(referenceSpec, appTime.absolute, appTime.timezone)
   );
   const previousReferenceIdentity = useRef(comparisonReferenceIdentity(referenceSpec));
   const primaryDurationMs = appTime.absolute.to - appTime.absolute.from;
-  const selectedLabel = referenceLabel(referenceSpec, healthReference);
+  const selectedLabel = referenceLabel(referenceSpec, automaticSelection);
   const selectedStatus = displayAvailability ? availabilityDescription(displayAvailability) : '';
-  const candidateAnnouncement = useMemo(
-    () => describeCandidateAvailability(menuOpen, candidateAvailability),
-    [candidateAvailability, menuOpen]
-  );
+  const announcement =
+    automaticAnnouncement(automaticSelection) ||
+    (selectedStatus === 'Checking availability' ? 'Checking comparison reference' : selectedStatus);
   const customResolution = useMemo(
     () => ({
       from: resolveLocalDateTime(customDraft.fromLocal, appTime.timezone),
@@ -155,25 +157,7 @@ export function DashboardComparisonControls() {
   const customRangeError = customResolution.from && customResolution.to ? customError : undefined;
   const customFromInvalid = Boolean(customFromError || customRangeError);
   const customToInvalid = Boolean(customToError || customRangeError);
-  const handleMenuVisibleChange = useCallback((open: boolean) => {
-    setMenuOpen(open);
-    setCandidateAvailability({});
-  }, []);
-  const reportCandidateAvailability = useCallback((key: string, next: CandidateAvailabilityStatus) => {
-    setCandidateAvailability((current) => {
-      const previous = current[key];
-
-      if (
-        previous?.description === next.description &&
-        previous.label === next.label &&
-        previous.status === next.status
-      ) {
-        return current;
-      }
-
-      return { ...current, [key]: next };
-    });
-  }, []);
+  const handleMenuVisibleChange = useCallback((open: boolean) => setMenuOpen(open), []);
   const resetCustomEditor = useCallback(() => {
     setCustomOpen(false);
     setCustomDraft(createCustomDraft(null, appTime.absolute, appTime.timezone));
@@ -181,6 +165,7 @@ export function DashboardComparisonControls() {
   const selectReference = useCallback(
     (reference: ComparisonReferenceSpec) => {
       setReference(reference);
+      setMenuOpen(false);
 
       if (reference.kind !== 'custom') {
         resetCustomEditor();
@@ -233,7 +218,6 @@ export function DashboardComparisonControls() {
     setCustomDraft(createCustomDraft(referenceSpec, appTime.absolute, appTime.timezone));
     setCustomOpen(true);
     setMenuOpen(false);
-    setCandidateAvailability({});
   };
 
   const updateCustomBoundary = (boundary: 'from' | 'to', localValue: string) => {
@@ -287,230 +271,247 @@ export function DashboardComparisonControls() {
     }
   };
 
+  const customEditor = (
+    <div className={styles.customEditor}>
+      <div>
+        <strong>Custom comparison range</strong>
+        <div className={styles.excludedInterval}>
+          Excluded primary interval: {formatDisplayDateTime(appTime.absolute.from, appTime.timezone)}
+          {' – '}
+          {formatDisplayDateTime(appTime.absolute.to, appTime.timezone)} ({appTime.timezone})
+        </div>
+        {customResolution.from && customResolution.to && (
+          <div className={styles.resolvedInterval}>
+            Resolved absolute range: {customResolution.from.iso} (UTC{customResolution.from.offset}){' – '}
+            {customResolution.to.iso} (UTC{customResolution.to.offset})
+          </div>
+        )}
+      </div>
+      <div className={styles.customFields}>
+        <Field
+          error={customFromError ? <span id={CUSTOM_FROM_ERROR_ID}>{customFromError}</span> : undefined}
+          htmlFor="comparison-custom-from"
+          invalid={customFromInvalid}
+          label="Custom range start"
+        >
+          <Input
+            aria-describedby={
+              customFromError ? CUSTOM_FROM_ERROR_ID : customRangeError ? CUSTOM_RANGE_ERROR_ID : undefined
+            }
+            aria-invalid={customFromInvalid}
+            id="comparison-custom-from"
+            invalid={customFromInvalid}
+            onChange={(event) => updateCustomBoundary('from', event.currentTarget.value)}
+            type="datetime-local"
+            value={customDraft.fromLocal}
+          />
+        </Field>
+        <Field
+          error={customToError ? <span id={CUSTOM_TO_ERROR_ID}>{customToError}</span> : undefined}
+          htmlFor="comparison-custom-to"
+          invalid={customToInvalid}
+          label="Custom range end"
+        >
+          <Input
+            aria-describedby={
+              customToError ? CUSTOM_TO_ERROR_ID : customRangeError ? CUSTOM_RANGE_ERROR_ID : undefined
+            }
+            aria-invalid={customToInvalid}
+            id="comparison-custom-to"
+            invalid={customToInvalid}
+            onChange={(event) => updateCustomBoundary('to', event.currentTarget.value)}
+            type="datetime-local"
+            value={customDraft.toLocal}
+          />
+        </Field>
+      </div>
+      {customRangeError && (
+        <div className={styles.status} id={CUSTOM_RANGE_ERROR_ID} role="alert">
+          {customRangeError}
+        </div>
+      )}
+      <InlineSwitch
+        id={MATCH_PRIMARY_DURATION_ID}
+        label="Match selected duration"
+        onChange={(event) => {
+          const checked = event.currentTarget.checked;
+
+          setCustomDraft((current) => {
+            if (!checked) {
+              return {
+                ...current,
+                matchPrimaryDuration: false,
+              };
+            }
+
+            const from = resolveLocalDateTime(current.fromLocal, appTime.timezone);
+
+            return {
+              ...current,
+              matchPrimaryDuration: true,
+              toLocal: from
+                ? formatLocalDateTime(from.timestamp + primaryDurationMs, appTime.timezone)
+                : current.toLocal,
+            };
+          });
+        }}
+        showLabel
+        value={customDraft.matchPrimaryDuration}
+      />
+      <div className={styles.customActions}>
+        <Button disabled={Boolean(customError)} onClick={applyCustom} type="button" variant="primary">
+          Apply custom range
+        </Button>
+        <Button fill="text" onClick={resetCustomEditor} type="button" variant="secondary">
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className={styles.controls}>
       <div className={styles.selectorGroup}>
-        <Button
-          aria-pressed={enabled}
-          fill={enabled ? 'solid' : 'outline'}
-          onClick={() => {
-            const nextEnabled = !enabled;
-
-            if (!nextEnabled) {
-              resetCustomEditor();
-              setMenuOpen(false);
-              setCandidateAvailability({});
-            }
-
-            setEnabled(nextEnabled);
-          }}
-          type="button"
-          variant="secondary"
-        >
-          Compare
-        </Button>
-        {enabled && (
+        <InlineSwitch
+          id="dashboard-comparison-toggle"
+          label="Compare"
+          onChange={(event) => setEnabled(event.currentTarget.checked)}
+          showLabel
+          value={enabled}
+        />
+        {enabled ? (
           <>
-            <Dropdown
-              onVisibleChange={handleMenuVisibleChange}
-              overlay={
-                <Menu ariaLabel="Comparison reference">
-                  <Menu.Item
-                    active={referenceSpec?.kind === 'normal'}
-                    ariaChecked={referenceSpec?.kind === 'normal'}
-                    ariaLabel={`Normal. ${availabilityDescription(healthReference)}`}
-                    description={availabilityDescription(healthReference)}
-                    disabled={!isSelectable(healthReference)}
-                    icon={referenceSpec?.kind === 'normal' ? 'check' : undefined}
-                    label="Normal"
-                    onClick={() => {
-                      selectReference({ kind: 'normal' });
-                    }}
-                    role="menuitemradio"
-                  />
-                  {menuOpen && (
-                    <ManualReferenceMenuItem
-                      label="Previous period"
-                      onAvailability={reportCandidateAvailability}
-                      onSelect={selectReference}
-                      reference={{ kind: 'previous' }}
-                      selected={referenceSpec?.kind === 'previous'}
-                    />
-                  )}
-                  {menuOpen &&
-                    COMPARISON_PRESETS.map((preset) => (
-                      <ManualReferenceMenuItem
-                        key={preset.id}
-                        label={preset.label}
-                        onAvailability={reportCandidateAvailability}
-                        onSelect={selectReference}
-                        reference={{ kind: 'shifted', presetId: preset.id }}
-                        selected={referenceSpec?.kind === 'shifted' && referenceSpec.presetId === preset.id}
+            <Stack alignItems="center" gap={1}>
+              {customOpen ? (
+                <Toggletip
+                  content={customEditor}
+                  maxWidth="calc(100vw - 32px)"
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      resetCustomEditor();
+                    }
+                  }}
+                  open
+                  width={720}
+                >
+                  <Button
+                    aria-label="Custom comparison range"
+                    fill="solid"
+                    type="button"
+                    variant="secondary"
+                  >
+                    Custom range
+                  </Button>
+                </Toggletip>
+              ) : (
+                <Dropdown
+                  onVisibleChange={handleMenuVisibleChange}
+                  overlay={
+                    <Menu ariaLabel="Comparison reference">
+                      <Menu.Group label="Normal baseline">
+                        {BASELINE_COMPARISON_PRESETS.map((preset) => (
+                          <ManualReferenceMenuItem
+                            key={preset.id}
+                            label={preset.label}
+                            onSelect={selectReference}
+                            reference={{ kind: 'baseline', presetId: preset.id }}
+                            selected={referenceSpec?.kind === 'baseline' && referenceSpec.presetId === preset.id}
+                          />
+                        ))}
+                      </Menu.Group>
+                      <Menu.Divider />
+                      <Menu.Group label="Same period">
+                        <ManualReferenceMenuItem
+                          label="Previous period"
+                          onSelect={selectReference}
+                          reference={{ kind: 'previous' }}
+                          selected={referenceSpec?.kind === 'previous'}
+                        />
+                        {SAME_PERIOD_COMPARISON_PRESETS.map((preset) => (
+                          <ManualReferenceMenuItem
+                            key={preset.id}
+                            label={preset.label}
+                            onSelect={selectReference}
+                            reference={{ kind: 'shifted', presetId: preset.id }}
+                            selected={referenceSpec?.kind === 'shifted' && referenceSpec.presetId === preset.id}
+                          />
+                        ))}
+                      </Menu.Group>
+                      <Menu.Divider />
+                      <Menu.Item
+                        active={referenceSpec?.kind === 'custom'}
+                        ariaChecked={referenceSpec?.kind === 'custom'}
+                        icon={referenceSpec?.kind === 'custom' ? 'check' : undefined}
+                        label="Custom range"
+                        onClick={openCustomEditor}
+                        role="menuitemradio"
                       />
-                    ))}
-                  <Menu.Item
-                    active={referenceSpec?.kind === 'custom'}
-                    ariaChecked={referenceSpec?.kind === 'custom'}
-                    icon={referenceSpec?.kind === 'custom' ? 'check' : undefined}
-                    label="Custom range"
-                    onClick={openCustomEditor}
-                    role="menuitemradio"
-                  />
-                </Menu>
-              }
-              placement="bottom-start"
-            >
+                      {automaticSelection.status === 'query-error' ? (
+                        <Menu.Item
+                          label="Retry automatic selection"
+                          onClick={() => {
+                            retryAutomaticSelection();
+                            setMenuOpen(false);
+                          }}
+                          role="menuitem"
+                        />
+                      ) : null}
+                    </Menu>
+                  }
+                  placement="bottom-start"
+                >
+                  <Button
+                    aria-haspopup="menu"
+                    aria-label={`Comparison reference, ${selectedLabel}`}
+                    className={styles.dropdownTrigger}
+                    fill="solid"
+                    type="button"
+                    variant="secondary"
+                  >
+                    {selectedLabel}
+                    <Icon name={menuOpen ? 'angle-up' : 'angle-down'} />
+                  </Button>
+                </Dropdown>
+              )}
               <Button
-                aria-label={`Comparison reference, ${selectedLabel}`}
-                fill="outline"
+                aria-label={`Remove comparison, ${selectedLabel}`}
+                fill="solid"
+                icon="times"
+                onClick={() => {
+                  resetCustomEditor();
+                  setMenuOpen(false);
+                  setReference(null);
+                }}
                 type="button"
                 variant="secondary"
-              >
-                {selectedLabel}
-              </Button>
-            </Dropdown>
+              />
+            </Stack>
             {selectedStatus && <span className={styles.status}>{selectedStatus}</span>}
           </>
-        )}
+        ) : null}
       </div>
       <span aria-live="polite" className={styles.visuallyHidden} role="status">
-        {selectedStatus === 'Checking availability' ? 'Checking comparison reference' : selectedStatus}
+        {announcement}
       </span>
-      <span aria-live="polite" className={styles.visuallyHidden} data-testid="comparison-candidate-status">
-        {candidateAnnouncement}
-      </span>
-      {enabled && customOpen && (
-        <div className={styles.customEditor}>
-          <div>
-            <strong>Custom comparison range</strong>
-            <div className={styles.excludedInterval}>
-              Excluded primary interval: {formatDisplayDateTime(appTime.absolute.from, appTime.timezone)}
-              {' – '}
-              {formatDisplayDateTime(appTime.absolute.to, appTime.timezone)} ({appTime.timezone})
-            </div>
-            {customResolution.from && customResolution.to && (
-              <div className={styles.resolvedInterval}>
-                Resolved absolute range: {customResolution.from.iso} (UTC{customResolution.from.offset}){' – '}
-                {customResolution.to.iso} (UTC{customResolution.to.offset})
-              </div>
-            )}
-          </div>
-          <div className={styles.customFields}>
-            <Field
-              error={customFromError ? <span id={CUSTOM_FROM_ERROR_ID}>{customFromError}</span> : undefined}
-              htmlFor="comparison-custom-from"
-              invalid={customFromInvalid}
-              label="Custom range start"
-            >
-              <Input
-                aria-describedby={
-                  customFromError ? CUSTOM_FROM_ERROR_ID : customRangeError ? CUSTOM_RANGE_ERROR_ID : undefined
-                }
-                aria-invalid={customFromInvalid}
-                id="comparison-custom-from"
-                invalid={customFromInvalid}
-                onChange={(event) => updateCustomBoundary('from', event.currentTarget.value)}
-                type="datetime-local"
-                value={customDraft.fromLocal}
-              />
-            </Field>
-            <Field
-              error={customToError ? <span id={CUSTOM_TO_ERROR_ID}>{customToError}</span> : undefined}
-              htmlFor="comparison-custom-to"
-              invalid={customToInvalid}
-              label="Custom range end"
-            >
-              <Input
-                aria-describedby={
-                  customToError ? CUSTOM_TO_ERROR_ID : customRangeError ? CUSTOM_RANGE_ERROR_ID : undefined
-                }
-                aria-invalid={customToInvalid}
-                id="comparison-custom-to"
-                invalid={customToInvalid}
-                onChange={(event) => updateCustomBoundary('to', event.currentTarget.value)}
-                type="datetime-local"
-                value={customDraft.toLocal}
-              />
-            </Field>
-          </div>
-          {customRangeError && (
-            <div className={styles.status} id={CUSTOM_RANGE_ERROR_ID} role="alert">
-              {customRangeError}
-            </div>
-          )}
-          <InlineSwitch
-            id={MATCH_PRIMARY_DURATION_ID}
-            label="Match selected duration"
-            onChange={(event) => {
-              const checked = event.currentTarget.checked;
-
-              setCustomDraft((current) => {
-                if (!checked) {
-                  return {
-                    ...current,
-                    matchPrimaryDuration: false,
-                  };
-                }
-
-                const from = resolveLocalDateTime(current.fromLocal, appTime.timezone);
-
-                return {
-                  ...current,
-                  matchPrimaryDuration: true,
-                  toLocal: from
-                    ? formatLocalDateTime(from.timestamp + primaryDurationMs, appTime.timezone)
-                    : current.toLocal,
-                };
-              });
-            }}
-            showLabel
-            value={customDraft.matchPrimaryDuration}
-          />
-          <div className={styles.customActions}>
-            <Button disabled={Boolean(customError)} onClick={applyCustom} type="button" variant="primary">
-              Apply custom range
-            </Button>
-            <Button fill="text" onClick={resetCustomEditor} type="button" variant="secondary">
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
 function ManualReferenceMenuItem({
   label,
-  onAvailability,
   onSelect,
   reference,
   selected,
 }: {
   label: string;
-  onAvailability: (key: string, availability: CandidateAvailabilityStatus) => void;
   onSelect: (reference: ComparisonReferenceSpec) => void;
-  reference: ManualComparisonReferenceSpec;
+  reference: ExplicitComparisonReferenceSpec;
   selected: boolean;
 }) {
-  const availability = useComparisonReferenceAvailability(reference, true);
-  const description = availabilityDescription(availability);
-
-  useEffect(() => {
-    onAvailability(referenceKey(reference), {
-      description,
-      label,
-      status: availability.status,
-    });
-  }, [availability.status, description, label, onAvailability, reference]);
-
   return (
     <Menu.Item
       active={selected}
       ariaChecked={selected}
-      ariaLabel={`${label}. ${description}`}
-      description={description}
-      disabled={!isSelectable(availability)}
       icon={selected ? 'check' : undefined}
       label={label}
       onClick={() => onSelect(reference)}
@@ -519,45 +520,13 @@ function ManualReferenceMenuItem({
   );
 }
 
-function describeCandidateAvailability(
-  menuOpen: boolean,
-  candidateAvailability: Record<string, CandidateAvailabilityStatus>
-): string {
-  if (!menuOpen) {
-    return '';
-  }
-
-  const statuses = Object.values(candidateAvailability);
-  const expectedCandidateCount = COMPARISON_PRESETS.length + 1;
-  const checking = statuses.length < expectedCandidateCount || statuses.some(({ status }) => status === 'checking');
-  const unavailable = statuses.filter(
-    ({ status }) => status !== 'available' && status !== 'partial' && status !== 'checking'
-  );
-
-  if (checking) {
-    return 'Checking comparison references';
-  }
-
-  if (unavailable.length > 0) {
-    return `Unavailable comparison references: ${unavailable
-      .map(({ description, label }) => `${label} — ${description}`)
-      .join('; ')}`;
-  }
-
-  return 'Comparison references available';
-}
-
-function referenceKey(reference: ManualComparisonReferenceSpec): string {
-  return reference.kind === 'shifted' ? reference.presetId : reference.kind;
-}
-
 function comparisonReferenceIdentity(reference: ComparisonReferenceSpec | null): string {
   if (!reference) {
     return 'off';
   }
 
-  if (reference.kind === 'shifted') {
-    return `shifted:${reference.presetId}`;
+  if (reference.kind === 'baseline' || reference.kind === 'shifted') {
+    return `${reference.kind}:${reference.presetId}`;
   }
 
   if (reference.kind === 'custom') {
@@ -568,8 +537,8 @@ function comparisonReferenceIdentity(reference: ComparisonReferenceSpec | null):
 }
 
 function referenceName(reference: ComparisonReferenceSpec | null): string {
-  if (!reference || reference.kind === 'normal') {
-    return 'Normal';
+  if (!reference || reference.kind === 'auto') {
+    return 'Compare';
   }
 
   if (reference.kind === 'previous') {
@@ -580,31 +549,46 @@ function referenceName(reference: ComparisonReferenceSpec | null): string {
     return 'Custom range';
   }
 
-  return COMPARISON_PRESETS.find(({ id }) => id === reference.presetId)?.label ?? 'Unknown preset';
+  const presets =
+    reference.kind === 'baseline' ? BASELINE_COMPARISON_PRESETS : SAME_PERIOD_COMPARISON_PRESETS;
+
+  return presets.find(({ id }) => id === reference.presetId)?.label ?? 'Unknown preset';
 }
 
-function referenceLabel(reference: ComparisonReferenceSpec | null, healthReference: NormalReference): string {
-  if (!reference || reference.kind !== 'normal') {
+function referenceLabel(
+  reference: ComparisonReferenceSpec | null,
+  automaticSelection: AutomaticComparisonState
+): string {
+  if (!reference || reference.kind !== 'auto') {
     return referenceName(reference);
   }
 
-  switch (healthReference.status) {
-    case 'available':
-      return `Normal · ${healthReference.tierId}`;
-    case 'checking':
-      return 'Normal · checking';
+  switch (automaticSelection.status) {
+    case 'finding':
+      return 'Finding comparison…';
+    case 'no-data':
+      return 'No comparison data';
     case 'query-error':
-      return 'Normal unavailable · query failed';
-    case 'not-established':
-      return 'Normal not established for this period';
+      return 'Could not find comparison';
+    case 'inactive':
+      return 'Finding comparison…';
   }
 }
 
-function isSelectable(availability: Availability): boolean {
-  return availability.status === 'available' || availability.status === 'partial';
+function automaticAnnouncement(automaticSelection: AutomaticComparisonState): string {
+  switch (automaticSelection.status) {
+    case 'finding':
+      return 'Finding comparison reference';
+    case 'no-data':
+      return 'No comparison data';
+    case 'query-error':
+      return 'Could not find comparison';
+    case 'inactive':
+      return '';
+  }
 }
 
-function availabilityDescription(availability: Availability): string {
+function availabilityDescription(availability: ManualReferenceAvailability): string {
   if (availability.status === 'available' || availability.status === 'partial') {
     return `${Math.round(availability.coverage * 100)}% coverage · ${Math.round(availability.executionCount).toLocaleString()} executions`;
   }
@@ -612,8 +596,6 @@ function availabilityDescription(availability: Availability): string {
   switch (availability.status) {
     case 'checking':
       return 'Checking availability';
-    case 'not-established':
-      return 'Normal not established for this period';
     case 'outside-retention':
       return 'Outside retention';
     case 'no-retained-executions':
@@ -720,19 +702,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(1),
     minWidth: 0,
   }),
+  dropdownTrigger: css({
+    gap: theme.spacing(0.5),
+  }),
   status: css({
     color: theme.colors.text.secondary,
     fontSize: theme.typography.bodySmall.fontSize,
   }),
   customEditor: css({
-    background: theme.colors.background.primary,
-    border: `1px solid ${theme.colors.border.weak}`,
-    borderRadius: theme.shape.radius.default,
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(1.5),
-    maxWidth: theme.spacing(72),
-    padding: theme.spacing(2),
   }),
   excludedInterval: css({
     color: theme.colors.text.secondary,

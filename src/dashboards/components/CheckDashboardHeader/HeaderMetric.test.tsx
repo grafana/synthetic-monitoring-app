@@ -206,7 +206,9 @@ describe('HeaderMetric', () => {
       trend: 'Recovered earlier in this range',
     });
 
-    expect(screen.getByRole('status', { name: 'Uptime trend' })).toHaveTextContent(
+    const health = screen.getByTestId('header-metric-health');
+    expect(health).toContainElement(screen.getByRole('status', { name: 'Uptime trend' }));
+    expect(health).toHaveTextContent(
       'Recovered earlier in this range'
     );
   });
@@ -255,6 +257,9 @@ describe('HeaderMetric', () => {
     const { rerender } = render(<HeaderMetric metric={metricWithSparkline} />);
 
     expect(screen.getByTestId('header-metric-sparkline')).toBeVisible();
+    expect(screen.getByTestId('header-metric-chart')).toContainElement(
+      screen.getByTestId('header-metric-sparkline')
+    );
 
     jest
       .mocked(useDashboardPanelQuery)
@@ -299,7 +304,7 @@ describe('HeaderMetric', () => {
     );
   });
 
-  it('passes the comparison visual without displacing health, alert, or trend evidence', () => {
+  it('replaces the selected-range health trend with comparison evidence while retaining alerts', () => {
     const metricWithSparkline: HeaderMetricDefinition = {
       ...metric,
       sparkline: {
@@ -318,8 +323,16 @@ describe('HeaderMetric', () => {
     };
     jest.mocked(useHeaderMetricComparison).mockReturnValue({
       state: 'ready',
-      summary: 'In line with Normal',
-      visual: { kind: 'normal-band', lower: 0.95, median: 0.975, upper: 1, label: 'Normal' },
+      readings: {
+        plain: '3.1 pp lower',
+        reference: '99.90%',
+      },
+      caption: 'Compared to Previous period',
+      visual: {
+        kind: 'overlay',
+        series: metricWithSparkline.sparkline!.selectSeries(sparklineData())!,
+        label: 'Previous period',
+      },
     });
     jest
       .mocked(useDashboardPanelQuery)
@@ -333,11 +346,12 @@ describe('HeaderMetric', () => {
       metricDefinition: metricWithSparkline,
     });
 
-    expect(screen.getByTestId('header-metric-sparkline')).toHaveAttribute('data-visual-kind', 'normal-band');
-    expect(screen.getByTestId('header-metric-sparkline')).toHaveAttribute('data-visual-label', 'Normal');
+    expect(screen.getByTestId('header-metric-sparkline')).toHaveAttribute('data-visual-kind', 'overlay');
+    expect(screen.getByTestId('header-metric-sparkline')).toHaveAttribute('data-visual-label', 'Previous period');
     expect(screen.getByTestId('header-metric-sparkline')).toHaveAttribute('data-health-state', 'unhealthy');
-    expect(screen.getByRole('status', { name: 'Uptime trend' })).toHaveTextContent(
-      'Recovered earlier in this range'
+    expect(screen.queryByRole('status', { name: 'Uptime trend' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('header-metric-health')).toContainElement(
+      screen.getByRole('button', { name: /Uptime comparison: 3.1 pp lower/ })
     );
     expect(
       screen.getByRole('status', {
@@ -346,25 +360,36 @@ describe('HeaderMetric', () => {
     ).toBeVisible();
   });
 
-  it('renders compact comparison evidence outside the primary value', () => {
+  it('renders the comparison in the status slot instead of beneath the primary value', () => {
     jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Done, 0.968), false));
     jest.mocked(useHeaderMetricComparison).mockReturnValue({
       state: 'ready',
-      summary: '3.1 pp lower than Previous period',
-      detail: '96.80% now · 99.90% reference',
+      readings: {
+        plain: '3.1 pp lower',
+        reference: '99.90%',
+      },
+      caption: 'Compared to Previous period',
+      detail: '96.80% selected · 99.90% reference',
       visual: { kind: 'summary-only' },
     });
 
     render(<HeaderMetric metric={metric} />);
 
     const primary = screen.getByText('96.80%');
+    const reading = screen.getByTestId('header-metric-reading');
     expect(primary.tagName).toBe('STRONG');
     expect(primary).not.toHaveTextContent('Previous period');
-    expect(screen.getByText('3.1 pp lower than Previous period')).toBeVisible();
-    expect(screen.getByText('96.80% now · 99.90% reference')).toBeVisible();
+    expect(reading).toContainElement(primary);
+    const comparisonButton = screen.getByRole('button', {
+      name: /Uptime comparison: 3.1 pp lower/,
+    });
+    expect(reading).not.toContainElement(comparisonButton);
+    expect(screen.getByTestId('header-metric-health')).toContainElement(comparisonButton);
+    expect(screen.getByTestId('header-metric-health')).toHaveTextContent('Compared to Previous period');
+    expect(screen.queryByText('96.80% selected · 99.90% reference')).not.toBeInTheDocument();
   });
 
-  it('announces loading and reports unavailable comparisons without replacing the primary value', () => {
+  it('announces loading and unavailable comparisons in the status slot without replacing the primary value', () => {
     jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Done, 0.968), false));
     jest.mocked(useHeaderMetricComparison).mockReturnValue({
       state: 'loading',
@@ -373,6 +398,8 @@ describe('HeaderMetric', () => {
     const { rerender } = render(<HeaderMetric metric={metric} />);
 
     const loading = screen.getByTestId('header-metric-comparison-loading');
+    expect(screen.getByTestId('header-metric-reading')).not.toContainElement(loading);
+    expect(screen.getByTestId('header-metric-health')).toContainElement(loading);
     expect(loading).toHaveAttribute('aria-live', 'polite');
     expect(loading).toHaveTextContent('Loading comparison');
     expect(loading.querySelector('svg')).toBeInTheDocument();
@@ -385,6 +412,8 @@ describe('HeaderMetric', () => {
     rerender(<HeaderMetric metric={metric} />);
 
     const unavailable = screen.getByText('Comparison unavailable');
+    expect(screen.getByTestId('header-metric-reading')).not.toContainElement(unavailable);
+    expect(screen.getByTestId('header-metric-health')).toContainElement(unavailable);
     expect(unavailable).toBeVisible();
     expect(unavailable).toHaveAttribute('aria-live', 'polite');
     expect(unavailable).toHaveAttribute('aria-atomic', 'true');
@@ -398,8 +427,12 @@ describe('HeaderMetric', () => {
     jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Done, 0.968), false));
     jest.mocked(useHeaderMetricComparison).mockReturnValue({
       state: 'ready',
-      summary: 'In line with Normal',
-      visual: { kind: 'normal-band', lower: 0.95, median: 0.975, upper: 1, label: 'Normal' },
+      readings: {
+        plain: '3.1 pp lower',
+        reference: '99.90%',
+      },
+      caption: 'Compared to Previous period',
+      visual: { kind: 'summary-only' },
     });
 
     const { rerender } = renderWithHealth({ rangeState: 'unhealthy' });
@@ -408,7 +441,11 @@ describe('HeaderMetric', () => {
 
     jest.mocked(useHeaderMetricComparison).mockReturnValue({
       state: 'ready',
-      summary: '3.1 pp lower than Previous period',
+      readings: {
+        plain: '8% faster',
+        reference: '0.47 s',
+      },
+      caption: 'Compared to 30 days ago',
       visual: { kind: 'summary-only' },
     });
     rerender(
@@ -436,6 +473,6 @@ describe('HeaderMetric', () => {
     );
 
     expect(screen.getByText('96.80%')).toHaveStyle({ color: result.current.colors.error.text });
-    expect(screen.getByText('3.1 pp lower than Previous period')).toBeVisible();
+    expect(screen.getByRole('button', { name: /Uptime comparison: 8% faster/ })).toBeVisible();
   });
 });

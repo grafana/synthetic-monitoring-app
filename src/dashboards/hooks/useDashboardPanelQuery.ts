@@ -80,7 +80,7 @@ export function useDashboardPanelQuery(
         interval: semanticValues.interval,
         intervalMs: semanticValues.intervalMs,
         maxDataPoints: definition.maxDataPoints ?? 500,
-        requestId: definition.id,
+        requestId: `${definition.id}:${scope[1]}:${scope[2]}:${timeRange.from.valueOf()}:${timeRange.to.valueOf()}`,
         defaultDatasource: {
           uid: activeDS?.uid ?? '',
           type: datasourceType,
@@ -92,6 +92,7 @@ export function useDashboardPanelQuery(
       definition.id,
       definition.maxDataPoints,
       interpolatedTargets,
+      scope,
       semanticValues.interval,
       semanticValues.intervalMs,
       timeRange,

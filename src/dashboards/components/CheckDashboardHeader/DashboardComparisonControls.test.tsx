@@ -1,23 +1,40 @@
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { type ManualReferenceAvailability } from 'dashboards/comparison/comparisonCoverage';
 
-import { type ComparisonReferenceSpec } from 'dashboards/comparison/comparisonReference.types';
 import { useAppTime } from 'contexts/AppTimeProvider';
-import {
-  type DashboardComparisonContextValue,
-  useComparisonReferenceAvailability,
-  useDashboardComparison,
-} from 'contexts/DashboardComparisonProvider';
+import { type DashboardComparisonContextValue, useDashboardComparison } from 'contexts/DashboardComparisonProvider';
 
 import { DashboardComparisonControls, toAbsoluteIso } from './DashboardComparisonControls';
 
 jest.mock('contexts/AppTimeProvider', () => ({ useAppTime: jest.fn() }));
 jest.mock('contexts/DashboardComparisonProvider', () => ({
-  useComparisonReferenceAvailability: jest.fn(),
   useDashboardComparison: jest.fn(),
 }));
+jest.mock('components/Toggletip', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+
+  return {
+    Toggletip: ({
+      children,
+      content,
+      onOpenChange,
+      open,
+    }: {
+      children: React.ReactElement;
+      content: React.ReactNode;
+      onOpenChange?: (open: boolean) => void;
+      open?: boolean;
+    }) => (
+      <>
+        {React.cloneElement(children, {
+          onClick: () => onOpenChange?.(!open),
+        } as React.HTMLAttributes<HTMLElement>)}
+        {open ? <div data-testid="toggletip-content">{content}</div> : null}
+      </>
+    ),
+  };
+});
 jest.mock('@grafana/ui', () => {
   const React = jest.requireActual<typeof import('react')>('react');
 
@@ -100,7 +117,22 @@ jest.mock('@grafana/ui', () => {
     );
   }
 
+  function MenuDivider() {
+    return <hr />;
+  }
+
+  function MenuGroup({ children, label }: { children: React.ReactNode; label?: string }) {
+    return (
+      <div role="group">
+        {label && <span>{label}</span>}
+        {children}
+      </div>
+    );
+  }
+
   Menu.Item = MenuItem;
+  Menu.Divider = MenuDivider;
+  Menu.Group = MenuGroup;
 
   return {
     Alert: ({ children }: { children: React.ReactNode }) => <div role="alert">{children}</div>,
@@ -113,6 +145,7 @@ jest.mock('@grafana/ui', () => {
       <button {...props}>{children}</button>
     ),
     Dropdown,
+    Icon: ({ name }: { name: string }) => <span aria-hidden="true" data-icon={name} data-testid="icon" />,
     Field: ({
       children,
       error,
@@ -152,6 +185,7 @@ jest.mock('@grafana/ui', () => {
       <input {...props} />
     ),
     Menu,
+    Stack: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
     useStyles2: () => ({
       controls: 'controls',
       customActions: 'custom-actions',
@@ -168,19 +202,10 @@ const primary = {
   from: Date.parse('2026-07-09T08:00:00.000Z'),
   to: Date.parse('2026-07-09T11:00:00.000Z'),
 };
-const NORMAL_REFERENCE_BUTTON = 'Comparison reference, Normal · 21d';
+const ACTIVE_REFERENCE_BUTTON = 'Comparison reference, Last 30 days';
 
 let comparison: DashboardComparisonContextValue;
 let appTime: ReturnType<typeof useAppTime>;
-let availabilityByReference: Record<string, ManualReferenceAvailability>;
-
-function referenceKey(reference: ComparisonReferenceSpec): string {
-  if (reference.kind === 'shifted') {
-    return reference.presetId;
-  }
-
-  return reference.kind;
-}
 
 function setComparison(overrides: Partial<DashboardComparisonContextValue> = {}) {
   comparison = {
@@ -189,8 +214,10 @@ function setComparison(overrides: Partial<DashboardComparisonContextValue> = {})
     healthReference: { status: 'available', tierId: '21d', range: primary, coverage: 0.9, executionCount: 84 },
     displayReference: null,
     displayAvailability: null,
+    automaticSelection: { status: 'inactive' },
     setEnabled: jest.fn(),
     setReference: jest.fn(),
+    retryAutomaticSelection: jest.fn(),
     ...overrides,
   };
   jest.mocked(useDashboardComparison).mockImplementation(() => comparison);
@@ -198,7 +225,6 @@ function setComparison(overrides: Partial<DashboardComparisonContextValue> = {})
 
 describe('DashboardComparisonControls', () => {
   beforeEach(() => {
-    availabilityByReference = {};
     setComparison();
     appTime = {
       raw: { from: '2026-07-09T08:00:00.000Z', to: '2026-07-09T11:00:00.000Z' },
@@ -217,155 +243,131 @@ describe('DashboardComparisonControls', () => {
       subscribeRefresh: jest.fn(),
     };
     jest.mocked(useAppTime).mockImplementation(() => appTime);
-    jest
-      .mocked(useComparisonReferenceAvailability)
-      .mockImplementation((reference) => availabilityByReference[referenceKey(reference)] ?? { status: 'checking' });
   });
 
-  it('starts with only the unpressed Compare button and reveals the resolved Normal selector', async () => {
+  it('keeps the comparison switch visible through off, finding, and resolved states', async () => {
     const user = userEvent.setup();
     const rendered = render(<DashboardComparisonControls />);
 
-    const compare = screen.getByRole('button', { name: 'Compare' });
-    expect(compare).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByRole('button', { name: /Comparison reference/ })).not.toBeInTheDocument();
+    const compare = screen.getByRole('switch', { name: 'Compare' });
+    expect(compare).not.toBeChecked();
 
     await user.click(compare);
     expect(comparison.setEnabled).toHaveBeenCalledWith(true);
 
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({
+      enabled: true,
+      referenceSpec: { kind: 'auto' },
+      automaticSelection: { status: 'finding', candidatePresetId: '30d' },
+    });
     rendered.rerender(<DashboardComparisonControls />);
 
-    expect(screen.getByRole('button', { name: 'Compare' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON })).toHaveTextContent('Normal · 21d');
+    expect(screen.getByRole('switch', { name: 'Compare' })).toBeChecked();
+    expect(screen.getByRole('button', { name: 'Comparison reference, Finding comparison…' })).toBeVisible();
+
+    setComparison({
+      enabled: true,
+      referenceSpec: { kind: 'baseline', presetId: '30d' },
+      displayAvailability: { status: 'available', coverage: 1, executionCount: 180 },
+    });
+    rendered.rerender(<DashboardComparisonControls />);
+
+    expect(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON })).toHaveTextContent('Last 30 days');
+    expect(screen.getByRole('switch', { name: 'Compare' })).toBeChecked();
   });
 
-  it('keeps the registry order and only mounts candidate availability while the menu is open', async () => {
+  it('uses a persistent switch to disable comparison and a separate remove action for the reference', async () => {
     const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({
+      enabled: true,
+      referenceSpec: { kind: 'baseline', presetId: '30d' },
+      displayAvailability: { status: 'available', coverage: 1, executionCount: 180 },
+    });
     render(<DashboardComparisonControls />);
 
-    expect(useComparisonReferenceAvailability).not.toHaveBeenCalled();
+    const toggle = screen.getByRole('switch', { name: 'Compare' });
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    expect(toggle).toBeChecked();
+    expect(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Remove comparison, Last 30 days' })).toBeVisible();
+
+    await user.click(toggle);
+
+    expect(comparison.setEnabled).toHaveBeenCalledWith(false);
+
+    await user.click(screen.getByRole('button', { name: 'Remove comparison, Last 30 days' }));
+
+    expect(comparison.setReference).toHaveBeenCalledWith(null);
+  });
+
+  it('keeps the registry order without preflighting every candidate when the menu opens', async () => {
+    const user = userEvent.setup();
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
+    render(<DashboardComparisonControls />);
+
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
 
     const menu = screen.getByRole('menu', { name: 'Comparison reference' });
+    expect(within(menu).getByText('Normal baseline')).toBeVisible();
+    expect(within(menu).getByText('Same period')).toBeVisible();
     expect(
       within(menu)
         .getAllByRole('menuitemradio')
         .map((item) => item.textContent)
     ).toEqual([
-      expect.stringContaining('Normal'),
+      expect.stringContaining('Last 30 days'),
+      expect.stringContaining('Last 21 days'),
+      expect.stringContaining('Last 14 days'),
+      expect.stringContaining('Last 7 days'),
+      expect.stringContaining('Last 24 hours'),
       expect.stringContaining('Previous period'),
-      expect.stringContaining('24 hours ago'),
-      expect.stringContaining('7 days ago'),
-      expect.stringContaining('14 days ago'),
-      expect.stringContaining('21 days ago'),
-      expect.stringContaining('30 days ago'),
-      expect.stringContaining('3 months ago'),
-      expect.stringContaining('1 year ago'),
+      expect.stringContaining('Same period yesterday'),
+      expect.stringContaining('Same period last week'),
+      expect.stringContaining('Same period last month'),
       expect.stringContaining('Custom range'),
     ]);
-    expect(within(menu).getByRole('menuitemradio', { name: /Normal/ })).toHaveAttribute('aria-checked', 'true');
-    expect(within(menu).getByRole('menuitemradio', { name: /24 hours ago/ })).toHaveAttribute(
+    expect(within(menu).getByRole('menuitemradio', { name: /Last 30 days/ })).toHaveAttribute('aria-checked', 'true');
+    expect(within(menu).getByRole('menuitemradio', { name: /Same period yesterday/ })).toHaveAttribute(
       'aria-checked',
       'false'
     );
-    const selectedNormal = within(menu).getByRole('menuitemradio', { name: /Normal/ });
+    const selectedReference = within(menu).getByRole('menuitemradio', { name: /Last 30 days/ });
 
-    expect(within(selectedNormal).getByTestId('menu-item-icon')).toHaveAttribute('data-icon', 'check');
+    expect(within(selectedReference).getByTestId('menu-item-icon')).toHaveAttribute('data-icon', 'check');
     expect(
-      within(within(menu).getByRole('menuitemradio', { name: /24 hours ago/ })).queryByTestId('menu-item-icon')
+      within(within(menu).getByRole('menuitemradio', { name: /Same period yesterday/ })).queryByTestId(
+        'menu-item-icon'
+      )
     ).not.toBeInTheDocument();
 
-    fireEvent.mouseLeave(selectedNormal);
+    fireEvent.mouseLeave(selectedReference);
 
-    expect(selectedNormal).toHaveAttribute('data-active', 'false');
-    expect(within(selectedNormal).getByTestId('menu-item-icon')).toHaveAttribute('data-icon', 'check');
-    const openCallCount = jest.mocked(useComparisonReferenceAvailability).mock.calls.length;
-    const candidateKeys = new Set(
-      jest.mocked(useComparisonReferenceAvailability).mock.calls.map(([reference]) => referenceKey(reference))
-    );
-
-    expect(candidateKeys.size).toBe(8);
-    expect(jest.mocked(useComparisonReferenceAvailability).mock.calls.every(([, enabled]) => enabled === true)).toBe(
-      true
-    );
-
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
-
-    expect(useComparisonReferenceAvailability).toHaveBeenCalledTimes(openCallCount);
+    expect(selectedReference).toHaveAttribute('data-active', 'false');
+    expect(within(selectedReference).getByTestId('menu-item-icon')).toHaveAttribute('data-icon', 'check');
+    expect(within(menu).queryByText('Checking availability')).not.toBeInTheDocument();
+    expect(within(menu).queryByText('Normal')).not.toBeInTheDocument();
+    expect(within(menu).queryByText('Typical')).not.toBeInTheDocument();
+    expect(within(menu).queryByText('1 year ago')).not.toBeInTheDocument();
+    expect(within(menu).queryByRole('menuitem', { name: 'Turn off comparison' })).not.toBeInTheDocument();
   });
 
-  it('selects available and partial references without moving the primary range', async () => {
+  it('selects a reference without preflight availability and leaves validation to the active comparison', async () => {
     const user = userEvent.setup();
-    availabilityByReference = {
-      previous: { status: 'available', coverage: 1, executionCount: 12 },
-      '24h': { status: 'partial', coverage: 0.75, executionCount: 9 },
-      '7d': { status: 'outside-retention' },
-      '14d': { status: 'available', coverage: 1, executionCount: 11 },
-      '21d': { status: 'no-retained-executions' },
-      '30d': { status: 'query-error' },
-      '3m': { status: 'invalid-range' },
-      '1y': { status: 'partial', coverage: 0.5, executionCount: 4 },
-    };
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
 
     const menu = screen.getByRole('menu', { name: 'Comparison reference' });
-    expect(within(menu).getByRole('menuitemradio', { name: /24 hours ago/ })).toBeEnabled();
-    expect(within(menu).getByRole('menuitemradio', { name: /24 hours ago/ })).toHaveTextContent(
-      '75% coverage · 9 executions'
-    );
-    expect(within(menu).getByRole('menuitemradio', { name: /7 days ago/ })).toBeDisabled();
-    expect(within(menu).getByRole('menuitemradio', { name: /7 days ago/ })).toHaveTextContent('Outside retention');
-    expect(within(menu).getByRole('menuitemradio', { name: /21 days ago/ })).toBeDisabled();
-    expect(within(menu).getByRole('menuitemradio', { name: /30 days ago/ })).toBeDisabled();
-    expect(within(menu).getByRole('menuitemradio', { name: /3 months ago/ })).toBeDisabled();
-    expect(within(menu).getByRole('menuitemradio', { name: /1 year ago/ })).toBeEnabled();
+    const baselineReference = within(menu).getByRole('menuitemradio', { name: /Last 14 days/ });
 
-    await user.click(within(menu).getByRole('menuitemradio', { name: /14 days ago/ }));
+    expect(baselineReference).toBeEnabled();
+    expect(baselineReference).toHaveTextContent('Last 14 days');
 
-    expect(comparison.setReference).toHaveBeenCalledWith({ kind: 'shifted', presetId: '14d' });
+    await user.click(baselineReference);
+
+    expect(comparison.setReference).toHaveBeenCalledWith({ kind: 'baseline', presetId: '14d' });
     expect(appTime.setTimeRange).not.toHaveBeenCalled();
-  });
-
-  it('uses one stable live region for candidate checking and resolved unavailable reasons', async () => {
-    const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
-    const rendered = render(<DashboardComparisonControls />);
-    const candidateStatus = screen.getByTestId('comparison-candidate-status');
-
-    expect(candidateStatus).toHaveAttribute('aria-live', 'polite');
-    expect(candidateStatus).toBeEmptyDOMElement();
-
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
-
-    screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }).focus();
-    expect(screen.getByTestId('comparison-candidate-status')).toBe(candidateStatus);
-    expect(candidateStatus).toHaveTextContent('Checking comparison references');
-
-    const available = { status: 'available', coverage: 1, executionCount: 12 } as const;
-    availabilityByReference = {
-      previous: available,
-      '24h': available,
-      '7d': { status: 'outside-retention' },
-      '14d': available,
-      '21d': available,
-      '30d': available,
-      '3m': available,
-      '1y': available,
-    };
-    rendered.rerender(<DashboardComparisonControls />);
-
-    expect(candidateStatus).toHaveTextContent('Unavailable comparison references: 7 days ago — Outside retention');
-    expect(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON })).toHaveFocus();
-
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
-
-    expect(candidateStatus).toBeEmptyDOMElement();
   });
 
   it('announces checks politely and reports partial selected coverage', () => {
@@ -391,12 +393,13 @@ describe('DashboardComparisonControls', () => {
 
   it('shows an absolute custom editor, locks duration, and allows an unlocked unequal range', async () => {
     const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
 
+    expect(screen.getByTestId('toggletip-content')).toHaveTextContent('Custom comparison range');
     const from = screen.getByLabelText('Custom range start');
     const to = screen.getByLabelText('Custom range end');
     const durationLock = screen.getByRole('switch', { name: 'Match selected duration' });
@@ -432,10 +435,10 @@ describe('DashboardComparisonControls', () => {
 
   it('rederives and saves the primary duration immediately when duration matching is enabled', async () => {
     const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
     await user.click(screen.getByText('Match selected duration'));
 
@@ -463,51 +466,48 @@ describe('DashboardComparisonControls', () => {
     });
   });
 
-  it('closes and clears an invalid custom draft when comparison is disabled, then re-enables on Normal', async () => {
+  it('closes and clears an invalid custom draft when comparison is disabled, then re-enables automatically', async () => {
     const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     const rendered = render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
     await user.clear(screen.getByLabelText('Custom range start'));
     expect(screen.getByRole('alert')).toHaveTextContent('Enter a valid custom start');
 
-    await user.click(screen.getByRole('button', { name: 'Compare' }));
+    await user.click(screen.getByRole('switch', { name: 'Compare' }));
     expect(comparison.setEnabled).toHaveBeenCalledWith(false);
 
-    setComparison({ enabled: false, referenceSpec: null });
+    setComparison({ enabled: false, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     rendered.rerender(<DashboardComparisonControls />);
     expect(screen.queryByText('Custom comparison range')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Compare' }));
+    await user.click(screen.getByRole('switch', { name: 'Compare' }));
     expect(comparison.setEnabled).toHaveBeenCalledWith(true);
 
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     rendered.rerender(<DashboardComparisonControls />);
-    expect(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON })).toBeVisible();
+    expect(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON })).toBeVisible();
     expect(screen.queryByText('Custom comparison range')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
     expect(screen.getByLabelText('Custom range start')).toHaveValue('2026-07-09T05:00');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('closes and clears the custom editor when a non-custom reference is selected', async () => {
+  it('cancels and clears the custom editor before selecting a non-custom reference', async () => {
     const user = userEvent.setup();
-    availabilityByReference = {
-      previous: { status: 'available', coverage: 1, executionCount: 12 },
-    };
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
     await user.clear(screen.getByLabelText('Custom range start'));
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Previous period/ }));
 
     expect(comparison.setReference).toHaveBeenCalledWith({ kind: 'previous' });
@@ -516,10 +516,10 @@ describe('DashboardComparisonControls', () => {
 
   it('resets an open custom editor when the URL reference changes externally to a non-custom reference', async () => {
     const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     const rendered = render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
     await user.clear(screen.getByLabelText('Custom range start'));
 
@@ -536,10 +536,9 @@ describe('DashboardComparisonControls', () => {
 
     expect(screen.queryByText('Custom comparison range')).not.toBeInTheDocument();
 
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     rendered.rerender(<DashboardComparisonControls />);
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
 
     expect(screen.getByLabelText('Custom range start')).toHaveValue('2026-07-09T05:00');
@@ -562,12 +561,12 @@ describe('DashboardComparisonControls', () => {
       },
       timezone: 'Europe/London',
     };
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     render(<DashboardComparisonControls />);
 
     expect(toAbsoluteIso('2026-10-25T01:30', 'Europe/London')).toBe('2026-10-25T00:30:00.000Z');
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
     await user.click(screen.getByText('Match selected duration'));
     await user.clear(screen.getByLabelText('Custom range start'));
@@ -582,10 +581,10 @@ describe('DashboardComparisonControls', () => {
 
   it('recomputes the derived end when the primary duration changes while locked', async () => {
     const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     const rendered = render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
     await user.clear(screen.getByLabelText('Custom range start'));
     await user.type(screen.getByLabelText('Custom range start'), '2026-07-08T04:00');
@@ -607,10 +606,10 @@ describe('DashboardComparisonControls', () => {
 
   it('rejects overlap but accepts half-open boundary contact', async () => {
     const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
     await user.click(screen.getByText('Match selected duration'));
 
@@ -641,10 +640,10 @@ describe('DashboardComparisonControls', () => {
 
   it('associates invalid start and end messages with the relevant custom input', async () => {
     const user = userEvent.setup();
-    setComparison({ enabled: true, referenceSpec: { kind: 'normal' } });
+    setComparison({ enabled: true, referenceSpec: { kind: 'baseline', presetId: '30d' } });
     render(<DashboardComparisonControls />);
 
-    await user.click(screen.getByRole('button', { name: NORMAL_REFERENCE_BUTTON }));
+    await user.click(screen.getByRole('button', { name: ACTIVE_REFERENCE_BUTTON }));
     await user.click(screen.getByRole('menuitemradio', { name: /Custom range/ }));
 
     const from = screen.getByLabelText('Custom range start');
@@ -703,22 +702,33 @@ describe('DashboardComparisonControls', () => {
   });
 
   it.each([
-    [{ status: 'checking' } as const, 'Normal · checking'],
-    [{ status: 'query-error' } as const, 'Normal unavailable · query failed'],
-    [{ status: 'not-established' } as const, 'Normal not established for this period'],
-    [
-      { status: 'available', tierId: '21d', range: primary, coverage: 0.9, executionCount: 84 } as const,
-      'Normal · 21d',
-    ],
-  ])('uses a distinct Normal trigger label for $expected', (healthReference, expected) => {
+    [{ status: 'finding', candidatePresetId: '30d' } as const, 'Finding comparison…'],
+    [{ status: 'no-data' } as const, 'No comparison data'],
+    [{ status: 'query-error' } as const, 'Could not find comparison'],
+  ])('uses an honest automatic-selection trigger label for $expected', (automaticSelection, expected) => {
     setComparison({
       enabled: true,
-      referenceSpec: { kind: 'normal' },
-      healthReference,
+      referenceSpec: { kind: 'auto' },
+      automaticSelection,
     });
 
     render(<DashboardComparisonControls />);
 
     expect(screen.getByRole('button', { name: `Comparison reference, ${expected}` })).toHaveTextContent(expected);
+  });
+
+  it('offers retry after automatic selection cannot establish availability', async () => {
+    const user = userEvent.setup();
+    setComparison({
+      enabled: true,
+      referenceSpec: { kind: 'auto' },
+      automaticSelection: { status: 'query-error' },
+    });
+    render(<DashboardComparisonControls />);
+
+    await user.click(screen.getByRole('button', { name: 'Comparison reference, Could not find comparison' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Retry automatic selection' }));
+
+    expect(comparison.retryAutomaticSelection).toHaveBeenCalledTimes(1);
   });
 });
