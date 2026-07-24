@@ -5,58 +5,33 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { CheckDashboardProvider, useCheckDashboard } from './CheckDashboardProvider';
 
-jest.mock('data/useProbes', () => ({
-  useProbes: () => ({
-    data: [
-      { id: 1, name: 'frankfurt' },
-      { id: 2, name: 'ohio' },
-    ],
-    isLoading: false,
-    isError: false,
-  }),
-}));
+function CheckContextConsumer() {
+  const context = useCheckDashboard();
 
-function ProbeConsumer() {
-  const { probes } = useCheckDashboard();
-
-  return <div data-testid="probes">{probes.join(',')}</div>;
+  return (
+    <div
+      data-check-job={context.check.job}
+      data-context-keys={Object.keys(context).sort().join(',')}
+      data-testid="check-context"
+      data-url-format={context.urlFormat}
+    />
+  );
 }
 
 describe('CheckDashboardProvider', () => {
-  it('exposes configured probe names from the probe catalog', () => {
+  it('exposes check identity and URL format without probe filter state', () => {
     render(
       <MemoryRouter>
-        <CheckDashboardProvider check={BASIC_HTTP_CHECK}>
-          <ProbeConsumer />
-        </CheckDashboardProvider>
-      </MemoryRouter>
-    );
-
-    expect(screen.getByTestId('probes')).toBeInTheDocument();
-  });
-
-  it('defaults to all probes when the URL has no probe filter', () => {
-    render(
-      <MemoryRouter initialEntries={['/checks/1']}>
         <CheckDashboardProvider check={BASIC_HTTP_CHECK} urlFormat="canonical">
-          <ProbeConsumer />
+          <CheckContextConsumer />
         </CheckDashboardProvider>
       </MemoryRouter>
     );
 
-    expect(screen.getByTestId('probes')).toHaveTextContent('');
-  });
-
-  it('reads selected probes from the canonical URL', () => {
-    render(
-      <MemoryRouter initialEntries={['/checks/1?sm-v=1&sm-probe=frankfurt']}>
-        <CheckDashboardProvider check={BASIC_HTTP_CHECK} urlFormat="canonical">
-          <ProbeConsumer />
-        </CheckDashboardProvider>
-      </MemoryRouter>
-    );
-
-    expect(screen.getByTestId('probes')).toHaveTextContent('frankfurt');
+    const context = screen.getByTestId('check-context');
+    expect(context).toHaveAttribute('data-check-job', BASIC_HTTP_CHECK.job);
+    expect(context).toHaveAttribute('data-context-keys', 'check,urlFormat');
+    expect(context).toHaveAttribute('data-url-format', 'canonical');
   });
 });
 

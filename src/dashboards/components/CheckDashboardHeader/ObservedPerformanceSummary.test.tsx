@@ -1,5 +1,5 @@
 import React from 'react';
-import { FieldType, GrafanaTheme2, LoadingState, PanelData } from '@grafana/data';
+import { dateTime, FieldType, GrafanaTheme2, LoadingState, PanelData } from '@grafana/data';
 import { useTheme2 } from '@grafana/ui';
 import { render, renderHook, screen, within } from '@testing-library/react';
 import { useDashboardPanelQuery } from 'dashboards/hooks/useDashboardPanelQuery';
@@ -7,13 +7,14 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { CheckDashboardHeaderProfile, HeaderMetricDefinition } from './CheckDashboardHeader.types';
 import { HEALTH_EXPLANATION_PRIORITY } from './health/checkHealth.types';
+import { DashboardComparisonProvider } from 'contexts/DashboardComparisonProvider';
 
 import { resolveCheckHealth } from './health/checkHealth';
 import { CheckHealthProvider } from './health/CheckHealthContext';
 import { ObservedPerformanceSummary } from './ObservedPerformanceSummary';
 
 jest.mock('dashboards/hooks/useDashboardPanelQuery', () => ({
-  useDashboardPanelQuery: jest.fn(() => ({ panelData: { series: [] }, isLoading: false })),
+  useDashboardPanelQuery: jest.fn(),
 }));
 
 jest.mock('./LiveIncidentPrompt', () => ({
@@ -35,13 +36,35 @@ const profile: CheckDashboardHeaderProfile<typeof BASIC_HTTP_CHECK> = {
   Narrative: () => <p>Factual availability narrative</p>,
 };
 
+function timeRange(): PanelData['timeRange'] {
+  return {
+    from: dateTime(0),
+    to: dateTime(1),
+    raw: { from: dateTime(0), to: dateTime(1) },
+  };
+}
+
+function renderSummary(summaryProfile: CheckDashboardHeaderProfile<typeof BASIC_HTTP_CHECK>) {
+  return render(<ObservedPerformanceSummary check={BASIC_HTTP_CHECK} profile={summaryProfile} />, {
+    wrapper: ({ children }) => (
+      <DashboardComparisonProvider check={BASIC_HTTP_CHECK}>{children}</DashboardComparisonProvider>
+    ),
+  });
+}
+
 describe('ObservedPerformanceSummary', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(useDashboardPanelQuery).mockReturnValue({
+      panelData: { state: LoadingState.Done, series: [], timeRange: timeRange() },
+      isLoading: false,
+      menuItems: undefined,
+      title: undefined,
+    });
   });
 
   it('keeps panel definitions stable when the check and profile have not changed', () => {
-    const { rerender } = render(<ObservedPerformanceSummary check={BASIC_HTTP_CHECK} profile={profile} />);
+    const { rerender } = renderSummary(profile);
 
     rerender(<ObservedPerformanceSummary check={BASIC_HTTP_CHECK} profile={profile} />);
 
@@ -49,7 +72,7 @@ describe('ObservedPerformanceSummary', () => {
   });
 
   it('keeps the compact shared surface without rendering a heading or narrative', () => {
-    render(<ObservedPerformanceSummary check={BASIC_HTTP_CHECK} profile={profile} />);
+    renderSummary(profile);
 
     const summary = screen.getByRole('region', { name: 'Observed performance' });
     const surface = within(summary).getByTestId('observed-performance-surface');
@@ -78,7 +101,7 @@ describe('ObservedPerformanceSummary', () => {
       ),
     };
 
-    render(<ObservedPerformanceSummary check={BASIC_HTTP_CHECK} profile={healthProfile} />);
+    renderSummary(healthProfile);
 
     expect(screen.getByTestId('health-provider')).toContainElement(
       screen.getByRole('status', { name: 'Check health' })
@@ -157,14 +180,14 @@ describe('ObservedPerformanceSummary', () => {
             length: 1,
           },
         ],
-        timeRange: {} as PanelData['timeRange'],
+        timeRange: timeRange(),
       },
       isLoading: false,
       menuItems: undefined,
       title: undefined,
     });
 
-    render(<ObservedPerformanceSummary check={BASIC_HTTP_CHECK} profile={healthProfile} />);
+    renderSummary(healthProfile);
 
     expect(screen.getByRole('status', { name: 'Check health' })).toHaveTextContent('Healthy now');
     expect(screen.getByText('96.80%')).toHaveStyle({ color: result.current.colors.error.text });

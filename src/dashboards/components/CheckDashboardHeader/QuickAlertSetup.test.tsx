@@ -2,6 +2,7 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_CHECK_ALERTS } from 'test/fixtures/checkAlerts';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
@@ -14,6 +15,14 @@ jest.mock('data/useCheckAlerts', () => ({
   ...jest.requireActual('data/useCheckAlerts'),
   useListAlertsForCheck: jest.fn(),
   useUpdateAlertsForCheck: jest.fn(),
+}));
+
+jest.mock('hooks/useMetricsDS', () => ({
+  useMetricsDS: jest.fn(() => undefined),
+}));
+
+jest.mock('hooks/useURLSearchParams', () => ({
+  useURLSearchParams: jest.fn(() => new URLSearchParams()),
 }));
 
 const updateAlerts = jest.fn();
@@ -80,7 +89,9 @@ describe('QuickAlertSetup', () => {
     const user = userEvent.setup();
 
     renderSetup(CheckAlertType.ProbeFailedExecutionsTooHigh);
-    const threshold = screen.getByRole('spinbutton', { name: 'Threshold' });
+    const threshold = screen.getByTestId(
+      CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
+    );
     await user.clear(threshold);
     await user.type(threshold, '999');
     await user.click(screen.getByRole('button', { name: 'Save alert' }));
@@ -98,5 +109,40 @@ describe('QuickAlertSetup', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Save failed');
     expect(screen.getByRole('dialog', { name: 'Set up Average latency alert' })).toBeVisible();
+  });
+
+  it('starts in view mode for existing alerts and reveals the form on edit', async () => {
+    const user = userEvent.setup();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const existing = BASIC_CHECK_ALERTS.alerts.find(
+      (alert) => alert.name === CheckAlertType.HTTPRequestDurationTooHighAvg
+    )!;
+
+    jest.mocked(useListAlertsForCheck).mockReturnValue({
+      data: [existing],
+    } as ReturnType<typeof useListAlertsForCheck>);
+    jest.mocked(useUpdateAlertsForCheck).mockReturnValue({
+      mutateAsync: updateAlerts,
+      isPending: false,
+    } as unknown as ReturnType<typeof useUpdateAlertsForCheck>);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <QuickAlertSetup
+          alertType={CheckAlertType.HTTPRequestDurationTooHighAvg}
+          check={check}
+          mode="edit"
+          onSaved={jest.fn()}
+        />
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByRole('dialog', { name: 'View Average latency alert' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Save alert' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Edit alert' }));
+
+    expect(screen.getByRole('dialog', { name: 'Edit Average latency alert' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Save alert' })).toBeVisible();
   });
 });

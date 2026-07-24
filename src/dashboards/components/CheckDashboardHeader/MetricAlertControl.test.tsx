@@ -12,8 +12,14 @@ import { CheckHealthProvider } from './health/CheckHealthContext';
 import { MetricAlertControl } from './MetricAlertControl';
 
 jest.mock('./QuickAlertSetup', () => ({
-  QuickAlertSetup: ({ onSaved }: { onSaved: () => void }) => (
-    <div aria-label="Set up Average latency alert" role="dialog">
+  QuickAlertSetup: ({
+    mode,
+    onSaved,
+  }: {
+    mode?: 'create' | 'edit';
+    onSaved: () => void;
+  }) => (
+    <div aria-label={mode === 'edit' ? 'View Average latency alert' : 'Set up Average latency alert'} role="dialog">
       <button onClick={onSaved} type="button">
         Save alert
       </button>
@@ -61,24 +67,56 @@ function renderControl(state: MetricAlertState, canWrite = false) {
 
 describe('MetricAlertControl', () => {
   it.each([
-    ['firing', 'Alert firing for Average latency'],
-    ['historical', 'Alert fired in this range for Average latency'],
-    ['configured', 'Alert configured for Average latency'],
     ['pending', 'Alert setup pending for Average latency'],
     ['error', 'Alert setup failed for Average latency'],
-  ] as const)('renders %s state accessibly', (state, label) => {
-    renderControl(state);
+  ] as const)('shows an accompanying setup status icon for %s without replacing the action', (state, label) => {
+    renderControl(state, true);
 
     expect(screen.getByLabelText(label)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'View alert for Average latency' })).toHaveTextContent('View alert');
+  });
+
+  it('keeps firing and historical markers out of the header action', () => {
+    renderControl('firing', true);
+
+    expect(screen.getByRole('button', { name: 'View alert for Average latency' })).toHaveTextContent('View alert');
+    expect(screen.queryByLabelText(/Alert (firing|fired)/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps configured alerts on View alert without a status icon', () => {
+    renderControl('configured', true);
+
+    expect(screen.getByRole('button', { name: 'View alert for Average latency' })).toHaveTextContent('View alert');
+    expect(screen.queryByLabelText(/Alert setup/)).not.toBeInTheDocument();
+  });
+
+  it('does not replace the action with Fired or Firing state text', () => {
+    renderControl('historical', true);
+
+    expect(screen.getByRole('button', { name: 'View alert for Average latency' })).toHaveTextContent('View alert');
+    expect(screen.queryByText('Fired')).not.toBeInTheDocument();
+    expect(screen.queryByText('Firing')).not.toBeInTheDocument();
   });
 
   it('offers setup only when the user can write alerts', async () => {
     const user = userEvent.setup();
 
     renderControl('not-configured', true);
+    expect(screen.getByRole('button', { name: 'Set up alert for Average latency' })).toHaveTextContent(
+      'Set up alert'
+    );
     await user.click(screen.getByRole('button', { name: 'Set up alert for Average latency' }));
 
     expect(screen.getByRole('dialog', { name: 'Set up Average latency alert' })).toBeVisible();
+  });
+
+  it('opens the edit dialog from View alert when an alert exists', async () => {
+    const user = userEvent.setup();
+
+    renderControl('configured', true);
+    await user.click(screen.getByRole('button', { name: 'View alert for Average latency' }));
+
+    expect(screen.getByRole('dialog', { name: 'View Average latency alert' })).toBeVisible();
   });
 
   it('does not offer an interactive setup control without write access', () => {
@@ -86,5 +124,6 @@ describe('MetricAlertControl', () => {
 
     expect(screen.queryByRole('button', { name: 'Set up alert for Average latency' })).not.toBeInTheDocument();
     expect(screen.getByLabelText('No alert configured for Average latency')).toBeInTheDocument();
+    expect(screen.getByText('No alert')).toBeVisible();
   });
 });

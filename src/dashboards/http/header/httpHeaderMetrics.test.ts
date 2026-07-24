@@ -10,16 +10,14 @@ describe('getHttpHeaderMetrics', () => {
 
     expect(metrics.map((metric) => metric.id)).toEqual(['uptime', 'reachability', 'average-latency', 'ssl-expiry']);
     expect(metrics.map((metric) => metric.label)).not.toContain('Frequency');
-    expect(metrics.find((metric) => metric.id === 'reachability')?.secondary?.definition.id).toBe(
-      'http-header-execution-counts'
+    expect(metrics.every((metric) => metric.secondary === undefined && metric.getSecondaryText === undefined)).toBe(
+      true
     );
   });
 
   it('keeps the headline metrics factual without threshold colour semantics', () => {
     const metrics = getHttpHeaderMetrics(BASIC_HTTP_CHECK);
-    const uptime = metrics.find((metric) => metric.id === 'uptime');
 
-    expect(uptime?.getSecondaryText?.(0.4324)).toBe('From at least one location');
     expect(metrics.every((metric) => !('getColor' in metric))).toBe(true);
   });
 
@@ -57,6 +55,54 @@ describe('getHttpHeaderMetrics', () => {
       { id: 'reachability', alertTypes: [CheckAlertType.ProbeFailedExecutionsTooHigh] },
       { id: 'average-latency', alertTypes: [CheckAlertType.HTTPRequestDurationTooHighAvg] },
       { id: 'ssl-expiry', alertTypes: [CheckAlertType.TLSTargetCertificateCloseToExpiring] },
+    ]);
+  });
+
+  it('declares each metric comparison capability without changing health capabilities', () => {
+    const metrics = getHttpHeaderMetrics(BASIC_HTTP_CHECK);
+
+    expect(
+      metrics.map((metric) => ({
+        id: metric.id,
+        supportsNormalBand: metric.comparison?.supportsNormalBand,
+        normalBandDomain: metric.comparison?.normalBandDomain,
+        normalBaselineId: metric.comparison?.normalBaseline?.definition.id,
+        normalBaselineMaxDataPoints: metric.comparison?.normalBaseline?.definition.maxDataPoints,
+        alertTypes: metric.health?.alertTypes,
+      }))
+    ).toEqual([
+      {
+        id: 'uptime',
+        supportsNormalBand: true,
+        normalBandDomain: { min: 0, max: 1 },
+        normalBaselineId: 'http-health-uptime-baseline',
+        normalBaselineMaxDataPoints: 720,
+        alertTypes: undefined,
+      },
+      {
+        id: 'reachability',
+        supportsNormalBand: true,
+        normalBandDomain: { min: 0, max: 1 },
+        normalBaselineId: 'http-health-reachability-baseline',
+        normalBaselineMaxDataPoints: 720,
+        alertTypes: [CheckAlertType.ProbeFailedExecutionsTooHigh],
+      },
+      {
+        id: 'average-latency',
+        supportsNormalBand: true,
+        normalBandDomain: { min: 0 },
+        normalBaselineId: 'http-health-latency-baseline',
+        normalBaselineMaxDataPoints: 720,
+        alertTypes: [CheckAlertType.HTTPRequestDurationTooHighAvg],
+      },
+      {
+        id: 'ssl-expiry',
+        supportsNormalBand: false,
+        normalBandDomain: undefined,
+        normalBaselineId: undefined,
+        normalBaselineMaxDataPoints: undefined,
+        alertTypes: [CheckAlertType.TLSTargetCertificateCloseToExpiring],
+      },
     ]);
   });
 });

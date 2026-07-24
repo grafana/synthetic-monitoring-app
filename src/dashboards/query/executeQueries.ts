@@ -1,12 +1,14 @@
 import {
   DataFrame,
+  DataQueryError,
   DataQueryRequest,
   DataQueryResponse,
   DataSourceApi,
   dateTime,
   FieldType,
+  LoadingState,
 } from '@grafana/data';
-import { isObservable, Observable } from 'rxjs';
+import { isObservable, Observable, Subscription } from 'rxjs';
 
 import { ExecuteQueriesResult, QueryExecutionResult, ResolvedQueryRequest } from './types';
 
@@ -17,6 +19,10 @@ export type ExecuteQueriesOptions = {
   signal: AbortSignal;
   getDataSource: (uid: string) => Promise<DataSourceQueryable>;
 };
+
+function getLegacyResponseError(response: DataQueryResponse): DataQueryError | undefined {
+  return (response as unknown as { error?: DataQueryError }).error;
+}
 
 function normalizeFrame(frame: DataFrame): DataFrame {
   return {
@@ -38,12 +44,21 @@ function normalizeFrame(frame: DataFrame): DataFrame {
 
 function normalizeResponse(response: DataQueryResponse, request: ResolvedQueryRequest): QueryExecutionResult {
   const frames = (response.data ?? []).map(normalizeFrame);
-  const errors = response.errors
-    ?.filter((error): error is { refId: string; message?: string } => Boolean(error.refId))
-    .map((error) => ({
-      refId: error.refId,
-      message: error.message ?? 'Unknown query error',
-    }));
+  const legacyError = getLegacyResponseError(response);
+  const responseErrors = [...(response.errors ?? []), ...(legacyError ? [legacyError] : [])];
+
+  if (response.state === LoadingState.Error && responseErrors.length === 0) {
+    responseErrors.push({ message: 'Query response failed' });
+  }
+
+  const errors = responseErrors.map((error) => ({
+    refId: error.refId,
+    message:
+      error.message ??
+      error.data?.message ??
+      error.statusText ??
+      'Unknown query error',
+  }));
 
   if (frames.length === 0 && errors?.length) {
     return {
@@ -114,30 +129,110 @@ async function runQuery(
   return normalizeResponse(response, request);
 }
 
-function observeWithAbort<T>(observable: Observable<T>, signal: AbortSignal): Promise<T> {
+function isEmptyLoadingResponse(response: DataQueryResponse) {
+  const legacyError = getLegacyResponseError(response);
+
+  return (
+    response.state === LoadingState.Loading &&
+    response.data.length === 0 &&
+    !legacyError &&
+    !response.errors?.length
+  );
+}
+
+function hasResponsePayload(response: DataQueryResponse | undefined) {
+  return Boolean(
+    response &&
+      (response.data.length > 0 ||
+        response.errors?.length ||
+        getLegacyResponseError(response) ||
+        response.state === LoadingState.Error)
+  );
+}
+
+function combineResponses(responses: DataQueryResponse[]): DataQueryResponse {
+  const errors = responses.flatMap((response) => {
+    const legacyError = getLegacyResponseError(response);
+
+    return [...(response.errors ?? []), ...(legacyError ? [legacyError] : [])];
+  });
+
+  return {
+    data: responses.flatMap((response) => response.data),
+    errors: errors.length > 0 ? errors : undefined,
+    state: responses.some((response) => response.state === LoadingState.Error)
+      ? LoadingState.Error
+      : responses.at(-1)?.state,
+  };
+}
+
+function observeWithAbort(
+  observable: Observable<DataQueryResponse>,
+  signal: AbortSignal
+): Promise<DataQueryResponse> {
   return new Promise((resolve, reject) => {
-    const subscription = observable.subscribe({
+    let subscription: Subscription | undefined;
+    let hasValue = false;
+    let unkeyedResponse: DataQueryResponse | undefined;
+    const keyedResponses = new Map<string, DataQueryResponse>();
+    let settled = false;
+
+    const cleanup = () => signal.removeEventListener('abort', onAbort);
+    const onAbort = () => {
+      subscription?.unsubscribe();
+
+      if (!settled) {
+        settled = true;
+        cleanup();
+        reject(new DOMException('Aborted', 'AbortError'));
+      }
+    };
+
+    signal.addEventListener('abort', onAbort, { once: true });
+
+    subscription = observable.subscribe({
       next: (value) => {
-        subscription.unsubscribe();
-        resolve(value);
+        hasValue = true;
+
+        if (value.key !== undefined) {
+          const previous = keyedResponses.get(value.key);
+
+          if (!isEmptyLoadingResponse(value) || !hasResponsePayload(previous)) {
+            keyedResponses.set(value.key, value);
+          }
+          return;
+        }
+
+        if (!isEmptyLoadingResponse(value) || !hasResponsePayload(unkeyedResponse)) {
+          unkeyedResponse = value;
+        }
       },
-      error: reject,
+      error: (error) => {
+        settled = true;
+        cleanup();
+        reject(error);
+      },
+      complete: () => {
+        settled = true;
+        cleanup();
+
+        if (!hasValue) {
+          reject(new Error('Query observable completed without emitting a response'));
+          return;
+        }
+
+        resolve(
+          combineResponses([
+            ...(unkeyedResponse ? [unkeyedResponse] : []),
+            ...keyedResponses.values(),
+          ])
+        );
+      },
     });
 
     if (signal.aborted) {
-      subscription.unsubscribe();
-      reject(new DOMException('Aborted', 'AbortError'));
-      return;
+      onAbort();
     }
-
-    signal.addEventListener(
-      'abort',
-      () => {
-        subscription.unsubscribe();
-        reject(new DOMException('Aborted', 'AbortError'));
-      },
-      { once: true }
-    );
   });
 }
 

@@ -7,6 +7,11 @@ export const DASHBOARD_URL_KEYS = {
   timezone: 'sm-timezone',
   refresh: 'sm-refresh',
   probe: 'sm-probe',
+  comparison: 'sm-compare',
+  comparisonPreset: 'sm-compare-preset',
+  comparisonFrom: 'sm-compare-from',
+  comparisonTo: 'sm-compare-to',
+  comparisonMatchDuration: 'sm-compare-match-duration',
 } as const;
 
 export type DashboardUrlKey = (typeof DASHBOARD_URL_KEYS)[keyof typeof DASHBOARD_URL_KEYS];
@@ -23,6 +28,11 @@ export const LEGACY_SCENE_DASHBOARD_KEYS = {
   instance: 'var-instance',
   alert: 'var-alert',
   runbook: 'var-runbook',
+  comparison: 'compare',
+  comparisonPreset: 'compare.preset',
+  comparisonFrom: 'compare.from',
+  comparisonTo: 'compare.to',
+  comparisonMatchDuration: 'compare.matchDuration',
 } as const;
 
 export const ALL_PROBE_SENTINELS = new Set(['$__all', 'All', '__all', 'all']);

@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { useAppTime } from 'contexts/AppTimeProvider';
 import { DEFAULT_APP_TIME_RANGE } from 'contexts/AppTimeProvider.utils';
 
+import { CHECK_DASHBOARD_PAGE_GUTTER } from './CheckDashboardLayout.constants';
 import { useCheckHealth } from './health/CheckHealthContext';
 
 export function LiveIncidentPrompt() {
@@ -43,7 +44,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flexWrap: 'wrap',
     fontSize: theme.typography.bodySmall.fontSize,
     gap: theme.spacing(0.5, 1),
-    padding: theme.spacing(0.75, 1.5),
+    padding: theme.spacing(0.75, CHECK_DASHBOARD_PAGE_GUTTER),
   }),
   linkButton: css({
     background: 'transparent',

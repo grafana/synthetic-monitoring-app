@@ -42,7 +42,7 @@ export type ResolvedQueryRequest = {
 };
 
 export type QueryTargetError = {
-  refId: string;
+  refId?: string;
   message: string;
 };
 

@@ -21,6 +21,8 @@ interface TimepointExplorerProps {
   resultFilter?: ExecutionResultFilter;
   onResultFilterChange?: (filter: ExecutionResultFilter) => void;
   annotations?: AnnotationQuery[];
+  /** Temporary stopgap for range execution totals until TPE overview is redesigned. */
+  overviewExtra?: string;
 }
 
 export const TimepointExplorer = ({
@@ -28,6 +30,7 @@ export const TimepointExplorer = ({
   resultFilter,
   onResultFilterChange,
   annotations = [],
+  overviewExtra,
 }: TimepointExplorerProps) => {
   const [internalResultFilter, setInternalResultFilter] = useState<ExecutionResultFilter>('all');
   const activeResultFilter = resultFilter ?? internalResultFilter;
@@ -50,7 +53,7 @@ export const TimepointExplorer = ({
             resultFilter={activeResultFilter}
             onResultFilterChange={handleResultFilterChange}
           >
-            <TimepointExplorerInternal />
+            <TimepointExplorerInternal overviewExtra={overviewExtra} />
           </TimepointExplorerProvider>
         ) : null
       }
@@ -60,7 +63,7 @@ export const TimepointExplorer = ({
 
 const CONTAINER_NAME = 'timepoint-explorer';
 
-const TimepointExplorerInternal = () => {
+const TimepointExplorerInternal = ({ overviewExtra }: { overviewExtra?: string }) => {
   const { viewMode, handleViewModeChange } = useTimepointExplorerContext();
   const styles = useStyles2(getStyles);
 
@@ -68,7 +71,7 @@ const TimepointExplorerInternal = () => {
     <div aria-label="Timepoint explorer" className={styles.container} role="region">
       <Stack direction={`column`} gap={2}>
         <div className={styles.header}>
-          <TimepointExplorerVisibleOverview />
+          <TimepointExplorerVisibleOverview overviewExtra={overviewExtra} />
           <div className={styles.actions}>
             <div>
               <RadioButtonGroup

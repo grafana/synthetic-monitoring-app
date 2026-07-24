@@ -127,4 +127,84 @@ describe('AlertHealthSummary', () => {
     expect(screen.getByRole('status', { name: 'Check health' })).toHaveTextContent('Healthy');
     expect(screen.getByRole('status', { name: 'Check health' })).toHaveTextContent('Normal not established yet');
   });
+
+  it('renders status reasons in headline metric order', () => {
+    const model = resolveCheckHealth({
+      metricIds: ['uptime', 'reachability', 'average-latency', 'ssl-expiry'],
+      evidence: [
+        {
+          ...evidence('SSL expiry: certificate expires in under 7 days', 'unhealthy'),
+          metricId: 'ssl-expiry',
+        },
+        {
+          ...evidence('Uptime is below 99%', 'unhealthy'),
+          metricId: 'uptime',
+        },
+        {
+          ...evidence('Reachability was critical earlier in this range', 'unhealthy', 'guardrail', 'range'),
+          metricId: 'reachability',
+        },
+      ],
+      rangeMode: 'historical',
+      evaluationAt: range.to,
+    });
+
+    render(
+      <CheckHealthProvider value={model}>
+        <AlertHealthSummary />
+      </CheckHealthProvider>
+    );
+
+    expect(screen.getByRole('status', { name: 'Check health' })).toHaveTextContent(
+      /Uptime is below 99%.*Reachability was critical earlier in this range.*SSL expiry: certificate expires in under 7 days/
+    );
+  });
+
+  it('dedupes identical evaluation and range summaries in the status bar', async () => {
+    const user = userEvent.setup();
+    const model = resolveCheckHealth({
+      metricIds: ['uptime', 'ssl-expiry'],
+      evidence: [
+        {
+          ...evidence('SSL expiry: certificate expires in under 7 days', 'unhealthy'),
+          metricId: 'ssl-expiry',
+        },
+        {
+          ...evidence('SSL expiry: certificate expires in under 7 days', 'unhealthy', 'guardrail', 'range'),
+          id: 'SSL expiry range',
+          metricId: 'ssl-expiry',
+        },
+        {
+          ...evidence('Uptime is within normal range', 'healthy'),
+          metricId: 'uptime',
+        },
+        {
+          ...evidence('Uptime is within normal range', 'healthy', 'baseline', 'range'),
+          id: 'Uptime range',
+          metricId: 'uptime',
+        },
+      ],
+      rangeMode: 'live',
+      evaluationAt: range.to,
+    });
+
+    render(
+      <CheckHealthProvider value={model}>
+        <AlertHealthSummary />
+      </CheckHealthProvider>
+    );
+
+    const status = screen.getByRole('status', { name: 'Check health' });
+    expect(status).toHaveTextContent('Unhealthy now');
+    expect(status.textContent?.match(/SSL expiry: certificate expires in under 7 days/g)).toHaveLength(1);
+    expect(status).not.toHaveTextContent('Uptime is within normal range');
+
+    await user.click(screen.getByRole('button', { name: 'View health evidence' }));
+
+    const tip = screen.getByTestId('toggletip-content');
+    expect(tip).toHaveTextContent('Evaluation point');
+    expect(tip).toHaveTextContent('Selected range');
+    // Full evidence tip still lists both scopes even when the status bar is deduped.
+    expect(tip.textContent?.match(/SSL expiry: certificate expires in under 7 days detail/g)).toHaveLength(2);
+  });
 });

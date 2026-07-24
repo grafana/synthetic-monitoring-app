@@ -100,6 +100,7 @@ describe('resolveTimeRange', () => {
 describe('getAppTimeRangeMode', () => {
   it.each([
     [{ from: 'now-3h', to: 'now' }, 'live'],
+    [{ from: 'now-3h', to: 'now+20m' }, 'live'],
     [{ from: '2026-07-23T08:00:00.000Z', to: 'now' }, 'live'],
     [{ from: '2026-07-23T08:00:00.000Z', to: '2026-07-23T11:00:00.000Z' }, 'historical'],
     [{ from: 'now-3h', to: 'now-5m' }, 'historical'],

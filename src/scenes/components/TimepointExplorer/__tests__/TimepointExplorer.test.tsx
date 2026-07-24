@@ -128,6 +128,14 @@ describe('TimepointExplorer', () => {
     expect(screen.queryByLabelText('Execution explorer controls')).not.toBeInTheDocument();
   });
 
+  it('appends optional overview execution totals', async () => {
+    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+
+    render(<TimepointExplorer check={TIME_MODIFIED_HTTP_CHECK} overviewExtra="377 of 706 succeeded" />);
+
+    expect(await screen.findByText(/overview · 377 of 706 succeeded/)).toBeVisible();
+  });
+
   it('renders when the check has no creation timestamp', async () => {
     mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
 

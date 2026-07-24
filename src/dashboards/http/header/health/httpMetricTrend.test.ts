@@ -17,6 +17,10 @@ function interpret(overrides: Partial<HttpTrendInterpretationInput> = {}) {
 }
 
 describe('interpretHttpMetricTrend', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('describes healthy stable reachability as consistently reachable', () => {
     expect(
       interpret({
@@ -151,13 +155,15 @@ describe('interpretHttpMetricTrend', () => {
   });
 
   it('does not call the normal certificate countdown worsening', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(Date.UTC(2026, 6, 23));
+
     expect(
       interpret({
         metricId: 'ssl-expiry',
         shape: 'falling',
         rangeValue: 61 * 86_400,
       })
-    ).toBe('On track for renewal');
+    ).toBe('On track for renewal · expires 2026-09-22');
 
     expect(
       interpret({
@@ -166,6 +172,39 @@ describe('interpretHttpMetricTrend', () => {
         rangeValue: 89 * 86_400,
       })
     ).toBe('Renewed during this range');
+  });
+
+  it('describes past-expiry certificates as expired on a date', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(Date.UTC(2026, 6, 23));
+
+    expect(
+      interpret({
+        metricId: 'ssl-expiry',
+        evaluationState: 'unhealthy',
+        rangeState: 'unhealthy',
+        rangeValue: -20,
+      })
+    ).toBe('Expired on 2026-07-22');
+  });
+
+  it('folds the expiry date into approaching and overdue banners', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(Date.UTC(2026, 6, 23));
+
+    expect(
+      interpret({
+        metricId: 'ssl-expiry',
+        evaluationState: 'degraded',
+        rangeValue: 14 * 86_400,
+      })
+    ).toBe('Approaching expiry threshold · expires 2026-08-06');
+
+    expect(
+      interpret({
+        metricId: 'ssl-expiry',
+        evaluationState: 'unhealthy',
+        rangeValue: 3 * 86_400,
+      })
+    ).toBe('Renewal overdue · expires 2026-07-26');
   });
 });
 

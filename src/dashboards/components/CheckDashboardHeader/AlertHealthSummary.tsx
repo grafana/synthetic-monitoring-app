@@ -3,10 +3,11 @@ import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { HealthState } from './health/checkHealth.types';
+import { HealthEvidence, HealthState } from './health/checkHealth.types';
 import type { AppTimeRangeMode } from 'contexts/AppTimeProvider.utils';
 import { Toggletip } from 'components/Toggletip';
 
+import { CHECK_DASHBOARD_PAGE_GUTTER } from './CheckDashboardLayout.constants';
 import { useCheckHealth } from './health/CheckHealthContext';
 
 const STATUS_VISUAL: Record<
@@ -25,12 +26,47 @@ function getStatusLabel(state: HealthState, rangeMode: AppTimeRangeMode): string
   return rangeMode === 'live' ? `${base} now` : `${base} at end of range`;
 }
 
+function orderStatusReasons(reasons: HealthEvidence[], metricIds: string[]): HealthEvidence[] {
+  const metricOrder = new Map(metricIds.map((id, index) => [id, index]));
+
+  return [...reasons].sort((left, right) => {
+    const leftIndex =
+      left.metricId != null ? (metricOrder.get(left.metricId) ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
+    const rightIndex =
+      right.metricId != null ? (metricOrder.get(right.metricId) ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER;
+
+    if (leftIndex !== rightIndex) {
+      return leftIndex - rightIndex;
+    }
+
+    // Evaluation before range so dedupe keeps the evaluation-point copy.
+    return (left.scope === 'evaluation' ? 0 : 1) - (right.scope === 'evaluation' ? 0 : 1);
+  });
+}
+
+function dedupeStatusReasons(reasons: HealthEvidence[]): HealthEvidence[] {
+  const seenSummaries = new Set<string>();
+
+  return reasons.filter((reason) => {
+    if (seenSummaries.has(reason.summary)) {
+      return false;
+    }
+
+    seenSummaries.add(reason.summary);
+    return true;
+  });
+}
+
 export function AlertHealthSummary() {
   const styles = useStyles2(getStyles);
   const model = useCheckHealth();
   const visual = STATUS_VISUAL[model.state];
   const evaluationEvidence = model.evidence.filter((item) => item.scope === 'evaluation');
   const rangeEvidence = model.evidence.filter((item) => item.scope === 'range');
+  // Keep status-bar copy in the same order as the headline metrics.
+  const statusReasons = dedupeStatusReasons(
+    orderStatusReasons([...model.compactReasons, ...model.rangeReasons], Object.keys(model.metrics))
+  );
 
   return (
     <div className={cx(styles.summary, styles[visual.tone])}>
@@ -38,13 +74,11 @@ export function AlertHealthSummary() {
         <div className={styles.leading}>
           <Icon aria-hidden className={styles.icon} name={visual.icon} size="md" />
           <strong className={styles.label}>{getStatusLabel(model.state, model.rangeMode)}</strong>
-          {model.compactReasons.map((reason) => (
-            <span className={styles.reason} key={reason.id}>
-              <span aria-hidden>·</span> {reason.summary}
-            </span>
-          ))}
-          {model.rangeReasons.slice(0, 2).map((reason) => (
-            <span className={styles.rangeReason} key={reason.id}>
+          {statusReasons.map((reason) => (
+            <span
+              className={reason.scope === 'range' ? styles.rangeReason : styles.reason}
+              key={reason.id}
+            >
               <span aria-hidden>·</span> {reason.summary}
             </span>
           ))}
@@ -106,7 +140,9 @@ const getStyles = (theme: GrafanaTheme2) => {
 
   return {
     summary: css({
-      padding: theme.spacing(1, 1.5),
+      // Full-bleed tone background; page gutter indents the status content only.
+      padding: theme.spacing(1, CHECK_DASHBOARD_PAGE_GUTTER),
+      width: '100%',
     }),
     error: toneBar('error'),
     info: toneBar('info'),

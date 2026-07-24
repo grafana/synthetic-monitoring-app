@@ -4,6 +4,7 @@ import { TimeRange } from '@grafana/data';
 import { DashboardQuerySemanticValues } from 'dashboards/query/types';
 import { useAppTime } from 'contexts/AppTimeProvider';
 import { useCheckDashboard } from 'contexts/CheckDashboardProvider';
+import { useDashboardPanelScopeOptional } from 'contexts/DashboardPanelScopeProvider';
 
 import {
   createDashboardQuerySemanticValues,
@@ -15,15 +16,17 @@ export function useDashboardQuerySemanticValues(
   maxDataPoints = 500,
   explicitRange?: DashboardQueryRange
 ): DashboardQuerySemanticValues {
-  const { check, probes } = useCheckDashboard();
+  const { check } = useCheckDashboard();
+  const panelScope = useDashboardPanelScopeOptional();
   const appTime = useAppTime();
   const range = explicitRange ?? appTime.absolute;
+  const probes = panelScope?.probes;
 
   return useMemo(
     () =>
       createDashboardQuerySemanticValues({
         check,
-        probes,
+        probes: probes ?? [],
         range,
         maxDataPoints,
       }),

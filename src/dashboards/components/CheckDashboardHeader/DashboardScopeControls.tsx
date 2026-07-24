@@ -1,11 +1,13 @@
 import React, { ReactNode, useMemo } from 'react';
 import { GrafanaTheme2, intervalToAbbreviatedDurationString, TimeRange } from '@grafana/data';
-import { MultiCombobox, RefreshPicker, TimeRangePicker, useStyles2 } from '@grafana/ui';
+import { Button, Field, MultiCombobox, RefreshPicker, TimeRangePicker, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { useAppTime } from 'contexts/AppTimeProvider';
-import { canShiftTimeRangeForward, resolveTimeRange } from 'contexts/AppTimeProvider.utils';
-import { useCheckDashboard } from 'contexts/CheckDashboardProvider';
+import { canShiftTimeRangeForward, DEFAULT_APP_TIME_RANGE, resolveTimeRange } from 'contexts/AppTimeProvider.utils';
+import { useDashboardPanelScope } from 'contexts/DashboardPanelScopeProvider';
+
+import { DashboardComparisonControls } from './DashboardComparisonControls';
 
 const PROBE_CONTROL_ID = 'dashboard-probe-control';
 
@@ -15,7 +17,7 @@ function toRawTimeValue(value: TimeRange['raw']['from']): string {
 
 function DashboardProbeControl() {
   const styles = useStyles2(getStyles);
-  const { probes, setProbes, catalogLoading, catalog, catalogError } = useCheckDashboard();
+  const { probes, setProbes, catalogLoading, catalog, catalogError } = useDashboardPanelScope();
   const options = useMemo(() => catalog.map((probe) => ({ label: probe, value: probe })), [catalog]);
 
   if (catalogError) {
@@ -23,10 +25,7 @@ function DashboardProbeControl() {
   }
 
   return (
-    <div>
-      <label className={styles.visuallyHidden} htmlFor={PROBE_CONTROL_ID}>
-        Probes
-      </label>
+    <Field className={styles.probeField} htmlFor={PROBE_CONTROL_ID} label="Probes">
       <MultiCombobox
         id={PROBE_CONTROL_ID}
         isClearable
@@ -39,39 +38,49 @@ function DashboardProbeControl() {
         onChange={(values) => setProbes(values.map((entry) => entry.value))}
         placeholder="All probes"
       />
-    </div>
+    </Field>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  commandBar: css({
+  globalControls: css({
     alignItems: 'center',
     display: 'flex',
     flexWrap: 'wrap',
     gap: theme.spacing(1),
     justifyContent: 'space-between',
+    width: '100%',
   }),
-  commandGroup: css({
+  startGroup: css({
+    alignItems: 'flex-start',
+    display: 'flex',
+    flex: '0 0 auto',
+    justifyContent: 'flex-start',
+    minWidth: 0,
+  }),
+  endGroup: css({
     alignItems: 'center',
     display: 'flex',
     flex: '0 0 auto',
+    flexWrap: 'nowrap',
     gap: theme.spacing(1),
+    justifyContent: 'flex-end',
     minWidth: 0,
   }),
-  visuallyHidden: css({
-    border: 0,
-    clip: 'rect(0 0 0 0)',
-    height: theme.spacing(0.125),
-    margin: theme.spacing(-0.125),
-    overflow: 'hidden',
-    padding: 0,
-    position: 'absolute',
-    whiteSpace: 'nowrap',
-    width: theme.spacing(0.125),
+  panelFilters: css({
+    alignItems: 'center',
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    justifyContent: 'flex-start',
+    width: '100%',
+  }),
+  probeField: css({
+    marginBottom: 0,
   }),
 });
 
-function DashboardTimeControls() {
+function DashboardTimeRangeControl() {
   const appTime = useAppTime();
   const value = useMemo(
     () => resolveTimeRange(appTime.raw.from, appTime.raw.to, appTime.timezone),
@@ -108,6 +117,19 @@ function DashboardTimeControls() {
 function DashboardRefreshControl() {
   const appTime = useAppTime();
 
+  if (appTime.rangeMode === 'historical') {
+    return (
+      <Button
+        fill="outline"
+        onClick={() => appTime.setTimeRange(DEFAULT_APP_TIME_RANGE)}
+        type="button"
+        variant="secondary"
+      >
+        Go to now
+      </Button>
+    );
+  }
+
   return (
     <RefreshPicker
       isOnCanvas
@@ -118,19 +140,44 @@ function DashboardRefreshControl() {
   );
 }
 
-export function DashboardScopeControls({ filters }: { filters?: ReactNode }) {
+export function DashboardTimeControls() {
   const styles = useStyles2(getStyles);
 
   return (
-    <div aria-label="Dashboard scope controls" className={styles.commandBar}>
-      <div className={styles.commandGroup} data-testid="command-bar-group">
-        <DashboardProbeControl />
-        {filters}
+    <div aria-label="Dashboard controls" className={styles.globalControls}>
+      <div className={styles.startGroup} data-testid="dashboard-start-group">
+        <DashboardComparisonControls />
       </div>
-      <div className={styles.commandGroup} data-testid="command-bar-group">
-        <DashboardTimeControls />
+      <div className={styles.endGroup} data-testid="dashboard-end-group" style={{ marginLeft: 'auto' }}>
+        <DashboardTimeRangeControl />
         <DashboardRefreshControl />
       </div>
+    </div>
+  );
+}
+
+function DashboardClearFiltersControl() {
+  const { probes, setProbes } = useDashboardPanelScope();
+
+  if (probes.length === 0) {
+    return null;
+  }
+
+  return (
+    <Button fill="text" onClick={() => setProbes([])} type="button" variant="secondary">
+      Clear filters
+    </Button>
+  );
+}
+
+export function DashboardPanelScopeControls({ filters }: { filters?: ReactNode }) {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div aria-label="Panel filters" className={styles.panelFilters}>
+      <DashboardProbeControl />
+      {filters}
+      <DashboardClearFiltersControl />
     </div>
   );
 }

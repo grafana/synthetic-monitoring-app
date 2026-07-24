@@ -45,6 +45,8 @@ export interface MetricAlertModel {
   alertType?: CheckAlertType;
   message?: string;
   canWrite?: boolean;
+  /** Count of firing episodes overlapping the selected range. */
+  fireCount?: number;
 }
 
 export interface MetricHealthModel {

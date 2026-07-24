@@ -1,11 +1,12 @@
 import React from 'react';
 import { MemoryRouter } from 'react-router';
-import { renderHook } from '@testing-library/react';
+import { render, renderHook, screen } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { CheckDashboardProvider } from 'contexts/CheckDashboardProvider';
+import { DashboardPanelScopeProvider } from 'contexts/DashboardPanelScopeProvider';
 
-import { useDashboardVar } from './useDashboardVar';
+import { useDashboardVar, useDashboardVarProbes } from './useDashboardVar';
 
 jest.mock('data/useProbes', () => ({
   useProbes: () => ({
@@ -37,6 +38,37 @@ describe('useDashboardVar', () => {
     const { result } = renderHook(() => useDashboardVar('probe'), { wrapper });
 
     expect(result.current).toEqual(['.*']);
+  });
+
+  it('keeps header probes global while resolving selected probes inside panel scope', () => {
+    function ProbeConsumer({ testId }: { testId: string }) {
+      const raw = useDashboardVar('probe');
+      const expanded = useDashboardVarProbes(BASIC_HTTP_CHECK);
+
+      return (
+        <output
+          data-expanded={expanded.join(',')}
+          data-raw={raw.join(',')}
+          data-testid={testId}
+        />
+      );
+    }
+
+    render(
+      <MemoryRouter initialEntries={['/checks/1?sm-v=1&sm-probe=frankfurt']}>
+        <CheckDashboardProvider check={BASIC_HTTP_CHECK} urlFormat="canonical">
+          <ProbeConsumer testId="header-query-scope" />
+          <DashboardPanelScopeProvider>
+            <ProbeConsumer testId="panel-query-scope" />
+          </DashboardPanelScopeProvider>
+        </CheckDashboardProvider>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('header-query-scope')).toHaveAttribute('data-raw', '.*');
+    expect(screen.getByTestId('header-query-scope')).toHaveAttribute('data-expanded', 'frankfurt,ohio');
+    expect(screen.getByTestId('panel-query-scope')).toHaveAttribute('data-raw', 'frankfurt');
+    expect(screen.getByTestId('panel-query-scope')).toHaveAttribute('data-expanded', 'frankfurt');
   });
 
   it('returns job and instance from the check', () => {

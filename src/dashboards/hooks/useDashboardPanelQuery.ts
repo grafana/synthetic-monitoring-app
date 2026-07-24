@@ -37,7 +37,10 @@ export type DashboardPanelDefinition = {
 
 export function useDashboardPanelQuery(
   definition: DashboardPanelDefinition,
-  options: { range?: DashboardQueryRange } = {}
+  options: {
+    range?: DashboardQueryRange;
+    enabled?: boolean;
+  } = {}
 ) {
   const { check } = useCheckDashboard();
   const { smDS } = useSMDatasourceContext();
@@ -51,9 +54,7 @@ export function useDashboardPanelQuery(
   const scope = useMemo(() => createDashboardQueryScope(stackId, check.id!), [check.id, stackId]);
 
   useEffect(() => {
-    registerActiveDashboardScope(scope);
-
-    return () => registerActiveDashboardScope(null);
+    return registerActiveDashboardScope(scope);
   }, [scope]);
 
   const datasourceType = definition.datasourceType === 'loki' ? 'loki' : 'prometheus';
@@ -138,11 +139,19 @@ export function useDashboardPanelQuery(
           signal,
           getDataSource: (uid) => getDataSourceSrv().get(uid),
         }),
-      enabled: Boolean(activeDS?.uid) && requests.length > 0,
+      enabled: options.enabled !== false && Boolean(activeDS?.uid) && requests.length > 0,
     })
   );
 
-  const [transformedFrames, setTransformedFrames] = useState<PanelData['series']>([]);
+  const rawFrames = useMemo(
+    () => query.data?.results.flatMap((result) => result.frames) ?? [],
+    [query.data]
+  );
+  const [transformResult, setTransformResult] = useState<{
+    source: ExecuteQueriesResult;
+    transforms: DashboardTransformDefinition[];
+    frames: PanelData['series'];
+  } | null>(null);
   const transformContext = useMemo<DataTransformContext>(
     () => ({
       interpolate: (value: string) => value,
@@ -151,21 +160,45 @@ export function useDashboardPanelQuery(
   );
 
   useEffect(() => {
-    const frames = query.data?.results.flatMap((result) => result.frames) ?? [];
-
-    if (!definition.transforms?.length) {
-      setTransformedFrames(frames);
+    if (!definition.transforms?.length || !query.data) {
       return;
     }
 
-    const subscription = applyTransforms(frames, definition.transforms, transformContext).subscribe((nextFrames) => {
-      setTransformedFrames(nextFrames);
-    });
+    const source = query.data;
+    const transforms = definition.transforms;
+    const subscription = applyTransforms(rawFrames, transforms, transformContext).subscribe(
+      (frames) => {
+        setTransformResult({ source, transforms, frames });
+      }
+    );
 
     return () => subscription.unsubscribe();
-  }, [definition.transforms, query.data, transformContext]);
+  }, [definition.transforms, query.data, rawFrames, transformContext]);
+
+  const transformsPending =
+    Boolean(definition.transforms?.length) &&
+    Boolean(query.data) &&
+    (transformResult?.source !== query.data ||
+      transformResult?.transforms !== definition.transforms);
+  const currentFrames = useMemo(
+    () =>
+      definition.transforms?.length
+        ? transformsPending
+          ? []
+          : transformResult?.frames ?? []
+        : rawFrames,
+    [definition.transforms, rawFrames, transformResult?.frames, transformsPending]
+  );
 
   const panelData = useMemo<PanelData>(() => {
+    if (options.enabled === false && !query.data) {
+      return {
+        state: LoadingState.Done,
+        series: [],
+        timeRange,
+      };
+    }
+
     if (query.isPending && !query.data) {
       return {
         state: LoadingState.Loading,
@@ -186,7 +219,7 @@ export function useDashboardPanelQuery(
     const results =
       query.data?.results.map((result) => ({
         ...result,
-        frames: transformedFrames,
+        frames: currentFrames,
       })) ?? [];
 
     if (results.length === 0) {
@@ -207,7 +240,16 @@ export function useDashboardPanelQuery(
     }
 
     return data;
-  }, [query.data, query.error, query.isError, query.isFetching, query.isPending, timeRange, transformedFrames]);
+  }, [
+    options.enabled,
+    query.data,
+    query.error,
+    query.isError,
+    query.isFetching,
+    query.isPending,
+    timeRange,
+    currentFrames,
+  ]);
 
   const menuDefinition: PanelMenuDefinition = useMemo(
     () => ({
@@ -244,6 +286,8 @@ export function useDashboardPanelQuery(
     panelData,
     menuItems,
     title,
-    isLoading: query.isPending || query.isFetching,
+    isLoading:
+      options.enabled !== false &&
+      (query.isPending || query.isFetching || transformsPending),
   };
 }

@@ -1,6 +1,7 @@
 import { useVariables } from '@grafana/scenes-react';
 
 import { useCheckDashboardOptional } from 'contexts/CheckDashboardProvider';
+import { useDashboardPanelScopeOptional } from 'contexts/DashboardPanelScopeProvider';
 
 function normalizeProbeValue(value: string[] | undefined): string[] | undefined {
   if (!value?.length) {
@@ -17,6 +18,7 @@ function normalizeProbeValue(value: string[] | undefined): string[] | undefined 
 export function useSceneVar(name: string) {
   const vars = useVariables();
   const checkDashboard = useCheckDashboardOptional();
+  const panelScope = useDashboardPanelScopeOptional();
   const variable = vars.find((v) => v.state.name === name);
 
   // @ts-expect-error - value is not typed
@@ -28,7 +30,7 @@ export function useSceneVar(name: string) {
 
   if (checkDashboard) {
     if (name === 'probe') {
-      return checkDashboard.probes.length > 0 ? checkDashboard.probes : ['.*'];
+      return panelScope?.probes.length ? panelScope.probes : ['.*'];
     }
 
     if (name === 'job') {

@@ -11,6 +11,9 @@ import { CHECK_DASHBOARD_PAGE_GUTTER } from './CheckDashboardLayout.constants';
 import { HeaderMetric } from './HeaderMetric';
 import { LiveIncidentPrompt } from './LiveIncidentPrompt';
 
+/** Switch from 4 columns to 2 before label + alert control + value + sparkline collide. */
+const METRICS_STACK_MAX_WIDTH = '1100px';
+
 export function ObservedPerformanceSummary<TCheck extends Check>({
   check,
   profile,
@@ -49,27 +52,31 @@ export function ObservedPerformanceSummary<TCheck extends Check>({
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     containerType: 'inline-size',
-    background: theme.colors.background.secondary,
+    display: 'flex',
+    flexDirection: 'column',
     minWidth: 0,
-    padding: theme.spacing(0, CHECK_DASHBOARD_PAGE_GUTTER),
     width: '100%',
   }),
   surface: css({
+    background: theme.colors.background.secondary,
     borderRadius: theme.shape.radius.default,
-    padding: theme.spacing(1.5, 0),
+    padding: theme.spacing(1.5, CHECK_DASHBOARD_PAGE_GUTTER),
   }),
   metrics: css({
     display: 'grid',
     gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-    '@container (max-width: 800px)': { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' },
+    [`@container (max-width: ${METRICS_STACK_MAX_WIDTH})`]: {
+      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    },
   }),
   metricCell: css({
+    display: 'flex',
     minWidth: 0,
     padding: theme.spacing(0, 1.5),
     '&:first-child': { paddingLeft: 0 },
     '&:last-child': { paddingRight: 0 },
     '&:not(:first-child)': { borderLeft: `1px solid ${theme.colors.border.weak}` },
-    '@container (max-width: 800px)': {
+    [`@container (max-width: ${METRICS_STACK_MAX_WIDTH})`]: {
       padding: theme.spacing(1.5),
       '&:nth-child(odd)': { borderLeft: 0, paddingLeft: 0 },
       '&:nth-child(even)': { borderLeft: `1px solid ${theme.colors.border.weak}`, paddingRight: 0 },

@@ -1,9 +1,37 @@
+import { type ComparisonReferenceSpec } from 'dashboards/comparison/comparisonReference.types';
+
 import {
   ALL_PROBE_SENTINELS,
   DASHBOARD_URL_KEYS,
   DASHBOARD_URL_VERSION,
   LEGACY_SCENE_DASHBOARD_KEYS,
 } from './dashboardUrlSchema';
+
+interface ComparisonUrlKeys {
+  kind: string;
+  preset: string;
+  from: string;
+  to: string;
+  matchDuration: string;
+}
+
+const CANONICAL_COMPARISON_URL_KEYS: ComparisonUrlKeys = {
+  kind: DASHBOARD_URL_KEYS.comparison,
+  preset: DASHBOARD_URL_KEYS.comparisonPreset,
+  from: DASHBOARD_URL_KEYS.comparisonFrom,
+  to: DASHBOARD_URL_KEYS.comparisonTo,
+  matchDuration: DASHBOARD_URL_KEYS.comparisonMatchDuration,
+};
+
+const LEGACY_COMPARISON_URL_KEYS: ComparisonUrlKeys = {
+  kind: LEGACY_SCENE_DASHBOARD_KEYS.comparison,
+  preset: LEGACY_SCENE_DASHBOARD_KEYS.comparisonPreset,
+  from: LEGACY_SCENE_DASHBOARD_KEYS.comparisonFrom,
+  to: LEGACY_SCENE_DASHBOARD_KEYS.comparisonTo,
+  matchDuration: LEGACY_SCENE_DASHBOARD_KEYS.comparisonMatchDuration,
+};
+
+const COMPARISON_URL_KEY_SETS = [CANONICAL_COMPARISON_URL_KEYS, LEGACY_COMPARISON_URL_KEYS];
 
 export type DashboardUrlState = {
   version: typeof DASHBOARD_URL_VERSION;
@@ -12,6 +40,7 @@ export type DashboardUrlState = {
   timezone?: string;
   refresh?: string;
   probes?: string[];
+  comparison?: ComparisonReferenceSpec | null;
 };
 
 export type ParseDashboardUrlResult =
@@ -48,6 +77,70 @@ function parseProbes(search: URLSearchParams, key: string): string[] | undefined
   return normalized.length > 0 ? normalized : undefined;
 }
 
+function parseComparison(search: URLSearchParams, keys: ComparisonUrlKeys): ComparisonReferenceSpec | undefined {
+  switch (search.get(keys.kind)) {
+    case 'normal':
+      return { kind: 'normal' };
+    case 'previous':
+      return { kind: 'previous' };
+    case 'shifted':
+      return { kind: 'shifted', presetId: search.get(keys.preset) ?? '' };
+    case 'custom':
+      return {
+        kind: 'custom',
+        from: search.get(keys.from) ?? '',
+        to: search.get(keys.to) ?? '',
+        matchPrimaryDuration: search.get(keys.matchDuration) !== '0',
+      };
+    default:
+      return undefined;
+  }
+}
+
+function writeComparison(
+  params: URLSearchParams,
+  keys: ComparisonUrlKeys,
+  comparison: ComparisonReferenceSpec | null | undefined,
+  preserved: URLSearchParams
+): void {
+  for (const comparisonKeys of COMPARISON_URL_KEY_SETS) {
+    for (const key of Object.values(comparisonKeys)) {
+      params.delete(key);
+    }
+  }
+
+  const nextComparison =
+    comparison === undefined
+      ? hasCanonicalComparisonParameters(preserved)
+        ? parseComparison(preserved, CANONICAL_COMPARISON_URL_KEYS)
+        : parseComparison(preserved, LEGACY_COMPARISON_URL_KEYS)
+      : comparison;
+
+  if (nextComparison === null || nextComparison === undefined) {
+    return;
+  }
+
+  params.set(keys.kind, nextComparison.kind);
+
+  if (nextComparison.kind === 'shifted') {
+    params.set(keys.preset, nextComparison.presetId);
+  }
+
+  if (nextComparison.kind === 'custom') {
+    params.set(keys.from, nextComparison.from);
+    params.set(keys.to, nextComparison.to);
+    params.set(keys.matchDuration, nextComparison.matchPrimaryDuration ? '1' : '0');
+  }
+}
+
+function hasComparisonParameters(params: URLSearchParams): boolean {
+  return COMPARISON_URL_KEY_SETS.some((keys) => Object.values(keys).some((key) => params.has(key)));
+}
+
+export function hasCanonicalComparisonParameters(params: URLSearchParams): boolean {
+  return Object.values(CANONICAL_COMPARISON_URL_KEYS).some((key) => params.has(key));
+}
+
 export function parseDashboardUrl(search: URLSearchParams): ParseDashboardUrlResult {
   const versionResult = parseVersion(search);
 
@@ -62,6 +155,7 @@ export function parseDashboardUrl(search: URLSearchParams): ParseDashboardUrlRes
     timezone: search.get(DASHBOARD_URL_KEYS.timezone) ?? undefined,
     refresh: search.get(DASHBOARD_URL_KEYS.refresh) ?? undefined,
     probes: parseProbes(search, DASHBOARD_URL_KEYS.probe),
+    comparison: parseComparison(search, CANONICAL_COMPARISON_URL_KEYS),
   };
 
   return { ok: true, state };
@@ -73,6 +167,7 @@ export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSe
   // [] = clear probe filter ("All probes").
   const preservedProbes =
     state.probes === undefined ? params.getAll(DASHBOARD_URL_KEYS.probe) : undefined;
+  const preservedComparison = new URLSearchParams(params);
 
   for (const key of Object.values(DASHBOARD_URL_KEYS)) {
     params.delete(key);
@@ -89,6 +184,8 @@ export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSe
     state.timezone !== undefined ||
     state.refresh !== undefined ||
     state.probes !== undefined ||
+    state.comparison !== undefined ||
+    hasComparisonParameters(preservedComparison) ||
     Boolean(preservedProbes?.length);
 
   if (!hasExplicitState) {
@@ -119,6 +216,8 @@ export function serializeDashboardUrl(state: DashboardUrlState, existing?: URLSe
     params.append(DASHBOARD_URL_KEYS.probe, probe);
   });
 
+  writeComparison(params, CANONICAL_COMPARISON_URL_KEYS, state.comparison, preservedComparison);
+
   return params;
 }
 
@@ -126,6 +225,7 @@ export function serializeLegacyDashboardUrl(state: DashboardUrlState, existing?:
   const params = new URLSearchParams(existing ?? undefined);
   const preservedProbes =
     state.probes === undefined ? params.getAll(LEGACY_SCENE_DASHBOARD_KEYS.probe) : undefined;
+  const preservedComparison = new URLSearchParams(params);
 
   for (const key of Object.values(LEGACY_SCENE_DASHBOARD_KEYS)) {
     params.delete(key);
@@ -152,6 +252,8 @@ export function serializeLegacyDashboardUrl(state: DashboardUrlState, existing?:
   probesToWrite?.forEach((probe) => {
     params.append(LEGACY_SCENE_DASHBOARD_KEYS.probe, probe);
   });
+
+  writeComparison(params, LEGACY_COMPARISON_URL_KEYS, state.comparison, preservedComparison);
 
   return params;
 }
@@ -202,5 +304,10 @@ export function mergeDashboardUrlState(base: DashboardUrlState, patch: Partial<D
     // Allow explicit undefined/[] to clear refresh or probe filters.
     refresh: 'refresh' in patch ? patch.refresh : base.refresh,
     probes: 'probes' in patch ? patch.probes : base.probes,
+    comparison: 'comparison' in patch ? patch.comparison : base.comparison,
   };
+}
+
+export function parseLegacyDashboardComparison(search: URLSearchParams): ComparisonReferenceSpec | undefined {
+  return parseComparison(search, LEGACY_COMPARISON_URL_KEYS);
 }

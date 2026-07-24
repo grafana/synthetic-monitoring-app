@@ -128,6 +128,51 @@ describe('resolveCheckHealth', () => {
     ]);
   });
 
+  it('orders summary reasons by metric order before severity', () => {
+    const model = resolveTestHealth({
+      metricIds: ['uptime', 'reachability', 'average-latency', 'ssl-expiry'],
+      evidence: [
+        evidence({
+          id: 'SSL expiry: certificate expires in under 7 days',
+          metricId: 'ssl-expiry',
+          kind: 'guardrail',
+          state: 'unhealthy',
+          explanationPriority: 400,
+        }),
+        evidence({
+          id: 'Uptime is below 99%',
+          metricId: 'uptime',
+          kind: 'guardrail',
+          state: 'unhealthy',
+          explanationPriority: 200,
+        }),
+        {
+          ...evidence({
+            id: 'Reachability was critical earlier in this range',
+            metricId: 'reachability',
+            kind: 'guardrail',
+            state: 'unhealthy',
+            explanationPriority: 300,
+          }),
+          scope: 'range',
+        },
+      ],
+    });
+
+    expect(model.compactReasons.map((item) => item.summary)).toEqual([
+      'Uptime is below 99%',
+      'SSL expiry: certificate expires in under 7 days',
+    ]);
+    expect(model.rangeReasons.map((item) => item.summary)).toEqual([
+      'Reachability was critical earlier in this range',
+    ]);
+    expect(model.evidence.map((item) => item.metricId)).toEqual([
+      'uptime',
+      'reachability',
+      'ssl-expiry',
+    ]);
+  });
+
   it('returns unknown only when no source has known evidence', () => {
     const model = resolveTestHealth({
       metricIds: ['ssl-expiry'],

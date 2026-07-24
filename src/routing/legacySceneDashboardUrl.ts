@@ -1,6 +1,12 @@
 import { dateTimeParse } from '@grafana/data';
 
-import { DashboardUrlState, mergeDashboardUrlState, parseDashboardUrl } from './dashboardUrl';
+import {
+  DashboardUrlState,
+  hasCanonicalComparisonParameters,
+  mergeDashboardUrlState,
+  parseDashboardUrl,
+  parseLegacyDashboardComparison,
+} from './dashboardUrl';
 import { ALL_PROBE_SENTINELS, LEGACY_SCENE_DASHBOARD_KEYS } from './dashboardUrlSchema';
 
 function parseLegacyProbes(search: URLSearchParams): string[] | undefined {
@@ -105,6 +111,10 @@ export function transformLegacySceneDashboardUrl(search: URLSearchParams): Dashb
 
   if (baseState.probes === undefined) {
     nextState.probes = parseLegacyProbes(search);
+  }
+
+  if (baseState.comparison === undefined && !hasCanonicalComparisonParameters(search)) {
+    nextState.comparison = parseLegacyDashboardComparison(search);
   }
 
   return mergeDashboardUrlState({ version: 1 }, nextState);

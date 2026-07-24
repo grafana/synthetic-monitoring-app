@@ -80,15 +80,17 @@ export function formatHttpCheckDefinition(check: HTTPCheck): CheckHeaderDefiniti
       {
         id: 'frequency',
         label: 'Frequency',
-        value: `Every ${formatDuration(check.frequency, true)}`,
+        value: formatDuration(check.frequency, true),
+        icon: 'clock-nine',
       },
       {
         id: 'configured-probes',
-        label: 'Configured probes',
+        label: 'Probes',
         value: String(check.probes.length),
+        icon: 'globe',
       },
-      { id: 'timeout', label: 'Timeout', value: formatDuration(check.timeout, true) },
-      { id: 'uptime-rules', label: 'Uptime success', value: formatHttpUptimeRules(http) },
+      { id: 'timeout', label: 'Timeout', value: formatDuration(check.timeout, true), icon: 'hourglass' },
+      { id: 'uptime-rules', label: 'Uptime success', value: formatHttpUptimeRules(http), icon: 'shield' },
     ],
     labels: check.labels,
     details: {

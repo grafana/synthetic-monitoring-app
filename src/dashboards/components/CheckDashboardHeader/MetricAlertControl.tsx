@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, IconName } from '@grafana/data';
 import { Icon, Tooltip, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 
 import { HeaderMetricDefinition } from './CheckDashboardHeader.types';
 import { MetricAlertModel, MetricAlertState } from './health/checkHealth.types';
@@ -11,65 +11,46 @@ import { Toggletip } from 'components/Toggletip';
 import { useCheckHealthOptional } from './health/CheckHealthContext';
 import { QuickAlertSetup } from './QuickAlertSetup';
 
-type PresentedAlertState = Exclude<MetricAlertState, 'not-configured' | 'unsupported'>;
+type SetupStatusIconState = Extract<MetricAlertState, 'pending' | 'error'>;
 
-const ALERT_STATE_PRESENTATION: Record<
-  PresentedAlertState,
+const SETUP_STATUS_ICON: Record<
+  SetupStatusIconState,
   {
     icon: IconName;
-    label: (metric: string) => string;
-    tone: 'error' | 'neutral' | 'warning';
+    ariaLabel: (metric: string) => string;
   }
 > = {
-  firing: {
-    icon: 'bell',
-    label: (metric) => `Alert firing for ${metric}`,
-    tone: 'error',
-  },
-  historical: {
-    icon: 'bell',
-    label: (metric) => `Alert fired in this range for ${metric}`,
-    tone: 'warning',
-  },
-  configured: {
-    icon: 'bell',
-    label: (metric) => `Alert configured for ${metric}`,
-    tone: 'neutral',
-  },
   pending: {
     icon: 'clock-nine',
-    label: (metric) => `Alert setup pending for ${metric}`,
-    tone: 'warning',
+    ariaLabel: (metric) => `Alert setup pending for ${metric}`,
   },
   error: {
     icon: 'exclamation-triangle',
-    label: (metric) => `Alert setup failed for ${metric}`,
-    tone: 'error',
+    ariaLabel: (metric) => `Alert setup failed for ${metric}`,
   },
 };
 
-function AlertStatusIcon({
+function isConfiguredAlert(state: MetricAlertState): boolean {
+  return state !== 'unsupported' && state !== 'not-configured';
+}
+
+function SetupStatusIcon({
+  className,
   metricLabel,
   model,
 }: {
+  className: string;
   metricLabel: string;
   model: MetricAlertModel;
 }) {
-  const styles = useStyles2(getStyles);
-
-  if (model.state === 'unsupported' || model.state === 'not-configured') {
+  if (model.state !== 'pending' && model.state !== 'error') {
     return null;
   }
 
-  const presentation = ALERT_STATE_PRESENTATION[model.state];
-  const label = presentation.label(metricLabel);
+  const presentation = SETUP_STATUS_ICON[model.state];
   const icon = (
-    <span
-      aria-label={label}
-      className={cx(styles.status, styles[presentation.tone])}
-      role="img"
-    >
-      <Icon aria-hidden name={presentation.icon} />
+    <span aria-label={presentation.ariaLabel(metricLabel)} className={className}>
+      <Icon name={presentation.icon} size="sm" />
     </span>
   );
 
@@ -93,62 +74,78 @@ export function MetricAlertControl<TCheck extends Check>({
     return null;
   }
 
-  if (alert.state === 'not-configured' && alert.canWrite) {
-    return (
-      <Toggletip
-        content={
-          <QuickAlertSetup
-            alertType={alertType}
-            check={check}
-            onCancel={() => setOpen(false)}
-            onSaved={() => setOpen(false)}
-          />
-        }
-        onOpenChange={setOpen}
-        open={open}
-      >
-        <button
-          aria-label={`Set up alert for ${metric.label}`}
-          className={styles.setupButton}
-          type="button"
-        >
-          <Icon name="bell" />
-        </button>
-      </Toggletip>
-    );
-  }
-
-  if (alert.state === 'not-configured') {
-    const label = `No alert configured for ${metric.label}`;
-
+  if (alert.state === 'not-configured' && !alert.canWrite) {
     return (
       <Tooltip content="You do not have permission to configure this alert.">
-        <span aria-label={label} className={cx(styles.status, styles.muted)} role="img">
-          <Icon aria-hidden name="bell" />
+        <span aria-label={`No alert configured for ${metric.label}`} className={styles.noAlert}>
+          No alert
         </span>
       </Tooltip>
     );
   }
 
-  return <AlertStatusIcon metricLabel={metric.label} model={alert} />;
+  const mode = isConfiguredAlert(alert.state) ? 'edit' : 'create';
+  const buttonLabel = mode === 'edit' ? 'Configured' : 'Set up alert';
+  const ariaLabel = `${buttonLabel} for ${metric.label}`;
+
+  return (
+    <span className={styles.control}>
+      <SetupStatusIcon className={styles.statusIcon} metricLabel={metric.label} model={alert} />
+      <Toggletip
+        content={
+          <QuickAlertSetup
+            alertType={alertType}
+            canWrite={Boolean(alert.canWrite)}
+            check={check}
+            mode={mode}
+            onCancel={() => setOpen(false)}
+            onSaved={() => setOpen(false)}
+          />
+        }
+        maxWidth="100%"
+        onOpenChange={setOpen}
+        open={open}
+        width={800}
+      >
+        <button aria-label={ariaLabel} className={styles.actionButton} type="button">
+          <Icon name="bell" size="sm" />
+          {buttonLabel}
+        </button>
+      </Toggletip>
+    </span>
+  );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  setupButton: css({
+  control: css({
     alignItems: 'center',
-    background: 'transparent',
-    border: 0,
-    color: theme.colors.text.link,
+    color: theme.colors.text.primary,
+    display: 'inline-flex',
+    flexShrink: 0,
+    gap: theme.spacing(0.5),
+    marginLeft: 'auto',
+  }),
+  statusIcon: css({
+    display: 'inline-flex',
+  }),
+  actionButton: css({
+    alignItems: 'center',
+    background: theme.colors.secondary.main,
+    border: `1px solid ${theme.colors.border.weak}`,
+    borderRadius: theme.shape.radius.pill,
+    color: theme.colors.text.primary,
     cursor: 'pointer',
     display: 'inline-flex',
-    padding: 0,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(0.25, 1),
+    whiteSpace: 'nowrap',
   }),
-  status: css({
-    alignItems: 'center',
-    display: 'inline-flex',
+  noAlert: css({
+    color: theme.colors.text.secondary,
+    flexShrink: 0,
+    fontSize: theme.typography.bodySmall.fontSize,
+    marginLeft: 'auto',
   }),
-  error: css({ color: theme.colors.error.text }),
-  warning: css({ color: theme.colors.warning.text }),
-  neutral: css({ color: theme.colors.text.secondary }),
-  muted: css({ color: theme.colors.text.disabled }),
 });

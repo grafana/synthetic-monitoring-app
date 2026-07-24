@@ -5,6 +5,8 @@ import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 
+import { ALERT_ANNOTATION_STEP } from './alertAnnotation.constants';
+
 const FIRING_CONDITION = `{job="$job", instance="$instance", alertstate="firing"}`;
 const PENDING_CONDITION = `{job="$job", instance="$instance", alertstate="pending"}`;
 
@@ -28,7 +30,7 @@ export function useDashboardContainerAnnotations(check: Check): AnnotationQuery[
       iconColor: 'red',
       name: 'Show alerts firing',
       titleFormat: 'Alert firing',
-      step: `10s`,
+      step: ALERT_ANNOTATION_STEP,
     };
 
     const alertPendingAnnotation: AnnotationQuery = {
@@ -40,7 +42,7 @@ export function useDashboardContainerAnnotations(check: Check): AnnotationQuery[
       iconColor: 'yellow',
       name: 'Show alerts pending',
       titleFormat: 'Alert pending',
-      step: `10s`,
+      step: ALERT_ANNOTATION_STEP,
     };
 
     if (checkHasLegacyAlerts) {

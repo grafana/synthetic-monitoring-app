@@ -67,7 +67,15 @@ export function createErrorRatePanelDefinition(minStep: string): DashboardPanelD
       },
       overrides: [],
     },
-    options: {},
+    options: {
+      tooltip: { mode: TooltipDisplayMode.Multi, sort: SortOrder.None },
+      legend: {
+        showLegend: true,
+        displayMode: LegendDisplayMode.List,
+        placement: 'bottom',
+        calcs: [],
+      },
+    },
   };
 }
 

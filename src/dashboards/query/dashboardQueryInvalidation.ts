@@ -3,17 +3,26 @@ import { queryClient } from 'data/queryClient';
 import { createDashboardQueryScope } from './dashboardQueryKeys';
 import { invalidateDashboardScope } from './dashboardQueryOptions';
 
-let activeDashboardScope: ReturnType<typeof createDashboardQueryScope> | null = null;
+type DashboardQueryScope = ReturnType<typeof createDashboardQueryScope>;
 
-export function registerActiveDashboardScope(scope: ReturnType<typeof createDashboardQueryScope> | null) {
-  activeDashboardScope = scope;
+const activeDashboardScopes = new Map<symbol, DashboardQueryScope>();
+
+export function registerActiveDashboardScope(scope: DashboardQueryScope) {
+  const token = Symbol('active-dashboard-scope');
+  activeDashboardScopes.set(token, scope);
+
+  return () => {
+    activeDashboardScopes.delete(token);
+  };
 }
 
 export function getActiveDashboardScope() {
-  return activeDashboardScope;
+  return Array.from(activeDashboardScopes.values()).at(-1) ?? null;
 }
 
 export function invalidateActiveDashboardQueries() {
+  const activeDashboardScope = getActiveDashboardScope();
+
   if (!activeDashboardScope) {
     return Promise.resolve();
   }

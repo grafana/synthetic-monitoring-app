@@ -1,9 +1,11 @@
+import { type NormalReference, type NormalTierId } from 'dashboards/comparison/comparisonCoverage';
+
 export interface BaselineSample {
   at: number;
   value: number;
 }
 
-export type BaselineTierLabel = '30-day' | '14-day' | '7-day' | '72-hour' | '24-hour';
+export type BaselineTierLabel = '30-day' | '21-day' | '14-day' | '7-day' | '24-hour';
 
 export interface BaselineTier {
   durationMs: number;
@@ -24,11 +26,18 @@ export const BASELINE_MINIMUM_COVERAGE = 0.8;
 const DAY_MS = 24 * BASELINE_BUCKET_MS;
 const BASELINE_TIERS: Array<Pick<BaselineTier, 'durationMs' | 'label'>> = [
   { durationMs: 30 * DAY_MS, label: '30-day' },
+  { durationMs: 21 * DAY_MS, label: '21-day' },
   { durationMs: 14 * DAY_MS, label: '14-day' },
   { durationMs: 7 * DAY_MS, label: '7-day' },
-  { durationMs: 72 * BASELINE_BUCKET_MS, label: '72-hour' },
   { durationMs: DAY_MS, label: '24-hour' },
 ];
+const BASELINE_TIER_LABELS: Record<NormalTierId, BaselineTierLabel> = {
+  '30d': '30-day',
+  '21d': '21-day',
+  '14d': '14-day',
+  '7d': '7-day',
+  '24h': '24-hour',
+};
 
 export function median(values: number[]): number | null {
   const sorted = values.filter(Number.isFinite).sort((left, right) => left - right);
@@ -61,15 +70,18 @@ export function bucketBaselineSamples(
 
   for (const sample of samples) {
     if (
-      sample.at < rangeFrom ||
-      sample.at >= rangeTo ||
+      sample.at <= rangeFrom ||
+      sample.at > rangeTo ||
       !Number.isFinite(sample.at) ||
       !Number.isFinite(sample.value)
     ) {
       continue;
     }
 
-    const bucketAt = rangeFrom + Math.floor((sample.at - rangeFrom) / BASELINE_BUCKET_MS) * BASELINE_BUCKET_MS;
+    // Prometheus range-query samples describe the window ending at their timestamp.
+    // Keep (from, to] and assign exact endpoints to the preceding relative hour.
+    const bucketIndex = Math.ceil((sample.at - rangeFrom) / BASELINE_BUCKET_MS) - 1;
+    const bucketAt = rangeFrom + bucketIndex * BASELINE_BUCKET_MS;
     const current = buckets.get(bucketAt) ?? { total: 0, count: 0 };
     current.total += sample.value;
     current.count += 1;
@@ -120,5 +132,38 @@ export function summarizeBaseline(samples: BaselineSample[], selectedFrom: numbe
     median: centre,
     mad,
     tier,
+  };
+}
+
+export function summarizeBaselineForRange(
+  samples: BaselineSample[],
+  normal: Extract<NormalReference, { status: 'available' }>
+): BaselineSummary | null {
+  const durationMs = normal.range.to - normal.range.from;
+  const bucketedSamples = bucketBaselineSamples(samples, normal.range.from, normal.range.to);
+  const bucketCount = Math.ceil(durationMs / BASELINE_BUCKET_MS);
+  const metricCoverage = bucketCount > 0 ? bucketedSamples.length / bucketCount : 0;
+
+  if (metricCoverage < BASELINE_MINIMUM_COVERAGE) {
+    return null;
+  }
+
+  const values = bucketedSamples.map((sample) => sample.value);
+  const centre = median(values);
+  const mad = medianAbsoluteDeviation(values);
+
+  if (centre === null || mad === null) {
+    return null;
+  }
+
+  return {
+    median: centre,
+    mad,
+    tier: {
+      durationMs,
+      label: BASELINE_TIER_LABELS[normal.tierId],
+      samples: bucketedSamples,
+      coverage: normal.coverage,
+    },
   };
 }

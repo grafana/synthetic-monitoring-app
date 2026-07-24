@@ -11,7 +11,8 @@ export type {
   HeaderMetricDefinition,
   HeaderMetricHealthCapability,
 } from './CheckDashboardHeader.types';
-export { DashboardScopeControls } from './DashboardScopeControls';
+export { DashboardComparisonControls } from './DashboardComparisonControls';
+export { DashboardPanelScopeControls, DashboardTimeControls } from './DashboardScopeControls';
 export { HeaderMetric } from './HeaderMetric';
 export { LiveIncidentPrompt } from './LiveIncidentPrompt';
 export { MetricAlertControl } from './MetricAlertControl';

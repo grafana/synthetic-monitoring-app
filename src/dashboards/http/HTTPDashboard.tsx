@@ -5,6 +5,7 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DashboardAnnotationsProvider } from 'dashboards/annotations/DashboardAnnotationsProvider';
 import { useDashboardContainerAnnotations } from 'dashboards/annotations/useDashboardContainerAnnotations';
+import { useHttpExecutionOverviewExtra } from 'dashboards/http/header/httpExecutionOverview';
 import {
   ErrorLogsPanelHeaderActions,
   HttpDashboardPage,
@@ -27,12 +28,13 @@ import { TimepointExplorer } from 'scenes/components/TimepointExplorer/Timepoint
 import { ExecutionResultFilter } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-export function HTTPDashboard({ check }: { check: HTTPCheck }) {
+function HTTPDashboardBody({ check }: { check: HTTPCheck }) {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
   const { unsuccessfulOnly, toggleUnsuccessfulOnly } = useErrorLogsPanelState(true);
   const [resultFilter, setResultFilter] = useState<ExecutionResultFilter>('all');
   const annotations = useDashboardContainerAnnotations(check);
+  const overviewExtra = useHttpExecutionOverviewExtra();
 
   const detailPanels = useMemo(
     () => ({
@@ -46,50 +48,54 @@ export function HTTPDashboard({ check }: { check: HTTPCheck }) {
   );
 
   return (
+    <DashboardAnnotationsProvider check={check} definitions={annotations}>
+      <PluginPage pageNav={{ text: check.job }} layout={PageLayoutType.Custom}>
+        <HttpDashboardPage check={check}>
+          <TimepointExplorer
+            annotations={annotations}
+            check={check}
+            onResultFilterChange={setResultFilter}
+            overviewExtra={overviewExtra}
+            resultFilter={resultFilter}
+          />
+
+          <div className={styles.errorRateRow}>
+            <DashboardPanel definition={detailPanels.errorRateMap} height={500} />
+            <DashboardPanel definition={detailPanels.errorRate} height={500} />
+          </div>
+
+          <div className={styles.latencyRow}>
+            <DashboardPanel definition={detailPanels.responseLatencyByPhase} height={300} />
+            <DashboardPanel definition={detailPanels.responseLatencyByProbe} height={300} />
+          </div>
+
+          <FeatureFlag name={FeatureName.TimepointExplorer}>
+            {({ isEnabled }) =>
+              isEnabled ? null : (
+                <DashboardPanel
+                  definition={detailPanels.errorLogs}
+                  height={850}
+                  headerActions={
+                    <ErrorLogsPanelHeaderActions
+                      unsuccessfulOnly={unsuccessfulOnly}
+                      onToggle={toggleUnsuccessfulOnly}
+                    />
+                  }
+                />
+              )
+            }
+          </FeatureFlag>
+        </HttpDashboardPage>
+      </PluginPage>
+    </DashboardAnnotationsProvider>
+  );
+}
+
+export function HTTPDashboard({ check }: { check: HTTPCheck }) {
+  return (
     <CheckDashboardProvider check={check} urlFormat="canonical">
       <PanelTimeRangeFromAppTime>
-        <DashboardAnnotationsProvider check={check} definitions={annotations}>
-          <PluginPage
-            pageNav={{ text: check.job }}
-            layout={PageLayoutType.Custom}
-          >
-            <HttpDashboardPage check={check}>
-              <TimepointExplorer
-                annotations={annotations}
-                check={check}
-                onResultFilterChange={setResultFilter}
-                resultFilter={resultFilter}
-              />
-
-              <div className={styles.errorRateRow}>
-                <DashboardPanel definition={detailPanels.errorRateMap} height={500} />
-                <DashboardPanel definition={detailPanels.errorRate} height={500} />
-              </div>
-
-              <div className={styles.latencyRow}>
-                <DashboardPanel definition={detailPanels.responseLatencyByPhase} height={300} />
-                <DashboardPanel definition={detailPanels.responseLatencyByProbe} height={300} />
-              </div>
-
-              <FeatureFlag name={FeatureName.TimepointExplorer}>
-                {({ isEnabled }) =>
-                  isEnabled ? null : (
-                    <DashboardPanel
-                      definition={detailPanels.errorLogs}
-                      height={850}
-                      headerActions={
-                        <ErrorLogsPanelHeaderActions
-                          unsuccessfulOnly={unsuccessfulOnly}
-                          onToggle={toggleUnsuccessfulOnly}
-                        />
-                      }
-                    />
-                  )
-                }
-              </FeatureFlag>
-            </HttpDashboardPage>
-          </PluginPage>
-        </DashboardAnnotationsProvider>
+        <HTTPDashboardBody check={check} />
       </PanelTimeRangeFromAppTime>
     </CheckDashboardProvider>
   );

@@ -4,6 +4,7 @@ import { HTTPCheck } from 'types';
 
 import { HttpCheckHealthProvider } from './health/HttpCheckHealthProvider';
 import { formatHttpCheckDefinition } from './httpCheckDefinition';
+import { createHttpExecutionPresenceDefinition } from './httpComparisonDefinitions';
 import { getHttpHeaderMetrics } from './httpHeaderMetrics';
 import { HttpHealthNarrative } from './HttpHealthNarrative';
 import { HttpReachabilityDetails } from './HttpReachabilityDetails';
@@ -16,4 +17,7 @@ export const httpDashboardHeaderProfile: CheckDashboardHeaderProfile<HTTPCheck> 
     ),
   Narrative: HttpHealthNarrative,
   HealthProvider: HttpCheckHealthProvider,
+  Comparison: {
+    createExecutionPresenceDefinition: createHttpExecutionPresenceDefinition,
+  },
 };

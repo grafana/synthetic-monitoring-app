@@ -57,25 +57,35 @@ function isTimeParticipatingPath(pathname: string): boolean {
 }
 
 function readDashboardState(search: URLSearchParams): DashboardUrlState {
-  const merged = mergeDashboardUrlState(
-    {
-      version: 1,
-      timezone: DEFAULT_APP_TIMEZONE,
-      ...DEFAULT_APP_TIME_RANGE,
-    },
-    transformLegacySceneDashboardUrl(search)
-  );
+  const parsed = transformLegacySceneDashboardUrl(search);
+  const merged: DashboardUrlState = {
+    ...parsed,
+    from: parsed.from ?? DEFAULT_APP_TIME_RANGE.from,
+    to: parsed.to ?? DEFAULT_APP_TIME_RANGE.to,
+    timezone: parsed.timezone ?? DEFAULT_APP_TIMEZONE,
+  };
 
-  // Probe selection is owned by CheckDashboardProvider — keep AppTime time-only.
+  // Probe selection is owned by DashboardPanelScopeProvider — keep AppTime time-only.
   const { probes: _probes, ...timeState } = merged;
 
   return timeState;
 }
 
+function isSameDashboardState(current: DashboardUrlState, next: DashboardUrlState): boolean {
+  return (
+    current.version === next.version &&
+    current.from === next.from &&
+    current.to === next.to &&
+    current.timezone === next.timezone &&
+    current.refresh === next.refresh &&
+    JSON.stringify(current.comparison) === JSON.stringify(next.comparison)
+  );
+}
+
 function hasExplicitTimeState(search: URLSearchParams): boolean {
   const state = transformLegacySceneDashboardUrl(search);
 
-  return Boolean(state.from || state.to || state.refresh || state.timezone);
+  return Boolean(state.from || state.to || state.refresh || state.timezone || state.comparison);
 }
 
 export function AppTimeProvider({ children }: PropsWithChildren) {
@@ -103,10 +113,8 @@ export function AppTimeProvider({ children }: PropsWithChildren) {
     }
 
     const search = new URLSearchParams(location.search);
-
-    if (hasExplicitTimeState(search)) {
-      setState(readDashboardState(search));
-    }
+    const nextState = readDashboardState(search);
+    setState((current) => isSameDashboardState(current, nextState) ? current : nextState);
   }, [location.pathname, location.search, participating]);
 
   const commitState = useCallback(

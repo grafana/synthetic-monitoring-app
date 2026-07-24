@@ -4,6 +4,7 @@ import { useDashboardLegacyVarsOptional } from 'dashboards/runtime/DashboardLega
 
 import { Check } from 'types';
 import { useCheckDashboardOptional } from 'contexts/CheckDashboardProvider';
+import { useDashboardPanelScopeOptional } from 'contexts/DashboardPanelScopeProvider';
 import { useProbes } from 'data/useProbes';
 
 /**
@@ -12,11 +13,12 @@ import { useProbes } from 'data/useProbes';
  */
 export function useDashboardVar(name: string): string[] {
   const checkDashboard = useCheckDashboardOptional();
+  const panelScope = useDashboardPanelScopeOptional();
   const legacyVars = useDashboardLegacyVarsOptional();
 
   if (checkDashboard) {
     if (name === 'probe') {
-      return checkDashboard.probes.length > 0 ? checkDashboard.probes : ['.*'];
+      return panelScope?.probes.length ? panelScope.probes : ['.*'];
     }
 
     if (name === 'job') {

@@ -1,4 +1,31 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+export function useMeasuredElementHeight<T extends HTMLElement>() {
+  const elementRef = useRef<T>(null);
+  const [height, setHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    const element = elementRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const measure = () => setHeight(element.getBoundingClientRect().height);
+    measure();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return { elementRef, height };
+}
 
 /**
  * Detects when a following `position: sticky` sibling has engaged.

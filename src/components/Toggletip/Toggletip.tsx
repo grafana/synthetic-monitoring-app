@@ -32,6 +32,10 @@ interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, '
   onOpenChange?: (open: boolean) => void;
   /** @default 'absolute' — use 'fixed' only when the trigger is NOT inside a containerType ancestor */
   strategy?: 'absolute' | 'fixed';
+  /** Preferred width. Pair with `maxWidth: '100%'` to stay viewport-safe without growing with content. */
+  width?: number | string;
+  /** @default 400 */
+  maxWidth?: number | string;
 }
 
 /**
@@ -48,11 +52,13 @@ export const Toggletip = ({
   children,
   content,
   contentClassName,
+  maxWidth = 400,
   onOpenChange,
   open,
   strategy = 'absolute',
+  width,
 }: ToggletipProps) => {
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2((theme) => getStyles(theme, maxWidth, width));
   const theme = useTheme2();
   const arrowRef = useRef(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -123,18 +129,20 @@ export const Toggletip = ({
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
+const getStyles = (theme: GrafanaTheme2, maxWidth: number | string, width?: number | string) => ({
   container: css({
     backgroundColor: theme.colors.background.primary,
     border: `1px solid ${theme.colors.border.weak}`,
     borderRadius: theme.shape.radius.default,
     boxShadow: theme.shadows.z2,
+    boxSizing: 'border-box',
     color: theme.components.tooltip.text,
     fontSize: theme.typography.bodySmall.fontSize,
-    padding: theme.spacing(2),
-    zIndex: theme.zIndex.tooltip,
-    maxWidth: '400px',
+    maxWidth,
     overflowWrap: 'break-word',
+    padding: theme.spacing(2),
+    width,
+    zIndex: theme.zIndex.tooltip,
   }),
   close: css({
     color: theme.colors.text.secondary,

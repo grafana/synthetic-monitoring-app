@@ -13,8 +13,18 @@ export type AppTimeRangeMode = 'live' | 'historical';
 
 export type TimeRangeShiftDirection = 'backward' | 'forward';
 
+/**
+ * Live ranges are anchored at "now" (or a relative end in the future, e.g. now+20m).
+ * Those keep auto-refresh; everything else is a fixed historical window.
+ */
 export function getAppTimeRangeMode(raw: { from: string; to: string }): AppTimeRangeMode {
-  return raw.to.trim().toLowerCase() === 'now' ? 'live' : 'historical';
+  const to = raw.to.trim().toLowerCase();
+
+  if (to === 'now' || to.startsWith('now+')) {
+    return 'live';
+  }
+
+  return 'historical';
 }
 
 export function parseTimeIntervalMs(value: string): number | undefined {

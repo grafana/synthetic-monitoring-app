@@ -1,0 +1,22 @@
+import { createHttpExecutionPresenceDefinition } from './httpComparisonDefinitions';
+
+describe('HTTP comparison query definitions', () => {
+  it('queries hourly completed-execution counts across the requested range', () => {
+    expect(createHttpExecutionPresenceDefinition()).toEqual({
+      id: 'http-comparison-execution-presence',
+      pluginId: 'timeseries',
+      fieldConfig: { defaults: {}, overrides: [] },
+      options: {},
+      maxDataPoints: 8760,
+      targets: [
+        {
+          refId: 'executions',
+          expr:
+            'sum(increase(probe_all_success_count{probe=~"$probe", instance="$instance", job="$job"}[1h]))',
+          interval: '1h',
+          range: true,
+        },
+      ],
+    });
+  });
+});

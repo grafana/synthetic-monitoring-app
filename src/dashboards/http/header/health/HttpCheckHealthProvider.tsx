@@ -1,15 +1,17 @@
-import React, { PropsWithChildren, useMemo } from 'react';
-import { FieldType, LoadingState, PanelData } from '@grafana/data';
+import React, { PropsWithChildren } from 'react';
+import { PanelData } from '@grafana/data';
+import { ALERT_EPISODE_END_TOLERANCE_MS } from 'dashboards/annotations/alertAnnotation.constants';
 import {
   getAlertEpisodeStateAt,
   NamedAlertEpisode,
 } from 'dashboards/annotations/annotationEvents';
 import { useDashboardAlertEpisodes } from 'dashboards/annotations/DashboardAnnotationsProvider';
+import { type NormalReference } from 'dashboards/comparison/comparisonCoverage';
 import { panelDataToTrendSamples } from 'dashboards/components/CheckDashboardHeader/headerMetricSparkline.utils';
 import {
   BaselineSample,
   BaselineSummary,
-  summarizeBaseline,
+  summarizeBaselineForRange,
 } from 'dashboards/components/CheckDashboardHeader/health/baseline';
 import {
   resolveCheckHealth,
@@ -23,6 +25,7 @@ import {
   DashboardPanelDefinition,
   useDashboardPanelQuery,
 } from 'dashboards/hooks/useDashboardPanelQuery';
+import { hasPanelDataQueryError } from 'dashboards/query/panelDataQueryState';
 
 import {
   CheckHealthProviderProps,
@@ -43,15 +46,11 @@ import {
   type AppTimeRangeMode,
   parseTimeIntervalMs,
 } from 'contexts/AppTimeProvider.utils';
+import { useDashboardComparison } from 'contexts/DashboardComparisonProvider';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { getCheckRuntimeAlertState, useChecksAlertStates } from 'data/useCheckAlertStates';
 import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 
-import {
-  createLatencyBaselineDefinition,
-  createReachabilityBaselineDefinition,
-  createUptimeBaselineDefinition,
-} from './httpBaselineDefinitions';
 import {
   compareLatencyToBaseline,
   compareRatioToBaseline,
@@ -65,7 +64,6 @@ import {
   interpretHttpMetricTrend,
 } from './httpMetricTrend';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 type HttpMetricId = 'uptime' | 'reachability' | 'average-latency' | 'ssl-expiry';
 
 export interface HealthPanelQueryResult {
@@ -102,6 +100,7 @@ interface BuildHttpCheckHealthModelArgs {
   canWriteAlerts: boolean;
   selectedRange: HealthRange;
   rangeMode: AppTimeRangeMode;
+  healthReference: NormalReference;
 }
 
 type MetricPolicy = {
@@ -110,45 +109,13 @@ type MetricPolicy = {
   selected: HealthPanelQueryResult;
   evaluateGuardrail: (value: number | null) => HealthDecision;
   baseline?: HealthPanelQueryResult;
+  selectBaselineSamples?: (data: PanelData) => BaselineSample[];
   compareBaseline?: (value: number, baseline: BaselineSummary) => HealthDecision;
   alertType?: CheckAlertType;
   applicable: boolean;
   selectValue: (data: PanelData) => number | null;
   series: HealthPanelQueryResult;
 };
-
-function valuesToArray(values: ArrayLike<unknown> | { toArray: () => unknown[] }): unknown[] {
-  return typeof (values as { toArray?: () => unknown[] }).toArray === 'function'
-    ? (values as { toArray: () => unknown[] }).toArray()
-    : Array.from(values as ArrayLike<unknown>);
-}
-
-export function panelDataToBaselineSamples(data: PanelData): BaselineSample[] {
-  return data.series.flatMap((frame) => {
-    const timeField = frame.fields.find(
-      (field) => field.type === FieldType.time || field.name.toLowerCase() === 'time'
-    );
-    const valueField = frame.fields.find((field) => field.type === FieldType.number);
-
-    if (!timeField || !valueField) {
-      return [];
-    }
-
-    const times = valuesToArray(timeField.values);
-    const values = valuesToArray(valueField.values);
-
-    return times.flatMap((at, index) => {
-      const value = values[index];
-
-      return typeof at === 'number' &&
-        Number.isFinite(at) &&
-        typeof value === 'number' &&
-        Number.isFinite(value)
-        ? [{ at, value }]
-        : [];
-    });
-  });
-}
 
 function metricById(
   metrics: Array<HeaderMetricDefinition<HTTPCheck>>,
@@ -237,11 +204,26 @@ function createGuardrailResult(policies: MetricPolicy[], range: HealthRange): He
 
 function createBaselineResult(
   policies: MetricPolicy[],
-  range: HealthRange
+  range: HealthRange,
+  healthReference: NormalReference
 ): HealthEvidenceProviderResult & {
   hasInsufficientHistory: boolean;
   baselinesByMetric: Partial<Record<HttpMetricId, BaselineSummary>>;
 } {
+  if (healthReference.status !== 'available') {
+    return {
+      sourceId: 'http-baseline',
+      isLoading: healthReference.status === 'checking',
+      evidence: [],
+      error:
+        healthReference.status === 'query-error'
+          ? new Error('Normal reference query failed')
+          : undefined,
+      hasInsufficientHistory: healthReference.status === 'not-established',
+      baselinesByMetric: {},
+    };
+  }
+
   let hasInsufficientHistory = false;
   let firstError: Error | undefined;
   const baselinesByMetric: Partial<Record<HttpMetricId, BaselineSummary>> = {};
@@ -250,7 +232,7 @@ function createBaselineResult(
       return [];
     }
 
-    if (policy.baseline.panelData.state === LoadingState.Error) {
+    if (hasPanelDataQueryError(policy.baseline.panelData)) {
       const error = new Error(policy.baseline.panelData.errors?.[0]?.message ?? 'Baseline query failed');
       firstError ??= error;
 
@@ -274,7 +256,10 @@ function createBaselineResult(
       return [];
     }
 
-    const baseline = summarizeBaseline(panelDataToBaselineSamples(policy.baseline.panelData), range.from);
+    const baseline = summarizeBaselineForRange(
+      policy.selectBaselineSamples?.(policy.baseline.panelData) ?? [],
+      healthReference
+    );
 
     if (!baseline) {
       hasInsufficientHistory = true;
@@ -324,12 +309,14 @@ export function resolveMetricAlertModel({
   configured,
   isFiring,
   hasHistoricalEpisode,
+  fireCount = 0,
   canWrite,
 }: {
   alertType: CheckAlertType;
   configured?: CheckAlertPublished;
   isFiring: boolean;
   hasHistoricalEpisode: boolean;
+  fireCount?: number;
   canWrite: boolean;
 }): MetricAlertModel {
   if (configured?.error) {
@@ -341,11 +328,11 @@ export function resolveMetricAlertModel({
   }
 
   if (isFiring) {
-    return { state: 'firing', alertType, canWrite };
+    return { state: 'firing', alertType, fireCount: Math.max(fireCount, 1), canWrite };
   }
 
   if (hasHistoricalEpisode) {
-    return { state: 'historical', alertType, canWrite };
+    return { state: 'historical', alertType, fireCount, canWrite };
   }
 
   if (configured) {
@@ -373,7 +360,6 @@ function createAlertResult({
   canWriteAlerts,
   range,
   rangeMode,
-  checkFrequency,
 }: {
   policies: MetricPolicy[];
   alerts: CheckAlertPublished[];
@@ -385,7 +371,6 @@ function createAlertResult({
   canWriteAlerts: boolean;
   range: HealthRange;
   rangeMode: AppTimeRangeMode;
-  checkFrequency: number;
 }): HealthEvidenceProviderResult & {
   alertsByMetric: Record<string, MetricAlertModel>;
   alertResolutionByMetric: Partial<Record<HttpMetricId, MetricAlertResolution>>;
@@ -422,31 +407,29 @@ function createAlertResult({
     }
 
     const configured = alerts.find((alert) => alert.name === alertType);
-    const historical = firingEpisodes.some(
+    const overlappingFiringEpisodes = firingEpisodes.filter(
       (episode) =>
         episode.alertName === alertType &&
         rangesOverlap(range, { from: episode.from, to: episode.to })
     );
+    const fireCount = overlappingFiringEpisodes.length;
+    const historical = fireCount > 0;
     const pending = pendingEpisodes.some(
       (episode) =>
         episode.alertName === alertType &&
         rangesOverlap(range, { from: episode.from, to: episode.to })
     );
     const runtimeFiring = runtimeAlertNames.has(alertType);
-    const episodeToleranceMs = Math.max(checkFrequency * 2, 60_000);
     const episodeStateAtEnd = getAlertEpisodeStateAt(
       firingEpisodes,
       alertType,
       range.to,
-      episodeToleranceMs
+      ALERT_EPISODE_END_TOLERANCE_MS
     );
     const atEvaluation =
       rangeMode === 'live' ? runtimeFiring : episodeStateAtEnd === 'firing';
-    const resolvedEpisodes = firingEpisodes.filter(
-      (episode) =>
-        episode.alertName === alertType &&
-        rangesOverlap(range, { from: episode.from, to: episode.to }) &&
-        episode.to + episodeToleranceMs < range.to
+    const resolvedEpisodes = overlappingFiringEpisodes.filter(
+      (episode) => episode.to + ALERT_EPISODE_END_TOLERANCE_MS < range.to
     );
     const resolvedAt =
       resolvedEpisodes.length > 0
@@ -470,6 +453,7 @@ function createAlertResult({
           configured,
           isFiring: rangeMode === 'live' && runtimeFiring,
           hasHistoricalEpisode: historical,
+          fireCount,
           canWrite: canWriteAlerts,
         });
 
@@ -771,6 +755,7 @@ export function buildHttpCheckHealthModel({
   canWriteAlerts,
   selectedRange,
   rangeMode,
+  healthReference,
 }: BuildHttpCheckHealthModelArgs) {
   const definitions = {
     uptime: metricById(metrics, 'uptime'),
@@ -787,6 +772,7 @@ export function buildHttpCheckHealthModel({
       series: series.uptime,
       evaluateGuardrail: evaluateRatioGuardrail,
       baseline: baseline.uptime,
+      selectBaselineSamples: definitions.uptime.comparison?.normalBaseline?.selectSamples,
       compareBaseline: compareRatioToBaseline,
       applicable: true,
       selectValue: definitions.uptime.selectValue,
@@ -798,6 +784,7 @@ export function buildHttpCheckHealthModel({
       series: series.reachability,
       evaluateGuardrail: evaluateRatioGuardrail,
       baseline: baseline.reachability,
+      selectBaselineSamples: definitions.reachability.comparison?.normalBaseline?.selectSamples,
       compareBaseline: compareRatioToBaseline,
       alertType: definitions.reachability.health?.alertTypes?.[0],
       applicable: true,
@@ -810,6 +797,7 @@ export function buildHttpCheckHealthModel({
       series: series.latency,
       evaluateGuardrail: evaluateLatencyGuardrail,
       baseline: baseline.latency,
+      selectBaselineSamples: definitions.latency.comparison?.normalBaseline?.selectSamples,
       compareBaseline: compareLatencyToBaseline,
       alertType: definitions.latency.health?.alertTypes?.[0],
       applicable: true,
@@ -827,7 +815,7 @@ export function buildHttpCheckHealthModel({
     },
   ];
   const guardrail = createGuardrailResult(policies, selectedRange);
-  const learnedBaseline = createBaselineResult(policies, selectedRange);
+  const learnedBaseline = createBaselineResult(policies, selectedRange, healthReference);
   const alertEvidence = createAlertResult({
     policies,
     alerts,
@@ -839,7 +827,6 @@ export function buildHttpCheckHealthModel({
     canWriteAlerts,
     range: selectedRange,
     rangeMode,
-    checkFrequency: check.frequency,
   });
   const endpoint = createEndpointResult({
     policies,
@@ -883,9 +870,28 @@ export function buildHttpCheckHealthModel({
   });
 }
 
-function useHealthPanel(definition: DashboardPanelDefinition, range?: HealthRange): HealthPanelQueryResult {
-  const query = useDashboardPanelQuery(definition, { range });
+function useHealthPanel(
+  definition: DashboardPanelDefinition,
+  range?: HealthRange,
+  enabled?: boolean
+): HealthPanelQueryResult {
+  const query = useDashboardPanelQuery(
+    definition,
+    range || enabled !== undefined ? { range, enabled } : undefined
+  );
   return { panelData: query.panelData, isLoading: query.isLoading };
+}
+
+function requireNormalBaselineDefinition(
+  metric: HeaderMetricDefinition<HTTPCheck>
+): DashboardPanelDefinition {
+  const definition = metric.comparison?.normalBaseline?.definition;
+
+  if (!definition) {
+    throw new Error(`HTTP header metric "${metric.id}" has no Normal baseline definition`);
+  }
+
+  return definition;
 }
 
 export function HttpCheckHealthProvider({
@@ -894,20 +900,10 @@ export function HttpCheckHealthProvider({
   children,
 }: PropsWithChildren<CheckHealthProviderProps<HTTPCheck>>) {
   const { absolute, rangeMode } = useAppTime();
+  const { healthReference } = useDashboardComparison();
   const selectedRange = absolute;
-  const baselineRange = useMemo(
-    () => ({ from: selectedRange.from - 30 * DAY_MS, to: selectedRange.from }),
-    [selectedRange.from]
-  );
-  const baselineDefinitions = useMemo(
-    () => ({
-      uptime: createUptimeBaselineDefinition(check),
-      reachability: createReachabilityBaselineDefinition(),
-      latency: createLatencyBaselineDefinition(),
-    }),
-    [check]
-  );
-
+  const baselineRange = healthReference.status === 'available' ? healthReference.range : undefined;
+  const baselineEnabled = healthReference.status === 'available';
   const definitions = {
     uptime: metricById(metrics, 'uptime'),
     reachability: metricById(metrics, 'reachability'),
@@ -930,9 +926,21 @@ export function HttpCheckHealthProvider({
   const sslSeries = useHealthPanel(
     definitions.ssl.sparkline?.definition ?? definitions.ssl.definition
   );
-  const uptimeBaseline = useHealthPanel(baselineDefinitions.uptime, baselineRange);
-  const reachabilityBaseline = useHealthPanel(baselineDefinitions.reachability, baselineRange);
-  const latencyBaseline = useHealthPanel(baselineDefinitions.latency, baselineRange);
+  const uptimeBaseline = useHealthPanel(
+    requireNormalBaselineDefinition(definitions.uptime),
+    baselineRange,
+    baselineEnabled
+  );
+  const reachabilityBaseline = useHealthPanel(
+    requireNormalBaselineDefinition(definitions.reachability),
+    baselineRange,
+    baselineEnabled
+  );
+  const latencyBaseline = useHealthPanel(
+    requireNormalBaselineDefinition(definitions.latency),
+    baselineRange,
+    baselineEnabled
+  );
   const access = useAlertAccessControl();
   const alertsQuery = useListAlertsForCheck(access.canReadAlerts ? check.id : undefined);
   const runtimeAlertsQuery = useChecksAlertStates(access.canReadAlerts ? [check] : []);
@@ -986,6 +994,7 @@ export function HttpCheckHealthProvider({
     canWriteAlerts: access.canWriteAlerts,
     selectedRange,
     rangeMode,
+    healthReference,
   });
 
   return <CheckHealthProvider value={model}>{children}</CheckHealthProvider>;

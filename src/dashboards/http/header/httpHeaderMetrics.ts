@@ -1,7 +1,10 @@
 import { HeaderMetricDefinition } from 'dashboards/components/CheckDashboardHeader';
-import { selectSparklineSeries } from 'dashboards/components/CheckDashboardHeader/headerMetricSparkline.utils';
 import {
-  formatDateFromNow,
+  panelDataToTrendSamples,
+  selectRatioSparklineSeries,
+  selectSparklineSeries,
+} from 'dashboards/components/CheckDashboardHeader/headerMetricSparkline.utils';
+import {
   formatPercent,
   formatSeconds,
   selectNumericValue,
@@ -16,23 +19,17 @@ import {
 import { CheckAlertType, HTTPCheck } from 'types';
 import { formatDuration } from 'utils';
 
-import { createExecutionCountsDefinition } from './httpHeaderQueryDefinitions';
-import { selectExecutionCounts } from './httpHeaderSelectors';
+import {
+  createLatencyBaselineDefinition,
+  createReachabilityBaselineDefinition,
+  createUptimeBaselineDefinition,
+} from './health/httpBaselineDefinitions';
 import {
   createAverageLatencySparklineDefinition,
   createReachabilitySparklineDefinition,
   createUptimeSparklineDefinition,
 } from './httpHeaderSparklineDefinitions';
-
-function formatExecutionCounts(data: Parameters<typeof selectExecutionCounts>[0]) {
-  const { total, successful, failed } = selectExecutionCounts(data);
-
-  if (total === null || successful === null || failed === null) {
-    return undefined;
-  }
-
-  return `${Math.round(successful).toLocaleString()} of ${Math.round(total).toLocaleString()} succeeded · ${Math.round(failed).toLocaleString()} failed`;
-}
+import { compareLatency, comparePercentagePoints, compareSslCertificate } from './httpMetricComparison';
 
 function formatSslRemaining(value: number | null) {
   if (value === null) {
@@ -47,6 +44,9 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
   const reachabilityDefinition = createReachabilityPanelDefinition(check);
   const latencyDefinition = createAverageLatencyPanelDefinition();
   const sslDefinition = createSslExpiryPanelDefinition();
+  const uptimeBaselineDefinition = createUptimeBaselineDefinition(check);
+  const reachabilityBaselineDefinition = createReachabilityBaselineDefinition();
+  const latencyBaselineDefinition = createLatencyBaselineDefinition();
 
   return [
     {
@@ -56,10 +56,18 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       definition: uptimeDefinition,
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatPercent,
-      getSecondaryText: () => 'From at least one location',
+      comparison: {
+        supportsNormalBand: true,
+        normalBaseline: {
+          definition: uptimeBaselineDefinition,
+          selectSamples: panelDataToTrendSamples,
+        },
+        normalBandDomain: { min: 0, max: 1 },
+        compare: comparePercentagePoints,
+      },
       sparkline: {
         definition: createUptimeSparklineDefinition(check),
-        selectSeries: selectSparklineSeries,
+        selectSeries: selectRatioSparklineSeries,
       },
     },
     {
@@ -69,13 +77,18 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       definition: reachabilityDefinition,
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatPercent,
-      secondary: {
-        definition: createExecutionCountsDefinition(),
-        selectText: formatExecutionCounts,
+      comparison: {
+        supportsNormalBand: true,
+        normalBaseline: {
+          definition: reachabilityBaselineDefinition,
+          selectSamples: panelDataToTrendSamples,
+        },
+        normalBandDomain: { min: 0, max: 1 },
+        compare: comparePercentagePoints,
       },
       sparkline: {
         definition: createReachabilitySparklineDefinition(check),
-        selectSeries: selectSparklineSeries,
+        selectSeries: selectRatioSparklineSeries,
       },
       health: {
         alertTypes: [CheckAlertType.ProbeFailedExecutionsTooHigh],
@@ -88,7 +101,15 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       definition: latencyDefinition,
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatSeconds,
-      getSecondaryText: () => 'Across selected probes',
+      comparison: {
+        supportsNormalBand: true,
+        normalBaseline: {
+          definition: latencyBaselineDefinition,
+          selectSamples: panelDataToTrendSamples,
+        },
+        normalBandDomain: { min: 0 },
+        compare: compareLatency,
+      },
       sparkline: {
         definition: createAverageLatencySparklineDefinition(check),
         selectSeries: selectSparklineSeries,
@@ -104,9 +125,9 @@ export function getHttpHeaderMetrics(check: HTTPCheck): Array<HeaderMetricDefini
       definition: sslDefinition,
       selectValue: (data) => selectNumericValue(data),
       formatValue: formatSslRemaining,
-      getSecondaryText: (value) => {
-        const date = formatDateFromNow(value);
-        return date ? `Expires ${date}` : undefined;
+      comparison: {
+        supportsNormalBand: false,
+        compare: compareSslCertificate,
       },
       sparkline: {
         definition: sslDefinition,

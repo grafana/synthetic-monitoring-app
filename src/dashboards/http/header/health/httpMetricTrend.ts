@@ -1,3 +1,4 @@
+import { formatDateFromNow } from 'dashboards/components/CheckDashboardHeader/headerMetricValue';
 import type { BaselineSummary } from 'dashboards/components/CheckDashboardHeader/health/baseline';
 
 import type {
@@ -60,6 +61,12 @@ function directionalDescription(metricId: HttpTrendMetricId, shape: MetricTrendS
   }
 }
 
+function withSslExpiryDate(label: string, rangeValue: number | null | undefined): string {
+  const date = formatDateFromNow(rangeValue ?? null);
+
+  return date ? `${label} · expires ${date}` : label;
+}
+
 function interpretSslTrend(input: HttpTrendInterpretationInput): string {
   if (input.shape === 'rising') {
     return 'Renewed during this range';
@@ -69,15 +76,23 @@ function interpretSslTrend(input: HttpTrendInterpretationInput): string {
     return 'Certificate changed during this range';
   }
 
+  const remaining = input.rangeValue;
+
+  if (typeof remaining === 'number' && remaining < 0) {
+    const date = formatDateFromNow(remaining);
+
+    return date ? `Expired on ${date}` : 'Expired';
+  }
+
   if (input.evaluationState === 'unhealthy') {
-    return 'Renewal overdue';
+    return withSslExpiryDate('Renewal overdue', remaining);
   }
 
   if (input.evaluationState === 'degraded') {
-    return 'Approaching expiry threshold';
+    return withSslExpiryDate('Approaching expiry threshold', remaining);
   }
 
-  return 'On track for renewal';
+  return withSslExpiryDate('On track for renewal', remaining);
 }
 
 export function interpretHttpMetricTrend(input: HttpTrendInterpretationInput): MetricTrendModel {

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useDashboardAnnotationFrames } from 'dashboards/annotations/DashboardAnnotationsProvider';
+import { toTimeseriesAnnotationFrames } from 'dashboards/annotations/timeseriesAnnotationFrames';
 import { PanelRendererShell } from 'dashboards/components/PanelRendererShell';
 import { DashboardPanelDefinition, useDashboardPanelQuery } from 'dashboards/hooks/useDashboardPanelQuery';
 
@@ -15,8 +16,9 @@ export function DashboardPanel({ definition, height, headerActions }: DashboardP
   const data = useMemo(
     () => {
       const series = panelData.series ?? [];
+      const annotations = toTimeseriesAnnotationFrames(annotationFrames);
 
-      if (annotationFrames.length === 0) {
+      if (annotations.length === 0) {
         return {
           ...panelData,
           series,
@@ -26,7 +28,7 @@ export function DashboardPanel({ definition, height, headerActions }: DashboardP
       return {
         ...panelData,
         series,
-        annotations: annotationFrames.filter((frame) => Array.isArray(frame.fields) && frame.fields.length > 0),
+        annotations,
       };
     },
     [annotationFrames, panelData]

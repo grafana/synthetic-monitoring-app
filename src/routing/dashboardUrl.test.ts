@@ -1,3 +1,5 @@
+import { type ComparisonReferenceSpec } from 'dashboards/comparison/comparisonReference.types';
+
 import {
   mergeDashboardUrlState,
   normalizeDashboardUrl,
@@ -27,6 +29,35 @@ describe('dashboardUrl', () => {
     const parsed = parseDashboardUrl(serialized);
 
     expect(parsed).toEqual({ ok: true, state });
+  });
+
+  it.each<ComparisonReferenceSpec>([
+    { kind: 'normal' },
+    { kind: 'previous' },
+    { kind: 'shifted', presetId: 'future-preset-id' },
+    {
+      kind: 'custom',
+      from: '2026-06-01T08:00:00.000Z',
+      to: '2026-06-01T11:00:00.000Z',
+      matchPrimaryDuration: false,
+    },
+  ])('round-trips canonical comparison state: %o', (comparison) => {
+    const serialized = serializeDashboardUrl({
+      version: 1,
+      from: 'now-3h',
+      to: 'now',
+      comparison,
+    });
+
+    expect(parseDashboardUrl(serialized)).toEqual({
+      ok: true,
+      state: {
+        version: 1,
+        from: 'now-3h',
+        to: 'now',
+        comparison,
+      },
+    });
   });
 
   it('preserves unrelated query parameters', () => {
@@ -182,6 +213,107 @@ describe('dashboardUrl', () => {
 
     expect(serialized.get(DASHBOARD_URL_KEYS.from)).toBe('now-6h');
     expect(serialized.getAll(DASHBOARD_URL_KEYS.probe)).toEqual(['frankfurt', 'ohio']);
+  });
+
+  it('preserves existing comparison params when serializing a time-only state', () => {
+    const existing = new URLSearchParams('sm-v=1&sm-from=now-3h&sm-compare=shifted&sm-compare-preset=future-preset-id');
+    const serialized = serializeDashboardUrl(
+      {
+        version: 1,
+        from: 'now-6h',
+        to: 'now',
+        comparison: undefined,
+      },
+      existing
+    );
+
+    expect(serialized.get(DASHBOARD_URL_KEYS.comparison)).toBe('shifted');
+    expect(serialized.get(DASHBOARD_URL_KEYS.comparisonPreset)).toBe('future-preset-id');
+  });
+
+  it('clears all comparison params when comparison is null', () => {
+    const existing = new URLSearchParams(
+      'sm-v=1&sm-compare=custom&sm-compare-from=2026-06-01T08%3A00%3A00.000Z&sm-compare-to=2026-06-01T11%3A00%3A00.000Z&sm-compare-match-duration=0'
+    );
+    const serialized = serializeDashboardUrl({ version: 1, comparison: null }, existing);
+
+    expect(serialized.get(DASHBOARD_URL_KEYS.comparison)).toBeNull();
+    expect(serialized.get(DASHBOARD_URL_KEYS.comparisonPreset)).toBeNull();
+    expect(serialized.get(DASHBOARD_URL_KEYS.comparisonFrom)).toBeNull();
+    expect(serialized.get(DASHBOARD_URL_KEYS.comparisonTo)).toBeNull();
+    expect(serialized.get(DASHBOARD_URL_KEYS.comparisonMatchDuration)).toBeNull();
+  });
+
+  it('keeps unknown shifted preset IDs unchanged', () => {
+    const serialized = serializeDashboardUrl({
+      version: 1,
+      comparison: { kind: 'shifted', presetId: 'future-preset-id' },
+    });
+
+    expect(serialized.get(DASHBOARD_URL_KEYS.comparisonPreset)).toBe('future-preset-id');
+  });
+
+  it('preserves missing custom comparison boundaries for later validation', () => {
+    const parsed = parseDashboardUrl(new URLSearchParams('sm-compare=custom'));
+
+    expect(parsed).toEqual({
+      ok: true,
+      state: {
+        version: 1,
+        comparison: {
+          kind: 'custom',
+          from: '',
+          to: '',
+          matchPrimaryDuration: true,
+        },
+      },
+    });
+  });
+
+  it('migrates comparison state between URL formats when preserving undefined comparison state', () => {
+    const canonical = serializeDashboardUrl(
+      { version: 1, comparison: undefined },
+      new URLSearchParams('compare=shifted&compare.preset=future-preset-id')
+    );
+    const legacy = serializeLegacyDashboardUrl(
+      { version: 1, comparison: undefined },
+      new URLSearchParams('sm-compare=shifted&sm-compare-preset=future-preset-id')
+    );
+
+    expect(canonical.get(DASHBOARD_URL_KEYS.comparison)).toBe('shifted');
+    expect(canonical.get(DASHBOARD_URL_KEYS.comparisonPreset)).toBe('future-preset-id');
+    expect(canonical.get(LEGACY_SCENE_DASHBOARD_KEYS.comparison)).toBeNull();
+    expect(legacy.get(LEGACY_SCENE_DASHBOARD_KEYS.comparison)).toBe('shifted');
+    expect(legacy.get(LEGACY_SCENE_DASHBOARD_KEYS.comparisonPreset)).toBe('future-preset-id');
+    expect(legacy.get(DASHBOARD_URL_KEYS.comparison)).toBeNull();
+  });
+
+  it('clears comparison state from both URL formats', () => {
+    const existing = new URLSearchParams(
+      'sm-compare=previous&sm-compare-preset=canonical&compare=shifted&compare.preset=legacy'
+    );
+    const canonical = serializeDashboardUrl({ version: 1, comparison: null }, existing);
+    const legacy = serializeLegacyDashboardUrl({ version: 1, comparison: null }, existing);
+
+    for (const params of [canonical, legacy]) {
+      expect(params.get(DASHBOARD_URL_KEYS.comparison)).toBeNull();
+      expect(params.get(DASHBOARD_URL_KEYS.comparisonPreset)).toBeNull();
+      expect(params.get(LEGACY_SCENE_DASHBOARD_KEYS.comparison)).toBeNull();
+      expect(params.get(LEGACY_SCENE_DASHBOARD_KEYS.comparisonPreset)).toBeNull();
+    }
+  });
+
+  it('replaces comparison state in the target URL format only', () => {
+    const existing = new URLSearchParams(
+      'sm-compare=previous&sm-compare-preset=canonical&compare=shifted&compare.preset=legacy'
+    );
+    const canonical = serializeDashboardUrl({ version: 1, comparison: { kind: 'normal' } }, existing);
+    const legacy = serializeLegacyDashboardUrl({ version: 1, comparison: { kind: 'normal' } }, existing);
+
+    expect(canonical.get(DASHBOARD_URL_KEYS.comparison)).toBe('normal');
+    expect(canonical.get(LEGACY_SCENE_DASHBOARD_KEYS.comparison)).toBeNull();
+    expect(legacy.get(LEGACY_SCENE_DASHBOARD_KEYS.comparison)).toBe('normal');
+    expect(legacy.get(DASHBOARD_URL_KEYS.comparison)).toBeNull();
   });
 
   it('clears probe params when probes is an empty array', () => {
