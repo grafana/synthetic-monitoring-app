@@ -158,6 +158,29 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
     ],
   },
   {
+    id: 'sm-reliability-inbox',
+    route: AppRoutes.ReliabilityInbox,
+    urlPattern: `${root}/reliability-inbox`,
+    createContextItems: () => [
+      structured('Synthetic Monitoring reliability opportunities', {
+        name: 'Reliability Inbox',
+        pageType: 'sm-reliability-inbox',
+        capabilities: ['review-coverage-evidence', 'configure-recommended-checks', 'complete-missing-setup'],
+        help: 'Shows evidence-backed potential Synthetic Monitoring coverage gaps derived from observed request activity. Help with: interpreting observed demand and limitations, reviewing a suggested check, asking only for configuration that cannot be inferred safely, and setting up the check after the user explicitly confirms the final configuration.',
+      }),
+    ],
+    createQuestions: () => [
+      question(
+        'Review a coverage opportunity',
+        'Help me review the evidence for this coverage opportunity and decide whether the suggested check is appropriate.'
+      ),
+      question(
+        'Complete a suggested check',
+        'Help me complete the suggested Synthetic Monitoring check. Preserve evidence-backed settings, ask me for missing values, and wait for my confirmation before creating it.'
+      ),
+    ],
+  },
+  {
     id: 'sm-check-list',
     route: AppRoutes.Checks,
     urlPattern: `${root}/checks`,
