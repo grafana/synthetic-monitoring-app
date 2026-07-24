@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAssistant } from '@grafana/assistant';
-import { render as renderWithoutApp, screen, waitFor } from '@testing-library/react';
+import { render as renderWithoutApp, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   trackInboxExposure,
@@ -106,17 +106,26 @@ describe('ReliabilityInboxPage', () => {
     expect(await screen.findByRole('heading', { name: 'Add an HTTP check for mcp.goagain.dev' })).toBeInTheDocument();
     expect(screen.getByText('Recommended next step')).toBeInTheDocument();
     expect(screen.getByText('Highest priority')).toBeInTheDocument();
-    expect(screen.getByText('High value · High confidence')).toBeInTheDocument();
-    expect(
-      screen.getByText('No exact check match found in the configuration available to this experiment')
-    ).toBeInTheDocument();
-    expect(screen.getByText('Other direct or indirect coverage may still exist.')).toBeInTheDocument();
 
-    const coverageDisclosure = screen.getByText('How coverage was checked').closest('details');
+    const queueSignals = screen.getByLabelText('Decision signals for mcp.goagain.dev');
+    expect(within(queueSignals).getByText('High value')).toBeInTheDocument();
+    expect(within(queueSignals).getByText('High confidence')).toBeInTheDocument();
+
+    const recommendationSignals = screen.getByLabelText('Recommendation signals');
+    expect(within(recommendationSignals).getByText('High value')).toBeInTheDocument();
+    expect(within(recommendationSignals).getByText('High confidence')).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        'Synthetic Monitoring does not appear to monitor this traffic yet, so we recommend adding this check.'
+      )
+    ).toBeInTheDocument();
+
+    const coverageDisclosure = screen.getByText('How we checked').closest('details');
     expect(coverageDisclosure).not.toHaveAttribute('open');
-    await user.click(screen.getByText('How coverage was checked'));
+    await user.click(screen.getByText('How we checked'));
     expect(coverageDisclosure).toHaveAttribute('open');
-    expect(screen.getByText(/Hostname-only similarity is not treated as certainty/)).toBeVisible();
+    expect(screen.getByText(/Similar or indirect monitoring may still exist/)).toBeVisible();
 
     expect(screen.queryByText('host.docker.internal')).not.toBeInTheDocument();
     expect(openAssistant).not.toHaveBeenCalled();
@@ -143,7 +152,9 @@ describe('ReliabilityInboxPage', () => {
 
     expect(screen.getByRole('button', { name: 'Review and customize check' })).toBeInTheDocument();
     expect(
-      screen.getByText('Opening review creates nothing. You confirm before anything is saved.')
+      screen.getByText(
+        'Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or saved until you confirm.'
+      )
     ).toBeInTheDocument();
     expect(openAssistant).not.toHaveBeenCalled();
   });
