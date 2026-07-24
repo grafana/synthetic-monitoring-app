@@ -20,7 +20,8 @@ export function ReliabilityInboxPage() {
     <PluginPage pageNav={{ text: 'Reliability Inbox' }} renderTitle={() => <ReliabilityInboxTitle />}>
       <div className={styles.page}>
         <p className={styles.subtitle}>
-          Review the evidence and use Assistant to tailor a suggested check before anything is created.
+          Prioritized monitoring opportunities from observed traffic. Review first; nothing is created without your
+          confirmation.
         </p>
         <ReliabilityInboxReview />
       </div>
@@ -194,104 +195,139 @@ function ReliabilityInboxReview() {
           >
             <span className={styles.queueRank}>{index === 0 ? 'Highest priority' : `Priority ${index + 1}`}</span>
             <strong>{opportunity.subject}</strong>
-            <span>{opportunity.observedSummary}</span>
+            <span className={styles.queueSignals}>
+              {capitalize(opportunity.value)} value · {capitalize(opportunity.confidence)} confidence
+            </span>
+            <span>Public HTTP traffic · {opportunity.requestRate}</span>
           </button>
         ))}
       </aside>
 
       <article className={styles.review}>
         <header className={styles.reviewHeader}>
-          <div>
-            <span className={styles.eyebrow}>Selected recommendation</span>
-            <h2>Monitor {selected.subject}</h2>
-            <p>{selected.rationale}</p>
+          <div className={styles.recommendation}>
+            <span className={styles.eyebrow}>Recommended next step</span>
+            <h2>Add an HTTP check for {selected.subject}</h2>
+            <p className={styles.target}>
+              {selected.proposedCheck.method} {selected.proposedCheck.target}
+            </p>
+            <p>Review a ready-to-customize check that can continuously verify this public endpoint.</p>
+            <div className={styles.decisionSignals}>
+              <div>
+                <Badge
+                  color={selected.value === 'high' ? 'orange' : 'darkgrey'}
+                  text={`${capitalize(selected.value)} value`}
+                />
+                <span>Observed demand and endpoint relevance make this worth reviewing.</span>
+              </div>
+              <div>
+                <Badge
+                  color={selected.confidence === 'high' ? 'green' : 'darkgrey'}
+                  text={`${capitalize(selected.confidence)} confidence`}
+                />
+                <span>Endpoint and traffic signals agree.</span>
+              </div>
+            </div>
           </div>
-          <div className={styles.badges}>
-            <Badge
-              color={selected.value === 'high' ? 'orange' : 'darkgrey'}
-              text={`${capitalize(selected.value)} value`}
-            />
-            <Badge
-              color={selected.confidence === 'high' ? 'green' : 'darkgrey'}
-              text={`${capitalize(selected.confidence)} confidence`}
-            />
-          </div>
-        </header>
-
-        <section className={styles.section}>
-          <h3>Evidence</h3>
-          <div className={styles.metrics}>
-            <EvidenceMetric value={selected.requestVolume} label="requests in the last hour" />
-            <EvidenceMetric value={selected.requestRate} label="observed request rate" />
-            <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
-            <EvidenceMetric value={selected.p99} label="p99 response time" />
-          </div>
-          <p className={styles.sourceNote}>
-            Evidence came from {formatList(selected.suggestion.evidence.families)} and covers the last hour of activity.
-          </p>
-        </section>
-
-        <section className={styles.coverage}>
-          <div>
-            <span className={styles.eyebrow}>Coverage match</span>
-            <h3>We did not find an exact matching check among the configuration we could analyze.</h3>
-          </div>
-          <p>
-            We compared the observed target, URL path, and proposed HTTP check type with the Synthetic Monitoring
-            configuration available to this experiment.
-          </p>
-          <p>
-            This is a guarded match, not proof of missing coverage. Aliases, redirects, upstream checks, inaccessible
-            configuration, or checks with a different path may cover the same service. Hostname-only similarity is not
-            treated as certainty.
-          </p>
-        </section>
-
-        <section className={styles.proposal}>
-          <div className={styles.proposalHeader}>
-            <div>
-              <span className={styles.eyebrow}>Suggested starting point</span>
-              <h3>HTTP check for {selected.subject}</h3>
-            </div>
-            <Badge color="green" text="Deterministic draft" />
-          </div>
-
-          <dl className={styles.proposalSummary}>
-            <div>
-              <dt>What to monitor</dt>
-              <dd>{selected.proposedCheck.target}</dd>
-            </div>
-            <div>
-              <dt>Suggested check</dt>
-              <dd>HTTP · {selected.proposedCheck.method}</dd>
-            </div>
-            <div>
-              <dt>Cadence</dt>
-              <dd>Every {formatDuration(selected.proposedCheck.frequencyMs)}</dd>
-            </div>
-            <div>
-              <dt>Probe / location policy</dt>
-              <dd>{selected.proposedCheck.locationPolicy}</dd>
-            </div>
-          </dl>
-
-          <div className={styles.handoff}>
-            <div>
-              <strong>Tailor this suggestion with Assistant</strong>
-              <p>
-                Assistant can check available probes and existing checks, ask only material setup questions, and show a
-                final configuration for your confirmation. Nothing is created by opening setup.
-              </p>
-            </div>
+          <div className={styles.primaryAction}>
             <Button
               icon="ai-sparkle"
               disabled={assistantDisabled}
               tooltip={assistantTooltip}
               onClick={setUpWithAssistant}
             >
-              Set up with Assistant
+              Review and customize check
             </Button>
+            <span>Opening review creates nothing. You confirm before anything is saved.</span>
           </div>
+        </header>
+
+        <section className={styles.section}>
+          <h3>Evidence at a glance</h3>
+          <div className={styles.metrics}>
+            <EvidenceMetric value={selected.requestVolume} label="requests in the last hour" />
+            <EvidenceMetric value={selected.requestRate} label="observed request rate" />
+            <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
+            <EvidenceMetric value={selected.p99} label="p99 response time" />
+          </div>
+          <p className={styles.sectionSummary}>
+            Recent traffic shows sustained demand with measurable availability and latency.
+          </p>
+          <details className={styles.disclosure}>
+            <summary>Why this recommendation?</summary>
+            <div className={styles.disclosureContent}>
+              <p>{selected.rationale}</p>
+              <p>Evidence covers the last hour and came from {formatList(selected.suggestion.evidence.families)}.</p>
+            </div>
+          </details>
+        </section>
+
+        <section className={styles.coverage}>
+          <div className={styles.coverageStatus}>
+            <Icon name="info-circle" />
+            <div>
+              <span className={styles.eyebrow}>Coverage status</span>
+              <h3>No exact check match found in the configuration available to this experiment</h3>
+              <p>Other direct or indirect coverage may still exist.</p>
+            </div>
+          </div>
+          <details className={styles.disclosure}>
+            <summary>How coverage was checked</summary>
+            <div className={styles.disclosureContent}>
+              <p>
+                We compared the observed target, URL path, and proposed HTTP check type with the Synthetic Monitoring
+                configuration available to this experiment.
+              </p>
+              <p>
+                This result is not proof of missing coverage. Aliases, redirects, upstream checks, inaccessible
+                configuration, or checks with a different path may cover the same service. Hostname-only similarity is
+                not treated as certainty.
+              </p>
+            </div>
+          </details>
+        </section>
+
+        <section className={styles.proposal}>
+          <div className={styles.proposalHeader}>
+            <div>
+              <span className={styles.eyebrow}>Proposed check</span>
+              <h3>
+                {selected.proposedCheck.method} {selected.proposedCheck.target}
+              </h3>
+            </div>
+            <Badge color="green" text="Ready to review" />
+          </div>
+
+          <div className={styles.compactConfig}>
+            <Icon name="globe" />
+            <div>
+              <strong>
+                HTTP {selected.proposedCheck.method} · Every {formatDuration(selected.proposedCheck.frequencyMs)}
+              </strong>
+              <span>{selected.proposedCheck.locationPolicy}</span>
+            </div>
+          </div>
+          <details className={cx(styles.disclosure, styles.configurationDisclosure)}>
+            <summary>View configuration details</summary>
+            <dl className={styles.proposalSummary}>
+              <div>
+                <dt>Timeout</dt>
+                <dd>{formatDuration(selected.proposedCheck.timeoutMs)}</dd>
+              </div>
+              <div>
+                <dt>Expected response</dt>
+                <dd>HTTP {selected.proposedCheck.validStatusCodes.join(', ')}</dd>
+              </div>
+              <div>
+                <dt>TLS requirement</dt>
+                <dd>{selected.proposedCheck.failIfNotSSL ? 'Require HTTPS' : 'Not required'}</dd>
+              </div>
+              <div>
+                <dt>Probe / location policy</dt>
+                <dd>{selected.proposedCheck.locationPolicy}</dd>
+              </div>
+            </dl>
+          </details>
         </section>
       </article>
     </div>
@@ -393,6 +429,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.bodySmall.fontSize,
     fontWeight: theme.typography.fontWeightBold,
   }),
+  queueSignals: css({
+    color: theme.colors.text.primary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+  }),
   review: css({
     display: 'flex',
     flexDirection: 'column',
@@ -409,6 +450,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(2.5),
     '& h2': { margin: theme.spacing(0.5, 0), fontSize: theme.typography.h3.fontSize },
     '& p': { color: theme.colors.text.secondary, margin: 0 },
+    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+      flexDirection: 'column',
+    },
+  }),
+  recommendation: css({
+    minWidth: 0,
+    flex: 1,
+  }),
+  target: css({
+    overflowWrap: 'anywhere',
+    fontFamily: theme.typography.fontFamilyMonospace,
+    marginBottom: `${theme.spacing(1)} !important`,
   }),
   eyebrow: css({
     color: theme.colors.text.secondary,
@@ -416,11 +469,37 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontWeight: theme.typography.fontWeightBold,
     textTransform: 'uppercase',
   }),
-  badges: css({
+  decisionSignals: css({
     display: 'flex',
-    gap: theme.spacing(0.75),
+    gap: theme.spacing(1.5),
     flexWrap: 'wrap',
-    justifyContent: 'flex-end',
+    marginTop: theme.spacing(2),
+    '& > div': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.75),
+    },
+    '& span:last-child': {
+      color: theme.colors.text.secondary,
+      fontSize: theme.typography.bodySmall.fontSize,
+    },
+  }),
+  primaryAction: css({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: theme.spacing(1),
+    maxWidth: 280,
+    '& span': {
+      color: theme.colors.text.secondary,
+      fontSize: theme.typography.bodySmall.fontSize,
+      textAlign: 'right',
+    },
+    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+      alignItems: 'flex-start',
+      maxWidth: 'none',
+      '& span': { textAlign: 'left' },
+    },
   }),
   section: css({
     padding: theme.spacing(2.5),
@@ -445,9 +524,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     '& strong': { fontSize: theme.typography.h4.fontSize },
     '& span': { color: theme.colors.text.secondary, fontSize: theme.typography.bodySmall.fontSize },
   }),
-  sourceNote: css({
+  sectionSummary: css({
     color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
     margin: theme.spacing(1.5, 0, 0),
   }),
   coverage: css({
@@ -456,8 +534,35 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(1),
     padding: theme.spacing(2.5),
     borderTop: `1px solid ${theme.colors.border.weak}`,
-    background: theme.colors.warning.transparent,
+    background: theme.colors.background.secondary,
     '& h3': { margin: theme.spacing(0.5, 0, 0), fontSize: theme.typography.h5.fontSize },
+    '& p': { color: theme.colors.text.secondary, margin: 0 },
+  }),
+  coverageStatus: css({
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(1.25),
+    '& > svg': {
+      color: theme.colors.info.text,
+      marginTop: theme.spacing(0.25),
+    },
+    '& h3': { marginBottom: `${theme.spacing(0.5)} !important` },
+  }),
+  disclosure: css({
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    marginTop: theme.spacing(1.5),
+    '& summary': {
+      color: theme.colors.text.link,
+      cursor: 'pointer',
+      fontWeight: theme.typography.fontWeightMedium,
+      padding: theme.spacing(1.25, 0, 0),
+    },
+  }),
+  disclosureContent: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    padding: theme.spacing(1, 0, 0, 2.5),
     '& p': { color: theme.colors.text.secondary, margin: 0 },
   }),
   proposal: css({
@@ -472,12 +577,34 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(2.5),
     '& h3': { margin: theme.spacing(0.5, 0, 0) },
   }),
+  compactConfig: css({
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(1.25),
+    margin: theme.spacing(0, 2.5),
+    padding: theme.spacing(1.5),
+    border: `1px solid ${theme.colors.border.weak}`,
+    borderRadius: theme.shape.radius.default,
+    background: theme.colors.background.primary,
+    '& > svg': { color: theme.colors.info.text },
+    '& > div': {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.5),
+      minWidth: 0,
+    },
+    '& span': { color: theme.colors.text.secondary },
+  }),
+  configurationDisclosure: css({
+    margin: theme.spacing(1.5, 2.5, 0),
+    paddingBottom: theme.spacing(1.5),
+  }),
   proposalSummary: css({
     display: 'grid',
     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
     gap: theme.spacing(1),
-    margin: 0,
-    padding: theme.spacing(0, 2.5, 2.5),
+    margin: theme.spacing(1, 0, 0),
+    padding: 0,
     '& > div': {
       padding: theme.spacing(1.25),
       border: `1px solid ${theme.colors.border.weak}`,
@@ -493,15 +620,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
       gridTemplateColumns: '1fr',
     },
-  }),
-  handoff: css({
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: theme.spacing(2),
-    padding: theme.spacing(2),
-    borderTop: `1px solid ${theme.colors.border.weak}`,
-    '& p': { color: theme.colors.text.secondary, margin: theme.spacing(0.5, 0, 0) },
   }),
   loading: css({
     display: 'flex',
