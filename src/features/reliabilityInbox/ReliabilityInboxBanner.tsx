@@ -8,7 +8,7 @@ import { ReliabilityOpportunity } from './types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
-import { ASSISTANT_GRADIENT, getAssistantActionStyle } from './assistantActionStyles';
+import { ASSISTANT_ACTION_SIZE, ASSISTANT_GRADIENT, getAssistantActionStyle } from './assistantActionStyles';
 import { useReliabilityInboxSuggestions } from './data';
 
 export function ReliabilityInboxBanner() {
@@ -45,9 +45,6 @@ export function ReliabilityInboxBanner() {
       <div className={styles.message}>
         <Icon name="ai-sparkle" className={styles.icon} aria-hidden="true" />
         <div>
-          <span className={styles.assistantLabel} id="reliability-inbox-assistant-entry">
-            Assistant-guided review
-          </span>
           <strong>
             Reliability Inbox · {opportunities.length} {opportunities.length === 1 ? 'opportunity' : 'opportunities'}
           </strong>
@@ -55,10 +52,9 @@ export function ReliabilityInboxBanner() {
         </div>
       </div>
       <LinkButton
-        aria-describedby="reliability-inbox-assistant-entry"
         className={styles.assistantAction}
         icon="ai-sparkle"
-        size="sm"
+        size={ASSISTANT_ACTION_SIZE}
         variant="secondary"
         href={generateRoutePath(AppRoutes.ReliabilityInbox)}
         onClick={() =>
@@ -109,11 +105,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
       gap: theme.spacing(0.25),
       flexWrap: 'wrap',
     },
-  }),
-  assistantLabel: css({
-    color: theme.colors.text.secondary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontWeight: theme.typography.fontWeightMedium,
   }),
   priority: css({
     color: theme.colors.text.secondary,
