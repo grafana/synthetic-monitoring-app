@@ -195,9 +195,16 @@ function ReliabilityInboxReview() {
           >
             <span className={styles.queueRank}>{index === 0 ? 'Highest priority' : `Priority ${index + 1}`}</span>
             <strong>{opportunity.subject}</strong>
-            <span className={styles.queueSignals}>
-              {capitalize(opportunity.value)} value · {capitalize(opportunity.confidence)} confidence
-            </span>
+            <div className={styles.queueSignals} aria-label={`Decision signals for ${opportunity.subject}`}>
+              <Badge
+                color={opportunity.value === 'high' ? 'orange' : 'darkgrey'}
+                text={`${capitalize(opportunity.value)} value`}
+              />
+              <Badge
+                color={opportunity.confidence === 'high' ? 'green' : 'darkgrey'}
+                text={`${capitalize(opportunity.confidence)} confidence`}
+              />
+            </div>
             <span>Public HTTP traffic · {opportunity.requestRate}</span>
           </button>
         ))}
@@ -211,8 +218,10 @@ function ReliabilityInboxReview() {
             <p className={styles.target}>
               {selected.proposedCheck.method} {selected.proposedCheck.target}
             </p>
-            <p>Review a ready-to-customize check that can continuously verify this public endpoint.</p>
-            <div className={styles.decisionSignals}>
+            <p className={styles.outcome}>
+              Review a ready-to-customize check that can continuously verify this public endpoint.
+            </p>
+            <div className={styles.decisionSignals} aria-label="Recommendation signals">
               <div>
                 <Badge
                   color={selected.value === 'high' ? 'orange' : 'darkgrey'}
@@ -238,7 +247,10 @@ function ReliabilityInboxReview() {
             >
               Review and customize check
             </Button>
-            <span>Opening review creates nothing. You confirm before anything is saved.</span>
+            <span>
+              Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or saved
+              until you confirm.
+            </span>
           </div>
         </header>
 
@@ -266,22 +278,19 @@ function ReliabilityInboxReview() {
           <div className={styles.coverageStatus}>
             <Icon name="info-circle" />
             <div>
-              <span className={styles.eyebrow}>Coverage status</span>
-              <h3>No exact check match found in the configuration available to this experiment</h3>
-              <p>Other direct or indirect coverage may still exist.</p>
+              <span className={styles.eyebrow}>Monitoring status</span>
+              <h3>
+                Synthetic Monitoring does not appear to monitor this traffic yet, so we recommend adding this check.
+              </h3>
             </div>
           </div>
           <details className={styles.disclosure}>
-            <summary>How coverage was checked</summary>
+            <summary>How we checked</summary>
             <div className={styles.disclosureContent}>
+              <p>We compared this endpoint and path with the HTTP checks available to us.</p>
               <p>
-                We compared the observed target, URL path, and proposed HTTP check type with the Synthetic Monitoring
-                configuration available to this experiment.
-              </p>
-              <p>
-                This result is not proof of missing coverage. Aliases, redirects, upstream checks, inaccessible
-                configuration, or checks with a different path may cover the same service. Hostname-only similarity is
-                not treated as certainty.
+                Similar or indirect monitoring may still exist through aliases, redirects, upstream checks, checks we
+                cannot access, or other paths.
               </p>
             </div>
           </details>
@@ -430,9 +439,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontWeight: theme.typography.fontWeightBold,
   }),
   queueSignals: css({
-    color: theme.colors.text.primary,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontWeight: theme.typography.fontWeightMedium,
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: theme.spacing(0.5),
   }),
   review: css({
     display: 'flex',
@@ -449,7 +459,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(2),
     padding: theme.spacing(2.5),
     '& h2': { margin: theme.spacing(0.5, 0), fontSize: theme.typography.h3.fontSize },
-    '& p': { color: theme.colors.text.secondary, margin: 0 },
     [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
       flexDirection: 'column',
     },
@@ -459,9 +468,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1,
   }),
   target: css({
+    color: theme.colors.text.primary,
     overflowWrap: 'anywhere',
     fontFamily: theme.typography.fontFamilyMonospace,
+    fontWeight: theme.typography.fontWeightMedium,
+    marginTop: 0,
     marginBottom: `${theme.spacing(1)} !important`,
+  }),
+  outcome: css({
+    color: theme.colors.text.primary,
+    fontSize: theme.typography.body.fontSize,
+    margin: 0,
   }),
   eyebrow: css({
     color: theme.colors.text.secondary,
@@ -471,8 +488,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   decisionSignals: css({
     display: 'flex',
-    gap: theme.spacing(1.5),
-    flexWrap: 'wrap',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: theme.spacing(0.75),
     marginTop: theme.spacing(2),
     '& > div': {
       display: 'flex',
@@ -490,15 +508,19 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'flex-end',
     gap: theme.spacing(1),
     maxWidth: 280,
-    '& span': {
+    '& > button span': {
+      color: `${theme.colors.primary.contrastText} !important`,
+    },
+    '& > span': {
       color: theme.colors.text.secondary,
       fontSize: theme.typography.bodySmall.fontSize,
+      lineHeight: 1.4,
       textAlign: 'right',
     },
     [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
       alignItems: 'flex-start',
       maxWidth: 'none',
-      '& span': { textAlign: 'left' },
+      '& > span': { textAlign: 'left' },
     },
   }),
   section: css({
