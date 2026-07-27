@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.57.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.57.0...v1.57.1) (2026-07-24)
+
+
+### Fixes
+
+* handle datasource Mismatch status and correct metrics UID fallback ([#1670](https://github.com/grafana/synthetic-monitoring-app/issues/1670)) ([b79a2cb](https://github.com/grafana/synthetic-monitoring-app/commit/b79a2cbcf37a4ba568c0e718f2d2905480c8b60d))
+* **security/medium/:** update dependency axios to v1.18.0 [security] ([#1764](https://github.com/grafana/synthetic-monitoring-app/issues/1764)) ([f0fc05e](https://github.com/grafana/synthetic-monitoring-app/commit/f0fc05ed6c928f10614540f2062a59d274d6158e))
+* **security/medium/:** update dependency react-router to v7.18.0 [security] ([#1770](https://github.com/grafana/synthetic-monitoring-app/issues/1770)) ([c2e3148](https://github.com/grafana/synthetic-monitoring-app/commit/c2e314806054deb2f1cffee0019d88819835c31d))
+* show secrets side-panel tab for HTTP checks ([#1771](https://github.com/grafana/synthetic-monitoring-app/issues/1771)) ([9e15eb6](https://github.com/grafana/synthetic-monitoring-app/commit/9e15eb6cfdf5a291063b27fa2f64a0ea7c77e347))
+
+
+### Miscellaneous Chores
+
+* auto-approve Argo canary and prod deploys ([#1769](https://github.com/grafana/synthetic-monitoring-app/issues/1769)) ([1b44732](https://github.com/grafana/synthetic-monitoring-app/commit/1b44732e54f834ff4840c8bc6a1ad9b35cadbc0c))
+
 ## [1.57.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.56.0...v1.57.0) (2026-07-16)
 
 
