@@ -135,6 +135,23 @@ describe('Reliability Inbox model', () => {
     expect(opportunity.errorRate).toBe('0.14%');
     expect(opportunity.requestVolume).toBe('5.8k');
     expect(opportunity.evidencePrototype).toEqual(HTTP_SUGGESTION.evidencePrototype);
+    expect(opportunity.gapTitle).toBe('mcp.goagain.dev may not have a synthetic check');
+    expect(opportunity.coverageSummary).toBe(
+      'We found active public HTTP traffic, but no exact matching check in the Synthetic Monitoring configuration available to us.'
+    );
+    expect(opportunity.importanceSummary).toBe(
+      'Public endpoint with steady traffic serving likely critical MCP protocol functions.'
+    );
+    expect(opportunity.evidenceSnapshot).toEqual({
+      primary: {
+        value: '14,700',
+        label: 'requests',
+      },
+      supporting: [],
+      windowLabel: 'the last 24 hours',
+      availability: 'available',
+      sourceKind: 'prototype',
+    });
     expect(opportunity.estimatedUsage).toBe('Estimated usage: 43.2k executions / month');
     expect(opportunity.readiness).toBe('ready');
     expect(opportunity.suggestion.checkType).toBe(CheckType.Http);
@@ -165,6 +182,56 @@ describe('Reliability Inbox model', () => {
     expect(opportunity.errorRate).toBeUndefined();
     expect(opportunity.p99).toBeUndefined();
     expect(opportunity.observedSummary).toBe('public endpoint · last hour');
+    expect(opportunity.evidenceSnapshot).toEqual({
+      primary: undefined,
+      supporting: [],
+      windowLabel: 'last hour',
+      availability: 'unavailable',
+      sourceKind: 'aggregate',
+    });
+  });
+
+  it('uses aggregate traffic as one evidence snapshot instead of separate headline cards', () => {
+    const opportunity = toReliabilityOpportunity({
+      ...HTTP_SUGGESTION,
+      evidencePrototype: undefined,
+    });
+
+    expect(opportunity.evidenceSnapshot).toEqual({
+      primary: {
+        value: '1.6 req/s',
+        label: 'observed request rate',
+      },
+      supporting: [
+        {
+          value: '5.8k',
+          label: 'estimated requests',
+        },
+        {
+          value: '0.14%',
+          label: 'HTTP error responses',
+        },
+        {
+          value: '4 ms',
+          label: 'p99 response time',
+        },
+      ],
+      windowLabel: 'last hour',
+      availability: 'available',
+      sourceKind: 'aggregate',
+    });
+  });
+
+  it('uses a conservative importance fallback when the suggestion has no rationale or purpose', () => {
+    const opportunity = toReliabilityOpportunity({
+      ...HTTP_SUGGESTION,
+      rationale: undefined,
+      purpose: undefined,
+    });
+
+    expect(opportunity.importanceSummary).toBe(
+      'This public endpoint receives observed traffic and may benefit from independent availability coverage.'
+    );
   });
 
   it('uses hostname, non-default port, and meaningful path as the human-readable endpoint identity', () => {
@@ -187,15 +254,21 @@ describe('Reliability Inbox model', () => {
     );
   });
 
-  it('suppresses private DNS and development-only targets from the initial queue', () => {
+  it('suppresses covered, private DNS, and development-only targets from the initial queue', () => {
     const developmentHttp = {
       ...HTTP_SUGGESTION,
       id: 'development-http',
       target: 'http://host.docker.internal:3000/ready',
     };
+    const coveredHttp = {
+      ...HTTP_SUGGESTION,
+      id: 'covered-http',
+      dedupStatus: 'covered',
+    };
 
     expect(isInitialReviewCandidate(HTTP_SUGGESTION)).toBe(true);
     expect(isInitialReviewCandidate(DNS_SUGGESTION)).toBe(false);
     expect(isInitialReviewCandidate(developmentHttp)).toBe(false);
+    expect(isInitialReviewCandidate(coveredHttp)).toBe(false);
   });
 });

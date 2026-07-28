@@ -16,6 +16,17 @@ interface RecommendationEvent extends TrackingEventProps {
   checkType: 'http';
 }
 
+interface RecommendationDetailEvent extends TrackingEventProps {
+  /** Identifier for the recommendation whose supporting detail changed. */
+  opportunityId: string;
+  /** Check type proposed by the recommendation. */
+  checkType: 'http';
+  /** Supporting detail section that the user expanded or collapsed. */
+  detailType: 'evidence' | 'coverage' | 'configuration';
+  /** Whether the supporting detail is open after the interaction. */
+  open: boolean;
+}
+
 /** Tracks when the compact Reliability Inbox entry point is shown. */
 export const trackInboxExposure = reliabilityInboxEvents<InboxExposureEvent>('exposed');
 /** Tracks when a user enters the dedicated review surface. */
@@ -24,3 +35,7 @@ export const trackReviewEntryClicked = reliabilityInboxEvents<RecommendationEven
 export const trackRecommendationReviewed = reliabilityInboxEvents<RecommendationEvent>('recommendation_reviewed');
 /** Tracks when a user explicitly hands a recommendation to Assistant for guided setup. */
 export const trackSetupWithAssistant = reliabilityInboxEvents<RecommendationEvent>('setup_with_assistant_clicked');
+/** Tracks deliberate expansion and collapse of supporting recommendation details. */
+export const trackRecommendationDetailToggled = reliabilityInboxEvents<RecommendationDetailEvent>(
+  'recommendation_detail_toggled'
+);

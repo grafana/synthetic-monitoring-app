@@ -46,9 +46,9 @@ export function ReliabilityInboxBanner() {
         <Icon name="ai-sparkle" className={styles.icon} aria-hidden="true" />
         <div>
           <strong>
-            Reliability Inbox · {opportunities.length} {opportunities.length === 1 ? 'opportunity' : 'opportunities'}
+            Reliability Inbox · {opportunities.length} suggested {opportunities.length === 1 ? 'check' : 'checks'}
           </strong>
-          <span className={styles.priority}>Highest priority: {topOpportunity.subject}</span>
+          <span className={styles.priority}>Top suggestion: {topOpportunity.subject}</span>
         </div>
       </div>
       <LinkButton

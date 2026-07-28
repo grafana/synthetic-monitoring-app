@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+const opportunityConfidenceSchema = z.enum(['high', 'medium', 'low']);
+
+const confidenceDimensionSchema = z
+  .object({
+    level: opportunityConfidenceSchema,
+    reason: z.string().optional(),
+  })
+  .strict();
+
 const reliabilityEvidencePrototypeSchema = z
   .object({
     kind: z.literal('graft-demo-v1'),
@@ -46,6 +55,14 @@ export const reliabilitySuggestionSchema = z
     reachability: z.string(),
     reachabilitySource: z.string(),
     confidence: z.string(),
+    confidenceBreakdown: z
+      .object({
+        observation: confidenceDimensionSchema.optional(),
+        coverageGap: confidenceDimensionSchema.optional(),
+        recommendation: confidenceDimensionSchema.optional(),
+      })
+      .strict()
+      .optional(),
     score: z.number(),
     dedupStatus: z.string(),
     authRequired: z.boolean(),
@@ -82,6 +99,19 @@ export type OpportunityValue = 'high' | 'medium' | 'lower';
 export type OpportunityConfidence = 'high' | 'medium' | 'low';
 export type OpportunityReadiness = 'ready' | 'needs-setup';
 
+export interface ReliabilityEvidenceMetric {
+  value: string;
+  label: string;
+}
+
+export interface ReliabilityEvidenceSnapshot {
+  primary?: ReliabilityEvidenceMetric;
+  supporting: ReliabilityEvidenceMetric[];
+  windowLabel: string;
+  availability: 'available' | 'partial' | 'unavailable';
+  sourceKind: 'aggregate' | 'prototype';
+}
+
 export interface SuggestedCheckConfig {
   job?: string;
   frequencyMs?: number;
@@ -111,6 +141,10 @@ export interface ReliabilityOpportunity {
   subject: string;
   observedSummary: string;
   rationale: string;
+  gapTitle: string;
+  coverageSummary: string;
+  importanceSummary: string;
+  evidenceSnapshot: ReliabilityEvidenceSnapshot;
   value: OpportunityValue;
   confidence: OpportunityConfidence;
   readiness: OpportunityReadiness;

@@ -37,4 +37,48 @@ describe('Reliability Inbox suggestion contract', () => {
       })
     ).toThrow();
   });
+
+  it('accepts an optional confidence breakdown without requiring it from legacy suggestions', () => {
+    const result = reliabilitySuggestionsSchema.parse({
+      suggestions: [
+        {
+          ...PARTIAL_HTTP_SUGGESTION,
+          confidenceBreakdown: {
+            observation: {
+              level: 'high',
+              reason: 'Traffic evidence is consistent.',
+            },
+            coverageGap: {
+              level: 'medium',
+              reason: 'Indirect coverage may exist.',
+            },
+            recommendation: {
+              level: 'medium',
+            },
+          },
+        },
+        PARTIAL_HTTP_SUGGESTION,
+      ],
+    });
+
+    expect(result.suggestions[0].confidenceBreakdown?.coverageGap?.level).toBe('medium');
+    expect(result.suggestions[1].confidenceBreakdown).toBeUndefined();
+  });
+
+  it('rejects unsupported confidence-breakdown levels', () => {
+    expect(() =>
+      reliabilitySuggestionsSchema.parse({
+        suggestions: [
+          {
+            ...PARTIAL_HTTP_SUGGESTION,
+            confidenceBreakdown: {
+              recommendation: {
+                level: 'certain',
+              },
+            },
+          },
+        ],
+      })
+    ).toThrow();
+  });
 });

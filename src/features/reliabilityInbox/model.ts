@@ -3,6 +3,8 @@ import {
   OpportunityReadiness,
   OpportunityValue,
   ProposedHttpCheckDraft,
+  ReliabilityEvidenceMetric,
+  ReliabilityEvidenceSnapshot,
   ReliabilityOpportunity,
   ReliabilitySuggestion,
   SuggestedCheckConfig,
@@ -130,6 +132,14 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
   const readiness = getReadiness(suggestion);
   const requestsPerSecond = suggestion.evidence.reqPerS;
   const requestRate = requestsPerSecond === undefined ? undefined : `${formatDecimal(requestsPerSecond)} req/s`;
+  const requestVolume = requestsPerSecond === undefined ? undefined : formatCompactNumber(requestsPerSecond * 60 * 60);
+  const errorRate = formatErrorRate(suggestion);
+  const p99 = suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`;
+  const subject = getSubject(suggestion.target);
+  const importanceSummary =
+    suggestion.rationale ??
+    suggestion.purpose ??
+    'This public endpoint receives observed traffic and may benefit from independent availability coverage.';
   const reachability = getReachabilityLabel(suggestion);
   const frequency = config.frequencyMs ? formatFrequency(config.frequencyMs) : 'Default schedule';
   const locations = config.probeIds.length;
@@ -144,9 +154,18 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
   return {
     id: suggestion.id,
     suggestion,
-    subject: getSubject(suggestion.target),
+    subject,
     observedSummary: [requestRate, reachability, 'last hour'].filter(Boolean).join(' · '),
-    rationale: suggestion.rationale ?? 'Observed demand appears to have no equivalent synthetic coverage.',
+    rationale: importanceSummary,
+    gapTitle: `${subject} may not have a synthetic check`,
+    coverageSummary: getCoverageSummary(suggestion),
+    importanceSummary,
+    evidenceSnapshot: getEvidenceSnapshot(suggestion, {
+      requestRate,
+      requestVolume,
+      errorRate,
+      p99,
+    }),
     value: getValue(suggestion.relevance),
     confidence: getConfidence(suggestion.confidence),
     readiness,
@@ -157,10 +176,10 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
         : `${frequency} · ${locationCopy} · ${assertion}`,
     estimatedUsage: estimateMonthlyUsage(config),
     sortScore: suggestion.relevance ?? suggestion.score * 100,
-    requestVolume: requestsPerSecond === undefined ? undefined : formatCompactNumber(requestsPerSecond * 60 * 60),
+    requestVolume,
     requestRate,
-    errorRate: formatErrorRate(suggestion),
-    p99: suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
+    errorRate,
+    p99,
     evidencePrototype: suggestion.evidencePrototype,
     proposedCheck,
   };
@@ -170,6 +189,7 @@ export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
   if (
     suggestion.checkType !== CheckType.Http ||
     suggestion.reachability !== 'public' ||
+    suggestion.dedupStatus.toLowerCase() !== 'uncovered' ||
     suggestion.authRequired ||
     suggestion.needsConfiguration
   ) {
@@ -182,6 +202,77 @@ export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
   } catch {
     return false;
   }
+}
+
+function getCoverageSummary(suggestion: ReliabilitySuggestion) {
+  if (suggestion.dedupStatus.toLowerCase() === 'uncovered') {
+    return 'We found active public HTTP traffic, but no exact matching check in the Synthetic Monitoring configuration available to us.';
+  }
+
+  return 'We could not confirm an exact matching check in the Synthetic Monitoring configuration available to us.';
+}
+
+function getEvidenceSnapshot(
+  suggestion: ReliabilitySuggestion,
+  aggregate: {
+    requestRate?: string;
+    requestVolume?: string;
+    errorRate?: string;
+    p99?: string;
+  }
+): ReliabilityEvidenceSnapshot {
+  if (suggestion.evidencePrototype) {
+    return {
+      primary: {
+        value: formatExactNumber(suggestion.evidencePrototype.exactRequestTotal),
+        label: 'requests',
+      },
+      supporting: [],
+      windowLabel: suggestion.evidencePrototype.window.label,
+      availability: 'available',
+      sourceKind: 'prototype',
+    };
+  }
+
+  const primary = aggregate.requestRate
+    ? {
+        value: aggregate.requestRate,
+        label: 'observed request rate',
+      }
+    : undefined;
+  const supporting = [
+    aggregate.requestVolume
+      ? {
+          value: aggregate.requestVolume,
+          label: 'estimated requests',
+        }
+      : undefined,
+    aggregate.errorRate
+      ? {
+          value: aggregate.errorRate,
+          label: 'HTTP error responses',
+        }
+      : undefined,
+    aggregate.p99
+      ? {
+          value: aggregate.p99,
+          label: 'p99 response time',
+        }
+      : undefined,
+  ].filter(isEvidenceMetric);
+  const hasAnyEvidenceMetric = Boolean(primary || supporting.length > 0);
+
+  return {
+    primary: primary ?? supporting.shift(),
+    supporting,
+    windowLabel: 'last hour',
+    availability: primary ? 'available' : hasAnyEvidenceMetric ? 'partial' : 'unavailable',
+    sourceKind: 'aggregate',
+  };
+}
+
+function isEvidenceMetric(metric: ReliabilityEvidenceMetric | false | undefined): metric is ReliabilityEvidenceMetric {
+  return Boolean(metric);
 }
 
 export function getProposedHttpCheckDraft(suggestion: ReliabilitySuggestion): ProposedHttpCheckDraft {
@@ -355,6 +446,10 @@ function formatCompactNumber(value: number) {
     return `${formatDecimal(value / 1000)}k`;
   }
   return Math.round(value).toString();
+}
+
+function formatExactNumber(value: number) {
+  return new Intl.NumberFormat('en-US').format(value);
 }
 
 function formatDecimal(value: number) {
