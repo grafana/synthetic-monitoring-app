@@ -65,6 +65,34 @@ describe('Reliability Inbox suggestion contract', () => {
     expect(result.suggestions[1].confidenceBreakdown).toBeUndefined();
   });
 
+  it('accepts optional backend-authored Grafana evidence references', () => {
+    const result = reliabilitySuggestionsSchema.parse({
+      suggestions: [
+        {
+          ...PARTIAL_HTTP_SUGGESTION,
+          evidence: {
+            ...PARTIAL_HTTP_SUGGESTION.evidence,
+            references: [
+              {
+                destination: 'dashboard',
+                label: 'Open service traffic dashboard',
+                path: '/d/service-traffic',
+              },
+            ],
+          },
+        },
+      ],
+    });
+
+    expect(result.suggestions[0].evidence.references).toEqual([
+      {
+        destination: 'dashboard',
+        label: 'Open service traffic dashboard',
+        path: '/d/service-traffic',
+      },
+    ]);
+  });
+
   it('rejects unsupported confidence-breakdown levels', () => {
     expect(() =>
       reliabilitySuggestionsSchema.parse({

@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { ReliabilityOpportunity } from './types';
 
 import { formatDuration } from './model';
+import { ReliabilityEvidenceInvestigation } from './ReliabilityEvidenceInvestigation';
 import { ReliabilityEvidenceTrend } from './ReliabilityEvidenceTrend';
 
 export type ReliabilityOpportunityDetailType = 'evidence' | 'coverage' | 'configuration';
@@ -48,6 +49,7 @@ export function ReliabilityOpportunityDetails({ opportunity, onToggle }: Reliabi
               {opportunity.evidenceSnapshot.sourceKind === 'prototype' && <Badge color="purple" text="Demo evidence" />}
             </div>
             <EvidenceMetrics opportunity={opportunity} />
+            <ReliabilityEvidenceInvestigation opportunity={opportunity} showUnavailable />
             {opportunity.evidencePrototype && <ReliabilityEvidenceTrend evidence={opportunity.evidencePrototype} />}
             <p>{opportunity.importanceSummary}</p>
             <p>

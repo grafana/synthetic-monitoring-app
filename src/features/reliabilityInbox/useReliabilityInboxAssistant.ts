@@ -44,7 +44,7 @@ export function useReliabilityInboxAssistant() {
         ...(p99Ms !== undefined && { p99Milliseconds: p99Ms }),
         ...(opportunity.errorRate !== undefined && { httpErrorRate: opportunity.errorRate }),
         ...(statusDistribution !== undefined && { statusDistribution }),
-        measurementWindow: 'last hour',
+        measurementWindow: opportunity.evidenceSnapshot.windowLabel,
         telemetryFamilies: opportunity.suggestion.evidence.families,
         reachability: {
           classification: opportunity.suggestion.reachability,

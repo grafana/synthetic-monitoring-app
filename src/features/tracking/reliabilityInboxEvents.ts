@@ -27,6 +27,15 @@ interface RecommendationDetailEvent extends TrackingEventProps {
   open: boolean;
 }
 
+interface EvidenceInvestigationEvent extends TrackingEventProps {
+  /** Identifier for the recommendation whose evidence the user investigates. */
+  opportunityId: string;
+  /** Check type proposed by the recommendation. */
+  checkType: 'http';
+  /** Grafana destination that contains the backing evidence. */
+  destination: 'explore' | 'dashboard' | 'logs' | 'traces';
+}
+
 /** Tracks when the compact Reliability Inbox entry point is shown. */
 export const trackInboxExposure = reliabilityInboxEvents<InboxExposureEvent>('exposed');
 /** Tracks when a user enters the dedicated review surface. */
@@ -38,4 +47,8 @@ export const trackSetupWithAssistant = reliabilityInboxEvents<RecommendationEven
 /** Tracks deliberate expansion and collapse of supporting recommendation details. */
 export const trackRecommendationDetailToggled = reliabilityInboxEvents<RecommendationDetailEvent>(
   'recommendation_detail_toggled'
+);
+/** Tracks when a user follows a recommendation's backing evidence into Grafana. */
+export const trackEvidenceInvestigationClicked = reliabilityInboxEvents<EvidenceInvestigationEvent>(
+  'evidence_investigation_clicked'
 );

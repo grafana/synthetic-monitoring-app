@@ -4,6 +4,7 @@ import { config } from '@grafana/runtime';
 import { render as renderWithoutApp, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
+  trackEvidenceInvestigationClicked,
   trackInboxExposure,
   trackRecommendationDetailToggled,
   trackRecommendationReviewed,
@@ -19,7 +20,7 @@ import { generateRoutePath, getRoute } from 'routing/utils';
 import { useReliabilityInboxSuggestions } from './data';
 import { toReliabilityOpportunity } from './model';
 import { ReliabilityInboxBanner } from './ReliabilityInboxBanner';
-import { RELIABILITY_INBOX_PAGE_NAV, ReliabilityInboxPage } from './ReliabilityInboxPage';
+import { RELIABILITY_INBOX_PAGE_NAV, ReliabilityInboxPage, ReliabilityInboxTitle } from './ReliabilityInboxPage';
 
 jest.mock('./data', () => ({
   useReliabilityInboxSuggestions: jest.fn(),
@@ -37,6 +38,7 @@ jest.mock('@grafana/scenes-react', () => {
 
 jest.mock('features/tracking/reliabilityInboxEvents', () => ({
   trackInboxExposure: jest.fn(),
+  trackEvidenceInvestigationClicked: jest.fn(),
   trackReviewEntryClicked: jest.fn(),
   trackRecommendationDetailToggled: jest.fn(),
   trackRecommendationReviewed: jest.fn(),
@@ -168,6 +170,10 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.queryByLabelText('Observed requests over time')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'View in Explore' })).not.toBeInTheDocument();
 
+    const reviewButton = screen.getByRole('button', { name: 'Review and customize check' });
+    const whyThisMatters = screen.getByRole('heading', { name: 'Why this matters' });
+    expect(reviewButton.compareDocumentPosition(whyThisMatters) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+
     const evidenceDisclosure = screen.getByText('Evidence and reasoning').closest('details');
     expect(evidenceDisclosure).not.toHaveAttribute('open');
     await user.click(screen.getByText('Evidence and reasoning'));
@@ -210,10 +216,16 @@ describe('ReliabilityInboxPage', () => {
     });
 
     await user.click(await screen.findByText('Evidence and reasoning'));
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'No traffic trend is available for this evidence window.'
-    );
+    expect(await screen.findByText('No traffic trend is available for this evidence window.')).toBeInTheDocument();
     expect(screen.queryByLabelText('Observed requests over time')).not.toBeInTheDocument();
+  });
+
+  it('marks the feature as Experimental with the shared rocket badge language', async () => {
+    renderWithoutApp(<ReliabilityInboxTitle />);
+
+    expect(screen.getByRole('heading', { name: 'Reliability Inbox' })).toBeInTheDocument();
+    expect(screen.getByText('Experimental')).toBeInTheDocument();
+    expect(await screen.findByTestId('rocket')).toBeInTheDocument();
   });
 
   it('shows confidence dimensions only when the suggestion contract provides them', async () => {
@@ -247,16 +259,23 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.getByText('Recommendation confidence')).toBeVisible();
   });
 
-  it('sorts the compact queue by value score and updates the selected detail', async () => {
+  it('shows high-confidence opportunities first and orders them by value', async () => {
     mockSuggestionList([
-      HTTP_SUGGESTION,
       {
         ...HTTP_SUGGESTION,
-        id: 'higher-value-suggestion',
-        target: 'https://features.grafana.app/',
-        relevance: 95,
-        rationale: 'Feature delivery affects several customer-facing capabilities.',
+        id: 'lower-value-high-confidence',
+        target: 'https://lower-value.example.com/',
+        relevance: 20,
+        confidence: 'high',
       },
+      {
+        ...HTTP_SUGGESTION,
+        id: 'high-value-medium-confidence',
+        target: 'https://medium-confidence.example.com/',
+        relevance: 95,
+        confidence: 'medium',
+      },
+      HTTP_SUGGESTION,
     ]);
     const { user } = render(<ReliabilityInboxPage />, {
       path: generateRoutePath(AppRoutes.ReliabilityInbox),
@@ -264,21 +283,52 @@ describe('ReliabilityInboxPage', () => {
     });
 
     expect(
-      await screen.findByRole('heading', { name: 'features.grafana.app may not have a synthetic check' })
+      await screen.findByRole('heading', { name: 'mcp.goagain.dev may not have a synthetic check' })
     ).toBeInTheDocument();
     const queue = screen.getByLabelText('Suggested checks');
     const queueButtons = within(queue).getAllByRole('button');
     expect(queueButtons[0]).toHaveTextContent('Highest priority');
-    expect(queueButtons[0]).toHaveTextContent('features.grafana.app');
-    expect(queueButtons[1]).toHaveTextContent('#2');
+    expect(queueButtons[0]).toHaveTextContent('mcp.goagain.dev');
+    expect(queueButtons[1]).toHaveTextContent('lower-value.example.com');
+    expect(queueButtons[2]).toHaveTextContent('medium-confidence.example.com');
 
-    await user.click(within(queue).getByText('mcp.goagain.dev'));
+    await user.click(within(queue).getByText('medium-confidence.example.com'));
     expect(
-      await screen.findByRole('heading', { name: 'mcp.goagain.dev may not have a synthetic check' })
+      await screen.findByRole('heading', { name: 'medium-confidence.example.com may not have a synthetic check' })
     ).toBeInTheDocument();
     expect(trackRecommendationReviewed).toHaveBeenCalledWith({
+      opportunityId: 'high-value-medium-confidence',
+      checkType: 'http',
+    });
+  });
+
+  it('links evidence to its exact Explore query and tracks investigation', async () => {
+    mockSuggestions({
+      ...HTTP_SUGGESTION,
+      evidencePrototype: {
+        ...HTTP_SUGGESTION.evidencePrototype!,
+        source: {
+          datasourceUid: 'prometheus-uid',
+          datasourceType: 'prometheus',
+          expression: 'sum(increase(http_requests_total[24h]))',
+          from: HTTP_SUGGESTION.evidencePrototype!.window.from,
+          to: HTTP_SUGGESTION.evidencePrototype!.window.to,
+        },
+      },
+    });
+    const { user } = render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    const investigateLink = await screen.findByRole('link', { name: 'Open backing query in Explore' });
+    expect(investigateLink).toHaveAttribute('href', expect.stringMatching(/^\/explore\?/));
+
+    await user.click(investigateLink);
+    expect(trackEvidenceInvestigationClicked).toHaveBeenCalledWith({
       opportunityId: 'http-suggestion',
       checkType: 'http',
+      destination: 'explore',
     });
   });
 
@@ -435,10 +485,7 @@ describe('ReliabilityInboxPage', () => {
       await screen.findByRole('heading', { name: 'mcp.goagain.dev may not have a synthetic check' })
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'GET mcp.goagain.dev' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Review and customize check' })).toHaveAttribute(
-      'aria-disabled',
-      'true'
-    );
+    expect(screen.getByRole('button', { name: 'Review and customize check' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('hands structured evidence and draft to Assistant as bounded setup guidance', async () => {
@@ -467,7 +514,7 @@ describe('ReliabilityInboxPage', () => {
               evidence: expect.objectContaining({
                 target: 'https://mcp.goagain.dev/',
                 requestsPerSecond: 1.6081232492997197,
-                measurementWindow: 'last hour',
+                measurementWindow: 'the last 24 hours',
                 coverageMatch: expect.objectContaining({
                   compared: ['observed target', 'URL path', 'HTTP check type'],
                 }),
@@ -514,14 +561,19 @@ describe('ReliabilityInboxPage', () => {
     const user = userEvent.setup();
     renderWithoutApp(<ReliabilityInboxBanner />);
 
-    expect(screen.getByText('Reliability Inbox · 1 suggested check')).toBeInTheDocument();
+    expect(screen.getByText('1 potential gap in your synthetic coverage')).toBeInTheDocument();
     expect(screen.queryByText('Assistant-guided review')).not.toBeInTheDocument();
-    expect(screen.getByText('Top suggestion: mcp.goagain.dev')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Public endpoints are receiving traffic that we couldn’t match to an existing check. Review the evidence and choose what to monitor.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Top suggestion: mcp.goagain.dev')).not.toBeInTheDocument();
     expect(
       screen.queryByRole('heading', { name: 'mcp.goagain.dev may not have a synthetic check' })
     ).not.toBeInTheDocument();
 
-    const reviewLink = screen.getByRole('link', { name: 'Review opportunities' });
+    const reviewLink = screen.getByRole('link', { name: 'Review suggested checks' });
     expect(reviewLink).toHaveAttribute('href', generateRoutePath(AppRoutes.ReliabilityInbox));
     await waitFor(() =>
       expect(trackInboxExposure).toHaveBeenCalledWith({

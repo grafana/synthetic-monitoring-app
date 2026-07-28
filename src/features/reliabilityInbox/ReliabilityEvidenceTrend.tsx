@@ -1,6 +1,5 @@
 import React, { PropsWithChildren, useEffect, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { config } from '@grafana/runtime';
 import { SceneDataNode, SceneTimeRange, VizConfigBuilders } from '@grafana/scenes';
 import { SceneContext, SceneContextObject, VizPanel } from '@grafana/scenes-react';
 import {
@@ -16,12 +15,12 @@ import {
   TooltipDisplayMode,
   VisibilityMode,
 } from '@grafana/schema';
-import { Spinner, TextLink, useStyles2 } from '@grafana/ui';
+import { Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ReliabilityEvidencePrototype } from './types';
 
-import { getEvidenceExploreUrl, getEvidencePanelData } from './evidence';
+import { getEvidencePanelData } from './evidence';
 
 interface ReliabilityEvidenceTrendProps {
   evidence: ReliabilityEvidencePrototype;
@@ -32,7 +31,6 @@ export function ReliabilityEvidenceTrend({ evidence, isLoading = false }: Reliab
   const styles = useStyles2(getStyles);
   const panelData = useMemo(() => getEvidencePanelData(evidence), [evidence]);
   const dataProvider = useMemo(() => new SceneDataNode({ data: panelData }), [panelData]);
-  const exploreUrl = getEvidenceExploreUrl(evidence, config.bootData.user.orgId);
 
   if (isLoading) {
     return (
@@ -55,11 +53,6 @@ export function ReliabilityEvidenceTrend({ evidence, isLoading = false }: Reliab
     <div className={styles.trend}>
       <div className={styles.trendHeader}>
         <span>Observed traffic trend</span>
-        {exploreUrl && (
-          <TextLink href={exploreUrl} variant="bodySmall">
-            View in Explore
-          </TextLink>
-        )}
       </div>
       <div className={styles.panel} aria-label="Observed requests over time">
         <StaticSceneContext from={evidence.window.from} to={evidence.window.to}>

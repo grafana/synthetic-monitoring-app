@@ -185,6 +185,30 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
   };
 }
 
+/**
+ * Orders the inbox by confidence first, then value, before using the backend score as a tie-breaker.
+ * This keeps high-value/high-confidence opportunities first, completes the high-confidence review
+ * set before showing lower-confidence items, and makes the policy independent of response order.
+ */
+export function compareReliabilityOpportunities(a: ReliabilityOpportunity, b: ReliabilityOpportunity) {
+  const confidenceDifference = getConfidencePriority(b.confidence) - getConfidencePriority(a.confidence);
+  if (confidenceDifference !== 0) {
+    return confidenceDifference;
+  }
+
+  const valueDifference = getValuePriority(b.value) - getValuePriority(a.value);
+  if (valueDifference !== 0) {
+    return valueDifference;
+  }
+
+  const scoreDifference = b.sortScore - a.sortScore;
+  if (scoreDifference !== 0) {
+    return scoreDifference;
+  }
+
+  return a.id.localeCompare(b.id);
+}
+
 export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
   if (
     suggestion.checkType !== CheckType.Http ||
@@ -388,6 +412,22 @@ function getConfidence(confidence: string): OpportunityConfidence {
     return normalized;
   }
   return 'low';
+}
+
+function getConfidencePriority(confidence: OpportunityConfidence) {
+  return {
+    high: 3,
+    medium: 2,
+    low: 1,
+  }[confidence];
+}
+
+function getValuePriority(value: OpportunityValue) {
+  return {
+    high: 3,
+    medium: 2,
+    lower: 1,
+  }[value];
 }
 
 function getReachabilityLabel(suggestion: ReliabilitySuggestion) {

@@ -9,6 +9,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
 import { useReliabilityInboxSuggestions } from './data';
+import { compareReliabilityOpportunities } from './model';
 import { ReliabilityInboxQueue } from './ReliabilityInboxQueue';
 import { ReliabilityOpportunityDetail } from './ReliabilityOpportunityDetail';
 import { useReliabilityInboxAssistant } from './useReliabilityInboxAssistant';
@@ -44,10 +45,7 @@ function ReliabilityInboxReview() {
   } = useReliabilityInboxAssistant();
   const [selectedId, setSelectedId] = useState<string>();
   const reviewedIds = useRef(new Set<string>());
-  const sortedOpportunities = useMemo(
-    () => [...opportunities].sort((a, b) => b.sortScore - a.sortScore),
-    [opportunities]
-  );
+  const sortedOpportunities = useMemo(() => [...opportunities].sort(compareReliabilityOpportunities), [opportunities]);
   const selected = sortedOpportunities.find((opportunity) => opportunity.id === selectedId) ?? sortedOpportunities[0];
 
   useEffect(() => {
@@ -108,13 +106,13 @@ function ReliabilityInboxReview() {
   );
 }
 
-function ReliabilityInboxTitle() {
+export function ReliabilityInboxTitle() {
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.titleRow}>
       <h1>Reliability Inbox</h1>
-      <Badge color="blue" text="Experimental" />
+      <Badge color="blue" icon="rocket" text="Experimental" />
     </div>
   );
 }

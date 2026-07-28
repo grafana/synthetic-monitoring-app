@@ -1,6 +1,6 @@
-import { ReliabilityEvidencePrototype } from './types';
+import { ReliabilityEvidencePrototype, ReliabilityEvidenceReference } from './types';
 
-import { getEvidenceExploreUrl, getEvidencePanelData } from './evidence';
+import { getEvidenceExploreUrl, getEvidenceInvestigationLinks, getEvidencePanelData } from './evidence';
 
 const EVIDENCE: ReliabilityEvidencePrototype = {
   kind: 'graft-demo-v1',
@@ -113,5 +113,53 @@ describe('Reliability Inbox prototype evidence', () => {
     ],
   ])('does not construct a verification link when %s', (_, evidence, orgId) => {
     expect(getEvidenceExploreUrl(evidence as ReliabilityEvidencePrototype, orgId)).toBeUndefined();
+  });
+
+  it('combines exact Explore provenance with safe backend-authored Grafana references', () => {
+    const evidenceWithSource: ReliabilityEvidencePrototype = {
+      ...EVIDENCE,
+      source: {
+        datasourceUid: 'prometheus-uid',
+        datasourceType: 'prometheus',
+        expression: 'sum(increase(http_requests_total[1h]))',
+        from: EVIDENCE.window.from,
+        to: EVIDENCE.window.to,
+      },
+    };
+    const references: ReliabilityEvidenceReference[] = [
+      {
+        destination: 'dashboard',
+        label: 'Open service traffic dashboard',
+        path: '/d/service-traffic',
+      },
+      {
+        destination: 'logs',
+        path: '/explore?left=logs',
+      },
+      {
+        destination: 'dashboard',
+        path: 'https://example.com/not-a-grafana-path',
+      },
+    ];
+
+    const links = getEvidenceInvestigationLinks(evidenceWithSource, references, 1);
+
+    expect(links).toEqual([
+      expect.objectContaining({
+        destination: 'explore',
+        href: expect.stringMatching(/^\/explore\?/),
+        label: 'Open backing query in Explore',
+      }),
+      {
+        destination: 'dashboard',
+        href: '/d/service-traffic',
+        label: 'Open service traffic dashboard',
+      },
+      {
+        destination: 'logs',
+        href: '/explore?left=logs',
+        label: 'Open related logs',
+      },
+    ]);
   });
 });

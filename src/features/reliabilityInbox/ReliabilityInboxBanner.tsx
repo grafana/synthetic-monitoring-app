@@ -10,17 +10,14 @@ import { generateRoutePath } from 'routing/utils';
 
 import { ASSISTANT_ACTION_SIZE, ASSISTANT_GRADIENT, getAssistantActionStyle } from './assistantActionStyles';
 import { useReliabilityInboxSuggestions } from './data';
+import { compareReliabilityOpportunities } from './model';
 
 export function ReliabilityInboxBanner() {
   const styles = useStyles2(getStyles);
   const { data: opportunities = [] } = useReliabilityInboxSuggestions();
   const exposureTracked = useRef(false);
   const topOpportunity = useMemo(
-    () =>
-      opportunities.reduce<ReliabilityOpportunity | undefined>(
-        (top, opportunity) => (!top || opportunity.sortScore > top.sortScore ? opportunity : top),
-        undefined
-      ),
+    () => [...opportunities].sort(compareReliabilityOpportunities)[0] as ReliabilityOpportunity | undefined,
     [opportunities]
   );
 
@@ -46,9 +43,12 @@ export function ReliabilityInboxBanner() {
         <Icon name="ai-sparkle" className={styles.icon} aria-hidden="true" />
         <div>
           <strong>
-            Reliability Inbox · {opportunities.length} suggested {opportunities.length === 1 ? 'check' : 'checks'}
+            {opportunities.length} potential {opportunities.length === 1 ? 'gap' : 'gaps'} in your synthetic coverage
           </strong>
-          <span className={styles.priority}>Top suggestion: {topOpportunity.subject}</span>
+          <span className={styles.description}>
+            Public endpoints are receiving traffic that we couldn’t match to an existing check. Review the evidence and
+            choose what to monitor.
+          </span>
         </div>
       </div>
       <LinkButton
@@ -64,7 +64,7 @@ export function ReliabilityInboxBanner() {
           })
         }
       >
-        Review opportunities
+        Review suggested checks
       </LinkButton>
     </section>
   );
@@ -106,7 +106,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
       flexWrap: 'wrap',
     },
   }),
-  priority: css({
+  description: css({
     color: theme.colors.text.secondary,
     fontSize: theme.typography.bodySmall.fontSize,
   }),

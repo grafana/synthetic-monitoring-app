@@ -2,6 +2,7 @@ import { ReliabilitySuggestion } from './types';
 import { CheckType } from 'types';
 
 import {
+  compareReliabilityOpportunities,
   getProposedHttpCheckDraft,
   isInitialReviewCandidate,
   parseSuggestedCheckConfig,
@@ -232,6 +233,34 @@ describe('Reliability Inbox model', () => {
     expect(opportunity.importanceSummary).toBe(
       'This public endpoint receives observed traffic and may benefit from independent availability coverage.'
     );
+  });
+
+  it('prioritizes confidence, then value, before the raw suggestion score', () => {
+    const opportunities = [
+      { id: 'high-value-low-confidence', relevance: 99, confidence: 'low' },
+      { id: 'lower-value-high-confidence', relevance: 20, confidence: 'high' },
+      { id: 'high-value-medium-confidence', relevance: 95, confidence: 'medium' },
+      { id: 'medium-value-high-confidence', relevance: 55, confidence: 'high' },
+      { id: 'high-value-high-confidence', relevance: 75, confidence: 'high' },
+    ]
+      .map(({ id, relevance, confidence }) =>
+        toReliabilityOpportunity({
+          ...HTTP_SUGGESTION,
+          id,
+          target: `https://${id}.example.com/`,
+          relevance,
+          confidence,
+        })
+      )
+      .sort(compareReliabilityOpportunities);
+
+    expect(opportunities.map(({ id }) => id)).toEqual([
+      'high-value-high-confidence',
+      'medium-value-high-confidence',
+      'lower-value-high-confidence',
+      'high-value-medium-confidence',
+      'high-value-low-confidence',
+    ]);
   });
 
   it('uses hostname, non-default port, and meaningful path as the human-readable endpoint identity', () => {

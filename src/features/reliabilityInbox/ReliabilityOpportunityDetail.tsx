@@ -7,6 +7,7 @@ import { trackRecommendationDetailToggled } from 'features/tracking/reliabilityI
 import { ReliabilityOpportunity } from './types';
 
 import { OpportunitySignalBadges } from './OpportunitySignalBadges';
+import { ReliabilityEvidenceInvestigation } from './ReliabilityEvidenceInvestigation';
 import { ReliabilityEvidenceSnapshot } from './ReliabilityEvidenceSnapshot';
 import { ReliabilityOpportunityDetails, ReliabilityOpportunityDetailType } from './ReliabilityOpportunityDetails';
 import { SuggestedCheckCard } from './SuggestedCheckCard';
@@ -46,12 +47,6 @@ export function ReliabilityOpportunityDetail({
             confidence={opportunity.confidence}
             value={opportunity.value}
           />
-          <p className={styles.coverageSummary}>{opportunity.coverageSummary}</p>
-          <div className={styles.importance}>
-            <h3>Why this matters</h3>
-            <p>{opportunity.importanceSummary}</p>
-          </div>
-          <ReliabilityEvidenceSnapshot evidence={opportunity.evidenceSnapshot} />
         </div>
       </header>
       <SuggestedCheckCard
@@ -60,6 +55,19 @@ export function ReliabilityOpportunityDetail({
         onReview={onReview}
         opportunity={opportunity}
       />
+      <section className={styles.context} aria-labelledby="reliability-inbox-why-this-matters">
+        <div className={styles.readingColumn}>
+          <p className={styles.coverageSummary}>{opportunity.coverageSummary}</p>
+          <div className={styles.importance}>
+            <h3 id="reliability-inbox-why-this-matters">Why this matters</h3>
+            <p>{opportunity.importanceSummary}</p>
+          </div>
+          <div className={styles.evidence}>
+            <ReliabilityEvidenceSnapshot evidence={opportunity.evidenceSnapshot} />
+            <ReliabilityEvidenceInvestigation opportunity={opportunity} />
+          </div>
+        </div>
+      </section>
       <ReliabilityOpportunityDetails key={opportunity.id} onToggle={trackDetailToggle} opportunity={opportunity} />
     </article>
   );
@@ -74,7 +82,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     overflow: 'hidden',
   }),
   summary: css({
-    padding: theme.spacing(2.5),
+    padding: theme.spacing(2.5, 2.5, 2),
+  }),
+  context: css({
+    padding: theme.spacing(0, 2.5, 2.5),
   }),
   readingColumn: css({
     maxWidth: 800,
@@ -97,7 +108,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.text.primary,
     fontSize: theme.typography.body.fontSize,
     lineHeight: 1.5,
-    margin: theme.spacing(2, 0, 0),
+    margin: 0,
     maxWidth: '72ch',
   }),
   importance: css({
@@ -113,5 +124,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
       lineHeight: 1.5,
       margin: 0,
     },
+  }),
+  evidence: css({
+    marginTop: theme.spacing(1),
   }),
 });

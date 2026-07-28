@@ -1,6 +1,12 @@
 import { createDataFrame, dateTime, FieldType, LoadingState, PanelData } from '@grafana/data';
 
-import { ReliabilityEvidencePrototype } from './types';
+import { ReliabilityEvidencePrototype, ReliabilityEvidenceReference } from './types';
+
+export interface ReliabilityEvidenceInvestigationLink {
+  destination: ReliabilityEvidenceReference['destination'];
+  href: string;
+  label: string;
+}
 
 export function getEvidenceExploreUrl(
   evidence: ReliabilityEvidencePrototype,
@@ -52,6 +58,38 @@ export function getEvidenceExploreUrl(
   return `/explore?${params.toString()}`;
 }
 
+export function getEvidenceInvestigationLinks(
+  evidence: ReliabilityEvidencePrototype | undefined,
+  references: ReliabilityEvidenceReference[] | undefined,
+  orgId: number | undefined
+): ReliabilityEvidenceInvestigationLink[] {
+  const links: ReliabilityEvidenceInvestigationLink[] = [];
+  const exploreUrl = evidence ? getEvidenceExploreUrl(evidence, orgId) : undefined;
+
+  if (exploreUrl) {
+    links.push({
+      destination: 'explore',
+      href: exploreUrl,
+      label: 'Open backing query in Explore',
+    });
+  }
+
+  for (const reference of references ?? []) {
+    const path = reference.path.trim();
+    if (!isSafeGrafanaPath(path)) {
+      continue;
+    }
+
+    links.push({
+      destination: reference.destination,
+      href: path,
+      label: reference.label?.trim() || getDefaultReferenceLabel(reference.destination),
+    });
+  }
+
+  return links.filter((link, index) => links.findIndex((candidate) => candidate.href === link.href) === index);
+}
+
 export function getEvidencePanelData(evidence: ReliabilityEvidencePrototype): PanelData {
   const frame = createDataFrame({
     name: 'Observed requests',
@@ -86,4 +124,17 @@ export function getEvidencePanelData(evidence: ReliabilityEvidencePrototype): Pa
       },
     },
   };
+}
+
+function isSafeGrafanaPath(path: string) {
+  return path.startsWith('/') && !path.startsWith('//');
+}
+
+function getDefaultReferenceLabel(destination: ReliabilityEvidenceReference['destination']) {
+  return {
+    explore: 'Open backing query in Explore',
+    dashboard: 'Open backing dashboard',
+    logs: 'Open related logs',
+    traces: 'Open related traces',
+  }[destination];
 }

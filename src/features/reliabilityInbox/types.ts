@@ -9,6 +9,14 @@ const confidenceDimensionSchema = z
   })
   .strict();
 
+const reliabilityEvidenceReferenceSchema = z
+  .object({
+    destination: z.enum(['explore', 'dashboard', 'logs', 'traces']),
+    label: z.string().optional(),
+    path: z.string(),
+  })
+  .strict();
+
 const reliabilityEvidencePrototypeSchema = z
   .object({
     kind: z.literal('graft-demo-v1'),
@@ -48,6 +56,9 @@ export const reliabilitySuggestionSchema = z
         statusDistribution: z.record(z.string(), z.number()).optional(),
         families: z.array(z.string()).default([]),
         activitySemantics: z.array(z.string()).default([]),
+        // The suggestion service must provide the exact Grafana-relative destination.
+        // The frontend deliberately does not infer a query from aggregate metric names.
+        references: z.array(reliabilityEvidenceReferenceSchema).optional(),
       })
       .loose(),
     // Graft-only contract prototype. The production suggestion API does not return this field yet.
@@ -94,6 +105,7 @@ export const reliabilitySuggestionsSchema = z.object({
 
 export type ReliabilitySuggestion = z.infer<typeof reliabilitySuggestionSchema>;
 export type ReliabilityEvidencePrototype = z.infer<typeof reliabilityEvidencePrototypeSchema>;
+export type ReliabilityEvidenceReference = z.infer<typeof reliabilityEvidenceReferenceSchema>;
 
 export type OpportunityValue = 'high' | 'medium' | 'lower';
 export type OpportunityConfidence = 'high' | 'medium' | 'low';
