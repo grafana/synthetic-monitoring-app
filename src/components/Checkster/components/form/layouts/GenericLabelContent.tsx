@@ -3,6 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { FieldValidationMessage, LoadingPlaceholder, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useKGReservedLabels } from 'features/knowledgeGraph/KnowledgeGraphServiceLink.hooks';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues, FeatureName } from 'types';
@@ -27,6 +28,9 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
     formState: { errors },
   } = useFormContext<CheckFormValues>();
   const prevCalNamesRef = useRef<string[]>([]);
+  // service_name / namespace belong to the KG service-link section when the KG app is
+  // installed: their rows are hidden here and typing them shows a redirect message.
+  const kgReservedLabels = useKGReservedLabels();
 
   useEffect(() => {
     const prevCalNames = prevCalNamesRef.current;
@@ -83,6 +87,7 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
           namePlaceholder="name"
           valuePlaceholder="value"
           limit={labelLimit !== undefined ? labelLimit - calNames.length : undefined}
+          reservedNames={kgReservedLabels}
           namePrefix={
             <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
               <span

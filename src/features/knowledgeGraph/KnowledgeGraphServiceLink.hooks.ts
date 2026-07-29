@@ -1,11 +1,37 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { useAppPluginInstalled } from '@grafana/runtime';
 import { ComboboxOption } from '@grafana/ui';
 
 import { CheckFormValues, Label } from 'types';
 
-import { findLabelValue } from './knowledgeGraph';
+import { findLabelValue, KG_NAMESPACE_LABEL, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
 import { fetchServiceMatchExists, fetchServiceNames, fetchServiceNamespaces } from './knowledgeGraphApi';
+
+export interface KGReservedLabels {
+  names: string[];
+  message: (name: string) => string;
+}
+
+/**
+ * The label names managed by the KG service-link section (`service_name` / `namespace`),
+ * for hiding them from the custom-label rows and redirecting users who type them there.
+ * Returns `undefined` when the Knowledge Graph app is not installed — the names are then
+ * ordinary custom labels and no restriction applies.
+ */
+export function useKGReservedLabels(): KGReservedLabels | undefined {
+  const { value: kgInstalled } = useAppPluginInstalled(KG_PLUGIN_ID);
+
+  if (!kgInstalled) {
+    return undefined;
+  }
+
+  return {
+    names: [KG_SERVICE_NAME_LABEL, KG_NAMESPACE_LABEL],
+    message: (name: string) =>
+      `${name} is used for service connections. Select a service above to connect this check, or use a different name for your custom label.`,
+  };
+}
 
 function upsertLabel(labels: Label[], name: string, value: string): Label[] {
   const filtered = labels.filter((label) => label.name !== name);

@@ -14,8 +14,7 @@ import { KnowledgeGraphServiceLink } from './KnowledgeGraphServiceLink';
 const KG_API_BASE = '/api/plugins/grafana-asserts-app/resources/asserts/api-server';
 const PROPERTY_VALUES_URL = `${KG_API_BASE}/v1/entity_type/property_values`;
 const ENTITY_SEARCH_URL = `${KG_API_BASE}/v1/search`;
-const EXPAND_BUTTON = 'Service link';
-const REMOVE_BUTTON = 'Remove service link';
+const CLEAR_ICON = 'times';
 
 const mockUseAppPluginInstalled = useAppPluginInstalled as jest.Mock;
 
@@ -83,32 +82,20 @@ it(`renders nothing when the Knowledge Graph app is not installed`, async () => 
   renderServiceLink();
 
   expect(screen.queryByText('Link to Knowledge Graph service')).not.toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: EXPAND_BUTTON })).not.toBeInTheDocument();
 });
 
-it(`starts collapsed with an expand button when no service link labels are set`, async () => {
+it(`shows the service link fields directly, with no expand or remove actions`, async () => {
   setKgInstalled(true);
   mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
   renderServiceLink();
 
-  expect(await screen.findByRole('button', { name: EXPAND_BUTTON })).toBeInTheDocument();
-  expect(screen.queryByPlaceholderText('Select or type a service name')).not.toBeInTheDocument();
-  expect(screen.queryByPlaceholderText('Select or type a namespace')).not.toBeInTheDocument();
-});
-
-it(`reveals the service link fields when expanded`, async () => {
-  setKgInstalled(true);
-  mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
-  const { user } = renderServiceLink();
-
-  await user.click(await screen.findByRole('button', { name: EXPAND_BUTTON }));
-
   expect(await screen.findByPlaceholderText('Select or type a service name')).toBeInTheDocument();
   expect(screen.getByPlaceholderText('Select or type a namespace')).toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: EXPAND_BUTTON })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Service link' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Remove service link' })).not.toBeInTheDocument();
 });
 
-it(`starts expanded and pre-populates the fields from existing service_name / namespace labels`, async () => {
+it(`pre-populates the fields from existing service_name / namespace labels`, async () => {
   setKgInstalled(true);
   mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
   renderServiceLink({
@@ -120,15 +107,12 @@ it(`starts expanded and pre-populates the fields from existing service_name / na
 
   expect(await screen.findByDisplayValue('frontend')).toBeInTheDocument();
   expect(screen.getByDisplayValue('otel-demo')).toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: EXPAND_BUTTON })).not.toBeInTheDocument();
 });
 
 it(`writes service_name and namespace into the check labels when a service is selected`, async () => {
   setKgInstalled(true);
   mockKgApi({ names: ['frontend', 'cartservice'], namespaces: ['otel-demo'] });
   const { user } = renderServiceLink();
-
-  await user.click(await screen.findByRole('button', { name: EXPAND_BUTTON }));
 
   const serviceInput = await screen.findByPlaceholderText('Select or type a service name');
   await user.click(serviceInput);
@@ -152,8 +136,6 @@ it(`writes to calLabels instead of labels when service_name is a cost attributio
   mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
   const { user } = renderServiceLink({ calLabels: [{ name: 'service_name', value: '' }] });
 
-  await user.click(await screen.findByRole('button', { name: EXPAND_BUTTON }));
-
   const serviceInput = await screen.findByPlaceholderText('Select or type a service name');
   await user.click(serviceInput);
   await user.click(await screen.findByRole('option', { name: 'frontend' }));
@@ -164,43 +146,20 @@ it(`writes to calLabels instead of labels when service_name is a cost attributio
   expect(screen.getByTestId('labels-output')).not.toHaveTextContent('service_name');
 });
 
-it(`clears the labels and collapses when the service link is removed`, async () => {
+it(`offers a clearable combobox per row as the only way to unset a value`, async () => {
   setKgInstalled(true);
   mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
-  const { user } = renderServiceLink({
+  renderServiceLink({
     labels: [
       { name: 'service_name', value: 'frontend' },
       { name: 'namespace', value: 'otel-demo' },
-      { name: 'team', value: 'sm' },
     ],
   });
 
-  await user.click(await screen.findByRole('button', { name: REMOVE_BUTTON }));
-
-  await waitFor(() => {
-    const output = screen.getByTestId('labels-output').textContent ?? '';
-    expect(output).not.toContain('service_name');
-    expect(output).not.toContain('namespace');
-  });
-  // unrelated labels are preserved and the section collapses back to the expand button
-  expect(screen.getByTestId('labels-output')).toHaveTextContent('"name":"team","value":"sm"');
-  expect(screen.getByRole('button', { name: EXPAND_BUTTON })).toBeInTheDocument();
-});
-
-it(`keeps the CAL row (with an empty value) when a CAL-managed service link is removed`, async () => {
-  setKgInstalled(true);
-  mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
-  const { user } = renderServiceLink({
-    calLabels: [{ name: 'service_name', value: 'frontend' }],
-    labels: [{ name: 'namespace', value: 'otel-demo' }],
-  });
-
-  await user.click(await screen.findByRole('button', { name: REMOVE_BUTTON }));
-
-  await waitFor(() => {
-    expect(screen.getByTestId('cal-labels-output')).toHaveTextContent('"name":"service_name","value":""');
-  });
-  expect(screen.getByTestId('labels-output')).not.toHaveTextContent('namespace');
+  expect(await screen.findByDisplayValue('frontend')).toBeInTheDocument();
+  // the combobox clear affordance (its click handler is not wired up under the test's
+  // inline-svg mock, so what clearing does to the labels is covered in the hooks test)
+  expect(screen.getAllByTestId(CLEAR_ICON)).toHaveLength(2);
 });
 
 it(`shows a confirmation when the selected service exists in the Knowledge Graph`, async () => {
