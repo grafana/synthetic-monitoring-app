@@ -62,9 +62,9 @@ const LINKED_CHECK = checkWithLabels([
   { name: 'namespace', value: 'otel-demo' },
 ]);
 
-async function renderAndExpand(check: Check) {
+async function renderSection(check: Check) {
   const result = render(<ConnectedServices check={check} />);
-  await result.user.click(await screen.findByRole('button', { name: 'Expand connected services' }));
+  await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.section);
   return result;
 }
 
@@ -75,15 +75,9 @@ it('renders nothing when the Knowledge Graph app is not installed', async () => 
   expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.section)).not.toBeInTheDocument();
 });
 
-it('is collapsed by default and reveals the zero state when expanded (unlinked check)', async () => {
+it('is expanded on load and shows the zero state for an unlinked check', async () => {
   setKgInstalled(true);
-  const { user } = render(<ConnectedServices check={checkWithLabels([{ name: 'Team', value: 'platform' }])} />);
-
-  // The section header is present but the body (and therefore the zero state) is hidden until expanded.
-  expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.section)).toBeInTheDocument();
-  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).not.toBeInTheDocument();
-
-  await user.click(screen.getByRole('button', { name: 'Expand connected services' }));
+  await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));
 
   expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).toBeInTheDocument();
   expect(screen.getByText('Connect this check to a service')).toBeInTheDocument();
@@ -94,15 +88,15 @@ it('is collapsed by default and reveals the zero state when expanded (unlinked c
   );
 });
 
-it('can be collapsed again after expanding', async () => {
+it('can be collapsed and expanded again', async () => {
   setKgInstalled(true);
-  const { user } = render(<ConnectedServices check={checkWithLabels([{ name: 'Team', value: 'platform' }])} />);
-
-  await user.click(await screen.findByRole('button', { name: 'Expand connected services' }));
-  expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).toBeInTheDocument();
+  const { user } = await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));
 
   await user.click(screen.getByRole('button', { name: 'Collapse connected services' }));
   expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: 'Expand connected services' }));
+  expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).toBeInTheDocument();
 });
 
 it('renders the neighbourhood graph from the Cypher query result (linked check)', async () => {
@@ -111,7 +105,7 @@ it('renders the neighbourhood graph from the Cypher query result (linked check)'
   const query = jest.fn().mockReturnValue(of({ data: [nodes, edges], state: LoadingState.Done }));
   setKgDatasource(query);
 
-  await renderAndExpand(LINKED_CHECK);
+  await renderSection(LINKED_CHECK);
 
   expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph)).toBeInTheDocument();
   expect(screen.getAllByTestId(CONNECTED_SERVICES_TEST_ID.node)).toHaveLength(4);
@@ -133,7 +127,7 @@ it('shows the insights popup on node hover, with the deep link into the KG app',
   const query = jest.fn().mockReturnValue(of({ data: [nodes, edges], state: LoadingState.Done }));
   setKgDatasource(query);
 
-  const { user } = await renderAndExpand(LINKED_CHECK);
+  const { user } = await renderSection(LINKED_CHECK);
   await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph);
 
   await user.hover(screen.getByRole('button', { name: 'frontend (Service)' }));
@@ -157,7 +151,7 @@ it('highlights an edge on hover and names the connection', async () => {
   const query = jest.fn().mockReturnValue(of({ data: [nodes, edges], state: LoadingState.Done }));
   setKgDatasource(query);
 
-  const { user } = await renderAndExpand(LINKED_CHECK);
+  const { user } = await renderSection(LINKED_CHECK);
   await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph);
 
   const edgeGroups = screen.getAllByTestId(CONNECTED_SERVICES_TEST_ID.edge);
@@ -184,7 +178,7 @@ it('shows the not-discovered-yet message when the query returns no entities', as
   const query = jest.fn().mockReturnValue(of({ data: [], state: LoadingState.Done }));
   setKgDatasource(query);
 
-  await renderAndExpand(LINKED_CHECK);
+  await renderSection(LINKED_CHECK);
 
   expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.empty)).toBeInTheDocument();
 });
@@ -194,7 +188,7 @@ it('shows the error state with a retry action when the query fails', async () =>
   const query = jest.fn().mockReturnValue(throwError(() => new Error('knowledge graph unavailable')));
   setKgDatasource(query);
 
-  await renderAndExpand(LINKED_CHECK);
+  await renderSection(LINKED_CHECK);
 
   expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.error)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();

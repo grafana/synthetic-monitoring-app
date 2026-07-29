@@ -52,7 +52,9 @@ export function ConnectedServices({ check }: ConnectedServicesProps) {
 
 function ConnectedServicesSection({ check }: ConnectedServicesProps) {
   const styles = useStyles2(getStyles);
-  const [isOpen, setIsOpen] = useState(false);
+  // Expanded on load: the graph is the point of the section, and the KG query only runs for a
+  // check that is actually linked to a service.
+  const [isOpen, setIsOpen] = useState(true);
 
   const serviceName = findLabelValue(check.labels ?? [], KG_SERVICE_NAME_LABEL);
   const namespace = findLabelValue(check.labels ?? [], KG_NAMESPACE_LABEL);

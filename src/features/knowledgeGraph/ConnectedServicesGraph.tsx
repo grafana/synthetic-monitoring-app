@@ -164,7 +164,9 @@ function NodeGlyph({ positioned, theme }: NodeGlyphProps) {
           textAnchor="middle"
           fontSize={11}
           fill={theme.colors.text.primary}
-          style={{ textShadow: `0 0 4px ${theme.colors.background.canvas}` }}
+          // Halo in the section's own background colour, so labels stay readable where they
+          // cross an edge.
+          style={{ textShadow: `0 0 4px ${theme.colors.background.primary}` }}
         >
           {label}
         </text>
@@ -356,9 +358,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     justifyContent: 'center',
     overflowX: 'auto',
-    background: theme.colors.background.canvas,
-    borderRadius: theme.shape.radius.default,
-    padding: theme.spacing(2),
+    // No surface of its own: the graph sits directly on the section's background so the
+    // section reads as one panel. Horizontal padding comes from the section body.
+    padding: theme.spacing(1, 0),
   }),
   insightList: css({
     listStyle: 'none',
