@@ -5,7 +5,14 @@ export enum QueryType {
   Probes = 'probes',
   Checks = 'checks',
   Traceroute = 'traceroute',
+  // Named queries resolved by the backend (pkg/plugin/namedqueries.go). The app
+  // passes parameters; the backend owns the expression and picks the datasource.
+  ChecksUptime = 'checks_uptime',
+  CheckErrorLogs = 'check_error_logs',
 }
+
+/** Query types served by the Go backend rather than in the browser. */
+export const BACKEND_QUERY_TYPES: readonly QueryType[] = [QueryType.ChecksUptime, QueryType.CheckErrorLogs];
 
 export interface SMQuery extends DataQuery {
   queryType: QueryType;
@@ -13,6 +20,10 @@ export interface SMQuery extends DataQuery {
   job?: string;
   probe?: string;
   query: string;
+  /** checks_uptime: the check's frequency in milliseconds */
+  frequency?: number;
+  /** check_error_logs: restrict to failed executions */
+  unsuccessfulOnly?: boolean;
 }
 
 export const DEFAULT_QUERY: SMQuery = {
