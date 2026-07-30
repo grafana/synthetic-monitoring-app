@@ -3,6 +3,16 @@
   "name": "Synthetic Monitoring API",
   "id": "synthetic-monitoring-datasource",
   "metrics": true,
+  "logs": true,
+  "backend": true,
+  "executable": "gpx_sm_datasource",
+
+  "iam": {
+    "permissions": [
+      { "action": "datasources:read", "scope": "datasources:*" },
+      { "action": "datasources:query", "scope": "datasources:*" }
+    ]
+  },
 
   "routes": [
     {
