@@ -36,8 +36,9 @@ type settings struct {
 
 // Datasource is one configured instance of the SM datasource.
 type Datasource struct {
-	settings settings
-	grafana  *grafanaClient
+	settings   settings
+	grafana    *grafanaClient
+	authorizer *authorizer
 }
 
 // NewDatasource is the instancemgmt factory registered with datasource.Manage.
@@ -49,7 +50,13 @@ func NewDatasource(_ context.Context, is backend.DataSourceInstanceSettings) (in
 		}
 	}
 
-	return &Datasource{settings: s, grafana: newGrafanaClient()}, nil
+	client := newGrafanaClient()
+
+	return &Datasource{
+		settings:   s,
+		grafana:    client,
+		authorizer: newAuthorizer(client.http),
+	}, nil
 }
 
 // Dispose satisfies instancemgmt.InstanceDisposer.

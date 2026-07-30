@@ -56,6 +56,16 @@ func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataReques
 	for ds, queries := range byTarget {
 		tr := ranges[ds]
 
+		// The user, not the plugin, has to be entitled to this data.
+		if err := d.authorizer.authorize(ctx, url, token, req.PluginContext.User, ds); err != nil {
+			log.DefaultLogger.Warn("denying query", "datasource", ds.UID, "error", err)
+
+			for _, q := range queries {
+				response.Responses[q.RefID] = backend.ErrDataResponse(backend.StatusForbidden, err.Error())
+			}
+			continue
+		}
+
 		result, err := d.grafana.query(ctx, url, token, tr.From, tr.To, queries)
 		if err != nil {
 			// the whole group failed; report it against each of its queries
