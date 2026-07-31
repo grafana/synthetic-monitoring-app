@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues, FeatureName } from 'types';
+import { CostAttributionSetupHint } from 'components/CostAttribution/CostAttributionSetupHint';
 import { FeatureFlag } from 'components/FeatureFlag';
 
 import { SectionContent } from '../../ui/SectionContent';
@@ -71,7 +72,15 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
     <SectionContent>
       <div data-testid={CHECKSTER_TEST_ID.form.components.GenericLabelContent.root} className={styles.container}>
         <FeatureFlag name={FeatureName.CALs}>
-          {({ isEnabled }) => (isEnabled ? <CostAttributionLabelsField calNames={calNames} /> : null)}
+          {({ isEnabled }) =>
+            isEnabled ? (
+              calNames.length > 0 ? (
+                <CostAttributionLabelsField calNames={calNames} />
+              ) : (
+                <CostAttributionSetupHint />
+              )
+            ) : null
+          }
         </FeatureFlag>
         <GenericNameValueField
           allowEmpty

@@ -8,6 +8,7 @@ import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { CheckFormValues, CheckType } from 'types';
 import { checkFormValuesToUsageCalcValues } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
+import { CostAttributionUsageTooltip } from 'components/CostAttribution/CostAttributionUsageTooltip';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
@@ -66,14 +67,19 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
       </Label>
       <div className={styles.calcList}>
         <div className={styles.section}>
-          <Icon className={styles.icon} name="calendar-alt" />
-          Test executions per month: <strong className={styles.value}>{usage.checksPerMonth.toLocaleString()}</strong>
+          <CostAttributionUsageTooltip source="check_form" metric="executions_per_month">
+            <Icon className={styles.icon} name="calendar-alt" />
+            Test executions per month:{' '}
+            <strong className={styles.value}>{usage.checksPerMonth.toLocaleString()}</strong>
+          </CostAttributionUsageTooltip>
         </div>
         {!hideTelemetry && (
           <>
             <div className={styles.section}>
-              <Icon className={styles.icon} name="chart-line" />
-              Active series: <strong className={styles.value}>{usage.activeSeries.toLocaleString()}</strong>
+              <CostAttributionUsageTooltip source="check_form" metric="active_series">
+                <Icon className={styles.icon} name="chart-line" />
+                Active series: <strong className={styles.value}>{usage.activeSeries.toLocaleString()}</strong>
+              </CostAttributionUsageTooltip>
             </div>
             <div className={styles.section}>
               <Icon className={styles.icon} name="clock-nine" />

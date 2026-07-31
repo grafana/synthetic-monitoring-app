@@ -5,6 +5,10 @@ import { css, cx } from '@emotion/css';
 import pluralize from 'pluralize';
 
 import { Label } from 'types';
+import {
+  CostAttributionUsageTooltip,
+  UsageMetric,
+} from 'components/CostAttribution/CostAttributionUsageTooltip';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
 
@@ -38,11 +42,11 @@ export const CheckListItemDetails = ({
   const probeLocationsMessage = probeLocations === 1 ? `${probeLocations} location` : `${probeLocations} locations`;
   const executionRateMessage = executionsRate ? `${executionsRate} executions / month` : null;
   const detailItems = [
-    `${frequency / 1000}s frequency`,
-    activeSeriesMessage,
-    probeLocationsMessage,
-    executionRateMessage,
-  ].filter((item): item is string => Boolean(item));
+    { text: `${frequency / 1000}s frequency` },
+    { text: activeSeriesMessage, metric: 'active_series' as UsageMetric },
+    { text: probeLocationsMessage },
+    { text: executionRateMessage, metric: 'executions_per_month' as UsageMetric },
+  ].filter((item): item is { text: string; metric?: UsageMetric } => Boolean(item.text));
   const hasCalLabels = (calLabels?.length ?? 0) > 0;
 
   return (
@@ -53,13 +57,21 @@ export const CheckListItemDetails = ({
       })}
     >
       {detailItems.map((item, index) => (
-        <React.Fragment key={`${item}-${index}`}>
+        <React.Fragment key={`${item.text}-${index}`}>
           {layout === 'inline' && index > 0 && (
             <span className={styles.separator} aria-hidden="true">
               |
             </span>
           )}
-          <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>{item}</span>
+          {item.metric ? (
+            <CostAttributionUsageTooltip source="check_list" metric={item.metric}>
+              <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>
+                {item.text}
+              </span>
+            </CostAttributionUsageTooltip>
+          ) : (
+            <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>{item.text}</span>
+          )}
         </React.Fragment>
       ))}
       {labels && onLabelClick && (
