@@ -2,13 +2,10 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { getCountDistinctTargetsQuery } from 'queries/countDistinctTargets';
-import { getScriptedDataReceivedQuery } from 'queries/scriptedDataReceived';
-import { getScriptedDataSentQuery } from 'queries/scriptedDataSent';
-import { getSumDurationByProbeQuery } from 'queries/sumDurationByProbe';
 
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
+import { QueryType } from 'datasource/types';
 import { AssertionsTable } from 'scenes/Common/AssertionsTable';
 import { AvgLatency } from 'scenes/Common/AvgLatencyViz';
 import { DashboardContainer } from 'scenes/Common/DashboardContainer';
@@ -47,13 +44,16 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
       </div>
       <Stack height={`200px`}>
         <Box width={`200px`}>
-          <DistinctTargets query={getCountDistinctTargetsQuery({ metric: 'probe_http_info' })} />
+          <DistinctTargets query={{ queryType: QueryType.CountDistinctTargets, metric: 'probe_http_info' }} />
         </Box>
-        <DurationByProbe query={getSumDurationByProbeQuery({ metric: 'probe_http_total_duration_seconds' })} unit="s" />
+        <DurationByProbe
+          query={{ queryType: QueryType.SumDurationByProbe, metric: 'probe_http_total_duration_seconds' }}
+          unit="s"
+        />
       </Stack>
       <div className={styles.dataRow}>
-        <DataSent query={getScriptedDataSentQuery()} />
-        <DataReceived query={getScriptedDataReceivedQuery()} />
+        <DataSent query={{ queryType: QueryType.ScriptedDataSent }} />
+        <DataReceived query={{ queryType: QueryType.ScriptedDataReceived }} />
       </div>
       <AssertionsTable checkType={CheckType.Scripted} check={check} />
       <ResultsByTargetTable checkType={checkType} />
