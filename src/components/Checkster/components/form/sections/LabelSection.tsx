@@ -34,6 +34,7 @@ export function LabelSection() {
         isLoading={isInitialLoad}
         calNames={calData?.names ?? []}
         labelLimit={maxAllowedMetricLabels}
+        showCalSetupHint={calData !== undefined && calData.names.length === 0}
       />
     </FormSection>
   );

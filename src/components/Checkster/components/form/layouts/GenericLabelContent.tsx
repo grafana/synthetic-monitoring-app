@@ -18,9 +18,18 @@ interface GenericLabelContentProps {
   isLoading?: boolean;
   calNames?: string[];
   labelLimit?: number;
+  // True only when the CALs query succeeded with an empty list — a failed fetch must not
+  // show setup nudges to tenants that already have CALs configured.
+  showCalSetupHint?: boolean;
 }
 
-export function GenericLabelContent({ description, isLoading, calNames = [], labelLimit }: GenericLabelContentProps) {
+export function GenericLabelContent({
+  description,
+  isLoading,
+  calNames = [],
+  labelLimit,
+  showCalSetupHint = false,
+}: GenericLabelContentProps) {
   const styles = useStyles2(getStyles);
   const {
     getValues,
@@ -76,9 +85,9 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
             isEnabled ? (
               calNames.length > 0 ? (
                 <CostAttributionLabelsField calNames={calNames} />
-              ) : (
+              ) : showCalSetupHint ? (
                 <CostAttributionSetupHint />
-              )
+              ) : null
             ) : null
           }
         </FeatureFlag>

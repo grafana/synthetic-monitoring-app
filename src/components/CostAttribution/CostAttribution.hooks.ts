@@ -6,13 +6,15 @@ import { useFeatureFlag } from 'hooks/useFeatureFlag';
 // The underlying query is deduped by react-query, so calling this per check list item is cheap.
 export function useCostAttributionSetupStatus() {
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
-  const { data, isLoading } = useTenantCostAttributionLabels();
+  const { data } = useTenantCostAttributionLabels();
   const calNames = isCALsEnabled ? (data?.names ?? []) : [];
 
   return {
     isCALsEnabled,
     calNames,
-    // Never true while loading, so nudges don't flash for tenants that have CALs configured.
-    needsSetup: isCALsEnabled && !isLoading && calNames.length === 0,
+    // Only true once the query has succeeded with an empty list — while loading or on
+    // error, data is undefined, so tenants that do have CALs configured never see setup
+    // nudges because of a failed fetch.
+    needsSetup: isCALsEnabled && data !== undefined && data.names.length === 0,
   };
 }

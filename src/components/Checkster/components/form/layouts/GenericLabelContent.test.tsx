@@ -64,7 +64,7 @@ describe('GenericLabelContent', () => {
     });
 
     it('shows the cost attribution setup hint with a CMAB settings link when calNames is empty', async () => {
-      renderGenericLabelContent({ calNames: [] });
+      renderGenericLabelContent({ calNames: [], showCalSetupHint: true });
 
       expect(await screen.findByTestId('cost-attribution-setup-hint')).toBeInTheDocument();
       const link = screen.getByRole('link', { name: /Set up cost attribution/ });
@@ -78,6 +78,14 @@ describe('GenericLabelContent', () => {
       await waitFor(() => {
         expect(screen.getByText('Cost attribution labels')).toBeInTheDocument();
       });
+      expect(screen.queryByTestId('cost-attribution-setup-hint')).not.toBeInTheDocument();
+    });
+
+    it('does not show the setup hint when the CALs query has not succeeded', () => {
+      // showCalSetupHint stays false while the CALs query is loading or errored, so a
+      // failed fetch never shows setup nudges to tenants that have CALs configured.
+      renderGenericLabelContent({ calNames: [], showCalSetupHint: false });
+
       expect(screen.queryByTestId('cost-attribution-setup-hint')).not.toBeInTheDocument();
     });
 
@@ -260,7 +268,7 @@ describe('GenericLabelContent', () => {
     });
 
     it('does not show the cost attribution setup hint', () => {
-      renderGenericLabelContent({ calNames: [] });
+      renderGenericLabelContent({ calNames: [], showCalSetupHint: true });
 
       expect(screen.queryByTestId('cost-attribution-setup-hint')).not.toBeInTheDocument();
     });

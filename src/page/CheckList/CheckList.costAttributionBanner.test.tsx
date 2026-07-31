@@ -87,6 +87,19 @@ describe('CheckList - cost attribution setup banner', () => {
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
 
+    it('does not show the banner when the CALs request fails', async () => {
+      server.use(
+        apiRoute(`getTenantCostAttributionLabels`, {
+          result: () => ({
+            status: 500,
+          }),
+        })
+      );
+      await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER));
+
+      expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
+    });
+
     it('does not show the banner when CALs are already configured', async () => {
       mockCalNames([`Team`, `Service`]);
       await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER));
