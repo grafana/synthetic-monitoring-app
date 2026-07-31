@@ -5,6 +5,7 @@ export enum AppRoutes {
   ChooseCheckGroup = 'checks/choose-type',
   Config = 'config', // config (index)
   EditCheck = 'checks/:id/edit',
+  FolderDashboard = 'checks/folders/:uid',
   ViewProbe = 'probes/:id',
   EditProbe = 'probes/:id/edit',
   Home = 'home',

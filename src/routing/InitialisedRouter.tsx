@@ -22,6 +22,7 @@ import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManageme
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
 import { DashboardPage } from 'page/DashboardPage';
 import { EditProbe } from 'page/EditProbe';
+import { FolderPage } from 'page/FolderPage';
 import { NewProbe } from 'page/NewProbe';
 import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
@@ -71,6 +72,16 @@ export const InitialisedRouter = () => {
 
       <Route path={AppRoutes.Checks}>
         <Route index element={<CheckList />} />
+        <Route
+          path="folders/:uid"
+          element={
+            canReadChecks ? (
+              <FolderPage />
+            ) : (
+              <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
+            )
+          }
+        />
         <Route path=":id">
           <Route
             index

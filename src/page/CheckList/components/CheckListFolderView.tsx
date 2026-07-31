@@ -7,6 +7,7 @@ import {
   ConfirmModal,
   Icon,
   IconButton,
+  LinkButton,
   Pagination,
   Spinner,
   Stack,
@@ -17,6 +18,8 @@ import { css } from '@emotion/css';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort, CheckType, GrafanaFolder, Label } from 'types';
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { useCheckFolderStatus } from 'contexts/CheckFolderAccessContext';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 import { useDeleteFolder } from 'data/useFolders';
@@ -385,6 +388,17 @@ function FolderTreeBranch({
             </span>
           </Stack>
         </button>
+        {!node.isOrphaned && !node.isDefault && (
+          <LinkButton
+            fill="text"
+            size="sm"
+            icon="chart-line"
+            href={generateRoutePath(AppRoutes.FolderDashboard, { uid: node.folderUid })}
+            aria-label={`View dashboard for folder ${node.folder?.title ?? node.folderUid}`}
+          >
+            View dashboard
+          </LinkButton>
+        )}
         {showActions && !isEmpty && (
           <div className={styles.folderActions}>
             <FolderBulkActions
