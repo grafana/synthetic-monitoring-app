@@ -4,6 +4,7 @@ import { TENANT_COST_ATTRIBUTION_LABELS } from 'test/fixtures/tenants';
 import { mockFeatureToggles } from 'test/utils';
 
 import { FeatureName } from 'types';
+import { CMAB_URLS } from 'components/CostAttribution/CostAttribution.constants';
 
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericLabelContent } from './GenericLabelContent';
@@ -60,6 +61,24 @@ describe('GenericLabelContent', () => {
       renderGenericLabelContent({ calNames: [] });
 
       expect(screen.queryByText(/Cost attribution labels/)).not.toBeInTheDocument();
+    });
+
+    it('shows the cost attribution setup hint with a CMAB settings link when calNames is empty', async () => {
+      renderGenericLabelContent({ calNames: [] });
+
+      expect(await screen.findByTestId('cost-attribution-setup-hint')).toBeInTheDocument();
+      const link = screen.getByRole('link', { name: /Set up cost attribution/ });
+      expect(link).toHaveAttribute('href', CMAB_URLS.settings);
+      expect(link).toHaveAttribute('target', '_blank');
+    });
+
+    it('does not show the setup hint when calNames are provided', async () => {
+      renderGenericLabelContent({ calNames });
+
+      await waitFor(() => {
+        expect(screen.getByText('Cost attribution labels')).toBeInTheDocument();
+      });
+      expect(screen.queryByTestId('cost-attribution-setup-hint')).not.toBeInTheDocument();
     });
 
     it('does not show remove buttons for CAL rows', async () => {
@@ -238,6 +257,12 @@ describe('GenericLabelContent', () => {
       renderGenericLabelContent({ calNames });
 
       expect(screen.queryByText(/Cost attribution labels/)).not.toBeInTheDocument();
+    });
+
+    it('does not show the cost attribution setup hint', () => {
+      renderGenericLabelContent({ calNames: [] });
+
+      expect(screen.queryByTestId('cost-attribution-setup-hint')).not.toBeInTheDocument();
     });
 
     it('renders the custom labels section normally', () => {
