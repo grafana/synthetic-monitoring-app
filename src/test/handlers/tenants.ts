@@ -59,6 +59,15 @@ export const getTenantCostAttributionLabels: ApiEntry<ListTenantCostAttributionL
   route: `/sm/tenant/cals`,
   method: `get`,
   result: () => {
+    // Dev-mode demo toggle: append `&sm-demo-no-cals` to the page URL when running
+    // `yarn dev:msw` to preview the "no cost attribution labels configured" state
+    // (e.g. the cost attribution discovery nudges). Never set in tests.
+    if (typeof window !== 'undefined' && window.location.search.includes('sm-demo-no-cals')) {
+      return {
+        json: { names: [] },
+      };
+    }
+
     return {
       json: TENANT_COST_ATTRIBUTION_LABELS,
     };
