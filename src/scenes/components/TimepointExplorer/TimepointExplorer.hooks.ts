@@ -3,9 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { colorManipulator } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
-import { queryMimir } from 'features/queryDatasources/queryMimir';
-import { getCheckConfigsQuery } from 'queries/getCheckConfigsQuery';
-import { getCheckProbeMaxDuration } from 'queries/getCheckProbeMaxDuration';
+import { queryNamedQuery } from 'features/queryDatasources/queryNamedQuery';
 
 import {
   ExecutionLabels,
@@ -15,8 +13,9 @@ import {
 } from 'features/parseCheckLogs/checkLogs.types';
 import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { Check } from 'types';
+import { QueryType } from 'datasource/types';
 import { InfiniteLogsParams, useInfiniteLogs } from 'data/useInfiniteLogs';
-import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSMDS } from 'hooks/useSMDS';
 import { useSceneAnnotation } from 'scenes/Common/useSceneAnnotation';
 import { useSceneRefreshPicker } from 'scenes/Common/useSceneRefreshPicker';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
@@ -221,30 +220,32 @@ export function usePersistedCheckConfigs({ from, to, check, probe }: UseCheckCon
 }
 
 function useCheckConfigs({ from, to, check, probe }: UseCheckConfigsProps) {
-  const metricsDS = useMetricsDS();
-  const { expr, interval, queryType } = getCheckConfigsQuery({
-    job: check.job,
-    instance: check.target,
-    probe: probe?.join('|'),
-  });
+  const smDS = useSMDS();
 
   return useQuery({
-    queryKey: ['uniqueCheckConfigs', metricsDS, expr, queryType, REF_ID_UNIQUE_CHECK_CONFIGS, from, to, interval],
-    queryFn: () => {
-      if (!metricsDS) {
-        return Promise.reject('No metrics data source found');
-      }
-
-      return queryMimir({
-        datasource: metricsDS,
-        query: expr,
-        start: from,
-        end: to,
+    queryKey: [
+      'uniqueCheckConfigs',
+      smDS.instanceSettings,
+      check.job,
+      check.target,
+      probe,
+      REF_ID_UNIQUE_CHECK_CONFIGS,
+      from,
+      to,
+    ],
+    queryFn: () =>
+      queryNamedQuery({
+        datasource: smDS.instanceSettings,
+        queryType: QueryType.CheckConfigs,
         refId: REF_ID_UNIQUE_CHECK_CONFIGS,
-        queryType,
-        interval,
-      });
-    },
+        params: {
+          job: check.job,
+          instance: check.target,
+          probe: probe?.join('|'),
+        },
+        from,
+        to,
+      }),
     select: (data) => {
       const configs = data.map((d) => extractFrequenciesAndConfigs(d)).flat();
 
@@ -272,30 +273,32 @@ export function usePersistedMaxProbeDuration({ from, to, check, probe }: UseMaxP
 }
 
 function useMaxProbeDuration({ from, to, check, probe }: UseMaxProbeDurationProps) {
-  const metricsDS = useMetricsDS();
+  const smDS = useSMDS();
 
   return useQuery({
-    queryKey: ['aggregation', metricsDS, check.job, check.target, REF_ID_MAX_PROBE_DURATION, from, to, probe],
-    queryFn: () => {
-      if (!metricsDS) {
-        return Promise.reject('No metrics data source found');
-      }
-
-      const { expr, queryType } = getCheckProbeMaxDuration({
-        job: check.job,
-        instance: check.target,
-        probe: probe?.join('|'),
-      });
-
-      return queryMimir({
-        datasource: metricsDS,
-        query: expr,
-        start: from,
-        end: to,
+    queryKey: [
+      'aggregation',
+      smDS.instanceSettings,
+      check.job,
+      check.target,
+      REF_ID_MAX_PROBE_DURATION,
+      from,
+      to,
+      probe,
+    ],
+    queryFn: () =>
+      queryNamedQuery({
+        datasource: smDS.instanceSettings,
+        queryType: QueryType.CheckProbeMaxDuration,
         refId: REF_ID_MAX_PROBE_DURATION,
-        queryType,
-      });
-    },
+        params: {
+          job: check.job,
+          instance: check.target,
+          probe: probe?.join('|'),
+        },
+        from,
+        to,
+      }),
     select: (data) => {
       const values = data.map((d) => d.fields?.[1]?.values || []).flat();
 

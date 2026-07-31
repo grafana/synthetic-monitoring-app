@@ -7,12 +7,47 @@ export enum QueryType {
   Traceroute = 'traceroute',
   // Named queries resolved by the backend (pkg/plugin/namedqueries.go). The app
   // passes parameters; the backend owns the expression and picks the datasource.
-  ChecksUptime = 'checks_uptime',
+  AvgQuantileWebVital = 'avg_quantile_web_vital',
+  BrowserDataReceived = 'browser_data_received',
+  BrowserDataSent = 'browser_data_sent',
+  CheckConfigs = 'check_configs',
   CheckErrorLogs = 'check_error_logs',
+  CheckProbeMaxDuration = 'check_probe_max_duration',
+  ChecksUptime = 'checks_uptime',
+  CountDistinctTargets = 'count_distinct_targets',
+  ProbeExecutionRate = 'probe_execution_rate',
+  ProbeFailureRate = 'probe_failure_rate',
+  Reachability = 'reachability',
+  ScriptedDataReceived = 'scripted_data_received',
+  ScriptedDataSent = 'scripted_data_sent',
+  SumDurationByProbe = 'sum_duration_by_probe',
 }
 
-/** Query types served by the Go backend rather than in the browser. */
-export const BACKEND_QUERY_TYPES: readonly QueryType[] = [QueryType.ChecksUptime, QueryType.CheckErrorLogs];
+/**
+ * Query types served by the Go backend rather than in the browser.
+ *
+ * The backend also serves avg_request_latency, avg_request_success_rate,
+ * avg_request_expected_response and scripted_http_requests_error_rate, which the
+ * app does not use: the panels consuming them need Grafana's joined-table frame
+ * shape, and that is produced by the Prometheus frontend datasource, so those
+ * panels still query Prometheus directly.
+ */
+export const BACKEND_QUERY_TYPES: readonly QueryType[] = [
+  QueryType.AvgQuantileWebVital,
+  QueryType.BrowserDataReceived,
+  QueryType.BrowserDataSent,
+  QueryType.CheckConfigs,
+  QueryType.CheckErrorLogs,
+  QueryType.CheckProbeMaxDuration,
+  QueryType.ChecksUptime,
+  QueryType.CountDistinctTargets,
+  QueryType.ProbeExecutionRate,
+  QueryType.ProbeFailureRate,
+  QueryType.Reachability,
+  QueryType.ScriptedDataReceived,
+  QueryType.ScriptedDataSent,
+  QueryType.SumDurationByProbe,
+];
 
 export interface SMQuery extends DataQuery {
   queryType: QueryType;
@@ -20,10 +55,16 @@ export interface SMQuery extends DataQuery {
   job?: string;
   probe?: string;
   query: string;
-  /** checks_uptime: the check's frequency in milliseconds */
+  /** checks_uptime, reachability: the check's frequency in milliseconds */
   frequency?: number;
   /** check_error_logs: restrict to failed executions */
   unsuccessfulOnly?: boolean;
+  /** sum_duration_by_probe, count_distinct_targets, avg_quantile_web_vital */
+  metric?: string;
+  /** avg_quantile_web_vital: 0-1, defaults to 0.75 */
+  quantile?: number;
+  /** avg_quantile_web_vital: extra grouping labels on top of instance and job */
+  by?: string[];
 }
 
 export const DEFAULT_QUERY: SMQuery = {
