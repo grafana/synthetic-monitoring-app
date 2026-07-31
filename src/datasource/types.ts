@@ -49,6 +49,22 @@ export const BACKEND_QUERY_TYPES: readonly QueryType[] = [
   QueryType.SumDurationByProbe,
 ];
 
+/**
+ * A named query request: the name and its parameters, without any panel concerns.
+ * What a panel hands to the query runner, and what the backend resolves.
+ */
+export interface NamedQueryRequest {
+  queryType: QueryType;
+  job?: string;
+  instance?: string;
+  probe?: string;
+  frequency?: number;
+  unsuccessfulOnly?: boolean;
+  metric?: string;
+  quantile?: number;
+  by?: string[];
+}
+
 export interface SMQuery extends DataQuery {
   queryType: QueryType;
   instance?: string;
