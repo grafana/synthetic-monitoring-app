@@ -1,4 +1,3 @@
-import { getProbeExecutionRateQuery, getProbeFailureRateQuery } from 'queries/probeExecutionStats';
 import { BASIC_CHECK_LIST } from 'test/fixtures/checks';
 import { METRICS_DATASOURCE } from 'test/fixtures/datasources';
 
@@ -42,19 +41,6 @@ export const getInstantMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
           status: `success`,
           data: {
             result: INSTANT_METRICS,
-            resultType: 'vector',
-          },
-        },
-      };
-    }
-
-    if (query === getProbeExecutionRateQuery() || query === getProbeFailureRateQuery()) {
-      return {
-        status: 200,
-        json: {
-          status: `success`,
-          data: {
-            result: [],
             resultType: 'vector',
           },
         },
