@@ -44,6 +44,7 @@ type dsQuery struct {
 	Range         bool             `json:"range"`
 	Instant       bool             `json:"instant"`
 	Interval      string           `json:"interval,omitempty"`
+	LegendFormat  string           `json:"legendFormat,omitempty"`
 	IntervalMs    int64            `json:"intervalMs,omitempty"`
 	MaxDataPoints int64            `json:"maxDataPoints,omitempty"`
 }

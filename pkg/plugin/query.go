@@ -44,6 +44,7 @@ func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataReques
 			Range:         !b.instant,
 			Instant:       b.instant,
 			Interval:      b.interval,
+			LegendFormat:  b.legendFormat,
 			IntervalMs:    q.Interval.Milliseconds(),
 			MaxDataPoints: maxDataPoints(b, q),
 		})
