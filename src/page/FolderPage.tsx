@@ -80,7 +80,11 @@ export function FolderPage() {
   }
 
   return (
+    // Keyed by folder so navigating between folder dashboards remounts:
+    // the view-tracking effect fires per folder and the execution-log time
+    // window (captured on mount) resets instead of leaking across folders.
     <FolderDashboard
+      key={folderNode.folderUid}
       folderTitle={folderNode.folder?.title ?? folderNode.folderUid}
       pathParts={pathParts}
       checks={folderChecks}

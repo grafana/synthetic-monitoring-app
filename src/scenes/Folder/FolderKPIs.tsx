@@ -28,15 +28,28 @@ export const FolderKPIs = ({ checks, metrics, executionLogs }: FolderKPIsProps) 
       <div className={styles.tile}>
         <div className={styles.label}>Checks</div>
         <div className={styles.value}>
-          {downCount > 0 ? (
-            <Icon name="exclamation-triangle" className={styles.down} size="lg" />
+          {metrics.isLoading ? (
+            '—'
           ) : (
-            <Icon name="check-circle" className={styles.up} size="lg" />
-          )}{' '}
-          {knownCount > 0 ? `${upCount} / ${knownCount} up` : `${checks.length} checks`}
+            <>
+              {knownCount > 0 &&
+                (downCount > 0 ? (
+                  <Icon name="exclamation-triangle" className={styles.down} size="lg" />
+                ) : (
+                  <Icon name="check-circle" className={styles.up} size="lg" />
+                ))}{' '}
+              {knownCount > 0 ? `${upCount} / ${knownCount} up` : `${checks.length} checks`}
+            </>
+          )}
         </div>
         <div className={styles.detail}>
-          {downCount > 0 ? `down: ${downChecks.map((check) => check.job).join(', ')}` : 'all checks passing'}
+          {metrics.isLoading
+            ? 'loading check states'
+            : downCount > 0
+              ? `down: ${downChecks.map((check) => check.job).join(', ')}`
+              : knownCount > 0
+                ? 'all checks passing'
+                : 'no state data yet'}
         </div>
       </div>
       <div className={styles.tile}>

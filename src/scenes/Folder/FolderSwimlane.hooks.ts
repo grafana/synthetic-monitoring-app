@@ -8,12 +8,23 @@ import { useInfiniteLogs } from 'data/useInfiniteLogs';
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
 // Values are interpolated into a Loki stream selector regex, which is fully
-// anchored. Two escaping layers: RE2 metacharacters so values match literally,
-// then string-literal escaping (double the backslashes, escape quotes) because
-// LogQL double-quoted strings reject unknown escape sequences like `\.`.
+// anchored. Each character needs up to two escaping layers, applied in a
+// single pass so nothing is ever re-escaped: RE2 metacharacters so values
+// match literally, then string-literal escaping (backslashes doubled, quotes
+// escaped) because LogQL double-quoted strings reject unknown escape
+// sequences like `\.`.
 function escapeRe2(value: string): string {
-  const regexEscaped = value.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
-  return regexEscaped.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return value.replace(/[\\^$.*+?()[\]{}|"]/g, (char) => {
+    if (char === '"') {
+      return '\\"';
+    }
+    if (char === '\\') {
+      // regex layer: \\ — string layer doubles each backslash
+      return '\\\\\\\\';
+    }
+    // regex layer: \<char> — string layer doubles the backslash
+    return `\\\\${char}`;
+  });
 }
 
 function joinRegex(values: string[]): string {

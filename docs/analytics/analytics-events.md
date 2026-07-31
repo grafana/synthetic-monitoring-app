@@ -230,6 +230,16 @@ Tracks when a folder is selected in the folder selector.
 
 Tracks when a new folder is created via the folder selector.
 
+#### synthetic-monitoring_folders_folder_dashboard_viewed
+
+Tracks when a folder dashboard page is viewed.
+
+##### Properties
+
+| name       | type     | description                                            |
+| ---------- | -------- | ------------------------------------------------------ |
+| checkCount | `number` | Number of checks in the folder (including subfolders). |
+
 ### link
 
 #### synthetic-monitoring_link_clicked
