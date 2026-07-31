@@ -1,20 +1,12 @@
-import React, { useMemo, useState } from 'react';
-import { GrafanaTheme2, LoadingState } from '@grafana/data';
+import React, { useState } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { useAppPluginInstalled } from '@grafana/runtime';
-import { VizConfigBuilders } from '@grafana/scenes';
-import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
-import {
-  LayoutAlgorithm,
-  ZoomMode,
-} from '@grafana/schema/dist/esm/raw/composable/nodegraph/panelcfg/x/NodeGraphPanelCfg_types.gen';
 import { Icon, IconButton, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
-import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { useKGDS } from 'hooks/useKGDS';
 import { CenteredSpinner } from 'components/CenteredSpinner/CenteredSpinner';
 import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { FormSectionName } from 'components/Checkster/types';
@@ -25,31 +17,13 @@ import {
   CONNECTED_SERVICES_TEST_ID,
   CONNECTED_SERVICES_TITLE,
 } from './ConnectedServices.constants';
-import {
-  buildServiceNeighbourhoodQuery,
-  getCheckNodeIcon,
-  getServiceEntityUrl,
-  graphPresentationTransformation,
-} from './ConnectedServices.utils';
-import {
-  findLabelValue,
-  getSyntheticCheckEntityName,
-  KG_NAMESPACE_LABEL,
-  KG_PLUGIN_ID,
-  KG_SERVICE_NAME_LABEL,
-} from './knowledgeGraph';
+import { useServiceNeighbourhood } from './ConnectedServices.hooks';
+import { getServiceEntityUrl } from './ConnectedServices.utils';
+import { ConnectedServicesGraph } from './ConnectedServicesGraph';
+import { findLabelValue, KG_NAMESPACE_LABEL, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
 
-const viz = VizConfigBuilders.nodegraph()
-  // The node graph has no "fit to screen" on load, so the layout is what keeps the neighbourhood
-  // visible without manual zooming. A layered layout packs the check + service + one-hop
-  // callers/dependencies more compactly than the default force layout, and cooperative zoom stops
-  // page scrolling from hijacking the graph.
-  .setOption('layoutAlgorithm', LayoutAlgorithm.Layered)
-  .setOption('zoomMode', ZoomMode.Cooperative)
-  .build();
-// Since the panel doesn't fit-to-screen on load, give it a generous fixed height so the graph is
-// visible without clipping; users pan/zoom for anything larger.
-const GRAPH_HEIGHT = 560;
+// Reserve room for the loading state so the section doesn't jump when the graph arrives.
+const MIN_BODY_HEIGHT = 280;
 
 interface ConnectedServicesProps {
   check: Check;
@@ -58,13 +32,13 @@ interface ConnectedServicesProps {
 /**
  * Renders the check's Knowledge Graph service neighbourhood as an inline dashboard section (the
  * check, the Service linked via MONITORED_BY, and that Service's one-hop CALLS neighbours in both directions).
- * The node graph carries health arcs and insight counts, so red-ringed neighbours surface as RCA
- * hints without leaving the dashboard.
+ * The nodes carry the KG's insight rings, so red-ringed neighbours surface as RCA hints without
+ * leaving the dashboard.
  *
  * Gating:
  * - KG app not installed → renders nothing (SM works without the Knowledge Graph).
  * - Installed but the check has no service link → an inviting zero state pointing at the edit form.
- * - Installed and linked → the node graph, with loading/error states from the query runner.
+ * - Installed and linked → the neighbourhood graph, with loading/error states from the query.
  */
 export function ConnectedServices({ check }: ConnectedServicesProps) {
   const { value: kgInstalled } = useAppPluginInstalled(KG_PLUGIN_ID);
@@ -78,7 +52,9 @@ export function ConnectedServices({ check }: ConnectedServicesProps) {
 
 function ConnectedServicesSection({ check }: ConnectedServicesProps) {
   const styles = useStyles2(getStyles);
-  const [isOpen, setIsOpen] = useState(false);
+  // Expanded on load: the graph is the point of the section, and the KG query only runs for a
+  // check that is actually linked to a service.
+  const [isOpen, setIsOpen] = useState(true);
 
   const serviceName = findLabelValue(check.labels ?? [], KG_SERVICE_NAME_LABEL);
   const namespace = findLabelValue(check.labels ?? [], KG_NAMESPACE_LABEL);
@@ -109,11 +85,7 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
 
       {isOpen && (
         <div className={styles.body}>
-          {serviceName ? (
-            <ServiceNeighbourhoodGraph check={check} serviceName={serviceName} />
-          ) : (
-            <ConnectedServicesZeroState checkId={check.id} />
-          )}
+          {serviceName ? <ServiceNeighbourhoodGraph check={check} /> : <ConnectedServicesZeroState checkId={check.id} />}
         </div>
       )}
     </section>
@@ -122,59 +94,47 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
 
 interface ServiceNeighbourhoodGraphProps {
   check: Check;
-  serviceName: string;
 }
 
-function ServiceNeighbourhoodGraph({ check, serviceName }: ServiceNeighbourhoodGraphProps) {
+function ServiceNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
   const styles = useStyles2(getStyles);
-  const kgDS = useKGDS();
+  const { data, isLoading, isError, refetch } = useServiceNeighbourhood(check);
 
-  const cypherQuery = buildServiceNeighbourhoodQuery(getSyntheticCheckEntityName(check));
-
-  const dataProvider = useQueryRunner({
-    datasource: kgDS ? { uid: kgDS.uid, type: kgDS.type } : undefined,
-    queries: [
-      {
-        refId: 'A',
-        queryType: 'entityGraph',
-        queryMode: 'cypher',
-        cypherQuery,
-      },
-    ],
-  });
-
-  // Give the originating check node its check-type icon and strip the zero-value stat labels.
-  const nodeIcon = getCheckNodeIcon(getCheckType(check.settings));
-  const transformations = useMemo(() => [graphPresentationTransformation(nodeIcon)], [nodeIcon]);
-  const graphData = useDataTransformer({ transformations, data: dataProvider });
-
-  const { data } = graphData.useState();
-  const state = data?.state;
-
-  if (state === LoadingState.Error) {
+  if (isError) {
     return (
       <div data-testid={CONNECTED_SERVICES_TEST_ID.error}>
         <ErrorAlert
           title="Couldn't load the service graph."
           content="The Knowledge Graph datasource didn't respond. Check its status and try again."
           buttonText="Retry"
-          onClick={() => dataProvider.runQueries()}
+          onClick={() => refetch()}
         />
       </div>
     );
   }
 
-  return (
-    <div className={styles.graph} data-testid={CONNECTED_SERVICES_TEST_ID.graph}>
-      {state === LoadingState.Loading ? (
-        <div className={styles.loading} data-testid={CONNECTED_SERVICES_TEST_ID.loading}>
-          <CenteredSpinner aria-label="Loading connected services" />
-        </div>
-      ) : (
-        <VizPanel title="" dataProvider={graphData} viz={viz} hoverHeader />
-      )}
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <div className={styles.loading} data-testid={CONNECTED_SERVICES_TEST_ID.loading}>
+        <CenteredSpinner aria-label="Loading connected services" />
+      </div>
+    );
+  }
+
+  if (!data || data.nodes.length === 0) {
+    // The check is linked but the KG hasn't discovered the entities yet (rules sync every few
+    // minutes, and the linked service may not exist under that name/namespace).
+    return (
+      <div className={styles.empty} data-testid={CONNECTED_SERVICES_TEST_ID.empty}>
+        <Text variant="body" color="secondary">
+          No graph data for this check yet. The Knowledge Graph may still be discovering it — check back in a few
+          minutes.
+        </Text>
+      </div>
+    );
+  }
+
+  return <ConnectedServicesGraph neighbourhood={data} />;
 }
 
 interface ConnectedServicesZeroStateProps {
@@ -235,11 +195,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
   body: css({
     padding: theme.spacing(0, 2, 2, 2),
   }),
-  graph: css({
-    height: GRAPH_HEIGHT,
-  }),
   loading: css({
-    height: '100%',
+    height: MIN_BODY_HEIGHT,
+  }),
+  empty: css({
+    display: 'flex',
+    justifyContent: 'center',
+    padding: theme.spacing(4, 2),
   }),
   zeroState: css({
     display: 'flex',
