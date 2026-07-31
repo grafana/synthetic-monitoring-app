@@ -6,6 +6,7 @@ import { isObservable, lastValueFrom } from 'rxjs';
 
 import { Check } from 'types';
 import { useKGDS } from 'hooks/useKGDS';
+import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
 import { buildServiceNeighbourhoodQuery, parseGraphFrames, ServiceNeighbourhood } from './ConnectedServices.utils';
 import { getSyntheticCheckEntityName } from './knowledgeGraph';
@@ -69,5 +70,6 @@ export function useServiceNeighbourhood(check: Check) {
     queryKey: ['kg-service-neighbourhood', kgDS?.uid, checkEntityName],
     enabled: Boolean(kgDS),
     queryFn: () => fetchServiceNeighbourhood(kgDS!.uid, checkEntityName),
+    refetchInterval: STANDARD_REFRESH_INTERVAL,
   });
 }
