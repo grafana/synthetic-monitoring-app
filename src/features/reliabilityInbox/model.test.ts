@@ -2,6 +2,7 @@ import { ReliabilitySuggestion } from './types';
 import { CheckType } from 'types';
 
 import {
+  compareReliabilityOpportunities,
   getProposedHttpCheckDraft,
   isInitialReviewCandidate,
   parseSuggestedCheckConfig,
@@ -150,6 +151,34 @@ describe('Reliability Inbox model', () => {
     );
   });
 
+  it('prioritizes confidence, then value, before the raw suggestion score', () => {
+    const opportunities = [
+      { id: 'high-value-low-confidence', relevance: 99, confidence: 'low' },
+      { id: 'lower-value-high-confidence', relevance: 20, confidence: 'high' },
+      { id: 'high-value-medium-confidence', relevance: 95, confidence: 'medium' },
+      { id: 'medium-value-high-confidence', relevance: 55, confidence: 'high' },
+      { id: 'high-value-high-confidence', relevance: 75, confidence: 'high' },
+    ]
+      .map(({ id, relevance, confidence }) =>
+        toReliabilityOpportunity({
+          ...HTTP_SUGGESTION,
+          id,
+          target: `https://${id}.example.com/`,
+          relevance,
+          confidence,
+        })
+      )
+      .sort(compareReliabilityOpportunities);
+
+    expect(opportunities.map(({ id }) => id)).toEqual([
+      'high-value-high-confidence',
+      'medium-value-high-confidence',
+      'lower-value-high-confidence',
+      'high-value-medium-confidence',
+      'high-value-low-confidence',
+    ]);
+  });
+
   it('uses hostname, non-default port, and meaningful path as the human-readable endpoint identity', () => {
     const target = 'https://api.example.com:8443/health?verbose=true#status';
     const opportunity = toReliabilityOpportunity({ ...HTTP_SUGGESTION, target });
@@ -180,5 +209,10 @@ describe('Reliability Inbox model', () => {
     expect(isInitialReviewCandidate(HTTP_SUGGESTION)).toBe(true);
     expect(isInitialReviewCandidate(DNS_SUGGESTION)).toBe(false);
     expect(isInitialReviewCandidate(developmentHttp)).toBe(false);
+  });
+
+  it('suppresses suggestions the service no longer considers uncovered', () => {
+    expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, dedupStatus: 'covered' })).toBe(false);
+    expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, dedupStatus: 'dismissed' })).toBe(false);
   });
 });

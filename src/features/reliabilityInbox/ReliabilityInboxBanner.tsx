@@ -9,18 +9,15 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
 import { ASSISTANT_ACTION_SIZE, ASSISTANT_GRADIENT, getAssistantActionStyle } from './assistantActionStyles';
-import { useReliabilityInboxSuggestions } from './data';
+import { useCachedReliabilityInboxSuggestions } from './data';
+import { compareReliabilityOpportunities } from './model';
 
 export function ReliabilityInboxBanner() {
   const styles = useStyles2(getStyles);
-  const { data: opportunities = [] } = useReliabilityInboxSuggestions();
+  const { data: opportunities = [] } = useCachedReliabilityInboxSuggestions();
   const exposureTracked = useRef(false);
   const topOpportunity = useMemo(
-    () =>
-      opportunities.reduce<ReliabilityOpportunity | undefined>(
-        (top, opportunity) => (!top || opportunity.sortScore > top.sortScore ? opportunity : top),
-        undefined
-      ),
+    () => [...opportunities].sort(compareReliabilityOpportunities)[0] as ReliabilityOpportunity | undefined,
     [opportunities]
   );
 
@@ -36,19 +33,21 @@ export function ReliabilityInboxBanner() {
     });
   }, [opportunities.length, topOpportunity]);
 
-  if (!topOpportunity) {
-    return null;
-  }
-
   return (
     <section className={styles.banner} aria-label="Reliability Inbox">
       <div className={styles.message}>
         <Icon name="ai-sparkle" className={styles.icon} aria-hidden="true" />
         <div>
           <strong>
-            Reliability Inbox · {opportunities.length} {opportunities.length === 1 ? 'opportunity' : 'opportunities'}
+            {topOpportunity
+              ? `Reliability Inbox · ${opportunities.length} ${opportunities.length === 1 ? 'opportunity' : 'opportunities'}`
+              : 'Reliability Inbox'}
           </strong>
-          <span className={styles.priority}>Highest priority: {topOpportunity.subject}</span>
+          <span className={styles.priority}>
+            {topOpportunity
+              ? `Highest priority: ${topOpportunity.subject}`
+              : 'Generate prioritized suggestions when you are ready to review them.'}
+          </span>
         </div>
       </div>
       <LinkButton
@@ -57,14 +56,16 @@ export function ReliabilityInboxBanner() {
         size={ASSISTANT_ACTION_SIZE}
         variant="secondary"
         href={generateRoutePath(AppRoutes.ReliabilityInbox)}
-        onClick={() =>
-          trackReviewEntryClicked({
-            opportunityId: topOpportunity.id,
-            checkType: topOpportunity.proposedCheck.checkType,
-          })
-        }
+        onClick={() => {
+          if (topOpportunity) {
+            trackReviewEntryClicked({
+              opportunityId: topOpportunity.id,
+              checkType: topOpportunity.proposedCheck.checkType,
+            });
+          }
+        }}
       >
-        Review opportunities
+        Review suggestions
       </LinkButton>
     </section>
   );
