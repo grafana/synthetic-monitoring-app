@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppPluginInstalled, usePluginComponent } from '@grafana/runtime';
+import { usePluginComponent } from '@grafana/runtime';
 import { useTimeRange } from '@grafana/scenes-react';
 
 import { Check } from 'types';
@@ -7,9 +7,9 @@ import { Check } from 'types';
 import {
   getSyntheticCheckEntityName,
   KG_ENTITY_ASSERTIONS_WIDGET_ID,
-  KG_PLUGIN_ID,
   KG_SYNTHETIC_CHECK_ENTITY_TYPE,
 } from './knowledgeGraph';
+import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 
 interface EntityAssertionsWidgetQuery {
   entityName?: string;
@@ -31,13 +31,13 @@ interface CheckKnowledgeGraphInsightsProps {
 }
 
 export function CheckKnowledgeGraphInsights({ check }: CheckKnowledgeGraphInsightsProps) {
-  const { value: kgInstalled } = useAppPluginInstalled(KG_PLUGIN_ID);
+  const kgEnabled = useKnowledgeGraphEnabled();
   const { component: AssertionsWidget } = usePluginComponent<EntityAssertionsWidgetProps>(
     KG_ENTITY_ASSERTIONS_WIDGET_ID
   );
   const [timeRange] = useTimeRange();
 
-  if (!kgInstalled || !AssertionsWidget) {
+  if (!kgEnabled || !AssertionsWidget) {
     return null;
   }
 

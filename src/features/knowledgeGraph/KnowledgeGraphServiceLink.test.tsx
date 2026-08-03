@@ -5,9 +5,9 @@ import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { testUsesCombobox } from 'test/utils';
+import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
 
-import { CheckFormValues, Label } from 'types';
+import { CheckFormValues, FeatureName, Label } from 'types';
 
 import { KnowledgeGraphServiceLink } from './KnowledgeGraphServiceLink';
 
@@ -75,6 +75,7 @@ function renderServiceLink({ labels = [], calLabels = [] }: RenderOptions = {}) 
 
 beforeEach(() => {
   testUsesCombobox();
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
 });
 
 it(`renders nothing when the Knowledge Graph app is not installed`, async () => {
@@ -82,6 +83,14 @@ it(`renders nothing when the Knowledge Graph app is not installed`, async () => 
   renderServiceLink();
 
   expect(screen.queryByText('Link to Knowledge Graph service')).not.toBeInTheDocument();
+});
+
+it(`renders nothing when the feature flag is disabled, even with the app installed`, async () => {
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+  setKgInstalled(true);
+  renderServiceLink();
+
+  expect(screen.queryByPlaceholderText('Select or type a service name')).not.toBeInTheDocument();
 });
 
 it(`shows the service link fields directly, with no expand or remove actions`, async () => {

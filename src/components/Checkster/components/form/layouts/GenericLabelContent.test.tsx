@@ -248,6 +248,7 @@ describe('GenericLabelContent', () => {
 
       it('renders a KG suggestions combobox for service_name / namespace values when the KG app is installed', async () => {
         testUsesCombobox();
+        mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
         (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
         mockKgSuggestions({ names: ['frontend'], namespaces: ['otel-demo'] });
 
@@ -278,12 +279,25 @@ describe('GenericLabelContent', () => {
         expect(await screen.findByRole('textbox', { name: 'Cost attribution label 1 value' })).toBeInTheDocument();
         expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
       });
+
+      it('renders plain value inputs when the KG feature flag is disabled, even with the app installed', async () => {
+        mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+        (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
+
+        renderGenericLabelContent(
+          { calNames: kgCalNames },
+          { calLabels: kgCalNames.map((name) => ({ name, value: '' })) }
+        );
+
+        expect(await screen.findByRole('textbox', { name: 'Cost attribution label 1 value' })).toBeInTheDocument();
+        expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+      });
     });
   });
 
   describe('Knowledge Graph reserved labels (service_name / namespace)', () => {
     beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: false });
+      mockFeatureToggles({ [FeatureName.CALs]: false, [FeatureName.KnowledgeGraph]: true });
     });
 
     it('hides service_name / namespace rows from the custom labels when the KG app is installed', async () => {
@@ -324,6 +338,26 @@ describe('GenericLabelContent', () => {
 
     it('renders service_name / namespace as ordinary custom labels when the KG app is not installed', async () => {
       (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: false });
+
+      renderGenericLabelContent(
+        {},
+        {
+          labels: [
+            { name: 'service_name', value: 'frontend' },
+            { name: 'namespace', value: 'otel-demo' },
+          ],
+        }
+      );
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('service_name')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('namespace')).toBeInTheDocument();
+      });
+    });
+
+    it('renders service_name / namespace as ordinary custom labels when the feature flag is disabled, even with the app installed', async () => {
+      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+      (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
 
       renderGenericLabelContent(
         {},

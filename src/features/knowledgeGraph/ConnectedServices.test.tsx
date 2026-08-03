@@ -7,8 +7,9 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
 import { buildNeighbourhoodFrames } from 'test/fixtures/knowledgeGraph';
 import { render } from 'test/render';
+import { mockFeatureToggles } from 'test/utils';
 
-import { Check } from 'types';
+import { Check, FeatureName } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 
 import { ConnectedServices } from './ConnectedServices';
@@ -49,6 +50,10 @@ function setKgDatasource(query: jest.Mock) {
   });
 }
 
+beforeEach(() => {
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+});
+
 afterEach(() => {
   delete config.datasources[KG_DATASOURCE.name];
 });
@@ -70,6 +75,14 @@ async function renderSection(check: Check) {
 
 it('renders nothing when the Knowledge Graph app is not installed', async () => {
   setKgInstalled(false);
+  render(<ConnectedServices check={LINKED_CHECK} />);
+
+  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.section)).not.toBeInTheDocument();
+});
+
+it('renders nothing when the feature flag is disabled, even with the app installed', async () => {
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+  setKgInstalled(true);
   render(<ConnectedServices check={LINKED_CHECK} />);
 
   expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.section)).not.toBeInTheDocument();

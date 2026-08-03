@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useAppPluginInstalled } from '@grafana/runtime';
 import { Icon, IconButton, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -21,6 +20,7 @@ import { useServiceNeighbourhood } from './ConnectedServices.hooks';
 import { getServiceEntityUrl } from './ConnectedServices.utils';
 import { ConnectedServicesGraph } from './ConnectedServicesGraph';
 import { findLabelValue, KG_NAMESPACE_LABEL, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
+import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 
 // Reserve room for the loading state so the section doesn't jump when the graph arrives.
 const MIN_BODY_HEIGHT = 280;
@@ -36,14 +36,14 @@ interface ConnectedServicesProps {
  * leaving the dashboard.
  *
  * Gating:
- * - KG app not installed → renders nothing (SM works without the Knowledge Graph).
- * - Installed but the check has no service link → an inviting zero state pointing at the edit form.
- * - Installed and linked → the neighbourhood graph, with loading/error states from the query.
+ * - KG app not installed or feature flag off → renders nothing (SM works without the Knowledge Graph).
+ * - Enabled but the check has no service link → an inviting zero state pointing at the edit form.
+ * - Enabled and linked → the neighbourhood graph, with loading/error states from the query.
  */
 export function ConnectedServices({ check }: ConnectedServicesProps) {
-  const { value: kgInstalled } = useAppPluginInstalled(KG_PLUGIN_ID);
+  const kgEnabled = useKnowledgeGraphEnabled();
 
-  if (!kgInstalled) {
+  if (!kgEnabled) {
     return null;
   }
 

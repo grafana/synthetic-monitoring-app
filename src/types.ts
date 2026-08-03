@@ -755,6 +755,7 @@ export enum FeatureName {
   CALs = 'synthetic-monitoring-cost-attribution',
   Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
+  KnowledgeGraph = 'synthetic-monitoring-knowledge-graph',
   Screenshots = 'synthetic-monitoring-screenshots',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',

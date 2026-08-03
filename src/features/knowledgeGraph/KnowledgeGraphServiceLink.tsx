@@ -1,7 +1,6 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useAppPluginInstalled } from '@grafana/runtime';
 import { Icon, IconButton, Input, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -10,6 +9,7 @@ import { useDOMId } from 'hooks/useDOMId';
 import { StyledField } from 'components/Checkster/components/ui/StyledField';
 
 import { KG_NAMESPACE_LABEL, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
+import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 import {
   KGLinkedLabel,
   KGServiceMatchState,
@@ -21,7 +21,7 @@ import { KnowledgeGraphValueCombobox } from './KnowledgeGraphValueCombobox';
 
 export function KnowledgeGraphServiceLink() {
   const styles = useStyles2(getStyles);
-  const { value: kgInstalled } = useAppPluginInstalled(KG_PLUGIN_ID);
+  const kgEnabled = useKnowledgeGraphEnabled();
   const {
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
@@ -32,7 +32,7 @@ export function KnowledgeGraphServiceLink() {
 
   const matchState = useKGServiceMatch(serviceName.value, namespace.value);
 
-  if (!kgInstalled) {
+  if (!kgEnabled) {
     return null;
   }
 

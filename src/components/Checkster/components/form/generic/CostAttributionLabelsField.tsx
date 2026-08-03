@@ -1,10 +1,10 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useAppPluginInstalled } from '@grafana/runtime';
 import { IconButton, Input, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { KG_NAMESPACE_LABEL, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from 'features/knowledgeGraph/knowledgeGraph';
+import { KG_NAMESPACE_LABEL, KG_SERVICE_NAME_LABEL } from 'features/knowledgeGraph/knowledgeGraph';
+import { useKnowledgeGraphEnabled } from 'features/knowledgeGraph/knowledgeGraph.hooks';
 import { KnowledgeGraphValueCombobox } from 'features/knowledgeGraph/KnowledgeGraphValueCombobox';
 
 import { CheckFormValues } from 'types';
@@ -23,7 +23,7 @@ export function CostAttributionLabelsField({ calNames }: CostAttributionLabelsFi
   const {
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
-  const { value: kgInstalled } = useAppPluginInstalled(KG_PLUGIN_ID);
+  const kgEnabled = useKnowledgeGraphEnabled();
   const styles = useStyles2(getStyles);
   const labelIdPrefix = useDOMId();
 
@@ -38,9 +38,9 @@ export function CostAttributionLabelsField({ calNames }: CostAttributionLabelsFi
           // service_name / namespace double as the Knowledge Graph service link, so their
           // values get the same KG-suggestions combobox as the service link section.
           const kgProperty =
-            kgInstalled && calName === KG_SERVICE_NAME_LABEL
+            kgEnabled && calName === KG_SERVICE_NAME_LABEL
               ? ('name' as const)
-              : kgInstalled && calName === KG_NAMESPACE_LABEL
+              : kgEnabled && calName === KG_NAMESPACE_LABEL
                 ? ('namespace' as const)
                 : undefined;
           const valueLabelId = `${labelIdPrefix}-cal-value-${index}`;
