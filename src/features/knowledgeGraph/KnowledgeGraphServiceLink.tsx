@@ -19,9 +19,19 @@ import {
 } from './KnowledgeGraphServiceLink.hooks';
 import { KnowledgeGraphValueCombobox } from './KnowledgeGraphValueCombobox';
 
+// Gate first so the KG-fetching hooks below never run when the integration is disabled.
 export function KnowledgeGraphServiceLink() {
-  const styles = useStyles2(getStyles);
   const kgEnabled = useKnowledgeGraphEnabled();
+
+  if (!kgEnabled) {
+    return null;
+  }
+
+  return <KnowledgeGraphServiceLinkFields />;
+}
+
+function KnowledgeGraphServiceLinkFields() {
+  const styles = useStyles2(getStyles);
   const {
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
@@ -31,10 +41,6 @@ export function KnowledgeGraphServiceLink() {
   const namespace = useKGLinkedLabel(KG_NAMESPACE_LABEL);
 
   const matchState = useKGServiceMatch(serviceName.value, namespace.value);
-
-  if (!kgEnabled) {
-    return null;
-  }
 
   const description = (
     <>
