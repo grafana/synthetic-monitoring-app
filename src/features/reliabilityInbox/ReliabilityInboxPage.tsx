@@ -12,7 +12,7 @@ import { getUserPermissions } from 'data/permissions';
 
 import { ASSISTANT_ACTION_SIZE, getAssistantActionStyle } from './assistantActionStyles';
 import { useReliabilityInboxSuggestions } from './data';
-import { formatDuration } from './model';
+import { compareReliabilityOpportunities, formatDuration } from './model';
 import { ReliabilityEvidenceTrend } from './ReliabilityEvidenceTrend';
 
 const ASSISTANT_ORIGIN = 'grafana-synthetic-monitoring-app/reliability-inbox';
@@ -49,10 +49,7 @@ function ReliabilityInboxReview() {
   const [selectedId, setSelectedId] = useState<string>();
   const reviewedIds = useRef(new Set<string>());
 
-  const sortedOpportunities = useMemo(
-    () => [...opportunities].sort((a, b) => b.sortScore - a.sortScore),
-    [opportunities]
-  );
+  const sortedOpportunities = useMemo(() => [...opportunities].sort(compareReliabilityOpportunities), [opportunities]);
   const selected = sortedOpportunities.find((opportunity) => opportunity.id === selectedId) ?? sortedOpportunities[0];
 
   useEffect(() => {
@@ -80,7 +77,7 @@ function ReliabilityInboxReview() {
     return (
       <Alert severity="error" title="Unable to load Reliability Inbox">
         <div className={styles.retryAlert}>
-          <span>Check that the Reliability Inbox fixture interceptor is enabled in Graft.</span>
+          <span>Check your permissions and the live Reliability Inbox service, then try again.</span>
           <Button variant="secondary" size="sm" onClick={() => refetch()}>
             Retry
           </Button>

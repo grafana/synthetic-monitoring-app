@@ -15,12 +15,13 @@ import { ReliabilitySuggestion } from './types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 
-import { useReliabilityInboxSuggestions } from './data';
+import { useCachedReliabilityInboxSuggestions, useReliabilityInboxSuggestions } from './data';
 import { toReliabilityOpportunity } from './model';
 import { ReliabilityInboxBanner } from './ReliabilityInboxBanner';
 import { RELIABILITY_INBOX_PAGE_NAV, ReliabilityInboxPage } from './ReliabilityInboxPage';
 
 jest.mock('./data', () => ({
+  useCachedReliabilityInboxSuggestions: jest.fn(),
   useReliabilityInboxSuggestions: jest.fn(),
 }));
 
@@ -95,8 +96,22 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
 const openAssistant = jest.fn();
 
 function mockSuggestions(suggestion = HTTP_SUGGESTION) {
-  jest.mocked(useReliabilityInboxSuggestions).mockReturnValue({
+  const result = {
     data: [toReliabilityOpportunity(suggestion)],
+    isLoading: false,
+    isError: false,
+    refetch: jest.fn(),
+  } as unknown as ReturnType<typeof useReliabilityInboxSuggestions>;
+
+  jest.mocked(useReliabilityInboxSuggestions).mockReturnValue(result);
+  jest
+    .mocked(useCachedReliabilityInboxSuggestions)
+    .mockReturnValue(result as ReturnType<typeof useCachedReliabilityInboxSuggestions>);
+}
+
+function mockSuggestionList(suggestions: ReliabilitySuggestion[]) {
+  jest.mocked(useReliabilityInboxSuggestions).mockReturnValue({
+    data: suggestions.map(toReliabilityOpportunity),
     isLoading: false,
     isError: false,
     refetch: jest.fn(),
@@ -208,6 +223,45 @@ describe('ReliabilityInboxPage', () => {
 
     expect(await screen.findByText('Loading Reliability Inbox…')).toBeInTheDocument();
     expect(screen.queryByText('Evidence at a glance')).not.toBeInTheDocument();
+  });
+
+  it('orders high-confidence opportunities by value before lower-confidence opportunities', async () => {
+    mockSuggestionList([
+      {
+        ...HTTP_SUGGESTION,
+        id: 'lower-value-high-confidence',
+        target: 'https://lower-high.example.com/',
+        relevance: 20,
+        confidence: 'high',
+        score: 10,
+      },
+      {
+        ...HTTP_SUGGESTION,
+        id: 'high-value-medium-confidence',
+        target: 'https://high-medium.example.com/',
+        relevance: 95,
+        confidence: 'medium',
+        score: 20,
+      },
+      {
+        ...HTTP_SUGGESTION,
+        id: 'high-value-high-confidence',
+        target: 'https://high-high.example.com/',
+        relevance: 75,
+        confidence: 'high',
+        score: 1,
+      },
+    ]);
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    const queueItems = within(await screen.findByLabelText('Review queue')).getAllByRole('button');
+    expect(queueItems[0]).toHaveTextContent('high-high.example.com');
+    expect(queueItems[1]).toHaveTextContent('lower-high.example.com');
+    expect(queueItems[2]).toHaveTextContent('high-medium.example.com');
   });
 
   it('anchors breadcrumbs and back navigation to the Synthetics home', () => {
@@ -328,7 +382,7 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.getByText('Highest priority: mcp.goagain.dev')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Add an HTTP check for mcp.goagain.dev' })).not.toBeInTheDocument();
 
-    const reviewLink = screen.getByRole('link', { name: 'Review opportunities' });
+    const reviewLink = screen.getByRole('link', { name: 'Review suggestions' });
     expect(reviewLink).toHaveAttribute('href', generateRoutePath(AppRoutes.ReliabilityInbox));
     await waitFor(() =>
       expect(trackInboxExposure).toHaveBeenCalledWith({
@@ -342,5 +396,27 @@ describe('ReliabilityInboxPage', () => {
       opportunityId: 'http-suggestion',
       checkType: 'http',
     });
+  });
+
+  it('keeps the Home entry point visible without generating suggestions when the cache is empty', async () => {
+    jest.mocked(useCachedReliabilityInboxSuggestions).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useCachedReliabilityInboxSuggestions>);
+
+    renderWithoutApp(<ReliabilityInboxBanner />);
+
+    expect(screen.getByText('Reliability Inbox')).toBeInTheDocument();
+    expect(screen.getByText('Generate prioritized suggestions when you are ready to review them.')).toBeInTheDocument();
+    expect(screen.queryByText(/Highest priority:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/opportunit(y|ies)/)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Review suggestions' })).toHaveAttribute(
+      'href',
+      generateRoutePath(AppRoutes.ReliabilityInbox)
+    );
+    expect(useReliabilityInboxSuggestions).not.toHaveBeenCalled();
+    expect(trackInboxExposure).not.toHaveBeenCalled();
   });
 });
