@@ -31,12 +31,19 @@ export const reliabilitySuggestionSchema = z
   .object({
     id: z.string(),
     target: z.string(),
-    checkType: z.enum(['http', 'dns']),
+    // Not an enum: the service also emits grpc, tcp and multihttp. An enum makes a
+    // single such suggestion throw and discard the WHOLE response, because the
+    // array parses as a unit. isInitialReviewCandidate narrows to http anyway.
+    checkType: z.string(),
     evidence: z
       .object({
-        reqPerS: z.number(),
-        p99Ms: z.number(),
-        statusDistribution: z.record(z.string(), z.number()),
+        // Defaulted rather than required. Every field on the service's Evidence
+        // struct is `omitempty`, so a zero value is ABSENT from the JSON rather
+        // than 0 — and zero-traffic candidates are common (a host found via labels
+        // that carries no requests). Requiring these discarded every suggestion.
+        reqPerS: z.number().default(0),
+        p99Ms: z.number().default(0),
+        statusDistribution: z.record(z.string(), z.number()).default({}),
         families: z.array(z.string()).default([]),
         activitySemantics: z.array(z.string()).default([]),
       })

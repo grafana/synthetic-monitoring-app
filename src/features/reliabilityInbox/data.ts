@@ -1,28 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
-import { getBackendSrv } from '@grafana/runtime';
-import { firstValueFrom } from 'rxjs';
 
 import { reliabilitySuggestionsSchema } from './types';
+import { useSMDS } from 'hooks/useSMDS';
 
 import { isInitialReviewCandidate, toReliabilityOpportunity } from './model';
 
-export const RELIABILITY_INBOX_SUGGESTIONS_URL =
-  '/api/plugins/grafana-synthetic-monitoring-app/resources/reliability-inbox/suggestions';
-
+/**
+ * Fetches suggestions from the reliability-inbox experiment.
+ */
 export function useReliabilityInboxSuggestions() {
+  const smDS = useSMDS();
+  const apiHost = smDS.instanceSettings.jsonData.apiHost;
+
   return useQuery({
-    queryKey: ['reliability-inbox', 'suggestions'],
+    // apiHost is in the key because it selects the region, and therefore which
+    // instance answered.
+    queryKey: ['reliability-inbox', 'suggestions', apiHost],
+    enabled: smDS.supportsReliabilityInbox(),
     queryFn: async () => {
-      const response = await firstValueFrom(
-        getBackendSrv().fetch<unknown>({
-          method: 'GET',
-          url: RELIABILITY_INBOX_SUGGESTIONS_URL,
-          showErrorAlert: false,
-        })
-      );
+      const result = await smDS.getReliabilityInboxSuggestions();
 
       return reliabilitySuggestionsSchema
-        .parse(response.data)
+        .parse(result)
         .suggestions.filter(isInitialReviewCandidate)
         .map(toReliabilityOpportunity);
     },

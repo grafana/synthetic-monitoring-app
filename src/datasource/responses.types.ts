@@ -5,6 +5,53 @@ import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
 
+export type ReliabilityInboxSuggestion = {
+  id: string;
+  target: string;
+  checkType: string;
+  reachability: string;
+  reachabilitySource: string;
+  confidence: string;
+  score: number;
+  dedupStatus: string;
+  authRequired: boolean;
+  prompt: string;
+  evidence: {
+    reqPerS?: number;
+    errorRatio?: number;
+    p99Ms?: number;
+    statusDistribution?: Record<string, number>;
+    families?: string[];
+    ports?: string[];
+  };
+  /** Which selection algorithms picked this target: score, llm_rank, outage_backtest. */
+  algorithms?: string[];
+  /** Evidence was insufficient; the user must complete the configuration. */
+  needsConfiguration?: boolean;
+  configurationReason?: string;
+  /** The derived check failed the checks API's validation and needs review. */
+  validationFailed?: boolean;
+  validationError?: string;
+};
+
+/**
+ * Response of the experimental reliability-inbox endpoint.
+ *
+ * `tenantId` and `stackId` are what the service resolved from the SM API using
+ * the forwarded access token, echoed back so the UI can confirm which tenant was
+ * analysed.
+ *
+ * `warnings` is load-bearing: the endpoint answers 200 with a degraded result
+ * rather than failing, so an empty `suggestions` with warnings means "could not
+ * determine", not "nothing to suggest".
+ */
+export type ReliabilityInboxResult = {
+  tenantId: number;
+  stackId: number;
+  suggestions: ReliabilityInboxSuggestion[];
+  warnings?: string[];
+};
+
 export type AddProbeResult = {
   probe: Probe;
   token: string;
