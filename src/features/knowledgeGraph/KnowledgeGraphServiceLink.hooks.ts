@@ -18,16 +18,27 @@ export interface KGReservedLabels {
  * for hiding them from the custom-label rows and redirecting users who type them there.
  * Returns `undefined` when the Knowledge Graph integration is not enabled (app not installed
  * or feature flag off) — the names are then ordinary custom labels and no restriction applies.
+ *
+ * CAL-managed names are excluded: for those, the service-link section edits the `calLabels`
+ * row rather than `labels`, so a user-typed custom label with that name would otherwise be
+ * hidden with no owner — failing the CAL-conflict validation on a row the user can't see or
+ * remove. Left visible, the existing CAL-conflict error handles it like any other collision.
  */
 export function useKGReservedLabels(): KGReservedLabels | undefined {
   const kgEnabled = useKnowledgeGraphEnabled();
+  const { watch } = useFormContext<CheckFormValues>();
+  const calLabels = watch('calLabels') ?? [];
 
   if (!kgEnabled) {
     return undefined;
   }
 
+  const names = [KG_SERVICE_NAME_LABEL, KG_NAMESPACE_LABEL].filter(
+    (name) => !calLabels.some((label) => label.name === name)
+  );
+
   return {
-    names: [KG_SERVICE_NAME_LABEL, KG_NAMESPACE_LABEL],
+    names,
     message: (name: string) =>
       `${name} is used for service connections. Select a service above to connect this check, or use a different name for your custom label.`,
   };

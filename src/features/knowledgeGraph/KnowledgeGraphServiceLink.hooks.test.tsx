@@ -1,8 +1,8 @@
 import React, { ReactNode } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useAppPluginInstalled } from '@grafana/runtime';
-import { screen, waitFor } from '@testing-library/react';
-import { render } from 'test/render';
+import { renderHook, screen, waitFor } from '@testing-library/react';
+import { createWrapper, render } from 'test/render';
 import { mockFeatureToggles } from 'test/utils';
 
 import { CheckFormValues, FeatureName, Label } from 'types';
@@ -102,19 +102,26 @@ describe('useKGLinkedLabel', () => {
 });
 
 describe('useKGReservedLabels', () => {
-  function renderReservedLabels() {
-    function Harness() {
-      const reserved = useKGReservedLabels();
+  function renderReservedLabels({ calLabels = [] }: { calLabels?: Label[] } = {}) {
+    const { Wrapper: ProviderWrapper } = createWrapper();
+
+    const Wrapper = ({ children }: { children: ReactNode }) => {
+      const form = useForm<CheckFormValues>({ defaultValues: { labels: [], calLabels } });
 
       return (
-        <>
-          <div data-testid="names">{reserved ? reserved.names.join(',') : 'none'}</div>
-          <div data-testid="message">{reserved?.message('service_name')}</div>
-        </>
+        <ProviderWrapper>
+          <FormProvider {...form}>{children}</FormProvider>
+        </ProviderWrapper>
       );
-    }
+    };
 
-    return render(<Harness />);
+    return renderHook(() => useKGReservedLabels(), { wrapper: Wrapper });
+  }
+
+  // The app providers render children asynchronously, so result.current stays null (the
+  // pre-render sentinel) until the first hook render lands. undefined is a real hook result.
+  async function waitForHookRender(result: { current: unknown }) {
+    await waitFor(() => expect(result.current).not.toBeNull());
   }
 
   beforeEach(() => {
@@ -123,26 +130,40 @@ describe('useKGReservedLabels', () => {
 
   it(`reserves service_name and namespace when the Knowledge Graph app is installed`, async () => {
     setKgInstalled(true);
-    renderReservedLabels();
+    const { result } = renderReservedLabels();
 
-    expect(await screen.findByTestId('names')).toHaveTextContent('service_name,namespace');
-    expect(screen.getByTestId('message')).toHaveTextContent(
+    await waitForHookRender(result);
+    expect(result.current?.names).toEqual(['service_name', 'namespace']);
+    expect(result.current?.message('service_name')).toBe(
       'service_name is used for service connections. Select a service above to connect this check, or use a different name for your custom label.'
     );
   });
 
   it(`reserves nothing when the Knowledge Graph app is not installed`, async () => {
     setKgInstalled(false);
-    renderReservedLabels();
+    const { result } = renderReservedLabels();
 
-    expect(await screen.findByTestId('names')).toHaveTextContent('none');
+    await waitForHookRender(result);
+    expect(result.current).toBeUndefined();
   });
 
   it(`reserves nothing when the feature flag is disabled, even with the app installed`, async () => {
     mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
     setKgInstalled(true);
-    renderReservedLabels();
+    const { result } = renderReservedLabels();
 
-    expect(await screen.findByTestId('names')).toHaveTextContent('none');
+    await waitForHookRender(result);
+    expect(result.current).toBeUndefined();
+  });
+
+  it(`does not reserve a name that is managed as a cost attribution label`, async () => {
+    setKgInstalled(true);
+    const { result } = renderReservedLabels({ calLabels: [{ name: 'service_name', value: '' }] });
+
+    // service_name is CAL-managed (the service link edits calLabels, not labels), so a
+    // user-typed custom label with that name must stay visible for the CAL-conflict
+    // validation to be seen and fixed.
+    await waitForHookRender(result);
+    expect(result.current?.names).toEqual(['namespace']);
   });
 });

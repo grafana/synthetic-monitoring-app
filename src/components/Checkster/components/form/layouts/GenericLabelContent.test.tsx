@@ -292,6 +292,33 @@ describe('GenericLabelContent', () => {
         expect(await screen.findByRole('textbox', { name: 'Cost attribution label 1 value' })).toBeInTheDocument();
         expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
       });
+
+      it('keeps a typed CAL-managed name visible as a custom label row instead of hiding it', async () => {
+        // Regression test: service_name declared as a CAL and typed into a custom label row.
+        // The KG service link edits calLabels for CAL-managed names, so hiding the labels row
+        // would leave an invisible row that fails the CAL-conflict validation with no way to
+        // remove it. The row must stay visible (and removable) after blur.
+        testUsesCombobox();
+        mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+        (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
+        mockKgSuggestions({ names: [], namespaces: [] });
+
+        const user = renderGenericLabelContent(
+          { calNames: ['service_name'] },
+          { calLabels: [{ name: 'service_name', value: '' }] }
+        );
+
+        const nameInput = await screen.findByPlaceholderText('name');
+        await user.type(nameInput, 'service_name');
+
+        const valueInput = screen.getByRole('textbox', { name: 'Custom labels 1 value' });
+        await user.type(valueInput, 'frontend');
+        await user.click(screen.getByText('Cost attribution labels'));
+
+        expect(screen.getByRole('textbox', { name: 'Custom labels 1 name' })).toHaveValue('service_name');
+        expect(screen.getByRole('textbox', { name: 'Custom labels 1 value' })).toHaveValue('frontend');
+        expect(screen.getByRole('button', { name: /^remove$/i })).toBeInTheDocument();
+      });
     });
   });
 
