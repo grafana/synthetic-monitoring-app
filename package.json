@@ -114,6 +114,7 @@
     "@grafana/alerting": "13.0.2",
     "@grafana/assistant": "0.1.25",
     "@grafana/data": "13.0.2",
+    "@grafana/faro-core": "2.7.1",
     "@grafana/faro-web-sdk": "2.7.1",
     "@grafana/i18n": "13.0.2",
     "@grafana/runtime": "13.0.2",

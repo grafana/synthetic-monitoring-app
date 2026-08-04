@@ -1438,7 +1438,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grafana/faro-core@npm:^2.7.1":
+"@grafana/faro-core@npm:2.7.1, @grafana/faro-core@npm:^2.7.1":
   version: 2.7.1
   resolution: "@grafana/faro-core@npm:2.7.1"
   dependencies:
@@ -13775,6 +13775,7 @@ __metadata:
     "@grafana/assistant": "npm:0.1.25"
     "@grafana/data": "npm:13.0.2"
     "@grafana/eslint-config": "npm:9.0.0"
+    "@grafana/faro-core": "npm:2.7.1"
     "@grafana/faro-web-sdk": "npm:2.7.1"
     "@grafana/i18n": "npm:13.0.2"
     "@grafana/runtime": "npm:13.0.2"

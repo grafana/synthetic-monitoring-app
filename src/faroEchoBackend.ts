@@ -1,17 +1,9 @@
+import { stringifyObjectValues } from '@grafana/faro-core';
 import { Faro } from '@grafana/faro-web-sdk';
 import { EchoBackend, EchoEventType, InteractionEchoEvent, registerEchoBackend } from '@grafana/runtime';
 
 // events created via createSMEventFactory all share this prefix
 const INTERACTION_PREFIX = 'synthetic-monitoring_';
-
-// faro event attributes must be strings
-function toEventAttributes(properties: Record<string, unknown> = {}): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(properties)
-      .filter(([, value]) => value !== undefined && value !== null)
-      .map(([key, value]) => [key, typeof value === 'object' ? JSON.stringify(value) : String(value)])
-  );
-}
 
 let registered = false;
 
@@ -27,7 +19,8 @@ export function registerFaroInteractionEchoBackend(faro: Faro) {
     supportedEvents: [EchoEventType.Interaction],
     addEvent: (event) => {
       if (event.payload.interactionName.startsWith(INTERACTION_PREFIX)) {
-        faro.api.pushEvent(event.payload.interactionName, toEventAttributes(event.payload.properties));
+        // faro event attributes must be strings
+        faro.api.pushEvent(event.payload.interactionName, stringifyObjectValues(event.payload.properties));
       }
     },
     // faro batches internally, nothing to flush
