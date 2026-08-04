@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Tab, TabContent, TabsBar, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackTerraformConfigViewed } from 'features/tracking/terraformEvents';
 
 import { FaroEvent, reportEvent } from 'faro';
 import { AppRoutes } from 'routing/types';
@@ -37,6 +38,7 @@ export function TerraformTab() {
 
   useEffect(() => {
     reportEvent(FaroEvent.ShowTerraformConfig);
+    trackTerraformConfigViewed();
   }, []);
 
   if (isLoading) {
