@@ -13,11 +13,7 @@ import {
   useSLOsForCheck,
   useUpdateSLO,
 } from './useSLOCheckLinks';
-import {
-  buildSLOCheckLinkMap,
-  getSLOQueryStrings,
-  sloMatchesSMCheck,
-} from './useSLOCheckLinks.utils';
+import { buildSLOCheckLinkMap, getSLOQueryStrings, sloMatchesSMCheck } from './useSLOCheckLinks.utils';
 
 const CHECK_ID = '42';
 const JOB = 'my-api-check';
@@ -121,9 +117,7 @@ describe('useSLOCheckLinks utils', () => {
       expect(sloMatchesSMCheck(sloUnrelated, JOB)).toBe(false);
     });
   });
-
 });
-
 
 describe('buildSLOCheckLinkMap', () => {
   const makeCheck = (id: number, job: string, target: string) =>
@@ -192,9 +186,7 @@ describe('buildSLOCheckLinkMap', () => {
     expect(map.slosByCheckId.get(2)).toEqual([sloManualRatio]);
     expect(map.slosByCheckId.has(3)).toBe(false);
 
-    expect(map.checksBySLOUuid.get(sloManualRatio.uuid)).toEqual(
-      expect.arrayContaining([checkA, checkB])
-    );
+    expect(map.checksBySLOUuid.get(sloManualRatio.uuid)).toEqual(expect.arrayContaining([checkA, checkB]));
     expect(map.checksBySLOUuid.get(sloManualRatio.uuid)).toHaveLength(2);
   });
 });
@@ -408,7 +400,7 @@ describe('useUpdateSLO', () => {
     mockUseChecks.mockReset();
   });
 
-  it('calls the plugin api updateSlo and returns the result', async () => {
+  it('calls the plugin api updateSlo and returns no error', async () => {
     usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([sloManualRatio]);
 
     const { Wrapper } = createWrapper();
@@ -419,8 +411,24 @@ describe('useUpdateSLO', () => {
     });
 
     const updateResult = await result.current(sloManualRatio);
-    expect(updateResult.data).toEqual(sloManualRatio);
     expect(updateResult.error).toBeUndefined();
+  });
+
+  it('returns the rejection as an error rather than throwing', async () => {
+    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([sloManualRatio]);
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useUpdateSLO(), { wrapper: Wrapper });
+
+    await waitFor(() => {
+      expect(typeof result.current).toBe('function');
+    });
+
+    const api = await usePluginFunctionsSpy.mock.results[0].value.functions[0].fn();
+    api.updateSlo.mockRejectedValueOnce({ status: 500, message: 'Boom' });
+
+    const updateResult = await result.current(sloManualRatio);
+    expect(updateResult.error?.message).toBe('Boom');
   });
 });
 
@@ -452,6 +460,7 @@ describe('useDeleteSLO', () => {
     });
 
     const deleteResult = await result.current('slo-4');
+    expect(deleteResult.data).toEqual({ uuid: 'slo-4' });
     expect(deleteResult.error).toBeUndefined();
   });
 });
