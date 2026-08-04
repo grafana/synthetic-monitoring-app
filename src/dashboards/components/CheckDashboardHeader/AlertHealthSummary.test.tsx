@@ -2,7 +2,12 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { HEALTH_EXPLANATION_PRIORITY, HealthEvidence, HealthState } from './health/checkHealth.types';
+import {
+  HEALTH_EXPLANATION_PRIORITY,
+  HealthEvidence,
+  HealthState,
+  MetricAlertModel,
+} from './health/checkHealth.types';
 import type { AppTimeRangeMode } from 'contexts/AppTimeProvider.utils';
 
 import { resolveCheckHealth } from './health/checkHealth';
@@ -34,15 +39,18 @@ function renderSummary({
   healthEvidence,
   qualifiers = [],
   rangeMode = 'live',
+  alerts = {},
 }: {
   healthEvidence: HealthEvidence[];
   qualifiers?: string[];
   rangeMode?: AppTimeRangeMode;
+  alerts?: Record<string, MetricAlertModel>;
 }) {
   const model = resolveCheckHealth({
     metricIds: ['reachability'],
     evidence: healthEvidence,
     qualifiers,
+    alerts,
     rangeMode,
     evaluationAt: range.to,
   });
@@ -116,6 +124,61 @@ describe('AlertHealthSummary', () => {
     expect(screen.getByTestId('toggletip-content')).toHaveTextContent('Baseline regression detail');
     expect(screen.getByTestId('toggletip-content')).toHaveTextContent('Evaluation point');
     expect(screen.getByTestId('toggletip-content')).toHaveTextContent('Selected range');
+  });
+
+  it('always reports how many alerts fired in the selected range', () => {
+    renderSummary({
+      healthEvidence: [evidence('Reachability alert is firing', 'unhealthy', 'alert')],
+      alerts: { reachability: { state: 'firing', fireCount: 3 } },
+    });
+
+    expect(screen.getByRole('status', { name: 'Check health' })).toHaveTextContent(
+      '3 alerts fired in the selected range'
+    );
+  });
+
+  it('reports zero fired alerts when none fired', () => {
+    renderSummary({
+      healthEvidence: [evidence('Reachability is at least 99.5%', 'healthy')],
+    });
+
+    expect(screen.getByRole('status', { name: 'Check health' })).toHaveTextContent(
+      '0 alerts fired in the selected range'
+    );
+  });
+
+  it('labels each reason with the source tier that produced it', () => {
+    renderSummary({
+      healthEvidence: [
+        evidence('Uptime is below its comparison', 'unhealthy', 'baseline'),
+        evidence('Reachability alert is firing', 'unhealthy', 'alert'),
+      ],
+    });
+
+    const status = screen.getByRole('status', { name: 'Check health' });
+    expect(status).toHaveTextContent('Comparison signal:');
+    expect(status).toHaveTextContent('Alert rule signal:');
+  });
+
+  it('presents the full evidence as a table with each signal source', async () => {
+    const user = userEvent.setup();
+
+    renderSummary({
+      healthEvidence: [
+        evidence('Reachability alert is firing', 'unhealthy', 'alert'),
+        evidence('Uptime is below its comparison', 'unhealthy', 'baseline', 'range'),
+      ],
+    });
+
+    await user.click(screen.getByRole('button', { name: 'View health evidence' }));
+
+    const tip = screen.getByTestId('toggletip-content');
+    expect(tip).toHaveTextContent('Signal');
+    expect(tip).toHaveTextContent('Source');
+    expect(tip).toHaveTextContent('Baseline / threshold');
+    expect(tip).toHaveTextContent('State');
+    expect(tip).toHaveTextContent('Alert rule');
+    expect(tip).toHaveTextContent('Comparison');
   });
 
   it('shows selected-range qualifiers without replacing the known health state', () => {

@@ -108,6 +108,10 @@ export function resolveCheckHealth({
   const sortedRangeEvidence = [...rangeEvidence].sort(compareEvidence);
   const state = worstKnownState(evaluationEvidence);
   const rangeState = rangeEvidence.length > 0 ? worstKnownState(rangeEvidence) : state;
+  const alertFireCount = Object.values(metrics).reduce(
+    (total, metric) => total + (metric.alert.fireCount ?? 0),
+    0
+  );
 
   return {
     state,
@@ -121,5 +125,6 @@ export function resolveCheckHealth({
     qualifiers,
     hasPartialEvidence: evidence.some((item) => item.state === 'unknown'),
     liveIncidentCount,
+    alertFireCount,
   };
 }

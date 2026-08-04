@@ -96,6 +96,7 @@ const sparkline: FieldSparkline = {
 class ControlledResizeObserver implements ResizeObserver {
   static instances: ControlledResizeObserver[] = [];
   static emitOnObserve = true;
+  observedElements: Element[] = [];
 
   constructor(private readonly callback: ResizeObserverCallback) {
     ControlledResizeObserver.instances.push(this);
@@ -103,7 +104,9 @@ class ControlledResizeObserver implements ResizeObserver {
 
   disconnect() {}
 
-  observe() {
+  observe(element: Element) {
+    this.observedElements.push(element);
+
     if (ControlledResizeObserver.emitOnObserve) {
       this.emit(160);
     }
@@ -213,6 +216,34 @@ describe('HeaderMetricSparkline', () => {
     act(() => ControlledResizeObserver.instances[0]!.emit(80));
 
     expect(plot).toHaveAttribute('data-width', '80');
+  });
+
+  it('rebinds responsive measurement when comparison replaces the primary-only renderer', () => {
+    const visual: HeaderMetricComparisonVisual = {
+      kind: 'overlay',
+      label: 'Previous period',
+      series: sparkline,
+    };
+    const { rerender } = render(
+      <HeaderMetricSparkline sparkline={sparkline} state="healthy" />
+    );
+    const primaryPlot = screen.getByTestId('header-metric-sparkline-plot');
+
+    expect(ControlledResizeObserver.instances).toHaveLength(1);
+    expect(ControlledResizeObserver.instances[0]!.observedElements).toEqual([primaryPlot]);
+
+    rerender(
+      <HeaderMetricSparkline sparkline={sparkline} state="healthy" visual={visual} />
+    );
+
+    const comparisonPlot = screen.getByTestId('header-metric-sparkline-plot');
+    expect(comparisonPlot).not.toBe(primaryPlot);
+    expect(ControlledResizeObserver.instances).toHaveLength(2);
+    expect(ControlledResizeObserver.instances[1]!.observedElements).toEqual([comparisonPlot]);
+
+    act(() => ControlledResizeObserver.instances[1]!.emit(80));
+
+    expect(screen.getByTestId('configured-comparison-uplot')).toHaveAttribute('data-width', '80');
   });
 
   it('preserves a fixed 0–1 primary range while plotting the comparison on the same scale', () => {

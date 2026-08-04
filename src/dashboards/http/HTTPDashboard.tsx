@@ -5,12 +5,9 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DashboardAnnotationsProvider } from 'dashboards/annotations/DashboardAnnotationsProvider';
 import { useDashboardContainerAnnotations } from 'dashboards/annotations/useDashboardContainerAnnotations';
+import { DashboardAccordion } from 'dashboards/components/DashboardAccordion/DashboardAccordion';
 import { useHttpExecutionOverviewExtra } from 'dashboards/http/header/httpExecutionOverview';
-import {
-  ErrorLogsPanelHeaderActions,
-  HttpDashboardPage,
-  useErrorLogsPanelState,
-} from 'dashboards/http/HttpDashboardChrome';
+import { HttpDashboardPage } from 'dashboards/http/HttpDashboardChrome';
 import { DashboardPanel } from 'dashboards/http/panels/DashboardPanel';
 import {
   createErrorRateMapPanelDefinition,
@@ -18,12 +15,10 @@ import {
   createResponseLatencyByPhasePanelDefinition,
   createResponseLatencyByProbePanelDefinition,
 } from 'dashboards/http/panels/detailPanelDefinitions';
-import { createErrorLogsPanelDefinition } from 'dashboards/http/panels/errorLogsPanelDefinition';
 import { PanelTimeRangeFromAppTime } from 'dashboards/runtime/PanelTimeRangeContext';
 
-import { FeatureName, HTTPCheck } from 'types';
+import { HTTPCheck } from 'types';
 import { CheckDashboardProvider } from 'contexts/CheckDashboardProvider';
-import { FeatureFlag } from 'components/FeatureFlag';
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { ExecutionResultFilter } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getMinStepFromFrequency } from 'scenes/utils';
@@ -31,7 +26,6 @@ import { getMinStepFromFrequency } from 'scenes/utils';
 function HTTPDashboardBody({ check }: { check: HTTPCheck }) {
   const minStep = getMinStepFromFrequency(check.frequency);
   const styles = useStyles2(getStyles);
-  const { unsuccessfulOnly, toggleUnsuccessfulOnly } = useErrorLogsPanelState(true);
   const [resultFilter, setResultFilter] = useState<ExecutionResultFilter>('all');
   const annotations = useDashboardContainerAnnotations(check);
   const overviewExtra = useHttpExecutionOverviewExtra();
@@ -42,49 +36,33 @@ function HTTPDashboardBody({ check }: { check: HTTPCheck }) {
       errorRate: createErrorRatePanelDefinition(minStep),
       responseLatencyByPhase: createResponseLatencyByPhasePanelDefinition('probe_http_duration_seconds'),
       responseLatencyByProbe: createResponseLatencyByProbePanelDefinition(),
-      errorLogs: createErrorLogsPanelDefinition(unsuccessfulOnly),
     }),
-    [minStep, unsuccessfulOnly]
+    [minStep]
   );
 
   return (
     <DashboardAnnotationsProvider check={check} definitions={annotations}>
       <PluginPage pageNav={{ text: check.job }} layout={PageLayoutType.Custom}>
         <HttpDashboardPage check={check}>
-          <TimepointExplorer
-            annotations={annotations}
-            check={check}
-            onResultFilterChange={setResultFilter}
-            overviewExtra={overviewExtra}
-            resultFilter={resultFilter}
-          />
-
-          <div className={styles.errorRateRow}>
-            <DashboardPanel definition={detailPanels.errorRateMap} height={500} />
-            <DashboardPanel definition={detailPanels.errorRate} height={500} />
-          </div>
-
-          <div className={styles.latencyRow}>
-            <DashboardPanel definition={detailPanels.responseLatencyByPhase} height={300} />
-            <DashboardPanel definition={detailPanels.responseLatencyByProbe} height={300} />
-          </div>
-
-          <FeatureFlag name={FeatureName.TimepointExplorer}>
-            {({ isEnabled }) =>
-              isEnabled ? null : (
-                <DashboardPanel
-                  definition={detailPanels.errorLogs}
-                  height={850}
-                  headerActions={
-                    <ErrorLogsPanelHeaderActions
-                      unsuccessfulOnly={unsuccessfulOnly}
-                      onToggle={toggleUnsuccessfulOnly}
-                    />
-                  }
-                />
-              )
-            }
-          </FeatureFlag>
+          <DashboardAccordion title="Executions">
+            <TimepointExplorer
+              annotations={annotations}
+              check={check}
+              onResultFilterChange={setResultFilter}
+              overviewExtra={overviewExtra}
+              resultFilter={resultFilter}
+            />
+          </DashboardAccordion>
+          <DashboardAccordion title="Performance">
+            <div className={styles.errorRateRow}>
+              <DashboardPanel definition={detailPanels.errorRateMap} height={500} />
+              <DashboardPanel definition={detailPanels.errorRate} height={500} />
+            </div>
+            <div className={styles.latencyRow}>
+              <DashboardPanel definition={detailPanels.responseLatencyByPhase} height={300} />
+              <DashboardPanel definition={detailPanels.responseLatencyByProbe} height={300} />
+            </div>
+          </DashboardAccordion>
         </HttpDashboardPage>
       </PluginPage>
     </DashboardAnnotationsProvider>

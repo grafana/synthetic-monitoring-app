@@ -70,6 +70,8 @@ export interface CheckHealthModel {
   qualifiers: string[];
   hasPartialEvidence: boolean;
   liveIncidentCount: number;
+  /** Total alert episodes that fired across the selected range, summed across metrics. */
+  alertFireCount: number;
 }
 
 export type MetricTrendShape =

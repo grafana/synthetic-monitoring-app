@@ -49,6 +49,7 @@ export function HeaderMetricSparkline({
   const color = getSparklineColor(theme, state);
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
+  const usesComparisonRenderer = visual !== undefined && visual.kind !== 'summary-only';
 
   useEffect(() => {
     const element = containerRef.current;
@@ -100,9 +101,9 @@ export function HeaderMetricSparkline({
 
       observer.disconnect();
     };
-  }, []);
+  }, [usesComparisonRenderer]);
 
-  if (!visual || visual.kind === 'summary-only') {
+  if (!usesComparisonRenderer) {
     return (
       <div aria-hidden className={styles.container} data-testid="header-metric-sparkline">
         <div className={styles.plot} data-testid="header-metric-sparkline-plot" ref={containerRef}>
