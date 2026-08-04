@@ -240,6 +240,10 @@ Tracks when a folder dashboard page is viewed.
 | ---------- | -------- | ------------------------------------------------------ |
 | checkCount | `number` | Number of checks in the folder (including subfolders). |
 
+#### synthetic-monitoring_folders_folder_overview_clicked
+
+Tracks clicks on the "Folder overview" link on the check list's folder headers.
+
 ### link
 
 #### synthetic-monitoring_link_clicked

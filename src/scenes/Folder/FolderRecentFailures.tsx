@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { Check } from 'types';
 import { getCheckCompositeKey } from 'data/useCheckAlertStates';
 
-import { formatLatency, getCheckDashboardHrefAtTime } from './FolderDashboard.utils';
+import { formatLatency, getCheckDashboardHrefForRange } from './FolderDashboard.utils';
 import { FolderExecutionLogs } from './FolderSwimlane.hooks';
 
 interface FolderRecentFailuresProps {
@@ -48,7 +48,7 @@ export const FolderRecentFailures = ({ checks, executionLogs }: FolderRecentFail
                 <td className={styles.when}>{dateTimeFormat(failure.timestamp, { format: 'HH:mm:ss' })}</td>
                 <td>
                   {check ? (
-                    <TextLink href={getCheckDashboardHrefAtTime(check, failure.timestamp)} inline={false}>
+                    <TextLink href={getCheckDashboardHrefForRange(check, executionLogs.timeRange)} inline={false}>
                       {failure.job}
                     </TextLink>
                   ) : (

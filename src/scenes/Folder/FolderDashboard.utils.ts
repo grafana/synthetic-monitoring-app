@@ -13,14 +13,11 @@ export function formatLatency(seconds: number): string {
   return `${seconds.toFixed(2)} s`;
 }
 
-const EXECUTION_LINK_WINDOW_MS = 30 * 60 * 1000;
-
 /**
- * Link to a check's dashboard with the time range centred on a specific
- * execution — the closest thing to deep-linking an execution until the
- * dashboard supports it directly.
+ * Link to a check's dashboard carrying the folder page's time window, so the
+ * user lands on the same 3h view they were just looking at.
  */
-export function getCheckDashboardHrefAtTime(check: Check, timestamp: number): string {
+export function getCheckDashboardHrefForRange(check: Check, range: { from: number; to: number }): string {
   const path = generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! });
-  return `${path}?from=${timestamp - EXECUTION_LINK_WINDOW_MS}&to=${timestamp + EXECUTION_LINK_WINDOW_MS}`;
+  return `${path}?from=${range.from}&to=${range.to}`;
 }

@@ -106,7 +106,7 @@ export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTa
               <td>{summary.latencyTrend ? <Sparkline points={summary.latencyTrend} /> : null}</td>
               <td className={styles.actions}>
                 <TextLink href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })} inline={false}>
-                  View dashboard
+                  View check dashboard
                 </TextLink>
               </td>
             </tr>

@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Badge, EmptyState, Stack, TextLink, useStyles2 } from '@grafana/ui';
+import { Badge, EmptyState, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackFolderDashboardViewed } from 'features/tracking/folderEvents';
 
 import { Check } from 'types';
 import { getCheckRuntimeAlertState, useChecksAlertStates } from 'data/useCheckAlertStates';
 import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
+import { Feedback } from 'components/Feedback';
 
 import { FolderCheckTable } from './FolderCheckTable';
 import { useFolderCheckMetrics } from './FolderDashboard.hooks';
@@ -16,46 +17,17 @@ import { FolderRecentFailures } from './FolderRecentFailures';
 import { FolderSwimlane } from './FolderSwimlane';
 import { useFolderExecutionLogs } from './FolderSwimlane.hooks';
 
-export interface FolderPathPart {
-  title: string;
-  href?: string;
-}
-
 interface FolderDashboardProps {
   folderTitle: string;
-  pathParts: FolderPathPart[];
   checks: Check[];
 }
-
-const FolderBreadcrumb = ({ pathParts }: { pathParts: FolderPathPart[] }) => {
-  if (pathParts.length < 2) {
-    return null;
-  }
-
-  return (
-    <>
-      {pathParts.map((part, index) => (
-        <React.Fragment key={`${part.title}-${index}`}>
-          {index > 0 && ' > '}
-          {part.href ? (
-            <TextLink href={part.href} inline={true} color="secondary">
-              {part.title}
-            </TextLink>
-          ) : (
-            part.title
-          )}
-        </React.Fragment>
-      ))}
-    </>
-  );
-};
 
 /**
  * Opinionated folder overview: a fixed, auto-refreshing last-3h window across
  * every section. No time picker or filters by design (v1) — per-check
  * dashboards carry those controls.
  */
-export const FolderDashboard = ({ folderTitle, pathParts, checks }: FolderDashboardProps) => {
+export const FolderDashboard = ({ folderTitle, checks }: FolderDashboardProps) => {
   const styles = useStyles2(getStyles);
   const metrics = useFolderCheckMetrics(checks);
   const { data: alertStates } = useChecksAlertStates(checks);
@@ -80,7 +52,7 @@ export const FolderDashboard = ({ folderTitle, pathParts, checks }: FolderDashbo
 
   if (checks.length === 0) {
     return (
-      <PluginPage pageNav={{ text: folderTitle }} subTitle={<FolderBreadcrumb pathParts={pathParts} />}>
+      <PluginPage pageNav={{ text: folderTitle }}>
         <EmptyState variant="not-found" message="This folder doesn't have any checks yet" />
       </PluginPage>
     );
@@ -89,7 +61,7 @@ export const FolderDashboard = ({ folderTitle, pathParts, checks }: FolderDashbo
   return (
     <PluginPage
       pageNav={{ text: folderTitle }}
-      subTitle={<FolderBreadcrumb pathParts={pathParts} />}
+      actions={<Feedback feature="folder-dashboard" about={{ text: 'New feature!' }} />}
       renderTitle={() => (
         <Stack alignItems="center" gap={1}>
           <h1 className={styles.title}>{folderTitle}</h1>

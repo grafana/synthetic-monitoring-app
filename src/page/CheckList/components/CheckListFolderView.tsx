@@ -15,6 +15,7 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackFolderOverviewClicked } from 'features/tracking/folderEvents';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort, CheckType, GrafanaFolder, Label } from 'types';
@@ -394,9 +395,10 @@ function FolderTreeBranch({
             size="sm"
             icon="chart-line"
             href={generateRoutePath(AppRoutes.FolderDashboard, { uid: node.folderUid })}
-            aria-label={`View dashboard for folder ${node.folder?.title ?? node.folderUid}`}
+            onClick={() => trackFolderOverviewClicked()}
+            aria-label={`Folder overview for ${node.folder?.title ?? node.folderUid}`}
           >
-            View dashboard
+            Folder overview
           </LinkButton>
         )}
         {showActions && !isEmpty && (

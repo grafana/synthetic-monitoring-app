@@ -10,7 +10,7 @@ import { mockFeatureToggles } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
-import { generateRoutePath, getRoute } from 'routing/utils';
+import { generateRoutePath } from 'routing/utils';
 
 import { FolderPage } from './FolderPage';
 
@@ -60,21 +60,16 @@ describe(`FolderPage`, () => {
     expect(screen.queryByText(CHECK_IN_STAGING.job)).not.toBeInTheDocument();
   });
 
-  it(`renders a breadcrumb linking back to the checks listing`, async () => {
-    renderFolderPage(FOLDER_PRODUCTION.uid);
-
-    const breadcrumb = await screen.findByRole(`link`, { name: `Grafana Synthetic Monitoring` });
-    expect(breadcrumb).toHaveAttribute(`href`, getRoute(AppRoutes.Checks));
-  });
-
   it(`links checks to their dashboard`, async () => {
     renderFolderPage(FOLDER_PRODUCTION.uid);
 
-    const checkLink = await screen.findByRole(`link`, { name: CHECK_IN_PRODUCTION.job });
-    expect(checkLink).toHaveAttribute(
-      `href`,
-      generateRoutePath(AppRoutes.CheckDashboard, { id: CHECK_IN_PRODUCTION.id! })
-    );
+    // The check name appears as a link in both the table and the swimlane.
+    const checkLinks = await screen.findAllByRole(`link`, { name: CHECK_IN_PRODUCTION.job });
+    const dashboardPath = generateRoutePath(AppRoutes.CheckDashboard, { id: CHECK_IN_PRODUCTION.id! });
+    expect(checkLinks.length).toBeGreaterThan(0);
+    checkLinks.forEach((link) => {
+      expect(link.getAttribute(`href`)).toContain(dashboardPath);
+    });
   });
 
   it(`shows an empty state for a folder without checks`, async () => {

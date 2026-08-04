@@ -60,7 +60,7 @@ export const CheckItemActionButtons = ({
                 fill="text"
                 className={styles.dashboardTextLink}
               >
-                View dashboard
+                View check dashboard
               </LinkButton>
               <LinkButton
                 href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
@@ -81,7 +81,7 @@ export const CheckItemActionButtons = ({
             />
           ) : (
             <LinkButton href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`} size="sm" fill="text">
-              View dashboard
+              View check dashboard
             </LinkButton>
           )}
         </>

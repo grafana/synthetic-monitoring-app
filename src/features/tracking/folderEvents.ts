@@ -20,3 +20,6 @@ interface FolderDashboardViewedEvent extends TrackingEventProps {
 
 /** Tracks when a folder dashboard page is viewed. */
 export const trackFolderDashboardViewed = folderEvents<FolderDashboardViewedEvent>('folder_dashboard_viewed');
+
+/** Tracks clicks on the "Folder overview" link on the check list's folder headers. */
+export const trackFolderOverviewClicked = folderEvents('folder_overview_clicked');

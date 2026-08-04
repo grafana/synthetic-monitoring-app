@@ -1,12 +1,12 @@
 import React from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { LoadingPlaceholder, Tooltip, useStyles2 } from '@grafana/ui';
+import { LoadingPlaceholder, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
 import { getCheckCompositeKey } from 'data/useCheckAlertStates';
 
-import { formatLatency, getCheckDashboardHrefAtTime } from './FolderDashboard.utils';
+import { formatLatency, getCheckDashboardHrefForRange } from './FolderDashboard.utils';
 import { ExecutionRecord, FolderExecutionLogs } from './FolderSwimlane.hooks';
 
 interface FolderSwimlaneProps {
@@ -20,10 +20,12 @@ const FailureMark = ({
   record,
   positionPct,
   check,
+  timeRange,
 }: {
   record: ExecutionRecord;
   positionPct: number;
   check: Check;
+  timeRange: { from: number; to: number };
 }) => {
   const styles = useStyles2(getStyles);
 
@@ -34,12 +36,13 @@ const FailureMark = ({
       )} · click to open check`}
     >
       <a
-        href={getCheckDashboardHrefAtTime(check, record.timestamp)}
+        href={getCheckDashboardHrefForRange(check, timeRange)}
         className={styles.markFailed}
         style={{ left: `${positionPct}%` }}
-        aria-label={`Open ${check.job} around the failed execution at ${dateTimeFormat(record.timestamp, {
-          format: 'HH:mm:ss',
-        })} from ${record.probe}`}
+        aria-label={`Open ${check.job} for the window containing the failed execution at ${dateTimeFormat(
+          record.timestamp,
+          { format: 'HH:mm:ss' }
+        )} from ${record.probe}`}
       />
     </Tooltip>
   );
@@ -70,7 +73,9 @@ export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) =
         return (
           <div key={check.id ?? `${check.job}-${check.target}`} className={styles.lane}>
             <div className={styles.laneLabel} title={check.job}>
-              {check.job}
+              <TextLink href={getCheckDashboardHrefForRange(check, timeRange)} color="primary" inline={false}>
+                {check.job}
+              </TextLink>
             </div>
             <div className={styles.track}>
               {records.map((record, index) =>
@@ -89,6 +94,7 @@ export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) =
                     record={record}
                     positionPct={toPct(record.timestamp)}
                     check={check}
+                    timeRange={timeRange}
                   />
                 )
               )}
