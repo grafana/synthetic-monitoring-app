@@ -39,6 +39,17 @@ if (window.location.hostname !== 'localhost') {
         id: config.bootData.user.orgName,
       },
       instrumentations: getWebInstrumentations(),
+      // only send signals emitted while the user is on this plugin's pages
+      beforeSend: (event) => {
+        if ((event.meta.page?.url ?? '').includes('grafana-synthetic-monitoring-app')) {
+          return event;
+        }
+
+        return null;
+      },
+      experimental: {
+        trackNavigation: true,
+      },
     });
 
     registerFaroInteractionEchoBackend(faro);
