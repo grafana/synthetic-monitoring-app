@@ -4,7 +4,7 @@ import { Check } from 'types';
 import { CheckRuntimeAlertStates, getCheckCompositeKey } from 'data/useCheckAlertStates';
 
 import { FolderCheckMetrics } from './FolderDashboard.hooks';
-import { orderChecksByAttention } from './FolderDashboard.utils';
+import { formatPercent, orderChecksByAttention } from './FolderDashboard.utils';
 import { ExecutionRecord, FolderExecutionLogs } from './FolderSwimlane.hooks';
 
 function makeCheck(job: string): Check {
@@ -50,6 +50,14 @@ function makeAlertStates(firingJobToCheck: Check[]): CheckRuntimeAlertStates {
     ])
   );
 }
+
+describe(`formatPercent`, () => {
+  it(`never rounds an imperfect value up to 100%`, () => {
+    expect(formatPercent(0.99996)).toBe(`99.9%`);
+    expect(formatPercent(1)).toBe(`100.0%`);
+    expect(formatPercent(0.963)).toBe(`96.3%`);
+  });
+});
 
 describe(`orderChecksByAttention`, () => {
   it(`orders down before alerting before recent failures before healthy`, () => {

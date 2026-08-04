@@ -8,7 +8,13 @@ import { FolderCheckMetrics } from './FolderDashboard.hooks';
 import { FolderExecutionLogs } from './FolderSwimlane.hooks';
 
 export function formatPercent(fraction: number): string {
-  return `${(fraction * 100).toFixed(1)}%`;
+  const percent = fraction * 100;
+  // Never round an imperfect value up to 100% — a check that failed recently
+  // showing "100.0%" next to a Down state reads as a contradiction.
+  if (percent > 99.9 && percent < 100) {
+    return '99.9%';
+  }
+  return `${percent.toFixed(1)}%`;
 }
 
 export function formatLatency(seconds: number): string {

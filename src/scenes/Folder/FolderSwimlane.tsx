@@ -128,7 +128,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   lane: css({
     display: 'grid',
-    gridTemplateColumns: '220px 1fr',
+    gridTemplateColumns: '300px 1fr',
     alignItems: 'center',
 
     '& + &': {
@@ -171,7 +171,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   axis: css({
     display: 'grid',
-    gridTemplateColumns: '220px 1fr',
+    gridTemplateColumns: '300px 1fr',
   }),
   axisTicks: css({
     display: 'flex',
