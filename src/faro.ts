@@ -95,20 +95,20 @@ export function getFaroConfig() {
   switch (env) {
     case FaroEnv.Dev:
       return {
-        url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/769f675a8e1e8b05f05b478b7002259b',
+        url: 'https://faro-collector-ops-eu-south-0.grafana-ops.net/collect/914df333264c1827e53d6a613704b6e6',
         name: 'synthetic-monitoring-app-dev',
         env: FaroEnv.Dev,
       };
     case FaroEnv.Staging:
       return {
-        url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/73212b0adc2a3d002ee3befa3b48c4d9',
+        url: 'https://faro-collector-ops-eu-south-0.grafana-ops.net/collect/40defe4600ad1deb0d47487f46841da3',
         name: 'synthetic-monitoring-app-staging',
         env: FaroEnv.Staging,
       };
     case FaroEnv.Prod:
     default:
       return {
-        url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/837791054a26c6aba5d32ece9030be32',
+        url: 'https://faro-collector-ops-eu-south-0.grafana-ops.net/collect/eedd4e9616af3ea1847d89f0284979a9',
         name: 'synthetic-monitoring-app-prod',
         env: FaroEnv.Prod,
       };
