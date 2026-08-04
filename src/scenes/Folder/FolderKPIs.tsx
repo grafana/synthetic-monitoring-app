@@ -6,7 +6,7 @@ import pluralize from 'pluralize';
 
 import { Check } from 'types';
 import { DEFAULT_FOLDER_TITLE } from 'data/folders.constants';
-import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
+import { CheckRuntimeAlertStates, getCheckCompositeKey, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 
 import { FolderCheckMetrics, getExecutionsPerMonth } from './FolderDashboard.hooks';
 import { formatPercent } from './FolderDashboard.utils';
@@ -108,7 +108,11 @@ export const FolderKPIs = ({ checks, metrics, executionLogs, alertStates }: Fold
         <div className={styles.label}>Failed executions &middot; 3h</div>
         <div className={styles.value}>{executionLogs.isLoading ? '—' : failureCount}</div>
         <div className={styles.detail}>
-          {failureCount > 0 && worstOffender ? `most from ${worstOffender}` : 'no failures in window'}
+          {executionLogs.isLoading
+            ? 'loading execution history'
+            : failureCount > 0 && worstOffender
+              ? `most from ${worstOffender}`
+              : 'no failures in window'}
         </div>
       </div>
       <div className={styles.tile}>
@@ -120,12 +124,16 @@ export const FolderKPIs = ({ checks, metrics, executionLogs, alertStates }: Fold
   );
 };
 
+// Aggregate by the job + instance pair (a check's identity everywhere on this
+// page) so reused job names across checks stay distinct; display the job.
 function getWorstOffender(executionLogs: FolderExecutionLogs): string | undefined {
-  const counts = new Map<string, number>();
+  const counts = new Map<string, { job: string; count: number }>();
   executionLogs.failures.forEach((failure) => {
-    counts.set(failure.job, (counts.get(failure.job) ?? 0) + 1);
+    const key = getCheckCompositeKey(failure.job, failure.instance);
+    const existing = counts.get(key);
+    counts.set(key, { job: failure.job, count: (existing?.count ?? 0) + 1 });
   });
-  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  return [...counts.values()].sort((a, b) => b.count - a.count)[0]?.job;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({

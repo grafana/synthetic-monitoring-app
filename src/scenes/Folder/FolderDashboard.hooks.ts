@@ -160,7 +160,8 @@ const DAYS_PER_MONTH = 31;
 
 export function getExecutionsPerMonth(checks: Check[]): number {
   return checks.reduce((total, check) => {
-    if (!check.frequency) {
+    // Disabled checks don't execute, so they contribute no volume.
+    if (!check.frequency || !check.enabled) {
       return total;
     }
     const perProbe = (DAYS_PER_MONTH * 24 * 60 * 60 * 1000) / check.frequency;
