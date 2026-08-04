@@ -6,23 +6,20 @@ function getRuntimeModule(): typeof import('@grafana/runtime') {
   return require('@grafana/runtime');
 }
 
+/** Mirrors the SLO app contract: methods resolve with plain values and reject on failure. */
 export function spyUsePluginFunctionsForSLOs(resolve: SLO[], options?: { notFound?: boolean }) {
-  const apiStub = options?.notFound
-    ? {
-        getSlos: async () => ({
-          error: { status: 404 },
-          data: undefined,
-        }),
-        updateSlo: jest.fn().mockResolvedValue({ data: resolve[0] }),
-        deleteSlo: jest.fn().mockResolvedValue({ data: {} }),
+  const apiStub = {
+    getSlos: async () => {
+      if (options?.notFound) {
+        throw Object.assign(new Error('not found'), { status: 404 });
       }
-    : {
-        getSlos: async () => ({
-          data: { slos: resolve },
-        }),
-        updateSlo: jest.fn().mockImplementation(async (slo: SLO) => ({ data: slo })),
-        deleteSlo: jest.fn().mockResolvedValue({ data: {} }),
-      };
+      return { slos: resolve };
+    },
+    getSlo: jest.fn().mockImplementation(async (uuid: string) => resolve.find((slo) => slo.uuid === uuid)),
+    addSlo: jest.fn().mockImplementation(async (slo: SLO) => ({ message: 'created', uuid: slo.uuid })),
+    updateSlo: jest.fn().mockResolvedValue(undefined),
+    deleteSlo: jest.fn().mockImplementation(async (uuid: string) => ({ uuid })),
+  };
 
   const fn = async () => apiStub;
 

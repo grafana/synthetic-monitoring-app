@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { usePluginFunctions } from '@grafana/runtime';
 
-import type { SLO } from './useSLOCheckLinks.types';
+import type { SLO, SLOApiV1 } from './useSLOCheckLinks.types';
 import { useExternalDependencies } from 'contexts/ExternalDependenciesContext';
 import { useChecks } from 'data/useChecks';
 
@@ -13,43 +13,41 @@ export const sloQueryKeys = {
   all: ['slos'] as const,
 };
 
+/** The SLO app registers a getter that resolves to the API object, not the API itself. */
+type GetSLOApi = () => Promise<SLOApiV1>;
+
 export type SLOPluginUpdateResult = {
-  data?: SLO;
-  error?: unknown;
+  error?: Error;
 };
 
 export type SLOPluginDeleteResult = {
-  data?: unknown;
-  error?: unknown;
+  data?: { uuid: string };
+  error?: Error;
 };
 
-export type GrafanaSLOPluginApi = {
-  getSlos: () => Promise<{
-    data?: { slos: SLO[] };
-    error?: unknown;
-  }>;
-  updateSlo?: (slo: SLO) => Promise<SLOPluginUpdateResult>;
-  deleteSlo?: (uuid: string) => Promise<SLOPluginDeleteResult>;
-};
+function getErrorStatus(e: unknown): number | undefined {
+  return typeof e === 'object' && e !== null && 'status' in e ? (e as { status?: number }).status : undefined;
+}
 
-async function fetchSLOsList(getApi: () => Promise<GrafanaSLOPluginApi>): Promise<SLO[]> {
+/** `instanceof Error` is unreliable across plugin bundle boundaries, so duck-type the message. */
+function toError(e: unknown): Error {
+  if (e instanceof Error) {
+    return e;
+  }
+  if (typeof e === 'object' && e !== null && 'message' in e) {
+    return new Error(String((e as { message?: unknown }).message));
+  }
+  return new Error(String(e));
+}
+
+async function fetchSLOsList(getSLOApi: GetSLOApi): Promise<SLO[]> {
   try {
-    const api = await getApi();
-    const result = await api.getSlos();
-    if (result?.error) {
-      const status =
-        typeof result.error === 'object' && result.error !== null && 'status' in result.error
-          ? (result.error as { status?: number }).status
-          : undefined;
-      if (status === 404) {
-        return [];
-      }
-      throw result.error instanceof Error ? result.error : new Error(String(result.error));
-    }
-    return result?.data?.slos ?? [];
+    const api = await getSLOApi();
+    const { slos } = await api.getSlos();
+    return slos ?? [];
   } catch (e: unknown) {
-    const status = typeof e === 'object' && e !== null && 'status' in e ? (e as { status?: number }).status : undefined;
-    if (status === 404) {
+    // The SLO API 404s for tenants that have never had SLOs provisioned.
+    if (getErrorStatus(e) === 404) {
       return [];
     }
     throw e;
@@ -61,20 +59,20 @@ export function useAllSLOs() {
   const pluginInstalled = slo.installed;
   const pluginCheckLoading = slo.isLoading;
 
-  const { functions, isLoading: functionsLoading } = usePluginFunctions<() => Promise<GrafanaSLOPluginApi>>({
+  const { functions, isLoading: functionsLoading } = usePluginFunctions<GetSLOApi>({
     extensionPointId: SLO_APP_API_EXTENSION_POINT_ID,
   });
 
-  const listFn = functions[0]?.fn;
-  const canFetch = pluginInstalled && !functionsLoading && typeof listFn === 'function';
+  const getSLOApi = functions[0]?.fn;
+  const canFetch = pluginInstalled && !functionsLoading && typeof getSLOApi === 'function';
 
   const query = useQuery({
-    queryKey: [...sloQueryKeys.all, listFn],
+    queryKey: [...sloQueryKeys.all, getSLOApi],
     queryFn: () => {
-      if (!listFn) {
+      if (!getSLOApi) {
         return Promise.resolve<SLO[]>([]);
       }
-      return fetchSLOsList(listFn);
+      return fetchSLOsList(getSLOApi);
     },
     enabled: canFetch,
   });
@@ -82,7 +80,7 @@ export function useAllSLOs() {
   return {
     slos: query.data ?? [],
     isLoading: pluginCheckLoading || functionsLoading || (canFetch && query.isLoading),
-    error: query.error instanceof Error ? query.error : query.error ? new Error(String(query.error)) : undefined,
+    error: query.error ? toError(query.error) : undefined,
   };
 }
 
@@ -90,10 +88,7 @@ export function useSLOCheckLinkMap() {
   const { slos, isLoading: slosLoading, error: slosError } = useAllSLOs();
   const { data: checks, isLoading: checksLoading, error: checksError } = useChecks();
 
-  const map = useMemo(
-    () => buildSLOCheckLinkMap(slos, checks ?? []),
-    [slos, checks]
-  );
+  const map = useMemo(() => buildSLOCheckLinkMap(slos, checks ?? []), [slos, checks]);
 
   return {
     map,
@@ -115,45 +110,55 @@ export function useChecksForSLO(sloUuid: string) {
 }
 
 function useSLOPluginApi() {
-  const { functions, isLoading } = usePluginFunctions<() => Promise<GrafanaSLOPluginApi>>({
+  const { functions, isLoading } = usePluginFunctions<GetSLOApi>({
     extensionPointId: SLO_APP_API_EXTENSION_POINT_ID,
   });
-  return { listFn: functions[0]?.fn, isLoading };
+  return { getSLOApi: functions[0]?.fn, isLoading };
 }
 
 export function useUpdateSLO() {
-  const { listFn } = useSLOPluginApi();
+  const { getSLOApi } = useSLOPluginApi();
 
   return useCallback(
     async (payload: SLO): Promise<SLOPluginUpdateResult> => {
-      if (!listFn) {
+      if (!getSLOApi) {
         return { error: new Error('SLO plugin API is not available') };
       }
-      const api = await listFn();
-      if (typeof api.updateSlo !== 'function') {
-        return { error: new Error('SLO plugin API does not support updateSlo') };
+      try {
+        const api = await getSLOApi();
+        // The installed SLO app may predate this method even though it registers `slo-api/v1`.
+        if (typeof api.updateSlo !== 'function') {
+          return { error: new Error('SLO plugin API does not support updateSlo') };
+        }
+        await api.updateSlo(payload);
+        return {};
+      } catch (e: unknown) {
+        return { error: toError(e) };
       }
-      return api.updateSlo(payload);
     },
-    [listFn]
+    [getSLOApi]
   );
 }
 
 export function useDeleteSLO() {
-  const { listFn } = useSLOPluginApi();
+  const { getSLOApi } = useSLOPluginApi();
 
   return useCallback(
     async (uuid: string): Promise<SLOPluginDeleteResult> => {
-      if (!listFn) {
+      if (!getSLOApi) {
         return { error: new Error('SLO plugin API is not available') };
       }
-      const api = await listFn();
-      if (typeof api.deleteSlo !== 'function') {
-        return { error: new Error('SLO plugin API does not support deleteSlo') };
+      try {
+        const api = await getSLOApi();
+        // The installed SLO app may predate this method even though it registers `slo-api/v1`.
+        if (typeof api.deleteSlo !== 'function') {
+          return { error: new Error('SLO plugin API does not support deleteSlo') };
+        }
+        return { data: await api.deleteSlo(uuid) };
+      } catch (e: unknown) {
+        return { error: toError(e) };
       }
-      return api.deleteSlo(uuid);
     },
-    [listFn]
+    [getSLOApi]
   );
 }
-
