@@ -5,6 +5,7 @@ import {
   PredefinedAlertInterface,
 } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
+import { isSecretRef } from '../utils/secrets';
 import { getCheckAlertsFormValues } from './toFormValues.alerts';
 
 export const getTlsConfigFormValues = (tlsConfig?: TLSConfig) => {
@@ -26,6 +27,11 @@ const getDecodedIfPEM = (cert = '') => {
   const decoded = fromBase64(cert);
   if (decoded === undefined) {
     return cert;
+  }
+  // A secret reference is stored base64-encoded on the wire (like any PEM); decode
+  // it back to the literal `${secrets.*}` so the field re-hydrates into secret mode.
+  if (isSecretRef(decoded)) {
+    return decoded;
   }
   if (decoded.indexOf('BEGIN') > 0) {
     return decoded;

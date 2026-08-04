@@ -2,6 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { BASIC_PING_CHECK } from 'test/fixtures/checks';
 import {
+  CHECK_IN_EXTERNAL_FOLDER,
   CHECK_IN_FORBIDDEN_FOLDER,
   CHECK_IN_PRODUCTION,
   CHECK_IN_READONLY_FOLDER,
@@ -105,6 +106,12 @@ describe('CheckList - Folder Permissions', () => {
         await renderCheckList();
         await screen.findByText('Production HTTP check');
         expect(await screen.findByText('Orphaned folder check')).toBeInTheDocument();
+      });
+
+      it('shows checks in readable folders outside the default folder subtree', async () => {
+        await renderCheckList([...ALL_CHECKS, CHECK_IN_EXTERNAL_FOLDER]);
+        await screen.findByText('Production HTTP check');
+        expect(await screen.findByText('External folder check')).toBeInTheDocument();
       });
     });
 
@@ -355,6 +362,41 @@ describe('CheckList - Folder Permissions', () => {
       expect(screen.getByText('Production HTTP check')).toBeInTheDocument();
       expect(screen.getByText('Forbidden folder check')).toBeInTheDocument();
       expect(screen.getByText('Unassigned check')).toBeInTheDocument();
+    });
+  });
+
+  describe('child-folder fetch failure', () => {
+    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+
+    it('does not mislabel in-subtree folders as external when the subtree fetch errors', async () => {
+      server.use(
+        apiRoute(`listChecks`, {
+          result: () => ({ json: [CHECK_IN_PRODUCTION] }),
+        }),
+        apiRoute(`listProbes`, {
+          result: () => ({ json: [PRIVATE_PROBE, PUBLIC_PROBE] }),
+        }),
+        // Default folder resolves fine (detail endpoint), but fetching its
+        // children fails. The subtree is then partial, so we must not assert
+        // that a legitimate child folder lives outside it.
+        apiRoute(`listFolders`, {
+          result: (req: Request) => {
+            const url = new URL(req.url);
+            if (url.searchParams.get('parentUid')) {
+              return { status: 500, json: { message: 'Internal server error' } };
+            }
+            return { json: [] };
+          },
+        })
+      );
+
+      render(<CheckList />, {
+        route: AppRoutes.Checks,
+        path: generateRoutePath(AppRoutes.Checks),
+      });
+
+      expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+      expect(screen.queryByText('Outside default folder')).not.toBeInTheDocument();
     });
   });
 

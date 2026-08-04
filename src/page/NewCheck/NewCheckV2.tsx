@@ -6,8 +6,8 @@ import { TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { UI_TEST_ID } from 'test/dataTestIds';
 
-import { CheckFormPageParams, CheckType } from 'types';
-import { createNavModel } from 'utils';
+import { Check, CheckFormPageParams, CheckType } from 'types';
+import { createNavModel, getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useProbes } from 'data/useProbes';
@@ -21,10 +21,46 @@ import { useDuplicateCheck } from 'page/NewCheck/NewCheckV2.hooks';
 import { PluginPageNotFound } from 'page/NotFound';
 
 import { CenteredSpinner } from '../../components/CenteredSpinner';
-import { CHECK_TYPE_GROUP_DEFAULT_CHECK } from '../../components/Checkster/constants';
+import { CHECK_TYPE_GROUP_DEFAULT_CHECK, DEFAULT_CHECK_CONFIG_MAP } from '../../components/Checkster/constants';
 import { getUserPermissions } from '../../data/permissions';
 
 const CHECK_TYPE_PARAM_NAME = 'checkType';
+
+/**
+ * A pre-filled check draft (e.g. from the Grafana Assistant deep-link) may only
+ * set a few fields. Merge it over the check type's default config so required
+ * settings the caller omitted (e.g. HTTP `ipVersion`) are still present —
+ * otherwise the form fails validation on an off-screen field and Save silently
+ * does nothing.
+ */
+export function mergePrefilledCheck(prefill: Check, fallbackType: CheckType): Check {
+  // getCheckType throws on undefined settings and silently defaults empty settings
+  // to HTTP, so fall back to the route's check type when the draft has no settings.
+  const hasSettings = !!prefill.settings && Object.keys(prefill.settings).length > 0;
+  const checkType = hasSettings ? getCheckType(prefill.settings) : fallbackType;
+
+  const base = DEFAULT_CHECK_CONFIG_MAP[checkType];
+  if (!base) {
+    return prefill;
+  }
+
+  // Merge under the CANONICAL settings key from the default config (e.g. `scripted`),
+  // reading the draft's settings value by position so a legacy `k6` key still lands
+  // on the right key instead of producing an invalid `settings: { k6: ... }`.
+  const canonicalKey = Object.keys(base.settings)[0];
+  const baseSettings = base.settings as Record<string, unknown>;
+  const draftValue = hasSettings
+    ? (Object.values(prefill.settings as Record<string, unknown>)[0] as Record<string, unknown>)
+    : {};
+
+  return {
+    ...base,
+    ...prefill,
+    settings: {
+      [canonicalKey]: { ...(baseSettings[canonicalKey] as Record<string, unknown>), ...draftValue },
+    },
+  } as unknown as Check;
+}
 
 export function NewCheckV2() {
   const [params] = useSearchParams({});
@@ -45,6 +81,12 @@ export function NewCheckV2() {
   ]);
 
   const location = useLocation();
+  // The Grafana Assistant can deep-link here with a pre-filled check draft in
+  // router state so the user only has to review and click Create.
+  const prefilledCheck = (location.state as { prefilledCheck?: Check } | null)?.prefilledCheck;
+  const fallbackCheckType = checkType ?? (group ? CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value] : CheckType.Http);
+  const initialCheck =
+    duplicateCheck ?? (prefilledCheck ? mergePrefilledCheck(prefilledCheck, fallbackCheckType) : undefined);
 
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
@@ -56,7 +98,10 @@ export function NewCheckV2() {
     [location.pathname, urlSearchParams]
   );
 
-  const isOverlimit = useIsOverlimit(false, checkType);
+  // Prefill deep-links may omit ?checkType=, so fall back to the actual check's type
+  // to keep the type-specific (browser/scripted) limit checks accurate.
+  const effectiveCheckType = checkType ?? (initialCheck ? getCheckType(initialCheck.settings) : undefined);
+  const isOverlimit = useIsOverlimit(false, effectiveCheckType);
   const { canWriteChecks } = getUserPermissions();
 
   const isLoading = (isLoadingProbes && !isProbesFetched) || isOverlimit === null || isLoadingDuplicateCheck;
@@ -85,8 +130,9 @@ export function NewCheckV2() {
           checkType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
           disabled={isOverlimit || !canWriteChecks}
           onCheckTypeChange={handleCheckTypeChange}
-          check={duplicateCheck}
+          check={initialCheck}
           isDuplicate={!!duplicateCheck}
+          isPrefilled={!duplicateCheck && !!prefilledCheck}
         >
           <Checkster onSave={handleSubmit} />
         </ChecksterProvider>

@@ -94,9 +94,9 @@ export const AppInitializer = ({ redirectTo, buttonText, autoInitialize = false 
         onSubmit={() => {
           if (jsonData.metrics.hostedId && jsonData.logs.hostedId) {
             initialize({
-              metricsSettings: metricsByUid!, // we have already guaranteed that this exists above
+              metricsSettings: metricsByUid ?? metricsByName!,
               metricsHostedId: jsonData.metrics.hostedId,
-              logsSettings: logsByUid!, // we have already guaranteed that this exists above
+              logsSettings: logsByUid ?? logsByName!,
               logsHostedId: jsonData.logs.hostedId,
             });
           } else {

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { Check } from 'types';
+import { Check, GrafanaFolder } from 'types';
 import {
   CheckFolderStatus,
   CheckPermissions,
@@ -28,12 +28,16 @@ import { useAllFolders } from 'data/useFolders';
  * Returns visibleChecks (filtered) and getPermissions (lookup function).
  */
 export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks: T[]) {
-  const { folders: allFolders, defaultFolderUid, isFoldersAvailable, folderStatus } = useAllFolders();
+  const {
+    folders: allFolders,
+    defaultFolderUid,
+    isFoldersAvailable,
+    folderStatus,
+    isLoading: isFoldersLoading,
+    isError: isFoldersError,
+  } = useAllFolders();
 
-  const accessibleFolderUids = useMemo(
-    () => new Set(allFolders.map((f) => f.uid)),
-    [allFolders]
-  );
+  const accessibleFolderUids = useMemo(() => new Set(allFolders.map((f) => f.uid)), [allFolders]);
 
   const folderUids = useMemo(() => {
     if (!isFoldersAvailable) {
@@ -68,9 +72,35 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
       if (accessibleFolderUids.has(effectiveUid)) {
         return true;
       }
-      return folderDetailsByUid.get(effectiveUid)?.type === 'orphaned';
+      // Folders outside the default subtree: `accessible` means the folder
+      // exists and the user can read it (e.g. a check assigned to an external
+      // folder via the API, or a folder stranded by a default-folder UID
+      // mismatch), so its checks must stay visible. `orphaned` (404) checks
+      // are shown too. Only `forbidden` (403) hides a check.
+      const folderState = folderDetailsByUid.get(effectiveUid);
+      return folderState?.type === 'orphaned' || folderState?.type === 'accessible';
     });
   }, [checks, isFoldersAvailable, accessibleFolderUids, folderDetailsByUid, defaultFolderUid]);
+
+  // Readable folders referenced by checks but living outside the default
+  // folder's subtree, so the folder view can show them instead of hiding
+  // their checks.
+  //
+  // We can only trust this once the subtree has loaded successfully: while
+  // loading (or if the child-folder fetch failed) we don't know the full
+  // subtree, so we'd wrongly flag in-subtree folders as external.
+  const externalFolders = useMemo(() => {
+    if (isFoldersLoading || isFoldersError) {
+      return [];
+    }
+    const result: GrafanaFolder[] = [];
+    folderDetailsByUid.forEach((state, uid) => {
+      if (state.type === 'accessible' && state.folder && !accessibleFolderUids.has(uid)) {
+        result.push(state.folder);
+      }
+    });
+    return result;
+  }, [folderDetailsByUid, accessibleFolderUids, isFoldersLoading, isFoldersError]);
 
   const getFolderStatus = useCallback(
     (check: Pick<Check, 'folderUid'>): CheckFolderStatus => {
@@ -88,6 +118,7 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
 
   return {
     visibleChecks,
+    externalFolders,
     getPermissions,
     getFolderStatus,
     isFoldersAvailable,

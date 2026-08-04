@@ -41,6 +41,9 @@ export function getHttpSettingsForm(settings: HTTPCheck['settings']): HttpSettin
     noFollowRedirects,
     tlsConfig,
     compression,
+    // Dropped from form values: the UI infers it from field values on save, so
+    // it must never leak into the form (it is Omit-ted from HttpSettingsFormValues).
+    secretManagerEnabled,
     ...rest
   } = httpSettings;
 

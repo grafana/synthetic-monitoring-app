@@ -38,7 +38,13 @@ export type FolderStatus = 'loading' | 'available' | 'not-provisioned' | 'permis
  * rather than wastefully trying to list/create the folder.
  */
 export function useDefaultFolder(enabled = true) {
-  const { data: defaultFolder, isLoading, isError, error, refetch } = useQuery({
+  const {
+    data: defaultFolder,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: [...folderQueryKeys.all, 'default'] as const,
     queryFn: async (): Promise<GrafanaFolder> => {
       try {
@@ -64,7 +70,7 @@ export function useDefaultFolder(enabled = true) {
           getBackendSrv().fetch<GrafanaFolder>({
             method: 'POST',
             url: '/api/folders',
-            data: { title: DEFAULT_FOLDER_TITLE },
+            data: { title: DEFAULT_FOLDER_TITLE, uid: DEFAULT_FOLDER_UID },
             showErrorAlert: false,
           })
         ).then((res) => res.data);

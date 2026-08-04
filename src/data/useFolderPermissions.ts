@@ -16,6 +16,7 @@ function toAccessState(folder: GrafanaFolder): FolderAccessState {
       canAdmin: folder.canAdmin ?? false,
       canDelete: folder.canDelete ?? false,
     },
+    folder,
   };
 }
 

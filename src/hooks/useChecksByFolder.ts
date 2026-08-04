@@ -10,6 +10,8 @@ export interface FolderNode {
   isAccessible: boolean;
   isOrphaned: boolean;
   isDefault?: boolean;
+  /** Folder exists and is readable but lives outside the default folder's subtree. */
+  isExternal?: boolean;
 }
 
 export interface ChecksByFolder {
@@ -59,14 +61,21 @@ export function collectAllChecks(node: FolderNode): Check[] {
  * The default folder is treated as an invisible root: its child folders are
  * promoted to top level, and checks assigned to it (or without a folderUid)
  * go into rootChecks.
+ *
+ * `externalFolders` are readable folders outside the default folder's subtree
+ * that have checks assigned to them (e.g. via the API, or stranded by a
+ * default-folder UID mismatch). They only get a node when a check references
+ * them, rendered at top level and flagged with `isExternal`.
  */
 export function buildChecksByFolder(
   checks: Check[],
   folders: GrafanaFolder[],
   defaultFolderUid?: string,
-  reverseFolderSort?: boolean
+  reverseFolderSort?: boolean,
+  externalFolders: GrafanaFolder[] = []
 ): ChecksByFolder {
-  const foldersById = new Map(folders.map((f) => [f.uid, f]));
+  const foldersById = new Map([...folders, ...externalFolders].map((f) => [f.uid, f]));
+  const externalUids = new Set(externalFolders.map((f) => f.uid));
   const nodeMap = new Map<string, FolderNode>();
 
   const getOrCreateNode = (uid: string): FolderNode => {
@@ -80,6 +89,7 @@ export function buildChecksByFolder(
         children: [],
         isAccessible: !!folder,
         isOrphaned: !folder,
+        isExternal: externalUids.has(uid),
       });
     }
     return nodeMap.get(uid)!;
@@ -104,6 +114,11 @@ export function buildChecksByFolder(
   });
 
   nodeMap.forEach((node) => {
+    // External folders stay at top level: their ancestors are not part of the
+    // SM folder data, so walking up would create bogus "not found" nodes.
+    if (node.isExternal) {
+      return;
+    }
     let current = node.folder;
     while (current?.parentUid && !isDefaultFolder(current.parentUid)) {
       getOrCreateNode(current.parentUid);

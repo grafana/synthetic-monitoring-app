@@ -1,6 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Checkbox, ConfirmModal, Icon, IconButton, Pagination, Spinner, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import {
+  Badge,
+  Button,
+  Checkbox,
+  ConfirmModal,
+  Icon,
+  IconButton,
+  Pagination,
+  Spinner,
+  Stack,
+  Tooltip,
+  useStyles2,
+} from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
@@ -8,7 +20,14 @@ import { Check, CheckSort, CheckType, GrafanaFolder, Label } from 'types';
 import { useCheckFolderStatus } from 'contexts/CheckFolderAccessContext';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 import { useDeleteFolder } from 'data/useFolders';
-import { buildChecksByFolder, collectAllCheckIds, collectAllChecks, collectAllFolderUids, FolderNode, getTotalCheckCount } from 'hooks/useChecksByFolder';
+import {
+  buildChecksByFolder,
+  collectAllCheckIds,
+  collectAllChecks,
+  collectAllFolderUids,
+  FolderNode,
+  getTotalCheckCount,
+} from 'hooks/useChecksByFolder';
 import { Feedback } from 'components/Feedback';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
@@ -17,6 +36,7 @@ import { FolderBulkActions } from 'page/CheckList/components/FolderBulkActions';
 interface CheckListFolderViewProps {
   checks: Check[];
   folders: GrafanaFolder[];
+  externalFolders?: GrafanaFolder[];
   foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
   foldersError?: boolean;
@@ -37,6 +57,7 @@ interface CheckListFolderViewProps {
 export function CheckListFolderView({
   checks,
   folders,
+  externalFolders,
   foldersMap,
   foldersLoading,
   foldersError,
@@ -56,8 +77,8 @@ export function CheckListFolderView({
   const styles = useStyles2(getStyles);
   const reverseFolderSort = sortType === CheckSort.ZToA;
   const { folderTree, rootChecks } = useMemo(
-    () => buildChecksByFolder(checks, folders, defaultFolderUid, reverseFolderSort),
-    [checks, folders, defaultFolderUid, reverseFolderSort]
+    () => buildChecksByFolder(checks, folders, defaultFolderUid, reverseFolderSort, externalFolders),
+    [checks, folders, defaultFolderUid, reverseFolderSort, externalFolders]
   );
 
   const defaultFolderNode: FolderNode | null = useMemo(() => {
@@ -198,9 +219,7 @@ export function CheckListFolderView({
         </div>
       )}
 
-      {!hasAnyContent && (
-        <div className={styles.emptyState}>No checks to display</div>
-      )}
+      {!hasAnyContent && <div className={styles.emptyState}>No checks to display</div>}
     </div>
   );
 }
@@ -228,7 +247,14 @@ interface FolderTreeBranchProps {
   onRetryFolders?: () => void;
 }
 
-function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkItemProps, onRetryFolders }: FolderTreeBranchProps) {
+function FolderTreeBranch({
+  node,
+  depth,
+  collapsedFolders,
+  toggleFolder,
+  checkItemProps,
+  onRetryFolders,
+}: FolderTreeBranchProps) {
   const styles = useStyles2(getStyles);
   const isExpanded = !collapsedFolders.has(node.folderUid);
   const totalChecks = getTotalCheckCount(node);
@@ -249,12 +275,17 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
   const isAllInFolderSelected = totalChecks > 0 && selectedCount === totalChecks;
   const isSomeInFolderSelected = selectedCount > 0 && !isAllInFolderSelected;
 
-  const deleteFolderTarget = isAllInFolderSelected && folderCanDelete && !node.isDefault && !node.isOrphaned
-    ? { uid: node.folderUid, title: node.folder?.title ?? node.folderUid }
-    : undefined;
+  // External folders live outside the SM folder tree and may hold unrelated
+  // content (dashboards, subfolders, alert rules), so we never offer to delete
+  // them -- the badge guides the user to move their checks out instead.
+  const deleteFolderTarget =
+    isAllInFolderSelected && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isExternal
+      ? { uid: node.folderUid, title: node.folder?.title ?? node.folderUid }
+      : undefined;
 
   const isEmpty = totalChecks === 0;
-  const canDeleteEmptyFolder = isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned;
+  const canDeleteEmptyFolder =
+    isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isExternal;
   const [emptyFolderSelected, setEmptyFolderSelected] = useState(false);
   const [showDeleteEmptyFolderModal, setShowDeleteEmptyFolderModal] = useState(false);
   const { mutateAsync: deleteFolderAsync } = useDeleteFolder();
@@ -291,7 +322,11 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
       <div className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}>
         <Checkbox
-          aria-label={isEmpty ? `Select folder ${node.folder?.title ?? 'folder'}` : `Select all checks in ${node.folder?.title ?? 'folder'}`}
+          aria-label={
+            isEmpty
+              ? `Select folder ${node.folder?.title ?? 'folder'}`
+              : `Select all checks in ${node.folder?.title ?? 'folder'}`
+          }
           checked={isEmpty ? emptyFolderSelected : isAllInFolderSelected}
           indeterminate={!isEmpty && isSomeInFolderSelected}
           onChange={handleFolderSelectAll}
@@ -320,15 +355,26 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
               ) : node.isOrphaned ? (
                 <span className={styles.orphanedLabel}>Folder not found</span>
               ) : (
-                node.folder?.title ?? node.folderUid
+                (node.folder?.title ?? node.folderUid)
               )}
             </span>
+            {node.isExternal && (
+              <Badge
+                text="Outside default folder"
+                color="orange"
+                icon="exclamation-triangle"
+                tooltip={`This is a separate folder (UID: ${node.folderUid}) outside the default Synthetic Monitoring folder. Move its checks to another folder to organize them with the rest.`}
+              />
+            )}
             {node.isOrphaned && !checkItemProps.foldersLoading && checkItemProps.foldersError && onRetryFolders && (
               <Button
                 variant="secondary"
                 size="sm"
                 icon="sync"
-                onClick={(e) => { e.stopPropagation(); onRetryFolders(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRetryFolders();
+                }}
                 tooltip="Retry loading folders"
               >
                 Retry
@@ -357,7 +403,10 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
               tooltip="Delete folder"
               size="sm"
               variant="destructive"
-              onClick={(e) => { e.stopPropagation(); setShowDeleteEmptyFolderModal(true); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteEmptyFolderModal(true);
+              }}
             />
             <span className={styles.selectedCount}>1 selected</span>
             {showDeleteEmptyFolderModal && (
@@ -388,7 +437,11 @@ function FolderTreeBranch({ node, depth, collapsedFolders, toggleFolder, checkIt
             />
           ))}
           {node.checks.length > 0 && (
-            <PaginatedCheckList checks={node.checks} checkItemProps={checkItemProps} hideTopPagination={node.isDefault} />
+            <PaginatedCheckList
+              checks={node.checks}
+              checkItemProps={checkItemProps}
+              hideTopPagination={node.isDefault}
+            />
           )}
         </div>
       )}
@@ -414,10 +467,7 @@ function PaginatedCheckList({ checks, checkItemProps, hideTopPagination }: Pagin
     }
   }, [currentPage, clampedPage]);
 
-  const pageChecks = checks.slice(
-    (clampedPage - 1) * CHECKS_PER_PAGE_CARD,
-    clampedPage * CHECKS_PER_PAGE_CARD
-  );
+  const pageChecks = checks.slice((clampedPage - 1) * CHECKS_PER_PAGE_CARD, clampedPage * CHECKS_PER_PAGE_CARD);
 
   const paginationControls = totalPages > 1 && (
     <div className={styles.pagination}>

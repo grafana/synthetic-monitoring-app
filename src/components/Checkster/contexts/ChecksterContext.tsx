@@ -66,6 +66,7 @@ export interface ChecksterProviderProps extends PropsWithChildren {
   check?: Check;
   checkType?: CheckType;
   isDuplicate?: boolean;
+  isPrefilled?: boolean;
 }
 
 interface StashedValues {
@@ -103,6 +104,7 @@ export function ChecksterProvider({
   onCheckTypeChange,
   disabled = false,
   isDuplicate = false,
+  isPrefilled = false,
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
@@ -227,6 +229,10 @@ export function ChecksterProvider({
     if (isDuplicate) {
       formMethods.setValue('job', `${check?.job} (Copy)`, { shouldDirty: true });
       formNavigation.completeAllSteps();
+    }
+    if (isPrefilled) {
+      formMethods.reset(getDefaultFormValues(checkType), { keepValues: true });
+      formMethods.setValue('job', formMethods.getValues('job'), { shouldDirty: true });
     }
     // only do this on mount so it doesn't trigger when the check is updated
     // eslint-disable-next-line react-hooks/exhaustive-deps

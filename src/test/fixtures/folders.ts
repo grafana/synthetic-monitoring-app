@@ -57,4 +57,28 @@ export const FOLDER_DELETABLE: GrafanaFolder = {
 
 export const FOLDER_FORBIDDEN_UID = 'folder-forbidden';
 
-export const MOCK_FOLDERS: GrafanaFolder[] = [DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_STAGING, FOLDER_READONLY, FOLDER_DELETABLE];
+/**
+ * A readable folder living outside the default SM folder's subtree (no
+ * parentUid, random-looking UID). Mirrors the "stranded" state created when a
+ * duplicate default folder exists with a non-canonical UID, or when a check is
+ * assigned to an arbitrary folder via the API. Deliberately NOT part of
+ * MOCK_FOLDERS: the subtree list endpoint never returns it, only the detail
+ * endpoint does.
+ */
+export const FOLDER_EXTERNAL: GrafanaFolder = {
+  uid: 'afq0rsc7nhgcgc',
+  title: 'Grafana Synthetic Monitoring',
+  url: '/dashboards/f/afq0rsc7nhgcgc/grafana-synthetic-monitoring',
+  canEdit: true,
+  canDelete: true,
+  canAdmin: false,
+  canSave: true,
+};
+
+export const MOCK_FOLDERS: GrafanaFolder[] = [
+  DEFAULT_FOLDER,
+  FOLDER_PRODUCTION,
+  FOLDER_STAGING,
+  FOLDER_READONLY,
+  FOLDER_DELETABLE,
+];
