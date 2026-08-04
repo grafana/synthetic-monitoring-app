@@ -8,6 +8,10 @@ import { Check } from 'types';
 import { DEFAULT_FOLDER_TITLE } from 'data/folders.constants';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 
+import { FolderCheckMetrics, getExecutionsPerMonth } from './FolderDashboard.hooks';
+import { formatPercent } from './FolderDashboard.utils';
+import { FolderExecutionLogs } from './FolderSwimlane.hooks';
+
 // Grafana's unified alerting list, pre-filtered to firing synthetic
 // monitoring rules — same link pattern the per-check alert statuses use.
 // The search `namespace:` matches the rule folder's title (SM creates its
@@ -15,10 +19,6 @@ import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useChec
 const FIRING_SM_ALERTS_URL = `/alerting/list?search=${encodeURIComponent(
   `state:firing namespace:"${DEFAULT_FOLDER_TITLE}"`
 )}`;
-
-import { FolderCheckMetrics, getExecutionsPerMonth } from './FolderDashboard.hooks';
-import { formatPercent } from './FolderDashboard.utils';
-import { FolderExecutionLogs } from './FolderSwimlane.hooks';
 
 interface FolderKPIsProps {
   checks: Check[];
