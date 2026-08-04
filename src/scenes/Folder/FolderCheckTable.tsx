@@ -40,22 +40,8 @@ const StateCell = ({ isUp }: { isUp?: boolean }) => {
 export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTableProps) => {
   const styles = useStyles2(getStyles);
 
-  // Down or firing checks first, then alphabetical — attention-ordered.
-  const sorted = [...checks].sort((a, b) => {
-    const stateRank = (check: Check) => {
-      const { isUp } = metrics.getSummary(check);
-      const firing = alertStates ? getCheckRuntimeAlertState(alertStates, check).firingCount : 0;
-      if (isUp === false) {
-        return 0;
-      }
-      if (firing > 0) {
-        return 1;
-      }
-      return 2;
-    };
-    return stateRank(a) - stateRank(b) || a.job.localeCompare(b.job);
-  });
-
+  // Row order comes from the page-level attention ordering, shared with the
+  // swimlane so both sections tell the same top-down story.
   return (
     <table className={styles.table}>
       <thead>
@@ -70,7 +56,7 @@ export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTa
         </tr>
       </thead>
       <tbody>
-        {sorted.map((check) => {
+        {checks.map((check) => {
           const summary = metrics.getSummary(check);
           const alertState = alertStates ? getCheckRuntimeAlertState(alertStates, check) : undefined;
 

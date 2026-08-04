@@ -12,6 +12,7 @@ import { Feedback } from 'components/Feedback';
 
 import { FolderCheckTable } from './FolderCheckTable';
 import { useFolderCheckMetrics } from './FolderDashboard.hooks';
+import { orderChecksByAttention } from './FolderDashboard.utils';
 import { FolderKPIs } from './FolderKPIs';
 import { FolderRecentFailures } from './FolderRecentFailures';
 import { FolderSwimlane } from './FolderSwimlane';
@@ -40,6 +41,11 @@ export const FolderDashboard = ({ folderTitle, checks }: FolderDashboardProps) =
     // Fire once per page view, not on data refetches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const orderedChecks = useMemo(
+    () => orderChecksByAttention(checks, metrics, alertStates, executionLogs),
+    [checks, metrics, alertStates, executionLogs]
+  );
 
   // A check needs attention when it is currently down or has a firing alert.
   const attentionCount = useMemo(() => {
@@ -78,9 +84,9 @@ export const FolderDashboard = ({ folderTitle, checks }: FolderDashboardProps) =
       <Stack direction="column" gap={1}>
         <FolderKPIs checks={checks} metrics={metrics} executionLogs={executionLogs} />
 
-        <FolderSwimlane checks={checks} executionLogs={executionLogs} />
+        <FolderSwimlane checks={orderedChecks} executionLogs={executionLogs} />
 
-        <FolderCheckTable checks={checks} metrics={metrics} alertStates={alertStates} />
+        <FolderCheckTable checks={orderedChecks} metrics={metrics} alertStates={alertStates} />
 
         <FolderRecentFailures checks={checks} executionLogs={executionLogs} />
       </Stack>
