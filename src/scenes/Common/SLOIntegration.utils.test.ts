@@ -2,19 +2,12 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import {
   buildSLODescription,
-  buildSLOLabels,
   buildSLOName,
   buildSLOQuery,
   buildSLOWizardInitialValuesForCheck,
-} from './CreateSLOButton.utils';
+} from './SLOIntegration.utils';
 
-describe('CreateSLOButton utils', () => {
-  it('builds labels with source', () => {
-    expect(buildSLOLabels(BASIC_HTTP_CHECK)).toEqual([
-      { key: 'source', value: 'grafana-synthetic-monitoring-app' },
-    ]);
-  });
-
+describe('SLOIntegration utils', () => {
   it('builds ratio query for the check', () => {
     const result = buildSLOQuery(BASIC_HTTP_CHECK);
 
@@ -56,9 +49,7 @@ describe('CreateSLOButton utils', () => {
     it('returns empty object when linked SLOs already contain reachability objective label', () => {
       const result = buildSLOWizardInitialValuesForCheck(BASIC_HTTP_CHECK, [
         {
-          labels: [
-            { key: 'sm_objective_kind', value: 'reachability' },
-          ],
+          labels: [{ key: 'sm_objective_kind', value: 'reachability' }],
         },
       ]);
 

@@ -2,11 +2,11 @@ import { useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { usePluginFunctions } from '@grafana/runtime';
 
-import type { SLO, SLOApiV1 } from './useSLOCheckLinks.types';
+import type { SLO, SLOApiV1 } from './grafanaSLOApp.types';
 import { useExternalDependencies } from 'contexts/ExternalDependenciesContext';
 import { useChecks } from 'data/useChecks';
 
-import { SLO_APP_API_EXTENSION_POINT_ID } from './useSLOCheckLinks.constants';
+import { SLO_APP_API_EXTENSION_POINT_ID } from './grafanaSLOApp.constants';
 import { buildSLOCheckLinkMap } from './useSLOCheckLinks.utils';
 
 export const sloQueryKeys = {

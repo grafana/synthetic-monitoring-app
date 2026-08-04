@@ -161,7 +161,7 @@ jest.mock('@grafana/runtime', () => {
         </div>
       </div>
     ),
-    /** Default no-op; tests can `jest.mocked(usePluginComponent).mockReturnValue(...)` (e.g. CreateSLOButton). */
+    /** Default no-op; tests can `jest.mocked(usePluginComponent).mockReturnValue(...)` (e.g. SLOIntegration). */
     usePluginComponent: jest.fn(() => ({
       isLoading: false,
       component: () => null,

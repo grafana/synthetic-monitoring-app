@@ -275,3 +275,42 @@ export interface SLO {
   // Contains fields that are read-only and can't be set by the user.
   readOnly?: ReadOnly;
 }
+
+/**
+ * --- Hand-observed grafana-slo-app wizard contract (not from generated schema) ---
+ * Source: grafana-slo-app `grafana-slo-app/wizard/v1` via usePluginComponent.
+ */
+
+export enum StepKey {
+  Information = 'information',
+  Indicator = 'indicator',
+  Objective = 'objective',
+  Alerts = 'alerts',
+  Review = 'review',
+}
+
+export type SLORatioQuery = {
+  type: 'ratio';
+  ratioQuery: {
+    successMetric: string;
+    totalMetric: string;
+    groupByLabels: string;
+  };
+};
+
+export type SLOWizardInitialValues = {
+  name?: string;
+  description?: string;
+  query?: SLORatioQuery;
+  labels?: Label[];
+};
+
+export type SLOComponentPropsV1 = {
+  initialValues?: SLOWizardInitialValues;
+  dataSourceUid?: string;
+  stepperOrientation?: 'horizontal' | 'vertical';
+  onSuccess?: () => void;
+  submitLabel?: string;
+  onCancel: () => void;
+  initialStep?: StepKey;
+};

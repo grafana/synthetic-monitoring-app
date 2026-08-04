@@ -1,7 +1,5 @@
-import type { SLO } from './useSLOCheckLinks.types';
+import type { SLO } from './grafanaSLOApp.types';
 import type { Check } from 'types';
-
-const SM_METRICS = [/\bprobe_success\b/, /\bprobe_all_success/, /\bsm_http_\w+/, /\bsm_dns_\w+/, /\bsm_ping_\w+/];
 
 export function getSLOQueryStrings(slo: SLO): string[] {
   const q = slo.query;
@@ -30,9 +28,22 @@ export function extractLabelValues(query: string, label: string): string[] {
   return values;
 }
 
-export function sloMatchesSMCheck(slo: SLO, job: string): boolean {
+function isReachabilityQuery(queries: string[]): boolean {
+  const combined = queries.join(' ');
+  return /\bprobe_all_success_sum\b/.test(combined) && /\bprobe_all_success_count\b/.test(combined);
+}
+
+export function sloMatchesSMCheck(slo: SLO, job: string, instance: string): boolean {
   const queries = getSLOQueryStrings(slo);
-  return queries.some((qs) => SM_METRICS.some((p) => p.test(qs)) && extractLabelValues(qs, 'job').includes(job));
+  if (!isReachabilityQuery(queries)) {
+    return false;
+  }
+  return queries.some(
+    (qs) =>
+      (/\bprobe_all_success_sum\b/.test(qs) || /\bprobe_all_success_count\b/.test(qs)) &&
+      extractLabelValues(qs, 'job').includes(job) &&
+      extractLabelValues(qs, 'instance').includes(instance)
+  );
 }
 
 function isSLOActive(slo: SLO): boolean {
@@ -52,7 +63,7 @@ export function buildSLOCheckLinkMap(slos: SLO[], checks: Check[]): SLOCheckLink
 
   for (const slo of activeSLOs) {
     for (const check of checks) {
-      if (check.id !== undefined && sloMatchesSMCheck(slo, check.job)) {
+      if (check.id !== undefined && sloMatchesSMCheck(slo, check.job, check.target)) {
         const forCheck = slosByCheckId.get(check.id);
         if (forCheck) {
           forCheck.push(slo);

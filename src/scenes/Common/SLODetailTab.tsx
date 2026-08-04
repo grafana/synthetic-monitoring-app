@@ -16,7 +16,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import type { SLO } from './useSLOCheckLinks.types';
+import type { SLO } from './grafanaSLOApp.types';
 
 import { useSLOMetrics } from './SLODetailTab.hooks';
 
@@ -114,12 +114,7 @@ function getBurnRateColor(value: number, theme: GrafanaTheme2): string {
   return theme.colors.error.text;
 }
 
-export function SLODetailTab({
-  slo,
-  onEdit,
-  onDelete,
-  isDeleting,
-}: SLODetailTabProps) {
+export function SLODetailTab({ slo, onEdit, onDelete, isDeleting }: SLODetailTabProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const styles = useStyles2(getStyles);
   const metrics = useSLOMetrics(slo);

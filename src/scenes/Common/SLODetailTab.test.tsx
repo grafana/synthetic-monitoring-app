@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { render } from 'test/render';
 
-import type { SLO } from './useSLOCheckLinks.types';
+import type { SLO } from './grafanaSLOApp.types';
 
 import { SLODetailTab } from './SLODetailTab';
 import type { SLOMetrics } from './SLODetailTab.hooks';
@@ -44,9 +44,7 @@ const baseSLO = (overrides: Partial<SLO> = {}): SLO => ({
   description: 'Keeps checkout healthy',
   query: { type: 'ratio', ratio: { successMetric: { prometheusMetric: 'a' }, totalMetric: { prometheusMetric: 'b' } } },
   objectives: [{ value: 0.995, window: '30d' }],
-  labels: [
-    { key: 'team', value: 'payments' },
-  ],
+  labels: [{ key: 'team', value: 'payments' }],
   ...overrides,
 });
 
