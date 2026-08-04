@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { Check } from 'types';
 import { getCheckCompositeKey } from 'data/useCheckAlertStates';
 
-import { formatLatency, getCheckDashboardHrefForRange } from './FolderDashboard.utils';
+import { formatLatency, getCheckDashboardHref } from './FolderDashboard.utils';
 import { ExecutionRecord, FolderExecutionLogs } from './FolderSwimlane.hooks';
 
 interface FolderSwimlaneProps {
@@ -20,12 +20,10 @@ const FailureMark = ({
   record,
   positionPct,
   check,
-  timeRange,
 }: {
   record: ExecutionRecord;
   positionPct: number;
   check: Check;
-  timeRange: { from: number; to: number };
 }) => {
   const styles = useStyles2(getStyles);
 
@@ -36,7 +34,7 @@ const FailureMark = ({
       )} · click to open check`}
     >
       <a
-        href={getCheckDashboardHrefForRange(check, timeRange)}
+        href={getCheckDashboardHref(check)}
         className={styles.markFailed}
         style={{ left: `${positionPct}%` }}
         aria-label={`Open ${check.job} for the window containing the failed execution at ${dateTimeFormat(
@@ -73,7 +71,7 @@ export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) =
         return (
           <div key={check.id ?? `${check.job}-${check.target}`} className={styles.lane}>
             <div className={styles.laneLabel} title={check.job}>
-              <TextLink href={getCheckDashboardHrefForRange(check, timeRange)} color="primary" inline={false}>
+              <TextLink href={getCheckDashboardHref(check)} color="primary" inline={false}>
                 {check.job}
               </TextLink>
             </div>
@@ -94,7 +92,6 @@ export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) =
                     record={record}
                     positionPct={toPct(record.timestamp)}
                     check={check}
-                    timeRange={timeRange}
                   />
                 )
               )}

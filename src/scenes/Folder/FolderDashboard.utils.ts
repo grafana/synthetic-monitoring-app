@@ -2,6 +2,7 @@ import { Check } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { CheckRuntimeAlertStates, getCheckCompositeKey, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
+import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 
 import { FolderCheckMetrics } from './FolderDashboard.hooks';
 import { FolderExecutionLogs } from './FolderSwimlane.hooks';
@@ -84,10 +85,11 @@ export function orderChecksByAttention(
 }
 
 /**
- * Link to a check's dashboard carrying the folder page's time window, so the
- * user lands on the same 3h view they were just looking at.
+ * Link to a check's dashboard with a relative "last 3 hours" range matching
+ * the folder page's window — relative so the target page shows a live
+ * selector instead of a frozen absolute window.
  */
-export function getCheckDashboardHrefForRange(check: Check, range: { from: number; to: number }): string {
+export function getCheckDashboardHref(check: Check): string {
   const path = generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! });
-  return `${path}?from=${range.from}&to=${range.to}`;
+  return `${path}?from=now-${DEFAULT_QUERY_FROM_TIME}&to=now`;
 }
