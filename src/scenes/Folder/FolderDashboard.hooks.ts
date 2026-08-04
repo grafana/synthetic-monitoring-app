@@ -60,7 +60,8 @@ export interface FolderCheckMetrics {
   upCount: number;
   downCount: number;
   downChecks: Check[];
-  avgReachability?: number;
+  /** The weakest link — the check with the lowest reachability in the window. */
+  worstReachability?: { check: Check; reachability: number };
   isLoading: boolean;
 }
 
@@ -126,8 +127,7 @@ export function useFolderCheckMetrics(checks: Check[]): FolderCheckMetrics {
 
     let upCount = 0;
     const downChecks: Check[] = [];
-    let reachabilitySum = 0;
-    let reachabilityCount = 0;
+    let worstReachability: FolderCheckMetrics['worstReachability'];
 
     checks.forEach((check) => {
       const summary = getSummary(check);
@@ -137,9 +137,11 @@ export function useFolderCheckMetrics(checks: Check[]): FolderCheckMetrics {
       if (summary.isUp === false) {
         downChecks.push(check);
       }
-      if (summary.reachability !== undefined) {
-        reachabilitySum += summary.reachability;
-        reachabilityCount++;
+      if (
+        summary.reachability !== undefined &&
+        (!worstReachability || summary.reachability < worstReachability.reachability)
+      ) {
+        worstReachability = { check, reachability: summary.reachability };
       }
     });
 
@@ -148,7 +150,7 @@ export function useFolderCheckMetrics(checks: Check[]): FolderCheckMetrics {
       upCount,
       downCount: downChecks.length,
       downChecks,
-      avgReachability: reachabilityCount > 0 ? reachabilitySum / reachabilityCount : undefined,
+      worstReachability,
       isLoading: isLoadingReachability || isLoadingState || isLoadingLatency,
     };
   }, [checks, reachability, state, latency, latencyTrend, isLoadingReachability, isLoadingState, isLoadingLatency]);

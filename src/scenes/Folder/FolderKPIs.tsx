@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, useStyles2 } from '@grafana/ui';
+import { Icon, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import pluralize from 'pluralize';
 
 import { Check } from 'types';
+import { AppRoutes } from 'routing/types';
+import { getRoute } from 'routing/utils';
+import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 
 import { FolderCheckMetrics, getExecutionsPerMonth } from './FolderDashboard.hooks';
 import { formatPercent } from './FolderDashboard.utils';
@@ -13,15 +17,31 @@ interface FolderKPIsProps {
   checks: Check[];
   metrics: FolderCheckMetrics;
   executionLogs: FolderExecutionLogs;
+  alertStates?: CheckRuntimeAlertStates;
 }
 
-export const FolderKPIs = ({ checks, metrics, executionLogs }: FolderKPIsProps) => {
+export const FolderKPIs = ({ checks, metrics, executionLogs, alertStates }: FolderKPIsProps) => {
   const styles = useStyles2(getStyles);
-  const { upCount, downCount, downChecks, avgReachability } = metrics;
+  const { upCount, downCount, downChecks, worstReachability } = metrics;
   const knownCount = upCount + downCount;
   const executionsPerMonth = getExecutionsPerMonth(checks);
   const failureCount = executionLogs.failures.length;
   const worstOffender = getWorstOffender(executionLogs);
+
+  const firingAlerts = useMemo(() => {
+    let count = 0;
+    let checkCount = 0;
+    if (alertStates) {
+      checks.forEach((check) => {
+        const { firingCount } = getCheckRuntimeAlertState(alertStates, check);
+        count += firingCount;
+        if (firingCount > 0) {
+          checkCount++;
+        }
+      });
+    }
+    return { count, checkCount };
+  }, [checks, alertStates]);
 
   return (
     <div className={styles.row}>
@@ -53,9 +73,29 @@ export const FolderKPIs = ({ checks, metrics, executionLogs }: FolderKPIsProps) 
         </div>
       </div>
       <div className={styles.tile}>
-        <div className={styles.label}>Avg reachability &middot; 3h</div>
-        <div className={styles.value}>{avgReachability !== undefined ? formatPercent(avgReachability) : '—'}</div>
-        <div className={styles.detail}>across {checks.length} checks</div>
+        <div className={styles.label}>Lowest reachability &middot; 3h</div>
+        <div className={styles.value}>
+          {worstReachability !== undefined ? formatPercent(worstReachability.reachability) : '—'}
+        </div>
+        <div className={styles.detail}>
+          {worstReachability !== undefined ? worstReachability.check.job : 'no reachability data'}
+        </div>
+      </div>
+      <div className={styles.tile}>
+        <div className={styles.label}>Firing alerts</div>
+        <div className={styles.value}>
+          {firingAlerts.count > 0 && <Icon name="bell" className={styles.down} size="lg" />}{' '}
+          {alertStates ? firingAlerts.count : '—'}
+        </div>
+        <div className={styles.detail}>
+          {firingAlerts.count > 0 ? (
+            <TextLink href={getRoute(AppRoutes.Alerts)} inline={false}>
+              {firingAlerts.checkCount} {pluralize('check', firingAlerts.checkCount)} alerting — view alerts
+            </TextLink>
+          ) : (
+            'none firing'
+          )}
+        </div>
       </div>
       <div className={styles.tile}>
         <div className={styles.label}>Failed executions &middot; 3h</div>

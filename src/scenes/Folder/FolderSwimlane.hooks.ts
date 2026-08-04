@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ExecutionLabels, ExecutionLabelType, FailedLogLabels, SucceededLogLabels } from 'features/parseCheckLogs/checkLogs.types';
 import { Check } from 'types';
 import { getCheckCompositeKey } from 'data/useCheckAlertStates';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
+import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
@@ -48,8 +49,16 @@ export interface FolderExecutionLogs {
 }
 
 export function useFolderExecutionLogs(checks: Check[]): FolderExecutionLogs {
-  // Fixed window captured on mount so the infinite-query key stays stable.
-  const [timeRange] = useState(() => ({ from: Date.now() - THREE_HOURS_MS, to: Date.now() }));
+  // Rolling last-3h window, advanced on an interval so the swimlane stays a
+  // live view. Each tick changes the query key, which refetches the window.
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const intervalId = setInterval(() => setNow(Date.now()), STANDARD_REFRESH_INTERVAL);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const timeRange = useMemo(() => ({ from: now - THREE_HOURS_MS, to: now }), [now]);
 
   const expr = useMemo(() => {
     const jobs = joinRegex(checks.map((check) => check.job));
@@ -76,7 +85,7 @@ export function useFolderExecutionLogs(checks: Check[]): FolderExecutionLogs {
     }
   }, [fetchNextPage, hasNextPage, logs.length]);
 
-  return useMemo(() => {
+  const computed = useMemo(() => {
     const pairKeys = new Set(checks.map((check) => getCheckCompositeKey(check.job, check.target)));
     const executionsByCheck = new Map<string, ExecutionRecord[]>();
     const failures: ExecutionRecord[] = [];
@@ -115,4 +124,14 @@ export function useFolderExecutionLogs(checks: Check[]): FolderExecutionLogs {
 
     return { timeRange, executionsByCheck, failures, isLoading };
   }, [logs, checks, timeRange, isLoading]);
+
+  // Advancing the window creates a fresh query (loading state) every tick;
+  // keep showing the previous window while the next one fetches so the
+  // swimlane doesn't flash a loader once a minute.
+  const persisted = useRef<FolderExecutionLogs>(computed);
+  if (!computed.isLoading || persisted.current.failures.length + persisted.current.executionsByCheck.size === 0) {
+    persisted.current = computed;
+  }
+
+  return persisted.current;
 }

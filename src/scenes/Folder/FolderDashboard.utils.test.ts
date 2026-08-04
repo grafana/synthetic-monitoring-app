@@ -17,7 +17,7 @@ function makeMetrics(downJobs: string[]): FolderCheckMetrics {
     upCount: 0,
     downCount: downJobs.length,
     downChecks: [],
-    avgReachability: undefined,
+    worstReachability: undefined,
     isLoading: false,
   };
 }

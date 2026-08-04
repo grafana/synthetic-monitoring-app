@@ -82,7 +82,7 @@ export const FolderDashboard = ({ folderTitle, checks }: FolderDashboardProps) =
       )}
     >
       <Stack direction="column" gap={1}>
-        <FolderKPIs checks={checks} metrics={metrics} executionLogs={executionLogs} />
+        <FolderKPIs checks={checks} metrics={metrics} executionLogs={executionLogs} alertStates={alertStates} />
 
         <FolderSwimlane checks={orderedChecks} executionLogs={executionLogs} />
 
