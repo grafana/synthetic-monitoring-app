@@ -1,6 +1,7 @@
 import {
   TENANT,
   TENANT_COST_ATTRIBUTION_LABELS,
+  TENANT_LABEL_MODE,
   TENANT_LIMITS,
   TENANT_SETTINGS,
   UPDATE_TENANT_SETTINGS,
@@ -8,6 +9,8 @@ import {
 
 import { ApiEntry } from 'test/handlers/types';
 import {
+  LabelMode,
+  LabelModeResponse,
   ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
@@ -61,6 +64,28 @@ export const getTenantCostAttributionLabels: ApiEntry<ListTenantCostAttributionL
   result: () => {
     return {
       json: TENANT_COST_ATTRIBUTION_LABELS,
+    };
+  },
+};
+
+export const getLabelMode: ApiEntry<LabelModeResponse> = {
+  route: `/sm/tenant/label-mode`,
+  method: `get`,
+  result: () => {
+    return {
+      json: TENANT_LABEL_MODE,
+    };
+  },
+};
+
+export const setLabelMode: ApiEntry<LabelModeResponse> = {
+  route: `/sm/tenant/label-mode`,
+  method: `put`,
+  result: async (req) => {
+    const body = (await req.clone().json()) as { mode: LabelMode };
+
+    return {
+      json: { ...TENANT_LABEL_MODE, mode: body.mode },
     };
   },
 };

@@ -16,10 +16,12 @@ import { createDatasource, installPlugin } from 'test/handlers/install';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import {
+  getLabelMode,
   getTenant,
   getTenantCostAttributionLabels,
   getTenantLimits,
   getTenantSettings,
+  setLabelMode,
   updateTenantSettings,
 } from 'test/handlers/tenants';
 import { createAccessToken } from 'test/handlers/tokens';
@@ -52,6 +54,7 @@ const API_ROUTES = {
   getGrafanaAlertRules,
   getHttpDashboard,
   getInstantMetrics,
+  getLabelMode,
   getLogsDS,
   getMetricsDS,
   getPromAlertRules,
@@ -68,6 +71,7 @@ const API_ROUTES = {
   listFolders,
   listProbes,
   listSecrets,
+  setLabelMode,
   testCheck,
   updateAlertsForCheck,
   updateCheck,
