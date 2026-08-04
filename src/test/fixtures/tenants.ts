@@ -1,4 +1,6 @@
 import {
+  LabelMode,
+  LabelModeResponse,
   ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
@@ -67,8 +69,8 @@ export const TENANT_LIMITS: ListTenantLimitsResponse = {
 // pkg/pb/synthetic_monitoring/checks_extra.go systemLabels in the agent repo
 // (27 names as of agent v0.60.0; region/from_cache/from_prefetch_cache/
 // from_service_worker/resource_type are intentionally not reserved).
-export const TENANT_LABEL_MODE: { mode: number; systemLabels: string[] } = {
-  mode: 0,
+export const TENANT_LABEL_MODE: LabelModeResponse = {
+  mode: LabelMode.Prefixed,
   systemLabels: [
     'check',
     'check_name',

@@ -1,6 +1,7 @@
 import { QueryKey } from '@tanstack/query-core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { LabelMode } from 'datasource/responses.types';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const QUERY_KEYS: Record<'labelMode', QueryKey> = {
@@ -21,7 +22,7 @@ export function useSetLabelMode() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (mode: number) => smDS.setLabelMode(mode),
+    mutationFn: (mode: LabelMode) => smDS.setLabelMode(mode),
     onSuccess: (data) => {
       // The PUT response carries the new state, so the cache can be updated
       // without a refetch.

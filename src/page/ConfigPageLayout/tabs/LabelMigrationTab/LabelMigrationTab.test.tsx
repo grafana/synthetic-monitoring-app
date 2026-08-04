@@ -20,14 +20,14 @@ const queryInstantMetricMock = queryInstantMetric as jest.Mock;
 
 async function renderTab() {
   const result = render(<LabelMigrationTab />);
-  await waitFor(() => expect(screen.queryByText('Label Migration')).toBeInTheDocument());
+  await waitFor(() => expect(screen.queryByText('Label migration')).toBeInTheDocument());
   return result;
 }
 
 describe('LabelMigrationTab', () => {
   it('renders the tab title', async () => {
     await renderTab();
-    expect(screen.getByText('Label Migration')).toBeInTheDocument();
+    expect(screen.getByText('Label migration')).toBeInTheDocument();
   });
 
   it('shows the current mode in prefixed state', async () => {

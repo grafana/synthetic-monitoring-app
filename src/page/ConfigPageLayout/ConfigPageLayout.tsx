@@ -64,7 +64,7 @@ export function ConfigPageLayout() {
     if (isFeatureEnabled(FeatureName.LabelMigration)) {
       navModel.children!.push({
         icon: 'tag-alt',
-        text: 'Label Migration',
+        text: 'Label migration',
         url: getConfigTabUrl('label-migration'),
         active: activeTab('label-migration'),
       });

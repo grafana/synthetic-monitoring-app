@@ -9,6 +9,8 @@ import {
 
 import { ApiEntry } from 'test/handlers/types';
 import {
+  LabelMode,
+  LabelModeResponse,
   ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
@@ -66,7 +68,7 @@ export const getTenantCostAttributionLabels: ApiEntry<ListTenantCostAttributionL
   },
 };
 
-export const getLabelMode: ApiEntry<{ mode: number; systemLabels: string[] }> = {
+export const getLabelMode: ApiEntry<LabelModeResponse> = {
   route: `/sm/tenant/label-mode`,
   method: `get`,
   result: () => {
@@ -76,11 +78,11 @@ export const getLabelMode: ApiEntry<{ mode: number; systemLabels: string[] }> = 
   },
 };
 
-export const setLabelMode: ApiEntry<{ mode: number; systemLabels: string[] }> = {
+export const setLabelMode: ApiEntry<LabelModeResponse> = {
   route: `/sm/tenant/label-mode`,
   method: `put`,
   result: async (req) => {
-    const body = (await req.clone().json()) as { mode: number };
+    const body = (await req.clone().json()) as { mode: LabelMode };
 
     return {
       json: { ...TENANT_LABEL_MODE, mode: body.mode },
