@@ -5,9 +5,11 @@ import { css } from '@emotion/css';
 import pluralize from 'pluralize';
 
 import { Check } from 'types';
-import { AppRoutes } from 'routing/types';
-import { getRoute } from 'routing/utils';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
+
+// Grafana's unified alerting list, pre-filtered to firing synthetic
+// monitoring rules — same link pattern the per-check alert statuses use.
+const FIRING_SM_ALERTS_URL = `/alerting/list?search=${encodeURIComponent('state:firing namespace:synthetic_monitoring')}`;
 
 import { FolderCheckMetrics, getExecutionsPerMonth } from './FolderDashboard.hooks';
 import { formatPercent } from './FolderDashboard.utils';
@@ -89,7 +91,7 @@ export const FolderKPIs = ({ checks, metrics, executionLogs, alertStates }: Fold
         </div>
         <div className={styles.detail}>
           {firingAlerts.count > 0 ? (
-            <TextLink href={getRoute(AppRoutes.Alerts)} inline={false}>
+            <TextLink href={FIRING_SM_ALERTS_URL} inline={false}>
               {firingAlerts.checkCount} {pluralize('check', firingAlerts.checkCount)} alerting — view alerts
             </TextLink>
           ) : (
