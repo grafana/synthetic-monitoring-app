@@ -1,23 +1,7 @@
-import type { SLO } from './useSLOCheckLinks.types';
+import type { SLO, SLORatioQuery, SLOWizardInitialValues } from './grafanaSLOApp.types';
 import { Check } from 'types';
 
-export type SLOLabel = { key: string; value: string };
 type LinkedSLOLabels = Pick<SLO, 'labels'>;
-
-export function buildSLOLabels(check: Check): SLOLabel[] {
-  return [
-    { key: 'source', value: `grafana-synthetic-monitoring-app` },
-  ];
-}
-
-export type SLORatioQuery = {
-  type: 'ratio';
-  ratioQuery: {
-    successMetric: string;
-    totalMetric: string;
-    groupByLabels: string;
-  };
-};
 
 const REACHABILITY_SUFFIX = ' (Reachability)';
 
@@ -51,13 +35,6 @@ export function buildSLOName(check: Check): string {
 export function buildSLODescription(check: Check): string {
   return `Reachability SLI from Synthetic Monitoring. Job: ${check.job} | Instance: ${check.target}`;
 }
-
-export type SLOWizardInitialValues = {
-  name?: string;
-  description?: string;
-  query?: SLORatioQuery;
-  labels?: SLOLabel[];
-};
 
 export const SM_OBJECTIVE_KIND_LABEL_KEY = 'sm_objective_kind';
 export const REACHABILITY_OBJECTIVE_KIND_VALUE = 'reachability';

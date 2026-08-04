@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { spyUsePluginFunctionsForSLOs } from 'test/helpers/mockUsePluginFunctionsForSLOs';
 import { createWrapper } from 'test/render';
 
-import type { SLO } from './useSLOCheckLinks.types';
+import type { SLO } from './grafanaSLOApp.types';
 import { useChecks } from 'data/useChecks';
 
 import {
@@ -15,19 +15,18 @@ import {
 } from './useSLOCheckLinks';
 import { buildSLOCheckLinkMap, getSLOQueryStrings, sloMatchesSMCheck } from './useSLOCheckLinks.utils';
 
-const CHECK_ID = '42';
 const JOB = 'my-api-check';
+const INSTANCE = 'https://api.example.com';
 
 const baseSLO: Omit<SLO, 'uuid' | 'name' | 'query'> = {
   description: '',
   objectives: [{ value: 0.995, window: '30d' }],
 };
 
-const sloWithIdLabel: SLO = {
+const sloWizardRatio: SLO = {
   ...baseSLO,
   uuid: 'slo-1',
   name: 'Wizard SLO',
-  labels: [{ key: 'sm_check_id', value: CHECK_ID }],
   query: {
     type: 'ratio',
     ratio: {
@@ -44,8 +43,8 @@ const sloManualRatio: SLO = {
   query: {
     type: 'ratio',
     ratio: {
-      successMetric: { prometheusMetric: `probe_all_success_sum{job="${JOB}", instance="x"}` },
-      totalMetric: { prometheusMetric: `probe_all_success_count{job="${JOB}", instance="x"}` },
+      successMetric: { prometheusMetric: `probe_all_success_sum{job="${JOB}", instance="${INSTANCE}"}` },
+      totalMetric: { prometheusMetric: `probe_all_success_count{job="${JOB}", instance="${INSTANCE}"}` },
     },
   },
 };
@@ -84,12 +83,52 @@ const sloGrafanaQueries: SLO = {
   },
 };
 
+const sloWrongInstance: SLO = {
+  ...baseSLO,
+  uuid: 'slo-8',
+  name: 'Wrong instance',
+  query: {
+    type: 'ratio',
+    ratio: {
+      successMetric: { prometheusMetric: `probe_all_success_sum{job="${JOB}", instance="https://wrong.example.com"}` },
+      totalMetric: {
+        prometheusMetric: `probe_all_success_count{job="${JOB}", instance="https://wrong.example.com"}`,
+      },
+    },
+  },
+};
+
+const sloJobOnly: SLO = {
+  ...baseSLO,
+  uuid: 'slo-9',
+  name: 'Job only',
+  query: {
+    type: 'ratio',
+    ratio: {
+      successMetric: { prometheusMetric: `probe_all_success_sum{job="${JOB}"}` },
+      totalMetric: { prometheusMetric: `probe_all_success_count{job="${JOB}"}` },
+    },
+  },
+};
+
+const sloHttpMetric: SLO = {
+  ...baseSLO,
+  uuid: 'slo-10',
+  name: 'HTTP metric',
+  query: {
+    type: 'freeform',
+    freeform: {
+      query: `sm_http_request_duration_seconds{job="${JOB}", instance="${INSTANCE}"}`,
+    },
+  },
+};
+
 describe('useSLOCheckLinks utils', () => {
   describe('getSLOQueryStrings', () => {
     it('extracts ratio success and total metrics', () => {
       expect(getSLOQueryStrings(sloManualRatio)).toEqual([
-        `probe_all_success_sum{job="${JOB}", instance="x"}`,
-        `probe_all_success_count{job="${JOB}", instance="x"}`,
+        `probe_all_success_sum{job="${JOB}", instance="${INSTANCE}"}`,
+        `probe_all_success_count{job="${JOB}", instance="${INSTANCE}"}`,
       ]);
     });
 
@@ -105,16 +144,32 @@ describe('useSLOCheckLinks utils', () => {
   });
 
   describe('sloMatchesSMCheck', () => {
-    it('matches ratio SLO with SM metric and job label', () => {
-      expect(sloMatchesSMCheck(sloManualRatio, JOB)).toBe(true);
+    it('matches ratio SLO with reachability metrics and job and instance labels', () => {
+      expect(sloMatchesSMCheck(sloManualRatio, JOB, INSTANCE)).toBe(true);
     });
 
-    it('matches freeform SLO with probe_success and job', () => {
-      expect(sloMatchesSMCheck(sloManualFreeform, JOB)).toBe(true);
+    it('does not match freeform SLO with probe_success only', () => {
+      expect(sloMatchesSMCheck(sloManualFreeform, JOB, INSTANCE)).toBe(false);
+    });
+
+    it('does not match grafanaQueries SLO with probe_success only', () => {
+      expect(sloMatchesSMCheck(sloGrafanaQueries, JOB, INSTANCE)).toBe(false);
     });
 
     it('does not match unrelated metrics even with job label', () => {
-      expect(sloMatchesSMCheck(sloUnrelated, JOB)).toBe(false);
+      expect(sloMatchesSMCheck(sloUnrelated, JOB, INSTANCE)).toBe(false);
+    });
+
+    it('does not match when job matches but instance does not', () => {
+      expect(sloMatchesSMCheck(sloWrongInstance, JOB, INSTANCE)).toBe(false);
+    });
+
+    it('does not match when instance label is absent from the query', () => {
+      expect(sloMatchesSMCheck(sloJobOnly, JOB, INSTANCE)).toBe(false);
+    });
+
+    it('does not match sm_http metrics even with matching job and instance', () => {
+      expect(sloMatchesSMCheck(sloHttpMetric, JOB, INSTANCE)).toBe(false);
     });
   });
 });
@@ -145,22 +200,21 @@ describe('buildSLOCheckLinkMap', () => {
     expect(map.checksBySLOUuid.size).toBe(0);
   });
 
-  it('links an SLO that matches a single check by job', () => {
+  it('links an SLO that matches a single check by job and instance', () => {
     const map = buildSLOCheckLinkMap([sloManualRatio], [checkA, checkC]);
     expect(map.slosByCheckId.get(1)).toEqual([sloManualRatio]);
     expect(map.slosByCheckId.has(3)).toBe(false);
   });
 
-  it('links one SLO to multiple checks when they share the same job', () => {
+  it('does not link one SLO to multiple checks that share the same job but differ on instance', () => {
     const map = buildSLOCheckLinkMap([sloManualRatio], [checkA, checkB]);
     expect(map.slosByCheckId.get(1)).toEqual([sloManualRatio]);
-    expect(map.slosByCheckId.get(2)).toEqual([sloManualRatio]);
+    expect(map.slosByCheckId.has(2)).toBe(false);
   });
 
-  it('links multiple SLOs to one check', () => {
-    const map = buildSLOCheckLinkMap([sloManualRatio, sloManualFreeform], [checkA]);
-    expect(map.slosByCheckId.get(1)).toHaveLength(2);
-    expect(map.slosByCheckId.get(1)).toEqual(expect.arrayContaining([sloManualRatio, sloManualFreeform]));
+  it('links a single reachability SLO to one check', () => {
+    const map = buildSLOCheckLinkMap([sloManualRatio], [checkA]);
+    expect(map.slosByCheckId.get(1)).toEqual([sloManualRatio]);
   });
 
   it('ignores SLOs whose metric is not an SM metric', () => {
@@ -183,11 +237,10 @@ describe('buildSLOCheckLinkMap', () => {
   it('populates both directions of the map symmetrically', () => {
     const map = buildSLOCheckLinkMap([sloManualRatio], [checkA, checkB, checkC]);
     expect(map.slosByCheckId.get(1)).toEqual([sloManualRatio]);
-    expect(map.slosByCheckId.get(2)).toEqual([sloManualRatio]);
+    expect(map.slosByCheckId.has(2)).toBe(false);
     expect(map.slosByCheckId.has(3)).toBe(false);
 
-    expect(map.checksBySLOUuid.get(sloManualRatio.uuid)).toEqual(expect.arrayContaining([checkA, checkB]));
-    expect(map.checksBySLOUuid.get(sloManualRatio.uuid)).toHaveLength(2);
+    expect(map.checksBySLOUuid.get(sloManualRatio.uuid)).toEqual([checkA]);
   });
 });
 
@@ -199,7 +252,7 @@ describe('useAllSLOs', () => {
   });
 
   it('returns the full SLO list when the plugin function resolves', async () => {
-    const allSLOs = [sloWithIdLabel, sloManualRatio, sloUnrelated];
+    const allSLOs = [sloWizardRatio, sloManualRatio, sloUnrelated];
     usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs(allSLOs);
 
     const { Wrapper } = createWrapper();

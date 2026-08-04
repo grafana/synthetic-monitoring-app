@@ -1,45 +1,20 @@
 import React, { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePluginComponent } from '@grafana/runtime';
-import { Box, Button, Drawer, Stack, Tab, TabsBar, Text } from '@grafana/ui';
+import { Box, Button, Drawer, Spinner, Stack, Tab, TabsBar, Text, Tooltip } from '@grafana/ui';
 
-import type { SLO } from './useSLOCheckLinks.types';
+import { type SLO, type SLOComponentPropsV1, type SLOWizardInitialValues, StepKey } from './grafanaSLOApp.types';
 import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { Feedback } from 'components/Feedback/Feedback';
 
-import { buildSLOWizardInitialValuesForCheck, type SLOLabel, type SLORatioQuery } from './CreateSLOButton.utils';
+import { SLO_WIZARD_COMPONENT_ID } from './grafanaSLOApp.constants';
 import { SLODetailTab } from './SLODetailTab';
 import { SLOIcon } from './SLOIcon';
+import { buildSLOName, buildSLOWizardInitialValuesForCheck } from './SLOIntegration.utils';
 import { sloQueryKeys, useDeleteSLO, useSLOsForCheck } from './useSLOCheckLinks';
 
 const NEW_SLO_TAB_KEY = 'new-slo';
-const SLO_COMPONENT_ID = 'grafana-slo-app/wizard/v1';
-
-type SLOWizardInitialValues = {
-  name?: string;
-  description?: string;
-  query?: SLORatioQuery;
-  labels?: SLOLabel[];
-};
-
-export enum StepKey {
-  Information = 'information',
-  Indicator = 'indicator',
-  Objective = 'objective',
-  Alerts = 'alerts',
-  Review = 'review',
-}
-
-type SLOComponentPropsV1 = {
-  initialValues?: SLOWizardInitialValues;
-  dataSourceUid?: string;
-  stepperOrientation?: 'horizontal' | 'vertical';
-  onSuccess?: () => void;
-  submitLabel?: string;
-  onCancel: () => void;
-  initialStep?: StepKey
-};
 
 function buildWizardInitialValuesForSLO(slo: SLO): SLOWizardInitialValues {
   if (slo.query.type !== 'ratio' || !slo.query.ratio) {
@@ -90,7 +65,7 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
   const metricsDS = useMetricsDS();
   const metricsDsUid = metricsDS?.uid;
   const { component: SLOComponent, isLoading: isWizardLoading } =
-    usePluginComponent<SLOComponentPropsV1>(SLO_COMPONENT_ID);
+    usePluginComponent<SLOComponentPropsV1>(SLO_WIZARD_COMPONENT_ID);
 
   const handleSLOListInvalidate = useCallback(
     () => queryClient.invalidateQueries({ queryKey: sloQueryKeys.all }),
@@ -117,8 +92,16 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
     [slos, deleteSLO, handleSLOListInvalidate]
   );
 
+  const LOADING_SLO_TOOLTIP = 'Loading linked SLOs';
+
   if (isLoading) {
-    return null;
+    return (
+      <Tooltip content={LOADING_SLO_TOOLTIP}>
+        <span aria-label={LOADING_SLO_TOOLTIP} data-testid="slo-integration-loading" role="status">
+          <Spinner />
+        </span>
+      </Tooltip>
+    );
   }
 
   const countLabel = slos.length > 0 ? (slos.length === 1 ? '1 SLO' : `${slos.length} SLOs`) : 'SLOs';
@@ -138,12 +121,6 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
     setDrawerOpen(true);
   };
 
-  const handleCreateSLOClick = () => {
-    setShowNewSLOTab(true);
-    setActiveTabKey(NEW_SLO_TAB_KEY);
-    setEditingUuid(undefined);
-  };
-
   const handleCloseNewSLOTab = () => {
     setShowNewSLOTab(false);
     if (slos.length > 0) {
@@ -153,28 +130,17 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
 
   const drawerTitle = (
     <Box paddingRight={3}>
-      <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between" wrap>
-        <Stack direction="row" gap={2} alignItems="center">
-          <SLOIcon pixelSize={22} />
-          <Text variant="h2">Linked SLOs ({slos.length})</Text>
-          <Feedback feature="slo-integration" about={{ text: 'Experimental' }} />
-        </Stack>
-        {isWizardReady ? (
-          <Button variant="primary" icon="plus" onClick={handleCreateSLOClick}>
-            New SLO
-          </Button>
-        ) : null}
+      <Stack direction="row" gap={2} alignItems="center" wrap>
+        <SLOIcon pixelSize={22} />
+        <Text variant="h2">Linked SLOs ({slos.length})</Text>
+        <Feedback feature="slo-integration" about={{ text: 'Experimental' }} />
       </Stack>
     </Box>
   );
 
   return (
     <>
-      <Button
-        variant="secondary"
-        icon={<SLOIcon />}
-        onClick={handleOpenDrawer}
-      >
+      <Button variant="secondary" icon={<SLOIcon />} onClick={handleOpenDrawer}>
         {countLabel}
       </Button>
 
@@ -196,7 +162,7 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
               {showNewSLOTab ? (
                 <Tab
                   key={NEW_SLO_TAB_KEY}
-                  label="New SLO"
+                  label={buildSLOName(check)}
                   active={activeTabKey === NEW_SLO_TAB_KEY}
                   onChangeTab={() => setActiveTabKey(NEW_SLO_TAB_KEY)}
                 />

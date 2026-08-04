@@ -4,9 +4,10 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
 
-import type { SLO } from './useSLOCheckLinks.types';
+import type { SLO } from './grafanaSLOApp.types';
 
 import { SLOIntegration } from './SLOIntegration';
+import { buildSLOName } from './SLOIntegration.utils';
 import { sloQueryKeys } from './useSLOCheckLinks';
 
 const mockUseSLOsForCheck = jest.fn();
@@ -58,12 +59,7 @@ const makeSLO = (overrides: Partial<SLO> = {}): SLO => ({
 
 let defaultDeleteSLO: jest.Mock;
 
-function mockHookReturn(overrides: {
-  slos: SLO[];
-  isLoading?: boolean;
-  error?: undefined;
-  deleteSLO?: jest.Mock;
-}) {
+function mockHookReturn(overrides: { slos: SLO[]; isLoading?: boolean; error?: undefined; deleteSLO?: jest.Mock }) {
   mockUseSLOsForCheck.mockReturnValue({
     slos: overrides.slos,
     isLoading: overrides.isLoading ?? false,
@@ -71,6 +67,8 @@ function mockHookReturn(overrides: {
   });
   mockUseDeleteSLO.mockReturnValue(overrides.deleteSLO ?? defaultDeleteSLO);
 }
+
+const prefilledSLOTabName = buildSLOName(BASIC_HTTP_CHECK);
 
 describe('SLOIntegration', () => {
   beforeEach(() => {
@@ -83,6 +81,15 @@ describe('SLOIntegration', () => {
     });
   });
 
+  it('shows a loading spinner with tooltip while linked SLOs are loading', async () => {
+    mockHookReturn({ slos: [], isLoading: true });
+
+    render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
+
+    expect(await screen.findByTestId('slo-integration-loading')).toHaveAttribute('aria-label', 'Loading linked SLOs');
+    expect(screen.queryByRole('button', { name: /slos/i })).not.toBeInTheDocument();
+  });
+
   it('opens drawer with wizard when there are no SLOs', async () => {
     mockHookReturn({ slos: [] });
 
@@ -90,11 +97,21 @@ describe('SLOIntegration', () => {
 
     await user.click(await screen.findByRole('button', { name: /slos/i }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByRole('tab', { name: 'New SLO' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('tab', { name: prefilledSLOTabName })).toBeInTheDocument();
     expect(within(dialog).getByText('Mock SLO Wizard')).toBeInTheDocument();
   });
 
-  it('does not show New SLO tab by default when SLOs exist', async () => {
+  it('does not render a New SLO button in the drawer title', async () => {
+    mockHookReturn({ slos: [] });
+
+    const { user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
+    await user.click(await screen.findByRole('button', { name: /slos/i }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).queryByRole('button', { name: /new slo/i })).not.toBeInTheDocument();
+  });
+
+  it('does not show the prefilled create tab when SLOs exist', async () => {
     const slo = makeSLO({ uuid: 'one', name: 'Only SLO' });
     mockHookReturn({ slos: [slo] });
 
@@ -103,21 +120,7 @@ describe('SLOIntegration', () => {
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('tab', { name: 'Only SLO' })).toBeInTheDocument();
-    expect(within(dialog).queryByRole('tab', { name: 'New SLO' })).not.toBeInTheDocument();
-  });
-
-  it('adds a New SLO tab when the Create SLO button in the drawer title is clicked', async () => {
-    const slo = makeSLO({ uuid: 'one', name: 'Only SLO' });
-    mockHookReturn({ slos: [slo] });
-
-    const { user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
-    await user.click(await screen.findByRole('button', { name: '1 SLO' }));
-
-    const dialog = await screen.findByRole('dialog');
-    await user.click(within(dialog).getByRole('button', { name: /new slo/i }));
-
-    expect(within(dialog).getByRole('tab', { name: 'New SLO' })).toBeInTheDocument();
-    expect(within(dialog).getByText('Mock SLO Wizard')).toBeInTheDocument();
+    expect(within(dialog).queryByRole('tab', { name: prefilledSLOTabName })).not.toBeInTheDocument();
   });
 
   it('invalidates linked-SLO queries when create completes', async () => {
@@ -202,5 +205,4 @@ describe('SLOIntegration', () => {
     });
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: sloQueryKeys.all });
   });
-
 });
