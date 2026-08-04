@@ -9,6 +9,7 @@ import { TrackingIdentity } from 'features/tracking/TrackingIdentity';
 
 import { ProvisioningJsonData } from 'types';
 import { getFaroConfig } from 'faro';
+import { registerFaroInteractionEchoBackend } from 'faroEchoBackend';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
@@ -26,7 +27,7 @@ const { env, url, name } = getFaroConfig();
 // faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
 if (window.location.hostname !== 'localhost') {
   getAppPluginVersion('grafana-synthetic-monitoring-app').then((version) => {
-    initializeFaro({
+    const faro = initializeFaro({
       url,
       app: {
         name,
@@ -39,6 +40,8 @@ if (window.location.hostname !== 'localhost') {
       },
       instrumentations: getWebInstrumentations(),
     });
+
+    registerFaroInteractionEchoBackend(faro);
   });
 }
 
