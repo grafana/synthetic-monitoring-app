@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { LoadingPlaceholder, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, LoadingPlaceholder, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
@@ -15,6 +15,10 @@ interface FolderSwimlaneProps {
 }
 
 const AXIS_TICK_COUNT = 7;
+
+// Checks are attention-ordered, so truncating large folders is safe: anything
+// hidden below the fold is healthy.
+export const VISIBLE_CHECKS_LIMIT = 25;
 
 const FailureMark = ({
   record,
@@ -48,8 +52,10 @@ const FailureMark = ({
 
 export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) => {
   const styles = useStyles2(getStyles);
+  const [showAll, setShowAll] = useState(false);
   const { timeRange, executionsByCheck, isLoading } = executionLogs;
   const windowMs = timeRange.to - timeRange.from;
+  const visibleChecks = showAll ? checks : checks.slice(0, VISIBLE_CHECKS_LIMIT);
 
   if (isLoading) {
     return (
@@ -65,7 +71,7 @@ export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) =
   return (
     <div className={styles.container}>
       <h3 className={styles.heading}>Executions &middot; last 3h</h3>
-      {checks.map((check) => {
+      {visibleChecks.map((check) => {
         const records = executionsByCheck.get(getCheckCompositeKey(check.job, check.target)) ?? [];
 
         return (
@@ -109,6 +115,11 @@ export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) =
           })}
         </div>
       </div>
+      {!showAll && checks.length > VISIBLE_CHECKS_LIMIT && (
+        <Button fill="text" size="sm" icon="angle-down" onClick={() => setShowAll(true)}>
+          Show all {checks.length} checks
+        </Button>
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, TextLink, useStyles2 } from '@grafana/ui';
+import { Badge, Button, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
@@ -11,6 +11,7 @@ import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useChec
 
 import { FolderCheckMetrics } from './FolderDashboard.hooks';
 import { formatLatency, formatPercent } from './FolderDashboard.utils';
+import { VISIBLE_CHECKS_LIMIT } from './FolderSwimlane';
 import { Sparkline } from './Sparkline';
 
 interface FolderCheckTableProps {
@@ -39,6 +40,8 @@ const StateCell = ({ isUp }: { isUp?: boolean }) => {
 
 export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTableProps) => {
   const styles = useStyles2(getStyles);
+  const [showAll, setShowAll] = useState(false);
+  const visibleChecks = showAll ? checks : checks.slice(0, VISIBLE_CHECKS_LIMIT);
 
   // Row order comes from the page-level attention ordering, shared with the
   // swimlane so both sections tell the same top-down story.
@@ -56,7 +59,7 @@ export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTa
         </tr>
       </thead>
       <tbody>
-        {checks.map((check) => {
+        {visibleChecks.map((check) => {
           const summary = metrics.getSummary(check);
           const alertState = alertStates ? getCheckRuntimeAlertState(alertStates, check) : undefined;
 
@@ -99,6 +102,17 @@ export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTa
           );
         })}
       </tbody>
+      {!showAll && checks.length > VISIBLE_CHECKS_LIMIT && (
+        <tfoot>
+          <tr>
+            <td colSpan={7}>
+              <Button fill="text" size="sm" icon="angle-down" onClick={() => setShowAll(true)}>
+                Show all {checks.length} checks
+              </Button>
+            </td>
+          </tr>
+        </tfoot>
+      )}
     </table>
   );
 };
