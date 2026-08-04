@@ -9,7 +9,7 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../../ConfigContent';
 import { SeriesPreview } from './SeriesPreview';
-import { useProbeSuccessLabels } from './useProbeSuccessLabels';
+import { useCheckInfoLabels } from './useCheckInfoLabels';
 
 interface CollisionError {
   msg: string;
@@ -38,7 +38,7 @@ function getErrorMessage(err: unknown, fallback: string): string {
 
 export function LabelMigrationTab() {
   const { isAdmin } = getUserPermissions();
-  const { labels: liveLabels, loading: liveLoading, failed: liveFailed, noDatasource } = useProbeSuccessLabels();
+  const { labels: liveLabels, loading: liveLoading, failed: liveFailed, noDatasource } = useCheckInfoLabels();
 
   const { data: state, isLoading, error: loadError, refetch, isRefetching } = useLabelMode();
   const setLabelModeMutation = useSetLabelMode();
@@ -239,9 +239,11 @@ export function LabelMigrationTab() {
           <ConfigContent.Section title="How your labels appear right now">
             <Space v={1} />
             <Text color="secondary">
-              This preview shows how a <code>probe_success</code> series with two example user-defined check labels (
+              This preview shows how an <code>sm_check_info</code> series with two example user-defined check labels (
               <code>env=&quot;prod&quot;</code>, <code>team=&quot;platform&quot;</code>) looks in{' '}
-              <strong>{modeLabel(state.mode)}</strong> mode.
+              <strong>{modeLabel(state.mode)}</strong> mode. Execution metrics such as <code>probe_success</code> are
+              different: they carry no user-defined labels in prefixed mode, and gain only the un-prefixed form after
+              you enable dual-write.
             </Text>
             <Space v={2} />
             <SeriesPreview

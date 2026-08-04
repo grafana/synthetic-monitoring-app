@@ -64,7 +64,7 @@ function previewSourceHint({
   noDatasource,
 }: Pick<SeriesPreviewProps, 'liveLabels' | 'liveFailed' | 'noDatasource'>): string {
   if (liveLabels) {
-    return ' (from your most recent probe_success series)';
+    return ' (from your most recent sm_check_info series)';
   }
   if (noDatasource) {
     return ' (example — no metrics datasource configured)';
@@ -77,8 +77,13 @@ function previewSourceHint({
 
 /**
  * Shows two label sets side-by-side:
- * 1. A live probe_success series with real system labels from the tenant's data.
+ * 1. A live sm_check_info series with real system labels from the tenant's data.
  * 2. A constructed example showing how user-defined labels appear in the current mode.
+ *
+ * sm_check_info is previewed (rather than an execution metric such as
+ * probe_success) because it is where user-defined labels live: it carries the
+ * prefixed form today and both forms in dual-write. Execution metrics never
+ * carried prefixed user labels and only gain the un-prefixed form.
  */
 export function SeriesPreview({
   mode,
@@ -119,7 +124,7 @@ export function SeriesPreview({
     <div className={styles.previewCard}>
       {/* Series name */}
       <p className={styles.seriesName}>
-        <span className={styles.metricName}>probe_success</span>
+        <span className={styles.metricName}>sm_check_info</span>
         {'{'}
         <span className={styles.labelSetInline}>
           {seriesPairs.map((p, i) => (

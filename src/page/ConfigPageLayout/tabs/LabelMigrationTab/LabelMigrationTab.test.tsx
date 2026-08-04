@@ -325,7 +325,7 @@ describe('LabelMigrationTab', () => {
     queryInstantMetricMock.mockResolvedValueOnce([
       {
         metric: {
-          __name__: 'probe_success',
+          __name__: 'sm_check_info',
           probe: 'live-probe',
           instance: 'live.example',
           job: 'live-job',
@@ -335,7 +335,7 @@ describe('LabelMigrationTab', () => {
       },
     ]);
     await renderTab();
-    await waitFor(() => expect(screen.getByText(/from your most recent probe_success series/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/from your most recent sm_check_info series/i)).toBeInTheDocument());
     // Reserved keys from the live series render as system labels...
     expect(screen.getByText('probe="live-probe"')).toBeInTheDocument();
     // ...while non-reserved live keys (user labels) are omitted entirely.
