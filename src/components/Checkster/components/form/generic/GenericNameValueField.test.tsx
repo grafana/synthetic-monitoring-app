@@ -2,7 +2,7 @@ import { ComponentProps } from 'react';
 import { screen, waitFor } from '@testing-library/react';
 
 import { ChecksterProvider } from '../../../contexts/ChecksterContext';
-import { formTestRenderer } from '../__test__/formTestRenderer';
+import { formTestRenderer, TestFormTestId } from '../__test__/formTestRenderer';
 import { GenericNameValueField } from './GenericNameValueField';
 
 // Mock dependencies
@@ -294,6 +294,90 @@ describe('GenericNameValueField', () => {
 
     // The prefix would be rendered by the Input component
     expect(screen.getByDisplayValue('var')).toBeInTheDocument();
+  });
+
+  describe('reservedNames', () => {
+    const reservedNames = {
+      names: ['service_name', 'namespace'],
+      message: (name: string) => `${name} is reserved`,
+    };
+
+    it('hides rows whose name is reserved', () => {
+      renderGenericNameValueField(
+        { reservedNames },
+        {
+          labels: [
+            { name: 'service_name', value: 'frontend' },
+            { name: 'team', value: 'sm' },
+          ],
+        }
+      );
+
+      expect(screen.getByDisplayValue('team')).toBeInTheDocument();
+      expect(screen.queryByDisplayValue('service_name')).not.toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /remove/i })).toHaveLength(1);
+    });
+
+    it('renders reserved-named rows normally when reservedNames is not provided', () => {
+      renderGenericNameValueField(undefined, {
+        labels: [{ name: 'service_name', value: 'frontend' }],
+      });
+
+      expect(screen.getByDisplayValue('service_name')).toBeInTheDocument();
+    });
+
+    it('shows the redirect message while typing a reserved name and hides the row on blur', async () => {
+      const user = renderGenericNameValueField(
+        { reservedNames, allowEmpty: true },
+        {
+          labels: [{ name: 'team', value: 'sm' }],
+        }
+      );
+
+      const nameInput = screen.getByDisplayValue('team');
+      await user.clear(nameInput);
+      await user.type(nameInput, 'service_name');
+
+      // while the field is focused the row stays visible with the redirect message
+      expect(screen.getByDisplayValue('service_name')).toBeInTheDocument();
+      expect(await screen.findByText('service_name is reserved')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Labels'));
+
+      await waitFor(() => {
+        expect(screen.queryByDisplayValue('service_name')).not.toBeInTheDocument();
+      });
+      expect(screen.queryByText('service_name is reserved')).not.toBeInTheDocument();
+    });
+
+    it('keeps a valued reserved row in the form values but drops an empty one on blur', async () => {
+      const user = renderGenericNameValueField(
+        { reservedNames, allowEmpty: true },
+        {
+          labels: [
+            { name: 'namespace', value: 'otel-demo' },
+            { name: 'team', value: 'sm' },
+          ],
+        }
+      );
+
+      // the valued reserved row is hidden but still part of the form values
+      expect(screen.queryByDisplayValue('namespace')).not.toBeInTheDocument();
+      expect(screen.getByTestId(TestFormTestId.Value)).toHaveTextContent('"name":"namespace","value":"otel-demo"');
+
+      // type a reserved name into the empty row, then blur: the row is dropped entirely
+      const emptyNameInput = screen.getAllByPlaceholderText('Name').at(-1);
+      await user.type(emptyNameInput!, 'service_name');
+      await user.click(screen.getByText('Labels'));
+
+      await waitFor(() => {
+        expect(screen.queryByDisplayValue('service_name')).not.toBeInTheDocument();
+      });
+      expect(screen.getByTestId(TestFormTestId.Value)).not.toHaveTextContent('service_name');
+      // the pre-existing rows are unaffected
+      expect(screen.getByTestId(TestFormTestId.Value)).toHaveTextContent('"name":"namespace","value":"otel-demo"');
+      expect(screen.getByTestId(TestFormTestId.Value)).toHaveTextContent('"name":"team","value":"sm"');
+    });
   });
 
   it('disables all inputs when form is disabled', () => {
