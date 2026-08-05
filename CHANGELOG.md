@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.58.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.57.1...v1.58.0) (2026-08-05)
+
+
+### Features
+
+* Add Label Migration config tab for label_ prefix removal ([#1768](https://github.com/grafana/synthetic-monitoring-app/issues/1768)) ([a890391](https://github.com/grafana/synthetic-monitoring-app/commit/a89039173573aa6ae83e7acd0325c3b30e85cd80))
+
+
+### Fixes
+
+* point faro config at the recreated collector apps ([#1784](https://github.com/grafana/synthetic-monitoring-app/issues/1784)) ([1d23b22](https://github.com/grafana/synthetic-monitoring-app/commit/1d23b22cca0c399f36dc7b458b916af3b36d49e6))
+* **security/high/:** update dependency ip-address to v10.3.1 [security] ([#1780](https://github.com/grafana/synthetic-monitoring-app/issues/1780)) ([a7b2db3](https://github.com/grafana/synthetic-monitoring-app/commit/a7b2db33334aef90b4fb7174a4415f5c2f032307))
+* **security/high/:** update dependency undici to v7.29.0 [security] ([#1781](https://github.com/grafana/synthetic-monitoring-app/issues/1781)) ([74c7755](https://github.com/grafana/synthetic-monitoring-app/commit/74c77550480cea7d56907af9e51bbf8f7c83b739))
+
+
+### Miscellaneous Chores
+
+* **faro:** duplicate rudderstack events to faro and enhance faro instrumentation ([#1782](https://github.com/grafana/synthetic-monitoring-app/issues/1782)) ([067f611](https://github.com/grafana/synthetic-monitoring-app/commit/067f6119740d835314e74f3474476170dea2f857))
+
 ## [1.57.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.57.0...v1.57.1) (2026-07-24)
 
 
