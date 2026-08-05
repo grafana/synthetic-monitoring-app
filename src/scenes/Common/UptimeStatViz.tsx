@@ -2,40 +2,31 @@ import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
-import { getUptimeQuery } from 'queries/uptime';
 
 import { Check } from 'types';
+import { QueryType } from 'datasource/types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSMDS } from 'hooks/useSMDS';
 import { UPTIME_DESCRIPTION } from 'components/constants';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const UptimeStat = ({ check }: { check: Check }) => {
+  const smDS = useSMDS();
+  // only so "Explore" opens against the datasource that holds the data
   const metricsDS = useMetricsDS();
 
-  const uptimeQuery = getUptimeQuery({
-    job: `$job`,
-    instance: `$instance`,
-    probe: `$probe`,
-    frequency: check.frequency,
-  });
-
-  const queries = [
-    {
-      expr: uptimeQuery.expr,
-      exemplar: true,
-      hide: false,
-      instant: false,
-      range: true,
-      interval: uptimeQuery.interval,
-      legendFormat: '',
-      refId: 'B',
-    },
-  ];
-
   const dataProvider = useQueryRunner({
-    queries,
-    datasource: metricsDS,
-    maxDataPoints: uptimeQuery.maxDataPoints,
+    queries: [
+      {
+        refId: 'B',
+        queryType: QueryType.ChecksUptime,
+        job: `$job`,
+        instance: `$instance`,
+        probe: `$probe`,
+        frequency: check.frequency,
+      },
+    ],
+    datasource: smDS.instanceSettings,
   });
 
   const transformation = {
@@ -87,6 +78,7 @@ export const UptimeStat = ({ check }: { check: Check }) => {
     viz,
     currentTimeRange,
     variables: ['job', 'probe', 'instance'],
+    exploreDatasourceUid: metricsDS?.uid,
   });
 
   return (

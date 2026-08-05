@@ -2,36 +2,32 @@ import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@grafana/scenes-react';
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
-import { getReachabilityQuery } from 'queries/reachability';
 
 import { Check } from 'types';
+import { QueryType } from 'datasource/types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSMDS } from 'hooks/useSMDS';
 import { REACHABILITY_DESCRIPTION } from 'components/constants';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const ReachabilityStat = ({ check }: { check: Check }) => {
+  const smDS = useSMDS();
+  // only so "Explore" opens against the datasource that holds the data
   const metricsDS = useMetricsDS();
 
-  const query = getReachabilityQuery({
-    job: `$job`,
-    instance: `$instance`,
-    probe: `$probe`,
-    frequency: check.frequency,
-  });
-
-  const queries = [
-    {
-      expr: query.expr,
-      interval: query.interval,
-      range: true,
-      refId: 'reachability',
-      legendFormat: 'reachability',
-    },
-  ];
-
   const dataProvider = useQueryRunner({
-    queries,
-    datasource: metricsDS,
+    queries: [
+      {
+        refId: 'reachability',
+        queryType: QueryType.Reachability,
+        job: `$job`,
+        instance: `$instance`,
+        probe: `$probe`,
+        frequency: check.frequency,
+        legendFormat: 'reachability',
+      },
+    ],
+    datasource: smDS.instanceSettings,
   });
 
   const dataTransformer = useDataTransformer({
@@ -80,6 +76,7 @@ export const ReachabilityStat = ({ check }: { check: Check }) => {
     data,
     viz,
     currentTimeRange,
+    exploreDatasourceUid: metricsDS?.uid,
     variables: ['job', 'probe', 'instance'],
   });
 

@@ -3,14 +3,13 @@ import {
   DataFrame,
   DataQueryRequest,
   DataQueryResponse,
-  DataSourceApi,
   DataSourceInstanceSettings,
   ScopedVars,
   TimeRange,
 } from '@grafana/data';
-import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
+import { BackendSrvRequest, DataSourceWithBackend, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, from, Observable } from 'rxjs';
 
 import { AlertSensitivity, Check, CheckAlertDraft, ListChannelsResponse, Probe, ThresholdSettings } from '../types';
 import {
@@ -36,7 +35,7 @@ import {
   type UpdateProbeResult,
   type UpdateTenantSettingsResult,
 } from './responses.types';
-import { QueryType, SMOptions, SMQuery } from './types';
+import { BACKEND_QUERY_TYPES, QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID } from 'datasource/constants';
 import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
@@ -44,7 +43,7 @@ import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
 import { LokiQueryResults } from '../components/Checkster/feature/adhoc-check/useAdHocLogs';
 import { parseTracerouteLogs } from './traceroute-utils';
 
-export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
+export class SMDataSource extends DataSourceWithBackend<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
     super(instanceSettings);
   }
@@ -122,7 +121,30 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return findLinkedDatasource({ ...info, uid: DEFAULT_LOGS_DS_UID });
   }
 
-  async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
+  /**
+   * Interpolate the parameters of a named query before it goes to the backend.
+   *
+   * Required rather than optional: `DataSourceWithBackend` interpolates each
+   * target through here, and scenes panels pass `$job` / `$instance` / `$probe`.
+   * Without this the backend would receive the literal variable names.
+   */
+  applyTemplateVariables(query: SMQuery, scopedVars: ScopedVars): SMQuery {
+    return this.interpolateVariablesInQueries([query], scopedVars)[0];
+  }
+
+  query(options: DataQueryRequest<SMQuery>): Observable<DataQueryResponse> {
+    const isBackendQuery = options.targets.some((target) => BACKEND_QUERY_TYPES.includes(target.queryType));
+
+    // Named queries are resolved by the Go backend, which owns the expression and
+    // decides whether it belongs to Prometheus or Loki.
+    if (isBackendQuery) {
+      return super.query(options);
+    }
+
+    return from(this.queryInBrowser(options));
+  }
+
+  private async queryInBrowser(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
     const data: DataFrame[] = [];
     const interpolated = this.interpolateVariablesInQueries(options.targets, options.scopedVars);
     for (const query of interpolated) {

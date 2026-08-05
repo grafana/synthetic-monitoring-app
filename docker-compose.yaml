@@ -8,10 +8,16 @@ services:
     volumes:
       - ./dev/provisioning:/etc/grafana/provisioning
       - ./dev/custom.ini:/etc/grafana/grafana.ini
+      # dev/license.jwt is a directory holding the licence file, not the licence
+      # itself. Docker creates a missing bind-mount source as a directory, so
+      # making the directory canonical means the auto-created path is already the
+      # right type -- otherwise the container refuses to start once a real licence
+      # file replaces it, and a stale directory is left inside grafana-storage.
       - ./dev/license.jwt:/var/lib/grafana/license.jwt
       - grafana-storage:/var/lib/grafana
     environment:
       GF_FEATURE_TOGGLES_ENABLE: localizationForPlugins
+      GF_ENTERPRISE_LICENSE_PATH: /var/lib/grafana/license.jwt/license.jwt
 
 volumes:
   grafana-storage:

@@ -5,7 +5,8 @@ import { LogsDedupStrategy, LogsSortOrder } from '@grafana/schema';
 import { Box, InlineSwitch } from '@grafana/ui';
 
 import { FeatureName } from 'types';
-import { useLogsDS } from 'hooks/useLogsDS';
+import { QueryType } from 'datasource/types';
+import { useSMDS } from 'hooks/useSMDS';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
@@ -21,18 +22,22 @@ const viz = VizConfigBuilders.logs()
   .build();
 
 export const ErrorLogs = ({ startingUnsuccessfulOnly = false }: { startingUnsuccessfulOnly?: boolean }) => {
-  const logsDS = useLogsDS();
+  const smDS = useSMDS();
   const [unsuccessfulOnly, setUnsuccessfulOnly] = useState(startingUnsuccessfulOnly);
+  // The LogQL lives in the backend (pkg/plugin/namedqueries.go). Scenes targets the
+  // Synthetic Monitoring datasource, which resolves the name against Loki.
   const dataProvider = useQueryRunner({
     queries: [
       {
-        expr: `{probe=~"$probe", instance="$instance", job="$job", probe_success=~"${
-          unsuccessfulOnly ? '0' : '.*'
-        }"} | logfmt`,
         refId: 'Execution_Logs',
+        queryType: QueryType.CheckErrorLogs,
+        job: '$job',
+        instance: '$instance',
+        probe: '$probe',
+        unsuccessfulOnly,
       },
     ],
-    datasource: logsDS,
+    datasource: smDS.instanceSettings,
   });
 
   const data = dataProvider.useState();

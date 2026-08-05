@@ -1,12 +1,14 @@
 import { type QueryKey, useQuery } from '@tanstack/react-query';
-import { getUptimeQuery } from 'queries/uptime';
+import { queryNamedQuery } from 'features/queryDatasources/queryNamedQuery';
 
 import { Check } from 'types';
 import { MetricCheckSuccess } from 'datasource/responses.types';
+import { QueryType } from 'datasource/types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSMDS } from 'hooks/useSMDS';
 import { DEFAULT_QUERY_FROM_TIME, STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
-import { findCheckinMetrics, getStartEnd, queryInstantMetric, queryRangeMetric } from './utils';
+import { findCheckinMetrics, getStartEnd, queryInstantMetric } from './utils';
 
 const QUERY_KEYS: Record<'checkReachability' | 'checkUptime', QueryKey> = {
   checkReachability: ['check_reachability'],
@@ -46,40 +48,48 @@ export function useCheckReachabilitySuccessRate(check: Check) {
   };
 }
 
+const MILLISECONDS_PER_SECOND = 1000;
+
+/**
+ * Uptime, asked of the Synthetic Monitoring datasource by name.
+ *
+ * The PromQL that used to live in `queries/uptime.ts` now lives in the backend
+ * (`pkg/plugin/namedqueries.go`); this only passes the parameters it varies.
+ */
 export function useCheckUptimeSuccessRate(check: Check) {
-  const metricsDS = useMetricsDS();
-  const url = metricsDS?.url || ``;
-  const { expr, interval } = getUptimeQuery({
-    job: check.job,
-    instance: check.target,
-    frequency: check.frequency,
-  });
+  const smDS = useSMDS();
 
   return useQuery({
     // we add 'now' as an option so can't add it to the query key
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...QUERY_KEYS.checkUptime, expr, url],
+    queryKey: [...QUERY_KEYS.checkUptime, smDS.uid, check.job, check.target, check.frequency],
     queryFn: async () => {
-      if (!metricsDS) {
-        return Promise.reject(`You need to have a metrics datasource available.`);
-      }
+      const { start, end } = getStartEnd();
 
-      return queryRangeMetric({ url, query: expr, ...getStartEnd(), step: interval });
+      return queryNamedQuery({
+        datasource: smDS.instanceSettings,
+        queryType: QueryType.ChecksUptime,
+        refId: 'check_uptime',
+        params: {
+          job: check.job,
+          instance: check.target,
+          frequency: check.frequency,
+        },
+        from: start * MILLISECONDS_PER_SECOND,
+        to: end * MILLISECONDS_PER_SECOND,
+      });
     },
-    select: (data) => {
-      const vals = data[0].values;
-      const total = vals.reduce((acc, [_, value]) => {
-        return acc + Number(value);
-      }, 0);
+    select: (frames) => {
+      // a Prometheus range response: field 0 is time, field 1 the values
+      const vals: number[] = frames[0]?.fields?.[1]?.values ?? [];
 
       if (vals.length === 0) {
         return null;
       }
 
-      return total / vals.length;
+      return vals.reduce((acc, value) => acc + Number(value), 0) / vals.length;
     },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
-    enabled: Boolean(metricsDS),
   });
 }

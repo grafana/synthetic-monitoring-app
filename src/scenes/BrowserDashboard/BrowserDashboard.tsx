@@ -2,13 +2,10 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { getBrowserDataReceivedQuery } from 'queries/browserDataReceived';
-import { getBrowserDataSentQuery } from 'queries/browserDataSent';
-import { getCountDistinctTargetsQuery } from 'queries/countDistinctTargets';
-import { getSumDurationByProbeQuery } from 'queries/sumDurationByProbe';
 
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
+import { QueryType } from 'datasource/types';
 import { useChecks } from 'data/useChecks';
 import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
 import { MetricsByURL } from 'scenes/BrowserDashboard/MetricsByURL';
@@ -49,14 +46,19 @@ export const BrowserDashboard = ({ check }: { check: Check }) => {
 
       <Stack height={`200px`}>
         <Box width={`200px`}>
-          <DistinctTargets query={getCountDistinctTargetsQuery({ metric: 'probe_browser_web_vital_fcp' })} />
+          <DistinctTargets
+            query={{ queryType: QueryType.CountDistinctTargets, metric: 'probe_browser_web_vital_fcp' }}
+          />
         </Box>
-        <DurationByProbe query={getSumDurationByProbeQuery({ metric: 'probe_browser_http_req_duration' })} unit="ms" />
+        <DurationByProbe
+          query={{ queryType: QueryType.SumDurationByProbe, metric: 'probe_browser_http_req_duration' }}
+          unit="ms"
+        />
       </Stack>
 
       <div className={styles.dataRow}>
-        <DataSent query={getBrowserDataSentQuery()} />
-        <DataReceived query={getBrowserDataReceivedQuery()} />
+        <DataSent query={{ queryType: QueryType.BrowserDataSent }} />
+        <DataReceived query={{ queryType: QueryType.BrowserDataReceived }} />
       </div>
       <AssertionsTable checkType={CheckType.Scripted} check={check} />
       <ErrorLogs startingUnsuccessfulOnly={false} />

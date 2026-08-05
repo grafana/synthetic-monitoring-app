@@ -1,47 +1,57 @@
 import { type QueryKey, useQuery } from '@tanstack/react-query';
-import { getProbeExecutionRateQuery, getProbeFailureRateQuery } from 'queries/probeExecutionStats';
+import { DataFrame } from '@grafana/data';
+import { queryNamedQuery } from 'features/queryDatasources/queryNamedQuery';
 
-import { MetricProbeSuccessRate } from 'datasource/responses.types';
-import { useMetricsDS } from 'hooks/useMetricsDS';
+import { QueryType } from 'datasource/types';
+import { useSMDS } from 'hooks/useSMDS';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
-import { getStartEnd, queryInstantMetric } from './utils';
+import { getStartEnd } from './utils';
 
 const QUERY_KEY_EXEC: QueryKey = ['probe_check_execution_rate'];
 const QUERY_KEY_FAIL: QueryKey = ['probe_check_failure_rate'];
 
+const MILLISECONDS_PER_SECOND = 1000;
+
+/**
+ * The value for one probe.
+ *
+ * These queries aggregate `by (probe)`, so the datasource returns a frame per
+ * probe with the label on the value field.
+ */
+function valueForProbe(frames: DataFrame[] | undefined, probeName: string): number | null {
+  const frame = frames?.find((f) => f.fields?.[1]?.labels?.probe === probeName);
+  const value = frame?.fields?.[1]?.values?.[0];
+
+  return typeof value === 'number' ? value : null;
+}
+
 export function useProbesExecutionStats() {
-  const metricsDS = useMetricsDS();
-  const url = metricsDS?.url || ``;
-  const execExpr = getProbeExecutionRateQuery();
-  const failExpr = getProbeFailureRateQuery();
+  const smDS = useSMDS();
+
+  const namedQuery = (queryType: QueryType, refId: string) => () => {
+    const { start, end } = getStartEnd();
+
+    return queryNamedQuery({
+      datasource: smDS.instanceSettings,
+      queryType,
+      refId,
+      from: start * MILLISECONDS_PER_SECOND,
+      to: end * MILLISECONDS_PER_SECOND,
+    });
+  };
 
   const execQuery = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...QUERY_KEY_EXEC, execExpr, url],
-    queryFn: () => {
-      if (!metricsDS) {
-        return Promise.reject(`You need to have a metrics datasource available.`);
-      }
-
-      return queryInstantMetric<MetricProbeSuccessRate>({ url, query: execExpr, ...getStartEnd() });
-    },
+    // 'now' moves, so it is deliberately not part of the key
+    queryKey: [...QUERY_KEY_EXEC, smDS.uid],
+    queryFn: namedQuery(QueryType.ProbeExecutionRate, 'probe_execution_rate'),
     refetchInterval: STANDARD_REFRESH_INTERVAL,
-    enabled: Boolean(metricsDS),
   });
 
   const failQuery = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...QUERY_KEY_FAIL, failExpr, url],
-    queryFn: () => {
-      if (!metricsDS) {
-        return Promise.reject(`You need to have a metrics datasource available.`);
-      }
-
-      return queryInstantMetric<MetricProbeSuccessRate>({ url, query: failExpr, ...getStartEnd() });
-    },
+    queryKey: [...QUERY_KEY_FAIL, smDS.uid],
+    queryFn: namedQuery(QueryType.ProbeFailureRate, 'probe_failure_rate'),
     refetchInterval: STANDARD_REFRESH_INTERVAL,
-    enabled: Boolean(metricsDS),
   });
 
   return {
@@ -55,12 +65,10 @@ export function useProbesExecutionStats() {
 
 export function useProbeExecutionStats(probeName?: string) {
   const { execResults, failResults, ...rest } = useProbesExecutionStats();
-  const exec = probeName ? execResults?.find((d) => d.metric.probe === probeName) : undefined;
-  const fail = probeName ? failResults?.find((d) => d.metric.probe === probeName) : undefined;
 
   return {
     ...rest,
-    executionsPerSec: exec?.value[1] ?? null,
-    failuresPerSec: fail?.value[1] ?? null,
+    executionsPerSec: probeName ? valueForProbe(execResults, probeName) : null,
+    failuresPerSec: probeName ? valueForProbe(failResults, probeName) : null,
   };
 }

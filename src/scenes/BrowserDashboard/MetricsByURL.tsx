@@ -4,9 +4,10 @@ import { VizConfigBuilders } from '@grafana/scenes';
 import { useDataTransformer, useQueryRunner, VizPanel } from '@grafana/scenes-react';
 import { LineInterpolation, TableCellDisplayMode } from '@grafana/schema';
 import { Box } from '@grafana/ui';
-import { getAvgQuantileWebVital } from 'queries/avgQuantileWebVital';
 
+import { QueryType } from 'datasource/types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSMDS } from 'hooks/useSMDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 enum MetricRefId {
@@ -18,32 +19,44 @@ enum MetricRefId {
 }
 
 export const MetricsByURL = () => {
+  const smDS = useSMDS();
+  // only so "Explore" opens against the datasource that holds the data
   const metricsDS = useMetricsDS();
 
   const dataProvider = useQueryRunner({
     queries: [
       {
         refId: MetricRefId.Fcp,
-        ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_fcp', by: ['url'] }),
+        queryType: QueryType.AvgQuantileWebVital,
+        metric: 'probe_browser_web_vital_fcp',
+        by: ['url'],
       },
       {
         refId: MetricRefId.Lcp,
-        ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_lcp', by: ['url'] }),
+        queryType: QueryType.AvgQuantileWebVital,
+        metric: 'probe_browser_web_vital_lcp',
+        by: ['url'],
       },
       {
         refId: MetricRefId.Ttfb,
-        ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_ttfb', by: ['url'] }),
+        queryType: QueryType.AvgQuantileWebVital,
+        metric: 'probe_browser_web_vital_ttfb',
+        by: ['url'],
       },
       {
         refId: MetricRefId.Cls,
-        ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_cls', by: ['url'] }),
+        queryType: QueryType.AvgQuantileWebVital,
+        metric: 'probe_browser_web_vital_cls',
+        by: ['url'],
       },
       {
         refId: MetricRefId.Inp,
-        ...getAvgQuantileWebVital({ metric: 'probe_browser_web_vital_inp', by: ['url'] }),
+        queryType: QueryType.AvgQuantileWebVital,
+        metric: 'probe_browser_web_vital_inp',
+        by: ['url'],
       },
     ],
-    datasource: metricsDS,
+    datasource: smDS.instanceSettings,
   });
 
   const dataTransformer = useDataTransformer({
@@ -122,6 +135,7 @@ export const MetricsByURL = () => {
   const menu = useVizPanelMenu({
     data: dataProvider.useState(),
     viz,
+    exploreDatasourceUid: metricsDS?.uid,
   });
 
   return (

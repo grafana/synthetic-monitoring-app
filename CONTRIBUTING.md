@@ -9,6 +9,7 @@ There are two different "modes" for developing this plugin. You can either work 
 - Set up a Grafana Cloud account
 - Make sure you have Docker installed
 - Clone this repo to your local machine
+- To work on the datasource backend, install [Go](https://go.dev/dl/) (the version in [`go.mod`](./go.mod) or newer) and [mage](https://magefile.org/). Only needed if you are touching `pkg/`; the frontend builds without them.
 
 ### Package manager
 
@@ -88,6 +89,102 @@ During the initialization process, the Synthetic Monitoring backend will:
 
 Users can then create checks to monitor their remote targets. Metrics and logs will flow into the selected Cloud stack.
 
+### Run the datasource backend
+
+The Synthetic Monitoring datasource has a Go backend in [`pkg/`](./pkg). It serves
+_named queries_: the app asks for `checks_uptime` with a job, an instance and a
+frequency, and the backend resolves that to a PromQL expression against the
+metrics datasource. `check_error_logs` resolves to LogQL against the logs
+datasource. The queries live in
+[`pkg/plugin/namedqueries.go`](./pkg/plugin/namedqueries.go) — adding one the app
+can use means adding an entry there, and nothing in the frontend.
+
+#### Build it
+
+```bash
+yarn build          # or `yarn dev` in watch mode
+mage -v build:linux # match your platform: build:darwinARM64, build:windows, ...
+```
+
+**Build the backend after the frontend.** `yarn build` clears `dist/`, which takes
+the backend binary with it. `mage -l` lists the available targets; `mage test`
+runs the Go tests.
+
+The binary lands in `dist/datasource/`, not `dist/`. That is deliberate: this is an
+app with a nested datasource, so the SDK's mage targets read `executable` from
+[`src/datasource/plugin.json`](./src/datasource/plugin.json) and write the binary
+beside it. No extra configuration is needed.
+
+Restart Grafana after changing `plugin.json` — plugin manifests are read at
+startup, so a rebuilt frontend alone will not pick up the change.
+
+#### Grafana settings it needs
+
+The backend queries Prometheus and Loki by calling Grafana's own `/api/ds/query`,
+which is what makes each datasource's existing authentication and any label
+policy attached to its token apply unchanged. To do that it needs its own service
+account, which Grafana provisions from the `iam` block in the datasource's
+`plugin.json`. That requires two settings:
+
+```ini
+[auth]
+managed_service_accounts_enabled = true
+
+[feature_toggles]
+enable = externalServiceAccounts
+```
+
+Without them the plugin receives no credential and **every named query is
+refused** — it fails closed rather than falling back to querying as itself. The
+error message says as much.
+
+#### Authorization, and why it looks like a no-op locally
+
+Before fetching anything, the backend asks Grafana whether the _calling user_ may
+query the target datasource. Without that check the backend would query as its own
+service account, letting any user read data through the app that they have no
+permission to query directly.
+
+The dev image enables anonymous access with the `Admin` role, and `Admin` can query
+every datasource — so locally the check passes for everything and is easy to
+mistake for dead code. To see it do something you need a user who can query the
+Synthetic Monitoring datasource but not the Prometheus one, which means real users
+and per-datasource permissions (the latter needs an Enterprise licence, see below).
+
+Note also that Grafana's permission search is cached and eventually consistent:
+after changing someone's access, expect a few seconds before the backend agrees.
+
+#### Check it works
+
+Find the datasource UID with `curl -s localhost:3000/api/datasources`, then:
+
+```bash
+curl -s -X POST http://localhost:3000/api/ds/query \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "from": "now-1h",
+    "to": "now",
+    "queries": [
+      {
+        "refId": "A",
+        "queryType": "checks_uptime",
+        "datasource": { "uid": "<sm-datasource-uid>", "type": "synthetic-monitoring-datasource" },
+        "job": "<your check job>",
+        "instance": "<your check target>",
+        "frequency": 60000
+      }
+    ]
+  }'
+```
+
+There is no PromQL in that request. The response echoes what Prometheus actually
+ran in `schema.meta.executedQueryString`, which is the quickest way to confirm the
+backend built the expression rather than the caller.
+
+The plugin logs each resolution at debug level — `resolved named query` with the
+name, the target and the expression — and the dev container already enables debug
+logging for this plugin.
+
 ### Run the entire stack locally
 
 - See the instructions for [setting up the api](https://github.com/grafana/synthetic-monitoring-api/blob/main/DEVELOPMENT.md)
@@ -97,9 +194,9 @@ Users can then create checks to monitor their remote targets. Metrics and logs w
 
 ### Grafana Enterprise integration
 
-Grafana Enterprise adds features which the plugin takes advantage of (e.g. RBAC). To run the development environment with Grafana Enterprise features enabled you need to add a valid Grafana Enterprise license by updating `dev/license.jwt`. It has been added to our `.gitignore` file to ensure your license doesn't get added to any pull requests (we wouldn't want that happening again...).
+Grafana Enterprise adds features which the plugin takes advantage of (e.g. RBAC). To run the development environment with Grafana Enterprise features enabled you need to add a valid Grafana Enterprise license by placing it at `dev/license.jwt/license.jwt`. `dev/license.jwt` has been added to our `.gitignore` file to ensure your license doesn't get added to any pull requests (we wouldn't want that happening again...).
 
-When running `yarn server` if `dev/license.jwt` doesn't exist it will create it for you with no content present. You are free to update this file with your own license.
+Note that `dev/license.jwt` is a **directory** holding the license file, not the license file itself. `yarn server` creates it for you if it is missing, and Docker creates a missing bind-mount source as a directory — so keeping the directory canonical means the auto-created path is always the right type. Grafana is pointed at the file inside it via `GF_ENTERPRISE_LICENSE_PATH` in `docker-compose.yaml`.
 
 ### IDE setup
 

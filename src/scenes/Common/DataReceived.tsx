@@ -2,28 +2,24 @@ import React from 'react';
 import { VizConfigBuilders } from '@grafana/scenes';
 import { useQueryRunner, VizPanel } from '@grafana/scenes-react';
 
-import { DSQuery } from 'queries/queries.types';
+import { NamedQueryRequest } from 'datasource/types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { useSMDS } from 'hooks/useSMDS';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
-export const DataReceived = ({ query }: { query: DSQuery }) => {
+export const DataReceived = ({ query }: { query: NamedQueryRequest }) => {
+  const smDS = useSMDS();
+  // only so "Explore" opens against the datasource that holds the data
   const metricsDS = useMetricsDS();
 
   const dataProvider = useQueryRunner({
-    queries: [
-      {
-        expr: query.expr,
-        refId: 'A',
-        range: query.queryType === 'range',
-        legendFormat: query.legendFormat,
-      },
-    ],
-    datasource: metricsDS,
+    queries: [{ refId: 'A', ...query }],
+    datasource: smDS.instanceSettings,
   });
 
   const viz = VizConfigBuilders.timeseries().setUnit('decbytes').build();
   const data = dataProvider.useState();
-  const menu = useVizPanelMenu({ data, viz });
+  const menu = useVizPanelMenu({ data, viz, exploreDatasourceUid: metricsDS?.uid });
 
   return <VizPanel title="Data received" viz={viz} dataProvider={dataProvider} menu={menu} />;
 };
