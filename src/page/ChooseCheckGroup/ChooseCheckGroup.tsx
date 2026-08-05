@@ -1,11 +1,12 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Stack, useStyles2 } from '@grafana/ui';
+import { Box, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
+import { AgentSkillReference } from 'components/AgentSkillReference/AgentSkillReference';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
 import { CheckGroupCard } from './components/CheckGroupCard';
@@ -28,6 +29,9 @@ export const ChooseCheckGroup = () => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}
           </div>
+          <Box maxWidth={100}>
+            <AgentSkillReference source="choose-check-type" collapsible />
+          </Box>
         </Stack>
       </div>
     </PluginPage>

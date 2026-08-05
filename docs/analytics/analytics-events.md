@@ -6,6 +6,39 @@ This document contains all the analytics events that are defined in the project.
 
 ## Events
 
+### agent_skill
+
+#### synthetic-monitoring_agent_skill_section_viewed
+
+Tracks when the agent skill reference content is shown: on render in the docs panels, on first expand on collapsible surfaces (choose-check-type, terraform-tab).
+
+##### Properties
+
+| name   | type                                                                                      | description                                                     |
+| ------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab"` | Where in the app the agent skill reference was interacted with. |
+
+#### synthetic-monitoring_agent_skill_link_clicked
+
+Tracks when the agent skill repository link is clicked.
+
+##### Properties
+
+| name   | type                                                                                      | description                                                     |
+| ------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab"` | Where in the app the agent skill reference was interacted with. |
+
+#### synthetic-monitoring_agent_skill_install_command_copied
+
+Tracks when one of the agent skill install commands is copied to the clipboard.
+
+##### Properties
+
+| name    | type                                                                                      | description                                                     |
+| ------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| source  | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab"` | Where in the app the agent skill reference was interacted with. |
+| command | `"npx" \| "claude-plugin"`                                                                | Which install command was copied.                               |
+
 ### check_creation
 
 #### synthetic-monitoring_check_creation_add_new_check_button_clicked

@@ -114,6 +114,34 @@ function smK6Conventions(): ChatContextItem {
   });
 }
 
+/**
+ * Hidden context attached to pages where the user is choosing or authoring a
+ * check. Assistant cannot run the Agent Skill itself, but it should know the
+ * skill exists so it can route users who author with an AI coding agent
+ * (Claude Code, Cursor, Codex, ...) to it instead of leaving them to generate
+ * load-test-shaped scripts from scratch.
+ */
+function agentSkillRecommendation(): ChatContextItem {
+  return hiddenStructured('Synthetic Monitoring agent skill', {
+    pageType: 'sm-agent-skill',
+    audience: 'check-authoring',
+    summary:
+      'A Synthetic Monitoring Agent Skill exists for AI coding agents (Claude Code, Cursor, Codex, and other Agent Skills compatible tools). It teaches an agent to choose the simplest sufficient check type, author scripted and browser checks with correct fail-fast assertions, validate them locally with `k6 run`, and deploy via the UI, API, or Terraform.',
+    whenToRecommend: [
+      'The user mentions authoring checks with an AI coding agent, in their IDE, in their terminal, or locally.',
+      'The user wants to convert an OpenAPI spec or an existing k6 script into checks as a larger local workflow.',
+      'The user asks how to manage many checks as code, or wants Terraform for scripted/browser checks.',
+      'The user is unsure which check type to pick and prefers working outside the Grafana UI.',
+    ],
+    howToInstall: [
+      'Any Agent Skills compatible tool: `npx skills add grafana/skills`',
+      'Claude Code plugin: `claude plugin install grafana-cloud@grafana-skills`',
+    ],
+    repository: 'https://github.com/grafana/skills/tree/main/skills/grafana-cloud/synthetic-monitoring-checks',
+    note: 'Scripts authored with the skill are portable k6 — users can paste them directly into the script editor in this app instead of deploying via Terraform or the API. Do NOT attempt to execute the skill yourself; it is an instruction set for coding agents with local file and terminal access.',
+  });
+}
+
 const root = PLUGIN_URL_PATH.replace(/\/$/, '');
 
 // Pre-built regex fragments so the route shape is obvious at the call site.
@@ -192,6 +220,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
         capabilities: ['explain-check-types', 'recommend-check-type'],
         help: 'User is picking which kind of synthetic check to create: API (HTTP, DNS, TCP, gRPC), Ping, Traceroute, k6 scripted, or k6 browser. Help with: which check type fits a given monitoring goal, the trade-offs between scripted and protocol-level checks, and when to choose browser checks.',
       }),
+      agentSkillRecommendation(),
     ],
     createQuestions: () => [
       question(
@@ -270,6 +299,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
         help: `User is creating a k6 scripted check (JavaScript) for synthetic monitoring. This is NOT a load test — the script runs as a single-VU probe check on a recurring schedule. Help with: writing the script (default export, http requests, sleep used sparingly), using the k6-testing assertions library (expect() from ${DOC_URLS.k6Assertions}) to fail-fast on assertion violations, referencing credentials via the SM Secrets module, and adapting existing perf-testing-shaped k6 scripts (stages/VUs/thresholds, classic check() calls) into the SM single-VU model. Prefer expect() over the classic check() function.`,
       }),
       smK6Conventions(),
+      agentSkillRecommendation(),
     ],
     createQuestions: () => [
       question(
@@ -302,6 +332,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
         help: `User is creating a k6 browser check (real headless browser) for synthetic monitoring. This is NOT a load test — the script runs as a single-VU probe check on a recurring schedule. Help with: writing browser scripts using the k6 browser API (page.goto, locator, waitForSelector), asserting on page content and DOM state with the k6-testing assertions library's auto-retrying matchers (await expect(page.locator(...)).toBeVisible(), .toHaveText(...), etc. — see ${DOC_URLS.k6Assertions}), navigating multi-page flows, referencing credentials via SM Secrets, and avoiding load-test constructs (no stages/VUs/thresholds). Prefer expect() over the classic check() function. Do NOT suggest page.screenshot() — screenshot capture is not currently functional in SM. For recommended patterns on element selection, handling dynamic elements, simulating user input delay, and cleaning up resources, see ${DOC_URLS.k6BrowserPractices}.`,
       }),
       smK6Conventions(),
+      agentSkillRecommendation(),
     ],
     createQuestions: () => [
       question(
@@ -353,6 +384,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
         help: 'User is editing an existing synthetic monitoring check. Help with: adjusting target/URL, request method/headers/body, response validation, probe selection, frequency/timeout, k6 script edits for scripted/browser checks, and per-check alert configuration. If the check being edited is a k6 scripted or browser check, follow the SM k6 conventions in the hidden context — do not introduce load-test constructs.',
       }),
       smK6Conventions(),
+      agentSkillRecommendation(),
     ],
     createQuestions: () => [
       question(
