@@ -60,6 +60,8 @@ describe('AgentSkillReference', () => {
       command: AGENT_SKILL_INSTALL_COMMANDS[0].trackingId,
     });
     expect(JSON.parse(localStorage.getItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY) ?? 'false')).toBe(true);
+    // the feedback ask must wait for a return visit, not appear mid-session
+    expect(screen.queryByText('Did the skill help?')).not.toBeInTheDocument();
   });
 
   it('shows the example prompts and tracks copying one without a tool', async () => {

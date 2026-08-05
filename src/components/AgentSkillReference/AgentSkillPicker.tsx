@@ -35,6 +35,10 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
     AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY,
     false
   );
+  // Ask for feedback only on return visits: snapshot the flag at mount so a
+  // copy in the current session doesn't trigger the ask before the skill has
+  // actually been tried.
+  const [askForFeedback] = useState(hasCopiedInstall);
   const hasTrackedView = useRef(false);
 
   const selectedTool = AGENT_SKILL_TOOLS.find(({ id }) => id === selectedId);
@@ -57,7 +61,7 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
         <Text variant="h5" element="h3">
           Or author checks with your coding agent
         </Text>
-        {hasCopiedInstall && (
+        {askForFeedback && (
           <Feedback feature={AGENT_SKILL_FEEDBACK_FEATURE} about={{ text: 'Did the skill help?' }} />
         )}
       </Stack>

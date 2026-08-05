@@ -77,6 +77,8 @@ describe('AgentSkillPicker', () => {
       command: CLAUDE_CODE.trackingId,
     });
     expect(JSON.parse(localStorage.getItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY) ?? 'false')).toBe(true);
+    // the feedback ask must wait for a return visit, not appear mid-session
+    expect(screen.queryByText('Did the skill help?')).not.toBeInTheDocument();
   });
 
   it('swaps the example prompt via the toggle and tracks which variant is copied', async () => {

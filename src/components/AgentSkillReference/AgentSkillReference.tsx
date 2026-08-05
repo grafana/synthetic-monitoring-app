@@ -35,6 +35,10 @@ export const AgentSkillReference = ({ source, collapsible = false }: AgentSkillR
     AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY,
     false
   );
+  // Ask for feedback only on return visits: snapshot the flag at mount so a
+  // copy in the current session doesn't trigger the ask before the skill has
+  // actually been tried.
+  const [askForFeedback] = useState(hasCopiedInstall);
   const [isOpen, setIsOpen] = useState(false);
   const hasTrackedView = useRef(false);
 
@@ -59,7 +63,7 @@ export const AgentSkillReference = ({ source, collapsible = false }: AgentSkillR
     [setHasCopiedInstall, source]
   );
 
-  const feedback = hasCopiedInstall && (
+  const feedback = askForFeedback && (
     <Feedback feature={AGENT_SKILL_FEEDBACK_FEATURE} about={{ text: 'Did the skill help?' }} />
   );
 
