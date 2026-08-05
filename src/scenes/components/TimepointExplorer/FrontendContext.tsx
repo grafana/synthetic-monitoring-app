@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Badge, BadgeColor, Icon, LinkButton, Spinner, Stack, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -7,7 +8,9 @@ import { CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { useTracesDS } from 'hooks/useTracesDS';
 import { PlainButton } from 'components/PlainButton';
+import { fetchTraceData } from 'scenes/components/LogsRenderer/LogLine.utils';
 import { getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
+import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
 import {
   useAppVersionChange,
   useExceptionRealSessions,
@@ -18,10 +21,12 @@ import {
 import {
   buildFaroPageHref,
   FaroExecutionContext,
+  FaroHttpRequest,
   FaroPageVisit,
   formatWebVitalDelta,
   formatWebVitalValue,
   getPageComparisonVerdict,
+  getRequestPath,
   rateWebVital,
   WEB_VITAL_LABELS,
   WEB_VITALS,
@@ -104,7 +109,7 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
 
         {context.exceptions.length > 0 && <ExceptionsList context={context} to={to} />}
 
-        {context.httpErrors.length > 0 && <HttpErrorsList context={context} />}
+        {context.requests.length > 0 && <NetworkRequestsList context={context} />}
 
         <Stack direction="column" gap={1}>
           <Text weight="medium">Pages visited</Text>
@@ -196,29 +201,120 @@ const ExceptionsList = ({ context, to }: { context: FaroExecutionContext; to: nu
   );
 };
 
-const HttpErrorsList = ({ context }: { context: FaroExecutionContext }) => {
+const COLLAPSED_REQUEST_COUNT = 5;
+
+const NetworkRequestsList = ({ context }: { context: FaroExecutionContext }) => {
   const tracesDS = useTracesDS();
+  const [showAll, setShowAll] = useState(false);
+  // failures first, then chronological — the failing request is what you came for
+  const sorted = [...context.requests].sort(
+    (a, b) => Number(b.isError) - Number(a.isError) || a.timestamp - b.timestamp
+  );
+  const failedCount = context.requests.filter((request) => request.isError).length;
+  const visible = showAll ? sorted : sorted.slice(0, COLLAPSED_REQUEST_COUNT);
 
   return (
     <Stack direction="column" gap={0.5}>
-      <Text weight="medium">Failed network requests during this run ({context.httpErrors.length})</Text>
-      {context.httpErrors.slice(0, 5).map((error, index) => (
-        <Text key={index} variant="bodySmall">
-          <Text color="error" variant="bodySmall">
-            {error.method} {error.url} → {error.statusCode === 0 ? 'no response' : error.statusCode}
-          </Text>
-          {tracesDS && error.traceId && (
-            <>
-              {' '}
-              ·{' '}
-              <TextLink href={getExploreTraceUrl(tracesDS.uid, error.traceId)} inline={false} variant="bodySmall">
-                view trace
-              </TextLink>
-            </>
-          )}
-        </Text>
+      <Text weight="medium">
+        Network requests during this run ({context.requests.length}
+        {failedCount > 0 ? ` · ${failedCount} failed` : ''})
+      </Text>
+      {visible.map((request, index) => (
+        <RequestRow key={`${request.timestamp}-${request.url}-${index}`} request={request} tracesDS={tracesDS} />
       ))}
+      {sorted.length > COLLAPSED_REQUEST_COUNT && (
+        <PlainButton onClick={() => setShowAll(!showAll)}>
+          <Text color="link" variant="bodySmall">
+            {showAll ? 'Show fewer' : `Show all ${sorted.length} requests`}
+          </Text>
+        </PlainButton>
+      )}
     </Stack>
+  );
+};
+
+const RequestRow = ({
+  request,
+  tracesDS,
+}: {
+  request: FaroHttpRequest;
+  tracesDS: ReturnType<typeof useTracesDS>;
+}) => {
+  const [traceExpanded, setTraceExpanded] = useState(false);
+  const canShowTrace = Boolean(tracesDS && request.traceId);
+
+  return (
+    <Stack direction="column" gap={0.5}>
+      <Text variant="bodySmall">
+        <Text color={request.isError ? 'error' : 'secondary'} variant="bodySmall">
+          {request.method}{' '}
+          <Tooltip content={request.url}>
+            <span>{getRequestPath(request.url)}</span>
+          </Tooltip>{' '}
+          → {request.statusCode === 0 ? 'no response' : request.statusCode}
+          {request.durationMs !== undefined && ` · ${Math.round(request.durationMs)} ms`}
+        </Text>
+        {canShowTrace && (
+          <>
+            {' '}
+            ·{' '}
+            <PlainButton onClick={() => setTraceExpanded(!traceExpanded)}>
+              <Text color="link" variant="bodySmall">
+                {traceExpanded ? 'hide trace' : 'view trace'}
+              </Text>
+            </PlainButton>
+          </>
+        )}
+      </Text>
+      {traceExpanded && tracesDS && request.traceId && (
+        <RequestTrace request={request} tracesDS={tracesDS} onClose={() => setTraceExpanded(false)} />
+      )}
+    </Stack>
+  );
+};
+
+const RequestTrace = ({
+  request,
+  tracesDS,
+  onClose,
+}: {
+  request: FaroHttpRequest;
+  tracesDS: NonNullable<ReturnType<typeof useTracesDS>>;
+  onClose: () => void;
+}) => {
+  const { data: traceData, isLoading } = useQuery({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- tracesDS.uid is a stable identifier
+    queryKey: ['faro-request-trace', request.traceId, tracesDS.uid],
+    queryFn: () => fetchTraceData(request.traceId!, tracesDS),
+    enabled: Boolean(request.traceId),
+    staleTime: Infinity,
+    retry: false,
+  });
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  if (!traceData || traceData.series.length === 0) {
+    return (
+      <Text color="secondary" italic variant="bodySmall">
+        No trace found for this request — the backend may not have sampled it.{' '}
+        <TextLink href={getExploreTraceUrl(tracesDS.uid, request.traceId!)} inline={false} variant="bodySmall">
+          Try in Explore
+        </TextLink>
+      </Text>
+    );
+  }
+
+  return (
+    <TracePanel
+      traceId={request.traceId!}
+      tracesDS={tracesDS}
+      traceData={traceData}
+      logTimestamp={request.timestamp}
+      arrowOffset={null}
+      onClose={onClose}
+    />
   );
 };
 

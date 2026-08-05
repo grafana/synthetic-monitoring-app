@@ -64,11 +64,13 @@ export interface FaroException {
   timestamp: number;
 }
 
-export interface FaroHttpError {
+export interface FaroHttpRequest {
   method: string;
   url: string;
   // 0 means the request got no response at all (network failure, CORS, aborted)
   statusCode: number;
+  isError: boolean;
+  durationMs?: number;
   pageId: string;
   traceId?: string;
   timestamp: number;
@@ -82,7 +84,7 @@ export interface FaroExecutionContext {
   sessionId: string;
   pages: FaroPageVisit[];
   exceptions: FaroException[];
-  httpErrors: FaroHttpError[];
+  requests: FaroHttpRequest[];
   hasSessionReplay: boolean;
 }
 
@@ -120,7 +122,7 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
 
   const pages = new Map<string, FaroPageVisit>();
   const exceptions: FaroException[] = [];
-  const httpErrors: FaroHttpError[] = [];
+  const requests: FaroHttpRequest[] = [];
   let appName: string | undefined;
   let appVersion: string | undefined;
   let appEnvironment: string | undefined;
@@ -167,12 +169,15 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
     if (labels.kind === 'event' && HTTP_EVENT_NAMES.includes(labels.event_name ?? '')) {
       // `| logfmt` folds `event_data_http.status_code` into underscores
       const statusCode = Number(labels.event_data_http_status_code);
+      const durationNs = Number(labels.event_data_duration_ns);
 
-      if (!Number.isNaN(statusCode) && isHttpErrorStatus(statusCode)) {
-        httpErrors.push({
+      if (!Number.isNaN(statusCode)) {
+        requests.push({
           method: labels.event_data_http_method ?? 'GET',
           url: labels.event_data_http_url ?? '',
           statusCode,
+          isError: isHttpErrorStatus(statusCode),
+          durationMs: !Number.isNaN(durationNs) ? durationNs / 1_000_000 : undefined,
           pageId,
           traceId: labels.traceID,
           timestamp: record.timestamp,
@@ -189,9 +194,19 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
     sessionId: session.sessionId,
     pages: [...pages.values()],
     exceptions,
-    httpErrors,
+    requests,
     hasSessionReplay,
   };
+}
+
+/** Compact display form for a request URL: path only, full URL on hover. */
+export function getRequestPath(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.pathname}${parsed.search}`;
+  } catch {
+    return url;
+  }
 }
 
 function escapeLogQLString(value: string): string {
