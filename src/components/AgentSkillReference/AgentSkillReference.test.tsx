@@ -3,17 +3,26 @@ import { screen } from '@testing-library/react';
 import { render } from 'test/render';
 
 import { AgentSkillReference } from './AgentSkillReference';
-import { AGENT_SKILL_INSTALL_COMMANDS, AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY } from './AgentSkillReference.constants';
+import {
+  AGENT_SKILL_DEFAULT_COPY,
+  AGENT_SKILL_INSTALL_COMMANDS,
+  AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY,
+  AGENT_SKILL_PROMPTS,
+  AGENT_SKILL_TERRAFORM_COPY,
+} from './AgentSkillReference.constants';
 
 jest.mock('features/tracking/agentSkillEvents', () => ({
   trackAgentSkillSectionViewed: jest.fn(),
   trackAgentSkillLinkClicked: jest.fn(),
   trackAgentSkillInstallCommandCopied: jest.fn(),
+  trackAgentSkillToolSelected: jest.fn(),
+  trackAgentSkillPromptCopied: jest.fn(),
 }));
 
 import {
   trackAgentSkillInstallCommandCopied,
   trackAgentSkillLinkClicked,
+  trackAgentSkillPromptCopied,
   trackAgentSkillSectionViewed,
 } from 'features/tracking/agentSkillEvents';
 
@@ -53,6 +62,39 @@ describe('AgentSkillReference', () => {
     expect(JSON.parse(localStorage.getItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY) ?? 'false')).toBe(true);
   });
 
+  it('shows the example prompts and tracks copying one without a tool', async () => {
+    const [SITE_PROMPT, API_SPEC_PROMPT] = AGENT_SKILL_PROMPTS;
+    const { user } = render(<AgentSkillReference source={SOURCE} />);
+
+    expect(await screen.findByText(SITE_PROMPT.prompt)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: API_SPEC_PROMPT.label }));
+    expect(await screen.findByText(API_SPEC_PROMPT.prompt)).toBeInTheDocument();
+
+    const copyButtons = screen.getAllByRole('button', { name: 'Copy to clipboard' });
+    await user.click(copyButtons[copyButtons.length - 1]);
+    expect(trackAgentSkillPromptCopied).toHaveBeenCalledWith({
+      source: SOURCE,
+      tool: undefined,
+      prompt: API_SPEC_PROMPT.id,
+    });
+  });
+
+  it('shows only the terraform adoption prompt on the terraform tab, without a toggle', async () => {
+    const TERRAFORM_PROMPT = AGENT_SKILL_PROMPTS.find(({ id }) => id === 'terraform-import')!;
+    render(<AgentSkillReference source="terraform-tab" />);
+
+    expect(await screen.findByText(AGENT_SKILL_TERRAFORM_COPY.title)).toBeInTheDocument();
+    expect(screen.queryByText(AGENT_SKILL_DEFAULT_COPY.title)).not.toBeInTheDocument();
+    expect(screen.getByText(new RegExp(TERRAFORM_PROMPT.prompt.slice(0, 60)))).toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    for (const { id, prompt } of AGENT_SKILL_PROMPTS) {
+      if (id !== 'terraform-import') {
+        expect(screen.queryByText(prompt)).not.toBeInTheDocument();
+      }
+    }
+  });
+
   it('tracks clicking the repository link', async () => {
     const { user } = render(<AgentSkillReference source={SOURCE} />);
 
@@ -65,7 +107,7 @@ describe('AgentSkillReference', () => {
   it('does not ask for feedback before an install command has been copied', async () => {
     render(<AgentSkillReference source={SOURCE} />);
 
-    await screen.findByText('Author checks with your AI coding agent');
+    await screen.findByText(AGENT_SKILL_DEFAULT_COPY.title);
     expect(screen.queryByText('Did the skill help?')).not.toBeInTheDocument();
   });
 
@@ -80,7 +122,7 @@ describe('AgentSkillReference', () => {
     it('starts collapsed and only tracks the view on first expand', async () => {
       const { user } = render(<AgentSkillReference source={SOURCE} collapsible />);
 
-      const toggle = await screen.findByText('Author checks with your AI coding agent');
+      const toggle = await screen.findByText(AGENT_SKILL_DEFAULT_COPY.title);
       expect(screen.queryByText(AGENT_SKILL_INSTALL_COMMANDS[0].command)).not.toBeInTheDocument();
       expect(trackAgentSkillSectionViewed).not.toHaveBeenCalled();
 

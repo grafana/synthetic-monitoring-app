@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
-import { AgentSkillReference } from 'components/AgentSkillReference/AgentSkillReference';
+import { AgentSkillPicker } from 'components/AgentSkillReference/AgentSkillPicker';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
 import { CheckGroupCard } from './components/CheckGroupCard';
@@ -29,8 +29,8 @@ export const ChooseCheckGroup = () => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}
           </div>
-          <Box maxWidth={100}>
-            <AgentSkillReference source="choose-check-type" collapsible />
+          <Box maxWidth={100} marginTop={2}>
+            <AgentSkillPicker source="choose-check-type" />
           </Box>
         </Stack>
       </div>

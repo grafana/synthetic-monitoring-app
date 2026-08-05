@@ -10,15 +10,19 @@ import { useLocalStorage } from 'usehooks-ts';
 import { Clipboard } from 'components/Clipboard';
 import { Feedback } from 'components/Feedback';
 
+import { AgentSkillPrompts } from './AgentSkillPrompts';
 import {
+  AGENT_SKILL_DEFAULT_COPY,
   AGENT_SKILL_FEEDBACK_FEATURE,
   AGENT_SKILL_INSTALL_COMMANDS,
   AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY,
   AGENT_SKILL_REPO_URL,
+  AGENT_SKILL_TERRAFORM_COPY,
   AgentSkillReferenceSource,
 } from './AgentSkillReference.constants';
 
-const TITLE = 'Author checks with your AI coding agent';
+const getCopy = (source: AgentSkillReferenceSource) =>
+  source === 'terraform-tab' ? AGENT_SKILL_TERRAFORM_COPY : AGENT_SKILL_DEFAULT_COPY;
 
 interface AgentSkillReferenceProps {
   source: AgentSkillReferenceSource;
@@ -60,12 +64,13 @@ export const AgentSkillReference = ({ source, collapsible = false }: AgentSkillR
   );
 
   const content = <AgentSkillReferenceContent source={source} onCopy={handleCopy} />;
+  const { title } = getCopy(source);
 
   if (collapsible) {
     return (
       <Stack direction="column" gap={0.5}>
         <Collapse
-          label={TITLE}
+          label={title}
           isOpen={isOpen}
           onToggle={() => {
             const nextIsOpen = !isOpen;
@@ -86,7 +91,7 @@ export const AgentSkillReference = ({ source, collapsible = false }: AgentSkillR
     <Stack direction="column" gap={2}>
       <Stack direction="row" alignItems="center" gap={1}>
         <Text variant="h4" element="h3">
-          {TITLE}
+          {title}
         </Text>
         {feedback}
       </Stack>
@@ -102,11 +107,7 @@ interface AgentSkillReferenceContentProps {
 
 const AgentSkillReferenceContent = ({ source, onCopy }: AgentSkillReferenceContentProps) => (
   <Stack direction="column" gap={2}>
-    <Text element="p">
-      The Synthetic Monitoring skill teaches AI coding agents to pick the simplest sufficient check type, author
-      scripted and browser checks that assert correctly, and validate them locally with <code>k6 run</code>. Paste the
-      resulting script into the editor here, or let your agent deploy it via Terraform or the API.
-    </Text>
+    <Text element="p">{getCopy(source).description}</Text>
     {AGENT_SKILL_INSTALL_COMMANDS.map(({ command, trackingId, label }) => (
       <Stack direction="column" gap={0.5} key={trackingId}>
         <Text element="p" color="secondary" variant="bodySmall">
@@ -117,6 +118,7 @@ const AgentSkillReferenceContent = ({ source, onCopy }: AgentSkillReferenceConte
         </div>
       </Stack>
     ))}
+    <AgentSkillPrompts source={source} showIntro />
     <div>
       <TextLink
         href={AGENT_SKILL_REPO_URL}
