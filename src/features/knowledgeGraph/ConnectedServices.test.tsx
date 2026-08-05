@@ -17,6 +17,25 @@ import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
 
 const mockUseAppPluginInstalled = useAppPluginInstalled as jest.Mock;
 
+// The section lives inside the scene-based check dashboard; its KG query follows the
+// dashboard's time range, provided by scenes-react. Fixed here so tests can assert on it.
+const MOCK_TIME_RANGE_FROM = '2026-08-05T10:00:00Z';
+const MOCK_TIME_RANGE_TO = '2026-08-05T11:00:00Z';
+
+jest.mock('@grafana/scenes-react', () => {
+  const { dateTime: mockDateTime } = jest.requireActual('@grafana/data');
+  const mockTimeRange = {
+    from: mockDateTime('2026-08-05T10:00:00Z'),
+    to: mockDateTime('2026-08-05T11:00:00Z'),
+    raw: { from: 'now-1h', to: 'now' },
+  };
+
+  return {
+    ...jest.requireActual('@grafana/scenes-react'),
+    useTimeRange: jest.fn(() => [mockTimeRange, jest.fn()]),
+  };
+});
+
 const KG_DATASOURCE = {
   uid: 'grafanacloud-knowledgegraph',
   type: 'grafana-knowledgegraph-datasource',
@@ -105,10 +124,15 @@ it('can be collapsed and expanded again', async () => {
   setKgInstalled(true);
   const { user } = await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));
 
-  await user.click(screen.getByRole('button', { name: 'Collapse connected services' }));
+  const toggle = screen.getByRole('button', { name: 'Connected services' });
+  expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+  await user.click(toggle);
+  expect(toggle).toHaveAttribute('aria-expanded', 'false');
   expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).not.toBeInTheDocument();
 
-  await user.click(screen.getByRole('button', { name: 'Expand connected services' }));
+  await user.click(toggle);
+  expect(toggle).toHaveAttribute('aria-expanded', 'true');
   expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).toBeInTheDocument();
 });
 
@@ -128,10 +152,13 @@ it('renders the neighbourhood graph from the Cypher query result (linked check)'
   expect(screen.getByText('cart')).toBeInTheDocument();
   expect(screen.getByText('gateway')).toBeInTheDocument();
 
-  // The Cypher query was sent to the KG datasource, scoped to this check's entity name.
+  // The Cypher query was sent to the KG datasource, scoped to this check's entity name and
+  // the dashboard's time range.
   const request = query.mock.calls[0][0];
   expect(request.targets[0]).toMatchObject({ queryType: 'entityGraph', queryMode: 'cypher' });
   expect(request.targets[0].cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
+  expect(request.range.from.valueOf()).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
+  expect(request.range.to.valueOf()).toBe(Date.parse(MOCK_TIME_RANGE_TO));
 });
 
 it('shows the insights popup on node hover, with the deep link into the KG app', async () => {

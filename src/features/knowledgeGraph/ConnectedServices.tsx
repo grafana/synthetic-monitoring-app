@@ -64,7 +64,7 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
       <div className={styles.header}>
         <IconButton
           name={isOpen ? 'angle-down' : 'angle-right'}
-          aria-label={isOpen ? 'Collapse connected services' : 'Expand connected services'}
+          aria-label="Connected services"
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
         />

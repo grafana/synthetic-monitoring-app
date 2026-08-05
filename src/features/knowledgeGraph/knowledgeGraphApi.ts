@@ -1,12 +1,13 @@
 import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
+import { ONE_HOUR_IN_MS } from 'utils.constants';
+
 import { KG_PLUGIN_ID } from './knowledgeGraph.constants';
 
 const KG_API_BASE = `/api/plugins/${KG_PLUGIN_ID}/resources/asserts/api-server`;
 const PROPERTY_VALUES_URL = `${KG_API_BASE}/v1/entity_type/property_values`;
 const ENTITY_SEARCH_URL = `${KG_API_BASE}/v1/search`;
-const ONE_HOUR_MS = 60 * 60 * 1000;
 
 interface EntityPropertyValuesResponse {
   values?: string[];
@@ -23,7 +24,7 @@ async function fetchServicePropertyValues(propertyName: 'name' | 'namespace', pr
           entityType: 'Service',
           propertyName,
           prefix: prefix || '',
-          start: now - ONE_HOUR_MS,
+          start: now - ONE_HOUR_IN_MS,
           end: now,
           limit: 50,
         },
@@ -72,7 +73,7 @@ export async function fetchServiceMatchExists(name: string, namespace?: string):
         url: ENTITY_SEARCH_URL,
         method: 'POST',
         data: {
-          timeCriteria: { start: now - ONE_HOUR_MS, end: now },
+          timeCriteria: { start: now - ONE_HOUR_IN_MS, end: now },
           filterCriteria: [
             {
               entityType: 'Service',

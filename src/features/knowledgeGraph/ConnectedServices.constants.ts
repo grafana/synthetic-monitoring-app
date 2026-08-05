@@ -13,8 +13,9 @@ export const CONNECTED_SERVICES_TEST_ID = {
 } as const;
 
 /**
- * Insight-ring severity colors, pinned to the Knowledge Graph's own values
- * (`assertsColors` in the KG plugin) so a check's ring reads identically on both surfaces.
+ * Insight-ring severity colors, pinned to the Knowledge Graph's own values so a check's ring
+ * reads identically on both surfaces. Source: `assertsColors` in
+ * https://github.com/grafana/asserts-app-plugin/blob/main/src/app/constants.ts#L6
  */
 export const KG_SEVERITY_COLORS = {
   critical: '#F2495C',
