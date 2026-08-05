@@ -11,6 +11,7 @@ import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
 import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
+import { FrontendContext } from 'scenes/components/TimepointExplorer/FrontendContext';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useRefetchInterval } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
@@ -126,6 +127,7 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
         probeNameToView={probeNameToView}
         timepoint={timepoint}
       />
+      <FrontendContext timepoint={timepoint} />
     </>
   );
 };
