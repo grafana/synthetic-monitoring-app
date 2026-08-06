@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Button, LoadingPlaceholder, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Alert, Button, LoadingPlaceholder, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
 import { getCheckCompositeKey } from 'data/useCheckAlertStates';
 
-import { formatLatency, getCheckDashboardHref } from './FolderDashboard.utils';
+import { VISIBLE_CHECKS_LIMIT } from './FolderDashboard.constants';
+import { formatLatency, getCheckDashboardHref, getCheckKey } from './FolderDashboard.utils';
+import { FolderSection } from './FolderSection';
 import { ExecutionRecord, FolderExecutionLogs } from './FolderSwimlane.hooks';
 
 interface FolderSwimlaneProps {
@@ -16,10 +18,10 @@ interface FolderSwimlaneProps {
 
 const AXIS_TICK_COUNT = 7;
 
-// Checks are attention-ordered, so truncating large folders is safe: anything
-// hidden below the fold is healthy.
-export const VISIBLE_CHECKS_LIMIT = 25;
-
+// Native `title` (like the success marks) rather than a floating Tooltip
+// component: the live window advances every refresh interval, remounting the
+// marks — a floating tooltip whose anchor unmounts mid-hover is orphaned and
+// sticks to the screen until the next hover.
 const FailureMark = ({
   record,
   positionPct,
@@ -32,54 +34,68 @@ const FailureMark = ({
   const styles = useStyles2(getStyles);
 
   return (
-    <Tooltip
-      content={`${dateTimeFormat(record.timestamp, { format: 'HH:mm:ss' })} · ${record.probe} · failed after ${formatLatency(
+    <a
+      href={getCheckDashboardHref(check)}
+      className={styles.markFailed}
+      style={{ left: `${positionPct}%` }}
+      title={`${dateTimeFormat(record.timestamp, { format: 'HH:mm:ss' })} · ${record.probe} · failed after ${formatLatency(
         record.durationSeconds
       )} · click to open check`}
-    >
-      <a
-        href={getCheckDashboardHref(check)}
-        className={styles.markFailed}
-        style={{ left: `${positionPct}%` }}
-        aria-label={`Open ${check.job} for the window containing the failed execution at ${dateTimeFormat(
-          record.timestamp,
-          { format: 'HH:mm:ss' }
-        )} from ${record.probe}`}
-      />
-    </Tooltip>
+      aria-label={`Open ${check.job} for the window containing the failed execution at ${dateTimeFormat(
+        record.timestamp,
+        { format: 'HH:mm:ss' }
+      )} from ${record.probe}`}
+    />
   );
 };
 
 export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) => {
   const styles = useStyles2(getStyles);
   const [showAll, setShowAll] = useState(false);
-  const { timeRange, executionsByCheck, isLoading } = executionLogs;
+  const { timeRange, executionsByCheck, isLoading, isError } = executionLogs;
   const windowMs = timeRange.to - timeRange.from;
   const visibleChecks = showAll ? checks : checks.slice(0, VISIBLE_CHECKS_LIMIT);
 
   if (isLoading) {
     return (
-      <div className={styles.container}>
-        <h3 className={styles.heading}>Executions &middot; last 3h</h3>
+      <FolderSection title="Executions · last 3h">
         <LoadingPlaceholder text="Loading execution history..." />
-      </div>
+      </FolderSection>
+    );
+  }
+
+  // Very large folders can exceed the log query size limits — say so instead
+  // of rendering every lane as a misleading "no executions in window".
+  if (isError) {
+    return (
+      <FolderSection title="Executions · last 3h">
+        <Alert severity="error" title="Failed to load execution history">
+          The execution history query failed. This can happen in folders with a very large number of checks.
+        </Alert>
+      </FolderSection>
     );
   }
 
   const toPct = (timestamp: number) => Math.min(100, Math.max(0, ((timestamp - timeRange.from) / windowMs) * 100));
 
   return (
-    <div className={styles.container}>
-      <h3 className={styles.heading}>Executions &middot; last 3h</h3>
+    <FolderSection title="Executions · last 3h">
       {visibleChecks.map((check) => {
         const records = executionsByCheck.get(getCheckCompositeKey(check.job, check.target)) ?? [];
+        const failureCount = records.filter((record) => !record.success).length;
 
         return (
-          <div key={check.id ?? `${check.job}-${check.target}`} className={styles.lane}>
+          <div key={getCheckKey(check)} className={styles.lane}>
             <div className={styles.laneLabel} title={check.job}>
               <TextLink href={getCheckDashboardHref(check)} color="primary" inline={false}>
                 {check.job}
               </TextLink>
+              {/* The marks are hover/mouse targets; give screen readers a per-lane summary instead. */}
+              {records.length > 0 && (
+                <span className={styles.srOnly}>
+                  {records.length} executions, {failureCount} failed in window
+                </span>
+              )}
             </div>
             <div className={styles.track}>
               {records.map((record, index) =>
@@ -120,23 +136,11 @@ export const FolderSwimlane = ({ checks, executionLogs }: FolderSwimlaneProps) =
           Show all {checks.length} checks
         </Button>
       )}
-    </div>
+    </FolderSection>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css({
-    background: theme.colors.background.secondary,
-    border: `1px solid ${theme.colors.border.weak}`,
-    borderRadius: theme.shape.radius.default,
-    padding: theme.spacing(1.5, 2),
-  }),
-  heading: css({
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontWeight: theme.typography.fontWeightMedium,
-    color: theme.colors.text.secondary,
-    margin: theme.spacing(0, 0, 1),
-  }),
   lane: css({
     display: 'grid',
     gridTemplateColumns: '300px 1fr',
@@ -152,6 +156,19 @@ const getStyles = (theme: GrafanaTheme2) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  }),
+  // Standard visually-hidden pattern (@grafana/ui doesn't ship one in this
+  // version): present to screen readers, removed from the visual layout.
+  srOnly: css({
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    padding: 0,
+    margin: '-1px',
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    whiteSpace: 'nowrap',
+    border: 0,
   }),
   track: css({
     position: 'relative',
